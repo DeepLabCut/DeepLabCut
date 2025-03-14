@@ -1839,6 +1839,7 @@ def export_model(
     overwrite: bool = False,
     make_tar: bool = True,
     wipepaths: bool = False,
+    without_detector: bool = False,
     modelprefix: str = "",
     engine: Engine | None = None,
 ) -> None:
@@ -1881,6 +1882,9 @@ def export_model(
 
     wipepaths : bool, optional
         Removes the actual path of your project and the init_weights from pose_cfg.
+
+    without_detector: bool, optional
+        PyTorch engine only. Exports top-down models without the detector.
 
     engine: Engine, optional, default = None.
         The default behavior loads the engine for the shuffle from the metadata. You can
@@ -1927,6 +1931,7 @@ def export_model(
             iteration=iteration,
             overwrite=overwrite,
             wipe_paths=wipepaths,
+            without_detector=without_detector,
             modelprefix=modelprefix,
         )
 

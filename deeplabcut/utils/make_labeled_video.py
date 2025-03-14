@@ -1418,7 +1418,7 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
             im.set_data(frame[:, X1:X2])
             for n, trackid in enumerate(trackids):
                 if imname in tracks[trackid]:
-                    x, y, p = tracks[trackid][imname].reshape((-1, 3)).T
+                    x, y, p = tracks[trackid][imname][:,:3].reshape((-1, 3)).T
                     markers[n].set_data(x[p > pcutoff], y[p > pcutoff])
                 else:
                     markers[n].set_data([], [])
@@ -1440,6 +1440,9 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
             output_name,
         ]
     )
+
+    # remove frames used for video creation
+    [os.remove(image) for image in os.listdir(destfolder) if ".png" in image]
 
 
 def create_video_from_pickled_tracks(

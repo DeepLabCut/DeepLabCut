@@ -96,9 +96,9 @@ You can use our demo videos, grab some from the internet, or use whatever older 
         **MODULE 2 webinar**: https://youtu.be/ILsuC4icBU0
 
 
-### **Module 3: Evalution of network performance**
+### **Module 3: Evaluation of network performance**
 
-   - **Slides** [Evalute your network](https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials/blob/main/part3-analysis.pdf)
+   - **Slides** [Evaluate your network](https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials/blob/master/part3-analysis.pdf)
    - **WATCH:** [Evaluate the network in ipython](https://www.youtube.com/watch?v=bgfnz1wtlpo)
       - why evaluation matters; how to benchmark; analyzing a video and using scoremaps, conf. readouts, etc.
 
