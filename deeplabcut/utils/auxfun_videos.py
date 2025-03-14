@@ -159,6 +159,24 @@ class VideoReader:
             y2 = int(self._height * y2)
         return x1, x2, y1, y2
 
+    def set_bbox(self, x1, x2, y1, y2, relative=False):
+        if x2 <= x1 or y2 <= y1:
+            raise ValueError(
+                f"Coordinates look wrong... " f"Ensure {x1} < {x2} and {y1} < {y2}."
+            )
+        if not relative:
+            x1 /= self._width
+            x2 /= self._width
+            y1 /= self._height
+            y2 /= self._height
+        bbox = x1, x2, y1, y2
+        if any(coord > 1 for coord in bbox):
+            warnings.warn(
+                "Bounding box larger than the video... " "Clipping to video dimensions."
+            )
+            bbox = tuple(map(lambda x: min(x, 1), bbox))
+        self._bbox = bbox
+
     @property
     def fps(self):
         return self._fps
@@ -204,24 +222,6 @@ class VideoWriter(VideoReader):
         self.dpi = dpi
         if fps:
             self.fps = fps
-
-    def set_bbox(self, x1, x2, y1, y2, relative=False):
-        if x2 <= x1 or y2 <= y1:
-            raise ValueError(
-                f"Coordinates look wrong... " f"Ensure {x1} < {x2} and {y1} < {y2}."
-            )
-        if not relative:
-            x1 /= self._width
-            x2 /= self._width
-            y1 /= self._height
-            y2 /= self._height
-        bbox = x1, x2, y1, y2
-        if any(coord > 1 for coord in bbox):
-            warnings.warn(
-                "Bounding box larger than the video... " "Clipping to video dimensions."
-            )
-            bbox = tuple(map(lambda x: min(x, 1), bbox))
-        self._bbox = bbox
 
     def shorten(
         self, start, end, suffix="short", dest_folder=None, validate_inputs=True
@@ -319,6 +319,21 @@ class VideoWriter(VideoReader):
             f"-filter:v crop={self.width}:{self.height}:{x1}:{y1} "
             f'-c:a copy "{output_path}"'
         )
+        subprocess.call(command, shell=True)
+        return output_path
+
+    def rotate(self, angle, rotatecw="Arbitrary", suffix="rotated", dest_folder=None):
+        output_path = self.make_output_path(suffix, dest_folder)
+        command = f'ffmpeg -n -i "{self.video_path}" -vf '
+        if rotatecw == "Arbitrary":
+            angle = np.deg2rad(angle)
+            command += f'rotate={angle} '
+        elif rotatecw == "Yes":
+            command += 'transpose=1 '
+        else:
+            raise ValueError("Unknown rotation direction.")
+
+        command += f'-c:a copy "{output_path}"'
         subprocess.call(command, shell=True)
         return output_path
 
@@ -558,6 +573,47 @@ def DownSampleVideo(
     """
     writer = VideoWriter(vname)
     return writer.rescale(width, height, rotatecw, angle, outsuffix, outpath)
+
+
+def rotate_video(vname, angle, rotatecw="Arbitrary", outsuffix="rotated", outpath=None):
+    """
+    Auxiliary function to rotate a video and output it to the same folder with "outsuffix" appended in its name.
+    Angle is in degrees.
+
+    Returns the full path to the rotated video!
+
+    Parameter
+    ----------
+    vname : string
+        A string containing the full path of the video.
+
+    angle: float
+        Angle to rotate by in degrees. Negative values rotate counter-clockwise.
+
+    rotatecw: str
+        Default "Arbitrary", rotates clockwise if "Yes", "Arbitrary" for arbitrary rotation by specified angle.
+
+    outsuffix: str
+        Suffix for output videoname (see example).
+
+    outpath: str
+        Output path for saving video to (by default will be the same folder as the video)
+
+    Examples
+    ----------
+
+    Linux/MacOs
+    >>> deeplabcut.rotate_video('/data/videos/mouse1.avi',angle=90)
+
+    Rotates the video by 90 degrees and saves it in /data/videos as mouse1rotated.avi
+
+    Windows:
+    >>> shortenedvideoname=deeplabcut.rotate_video('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi', angle=180,rotatecw='Yes')
+
+    Rotates the video by 180 degrees and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1rotated.avi
+    """
+    writer = VideoWriter(vname)
+    return writer.rotate(angle, rotatecw, outsuffix, outpath)
 
 
 def draw_bbox(video):

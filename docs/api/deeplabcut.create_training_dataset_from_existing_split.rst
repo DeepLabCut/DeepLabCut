@@ -1,0 +1,1 @@
+.. autofunction:: deeplabcut.generate_training_dataset.trainingsetmanipulation.create_training_dataset_from_existing_split

@@ -23,7 +23,7 @@ import pandas as pd
 import statsmodels.api as sm
 from skimage.util import img_as_ubyte
 
-from deeplabcut.pose_estimation_tensorflow.lib import inferenceutils
+from deeplabcut.core import inferenceutils
 from deeplabcut.utils import (
     auxiliaryfunctions,
     auxfun_multianimal,
@@ -235,7 +235,7 @@ def extract_outlier_frames(
     outlieralgorithm: str, optional, default="jump".
         String specifying the algorithm used to detect the outliers.
 
-        * ``'Fitting'`` fits a Auto Regressive Integrated Moving Average model to the
+        * ``'fitting'`` fits an Auto Regressive Integrated Moving Average model to the
           data and computes the distance to the estimated data. Larger distances than
           epsilon are then potentially identified as outliers
         * ``'jump'`` identifies larger jumps than 'epsilon' in any body part

@@ -1,0 +1,50 @@
+data:
+  colormode: RGB
+  inference:
+    normalize_images: true
+  train:
+    affine:
+      p: 0.5
+      rotation: 30
+      scaling: [ 1.0, 1.0 ]
+      translation: 40
+    collate:
+      type: ResizeFromDataSizeCollate
+      min_scale: 0.4
+      max_scale: 1.0
+      min_short_side: 128
+      max_short_side: 1152
+      multiple_of: 32
+      to_square: false
+    hflip: true
+    normalize_images: true
+device: auto
+model:
+  type: SSDLite
+  box_score_thresh: 0.6
+  freeze_bn_stats: true
+  freeze_bn_weights: false
+runner:
+  type: DetectorTrainingRunner
+  key_metric: "test.mAP@50:95"
+  key_metric_asc: true
+  eval_interval: 10
+  optimizer:
+    type: AdamW
+    params:
+      lr: 1e-5
+  scheduler:
+    type: LRListScheduler
+    params:
+      milestones: [ 90 ]
+      lr_list: [ [ 1e-6 ] ]
+  snapshots:
+    max_snapshots: 5
+    save_epochs: 25
+    save_optimizer_state: false
+train_settings:
+  batch_size: 8
+  dataloader_workers: 0
+  dataloader_pin_memory: false
+  display_iters: 500
+  epochs: 250
