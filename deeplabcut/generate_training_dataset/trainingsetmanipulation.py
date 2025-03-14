@@ -918,14 +918,16 @@ def create_training_dataset(
     Examples
     --------
 
-    Linux/MacOS
-
+    Linux/MacOS:
     >>> deeplabcut.create_training_dataset(
             '/analysis/project/reaching-task/config.yaml', num_shuffles=1,
         )
 
-    Windows
+    >>> deeplabcut.create_training_dataset(
+            '/analysis/project/reaching-task/config.yaml', Shuffles=[2], engine=deeplabcut.Engine.TF,
+        )
 
+    Windows:
     >>> deeplabcut.create_training_dataset(
             'C:\\Users\\Ulf\\looming-task\\config.yaml', Shuffles=[3,17,5],
         )
