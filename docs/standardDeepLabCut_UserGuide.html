@@ -1322,18 +1322,27 @@ representing the training and test indices.</p>
 <p>Use the function <code class="docutils literal notranslate"><span class="pre">add_new_videos</span></code> at any stage of the project to add more videos
 to the project.</p>
 <p class="rubric">Examples</p>
-<p>Linux/MacOS</p>
+<p>Linux/MacOS:
+&gt;&gt;&gt; deeplabcut.create_training_dataset(</p>
+<blockquote>
+<div><blockquote>
+<div><p>‘/analysis/project/reaching-task/config.yaml’, num_shuffles=1,</p>
+</div></blockquote>
+<p>)</p>
+</div></blockquote>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span>
-<span class="go">        &#39;/analysis/project/reaching-task/config.yaml&#39;, num_shuffles=1,</span>
+<span class="go">        &#39;/analysis/project/reaching-task/config.yaml&#39;, Shuffles=[2], engine=deeplabcut.Engine.TF,</span>
 <span class="go">    )</span>
 </pre></div>
 </div>
-<p>Windows</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span>
-<span class="go">        &#39;C:\Users\Ulf\looming-task\config.yaml&#39;, Shuffles=[3,17,5],</span>
-<span class="go">    )</span>
-</pre></div>
-</div>
+<p>Windows:
+&gt;&gt;&gt; deeplabcut.create_training_dataset(</p>
+<blockquote>
+<div><blockquote>
+<div><p>‘C:UsersUlflooming-taskconfig.yaml’, Shuffles=[3,17,5],</p>
+</div></blockquote>
+<p>)</p>
+</div></blockquote>
 </dd></dl>
 
 </div>
