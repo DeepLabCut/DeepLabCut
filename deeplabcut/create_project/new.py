@@ -14,7 +14,9 @@ import os
 import shutil
 import warnings
 from pathlib import Path
+
 from deeplabcut import DEBUG
+from deeplabcut.core.engine import Engine
 from deeplabcut.utils.auxfun_videos import VideoReader
 
 
@@ -260,8 +262,15 @@ def create_new_project(
             ["bodypart2", "bodypart3"],
             ["bodypart1", "bodypart3"],
         ]
-        cfg_file["default_augmenter"] = "multi-animal-imgaug"
-        cfg_file["default_net_type"] = "dlcrnet_ms5"
+        engine = cfg_file.get("engine")
+        if engine in Engine.PYTORCH.aliases:
+            cfg_file["default_augmenter"] = "albumentations"
+            cfg_file["default_net_type"] = "rtmpose_m"
+        elif engine in Engine.TF.aliases:
+            cfg_file["default_augmenter"] = "multi-animal-imgaug"
+            cfg_file["default_net_type"] = "dlcrnet_ms5"
+        else:
+            raise ValueError(f"Unknown or undefined engine {engine}")
         cfg_file["default_track_method"] = "ellipse"
     else:
         cfg_file, ruamelFile = auxiliaryfunctions.create_config_template()
