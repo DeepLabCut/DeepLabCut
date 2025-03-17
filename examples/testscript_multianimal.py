@@ -332,6 +332,7 @@ if __name__ == "__main__":
     deeplabcut.create_multianimaltraining_dataset(
         config_path,
         Shuffles=[4, 5],
+        net_type=NET,
         trainIndices=[trainIndices, trainIndices],
         testIndices=[testIndices, testIndices],
         engine=ENGINE,
