@@ -415,6 +415,14 @@ def analyze_videos(
             use_shelve = False
 
     dynamic = DynamicCropper.build(*dynamic)
+    if pose_task != Task.BOTTOM_UP and dynamic is not None:
+        print(
+            "Turning off dynamic cropping. It should only be used for bottom-up "
+            "pose estimation models, but you are using a top-down model. For top-down "
+            "models, use the TopDownDynamicCropper with the `top_down_dynamic` arg."
+        )
+        dynamic = None
+
     if top_down_dynamic is not None:
         if pose_task == Task.TOP_DOWN:
             td_cfg = model_cfg["data"]["inference"].get(
@@ -423,14 +431,8 @@ def analyze_videos(
             )
             top_down_dynamic["top_down_crop_size"] = td_cfg["width"], td_cfg["height"]
 
+        print(f"Creating a TopDownDynamicCropper with configuration {top_down_dynamic}")
         dynamic = TopDownDynamicCropper(**top_down_dynamic)
-    elif pose_task != Task.BOTTOM_UP and dynamic is not None:
-        print(
-            "Turning off dynamic cropping. It should only be used for bottom-up "
-            "pose estimation models, but you are using a top-down model. For top-down "
-            "models, use the TopDownDynamicCropper with the `top_down_dynamic` arg."
-        )
-        dynamic = None
 
     snapshot = utils.get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
     print(f"Analyzing videos with {snapshot.path}")
