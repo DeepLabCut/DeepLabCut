@@ -1639,7 +1639,7 @@ def create_training_dataset_from_existing_split(
                 * ``efficientnet-b4``
                 * ``efficientnet-b5``
                 * ``efficientnet-b6``
-            Currently supported  options for engine=Engine.TF can be obtained by calling
+            Currently supported  options for engine=Engine.PYTORCH can be obtained by calling
             ``deeplabcut.pose_estimation_pytorch.available_models()``.
 
         detector_type: string, optional, default=None
