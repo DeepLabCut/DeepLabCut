@@ -187,6 +187,7 @@ def convert_detections2tracklets(
                 )
 
             num_frames = data["metadata"]["nframes"]
+            strwidth = int(np.ceil(np.log10(num_frames))) 
             ass = auxiliaryfunctions.read_pickle(ass_filename)
 
             # Initialize storage of the 'single' individual track
@@ -254,8 +255,9 @@ def convert_detections2tracklets(
                         else:
                             xy = animals[:, keep_inds, :2]
                         trackers = mot_tracker.track(xy)
-
-                    trackingutils.fill_tracklets(tracklets, trackers, animals, index)
+                    
+                    imname = "frame" + str(index).zfill(strwidth)
+                    trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
 
             tracklets["header"] = df_index
             with open(track_filename, "wb") as f:
