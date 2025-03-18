@@ -21,7 +21,7 @@ import deeplabcut
 if __name__ == "__main__":
     superanimal_name = "superanimal_quadruped"
     working_dir = Path(__file__).resolve().parent
-    video_dir = working_dir / "openfield-Pranav-2018-10-30/videos/m3v1mp4short.mp4"
+    video_dir = working_dir / "openfield-Pranav-2018-10-30/videos/m3v1mp4.mp4"
     project_name = "pretrained"
 
     deeplabcut.create_pretrained_project(

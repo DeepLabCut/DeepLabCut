@@ -30,6 +30,7 @@ def export_model(
     iteration: int | None = None,
     overwrite: bool = False,
     wipe_paths: bool = False,
+    without_detector: bool = False,
     modelprefix: str | None = None,
 ) -> None:
     """Export DeepLabCut models for live inference.
@@ -55,6 +56,8 @@ def export_model(
         wipe_paths : bool, optional
             Removes the actual path of your project and the init_weights from the
             ``pytorch_config.yaml``.
+        without_detector: bool, optional
+            Exports top-down models without the detector.
         modelprefix: Directory containing the deeplabcut models to use when evaluating
             the network. By default, the models are assumed to exist in the project
             folder.
@@ -96,7 +99,7 @@ def export_model(
         )
 
     detector_snapshots = [None]
-    if loader.pose_task == Task.TOP_DOWN:
+    if loader.pose_task == Task.TOP_DOWN and not without_detector:
         if detector_snapshot_index is None:
             detector_snapshot_index = loader.project_cfg["detector_snapshotindex"]
         detector_snapshots = utils.get_model_snapshots(
