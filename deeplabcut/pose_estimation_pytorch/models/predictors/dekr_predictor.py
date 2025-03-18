@@ -394,6 +394,7 @@ class DEKRPredictor(BasePredictor):
         area = area.repeat(1, 1, num_people * num_joints)
         area = area.reshape(batch_size, num_people, num_people, num_joints)
 
+        # TODO(niels): Optimize code
         # swap (batch, num_people) dims to be able to broadcast the diff
         xy_ = xy.transpose(1, 0)
 
@@ -413,6 +414,7 @@ class DEKRPredictor(BasePredictor):
         nms_pose = pose_dist > self.nms_threshold  # shape (b, num_people, num_people)
 
         for batch_idx in range(batch_size):
+            # TODO(niels): Optimize code
             kept = torch.zeros(num_people, dtype=torch.bool)
             batch_order = []
             kept_indices = set()
