@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from typing import Tuple
+from typing import Callable, Tuple
 
 from PySide6 import QtCore
 import re
@@ -26,9 +26,25 @@ class Worker(QtCore.QObject):
         self.finished.emit()
 
 
-def move_to_separate_thread(func):
+class CaptureWorker(Worker):
+    """A worker that captures outputs from methods that are run."""
+
+    def __init__(self, func: Callable):
+        super().__init__(func)
+        self.outputs = None
+
+    def run(self):
+        self.outputs = self.func()
+        self.finished.emit()
+
+
+def move_to_separate_thread(func: Callable, capture_outputs: bool = False):
     thread = QtCore.QThread()
-    worker = Worker(func)
+    if capture_outputs:
+        worker = CaptureWorker(func)
+    else:
+        worker = Worker(func)
+
     worker.finished.connect(worker.deleteLater)
     worker.moveToThread(thread)
     thread.started.connect(worker.run)

@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Annotate locations with typos
+        uses: codespell-project/codespell-problem-matcher@v1
       - name: Codespell
-        uses: codespell-project/actions-codespell@v1
-        with:
-           ignore_words_list: bu,BU,td,TD,ctd,CTD, Wither
+        uses: codespell-project/actions-codespell@v2
