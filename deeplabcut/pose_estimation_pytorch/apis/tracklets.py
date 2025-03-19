@@ -276,7 +276,9 @@ def build_tracklets(
                     xy = animals[:, keep_inds, :2]
                 trackers = mot_tracker.track(xy)
 
-            trackingutils.fill_tracklets(tracklets, trackers, animals, index)
+            strwidth = int(np.ceil(np.log10(num_frames)))
+            imname = "frame" + str(index).zfill(strwidth)
+            trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
 
     return tracklets
 
