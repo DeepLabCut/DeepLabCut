@@ -12,7 +12,7 @@ model:
     type: CondPreNet
     backbone:
       type: HRNet
-      model_name: hrnet_w32
+      model_name: hrnet_w48
       freeze_bn_stats: true
       freeze_bn_weights: false
       interpolate_branches: false
@@ -21,7 +21,7 @@ model:
       type: ColoredKeypointEncoder
       num_joints: "num_bodyparts"
       kernel_size: [15, 15]
-  backbone_output_channels: 32
+  backbone_output_channels: 48
   heads:
     bodypart:
       type: HeatmapHead
@@ -43,7 +43,7 @@ model:
           weight: 1.0
       heatmap_config:
         channels:
-        - 32
+        - 48
         kernel_size: []
         strides: []
         final_conv:
