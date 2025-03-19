@@ -265,7 +265,7 @@ def create_new_project(
         engine = cfg_file.get("engine")
         if engine in Engine.PYTORCH.aliases:
             cfg_file["default_augmenter"] = "albumentations"
-            cfg_file["default_net_type"] = "rtmpose_m"
+            cfg_file["default_net_type"] = "resnet_50"
         elif engine in Engine.TF.aliases:
             cfg_file["default_augmenter"] = "multi-animal-imgaug"
             cfg_file["default_net_type"] = "dlcrnet_ms5"
