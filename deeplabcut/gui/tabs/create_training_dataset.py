@@ -419,6 +419,9 @@ class CreateTrainingDataset(DefaultTab):
         if default_net is None:
             default_net = self.root.cfg.get("default_net_type", "resnet_50")
 
+        if engine == Engine.TF and default_net not in DLCParams.NNETS or engine == Engine.PYTORCH and default_net not in available_models():
+            default_net = "resnet_50"
+
         if default_net in nets:
             self.net_choice.setCurrentIndex(nets.index(default_net))
 
