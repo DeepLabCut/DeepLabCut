@@ -1444,7 +1444,7 @@ def _convert_detections_to_tracklets(
         mot_tracker = trackingutils.SORTBox(
             inference_cfg["max_age"],
             inference_cfg["min_hits"],
-            inference_cfg.get("oks_threshold", 0.3),
+            inference_cfg.get("iou_threshold", 0.3),
         )
     elif track_method == "skeleton":
         mot_tracker = trackingutils.SORTSkeleton(
@@ -1737,7 +1737,7 @@ def convert_detections2tracklets(
                     mot_tracker = trackingutils.SORTBox(
                         inferencecfg["max_age"],
                         inferencecfg["min_hits"],
-                        inferencecfg.get("oks_threshold", 0.3),
+                        inferencecfg.get("iou_threshold", 0.3),
                     )
                 elif track_method == "skeleton":
                     mot_tracker = trackingutils.SORTSkeleton(

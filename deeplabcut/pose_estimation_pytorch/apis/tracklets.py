@@ -137,129 +137,30 @@ def convert_detections2tracklets(
             print(f"Tracklets already computed at {track_filename}")
             print("Set overwrite = True to overwrite.")
         else:
-            dlc_scorer = metadata["data"]["Scorer"]
-            joints = data["metadata"]["all_joints_names"]
-            n_joints = len(joints)
-
-            # TODO: adjust this for multi + unique bodyparts!
-            # this is only for multianimal parts and unique bodyparts as one (not one
-            # unique bodyparts guy tracked etc.)
-            bodypart_labels = [bpt for bpt in joints for _ in range(3)]
-            scorers = len(bodypart_labels) * [dlc_scorer]
-            xyl_value = int(len(bodypart_labels) / 3) * ["x", "y", "likelihood"]
-            df_index = pd.MultiIndex.from_arrays(
-                np.vstack([scorers, bodypart_labels, xyl_value]),
-                names=["scorer", "bodyparts", "coords"],
-            )
-
-            if track_method == "box":
-                mot_tracker = trackingutils.SORTBox(
-                    inference_cfg["max_age"],
-                    inference_cfg["min_hits"],
-                    inference_cfg.get("oks_threshold", 0.3),
-                )
-            elif track_method == "skeleton":
-                mot_tracker = trackingutils.SORTSkeleton(
-                    n_joints,
-                    inference_cfg["max_age"],
-                    inference_cfg["min_hits"],
-                    inference_cfg.get("oks_threshold", 0.5),
-                )
-            else:
-                mot_tracker = trackingutils.SORTEllipse(
-                    inference_cfg.get("max_age", 1),
-                    inference_cfg.get("min_hits", 1),
-                    inference_cfg.get("iou_threshold", 0.6),
-                )
-
-            tracklets = {}
-            multi_bpts = cfg["multianimalbodyparts"]
-
-            ass_filename = data_filename.with_stem(
+            assemblies_path = data_filename.with_stem(
                 data_filename.stem + "_assemblies"
             ).with_suffix(".pickle")
-            if not ass_filename.exists():
+            if not assemblies_path.exists():
                 raise FileNotFoundError(
-                    f"Could not find the assembles file {ass_filename}. You're "
+                    f"Could not find the assembles file {assemblies_path}. You're "
                     f"converting detections to tracklets using PyTorch, which "
                     "means the assemblies file must be created by the model when "
                     "analyzing the video!"
                 )
+            assemblies_data = auxiliaryfunctions.read_pickle(assemblies_path)
 
-            num_frames = data["metadata"]["nframes"]
-            strwidth = int(np.ceil(np.log10(num_frames))) 
-            ass = auxiliaryfunctions.read_pickle(ass_filename)
+            tracklets = build_tracklets(
+                assemblies_data=assemblies_data,
+                track_method=track_method,
+                inference_cfg=inference_cfg,
+                joints=data["metadata"]["all_joints_names"],
+                scorer=metadata["data"]["Scorer"],
+                num_frames=data["metadata"]["nframes"],
+                ignore_bodyparts=ignore_bodyparts,
+                unique_bodyparts=cfg["uniquebodyparts"],
+                identity_only=identity_only
+            )
 
-            # Initialize storage of the 'single' individual track
-            if cfg["uniquebodyparts"]:
-                tracklets["single"] = {}
-                _single = {}
-                for index in range(num_frames):
-                    single_detection = ass["single"].get(index)
-                    if single_detection is None:
-                        continue
-                    _single[index] = np.asarray(single_detection)
-                tracklets["single"].update(_single)
-
-            pcutoff = inference_cfg.get("pcutoff")
-            if inference_cfg["topktoretain"] == 1:
-                tracklets[0] = {}
-                for index in tqdm(range(num_frames)):
-                    assemblies = ass.get(index)
-                    if assemblies is None:
-                        continue
-
-                    assembly = np.asarray(assemblies[0].data)
-                    assembly[assembly[..., 2] < pcutoff] = np.nan
-                    tracklets[0][index] = assembly
-            else:
-                keep = set(multi_bpts).difference(ignore_bodyparts or [])
-                keep_inds = sorted(multi_bpts.index(bpt) for bpt in keep)
-                for index in tqdm(range(num_frames)):
-                    assemblies = ass.get(index)
-                    if assemblies is None or len(assemblies) == 0:
-                        continue
-
-                    animals = np.stack([a for a in assemblies])
-                    animals[np.any(animals[..., :3] < 0, axis=-1), :2] = np.nan
-                    animals[animals[..., 2] < pcutoff, :2] = np.nan
-                    animal_mask = ~np.all(np.isnan(animals[:, :, :2]), axis=(1, 2))
-                    if ~np.any(animal_mask):
-                        continue
-                    animals = animals[animal_mask]
-
-                    if identity_only:
-                        # Optimal identity assignment based on soft voting
-                        mat = np.zeros((len(animals), inference_cfg["topktoretain"]))
-                        for row, animal_pose in enumerate(animals):
-                            animal_pose = animal_pose[
-                                ~np.isnan(animal_pose).any(axis=1)
-                            ]
-                            unique_ids, idx = np.unique(
-                                animal_pose[:, 3], return_inverse=True
-                            )
-                            total_scores = np.bincount(idx, weights=animal_pose[:, 2])
-                            softmax_id_scores = softmax(total_scores)
-                            for pred_id, softmax_score in zip(
-                                unique_ids.astype(int), softmax_id_scores
-                            ):
-                                mat[row, pred_id] = softmax_score
-
-                        inds = linear_sum_assignment(mat, maximize=True)
-                        trackers = np.c_[inds][:, ::-1]
-                    else:
-                        if track_method == "box":
-                            xy = trackingutils.calc_bboxes_from_keypoints(
-                                animals[:, keep_inds], inference_cfg["boundingboxslack"]
-                            )  # TODO: get cropping parameters and utilize!
-                        else:
-                            xy = animals[:, keep_inds, :2]
-                        trackers = mot_tracker.track(xy)
-                    
-                    imname = "frame" + str(index).zfill(strwidth)
-                    trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
-
-            tracklets["header"] = df_index
             with open(track_filename, "wb") as f:
                 pickle.dump(tracklets, f, pickle.HIGHEST_PROTOCOL)
 
@@ -268,6 +169,127 @@ def convert_detections2tracklets(
         "The tracklets were created (i.e., under the hood "
         "deeplabcut.convert_detections2tracklets was run). Now you can "
         "'refine_tracklets' in the GUI, or run 'deeplabcut.stitch_tracklets'."
+    )
+
+
+def build_tracklets(
+    assemblies_data: dict,
+    track_method: str,
+    inference_cfg: dict,
+    joints: list[str],
+    scorer: str,
+    num_frames: int,
+    ignore_bodyparts: list[str]|None = None,
+    unique_bodyparts: list|None = None,
+    identity_only: bool = False
+) -> dict :
+
+    if track_method == "box":
+        mot_tracker = trackingutils.SORTBox(
+            inference_cfg["max_age"],
+            inference_cfg["min_hits"],
+            inference_cfg.get("iou_threshold", 0.3),
+        )
+    elif track_method == "skeleton":
+        mot_tracker = trackingutils.SORTSkeleton(
+            len(joints),
+            inference_cfg["max_age"],
+            inference_cfg["min_hits"],
+            inference_cfg.get("oks_threshold", 0.5),
+        )
+    else:
+        mot_tracker = trackingutils.SORTEllipse(
+            inference_cfg.get("max_age", 1),
+            inference_cfg.get("min_hits", 1),
+            inference_cfg.get("iou_threshold", 0.6),
+        )
+
+    tracklets = {}
+
+    df_index = _create_tracklets_header(joints, scorer)
+    tracklets["header"] = df_index
+
+    # Initialize storage of the 'single' individual track
+    if unique_bodyparts:
+        tracklets["single"] = {}
+        _single = {}
+        for index in range(num_frames):
+            single_detection = assemblies_data["single"].get(index)
+            if single_detection is None:
+                continue
+            _single[index] = np.asarray(single_detection)
+        tracklets["single"].update(_single)
+
+    pcutoff = inference_cfg.get("pcutoff")
+    if inference_cfg["topktoretain"] == 1:
+        tracklets[0] = {}
+        for index in tqdm(range(num_frames)):
+            assemblies = assemblies_data.get(index)
+            if assemblies is None:
+                continue
+
+            assembly = np.asarray(assemblies[0].data)
+            assembly[assembly[..., 2] < pcutoff] = np.nan
+            tracklets[0][index] = assembly
+    else:
+        multi_bpts = list(set(joints).difference(unique_bodyparts or []))
+        keep = set(multi_bpts).difference(ignore_bodyparts or [])
+        keep_inds = sorted(multi_bpts.index(bpt) for bpt in keep)
+        for index in tqdm(range(num_frames)):
+            assemblies = assemblies_data.get(index)
+            if assemblies is None or len(assemblies) == 0:
+                continue
+
+            animals = np.stack([a for a in assemblies])
+            animals[np.any(animals[..., :3] < 0, axis=-1), :2] = np.nan
+            animals[animals[..., 2] < pcutoff, :2] = np.nan
+            animal_mask = ~np.all(np.isnan(animals[:, :, :2]), axis=(1, 2))
+            if ~np.any(animal_mask):
+                continue
+            animals = animals[animal_mask]
+
+            if identity_only:
+                # Optimal identity assignment based on soft voting
+                mat = np.zeros((len(animals), inference_cfg["topktoretain"]))
+                for row, animal_pose in enumerate(animals):
+                    animal_pose = animal_pose[
+                        ~np.isnan(animal_pose).any(axis=1)
+                    ]
+                    unique_ids, idx = np.unique(
+                        animal_pose[:, 3], return_inverse=True
+                    )
+                    total_scores = np.bincount(idx, weights=animal_pose[:, 2])
+                    softmax_id_scores = softmax(total_scores)
+                    for pred_id, softmax_score in zip(
+                            unique_ids.astype(int), softmax_id_scores
+                    ):
+                        mat[row, pred_id] = softmax_score
+
+                inds = linear_sum_assignment(mat, maximize=True)
+                trackers = np.c_[inds][:, ::-1]
+            else:
+                if track_method == "box":
+                    xy = trackingutils.calc_bboxes_from_keypoints(
+                        animals[:, keep_inds], inference_cfg["boundingboxslack"]
+                    )  # TODO: get cropping parameters and utilize!
+                else:
+                    xy = animals[:, keep_inds, :2]
+                trackers = mot_tracker.track(xy)
+
+            strwidth = int(np.ceil(np.log10(num_frames)))
+            imname = "frame" + str(index).zfill(strwidth)
+            trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
+
+    return tracklets
+
+
+def _create_tracklets_header(joints, dlc_scorer):
+    bodypart_labels = [bpt for bpt in joints for _ in range(3)]
+    scorers = len(bodypart_labels) * [dlc_scorer]
+    xyl_value = int(len(bodypart_labels) / 3) * ["x", "y", "likelihood"]
+    return pd.MultiIndex.from_arrays(
+        np.vstack([scorers, bodypart_labels, xyl_value]),
+        names=["scorer", "bodyparts", "coords"],
     )
 
 
