@@ -10,7 +10,6 @@
 #
 import torch
 import torch.nn as nn
-from typing import Dict, Any, List, Union
 
 from deeplabcut.pose_estimation_pytorch.models.backbones.base import (
     BACKBONES,
@@ -51,7 +50,7 @@ class CondPreNet(BaseBackbone):
         
         self.init_weights()
         
-     def _make_preNet(self, num_outputs, input_image = False):        
+    def _make_preNet(self, num_outputs, input_image = False):        
         if not input_image: # cond 
             preNet = nn.Sequential(
                     nn.Conv2d(3, num_outputs, kernel_size=7, stride = 1, padding='same'),

@@ -108,33 +108,38 @@ class StackedKeypointEncoder(BaseKeypointEncoder):
             the encoded keypoints
         """
 
-        raise NotImplementedError("StackedKeypointEncoder not implemented yet with batch processing")
+        batch_size, _, _ = keypoints.shape
 
-        kpts = np.array(keypoints).astype(int)  # .reshape(-1, 2).astype(int)
-        zero_matrix = np.zeros(size)
+        kpts = keypoints.copy()
+        kpts[keypoints[..., 2] <= 0] = 0
+        kpts = np.nan_to_num(kpts)
+        oob_mask = out_of_bounds_keypoints(kpts, (256,256))
+        if np.sum(oob_mask) > 0:
+            kpts[oob_mask] = 0
+        kpts = kpts.astype(int)
 
-        def _get_condition_matrix(zero_matrix_, kpt_):
-            if 0 < kpt_[0] < size[1] and 0 < kpt_[1] < size[0]:
-                zero_matrix_[kpt_[1] - 1][kpt_[0] - 1] = 255
-            return zero_matrix_
+        zero_matrix = np.zeros((batch_size, size[0], size[1], self.num_channels))
 
-        condition_heatmap_list = []
-        for i, kpt in enumerate(kpts):
-            condition = _get_condition_matrix(zero_matrix, kpt)
-            condition_heatmap = self.blur_heatmap(condition)
-            condition_heatmap_list.append(condition_heatmap)
-            zero_matrix = np.zeros(size)
+        # def _get_condition_matrix(zero_matrix, kpts):
+        #     if 0 < kpt_[0] < size[1] and 0 < kpt_[1] < size[0]:
+        #         zero_matrix_[kpt_[1] - 1][kpt_[0] - 1] = 255
+        #     return zero_matrix_
 
-            # ### debug: visualization -> check conditions
-            # condition_heatmap = np.expand_dims(condition_heatmap, axis=0)
-            # condition = np.repeat(condition_heatmap, 3, axis=0)
-            # print("condition", condition.shape)
-            # condition = np.transpose(condition, (1, 2, 0))
-            # cv2.imwrite(f'/media/data/mu/test/cond_{i}.jpg', condition+image)
-            # cv2.imwrite(f'/media/data/mu/test/image.jpg', image)
+        def _get_condition_matrix(zero_matrix, kpts):
+            for i, pose in enumerate(kpts):
+                x, y, vis = pose.T
+                mask = vis > 0
+                x_masked, y_masked = x[mask], y[mask]
+                zero_matrix[i, y_masked-1, x_masked-1, np.arange(self.num_joints)] = 255
+            return zero_matrix
 
-        condition_heatmap_list = np.moveaxis(np.array(condition_heatmap_list), 0, -1)
-        return condition_heatmap_list
+        condition = _get_condition_matrix(zero_matrix, kpts)
+
+        for i in range(batch_size):
+            condition_heatmap = self.blur_heatmap(condition[i])
+            condition[i] = condition_heatmap
+
+        return condition
 
 
 @KEYPOINT_ENCODERS.register_module
