@@ -118,7 +118,10 @@ if __name__ == "__main__":
 
     print("Creating train dataset...")
     deeplabcut.create_multianimaltraining_dataset(
-        config_path, net_type=NET, crop_size=(200, 200), engine=ENGINE,
+        config_path,
+        net_type=NET,
+        crop_size=(200, 200),
+        engine=ENGINE,
     )
     print("Train dataset created.")
 
@@ -332,6 +335,7 @@ if __name__ == "__main__":
     deeplabcut.create_multianimaltraining_dataset(
         config_path,
         Shuffles=[4, 5],
+        net_type=NET,
         trainIndices=[trainIndices, trainIndices],
         testIndices=[testIndices, testIndices],
         engine=ENGINE,
