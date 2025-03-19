@@ -24,16 +24,17 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.generate_training_dataset import get_existing_shuffle_indices
 from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
-from deeplabcut.gui.displays.shuffle_metadata_viewer import ShuffleMetadataViewer
-from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.components import (
     DefaultTab,
     ShuffleSpinBox,
     _create_grid_layout,
     _create_label_widget,
 )
+from deeplabcut.gui.displays.shuffle_metadata_viewer import ShuffleMetadataViewer
+from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import launch_napari
 from deeplabcut.modelzoo import build_weight_init
+from deeplabcut.pose_estimation_pytorch import available_models
 from deeplabcut.utils.auxiliaryfunctions import (
     get_data_and_metadata_filenames,
     get_training_set_folder,
@@ -394,9 +395,6 @@ class CreateTrainingDataset(DefaultTab):
             if not self.root.is_multianimal:
                 nets.remove("dlcrnet_ms5")
         else:
-            # FIXME: Circular imports make it impossible to import this at the top
-            from deeplabcut.pose_estimation_pytorch import available_models
-
             nets = available_models()
             net_filter = self.get_net_filter()
             default_net = self.get_default_net()
