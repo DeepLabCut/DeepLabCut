@@ -8,6 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import numpy as np
 import torch
 import torch.nn as nn
 
@@ -36,8 +37,11 @@ class CondPreNet(BaseBackbone):
             backbone: The backbone model to wrap
         """
         if not isinstance(backbone, BaseBackbone):
+            backbone['pretrained'] = kwargs.get('pretrained', False)
             backbone = BACKBONES.build(backbone)
 
+        if 'pretrained' in kwargs:
+            pretrained = kwargs.pop('pretrained')
         super().__init__(stride=backbone.stride, **kwargs)
         
         if not isinstance(kpt_encoder, BaseKeypointEncoder):
