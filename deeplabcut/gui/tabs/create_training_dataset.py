@@ -59,7 +59,7 @@ class CreateTrainingDataset(DefaultTab):
         self.ok_button.setMinimumWidth(150)
         self.ok_button.clicked.connect(self.create_training_dataset)
 
-        self.main_layout.addWidget(self.mapping_button, alignment=Qt.AlignRight)
+        self.main_layout.addWidget(self.mapping_button, alignment=Qt.AlignRight) # todo does this still work?
         self.main_layout.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
         self.help_button = QtWidgets.QPushButton("Help")
@@ -109,6 +109,7 @@ class CreateTrainingDataset(DefaultTab):
 
 
     def _create_shuffle_layout(self):
+        # todo add link to docs "What is a shuffle?"
         shuffle_label = QtWidgets.QLabel("Shuffle")
 
         self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
@@ -124,6 +125,7 @@ class CreateTrainingDataset(DefaultTab):
             lambda s: self.root.logger.info(f"Overwrite: {s}")
         )
 
+        # todo add link to docs "What is a train-test split?"
         self.data_split_selection = DataSplitSelector(self.root, self)
 
         self.view_shuffles_button = QtWidgets.QPushButton("View Existing Shuffles")
@@ -139,6 +141,10 @@ class CreateTrainingDataset(DefaultTab):
 
 
     def _create_weight_init_layout(self):
+        # todo show/hide depending on engine (already kind of implemented)
+        # todo add link to docs "What is Super-Animal?"
+        # todo add yes-no switch "Use SuperAnimal initial weights?"
+        # todo add spinner "which super-animal model?", visibility depending on SA switch
         self.weight_init_label = QtWidgets.QLabel("Weight Initialization")
 
         self.weight_init_selector = WeightInitializationSelector(self.root)
@@ -153,6 +159,10 @@ class CreateTrainingDataset(DefaultTab):
 
 
     def _create_architecture_layout(self):
+        # todo show/hide depending on Engine
+        # todo add link to docs "What is the difference between Top-Down and Bottom-up approaches?"
+        # todo add switch Top-Down / Bottom-up
+        # todo add link to docs "What architecture should I choose?"
         nnet_label = QtWidgets.QLabel("Network architecture")
 
         self.net_choice = QtWidgets.QComboBox()
@@ -161,13 +171,15 @@ class CreateTrainingDataset(DefaultTab):
         self.update_nets(self.root.engine)
         self.root.engine_change.connect(self.update_nets)
         self.net_choice.currentTextChanged.connect(self.log_net_choice)
+        # todo rework once weight inits is more clear
         self.weight_init_selector.weight_init_choice.currentTextChanged.connect(
             lambda _: self.update_nets(None)
         )
-        self.weight_init_selector.weight_init_choice.currentTextChanged.connect(
+        self.weight_init_selector.weight_init_choice.currentTextChanged.connect( # todo do we keep this here?
             lambda _: self.set_edit_table_visibility()
         )
 
+        # todo correct detector choice display (not always present when needed, f.ex. RTM pose)
         # Detector selection for top-down models
         self.detector_label = QtWidgets.QLabel("Detector architecture")
 
@@ -181,6 +193,10 @@ class CreateTrainingDataset(DefaultTab):
         self.net_choice.currentTextChanged.connect(
             lambda new_net_choice: self.update_detectors(net_choice=new_net_choice)
         )
+        # todo if single-animal: detector or top-down cropping
+
+        # self.test_switch = Switch(on_text="Top-Down", off_text="Bottom-Up", on_bg_color="#99FFFF", off_bg_color="#FF99FF", )
+        # layout.addWidget(self.test_switch, 1, 0)
 
         layout = _create_grid_layout()
         layout.addWidget(nnet_label, 0, 0)
@@ -191,6 +207,8 @@ class CreateTrainingDataset(DefaultTab):
 
 
     def _create_augmentation_layout(self):
+        # todo add link to docs "What are the different Augmentation methods?"
+        # todo hide if pytorch
         augmentation_label = QtWidgets.QLabel("Augmentation method")
         self.aug_choice = QtWidgets.QComboBox()
         self.update_aug_methods(self.root.engine)
