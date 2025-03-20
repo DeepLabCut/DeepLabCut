@@ -47,9 +47,8 @@ class CreateTrainingDataset(DefaultTab):
         self.model_comparison = False
 
         self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
-        self.layout_attributes = _create_grid_layout(margins=(20, 0, 0, 0))
-        self._generate_layout_attributes(self.layout_attributes)
-        self.main_layout.addLayout(self.layout_attributes)
+        attributes_layout = self._create_attributes_layout()
+        self.main_layout.addLayout(attributes_layout)
 
         self.mapping_button = QtWidgets.QPushButton("Edit Conversion Table")
         self.mapping_button.clicked.connect(self.edit_conversion_table)
@@ -94,14 +93,26 @@ class CreateTrainingDataset(DefaultTab):
         dialog.setLayout(layout)
         dialog.exec_()
 
-    def _generate_layout_attributes(self, layout):
-        layout.setColumnMinimumWidth(3, 300)
 
-        # Shuffle
+    def _create_attributes_layout(self):
+        shuffle_layout = self._create_shuffle_layout()
+        weight_init_layout = self._create_weight_init_layout()
+        model_layout = self._create_architecture_layout()
+        augmentation_layout = self._create_augmentation_layout()
+
+        layout =  QtWidgets.QVBoxLayout()
+        layout.addLayout(shuffle_layout)
+        layout.addLayout(weight_init_layout)
+        layout.addLayout(model_layout)
+        layout.addLayout(augmentation_layout)
+        return layout
+
+
+    def _create_shuffle_layout(self):
         shuffle_label = QtWidgets.QLabel("Shuffle")
+
         self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
 
-        # Overwrite selection
         self.overwrite = QtWidgets.QCheckBox("Overwrite if exists")
         self.overwrite.setChecked(False)
         self.overwrite.setToolTip(
@@ -113,27 +124,43 @@ class CreateTrainingDataset(DefaultTab):
             lambda s: self.root.logger.info(f"Overwrite: {s}")
         )
 
-        # Use same data split as another shuffle
         self.data_split_selection = DataSplitSelector(self.root, self)
 
         self.view_shuffles_button = QtWidgets.QPushButton("View Existing Shuffles")
         self.view_shuffles_button.clicked.connect(self.view_shuffles)
 
-        # Dataset choices
+        layout = _create_grid_layout()
+        layout.addWidget(shuffle_label, 0, 0)
+        layout.addWidget(self.shuffle, 0, 1)
+        layout.addWidget(self.overwrite, 0, 2)
+        layout.addWidget(self.data_split_selection, 1, 1)
+        layout.addWidget(self.view_shuffles_button, 1, 2)
+        return layout
+
+
+    def _create_weight_init_layout(self):
         self.weight_init_label = QtWidgets.QLabel("Weight Initialization")
+
         self.weight_init_selector = WeightInitializationSelector(self.root)
+
         self.update_weight_init_methods(self.root.engine)
         self.root.engine_change.connect(self.update_weight_init_methods)
 
-        # Neural Network
+        layout = _create_grid_layout()
+        layout.addWidget(self.weight_init_label, 0, 0)
+        layout.addWidget(self.weight_init_selector, 0, 1)
+        return layout
+
+
+    def _create_architecture_layout(self):
         nnet_label = QtWidgets.QLabel("Network architecture")
+
         self.net_choice = QtWidgets.QComboBox()
         self.net_choice.setMinimumWidth(200)
+
         self.update_nets(self.root.engine)
         self.root.engine_change.connect(self.update_nets)
         self.net_choice.currentTextChanged.connect(self.log_net_choice)
-
-        # Update Net types when selected weight init changes
         self.weight_init_selector.weight_init_choice.currentTextChanged.connect(
             lambda _: self.update_nets(None)
         )
@@ -143,8 +170,10 @@ class CreateTrainingDataset(DefaultTab):
 
         # Detector selection for top-down models
         self.detector_label = QtWidgets.QLabel("Detector architecture")
+
         self.detector_choice = QtWidgets.QComboBox()
         self.detector_choice.setMinimumWidth(200)
+
         self.update_detectors(engine=self.root.engine)
         self.root.engine_change.connect(
             lambda engine: self.update_detectors(engine=engine)
@@ -153,31 +182,26 @@ class CreateTrainingDataset(DefaultTab):
             lambda new_net_choice: self.update_detectors(net_choice=new_net_choice)
         )
 
-        # Augmentation method
+        layout = _create_grid_layout()
+        layout.addWidget(nnet_label, 0, 0)
+        layout.addWidget(self.net_choice, 0, 1)
+        layout.addWidget(self.detector_label, 0, 2)
+        layout.addWidget(self.detector_choice, 0, 3)
+        return layout
+
+
+    def _create_augmentation_layout(self):
         augmentation_label = QtWidgets.QLabel("Augmentation method")
         self.aug_choice = QtWidgets.QComboBox()
         self.update_aug_methods(self.root.engine)
         self.root.engine_change.connect(self.update_aug_methods)
         self.aug_choice.currentTextChanged.connect(self.log_augmentation_choice)
 
-        layout.addWidget(shuffle_label, 0, 0)
-        layout.addWidget(self.shuffle, 0, 1)
-        layout.addWidget(self.overwrite, 0, 2)
+        layout = _create_grid_layout()
+        layout.addWidget(augmentation_label, 0, 0)
+        layout.addWidget(self.aug_choice, 0, 1)
+        return layout
 
-        layout.addWidget(self.data_split_selection, 1, 1)
-        layout.addWidget(self.view_shuffles_button, 1, 2)
-
-        layout.addWidget(self.weight_init_label, 2, 0)
-        layout.addWidget(self.weight_init_selector, 2, 1)
-
-        layout.addWidget(nnet_label, 3, 0)
-        layout.addWidget(self.net_choice, 3, 1)
-
-        layout.addWidget(self.detector_label, 3, 2)
-        layout.addWidget(self.detector_choice, 3, 3)
-
-        layout.addWidget(augmentation_label, 4, 0)
-        layout.addWidget(self.aug_choice, 4, 1)
 
     def log_net_choice(self, net):
         self.root.logger.info(f"Network architecture set to {net.upper()}")
