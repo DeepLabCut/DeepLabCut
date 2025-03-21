@@ -620,12 +620,12 @@ class MainWindow(QMainWindow):
         self.create_training_dataset = CreateTrainingDataset(
             root=self,
             parent=None,
-            h1_description="DeepLabCut - Step 4. Create training dataset",
+            h1_description="DeepLabCut - Create Training Dataset",
         )
         self.train_network = TrainNetwork(
             root=self,
             parent=None,
-            h1_description="DeepLabCut - Train network",
+            h1_description="DeepLabCut - Train Network",
         )
         self.evaluate_network = EvaluateNetwork(
             root=self,
@@ -648,10 +648,10 @@ class MainWindow(QMainWindow):
         self.extract_outlier_frames = ExtractOutlierFrames(
             root=self,
             parent=None,
-            h1_description="DeepLabCut - Step 8. Extract outlier frames",
+            h1_description="DeepLabCut - Extract Outlier Frames",
         )
         self.refine_tracklets = RefineTracklets(
-            root=self, parent=None, h1_description="DeepLabCut - Refine labels"
+            root=self, parent=None, h1_description="DeepLabCut - Refine Labels"
         )
         self.modelzoo = ModelZoo(
             root=self, parent=None, h1_description="DeepLabCut - Model Zoo"
@@ -668,7 +668,7 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self.evaluate_network, "Evaluate network")
         self.tab_widget.addTab(self.analyze_videos, "Analyze videos")
         self.tab_widget.addTab(
-            self.unsupervised_id_tracking, "Unsupervised ID Tracking (*)"
+            self.unsupervised_id_tracking, "Unsupervised ID tracking (*)"
         )
         self.tab_widget.addTab(self.create_videos, "Create videos")
         self.tab_widget.addTab(
