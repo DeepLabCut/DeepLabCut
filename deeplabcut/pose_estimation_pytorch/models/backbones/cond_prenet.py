@@ -49,19 +49,19 @@ class CondPreNet(BaseBackbone):
         self.cond_enc = kpt_encoder
 
         self.backbone = backbone
-        self.rgb_preNet = self._make_preNet(3, input_image=True)
-        self.cond_preNet = self._make_preNet(3, input_image=False)
+        self.rgb_preNet = self._make_preNet(num_inputs=3, num_outputs=3, input_image=True)
+        self.cond_preNet = self._make_preNet(num_inputs=self.cond_enc.num_channels, num_outputs=3, input_image=False)
         
         self.init_weights()
         
-    def _make_preNet(self, num_outputs, input_image = False):        
+    def _make_preNet(self, num_inputs, num_outputs, input_image = False):        
         if not input_image: # cond 
             preNet = nn.Sequential(
-                    nn.Conv2d(3, num_outputs, kernel_size=7, stride = 1, padding='same'),
+                    nn.Conv2d(num_inputs, num_outputs, kernel_size=7, stride = 1, padding='same'),
                     nn.BatchNorm2d(num_outputs))
         else:
             preNet = nn.Sequential(
-                    nn.Conv2d(3, 64, kernel_size=3, stride = 1, padding='same'),
+                    nn.Conv2d(num_inputs, 64, kernel_size=3, stride = 1, padding='same'),
                     nn.BatchNorm2d(64),
                     nn.Conv2d(64, num_outputs, kernel_size = 7, stride = 1, padding='same'),
                     nn.BatchNorm2d(num_outputs))

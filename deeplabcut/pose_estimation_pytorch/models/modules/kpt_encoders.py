@@ -129,8 +129,8 @@ class StackedKeypointEncoder(BaseKeypointEncoder):
             for i, pose in enumerate(kpts):
                 x, y, vis = pose.T
                 mask = vis > 0
-                x_masked, y_masked = x[mask], y[mask]
-                zero_matrix[i, y_masked-1, x_masked-1, np.arange(self.num_joints)] = 255
+                x_masked, y_masked, joint_inds_masked = x[mask], y[mask], np.arange(self.num_joints)[mask]
+                zero_matrix[i, y_masked-1, x_masked-1, joint_inds_masked] = 255
             return zero_matrix
 
         condition = _get_condition_matrix(zero_matrix, kpts)
