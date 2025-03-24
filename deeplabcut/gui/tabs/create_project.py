@@ -54,7 +54,7 @@ class ProjectCreator(QtWidgets.QDialog):
         self.identity_toggle = YesNoSwitch()
         self.identity_toggle.setChecked(False)
 
-        main_layout = QtWidgets.QVBoxLayout(self)
+        main_layout = QtWidgets.QVBoxLayout(self) # this?
         self.user_frame = self.lay_out_user_frame()
         self.video_frame = self.lay_out_video_frame()
         self.create_button = QtWidgets.QPushButton("Create")

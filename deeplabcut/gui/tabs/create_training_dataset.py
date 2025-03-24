@@ -46,7 +46,7 @@ class CreateTrainingDataset(DefaultTab):
 
         self.model_comparison = False
 
-        attributes_layout = self._create_attributes_layout()
+        attributes_layout = self._create_attributes_layout() # maybe shouldn't even have an "attributes layout", since I removed "Attributes" title
         self.main_layout.addLayout(attributes_layout)
 
         self.mapping_button = QtWidgets.QPushButton("Edit Conversion Table")
@@ -58,7 +58,7 @@ class CreateTrainingDataset(DefaultTab):
         self.ok_button.setMinimumWidth(150)
         self.ok_button.clicked.connect(self.create_training_dataset)
 
-        self.main_layout.addWidget(self.mapping_button, alignment=Qt.AlignRight)
+        self.main_layout.addWidget(self.mapping_button, alignment=Qt.AlignRight) # todo does this still work?
         self.main_layout.addWidget(self.ok_button, alignment=Qt.AlignRight)
 
         self.help_button = QtWidgets.QPushButton("Help")
@@ -97,14 +97,18 @@ class CreateTrainingDataset(DefaultTab):
         self.shuffle_group = CreateTrainingDataset.ShuffleGroupBox(self.root)
 
         self.weight_init_group = CreateTrainingDataset.WeightInitGroupBox(self.root)
-        model_layout = self._create_architecture_layout()
+
+        self.nn_architecture_group = CreateTrainingDataset.NNArchitectureGroupBox(self.root)
+
         augmentation_layout = self._create_augmentation_layout()
+        # todo sublayouts: extract callbacks setup into separate method
+        # todo put borders / different colors inro sublayouts
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.shuffle_group)
         layout.addWidget(self.weight_init_group)
-        layout.addLayout(model_layout)
-        layout.addLayout(augmentation_layout)
+        layout.addWidget(self.nn_architecture_group)
+        layout.addWidget(augmentation_layout)
         return layout
 
 
@@ -113,9 +117,10 @@ class CreateTrainingDataset(DefaultTab):
             super().__init__(group_title="Training Dataset Index", root=root)
 
         def _setup_ui(self):
+            # todo add link to docs "What is a shuffle?"
             shuffle_label = QtWidgets.QLabel("Shuffle")
 
-            self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
+            self.shuffle = ShuffleSpinBox(root=self.root, parent=self) # todo self is not what it was anymore! check if similar issue in other places!
 
             self.overwrite = QtWidgets.QCheckBox("Overwrite if exists")
             self.overwrite.setToolTip(
@@ -124,7 +129,8 @@ class CreateTrainingDataset(DefaultTab):
                 "might lose data."
             )
 
-            self.data_split_selection = DataSplitSelector(self.root, self)
+            # todo add link to docs "What is a train-test split?"
+            self.data_split_selection = DataSplitSelector(self.root, self) # todo self is not what it was anymore! check if similar issue in other places!
 
             self.view_shuffles_button = QtWidgets.QPushButton("View Existing Shuffles")
 
@@ -135,6 +141,7 @@ class CreateTrainingDataset(DefaultTab):
             layout.addWidget(self.data_split_selection, 1, 1)
             layout.addWidget(self.view_shuffles_button, 1, 2)
 
+            #layout.setContentsMargins(50, 50, 50, 50) # todo ?
 
             super().setLayout(layout)
 
@@ -158,6 +165,10 @@ class CreateTrainingDataset(DefaultTab):
             super().__init__(group_title="Weight Initialization", root=root)
 
         def _setup_ui(self):
+            # todo show/hide depending on engine (already kind of implemented)
+            # todo add link to docs "What is Super-Animal?"
+            # todo add yes-no switch "Use SuperAnimal initial weights?"
+            # todo add spinner "which super-animal model?", visibility depending on SA switch
             self.weight_init_label = QtWidgets.QLabel("Weight Initialization")
 
             self.weight_init_selector = WeightInitializationSelector(self.root)
@@ -185,46 +196,149 @@ class CreateTrainingDataset(DefaultTab):
             self.weight_init_selector.update_choices(list(_WEIGHT_INIT_OPTIONS.keys()))
             self.weight_init_selector.show()
 
+    class NNArchitectureGroupBox(WidgetsGroupBox):
+        def __init__(self, root):
+            super().__init__(group_title="Neural Network Architecture", root=root)
 
-    def _create_architecture_layout(self):
-        nnet_label = QtWidgets.QLabel("Network architecture")
+        def _setup_ui(self):
+            # todo show/hide depending on Engine
+            # todo add link to docs "What is the difference between Top-Down and Bottom-up approaches?"
+            # todo add switch Top-Down / Bottom-up
+            # todo add link to docs "What architecture should I choose?"
+            nnet_label = QtWidgets.QLabel("Network architecture")
 
-        self.net_choice = QtWidgets.QComboBox()
-        self.net_choice.setMinimumWidth(200)
+            self.net_choice = QtWidgets.QComboBox()
+            self.net_choice.setMinimumWidth(200)
 
-        self.update_nets(self.root.engine)
-        self.root.engine_change.connect(self.update_nets)
-        self.net_choice.currentTextChanged.connect(self.log_net_choice)
-        self.weight_init_group.weight_init_selector.weight_init_choice.currentTextChanged.connect(
-            lambda _: self.update_nets(None)
-        )
-        self.weight_init_group.weight_init_selector.weight_init_choice.currentTextChanged.connect(
-            lambda _: self.set_edit_table_visibility()
-        )
+            # todo correct detector choice display (not always present when needed, f.ex. RTM pose)
+            self.detector_label = QtWidgets.QLabel("Detector architecture")
 
-        # Detector selection for top-down models
-        self.detector_label = QtWidgets.QLabel("Detector architecture")
+            self.detector_choice = QtWidgets.QComboBox()
+            self.detector_choice.setMinimumWidth(200)
 
-        self.detector_choice = QtWidgets.QComboBox()
-        self.detector_choice.setMinimumWidth(200)
+            # todo if single-animal: detector or top-down cropping
 
-        self.update_detectors(engine=self.root.engine)
-        self.root.engine_change.connect(
-            lambda engine: self.update_detectors(engine=engine)
-        )
-        self.net_choice.currentTextChanged.connect(
-            lambda new_net_choice: self.update_detectors(net_choice=new_net_choice)
-        )
+            # self.test_switch = Switch(on_text="Top-Down", off_text="Bottom-Up", on_bg_color="#99FFFF", off_bg_color="#FF99FF", )
+            # layout.addWidget(self.test_switch, 1, 0)
 
-        layout = _create_grid_layout()
-        layout.addWidget(nnet_label, 0, 0)
-        layout.addWidget(self.net_choice, 0, 1)
-        layout.addWidget(self.detector_label, 0, 2)
-        layout.addWidget(self.detector_choice, 0, 3)
-        return layout
+            layout = _create_grid_layout()
+            layout.addWidget(nnet_label, 0, 0)
+            layout.addWidget(self.net_choice, 0, 1)
+            layout.addWidget(self.detector_label, 0, 2)
+            layout.addWidget(self.detector_choice, 0, 3)
+
+            super().setLayout(layout)
+
+        def _initialize_state(self):
+            self._update_nets(self.root.engine)
+            self._update_detectors(engine=self.root.engine)
+
+        def _connect_signals(self):
+            self.root.engine_change.connect(self._update_nets)
+            self.net_choice.currentTextChanged.connect(self._log_net_choice)
+            # todo rework once weight inits is more clear
+            self.weight_init_group.weight_init_selector.weight_init_choice.currentTextChanged.connect(
+                lambda _: self._update_nets(None)
+            )
+            self.weight_init_group.weight_init_selector.weight_init_choice.currentTextChanged.connect(
+                # todo do we keep this here?
+                lambda _: self.set_edit_table_visibility()
+            )
+            self.root.engine_change.connect(
+                lambda engine: self._update_detectors(engine=engine)
+            )
+            self.net_choice.currentTextChanged.connect(
+                lambda new_net_choice: self._update_detectors(net_choice=new_net_choice)
+            )
+
+        @Slot(Engine)
+        def _update_nets(self, engine: Engine | None) -> None:
+            if engine is None:
+                engine = self.root.engine
+
+            default_net = None
+            if engine == Engine.TF:
+                nets = DLCParams.NNETS.copy()
+                if not self.root.is_multianimal:
+                    nets.remove("dlcrnet_ms5")
+            else:
+                # FIXME: Circular imports make it impossible to import this at the top
+                from deeplabcut.pose_estimation_pytorch import available_models
+
+                nets = available_models()
+                net_filter = self.get_net_filter()
+                default_net = self.get_default_net()
+                td_prefix = "top_down_"
+                if net_filter is not None:
+                    nets = [
+                        n
+                        for n in nets
+                        if (
+                            n in net_filter
+                            or (
+                                n.startswith(td_prefix)
+                                and n[len(td_prefix) :] in net_filter
+                            )
+                        )
+                    ]
+
+            while self.net_choice.count() > 0:
+                self.net_choice.removeItem(0)
+
+            self.net_choice.addItems(nets)
+            if default_net is None:
+                default_net = self.root.cfg.get("default_net_type", "resnet_50")
+
+            if default_net in nets:
+                self.net_choice.setCurrentIndex(nets.index(default_net))
+
+        @Slot(Engine)
+        def _update_detectors(
+            self,
+            engine: Engine | None = None,
+            net_choice: str | None = None,
+        ) -> None:
+            if engine is None:
+                engine = self.root.engine
+
+            if engine == Engine.TF:
+                detectors = []
+            else:
+                # FIXME: Circular imports make it impossible to import this at the top
+                from deeplabcut.pose_estimation_pytorch import available_detectors
+
+                detectors = available_detectors()
+                det_filter = self.get_detector_filter()
+                if det_filter is not None:
+                    detectors = [d for d in detectors if d in det_filter]
+
+            while self.detector_choice.count() > 0:
+                self.detector_choice.removeItem(0)
+
+            self.detector_choice.addItems(detectors)
+            default_detector = self.get_default_detector()
+            if default_detector in detectors:
+                self.detector_choice.setCurrentIndex(detectors.index(default_detector))
+            elif "ssdlite" in detectors:
+                self.detector_choice.setCurrentIndex(detectors.index("ssdlite"))
+
+            if net_choice is None:
+                net_choice = self.net_choice.currentText()
+
+            if "top_down" in net_choice:
+                self.detector_label.show()
+                self.detector_choice.show()
+            else:
+                self.detector_label.hide()
+                self.detector_choice.hide()
+
+        def _log_net_choice(self, net):
+            self.root.logger.info(f"Network architecture set to {net.upper()}")
 
 
     def _create_augmentation_layout(self):
+        # todo add link to docs "What are the different Augmentation methods?"
+        # todo hide if pytorch
         augmentation_label = QtWidgets.QLabel("Augmentation method")
         self.aug_choice = QtWidgets.QComboBox()
         self.update_aug_methods(self.root.engine)
@@ -234,11 +348,10 @@ class CreateTrainingDataset(DefaultTab):
         layout = _create_grid_layout()
         layout.addWidget(augmentation_label, 0, 0)
         layout.addWidget(self.aug_choice, 0, 1)
-        return layout
 
-
-    def log_net_choice(self, net):
-        self.root.logger.info(f"Network architecture set to {net.upper()}")
+        group = QtWidgets.QGroupBox("Image Augmentation")
+        group.setLayout(layout)
+        return group
 
     def log_augmentation_choice(self, augmentation):
         self.root.logger.info(f"Image augmentation set to {augmentation.upper()}")
@@ -444,87 +557,6 @@ class CreateTrainingDataset(DefaultTab):
         return True
 
     @Slot(Engine)
-    def update_nets(self, engine: Engine | None) -> None:
-        if engine is None:
-            engine = self.root.engine
-
-        default_net = None
-        if engine == Engine.TF:
-            nets = DLCParams.NNETS.copy()
-            if not self.root.is_multianimal:
-                nets.remove("dlcrnet_ms5")
-        else:
-            # FIXME: Circular imports make it impossible to import this at the top
-            from deeplabcut.pose_estimation_pytorch import available_models
-
-            nets = available_models()
-            net_filter = self.get_net_filter()
-            default_net = self.get_default_net()
-            td_prefix = "top_down_"
-            if net_filter is not None:
-                nets = [
-                    n
-                    for n in nets
-                    if (
-                        n in net_filter
-                        or (
-                            n.startswith(td_prefix)
-                            and n[len(td_prefix) :] in net_filter
-                        )
-                    )
-                ]
-
-        while self.net_choice.count() > 0:
-            self.net_choice.removeItem(0)
-
-        self.net_choice.addItems(nets)
-        if default_net is None:
-            default_net = self.root.cfg.get("default_net_type", "resnet_50")
-
-        if default_net in nets:
-            self.net_choice.setCurrentIndex(nets.index(default_net))
-
-    @Slot(Engine)
-    def update_detectors(
-        self,
-        engine: Engine | None = None,
-        net_choice: str | None = None,
-    ) -> None:
-        if engine is None:
-            engine = self.root.engine
-
-        if engine == Engine.TF:
-            detectors = []
-        else:
-            # FIXME: Circular imports make it impossible to import this at the top
-            from deeplabcut.pose_estimation_pytorch import available_detectors
-
-            detectors = available_detectors()
-            det_filter = self.get_detector_filter()
-            if det_filter is not None:
-                detectors = [d for d in detectors if d in det_filter]
-
-        while self.detector_choice.count() > 0:
-            self.detector_choice.removeItem(0)
-
-        self.detector_choice.addItems(detectors)
-        default_detector = self.get_default_detector()
-        if default_detector in detectors:
-            self.detector_choice.setCurrentIndex(detectors.index(default_detector))
-        elif "ssdlite" in detectors:
-            self.detector_choice.setCurrentIndex(detectors.index("ssdlite"))
-
-        if net_choice is None:
-            net_choice = self.net_choice.currentText()
-
-        if "top_down" in net_choice:
-            self.detector_label.show()
-            self.detector_choice.show()
-        else:
-            self.detector_label.hide()
-            self.detector_choice.hide()
-
-    @Slot(Engine)
     def update_aug_methods(self, engine: Engine) -> None:
         methods = compat.get_available_aug_methods(engine)
         while self.aug_choice.count() > 0:
@@ -583,7 +615,9 @@ class CreateTrainingDataset(DefaultTab):
         weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_group.weight_init_selector.weight_init]
         return weight_init_cfg.get("default_detector")
 
-class WeightInitializationSelector(QtWidgets.QWidget):
+# todo put groups into classes
+# todo Remove "Attributes" title (and other superficial stuff)
+class WeightInitializationSelector(QtWidgets.QWidget): # todo move into WeightInitGroupBox
     """Widget to select weight initialization"""
 
     def __init__(self, root):
