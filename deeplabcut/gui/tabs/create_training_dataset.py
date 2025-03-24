@@ -28,7 +28,7 @@ from deeplabcut.gui.components import (
     DefaultTab,
     ShuffleSpinBox,
     _create_grid_layout,
-    _create_label_widget,
+    WidgetsGroupBox,
 )
 from deeplabcut.gui.displays.shuffle_metadata_viewer import ShuffleMetadataViewer
 from deeplabcut.gui.dlc_params import DLCParams
@@ -46,7 +46,6 @@ class CreateTrainingDataset(DefaultTab):
 
         self.model_comparison = False
 
-        self.main_layout.addWidget(_create_label_widget("Attributes", "font:bold"))
         attributes_layout = self._create_attributes_layout()
         self.main_layout.addLayout(attributes_layout)
 
@@ -95,47 +94,63 @@ class CreateTrainingDataset(DefaultTab):
 
 
     def _create_attributes_layout(self):
-        shuffle_layout = self._create_shuffle_layout()
+        self.shuffle_group = CreateTrainingDataset.ShuffleGroupBox(self.root)
+
         weight_init_layout = self._create_weight_init_layout()
         model_layout = self._create_architecture_layout()
         augmentation_layout = self._create_augmentation_layout()
 
-        layout =  QtWidgets.QVBoxLayout()
-        layout.addLayout(shuffle_layout)
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.shuffle_group)
         layout.addLayout(weight_init_layout)
         layout.addLayout(model_layout)
         layout.addLayout(augmentation_layout)
         return layout
 
 
-    def _create_shuffle_layout(self):
-        shuffle_label = QtWidgets.QLabel("Shuffle")
+    class ShuffleGroupBox(WidgetsGroupBox):
+        def __init__(self, root):
+            super().__init__(group_title="Training Dataset Index", root=root)
 
-        self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
+        def _setup_ui(self):
+            shuffle_label = QtWidgets.QLabel("Shuffle")
 
-        self.overwrite = QtWidgets.QCheckBox("Overwrite if exists")
-        self.overwrite.setChecked(False)
-        self.overwrite.setToolTip(
-            "When checked, creating a new shuffle with an index that already exists "
-            "will overwrite the existing index. Be careful with this option as you "
-            "might lose data."
-        )
-        self.overwrite.stateChanged.connect(
-            lambda s: self.root.logger.info(f"Overwrite: {s}")
-        )
+            self.shuffle = ShuffleSpinBox(root=self.root, parent=self)
 
-        self.data_split_selection = DataSplitSelector(self.root, self)
+            self.overwrite = QtWidgets.QCheckBox("Overwrite if exists")
+            self.overwrite.setToolTip(
+                "When checked, creating a new shuffle with an index that already exists "
+                "will overwrite the existing index. Be careful with this option as you "
+                "might lose data."
+            )
 
-        self.view_shuffles_button = QtWidgets.QPushButton("View Existing Shuffles")
-        self.view_shuffles_button.clicked.connect(self.view_shuffles)
+            self.data_split_selection = DataSplitSelector(self.root, self)
 
-        layout = _create_grid_layout()
-        layout.addWidget(shuffle_label, 0, 0)
-        layout.addWidget(self.shuffle, 0, 1)
-        layout.addWidget(self.overwrite, 0, 2)
-        layout.addWidget(self.data_split_selection, 1, 1)
-        layout.addWidget(self.view_shuffles_button, 1, 2)
-        return layout
+            self.view_shuffles_button = QtWidgets.QPushButton("View Existing Shuffles")
+
+            layout = _create_grid_layout()
+            layout.addWidget(shuffle_label, 0, 0)
+            layout.addWidget(self.shuffle, 0, 1)
+            layout.addWidget(self.overwrite, 0, 2)
+            layout.addWidget(self.data_split_selection, 1, 1)
+            layout.addWidget(self.view_shuffles_button, 1, 2)
+
+
+            super().setLayout(layout)
+
+        def _initialize_state(self):
+            self.overwrite.setChecked(False)
+
+        def _connect_signals(self):
+            self.overwrite.stateChanged.connect(
+                lambda s: self.root.logger.info(f"Overwrite: {s}")
+            )
+
+            self.view_shuffles_button.clicked.connect(self._view_shuffles)
+
+        def _view_shuffles(self) -> None:
+            viewer = ShuffleMetadataViewer(root=self.root, parent=self)
+            viewer.show()
 
 
     def _create_weight_init_layout(self):
@@ -219,13 +234,13 @@ class CreateTrainingDataset(DefaultTab):
         _ = launch_napari(files)
 
     def create_training_dataset(self):
-        shuffle = self.shuffle.value()
+        shuffle = self.shuffle_group.shuffle.value()
         cfg = self.root.cfg
         existing_indices = get_existing_shuffle_indices(
             cfg=cfg, train_fraction=cfg["TrainingFraction"][self.root.trainingset_index]
         )
 
-        overwrite = self.overwrite.isChecked()
+        overwrite = self.shuffle_group.overwrite.isChecked()
         if shuffle in existing_indices:
             if overwrite:
                 if not self._confirm_overwrite(shuffle, existing_indices):
@@ -277,11 +292,11 @@ class CreateTrainingDataset(DefaultTab):
                     print(f"The training dataset could not be created: {err}.")
                     return
 
-                if self.data_split_selection.selected:
+                if self.shuffle_group.data_split_selection.selected:
                     deeplabcut.create_training_dataset_from_existing_split(
                         self.root.config,
-                        from_shuffle=self.data_split_selection.from_shuffle,
-                        shuffles=[self.shuffle.value()],
+                        from_shuffle=self.shuffle_group.data_split_selection.from_shuffle,
+                        shuffles=[self.shuffle_group.shuffle.value()],
                         net_type=net_type,
                         detector_type=detector_type,
                         userfeedback=not overwrite,
@@ -293,7 +308,7 @@ class CreateTrainingDataset(DefaultTab):
                     deeplabcut.create_multianimaltraining_dataset(
                         self.root.config,
                         shuffle,
-                        Shuffles=[self.shuffle.value()],
+                        Shuffles=[self.shuffle_group.shuffle.value()],
                         net_type=net_type,
                         detector_type=detector_type,
                         userfeedback=not overwrite,
@@ -304,7 +319,7 @@ class CreateTrainingDataset(DefaultTab):
                     deeplabcut.create_training_dataset(
                         self.root.config,
                         shuffle,
-                        Shuffles=[self.shuffle.value()],
+                        Shuffles=[self.shuffle_group.shuffle.value()],
                         net_type=net_type,
                         detector_type=detector_type,
                         augmenter_type=self.aug_choice.currentText(),
@@ -343,7 +358,7 @@ class CreateTrainingDataset(DefaultTab):
                 get_data_and_metadata_filenames(
                     trainingsetfolder,
                     self.root.cfg["TrainingFraction"][0],
-                    self.shuffle.value(),
+                    self.shuffle_group.shuffle.value(),
                     self.root.cfg,
                 )
             )
@@ -353,7 +368,7 @@ class CreateTrainingDataset(DefaultTab):
                 os.path.exists(os.path.join(self.root.project_folder, file))
                 for file in filenames
             ):
-                self.root.shuffle_created.emit(self.shuffle.value())
+                self.root.shuffle_created.emit(self.shuffle_group.shuffle.value())
                 msg = _create_message_box(
                     "The training dataset is successfully created.",
                     "Use the function 'train_network' to start training. Happy training!",
@@ -559,11 +574,6 @@ class CreateTrainingDataset(DefaultTab):
 
         weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_selector.weight_init]
         return weight_init_cfg.get("default_detector")
-
-    def view_shuffles(self) -> None:
-        viewer = ShuffleMetadataViewer(root=self.root, parent=self)
-        viewer.show()
-
 
 class WeightInitializationSelector(QtWidgets.QWidget):
     """Widget to select weight initialization"""

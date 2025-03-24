@@ -12,6 +12,7 @@ import os
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
+
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import ConfigEditor
 
@@ -287,6 +288,27 @@ class ShuffleSpinBox(QtWidgets.QSpinBox):
     def update_shuffle(self, new_shuffle: int):
         if new_shuffle != self.value():
             self.setValue(new_shuffle)
+
+
+class WidgetsGroupBox(QtWidgets.QGroupBox):
+    def __init__(self, group_title: str, root):
+        super().__init__(title=group_title)
+        self.root = root
+
+        self._setup_ui()
+
+        self._initialize_state()
+
+        self._connect_signals()
+
+    def _setup_ui(self):
+        raise NotImplementedError("Child classes must override _setup_ui()")
+
+    def _initialize_state(self):
+        raise NotImplementedError("Child classes must override _initialize_state()")
+
+    def _connect_signals(self):
+        raise NotImplementedError("Child classes must override _connect_signals()")
 
 
 class DefaultTab(QtWidgets.QWidget):
