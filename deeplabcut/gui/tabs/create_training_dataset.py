@@ -70,7 +70,7 @@ class CreateTrainingDataset(DefaultTab):
             self.root.cfg.get("SuperAnimalConversionTables", {})
         )
         is_pytorch_engine = self.root.engine == Engine.PYTORCH
-        is_finetuning = self.weight_init_selector.with_decoder
+        is_finetuning = self.weight_init_group.weight_init_selector.with_decoder
         self.mapping_button.setVisible(
             has_conversion_tables & is_pytorch_engine & is_finetuning
         )
@@ -96,13 +96,13 @@ class CreateTrainingDataset(DefaultTab):
     def _create_attributes_layout(self):
         self.shuffle_group = CreateTrainingDataset.ShuffleGroupBox(self.root)
 
-        weight_init_layout = self._create_weight_init_layout()
+        self.weight_init_group = CreateTrainingDataset.WeightInitGroupBox(self.root)
         model_layout = self._create_architecture_layout()
         augmentation_layout = self._create_augmentation_layout()
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.shuffle_group)
-        layout.addLayout(weight_init_layout)
+        layout.addWidget(self.weight_init_group)
         layout.addLayout(model_layout)
         layout.addLayout(augmentation_layout)
         return layout
@@ -153,18 +153,37 @@ class CreateTrainingDataset(DefaultTab):
             viewer.show()
 
 
-    def _create_weight_init_layout(self):
-        self.weight_init_label = QtWidgets.QLabel("Weight Initialization")
+    class WeightInitGroupBox(WidgetsGroupBox):
+        def __init__(self, root):
+            super().__init__(group_title="Weight Initialization", root=root)
 
-        self.weight_init_selector = WeightInitializationSelector(self.root)
+        def _setup_ui(self):
+            self.weight_init_label = QtWidgets.QLabel("Weight Initialization")
 
-        self.update_weight_init_methods(self.root.engine)
-        self.root.engine_change.connect(self.update_weight_init_methods)
+            self.weight_init_selector = WeightInitializationSelector(self.root)
 
-        layout = _create_grid_layout()
-        layout.addWidget(self.weight_init_label, 0, 0)
-        layout.addWidget(self.weight_init_selector, 0, 1)
-        return layout
+            layout = _create_grid_layout()
+            layout.addWidget(self.weight_init_label, 0, 0)
+            layout.addWidget(self.weight_init_selector, 0, 1)
+
+            super().setLayout(layout)
+
+        def _initialize_state(self):
+            self._update_weight_init_methods(self.root.engine)
+
+        def _connect_signals(self):
+            self.root.engine_change.connect(self._update_weight_init_methods)
+
+        @Slot(Engine)
+        def _update_weight_init_methods(self, engine: Engine) -> None:
+            if engine != Engine.PYTORCH:
+                self.weight_init_label.hide()
+                self.weight_init_selector.hide()
+                return
+
+            self.weight_init_label.show()
+            self.weight_init_selector.update_choices(list(_WEIGHT_INIT_OPTIONS.keys()))
+            self.weight_init_selector.show()
 
 
     def _create_architecture_layout(self):
@@ -176,10 +195,10 @@ class CreateTrainingDataset(DefaultTab):
         self.update_nets(self.root.engine)
         self.root.engine_change.connect(self.update_nets)
         self.net_choice.currentTextChanged.connect(self.log_net_choice)
-        self.weight_init_selector.weight_init_choice.currentTextChanged.connect(
+        self.weight_init_group.weight_init_selector.weight_init_choice.currentTextChanged.connect(
             lambda _: self.update_nets(None)
         )
-        self.weight_init_selector.weight_init_choice.currentTextChanged.connect(
+        self.weight_init_group.weight_init_selector.weight_init_choice.currentTextChanged.connect(
             lambda _: self.set_edit_table_visibility()
         )
 
@@ -514,26 +533,15 @@ class CreateTrainingDataset(DefaultTab):
         self.aug_choice.addItems(methods)
         self.aug_choice.setCurrentText(methods[0])
 
-    @Slot(Engine)
-    def update_weight_init_methods(self, engine: Engine) -> None:
-        if engine != Engine.PYTORCH:
-            self.weight_init_label.hide()
-            self.weight_init_selector.hide()
-            return
-
-        self.weight_init_label.show()
-        self.weight_init_selector.update_choices(list(_WEIGHT_INIT_OPTIONS.keys()))
-        self.weight_init_selector.show()
-
     def get_net_filter(self) -> list[str] | None:
         """Returns: the net type that can be used based on weight initialization"""
         if self.root.engine != Engine.PYTORCH:
             return None
 
-        if self.weight_init_selector.weight_init not in _WEIGHT_INIT_OPTIONS:
+        if self.weight_init_group.weight_init_selector.weight_init not in _WEIGHT_INIT_OPTIONS:
             return None
 
-        weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_selector.weight_init]
+        weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_group.weight_init_selector.weight_init]
         if "super_animal" in weight_init_cfg:
             return dlclibrary.get_available_models(weight_init_cfg["super_animal"])
 
@@ -544,10 +552,10 @@ class CreateTrainingDataset(DefaultTab):
         if self.root.engine != Engine.PYTORCH:
             return None
 
-        if self.weight_init_selector.weight_init not in _WEIGHT_INIT_OPTIONS:
+        if self.weight_init_group.weight_init_selector.weight_init not in _WEIGHT_INIT_OPTIONS:
             return None
 
-        weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_selector.weight_init]
+        weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_group.weight_init_selector.weight_init]
         if "super_animal" in weight_init_cfg:
             return dlclibrary.get_available_detectors(weight_init_cfg["super_animal"])
 
@@ -558,10 +566,10 @@ class CreateTrainingDataset(DefaultTab):
         if self.root.engine != Engine.PYTORCH:
             return None
 
-        if self.weight_init_selector.weight_init not in _WEIGHT_INIT_OPTIONS:
+        if self.weight_init_group.weight_init_selector.weight_init not in _WEIGHT_INIT_OPTIONS:
             return None
 
-        weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_selector.weight_init]
+        weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_group.weight_init_selector.weight_init]
         return weight_init_cfg.get("default_net")
 
     def get_default_detector(self) -> str | None:
@@ -569,10 +577,10 @@ class CreateTrainingDataset(DefaultTab):
         if self.root.engine != Engine.PYTORCH:
             return None
 
-        if self.weight_init_selector.weight_init not in _WEIGHT_INIT_OPTIONS:
+        if self.weight_init_group.weight_init_selector.weight_init not in _WEIGHT_INIT_OPTIONS:
             return None
 
-        weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_selector.weight_init]
+        weight_init_cfg = _WEIGHT_INIT_OPTIONS[self.weight_init_group.weight_init_selector.weight_init]
         return weight_init_cfg.get("default_detector")
 
 class WeightInitializationSelector(QtWidgets.QWidget):
