@@ -661,9 +661,9 @@ def get_pose_inference_runner(
         transform: the transform for pose estimation. if None, uses the transform
             defined in the config.
         dynamic: The DynamicCropper used for video inference, or None if dynamic
-            cropping should not be used. Only for bottom-up pose estimation models.
-            Should only be used when creating inference runners for video pose
-            estimation with batch size 1.
+            cropping should not be used. Should only be used when creating inference
+            runners for video pose estimation with batch size 1. For top-down pose
+            estimation models, a `TopDownDynamicCropper` must be used.
 
     Returns:
         an inference runner for pose estimation
