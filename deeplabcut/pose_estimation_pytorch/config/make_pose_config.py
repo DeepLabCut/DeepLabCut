@@ -14,16 +14,15 @@ from __future__ import annotations
 import copy
 from pathlib import Path
 
+from deeplabcut.core.config import read_config_as_dict, write_config
+from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.config.utils import (
     get_config_folder_path,
     load_backbones,
     load_base_config,
-    read_config_as_dict,
     replace_default_values,
     update_config,
-    write_config,
 )
-from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 

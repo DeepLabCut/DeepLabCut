@@ -56,6 +56,7 @@ class PoseModel(nn.Module):
         self.backbone = backbone
         self.heads = nn.ModuleDict(heads)
         self.neck = neck
+        self.output_features = False
 
         self._strides = {
             name: _model_stride(self.backbone.stride, head.stride)
@@ -79,6 +80,9 @@ class PoseModel(nn.Module):
             features = self.neck(features)
 
         outputs = {}
+        if self.output_features:
+            outputs["backbone"] = dict(features=features)
+
         for head_name, head in self.heads.items():
             outputs[head_name] = head(features)
         return outputs
@@ -129,10 +133,14 @@ class PoseModel(nn.Module):
         Returns:
             A dictionary containing the predictions of each head group
         """
-        return {
+        predictions = {
             name: head.predictor(self._strides[name], outputs[name])
             for name, head in self.heads.items()
         }
+        if self.output_features:
+            predictions["backbone"] = outputs["backbone"]
+
+        return predictions
 
     def get_stride(self, head: str) -> int:
         """

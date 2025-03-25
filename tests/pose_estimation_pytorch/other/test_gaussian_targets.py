@@ -40,10 +40,8 @@ def test_gaussian_target_generation(
         pos_dist_thresh=17,
         locref_std=5.0,
     )
-    output = torch.tensor(
-        output(stride, prediction, labels)["heatmap"]["target"].reshape(
-            batch_size, num_keypoints, image_size[0] * image_size[1]
-        )
+    output = output(stride, prediction, labels)["heatmap"]["target"].reshape(
+        batch_size, num_keypoints, image_size[0] * image_size[1]
     )
 
     # get coords of max value of the heatmap

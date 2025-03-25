@@ -19,7 +19,7 @@ import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.generate_training_dataset import TrainingDatasetMetadata
 from deeplabcut.modelzoo import build_weight_init
 from deeplabcut.pose_estimation_pytorch import DLCLoader
-from deeplabcut.pose_estimation_pytorch.apis.evaluate import evaluate_snapshot
+from deeplabcut.pose_estimation_pytorch.apis.evaluation import evaluate_snapshot
 from deeplabcut.pose_estimation_pytorch.models import PoseModel
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 

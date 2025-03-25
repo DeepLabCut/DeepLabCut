@@ -14,18 +14,21 @@ import os
 import shutil
 import warnings
 from pathlib import Path
+
 from deeplabcut import DEBUG
+from deeplabcut.core.engine import Engine
 from deeplabcut.utils.auxfun_videos import VideoReader
 
 
 def create_new_project(
-    project,
-    experimenter,
-    videos,
-    working_directory=None,
-    copy_videos=False,
-    videotype="",
-    multianimal=False,
+    project: str,
+    experimenter: str,
+    videos: list[str],
+    working_directory: str | None = None,
+    copy_videos: bool = False,
+    videotype: str = "",
+    multianimal: bool = False,
+    individuals: list[str] | None = None,
 ):
     r"""Create the necessary folders and files for a new project.
 
@@ -57,6 +60,11 @@ def create_new_project(
 
     multianimal: bool, optional. Default: False.
         For creating a multi-animal project (introduced in DLC 2.2)
+
+    individuals: list[str]|None = None,
+        Relevant only if multianimal is True.
+        list of individuals to be used in the project configuration.
+        If None - defaults to ['individual1', 'individual2', 'individual3']
 
     Returns
     -------
@@ -241,7 +249,11 @@ def create_new_project(
         cfg_file, ruamelFile = auxiliaryfunctions.create_config_template(multianimal)
         cfg_file["multianimalproject"] = multianimal
         cfg_file["identity"] = False
-        cfg_file["individuals"] = ["individual1", "individual2", "individual3"]
+        cfg_file["individuals"] = (
+            individuals
+            if individuals
+            else ["individual1", "individual2", "individual3"]
+        )
         cfg_file["multianimalbodyparts"] = ["bodypart1", "bodypart2", "bodypart3"]
         cfg_file["uniquebodyparts"] = []
         cfg_file["bodyparts"] = "MULTI!"
@@ -250,8 +262,15 @@ def create_new_project(
             ["bodypart2", "bodypart3"],
             ["bodypart1", "bodypart3"],
         ]
-        cfg_file["default_augmenter"] = "multi-animal-imgaug"
-        cfg_file["default_net_type"] = "dlcrnet_ms5"
+        engine = cfg_file.get("engine")
+        if engine in Engine.PYTORCH.aliases:
+            cfg_file["default_augmenter"] = "albumentations"
+            cfg_file["default_net_type"] = "resnet_50"
+        elif engine in Engine.TF.aliases:
+            cfg_file["default_augmenter"] = "multi-animal-imgaug"
+            cfg_file["default_net_type"] = "dlcrnet_ms5"
+        else:
+            raise ValueError(f"Unknown or undefined engine {engine}")
         cfg_file["default_track_method"] = "ellipse"
     else:
         cfg_file, ruamelFile = auxiliaryfunctions.create_config_template()

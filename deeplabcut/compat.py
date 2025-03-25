@@ -386,6 +386,7 @@ def evaluate_network(
     modelprefix: str = "",
     per_keypoint_evaluation: bool = False,
     snapshots_to_evaluate: list[str] | None = None,
+    pcutoff: float | list[float] | dict[str, float] | None = None,
     engine: Engine | None = None,
     **torch_kwargs,
 ):
@@ -449,6 +450,16 @@ def evaluate_network(
     snapshots_to_evaluate: List[str], optional, default=None
         List of snapshot names to evaluate (e.g. ["snapshot-5000", "snapshot-7500"]).
 
+    pcutoff: float | list[float] | dict[str, float] | None, default=None
+        Only for the PyTorch engine. For the TensorFlow engine, please set the pcutoff
+        in the `config.yaml` file.
+        The cutoff to use for computing evaluation metrics. When `None` (default), the
+        cutoff will be loaded from the project config. If a list is provided, there
+        should be one value for each bodypart and one value for each unique bodypart
+        (if there are any). If a dict is provided, the keys should be bodyparts
+        mapping to pcutoff values for each bodypart. Bodyparts that are not defined
+        in the dict will have pcutoff set to 0.6.
+
     engine: Engine, optional, default = None.
         The default behavior loads the engine for the shuffle from the metadata. You can
         overwrite this by passing the engine as an argument, but this should generally
@@ -489,6 +500,16 @@ def evaluate_network(
             Shuffles=[1],
             plotting="individual",
         )
+
+    If you have a PyTorch model for which you want to set a different p-cutoff for
+    "left_ear" and "right_ear" bodyparts, and keep the one set in the project config
+    for other bodyparts:
+
+    >>> deeplabcut.evaluate_network(
+    >>>     "/analysis/project/reaching-task/config.yaml",
+    >>>     Shuffles=[0, 1],
+    >>>     pcutoff={"left_ear": 0.8, "right_ear": 0.8},
+    >>> )
 
     Note: This defaults to standard plotting for single-animal projects.
     """
@@ -543,6 +564,7 @@ def evaluate_network(
             comparison_bodyparts=comparisonbodyparts,
             per_keypoint_evaluation=per_keypoint_evaluation,
             modelprefix=modelprefix,
+            pcutoff=pcutoff,
             **torch_kwargs,
         )
 
@@ -652,6 +674,7 @@ def analyze_videos(
     use_shelve: bool = False,
     auto_track: bool = True,
     n_tracks: int | None = None,
+    animal_names: list[str] | None = None,
     calibrate: bool = False,
     identity_only: bool = False,
     use_openvino: str | None = None,
@@ -745,7 +768,6 @@ def analyze_videos(
         By default, the models are assumed to exist in the project folder.
 
     robust_nframes: bool, optional, default=False
-        Currently not supported by the PyTorch engine.
         Evaluate a video's number of frames in a robust manner.
         This option is slower (as the whole video is read frame-by-frame),
         but does not rely on metadata, hence its robustness against file corruption.
@@ -789,6 +811,13 @@ def analyze_videos(
         defined in the config.yaml. Another number can be passed if the number of
         animals in the video is different from the number of animals the model was
         trained on.
+
+    animal_names: list[str], optional
+        If you want the names given to individuals in the labeled data file, you can
+        specify those names as a list here. If given and `n_tracks` is None, `n_tracks`
+        will be set to `len(animal_names)`. If `n_tracks` is not None, then it must be
+        equal to `len(animal_names)`. If it is not given, then `animal_names` will
+        be loaded from the `individuals` in the project config.yaml file.
 
     use_openvino: str, optional
         Only for the TensorFlow engine.
@@ -901,6 +930,7 @@ def analyze_videos(
             use_shelve=use_shelve,
             auto_track=auto_track,
             n_tracks=n_tracks,
+            animal_names=animal_names,
             calibrate=calibrate,
             identity_only=identity_only,
             **kwargs,
@@ -935,6 +965,7 @@ def analyze_videos(
             robust_nframes=robust_nframes,
             auto_track=auto_track,
             n_tracks=n_tracks,
+            animal_names=animal_names,
             calibrate=calibrate,
             identity_only=identity_only,
             overwrite=False,
@@ -957,12 +988,80 @@ def create_tracking_dataset(
     batchsize: int | None = None,
     cropping: list[int] | None = None,
     TFGPUinference: bool = True,
-    dynamic: tuple[bool, float, int] = (False, 0.5, 10),
     modelprefix: str = "",
     robust_nframes: bool = False,
     n_triplets: int = 1000,
     engine: Engine | None = None,
-):
+) -> str:
+    """Creates a tracking dataset to train a ReID tracklet stitcher.
+
+    Parameters
+    ----------
+    config: str
+        Full path of the config.yaml file.
+
+    videos: list[str]
+        A list of strings containing the full paths to videos from which to create a
+        tracking dataset, or a path to the directory where all the videos with same
+        extension are stored.
+
+    track_method: str
+        Specifies the tracker used to generate the pose estimation data. Must be either
+        'box', 'skeleton', or 'ellipse'.
+
+    videotype: str, optional, default=""
+        Checks for the extension of the video in case the input to the video is a
+        directory. Only videos with this extension are analyzed. If left unspecified,
+        videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+
+    shuffle: int, optional, default=1
+        An integer specifying the shuffle index of the training dataset used for
+        training the network.
+
+    trainingsetindex: int, optional, default=0
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml).
+
+    gputouse: int or None, optional, default=None
+        Only for the TensorFlow engine (for the PyTorch engine use ``device``).
+        Indicates the GPU to use (see number in ``nvidia-smi``). If you do not have a
+        GPU put ``None``. See:
+            https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+
+    TFGPUinference: bool, optional, default=True
+        Only for the TensorFlow engine.
+        Perform inference on GPU with TensorFlow code. Introduced in "Pretraining
+        boosts out-of-domain robustness for pose estimation" by Alexander Mathis,
+        Mert Yüksekgönül, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis.
+        Source: https://arxiv.org/abs/1909.11229
+
+    destfolder:
+        Specifies the destination folder for analysis data. If ``None``, the path of
+        the video is used. Note that for subsequent analysis this folder also needs to
+        be passed.
+
+    modelprefix: str, optional, default=""
+        Directory containing the deeplabcut models to use when evaluating the network.
+        By default, the models are assumed to exist in the project folder.
+
+    robust_nframes: bool, optional, default=False
+        Evaluate a video's number of frames in a robust manner.
+        This option is slower (as the whole video is read frame-by-frame),
+        but does not rely on metadata, hence its robustness against file corruption.
+
+    n_triplets: int, default=1000
+        The number of triplets to extract for the dataset.
+
+    engine: Engine, optional, default = None.
+        The default behavior loads the engine for the shuffle from the metadata. You can
+        overwrite this by passing the engine as an argument, but this should generally
+        not be done.
+
+    Returns
+    -------
+    DLCScorer: str
+        the scorer used to analyze the videos
+    """
     if engine is None:
         engine = get_shuffle_engine(
             _load_config(config),
@@ -982,12 +1081,26 @@ def create_tracking_dataset(
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             gputouse=gputouse,
-            save_as_csv=False,  # not used in method
             destfolder=destfolder,
             batchsize=batchsize,
             cropping=cropping,
             TFGPUinference=TFGPUinference,
-            dynamic=dynamic,
+            modelprefix=modelprefix,
+            robust_nframes=robust_nframes,
+            n_triplets=n_triplets,
+        )
+    elif engine == Engine.PYTORCH:
+        from deeplabcut.pose_estimation_pytorch.apis import create_tracking_dataset
+        return create_tracking_dataset(
+            config,
+            videos,
+            track_method,
+            videotype=videotype,
+            shuffle=shuffle,
+            trainingsetindex=trainingsetindex,
+            destfolder=destfolder,
+            batch_size=batchsize,
+            cropping=cropping,
             modelprefix=modelprefix,
             robust_nframes=robust_nframes,
             n_triplets=n_triplets,
@@ -1726,6 +1839,7 @@ def export_model(
     overwrite: bool = False,
     make_tar: bool = True,
     wipepaths: bool = False,
+    without_detector: bool = False,
     modelprefix: str = "",
     engine: Engine | None = None,
 ) -> None:
@@ -1768,6 +1882,9 @@ def export_model(
 
     wipepaths : bool, optional
         Removes the actual path of your project and the init_weights from pose_cfg.
+
+    without_detector: bool, optional
+        PyTorch engine only. Exports top-down models without the detector.
 
     engine: Engine, optional, default = None.
         The default behavior loads the engine for the shuffle from the metadata. You can
@@ -1814,6 +1931,7 @@ def export_model(
             iteration=iteration,
             overwrite=overwrite,
             wipe_paths=wipepaths,
+            without_detector=without_detector,
             modelprefix=modelprefix,
         )
 

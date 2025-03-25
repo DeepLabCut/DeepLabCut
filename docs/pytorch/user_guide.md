@@ -1,42 +1,34 @@
 (dlc3-user-guide)=
-# DeepLabCut 3.0 - Pytorch User Guide
+# DeepLabCut 3.0 - PyTorch User Guide
 
 ## Using DeepLabCut 3.0
 
 **DeepLabCut 3.0 keeps the same high-level API that you know, but has a full new PyTorch backend. 
-Moreover, it is a rewrite that more developer friendly, more powerful, and built for modern deep
+Moreover, it is a rewrite that is more developer friendly, more powerful, and built for modern deep
 learning-based computer vision applications.**
 
-**NOTE**🔥: We suggest that if you're just starting with DeepLabCut you start with the PyTorch backend. 
-You will easily know which "engine" you are using by looking at the main `config.yaml` file, or top right corner in the GUI. 
-If you have DeepLabCut projects in TensorFlow, we've got you covered too: you can seamlessly switch to train your already labeled data
-by simply switching the engine (and thereby also compare performance). In short, expect a boost 🔥.
+**NOTE**🔥: We suggest that if you're just starting with DeepLabCut you start with the
+PyTorch backend. You will easily know which "engine" you are using by looking at the
+main `config.yaml` file, or top right corner in the GUI. If you have DeepLabCut projects
+in TensorFlow, we've got you covered too: you can seamlessly switch to train your
+already labeled data by simply switching the engine (and thereby also compare
+performance). In short, expect a boost 🔥.
 
-In short, PyTorch models can be trained in any DeepLabCut project. If you have a project already made,  simply add a new key to your 
-project `config.yaml` file specifying `engine: pytorch`. Then any new training dataset
-that will be created will be a PyTorch model (see 
-[Creating Shuffles and Model Configuration](#Creating-Shuffles-and-Model-Configuration))
-to learn more about training PyTorch models. To train Tensorflow models again, you can
-set `engine: tensorflow`.
+In short, PyTorch models can be trained in any DeepLabCut project. If you have a project
+already made,  simply add a new key to your project `config.yaml` file specifying
+`engine: pytorch`. Then any new training dataset that will be created will be a PyTorch
+model (see [Creating Shuffles and Model Configuration](
+#Creating-Shuffles-and-Model-Configuration)) to learn more about training PyTorch
+models. To train Tensorflow models again, you can set `engine: tensorflow`.
 
 ### Installation
 
-During the alpha phase, you can use the `yaml` we provide, or create a new `env`. 
-- If you are a beginner user, [please see these docs!](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html)
-- If you are an advanced user, here is a quick start. [“Install PyTorch”](https://pytorch.org/get-started/locally/), then:
-```
-conda install -c conda-forge pytables==3.8.0
-pip install git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=deeplabcut[gui,modelzoo,wandb]
-```
+To see the DeepLabCut 3.0 installation guide, check the [installation docs](how-to-install).
 
 ### Using the GUI
 
-You can use the GUI to train DeepLabCut projects. However, you cannot switch between 
-PyTorch and Tensorflow models while using the GUI. If you have set your engine to
-`pytorch`, then the GUI will only offer the creation of PyTorch shuffles.
-
-You can create `tensorflow` shuffles and train them again by setting the 
-`engine: tensorflow` in the top right corner of the GUI.
+You can use the GUI to train DeepLabCut projects. You can switch between the PyTorch
+and TensorFlow engine through the drop-down menu in the top right corner.
 
 ## Major changes
 
@@ -81,7 +73,7 @@ parameters are not valid for the DLC 3.0 PyTorch API.
 | `evaluate_network`             |     🟢      |                                                                                                     |                                                     |
 | `return_evaluate_network_data` |     🔴      |                                                                                                     | `TFGPUinference`, `allow_growth`                    |
 | `analyze_videos`               |     🟠      | `greedy`, `calibrate`, `window_size`                                                                |                                                     |
-| `create_tracking_dataset`      |     🔴      |                                                                                                     |                                                     |
+| `create_tracking_dataset`      |     🟢      |                                                                                                     |                                                     |
 | `analyze_time_lapse_frames`    |     🟢      | the name has changed to  `analyze_images` to better reflect what it actually does (no video needed) |                                                     |
 | `convert_detections2tracklets` |     🟠      | `greedy`, `calibrate`, `window_size`                                                                |                                                     |
 | `extract_maps`                 |     🟢      |                                                                                                     |                                                     |

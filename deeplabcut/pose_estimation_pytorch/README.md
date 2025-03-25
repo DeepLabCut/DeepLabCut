@@ -374,7 +374,6 @@ pretrained weights, and either train them or run inference with them.
 from pathlib import Path
 
 import deeplabcut.pose_estimation_pytorch as dlc_torch
-from deeplabcut.pose_estimation_pytorch.apis.train import train
 
 # Specify project paths
 project_root = Path("/path/to/my/COCOProject")
@@ -387,7 +386,7 @@ loader = dlc_torch.COCOLoader(
     train_json_filename=train_json_filename,
     test_json_filename=test_json_filename,
 )
-train(
+dlc_torch.train(
     loader=loader,
     run_config=loader.model_cfg,
     task=dlc_torch.Task(loader.model_cfg["method"]),
@@ -412,6 +411,7 @@ API. We also use this API under the hood, in particular for the Model Zoo. Check
 example below:
 
 ```python
+from deeplabcut.core.config import read_config_as_dict
 from pathlib import Path
 
 import deeplabcut.pose_estimation_pytorch as dlc_torch
@@ -430,7 +430,7 @@ batch_size = 16
 detector_batch_size = 8
 
 # read model configuration
-model_cfg = dlc_torch.config.read_config_as_dict(pytorch_config_path)
+model_cfg = read_config_as_dict(pytorch_config_path)
 pose_task = dlc_torch.Task(model_cfg["method"])
 pose_runner = dlc_torch.get_pose_inference_runner(
     model_config=model_cfg,
@@ -458,16 +458,17 @@ predictions = dlc_torch.video_inference(
 
 ### Running Top-Down Video Analysis with Existing Bounding Boxes
 
-When `deeplabcut.pose_estimation_pytorch.apis.analyze_videos.video_inference` is called
+When `deeplabcut.pose_estimation_pytorch.apis.videos.video_inference` is called
 with a top-down model, it is assumed that a detector snapshot is given as well to obtain
 bounding boxes with which to run pose estimation. It's possible that you've already 
 obtained bounding boxes for your video (with another object detector or through some 
-other means), and you want to re-use those bounding boxes instead of running an object
+other means), and you want to reuse those bounding boxes instead of running an object
 detector again.
 
 You can easily do so by writing a bit of custom code, as shown in the example below:
 
 ```python
+from deeplabcut.core.config import read_config_as_dict
 from pathlib import Path
 
 import numpy as np
@@ -495,7 +496,7 @@ video.set_context(bounding_boxes)
 max_individuals = np.max([len(context["bboxes"]) for context in bounding_boxes])
 
 # run inference!
-model_cfg = dlc_torch.config.read_config_as_dict("/Users/Jayson/pytorch_config.yaml")
+model_cfg = read_config_as_dict("/Users/Jayson/pytorch_config.yaml")
 pose_runner = dlc_torch.get_pose_inference_runner(
     model_config=model_cfg,
     snapshot_path=Path("/Users/Jayson/model-snapshot.pt"),

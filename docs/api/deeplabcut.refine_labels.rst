@@ -1,1 +1,1 @@
-.. autofunction:: deeplabcut.gui.refine_labels.refine_labels
+.. autofunction:: deeplabcut.gui.tabs.label_frames.refine_labels

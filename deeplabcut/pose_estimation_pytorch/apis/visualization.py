@@ -28,9 +28,8 @@ import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.data as data
 import deeplabcut.pose_estimation_pytorch.data.preprocessor as preprocessor
 import deeplabcut.pose_estimation_pytorch.models as models
-import deeplabcut.utils.visualization as visualization_utils
+from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.engine import Engine
-from deeplabcut.pose_estimation_pytorch.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions
 
