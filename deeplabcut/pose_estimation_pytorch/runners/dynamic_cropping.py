@@ -103,6 +103,9 @@ class DynamicCropper:
         the next frame. Scales the pose predicted in the cropped image back to the
         original image space and returns it.
 
+        This method modifies the pose tensor in-place; so pass a copy of the tensor if
+        you need to keep the original values.
+
         Args:
             pose: The pose that was predicted by the pose estimation model in the
                 cropped image coordinate space.
@@ -329,6 +332,9 @@ class TopDownDynamicCropper(DynamicCropper):
         Uses the pose predicted by the model to update the dynamic crop parameters for
         the next frame. Scales the pose predicted in the cropped image back to the
         original image space and returns it.
+
+        This method modifies the pose tensor in-place; so pass a copy of the tensor if
+        you need to keep the original values.
 
         Args:
             pose: The pose that was predicted by the pose estimation model in the
