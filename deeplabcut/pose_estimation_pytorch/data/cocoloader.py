@@ -49,8 +49,8 @@ class COCOLoader(Loader):
         train_json_filename: str = "train.json",
         test_json_filename: str = "test.json",
     ):
-        super().__init__(Path(model_config_path))
-        self.project_root = Path(project_root)
+        image_root = Path(project_root) / "images"
+        super().__init__(project_root, image_root, Path(model_config_path))
         self.train_json_filename = train_json_filename
         self.test_json_filename = test_json_filename
         self._dataset_parameters = None
@@ -161,8 +161,7 @@ class COCOLoader(Loader):
 
         return coco_json
 
-    @staticmethod
-    def validate_images(project_root: str | Path, coco_json: dict) -> dict:
+    def validate_images(self, coco_json: dict) -> dict:
         """Goes over images and annotations to look for potential errors
 
         This code tries to ensure that training a model on this project does not crash
@@ -188,7 +187,7 @@ class COCOLoader(Loader):
             if image_filename.is_absolute():
                 image_path = image_filename
             else:
-                image_path = Path(project_root) / "images" / image["file_name"]
+                image_path = self.image_root / image["file_name"]
                 image["file_name"] = str(image_path)
 
             if not image_path.exists():

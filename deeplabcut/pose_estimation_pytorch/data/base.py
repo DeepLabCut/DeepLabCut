@@ -46,7 +46,14 @@ class Loader(ABC):
             Returns a dictionary containing dataset parameters derived from the configuration.
     """
 
-    def __init__(self, model_config_path: str | Path) -> None:
+    def __init__(
+        self,
+        project_root: str | Path,
+        image_root: str | Path,
+        model_config_path: str | Path,
+    ) -> None:
+        self.project_root = Path(project_root)
+        self.image_root = Path(image_root)
         self.model_config_path = Path(model_config_path)
         self.model_cfg = config_utils.read_config_as_dict(str(model_config_path))
         self.pose_task = Task(self.model_cfg["method"])

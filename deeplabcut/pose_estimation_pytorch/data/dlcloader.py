@@ -68,13 +68,13 @@ class DLCLoader(Loader):
             engine=Engine.PYTORCH,
             modelprefix=modelprefix,
         )
-
-        super().__init__(
+        model_config_path = (
             self._project_root
             / self._model_folder
             / "train"
             / Engine.PYTORCH.pose_cfg_name
         )
+        super().__init__(self._project_root, self._project_root, model_config_path)
 
         # lazy-load split and DataFrames
         self._split: dict[str, list[int]] | None = None
@@ -277,27 +277,34 @@ class DLCLoader(Loader):
         parameters: PoseDatasetParameters,
     ) -> pd.DataFrame:
         if bu_predictions is None:
-            pred_path = Path(str(bu_snapshot).replace('dlc-models', 'evaluation-results')).parent.parent
+            pred_path = Path(
+                str(bu_snapshot).replace("dlc-models", "evaluation-results")
+            ).parent.parent
             cfg = af.read_config(pred_path.parent.parent.parent / "config.yaml")
             scorer = af.get_scorer_name(
-                    cfg=cfg,
-                    shuffle=int(re.search(r'shuffle(\d+)', str(bu_snapshot)).group(1)),
-                    trainFraction=int(re.search(r'trainset(\d+)', str(bu_snapshot)).group(1)) / 100,
-                    engine=Engine.PYTORCH,
-                    trainingsiterations=re.search(r'snapshot-(.+)\.pth', str(bu_snapshot)).group(1),
-                    modelprefix="",
+                cfg=cfg,
+                shuffle=int(re.search(r"shuffle(\d+)", str(bu_snapshot)).group(1)),
+                trainFraction=int(
+                    re.search(r"trainset(\d+)", str(bu_snapshot)).group(1)
                 )
+                / 100,
+                engine=Engine.PYTORCH,
+                trainingsiterations=re.search(
+                    r"snapshot-(.+)\.pth", str(bu_snapshot)
+                ).group(1),
+                modelprefix="",
+            )
 
             pred_file = pred_path / f"{scorer[0]}.h5"
             dlc_preds = pd.read_hdf(pred_file, key="df_with_missing")
 
-            #FIXME: Implement the case where snapshot is loaded
+            # FIXME: Implement the case where snapshot is loaded
             raise NotImplementedError("Need to implement the case with loaded snapshot")
 
         else:
             pred_path = bu_predictions.parent.parent
             dlc_preds = pd.read_hdf(bu_predictions, key="df_with_missing")
-        
+
         predictions = {}
         for idx in dlc_preds.index.unique():
             if type(idx) == tuple:
@@ -305,7 +312,9 @@ class DLCLoader(Loader):
             else:
                 img_path = pred_path.parent.parent / Path(idx)
 
-            keypoints = dlc_preds.loc[idx].values.reshape(-1,len(parameters.bodyparts),3)[...,:2]
+            keypoints = dlc_preds.loc[idx].values.reshape(
+                -1, len(parameters.bodyparts), 3
+            )[..., :2]
             keypoints = keypoints[~np.isnan(keypoints).all(axis=-1).all(axis=-1)]
             cond_keypoints = np.zeros((*keypoints.shape[:-1], 3))
             cond_keypoints[..., :2] = keypoints
