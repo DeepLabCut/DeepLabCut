@@ -15,6 +15,128 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+import deeplabcut.pose_estimation_pytorch.apis.utils as utils
+import deeplabcut.pose_estimation_pytorch.data as data
+from deeplabcut.pose_estimation_pytorch.task import Task
+
+
+def load_conditions(loader: data.Loader, images: list[str]) -> dict[str, np.ndarray]:
+    if loader.pose_task != Task.CTD:
+        raise ValueError(f"Conditions can only be loaded for CTD models")
+
+    condition_cfg = loader.model_cfg["data"].get("conditions")
+    error_message = (
+        f"Misconfigured conditions in the pytorch_config: {condition_cfg}. Valid "
+        f"examples:\n" + _CONDITION_EXAMPLES
+    )
+    if condition_cfg is None:
+        raise ValueError(error_message)
+
+    elif isinstance(condition_cfg, str):
+        return load_conditions_from_file(
+            images=images, filepath=condition_cfg, path_prefix=loader.image_root
+        )
+
+    elif (
+        isinstance(loader, data.DLCLoader)
+        and isinstance(condition_cfg, dict)
+        and "shuffle" in condition_cfg
+    ):
+        # Create a loader for the BU model to use for conditions
+        shuffle = condition_cfg["shuffle"]
+        trainset_index = condition_cfg.get("trainset_index", 0)
+        modelprefix = condition_cfg.get("modelprefix", "")
+        bu_loader = data.DLCLoader(
+            loader.project_root / "config.yaml",
+            trainset_index=trainset_index,
+            shuffle=shuffle,
+            modelprefix=modelprefix,
+        )
+        if bu_loader.pose_task != Task.BOTTOM_UP:
+            raise ValueError(
+                "Only BU models can be used as conditions for CTD models. Found "
+                f"shuffle {shuffle} to be {bu_loader.pose_task}. Please select"
+                "another shuffle as condition."
+            )
+
+        # Get the snapshot to use for conditions
+        snapshots = utils.get_model_snapshots(
+            "all", bu_loader.model_folder, bu_loader.pose_task
+        )
+        if "snapshot" in condition_cfg:
+            snapshot_name = condition_cfg["snapshot"]
+            snapshot_matches = [
+                s
+                for s in snapshots
+                if (s.path.name == snapshot_name) or (s.path.stem == snapshot_name)
+            ]
+            if len(snapshot_matches) == 0:
+                raise ValueError(
+                    f"Could not find {snapshot_name} for shuffle {shuffle}. Found "
+                    f" {len(snapshots)} snapshots: {[s.path.name for s in snapshots]}"
+                )
+            snapshot = snapshot_matches[0]
+        elif "snapshot_index" in condition_cfg:
+            snapshot_index = condition_cfg["snapshot_index"]
+            snapshot = snapshots[snapshot_index]
+        else:
+            snapshot = snapshots[-1]
+
+        bu_scorer = utils.get_scorer_name(
+            cfg=bu_loader.project_cfg,
+            shuffle=shuffle,
+            train_fraction=loader.train_fraction,
+            snapshot_uid=utils.get_scorer_uid(snapshot, None),
+            modelprefix=modelprefix,
+        )
+        conditions_filepath = loader.evaluation_folder / f"{bu_scorer}.h5"
+        if not conditions_filepath.exists():
+            raise ValueError(
+                f"Conditions file {conditions_filepath} does not exist. Please make "
+                f"sure snapshot {snapshot.path.name} for shuffle {shuffle} was "
+                "evaluated (which) is when the predictions file is created."
+            )
+
+        return load_conditions_from_file(
+            images=images, filepath=conditions_filepath, path_prefix=loader.image_root
+        )
+
+    if isinstance(loader, data.DLCLoader):
+        error_message += _CONDITION_DLCLOADER_EXAMPLES
+
+    raise ValueError(error_message)
+
+
+def load_conditions_from_file(
+    images: list[str],
+    filepath: str | Path,
+    path_prefix: str | Path | None = None,
+) -> dict[str, np.ndarray]:
+    """Loads conditions for a model from a file
+
+    Args:
+        images: A list of image paths to load conditions for
+        filepath: Path to the file containing conditions. Must be either a JSON (with a
+            ".json" suffix) or HDF5 file (with a ".h5" suffix).
+        path_prefix: Optional prefix to prepend to image paths when looking up
+            conditions. This is useful when the paths in the conditions file are
+            relative but the provided image paths are absolute, or vice versa.
+
+    Returns:
+        A dictionary mapping image paths to condition arrays. Each array has shape
+        (num_conditions, num_bodyparts, 3).
+    """
+    suffix = Path(filepath).suffix.lower()
+    if suffix == ".h5":
+        return load_conditions_h5(images, filepath, path_prefix)
+    elif suffix == ".json":
+        return load_conditions_json(images, filepath, path_prefix)
+
+    raise ValueError(
+        f"Unknown file suffix {suffix}. Can only read conditions from HDF5 or JSON "
+        f"files. Received {filepath}."
+    )
+
 
 def load_conditions_h5(
     images: list[str],
@@ -174,32 +296,37 @@ def load_conditions_json(
     return parsed
 
 
-def load_conditions(
-    images: list[str],
-    filepath: str | Path,
-    path_prefix: str | Path | None = None,
-) -> dict[str, np.ndarray]:
-    """Loads conditions for a model from a file
+_CONDITION_EXAMPLES = """
+Example: Loading the predictions contained in an h5 file.
+  ```
+  data:
+    conditions: /path/to/bu_predictions.h5
+  ```
+Example: Loading the predictions contained in an json file.
+  ```
+  data:
+    conditions: /path/to/bu_predictions.json
+  ```
+"""
 
-    Args:
-        images: A list of image paths to load conditions for
-        filepath: Path to the file containing conditions. Must be either a JSON (with a
-            ".json" suffix) or HDF5 file (with a ".h5" suffix).
-        path_prefix: Optional prefix to prepend to image paths when looking up
-            conditions. This is useful when the paths in the conditions file are
-            relative but the provided image paths are absolute, or vice versa.
-
-    Returns:
-        A dictionary mapping image paths to condition arrays. Each array has shape
-        (num_conditions, num_bodyparts, 3).
-    """
-    suffix = Path(filepath).suffix.lower()
-    if suffix == ".h5":
-        return load_conditions_h5(images, filepath, path_prefix)
-    elif suffix == ".json":
-        return load_conditions_json(images, filepath, path_prefix)
-
-    raise ValueError(
-        f"Unknown file suffix {suffix}. Can only read conditions from HDF5 or JSON "
-        f"files. Received {filepath}."
-    )
+_CONDITION_DLCLOADER_EXAMPLES = """
+Example: Loading the predictions for the default snapshot of shuffle 1.
+  data:
+    conditions:
+      shuffle: 1
+  ```
+Example: Loading the predictions for snapshot-250.pt of shuffle 1.
+  ```
+  data:
+    conditions:
+      shuffle: 1
+      snapshot: snapshot-250.pt
+  ```
+Example: Loading the predictions for the snapshot with index 2 of shuffle 1.
+  ```
+  data:
+    conditions:
+      shuffle: 1
+      snapshot_index: 2
+  ```
+"""
