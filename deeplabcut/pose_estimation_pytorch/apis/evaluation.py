@@ -635,21 +635,13 @@ def evaluate_snapshot(
         save_rmse_per_bodypart(rmse_per_bodypart, rmse_per_bpt_path, show_errors)
 
     if plotting:
-        # # use BU predictions for plotting
-        # bu_predictions = pd.read_hdf('/home/lucas/datasets/fish-dlc-2021-05-07/evaluation-results-pytorch/iteration-17/fishMay7-trainset94shuffle5/DLC_HrnetW32_fishMay7shuffle5_detector_250_snapshot_140.h5', key='df_with_missing')
-        # bu_predictions = pd.read_hdf('/home/lucas/datasets/marmoset-dlc-2021-05-07/evaluation-results-pytorch/iteration-19/marmosetMay7-trainset95shuffle1/DLC_DekrW32_marmosetMay7shuffle1_140.h5', key='df_with_missing')
-        # predictions = {'train': bu_predictions, 'test': bu_predictions}
-
         folder_name = f"LabeledImages_{scorer}"
-        #folder_name = f"LabeledImages_{scorer}_individual"
         folder_path = loader.evaluation_folder / folder_name
         folder_path.mkdir(parents=True, exist_ok=True)
         if isinstance(plotting, str):
             plot_mode = plotting
         else:
             plot_mode = "bodypart"
-
-        #plot_mode = 'individual'
 
         df_ground_truth = ensure_multianimal_df_format(loader.df)
 
@@ -670,8 +662,6 @@ def evaluate_snapshot(
                 project_root=cfg["project_path"],
                 scorer=cfg["scorer"],
                 model_name=scorer,
-                #model_name='DLC_HrnetW32_fishMay7shuffle5_detector_250_snapshot_140',
-                #model_name='DLC_DekrW32_marmosetMay7shuffle1_140',
                 output_folder=str(folder_path),
                 in_train_set=mode == "train",
                 plot_unique_bodyparts=eval_parameters.num_unique_bpts > 0,
