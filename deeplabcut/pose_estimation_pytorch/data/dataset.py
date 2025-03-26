@@ -139,9 +139,9 @@ class PoseDataset(Dataset):
         img = self.images[self.img_id_to_index[ann["image_id"]]]
         near_anns = []
         for idx in self.annotation_idx_map[img["id"]]:
-            # we consider near annotations to be those whose bounding boxes overlap wih the current item
-            #if idx != index and calc_bbox_overlap(ann['bbox'], self.annotations[idx]['bbox']) > 0:
-            #HACK: add same annotation as near keypoints so that we don't have empty list
+            # we consider near annotations to be those whose bounding boxes overlap with
+            # the current item
+            # HACK: add same annotation as near keypoints so that we don't have empty list
             if calc_bbox_overlap(ann['bbox'], self.annotations[idx]['bbox']) > 0:
                 near_anns.append(self.annotations[idx])
         return img["file_name"], [ann] + near_anns, img["id"]
@@ -243,17 +243,10 @@ class PoseDataset(Dataset):
 
                 keypoints[:, :, 0] = (keypoints[:, :, 0] - offsets[0]) / scales[0]
                 keypoints[:, :, 1] = (keypoints[:, :, 1] - offsets[1]) / scales[1]
-                # print('keypoints GT', keypoints)
                 if self.task == Task.CTD:
                     synthesized_keypoints[:, 0] = (synthesized_keypoints[:, 0] - offsets[0]) / scales[0]
                     synthesized_keypoints[:, 1] = (synthesized_keypoints[:, 1] - offsets[1]) / scales[1]
-                    # synthesized_keypoints[synthesized_keypoints < 0] = 0
-                    # print('keypoints COND', synthesized_keypoints)
-                    # print('')
                     keypoints = safe_stack([keypoints, synthesized_keypoints[None, ...]], (0, self.parameters.num_joints, 3))
-
-                # from deeplabcut.pose_estimation_pytorch.data.image import plot_keypoints
-                # plot_keypoints(image, keypoints[0,0], keypoints[1,0], "/home/lucas/logs/debug_images", index)
 
                 bboxes = bboxes[:1]
                 bboxes[..., 0] = (bboxes[..., 0] - offsets[0]) / scales[0]
@@ -262,8 +255,7 @@ class PoseDataset(Dataset):
                 bboxes[..., 3] = bboxes[..., 3] / scales[1]
                 bboxes = np.clip(bboxes, 0, self.parameters.top_down_crop_size[0] - 1) #TODO: clip based on [x,y,x,y]?
 
-                # as a RandomBBoxTransform can be added, keypoints may be outside of the
-                #   image after the crop
+                # RandomBBoxTransform may move keypoints outside the cropped image
                 oob_mask = out_of_bounds_keypoints(keypoints, self.td_crop_size)
                 if np.sum(oob_mask) > 0:
                     keypoints[oob_mask, 2] = 0.0
