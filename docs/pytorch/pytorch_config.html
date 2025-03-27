@@ -484,6 +484,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-top-down-models">Training Top-Down Models</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#detector-configuration">Detector Configuration</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#restarting-training-of-an-object-detector-at-a-specific-checkpoint">Restarting Training of an Object Detector at a Specific Checkpoint</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#generating-bounding-boxes-from-pose">Generating Bounding Boxes from Pose</a></li>
 </ul>
 </li>
 </ul>
@@ -543,6 +544,8 @@ need to be trained on CPU, while others like ResNets can take advantage of the G
 <h3>Data<a class="headerlink" href="#data" title="Link to this heading">#</a></h3>
 <p>The data section configures:</p>
 <ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">bbox_margin</span></code>: The margin (in pixels) to add around ground truth pose when generating
+bounding boxes. For more information, see <a class="reference internal" href="#bbox-from-pose">generating bounding boxes from pose</a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">colormode</span></code>: in which format images are given to the model (e.g., <code class="docutils literal notranslate"><span class="pre">RGB</span></code>, <code class="docutils literal notranslate"><span class="pre">BGR</span></code>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">inference</span></code>: which transformations should be applied to images when running evaluation
 or inference</p></li>
@@ -550,6 +553,7 @@ or inference</p></li>
 </ul>
 <p>The default configuration for a pose model is:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">data</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">bbox_margin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
 <span class="w">  </span><span class="nt">colormode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RGB</span><span class="w">  </span><span class="c1"># should never be changed</span>
 <span class="w">  </span><span class="nt">inference</span><span class="p">:</span><span class="w">  </span><span class="c1"># the augmentations to apply to images during inference </span>
 <span class="w">    </span><span class="nt">normalize_images</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># this should always be set to true</span>
@@ -1026,6 +1030,24 @@ so, you <em>must set <code class="docutils literal notranslate"><span class="pre
 config! Otherwise, the parameters for the scheduler your started training with will be
 loaded from the state dictionary, and your edits might not be kept!</p>
 </section>
+<section id="generating-bounding-boxes-from-pose">
+<span id="bbox-from-pose"></span><h3>Generating Bounding Boxes from Pose<a class="headerlink" href="#generating-bounding-boxes-from-pose" title="Link to this heading">#</a></h3>
+<p>To train object detection models (for top-down pose estimation), ground truth bounding
+boxes are needed. As they are not annotated in DeepLabCut, they are generated from the
+ground truth pose: simply take the minimum and maximum for the x and y axes, add a small
+margin and you have your bounding box! The default setting adds a margin of 20 pixels
+around the pose. This works well in most cases, but in some cases you should update this
+value (e.g. when you have very small or large images).</p>
+<p>You can edit that value in the <code class="docutils literal notranslate"><span class="pre">pytorch_config.yaml</span></code> for your model through the
+<code class="docutils literal notranslate"><span class="pre">data:</span> <span class="pre">bbox_margin</span></code> parameter for the detector:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">detector</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">data</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bbox_margin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</pre></div>
+</div>
+<p><img alt="Bounding boxes generated from pose with different margins" src="../../_images/bboxes_from_kpts.png" /></p>
+</section>
 </section>
 </section>
 
@@ -1109,6 +1131,7 @@ loaded from the state dictionary, and your edits might not be kept!</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-top-down-models">Training Top-Down Models</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#detector-configuration">Detector Configuration</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#restarting-training-of-an-object-detector-at-a-specific-checkpoint">Restarting Training of an Object Detector at a Specific Checkpoint</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#generating-bounding-boxes-from-pose">Generating Bounding Boxes from Pose</a></li>
 </ul>
 </li>
 </ul>
