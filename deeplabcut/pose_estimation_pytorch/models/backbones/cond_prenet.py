@@ -36,12 +36,11 @@ class CondPreNet(BaseBackbone):
         Args:
             backbone: The backbone model to wrap
         """
+        pretrained = kwargs.pop("pretrained", False)
         if not isinstance(backbone, BaseBackbone):
-            backbone['pretrained'] = kwargs.get('pretrained', False)
+            backbone["pretrained"] = pretrained
             backbone = BACKBONES.build(backbone)
 
-        if 'pretrained' in kwargs:
-            pretrained = kwargs.pop('pretrained')
         super().__init__(stride=backbone.stride, **kwargs)
         
         if not isinstance(kpt_encoder, BaseKeypointEncoder):
