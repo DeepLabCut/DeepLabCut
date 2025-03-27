@@ -111,7 +111,7 @@ class PoseDataset(Dataset):
             self.generative_sampler = GenerativeSampler(
                 self.parameters.num_joints,
                 keypoint_sigmas=self.ctd_config.gen_sampling_sigmas,
-                keypoint_symmetries=self.ctd_config.gen_sampling_symmetries,
+                keypoints_symmetry=self.ctd_config.gen_sampling_symmetries,
             )
 
     def __len__(self):

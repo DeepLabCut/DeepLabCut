@@ -10,7 +10,7 @@ data:
   bbox_margin: 5
   gen_sampling_sigmas: 0.1
   gen_sampling_symmetries: []
-method: ctd  # Need to add a detector
+method: ctd
 model:
   backbone:
     type: CondPreNet

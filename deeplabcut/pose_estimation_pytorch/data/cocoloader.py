@@ -247,7 +247,7 @@ class COCOLoader(Loader):
             raise AttributeError(f"Unknown mode: {mode}")
 
         data = COCOLoader.validate_categories(data)
-        data = COCOLoader.validate_images(self.project_root, data)
+        data = self.validate_images(data)
 
         annotations_per_image = {}
         for annotation in data["annotations"]:
