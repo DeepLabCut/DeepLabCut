@@ -7,7 +7,7 @@ data:
     top_down_crop:
       width: 288
       height: 384
-  bbox_margin: 25
+  bbox_margin: 5
   gen_sampling_sigmas: 0.1
   gen_sampling_symmetries: []
 method: ctd  # Need to add a detector
