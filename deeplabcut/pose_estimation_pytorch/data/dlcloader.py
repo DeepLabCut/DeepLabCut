@@ -179,7 +179,10 @@ class DLCLoader(Loader):
         params = self.get_dataset_parameters()
         data = self.to_coco(str(self._project_root), self._dfs[mode], params)
         with_bbox = self._compute_bboxes(
-            data["images"], data["annotations"], method="keypoints"
+            data["images"],
+            data["annotations"],
+            method="keypoints",
+            bbox_margin=self.model_cfg["data"].get("bbox_margin", 20),
         )
         data["annotations"] = with_bbox
         return data
