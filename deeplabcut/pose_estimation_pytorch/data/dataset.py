@@ -34,6 +34,13 @@ from deeplabcut.pose_estimation_pytorch.data.generative_sampling import Generati
 
 
 @dataclass(frozen=True)
+class CTDConfig:
+    bbox_margin: int
+    gen_sampling_sigmas: float | list[float] = 0.1
+    gen_sampling_symmetries: bool = True
+
+
+@dataclass(frozen=True)
 class PoseDatasetParameters:
     """Parameters for a pose dataset
 
@@ -43,6 +50,7 @@ class PoseDatasetParameters:
         individuals: the names of individuals
         with_center_keypoints: whether to compute center keypoints for individuals
         color_mode: {"RGB", "BGR"} the mode to load images in
+        ctd_config: for CTD models, the configuration for bbox calculation and error sampling
         top_down_crop_size: for top-down models, the (width, height) to crop bboxes to
         top_down_crop_margin: for top-down models, the margin to add around bboxes
     """
@@ -52,6 +60,7 @@ class PoseDatasetParameters:
     individuals: list[str]
     with_center_keypoints: bool = False
     color_mode: str = "RGB"
+    ctd_config: CTDConfig | None = None
     top_down_crop_size: tuple[int, int] | None = None
     top_down_crop_margin: int | None = None
 
@@ -78,6 +87,7 @@ class PoseDataset(Dataset):
     transform: A.BaseCompose | None = None
     mode: str = "train"
     task: Task = Task.BOTTOM_UP
+    ctd_config: CTDConfig | None = None
 
     def __post_init__(self):
         self.image_path_id_map = map_image_path_to_id(self.images)
@@ -98,7 +108,11 @@ class PoseDataset(Dataset):
         self.td_crop_margin = self.parameters.top_down_crop_margin
 
         if self.task == Task.CTD:
-            self.generative_sampler = GenerativeSampler(self.parameters.num_joints)
+            self.generative_sampler = GenerativeSampler(
+                self.parameters.num_joints,
+                keypoint_sigmas=self.ctd_config.gen_sampling_sigmas,
+                keypoint_symmetries=self.ctd_config.gen_sampling_symmetries,
+            )
 
     def __len__(self):
         # TODO: TD/CTD should only return the number of annotations that aren't unique_bodyparts
@@ -222,7 +236,7 @@ class PoseDataset(Dataset):
                         synthesized_keypoints,
                         original_size[0],
                         original_size[1],
-                        25,  # FIXME: bbox_margin should be a parameter set in cfg (25 for animals, 5 for humans?)
+                        self.ctd_config.bbox_margin,
                     )
 
             if bboxes[0, 2] == 0 or bboxes[0, 3] == 0:
@@ -237,7 +251,8 @@ class PoseDataset(Dataset):
                     image,
                     bboxes[0],
                     self.parameters.top_down_crop_size,
-                    margin=0,
+                    #margin=0,
+                    self.parameters.top_down_crop_margin, #TODO: check
                     crop_with_context=(self.task != Task.CTD),
                 )
 

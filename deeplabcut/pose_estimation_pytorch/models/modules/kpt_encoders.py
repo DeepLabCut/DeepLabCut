@@ -120,11 +120,6 @@ class StackedKeypointEncoder(BaseKeypointEncoder):
 
         zero_matrix = np.zeros((batch_size, size[0], size[1], self.num_channels))
 
-        # def _get_condition_matrix(zero_matrix, kpts):
-        #     if 0 < kpt_[0] < size[1] and 0 < kpt_[1] < size[0]:
-        #         zero_matrix_[kpt_[1] - 1][kpt_[0] - 1] = 255
-        #     return zero_matrix_
-
         def _get_condition_matrix(zero_matrix, kpts):
             for i, pose in enumerate(kpts):
                 x, y, vis = pose.T
@@ -188,14 +183,11 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
             kpts[oob_mask] = 0
         kpts = kpts.astype(int)
 
-        #kpts = np.array(keypoints).astype(int)
         zero_matrix = np.zeros((batch_size, size[0], size[1], self.num_channels))
         
         def _get_condition_matrix(zero_matrix, kpts):
             for i, pose in enumerate(kpts):
-                #x, y = pose.T
                 x, y, vis = pose.T
-                #mask = (0 < x) & (x < size[1]) & (0 < y) & (y < size[0])
                 mask = vis > 0
                 x_masked, y_masked, colors_masked = x[mask], y[mask], self.colors[mask]
                 zero_matrix[i, y_masked-1, x_masked-1] = colors_masked
@@ -206,10 +198,8 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
             mask = (0 < x) & (x < zero_matrix.shape[2]) & (0 < y) & (y < zero_matrix.shape[1])
             colors_masked = np.repeat(self.colors[:, None, :], len(zero_matrix), 1) * np.repeat(mask[:, :, None], 3, 2)
             kpt_indices = np.stack([x.T, y.T]).transpose(1, 2, 0)
-            #kpt_indices = np.stack([x[mask[:,0]].T, y[mask[:,0]].T]).transpose(1, 2, 0)
             batch_indices = np.repeat(np.arange(len(zero_matrix))[:, None, None], self.num_joints, axis=1)
             kpt_input = np.concatenate([batch_indices, kpt_indices], dtype=int, axis=2)
-            #zero_matrix[kpt_input[...,0], kpt_input[...,2], kpt_input[...,1]] = colors_masked.transpose(1,0,2)            
             zero_matrix[kpt_input[...,0], kpt_input[...,2]-1, kpt_input[...,1]-1] = colors_masked.transpose(1,0,2)            
             return zero_matrix
 
@@ -225,7 +215,6 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
 
     def get_colors_from_cmap(self, cmap_name, num_colors):
         cmap = plt.get_cmap(cmap_name)
-        #colors_float = [cmap(i) for i in range(0, 256, 256 // num_colors)]
         colors_float = [cmap(i) for i in np.linspace(0, 256, num_colors, dtype=int)]
         colors = [(int(r*255), int(g*255), int(b*255)) for r, g, b, _ in colors_float]
         return colors

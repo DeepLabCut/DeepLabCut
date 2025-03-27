@@ -19,6 +19,7 @@ import numpy as np
 import deeplabcut.core.config as config_utils
 import deeplabcut.pose_estimation_pytorch.config as config
 from deeplabcut.pose_estimation_pytorch.data.dataset import (
+    CTDConfig,
     PoseDataset,
     PoseDatasetParameters,
 )
@@ -223,6 +224,12 @@ class Loader(ABC):
         parameters = self.get_dataset_parameters()
         data = self.load_data(mode)
         data["annotations"] = self.filter_annotations(data["annotations"], task)
+        if self.pose_task == Task.CTD:
+            ctd_config = CTDConfig(
+                self.model_cfg["data"].get("bbox_margin", 25),
+                self.model_cfg["data"].get("gen_sampling_sigmas", 0.1),
+                self.model_cfg["data"].get("gen_sampling_symmetries", [])
+            )
         dataset = PoseDataset(
             images=data["images"],
             annotations=data["annotations"],
@@ -230,6 +237,7 @@ class Loader(ABC):
             mode=mode,
             task=task,
             parameters=parameters,
+            ctd_config=ctd_config if self.pose_task == Task.CTD else None,
         )
         return dataset
 
