@@ -1,11 +1,11 @@
 data:
   inference:
     top_down_crop:
-      width: 384
+      width: 288
       height: 384
   train:
     top_down_crop:
-      width: 384
+      width: 288
       height: 384
   bbox_margin: 25
   gen_sampling_sigmas: 0.1
@@ -32,9 +32,9 @@ model:
       weight_init: RTMPose
       target_generator:
         type: SimCCGenerator
-        input_size: [384, 384]
+        input_size: [288, 384]
         smoothing_type: gaussian
-        sigma: [6.93, 6.93]
+        sigma: [6., 6.93]
         simcc_split_ratio: 2.0
         label_smooth_weight: 0.0
         normalize: false
@@ -52,10 +52,10 @@ model:
       predictor:
         type: SimCCPredictor
         simcc_split_ratio: 2.0
-      input_size: [384, 384]
+      input_size: [288, 384]
       in_channels: 1280
       out_channels: "num_bodyparts"
-      in_featuremap_size: [12, 12]  # input_size / backbone stride
+      in_featuremap_size: [9, 12]  # input_size / backbone stride
       simcc_split_ratio: 2.0
       final_layer_kernel_size: 7
       gau_cfg:
