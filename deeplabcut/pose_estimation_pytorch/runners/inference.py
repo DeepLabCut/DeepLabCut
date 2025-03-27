@@ -20,7 +20,7 @@ import torch.nn as nn
 
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import Postprocessor
-from deeplabcut.pose_estimation_pytorch.data.preprocessor import Preprocessor
+from deeplabcut.pose_estimation_pytorch.data.preprocessor import LoadImage, Preprocessor
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.runners.base import ModelType, Runner
@@ -76,6 +76,9 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 weights_only=load_weights_only,
             )
 
+        self.model.to(self.device)
+        self.model.eval()
+
         self._batch: torch.Tensor | None = None
         self._model_kwargs: dict[str, np.ndarray | torch.Tensor] = {}
 
@@ -127,9 +130,6 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 }
             ]
         """
-        self.model.to(self.device)
-        self.model.eval()
-
         results = []
         for data in images:
             self._prepare_inputs(data)
@@ -316,6 +316,126 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
         return predictions
 
 
+class CTDInferenceRunner(InferenceRunner[PoseModel]):
+    """Runner for pose estimation inference"""
+
+    def __init__(
+        self,
+        model: PoseModel,
+        bu_runner: PoseInferenceRunner,
+        **kwargs,
+    ):
+        super().__init__(model, **kwargs)
+        self.bu_runner = bu_runner
+        self._image_loader = LoadImage()
+
+        if False and self.batch_size != 1:
+            raise ValueError(
+                "Dynamic cropping can only be used with batch size 1. Please set "
+                "your batch size to 1."
+            )
+
+    @torch.no_grad()
+    def inference(
+        self,
+        images: (
+            Iterable[str | Path | np.ndarray]
+            | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]
+        ),
+        shelf_writer: shelving.ShelfWriter | None = None,
+    ) -> list[dict[str, np.ndarray]]:
+        """Run CTD model inference on the given dataset
+
+        Args:
+            images: the images to run inference on, optionally with context
+            shelf_writer: by default, data are saved in a list and returned at the end
+                of inference. Passing a shelf manager writes data to disk on-the-fly
+                using a "shelf" (a pickle-based, persistent, database-like object by
+                default, resulting in constant memory footprint). The returned list is
+                then empty.
+
+        Returns:
+            a dict containing head predictions for each image
+            [
+                {
+                    "bodypart": {"poses": np.array},
+                    "unique_bodypart": {"poses": np.array},
+                }
+            ]
+        """
+        results = []
+        for data in images:
+            data = self.add_conditions(data)
+            self._prepare_inputs(data)
+            self._process_full_batches()
+            results += self._extract_results(shelf_writer)
+
+        # Process the last batch even if not full
+        if self._inputs_waiting_for_processing():
+            self._process_batch()
+            results += self._extract_results(shelf_writer)
+
+        return results
+
+    def predict(
+        self, inputs: torch.Tensor, **kwargs
+    ) -> list[dict[str, dict[str, np.ndarray]]]:
+        """Makes predictions from a model input and output
+
+        Args:
+            the inputs to the model, of shape (batch_size, ...)
+
+        Returns:
+            predictions for each of the 'batch_size' inputs, made by each head, e.g.
+            [
+                {
+                    "bodypart": {"poses": np.ndarray},
+                    "unique_bodypart": {"poses": np.ndarray},
+                }
+            ]
+        """
+        self.bu_runner.model.eval()
+        outputs = self.model(inputs.to(self.device), **kwargs)
+        raw_predictions = self.model.get_predictions(outputs)
+        predictions = [
+            {
+                head: {
+                    pred_name: pred[b].cpu().numpy()
+                    for pred_name, pred in head_outputs.items()
+                }
+                for head, head_outputs in raw_predictions.items()
+            }
+            for b in range(len(inputs))
+        ]
+        return predictions
+
+    def add_conditions(
+        self,
+        data: str | Path | np.ndarray | tuple[str | Path | np.ndarray, dict],
+    ) -> tuple[torch.Tensor, dict]:
+        if isinstance(data, (str, Path, np.ndarray)):
+            inputs, context = data, {}
+        else:
+            inputs, context = data
+
+        if self.bu_runner.preprocessor is not None:
+            inputs, context = self.bu_runner.preprocessor(inputs, context)
+        else:
+            inputs = torch.as_tensor(inputs)
+
+        predictions = self.bu_runner.predict(inputs, context=context)
+        if self.bu_runner.postprocessor is not None:
+            predictions, _ = self.postprocessor(predictions, context)
+
+        input_image = inputs[0]
+        context["cond_kpts"] = [
+            p for p in predictions["bodypart"]["poses"]
+            if np.any((p > 0) & ~np.isnan(p), axis=(1, 2))
+        ]
+
+        return input_image, context
+
+
 class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
     """Runner for object detection inference"""
 
@@ -360,7 +480,7 @@ def build_inference_runner(
     task: Task,
     model: nn.Module,
     device: str,
-    snapshot_path: str | Path,
+    snapshot_path: str | Path | None = None,
     batch_size: int = 1,
     preprocessor: Preprocessor | None = None,
     postprocessor: Postprocessor | None = None,
