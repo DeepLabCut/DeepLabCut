@@ -47,6 +47,9 @@ need to be trained on CPU, while others like ResNets can take advantage of the G
 
 The data section configures:
 
+- `bbox_margin`: The margin (in pixels) to add around ground truth pose when generating
+bounding boxes. For more information, see [generating bounding boxes from pose](
+#bbox-from-pose).
 - `colormode`: in which format images are given to the model (e.g., `RGB`, `BGR`)
 - `inference`: which transformations should be applied to images when running evaluation
 or inference
@@ -56,6 +59,7 @@ The default configuration for a pose model is:
 
 ```yaml
 data:
+  bbox_margin: 20
   colormode: RGB  # should never be changed
   inference:  # the augmentations to apply to images during inference 
     normalize_images: true  # this should always be set to true
@@ -560,3 +564,25 @@ that was being used (by editing the configuration under the `scheduler` key). Wh
 so, you *must set `load_scheduler_state_dict: false`* in your `detector`: `runner`
 config! Otherwise, the parameters for the scheduler your started training with will be
 loaded from the state dictionary, and your edits might not be kept!
+
+(bbox-from-pose)=
+### Generating Bounding Boxes from Pose
+
+To train object detection models (for top-down pose estimation), ground truth bounding
+boxes are needed. As they are not annotated in DeepLabCut, they are generated from the
+ground truth pose: simply take the minimum and maximum for the x and y axes, add a small
+margin and you have your bounding box! The default setting adds a margin of 20 pixels
+around the pose. This works well in most cases, but in some cases you should update this 
+value (e.g. when you have very small or large images).
+
+You can edit that value in the `pytorch_config.yaml` for your model through the 
+`data: bbox_margin` parameter for the detector:
+
+```yaml
+detector:
+  data:
+    bbox_margin: 20
+    ...
+```
+
+![Bounding boxes generated from pose with different margins](assets/bboxes_from_kpts.png)
