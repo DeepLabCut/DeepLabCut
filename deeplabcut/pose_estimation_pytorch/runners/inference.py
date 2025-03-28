@@ -323,19 +323,22 @@ class CTDInferenceRunner(InferenceRunner[PoseModel]):
         self,
         model: PoseModel,
         bu_runner: PoseInferenceRunner,
+        tracking: bool = True,
         **kwargs,
     ):
         super().__init__(model, **kwargs)
         self.bu_runner = bu_runner
         self.bu_runner.model.eval()
+        self.tracking = tracking
 
         self._image_loader = LoadImage()
 
-        if False and self.batch_size != 1:
-            raise ValueError(
-                "Dynamic cropping can only be used with batch size 1. Please set "
-                "your batch size to 1."
+        if self.tracking and self.batch_size != 1:
+            print(
+                "Dynamic cropping can only be used with batch size 1. Setting the batch"
+                " size to 1."
             )
+            self.batch_size = 1
 
     @torch.no_grad()
     def inference(
@@ -365,6 +368,9 @@ class CTDInferenceRunner(InferenceRunner[PoseModel]):
                 }
             ]
         """
+        if self.tracking:
+            return self._inference(images, shelf_writer)
+
         results = []
         for data in images:
             data = self.add_conditions(data)
@@ -408,6 +414,7 @@ class CTDInferenceRunner(InferenceRunner[PoseModel]):
             }
             for b in range(len(inputs))
         ]
+
         return predictions
 
     def add_conditions(
@@ -428,10 +435,12 @@ class CTDInferenceRunner(InferenceRunner[PoseModel]):
         else:
             inputs = torch.as_tensor(image)
 
+        # Get and post-process the predictions
         predictions = self.bu_runner.predict(inputs)
         if self.bu_runner.postprocessor is not None:
             predictions, context = self.bu_runner.postprocessor(predictions, context)
 
+        # Extract the conditions
         conds = predictions["bodyparts"][..., :3]
         pred_mask = ~np.all(np.any(conds <= 0 | np.isnan(conds), axis=2), axis=1)
         if np.sum(pred_mask) > 0:
@@ -440,6 +449,73 @@ class CTDInferenceRunner(InferenceRunner[PoseModel]):
             conds = np.zeros((0, conds.shape[1], 3))
 
         return image, {"cond_kpts": conds}
+
+    def _inference(
+        self,
+        images: (
+            Iterable[str | Path | np.ndarray]
+            | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]
+        ),
+        shelf_writer: shelving.ShelfWriter | None = None,
+    ) -> list[dict[str, np.ndarray]]:
+        prev_pose = None
+
+        results = []
+        for data in images:
+            inputs, context = self._prepare_ctd_inputs(data, prev_pose)
+            model_kwargs = context.pop("model_kwargs", {})
+            predictions = self.predict(inputs, **model_kwargs)
+            if self.postprocessor is not None:
+                # Pop the "cond_kpts" from the context so there's no re-scoring
+                if prev_pose is not None:
+                    context.pop("cond_kpts")
+
+                predictions, _ = self.postprocessor(predictions, context)
+
+            # Set the predictions as context for the next frame
+            prev_pose = predictions["bodyparts"][..., :3]
+
+            if shelf_writer is not None:
+                shelf_writer.add_prediction(
+                    bodyparts=predictions["bodyparts"],
+                    unique_bodyparts=predictions.get("unique_bodyparts"),
+                    identity_scores=predictions.get("identity_scores"),
+                    features=predictions.get("features"),
+                )
+            else:
+                results.append(predictions)
+
+        return results
+
+    def _prepare_ctd_inputs(
+        self,
+        data,
+        prev_pose: np.ndarray | None,
+    ) -> tuple[torch.Tensor, dict[str, Any]]:
+        # Get valid conditions
+        conds = None
+        if prev_pose is not None:
+            bad_data = np.any(prev_pose <= 0 | np.isnan(prev_pose), axis=2)
+            pred_mask = ~np.all(bad_data | (prev_pose[..., 2] <= 0.25), axis=1)
+            if np.sum(pred_mask) > 0:
+                conds = prev_pose[pred_mask]
+
+        # If there's any valid pose, use it as a condition for the next frame
+        if conds is None:
+            inputs, context = self.add_conditions(data)
+        else:
+            if isinstance(data, (str, Path, np.ndarray)):
+                inputs, context = data, {}
+            else:
+                inputs, context = data
+
+            context["cond_kpts"] = conds
+
+        if self.preprocessor is None:
+            return torch.as_tensor(inputs), context
+
+        inputs, context = self.preprocessor(inputs, context)
+        return inputs, context
 
 
 class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
