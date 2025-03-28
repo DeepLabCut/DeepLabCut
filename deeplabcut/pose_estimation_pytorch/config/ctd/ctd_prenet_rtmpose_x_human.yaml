@@ -8,7 +8,7 @@ data:
       width: 288
       height: 384
   bbox_margin: 5
-  gen_sampling_sigmas: [.079, .079, .072, .072, .062, .062, .107, .107, .087, .087, .089, .089, .025, .025]
+  gen_sampling_sigmas: [.079, .079, .072, .072, .062, .062, .107, .107, .087, .087, .089, .089, .025, .025] # CrowdPose sigmas
   gen_sampling_symmetries: [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9], [10, 11]] # CrowdPose symmetries
 method: ctd
 model:
@@ -25,7 +25,7 @@ model:
       type: ColoredKeypointEncoder
       num_joints: "num_bodyparts"
       kernel_size: [15, 15]
-    input_size: [384, 288]
+    img_size: [384, 288]
   backbone_output_channels: 1280
   heads:
     bodypart:
