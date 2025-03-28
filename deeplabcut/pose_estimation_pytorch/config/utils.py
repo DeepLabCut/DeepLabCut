@@ -257,6 +257,31 @@ def available_models() -> list[str]:
     return list(sorted(models))
 
 
+def is_model_top_down(net_type: str) -> bool:
+    """Checks whenever a given net_type is top-down or not"""
+    if net_type not in available_models():
+        raise ValueError(
+            f"Model {net_type} is not part of available models, which are {str(available_models())}"
+        )
+
+    configs_dir = get_config_folder_path()
+    backbones = load_backbones(configs_dir)
+
+    if net_type.startswith("top_down_"):
+        return True
+    elif net_type in backbones:
+        return False
+
+    configs_dir = get_config_folder_path()
+
+    architecture = net_type.split("_")[0]
+
+    cfg_path = configs_dir / architecture / f"{net_type}.yaml"
+    model_cfg = read_config_as_dict(cfg_path)
+
+    return model_cfg.get("method", "BU").upper() == "TD"
+
+
 def available_detectors() -> list[str]:
     """Returns: all the possible detectors that can be used"""
     return load_detectors(get_config_folder_path())
