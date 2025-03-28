@@ -20,6 +20,7 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     update_config,
     update_config_by_dotpath,
 )
+
 # For backwards compatibility
 from deeplabcut.core.config import (
     read_config_as_dict,

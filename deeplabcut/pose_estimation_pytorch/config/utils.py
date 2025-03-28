@@ -260,7 +260,9 @@ def available_models() -> list[str]:
 def is_model_top_down(net_type: str) -> bool:
     """Checks whenever a given net_type is top-down or not"""
     if net_type not in available_models():
-        raise ValueError(f"Model {net_type} is not part of available models, which are {str(available_models())}")
+        raise ValueError(
+            f"Model {net_type} is not part of available models, which are {str(available_models())}"
+        )
 
     configs_dir = get_config_folder_path()
     backbones = load_backbones(configs_dir)
