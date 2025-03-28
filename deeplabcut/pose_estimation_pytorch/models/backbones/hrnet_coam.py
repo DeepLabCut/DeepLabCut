@@ -54,7 +54,7 @@ class HRNetCoAM(HRNet):
             channel_att_only: Whether to use only channel attention block in CoAM.
             att_heads: Number of attention heads.
             cond_enc: Type of conditional encoding ('stacked', 'colored', or greyscale).
-            img_size: Size of the input image.
+            img_size: The (height, width) size of the input images.
             num_joints: Number of joints in the dataset.
         """
 
@@ -64,7 +64,10 @@ class HRNetCoAM(HRNet):
         self.selfatt_coam_modules = selfatt_coam_modules
         self.channel_att_only = channel_att_only
         if not isinstance(kpt_encoder, BaseKeypointEncoder):
+            if "img_size" not in kpt_encoder:
+                kpt_encoder["img_size"] = img_size
             kpt_encoder = KEYPOINT_ENCODERS.build(kpt_encoder)
+
         self.cond_enc = kpt_encoder
 
         self.coam_stages = nn.ModuleList([None, None, None, None])

@@ -442,14 +442,14 @@ class ConditionalKeypointsToModelInputs(Preprocessor):
     def __call__(
         self, image: np.ndarray, context: Context
     ) -> tuple[np.ndarray, Context]:
-
-        context["model_kwargs"] = {"cond_kpts": context[self.cond_kpt_key]}
-
         cond_keypoints = context[self.cond_kpt_key]
+        context["model_kwargs"] = {"cond_kpts": cond_keypoints}
+        if len(cond_keypoints) == 0:
+            return image, context
+
         rescaled = cond_keypoints.copy()
         rescaled[..., :2] = (
             rescaled[..., :2] - np.array(context["offsets"])[:, None]
         ) / np.array(context["scales"])[:, None]
         context["model_kwargs"] = {"cond_kpts": np.expand_dims(rescaled, axis=1)}
-
         return image, context

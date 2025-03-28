@@ -29,12 +29,19 @@ class CondPreNet(BaseBackbone):
     This allows to process image and condition features and prepare them for the main backbone.
     """
 
-    def __init__(self, kpt_encoder: dict | BaseKeypointEncoder, backbone: dict | BaseBackbone, **kwargs):
+    def __init__(
+        self,
+        kpt_encoder: dict | BaseKeypointEncoder,
+        backbone: dict | BaseBackbone,
+        img_size: tuple[int, int] = (256, 256),
+        **kwargs,
+    ):
         """
         Initialize the PreNetWrapper.
 
         Args:
-            backbone: The backbone model to wrap
+            backbone: The backbone model to wrap.
+            img_size: The (height, width) of the input images.
         """
         pretrained = kwargs.pop("pretrained", False)
         if not isinstance(backbone, BaseBackbone):
@@ -44,6 +51,8 @@ class CondPreNet(BaseBackbone):
         super().__init__(stride=backbone.stride, **kwargs)
         
         if not isinstance(kpt_encoder, BaseKeypointEncoder):
+            if "img_size" not in kpt_encoder:
+                kpt_encoder["img_size"] = img_size
             kpt_encoder = KEYPOINT_ENCODERS.build(kpt_encoder)
         self.cond_enc = kpt_encoder
 

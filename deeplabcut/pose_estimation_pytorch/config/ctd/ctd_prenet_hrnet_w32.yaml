@@ -26,6 +26,7 @@ model:
       type: StackedKeypointEncoder
       num_joints: "num_bodyparts"
       kernel_size: [15, 15]
+    img_size: [256, 256]
   backbone_output_channels: 32
   heads:
     bodypart:

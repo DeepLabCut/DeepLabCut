@@ -8,6 +8,9 @@ data:
     auto_padding:  # Required for HRNet backbones
       pad_width_divisor: 32
       pad_height_divisor: 32
+  top_down_crop:
+    width: 256
+    height: 256
   bbox_margin: 25
   gen_sampling_sigmas: 0.1
   gen_sampling_symmetries: []

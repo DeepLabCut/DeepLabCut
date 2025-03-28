@@ -31,13 +31,21 @@ class BaseKeypointEncoder(ABC):
     Modified from BUCTD/data/JointsDataset
     """
 
-    def __init__(self, num_joints: int, kernel_size: tuple[int, int] = (15, 15)) -> None:
+    def __init__(
+        self,
+        num_joints: int,
+        kernel_size: tuple[int, int] = (15, 15),
+        img_size: tuple[int, int] = (256, 256),
+    ) -> None:
         """
         Args:
-            kernel_size: the Gaussian kernel size to use when blurring a heatmap
+            num_joints: The number of joints to encode
+            kernel_size: The Gaussian kernel size to use when blurring a heatmap
+            img_size: The (height, width) of the input images
         """
         self.kernel_size = kernel_size
         self.num_joints = num_joints
+        self.img_size = img_size
 
     @property
     def num_channels(self):
@@ -71,9 +79,9 @@ class BaseKeypointEncoder(ABC):
         am = np.amax(heatmap)
         if am == 0:
             return heatmap
-        heatmap /= (am / 255)
+        heatmap /= am / 255
         return heatmap
-    
+
     # def blur_heatmap_batch(self, heatmaps: torch.tensor) -> np.ndarray:
     #     heatmaps = TF.gaussian_blur(heatmaps.permute(0,3,1,2), self.kernel_size).permute(0,2,3,1).numpy()
     #     am = np.amax(heatmaps)
@@ -112,8 +120,12 @@ class StackedKeypointEncoder(BaseKeypointEncoder):
 
         kpts = keypoints.copy()
         kpts[keypoints[..., 2] <= 0] = 0
+
+        # Mark keypoints as visible, remove NaNs
+        kpts[kpts[..., 2] > 0, 2] = 2
         kpts = np.nan_to_num(kpts)
-        oob_mask = out_of_bounds_keypoints(kpts, (256,256))
+
+        oob_mask = out_of_bounds_keypoints(kpts, self.img_size)
         if np.sum(oob_mask) > 0:
             kpts[oob_mask] = 0
         kpts = kpts.astype(int)
@@ -124,8 +136,12 @@ class StackedKeypointEncoder(BaseKeypointEncoder):
             for i, pose in enumerate(kpts):
                 x, y, vis = pose.T
                 mask = vis > 0
-                x_masked, y_masked, joint_inds_masked = x[mask], y[mask], np.arange(self.num_joints)[mask]
-                zero_matrix[i, y_masked-1, x_masked-1, joint_inds_masked] = 255
+                x_masked, y_masked, joint_inds_masked = (
+                    x[mask],
+                    y[mask],
+                    np.arange(self.num_joints)[mask],
+                )
+                zero_matrix[i, y_masked - 1, x_masked - 1, joint_inds_masked] = 255
             return zero_matrix
 
         condition = _get_condition_matrix(zero_matrix, kpts)
@@ -144,13 +160,17 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
     Modified from BUCTD/data/JointsDataset, get_condition_image_colored
     """
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(
+        self, colors: list[tuple[int, int, int]] | None = None, **kwargs
+    ) -> None:
         """
         Args:
             colors: the color to use for each keypoint
         """
         super().__init__(**kwargs)
-        self.colors = np.array(self.get_colors_from_cmap('rainbow', self.num_joints))
+        if colors is None:
+            colors = self.get_colors_from_cmap("rainbow", self.num_joints)
+        self.colors = np.array(colors)
 
     @property
     def num_channels(self):
@@ -174,47 +194,64 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
                 f"colors, but there are {num_kpts} to encode"
             )
 
-        #kpts = keypoints.detach().numpy()
+        # kpts = keypoints.detach().numpy()
         kpts = keypoints.copy()
         kpts[keypoints[..., 2] <= 0] = 0
+
+        # Mark keypoints as visible, remove NaNs
+        kpts[kpts[..., 2] > 0, 2] = 2
         kpts = np.nan_to_num(kpts)
-        oob_mask = out_of_bounds_keypoints(kpts, (256,256))
+
+        oob_mask = out_of_bounds_keypoints(kpts, self.img_size)
         if np.sum(oob_mask) > 0:
             kpts[oob_mask] = 0
         kpts = kpts.astype(int)
 
         zero_matrix = np.zeros((batch_size, size[0], size[1], self.num_channels))
-        
+
         def _get_condition_matrix(zero_matrix, kpts):
             for i, pose in enumerate(kpts):
                 x, y, vis = pose.T
                 mask = vis > 0
                 x_masked, y_masked, colors_masked = x[mask], y[mask], self.colors[mask]
-                zero_matrix[i, y_masked-1, x_masked-1] = colors_masked
+                zero_matrix[i, y_masked - 1, x_masked - 1] = colors_masked
             return zero_matrix
-        
+
         def _get_condition_matrix_optim(zero_matrix, kpts):
             x, y = np.array(kpts).T
-            mask = (0 < x) & (x < zero_matrix.shape[2]) & (0 < y) & (y < zero_matrix.shape[1])
-            colors_masked = np.repeat(self.colors[:, None, :], len(zero_matrix), 1) * np.repeat(mask[:, :, None], 3, 2)
+            mask = (
+                (0 < x)
+                & (x < zero_matrix.shape[2])
+                & (0 < y)
+                & (y < zero_matrix.shape[1])
+            )
+            colors_masked = np.repeat(
+                self.colors[:, None, :], len(zero_matrix), 1
+            ) * np.repeat(mask[:, :, None], 3, 2)
             kpt_indices = np.stack([x.T, y.T]).transpose(1, 2, 0)
-            batch_indices = np.repeat(np.arange(len(zero_matrix))[:, None, None], self.num_joints, axis=1)
+            batch_indices = np.repeat(
+                np.arange(len(zero_matrix))[:, None, None], self.num_joints, axis=1
+            )
             kpt_input = np.concatenate([batch_indices, kpt_indices], dtype=int, axis=2)
-            zero_matrix[kpt_input[...,0], kpt_input[...,2]-1, kpt_input[...,1]-1] = colors_masked.transpose(1,0,2)            
+            zero_matrix[
+                kpt_input[..., 0], kpt_input[..., 2] - 1, kpt_input[..., 1] - 1
+            ] = colors_masked.transpose(1, 0, 2)
             return zero_matrix
 
         condition = _get_condition_matrix(zero_matrix, kpts)
-        #condition = _get_condition_matrix_optim(zero_matrix, kpts)
+        # condition = _get_condition_matrix_optim(zero_matrix, kpts)
 
         for i in range(batch_size):
             condition_heatmap = self.blur_heatmap(condition[i])
             condition[i] = condition_heatmap
-        #condition = self.blur_heatmap_batch(torch.from_numpy(condition))
+        # condition = self.blur_heatmap_batch(torch.from_numpy(condition))
 
         return condition
 
     def get_colors_from_cmap(self, cmap_name, num_colors):
         cmap = plt.get_cmap(cmap_name)
         colors_float = [cmap(i) for i in np.linspace(0, 256, num_colors, dtype=int)]
-        colors = [(int(r*255), int(g*255), int(b*255)) for r, g, b, _ in colors_float]
+        colors = [
+            (int(r * 255), int(g * 255), int(b * 255)) for r, g, b, _ in colors_float
+        ]
         return colors

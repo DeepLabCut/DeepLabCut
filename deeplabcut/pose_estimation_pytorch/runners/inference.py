@@ -327,6 +327,8 @@ class CTDInferenceRunner(InferenceRunner[PoseModel]):
     ):
         super().__init__(model, **kwargs)
         self.bu_runner = bu_runner
+        self.bu_runner.model.eval()
+
         self._image_loader = LoadImage()
 
         if False and self.batch_size != 1:
@@ -394,7 +396,6 @@ class CTDInferenceRunner(InferenceRunner[PoseModel]):
                 }
             ]
         """
-        self.bu_runner.model.eval()
         outputs = self.model(inputs.to(self.device), **kwargs)
         raw_predictions = self.model.get_predictions(outputs)
         predictions = [
@@ -412,28 +413,33 @@ class CTDInferenceRunner(InferenceRunner[PoseModel]):
     def add_conditions(
         self,
         data: str | Path | np.ndarray | tuple[str | Path | np.ndarray, dict],
-    ) -> tuple[torch.Tensor, dict]:
+    ) -> tuple[np.ndarray, dict]:
         if isinstance(data, (str, Path, np.ndarray)):
             inputs, context = data, {}
         else:
             inputs, context = data
 
+        # Load the image once - then given as a numpy array to CTD
+        image, _ = self._image_loader(inputs, context)
+
+        # Run the pre-processor
         if self.bu_runner.preprocessor is not None:
-            inputs, context = self.bu_runner.preprocessor(inputs, context)
+            inputs, context = self.bu_runner.preprocessor(image, context)
         else:
-            inputs = torch.as_tensor(inputs)
+            inputs = torch.as_tensor(image)
 
-        predictions = self.bu_runner.predict(inputs, context=context)
+        predictions = self.bu_runner.predict(inputs)
         if self.bu_runner.postprocessor is not None:
-            predictions, _ = self.postprocessor(predictions, context)
+            predictions, context = self.bu_runner.postprocessor(predictions, context)
 
-        input_image = inputs[0]
-        context["cond_kpts"] = [
-            p for p in predictions["bodypart"]["poses"]
-            if np.any((p > 0) & ~np.isnan(p), axis=(1, 2))
-        ]
+        conds = predictions["bodyparts"][..., :3]
+        pred_mask = ~np.all(np.any(conds <= 0 | np.isnan(conds), axis=2), axis=1)
+        if np.sum(pred_mask) > 0:
+            conds = conds[pred_mask]
+        else:
+            conds = np.zeros((0, conds.shape[1], 3))
 
-        return input_image, context
+        return image, {"cond_kpts": conds}
 
 
 class DetectorInferenceRunner(InferenceRunner[BaseDetector]):

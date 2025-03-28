@@ -23,6 +23,7 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     replace_default_values,
     update_config,
 )
+from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 
@@ -117,8 +118,8 @@ def make_pytorch_pose_config(
             **default_value_kwargs,
         )
 
-    is_top_down = model_cfg.get("method", "BU").upper() == "TD"
-    if is_top_down:
+    task = Task(model_cfg["method"])
+    if task == Task.TOP_DOWN:
         model_cfg = add_detector(
             configs_dir,
             model_cfg,
@@ -127,7 +128,7 @@ def make_pytorch_pose_config(
         )
 
     # add the default augmentations to the config
-    aug_filename = "aug_top_down.yaml" if is_top_down else "aug_default.yaml"
+    aug_filename = "aug_default.yaml" if task == Task.BOTTOM_UP else "aug_top_down.yaml"
     aug_cfg = {"data": read_config_as_dict(configs_dir / "base" / aug_filename)}
     pose_config = update_config(pose_config, aug_cfg)
 
@@ -140,7 +141,7 @@ def make_pytorch_pose_config(
 
     # add a unique bodypart head if needed
     if len(unique_bpts) > 0:
-        if is_top_down:
+        if task != Task.BOTTOM_UP:
             raise ValueError(
                 f"You selected a top-down model architecture ({net_type}), but you have"
                 f" unique bodyparts, which is not yet implemented for top-down models."
@@ -157,7 +158,7 @@ def make_pytorch_pose_config(
 
     # add an identity head if needed
     if with_identity:
-        if is_top_down:
+        if task != Task.BOTTOM_UP:
             raise ValueError(
                 f"You selected a top-down model architecture ({net_type}), but you have"
                 f" set `identity: true`, which is not yet implemented for top-down"
