@@ -339,9 +339,13 @@ class PoseDataset(Dataset):
             anns["individual_id"] = -np.ones(len(anns["category_id"]), dtype=int)
 
         individual_ids = anns["individual_id"]
+        is_crowd = anns["iscrowd"]
+        labels = anns["category_id"]
         if self.task == Task.CTD:
             keypoints = keypoints[0]
             individual_ids = individual_ids[:1]
+            is_crowd = is_crowd[:1]
+            labels = labels[:1]
 
         # we use ..., :3 to pass the visibility flag along
         return {
@@ -352,8 +356,8 @@ class PoseDataset(Dataset):
             "with_center_keypoints": self.parameters.with_center_keypoints,
             "area": pad_to_length(area, num_animals, 0).astype(np.single),
             "boxes": pad_to_length(bboxes, num_animals, 0).astype(np.single),
-            "is_crowd": pad_to_length(anns["iscrowd"], num_animals, 0).astype(int),
-            "labels": pad_to_length(anns["category_id"], num_animals, -1).astype(int),
+            "is_crowd": pad_to_length(is_crowd, num_animals, 0).astype(int),
+            "labels": pad_to_length(labels, num_animals, -1).astype(int),
             "individual_ids": pad_to_length(individual_ids, num_animals, -1).astype(int),
         }
 
