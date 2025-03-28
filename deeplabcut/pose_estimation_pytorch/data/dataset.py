@@ -329,18 +329,19 @@ class PoseDataset(Dataset):
         anns: dict,
     ) -> dict[str, np.ndarray]:
         num_animals = self.parameters.max_num_animals
-        individual_ids = anns["individual_id"]
         if self.task in (Task.TOP_DOWN, Task.CTD):
             num_animals = 1
-            if self.task == Task.CTD:
-                keypoints = keypoints[0]
-                individual_ids = anns["individual_id"][:1]
 
         bbox_widths = np.maximum(1, bboxes[..., 2])
         bbox_heights = np.maximum(1, bboxes[..., 3])
         area = bbox_widths * bbox_heights
         if "individual_id" not in anns:
             anns["individual_id"] = -np.ones(len(anns["category_id"]), dtype=int)
+
+        individual_ids = anns["individual_id"]
+        if self.task == Task.CTD:
+            keypoints = keypoints[0]
+            individual_ids = individual_ids[:1]
 
         # we use ..., :3 to pass the visibility flag along
         return {
@@ -351,8 +352,8 @@ class PoseDataset(Dataset):
             "with_center_keypoints": self.parameters.with_center_keypoints,
             "area": pad_to_length(area, num_animals, 0).astype(np.single),
             "boxes": pad_to_length(bboxes, num_animals, 0).astype(np.single),
-            #"is_crowd": pad_to_length(anns["iscrowd"], num_animals, 0).astype(int),
-            #"labels": pad_to_length(anns["category_id"], num_animals, -1).astype(int),
+            "is_crowd": pad_to_length(anns["iscrowd"], num_animals, 0).astype(int),
+            "labels": pad_to_length(anns["category_id"], num_animals, -1).astype(int),
             "individual_ids": pad_to_length(individual_ids, num_animals, -1).astype(int),
         }
 
