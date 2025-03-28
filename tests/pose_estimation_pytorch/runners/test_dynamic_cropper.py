@@ -14,7 +14,10 @@ import pytest
 import numpy as np
 import torch
 
-from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import DynamicCropper
+from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (
+    DynamicCropper,
+    TopDownDynamicCropper,
+)
 
 
 @pytest.mark.parametrize("dynamic", [(False, 0.5, 10)])
@@ -127,6 +130,51 @@ def test_dynamic_cropper_basic_crop(
     print("Pose out after update")
     print(pose_out.numpy())
     np.testing.assert_allclose(pose_out.numpy(), np.array(pose))
+
+
+@pytest.mark.parametrize("size", [128, 256, 291, 320, 480, 500, 640, 800])
+@pytest.mark.parametrize("n", [1, 2, 3, 4, 5])
+@pytest.mark.parametrize("overlap", [0, 1, 5, 10, 100])
+def test_tddc_array_split(size: int, n: int, overlap: int) -> None:
+    print("\nTesting TopDownDynamicCropper array split")
+    print("Size:", size)
+    print("N:", n)
+    print("Overlap:", overlap)
+    sections = TopDownDynamicCropper.split_array(size, n, overlap)
+    print("Sections:")
+    for section in sections:
+        print(f"  {section}")
+
+    # check that we have the desired number of sections
+    assert len(sections) == n
+
+    # check that the sections start at 0 and end at the array size
+    start, end = sections[0][0], sections[-1][1]
+    assert start == 0
+    assert end == size
+
+    # check all sections have size at least 1
+    for start, end in sections:
+        assert start < end
+
+    # check that all sections have the same size
+    sizes = [end - start for start, end in sections]
+    assert len(set(sizes)) == 1
+
+    # check the overlap is big enough for each section
+    for (start_1, end_1), (start_2, end_2) in zip(sections[:-1], sections[1:]):
+        assert end_1 >= start_2
+        assert end_1 - start_2 >= overlap
+
+    # check that the difference between overlaps is at most 1
+    # FIXME(niels) - auto-correct the overlap to spread it out more evenly
+    # if n > 1:
+    #     overlaps = [
+    #         end_1 - start_2
+    #         for (start_1, end_1), (start_2, end_2) in zip(sections[:-1], sections[1:])
+    #     ]
+    #
+    #     assert max(overlaps) - min(overlaps) <= 1
 
 
 def _generate_random_pose(
