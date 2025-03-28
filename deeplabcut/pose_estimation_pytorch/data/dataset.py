@@ -352,6 +352,8 @@ class PoseDataset(Dataset):
         labels = anns["category_id"]
         if self.task == Task.CTD:
             keypoints = keypoints[0]
+            area = area[:1]
+            bboxes = bboxes[:1]
             individual_ids = individual_ids[:1]
             is_crowd = is_crowd[:1]
             labels = labels[:1]
