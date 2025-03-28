@@ -25,6 +25,7 @@ model:
       type: ColoredKeypointEncoder
       num_joints: "num_bodyparts"
       kernel_size: [15, 15]
+    img_size: [384, 384]
   backbone_output_channels: 1280
   heads:
     bodypart:
