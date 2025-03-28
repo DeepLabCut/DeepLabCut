@@ -29,6 +29,9 @@ def load_conditions(loader: data.Loader, images: list[str]) -> dict[str, np.ndar
         f"Misconfigured conditions in the pytorch_config: {condition_cfg}. Valid "
         f"examples:\n" + _CONDITION_EXAMPLES
     )
+    if isinstance(loader, data.DLCLoader):
+        error_message += _CONDITION_DLCLOADER_EXAMPLES
+
     if condition_cfg is None:
         raise ValueError(error_message)
 
@@ -94,15 +97,12 @@ def load_conditions(loader: data.Loader, images: list[str]) -> dict[str, np.ndar
             raise ValueError(
                 f"Conditions file {conditions_filepath} does not exist. Please make "
                 f"sure snapshot {snapshot.path.name} for shuffle {shuffle} was "
-                "evaluated (which) is when the predictions file is created."
+                "evaluated (which is when the predictions file is created)."
             )
 
         return load_conditions_from_file(
             images=images, filepath=conditions_filepath, path_prefix=loader.image_root
         )
-
-    if isinstance(loader, data.DLCLoader):
-        error_message += _CONDITION_DLCLOADER_EXAMPLES
 
     raise ValueError(error_message)
 

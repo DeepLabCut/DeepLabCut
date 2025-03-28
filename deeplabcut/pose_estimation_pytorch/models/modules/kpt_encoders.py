@@ -120,7 +120,11 @@ class StackedKeypointEncoder(BaseKeypointEncoder):
 
         kpts = keypoints.copy()
         kpts[keypoints[..., 2] <= 0] = 0
+
+        # Mark keypoints as visible, remove NaNs
+        kpts[kpts[..., 2] > 0, 2] = 2
         kpts = np.nan_to_num(kpts)
+
         oob_mask = out_of_bounds_keypoints(kpts, self.img_size)
         if np.sum(oob_mask) > 0:
             kpts[oob_mask] = 0
@@ -193,8 +197,12 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
         # kpts = keypoints.detach().numpy()
         kpts = keypoints.copy()
         kpts[keypoints[..., 2] <= 0] = 0
+
+        # Mark keypoints as visible, remove NaNs
+        kpts[kpts[..., 2] > 0, 2] = 2
         kpts = np.nan_to_num(kpts)
-        oob_mask = out_of_bounds_keypoints(kpts, (256, 256))
+
+        oob_mask = out_of_bounds_keypoints(kpts, self.img_size)
         if np.sum(oob_mask) > 0:
             kpts[oob_mask] = 0
         kpts = kpts.astype(int)
