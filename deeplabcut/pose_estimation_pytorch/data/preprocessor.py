@@ -443,7 +443,6 @@ class ConditionalKeypointsToModelInputs(Preprocessor):
         self, image: np.ndarray, context: Context
     ) -> tuple[np.ndarray, Context]:
         cond_keypoints = context[self.cond_kpt_key]
-        context["model_kwargs"] = {"cond_kpts": cond_keypoints}
         if len(cond_keypoints) == 0:
             return image, context
 
