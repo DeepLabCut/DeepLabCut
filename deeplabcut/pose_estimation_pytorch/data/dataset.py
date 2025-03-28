@@ -242,6 +242,12 @@ class PoseDataset(Dataset):
             if bboxes[0, 2] == 0 or bboxes[0, 3] == 0:
                 # bbox was augmented out of the image; blank image, no keypoints
                 keypoints[..., 2] = 0.0
+                if self.task == Task.CTD:
+                    keypoints = safe_stack(
+                        [keypoints, keypoints],
+                        (2, 1, self.parameters.num_joints, 3),
+                    )
+
                 image = np.zeros(
                     (self.td_crop_size[1], self.td_crop_size[0], image.shape[-1]),
                     dtype=image.dtype,
@@ -261,7 +267,10 @@ class PoseDataset(Dataset):
                 if self.task == Task.CTD:
                     synthesized_keypoints[:, 0] = (synthesized_keypoints[:, 0] - offsets[0]) / scales[0]
                     synthesized_keypoints[:, 1] = (synthesized_keypoints[:, 1] - offsets[1]) / scales[1]
-                    keypoints = safe_stack([keypoints, synthesized_keypoints[None, ...]], (0, self.parameters.num_joints, 3))
+                    keypoints = safe_stack(
+                        [keypoints, synthesized_keypoints[None, ...]],
+                        (2, 1, self.parameters.num_joints, 3)
+                    )
 
                 bboxes = bboxes[:1]
                 bboxes[..., 0] = (bboxes[..., 0] - offsets[0]) / scales[0]
