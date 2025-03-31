@@ -141,6 +141,7 @@ def get_model_snapshots(
     index: int | str,
     model_folder: Path,
     task: Task,
+    snapshot_filter: list[str] | None = None,
 ) -> list[Snapshot]:
     """
     Args:
@@ -151,6 +152,8 @@ def get_model_snapshots(
             snapshots.
         model_folder: The path to the folder containing the snapshots
         task: The task for which to return the snapshot
+        snapshot_filter: List of snapshot names to return (e.g. ["snapshot-50",
+            "snapshot-75"]). If defined, `index` will be ignored.
 
     Returns:
         If index=="all", returns all snapshots. Otherwise, returns a list containing a
@@ -163,6 +166,16 @@ def get_model_snapshots(
     snapshot_manager = TorchSnapshotManager(
         model_folder=model_folder, snapshot_prefix=task.snapshot_prefix
     )
+    if snapshot_filter is not None:
+        all_snapshots = snapshot_manager.snapshots()
+        snapshots = [s for s in all_snapshots if s.path.stem in snapshot_filter]
+        if len(snapshots) != len(snapshot_filter):
+            print(f"Warning: could not find all `snapshots_to_evaluate`.")
+            print(f"  Requested snapshots: {snapshot_filter}")
+            print(f"  Found snapshots: {[s.path.stem for s in all_snapshots]}")
+            print(f"  Snapshots returned: {[s.path.stem for s in snapshots]}")
+        return snapshots
+
     if isinstance(index, str) and index.lower() == "best":
         best_snapshot = snapshot_manager.best()
         if best_snapshot is None:
