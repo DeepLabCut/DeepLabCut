@@ -35,6 +35,7 @@ def make_pytorch_pose_config(
     detector_type: str | None = None,
     weight_init: WeightInitialization | None = None,
     save: bool = False,
+    ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
 ) -> dict:
     """Creates a PyTorch pose configuration file for a DeepLabCut project
 
@@ -67,6 +68,14 @@ def make_pytorch_pose_config(
         weight_init: Specify how model weights should be initialized. If None, ImageNet
             pretrained weights from Timm will be loaded when training.
         save: Whether to save the model configuration file to the ``pose_config_path``.
+        ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] , optional, default = None,
+            If using a conditional-top-down (CTD) net_type, this argument needs to be specified.
+            It defines the conditions that will be used with the CTD model.
+            It can be either:
+                * A shuffle number (ctd_conditions: int), which must correspond to a bottom-up (BU) network type.
+                * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5 predictions file.
+                * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
+
 
     Returns:
         the PyTorch pose configuration file
@@ -86,6 +95,7 @@ def make_pytorch_pose_config(
     pose_config["net_type"] = net_type
 
     backbones = load_backbones(configs_dir)
+    add_conditions_to_aug_cfg = False
     if net_type in backbones:
         if not top_down and multianimal_project:
             model_cfg = create_backbone_with_paf_model(
@@ -108,6 +118,12 @@ def make_pytorch_pose_config(
         default_value_kwargs = {}
         if architecture == "dlcrnet":
             default_value_kwargs.update(_get_paf_parameters(project_config, bodyparts))
+        elif architecture == "ctd":
+            if ctd_conditions is None:
+                raise ValueError(
+                    "When using a conditional top down (ctd) architecture, conditions need to be specified."
+                )
+            add_conditions_to_aug_cfg = True
 
         cfg_path = configs_dir / architecture / f"{net_type}.yaml"
         model_cfg = read_config_as_dict(cfg_path)
@@ -130,6 +146,8 @@ def make_pytorch_pose_config(
     # add the default augmentations to the config
     aug_filename = "aug_default.yaml" if task == Task.BOTTOM_UP else "aug_top_down.yaml"
     aug_cfg = {"data": read_config_as_dict(configs_dir / "base" / aug_filename)}
+    if add_conditions_to_aug_cfg:
+        _add_ctd_conditions(aug_cfg, ctd_conditions)
     pose_config = update_config(pose_config, aug_cfg)
 
     # add the model to the config
@@ -180,6 +198,53 @@ def make_pytorch_pose_config(
         write_config(pose_config_path, pose_config, overwrite=True)
 
     return pose_config
+
+
+def _add_ctd_conditions(
+    aug_cfg: dict, ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int]
+):
+    """
+    Args:
+        aug_cfg: dict, data augmentation configuration
+        ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] , optional, default = None,
+            If using a conditional-top-down (CTD) net_type, this argument needs to be specified.
+            It defines the conditions that will be used with the CTD model.
+            It can be either:
+                * A shuffle number (ctd_conditions: int), which must correspond to a bottom-up (BU) network type.
+                * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5 predictions file.
+                * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
+    """
+    if isinstance(ctd_conditions, int):
+        conditions = {"shuffle": ctd_conditions}
+
+    elif isinstance(ctd_conditions, str) or isinstance(ctd_conditions, Path):
+        ctd_conditions = Path(ctd_conditions)
+        if not ctd_conditions.exist():
+            raise FileNotFoundError(f"Invalid path: {ctd_conditions}")
+        if ctd_conditions.suffix not in (".h5", ".json"):
+            raise ValueError(f"Invalid conditions file extension.")
+        conditions = str(ctd_conditions.resolve())
+
+    elif isinstance(ctd_conditions, tuple):
+        if len(ctd_conditions) != 2:
+            raise ValueError(f"Invalid conditions tuple length.")
+        if not isinstance(ctd_conditions[0], int):
+            raise TypeError("Conditions shuffle number must be of type int.")
+        if isinstance(ctd_conditions[1], int):
+            conditions = {
+                "shuffle": ctd_conditions[0],
+                "snapshot_index": ctd_conditions[1],
+            }
+        elif isinstance(ctd_conditions[1], str):
+            conditions = {"shuffle": ctd_conditions[0], "snapshot": ctd_conditions[1]}
+        else:
+            raise TypeError(
+                "Conditions snapshot must be of type int (index) or string (snapshot name)."
+            )
+    else:
+        raise TypeError("Conditions ctd_conditions is of invalid type.")
+
+    aug_cfg["data"]["conditions"] = conditions
 
 
 def make_pytorch_test_config(
@@ -440,7 +505,8 @@ def add_detector(
         read_config_as_dict(configs_dir / "detectors" / f"{detector_type}.yaml"),
     )
     detector_config = replace_default_values(
-        detector_config, num_individuals=num_individuals,
+        detector_config,
+        num_individuals=num_individuals,
     )
     config["detector"] = dict(sorted(detector_config.items()))
     return config

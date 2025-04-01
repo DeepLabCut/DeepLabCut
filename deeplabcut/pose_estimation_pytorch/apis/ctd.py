@@ -92,7 +92,7 @@ def load_conditions(loader: data.Loader, images: list[str]) -> dict[str, np.ndar
             snapshot_uid=utils.get_scorer_uid(snapshot, None),
             modelprefix=modelprefix,
         )
-        conditions_filepath = loader.evaluation_folder / f"{bu_scorer}.h5"
+        conditions_filepath = bu_loader.evaluation_folder / f"{bu_scorer}.h5"
         if not conditions_filepath.exists():
             raise ValueError(
                 f"Conditions file {conditions_filepath} does not exist. Please make "
