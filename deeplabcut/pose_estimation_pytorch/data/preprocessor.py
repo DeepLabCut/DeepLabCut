@@ -124,6 +124,7 @@ def build_top_down_preprocessor(
 def build_conditional_top_down_preprocessor(
     color_mode: str,
     transform: A.BaseCompose,
+    bbox_margin: int,
     top_down_crop_size: tuple[int, int],
     top_down_crop_margin: int = 0,
     top_down_crop_with_context: bool = False,
@@ -138,6 +139,8 @@ def build_conditional_top_down_preprocessor(
     Args:
         color_mode: whether to load the image as an RGB or BGR
         transform: the transform to apply to the image
+        bbox_margin: The margin to add around keypoints when generating bounding boxes
+            from conditional keypoints.
         top_down_crop_size: the (width, height) to resize cropped bboxes to
         top_down_crop_margin: the margin to add around detected bboxes for the crop
         top_down_crop_with_context: whether to keep context when applying the top-down crop
@@ -148,7 +151,7 @@ def build_conditional_top_down_preprocessor(
     return ComposePreprocessor(
         components=[
             LoadImage(color_mode),
-            ComputeBoundingBoxesFromCondKeypoints(),
+            ComputeBoundingBoxesFromCondKeypoints(bbox_margin=bbox_margin),
             TopDownCrop(
                 output_size=top_down_crop_size,
                 margin=top_down_crop_margin,
@@ -410,10 +413,16 @@ class TopDownCrop(Preprocessor):
 
 
 class ComputeBoundingBoxesFromCondKeypoints(Preprocessor):
-    """TODO"""
+    """Generates bounding boxes from predicted keypoints
 
-    def __init__(self, cond_kpt_key: str = "cond_kpts") -> None:
+    Args:
+        cond_kpt_key: The key under which cond. keypoints are stored in the context.
+        bbox_margin: The margin to add around keypoints when generating bounding boxes.
+    """
+
+    def __init__(self, cond_kpt_key: str = "cond_kpts", bbox_margin: int = 0) -> None:
         self.cond_kpt_key = cond_kpt_key
+        self.bbox_margin = bbox_margin
 
     def __call__(
         self, image: np.ndarray, context: Context
@@ -424,13 +433,11 @@ class ComputeBoundingBoxesFromCondKeypoints(Preprocessor):
                 f"Must include cond kpts to ComputeBBoxes, found {context}"
             )
 
+        h, w = image.shape[:2]
         context["bboxes"] = [
-            # FIXME: bbox_margin should be a parameter set in the configuration (25 for animals, 5 for humans?)
-            bbox_from_keypoints(cond_kpts, image.shape[0], image.shape[1], 25)
+            bbox_from_keypoints(cond_kpts, h, w, self.bbox_margin)
             for cond_kpts in context[self.cond_kpt_key]
         ]
-        # context["bboxes"] = np.clip(context["bboxes"], 0, image.shape[0] - 1)
-
         return image, context
 
 

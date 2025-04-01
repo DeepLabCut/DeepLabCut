@@ -24,11 +24,14 @@ from tqdm import tqdm
 
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
-from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.apis.tracklets import (
     convert_detections2tracklets,
 )
-from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner, DynamicCropper
+from deeplabcut.pose_estimation_pytorch.data import DLCLoader
+from deeplabcut.pose_estimation_pytorch.runners import (
+    DynamicCropper,
+    InferenceRunner,
+)
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxiliaryfunctions, VideoReader
@@ -223,6 +226,7 @@ def analyze_videos(
     batch_size: int | None = None,
     detector_batch_size: int | None = None,
     dynamic: tuple[bool, float, int] = (False, 0.5, 10),
+    ctd_tracking: bool | dict = False,
     modelprefix: str = "",
     use_shelve: bool = False,
     robust_nframes: bool = False,
@@ -280,6 +284,20 @@ def analyze_videos(
             is utilized for updating the crop window for the next frame (this is why the
             margin is important and should be set large enough given the movement of the
             animal).
+        ctd_tracking: Only for CTD models. Conditional top-down models can be used
+            to directly track individuals. Poses from frame T are given as conditions
+            for frame T+1. This also means a BU model is only needed to "initialize" the
+            pose in the first frame, and for the remaining frames only the CTD model is
+            needed. If `True`, the `pytorch_config.yaml` for the model contain the
+            configuration for conditional pose tracking:
+                ```
+                data:
+                    conditions:
+                        shuffle: 1
+                        snapshot: snapshot-250.pt
+                ```
+            To use another model or configure conditional pose tracking differently, you
+            can pass a CTDTrackingConfig instance.
         modelprefix: directory containing the deeplabcut models to use when evaluating
             the network. By default, they are assumed to exist in the project folder.
         batch_size: the batch size to use for inference. Takes the value from the
@@ -330,45 +348,41 @@ def analyze_videos(
     _validate_destfolder(destfolder)
 
     # Load the project configuration
-    cfg = auxiliaryfunctions.read_config(config)
-    project_path = Path(cfg["project_path"])
-    train_fraction = cfg["TrainingFraction"][trainingsetindex]
-    model_folder = project_path / auxiliaryfunctions.get_model_folder(
-        train_fraction,
-        shuffle,
-        cfg,
+    loader = DLCLoader(
+        config,
+        trainset_index=trainingsetindex,
+        shuffle=shuffle,
         modelprefix=modelprefix,
-        engine=Engine.PYTORCH,
     )
-    train_folder = model_folder / "train"
 
-    # Read the inference configuration, load the model
-    model_cfg_path = train_folder / Engine.PYTORCH.pose_cfg_name
-    model_cfg = auxiliaryfunctions.read_plainconfig(model_cfg_path)
-    pose_task = Task(model_cfg["method"])
-
-    pose_cfg_path = model_folder / "test" / "pose_cfg.yaml"
+    train_fraction = loader.project_cfg["TrainingFraction"][trainingsetindex]
+    pose_cfg_path = loader.model_folder.parent / "test" / "pose_cfg.yaml"
     pose_cfg = auxiliaryfunctions.read_plainconfig(pose_cfg_path)
 
     snapshot_index, detector_snapshot_index = utils.parse_snapshot_index_for_analysis(
-        cfg, model_cfg, snapshot_index, detector_snapshot_index,
+        loader.project_cfg, loader.model_cfg, snapshot_index, detector_snapshot_index,
     )
 
-    if cropping is None and cfg.get("cropping", False):
-        cropping = cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]
+    if cropping is None and loader.project_cfg.get("cropping", False):
+        cropping = (
+            loader.project_cfg["x1"],
+            loader.project_cfg["x2"],
+            loader.project_cfg["y1"],
+            loader.project_cfg["y2"],
+        )
 
     # Get general project parameters
-    multi_animal = cfg["multianimalproject"]
-    bodyparts = model_cfg["metadata"]["bodyparts"]
-    unique_bodyparts = model_cfg["metadata"]["unique_bodyparts"]
-    individuals = model_cfg["metadata"]["individuals"]
+    multi_animal = loader.project_cfg["multianimalproject"]
+    bodyparts = loader.model_cfg["metadata"]["bodyparts"]
+    unique_bodyparts = loader.model_cfg["metadata"]["unique_bodyparts"]
+    individuals = loader.model_cfg["metadata"]["individuals"]
     max_num_animals = len(individuals)
 
     if device is not None:
-        model_cfg["device"] = device
+        loader.model_cfg["device"] = device
 
     if batch_size is None:
-        batch_size = cfg.get("batch_size", 1)
+        batch_size = loader.project_cfg.get("batch_size", 1)
 
     if not multi_animal:
         save_as_df = True
@@ -380,27 +394,32 @@ def analyze_videos(
             use_shelve = False
 
     dynamic = DynamicCropper.build(*dynamic)
-    if pose_task != Task.BOTTOM_UP and dynamic is not None:
+    if loader.pose_task != Task.BOTTOM_UP and dynamic is not None:
         print(
             "Turning off dynamic cropping. It should only be used for bottom-up "
             f"pose estimation models, but you are using a top-down model."
         )
         dynamic = None
 
-    snapshot = utils.get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
+    snapshot = utils.get_model_snapshots(
+        snapshot_index, loader.model_cfg, loader.pose_task
+    )[0]
     print(f"Analyzing videos with {snapshot.path}")
     pose_runner = utils.get_pose_inference_runner(
-        model_config=model_cfg,
+        model_config=loader.model_cfg,
         snapshot_path=snapshot.path,
         max_individuals=max_num_animals,
         batch_size=batch_size,
         transform=transform,
         dynamic=dynamic,
+        ctd_tracking=ctd_tracking,
     )
-    detector_runner = None
 
+    # FIXME(niels) - when ctd_tracking is true, save a "_ctd" track file!
+
+    detector_runner = None
     detector_path, detector_snapshot = None, None
-    if pose_task == Task.TOP_DOWN:
+    if loader.pose_task == Task.TOP_DOWN:
         if detector_snapshot_index is None:
             raise ValueError(
                 "Cannot run videos analysis for top-down models without a detector "
@@ -409,21 +428,21 @@ def analyze_videos(
             )
 
         if detector_batch_size is None:
-            detector_batch_size = cfg.get("detector_batch_size", 1)
+            detector_batch_size = loader.project_cfg.get("detector_batch_size", 1)
 
         detector_snapshot = utils.get_model_snapshots(
-            detector_snapshot_index, train_folder, Task.DETECT
+            detector_snapshot_index, loader.model_folder, Task.DETECT
         )[0]
         print(f"  -> Using detector {detector_snapshot.path}")
         detector_runner = utils.get_detector_inference_runner(
-            model_config=model_cfg,
+            model_config=loader.model_cfg,
             snapshot_path=detector_snapshot.path,
             max_individuals=max_num_animals,
             batch_size=detector_batch_size,
         )
 
     dlc_scorer = utils.get_scorer_name(
-        cfg,
+        loader.project_cfg,
         shuffle,
         train_fraction,
         snapshot_uid=utils.get_scorer_uid(snapshot, detector_snapshot),
@@ -464,8 +483,8 @@ def analyze_videos(
             )
             runtime.append(time.time())
             metadata = _generate_metadata(
-                cfg=cfg,
-                pytorch_config=model_cfg,
+                cfg=loader.project_cfg,
+                pytorch_config=loader.model_cfg,
                 dlc_scorer=dlc_scorer,
                 train_fraction=train_fraction,
                 batch_size=batch_size,
@@ -490,7 +509,7 @@ def analyze_videos(
                     create_df_from_prediction(
                         predictions=predictions,
                         multi_animal=multi_animal,
-                        model_cfg=model_cfg,
+                        model_cfg=loader.model_cfg,
                         dlc_scorer=dlc_scorer,
                         output_path=output_path,
                         output_prefix=output_prefix,

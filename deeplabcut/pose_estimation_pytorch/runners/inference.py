@@ -568,6 +568,7 @@ def build_inference_runner(
     postprocessor: Postprocessor | None = None,
     dynamic: DynamicCropper | None = None,
     load_weights_only: bool | None = None,
+    **kwargs,
 ) -> InferenceRunner:
     """
     Build a runner object according to a pytorch configuration file
@@ -591,6 +592,7 @@ def build_inference_runner(
                 https://pytorch.org/docs/stable/generated/torch.load.html
             If None, the default value is used:
                 `deeplabcut.pose_estimation_pytorch.get_load_weights_only()`
+        **kwargs: Other arguments for the InferenceRunner.
 
     Returns:
         The inference runner.
@@ -603,6 +605,7 @@ def build_inference_runner(
         preprocessor=preprocessor,
         postprocessor=postprocessor,
         load_weights_only=load_weights_only,
+        **kwargs,
     )
     if task == Task.DETECT:
         if dynamic is not None:
@@ -619,5 +622,12 @@ def build_inference_runner(
                 f"pose estimation models, but you are using a {task} model."
             )
         dynamic = None
+
+    if task == Task.CTD:
+        # FIXME(niels) - allow running CTD with conditions from a file
+        if "bu_runner" not in kwargs:
+            raise ValueError(f"A `bu_runner` must be given for CTD inference.")
+
+        return CTDInferenceRunner(**kwargs)
 
     return PoseInferenceRunner(dynamic=dynamic, **kwargs)
