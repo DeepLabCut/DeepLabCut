@@ -562,6 +562,7 @@ def evaluate_network(
             plotting=plotting,
             show_errors=show_errors,
             comparison_bodyparts=comparisonbodyparts,
+            snapshots_to_evaluate=snapshots_to_evaluate,
             per_keypoint_evaluation=per_keypoint_evaluation,
             modelprefix=modelprefix,
             pcutoff=pcutoff,
