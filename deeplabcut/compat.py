@@ -249,7 +249,7 @@ def train_network(
             batch_size=8,
             epochs=100,
             save_epochs=10,
-            display_iters=50,
+            displayiters=50,
         )
     """
     if engine is None:
