@@ -117,6 +117,7 @@ class LabelFrames(DefaultTab):
         self.check_labels_btn.clicked.connect(self.check_labels)
         self.build_skeleton_btn = QtWidgets.QPushButton("Build skeleton")
         self.build_skeleton_btn.clicked.connect(self.build_skeleton)
+        self.main_layout.addWidget(self.clean_up_frames_btn, alignment=Qt.AlignLeft)
         self.main_layout.addWidget(self.label_frames_btn, alignment=Qt.AlignLeft)
         self.main_layout.addWidget(self.check_labels_btn, alignment=Qt.AlignLeft)
         self.main_layout.addWidget(self.build_skeleton_btn, alignment=Qt.AlignLeft)
