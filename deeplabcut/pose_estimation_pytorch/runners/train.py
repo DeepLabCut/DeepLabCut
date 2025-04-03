@@ -241,7 +241,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 line_length = max([len(name) for name in epoch_metrics.keys()]) + 2
                 for name, score in epoch_metrics.items():
                     logging.info(f"  {(name + ':').ljust(line_length)}{score:6.2f}")
-
+                    
     def _epoch(
         self,
         loader: torch.utils.data.DataLoader,
@@ -273,6 +273,12 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         epoch_loss = []
         loss_metrics = defaultdict(list)
         for i, batch in enumerate(loader):
+            # batch: dict_keys(['image', 'image_id', 'path', 'original_size', 'offsets', 'scales', 'annotations'])
+            # print("batch:", batch.keys())
+            # we can get the dataset name from the path;
+            # path ['xxx/v8_coco/images/mbw_0_cam1_0149.jpg', 'xx/v8_coco/images/mbw_0_cam2_0060.jpg']
+            # print("path", batch["path"])
+            
             losses_dict = self.step(batch, mode)
             if "total_loss" in losses_dict:
                 epoch_loss.append(losses_dict["total_loss"])
@@ -433,15 +439,15 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         if mode == "train":
             self.optimizer.zero_grad()
 
-        inputs = batch["image"]
+        inputs = batch["image"] # [B,3, 256, 256]
         inputs = inputs.to(self.device).float()
-        outputs = self.model(inputs)
+        outputs = self.model(inputs) # {'bodypart':{'heatmap':[B,37,64,74]}, 'locref': {B, 74, 64,64} }
 
         if self._data_parallel:
             underlying_model = self.model.module
         else:
             underlying_model = self.model
-
+        # the same structure with outputs
         target = underlying_model.get_target(outputs, batch["annotations"])
         losses_dict = underlying_model.get_loss(outputs, target)
         if mode == "train":

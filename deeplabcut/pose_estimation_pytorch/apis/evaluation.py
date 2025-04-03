@@ -690,7 +690,7 @@ class DynamicSkeleton:
         if self.confidence_dict.get('C_hip') < self.p_cutoff:
             self.parent_mapping['L_hip'] = 'root_tail'
             self.parent_mapping['R_hip'] = 'root_tail'
-            self.parent_mapping['mid_tail'] = 'root_tail'
+            self.parent_mapping['M_tail'] = 'root_tail'
             self.parent_mapping['root_tail'] = None
             self.dynamic_skeleton.append(('root_tail', 'C_hip'))
     
@@ -789,7 +789,7 @@ def plot_gt_and_predictions_PFM(
         dot_size = base_size
         
     # Ensure dot size stays within reasonable bounds
-    dot_size = int(max(4, min(dot_size, 15)))*0.8  # Tighter bounds for dots
+    dot_size = int(max(4, min(dot_size, 15)))*0.8 # *5 for oap # # Tighter bounds for dots
     
     # filter out the non exist individuals  
     if bounding_boxes is not None:
@@ -1028,6 +1028,8 @@ def plot_gt_and_predictions_PFM(
                         x_text = min(max(0, x_text), w - 100)
                         y_text = min(max(0, y_text), h - 10)
                         
+                        # ToDo
+                        # dynamic text position;
                         # Avoid overlapping with existing text
                         while any(abs(x_text - existing_x) <= 15 * scale_factor and abs(y_text - existing_y) <= 15 * scale_factor 
                                 for existing_x, existing_y in existing_text_positions):
@@ -1065,7 +1067,7 @@ def plot_gt_and_predictions_PFM(
                         # plot the skeleton is the skeleton is not None
                         connection_pairs = []
 
-                        dynamic_skeleton = skeleton.copy()
+                        # dynamic_skeleton = skeleton.copy()
                         # dynamic_skeleton = get_dynamic_skeleton(dynamic_skeleton, pred_bodyparts[idx_individual], p_cutoff)
                         
                         dynamic_skeleton = DynamicSkeleton(pred_bodyparts[idx_individual], p_cutoff).get_dynamic_skeleton()
