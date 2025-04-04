@@ -39,6 +39,15 @@ jobs:
         run: |
           conda install pytables==3.8.0
 
+      - name: Install TensorFlow
+        shell: bash -el {0}  # Important: activates the conda environment
+        run: |
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            pip install tensorflow-macos<2.13.0 tensorflow-metal tensorpack>=0.11 tf_slim>=1.1.0
+          else
+            pip install tensorflow>=2.0,<2.13.0 tensorpack>=0.11 tf_slim>=1.1.0
+          fi
+
       - name: Install dependencies
         shell: bash -el {0}  # Important: activates the conda environment
         run: |
