@@ -24,7 +24,10 @@ from deeplabcut.pose_estimation_pytorch.data.preprocessor import Preprocessor
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.runners.base import ModelType, Runner
-from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import DynamicCropper
+from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (
+    DynamicCropper,
+    TopDownDynamicCropper,
+)
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
@@ -235,17 +238,11 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
     ):
         super().__init__(model, **kwargs)
         self.dynamic = dynamic
-        if dynamic is not None:
-            print(
-                f"Inference runner using dynamic cropping: {self.dynamic}.\n"
-                "Note that dynamic cropping should only be used to analyze videos with "
-                "bottom-up pose estimation models."
+        if dynamic is not None and self.batch_size != 1:
+            raise ValueError(
+                "Dynamic cropping can only be used with batch size 1. Please set "
+                "your batch size to 1."
             )
-            if self.batch_size != 1:
-                raise ValueError(
-                    "Dynamic cropping can only be used with batch size 1. Please set "
-                    "your batch size to 1."
-                )
 
     def predict(self, inputs: torch.Tensor) -> list[dict[str, dict[str, np.ndarray]]]:
         """Makes predictions from a model input and output
@@ -262,14 +259,18 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
                 }
             ]
         """
+        batch_size = len(inputs)
         if self.dynamic is not None:
+            # dynamic cropping can use patches
             inputs = self.dynamic.crop(inputs)
 
         outputs = self.model(inputs.to(self.device))
         raw_predictions = self.model.get_predictions(outputs)
 
         if self.dynamic is not None:
-            self.dynamic.update(raw_predictions["bodypart"]["poses"])
+            raw_predictions["bodypart"]["poses"] = self.dynamic.update(
+                raw_predictions["bodypart"]["poses"]
+            )
 
         predictions = [
             {
@@ -279,7 +280,7 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
                 }
                 for head, head_outputs in raw_predictions.items()
             }
-            for b in range(len(inputs))
+            for b in range(batch_size)
         ]
         return predictions
 
@@ -377,11 +378,12 @@ def build_inference_runner(
         return DetectorInferenceRunner(**kwargs)
 
     if task != Task.BOTTOM_UP:
-        if dynamic is not None:
+        if dynamic is not None and not isinstance(dynamic, TopDownDynamicCropper):
             print(
                 "Turning off dynamic cropping. It should only be used for bottom-up "
-                f"pose estimation models, but you are using a {task} model."
+                f"pose estimation models, but you are using a {task} model. To use "
+                f"dynamic cropping with {task}, use a TopDownDynamicCropper."
             )
-        dynamic = None
+            dynamic = None
 
     return PoseInferenceRunner(dynamic=dynamic, **kwargs)
