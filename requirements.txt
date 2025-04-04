@@ -10,7 +10,7 @@ dlclibrary
 ipython
 filterpy
 ruamel.yaml>=0.15.0
-intel-openmp
+intel-openmp; sys_platform == "win32" or sys_platform == "linux"
 imageio-ffmpeg
 imgaug>=0.4.0
 numba>=0.54.0
@@ -24,8 +24,10 @@ scikit-image>=0.17
 scikit-learn>=1.0
 scipy>=1.9
 statsmodels>=0.11
-tensorflow>=2.0,<2.13.0
 tables==3.8.0
+tensorflow>=2.0,<2.13.0; sys_platform == "win32" or sys_platform == "linux"
+tensorflow-macos<2.13.0; sys_platform == "darwin"
+tensorflow-metal; sys_platform == "darwin"
 tensorpack>=0.11
 tf_slim>=1.1.0
 torch>=2.0.0
