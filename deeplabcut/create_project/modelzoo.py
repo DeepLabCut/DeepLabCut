@@ -111,6 +111,7 @@ def create_pretrained_human_project(
         videotype=videotype,
         createlabeledvideo=createlabeledvideo,
         analyzevideo=analyzevideo,
+        engine=Engine.TF,
     )
 
 
