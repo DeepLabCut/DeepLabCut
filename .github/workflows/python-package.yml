@@ -43,8 +43,10 @@ jobs:
           brew install hdf5 c-blosc bzip2
           brew reinstall lzo lz4
           brew link --overwrite c-blosc
-          export LDFLAGS="-L/opt/homebrew/opt/bzip2/lib"
-          export CPPFLAGS="-I/opt/homebrew/opt/bzip2/include"
+          export LDFLAGS="-L/opt/homebrew/opt/bzip2/lib -L/opt/homebrew/opt/lzo/lib"
+          export CPPFLAGS="-I/opt/homebrew/opt/bzip2/include -I/opt/homebrew/opt/lzo/include"
+          export HDF5_DIR="$(brew --prefix hdf5)"
+          export LZO_DIR="$(brew --prefix lzo)"
 
       - name: Install dependencies
         run: |
