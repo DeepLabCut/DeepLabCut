@@ -49,6 +49,7 @@ jobs:
         shell: bash -el {0}  # Important: activates the conda environment
         if: runner.os == 'macOS'
         run: |
+          conda install -c apple tensorflow-deps
           pip install "tensorflow-macos<2.13.0" tensorflow-metal "tensorpack>=0.11" "tf_slim>=1.1.0"
 
       - name: Install dependencies
