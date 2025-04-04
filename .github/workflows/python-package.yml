@@ -41,6 +41,10 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew install hdf5
+          brew install lzo
+          brew install bzip2
+          brew install blosc
+          brew install lz4
 
       - name: Install dependencies
         run: |
