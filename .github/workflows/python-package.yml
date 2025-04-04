@@ -13,12 +13,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-15-arm, windows-latest]
+        os: [ubuntu-latest, macos-14, windows-latest]
         python-version: ["3.10"]
         include:
           - os: ubuntu-latest
             path: ~/.cache/pip
-          - os: macos-15-arm
+          - os: macos-14
             path: ~/Library/Caches/pip
           - os: windows-latest
             path: ~\AppData\Local\pip\Cache
