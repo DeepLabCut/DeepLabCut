@@ -42,6 +42,11 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt
 
+      - name: Install hdf5
+        if: runner.os == 'macOS'
+        run: |
+          brew install hdf5
+
       - name: Install ffmpeg
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
