@@ -43,6 +43,7 @@ jobs:
           brew install hdf5
           brew install lzo
           brew install lz4
+          brew install c-blosc
 
       - name: Install dependencies
         run: |
