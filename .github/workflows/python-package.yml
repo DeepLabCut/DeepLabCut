@@ -35,9 +35,11 @@ jobs:
       - name: Set up Python
         uses: conda-incubator/setup-miniconda@v3
         with:
-          python-version: ${{ matrix.python-version }}
+          auto-activate-base: true
+          activate-environment: ""
           channels: conda-forge,defaults
           channel-priority: strict
+          python-version: ${{ matrix.python-version }}
 
       - name: Install PyTables through Conda
         run: |
