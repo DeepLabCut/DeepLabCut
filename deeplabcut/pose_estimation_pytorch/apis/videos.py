@@ -351,7 +351,10 @@ def analyze_videos(
     pose_cfg = auxiliaryfunctions.read_plainconfig(pose_cfg_path)
 
     snapshot_index, detector_snapshot_index = utils.parse_snapshot_index_for_analysis(
-        cfg, model_cfg, snapshot_index, detector_snapshot_index,
+        cfg,
+        model_cfg,
+        snapshot_index,
+        detector_snapshot_index,
     )
 
     if cropping is None and cfg.get("cropping", False):

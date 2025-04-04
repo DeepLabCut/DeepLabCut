@@ -17,6 +17,7 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators.heatmap_targets
     HeatmapGaussianGenerator,
 )
 
+
 @pytest.mark.parametrize(
     "data",
     [
@@ -56,7 +57,7 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators.heatmap_targets
                 [0.1054, 0.3247, 0.1054, 0.0036],
                 [0.3247, 1.0, 0.3247, 0.0111],
                 [0.1054, 0.3247, 0.1054, 0.0036],
-                [0.0036, 0.0111, 0.0036, 0.0001]
+                [0.0036, 0.0111, 0.0036, 0.0001],
             ],
         },
     ],

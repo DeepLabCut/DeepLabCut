@@ -119,7 +119,10 @@ dlc.check_labels(path_config_file)
 
 print("CREATING TRAININGSET")
 dlc.create_training_dataset(
-    path_config_file, net_type=net_type, augmenter_type=augmenter_type, engine=engine,
+    path_config_file,
+    net_type=net_type,
+    augmenter_type=augmenter_type,
+    engine=engine,
 )
 
 posefile = os.path.join(

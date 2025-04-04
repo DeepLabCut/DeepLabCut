@@ -135,7 +135,10 @@ if __name__ == "__main__":
 
     print("CREATING TRAININGSET")
     deeplabcut.create_training_dataset(
-        path_config_file, net_type=NET, augmenter_type=augmenter_type, engine=engine,
+        path_config_file,
+        net_type=NET,
+        augmenter_type=augmenter_type,
+        engine=engine,
     )
 
     # Check the training image paths are correctly stored as arrays of strings
