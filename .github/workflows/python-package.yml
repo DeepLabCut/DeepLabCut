@@ -40,10 +40,8 @@ jobs:
       - name: Install hdf5
         if: runner.os == 'macOS'
         run: |
-          brew install hdf5
-          brew install lzo
-          brew install lz4
-          brew install c-blosc
+          brew install hdf5 lzo lz4 c-blosc bzip2
+          brew link --overwrite c-blosc
 
       - name: Install dependencies
         run: |
