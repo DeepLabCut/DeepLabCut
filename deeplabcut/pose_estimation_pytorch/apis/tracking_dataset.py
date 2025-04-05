@@ -60,7 +60,7 @@ def build_feature_extraction_runner(
     else:
         preprocessor = data.build_bottom_up_preprocessor(
             loader.model_cfg["data"]["colormode"],
-            data.build_transforms(loader.model_cfg["data"]["inference"])
+            data.build_transforms(loader.model_cfg["data"]["inference"]),
         )
 
     postprocessor = postprocessing.ComposePostprocessor(
@@ -91,9 +91,9 @@ def build_feature_extraction_runner(
         postprocessor=postprocessor,
         load_weights_only=loader.model_cfg["runner"].get("load_weights_only", None),
     )
-    assert isinstance(runner, runners.PoseInferenceRunner), (
-        f"Failed to build inference runner: got type {type(runner)}"
-    )
+    assert isinstance(
+        runner, runners.PoseInferenceRunner
+    ), f"Failed to build inference runner: got type {type(runner)}"
 
     # Set the model to output backbone features
     runner.model.output_features = True
@@ -187,10 +187,15 @@ def create_tracking_dataset(
     test_cfg = read_config_as_dict(test_cfg_path)
 
     snapshot_index, detector_snapshot_index = utils.parse_snapshot_index_for_analysis(
-        loader.project_cfg, loader.model_cfg, None, None,
+        loader.project_cfg,
+        loader.model_cfg,
+        None,
+        None,
     )
     snapshot = utils.get_model_snapshots(
-        snapshot_index, loader.model_folder, loader.pose_task,
+        snapshot_index,
+        loader.model_folder,
+        loader.pose_task,
     )[0]
 
     if cropping is None and loader.project_cfg.get("cropping", False):
@@ -220,7 +225,9 @@ def create_tracking_dataset(
             detector_batch_size = loader.project_cfg.get("detector_batch_size", 1)
 
         detector_snapshot = utils.get_model_snapshots(
-            detector_snapshot_index, loader.model_folder, Task.DETECT,
+            detector_snapshot_index,
+            loader.model_folder,
+            Task.DETECT,
         )[0]
         detector_runner = utils.get_detector_inference_runner(
             model_config=loader.model_cfg,

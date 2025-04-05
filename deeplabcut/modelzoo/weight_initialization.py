@@ -15,7 +15,7 @@ import deeplabcut.modelzoo.utils as utils
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
-    get_super_animal_snapshot_path
+    get_super_animal_snapshot_path,
 )
 
 

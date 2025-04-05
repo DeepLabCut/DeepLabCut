@@ -40,8 +40,8 @@ def generate_random_lr_list(num_floats: int):
     "milestones, lr_list",
     [
         ([10, 430], [[0.05], [0.005]]),
-        (list(sorted(random.sample(range(0, 999), 2))), generate_random_lr_list(2))
-    ]
+        (list(sorted(random.sample(range(0, 999), 2))), generate_random_lr_list(2)),
+    ],
 )
 def test_scheduler(milestones, lr_list):
     """Testing schedulers.py.
@@ -96,7 +96,7 @@ TEST_SCHEDULERS = [
     SchedulerTestConfig(
         cfg=dict(
             type="LRListScheduler",
-            params=dict(milestones=[2, 5], lr_list=[[0.5], [0.1]])
+            params=dict(milestones=[2, 5], lr_list=[[0.5], [0.1]]),
         ),
         init_lr=1.0,
         expected_lrs=[1.0, 1.0, 0.5, 0.5, 0.5, 0.1, 0.1, 0.1],
@@ -228,8 +228,16 @@ def test_two_stage_training(test_cfg: SchedulerTestConfig, middle_epoch: int) ->
             ),
             start_lr=1.0,
             expected_lrs=[
-                [0.1], [0.1], [1.0], [1.0], [1.0],  # ConstantLR
-                [1.0], [1.0], [0.1], [0.1], [0.01],  # StepLR
+                [0.1],
+                [0.1],
+                [1.0],
+                [1.0],
+                [1.0],  # ConstantLR
+                [1.0],
+                [1.0],
+                [0.1],
+                [0.1],
+                [0.01],  # StepLR
             ],
         ),
     ],

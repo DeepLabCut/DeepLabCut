@@ -132,9 +132,7 @@ def create_config_from_modelzoo(
         The generated pose configuration file.
     """
     # load the model configuration
-    model_cfg = read_config_as_dict(
-        get_super_animal_model_config_path(model_name)
-    )
+    model_cfg = read_config_as_dict(get_super_animal_model_config_path(model_name))
     if detector_name is None:
         model_cfg["method"] = Task.BOTTOM_UP.aliases[0].lower()
         # Use default bottom-up image augmentation if no detector is given (the collate

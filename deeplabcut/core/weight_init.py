@@ -187,6 +187,7 @@ class WeightInitialization:
             The built WeightInitialization.
         """
         from deeplabcut.modelzoo import build_weight_init
+
         deprecation_warning = (
             "The `WeightInitialization.build` is deprecated and will be removed in a "
             "future version of DeepLabCut. Please use `build_weight_init` from "

@@ -501,7 +501,9 @@ def evaluate_snapshot(
     head_type = loader.model_cfg["model"]["heads"]["bodypart"]["type"]
     if head_type == "DLCRNetHead":
         prune_paf_graph.benchmark_paf_graphs(
-            loader=loader, snapshot_path=snapshot.path, verbose=False,
+            loader=loader,
+            snapshot_path=snapshot.path,
+            verbose=False,
         )
 
     parameters = loader.get_dataset_parameters()
@@ -563,7 +565,8 @@ def evaluate_snapshot(
         ),
         "pcutoff": (
             ", ".join([str(v) for v in pcutoff])
-            if isinstance(pcutoff, list) else pcutoff
+            if isinstance(pcutoff, list)
+            else pcutoff
         ),
     }
     for split in ["train", "test"]:

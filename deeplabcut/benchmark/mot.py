@@ -53,6 +53,7 @@ def convert_bboxes_to_xywh(bboxes: NDArray, inplace: bool = False) -> NDArray:
     bboxes[:, 2] = w
     bboxes[:, 3] = h
 
+
 _convert_bboxes_to_xywh = convert_bboxes_to_xywh
 
 
@@ -168,7 +169,9 @@ def compute_mot_metrics(
     trackers_gt = func(df_gt, **kwargs)
     trackers = func(df, **kwargs)
     return _compute_mot_metrics(
-        trackers_gt, trackers, tracker_type,
+        trackers_gt,
+        trackers,
+        tracker_type,
     )
 
 

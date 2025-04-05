@@ -193,7 +193,10 @@ class PoseDataset(Dataset):
                 )
             else:
                 image, offsets, scales = top_down_crop(
-                    image, bboxes[0], self.td_crop_size, margin=self.td_crop_margin,
+                    image,
+                    bboxes[0],
+                    self.td_crop_size,
+                    margin=self.td_crop_margin,
                 )
                 keypoints[:, :, 0] = (keypoints[:, :, 0] - offsets[0]) / scales[0]
                 keypoints[:, :, 1] = (keypoints[:, :, 1] - offsets[1]) / scales[1]
