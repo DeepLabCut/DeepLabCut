@@ -1,15 +1,18 @@
 data:
+  bbox_margin: 5
+  gen_sampling:
+    keypoint_sigmas: [ .079, .079, .072, .072, .062, .062, .107, .107, .087, .087, .089, .089, .025, .025 ]  # CrowdPose sigmas
+    keypoints_symmetry: [ [ 0, 1 ], [ 2, 3 ], [ 4, 5 ], [ 6, 7 ], [ 8, 9 ], [ 10, 11 ] ] # CrowdPose symmetries
   inference:
     top_down_crop:
       width: 288
       height: 384
+      crop_with_context: false
   train:
     top_down_crop:
       width: 288
       height: 384
-  bbox_margin: 5
-  gen_sampling_sigmas: [.079, .079, .072, .072, .062, .062, .107, .107, .087, .087, .089, .089, .025, .025] # CrowdPose sigmas
-  gen_sampling_symmetries: [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9], [10, 11]] # CrowdPose symmetries
+      crop_with_context: false
 method: ctd
 model:
   backbone:

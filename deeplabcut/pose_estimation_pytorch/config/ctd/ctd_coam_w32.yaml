@@ -1,19 +1,17 @@
 data:
-  inference:
-    auto_padding:  # Required for HRNet backbones
-      pad_width_divisor: 32
-      pad_height_divisor: 32
-    bu_predictions: /home/lucas/datasets/fish-dlc-2021-05-07/evaluation-results-pytorch/iteration-17/fishMay7-trainset94shuffle5/DLC_HrnetW32_fishMay7shuffle5_detector_250_snapshot_140.h5
-  train:
-    auto_padding:  # Required for HRNet backbones
-      pad_width_divisor: 32
-      pad_height_divisor: 32
-  top_down_crop:
-    width: 256
-    height: 256
   bbox_margin: 25
-  gen_sampling_sigmas: 0.1
-  gen_sampling_symmetries: []
+  gen_sampling:
+    keypoint_sigmas: 0.1
+  inference:
+    top_down_crop:
+      width: 256
+      height: 256
+      crop_with_context: false
+  train:
+    top_down_crop:
+      width: 256
+      height: 256
+      crop_with_context: false
 method: ctd
 model:
   backbone:
@@ -38,18 +36,23 @@ model:
       predictor:
         type: HeatmapPredictor
         apply_sigmoid: false
-        #clip_scores: true
-        location_refinement: false
+        clip_scores: true
+        location_refinement: true
+        locref_std: 7.2801
       target_generator:
         type: HeatmapGaussianGenerator
         num_heatmaps: "num_bodyparts"
         pos_dist_thresh: 17
         heatmap_mode: KEYPOINT
-        generate_locref: false
+        generate_locref: true
+        locref_std: 7.2801
       criterion:
         heatmap:
           type: WeightedMSECriterion
           weight: 1.0
+        locref:
+          type: WeightedHuberCriterion
+          weight: 0.05
       heatmap_config:
         channels:
         - 32
@@ -57,4 +60,12 @@ model:
         strides: []
         final_conv:
           out_channels: "num_bodyparts"
+          kernel_size: 1
+      locref_config:
+        channels:
+          - 32
+        kernel_size: []
+        strides: []
+        final_conv:
+          out_channels: "num_bodyparts x 2"
           kernel_size: 1

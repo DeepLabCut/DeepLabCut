@@ -16,6 +16,10 @@ import albumentations as A
 import numpy as np
 from torch.utils.data import Dataset
 
+from deeplabcut.pose_estimation_pytorch.data.generative_sampling import (
+    GenerativeSampler,
+    GenSamplingConfig,
+)
 from deeplabcut.pose_estimation_pytorch.data.image import load_image, top_down_crop
 from deeplabcut.pose_estimation_pytorch.data.utils import (
     _crop_image_keypoints,
@@ -30,14 +34,6 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
     safe_stack,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
-from deeplabcut.pose_estimation_pytorch.data.generative_sampling import GenerativeSampler
-
-
-@dataclass(frozen=True)
-class CTDConfig:
-    bbox_margin: int
-    gen_sampling_sigmas: float | list[float] = 0.1
-    gen_sampling_symmetries: bool = True
 
 
 @dataclass(frozen=True)
@@ -60,9 +56,10 @@ class PoseDatasetParameters:
     individuals: list[str]
     with_center_keypoints: bool = False
     color_mode: str = "RGB"
-    ctd_config: CTDConfig | None = None
+    ctd_config: GenSamplingConfig | None = None
     top_down_crop_size: tuple[int, int] | None = None
     top_down_crop_margin: int | None = None
+    top_down_crop_with_context: bool = True
 
     @property
     def num_joints(self) -> int:
@@ -87,7 +84,7 @@ class PoseDataset(Dataset):
     transform: A.BaseCompose | None = None
     mode: str = "train"
     task: Task = Task.BOTTOM_UP
-    ctd_config: CTDConfig | None = None
+    ctd_config: GenSamplingConfig | None = None
 
     def __post_init__(self):
         self.image_path_id_map = map_image_path_to_id(self.images)
@@ -108,10 +105,15 @@ class PoseDataset(Dataset):
         self.td_crop_margin = self.parameters.top_down_crop_margin
 
         if self.task == Task.CTD:
+            if self.ctd_config is None:
+                raise ValueError(
+                    "Must specify a ``ctd_config`` in your PoseDatasetParameters for "
+                    "CTD models."
+                )
+
             self.generative_sampler = GenerativeSampler(
                 self.parameters.num_joints,
-                keypoint_sigmas=self.ctd_config.gen_sampling_sigmas,
-                keypoints_symmetry=self.ctd_config.gen_sampling_symmetries,
+                **self.ctd_config.to_dict(),
             )
 
     def __len__(self):
@@ -144,7 +146,7 @@ class PoseDataset(Dataset):
         ann = self.annotations[index]
         img = self.images[self.img_id_to_index[ann["image_id"]]]
         return img["file_name"], [ann], img["id"]
-    
+
     def _get_raw_item_crop_context(self, index: int) -> tuple[str, list[dict], int]:
         """
         Includes keypoints from other individuals in the image ("context").
@@ -156,7 +158,7 @@ class PoseDataset(Dataset):
             # we consider near annotations to be those whose bounding boxes overlap with
             # the current item
             # HACK: add same annotation as near keypoints so that we don't have empty list
-            if calc_bbox_overlap(ann['bbox'], self.annotations[idx]['bbox']) > 0:
+            if calc_bbox_overlap(ann["bbox"], self.annotations[idx]["bbox"]) > 0:
                 near_anns.append(self.annotations[idx])
         return img["file_name"], [ann] + near_anns, img["id"]
 
@@ -224,10 +226,10 @@ class PoseDataset(Dataset):
                 near_keypoints = keypoints[1:]
                 keypoints = keypoints[:1]
                 synthesized_keypoints = self.generative_sampler(
-                     keypoints=keypoints.reshape(-1, 3),
-                     near_keypoints=near_keypoints.reshape(len(near_keypoints),-1, 3),
-                     area=bboxes[0, 2]*bboxes[0, 3],
-                     image_size=original_size,
+                    keypoints=keypoints.reshape(-1, 3),
+                    near_keypoints=near_keypoints.reshape(len(near_keypoints), -1, 3),
+                    area=bboxes[0, 2] * bboxes[0, 3],
+                    image_size=original_size,
                 )
 
                 # if conditional keypoints are empty, we take original bbox
@@ -257,19 +259,22 @@ class PoseDataset(Dataset):
                     image,
                     bboxes[0],
                     self.parameters.top_down_crop_size,
-                    #margin=0,
-                    self.parameters.top_down_crop_margin, #TODO: check
-                    crop_with_context=(self.task != Task.CTD),
+                    self.parameters.top_down_crop_margin,
+                    crop_with_context=self.parameters.top_down_crop_with_context,
                 )
 
                 keypoints[:, :, 0] = (keypoints[:, :, 0] - offsets[0]) / scales[0]
                 keypoints[:, :, 1] = (keypoints[:, :, 1] - offsets[1]) / scales[1]
                 if self.task == Task.CTD:
-                    synthesized_keypoints[:, 0] = (synthesized_keypoints[:, 0] - offsets[0]) / scales[0]
-                    synthesized_keypoints[:, 1] = (synthesized_keypoints[:, 1] - offsets[1]) / scales[1]
+                    synthesized_keypoints[:, 0] = (
+                        synthesized_keypoints[:, 0] - offsets[0]
+                    ) / scales[0]
+                    synthesized_keypoints[:, 1] = (
+                        synthesized_keypoints[:, 1] - offsets[1]
+                    ) / scales[1]
                     keypoints = safe_stack(
                         [keypoints, synthesized_keypoints[None, ...]],
-                        (2, 1, self.parameters.num_joints, 3)
+                        (2, 1, self.parameters.num_joints, 3),
                     )
 
                 bboxes = bboxes[:1]
@@ -277,7 +282,9 @@ class PoseDataset(Dataset):
                 bboxes[..., 1] = (bboxes[..., 1] - offsets[1]) / scales[1]
                 bboxes[..., 2] = bboxes[..., 2] / scales[0]
                 bboxes[..., 3] = bboxes[..., 3] / scales[1]
-                bboxes = np.clip(bboxes, 0, self.parameters.top_down_crop_size[0] - 1) #TODO: clip based on [x,y,x,y]?
+                bboxes = np.clip(
+                    bboxes, 0, self.parameters.top_down_crop_size[0] - 1
+                )  # TODO: clip based on [x,y,x,y]?
 
                 # RandomBBoxTransform may move keypoints outside the cropped image
                 oob_mask = out_of_bounds_keypoints(keypoints, self.td_crop_size)
@@ -327,7 +334,7 @@ class PoseDataset(Dataset):
             "annotations": self._prepare_final_annotation_dict(
                 keypoints, keypoints_unique, bboxes, annotations_merged
             ),
-            "context": context
+            "context": context,
         }
 
     def _prepare_final_annotation_dict(
@@ -369,7 +376,9 @@ class PoseDataset(Dataset):
             "boxes": pad_to_length(bboxes, num_animals, 0).astype(np.single),
             "is_crowd": pad_to_length(is_crowd, num_animals, 0).astype(int),
             "labels": pad_to_length(labels, num_animals, -1).astype(int),
-            "individual_ids": pad_to_length(individual_ids, num_animals, -1).astype(int),
+            "individual_ids": pad_to_length(individual_ids, num_animals, -1).astype(
+                int
+            ),
         }
 
     def _get_data_based_on_task(self, index: int) -> tuple[str, list[dict], int]:

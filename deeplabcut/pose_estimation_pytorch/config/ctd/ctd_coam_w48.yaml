@@ -1,16 +1,17 @@
 data:
-  inference:
-    auto_padding:  # Required for HRNet backbones
-      pad_width_divisor: 32
-      pad_height_divisor: 32
-    bu_predictions: /home/lucas/datasets/fish-dlc-2021-05-07/evaluation-results-pytorch/iteration-17/fishMay7-trainset94shuffle5/DLC_HrnetW32_fishMay7shuffle5_detector_250_snapshot_140.h5
-  train:
-    auto_padding:  # Required for HRNet backbones
-      pad_width_divisor: 32
-      pad_height_divisor: 32
   bbox_margin: 25
-  gen_sampling_sigmas: 0.1
-  gen_sampling_symmetries: []
+  gen_sampling:
+    keypoint_sigmas: 0.1
+  inference:
+    top_down_crop:
+      width: 256
+      height: 256
+      crop_with_context: false
+  train:
+    top_down_crop:
+      width: 256
+      height: 256
+      crop_with_context: false
 method: ctd
 model:
   backbone:

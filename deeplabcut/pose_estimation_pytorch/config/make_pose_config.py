@@ -95,7 +95,6 @@ def make_pytorch_pose_config(
     pose_config["net_type"] = net_type
 
     backbones = load_backbones(configs_dir)
-    add_conditions_to_aug_cfg = False
     if net_type in backbones:
         if not top_down and multianimal_project:
             model_cfg = create_backbone_with_paf_model(
@@ -118,12 +117,6 @@ def make_pytorch_pose_config(
         default_value_kwargs = {}
         if architecture == "dlcrnet":
             default_value_kwargs.update(_get_paf_parameters(project_config, bodyparts))
-        elif architecture == "ctd":
-            if ctd_conditions is None:
-                raise ValueError(
-                    "When using a conditional top down (ctd) architecture, conditions need to be specified."
-                )
-            add_conditions_to_aug_cfg = True
 
         cfg_path = configs_dir / architecture / f"{net_type}.yaml"
         model_cfg = read_config_as_dict(cfg_path)
@@ -134,7 +127,7 @@ def make_pytorch_pose_config(
             **default_value_kwargs,
         )
 
-    task = Task(model_cfg["method"])
+    task = Task(model_cfg.get("method", "BU").upper())
     if task == Task.TOP_DOWN:
         model_cfg = add_detector(
             configs_dir,
@@ -146,8 +139,11 @@ def make_pytorch_pose_config(
     # add the default augmentations to the config
     aug_filename = "aug_default.yaml" if task == Task.BOTTOM_UP else "aug_top_down.yaml"
     aug_cfg = {"data": read_config_as_dict(configs_dir / "base" / aug_filename)}
-    if add_conditions_to_aug_cfg:
+
+    # Add conditions for CTD models if specified
+    if task == Task.CTD and ctd_conditions is not None:
         _add_ctd_conditions(aug_cfg, ctd_conditions)
+
     pose_config = update_config(pose_config, aug_cfg)
 
     # add the model to the config
@@ -206,20 +202,22 @@ def _add_ctd_conditions(
     """
     Args:
         aug_cfg: dict, data augmentation configuration
-        ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] , optional, default = None,
-            If using a conditional-top-down (CTD) net_type, this argument needs to be specified.
-            It defines the conditions that will be used with the CTD model.
-            It can be either:
-                * A shuffle number (ctd_conditions: int), which must correspond to a bottom-up (BU) network type.
-                * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5 predictions file.
-                * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
+        ctd_conditions: Only for using conditional-top-down (CTD) models. It defines
+            the conditions that will be used with the CTD model. It can be:
+            * A shuffle number (ctd_conditions: int), which must correspond to a
+                bottom-up (BU) network type.
+            * A predictions file path (ctd_conditions: string | Path), which must
+                correspond to a .json or .h5 predictions file.
+            * A shuffle number and a particular snapshot (ctd_conditions:
+                tuple[int, str] | tuple[int, int]), which respectively correspond to a
+                bottom-up (BU) network type and a particular snapshot name or index.
     """
     if isinstance(ctd_conditions, int):
         conditions = {"shuffle": ctd_conditions}
 
     elif isinstance(ctd_conditions, str) or isinstance(ctd_conditions, Path):
         ctd_conditions = Path(ctd_conditions)
-        if not ctd_conditions.exist():
+        if not ctd_conditions.exists():
             raise FileNotFoundError(f"Invalid path: {ctd_conditions}")
         if ctd_conditions.suffix not in (".h5", ".json"):
             raise ValueError(f"Invalid conditions file extension.")

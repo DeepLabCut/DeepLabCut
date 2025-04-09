@@ -44,7 +44,47 @@ from __future__ import annotations
 
 import math
 import random
+from dataclasses import dataclass, asdict
+
 import numpy as np
+
+
+@dataclass(frozen=True)
+class GenSamplingConfig:
+    """Configuration for CTD models.
+
+    Args:
+        bbox_margin: The margin added around conditional keypoints
+        keypoint_sigmas: The sigma for each keypoint.
+        keypoints_symmetry: Indices of symmetric keypoints (e.g. left/right eye)
+        jitter_prob: The probability of applying jitter. Jitter error is defined as
+            a small displacement from the GT keypoint.
+        swap_prob: The probability of applying a swap error. Swap error represents
+            a confusion between the same or similar parts which belong to different
+            persons.
+        inv_prob: The probability of applying an inversion error. Inversion error
+            occurs when a pose estimation model is confused between semantically
+            similar parts that belong to the same instance.
+        miss_prob: The probability of applying a miss error. Miss error represents a
+            large displacement from the GT keypoint position.
+    """
+    bbox_margin: int
+    keypoint_sigmas: float | list[float] = 0.1
+    keypoints_symmetry: list[tuple[int, int]] | None = None
+    jitter_prob: float = 0.16
+    swap_prob: float = 0.08
+    inv_prob: float = 0.03
+    miss_prob: float = 0.10
+
+    def to_dict(self) -> dict:
+        return {
+            "keypoint_sigmas": self.keypoint_sigmas,
+            "keypoints_symmetry": self.keypoints_symmetry,
+            "jitter_prob": self.jitter_prob,
+            "swap_prob": self.swap_prob,
+            "inv_prob": self.inv_prob,
+            "miss_prob": self.miss_prob,
+        }
 
 
 class GenerativeSampler:
@@ -54,7 +94,11 @@ class GenerativeSampler:
         self,
         num_keypoints: int,
         keypoint_sigmas: float | list[float] = 0.1,
-        keypoints_symmetry: list[tuple[int, int]] = []
+        keypoints_symmetry: list[tuple[int, int]] | None = None,
+        jitter_prob: float = 0.16,
+        swap_prob: float = 0.08,
+        inv_prob: float = 0.03,
+        miss_prob: float = 0.10,
     ):
         """
         Args:
@@ -62,22 +106,33 @@ class GenerativeSampler:
             keypoint_sigmas: the sigma for each keypoint
             keypoints_symmetry: indices of keypoints that are symmetric (e.g., left and
                 right eye)
+            jitter_prob: The probability of applying jitter. Jitter error is defined as
+                a small displacement from the GT keypoint.
+            swap_prob: The probability of applying a swap error. Swap error represents
+                a confusion between the same or similar parts which belong to different
+                persons.
+            inv_prob: The probability of applying an inversion error. Inversion error
+                occurs when a pose estimation model is confused between semantically
+                similar parts that belong to the same instance.
+            miss_prob: The probability of applying a miss error. Miss error represents a
+                large displacement from the GT keypoint position.
         """
         if isinstance(keypoint_sigmas, float):
             keypoint_sigmas = num_keypoints * [keypoint_sigmas]
-        if keypoints_symmetry is None:
-            keypoints_symmetry = keypoints_symmetry
 
         self.keypoint_sigmas = np.array(keypoint_sigmas)
         self.keypoints_symmetry = keypoints_symmetry
         self.num_keypoints = num_keypoints
+        self.jitter_prob = jitter_prob
+        self.swap_prob = swap_prob
+        self.inv_prob = inv_prob
+        self.miss_prob = miss_prob
 
     def __call__(
         self,
         keypoints: np.ndarray,
         near_keypoints: np.ndarray,
-        area: float,  # ??
-        #num_overlap: int,  # ??
+        area: float,
         image_size: tuple[int, int],
     ) -> np.ndarray:
         """Samples keypoints
@@ -91,7 +146,6 @@ class GenerativeSampler:
             near_keypoints: (num_other_individuals, num_keypoints, x-y-visibility) joints
                 from other individuals near this one, for which keypoints might be swapped
             area: the total area of the bounding box surrounding the keypoints
-            num_overlap:
 
         Returns:
             the generative sampled keypoints, of shape (num_keypoints, x-y-visibility)
@@ -113,14 +167,7 @@ class GenerativeSampler:
         #     if keypoints[j, 2] == 0:
         #         synth_joints[j] = estimated_joints[j]
 
-        # instead we fill empty annotations with the mean of the other annotations
-        # in order to prevent corrupted bboxes
-        # for j in range(self.num_keypoints):
-        #     #if keypoints[j, 2] == 0:
-        #     if sum(keypoints[j,:2]) == 0:
-        #         synth_joints[j] = np.mean(keypoints[keypoints[:, 2] > 0], axis=0)
-
-        #num_valid_joint = np.sum(keypoints[:, 2] > 0)
+        # num_valid_joint = np.sum(keypoints[:, 2] > 0)
 
         N = 500  # TODO: do not know how this is set
         for j in range(self.num_keypoints):
@@ -135,29 +182,34 @@ class GenerativeSampler:
             coord_list.append(swap_coord)
 
             # on top of inv gt, swap inv gt
-            # FIXME: In the original codebase, they only swap symmetric keypoints. As
-            #  we don't always have symmetries for keypoints in DeepLabCut, we swap any
-            #  keypoint with any other keypoint by randomly selecting keypoints to swap
-            kps_symmetry = self.keypoints_symmetry
-            pair_exist = False
-            # for now, we randomly sample keypoint pairs to swap
-            kps_symmetry = np.random.choice(list(range(self.num_keypoints)),
-                                            size=(self.num_keypoints//2, 2), replace=False)
-            for (q, w) in kps_symmetry:
+            if self.keypoints_symmetry is None or len(self.keypoints_symmetry) == 0:
+                # randomly sample keypoint pairs to swap
+                kps_symmetry = np.random.choice(
+                    list(range(self.num_keypoints)),
+                    size=(self.num_keypoints // 2, 2),
+                    replace=False,
+                )
+            else:
+                kps_symmetry = self.keypoints_symmetry
+
+            pair_idx = None
+            for q, w in kps_symmetry:
                 if j == q or j == w:
                     if j == q:
                         pair_idx = w
                     else:
                         pair_idx = q
-                    pair_exist = True
-            if pair_exist and (keypoints[pair_idx, 2] > 0):
+
+            if pair_idx is not None and (keypoints[pair_idx, 2] > 0):
                 inv_coord = np.expand_dims(synth_joints[pair_idx, :2], 0)
                 coord_list.append(inv_coord)
             else:
                 coord_list.append(np.empty([0, 2]))
 
-            if pair_exist:
-                swap_inv_coord = near_keypoints[near_keypoints[:, pair_idx, 2] > 0, pair_idx, :2]
+            if pair_idx is not None:
+                swap_inv_coord = near_keypoints[
+                    near_keypoints[:, pair_idx, 2] > 0, pair_idx, :2
+                ]
                 coord_list.append(swap_inv_coord)
             else:
                 coord_list.append(np.empty([0, 2]))
@@ -169,12 +221,7 @@ class GenerativeSampler:
 
             # jitter error
             synth_jitter = np.zeros(3)
-            
-            # if num_valid_joint <= 4:
-            #     jitter_prob = 0.20
-            # else:
-            #     jitter_prob = 0.15
-            jitter_prob = 0.16
+            jitter_prob = self.jitter_prob
 
             angle = np.random.uniform(0, 2 * math.pi, [N])
             r = np.random.uniform(ks_85_dist[j], ks_50_dist[j], [N])
@@ -186,8 +233,14 @@ class GenerativeSampler:
                 if i == jitter_idx:
                     continue
                 dist_mask = np.logical_and(
-                    dist_mask, np.sqrt((tot_coord_list[i][0] - x) ** 2 + (tot_coord_list[i][1] - y) ** 2) > r
+                    dist_mask,
+                    np.sqrt(
+                        (tot_coord_list[i][0] - x) ** 2
+                        + (tot_coord_list[i][1] - y) ** 2
+                    )
+                    > r,
                 )
+
             x = x[dist_mask].reshape(-1)
             y = y[dist_mask].reshape(-1)
             if len(x) > 0:
@@ -198,14 +251,7 @@ class GenerativeSampler:
 
             # miss error
             synth_miss = np.zeros(3)
-            
-            # if num_valid_joint <= 2:
-            #     miss_prob = 0.20
-            # elif num_valid_joint <= 4:
-            #     miss_prob = 0.13
-            # else:
-            #     miss_prob = 0.05
-            miss_prob = 0.10
+            miss_prob = self.miss_prob
 
             miss_pt_list = []
             for miss_idx in range(len(tot_coord_list)):
@@ -219,8 +265,11 @@ class GenerativeSampler:
                         continue
                     dist_mask = np.logical_and(
                         dist_mask,
-                        np.sqrt((tot_coord_list[i][0] - x) ** 2 + (tot_coord_list[i][1] - y) ** 2) > ks_50_dist[
-                            j]
+                        np.sqrt(
+                            (tot_coord_list[i][0] - x) ** 2
+                            + (tot_coord_list[i][1] - y) ** 2
+                        )
+                        > ks_50_dist[j],
                     )
                 x = x[dist_mask].reshape(-1)
                 y = y[dist_mask].reshape(-1)
@@ -243,11 +292,11 @@ class GenerativeSampler:
 
             # inversion prob
             synth_inv = np.zeros(3)
-            inv_prob = 0.03
-            if pair_exist and keypoints[pair_idx, 2] > 0:
+            inv_prob = self.inv_prob
+            if pair_idx is not None and keypoints[pair_idx, 2] > 0:
                 angle = np.random.uniform(0, 2 * math.pi, [N])
                 r = np.random.uniform(0, ks_50_dist[j], [N])
-                inv_idx = (len(coord_list[0]) + len(coord_list[1]))
+                inv_idx = len(coord_list[0]) + len(coord_list[1])
                 x = tot_coord_list[inv_idx][0] + r * np.cos(angle)
                 y = tot_coord_list[inv_idx][1] + r * np.sin(angle)
                 dist_mask = True
@@ -255,9 +304,12 @@ class GenerativeSampler:
                     if i == inv_idx:
                         continue
                     dist_mask = np.logical_and(
-                        dist_mask, np.sqrt(
-                            (tot_coord_list[i][0] - x) ** 2 + (tot_coord_list[i][1] - y) ** 2
-                        ) > r
+                        dist_mask,
+                        np.sqrt(
+                            (tot_coord_list[i][0] - x) ** 2
+                            + (tot_coord_list[i][1] - y) ** 2
+                        )
+                        > r,
                     )
                 x = x[dist_mask].reshape(-1)
                 y = y[dist_mask].reshape(-1)
@@ -270,17 +322,14 @@ class GenerativeSampler:
             # swap prob
             synth_swap = np.zeros(3)
             swap_exist = (len(coord_list[1]) > 0) or (len(coord_list[3]) > 0)
-            
-            # if (num_valid_joint <= 4 and num_overlap > 0) or (num_valid_joint <= 5 and num_overlap >= 1):
-            #     swap_prob = 0.10
-            # else:
-            #     swap_prob = 0.04
-            swap_prob = 0.08
-            
+            swap_prob = self.swap_prob
+
             if swap_exist:
                 swap_pt_list = []
                 for swap_idx in range(len(tot_coord_list)):
-                    if swap_idx == 0 or swap_idx == len(coord_list[0]) + len(coord_list[1]):
+                    if swap_idx == 0 or swap_idx == len(coord_list[0]) + len(
+                        coord_list[1]
+                    ):
                         continue
                     angle = np.random.uniform(0, 2 * math.pi, [N])
                     r = np.random.uniform(0, ks_50_dist[j], [N])
@@ -290,15 +339,19 @@ class GenerativeSampler:
                     for i in range(len(tot_coord_list)):
                         if i == 0 or i == len(coord_list[0]) + len(coord_list[1]):
                             dist_mask = np.logical_and(
-                                dist_mask, np.sqrt(
-                                    (tot_coord_list[i][0] - x) ** 2 + (tot_coord_list[i][1] - y) ** 2
-                                ) > r
+                                dist_mask,
+                                np.sqrt(
+                                    (tot_coord_list[i][0] - x) ** 2
+                                    + (tot_coord_list[i][1] - y) ** 2
+                                )
+                                > r,
                             )
                     x = x[dist_mask].reshape(-1)
                     y = y[dist_mask].reshape(-1)
                     if len(x) > 0:
                         coord = np.transpose(np.vstack([x, y]), [1, 0])
                         swap_pt_list.append(coord)
+
                 if len(swap_pt_list) > 0:
                     swap_pt_list = np.concatenate(swap_pt_list, axis=0).reshape(-1, 2)
                     rand_idx = random.randrange(0, len(swap_pt_list))
@@ -320,8 +373,14 @@ class GenerativeSampler:
                 if i == good_idx:
                     continue
                 dist_mask = np.logical_and(
-                    dist_mask, np.sqrt((tot_coord_list[i][0] - x) ** 2 + (tot_coord_list[i][1] - y) ** 2) > r
+                    dist_mask,
+                    np.sqrt(
+                        (tot_coord_list[i][0] - x) ** 2
+                        + (tot_coord_list[i][1] - y) ** 2
+                    )
+                    > r,
                 )
+
             x = x[dist_mask].reshape(-1)
             y = y[dist_mask].reshape(-1)
             if len(x) > 0:
@@ -340,8 +399,6 @@ class GenerativeSampler:
                 miss_prob = 0
             if synth_good[2] == 0:
                 good_prob = 0
-
-            #swap_prob = 0
 
             normalizer = jitter_prob + miss_prob + inv_prob + swap_prob + good_prob
             if normalizer == 0:
@@ -364,8 +421,6 @@ class GenerativeSampler:
         synth_joints[nan_mask, 2] = 0
         np.clip(synth_joints[:, 0], 0, image_size[1], out=synth_joints[:, 0])
         np.clip(synth_joints[:, 1], 0, image_size[0], out=synth_joints[:, 1])
-        # print('synth_joints', synth_joints)
-
         return synth_joints
 
     def get_distance_wrt_keypoint_sim(self, ks: float, area: float) -> np.ndarray:

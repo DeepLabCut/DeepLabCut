@@ -24,11 +24,17 @@ from tqdm import tqdm
 
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
+from deeplabcut.pose_estimation_pytorch.apis.ctd import (
+    get_condition_provider,
+    get_conditions_provider_for_video,
+)
 from deeplabcut.pose_estimation_pytorch.apis.tracklets import (
     convert_detections2tracklets,
 )
 from deeplabcut.pose_estimation_pytorch.data import DLCLoader
+from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
 from deeplabcut.pose_estimation_pytorch.runners import (
+    CTDTrackingConfig,
     DynamicCropper,
     InferenceRunner,
 )
@@ -134,7 +140,7 @@ def video_inference(
     Examples:
         Bottom-up video analysis:
         >>> import deeplabcut.pose_estimation_pytorch as pep
-        >>> from deeplabcut.core.config_utils import read_config_as_dict
+        >>> from deeplabcut.core.config import read_config_as_dict
         >>> model_cfg = read_config_as_dict("pytorch_config.yaml")
         >>> runner = pep.get_pose_inference_runner(model_cfg, "snapshot.pt")
         >>> video_predictions = pep.video_inference("video.mp4", runner)
@@ -142,7 +148,7 @@ def video_inference(
 
         Top-down video analysis:
         >>> import deeplabcut.pose_estimation_pytorch as pep
-        >>> from deeplabcut.core.config_utils import read_config_as_dict
+        >>> from deeplabcut.core.config import read_config_as_dict
         >>> model_cfg = read_config_as_dict("pytorch_config.yaml")
         >>> runner = pep.get_pose_inference_runner(model_cfg, "snapshot.pt")
         >>> d_runner = pep.get_pose_inference_runner(model_cfg, "snapshot-detector.pt")
@@ -152,7 +158,7 @@ def video_inference(
         Top-Down pose estimation with pre-computed bounding boxes:
         >>> import numpy as np
         >>> import deeplabcut.pose_estimation_pytorch as pep
-        >>> from deeplabcut.core.config_utils import read_config_as_dict
+        >>> from deeplabcut.core.config import read_config_as_dict
         >>>
         >>> video_iterator = pep.VideoIterator("video.mp4")
         >>> video_iterator.set_context([
@@ -226,7 +232,8 @@ def analyze_videos(
     batch_size: int | None = None,
     detector_batch_size: int | None = None,
     dynamic: tuple[bool, float, int] = (False, 0.5, 10),
-    ctd_tracking: bool | dict = False,
+    ctd_conditions: dict | CondFromModel | None = None,
+    ctd_tracking: bool | dict | CTDTrackingConfig = False,
     modelprefix: str = "",
     use_shelve: bool = False,
     robust_nframes: bool = False,
@@ -284,20 +291,20 @@ def analyze_videos(
             is utilized for updating the crop window for the next frame (this is why the
             margin is important and should be set large enough given the movement of the
             animal).
+        ctd_conditions: Only for CTD models. If None, the configuration for the
+            condition provider will be loaded from the pytorch_config file (under the
+            "data": "conditions"). If the ctd_conditions is given as a dict, creates a
+            CondFromModel from the dict. Otherwise, a CondFromModel can be given
+            directly. Example configuration:
+                ```
+                ctd_conditions = {"shuffle": 17, "snapshot": "snapshot-best-190.pt"}
+                ```
         ctd_tracking: Only for CTD models. Conditional top-down models can be used
             to directly track individuals. Poses from frame T are given as conditions
             for frame T+1. This also means a BU model is only needed to "initialize" the
             pose in the first frame, and for the remaining frames only the CTD model is
-            needed. If `True`, the `pytorch_config.yaml` for the model contain the
-            configuration for conditional pose tracking:
-                ```
-                data:
-                    conditions:
-                        shuffle: 1
-                        snapshot: snapshot-250.pt
-                ```
-            To use another model or configure conditional pose tracking differently, you
-            can pass a CTDTrackingConfig instance.
+            needed. To configure conditional pose tracking differently, you can pass a
+            CTDTrackingConfig instance.
         modelprefix: directory containing the deeplabcut models to use when evaluating
             the network. By default, they are assumed to exist in the project folder.
         batch_size: the batch size to use for inference. Takes the value from the
@@ -402,8 +409,28 @@ def analyze_videos(
         dynamic = None
 
     snapshot = utils.get_model_snapshots(
-        snapshot_index, loader.model_cfg, loader.pose_task
+        snapshot_index, loader.model_folder, loader.pose_task
     )[0]
+
+    # Load the BU model for the conditions provider
+    cond_provider = None
+    if loader.pose_task == Task.CTD:
+        if ctd_conditions is None:
+            cond_provider = get_condition_provider(
+                condition_cfg=loader.model_cfg["data"]["conditions"],
+                config=config,
+            )
+        elif isinstance(ctd_conditions, dict):
+            cond_provider = get_condition_provider(
+                condition_cfg=ctd_conditions, config=config,
+            )
+        else:
+            cond_provider = ctd_conditions
+
+    if isinstance(ctd_tracking, dict):
+        # FIXME(niels) - add video FPS setting
+        ctd_tracking = CTDTrackingConfig.build(ctd_tracking)
+
     print(f"Analyzing videos with {snapshot.path}")
     pose_runner = utils.get_pose_inference_runner(
         model_config=loader.model_cfg,
@@ -412,10 +439,9 @@ def analyze_videos(
         batch_size=batch_size,
         transform=transform,
         dynamic=dynamic,
+        cond_provider=cond_provider,
         ctd_tracking=ctd_tracking,
     )
-
-    # FIXME(niels) - when ctd_tracking is true, save a "_ctd" track file!
 
     detector_runner = None
     detector_path, detector_snapshot = None, None
@@ -441,13 +467,7 @@ def analyze_videos(
             batch_size=detector_batch_size,
         )
 
-    dlc_scorer = utils.get_scorer_name(
-        loader.project_cfg,
-        shuffle,
-        train_fraction,
-        snapshot_uid=utils.get_scorer_uid(snapshot, detector_snapshot),
-        modelprefix=modelprefix,
-    )
+    dlc_scorer = loader.scorer(snapshot, detector_snapshot)
 
     # Reading video and init variables
     videos = utils.list_videos_in_folder(videos, videotype, shuffle=in_random_order)
@@ -461,6 +481,13 @@ def analyze_videos(
         output_pkl = output_path / f"{output_prefix}_full.pickle"
 
         video_iterator = VideoIterator(video, cropping=cropping)
+
+        # Check if BU model pose predictions exist so the model does not need to be run
+        if loader.pose_task == Task.CTD:
+            vid_cond_provider = get_conditions_provider_for_video(cond_provider, video)
+            if vid_cond_provider is not None:
+                video_cond = vid_cond_provider.load_conditions()
+                video_iterator.set_context([dict(cond_kpts=c) for c in video_cond])
 
         shelf_writer = None
         if use_shelve:
@@ -517,14 +544,54 @@ def analyze_videos(
                     )
 
             if multi_animal:
+                assemblies_path = output_path / f"{output_prefix}_assemblies.pickle"
                 _generate_assemblies_file(
                     full_data_path=output_pkl,
-                    output_path=output_path / f"{output_prefix}_assemblies.pickle",
+                    output_path=assemblies_path,
                     num_bodyparts=len(bodyparts),
                     num_unique_bodyparts=len(unique_bodyparts),
                 )
 
-                if auto_track:
+                # when running CTD tracking, don't auto-track as CTD did the tracking
+                # for us!
+                if ctd_tracking:
+                    full_data = auxiliaryfunctions.read_pickle(output_pkl)
+                    full_data_meta = full_data.pop("metadata")
+
+                    num_frames = full_data_meta["nframes"]
+                    str_width = full_data_meta["key_str_width"]
+
+                    ctd_predictions = []
+                    for i in range(num_frames):
+                        frame_data = full_data.get("frame" + str(i).zfill(str_width))
+                        if frame_data is None:
+                            pose = np.full((len(individuals), len(bodyparts), 3), np.nan)
+                            ctd_predictions.append(dict(bodyparts=pose))
+                            continue
+
+                        # there can't be unique bodyparts for CTD models
+                        #   -> so coords has shape (num_bodyparts, num_idv, _)
+                        coords = np.stack(frame_data["coordinates"][0], axis=0)
+                        scores = np.stack(frame_data["confidence"], axis=0)
+                        pose = np.concatenate([coords, scores], axis=-1)
+
+                        # transpose to (num_idv, num_bodyparts, _)
+                        pose = pose.transpose((1, 0, 2))
+
+                        # add poses to the predictions
+                        ctd_predictions.append(dict(bodyparts=pose))
+
+                    create_df_from_prediction(
+                        predictions=predictions,
+                        multi_animal=multi_animal,
+                        model_cfg=loader.model_cfg,
+                        dlc_scorer=dlc_scorer,
+                        output_path=output_path,
+                        output_prefix=output_prefix + "_ctd",
+                        save_as_csv=save_as_csv,
+                    )
+
+                elif auto_track:
                     convert_detections2tracklets(
                         config=config,
                         videos=str(video),
@@ -783,6 +850,7 @@ def _generate_output_data(
 
         if "bboxes" in frame_predictions:
             output[key]["bboxes"] = frame_predictions["bboxes"]
+        if "bbox_scores" in frame_predictions:
             output[key]["bbox_scores"] = frame_predictions["bbox_scores"]
 
         if "identity_scores" in frame_predictions:

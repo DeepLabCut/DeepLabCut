@@ -169,16 +169,15 @@ def CreateVideo(
             # Draw bounding boxes if required and present
             if plot_bboxes and bboxes_list:
                 bboxes = bboxes_list[index]["bboxes"]
-                bbox_scores = bboxes_list[index]["bbox_scores"]
-                n_bboxes = bboxes.shape[0]
+                bbox_scores = bboxes_list[index].get("bbox_scores")
+                n_bboxes = len(bboxes)
                 for i in range(n_bboxes):
-                    bbox = bboxes[i, :]
+                    bbox = bboxes[i]
                     x, y = bbox[0], bbox[1]
                     x += x1
                     y += y1
                     w, h = bbox[2], bbox[3]
-                    confidence = bbox_scores[i]
-                    if confidence < bboxes_pcutoff:
+                    if bbox_scores is not None and bbox_scores[i] < bboxes_pcutoff:
                         continue
                     rect_coords = rectangle_perimeter(start=(y, x), extent=(h, w))
 
@@ -351,14 +350,13 @@ def CreateVideoSlow(
                 # Draw bounding boxes of required and present
                 if plot_bboxes and bboxes_list:
                     bboxes = bboxes_list[index]["bboxes"]
-                    bbox_scores = bboxes_list[index]["bbox_scores"]
-                    n_bboxes = bboxes.shape[0]
+                    bbox_scores = bboxes_list[index].get("bbox_scores")
+                    n_bboxes = len(bboxes)
                     for i in range(n_bboxes):
-                        bbox = bboxes[i, :]
+                        bbox = bboxes[i]
                         bbox_origin = (bbox[0], bbox[1])
                         (bbox_width, bbox_height) = (bbox[2], bbox[3])
-                        bbox_confidence = bbox_scores[i]
-                        if bbox_confidence < bboxes_pcutoff:
+                        if bbox_scores is not None and bbox_scores[i] < bboxes_pcutoff:
                             continue
                         rectangle = patches.Rectangle(
                             bbox_origin,

@@ -16,6 +16,7 @@ from deeplabcut.pose_estimation_pytorch.runners.base import (
     Runner,
     set_load_weights_only,
 )
+from deeplabcut.pose_estimation_pytorch.runners.ctd import CTDTrackingConfig
 from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import DynamicCropper
 from deeplabcut.pose_estimation_pytorch.runners.inference import (
     build_inference_runner,

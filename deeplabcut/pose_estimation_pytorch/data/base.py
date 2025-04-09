@@ -19,10 +19,13 @@ import numpy as np
 import deeplabcut.core.config as config_utils
 import deeplabcut.pose_estimation_pytorch.config as config
 from deeplabcut.pose_estimation_pytorch.data.dataset import (
-    CTDConfig,
     PoseDataset,
     PoseDatasetParameters,
 )
+from deeplabcut.pose_estimation_pytorch.data.generative_sampling import (
+    GenSamplingConfig,
+)
+from deeplabcut.pose_estimation_pytorch.data.snapshots import list_snapshots, Snapshot
 from deeplabcut.pose_estimation_pytorch.data.utils import (
     _compute_crop_bounds,
     bbox_from_keypoints,
@@ -64,6 +67,30 @@ class Loader(ABC):
     def model_folder(self) -> Path:
         """Returns: The path of the folder containing the model data"""
         return self.model_config_path.parent
+
+    def snapshots(
+        self,
+        detector: bool = False,
+        best_in_last: bool = True,
+    ) -> list[Snapshot]:
+        """Lists snapshots saved for the model.
+
+        Args:
+            detector: If the Loader is for a Top-Down model, passing detector=True
+                will return the snapshots for the detector. Otherwise, the snapshots
+                for the pose model are returned.
+            best_in_last: Whether to place the snapshot with the best performance in the
+                last position in the list, even if it wasn't the last epoch.
+
+        Returns:
+            The snapshots stored in a folder, sorted by the number of epochs they were
+            trained for. If best_in_last=True and a best snapshot exists, it will be the
+            last one in the list.
+        """
+        prefix = self.pose_task.snapshot_prefix
+        if detector:
+            prefix = Task.DETECT.snapshot_prefix
+        return list_snapshots(self.model_folder, prefix, best_in_last=best_in_last)
 
     def update_model_cfg(self, updates: dict) -> None:
         """Updates the model configuration
@@ -224,12 +251,13 @@ class Loader(ABC):
         parameters = self.get_dataset_parameters()
         data = self.load_data(mode)
         data["annotations"] = self.filter_annotations(data["annotations"], task)
+        ctd_config = None
         if self.pose_task == Task.CTD:
-            ctd_config = CTDConfig(
-                self.model_cfg["data"].get("bbox_margin", 25),
-                self.model_cfg["data"].get("gen_sampling_sigmas", 0.1),
-                self.model_cfg["data"].get("gen_sampling_symmetries", [])
+            ctd_config = GenSamplingConfig(
+                bbox_margin=self.model_cfg["data"].get("bbox_margin", 20),
+                **self.model_cfg["data"].get("gen_sampling", {}),
             )
+
         dataset = PoseDataset(
             images=data["images"],
             annotations=data["annotations"],
@@ -237,7 +265,7 @@ class Loader(ABC):
             mode=mode,
             task=task,
             parameters=parameters,
-            ctd_config=ctd_config if self.pose_task == Task.CTD else None,
+            ctd_config=ctd_config,
         )
         return dataset
 

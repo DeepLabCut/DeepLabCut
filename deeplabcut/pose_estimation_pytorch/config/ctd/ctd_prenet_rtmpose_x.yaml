@@ -1,15 +1,17 @@
 data:
+  bbox_margin: 25
+  gen_sampling:
+    keypoint_sigmas: 0.1
   inference:
     top_down_crop:
       width: 384
       height: 384
+      crop_with_context: false
   train:
     top_down_crop:
       width: 384
       height: 384
-  bbox_margin: 25
-  gen_sampling_sigmas: 0.1
-  gen_sampling_symmetries: []
+      crop_with_context: false
 method: ctd
 model:
   backbone:

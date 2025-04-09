@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import deeplabcut.pose_estimation_pytorch.apis.ctd as ctd
+from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromFile
 
 
 CONDITIONS = [
@@ -52,8 +52,8 @@ def test_ctd_load_json_containing_rel_paths(
     with open(conditions_filepath, "w") as f:
         json.dump(conditions, f)
 
-    conditions = ctd.load_conditions_json(
-        images, conditions_filepath, path_prefix=path_prefix,
+    conditions = CondFromFile.load_conditions_json(
+        conditions_filepath, images, path_prefix=path_prefix,
     )
     for img_path, _, condition in data:
         assert img_path in conditions
@@ -132,8 +132,8 @@ def test_ctd_load_hdf_containing_rel_paths(
     conditions_filepath = tmp_folder / "conditions.h5"
     df.to_hdf(conditions_filepath, key="df_with_missing")
 
-    conditions = ctd.load_conditions_h5(
-        images, conditions_filepath, path_prefix=path_prefix,
+    conditions = CondFromFile.load_conditions_h5(
+        conditions_filepath, images, path_prefix=path_prefix,
     )
     for idx, (img_path, img_index) in enumerate(data):
         assert img_path in conditions

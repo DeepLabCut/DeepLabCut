@@ -21,6 +21,7 @@ import pandas as pd
 
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.engine import Engine
+from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import (
     build_dlc_dataframe_columns,
@@ -39,6 +40,7 @@ from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
 from deeplabcut.pose_estimation_pytorch.runners import (
     build_inference_runner,
+    CTDTrackingConfig,
     DetectorInferenceRunner,
     DynamicCropper,
     InferenceRunner,
@@ -658,7 +660,8 @@ def get_pose_inference_runner(
     max_individuals: int | None = None,
     transform: A.BaseCompose | None = None,
     dynamic: DynamicCropper | None = None,
-    ctd_tracking: bool | dict = False,
+    cond_provider: CondFromModel | None = None,
+    ctd_tracking: bool | CTDTrackingConfig = False,
 ) -> PoseInferenceRunner:
     """Builds an inference runner for pose estimation.
 
@@ -674,20 +677,14 @@ def get_pose_inference_runner(
             cropping should not be used. Only for bottom-up pose estimation models.
             Should only be used when creating inference runners for video pose
             estimation with batch size 1.
+        cond_provider: Only for CTD models. If None, the CondProvider is created from
+            the pytorch_cfg.
         ctd_tracking: Only for CTD models. Conditional top-down models can be used
             to directly track individuals. Poses from frame T are given as conditions
             for frame T+1. This also means a BU model is only needed to "initialize" the
             pose in the first frame, and for the remaining frames only the CTD model is
-            needed. If `True`, the `pytorch_config.yaml` for the model contain the
-            configuration for conditional pose tracking:
-                ```
-                data:
-                    conditions:
-                        shuffle: 1
-                        snapshot: snapshot-250.pt
-                ```
-            To use another model or configure conditional pose tracking differently, you
-            can pass a CTDTrackingConfig instance.
+            needed. To configure conditional pose tracking differently, you can pass a
+            CTDTrackingConfig instance.
 
     Returns:
         an inference runner for pose estimation
@@ -724,17 +721,16 @@ def get_pose_inference_runner(
         margin = crop_cfg.get("margin", 0)
 
         if pose_task == Task.CTD:
-            # FIXME(niels) - allow to load conditions for a video from a file
-            kwargs["bu_runner"] = get_pose_inference_runner(
-                model_config=read_config_as_dict(model_config["data"]["config_path"]),
-                snapshot_path=model_config["data"]["snapshot_path"],
-                batch_size=1,
-                device=device,
-                max_individuals=max_individuals,
-            )
+            if cond_provider is not None:
+                kwargs["bu_runner"] = get_pose_inference_runner(
+                    model_config=read_config_as_dict(cond_provider.config_path),
+                    snapshot_path=cond_provider.snapshot_path,
+                    batch_size=1,
+                    device=device,
+                    max_individuals=max_individuals,
+                )
 
-            # FIXME(niels) - add configuration for CTD tracking
-            kwargs["ctd_tracking"] = bool(ctd_tracking)
+            kwargs["ctd_tracking"] = ctd_tracking
 
             pose_preprocessor = build_conditional_top_down_preprocessor(
                 color_mode=model_config["data"]["colormode"],

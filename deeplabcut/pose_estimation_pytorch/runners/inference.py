@@ -18,7 +18,10 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+import deeplabcut.pose_estimation_pytorch.post_processing.nms as nms
+import deeplabcut.pose_estimation_pytorch.runners.ctd as ctd
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
+from deeplabcut.core.inferenceutils import calc_object_keypoint_similarity
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import Postprocessor
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import LoadImage, Preprocessor
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
@@ -316,29 +319,47 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
         return predictions
 
 
-class CTDInferenceRunner(InferenceRunner[PoseModel]):
-    """Runner for pose estimation inference"""
+class CTDInferenceRunner(PoseInferenceRunner):
+    """Runner for pose estimation inference
+
+    Args:
+        model: The CTD model to run inference with.
+        bu_runner: A runner for the BU model to run inference with. If no BU runner is
+            given, conditions must be given in the context for the data. Otherwise an
+            error will be raised during inference.
+        tracking: Whether to track using the CTD model. If
+    """
 
     def __init__(
         self,
         model: PoseModel,
-        bu_runner: PoseInferenceRunner,
-        tracking: bool = True,
+        bu_runner: PoseInferenceRunner | None = None,
+        ctd_tracking: bool | ctd.CTDTrackingConfig = False,
         **kwargs,
     ):
         super().__init__(model, **kwargs)
         self.bu_runner = bu_runner
-        self.bu_runner.model.eval()
-        self.tracking = tracking
+        if bu_runner is not None:
+            self.bu_runner.model.eval()
+
+        self.tracking = None
+        if isinstance(ctd_tracking, ctd.CTDTrackingConfig):
+            self.tracking = ctd_tracking
+        elif ctd_tracking:  # generate default config
+            self.tracking = ctd.CTDTrackingConfig()
+
+        if self.tracking and self.batch_size != 1:
+            print("CTD tracking can only be used with batch size 1. Updating it.")
+            self.batch_size = 1
 
         self._image_loader = LoadImage()
 
-        if self.tracking and self.batch_size != 1:
-            print(
-                "Dynamic cropping can only be used with batch size 1. Setting the batch"
-                " size to 1."
-            )
-            self.batch_size = 1
+        # Stored poses and IDX -> ID map for CTD tracking
+        self._bu_age = -1
+        self._missing_idvs = False
+        self._prev_pose = None
+        self._idx_to_id = None
+        self._ctd_track_ages = None   # the age of each CTD tracklet
 
     @torch.no_grad()
     def inference(
@@ -369,7 +390,7 @@ class CTDInferenceRunner(InferenceRunner[PoseModel]):
             ]
         """
         if self.tracking:
-            return self._inference(images, shelf_writer)
+            return self._ctd_tracking_inference(images, shelf_writer)
 
         results = []
         for data in images:
@@ -429,6 +450,10 @@ class CTDInferenceRunner(InferenceRunner[PoseModel]):
         # Load the image once - then given as a numpy array to CTD
         image, _ = self._image_loader(inputs, context)
 
+        # If the conditional keypoints are in the context, return the context
+        if "cond_kpts" in context:
+            return image, context
+
         # Run the pre-processor
         if self.bu_runner.preprocessor is not None:
             inputs, context = self.bu_runner.preprocessor(image, context)
@@ -450,7 +475,7 @@ class CTDInferenceRunner(InferenceRunner[PoseModel]):
 
         return image, {"cond_kpts": conds}
 
-    def _inference(
+    def _ctd_tracking_inference(
         self,
         images: (
             Iterable[str | Path | np.ndarray]
@@ -458,22 +483,21 @@ class CTDInferenceRunner(InferenceRunner[PoseModel]):
         ),
         shelf_writer: shelving.ShelfWriter | None = None,
     ) -> list[dict[str, np.ndarray]]:
-        prev_pose = None
-
         results = []
         for data in images:
-            inputs, context = self._prepare_ctd_inputs(data, prev_pose)
+            inputs, context = self._prepare_ctd_inputs(data)
             model_kwargs = context.pop("model_kwargs", {})
             predictions = self.predict(inputs, **model_kwargs)
             if self.postprocessor is not None:
                 # Pop the "cond_kpts" from the context so there's no re-scoring
-                if prev_pose is not None:
+                # This is required when tracking with CTD, otherwise scores go to 0
+                if self._prev_pose is not None:
                     context.pop("cond_kpts")
 
                 predictions, _ = self.postprocessor(predictions, context)
 
             # Set the predictions as context for the next frame
-            prev_pose = predictions["bodyparts"][..., :3]
+            self._ctd_tracking_postprocess(predictions)
 
             if shelf_writer is not None:
                 shelf_writer.add_prediction(
@@ -487,35 +511,139 @@ class CTDInferenceRunner(InferenceRunner[PoseModel]):
 
         return results
 
-    def _prepare_ctd_inputs(
-        self,
-        data,
-        prev_pose: np.ndarray | None,
-    ) -> tuple[torch.Tensor, dict[str, Any]]:
-        # Get valid conditions
-        conds = None
-        if prev_pose is not None:
-            bad_data = np.any(prev_pose <= 0 | np.isnan(prev_pose), axis=2)
-            pred_mask = ~np.all(bad_data | (prev_pose[..., 2] <= 0.25), axis=1)
-            if np.sum(pred_mask) > 0:
-                conds = prev_pose[pred_mask]
-
-        # If there's any valid pose, use it as a condition for the next frame
-        if conds is None:
+    def _prepare_ctd_inputs(self, data) -> tuple[torch.Tensor, dict[str, Any]]:
+        # If there's no valid poses, use the BU model to get conditions
+        self._bu_age += 1
+        if (
+            self._prev_pose is None
+            or (
+                self._missing_idvs
+                and self.tracking.bu_on_lost_idv
+                and self._bu_age >= self.tracking.bu_max_frequency
+            )
+            or (
+                self.tracking.bu_min_frequency is not None
+                and self._bu_age >= self.tracking.bu_min_frequency
+            )
+        ):
+            self._bu_age = 0
             inputs, context = self.add_conditions(data)
+
+            if self._prev_pose is not None:
+                context["cond_kpts"] = self._merge_conditions(context["cond_kpts"])
+
         else:
             if isinstance(data, (str, Path, np.ndarray)):
                 inputs, context = data, {}
             else:
                 inputs, context = data
 
-            context["cond_kpts"] = conds
+            context["cond_kpts"] = self._prev_pose
 
         if self.preprocessor is None:
             return torch.as_tensor(inputs), context
 
         inputs, context = self.preprocessor(inputs, context)
         return inputs, context
+
+    def _ctd_tracking_postprocess(self, predictions: dict[str, np.ndarray]) -> None:
+        """Post-processes predictions. In-place changes to the predictions dict."""
+        # reorder the previous poses so the indices match the track IDs
+        if self._idx_to_id is not None:
+            predictions["bodyparts"] = predictions["bodyparts"][self._idx_to_id]
+
+        # mask all keypoints below the CTD tracking threshold
+        prev_pose = predictions["bodyparts"][..., :3].copy()
+        prev_pose[prev_pose[..., 2] <= self.tracking.threshold_ctd] = np.nan
+
+        # apply NMS on the conditions, keeping older tracks
+        order = None
+        if self._ctd_track_ages is not None:
+            ordering = self._ctd_track_ages.copy()
+
+            # sort by track age, then score
+            vis = np.sum(np.all(~np.isnan(prev_pose), axis=-1), axis=-1) > 1
+            scores = np.nanmean(prev_pose[vis, :, 2], axis=-1)
+            ordering[vis] += scores
+
+            # only keep non-zero scores
+            order = ordering.argsort()[::-1]
+            order = order[ordering[order] > 0]
+
+        nms_mask = nms.nms_oks(
+            prev_pose,
+            oks_threshold=self.tracking.threshold_nms,
+            oks_sigmas=0.1,
+            oks_margin=1.0,
+            score_threshold=self.tracking.threshold_ctd,
+            order=order,
+        )
+
+        # Set the previous pose and ID ordering
+        if np.any(nms_mask):
+            self._prev_pose = prev_pose[nms_mask]
+
+            # get the IDs of the kept poses
+            found_idx_to_id = np.where(nms_mask)[0]
+            missing_ids = np.where(~nms_mask)[0]
+            self._idx_to_id = np.concatenate([found_idx_to_id, missing_ids])
+
+            # add 1 to the age of kept tracks
+            if self._ctd_track_ages is None:
+                self._ctd_track_ages = np.zeros(len(self._idx_to_id))
+            self._ctd_track_ages[nms_mask] += 1
+            self._ctd_track_ages[~nms_mask] = 0
+
+            # check if there are any missing individuals
+            self._missing_idvs = len(self._prev_pose) != len(self._idx_to_id)
+        else:
+            self._prev_pose = None
+            self._idx_to_id = None
+            self._idx_ages = None
+
+    def _merge_conditions(self, bu_cond: np.ndarray) -> np.ndarray:
+        """
+        Merges conditions made by a BU model with existing conditions from CTD tracking.
+        """
+        # prepare the BU conditions for matching
+        bu_cond = bu_cond.copy()[:, :, :3]
+        # mask low-quality keypoints
+        bu_cond[bu_cond[..., 2] < self.tracking.threshold_ctd] = np.nan
+
+        # remove non-visible individuals
+        kpt_vis = np.all(~np.isnan(bu_cond), axis=-1)
+        idv_vis = np.sum(kpt_vis, axis=-1) > 1  # need at least 2 kpts for OKS
+
+        # if no valid BU predictions are left, return the CTD conditions
+        if np.sum(idv_vis) == 0:
+            return self._prev_pose
+
+        # match BU conditions to CTD poses from the highest score to the lowest
+        bu_cond = bu_cond[idv_vis]
+        new_conditions = []
+        for bu_pose in bu_cond:
+            best_oks = 0
+            for ctd_pose in self._prev_pose:
+                best_oks = max(
+                    best_oks,
+                    calc_object_keypoint_similarity(bu_pose, ctd_pose, sigma=0.1)
+                )
+
+            if best_oks < self.tracking.threshold_bu_add:
+                new_conditions.append((best_oks, bu_pose))
+
+        # add the conditions with the lowest OKS score
+        new_conditions = [
+            c[1] for c in sorted(new_conditions, key=lambda x: x[0])
+        ]
+
+        # if there are no new conditions,
+        if len(new_conditions) == 0:
+            return self._prev_pose
+
+        new_conditions = np.stack(new_conditions, axis=0)
+        cond_pose = np.concatenate([self._prev_pose, new_conditions], axis=0)
+        return cond_pose[:len(self._idx_to_id)]
 
 
 class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
@@ -624,10 +752,6 @@ def build_inference_runner(
         dynamic = None
 
     if task == Task.CTD:
-        # FIXME(niels) - allow running CTD with conditions from a file
-        if "bu_runner" not in kwargs:
-            raise ValueError(f"A `bu_runner` must be given for CTD inference.")
-
         return CTDInferenceRunner(**kwargs)
 
     return PoseInferenceRunner(dynamic=dynamic, **kwargs)

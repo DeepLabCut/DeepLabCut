@@ -28,4 +28,5 @@ from deeplabcut.pose_estimation_pytorch.data.preprocessor import (
     build_top_down_preprocessor,
     Preprocessor,
 )
+from deeplabcut.pose_estimation_pytorch.data.snapshots import list_snapshots, Snapshot
 from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms

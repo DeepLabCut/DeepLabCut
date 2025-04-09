@@ -40,9 +40,11 @@ from deeplabcut.pose_estimation_pytorch.data import (
     COCOLoader,
     COLLATE_FUNCTIONS,
     DLCLoader,
+    list_snapshots,
     Loader,
     PoseDataset,
     PoseDatasetParameters,
+    Snapshot,
 )
 from deeplabcut.pose_estimation_pytorch.runners import (
     build_inference_runner,
