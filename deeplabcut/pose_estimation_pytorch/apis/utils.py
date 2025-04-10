@@ -530,7 +530,7 @@ def get_inference_runners(
                 bbox_margin=model_config["data"].get("bbox_margin", 20),
                 top_down_crop_size=(width, height),
                 top_down_crop_margin=margin,
-                top_down_crop_with_context=crop_cfg.get("with_context", False),
+                top_down_crop_with_context=crop_cfg.get("crop_with_context", False),
             )
         else:  # Top-Down
             pose_preprocessor = build_top_down_preprocessor(
@@ -538,7 +538,7 @@ def get_inference_runners(
                 transform=transform,
                 top_down_crop_size=(width, height),
                 top_down_crop_margin=margin,
-                top_down_crop_with_context=crop_cfg.get("with_context", True),
+                top_down_crop_with_context=crop_cfg.get("crop_with_context", True),
             )
 
         pose_postprocessor = build_top_down_postprocessor(
@@ -738,7 +738,7 @@ def get_pose_inference_runner(
                 bbox_margin=model_config["data"].get("bbox_margin", 20),
                 top_down_crop_size=(width, height),
                 top_down_crop_margin=margin,
-                top_down_crop_with_context=crop_cfg.get("with_context", False),
+                top_down_crop_with_context=crop_cfg.get("crop_with_context", False),
             )
         else:  # Top-Down
             pose_preprocessor = build_top_down_preprocessor(
@@ -746,7 +746,7 @@ def get_pose_inference_runner(
                 transform=transform,
                 top_down_crop_size=(width, height),
                 top_down_crop_margin=margin,
-                top_down_crop_with_context=crop_cfg.get("with_context", True),
+                top_down_crop_with_context=crop_cfg.get("crop_with_context", True),
             )
 
         pose_postprocessor = build_top_down_postprocessor(

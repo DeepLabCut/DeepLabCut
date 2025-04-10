@@ -74,29 +74,18 @@ runner:
   optimizer:
     type: AdamW
     params:
-      lr: 1e-3
+      lr: 1e-5
   scheduler:
-    type: SequentialLR
+    type: LRListScheduler
     params:
-      schedulers:
-      - type: LinearLR
-        params:
-          start_factor: 0.001
-          end_factor: 1.0
-          total_iters: 5
-      - type: CosineAnnealingLR
-        params:
-          T_max: 200     # max_epochs // 2
-          eta_min: 5e-5  # ~base_lr / 20
-      - type: LRListScheduler
-        params:
-          milestones:
-            - 0
-          lr_list:
-            - - 5e-5
+      lr_list:
+      - - 1e-3
+      - - 1e-4
+      - - 1e-5
       milestones:
-      - 200              # max_epochs // 2
-      - 400
+      - 5
+      - 300
+      - 360
 train_settings:
   batch_size: 32
   dataloader_workers: 4

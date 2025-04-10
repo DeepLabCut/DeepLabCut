@@ -919,13 +919,18 @@ def create_training_dataset(
         the value specified in the project configuration file. If no engine is specified
         for the project, defaults to ``deeplabcut.compat.DEFAULT_ENGINE``.
 
-    ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] , optional, default = None,
-        If using a conditional-top-down (CTD) net_type, this argument needs to be specified.
-        It defines the conditions that will be used with the CTD model.
+    ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None, default = None,
+        If using a conditional-top-down (CTD) net_type, this argument should be
+        specified. It defines the conditions that will be used with the CTD model.
         It can be either:
-            * A shuffle number (ctd_conditions: int), which must correspond to a bottom-up (BU) network type.
-            * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5 predictions file.
-            * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
+            * A shuffle number (ctd_conditions: int), which must correspond to a
+                bottom-up (BU) network type.
+            * A predictions file path (ctd_conditions: string | Path), which must
+                correspond to a .json or .h5 predictions file.
+            * A shuffle number and a particular snapshot
+                (ctd_conditions: tuple[int, str] | tuple[int, int]), which respectively
+                correspond to a bottom-up (BU) network type and a particular snapshot
+                name or index.
 
     Returns
     -------
@@ -1623,6 +1628,7 @@ def create_training_dataset_from_existing_split(
     net_type: str | None = None,
     detector_type: str | None = None,
     augmenter_type: str | None = None,
+    ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
     posecfg_template: dict | None = None,
     superanimal_name: str = "",
     weight_init: WeightInitialization | None = None,
@@ -1707,6 +1713,19 @@ def create_training_dataset_from_existing_split(
             engine is specified for the project, defaults to
             ``deeplabcut.compat.DEFAULT_ENGINE``.
 
+        ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None, default = None,
+            If using a conditional-top-down (CTD) net_type, this argument should be
+            specified. It defines the conditions that will be used with the CTD model.
+            It can be either:
+                * A shuffle number (ctd_conditions: int), which must correspond to a
+                  bottom-up (BU) network type.
+                * A predictions file path (ctd_conditions: string | Path), which must
+                  correspond to a .json or .h5 predictions file.
+                * A shuffle number and a particular snapshot
+                  (ctd_conditions: tuple[int, str] | tuple[int, int]), which
+                  respectively correspond to a bottom-up (BU) network type and a
+                  particular snapshot name or index.
+
     Returns:
         If training dataset was successfully created, a list of tuples is returned.
         The first two elements in each tuple represent the training fraction and the
@@ -1758,6 +1777,7 @@ def create_training_dataset_from_existing_split(
         superanimal_name=superanimal_name,
         weight_init=weight_init,
         engine=engine,
+        ctd_conditions=ctd_conditions,
     )
 
 

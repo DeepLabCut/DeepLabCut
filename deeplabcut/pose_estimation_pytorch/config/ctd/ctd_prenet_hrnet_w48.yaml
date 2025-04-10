@@ -1,7 +1,7 @@
 data:
   bbox_margin: 25
   gen_sampling:
-    keypoint_sigmas: 0.1
+    keypoint_sigmas: 0.02
   inference:
     top_down_crop:
       width: 256

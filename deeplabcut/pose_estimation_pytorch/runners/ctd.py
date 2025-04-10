@@ -41,8 +41,8 @@ class CTDTrackingConfig:
     bu_on_lost_idv: bool = True
     bu_min_frequency: int | None = None
     bu_max_frequency: int | None = 100
-    threshold_bu_add: float = 0.3
-    threshold_ctd: float = 0.05
+    threshold_bu_add: float = 0.25
+    threshold_ctd: float = 0.01
     threshold_nms: float = 0.9
 
     @staticmethod

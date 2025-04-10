@@ -497,7 +497,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
                 predictions, _ = self.postprocessor(predictions, context)
 
             # Set the predictions as context for the next frame
-            self._ctd_tracking_postprocess(predictions)
+            self._ctd_tracking_postprocess(predictions, context["image_size"])
 
             if shelf_writer is not None:
                 shelf_writer.add_prediction(
@@ -546,7 +546,9 @@ class CTDInferenceRunner(PoseInferenceRunner):
         inputs, context = self.preprocessor(inputs, context)
         return inputs, context
 
-    def _ctd_tracking_postprocess(self, predictions: dict[str, np.ndarray]) -> None:
+    def _ctd_tracking_postprocess(
+        self, predictions: dict[str, np.ndarray], image_size: tuple[int, int],
+    ) -> None:
         """Post-processes predictions. In-place changes to the predictions dict."""
         # reorder the previous poses so the indices match the track IDs
         if self._idx_to_id is not None:
@@ -555,6 +557,13 @@ class CTDInferenceRunner(PoseInferenceRunner):
         # mask all keypoints below the CTD tracking threshold
         prev_pose = predictions["bodyparts"][..., :3].copy()
         prev_pose[prev_pose[..., 2] <= self.tracking.threshold_ctd] = np.nan
+
+        # mask all keypoints outside the image
+        w, h = image_size
+        prev_pose[prev_pose[..., 0] < 0] = np.nan
+        prev_pose[prev_pose[..., 1] < 0] = np.nan
+        prev_pose[prev_pose[..., 0] >= w] = np.nan
+        prev_pose[prev_pose[..., 1] >= h] = np.nan
 
         # apply NMS on the conditions, keeping older tracks
         order = None
