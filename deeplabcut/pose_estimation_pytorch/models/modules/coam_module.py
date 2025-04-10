@@ -15,11 +15,6 @@ import torch.nn as nn
 from torch.nn import init
 import torchvision.transforms.functional as TF
 
-# from deeplabcut.pose_estimation_pytorch.models.modules import (
-#     ColoredKeypointEncoder,
-#     StackedKeypointEncoder,
-# )
-
 
 class CoAMBlock(nn.Module):
     """
