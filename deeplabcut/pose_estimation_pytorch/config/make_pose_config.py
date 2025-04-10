@@ -141,7 +141,7 @@ def make_pytorch_pose_config(
     aug_cfg = {"data": read_config_as_dict(configs_dir / "base" / aug_filename)}
 
     # Add conditions for CTD models if specified
-    if task == Task.CTD and ctd_conditions is not None:
+    if task == Task.COND_TOP_DOWN and ctd_conditions is not None:
         _add_ctd_conditions(aug_cfg, ctd_conditions)
 
     pose_config = update_config(pose_config, aug_cfg)

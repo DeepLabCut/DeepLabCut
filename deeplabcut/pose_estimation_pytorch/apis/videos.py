@@ -414,7 +414,7 @@ def analyze_videos(
 
     # Load the BU model for the conditions provider
     cond_provider = None
-    if loader.pose_task == Task.CTD:
+    if loader.pose_task == Task.COND_TOP_DOWN:
         if ctd_conditions is None:
             cond_provider = get_condition_provider(
                 condition_cfg=loader.model_cfg["data"]["conditions"],
@@ -483,7 +483,7 @@ def analyze_videos(
         video_iterator = VideoIterator(video, cropping=cropping)
 
         # Check if BU model pose predictions exist so the model does not need to be run
-        if loader.pose_task == Task.CTD:
+        if loader.pose_task == Task.COND_TOP_DOWN:
             vid_cond_provider = get_conditions_provider_for_video(cond_provider, video)
             if vid_cond_provider is not None:
                 video_cond = vid_cond_provider.load_conditions()

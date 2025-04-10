@@ -523,7 +523,7 @@ def get_inference_runners(
         crop_cfg = model_config["data"]["inference"].get("top_down_crop", {})
         width, height = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
         margin = crop_cfg.get("margin", 0)
-        if pose_task == Task.CTD:
+        if pose_task == Task.COND_TOP_DOWN:
             pose_preprocessor = build_conditional_top_down_preprocessor(
                 color_mode=model_config["data"]["colormode"],
                 transform=transform,
@@ -720,7 +720,7 @@ def get_pose_inference_runner(
         width, height = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
         margin = crop_cfg.get("margin", 0)
 
-        if pose_task == Task.CTD:
+        if pose_task == Task.COND_TOP_DOWN:
             if cond_provider is not None:
                 kwargs["bu_runner"] = get_pose_inference_runner(
                     model_config=read_config_as_dict(cond_provider.config_path),

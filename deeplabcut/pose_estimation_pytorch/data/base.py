@@ -252,7 +252,7 @@ class Loader(ABC):
         data = self.load_data(mode)
         data["annotations"] = self.filter_annotations(data["annotations"], task)
         ctd_config = None
-        if self.pose_task == Task.CTD:
+        if self.pose_task == Task.COND_TOP_DOWN:
             ctd_config = GenSamplingConfig(
                 bbox_margin=self.model_cfg["data"].get("bbox_margin", 20),
                 **self.model_cfg["data"].get("gen_sampling", {}),

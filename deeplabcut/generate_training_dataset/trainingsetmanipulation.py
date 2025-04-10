@@ -848,6 +848,9 @@ def create_training_dataset(
                 * ``cspnext_x``
                 * ``ctd_coam_w32``
                 * ``ctd_coam_w48``
+                * ``ctd_prenet_cspnext_m``
+                * ``ctd_prenet_cspnext_x``
+                * ``ctd_prenet_rtmpose_x_human``
                 * ``ctd_prenet_hrnet_w32``
                 * ``ctd_prenet_hrnet_w48``
                 * ``ctd_prenet_rtmpose_m``

@@ -760,7 +760,7 @@ def build_inference_runner(
             )
         dynamic = None
 
-    if task == Task.CTD:
+    if task == Task.COND_TOP_DOWN:
         return CTDInferenceRunner(**kwargs)
 
     return PoseInferenceRunner(dynamic=dynamic, **kwargs)

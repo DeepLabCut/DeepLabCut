@@ -85,7 +85,7 @@ def predict(
                 for image in image_paths
             ]
 
-    elif loader.pose_task == Task.CTD:
+    elif loader.pose_task == Task.COND_TOP_DOWN:
         # Load conditions for context
         conditions = ctd.load_conditions_for_evaluation(loader, image_paths)
         context = [{"cond_kpts": conditions[image]} for image in image_paths]

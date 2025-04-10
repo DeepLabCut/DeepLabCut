@@ -104,7 +104,7 @@ class PoseDataset(Dataset):
         self.td_crop_size = self.parameters.top_down_crop_size
         self.td_crop_margin = self.parameters.top_down_crop_margin
 
-        if self.task == Task.CTD:
+        if self.task == Task.COND_TOP_DOWN:
             if self.ctd_config is None:
                 raise ValueError(
                     "Must specify a ``ctd_config`` in your PoseDatasetParameters for "
@@ -210,7 +210,7 @@ class PoseDataset(Dataset):
         offsets = (0, 0)
         scales = (1.0, 1.0)
 
-        if self.task in (Task.TOP_DOWN, Task.CTD):
+        if self.task in (Task.TOP_DOWN, Task.COND_TOP_DOWN):
             if self.parameters.top_down_crop_size is None:
                 raise ValueError(
                     "You must specify a cropped image size for top-down models"
@@ -222,7 +222,7 @@ class PoseDataset(Dataset):
                 )
             bboxes = bboxes.astype(int)
 
-            if self.task == Task.CTD:
+            if self.task == Task.COND_TOP_DOWN:
                 near_keypoints = keypoints[1:]
                 keypoints = keypoints[:1]
                 synthesized_keypoints = self.generative_sampler(
@@ -244,7 +244,7 @@ class PoseDataset(Dataset):
             if bboxes[0, 2] == 0 or bboxes[0, 3] == 0:
                 # bbox was augmented out of the image; blank image, no keypoints
                 keypoints[..., 2] = 0.0
-                if self.task == Task.CTD:
+                if self.task == Task.COND_TOP_DOWN:
                     keypoints = safe_stack(
                         [keypoints, keypoints],
                         (2, 1, self.parameters.num_joints, 3),
@@ -265,7 +265,7 @@ class PoseDataset(Dataset):
 
                 keypoints[:, :, 0] = (keypoints[:, :, 0] - offsets[0]) / scales[0]
                 keypoints[:, :, 1] = (keypoints[:, :, 1] - offsets[1]) / scales[1]
-                if self.task == Task.CTD:
+                if self.task == Task.COND_TOP_DOWN:
                     synthesized_keypoints[:, 0] = (
                         synthesized_keypoints[:, 0] - offsets[0]
                     ) / scales[0]
@@ -321,7 +321,7 @@ class PoseDataset(Dataset):
         scales: tuple[float, float],
     ) -> dict[str, np.ndarray | dict[str, np.ndarray]]:
         context = dict()
-        if self.task == Task.CTD:
+        if self.task == Task.COND_TOP_DOWN:
             context["cond_keypoints"] = keypoints[1, :, :, :].astype(np.single)
 
         return {
@@ -345,7 +345,7 @@ class PoseDataset(Dataset):
         anns: dict,
     ) -> dict[str, np.ndarray]:
         num_animals = self.parameters.max_num_animals
-        if self.task in (Task.TOP_DOWN, Task.CTD):
+        if self.task in (Task.TOP_DOWN, Task.COND_TOP_DOWN):
             num_animals = 1
 
         bbox_widths = np.maximum(1, bboxes[..., 2])
@@ -357,7 +357,7 @@ class PoseDataset(Dataset):
         individual_ids = anns["individual_id"]
         is_crowd = anns["iscrowd"]
         labels = anns["category_id"]
-        if self.task == Task.CTD:
+        if self.task == Task.COND_TOP_DOWN:
             keypoints = keypoints[0]
             area = area[:1]
             bboxes = bboxes[:1]
@@ -401,7 +401,7 @@ class PoseDataset(Dataset):
         """
         if self.task == Task.TOP_DOWN:
             return self._get_raw_item_crop(index)
-        elif self.task == Task.CTD:
+        elif self.task == Task.COND_TOP_DOWN:
             return self._get_raw_item_crop_context(index)
         elif self.task in (Task.BOTTOM_UP, Task.DETECT):
             return self._get_raw_item(index)

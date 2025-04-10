@@ -27,7 +27,7 @@ class Task(TaskDataMixin, Enum):
     BOTTOM_UP = ("BU", "BottomUp"), "snapshot"
     DETECT = ("DT", "Detect"), "snapshot-detector"
     TOP_DOWN = ("TD", "TopDown"), "snapshot"
-    CTD = ("CTD", "ConditionalTopDown"), "snapshot"
+    COND_TOP_DOWN = ("CTD", "CondTopDown", "ConditionalTopDown"), "snapshot"
 
     @classmethod
     def _missing_(cls, value):

@@ -102,7 +102,7 @@ def load_conditions_for_evaluation(
     Returns:
         The conditions for the images.
     """
-    if loader.pose_task != Task.CTD:
+    if loader.pose_task != Task.COND_TOP_DOWN:
         raise ValueError(f"Conditions can only be loaded for CTD models")
 
     # load the conditions config
