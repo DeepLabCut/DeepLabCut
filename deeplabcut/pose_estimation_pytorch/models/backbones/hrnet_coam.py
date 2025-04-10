@@ -183,14 +183,6 @@ class HRNetCoAM(HRNet):
         cond_hm = torch.from_numpy(cond_hm).float().to(x.device)
         cond_hm = cond_hm.permute(0, 3, 1, 2)  # (B, C, H, W)
 
-        from deeplabcut.pose_estimation_pytorch.data.image import plot_image_grid
-        # during training
-        # plot_image_grid(x.cpu().numpy(), cond_hm.cpu().numpy(), '/home/lucas/logs/debug_images', x[19,1,55,77])
-        # during inference
-        # plot_image_grid(x.cpu().numpy(), cond_hm.cpu().numpy(), '/home/lucas/logs/debug_images', np.random.rand(3,2), single=True)
-        # print('x', x.shape)
-        # print('cond_hm', cond_hm.shape)
-
         # Stem
         x = self.model.conv1(x)
         x = self.model.bn1(x)

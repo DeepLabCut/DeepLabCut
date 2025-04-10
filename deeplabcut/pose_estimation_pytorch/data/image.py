@@ -15,102 +15,11 @@ import copy
 from pathlib import Path
 
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torchvision.transforms.functional as F
 
 from deeplabcut.pose_estimation_pytorch.data.utils import _compute_crop_bounds
-
-
-def plot_keypoints(image, keypoints1, keypoints2, output_path="", img_ix=0):
-    """
-    Plots an image with two sets of keypoints and saves the result to disk.
-
-    Args:
-        image (numpy array): The image to be plotted (shape: [256, 256, 3]).
-        keypoints1 (numpy array): First set of keypoints (shape: [5, 3]).
-        keypoints2 (numpy array): Second set of keypoints (shape: [5, 3]).
-        output_path (str): Path to save the output image.
-    """
-
-    keypoints2[keypoints2 < 0] = 0
-
-    # Check if the keypoints have a confidence score
-    if keypoints1.shape[1] == 3:
-        keypoints1 = keypoints1[:, :2]  # Ignore confidence for now
-    if keypoints2.shape[1] == 3:
-        keypoints2 = keypoints2[:, :2]
-    # Create a figure and axis
-    fig, ax = plt.subplots(figsize=(6, 6))
-    # Plot the image
-    ax.imshow(image)
-    # Plot the first set of keypoints
-    for ix, keypoint in enumerate(keypoints1):
-        if ix == len(keypoints1) - 1:
-            ax.scatter(keypoint[0], keypoint[1], c='green', s=50, label="GT keypoints")
-        else:
-            ax.scatter(keypoint[0], keypoint[1], c='green', s=50)
-    # Plot the second set of keypoints
-    for ix, keypoint in enumerate(keypoints2):
-        if ix == len(keypoints2) - 1:
-            ax.scatter(keypoint[0], keypoint[1], c='red', s=50, label="Cond keypoints")
-        else:
-            ax.scatter(keypoint[0], keypoint[1], c='red', s=50)
-    # Add a legend to differentiate keypoints
-    ax.legend()
-    # Remove axis ticks
-    ax.axis("off")
-    # Save the image to disk
-    plt.savefig(f'{output_path}/loaded_cropped_{img_ix}.png', bbox_inches='tight')
-    plt.close()
-
-
-def plot_image_grid(images, conditions, save_path="", batch_ix=0, single=False):
-    """
-    Plots a grid of 16 images from vector1 in the left column and 16 images from vector2 in the right column.
-    Args:
-        images (numpy array): First vector of shape [32, 3, 256, 256].
-        conditions (numpy array): Second vector of shape [32, 3, 256, 256].
-        save_path (str): Path to save the output image.
-    """
-    # Ensure the inputs have the correct shape
-    num_images = 1 if single else 32
-
-    assert images.shape == (num_images, 3, 256, 256), "images must have shape [32, 3, 256, 256]"
-    assert conditions.shape == (num_images, 3, 256, 256), "conditions must have shape [32, 3, 256, 256]"
-
-    if single:
-        images1, images2 = images, conditions
-    else:
-        num_images = num_images // 2
-        # Select the first 16 images from each vector
-        images1 = images[:num_images]
-        images2 = conditions[:num_images]
-    
-    # Create a figure with 16 rows and 2 columns
-    fig, axes = plt.subplots(num_images, 2, figsize=(8, 32))
-    
-    # Loop through the rows and plot images
-    for i in range(num_images):
-        if single:
-            curr_ax = axes
-        else:
-            curr_ax = axes[i]
-        # Left column: images from vector1
-        curr_ax[0].imshow(np.transpose(images1[i], (1, 2, 0)))  # Convert [3, 256, 256] to [256, 256, 3]
-        curr_ax[0].axis("off")  # Turn off the axis
-        curr_ax[0].set_title(f"Input Images {i+1}", fontsize=8)
-        # Right column: images from vector2
-        curr_ax[1].imshow(np.transpose(images2[i], (1, 2, 0)))  # Convert [3, 256, 256] to [256, 256, 3]
-        curr_ax[1].axis("off")  # Turn off the axis
-        curr_ax[1].set_title(f"Cond. Heatmaps {i+1}", fontsize=8)
-    
-    # Adjust spacing
-    plt.tight_layout()
-    # Save the figure
-    plt.savefig(f'{save_path}/hrnet_coam_input_{batch_ix}.png', bbox_inches='tight')
-    plt.close(fig)  # Close the figure to free up memory
 
 
 def load_image(filepath: str | Path, color_mode: str = "RGB") -> np.ndarray:
