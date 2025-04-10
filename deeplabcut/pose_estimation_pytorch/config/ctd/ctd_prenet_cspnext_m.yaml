@@ -74,7 +74,7 @@ runner:
     type: LRListScheduler
     params:
       lr_list:
-      - - 1e-03
+      - - 5e-04
       - - 1e-04
       - - 1e-05
       milestones:
