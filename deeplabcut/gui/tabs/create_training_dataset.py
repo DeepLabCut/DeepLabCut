@@ -34,7 +34,7 @@ from deeplabcut.gui.displays.shuffle_metadata_viewer import ShuffleMetadataViewe
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import launch_napari
 from deeplabcut.modelzoo import build_weight_init
-from deeplabcut.pose_estimation_pytorch import available_models
+from deeplabcut.pose_estimation_pytorch import available_models, is_model_top_down
 from deeplabcut.utils.auxiliaryfunctions import (
     get_data_and_metadata_filenames,
     get_training_set_folder,
@@ -238,7 +238,7 @@ class CreateTrainingDataset(DefaultTab):
 
                     # try importing TF so they can't create shuffles for it if they
                     # don't have it installed
-                elif engine == Engine.PYTORCH and "top_down" in net_type:
+                elif engine == Engine.PYTORCH and is_model_top_down(net_type):
                     detector_type = self.detector_choice.currentText()
 
                 try:
@@ -463,7 +463,7 @@ class CreateTrainingDataset(DefaultTab):
         if net_choice is None:
             net_choice = self.net_choice.currentText()
 
-        if "top_down" in net_choice:
+        if is_model_top_down(net_choice):
             self.detector_label.show()
             self.detector_choice.show()
         else:
