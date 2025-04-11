@@ -32,11 +32,16 @@ import pandas as pd
 import scipy.io as sio
 
 import deeplabcut
+import tensorflow as tf
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
+from tensorflow.python.platform import build_info
+
 
 # Disable TF-Metal to avoid SegFaults with MacOS
-os.environ["TF_METAL_ENABLED"] = "0"
+if not build_info.build_info["is_cuda_build"]:
+    tf.config.set_visible_devices([], "GPU")
+
 
 USE_SHELVE = random.choice([True, False])
 MODELS = ["resnet_50", "efficientnet-b0"]

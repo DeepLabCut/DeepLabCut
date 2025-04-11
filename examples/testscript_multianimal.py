@@ -17,12 +17,17 @@ import numpy as np
 import pandas as pd
 
 import deeplabcut
+import tensorflow as tf
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoReader
+from tensorflow.python.platform import build_info
+
 
 # Disable TF-Metal to avoid SegFaults with MacOS
-os.environ["TF_METAL_ENABLED"] = "0"
+if not build_info.build_info["is_cuda_build"]:
+    tf.config.set_visible_devices([], "GPU")
+
 
 MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0"]
 
