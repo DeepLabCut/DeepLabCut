@@ -35,6 +35,9 @@ import deeplabcut
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
 
+# Disable TF-Metal to avoid SegFaults with MacOS
+os.environ["TF_METAL_ENABLED"] = "0"
+
 USE_SHELVE = random.choice([True, False])
 MODELS = ["resnet_50", "efficientnet-b0"]
 

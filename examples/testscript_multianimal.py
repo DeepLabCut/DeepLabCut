@@ -21,6 +21,9 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoReader
 
+# Disable TF-Metal to avoid SegFaults with MacOS
+os.environ["TF_METAL_ENABLED"] = "0"
+
 MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0"]
 
 
