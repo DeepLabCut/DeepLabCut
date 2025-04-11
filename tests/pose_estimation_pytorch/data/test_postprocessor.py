@@ -88,7 +88,10 @@ def test_trim_outputs(data):
     """expects x_processed = x * scale + offset"""
     postprocessor = TrimOutputs(max_individuals=data["max_individuals"])
     context = {}
-    predictions = {"bboxes": np.array(data["bboxes"]), "bbox_scores": np.array(data["bbox_scores"])}
+    predictions = {
+        "bboxes": np.array(data["bboxes"]),
+        "bbox_scores": np.array(data["bbox_scores"]),
+    }
     predictions, context = postprocessor(predictions, context=context)
     print(predictions["bboxes"].tolist())
     print(predictions["bbox_scores"].tolist())
@@ -231,13 +234,15 @@ def test_prepare_backbone_features():
     features[0, 25, 20] = 2
     features[0, 35, 30] = 3
 
-    pose = np.array([
+    pose = np.array(
         [
-            [10.1, 15.1, 0.95],
-            [20.1, 25.1, 0.95],
-            [29.9, 34.9, 0.95],
-        ],
-    ])
+            [
+                [10.1, 15.1, 0.95],
+                [20.1, 25.1, 0.95],
+                [29.9, 34.9, 0.95],
+            ],
+        ]
+    )
 
     predictions = [dict(backbone=dict(features=features), bodypart=dict(poses=pose))]
     context = dict(image_size=(img_w, img_h))
@@ -269,13 +274,15 @@ def test_prepare_top_down_backbone_features():
     features[1, 0, 85, 20] = 12
     features[1, 0, 75, 30] = 13
 
-    pose_idv0 = np.array([
+    pose_idv0 = np.array(
         [
-            [10.1, 15.1, 0.95],
-            [20.1, 25.1, 0.95],
-            [29.9, 34.9, 0.95],
-        ],
-    ])
+            [
+                [10.1, 15.1, 0.95],
+                [20.1, 25.1, 0.95],
+                [29.9, 34.9, 0.95],
+            ],
+        ]
+    )
     pose_idv1 = np.array(
         [
             [

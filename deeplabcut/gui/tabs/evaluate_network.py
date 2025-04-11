@@ -226,9 +226,7 @@ class EvaluateNetwork(DefaultTab):
             )
 
             image_dir = (
-                Path(self.root.project_folder)
-                / eval_folder
-                / f"LabeledImages_{scorer}"
+                Path(self.root.project_folder) / eval_folder / f"LabeledImages_{scorer}"
             )
             labeled_images = [str(p) for p in image_dir.rglob("*.png")]
             if len(labeled_images) > 0:

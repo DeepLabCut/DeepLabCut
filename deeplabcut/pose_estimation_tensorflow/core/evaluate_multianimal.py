@@ -437,15 +437,23 @@ def evaluate_multianimal_full(
                     coordinates = ["x", "y", "conf"]
                     # Create the new MultiIndex by repeating the existing index and adding the new level
                     poses_multi_index = pd.MultiIndex.from_tuples(
-                        [(scorer, individual, bodypart, coordinate)
-                         for scorer, individual, bodypart in df.index
-                         for coordinate in coordinates],
-                        names=df.index.names + ['coordinates']
+                        [
+                            (scorer, individual, bodypart, coordinate)
+                            for scorer, individual, bodypart in df.index
+                            for coordinate in coordinates
+                        ],
+                        names=df.index.names + ["coordinates"],
                     )
 
-                    predicted_poses = np.concatenate((predicted_poses, np.expand_dims(conf, axis=-1)), axis=-1)
-                    predicted_poses = predicted_poses.reshape(predicted_poses.shape[0], -1)
-                    df_predicted_poses = pd.DataFrame(predicted_poses, columns=poses_multi_index)
+                    predicted_poses = np.concatenate(
+                        (predicted_poses, np.expand_dims(conf, axis=-1)), axis=-1
+                    )
+                    predicted_poses = predicted_poses.reshape(
+                        predicted_poses.shape[0], -1
+                    )
+                    df_predicted_poses = pd.DataFrame(
+                        predicted_poses, columns=poses_multi_index
+                    )
                     write_poses_path = os.path.join(
                         evaluationfolder, f"predicted_poses_{training_iterations}.h5"
                     )

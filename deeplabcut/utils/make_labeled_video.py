@@ -1055,8 +1055,8 @@ def create_video(
         fname=video,
         sname=output_path,
         codec=codec,
-        sw=bbox[1]-bbox[0] if display_cropped else "",
-        sh=bbox[3]-bbox[2] if display_cropped else "",
+        sw=bbox[1] - bbox[0] if display_cropped else "",
+        sh=bbox[3] - bbox[2] if display_cropped else "",
         fps=fps,
     )
 

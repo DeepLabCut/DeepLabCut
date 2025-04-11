@@ -95,7 +95,7 @@ def resize_and_random_crop(
     else:
         h, w = get_resize_preserve_ratio(
             oh, ow, size[0], size[1], max_long_side=max_size
-            )
+        )
         tgt_h, tgt_w = size
 
     scale_x, scale_y = ow / w, oh / h
@@ -148,7 +148,9 @@ def resize_and_random_crop(
         if boxes is not None and len(boxes) > 0:
             scaled_boxes = (boxes / bbox_scale) - bbox_offset
             scaled_boxes = _compute_crop_bounds(
-                scaled_boxes, (tgt_h, tgt_w, 3), remove_empty=False,
+                scaled_boxes,
+                (tgt_h, tgt_w, 3),
+                remove_empty=False,
             )
             anns[bbox_key] = scaled_boxes
 
@@ -235,7 +237,7 @@ def top_down_crop(
 
     # crop the pixels we care about
     image_crop = np.zeros((h + pad_y, w + pad_x, c), dtype=image.dtype)
-    image_crop[pad_top:pad_top + h, pad_left:pad_left + w] = image[y1:y2, x1:x2]
+    image_crop[pad_top : pad_top + h, pad_left : pad_left + w] = image[y1:y2, x1:x2]
 
     # resize the cropped image
     image = cv2.resize(image_crop, (out_w, out_h), interpolation=cv2.INTER_LINEAR)

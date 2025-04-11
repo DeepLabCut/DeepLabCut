@@ -114,7 +114,8 @@ def build_bottom_up_postprocessor(
     if with_identity:
         components.append(
             AssignIndividualIdentities(
-                identity_key="identity_scores", pose_key="bodyparts",
+                identity_key="identity_scores",
+                pose_key="bodyparts",
             )
         )
 
@@ -307,7 +308,7 @@ class TrimOutputs(Postprocessor):
         for name in predictions:
             output = predictions[name]
             if len(output) > self.max_individuals[name]:
-                predictions[name] = output[:self.max_individuals[name]]
+                predictions[name] = output[: self.max_individuals[name]]
 
         return predictions, context
 

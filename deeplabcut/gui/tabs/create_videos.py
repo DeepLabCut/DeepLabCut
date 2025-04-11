@@ -264,10 +264,7 @@ class CreateVideos(DefaultTab):
         filtered = self.use_filtered_data_checkbox.isChecked()
 
         bodyparts = "all"
-        if (
-            len(self.bodyparts_to_use) != 0
-            and not self.plot_all_bodyparts.isChecked()
-        ):
+        if len(self.bodyparts_to_use) != 0 and not self.plot_all_bodyparts.isChecked():
             self.update_selected_bodyparts()
             bodyparts = self.bodyparts_to_use
 

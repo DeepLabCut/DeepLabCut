@@ -67,6 +67,3 @@ def test_build_feature_extraction_runner(tmp_path_factory):
         device="cpu",
         batch_size=1,
     )
-
-
-
