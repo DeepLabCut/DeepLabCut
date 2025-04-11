@@ -45,6 +45,7 @@ from deeplabcut.pose_estimation_pytorch.runners import (
     DynamicCropper,
     InferenceRunner,
     PoseInferenceRunner,
+    TopDownDynamicCropper,
 )
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import (
     Snapshot,
@@ -144,6 +145,7 @@ def get_model_snapshots(
     index: int | str,
     model_folder: Path,
     task: Task,
+    snapshot_filter: list[str] | None = None,
 ) -> list[Snapshot]:
     """
     Args:
@@ -154,6 +156,8 @@ def get_model_snapshots(
             snapshots.
         model_folder: The path to the folder containing the snapshots
         task: The task for which to return the snapshot
+        snapshot_filter: List of snapshot names to return (e.g. ["snapshot-50",
+            "snapshot-75"]). If defined, `index` will be ignored.
 
     Returns:
         If index=="all", returns all snapshots. Otherwise, returns a list containing a
@@ -166,6 +170,16 @@ def get_model_snapshots(
     snapshot_manager = TorchSnapshotManager(
         model_folder=model_folder, snapshot_prefix=task.snapshot_prefix
     )
+    if snapshot_filter is not None:
+        all_snapshots = snapshot_manager.snapshots()
+        snapshots = [s for s in all_snapshots if s.path.stem in snapshot_filter]
+        if len(snapshots) != len(snapshot_filter):
+            print(f"Warning: could not find all `snapshots_to_evaluate`.")
+            print(f"  Requested snapshots: {snapshot_filter}")
+            print(f"  Found snapshots: {[s.path.stem for s in all_snapshots]}")
+            print(f"  Snapshots returned: {[s.path.stem for s in snapshots]}")
+        return snapshots
+
     if isinstance(index, str) and index.lower() == "best":
         best_snapshot = snapshot_manager.best()
         if best_snapshot is None:
@@ -263,9 +277,12 @@ def get_scorer_name(
         snapshot = get_model_snapshots(snapshot_index, train_dir, pose_task)[0]
         detector_snapshot = None
         if detector_index is not None and pose_task == Task.TOP_DOWN:
-            detector_snapshot = get_model_snapshots(
-                detector_index, train_dir, Task.DETECT
-            )[0]
+            try:
+                detector_snapshot = get_model_snapshots(
+                    detector_index, train_dir, Task.DETECT
+                )[0]
+            except ValueError:
+                detector_snapshot = None
 
         snapshot_uid = get_scorer_uid(snapshot, detector_snapshot)
 
@@ -674,9 +691,9 @@ def get_pose_inference_runner(
         transform: the transform for pose estimation. if None, uses the transform
             defined in the config.
         dynamic: The DynamicCropper used for video inference, or None if dynamic
-            cropping should not be used. Only for bottom-up pose estimation models.
-            Should only be used when creating inference runners for video pose
-            estimation with batch size 1.
+            cropping should not be used. Should only be used when creating inference
+            runners for video pose estimation with batch size 1. For top-down pose
+            estimation models, a `TopDownDynamicCropper` must be used.
         cond_provider: Only for CTD models. If None, the CondProvider is created from
             the pytorch_cfg.
         ctd_tracking: Only for CTD models. Conditional top-down models can be used
@@ -704,7 +721,7 @@ def get_pose_inference_runner(
         transform = build_transforms(model_config["data"]["inference"])
 
     kwargs = {}
-    if pose_task == Task.BOTTOM_UP:
+    if pose_task == Task.BOTTOM_UP or isinstance(dynamic, TopDownDynamicCropper):
         pose_preprocessor = build_bottom_up_preprocessor(
             color_mode=model_config["data"]["colormode"],
             transform=transform,

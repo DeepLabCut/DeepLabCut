@@ -153,7 +153,9 @@ def test_mock_top_down(batch_size, detections_per_image):
 
 
 def test_dynamic_pose_inference_calls_dynamic():
-    pose_batch = [Mock()]
+    pose_batch = torch.zeros((1, 1, 1, 3))
+    pose_batch_updated = torch.ones((1, 1, 1, 3))
+
     image_crop = Mock()
     image_crop.__len__ = Mock(return_value=1)
 
@@ -165,16 +167,22 @@ def test_dynamic_pose_inference_calls_dynamic():
     dynamic.crop = Mock()
     dynamic.crop.return_value = image_crop
     dynamic.update = Mock()
+    dynamic.update.return_value = pose_batch_updated
 
     runner = inference.PoseInferenceRunner(
         model=model,
         dynamic=dynamic,
         batch_size=1,
     )
-    image = torch.Tensor((1, 3, 64, 64))
-    _ = runner.predict(image)
+    image = torch.zeros((1, 3, 64, 64))
+    updated_pose = runner.predict(image)
     dynamic.crop.assert_called_once_with(image)
     dynamic.update.assert_called_once_with(pose_batch)
+
+    assert len(updated_pose) == 1
+    np.testing.assert_allclose(
+        updated_pose[0]["bodypart"]["poses"], pose_batch_updated[0].cpu().numpy(),
+    )
 
 
 def _check_batch_shapes(batch_size, h, w, batch_shapes) -> None:

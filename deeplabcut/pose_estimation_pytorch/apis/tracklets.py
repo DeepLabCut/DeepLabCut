@@ -231,7 +231,7 @@ def build_tracklets(
         tracklets[0] = {}
         for index in tqdm(range(num_frames)):
             assemblies = assemblies_data.get(index)
-            if assemblies is None:
+            if assemblies is None or len(assemblies) == 0:
                 continue
 
             assembly = np.asarray(assemblies[0].data)

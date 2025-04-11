@@ -37,6 +37,7 @@ from deeplabcut.pose_estimation_pytorch.runners import (
     CTDTrackingConfig,
     DynamicCropper,
     InferenceRunner,
+    TopDownDynamicCropper,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
@@ -234,6 +235,7 @@ def analyze_videos(
     dynamic: tuple[bool, float, int] = (False, 0.5, 10),
     ctd_conditions: dict | CondFromModel | None = None,
     ctd_tracking: bool | dict | CTDTrackingConfig = False,
+    top_down_dynamic: dict | None = None,
     modelprefix: str = "",
     use_shelve: bool = False,
     robust_nframes: bool = False,
@@ -305,6 +307,33 @@ def analyze_videos(
             pose in the first frame, and for the remaining frames only the CTD model is
             needed. To configure conditional pose tracking differently, you can pass a
             CTDTrackingConfig instance.
+        top_down_dynamic: Configuration for a top-down dynamic cropper. If None,
+            top-down dynamic cropping is not used. Can only be used when running
+            inference on a single animal. If an empty dict is given, default parameters
+            are used. This is not recommended, as parameters should be customized for
+            your data. Possible parameters are:
+                "top_down_crop_size": tuple[int, int]
+                    The (width, height) to resize the crop to. If not specified, will
+                    be loaded from the `pytorch_cfg.yaml` for your top-down model. If
+                    your model is not a top-down model, must be given.
+                "patch_counts": tuple[int, int] (default: (3, 2))
+                    The number of patches along the (width, height) of the images when
+                    no crop is found.
+                "patch_overlap": int (default: 50)
+                    The amount of overlapping pixels between adjacent patches.
+                "min_bbox_size": tuple[int, int] (default: (50, 50))
+                    The minimum (width, height) for a detected bounding box.
+                "threshold": float (default: 0.6)
+                    The threshold score for bodyparts above which an individual is
+                    considered to be detected.
+                "margin": int (default: 25)
+                    The margin to add around keypoints when generating bounding boxes.
+                "min_hq_keypoints": int (default: 2)
+                    The minimum number of keypoints above the threshold required for the
+                    individual to be considered detected and a bbox to be computed.
+                "bbox_from_hq": bool (default: False)
+                    If True, only keypoints above the score threshold will be used to
+                    compute the bounding boxes.
         modelprefix: directory containing the deeplabcut models to use when evaluating
             the network. By default, they are assumed to exist in the project folder.
         batch_size: the batch size to use for inference. Takes the value from the
@@ -404,9 +433,21 @@ def analyze_videos(
     if loader.pose_task != Task.BOTTOM_UP and dynamic is not None:
         print(
             "Turning off dynamic cropping. It should only be used for bottom-up "
-            f"pose estimation models, but you are using a top-down model."
+            "pose estimation models, but you are using a top-down model. For top-down "
+            "models, use the TopDownDynamicCropper with the `top_down_dynamic` arg."
         )
         dynamic = None
+
+    if top_down_dynamic is not None:
+        if loader.pose_task == Task.TOP_DOWN:
+            td_cfg = loader.model_cfg["data"]["inference"].get(
+                "top_down_crop",
+                {"width": 256, "height": 256},
+            )
+            top_down_dynamic["top_down_crop_size"] = td_cfg["width"], td_cfg["height"]
+
+        print(f"Creating a TopDownDynamicCropper with configuration {top_down_dynamic}")
+        dynamic = TopDownDynamicCropper(**top_down_dynamic)
 
     snapshot = utils.get_model_snapshots(
         snapshot_index, loader.model_folder, loader.pose_task
@@ -445,7 +486,7 @@ def analyze_videos(
 
     detector_runner = None
     detector_path, detector_snapshot = None, None
-    if loader.pose_task == Task.TOP_DOWN:
+    if loader.pose_task == Task.TOP_DOWN and dynamic is None:
         if detector_snapshot_index is None:
             raise ValueError(
                 "Cannot run videos analysis for top-down models without a detector "

@@ -249,7 +249,7 @@ def train_network(
             batch_size=8,
             epochs=100,
             save_epochs=10,
-            display_iters=50,
+            displayiters=50,
         )
     """
     if engine is None:
@@ -562,6 +562,7 @@ def evaluate_network(
             plotting=plotting,
             show_errors=show_errors,
             comparison_bodyparts=comparisonbodyparts,
+            snapshots_to_evaluate=snapshots_to_evaluate,
             per_keypoint_evaluation=per_keypoint_evaluation,
             modelprefix=modelprefix,
             pcutoff=pcutoff,

@@ -686,6 +686,7 @@ def evaluate_network(
     plotting: bool | str = False,
     show_errors: bool = True,
     transform: A.Compose = None,
+    snapshots_to_evaluate: list[str] | None = None,
     comparison_bodyparts: str | list[str] | None = None,
     per_keypoint_evaluation: bool = False,
     modelprefix: str = "",
@@ -717,6 +718,8 @@ def evaluate_network(
         show_errors: display train and test errors.
         transform: transformation pipeline for evaluation
             ** Should normalise the data the same way it was normalised during training **
+        snapshots_to_evaluate: List of snapshot names to evaluate (e.g. ["snapshot-50",
+            "snapshot-75"]). If defined, `snapshotindex` will be ignored.
         comparison_bodyparts: A subset of the bodyparts for which to compute the
             evaluation metrics.
         per_keypoint_evaluation: Compute the train and test RMSE for each keypoint, and
@@ -790,6 +793,7 @@ def evaluate_network(
                 snapshotindex,
                 model_folder=loader.model_folder,
                 task=loader.pose_task,
+                snapshot_filter=snapshots_to_evaluate,
             )
 
             detector_snapshots = [None]
