@@ -16,6 +16,10 @@ from deeplabcut.pose_estimation_pytorch.data.dataset import (
     PoseDatasetParameters,
     PoseDataset,
 )
+from deeplabcut.pose_estimation_pytorch.data.generative_sampling import (
+    GenerativeSampler,
+    GenSamplingConfig,
+)
 from deeplabcut.pose_estimation_pytorch.data.image import top_down_crop
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
     build_bottom_up_postprocessor,
@@ -28,4 +32,5 @@ from deeplabcut.pose_estimation_pytorch.data.preprocessor import (
     build_top_down_preprocessor,
     Preprocessor,
 )
+from deeplabcut.pose_estimation_pytorch.data.snapshots import list_snapshots, Snapshot
 from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms

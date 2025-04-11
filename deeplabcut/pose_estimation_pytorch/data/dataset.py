@@ -13,19 +13,25 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import albumentations as A
-import cv2
 import numpy as np
 from torch.utils.data import Dataset
 
-from deeplabcut.pose_estimation_pytorch.data.image import top_down_crop
+from deeplabcut.pose_estimation_pytorch.data.generative_sampling import (
+    GenerativeSampler,
+    GenSamplingConfig,
+)
+from deeplabcut.pose_estimation_pytorch.data.image import load_image, top_down_crop
 from deeplabcut.pose_estimation_pytorch.data.utils import (
     _crop_image_keypoints,
     _extract_keypoints_and_bboxes,
     apply_transform,
+    bbox_from_keypoints,
+    calc_bbox_overlap,
     map_id_to_annotations,
     map_image_path_to_id,
     out_of_bounds_keypoints,
     pad_to_length,
+    safe_stack,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
 
@@ -40,6 +46,7 @@ class PoseDatasetParameters:
         individuals: the names of individuals
         with_center_keypoints: whether to compute center keypoints for individuals
         color_mode: {"RGB", "BGR"} the mode to load images in
+        ctd_config: for CTD models, the configuration for bbox calculation and error sampling
         top_down_crop_size: for top-down models, the (width, height) to crop bboxes to
         top_down_crop_margin: for top-down models, the margin to add around bboxes
     """
@@ -49,8 +56,10 @@ class PoseDatasetParameters:
     individuals: list[str]
     with_center_keypoints: bool = False
     color_mode: str = "RGB"
+    ctd_config: GenSamplingConfig | None = None
     top_down_crop_size: tuple[int, int] | None = None
     top_down_crop_margin: int | None = None
+    top_down_crop_with_context: bool = True
 
     @property
     def num_joints(self) -> int:
@@ -75,6 +84,7 @@ class PoseDataset(Dataset):
     transform: A.BaseCompose | None = None
     mode: str = "train"
     task: Task = Task.BOTTOM_UP
+    ctd_config: GenSamplingConfig | None = None
 
     def __post_init__(self):
         self.image_path_id_map = map_image_path_to_id(self.images)
@@ -94,8 +104,20 @@ class PoseDataset(Dataset):
         self.td_crop_size = self.parameters.top_down_crop_size
         self.td_crop_margin = self.parameters.top_down_crop_margin
 
+        if self.task == Task.COND_TOP_DOWN:
+            if self.ctd_config is None:
+                raise ValueError(
+                    "Must specify a ``ctd_config`` in your PoseDatasetParameters for "
+                    "CTD models."
+                )
+
+            self.generative_sampler = GenerativeSampler(
+                self.parameters.num_joints,
+                **self.ctd_config.to_dict(),
+            )
+
     def __len__(self):
-        # TODO: TD should only return the number of annotations that aren't unique_bodyparts
+        # TODO: TD/CTD should only return the number of annotations that aren't unique_bodyparts
         if self.task in (Task.BOTTOM_UP, Task.DETECT):
             return len(self.images)
 
@@ -117,16 +139,28 @@ class PoseDataset(Dataset):
             Otherwise, it returns the image path and a list of annotations for all instances in the image.
         """
         img = self.images[index]
-
         anns = [self.annotations[idx] for idx in self.annotation_idx_map[img["id"]]]
-
         return img["file_name"], anns, img["id"]
 
     def _get_raw_item_crop(self, index: int) -> tuple[str, list[dict], int]:
         ann = self.annotations[index]
-
         img = self.images[self.img_id_to_index[ann["image_id"]]]
         return img["file_name"], [ann], img["id"]
+
+    def _get_raw_item_crop_context(self, index: int) -> tuple[str, list[dict], int]:
+        """
+        Includes keypoints from other individuals in the image ("context").
+        """
+        ann = self.annotations[index]
+        img = self.images[self.img_id_to_index[ann["image_id"]]]
+        near_anns = []
+        for idx in self.annotation_idx_map[img["id"]]:
+            # we consider near annotations to be those whose bounding boxes overlap with
+            # the current item
+            # HACK: add same annotation as near keypoints so that we don't have empty list
+            if calc_bbox_overlap(ann["bbox"], self.annotations[idx]["bbox"]) > 0:
+                near_anns.append(self.annotations[idx])
+        return img["file_name"], [ann] + near_anns, img["id"]
 
     def __getitem__(self, index: int) -> dict:
         """
@@ -155,8 +189,8 @@ class PoseDataset(Dataset):
             }
         """
         image_path, anns, image_id = self._get_data_based_on_task(index)
-
-        image, original_size = self._load_image(image_path)
+        image = load_image(image_path, color_mode=self.parameters.color_mode)
+        original_size = image.shape
         (
             keypoints,
             keypoints_unique,
@@ -176,35 +210,83 @@ class PoseDataset(Dataset):
         offsets = (0, 0)
         scales = (1.0, 1.0)
 
-        if self.task == Task.TOP_DOWN:
-            if len(bboxes) > 1:
+        if self.task in (Task.TOP_DOWN, Task.COND_TOP_DOWN):
+            if self.parameters.top_down_crop_size is None:
+                raise ValueError(
+                    "You must specify a cropped image size for top-down models"
+                )
+            if len(bboxes) > 1 and self.task == Task.TOP_DOWN:
                 raise ValueError(
                     "There can only be one bbox per item in TD datasets, found "
                     f"{bboxes} for {index} (image {image_path})"
                 )
             bboxes = bboxes.astype(int)
 
+            if self.task == Task.COND_TOP_DOWN:
+                near_keypoints = keypoints[1:]
+                keypoints = keypoints[:1]
+                synthesized_keypoints = self.generative_sampler(
+                    keypoints=keypoints.reshape(-1, 3),
+                    near_keypoints=near_keypoints.reshape(len(near_keypoints), -1, 3),
+                    area=bboxes[0, 2] * bboxes[0, 3],
+                    image_size=original_size,
+                )
+
+                # if conditional keypoints are empty, we take original bbox
+                if np.any(synthesized_keypoints[..., -1] > 0):
+                    bboxes[0] = bbox_from_keypoints(
+                        synthesized_keypoints,
+                        original_size[0],
+                        original_size[1],
+                        self.ctd_config.bbox_margin,
+                    )
+
             if bboxes[0, 2] == 0 or bboxes[0, 3] == 0:
                 # bbox was augmented out of the image; blank image, no keypoints
                 keypoints[..., 2] = 0.0
+                if self.task == Task.COND_TOP_DOWN:
+                    keypoints = safe_stack(
+                        [keypoints, keypoints],
+                        (2, 1, self.parameters.num_joints, 3),
+                    )
+
                 image = np.zeros(
                     (self.td_crop_size[1], self.td_crop_size[0], image.shape[-1]),
                     dtype=image.dtype,
                 )
             else:
                 image, offsets, scales = top_down_crop(
-                    image, bboxes[0], self.td_crop_size, margin=self.td_crop_margin,
+                    image,
+                    bboxes[0],
+                    self.parameters.top_down_crop_size,
+                    self.parameters.top_down_crop_margin,
+                    crop_with_context=self.parameters.top_down_crop_with_context,
                 )
+
                 keypoints[:, :, 0] = (keypoints[:, :, 0] - offsets[0]) / scales[0]
                 keypoints[:, :, 1] = (keypoints[:, :, 1] - offsets[1]) / scales[1]
+                if self.task == Task.COND_TOP_DOWN:
+                    synthesized_keypoints[:, 0] = (
+                        synthesized_keypoints[:, 0] - offsets[0]
+                    ) / scales[0]
+                    synthesized_keypoints[:, 1] = (
+                        synthesized_keypoints[:, 1] - offsets[1]
+                    ) / scales[1]
+                    keypoints = safe_stack(
+                        [keypoints, synthesized_keypoints[None, ...]],
+                        (2, 1, self.parameters.num_joints, 3),
+                    )
+
                 bboxes = bboxes[:1]
                 bboxes[..., 0] = (bboxes[..., 0] - offsets[0]) / scales[0]
                 bboxes[..., 1] = (bboxes[..., 1] - offsets[1]) / scales[1]
                 bboxes[..., 2] = bboxes[..., 2] / scales[0]
                 bboxes[..., 3] = bboxes[..., 3] / scales[1]
+                bboxes = np.clip(
+                    bboxes, 0, self.parameters.top_down_crop_size[0] - 1
+                )  # TODO: clip based on [x,y,x,y]?
 
-                # as a RandomBBoxTransform can be added, keypoints may be outside of the
-                #   image after the crop
+                # RandomBBoxTransform may move keypoints outside the cropped image
                 oob_mask = out_of_bounds_keypoints(keypoints, self.td_crop_size)
                 if np.sum(oob_mask) > 0:
                     keypoints[oob_mask, 2] = 0.0
@@ -238,6 +320,10 @@ class PoseDataset(Dataset):
         offsets: tuple[int, int],
         scales: tuple[float, float],
     ) -> dict[str, np.ndarray | dict[str, np.ndarray]]:
+        context = dict()
+        if self.task == Task.COND_TOP_DOWN:
+            context["cond_keypoints"] = keypoints[1, :, :, :].astype(np.single)
+
         return {
             "image": image.transpose((2, 0, 1)),
             "image_id": image_id,
@@ -248,6 +334,7 @@ class PoseDataset(Dataset):
             "annotations": self._prepare_final_annotation_dict(
                 keypoints, keypoints_unique, bboxes, annotations_merged
             ),
+            "context": context,
         }
 
     def _prepare_final_annotation_dict(
@@ -258,7 +345,7 @@ class PoseDataset(Dataset):
         anns: dict,
     ) -> dict[str, np.ndarray]:
         num_animals = self.parameters.max_num_animals
-        if self.task == Task.TOP_DOWN:
+        if self.task in (Task.TOP_DOWN, Task.COND_TOP_DOWN):
             num_animals = 1
 
         bbox_widths = np.maximum(1, bboxes[..., 2])
@@ -266,6 +353,17 @@ class PoseDataset(Dataset):
         area = bbox_widths * bbox_heights
         if "individual_id" not in anns:
             anns["individual_id"] = -np.ones(len(anns["category_id"]), dtype=int)
+
+        individual_ids = anns["individual_id"]
+        is_crowd = anns["iscrowd"]
+        labels = anns["category_id"]
+        if self.task == Task.COND_TOP_DOWN:
+            keypoints = keypoints[0]
+            area = area[:1]
+            bboxes = bboxes[:1]
+            individual_ids = individual_ids[:1]
+            is_crowd = is_crowd[:1]
+            labels = labels[:1]
 
         # we use ..., :3 to pass the visibility flag along
         return {
@@ -276,18 +374,12 @@ class PoseDataset(Dataset):
             "with_center_keypoints": self.parameters.with_center_keypoints,
             "area": pad_to_length(area, num_animals, 0).astype(np.single),
             "boxes": pad_to_length(bboxes, num_animals, 0).astype(np.single),
-            "is_crowd": pad_to_length(anns["iscrowd"], num_animals, 0).astype(int),
-            "labels": pad_to_length(anns["category_id"], num_animals, -1).astype(int),
-            "individual_ids": pad_to_length(
-                anns["individual_id"], num_animals, -1
-            ).astype(int),
+            "is_crowd": pad_to_length(is_crowd, num_animals, 0).astype(int),
+            "labels": pad_to_length(labels, num_animals, -1).astype(int),
+            "individual_ids": pad_to_length(individual_ids, num_animals, -1).astype(
+                int
+            ),
         }
-
-    def _load_image(self, image_path):
-        image = cv2.imread(image_path)
-        if self.parameters.color_mode == "RGB":
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        return image, image.shape
 
     def _get_data_based_on_task(self, index: int) -> tuple[str, list[dict], int]:
         """
@@ -309,7 +401,9 @@ class PoseDataset(Dataset):
         """
         if self.task == Task.TOP_DOWN:
             return self._get_raw_item_crop(index)
-        elif self.task in [Task.BOTTOM_UP, Task.DETECT]:
+        elif self.task == Task.COND_TOP_DOWN:
+            return self._get_raw_item_crop_context(index)
+        elif self.task in (Task.BOTTOM_UP, Task.DETECT):
             return self._get_raw_item(index)
 
         raise ValueError(f"Unknown task: {self.task}")

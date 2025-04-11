@@ -119,6 +119,7 @@ def create_multianimaltraining_dataset(
     userfeedback: bool = True,
     weight_init: WeightInitialization | None = None,
     engine: Engine | None = None,
+    ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
 ):
     """
     Creates a training dataset for multi-animal datasets. Labels from all the extracted
@@ -158,17 +159,38 @@ def create_multianimaltraining_dataset(
                 * ``efficientnet-b6``
             PyTorch (call ``deeplabcut.pose_estimation_pytorch.available_models()`` for
             a complete list)
-                * ``resnet_50``
-                * ``resnet_101``
+                * ``animaltokenpose_base``
+                * ``cspnext_m``
+                * ``cspnext_s``
+                * ``cspnext_x``
+                * ``ctd_coam_w32``
+                * ``ctd_coam_w48``
+                * ``ctd_prenet_hrnet_w32``
+                * ``ctd_prenet_hrnet_w48``
+                * ``ctd_prenet_rtmpose_m``
+                * ``ctd_prenet_rtmpose_x``
+                * ``ctd_prenet_rtmpose_x_human``
                 * ``dekr_w18``
                 * ``dekr_w32``
                 * ``dekr_w48``
-                * ``top_down_resnet_50``
-                * ``top_down_resnet_101``
+                * ``dlcrnet_stride16_ms5``
+                * ``dlcrnet_stride32_ms5``
+                * ``hrnet_w18``
+                * ``hrnet_w32``
+                * ``hrnet_w48``
+                * ``resnet_101``
+                * ``resnet_50``
+                * ``rtmpose_m``
+                * ``rtmpose_s``
+                * ``rtmpose_x``
+                * ``top_down_cspnext_m``
+                * ``top_down_cspnext_s``
+                * ``top_down_cspnext_x``
                 * ``top_down_hrnet_w18``
                 * ``top_down_hrnet_w32``
                 * ``top_down_hrnet_w48``
-                * ``animaltokenpose_base``
+                * ``top_down_resnet_101``
+                * ``top_down_resnet_50``
 
     detector_type: string, optional, default=None
         Only for the PyTorch engine.
@@ -232,6 +254,14 @@ def create_multianimaltraining_dataset(
         Whether to create a pose config for a Tensorflow or PyTorch model. Defaults to
         the value specified in the project configuration file. If no engine is specified
         for the project, defaults to ``deeplabcut.compat.DEFAULT_ENGINE``.
+
+    ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] , optional, default = None,
+        If using a conditional-top-down (CTD) net_type, this argument needs to be specified.
+        It defines the conditions that will be used with the CTD model.
+        It can be either:
+            * A shuffle number (ctd_conditions: int), which must correspond to a bottom-up (BU) network type.
+            * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5 predictions file.
+            * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
 
     Example
     --------
@@ -596,6 +626,7 @@ def create_multianimaltraining_dataset(
                         detector_type=detector_type,
                         weight_init=weight_init,
                         save=True,
+                        ctd_conditions=ctd_conditions,
                     )
 
                 make_pytorch_test_config(pytorch_cfg, path_test_config, save=True)

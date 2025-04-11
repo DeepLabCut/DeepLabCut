@@ -1436,6 +1436,11 @@ def _convert_detections_to_tracklets(
             f"Invalid tracking method. Only {', '.join(trackingutils.TRACK_METHODS)} are currently supported."
         )
 
+    if track_method == "ctd":
+        raise ValueError(
+            "CTD tracking is only available for BUCTD models with the PyTorch engine."
+        )
+
     joints = data["metadata"]["all_joints_names"]
     partaffinityfield_graph = data["metadata"]["PAFgraph"]
     paf_inds = data["metadata"]["PAFinds"]

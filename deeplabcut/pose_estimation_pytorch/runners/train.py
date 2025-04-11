@@ -435,7 +435,11 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
 
         inputs = batch["image"]
         inputs = inputs.to(self.device).float()
-        outputs = self.model(inputs)
+        if 'cond_keypoints' in batch['context']:
+            cond_kpts = batch['context']['cond_keypoints']
+            outputs = self.model(inputs, cond_kpts=cond_kpts)
+        else:
+            outputs = self.model(inputs)
 
         if self._data_parallel:
             underlying_model = self.model.module

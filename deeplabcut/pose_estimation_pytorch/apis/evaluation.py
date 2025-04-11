@@ -21,6 +21,7 @@ import pandas as pd
 from tqdm import tqdm
 
 import deeplabcut.core.metrics as metrics
+import deeplabcut.pose_estimation_pytorch.apis.ctd as ctd
 import deeplabcut.pose_estimation_pytorch.apis.prune_paf_graph as prune_paf_graph
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch import utils
@@ -83,6 +84,11 @@ def predict(
                 {"bboxes": ground_truth_bboxes[image]["bboxes"]}
                 for image in image_paths
             ]
+
+    elif loader.pose_task == Task.COND_TOP_DOWN:
+        # Load conditions for context
+        conditions = ctd.load_conditions_for_evaluation(loader, image_paths)
+        context = [{"cond_kpts": conditions[image]} for image in image_paths]
 
     images_with_context = image_paths
     if context is not None:
@@ -501,7 +507,9 @@ def evaluate_snapshot(
     head_type = loader.model_cfg["model"]["heads"]["bodypart"]["type"]
     if head_type == "DLCRNetHead":
         prune_paf_graph.benchmark_paf_graphs(
-            loader=loader, snapshot_path=snapshot.path, verbose=False,
+            loader=loader,
+            snapshot_path=snapshot.path,
+            verbose=False,
         )
 
     parameters = loader.get_dataset_parameters()
@@ -563,7 +571,8 @@ def evaluate_snapshot(
         ),
         "pcutoff": (
             ", ".join([str(v) for v in pcutoff])
-            if isinstance(pcutoff, list) else pcutoff
+            if isinstance(pcutoff, list)
+            else pcutoff
         ),
     }
     for split in ["train", "test"]:

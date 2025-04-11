@@ -21,7 +21,7 @@ from deeplabcut.core.inferenceutils import calc_object_keypoint_similarity
 def compute_oks_matrix(
     ground_truth: np.ndarray,
     predictions: np.ndarray,
-    oks_sigma: float,
+    oks_sigma: float | np.ndarray,
     oks_bbox_margin: float = 0.0,
 ) -> np.ndarray:
     """Computes the OKS score for each (prediction, gt) pair in an image
@@ -53,7 +53,7 @@ def compute_oks_matrix(
 def compute_oks(
     data: list[tuple[np.ndarray, np.ndarray]],
     oks_bbox_margin: float = 0.0,
-    oks_sigma: float = 0.1,
+    oks_sigma: float | np.ndarray = 0.1,
     oks_thresholds: np.ndarray | None = None,
     oks_recall_thresholds: np.ndarray | None = None,
 ) -> dict[str, float]:

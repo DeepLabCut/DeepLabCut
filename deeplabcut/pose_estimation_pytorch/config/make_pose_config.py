@@ -23,6 +23,7 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     replace_default_values,
     update_config,
 )
+from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 
@@ -34,6 +35,7 @@ def make_pytorch_pose_config(
     detector_type: str | None = None,
     weight_init: WeightInitialization | None = None,
     save: bool = False,
+    ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
 ) -> dict:
     """Creates a PyTorch pose configuration file for a DeepLabCut project
 
@@ -66,6 +68,14 @@ def make_pytorch_pose_config(
         weight_init: Specify how model weights should be initialized. If None, ImageNet
             pretrained weights from Timm will be loaded when training.
         save: Whether to save the model configuration file to the ``pose_config_path``.
+        ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] , optional, default = None,
+            If using a conditional-top-down (CTD) net_type, this argument needs to be specified.
+            It defines the conditions that will be used with the CTD model.
+            It can be either:
+                * A shuffle number (ctd_conditions: int), which must correspond to a bottom-up (BU) network type.
+                * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5 predictions file.
+                * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
+
 
     Returns:
         the PyTorch pose configuration file
@@ -117,8 +127,8 @@ def make_pytorch_pose_config(
             **default_value_kwargs,
         )
 
-    is_top_down = model_cfg.get("method", "BU").upper() == "TD"
-    if is_top_down:
+    task = Task(model_cfg.get("method", "BU").upper())
+    if task == Task.TOP_DOWN:
         model_cfg = add_detector(
             configs_dir,
             model_cfg,
@@ -127,8 +137,13 @@ def make_pytorch_pose_config(
         )
 
     # add the default augmentations to the config
-    aug_filename = "aug_top_down.yaml" if is_top_down else "aug_default.yaml"
+    aug_filename = "aug_default.yaml" if task == Task.BOTTOM_UP else "aug_top_down.yaml"
     aug_cfg = {"data": read_config_as_dict(configs_dir / "base" / aug_filename)}
+
+    # Add conditions for CTD models if specified
+    if task == Task.COND_TOP_DOWN and ctd_conditions is not None:
+        _add_ctd_conditions(aug_cfg, ctd_conditions)
+
     pose_config = update_config(pose_config, aug_cfg)
 
     # add the model to the config
@@ -140,7 +155,7 @@ def make_pytorch_pose_config(
 
     # add a unique bodypart head if needed
     if len(unique_bpts) > 0:
-        if is_top_down:
+        if task != Task.BOTTOM_UP:
             raise ValueError(
                 f"You selected a top-down model architecture ({net_type}), but you have"
                 f" unique bodyparts, which is not yet implemented for top-down models."
@@ -157,7 +172,7 @@ def make_pytorch_pose_config(
 
     # add an identity head if needed
     if with_identity:
-        if is_top_down:
+        if task != Task.BOTTOM_UP:
             raise ValueError(
                 f"You selected a top-down model architecture ({net_type}), but you have"
                 f" set `identity: true`, which is not yet implemented for top-down"
@@ -179,6 +194,55 @@ def make_pytorch_pose_config(
         write_config(pose_config_path, pose_config, overwrite=True)
 
     return pose_config
+
+
+def _add_ctd_conditions(
+    aug_cfg: dict, ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int]
+):
+    """
+    Args:
+        aug_cfg: dict, data augmentation configuration
+        ctd_conditions: Only for using conditional-top-down (CTD) models. It defines
+            the conditions that will be used with the CTD model. It can be:
+            * A shuffle number (ctd_conditions: int), which must correspond to a
+                bottom-up (BU) network type.
+            * A predictions file path (ctd_conditions: string | Path), which must
+                correspond to a .json or .h5 predictions file.
+            * A shuffle number and a particular snapshot (ctd_conditions:
+                tuple[int, str] | tuple[int, int]), which respectively correspond to a
+                bottom-up (BU) network type and a particular snapshot name or index.
+    """
+    if isinstance(ctd_conditions, int):
+        conditions = {"shuffle": ctd_conditions}
+
+    elif isinstance(ctd_conditions, str) or isinstance(ctd_conditions, Path):
+        ctd_conditions = Path(ctd_conditions)
+        if not ctd_conditions.exists():
+            raise FileNotFoundError(f"Invalid path: {ctd_conditions}")
+        if ctd_conditions.suffix not in (".h5", ".json"):
+            raise ValueError(f"Invalid conditions file extension.")
+        conditions = str(ctd_conditions.resolve())
+
+    elif isinstance(ctd_conditions, tuple):
+        if len(ctd_conditions) != 2:
+            raise ValueError(f"Invalid conditions tuple length.")
+        if not isinstance(ctd_conditions[0], int):
+            raise TypeError("Conditions shuffle number must be of type int.")
+        if isinstance(ctd_conditions[1], int):
+            conditions = {
+                "shuffle": ctd_conditions[0],
+                "snapshot_index": ctd_conditions[1],
+            }
+        elif isinstance(ctd_conditions[1], str):
+            conditions = {"shuffle": ctd_conditions[0], "snapshot": ctd_conditions[1]}
+        else:
+            raise TypeError(
+                "Conditions snapshot must be of type int (index) or string (snapshot name)."
+            )
+    else:
+        raise TypeError("Conditions ctd_conditions is of invalid type.")
+
+    aug_cfg["data"]["conditions"] = conditions
 
 
 def make_pytorch_test_config(
@@ -439,7 +503,8 @@ def add_detector(
         read_config_as_dict(configs_dir / "detectors" / f"{detector_type}.yaml"),
     )
     detector_config = replace_default_values(
-        detector_config, num_individuals=num_individuals,
+        detector_config,
+        num_individuals=num_individuals,
     )
     config["detector"] = dict(sorted(detector_config.items()))
     return config

@@ -18,9 +18,12 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+import deeplabcut.pose_estimation_pytorch.post_processing.nms as nms
+import deeplabcut.pose_estimation_pytorch.runners.ctd as ctd
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
+from deeplabcut.core.inferenceutils import calc_object_keypoint_similarity
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import Postprocessor
-from deeplabcut.pose_estimation_pytorch.data.preprocessor import Preprocessor
+from deeplabcut.pose_estimation_pytorch.data.preprocessor import LoadImage, Preprocessor
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.runners.base import ModelType, Runner
@@ -79,13 +82,20 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 weights_only=load_weights_only,
             )
 
+        self.model.to(self.device)
+        self.model.eval()
+
         self._batch: torch.Tensor | None = None
+        self._model_kwargs: dict[str, np.ndarray | torch.Tensor] = {}
+
         self._contexts: list[dict] = []
         self._image_batch_sizes: list[int] = []
         self._predictions: list = []
 
     @abstractmethod
-    def predict(self, inputs: torch.Tensor) -> list[dict[str, dict[str, np.ndarray]]]:
+    def predict(
+        self, inputs: torch.Tensor, **kwargs
+    ) -> list[dict[str, dict[str, np.ndarray]]]:
         """Makes predictions from a model input and output
 
         Args:
@@ -126,9 +136,6 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 }
             ]
         """
-        self.model.to(self.device)
-        self.model.eval()
-
         results = []
         for data in images:
             self._prepare_inputs(data)
@@ -159,6 +166,25 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         else:
             inputs = torch.as_tensor(inputs)
 
+        # add new model_kwargs from the inputs
+        model_kwargs = context.pop("model_kwargs", {})
+        for k, v in model_kwargs.items():
+            curr_v = self._model_kwargs.get(k)
+            if curr_v is None or len(curr_v) == 0:
+                curr_v = v
+            elif len(v) == 0:
+                continue
+            elif isinstance(curr_v, np.ndarray):
+                curr_v = np.concatenate([curr_v, v], axis=0)
+            elif isinstance(curr_v, torch.Tensor):
+                curr_v = torch.cat([curr_v, v], dim=0)
+            else:
+                raise ValueError(
+                    f"model_kwargs {k} must be a numpy array or torch tensor - "
+                    f"found '{type(v)}'."
+                )
+            self._model_kwargs[k] = curr_v
+
         self._contexts.append(context)
         self._image_batch_sizes.append(len(inputs))
 
@@ -186,7 +212,6 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             num_predictions = self._image_batch_sizes[0]
             image_predictions = self._predictions[:num_predictions]
             context = self._contexts[0]
-
             if self.postprocessor is not None:
                 # TODO: Should we return context?
                 # TODO: typing update - the post-processor can remove a dict level
@@ -214,13 +239,21 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         called, otherwise this method will raise an error.
         """
         batch = self._batch[: self.batch_size]
-        self._predictions += self.predict(batch)
+        model_kwargs = {
+            mk: v[: self.batch_size] for mk, v in self._model_kwargs.items()
+        }
+
+        self._predictions += self.predict(batch, **model_kwargs)
 
         # remove processed inputs from batch
         if len(self._batch) <= self.batch_size:
             self._batch = None
+            self._model_kwargs = {}
         else:
             self._batch = self._batch[self.batch_size :]
+            self._model_kwargs = {
+                mk: v[self.batch_size :] for mk, v in self._model_kwargs.items()
+            }
 
     def _inputs_waiting_for_processing(self) -> bool:
         """Returns: Whether there are inputs which have not yet been processed"""
@@ -244,7 +277,9 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
                 "your batch size to 1."
             )
 
-    def predict(self, inputs: torch.Tensor) -> list[dict[str, dict[str, np.ndarray]]]:
+    def predict(
+        self, inputs: torch.Tensor, **kwargs
+    ) -> list[dict[str, dict[str, np.ndarray]]]:
         """Makes predictions from a model input and output
 
         Args:
@@ -264,7 +299,7 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
             # dynamic cropping can use patches
             inputs = self.dynamic.crop(inputs)
 
-        outputs = self.model(inputs.to(self.device))
+        outputs = self.model(inputs.to(self.device), **kwargs)
         raw_predictions = self.model.get_predictions(outputs)
 
         if self.dynamic is not None:
@@ -285,6 +320,342 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
         return predictions
 
 
+class CTDInferenceRunner(PoseInferenceRunner):
+    """Runner for pose estimation inference
+
+    Args:
+        model: The CTD model to run inference with.
+        bu_runner: A runner for the BU model to run inference with. If no BU runner is
+            given, conditions must be given in the context for the data. Otherwise an
+            error will be raised during inference.
+        tracking: Whether to track using the CTD model. If
+    """
+
+    def __init__(
+        self,
+        model: PoseModel,
+        bu_runner: PoseInferenceRunner | None = None,
+        ctd_tracking: bool | ctd.CTDTrackingConfig = False,
+        **kwargs,
+    ):
+        super().__init__(model, **kwargs)
+        self.bu_runner = bu_runner
+        if bu_runner is not None:
+            self.bu_runner.model.eval()
+
+        self.tracking = None
+        if isinstance(ctd_tracking, ctd.CTDTrackingConfig):
+            self.tracking = ctd_tracking
+        elif ctd_tracking:  # generate default config
+            self.tracking = ctd.CTDTrackingConfig()
+
+        if self.tracking and self.batch_size != 1:
+            print("CTD tracking can only be used with batch size 1. Updating it.")
+            self.batch_size = 1
+
+        self._image_loader = LoadImage()
+
+        # Stored poses and IDX -> ID map for CTD tracking
+        self._bu_age = -1
+        self._missing_idvs = False
+        self._prev_pose = None
+        self._idx_to_id = None
+        self._ctd_track_ages = None   # the age of each CTD tracklet
+
+    @torch.no_grad()
+    def inference(
+        self,
+        images: (
+            Iterable[str | Path | np.ndarray]
+            | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]
+        ),
+        shelf_writer: shelving.ShelfWriter | None = None,
+    ) -> list[dict[str, np.ndarray]]:
+        """Run CTD model inference on the given dataset
+
+        Args:
+            images: the images to run inference on, optionally with context
+            shelf_writer: by default, data are saved in a list and returned at the end
+                of inference. Passing a shelf manager writes data to disk on-the-fly
+                using a "shelf" (a pickle-based, persistent, database-like object by
+                default, resulting in constant memory footprint). The returned list is
+                then empty.
+
+        Returns:
+            a dict containing head predictions for each image
+            [
+                {
+                    "bodypart": {"poses": np.array},
+                    "unique_bodypart": {"poses": np.array},
+                }
+            ]
+        """
+        if self.tracking:
+            return self._ctd_tracking_inference(images, shelf_writer)
+
+        results = []
+        for data in images:
+            data = self.add_conditions(data)
+            self._prepare_inputs(data)
+            self._process_full_batches()
+            results += self._extract_results(shelf_writer)
+
+        # Process the last batch even if not full
+        if self._inputs_waiting_for_processing():
+            self._process_batch()
+            results += self._extract_results(shelf_writer)
+
+        return results
+
+    def predict(
+        self, inputs: torch.Tensor, **kwargs
+    ) -> list[dict[str, dict[str, np.ndarray]]]:
+        """Makes predictions from a model input and output
+
+        Args:
+            the inputs to the model, of shape (batch_size, ...)
+
+        Returns:
+            predictions for each of the 'batch_size' inputs, made by each head, e.g.
+            [
+                {
+                    "bodypart": {"poses": np.ndarray},
+                    "unique_bodypart": {"poses": np.ndarray},
+                }
+            ]
+        """
+        outputs = self.model(inputs.to(self.device), **kwargs)
+        raw_predictions = self.model.get_predictions(outputs)
+        predictions = [
+            {
+                head: {
+                    pred_name: pred[b].cpu().numpy()
+                    for pred_name, pred in head_outputs.items()
+                }
+                for head, head_outputs in raw_predictions.items()
+            }
+            for b in range(len(inputs))
+        ]
+
+        return predictions
+
+    def add_conditions(
+        self,
+        data: str | Path | np.ndarray | tuple[str | Path | np.ndarray, dict],
+    ) -> tuple[np.ndarray, dict]:
+        if isinstance(data, (str, Path, np.ndarray)):
+            inputs, context = data, {}
+        else:
+            inputs, context = data
+
+        # Load the image once - then given as a numpy array to CTD
+        image, _ = self._image_loader(inputs, context)
+
+        # If the conditional keypoints are in the context, return the context
+        if "cond_kpts" in context:
+            return image, context
+
+        # Run the pre-processor
+        if self.bu_runner.preprocessor is not None:
+            inputs, context = self.bu_runner.preprocessor(image, context)
+        else:
+            inputs = torch.as_tensor(image)
+
+        # Get and post-process the predictions
+        predictions = self.bu_runner.predict(inputs)
+        if self.bu_runner.postprocessor is not None:
+            predictions, context = self.bu_runner.postprocessor(predictions, context)
+
+        # Extract the conditions
+        conds = predictions["bodyparts"][..., :3]
+        pred_mask = ~np.all(np.any(conds <= 0 | np.isnan(conds), axis=2), axis=1)
+        if np.sum(pred_mask) > 0:
+            conds = conds[pred_mask]
+        else:
+            conds = np.zeros((0, conds.shape[1], 3))
+
+        return image, {"cond_kpts": conds}
+
+    def _ctd_tracking_inference(
+        self,
+        images: (
+            Iterable[str | Path | np.ndarray]
+            | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]
+        ),
+        shelf_writer: shelving.ShelfWriter | None = None,
+    ) -> list[dict[str, np.ndarray]]:
+        results = []
+        for data in images:
+            inputs, context = self._prepare_ctd_inputs(data)
+            model_kwargs = context.pop("model_kwargs", {})
+            predictions = self.predict(inputs, **model_kwargs)
+            if self.postprocessor is not None:
+                # Pop the "cond_kpts" from the context so there's no re-scoring
+                # This is required when tracking with CTD, otherwise scores go to 0
+                if self._prev_pose is not None:
+                    context.pop("cond_kpts")
+
+                predictions, _ = self.postprocessor(predictions, context)
+
+            # Set the predictions as context for the next frame
+            self._ctd_tracking_postprocess(predictions, context["image_size"])
+
+            if shelf_writer is not None:
+                shelf_writer.add_prediction(
+                    bodyparts=predictions["bodyparts"],
+                    unique_bodyparts=predictions.get("unique_bodyparts"),
+                    identity_scores=predictions.get("identity_scores"),
+                    features=predictions.get("features"),
+                )
+            else:
+                results.append(predictions)
+
+        return results
+
+    def _prepare_ctd_inputs(self, data) -> tuple[torch.Tensor, dict[str, Any]]:
+        # If there's no valid poses, use the BU model to get conditions
+        self._bu_age += 1
+        if (
+            self._prev_pose is None
+            or (
+                self._missing_idvs
+                and self.tracking.bu_on_lost_idv
+                and self._bu_age >= self.tracking.bu_max_frequency
+            )
+            or (
+                self.tracking.bu_min_frequency is not None
+                and self._bu_age >= self.tracking.bu_min_frequency
+            )
+        ):
+            self._bu_age = 0
+            inputs, context = self.add_conditions(data)
+
+            if self._prev_pose is not None:
+                context["cond_kpts"] = self._merge_conditions(context["cond_kpts"])
+
+        else:
+            if isinstance(data, (str, Path, np.ndarray)):
+                inputs, context = data, {}
+            else:
+                inputs, context = data
+
+            context["cond_kpts"] = self._prev_pose
+
+        if self.preprocessor is None:
+            return torch.as_tensor(inputs), context
+
+        inputs, context = self.preprocessor(inputs, context)
+        return inputs, context
+
+    def _ctd_tracking_postprocess(
+        self, predictions: dict[str, np.ndarray], image_size: tuple[int, int],
+    ) -> None:
+        """Post-processes predictions. In-place changes to the predictions dict."""
+        # reorder the previous poses so the indices match the track IDs
+        if self._idx_to_id is not None:
+            predictions["bodyparts"] = predictions["bodyparts"][self._idx_to_id]
+
+        # mask all keypoints below the CTD tracking threshold
+        prev_pose = predictions["bodyparts"][..., :3].copy()
+        prev_pose[prev_pose[..., 2] <= self.tracking.threshold_ctd] = np.nan
+
+        # mask all keypoints outside the image
+        w, h = image_size
+        prev_pose[prev_pose[..., 0] < 0] = np.nan
+        prev_pose[prev_pose[..., 1] < 0] = np.nan
+        prev_pose[prev_pose[..., 0] >= w] = np.nan
+        prev_pose[prev_pose[..., 1] >= h] = np.nan
+
+        # apply NMS on the conditions, keeping older tracks
+        order = None
+        if self._ctd_track_ages is not None:
+            ordering = self._ctd_track_ages.copy()
+
+            # sort by track age, then score
+            vis = np.sum(np.all(~np.isnan(prev_pose), axis=-1), axis=-1) > 1
+            scores = np.nanmean(prev_pose[vis, :, 2], axis=-1)
+            ordering[vis] += scores
+
+            # only keep non-zero scores
+            order = ordering.argsort()[::-1]
+            order = order[ordering[order] > 0]
+
+        nms_mask = nms.nms_oks(
+            prev_pose,
+            oks_threshold=self.tracking.threshold_nms,
+            oks_sigmas=0.1,
+            oks_margin=1.0,
+            score_threshold=self.tracking.threshold_ctd,
+            order=order,
+        )
+
+        # Set the previous pose and ID ordering
+        if np.any(nms_mask):
+            self._prev_pose = prev_pose[nms_mask]
+
+            # get the IDs of the kept poses
+            found_idx_to_id = np.where(nms_mask)[0]
+            missing_ids = np.where(~nms_mask)[0]
+            self._idx_to_id = np.concatenate([found_idx_to_id, missing_ids])
+
+            # add 1 to the age of kept tracks
+            if self._ctd_track_ages is None:
+                self._ctd_track_ages = np.zeros(len(self._idx_to_id))
+            self._ctd_track_ages[nms_mask] += 1
+            self._ctd_track_ages[~nms_mask] = 0
+
+            # check if there are any missing individuals
+            self._missing_idvs = len(self._prev_pose) != len(self._idx_to_id)
+        else:
+            self._prev_pose = None
+            self._idx_to_id = None
+            self._idx_ages = None
+
+    def _merge_conditions(self, bu_cond: np.ndarray) -> np.ndarray:
+        """
+        Merges conditions made by a BU model with existing conditions from CTD tracking.
+        """
+        # prepare the BU conditions for matching
+        bu_cond = bu_cond.copy()[:, :, :3]
+        # mask low-quality keypoints
+        bu_cond[bu_cond[..., 2] < self.tracking.threshold_ctd] = np.nan
+
+        # remove non-visible individuals
+        kpt_vis = np.all(~np.isnan(bu_cond), axis=-1)
+        idv_vis = np.sum(kpt_vis, axis=-1) > 1  # need at least 2 kpts for OKS
+
+        # if no valid BU predictions are left, return the CTD conditions
+        if np.sum(idv_vis) == 0:
+            return self._prev_pose
+
+        # match BU conditions to CTD poses from the highest score to the lowest
+        bu_cond = bu_cond[idv_vis]
+        new_conditions = []
+        for bu_pose in bu_cond:
+            best_oks = 0
+            for ctd_pose in self._prev_pose:
+                best_oks = max(
+                    best_oks,
+                    calc_object_keypoint_similarity(bu_pose, ctd_pose, sigma=0.1)
+                )
+
+            if best_oks < self.tracking.threshold_bu_add:
+                new_conditions.append((best_oks, bu_pose))
+
+        # add the conditions with the lowest OKS score
+        new_conditions = [
+            c[1] for c in sorted(new_conditions, key=lambda x: x[0])
+        ]
+
+        # if there are no new conditions,
+        if len(new_conditions) == 0:
+            return self._prev_pose
+
+        new_conditions = np.stack(new_conditions, axis=0)
+        cond_pose = np.concatenate([self._prev_pose, new_conditions], axis=0)
+        return cond_pose[:len(self._idx_to_id)]
+
+
 class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
     """Runner for object detection inference"""
 
@@ -296,7 +667,9 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
         """
         super().__init__(model, **kwargs)
 
-    def predict(self, inputs: torch.Tensor) -> list[dict[str, dict[str, np.ndarray]]]:
+    def predict(
+        self, inputs: torch.Tensor, **kwargs
+    ) -> list[dict[str, dict[str, np.ndarray]]]:
         """Makes predictions from a model input and output
 
         Args:
@@ -327,12 +700,13 @@ def build_inference_runner(
     task: Task,
     model: nn.Module,
     device: str,
-    snapshot_path: str | Path,
+    snapshot_path: str | Path | None = None,
     batch_size: int = 1,
     preprocessor: Preprocessor | None = None,
     postprocessor: Postprocessor | None = None,
     dynamic: DynamicCropper | None = None,
     load_weights_only: bool | None = None,
+    **kwargs,
 ) -> InferenceRunner:
     """
     Build a runner object according to a pytorch configuration file
@@ -356,6 +730,7 @@ def build_inference_runner(
                 https://pytorch.org/docs/stable/generated/torch.load.html
             If None, the default value is used:
                 `deeplabcut.pose_estimation_pytorch.get_load_weights_only()`
+        **kwargs: Other arguments for the InferenceRunner.
 
     Returns:
         The inference runner.
@@ -368,6 +743,7 @@ def build_inference_runner(
         preprocessor=preprocessor,
         postprocessor=postprocessor,
         load_weights_only=load_weights_only,
+        **kwargs,
     )
     if task == Task.DETECT:
         if dynamic is not None:
@@ -385,5 +761,8 @@ def build_inference_runner(
                 f"dynamic cropping with {task}, use a TopDownDynamicCropper."
             )
             dynamic = None
+
+    if task == Task.COND_TOP_DOWN:
+        return CTDInferenceRunner(**kwargs)
 
     return PoseInferenceRunner(dynamic=dynamic, **kwargs)

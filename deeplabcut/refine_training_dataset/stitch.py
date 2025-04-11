@@ -1147,6 +1147,11 @@ def stitch_tracklets(
 
     cfg = auxiliaryfunctions.read_config(config_path)
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
+    if track_method == "ctd":
+        raise ValueError(
+            "CTD tracking occurs directly during video analysis. No need to call "
+            "`stitch_tracklets` with `track_method=='ctd'`."
+        )
 
     if animal_names is None:
         animal_names = cfg["individuals"]

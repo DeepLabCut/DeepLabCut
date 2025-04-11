@@ -11,7 +11,6 @@
 """Code to handle storing models"""
 from __future__ import annotations
 
-import re
 import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -19,21 +18,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-
-@dataclass(frozen=True)
-class Snapshot:
-    best: bool
-    epochs: int | None
-    path: Path
-
-    def uid(self) -> str:
-        return self.path.stem.split("-")[-1]
-
-    @staticmethod
-    def from_path(path: Path) -> "Snapshot":
-        best = "-best" in path.stem
-        epochs = int(path.stem.split("-")[-1])
-        return Snapshot(best=best, epochs=epochs, path=path)
+from deeplabcut.pose_estimation_pytorch.data.snapshots import list_snapshots, Snapshot
 
 
 @dataclass
@@ -182,25 +167,9 @@ class TorchSnapshotManager:
             trained for. If ``best_in_last=True`` and a best snapshot exists, it will be
             the last one in the list.
         """
-
-        def _sort_key(snapshot: Snapshot) -> int:
-            return snapshot.epochs
-
-        def _sort_key_best_as_last(snapshot: Snapshot) -> tuple[int, int]:
-            return 1 if snapshot.best else 0, snapshot.epochs
-
-        pattern = r"^(" + self.snapshot_prefix + r"(-best)?-\d+\.pt)$"
-        snapshots = [
-            Snapshot.from_path(f)
-            for f in self.model_folder.iterdir()
-            if re.match(pattern, f.name)
-        ]
-
-        sort_key = _sort_key
-        if best_in_last:
-            sort_key = _sort_key_best_as_last
-        snapshots.sort(key=sort_key)
-        return snapshots
+        return list_snapshots(
+            self.model_folder, self.snapshot_prefix, best_in_last=best_in_last
+        )
 
     def snapshot_path(self, epoch: int, best: bool = False) -> Path:
         """

@@ -1,0 +1,71 @@
+data:
+  bbox_margin: 25
+  gen_sampling:
+    keypoint_sigmas: 0.1
+  inference:
+    top_down_crop:
+      width: 256
+      height: 256
+      crop_with_context: false
+  train:
+    top_down_crop:
+      width: 256
+      height: 256
+      crop_with_context: false
+method: ctd
+model:
+  backbone:
+    type: HRNetCoAM
+    base_model_name: hrnet_w32
+    pretrained: true
+    freeze_bn_stats: false
+    freeze_bn_weights: false
+    coam_modules: [2,]
+    channel_att_only: false
+    att_heads: 1
+    kpt_encoder:
+      type: StackedKeypointEncoder
+      num_joints: "num_bodyparts"
+      kernel_size: [15, 15]
+    img_size: [256, 256]
+  backbone_output_channels: 32
+  heads:
+    bodypart:
+      type: HeatmapHead
+      weight_init: normal
+      predictor:
+        type: HeatmapPredictor
+        apply_sigmoid: false
+        clip_scores: true
+        location_refinement: true
+        locref_std: 7.2801
+      target_generator:
+        type: HeatmapGaussianGenerator
+        num_heatmaps: "num_bodyparts"
+        pos_dist_thresh: 17
+        heatmap_mode: KEYPOINT
+        generate_locref: true
+        locref_std: 7.2801
+      criterion:
+        heatmap:
+          type: WeightedMSECriterion
+          weight: 1.0
+        locref:
+          type: WeightedHuberCriterion
+          weight: 0.05
+      heatmap_config:
+        channels:
+        - 32
+        kernel_size: []
+        strides: []
+        final_conv:
+          out_channels: "num_bodyparts"
+          kernel_size: 1
+      locref_config:
+        channels:
+          - 32
+        kernel_size: []
+        strides: []
+        final_conv:
+          out_channels: "num_bodyparts x 2"
+          kernel_size: 1

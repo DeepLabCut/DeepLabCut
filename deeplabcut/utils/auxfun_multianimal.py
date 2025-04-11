@@ -74,7 +74,8 @@ def get_track_method(cfg, track_method=""):
             # check if it exists:
             if track_method not in TRACK_METHODS:
                 raise ValueError(
-                    f"Invalid tracking method. Only {', '.join(TRACK_METHODS)} are currently supported."
+                    f"Invalid tracking method. Only {', '.join(TRACK_METHODS)} are "
+                    "currently supported."
                 )
             return track_method
         else:  # default
