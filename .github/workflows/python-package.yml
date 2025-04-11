@@ -44,7 +44,7 @@ jobs:
         shell: bash -el {0}  # Important: activates the conda environment
         if: runner.os == 'macOS'
         run: |
-          pip install tensorflow-macos==2.12.0 tensorflow-metal==1.2.0 tensorpack==0.11 tf_slim==1.1.0
+          pip install tensorflow-macos==2.12.0 tensorpack==0.11 tf_slim==1.1.0
 
       - name: Install PyTables through Conda
         shell: bash -el {0}  # Important: activates the conda environment
