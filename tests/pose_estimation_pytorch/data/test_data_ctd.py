@@ -53,7 +53,7 @@ def test_ctd_load_json_containing_rel_paths(
         json.dump(conditions, f)
 
     conditions = CondFromFile.load_conditions_json(
-        conditions_filepath, images, path_prefix=path_prefix,
+        conditions_filepath, images, path_prefix=Path(path_prefix),
     )
     for img_path, _, condition in data:
         assert img_path in conditions
@@ -133,7 +133,7 @@ def test_ctd_load_hdf_containing_rel_paths(
     df.to_hdf(conditions_filepath, key="df_with_missing")
 
     conditions = CondFromFile.load_conditions_h5(
-        conditions_filepath, images, path_prefix=path_prefix,
+        conditions_filepath, images, path_prefix=Path(path_prefix),
     )
     for idx, (img_path, img_index) in enumerate(data):
         assert img_path in conditions
