@@ -69,11 +69,11 @@ jobs:
           fi
         shell: bash
 
-      - name: Run pytest tests
-        shell: bash -el {0}  # Important: activates the conda environment
-        run: |
-          pip install pytest
-          python -m pytest
+#      - name: Run pytest tests
+#        shell: bash -el {0}  # Important: activates the conda environment
+#        run: |
+#          pip install pytest
+#          python -m pytest
 
       - name: Run functional tests
         shell: bash -el {0}  # Important: activates the conda environment

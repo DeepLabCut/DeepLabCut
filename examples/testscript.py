@@ -40,6 +40,7 @@ from tensorflow.python.platform import build_info
 
 # Disable TF-Metal to avoid SegFaults with MacOS
 if not build_info.build_info["is_cuda_build"]:
+    print("Disabling MPS for MacOS runner!")
     tf.config.set_visible_devices([], "GPU")
 
 
