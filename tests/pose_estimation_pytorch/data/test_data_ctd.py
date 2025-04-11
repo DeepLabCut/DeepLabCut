@@ -28,7 +28,8 @@ CONDITIONS = [
 
 @pytest.mark.parametrize("path_prefix", ["/a/b", Path("/a/b")])
 @pytest.mark.parametrize(
-    "data", [
+    "data",
+    [
         [("/a/b/c/d.png", "/a/b/c/d.png", CONDITIONS[1])],
         [("/a/b/c/d.png", "c/d.png", CONDITIONS[1])],
         [
@@ -36,7 +37,7 @@ CONDITIONS = [
             ("/a/b/c/d.png", "c/d.png", CONDITIONS[2]),
             ("/a/b/c/e.png", "/a/b/c/e.png", CONDITIONS[3]),
         ],
-    ]
+    ],
 )
 def test_ctd_load_json_containing_rel_paths(
     tmp_path_factory,
@@ -44,7 +45,7 @@ def test_ctd_load_json_containing_rel_paths(
     data: tuple[list[str], list[str], list],
 ) -> None:
     print("Starting test")
-    images = [elem[0] for elem in data]
+    images = [str(Path(elem[0])) for elem in data]
     conditions = {key: cond for _, key, cond in data}
 
     tmp_folder = Path(tmp_path_factory.mktemp("tmp-project"))
@@ -53,7 +54,9 @@ def test_ctd_load_json_containing_rel_paths(
         json.dump(conditions, f)
 
     conditions = CondFromFile.load_conditions_json(
-        conditions_filepath, images, path_prefix=Path(path_prefix),
+        conditions_filepath,
+        images,
+        path_prefix=path_prefix,
     )
     for img_path, _, condition in data:
         assert img_path in conditions
@@ -64,7 +67,8 @@ def test_ctd_load_json_containing_rel_paths(
 @pytest.mark.parametrize("num_conditions", [1, 2, 3, 5, 10])
 @pytest.mark.parametrize("num_bodyparts", [1, 2, 3, 5, 10])
 @pytest.mark.parametrize(
-    "data", [
+    "data",
+    [
         [("/p/data/video0/img0.png", ("data", "video0", "img0.png"))],
         [("/p/data/video0/img0.png", "data/video0/img0.png")],
         [
@@ -77,7 +81,7 @@ def test_ctd_load_json_containing_rel_paths(
             ("/p/b/c/d1.png", "b/c/d1.png"),
             ("/p/b/c/d2.png", "b/c/d2.png"),
         ],
-    ]
+    ],
 )
 def test_ctd_load_hdf_containing_rel_paths(
     tmp_path_factory,
@@ -88,7 +92,7 @@ def test_ctd_load_hdf_containing_rel_paths(
 ) -> None:
     print("\nStarting test")
     num_images = len(data)
-    images = [img for img, _ in data]
+    images = [str(Path(img)) for img, _ in data]
     index = [idx for _, idx in data]
     if isinstance(index[0], tuple):
         index = pd.MultiIndex.from_tuples(index)
@@ -120,7 +124,7 @@ def test_ctd_load_hdf_containing_rel_paths(
             ["scorer"],
             [f"idv{i}" for i in range(num_conditions)],
             [f"bpt{i}" for i in range(num_bodyparts)],
-            ["x", "y", "likelihood"]
+            ["x", "y", "likelihood"],
         ],
         names=["scorer", "individuals", "bodyparts", "coords"],
     )
@@ -133,7 +137,7 @@ def test_ctd_load_hdf_containing_rel_paths(
     df.to_hdf(conditions_filepath, key="df_with_missing")
 
     conditions = CondFromFile.load_conditions_h5(
-        conditions_filepath, images, path_prefix=Path(path_prefix),
+        conditions_filepath, images, path_prefix=path_prefix
     )
     for idx, (img_path, img_index) in enumerate(data):
         assert img_path in conditions
