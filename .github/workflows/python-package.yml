@@ -37,7 +37,7 @@ jobs:
       - name: Install PyTables through Conda
         shell: bash -el {0}  # Important: activates the conda environment
         run: |
-          conda install pytables==3.8.0
+          conda install pytables==3.8.0 "numpy<2"
 
       - name: Install dependencies
         shell: bash -el {0}  # Important: activates the conda environment
