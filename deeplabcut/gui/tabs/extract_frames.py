@@ -25,6 +25,59 @@ from deeplabcut.gui.components import (
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.gui.widgets import launch_napari
 from deeplabcut.generate_training_dataset import extract_frames
+from deeplabcut.generate_training_dataset.curated_video_frame_extraction import extract_curated_frames_from_video
+
+class ParameterDialog(QtWidgets.QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Curated Video Frame Extraction")
+
+        self.layout = QtWidgets.QVBoxLayout()
+
+        # Start Time
+        self.start_time_label = QtWidgets.QLabel("Start Time (seconds or HH:MM:SS):")
+        self.start_time_input = QtWidgets.QLineEdit("0.0")
+        self.start_time_input.setPlaceholderText("Enter time (e.g., 0.0 or 00:00:00)")
+        self.layout.addWidget(self.start_time_label)
+        self.layout.addWidget(self.start_time_input)
+
+        # End Time
+        self.end_time_label = QtWidgets.QLabel("End Time (seconds or HH:MM:SS):")
+        self.end_time_input = QtWidgets.QLineEdit("10.0")
+        self.end_time_input.setPlaceholderText("Enter time (e.g., 10.0 or 00:00:10)")
+        self.layout.addWidget(self.end_time_label)
+        self.layout.addWidget(self.end_time_input)
+
+        # Min Gap
+        self.min_gap_label = QtWidgets.QLabel("Minimum Gap (frames or % with % symbol):")
+        self.min_gap_input = QtWidgets.QLineEdit("2%")
+        self.min_gap_input.setPlaceholderText("Enter gap (e.g., 15 or 2%)")
+        self.layout.addWidget(self.min_gap_label)
+        self.layout.addWidget(self.min_gap_input)
+
+        # Min Frames
+        self.min_frames_label = QtWidgets.QLabel("Minimum Frames to Extract:")
+        self.min_frames_input = QtWidgets.QSpinBox()
+        self.min_frames_input.setRange(1, 1000)
+        self.min_frames_input.setValue(20)
+        self.layout.addWidget(self.min_frames_label)
+        self.layout.addWidget(self.min_frames_input)
+
+        self.buttons = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.rejected.connect(self.reject)
+        self.layout.addWidget(self.buttons)
+
+        self.setLayout(self.layout)
+
+    def get_parameters(self):
+        return {
+            "Start Time": self.start_time_input.text(),
+            "End Time": self.end_time_input.text(),
+            "Min Gap": self.min_gap_input.text(),
+            "Min Frames": self.min_frames_input.value()
+        }
+
 
 
 def select_cropping_area(config, videos=None):
@@ -129,7 +182,7 @@ class ExtractFrames(DefaultTab):
         # Extraction method
         ext_method_label = QtWidgets.QLabel("Extraction method")
         self.extraction_method_widget = QtWidgets.QComboBox()
-        options = ["automatic", "manual"]
+        options = ["automatic", "manual", "curated"]
         self.extraction_method_widget.addItems(options)
         self.extraction_method_widget.currentTextChanged.connect(
             self.log_extraction_method
@@ -185,6 +238,11 @@ class ExtractFrames(DefaultTab):
             self.cluster_step_widget.setEnabled(False)
             self.frame_cropping_widget.setEnabled(False)
             self.slider_width_widget.setEnabled(True)
+        if extraction_method == 'AER-Curated':
+            self.extraction_algorithm_widget.setEnabled(False)
+            self.cluster_step_widget.setEnabled(False)
+            self.frame_cropping_widget.setEnabled(False)
+            self.slider_width_widget.setEnabled(False)
         else:
             self.extraction_algorithm_widget.setEnabled(True)
             self.cluster_step_widget.setEnabled(True)
@@ -206,6 +264,28 @@ class ExtractFrames(DefaultTab):
                     "Please select exactly one video to extract frames from.",
                 )
                 return
+        if mode == "AER-Curated":
+            dialog = ParameterDialog()
+
+            if dialog.exec_() == QtWidgets.QDialog.Accepted:
+                params = dialog.get_parameters()
+                start_time = params["Start Time"]
+                end_time = params["End Time"]
+                min_gap = params["Min Gap"]
+                min_frames = params["Min Frames"]
+
+                # Check if exactly one video is selected
+                videos = list(self.video_selection_widget.files)
+                if len(videos) != 1:
+                    QtWidgets.QMessageBox.critical(
+                        None,
+                        "Error",
+                        "Please select exactly one video to extract frames from."
+                    )
+                else:
+                    # run curated_video_frame_extraction.py with the provided parameters
+                    extract_curated_frames_from_video(videos[0], start_time, end_time,  min_gap, min_frames)
+
             first_video = videos[0]
             if len(videos) > 1:
                 self.root.writer.write(
