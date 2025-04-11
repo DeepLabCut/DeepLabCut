@@ -29,7 +29,7 @@ import platform
 
 print("Imported DLC!")
 
-engine = Engine.TF
+engine = Engine.PYTORCH
 
 basepath = os.path.dirname(os.path.abspath("testscript_cli.py"))
 videoname = "reachingvideo1"
