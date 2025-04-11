@@ -32,16 +32,8 @@ import pandas as pd
 import scipy.io as sio
 
 import deeplabcut
-import tensorflow as tf
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
-from tensorflow.python.platform import build_info
-
-
-# Disable TF-Metal to avoid SegFaults with MacOS
-if not build_info.build_info["is_cuda_build"]:
-    print("Disabling MPS for MacOS runner!")
-    tf.config.set_visible_devices([], "GPU")
 
 
 USE_SHELVE = random.choice([True, False])
