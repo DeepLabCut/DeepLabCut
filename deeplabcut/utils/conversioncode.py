@@ -398,9 +398,9 @@ def robust_split_path(s):
     sep = "/" if "/" in s else "\\"
     return tuple(s.split(sep))
 
-def extract_frames_from_pkg_slp(file_path, base_output_dir, scorer='me'):
+def extract_frames_from_pkg_sleap(file_path, base_output_dir, scorer='me'):
     """
-    Convert a SLEAP project into a Deeplabcut project
+    Convert a SLEAP project into a DeepLabCut project
     WARNING: conversion might corrupt the data.
 
     file_path : string
@@ -412,7 +412,8 @@ def extract_frames_from_pkg_slp(file_path, base_output_dir, scorer='me'):
     scorer: string, optional
         Name of scorer.
 
-    Once conversion is complete, you will need to manually create a Deeplabcut config.yaml file. 
+    Once conversion is complete, you will need to manually create a DeepLabCut config.yaml file based 
+    on the keypoint names in the generated .csv files.
 
     Finally, run deeplabcut.convertcsv2h5('config.yaml')
     """
