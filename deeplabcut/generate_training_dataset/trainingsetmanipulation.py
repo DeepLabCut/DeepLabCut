@@ -1542,7 +1542,11 @@ def create_training_model_comparison(
     else:
         pass
 
-    largestshuffleindex = get_existing_shuffle_indices(cfg)[-1] + 1
+    existing_shuffles = get_existing_shuffle_indices(cfg)
+    if len(existing_shuffles) == 0:
+        largestshuffleindex = 0
+    else:
+        largestshuffleindex = existing_shuffles[-1] + 1
 
     shuffle_list = []
     for shuffle in range(num_shuffles):
