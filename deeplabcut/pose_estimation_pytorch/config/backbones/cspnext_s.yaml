@@ -11,7 +11,7 @@ runner:
   optimizer:
     type: AdamW
     params:
-      lr: 0.001
+      lr: 5e-4
   scheduler:
     type: LRListScheduler
     params:
