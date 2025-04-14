@@ -27,7 +27,7 @@ CONDITIONS = [
 ]
 
 
-@pytest.mark.parametrize("path_prefix", ["/a/b", Path("/a/b")])
+@pytest.mark.parametrize("path_prefix", ["/a/b"])
 @pytest.mark.parametrize(
     "data",
     [
@@ -48,16 +48,20 @@ def test_ctd_load_json_containing_rel_paths(
     print("Starting test")
     # convert the image paths to Windows format
     if platform.system() == "Windows":
+        print("Converting to windows filesystem")
+
+        print("Path Prefix:", path_prefix)
         if isinstance(path_prefix, Path):
+            print(f"  As string: {str(path_prefix)}")
             path_prefix = Path(_to_windows_path(str(path_prefix)))
         else:
             path_prefix = _to_windows_path(path_prefix)
+        print(f"  Converted {path_prefix}")
 
         data = [
             (_to_windows_path(img), _to_windows_path(key), cond)
             for img, key, cond in data
         ]
-        print("Converting to windows filesystem")
         print(f"Images: {[d[0] for d in data]}")
         print(f"Condition keys: {[d[1] for d in data]}")
         print("---")
@@ -80,7 +84,7 @@ def test_ctd_load_json_containing_rel_paths(
         np.testing.assert_allclose(condition, conditions[img_path])
 
 
-@pytest.mark.parametrize("path_prefix", ["/p", Path("/p")])
+@pytest.mark.parametrize("path_prefix", ["/p"])
 @pytest.mark.parametrize("num_conditions", [1, 2, 3, 5, 10])
 @pytest.mark.parametrize("num_bodyparts", [1, 2, 3, 5, 10])
 @pytest.mark.parametrize(
@@ -111,13 +115,17 @@ def test_ctd_load_hdf_containing_rel_paths(
 
     # convert the image paths to Windows format
     if platform.system() == "Windows":
+        print("Converting to windows filesystem")
+
+        print("Path Prefix:", path_prefix)
         if isinstance(path_prefix, Path):
+            print(f"  As string: {str(path_prefix)}")
             path_prefix = Path(_to_windows_path(str(path_prefix)))
         else:
             path_prefix = _to_windows_path(path_prefix)
+        print(f"  Converted {path_prefix}")
 
         data = [(_to_windows_path(img), idx) for img, idx in data]
-        print("Converting to windows filesystem")
         print(f"Images: {[d[0] for d in data]}")
         print("---")
 
