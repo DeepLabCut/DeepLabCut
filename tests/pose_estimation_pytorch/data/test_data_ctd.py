@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import json
+import platform
 from pathlib import Path
 
 import numpy as np
@@ -45,8 +46,22 @@ def test_ctd_load_json_containing_rel_paths(
     data: tuple[list[str], list[str], list],
 ) -> None:
     print("Starting test")
-    images = [str(Path(elem[0])) for elem in data]
+    images = [img for img, _, _ in data]
     conditions = {key: cond for _, key, cond in data}
+
+    # convert the image paths to Windows format
+    if platform.system() == "Windows":
+        if isinstance(path_prefix, Path):
+            path_prefix = Path(_to_windows_path(str(path_prefix)))
+        else:
+            path_prefix = _to_windows_path(path_prefix)
+
+        images = [_to_windows_path(img) for img in images]
+        conditions = {_to_windows_path(k): v for k, v in conditions.items()}
+        print("Converting to windows filesystem")
+        print(f"Images: {images}")
+        print(f"Condition keys: {list(conditions.keys())}")
+        print("---")
 
     tmp_folder = Path(tmp_path_factory.mktemp("tmp-project"))
     conditions_filepath = tmp_folder / "conditions.json"
@@ -92,7 +107,20 @@ def test_ctd_load_hdf_containing_rel_paths(
 ) -> None:
     print("\nStarting test")
     num_images = len(data)
-    images = [str(Path(img)) for img, _ in data]
+    images = [img for img, _ in data]
+
+    # convert the image paths to Windows format
+    if platform.system() == "Windows":
+        if isinstance(path_prefix, Path):
+            path_prefix = Path(_to_windows_path(str(path_prefix)))
+        else:
+            path_prefix = _to_windows_path(path_prefix)
+
+        images = [_to_windows_path(img) for img in images]
+        print("Converting to windows filesystem")
+        print(f"Images: {images}")
+        print("---")
+
     index = [idx for _, idx in data]
     if isinstance(index[0], tuple):
         index = pd.MultiIndex.from_tuples(index)
@@ -142,3 +170,11 @@ def test_ctd_load_hdf_containing_rel_paths(
     for idx, (img_path, img_index) in enumerate(data):
         assert img_path in conditions
         np.testing.assert_allclose(output_pose[idx], conditions[img_path])
+
+
+def _to_windows_path(s: str) -> str:
+    # Convert absolute paths to paths on C:
+    if s.startswith("/"):
+        return str(Path("C:", *s[1:].split("/")))
+
+    return s
