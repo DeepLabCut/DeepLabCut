@@ -46,9 +46,6 @@ def test_ctd_load_json_containing_rel_paths(
     data: tuple[list[str], list[str], list],
 ) -> None:
     print("Starting test")
-    images = [img for img, _, _ in data]
-    conditions = {key: cond for _, key, cond in data}
-
     # convert the image paths to Windows format
     if platform.system() == "Windows":
         if isinstance(path_prefix, Path):
@@ -56,12 +53,17 @@ def test_ctd_load_json_containing_rel_paths(
         else:
             path_prefix = _to_windows_path(path_prefix)
 
-        images = [_to_windows_path(img) for img in images]
-        conditions = {_to_windows_path(k): v for k, v in conditions.items()}
+        data = [
+            (_to_windows_path(img), _to_windows_path(key), cond)
+            for img, key, cond in data
+        ]
         print("Converting to windows filesystem")
-        print(f"Images: {images}")
-        print(f"Condition keys: {list(conditions.keys())}")
+        print(f"Images: {[d[0] for d in data]}")
+        print(f"Condition keys: {[d[1] for d in data]}")
         print("---")
+
+    images = [img for img, _, _ in data]
+    conditions = {key: cond for _, key, cond in data}
 
     tmp_folder = Path(tmp_path_factory.mktemp("tmp-project"))
     conditions_filepath = tmp_folder / "conditions.json"
@@ -106,8 +108,6 @@ def test_ctd_load_hdf_containing_rel_paths(
     data: tuple[list[str], list[str]],
 ) -> None:
     print("\nStarting test")
-    num_images = len(data)
-    images = [img for img, _ in data]
 
     # convert the image paths to Windows format
     if platform.system() == "Windows":
@@ -116,11 +116,13 @@ def test_ctd_load_hdf_containing_rel_paths(
         else:
             path_prefix = _to_windows_path(path_prefix)
 
-        images = [_to_windows_path(img) for img in images]
+        data = [(_to_windows_path(img), idx) for img, idx in data]
         print("Converting to windows filesystem")
-        print(f"Images: {images}")
+        print(f"Images: {[d[0] for d in data]}")
         print("---")
 
+    num_images = len(data)
+    images = [img for img, _ in data]
     index = [idx for _, idx in data]
     if isinstance(index[0], tuple):
         index = pd.MultiIndex.from_tuples(index)
@@ -175,6 +177,6 @@ def test_ctd_load_hdf_containing_rel_paths(
 def _to_windows_path(s: str) -> str:
     # Convert absolute paths to paths on C:
     if s.startswith("/"):
-        return str(Path("C:", *s[1:].split("/")))
+        return str(Path("C:\\", *s[1:].split("/")))
 
     return s
