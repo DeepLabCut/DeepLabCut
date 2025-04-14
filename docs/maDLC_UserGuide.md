@@ -653,10 +653,24 @@ You can drop "Indices" to run this on all training/testing images (this is very 
 
 ### (I) Analyze new Videos
 
+````{versionadded} 3.0.0
+With the addition of conditional top-down models in DeepLabCut 3.0, it's now possible to
+track individuals directly **during video analysis**. If you choose to train any model
+with a name that starts with `ctd_`, you'll be able to call `deeplabcut.analyze_videos`
+with `ctd_tracking=True`. To learn more about tracking with CTD, see the [
+`COLAB_BUCTD_and_CTD_tracking`](
+https://github.com/DeepLabCut/DeepLabCut/main/examples/COLAB/COLAB_BUCTD_and_CTD_tracking.ipynb)
+COLAB notebook.
+````
+
 **-------------------- DECISION POINT -------------------**
 
 **ATTENTION!**
-**Pose estimation and tracking should be thought of as separate steps.** If you do not have good pose estimation evaluation metrics at this point, stop, check original labels, add more data, etc --> don't move forward with this model. If you think you have a good model, please test the "raw" pose estimation performance on a video to validate performance:
+**Pose estimation and tracking should be thought of as separate steps.** If you do not 
+have good pose estimation evaluation metrics at this point, stop, check original labels,
+add more data, etc --> don't move forward with this model. If you think you have a good
+model, please test the "raw" pose estimation performance on a video to validate
+performance:
 
 Please run:
 

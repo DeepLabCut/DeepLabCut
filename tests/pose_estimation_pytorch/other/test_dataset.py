@@ -73,6 +73,7 @@ key_set = {
     "original_size",
     "annotations",
     "image_id",
+    "context",
 }
 anno_key_set = {
     "keypoints",
@@ -108,7 +109,7 @@ def test_iter_all_dataset_no_transform(batch_size):
         is_last_batch = i == (len(dataloader) - 1)
         assert (
             set(item.keys()) == key_set
-        ), "the key returned don't match the required ones"
+        ), f"the key returned don't match the required ones: {item.keys()} != {key_set}"
 
         anno = item["annotations"]
         assert (
@@ -171,7 +172,7 @@ def test_iter_all_augmented_dataset(batch_size, x_size, y_size, exaggeration):
         is_last_batch = i == (len(dataloader) - 1)
         assert (
             set(item.keys()) == key_set
-        ), "the key returned don't match the required ones"
+        ), f"the key returned don't match the required ones: {item.keys()} != {key_set}"
 
         anno = item["annotations"]
         assert (
