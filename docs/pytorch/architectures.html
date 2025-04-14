@@ -471,8 +471,11 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#neural-networks-architectures">Neural Networks Architectures</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#information-on-single-animal-models">Information on Single Animal Models</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#information-on-multi-animal-models">Information on Multi-Animal Models</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#backbones-with-part-affinity-fields">Backbones with Part-Affinity Fields</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#approaches-to-multi-animal-pose-estimation">Approaches to multi-animal pose estimation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bottom-up-models">Bottom-up Models</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#backbones-with-part-affinity-fields">Backbones with Part-Affinity Fields</a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#top-down-models">Top-Down Models</a></li>
 </ul>
 </li>
@@ -505,7 +508,7 @@ document.write(`
 <section id="neural-networks-architectures">
 <h2>Neural Networks Architectures<a class="headerlink" href="#neural-networks-architectures" title="Link to this heading">#</a></h2>
 <p>Several architectures are currently implemented in DeepLabCut PyTorch (more will come,
-and you can add more easily in our new model registry).</p>
+and you can add more easily in our new model registry). Also check out the explanations of bottom-up/top-down below.</p>
 <p><strong>ResNets</strong></p>
 <ul class="simple">
 <li><p>Adapted from <a class="reference external" href="https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html">He, Kaiming, et al. “Deep residual learning for image recognition.” Proceedings of the IEEE conference on Computer Vision and Pattern Recognition. 2016.</a> and [Insafutdinov, Eldar et al. “DeeperCut: A Deeper, Stronger, and Faster Multi-Person Pose Estimation Model”. European Conference on Computer Vision (ECCV) 2016.]</p></li>
@@ -562,15 +565,55 @@ layer. To create the single animal model composed of a backbone and head, you ca
 but it might improve performance), you can simply edit your <code class="docutils literal notranslate"><span class="pre">pytorch_config.yaml</span></code> file.</p>
 <p>Of course, any multi-animal model can also be used for single-animal projects!</p>
 </section>
-<section id="information-on-multi-animal-models">
-<h2>Information on Multi-Animal Models<a class="headerlink" href="#information-on-multi-animal-models" title="Link to this heading">#</a></h2>
+<section id="approaches-to-multi-animal-pose-estimation">
+<h2>Approaches to multi-animal pose estimation<a class="headerlink" href="#approaches-to-multi-animal-pose-estimation" title="Link to this heading">#</a></h2>
+<p>Single-animal pose estimation is quite straightforward: the model takes an image as
+input, and it outputs the predicted coordinate of each bodypart.</p>
+<p>Multi-animal pose estimation is more complex. Not only do you need to localize bodyparts
+in the image, but you also need to group bodyparts per individual. There are two main
+approaches to multi-animal pose estimation.</p>
+<p>The first approach, <strong>bottom-up</strong> pose estimation, starts by detecting bodyparts in the
+image before figuring out how they belong together (i.e., which keypoints belong to the
+same animal).</p>
+<p><img alt="Schema representing the bottom-up approach to pose estimation" src="../../_images/bottom-up-approach.png" /></p>
+<p>The second approach, <strong>top-down</strong> pose estimation, uses a two-step approach. A first
+model (an object detector) is used to localize every animal present in the image through
+its bounding box. Then, the pose for each animal is determined by predicting bodyparts
+in each bounding box. The pose estimation</p>
+<p><img alt="Schema representing the top-down approach to pose estimation" src="../../_images/top-down-approach.png" /></p>
+<p>The top-down approach tends to be more accurate in less crowded scenes, as the pose
+model only needs to process the pixels related to a single animal. However, in more
+crowded scenes, the pose estimation task becomes ambiguous. Multiple overlapping
+individuals will have very similar bounding boxes, and the pose model has no way of
+knowing which animal it is supposed to predict keypoints for.</p>
+<p>The bottom-up approach does not have this ambiguïty, and also has the advantage of
+only needing to run a pose estimation model, instead of needing to run an object
+detector first. However, grouping keypoints is a difficult problem.</p>
+<p>A new approach to pose estimation, named bottom-up conditioned top-down (or BUCTD), was
+introduced in <a class="reference external" href="https://openaccess.thecvf.com/content/ICCV2023/papers/Zhou_Rethinking_Pose_Estimation_in_Crowds_Overcoming_the_Detection_Information_Bottleneck_ICCV_2023_paper.pdf">Zhou, Stoffl, Mathis, Mathis. “Rethinking Pose Estimation in Crowds:
+Overcoming the Detection Information Bottleneck and Ambiguity.” Proceedings of the
+IEEE/CVF International Conference on Computer Vision (ICCV). 2023</a>
+. It’s a hybrid two-stage approach leveraging the strengths of the bottom-up and
+top-down approaches to overcome the ambiguïty introduced through bounding boxes. Instead
+of using an object detection model to localize individuals, it uses a bottom-up pose
+estimation model. The predictions made by the bottom-up model are given as proposals (or
+<em>conditions</em>) to the pose estimation model. This is illustrated in the figure below. In modern language, one could state that CTD models are “pose-promptable”.</p>
+<figure>
+  <img src="assets/buctd_figure_1.png" style="text-align: center; width: 400px;">
+  <figcaption>Zhou, Mu, et al. "Rethinking pose estimation in crowds: overcoming the 
+detection information bottleneck and ambiguity." Proceedings of the IEEE/CVF 
+International Conference on Computer Vision. 2023.</figcaption>
+</figure>
+<section id="bottom-up-models">
+<h3>Bottom-up Models<a class="headerlink" href="#bottom-up-models" title="Link to this heading">#</a></h3>
 <section id="backbones-with-part-affinity-fields">
-<h3>Backbones with Part-Affinity Fields<a class="headerlink" href="#backbones-with-part-affinity-fields" title="Link to this heading">#</a></h3>
+<h4>Backbones with Part-Affinity Fields<a class="headerlink" href="#backbones-with-part-affinity-fields" title="Link to this heading">#</a></h4>
 <p>As in DeepLabCut 2.X, the base multi-animal model is composed of a backbone (encoder)
 and a head predicting keypoints and part-affinity fields (PAFs). These PAFs are used to
 assemble keypoints for individuals.</p>
 <p>Passing a backbone as a net type (e.g., <code class="docutils literal notranslate"><span class="pre">resnet_50</span></code>, <code class="docutils literal notranslate"><span class="pre">hrnet_w32</span></code>) for a multi-animal
 project will create a model consisting of a backbone and a heatmap + PAF head.</p>
+</section>
 </section>
 <section id="top-down-models">
 <h3>Top-Down Models<a class="headerlink" href="#top-down-models" title="Link to this heading">#</a></h3>
@@ -657,8 +700,11 @@ heads.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#neural-networks-architectures">Neural Networks Architectures</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#information-on-single-animal-models">Information on Single Animal Models</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#information-on-multi-animal-models">Information on Multi-Animal Models</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#backbones-with-part-affinity-fields">Backbones with Part-Affinity Fields</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#approaches-to-multi-animal-pose-estimation">Approaches to multi-animal pose estimation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bottom-up-models">Bottom-up Models</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#backbones-with-part-affinity-fields">Backbones with Part-Affinity Fields</a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#top-down-models">Top-Down Models</a></li>
 </ul>
 </li>
