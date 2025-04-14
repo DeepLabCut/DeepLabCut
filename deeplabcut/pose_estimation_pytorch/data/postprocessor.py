@@ -114,7 +114,8 @@ def build_bottom_up_postprocessor(
     if with_identity:
         components.append(
             AssignIndividualIdentities(
-                identity_key="identity_scores", pose_key="bodyparts",
+                identity_key="identity_scores",
+                pose_key="bodyparts",
             )
         )
 
@@ -279,6 +280,9 @@ class PadOutputs(Postprocessor):
     ) -> tuple[dict[str, np.ndarray], Context]:
         for name in predictions:
             output = predictions[name]
+            if isinstance(output, list):
+                output = np.array(output)
+
             if (
                 name in self.max_individuals
                 and len(output) < self.max_individuals[name]
@@ -307,7 +311,7 @@ class TrimOutputs(Postprocessor):
         for name in predictions:
             output = predictions[name]
             if len(output) > self.max_individuals[name]:
-                predictions[name] = output[:self.max_individuals[name]]
+                predictions[name] = output[: self.max_individuals[name]]
 
         return predictions, context
 
@@ -380,6 +384,25 @@ class RescaleAndOffset(Postprocessor):
                             output_rescaled[:, :2] = output[:, :2] * scale + offset
                             rescaled_individuals.append(output_rescaled)
                         rescaled = np.stack(rescaled_individuals)
+
+                        # rescoring: https://github.com/amathislab/BUCTD/blob/main/lib/dataset/crowdpose.py#L182-L206
+                        if "cond_kpts" in context:
+                            kpt_scores = rescaled[:, :, 2].copy()
+                            valid_kpt_scores = kpt_scores >= 0.2
+
+                            num_valid_kpts = np.sum(valid_kpt_scores, axis=1)
+                            num_valid_kpts[num_valid_kpts == 0] = 1
+                            kpt_scores[~valid_kpt_scores] = 0
+                            kpt_score_sums = np.sum(kpt_scores, axis=1)
+                            idv_scores = kpt_score_sums / num_valid_kpts
+
+                            cond_kpt_scores = np.mean(
+                                context["cond_kpts"][:, :, 2], axis=1
+                            )
+
+                            rescaled[:, :, 2] = (cond_kpt_scores * idv_scores).reshape(
+                                -1, 1
+                            )
 
                 updated_predictions[name] = rescaled
             else:

@@ -1,6 +1,18 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
+"""Classes and functions to manipulate images"""
 from __future__ import annotations
 
 import copy
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -8,6 +20,25 @@ import torch
 import torchvision.transforms.functional as F
 
 from deeplabcut.pose_estimation_pytorch.data.utils import _compute_crop_bounds
+
+
+def load_image(filepath: str | Path, color_mode: str = "RGB") -> np.ndarray:
+    """Loads an image from a file using cv2
+
+    Args:
+        filepath: the path of the file containing the image to load
+        color_mode: {'RGB', 'BGR'} the color mode to load the image with
+
+    Returns:
+        the image as a numpy array
+    """
+    image = cv2.imread(str(filepath))
+    if color_mode == "RGB":
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    elif not color_mode == "BGR":
+        raise ValueError(f"Unsupported `color_mode`: {color_mode}")
+
+    return image
 
 
 def resize_and_random_crop(
@@ -87,6 +118,17 @@ def resize_and_random_crop(
                 h = max_long_side
 
         return h, w
+    
+    def scale_kpts(
+        keypoints: np.ndarray, kpt_scale: np.ndarray, kpt_offset: np.ndarray,
+        tgt_h: int, tgt_w: int
+    ) -> np.ndarray:
+        scaled_kpts = keypoints.copy()
+        scaled_kpts[..., :2] = (scaled_kpts[..., :2] / kpt_scale) - kpt_offset
+        scaled_kpts[(scaled_kpts[..., 0] >= tgt_w)] = -1
+        scaled_kpts[(scaled_kpts[..., 1] >= tgt_h)] = -1
+        scaled_kpts[(scaled_kpts[..., :2] < 0).any(axis=-1)] = -1
+        return scaled_kpts
 
     oh, ow = image.shape[1:]
     if isinstance(size, int):
@@ -126,21 +168,20 @@ def resize_and_random_crop(
     targets["offsets"] = ox + (offset_x * sx), oy + (offset_y * sy)
     targets["scales"] = sx * scale_x, sy * scale_y
 
-    # update annotations
+    # update annotations and context
     anns = targets.get("annotations", {})
+    context = targets.get("context", {})
 
     kpt_scale = np.array([scale_x, scale_y])
     kpt_offset = np.array([offset_x, offset_y])
     for kpt_key in ["keypoints", "keypoints_unique"]:
         keypoints = anns.get(kpt_key)
         if keypoints is not None and len(keypoints) > 0:
-            scaled_kpts = keypoints.copy()
-            scaled_kpts[..., :2] = (scaled_kpts[..., :2] / kpt_scale) - kpt_offset
-            scaled_kpts[(scaled_kpts[..., 0] >= tgt_w)] = -1
-            scaled_kpts[(scaled_kpts[..., 1] >= tgt_h)] = -1
-            scaled_kpts[(scaled_kpts[..., :2] < 0).any(axis=-1)] = -1
-            anns[kpt_key] = scaled_kpts
-
+            anns[kpt_key] = scale_kpts(keypoints, kpt_scale, kpt_offset, tgt_h, tgt_w)
+    cond_keypoints = context.get("cond_keypoints")
+    if cond_keypoints is not None and len(cond_keypoints) > 0:
+        context["cond_keypoints"] = scale_kpts(cond_keypoints, kpt_scale, kpt_offset, tgt_h, tgt_w)
+        
     bbox_scale = np.array([scale_x, scale_y, scale_x, scale_y])
     bbox_offset = np.array([offset_x, offset_y, 0, 0])
     for bbox_key in ["boxes"]:
@@ -171,6 +212,7 @@ def top_down_crop(
     output_size: tuple[int, int],
     margin: int = 0,
     center_padding: bool = False,
+    crop_with_context: bool = True,
 ) -> tuple[np.array, tuple[int, int], tuple[float, float]]:
     """
     Crops images around bounding boxes for top-down pose estimation. Computes offsets so
@@ -187,6 +229,7 @@ def top_down_crop(
         output_size: the (width, height) of the output cropped image
         margin: a margin to add around the bounding box before cropping
         center_padding: whether to center the image in the padding if any is needed
+        crop_with_context: Whether to keep context around the bounding box when cropping
 
     Returns:
         cropped_image, (offset_x, offset_y), (scale_x, scale_y)
@@ -200,12 +243,13 @@ def top_down_crop(
     w += 2 * margin
     h += 2 * margin
 
-    input_ratio = w / h
-    output_ratio = out_w / out_h
-    if input_ratio > output_ratio:  # h/w < h0/w0 => h' = w * h0/w0
-        h = w / output_ratio
-    elif input_ratio < output_ratio:  # w/h < w0/h0 => w' = h * w0/h0
-        w = h * output_ratio
+    if crop_with_context:
+        input_ratio = w / h
+        output_ratio = out_w / out_h
+        if input_ratio > output_ratio:  # h/w < h0/w0 => h' = w * h0/w0
+            h = w / output_ratio
+        elif input_ratio < output_ratio:  # w/h < w0/h0 => w' = h * w0/h0
+            w = h * output_ratio
 
     # cx,cy,w,h will now give the right ratio -> check if padding is needed
     x1, y1 = int(round(cx - (w / 2))), int(round(cy - (h / 2)))
@@ -227,6 +271,19 @@ def top_down_crop(
         y2 = image_h
 
     w, h = x2 - x1, y2 - y1
+    if not crop_with_context:
+        input_ratio = w / h
+        output_ratio = out_w / out_h
+        if input_ratio > output_ratio:  # h/w < h0/w0 => h' = w * h0/w0
+            w_pad = int(w - h * output_ratio) // 2
+            pad_top += w_pad
+            pad_bottom += w_pad
+
+        elif input_ratio < output_ratio:  # w/h < w0/h0 => w' = h * w0/h0
+            h_pad = int(h - (w / output_ratio)) // 2
+            pad_left += h_pad
+            pad_right += h_pad
+
     pad_x = pad_left + pad_right
     pad_y = pad_top + pad_bottom
     if center_padding:
