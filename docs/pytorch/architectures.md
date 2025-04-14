@@ -20,7 +20,7 @@ print(available_detectors())
 ## Neural Networks Architectures
 
 Several architectures are currently implemented in DeepLabCut PyTorch (more will come,
-and you can add more easily in our new model registry).
+and you can add more easily in our new model registry). Also check out the explanations of bottom-up/top-down below. 
 
 **ResNets**
 - Adapted from [He, Kaiming, et al. "Deep residual learning for image recognition." Proceedings of the IEEE conference on Computer Vision and Pattern Recognition. 2016.](https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html) and [Insafutdinov, Eldar et al. "DeeperCut: A Deeper, Stronger, and Faster Multi-Person Pose Estimation Model". European Conference on Computer Vision (ECCV) 2016.]
@@ -116,7 +116,7 @@ https://openaccess.thecvf.com/content/ICCV2023/papers/Zhou_Rethinking_Pose_Estim
 top-down approaches to overcome the ambiguïty introduced through bounding boxes. Instead
 of using an object detection model to localize individuals, it uses a bottom-up pose 
 estimation model. The predictions made by the bottom-up model are given as proposals (or
-_conditions_) to the pose estimation model. This is illustrated in the figure below.
+_conditions_) to the pose estimation model. This is illustrated in the figure below. In modern language, one could state that CTD models are "pose-promptable". 
 
 <figure>
   <img src="assets/buctd_figure_1.png" style="text-align: center; width: 400px;">
@@ -127,7 +127,7 @@ International Conference on Computer Vision. 2023.</figcaption>
 
 ### Bottom-up Models
 
-#### Backbones with Part-Affinity Fields
+#### Backbones with Part-Affinity Fields 
 
 As in DeepLabCut 2.X, the base multi-animal model is composed of a backbone (encoder) 
 and a head predicting keypoints and part-affinity fields (PAFs). These PAFs are used to 
