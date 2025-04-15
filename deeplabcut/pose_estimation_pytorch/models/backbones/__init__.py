@@ -15,3 +15,5 @@ from deeplabcut.pose_estimation_pytorch.models.backbones.base import (
 from deeplabcut.pose_estimation_pytorch.models.backbones.cspnext import CSPNeXt
 from deeplabcut.pose_estimation_pytorch.models.backbones.hrnet import HRNet
 from deeplabcut.pose_estimation_pytorch.models.backbones.resnet import ResNet, DLCRNet
+from deeplabcut.pose_estimation_pytorch.models.backbones.hrnet_coam import HRNetCoAM
+from deeplabcut.pose_estimation_pytorch.models.backbones.cond_prenet import CondPreNet

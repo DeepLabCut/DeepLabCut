@@ -21,6 +21,7 @@ import pandas as pd
 
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.engine import Engine
+from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import (
     build_dlc_dataframe_columns,
@@ -33,11 +34,13 @@ from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import (
     build_bottom_up_preprocessor,
     build_top_down_preprocessor,
+    build_conditional_top_down_preprocessor,
 )
 from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
 from deeplabcut.pose_estimation_pytorch.runners import (
     build_inference_runner,
+    CTDTrackingConfig,
     DetectorInferenceRunner,
     DynamicCropper,
     InferenceRunner,
@@ -534,28 +537,40 @@ def get_inference_runners(
             with_identity=with_identity,
         )
     else:
-        # FIXME: Cannot run detectors on MPS
-        detector_device = device
-        if device == "mps":
-            detector_device = "cpu"
-
         crop_cfg = model_config["data"]["inference"].get("top_down_crop", {})
         width, height = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
         margin = crop_cfg.get("margin", 0)
+        if pose_task == Task.COND_TOP_DOWN:
+            pose_preprocessor = build_conditional_top_down_preprocessor(
+                color_mode=model_config["data"]["colormode"],
+                transform=transform,
+                bbox_margin=model_config["data"].get("bbox_margin", 20),
+                top_down_crop_size=(width, height),
+                top_down_crop_margin=margin,
+                top_down_crop_with_context=crop_cfg.get("crop_with_context", False),
+            )
+        else:  # Top-Down
+            pose_preprocessor = build_top_down_preprocessor(
+                color_mode=model_config["data"]["colormode"],
+                transform=transform,
+                top_down_crop_size=(width, height),
+                top_down_crop_margin=margin,
+                top_down_crop_with_context=crop_cfg.get("crop_with_context", True),
+            )
 
-        pose_preprocessor = build_top_down_preprocessor(
-            color_mode=model_config["data"]["colormode"],
-            transform=transform,
-            top_down_crop_size=(width, height),
-            top_down_crop_margin=margin,
-        )
         pose_postprocessor = build_top_down_postprocessor(
             max_individuals=max_individuals,
             num_bodyparts=num_bodyparts,
             num_unique_bodyparts=num_unique_bodyparts,
         )
 
+        # FIXME: Cannot run detectors on MPS
+        detector_device = device
+        if device == "mps":
+            detector_device = "cpu"
+
         if detector_path is not None:
+            detector_path = str(detector_path)
             if detector_transform is None:
                 detector_transform = build_transforms(
                     model_config["detector"]["data"]["inference"]
@@ -662,6 +677,8 @@ def get_pose_inference_runner(
     max_individuals: int | None = None,
     transform: A.BaseCompose | None = None,
     dynamic: DynamicCropper | None = None,
+    cond_provider: CondFromModel | None = None,
+    ctd_tracking: bool | CTDTrackingConfig = False,
 ) -> PoseInferenceRunner:
     """Builds an inference runner for pose estimation.
 
@@ -677,6 +694,14 @@ def get_pose_inference_runner(
             cropping should not be used. Should only be used when creating inference
             runners for video pose estimation with batch size 1. For top-down pose
             estimation models, a `TopDownDynamicCropper` must be used.
+        cond_provider: Only for CTD models. If None, the CondProvider is created from
+            the pytorch_cfg.
+        ctd_tracking: Only for CTD models. Conditional top-down models can be used
+            to directly track individuals. Poses from frame T are given as conditions
+            for frame T+1. This also means a BU model is only needed to "initialize" the
+            pose in the first frame, and for the remaining frames only the CTD model is
+            needed. To configure conditional pose tracking differently, you can pass a
+            CTDTrackingConfig instance.
 
     Returns:
         an inference runner for pose estimation
@@ -695,6 +720,7 @@ def get_pose_inference_runner(
     if transform is None:
         transform = build_transforms(model_config["data"]["inference"])
 
+    kwargs = {}
     if pose_task == Task.BOTTOM_UP or isinstance(dynamic, TopDownDynamicCropper):
         pose_preprocessor = build_bottom_up_preprocessor(
             color_mode=model_config["data"]["colormode"],
@@ -711,12 +737,35 @@ def get_pose_inference_runner(
         width, height = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
         margin = crop_cfg.get("margin", 0)
 
-        pose_preprocessor = build_top_down_preprocessor(
-            color_mode=model_config["data"]["colormode"],
-            transform=transform,
-            top_down_crop_size=(width, height),
-            top_down_crop_margin=margin,
-        )
+        if pose_task == Task.COND_TOP_DOWN:
+            if cond_provider is not None:
+                kwargs["bu_runner"] = get_pose_inference_runner(
+                    model_config=read_config_as_dict(cond_provider.config_path),
+                    snapshot_path=cond_provider.snapshot_path,
+                    batch_size=1,
+                    device=device,
+                    max_individuals=max_individuals,
+                )
+
+            kwargs["ctd_tracking"] = ctd_tracking
+
+            pose_preprocessor = build_conditional_top_down_preprocessor(
+                color_mode=model_config["data"]["colormode"],
+                transform=transform,
+                bbox_margin=model_config["data"].get("bbox_margin", 20),
+                top_down_crop_size=(width, height),
+                top_down_crop_margin=margin,
+                top_down_crop_with_context=crop_cfg.get("crop_with_context", False),
+            )
+        else:  # Top-Down
+            pose_preprocessor = build_top_down_preprocessor(
+                color_mode=model_config["data"]["colormode"],
+                transform=transform,
+                top_down_crop_size=(width, height),
+                top_down_crop_margin=margin,
+                top_down_crop_with_context=crop_cfg.get("crop_with_context", True),
+            )
+
         pose_postprocessor = build_top_down_postprocessor(
             max_individuals=max_individuals,
             num_bodyparts=num_bodyparts,
@@ -733,6 +782,7 @@ def get_pose_inference_runner(
         postprocessor=pose_postprocessor,
         dynamic=dynamic,
         load_weights_only=model_config["runner"].get("load_weights_only", None),
+        **kwargs,
     )
     if not isinstance(runner, PoseInferenceRunner):
         raise RuntimeError(f"Failed to build PoseInferenceRunner for {model_config}")

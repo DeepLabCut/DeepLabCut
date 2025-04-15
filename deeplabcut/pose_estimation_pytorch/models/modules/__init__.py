@@ -16,6 +16,16 @@ from deeplabcut.pose_estimation_pytorch.models.modules.conv_block import (
 from deeplabcut.pose_estimation_pytorch.models.modules.conv_module import (
     HighResolutionModule,
 )
+from deeplabcut.pose_estimation_pytorch.models.modules.coam_module import (
+    CoAMBlock,
+    SelfAttentionModule_CoAM
+)
+from deeplabcut.pose_estimation_pytorch.models.modules.kpt_encoders import (
+    BaseKeypointEncoder,
+    ColoredKeypointEncoder,
+    StackedKeypointEncoder,
+    KEYPOINT_ENCODERS
+)
 from deeplabcut.pose_estimation_pytorch.models.modules.gated_attention_unit import (
     GatedAttentionUnit,
 )
