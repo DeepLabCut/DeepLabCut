@@ -75,6 +75,8 @@ class DEKRPredictor(BasePredictor):
         use_heatmap: bool = True,
         keypoint_score_type: str = "combined",
         max_absorb_distance: int = 75,
+        nms_threshold: float = 0.05,
+        apply_pose_nms: bool = True,
     ):
         """
         Args:
@@ -88,6 +90,8 @@ class DEKRPredictor(BasePredictor):
                 applies the heatmap score to each keypoint. "center" applies the score
                 of the center of each individual to all of its keypoints. "combined"
                 multiplies the score of the heatmap and individual for each keypoint.
+            nms_threshold: Threshold for NMS of pose.
+            apply_pose_nms: Whether to apply pose NMS
         """
         super().__init__()
         self.num_animals = num_animals
@@ -99,8 +103,9 @@ class DEKRPredictor(BasePredictor):
         if self.keypoint_score_type not in ("heatmap", "center", "combined"):
             raise ValueError(f"Unknown keypoint score type: {self.keypoint_score_type}")
 
-        # TODO: Set as in HRNet/DEKR configs. Define as a constant.
         self.max_absorb_distance = max_absorb_distance
+        self.nms_threshold = nms_threshold
+        self.apply_pose_nms = apply_pose_nms
 
     def forward(
         self, stride: float, outputs: dict[str, torch.Tensor]
@@ -174,7 +179,9 @@ class DEKRPredictor(BasePredictor):
             score = torch.clip(score, min=0, max=1)
 
         poses_w_scores = torch.cat([poses, score], dim=3)
-        # self.pose_nms(heatmaps, poses_w_scores)
+        if self.apply_pose_nms:
+            poses_w_scores = self.pose_nms(poses_w_scores)
+
         return {"poses": poses_w_scores}
 
     def get_locations(
@@ -299,11 +306,11 @@ class DEKRPredictor(BasePredictor):
 
         return pos_ind, scores
 
-    ########## WIP to take heatmap into account for scoring ##########
     def _update_pose_with_heatmaps(
         self, _poses: torch.Tensor, kpt_heatmaps: torch.Tensor
     ):
-        """If a heatmap center is close enough from the regressed point, the final prediction is the center of this heatmap
+        """If a heatmap center is close enough from the regressed point, the final
+        prediction is the center of this heatmap
 
         Args:
             poses: poses tensor, shape (batch_size, num_animals, num_keypoints, 2)
@@ -358,51 +365,86 @@ class DEKRPredictor(BasePredictor):
             2, 3
         )  # (batch_size, num_joints, h*w)
 
-        # Predicted poses based on the offset can be outside of the image
+        # Predicted poses based on the offset can be outside the image
         x = torch.clamp(torch.floor(pose_coords[:, :, :, 0]), 0, w - 1).long()
         y = torch.clamp(torch.floor(pose_coords[:, :, :, 1]), 0, h - 1).long()
         keypoint_poses = (y * w + x).mT  # (batch, num_joints, num_individuals)
-        heatscores = torch.gather(heatmaps_nocenter, 2, keypoint_poses)
-        return heatscores.mT  # (batch, num_individuals, num_joints)
+        scores = torch.gather(heatmaps_nocenter, 2, keypoint_poses)
+        return scores.mT  # (batch, num_individuals, num_joints)
 
-    def pose_nms(self, heatmaps: torch.Tensor, poses: torch.Tensor):
+    def pose_nms(self, poses: torch.Tensor) -> torch.Tensor:
         """Non-Maximum Suppression (NMS) for regressed poses.
 
         Args:
-            heatmaps: Heatmaps tensor.
-            poses: Pose proposals.
+            poses: Pose proposals of shape (batch_size, num_people, num_joints, 3).
+                The poses for each element in the batch should be sorted by score (the
+                highest score prediction should be first).
 
         Returns:
-            None
-
-        Example:
-            # Assuming you have 'heatmaps' and 'poses' tensors
-            predictor.pose_nms(heatmaps, poses)
+            Pose proposals after non-maximum suppression.
         """
-        pose_scores = poses[:, :, :, 2]
-        pose_coords = poses[:, :, :, :2]
+        batch_size, num_people, num_joints, _ = poses.shape
+        if num_people == 0:
+            return poses
 
-        if pose_coords.shape[1] == 0:
-            return [], []
+        xy = poses[:, :, :, :2]
+        w = xy[..., 0].max(dim=-1)[0] - xy[..., 0].min(dim=-1)[0]
+        h = xy[..., 1].max(dim=-1)[0] - xy[..., 1].min(dim=-1)[0]
+        area = torch.clamp((w * w) + (h * h), min=1)
+        area = area.repeat(1, 1, num_people * num_joints)
+        area = area.reshape(batch_size, num_people, num_people, num_joints)
 
-        batch_size, num_people, num_joints, _ = pose_coords.shape
-        heatvals = self.get_heat_value(pose_coords, heatmaps)
-        heat_score = (torch.sum(heatvals, dim=1) / num_joints)[:, 0]
+        # TODO(niels): Optimize code
+        # swap (batch, num_people) dims to be able to broadcast the diff
+        xy_ = xy.transpose(1, 0)
 
-        # return heat_score
-        # pose_score = pose_score*heatvals
-        # poses = torch.cat([pose_coord.cpu(), pose_score.cpu()], dim=2)
+        # compute the difference between keypoints
+        pose_diff = xy_[:, None] - xy_
+        pose_diff.pow_(2)
 
-        # keep_pose_inds = nms_core(cfg, pose_coord, heat_score)
-        # poses = poses[keep_pose_inds]
-        # heat_score = heat_score[keep_pose_inds]
+        # put batch first again
+        pose_diff = pose_diff.transpose(2, 0)
 
-        # if len(keep_pose_inds) > cfg.DATASET.MAX_NUM_PEOPLE:
-        #     heat_score, topk_inds = torch.topk(heat_score,
-        #                                         cfg.DATASET.MAX_NUM_PEOPLE)
-        #     poses = poses[topk_inds]
+        # Compute error between people pairs
+        pose_dist = pose_diff.sum(dim=-1)
+        pose_dist.sqrt_()
 
-        # poses = [poses.numpy()]
-        # scores = [i[:, 2].mean() for i in poses[0]]
+        pose_thresh = self.nms_threshold * torch.sqrt(area)
+        pose_dist = (pose_dist < pose_thresh).sum(dim=-1)
+        nms_pose = pose_dist > self.nms_threshold  # shape (b, num_people, num_people)
 
-        # return poses, scores
+        for batch_idx in range(batch_size):
+            # TODO(niels): Optimize code
+            kept = torch.zeros(num_people, dtype=torch.bool)
+            batch_order = []
+            kept_indices = set()
+            ignored_indices = set()
+            for person_idx in range(num_people):
+                if person_idx in ignored_indices:
+                    continue
+
+                kept_indices.add(person_idx)
+                batch_order.append(person_idx)
+                kept[person_idx] = True
+
+                suppressed = (
+                    nms_pose[batch_idx, person_idx]
+                    .nonzero()
+                    .detach()
+                    .reshape(-1)
+                    .tolist()
+                )
+                for to_suppress in suppressed:
+                    if to_suppress not in kept_indices:
+                        ignored_indices.add(to_suppress)
+
+            for idx in ignored_indices:
+                batch_order.append(idx)
+
+            # Mask out suppressed predictions
+            poses[batch_idx, ~kept] = -1
+
+            # Re-order predictions so the non-suppressed ones are up top
+            poses[batch_idx] = poses[batch_idx, batch_order]
+
+        return poses

@@ -1,5 +1,5 @@
 [codespell]
-skip = .git,*.pdf,*.svg,deeplabcut/pose_estimation_tensorflow/models/pretrained
+skip = .git,*.pdf,*.svg,*.ipynb,deeplabcut/pose_estimation_tensorflow/models/pretrained
 # MOT,SIE - legit acronyms
 # tThe - for \tThe. codespell is not good detecting those yet
-ignore-words-list = mot,sie,tthe, assertIn
+ignore-words-list = mot,sie,tthe,assertin,bu,td,ctd,wither

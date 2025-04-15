@@ -34,11 +34,10 @@
 [👩🏾‍💻👨‍💻 DeepLabCut AI Residency](https://www.deeplabcutairesidency.org/) 
 
 
-![Vesion](https://img.shields.io/badge/python_version-3.10-purple)
+![Version](https://img.shields.io/badge/python_version-3.10-purple)
 [![Downloads](https://pepy.tech/badge/deeplabcut)](https://pepy.tech/project/deeplabcut)
 [![Downloads](https://pepy.tech/badge/deeplabcut/month)](https://pepy.tech/project/deeplabcut)
 [![PyPI version](https://badge.fury.io/py/deeplabcut.svg)](https://badge.fury.io/py/deeplabcut)
-![Python package](https://github.com/DeepLabCut/DeepLabCut/workflows/Python%20package/badge.svg)
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 [![GitHub stars](https://img.shields.io/github/stars/DeepLabCut/DeepLabCut.svg?style=social&label=Star)](https://github.com/DeepLabCut/DeepLabCut)
@@ -60,15 +59,24 @@
 
 Please click the link above for all the information you need to get started! Please note that currently we support only Python 3.10+ (see conda files for guidance).
 
-Developers Stable Release:
-- Very quick start: You need to have TensorFlow installed (up to v2.10 supported across platforms) `pip install "deeplabcut[gui,tf]"` that includes all functions plus GUIs, or `pip install deeplabcut[tf]` (headless version with PyTorch and TensorFlow).
-  
-Developers Alpha Release:
-- We also have an alpha release of PyTorch DeepLabCut available! [Please see here for instructions and information](https://github.com/DeepLabCut/DeepLabCut/blob/pytorch_docs/docs/pytorch/user_guide.md).
+Developers Stable Release: very quick start (Python 3.10+ required) to install 
+DeepLabCut with the PyTorch engine
 
-We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/main/conda-environments/README.md) or the new [`deeplabcut-docker` package](https://github.com/DeepLabCut/DeepLabCut/tree/main/docker). 
+- [Install PyTorch](https://pytorch.org/get-started/locally/) (**select the desired
+CUDA version if you want to use a GPU**): `pip install torch torchvision`
+- Then, [install `pytables`](https://www.pytables.org/usersguide/installation.html): `conda install -c conda-forge pytables==3.8.0`
+- Finally, install `DeepLabCut` (with all functions + the GUI): 
+`pip install --pre  "deeplabcut[gui]"` or `pip install  --pre "deeplabcut"` (headless 
+version with PyTorch)!
 
-# [Documentation: The DeepLabCut Process](https://deeplabcut.github.io/DeepLabCut)
+To use the TensorFlow (TF) engine (requires Python 3.10; TF up to v2.10 supported on Windows,
+up to v2.12 on other platforms): you'll need to run `pip install "deeplabcut[gui,tf]"` 
+(which includes all functions plus GUIs) or `pip install "deeplabcut[tf]"` (headless
+version with PyTorch and TensorFlow). We aim to depreciate the TF part in 2027.
+
+We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/main/conda-environments/README.md) or the [`deeplabcut-docker` package](https://github.com/DeepLabCut/DeepLabCut/tree/main/docker). 
+
+# [Documentation: The DeepLabCut Process](https://deeplabcut.github.io/DeepLabCut/README.html)
 
 Our docs walk you through using DeepLabCut, and key API points. For an overview of the toolbox and workflow for project management, see our step-by-step at [Nature Protocols paper](https://doi.org/10.1038/s41596-019-0176-0).
 
@@ -82,9 +90,7 @@ For a deeper understanding and more resources for you to get started with Python
 
 🐭 pose tracking of single animals demo [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_DEMO_mouse_openfield.ipynb)
 
-🐭🐭🐭 pose tracking of multiple animals demo [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_3miceDemo.ipynb)
-
-- See [more demos here](https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/README.md). We provide data and several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the beginning on your own data. We also show you how to use the code in Docker, and on Google Colab.
+See [more demos here](https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/README.md). We provide data and several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the beginning on your own data. We also show you how to use the code in Docker, and on Google Colab.
 
 # Why use DeepLabCut?
 
@@ -129,7 +135,7 @@ This is an actively developed package and we welcome community development and i
 
 ## References \& Citations:
 
-Please see our [dedicated page](https://deeplabcut.github.io/DeepLabCut/docs/citation.html) on how to **cite DeepLabCut** 🙏 and our sugestions for your Methods section!
+Please see our [dedicated page](https://deeplabcut.github.io/DeepLabCut/docs/citation.html) on how to **cite DeepLabCut** 🙏 and our suggestions for your Methods section!
 
 ## License:
 

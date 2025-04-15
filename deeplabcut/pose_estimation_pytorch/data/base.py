@@ -22,6 +22,10 @@ from deeplabcut.pose_estimation_pytorch.data.dataset import (
     PoseDataset,
     PoseDatasetParameters,
 )
+from deeplabcut.pose_estimation_pytorch.data.generative_sampling import (
+    GenSamplingConfig,
+)
+from deeplabcut.pose_estimation_pytorch.data.snapshots import list_snapshots, Snapshot
 from deeplabcut.pose_estimation_pytorch.data.utils import (
     _compute_crop_bounds,
     bbox_from_keypoints,
@@ -46,7 +50,14 @@ class Loader(ABC):
             Returns a dictionary containing dataset parameters derived from the configuration.
     """
 
-    def __init__(self, model_config_path: str | Path) -> None:
+    def __init__(
+        self,
+        project_root: str | Path,
+        image_root: str | Path,
+        model_config_path: str | Path,
+    ) -> None:
+        self.project_root = Path(project_root)
+        self.image_root = Path(image_root)
         self.model_config_path = Path(model_config_path)
         self.model_cfg = config_utils.read_config_as_dict(str(model_config_path))
         self.pose_task = Task(self.model_cfg["method"])
@@ -56,6 +67,30 @@ class Loader(ABC):
     def model_folder(self) -> Path:
         """Returns: The path of the folder containing the model data"""
         return self.model_config_path.parent
+
+    def snapshots(
+        self,
+        detector: bool = False,
+        best_in_last: bool = True,
+    ) -> list[Snapshot]:
+        """Lists snapshots saved for the model.
+
+        Args:
+            detector: If the Loader is for a Top-Down model, passing detector=True
+                will return the snapshots for the detector. Otherwise, the snapshots
+                for the pose model are returned.
+            best_in_last: Whether to place the snapshot with the best performance in the
+                last position in the list, even if it wasn't the last epoch.
+
+        Returns:
+            The snapshots stored in a folder, sorted by the number of epochs they were
+            trained for. If best_in_last=True and a best snapshot exists, it will be the
+            last one in the list.
+        """
+        prefix = self.pose_task.snapshot_prefix
+        if detector:
+            prefix = Task.DETECT.snapshot_prefix
+        return list_snapshots(self.model_folder, prefix, best_in_last=best_in_last)
 
     def update_model_cfg(self, updates: dict) -> None:
         """Updates the model configuration
@@ -216,6 +251,13 @@ class Loader(ABC):
         parameters = self.get_dataset_parameters()
         data = self.load_data(mode)
         data["annotations"] = self.filter_annotations(data["annotations"], task)
+        ctd_config = None
+        if self.pose_task == Task.COND_TOP_DOWN:
+            ctd_config = GenSamplingConfig(
+                bbox_margin=self.model_cfg["data"].get("bbox_margin", 20),
+                **self.model_cfg["data"].get("gen_sampling", {}),
+            )
+
         dataset = PoseDataset(
             images=data["images"],
             annotations=data["annotations"],
@@ -223,6 +265,7 @@ class Loader(ABC):
             mode=mode,
             task=task,
             parameters=parameters,
+            ctd_config=ctd_config,
         )
         return dataset
 
@@ -269,6 +312,7 @@ class Loader(ABC):
         images: list[dict],
         annotations: list[dict],
         method: str = "gt",
+        bbox_margin: int = 20,
     ):
         """TODO: Nastya method of bbox computation (detection bbox, seg. mask, ...)
         Retrieves all bounding boxes based on the given method.
@@ -281,6 +325,7 @@ class Loader(ABC):
                 - 'detection bbox': Bounding boxes from detection.
                 - 'keypoints': Bounding boxes from keypoints.
                 - 'segmentation mask': Bounding boxes from segmentation masks.
+            bbox_margin: Margin to add around keypoints when generating bounding boxes.
 
         Returns:
             list: Updated annotations based on the given method.
@@ -307,7 +352,6 @@ class Loader(ABC):
             raise NotImplementedError
 
         elif method == "keypoints":
-            bbox_margin = 20  # TODO: should not be hardcoded
             min_area = 1  # TODO: should not be hardcoded
             img_id_to_annotations = map_id_to_annotations(annotations)
             for img in images:

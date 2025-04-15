@@ -21,6 +21,7 @@ import pandas as pd
 
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.engine import Engine
+from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import (
     build_dlc_dataframe_columns,
@@ -33,15 +34,18 @@ from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import (
     build_bottom_up_preprocessor,
     build_top_down_preprocessor,
+    build_conditional_top_down_preprocessor,
 )
 from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
 from deeplabcut.pose_estimation_pytorch.runners import (
     build_inference_runner,
+    CTDTrackingConfig,
     DetectorInferenceRunner,
     DynamicCropper,
     InferenceRunner,
     PoseInferenceRunner,
+    TopDownDynamicCropper,
 )
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import (
     Snapshot,
@@ -141,6 +145,7 @@ def get_model_snapshots(
     index: int | str,
     model_folder: Path,
     task: Task,
+    snapshot_filter: list[str] | None = None,
 ) -> list[Snapshot]:
     """
     Args:
@@ -151,6 +156,8 @@ def get_model_snapshots(
             snapshots.
         model_folder: The path to the folder containing the snapshots
         task: The task for which to return the snapshot
+        snapshot_filter: List of snapshot names to return (e.g. ["snapshot-50",
+            "snapshot-75"]). If defined, `index` will be ignored.
 
     Returns:
         If index=="all", returns all snapshots. Otherwise, returns a list containing a
@@ -163,6 +170,16 @@ def get_model_snapshots(
     snapshot_manager = TorchSnapshotManager(
         model_folder=model_folder, snapshot_prefix=task.snapshot_prefix
     )
+    if snapshot_filter is not None:
+        all_snapshots = snapshot_manager.snapshots()
+        snapshots = [s for s in all_snapshots if s.path.stem in snapshot_filter]
+        if len(snapshots) != len(snapshot_filter):
+            print(f"Warning: could not find all `snapshots_to_evaluate`.")
+            print(f"  Requested snapshots: {snapshot_filter}")
+            print(f"  Found snapshots: {[s.path.stem for s in all_snapshots]}")
+            print(f"  Snapshots returned: {[s.path.stem for s in snapshots]}")
+        return snapshots
+
     if isinstance(index, str) and index.lower() == "best":
         best_snapshot = snapshot_manager.best()
         if best_snapshot is None:
@@ -260,9 +277,12 @@ def get_scorer_name(
         snapshot = get_model_snapshots(snapshot_index, train_dir, pose_task)[0]
         detector_snapshot = None
         if detector_index is not None and pose_task == Task.TOP_DOWN:
-            detector_snapshot = get_model_snapshots(
-                detector_index, train_dir, Task.DETECT
-            )[0]
+            try:
+                detector_snapshot = get_model_snapshots(
+                    detector_index, train_dir, Task.DETECT
+                )[0]
+            except ValueError:
+                detector_snapshot = None
 
         snapshot_uid = get_scorer_uid(snapshot, detector_snapshot)
 
@@ -435,7 +455,7 @@ def build_bboxes_dict_for_dataframe(
     bboxes_data = []
     for image_name, image_predictions in predictions.items():
         image_names.append(image_name)
-        if "bboxes" in image_predictions:
+        if "bboxes" in image_predictions and "bbox_scores" in image_predictions:
             bboxes_data.append(
                 (image_predictions["bboxes"], image_predictions["bbox_scores"])
             )
@@ -517,28 +537,40 @@ def get_inference_runners(
             with_identity=with_identity,
         )
     else:
-        # FIXME: Cannot run detectors on MPS
-        detector_device = device
-        if device == "mps":
-            detector_device = "cpu"
-
         crop_cfg = model_config["data"]["inference"].get("top_down_crop", {})
         width, height = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
         margin = crop_cfg.get("margin", 0)
+        if pose_task == Task.COND_TOP_DOWN:
+            pose_preprocessor = build_conditional_top_down_preprocessor(
+                color_mode=model_config["data"]["colormode"],
+                transform=transform,
+                bbox_margin=model_config["data"].get("bbox_margin", 20),
+                top_down_crop_size=(width, height),
+                top_down_crop_margin=margin,
+                top_down_crop_with_context=crop_cfg.get("crop_with_context", False),
+            )
+        else:  # Top-Down
+            pose_preprocessor = build_top_down_preprocessor(
+                color_mode=model_config["data"]["colormode"],
+                transform=transform,
+                top_down_crop_size=(width, height),
+                top_down_crop_margin=margin,
+                top_down_crop_with_context=crop_cfg.get("crop_with_context", True),
+            )
 
-        pose_preprocessor = build_top_down_preprocessor(
-            color_mode=model_config["data"]["colormode"],
-            transform=transform,
-            top_down_crop_size=(width, height),
-            top_down_crop_margin=margin,
-        )
         pose_postprocessor = build_top_down_postprocessor(
             max_individuals=max_individuals,
             num_bodyparts=num_bodyparts,
             num_unique_bodyparts=num_unique_bodyparts,
         )
 
+        # FIXME: Cannot run detectors on MPS
+        detector_device = device
+        if device == "mps":
+            detector_device = "cpu"
+
         if detector_path is not None:
+            detector_path = str(detector_path)
             if detector_transform is None:
                 detector_transform = build_transforms(
                     model_config["detector"]["data"]["inference"]
@@ -645,6 +677,8 @@ def get_pose_inference_runner(
     max_individuals: int | None = None,
     transform: A.BaseCompose | None = None,
     dynamic: DynamicCropper | None = None,
+    cond_provider: CondFromModel | None = None,
+    ctd_tracking: bool | CTDTrackingConfig = False,
 ) -> PoseInferenceRunner:
     """Builds an inference runner for pose estimation.
 
@@ -657,9 +691,17 @@ def get_pose_inference_runner(
         transform: the transform for pose estimation. if None, uses the transform
             defined in the config.
         dynamic: The DynamicCropper used for video inference, or None if dynamic
-            cropping should not be used. Only for bottom-up pose estimation models.
-            Should only be used when creating inference runners for video pose
-            estimation with batch size 1.
+            cropping should not be used. Should only be used when creating inference
+            runners for video pose estimation with batch size 1. For top-down pose
+            estimation models, a `TopDownDynamicCropper` must be used.
+        cond_provider: Only for CTD models. If None, the CondProvider is created from
+            the pytorch_cfg.
+        ctd_tracking: Only for CTD models. Conditional top-down models can be used
+            to directly track individuals. Poses from frame T are given as conditions
+            for frame T+1. This also means a BU model is only needed to "initialize" the
+            pose in the first frame, and for the remaining frames only the CTD model is
+            needed. To configure conditional pose tracking differently, you can pass a
+            CTDTrackingConfig instance.
 
     Returns:
         an inference runner for pose estimation
@@ -678,7 +720,8 @@ def get_pose_inference_runner(
     if transform is None:
         transform = build_transforms(model_config["data"]["inference"])
 
-    if pose_task == Task.BOTTOM_UP:
+    kwargs = {}
+    if pose_task == Task.BOTTOM_UP or isinstance(dynamic, TopDownDynamicCropper):
         pose_preprocessor = build_bottom_up_preprocessor(
             color_mode=model_config["data"]["colormode"],
             transform=transform,
@@ -694,12 +737,35 @@ def get_pose_inference_runner(
         width, height = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
         margin = crop_cfg.get("margin", 0)
 
-        pose_preprocessor = build_top_down_preprocessor(
-            color_mode=model_config["data"]["colormode"],
-            transform=transform,
-            top_down_crop_size=(width, height),
-            top_down_crop_margin=margin,
-        )
+        if pose_task == Task.COND_TOP_DOWN:
+            if cond_provider is not None:
+                kwargs["bu_runner"] = get_pose_inference_runner(
+                    model_config=read_config_as_dict(cond_provider.config_path),
+                    snapshot_path=cond_provider.snapshot_path,
+                    batch_size=1,
+                    device=device,
+                    max_individuals=max_individuals,
+                )
+
+            kwargs["ctd_tracking"] = ctd_tracking
+
+            pose_preprocessor = build_conditional_top_down_preprocessor(
+                color_mode=model_config["data"]["colormode"],
+                transform=transform,
+                bbox_margin=model_config["data"].get("bbox_margin", 20),
+                top_down_crop_size=(width, height),
+                top_down_crop_margin=margin,
+                top_down_crop_with_context=crop_cfg.get("crop_with_context", False),
+            )
+        else:  # Top-Down
+            pose_preprocessor = build_top_down_preprocessor(
+                color_mode=model_config["data"]["colormode"],
+                transform=transform,
+                top_down_crop_size=(width, height),
+                top_down_crop_margin=margin,
+                top_down_crop_with_context=crop_cfg.get("crop_with_context", True),
+            )
+
         pose_postprocessor = build_top_down_postprocessor(
             max_individuals=max_individuals,
             num_bodyparts=num_bodyparts,
@@ -716,6 +782,7 @@ def get_pose_inference_runner(
         postprocessor=pose_postprocessor,
         dynamic=dynamic,
         load_weights_only=model_config["runner"].get("load_weights_only", None),
+        **kwargs,
     )
     if not isinstance(runner, PoseInferenceRunner):
         raise RuntimeError(f"Failed to build PoseInferenceRunner for {model_config}")
