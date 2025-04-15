@@ -7,8 +7,8 @@ RUN mkdir test/
 WORKDIR test
 RUN apt-get update && apt-get install -yy git
 RUN git config --global advice.detachedHead false
-# FIXME(niels): pull from --branch v${DEEPLABCUT_VERSION}
-RUN git clone --depth 1 --branch pytorch_dlc \
+# FIXME(maxim): pull from --branch v${DEEPLABCUT_VERSION}
+RUN git clone --depth 1 --branch main \
     https://github.com/DeepLabCut/DeepLabCut.git /test
 
 RUN pip3 install --no-cache-dir pytest

@@ -13,7 +13,7 @@ import argparse
 import pty
 import sys
 
-__version__ = "0.0.10-alpha"
+__version__ = "0.0.11-alpha"
 
 _MOTD = r"""
                     .--,       .--,

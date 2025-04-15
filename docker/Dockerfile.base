@@ -17,9 +17,9 @@ RUN apt-get update -yy && \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# FIXME(niels) install DeepLabCut through pypi releases
+# FIXME(maxim) install DeepLabCut through pypi releases: `pip install deeplabcut==${DEEPLABCUT_VERSION}`
 RUN pip install --upgrade pip
-RUN python -m pip install git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc \
+RUN python -m pip install git+https://github.com/DeepLabCut/DeepLabCut.git \
 	huggingface_hub \
 	wandb
 
