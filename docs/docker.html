@@ -489,7 +489,14 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="deeplabcut-docker-containers">
 <span id="docker-containers"></span><h1>DeepLabCut Docker containers<a class="headerlink" href="#deeplabcut-docker-containers" title="Link to this heading">#</a></h1>
-<p>For DeepLabCut 2.2.0.2 and onwards, we provide container containers on <a class="reference external" href="https://hub.docker.com/r/deeplabcut/deeplabcut">DockerHub</a>. Using Docker is an alternative approach to using DeepLabCut, which only requires the user to install <a class="reference external" href="https://www.docker.com/">Docker</a> on your machine, vs. following the step-by-step installation guide for a Anaconda setup. All dependencies needed to run DeepLabCut in terminal or GUI mode, or running Jupyter notebooks with DeepLabCut pre-installed are shipped with the provided Docker images.</p>
+<p>For DeepLabCut 2.2.0.2 and onwards, we provide container containers on <a class="reference external" href="https://hub.docker.com/r/deeplabcut/deeplabcut">DockerHub</a>. Using Docker is an alternative approach
+to using DeepLabCut, which only requires the user to install <a class="reference external" href="https://www.docker.com/">Docker</a> on your machine, vs. following the step-by-step installation
+guide for a Anaconda setup. All dependencies needed to run DeepLabCut in the terminal or
+running Jupyter notebooks with DeepLabCut pre-installed are shipped with the provided
+Docker images.</p>
+<p>The <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/gui/napari_GUI.html"><code class="docutils literal notranslate"><span class="pre">napari-deeplabcut</span></code> labelling GUI</a> can be used to label
+your data, but it cannot be run in a Docker container: it should be installed as
+documented in the link above: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">napari-deeplabcut</span></code> (checkout the <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/gui/napari_GUI.html#workflow">workflow</a> as well!).</p>
 <p>Advanced users can directly head to <a class="reference external" href="https://hub.docker.com/r/deeplabcut/deeplabcut">DockerHub</a> and use the provided images there. To get started with using the images, we however also provide a helper tool, <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code>, which makes the transition to docker images particularly convenient; to install the tool, run</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>deeplabcut-docker
 </pre></div>
@@ -501,7 +508,7 @@ Note that this will <em>not</em> disprupt or install Tensorflow, or any other De
 <p>With <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code>, you can use the images in two modes.</p>
 <ul class="simple">
 <li><p><em>Note 1: When running any of the following commands first, it can take some time to complete (a few minutes, depending on your internet connection), since it downloads the Docker image in the background. If you do not see any errors in your terminal, assume that everything is working fine! Subsequent runs of the command will be faster.</em></p></li>
-<li><p><em>Note 2: The Terminal mode image can be used on all supported platforms (Linux and MacOS). The GUI images can only be considered stable on Linux systems as of DeepLabCut 2.2.0.2 and need additional configuration on Mac.</em></p></li>
+<li><p><em>Note 2: The labelling GUI cannot be used through the Docker images. However, you can install <a class="reference external" href="https://github.com/DeepLabCut/napari-deeplabcut/tree/main?tab=readme-ov-file#napari-deeplabcut-keypoint-annotation-for-pose-estimation"><code class="docutils literal notranslate"><span class="pre">napari-deeplabcut</span></code></a> in a conda environment to do the labelling!</em></p></li>
 <li><p><em>Note 3: For any mode below, you might want to set which directory is the base, namely, so you can have read/write (or read-only access). Here is how to do so:
 If you want to mount the whole directory could e.g., pass</em></p></li>
 </ul>
@@ -510,8 +517,13 @@ If you want to mount the whole directory could e.g., pass</em></p></li>
 <p>If read-only access is enough, <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span> <span class="pre">bash</span> <span class="pre">-v</span> <span class="pre">/home/mackenzie/DEEPLABCUT:/home/mackenzie/DEEPLABCUT:ro</span></code></p>
 <section id="terminal-mode">
 <h3>Terminal mode<a class="headerlink" href="#terminal-mode" title="Link to this heading">#</a></h3>
-<p>If you not need the GUI, you can run the light version of DeepLabCut and open a terminal by running</p>
+<p>You can run the light version of DeepLabCut and open a terminal by running</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>deeplabcut-docker<span class="w"> </span>bash
+</pre></div>
+</div>
+<p><strong>Important:</strong> if have GPUs on your machine and want to use them to train models, you
+need to pass the <code class="docutils literal notranslate"><span class="pre">--gpus</span> <span class="pre">all</span></code> argument to <code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>deeplabcut-docker<span class="w"> </span>bash<span class="w"> </span>--gpus<span class="w"> </span>all
 </pre></div>
 </div>
 <p>Inside the terminal, you can confirm that DeepLabCut is correctly installed by running and noting which version installs.</p>
@@ -522,7 +534,7 @@ If you want to mount the whole directory could e.g., pass</em></p></li>
 </section>
 <section id="jupyter-notebook-mode">
 <h3>Jupyter Notebook mode<a class="headerlink" href="#jupyter-notebook-mode" title="Link to this heading">#</a></h3>
-<p>Finally, you can run DeepLabCut by starting a jupyter notebook server. The corresponding image can be pulled and started by running</p>
+<p>You can run DeepLabCut by starting a jupyter notebook server. The corresponding image can be pulled and started by running</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>deeplabcut-docker<span class="w"> </span>notebook<span class="w"> </span>
 </pre></div>
 </div>
@@ -531,7 +543,7 @@ If you want to mount the whole directory could e.g., pass</em></p></li>
 </section>
 <section id="advanced-usage">
 <h3>Advanced usage<a class="headerlink" href="#advanced-usage" title="Link to this heading">#</a></h3>
-<p>Advanced users and developers can visit the <code class="docutils literal notranslate"><span class="pre">/docker</span></code> subdirectory in the DeepLabCut codebase on Github. We provide Dockerfiles for all images, along with build instructions there.</p>
+<p>Advanced users and developers can visit the <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/main/docker"><code class="docutils literal notranslate"><span class="pre">/docker</span></code> subdirectory</a> in the DeepLabCut codebase on Github. We provide Dockerfiles for all images, along with build instructions there.</p>
 </section>
 </section>
 <section id="prerequisites-if-you-don-t-have-docker-installed-already">
