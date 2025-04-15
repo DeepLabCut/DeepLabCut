@@ -8,6 +8,7 @@ wandb
 # existing:
 dlclibrary
 ipython
+ffmpegcv>=0.3.17
 filterpy
 ruamel.yaml>=0.15.0
 intel-openmp; sys_platform == "win32" or sys_platform == "linux"
