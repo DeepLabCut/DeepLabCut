@@ -74,7 +74,8 @@ def get_track_method(cfg, track_method=""):
             # check if it exists:
             if track_method not in TRACK_METHODS:
                 raise ValueError(
-                    f"Invalid tracking method. Only {', '.join(TRACK_METHODS)} are currently supported."
+                    f"Invalid tracking method. Only {', '.join(TRACK_METHODS)} are "
+                    "currently supported."
                 )
             return track_method
         else:  # default
@@ -370,11 +371,11 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
 
             Data.to_hdf(
                 fn + "singleanimal.h5",
-                "df_with_missing",
+                key="df_with_missing",
             )
             Data.to_csv(fn + "singleanimal.csv")
 
-            dataFrame.to_hdf(fn + ".h5", "df_with_missing")
+            dataFrame.to_hdf(fn + ".h5", key="df_with_missing")
             dataFrame.to_csv(fn + ".csv")
 
 
@@ -445,13 +446,13 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
 
                 Data.to_hdf(
                     fn + "multianimal.h5",
-                    "df_with_missing",
+                    key="df_with_missing",
                 )
                 Data.to_csv(fn + "multianimal.csv")
 
                 DataFrame.to_hdf(
                     fn + ".h5",
-                    "df_with_missing",
+                    key="df_with_missing",
                 )
                 DataFrame.to_csv(fn + ".csv")
             elif target is None or target == "multi":
@@ -534,13 +535,13 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
 
                 Data.to_hdf(
                     fn + "singleanimal.h5",
-                    "df_with_missing",
+                    key="df_with_missing",
                 )
                 Data.to_csv(fn + "singleanimal.csv")
 
                 DataFrame.to_hdf(
                     fn + ".h5",
-                    "df_with_missing",
+                    key="df_with_missing",
                 )
                 DataFrame.to_csv(fn + ".csv")
 

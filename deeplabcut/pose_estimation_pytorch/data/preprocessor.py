@@ -16,11 +16,14 @@ from pathlib import Path
 from typing import Any, TypeVar
 
 import albumentations as A
-import cv2
 import numpy as np
 import torch
 
-from deeplabcut.pose_estimation_pytorch.data.image import top_down_crop
+from deeplabcut.pose_estimation_pytorch.data.image import (
+    load_image,
+    top_down_crop
+)
+from deeplabcut.pose_estimation_pytorch.data.utils import bbox_from_keypoints
 
 
 Image = TypeVar("Image", torch.Tensor, np.ndarray, str, Path)
@@ -85,6 +88,7 @@ def build_top_down_preprocessor(
     transform: A.BaseCompose,
     top_down_crop_size: tuple[int, int],
     top_down_crop_margin: int = 0,
+    top_down_crop_with_context: bool = True,
 ) -> Preprocessor:
     """Creates a preprocessor for top-down pose estimation
 
@@ -98,6 +102,7 @@ def build_top_down_preprocessor(
         transform: the transform to apply to the image
         top_down_crop_size: the (width, height) to resize cropped bboxes to
         top_down_crop_margin: the margin to add around detected bboxes for the crop
+        top_down_crop_with_context: whether to keep context when applying the top-down crop
 
     Returns:
         A default top-down Preprocessor
@@ -105,8 +110,55 @@ def build_top_down_preprocessor(
     return ComposePreprocessor(
         components=[
             LoadImage(color_mode),
-            TopDownCrop(output_size=top_down_crop_size, margin=top_down_crop_margin),
+            TopDownCrop(
+                output_size=top_down_crop_size,
+                margin=top_down_crop_margin,
+                with_context=top_down_crop_with_context,
+            ),
             AugmentImage(transform),
+            ToTensor(),
+        ]
+    )
+
+
+def build_conditional_top_down_preprocessor(
+    color_mode: str,
+    transform: A.BaseCompose,
+    bbox_margin: int,
+    top_down_crop_size: tuple[int, int],
+    top_down_crop_margin: int = 0,
+    top_down_crop_with_context: bool = False,
+) -> Preprocessor:
+    """Creates a preprocessor for conditional top-down pose estimation
+
+    Creates a preprocessor that loads an image, computes bounding boxes from conditional
+    keypoints (given as a context (through a "cond_kpts" key), crops all bounding boxes,
+    runs some transforms on each cropped image (such as normalization), creates a tensor
+    from the numpy array (going from (num_ind, h, w, 3) to (num_ind, 3, h, w)).
+
+    Args:
+        color_mode: whether to load the image as an RGB or BGR
+        transform: the transform to apply to the image
+        bbox_margin: The margin to add around keypoints when generating bounding boxes
+            from conditional keypoints.
+        top_down_crop_size: the (width, height) to resize cropped bboxes to
+        top_down_crop_margin: the margin to add around detected bboxes for the crop
+        top_down_crop_with_context: whether to keep context when applying the top-down crop
+
+    Returns:
+        A default conditional top-down Preprocessor
+    """
+    return ComposePreprocessor(
+        components=[
+            LoadImage(color_mode),
+            ComputeBoundingBoxesFromCondKeypoints(bbox_margin=bbox_margin),
+            TopDownCrop(
+                output_size=top_down_crop_size,
+                margin=top_down_crop_margin,
+                with_context=top_down_crop_with_context,
+            ),
+            AugmentImage(transform),
+            ConditionalKeypointsToModelInputs(),
             ToTensor(),
         ]
     )
@@ -130,20 +182,16 @@ class ComposePreprocessor(Preprocessor):
 class LoadImage(Preprocessor):
     """Loads an image from a file, if not yet loaded"""
 
-    def __init__(self, color_mode: str = "RBG") -> None:
+    def __init__(self, color_mode: str = "RGB") -> None:
         self.color_mode = color_mode
 
     def __call__(self, image: Image, context: Context) -> tuple[np.ndarray, Context]:
         if isinstance(image, (str, Path)):
-            image_ = cv2.imread(str(image))
-            if self.color_mode == "RGB":
-                image_ = cv2.cvtColor(image_, cv2.COLOR_BGR2RGB)
-        else:
-            image_ = image
+            image = load_image(image, color_mode=self.color_mode)
 
-        h, w = image_.shape[:2]
+        h, w = image.shape[:2]
         context["image_size"] = w, h
-        return image_, context
+        return image, context
 
 
 class AugmentImage(Preprocessor):
@@ -315,14 +363,21 @@ class TopDownCrop(Preprocessor):
     Args:
         output_size: The (width, height) of crops to output
         margin: The margin to add around detected bounding boxes before cropping
+        with_context: Whether to keep context in the top-down crop
     """
 
-    def __init__(self, output_size: int | tuple[int, int], margin: int = 0) -> None:
+    def __init__(
+        self,
+        output_size: int | tuple[int, int],
+        margin: int = 0,
+        with_context: bool = True,
+    ) -> None:
         if isinstance(output_size, int):
             output_size = (output_size, output_size)
 
         self.output_size = output_size
         self.margin = margin
+        self.with_context = with_context
 
     def __call__(
         self, image: np.ndarray, context: Context
@@ -334,7 +389,11 @@ class TopDownCrop(Preprocessor):
         images, offsets, scales = [], [], []
         for bbox in context["bboxes"]:
             crop, offset, scale = top_down_crop(
-                image, bbox, self.output_size, margin=self.margin
+                image,
+                bbox,
+                self.output_size,
+                margin=self.margin,
+                crop_with_context=self.with_context,
             )
             images.append(crop)
             offsets.append(offset)
@@ -351,3 +410,52 @@ class TopDownCrop(Preprocessor):
 
         context["top_down_crop_size"] = self.output_size
         return images, context
+
+
+class ComputeBoundingBoxesFromCondKeypoints(Preprocessor):
+    """Generates bounding boxes from predicted keypoints
+
+    Args:
+        cond_kpt_key: The key under which cond. keypoints are stored in the context.
+        bbox_margin: The margin to add around keypoints when generating bounding boxes.
+    """
+
+    def __init__(self, cond_kpt_key: str = "cond_kpts", bbox_margin: int = 0) -> None:
+        self.cond_kpt_key = cond_kpt_key
+        self.bbox_margin = bbox_margin
+
+    def __call__(
+        self, image: np.ndarray, context: Context
+    ) -> tuple[np.ndarray, Context]:
+        """TODO: numpy implementation"""
+        if "cond_kpts" not in context:
+            raise ValueError(
+                f"Must include cond kpts to ComputeBBoxes, found {context}"
+            )
+
+        h, w = image.shape[:2]
+        context["bboxes"] = [
+            bbox_from_keypoints(cond_kpts, h, w, self.bbox_margin)
+            for cond_kpts in context[self.cond_kpt_key]
+        ]
+        return image, context
+
+
+class ConditionalKeypointsToModelInputs(Preprocessor):
+
+    def __init__(self, cond_kpt_key: str = "cond_kpts") -> None:
+        self.cond_kpt_key = cond_kpt_key
+
+    def __call__(
+        self, image: np.ndarray, context: Context
+    ) -> tuple[np.ndarray, Context]:
+        cond_keypoints = context[self.cond_kpt_key]
+        if len(cond_keypoints) == 0:
+            return image, context
+
+        rescaled = cond_keypoints.copy()
+        rescaled[..., :2] = (
+            rescaled[..., :2] - np.array(context["offsets"])[:, None]
+        ) / np.array(context["scales"])[:, None]
+        context["model_kwargs"] = {"cond_kpts": np.expand_dims(rescaled, axis=1)}
+        return image, context

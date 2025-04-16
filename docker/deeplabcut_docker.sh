@@ -2,10 +2,12 @@
 #
 # Helper script for launching deeplabcut docker UI containers
 # Usage:
-#   $ ./deeplabcut-docker.sh [gui|notebook|bash]
+#   $ ./deeplabcut-docker.sh [notebook|bash]
 
 DOCKER=${DOCKER:-docker}
-DLC_VERSION=${DLC_VERSION:-"latest"}
+CUDA_VERSION=${CUDA_VERSION:-"12.4"}
+CUDNN_VERSION=${CUDNN_VERSION:-"9"}
+DLC_VERSION=${DLC_VERSION:-"3.0.0"}
 DLC_NOTEBOOK_PORT=${DLC_NOTEBOOK_PORT:-8888}
 
 # Check if the current users has privileges to start
@@ -35,41 +37,6 @@ check_system() {
     fi
 }
 
-# Select docker parameters based on the system.
-# Display variable and bind paths slightly differ
-# between macOS and Linux. Further systems should
-# be added here.
-get_x11_args() {
-    if [[ $(uname -s) == Linux ]]; then
-        err "Using Linux config"
-        args=(
-            "-e DISPLAY=unix$DISPLAY"
-            "-v /tmp/.X11-unix:/tmp/.X11-unix"
-            "-v $XAUTHORITY:/home/developer/.Xauthority"
-        )
-    elif [[ $(uname -s) == Darwin ]]; then
-        err "Using OSX config"
-        # TODO(stes) This is most likely not robust for all users;
-        #            We need to replace "en0" by some dynamic way
-        #            of figuring out the active network interface.
-        #            Even better would be to use 127.0.0.1, if this
-        #            is possible with the correct external config
-        ip=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}')
-        display_id=$(echo $DISPLAY | sed -e 's/.*\(:[0-9]\)/\1/')
-        args=(
-            "-e DISPLAY=${ip}${display_id}"
-        )
-    else
-        err "Unknown operating system:"
-        err "$(uname -s)"
-        err "Please open an issue on "
-        err "https://github.com/DeepLabCut/DeepLabCut/issues"
-        err "And attach your full console output."
-        exit 1
-    fi
-    echo "${args[@]}"
-}
-
 get_mount_args() {
     args=(
         "-v $(pwd):/app -w /app"
@@ -78,11 +45,11 @@ get_mount_args() {
 }
 
 get_container_name() {
-    echo deeplabcut/deeplabcut:${DLC_VERSION}-$1
+    echo "deeplabcut/deeplabcut:${DLC_VERSION}-$1-cuda${CUDA_VERSION}-cudnn${CUDNN_VERSION}"
 }
 
 get_local_container_name() {
-    echo deeplabcut-${DLC_VERSION}-$1
+    echo "deeplabcut-${DLC_VERSION}-$1-cuda${CUDA_VERSION}-cudnn${CUDNN_VERSION}"
 }
 
 ### Start of helper functions ###
@@ -99,7 +66,7 @@ update() {
 }
 
 # Build the docker container
-# Usage: build [core|gui|gui-jupyter]
+# Usage: build [core|jupyter]
 build() {
     tag=$1
     _build $(get_container_name $tag) $(get_local_container_name $tag) || exit 1
@@ -115,7 +82,7 @@ _build() {
     gid=$(id -g)
 
     err "Configuring a local container for user $uname ($uid) in group $gname ($gid)"
-    $DOCKER build -q -t ${local_name} - <<EOF
+    $DOCKER build -q -t "${local_name}" - <<EOF
     from ${remote_name}
 
     # Create same user as on the host system
@@ -138,27 +105,17 @@ EOF
 
 ### Start of CLI functions ###
 
-# Launch the UI version of DeepLabCut
-gui() {
-    extra_args="$@"
-    update gui || exit 1
-    build gui || exit 1
-    args="$(get_x11_args) $(get_mount_args) ${extra_args}"
-    $DOCKER run -it --rm ${args} $(get_local_container_name gui) ||
-        err "Failed to launch the DLC GUI. Used args: \"${args}\""
-}
-
 # Launch a Jupyter Server in the current directory
 notebook() {
     extra_args="$@"
-    update gui-jupyter || exit 1
-    build gui-jupyter || exit 1
-    args="$(get_x11_args) $(get_mount_args) ${extra_args} -v /app/examples"
+    update jupyter || exit 1
+    build jupyter || exit 1
+    args="$(get_mount_args) ${extra_args}"
     err "Starting the notebook server."
     err "Open your browser at"
     err "http://127.0.0.1:${DLC_NOTEBOOK_PORT}"
     err "If prompted for a password, enter 'deeplabcut'."
-    $DOCKER run -p 127.0.0.1:${DLC_NOTEBOOK_PORT}:8888 -it --rm ${args} $(get_local_container_name gui-jupyter) ||
+    $DOCKER run -p 127.0.0.1:"${DLC_NOTEBOOK_PORT}":8888 -it --rm ${args} $(get_local_container_name jupyter) ||
         err "Failed to launch the notebook server. Used args: \"${args}\""
 }
 
@@ -183,15 +140,14 @@ custom() {
 }
 
 check_system
-subcommand=${1:-gui}
+subcommand=${1:-notebook}
 shift 1
 case "${subcommand}" in
-gui) gui "$@" ;;
 notebook) notebook "$@" ;;
 bash) bash "$@" ;;
 custom) custom "$@" ;;
 *)
     echo "Usage"
-    echo "$0 [gui|notebook|bash|help]"
+    echo "$0 [notebook|bash|help]"
     ;;
 esac

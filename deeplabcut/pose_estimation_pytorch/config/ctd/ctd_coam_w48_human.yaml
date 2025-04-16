@@ -1,0 +1,59 @@
+data:
+  bbox_margin: 5
+  gen_sampling:
+    keypoint_sigmas: [ .079, .079, .072, .072, .062, .062, .107, .107, .087, .087, .089, .089, .025, .025 ]  # CrowdPose sigmas
+    keypoints_symmetry: [ [ 0, 1 ], [ 2, 3 ], [ 4, 5 ], [ 6, 7 ], [ 8, 9 ], [ 10, 11 ] ] # CrowdPose symmetries
+  inference:
+    top_down_crop:
+      width: 288
+      height: 384
+      crop_with_context: false
+  train:
+    top_down_crop:
+      width: 288
+      height: 384
+      crop_with_context: false
+method: ctd
+model:
+  backbone:
+    type: HRNetCoAM
+    base_model_name: hrnet_w48
+    pretrained: true
+    freeze_bn_stats: false
+    freeze_bn_weights: false
+    coam_modules: [2,]
+    channel_att_only: false
+    att_heads: 1
+    kpt_encoder:
+      type: StackedKeypointEncoder
+      num_joints: "num_bodyparts"
+      kernel_size: [15, 15]
+    img_size: [384, 288]
+  backbone_output_channels: 48
+  heads:
+    bodypart:
+      type: HeatmapHead
+      weight_init: normal
+      predictor:
+        type: HeatmapPredictor
+        apply_sigmoid: false
+        #clip_scores: true
+        location_refinement: false
+      target_generator:
+        type: HeatmapGaussianGenerator
+        num_heatmaps: "num_bodyparts"
+        pos_dist_thresh: 17
+        heatmap_mode: KEYPOINT
+        generate_locref: false
+      criterion:
+        heatmap:
+          type: WeightedMSECriterion
+          weight: 1.0
+      heatmap_config:
+        channels:
+        - 48
+        kernel_size: []
+        strides: []
+        final_conv:
+          out_channels: "num_bodyparts"
+          kernel_size: 1

@@ -10,11 +10,10 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import argparse
-import os
 import pty
 import sys
 
-__version__ = "0.0.10-alpha"
+__version__ = "0.0.11-alpha"
 
 _MOTD = r"""
                     .--,       .--,
@@ -50,7 +49,7 @@ def _parse_args():
     parser.add_argument(
         "container",
         type=str,
-        choices=["gui", "notebook", "bash"],
+        choices=["notebook", "bash"],
         help=(
             "The container to launch. A list of all containers is available on "
             "https://hub.docker.com/r/deeplabcut/deeplabcut/tags. By default, the "

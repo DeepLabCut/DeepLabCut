@@ -343,10 +343,15 @@ def evaluate_multianimal_full(
                         # Form 2D array of shape (n_rows, 4) where the last dim is
                         # (sample_index, peak_y, peak_x, bpt_index) to slice the PAFs.
                         temp = df.reset_index(level="bodyparts").dropna()
-                        temp["bodyparts"].replace(
-                            dict(zip(joints, range(len(joints)))),
-                            inplace=True,
-                        )
+                        with pd.option_context("future.no_silent_downcasting", True):
+                            temp["bodyparts"] = (
+                                temp["bodyparts"]
+                                .replace(
+                                    dict(zip(joints, range(len(joints)))),
+                                )
+                                .infer_objects(copy=False)
+                            )
+
                         temp["sample"] = 0
                         peaks_gt = temp.loc[
                             :, ["sample", "y", "x", "bodyparts"]

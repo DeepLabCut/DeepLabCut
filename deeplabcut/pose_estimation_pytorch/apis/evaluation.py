@@ -21,6 +21,7 @@ import pandas as pd
 from tqdm import tqdm
 
 import deeplabcut.core.metrics as metrics
+import deeplabcut.pose_estimation_pytorch.apis.ctd as ctd
 import deeplabcut.pose_estimation_pytorch.apis.prune_paf_graph as prune_paf_graph
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch import utils
@@ -83,6 +84,11 @@ def predict(
                 {"bboxes": ground_truth_bboxes[image]["bboxes"]}
                 for image in image_paths
             ]
+
+    elif loader.pose_task == Task.COND_TOP_DOWN:
+        # Load conditions for context
+        conditions = ctd.load_conditions_for_evaluation(loader, image_paths)
+        context = [{"cond_kpts": conditions[image]} for image in image_paths]
 
     images_with_context = image_paths
     if context is not None:

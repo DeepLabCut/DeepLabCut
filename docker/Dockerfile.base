@@ -1,34 +1,32 @@
 ARG CUDA_VERSION
-FROM nvidia/cuda:${CUDA_VERSION}
+ARG CUDNN_VERSION
+ARG PYTORCH_VERSION
+FROM pytorch/pytorch:${PYTORCH_VERSION}-cuda${CUDA_VERSION}-cudnn${CUDNN_VERSION}-runtime
 
 ARG DEEPLABCUT_VERSION
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG PYTHON_VERSION=3.9
 RUN apt-get update -yy && \
-    apt-get install -yy --no-install-recommends python${PYTHON_VERSION} python3-pip ffmpeg libsm6 libxext6 && \
-    ln -s -f /usr/bin/python${PYTHON_VERSION} /usr/bin/python3 && \
-    ln -s -f /usr/bin/python${PYTHON_VERSION} /usr/bin/python && \
-    ln -s -f /usr/bin/pip3 /usr/bin/pip && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt-get clean
+    apt-get install -yy --no-install-recommends \
+    libgl1 \
+    libglib2.0-0 \
+    build-essential \
+    make \
+    git \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-RUN pip3 install --upgrade \
-		deeplabcut==${DEEPLABCUT_VERSION} \
-		numpy==1.24.0 \
-		decorator==4.4.2 \ 
-		tensorflow==2.10 \
-		torch==1.12 \
-	&& pip3 list
+# FIXME(maxim) install DeepLabCut through pypi releases: `pip install deeplabcut==${DEEPLABCUT_VERSION}`
+RUN pip install --upgrade pip
+RUN python -m pip install git+https://github.com/DeepLabCut/DeepLabCut.git \
+	huggingface_hub \
+	wandb
 
-# The installed tensorflow version will not work with the latest protocol buffer version,
-# hence we are fixing the version to 3.20.
-# See https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
-# for details on why this is needed. (re: Aug 21, 2023: retested, still required)
-RUN pip3 install protobuf==3.20.1
-
-# TODO required to fix permission errors when running the container with limited permission.
-RUN chmod a+rwx -R /usr/local/lib/python${PYTHON_VERSION}/dist-packages/deeplabcut/pose_estimation_tensorflow/models/pretrained
+# Make the folder containing the pretrained weights writeable
+RUN mkdir -p /opt/conda/lib/python3.11/site-packages/deeplabcut/pose_estimation_pytorch/models/backbones/pretrained_weights && \
+    chmod a+rwx -R /opt/conda/lib/python3.11/site-packages/deeplabcut/pose_estimation_pytorch/models/backbones/pretrained_weights
 
 ENV CUDA_VERSION=${CUDA_VERSION}
 ENV DEEPLABCUT_VERSION=${DEEPLABCUT_VERSION}
+ENV PYTORCH_VERSION=${CUDA_VERSION}

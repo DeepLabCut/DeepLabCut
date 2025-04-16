@@ -28,6 +28,7 @@ warnings.simplefilter("ignore", category=NumbaPerformanceWarning)
 
 TRACK_METHODS = {
     "box": "_bx",
+    "ctd": "_ctd",
     "skeleton": "_sk",
     "ellipse": "_el",
     "transformer": "_tr",

@@ -24,7 +24,7 @@ def compute_metrics(
     unique_bodypart_poses: dict[str, np.ndarray] | None = None,
     pcutoff: float = -1,
     oks_bbox_margin: int = 0,
-    oks_sigma: float = 0.1,
+    oks_sigma: float | np.ndarray = 0.1,
     per_keypoint_rmse: bool = False,
     compute_detection_rmse: bool = True,
 ) -> dict:

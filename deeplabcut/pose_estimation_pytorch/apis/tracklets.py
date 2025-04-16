@@ -83,6 +83,12 @@ def convert_detections2tracklets(
     if "multi-animal" not in dlc_cfg["dataset_type"]:
         raise ValueError("This function is only required for multianimal projects!")
 
+    if track_method == "ctd":
+        raise ValueError(
+            "CTD tracking occurs directly during video analysis. No need to call "
+            "`convert_detections2tracklets` with `track_method=='ctd'`."
+        )
+
     if inference_cfg is None:
         inference_cfg = auxfun_multianimal.read_inferencecfg(
             model_dir / "test" / "inference_cfg.yaml", cfg

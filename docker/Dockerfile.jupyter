@@ -1,23 +1,9 @@
 ARG CUDA_VERSION
+ARG CUDNN_VERSION
 ARG DEEPLABCUT_VERSION
-FROM deeplabcut/deeplabcut:${DEEPLABCUT_VERSION}-core-cuda${CUDA_VERSION}-latest
+FROM deeplabcut/deeplabcut:${DEEPLABCUT_VERSION}-core-cuda${CUDA_VERSION}-cudnn${CUDNN_VERSION}
 
-RUN pip3 install --no-cache-dir \
-        notebook==6.4.12 \
-        && pip3 list
+RUN pip install "notebook<7"
 
-ENV PYTHONPATH "${PYTHONPATH}:/usr/lib/python3"
-
-ARG USER=docker_user
-RUN useradd -m ${USER} \
-    && cp /root/.bashrc /home/${USER}/ \
-    && mkdir /app /data /codebase \
-    && chown -R --from=root ${USER} /home/${SUSER} \
-                                /app /data /codebase
-ENV HOME /home/${USER}
-WORKDIR ${HOME}
-USER ${USER}
-
-RUN jupyter notebook --generate-config
 EXPOSE 8888
-ENTRYPOINT ["jupyter", "notebook", "--no-browser",  "--ip", "0.0.0.0"]
+ENTRYPOINT ["jupyter", "notebook", "--no-browser", "--NotebookApp.token=deeplabcut", "--ip", "0.0.0.0"]

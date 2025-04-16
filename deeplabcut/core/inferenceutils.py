@@ -961,6 +961,9 @@ def calc_object_keypoint_similarity(
 
     k_squared = (2 * sigma) ** 2
     denom = 2 * scale_squared * k_squared
+    if isinstance(sigma, np.ndarray):
+        denom = denom[visible_gt]
+
     if symmetric_kpts is None:
         pred = xy_pred[visible_gt]
         pred[np.isnan(pred)] = np.inf

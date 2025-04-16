@@ -112,7 +112,7 @@ class UnsupervizedIdTracking(DefaultTab):
 
     def run_transformer(self):
         config = self.root.config
-        videos = self.files
+        videos = [v for v in self.files]
         videotype = self.video_selection_widget.videotype_widget.currentText()
         n_tracks = self.num_animals_in_videos.value()
         shuffle = self.shuffle.value()
