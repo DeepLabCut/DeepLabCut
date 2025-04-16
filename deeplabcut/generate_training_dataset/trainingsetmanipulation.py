@@ -791,6 +791,7 @@ def create_training_dataset(
     superanimal_name="",
     weight_init: WeightInitialization | None = None,
     engine: Engine | None = None,
+    ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
 ):
     """Creates a training dataset.
 
@@ -841,20 +842,41 @@ def create_training_dataset(
                 * ``efficientnet-b6``
             PyTorch (call ``deeplabcut.pose_estimation_pytorch.available_models()`` for
             a complete list)
-                * ``resnet_50``
-                * ``resnet_101``
-                * ``hrnet_w18``
-                * ``hrnet_w32``
-                * ``hrnet_w48``
+                * ``animaltokenpose_base``
+                * ``cspnext_m``
+                * ``cspnext_s``
+                * ``cspnext_x``
+                * ``ctd_coam_w32``
+                * ``ctd_coam_w48``
+                * ``ctd_prenet_cspnext_m``
+                * ``ctd_prenet_cspnext_x``
+                * ``ctd_prenet_rtmpose_x_human``
+                * ``ctd_prenet_hrnet_w32``
+                * ``ctd_prenet_hrnet_w48``
+                * ``ctd_prenet_rtmpose_m``
+                * ``ctd_prenet_rtmpose_x``
+                * ``ctd_prenet_rtmpose_x_human``
                 * ``dekr_w18``
                 * ``dekr_w32``
                 * ``dekr_w48``
-                * ``top_down_resnet_50``
-                * ``top_down_resnet_101``
+                * ``dlcrnet_stride16_ms5``
+                * ``dlcrnet_stride32_ms5``
+                * ``hrnet_w18``
+                * ``hrnet_w32``
+                * ``hrnet_w48``
+                * ``resnet_101``
+                * ``resnet_50``
+                * ``rtmpose_m``
+                * ``rtmpose_s``
+                * ``rtmpose_x``
+                * ``top_down_cspnext_m``
+                * ``top_down_cspnext_s``
+                * ``top_down_cspnext_x``
                 * ``top_down_hrnet_w18``
                 * ``top_down_hrnet_w32``
                 * ``top_down_hrnet_w48``
-                * ``animaltokenpose_base``
+                * ``top_down_resnet_101``
+                * ``top_down_resnet_50``
 
     detector_type: string, optional, default=None
         Only for the PyTorch engine.
@@ -899,6 +921,19 @@ def create_training_dataset(
         Whether to create a pose config for a Tensorflow or PyTorch model. Defaults to
         the value specified in the project configuration file. If no engine is specified
         for the project, defaults to ``deeplabcut.compat.DEFAULT_ENGINE``.
+
+    ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None, default = None,
+        If using a conditional-top-down (CTD) net_type, this argument should be
+        specified. It defines the conditions that will be used with the CTD model.
+        It can be either:
+            * A shuffle number (ctd_conditions: int), which must correspond to a
+                bottom-up (BU) network type.
+            * A predictions file path (ctd_conditions: string | Path), which must
+                correspond to a .json or .h5 predictions file.
+            * A shuffle number and a particular snapshot
+                (ctd_conditions: tuple[int, str] | tuple[int, int]), which respectively
+                correspond to a bottom-up (BU) network type and a particular snapshot
+                name or index.
 
     Returns
     -------
@@ -985,6 +1020,7 @@ def create_training_dataset(
             userfeedback=userfeedback,
             engine=engine,
             weight_init=weight_init,
+            ctd_conditions=ctd_conditions,
         )
     else:
         scorer = cfg["scorer"]
@@ -1088,7 +1124,6 @@ def create_training_dataset(
 
         Shuffles = validate_shuffles(cfg, Shuffles, num_shuffles, userfeedback)
 
-        # print(trainIndices,testIndices, Shuffles, augmenter_type,net_type)
         if trainIndices is None and testIndices is None:
             splits = [
                 (
@@ -1305,6 +1340,7 @@ def create_training_dataset(
                             detector_type=detector_type,
                             weight_init=weight_init,
                             save=True,
+                            ctd_conditions=ctd_conditions,
                         )
 
                     make_pytorch_test_config(pytorch_cfg, path_test_config, save=True)
@@ -1542,7 +1578,11 @@ def create_training_model_comparison(
     else:
         pass
 
-    largestshuffleindex = get_existing_shuffle_indices(cfg)[-1] + 1
+    existing_shuffles = get_existing_shuffle_indices(cfg)
+    if len(existing_shuffles) == 0:
+        largestshuffleindex = 0
+    else:
+        largestshuffleindex = existing_shuffles[-1] + 1
 
     shuffle_list = []
     for shuffle in range(num_shuffles):
@@ -1595,6 +1635,7 @@ def create_training_dataset_from_existing_split(
     net_type: str | None = None,
     detector_type: str | None = None,
     augmenter_type: str | None = None,
+    ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
     posecfg_template: dict | None = None,
     superanimal_name: str = "",
     weight_init: WeightInitialization | None = None,
@@ -1679,6 +1720,19 @@ def create_training_dataset_from_existing_split(
             engine is specified for the project, defaults to
             ``deeplabcut.compat.DEFAULT_ENGINE``.
 
+        ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None, default = None,
+            If using a conditional-top-down (CTD) net_type, this argument should be
+            specified. It defines the conditions that will be used with the CTD model.
+            It can be either:
+                * A shuffle number (ctd_conditions: int), which must correspond to a
+                  bottom-up (BU) network type.
+                * A predictions file path (ctd_conditions: string | Path), which must
+                  correspond to a .json or .h5 predictions file.
+                * A shuffle number and a particular snapshot
+                  (ctd_conditions: tuple[int, str] | tuple[int, int]), which
+                  respectively correspond to a bottom-up (BU) network type and a
+                  particular snapshot name or index.
+
     Returns:
         If training dataset was successfully created, a list of tuples is returned.
         The first two elements in each tuple represent the training fraction and the
@@ -1730,6 +1784,7 @@ def create_training_dataset_from_existing_split(
         superanimal_name=superanimal_name,
         weight_init=weight_init,
         engine=engine,
+        ctd_conditions=ctd_conditions,
     )
 
 

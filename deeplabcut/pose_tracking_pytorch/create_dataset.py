@@ -96,6 +96,13 @@ def create_triplets_dataset(
 
         method = trackingutils.TRACK_METHODS[track_method]
         track_file = os.path.join(destfolder, vname + dlcscorer + f"{method}.pickle")
+        if not Path(track_file).exists():
+            raise ValueError(
+                f"Tracklet file {track_file} does not exist. Please run "
+                f"`analyze_videos` with the {method} tracker before using the ReID "
+                "transformer."
+            )
+
         out_fname = os.path.join(destfolder, vname + dlcscorer + "_triplet_vector.npy")
         create_train_using_pickle(
             feature_fname, track_file, out_fname, n_triplets=n_triplets

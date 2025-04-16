@@ -467,7 +467,7 @@ def save_data(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv
     if save_as_csv:
         print("Saving csv poses!")
         DataMachine.to_csv(dataname.split(".h5")[0] + ".csv")
-    DataMachine.to_hdf(dataname, "df_with_missing", format="table", mode="w")
+    DataMachine.to_hdf(dataname, key="df_with_missing", format="table", mode="w")
     with open(dataname.split(".h5")[0] + "_meta.pickle", "wb") as f:
         # Pickle the 'data' dictionary using the highest protocol available.
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)

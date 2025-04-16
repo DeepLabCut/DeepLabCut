@@ -1,0 +1,58 @@
+data:
+  bbox_margin: 25
+  gen_sampling:
+    keypoint_sigmas: 0.02
+  inference:
+    top_down_crop:
+      width: 256
+      height: 256
+      crop_with_context: false
+  train:
+    top_down_crop:
+      width: 256
+      height: 256
+      crop_with_context: false
+method: ctd
+model:
+  backbone:
+    type: CondPreNet
+    backbone:
+      type: HRNet
+      model_name: hrnet_w32
+      freeze_bn_stats: false
+      freeze_bn_weights: false
+      interpolate_branches: false
+      increased_channel_count: false  # changes backbone_output_channels to 128 when true
+    kpt_encoder:
+      type: StackedKeypointEncoder
+      num_joints: "num_bodyparts"
+      kernel_size: [15, 15]
+    img_size: [256, 256]
+  backbone_output_channels: 32
+  heads:
+    bodypart:
+      type: HeatmapHead
+      weight_init: normal
+      predictor:
+        type: HeatmapPredictor
+        apply_sigmoid: false
+        #clip_scores: true
+        location_refinement: false
+      target_generator:
+        type: HeatmapGaussianGenerator
+        num_heatmaps: "num_bodyparts"
+        pos_dist_thresh: 17
+        heatmap_mode: KEYPOINT
+        generate_locref: false
+      criterion:
+        heatmap:
+          type: WeightedMSECriterion
+          weight: 1.0
+      heatmap_config:
+        channels:
+        - 32
+        kernel_size: []
+        strides: []
+        final_conv:
+          out_channels: "num_bodyparts"
+          kernel_size: 1

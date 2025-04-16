@@ -1,7 +1,7 @@
 name: Bug Report
 description: File a bug report to help us improve
 assignees:
-  - n-poulsen
+  - maximpavliv
 body:
   - type: markdown
     attributes:
@@ -14,14 +14,6 @@ body:
       options:
         - label: I have searched the existing issues
           required: true
-  - type: textarea
-    id: what-happened
-    attributes:
-      label: Bug description
-      description: Also tell us concisely what you expected to happen
-      placeholder: What happened?
-    validations:
-      required: true
   - type: textarea
     attributes:
       label: Operating System
@@ -36,6 +28,16 @@ body:
       description: What version of DLC are you using? Please check with `import deeplabcut`, `deeplabcut.__version__`
       placeholder: 2.2rc3
       value: dlc version
+    validations:
+      required: true
+  - type: dropdown
+    id: backend engine
+    attributes:
+      label: What engine are you using? 
+      options:
+        - pytorch
+        - tensorflow
+        - both (rare!)
     validations:
       required: true
   - type: dropdown
@@ -56,10 +58,18 @@ body:
       value: gpu
     validations:
       required: true
+ - type: textarea
+    id: what-happened
+    attributes:
+      label: Bug description 🐛
+      description: Also tell us concisely what you expected to happen
+      placeholder: What happened?
+    validations:
+      required: true
   - type: textarea
     attributes:
       label: Steps To Reproduce
-      description: Steps to reproduce the behavior.
+      description: Please provide a minimal example to reproduce the behavior.
       placeholder: |
         1. In this environment...
         2. With this config...

@@ -60,6 +60,22 @@ class HRNet(BaseBackbone):
         self.model = _load_hrnet(model_name, pretrained, increased_channel_count)
         self.interpolate_branches = interpolate_branches
 
+    def prepare_output(self, y_list: list) -> torch.Tensor:
+        if not self.interpolate_branches:
+            return y_list[0]
+
+        x0_h, x0_w = y_list[0].size(2), y_list[0].size(3)
+        x = torch.cat(
+            [
+                y_list[0],
+                F.interpolate(y_list[1], size=(x0_h, x0_w), mode="bilinear"),
+                F.interpolate(y_list[2], size=(x0_h, x0_w), mode="bilinear"),
+                F.interpolate(y_list[3], size=(x0_h, x0_w), mode="bilinear"),
+            ],
+            1,
+        )
+        return x
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass through the HRNet backbone.
 
@@ -77,20 +93,8 @@ class HRNet(BaseBackbone):
             >>> y = backbone(x)
         """
         y_list = self.model(x)
-        if not self.interpolate_branches:
-            return y_list[0]
 
-        x0_h, x0_w = y_list[0].size(2), y_list[0].size(3)
-        x = torch.cat(
-            [
-                y_list[0],
-                F.interpolate(y_list[1], size=(x0_h, x0_w), mode="bilinear"),
-                F.interpolate(y_list[2], size=(x0_h, x0_w), mode="bilinear"),
-                F.interpolate(y_list[3], size=(x0_h, x0_w), mode="bilinear"),
-            ],
-            1,
-        )
-        return x
+        return self.prepare_output(y_list)
 
 
 def _load_hrnet(
