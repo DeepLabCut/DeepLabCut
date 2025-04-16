@@ -27,6 +27,7 @@ from deeplabcut.utils import auxiliaryfunctions
 @dataclass(frozen=True)
 class DataSplit:
     """Class representing the metadata for a shuffle"""
+
     train_indices: tuple[int, ...]
     test_indices: tuple[int, ...]
 
@@ -47,6 +48,7 @@ class DataSplit:
 @dataclass(frozen=True)
 class ShuffleMetadata:
     """Class representing the metadata for a shuffle"""
+
     name: str
     train_fraction: float
     index: int
@@ -83,7 +85,7 @@ class ShuffleMetadata:
             split=DataSplit(
                 train_indices=tuple(sorted([int(idx) for idx in train_idx])),
                 test_indices=tuple(sorted([int(idx) for idx in test_idx])),
-            )
+            ),
         )
 
 
@@ -120,6 +122,7 @@ class TrainingDatasetMetadata:
         trainset_metadata = trainset_metadata.add(new_shuffle)
         trainset_metadata.save()  # saves to disk
     """
+
     project_config: dict
     shuffles: tuple[ShuffleMetadata, ...]
     file_header: tuple[str] = (
@@ -197,10 +200,7 @@ class TrainingDatasetMetadata:
         """
         train_fraction = self.project_config["TrainingFraction"][trainset_index]
         for shuffle in self.shuffles:
-            if (
-                shuffle.train_fraction == train_fraction
-                and shuffle.index == index
-            ):
+            if shuffle.train_fraction == train_fraction and shuffle.index == index:
                 return shuffle
 
         raise ValueError(
@@ -380,7 +380,7 @@ def update_metadata(
         split=DataSplit(
             train_indices=tuple(sorted([int(i) for i in train_indices])),
             test_indices=tuple(sorted([int(i) for i in test_indices])),
-        )
+        ),
     )
     metadata = metadata.add(shuffle=new_shuffle, overwrite=overwrite)
     metadata.save()

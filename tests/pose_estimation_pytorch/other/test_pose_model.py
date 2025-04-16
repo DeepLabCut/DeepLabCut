@@ -15,7 +15,11 @@ import pytest
 import torch
 
 import deeplabcut.pose_estimation_pytorch.models as dlc_models
-from deeplabcut.pose_estimation_pytorch.models import CRITERIONS, TARGET_GENERATORS, PREDICTORS
+from deeplabcut.pose_estimation_pytorch.models import (
+    CRITERIONS,
+    TARGET_GENERATORS,
+    PREDICTORS,
+)
 from deeplabcut.pose_estimation_pytorch.models.criterions import LOSS_AGGREGATORS
 from deeplabcut.pose_estimation_pytorch.models.modules import AdaptBlock, BasicBlock
 
@@ -65,7 +69,12 @@ backbones_dicts = [
         "increased_channel_count": False,
         "stride": 4,
     },
-    {"type": "ResNet", "model_name": "resnet50_gn", "output_channels": 2048, "stride": 32},
+    {
+        "type": "ResNet",
+        "model_name": "resnet50_gn",
+        "output_channels": 2048,
+        "stride": 32,
+    },
 ]
 
 heads_dicts = [
@@ -263,9 +272,7 @@ def test_head(head_dict, input_shape, num_keypoints):
         criterions = {}
         for loss_name, criterion_cfg in head_dict["criterion"].items():
             weights[loss_name] = criterion_cfg.get("weight", 1.0)
-            criterion_cfg = {
-                k: v for k, v in criterion_cfg.items() if k != "weight"
-            }
+            criterion_cfg = {k: v for k, v in criterion_cfg.items() if k != "weight"}
             criterions[loss_name] = CRITERIONS.build(criterion_cfg)
 
         aggregator_cfg = {"type": "WeightedLossAggregator", "weights": weights}

@@ -143,12 +143,9 @@ class VideoEditor(DefaultTab):
                         video, self.rotation_angle.value(), "Arbitrary"
                     )
                 elif self.video_rotation.currentText() == "clockwise":
-                    auxfun_videos.rotate_video(
-                        video, 0, "Yes"
-                    )
+                    auxfun_videos.rotate_video(video, 0, "Yes")
         else:
             self.root.logger.error("No videos selected...")
-
 
     def trim_videos(self):
         start = time.strftime("%H:%M:%S", time.gmtime(self.video_start.value()))

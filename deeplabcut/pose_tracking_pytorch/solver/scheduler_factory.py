@@ -16,7 +16,7 @@
 # Hacked together by / Copyright 2020 Ross Wightman
 # https://github.com/rwightman/pytorch-image-models/blob/main/timm/scheduler/scheduler_factory.py
 #
-""" Scheduler Factory
+"""Scheduler Factory
 Hacked together by / Copyright 2020 Ross Wightman
 """
 from .cosine_lr import CosineLRScheduler

@@ -11,7 +11,9 @@
 import pytest
 import torch
 
-from deeplabcut.pose_estimation_pytorch.models.target_generators import HeatmapGaussianGenerator
+from deeplabcut.pose_estimation_pytorch.models.target_generators import (
+    HeatmapGaussianGenerator,
+)
 
 
 @pytest.mark.parametrize(

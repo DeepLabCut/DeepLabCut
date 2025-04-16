@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-""" Vision Transformer (ViT) in PyTorch
+"""Vision Transformer (ViT) in PyTorch
 
 A PyTorch implement of Vision Transformers as described in
 'An Image Is Worth 16 x 16 Words: Transformers for Image Recognition at Scale' - https://arxiv.org/abs/2010.11929

@@ -104,9 +104,7 @@ def test_load_head_weights(tmp_path_factory, load_head_weights):
     )
 
     original_state_dict = model.state_dict()
-    zero_state_dict = {
-        k: torch.zeros_like(v) for k, v in original_state_dict.items()
-    }
+    zero_state_dict = {k: torch.zeros_like(v) for k, v in original_state_dict.items()}
 
     load = Mock()
     load.return_value = dict(model=zero_state_dict)
@@ -308,7 +306,9 @@ def _fit_runner_and_check_lrs(
                 # the current_epoch value is indexed at 1
                 total_epoch = runner.current_epoch - 1
                 epoch = total_epoch - runner.starting_epoch
-                _assert_learning_rates_match(total_epoch, optimizer, expected_lrs[epoch])
+                _assert_learning_rates_match(
+                    total_epoch, optimizer, expected_lrs[epoch]
+                )
                 optimizer.step()
                 return dict(total_loss=0)
 
