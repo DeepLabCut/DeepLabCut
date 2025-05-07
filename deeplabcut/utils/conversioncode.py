@@ -397,7 +397,7 @@ def robust_split_path(s):
     return tuple(s.split(sep))
 
 
-def extract_frames_from_pkg_sleap(file_path, base_output_dir, scorer='me'):
+def extract_frames_from_pkg_sleap(file_path, base_output_dir, scorer="me"):
     """
     Convert a SLEAP project into a DeepLabCut project
     WARNING: Conversion might corrupt the data.
@@ -407,60 +407,60 @@ def extract_frames_from_pkg_sleap(file_path, base_output_dir, scorer='me'):
         Output directory.
     scorer: string, optional
         Name of scorer.
-    Once conversion is complete, you will need to manually create a DeepLabCut config.yaml file based 
+    Once conversion is complete, you will need to manually create a DeepLabCut config.yaml file based
     on the keypoint names in the generated .csv files.
     Finally, run deeplabcut.convertcsv2h5('config.yaml')
     """
-    config = {'scorer': scorer,
-              'date': time.strftime("%Y-%m-%d"),
-              'identity': None,
-              'project_path': base_output_dir,
-              'engine': 'pytorch',
-              'video_sets': {},
-              'start': 0,
-              'stop': 1,
-              'numframes2pick': 20,
-              'skeleton_color': 'black',
-              'pcutoff': 0.6,
-              'dotsize': 12,
-              'alphavalue': 0.6,
-              'colormap': 'rainbow',
-              'TrainingFraction': [0.95],
-              'iteration': 0,
-              'default_net_type': 'resnet_50',
-              'default_augmenter': 'default',
-              'snapshotindex': -1,
-              'detector_snapshotindex': -1,
-              'batch_size': 8,
-              'detector_batch_size': 1,
-              'cropping': False,
-              'x1': 0,
-              'x2': 640,
-              'y1': 277,
-              'y2': 624,
-              'corner2move2': [50, 50],
-              'move2corner': True,
-              'SuperAnimalConversionTables': None
-              }
+    config = {
+        "scorer": scorer,
+        "date": time.strftime("%Y-%m-%d"),
+        "identity": None,
+        "project_path": base_output_dir,
+        "engine": "pytorch",
+        "video_sets": {},
+        "start": 0,
+        "stop": 1,
+        "numframes2pick": 20,
+        "skeleton_color": "black",
+        "pcutoff": 0.6,
+        "dotsize": 12,
+        "alphavalue": 0.6,
+        "colormap": "rainbow",
+        "TrainingFraction": [0.95],
+        "iteration": 0,
+        "default_net_type": "resnet_50",
+        "default_augmenter": "default",
+        "snapshotindex": -1,
+        "detector_snapshotindex": -1,
+        "batch_size": 8,
+        "detector_batch_size": 1,
+        "cropping": False,
+        "x1": 0,
+        "x2": 640,
+        "y1": 277,
+        "y2": 624,
+        "corner2move2": [50, 50],
+        "move2corner": True,
+        "SuperAnimalConversionTables": None,
+    }
 
-
-    #create directories
+    # create directories
     if not os.path.exists(base_output_dir):
         os.makedirs(base_output_dir)
-        os.makedirs(os.path.join(base_output_dir,"labeled-data"))
-        os.makedirs(os.path.join(base_output_dir,"videos"))
+        os.makedirs(os.path.join(base_output_dir, "labeled-data"))
+        os.makedirs(os.path.join(base_output_dir, "videos"))
 
-    #parse .slp file
-    with h5py.File(file_path, 'r') as hdf_file:
+    # parse .slp file
+    with h5py.File(file_path, "r") as hdf_file:
         # Identify video names
         video_names = {}
         for video_group_name in hdf_file.keys():
-            if video_group_name.startswith('video'):
-                source_video_path = f'{video_group_name}/source_video'
+            if video_group_name.startswith("video"):
+                source_video_path = f"{video_group_name}/source_video"
                 if source_video_path in hdf_file:
-                    source_video_json = hdf_file[source_video_path].attrs['json']
+                    source_video_json = hdf_file[source_video_path].attrs["json"]
                     source_video_dict = json.loads(source_video_json)
-                    video_filename = source_video_dict['backend']['filename']
+                    video_filename = source_video_dict["backend"]["filename"]
                     video_names[video_group_name] = video_filename
 
         # Extract and save images for each video
@@ -468,111 +468,125 @@ def extract_frames_from_pkg_sleap(file_path, base_output_dir, scorer='me'):
             data_frames = []
             scorer_row, bodyparts_row, coords_row = None, None, None
             output_dir = os.path.join(
-                base_output_dir, "labeled-data", os.path.basename(video_filename).split('.')[0]
+                base_output_dir,
+                "labeled-data",
+                os.path.basename(video_filename).split(".")[0],
             )
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
 
             # extract labeled frames and save them in a separate directory for each video
-            if video_group in hdf_file and 'video' in hdf_file[video_group]:
-                video_data = hdf_file[f'{video_group}/video'][:]
-                frame_numbers = hdf_file[f'{video_group}/frame_numbers'][:]
+            if video_group in hdf_file and "video" in hdf_file[video_group]:
+                video_data = hdf_file[f"{video_group}/video"][:]
+                frame_numbers = hdf_file[f"{video_group}/frame_numbers"][:]
                 frame_names = []
-                for i, (img_bytes, frame_number) in enumerate(zip(video_data, frame_numbers)):
+                for i, (img_bytes, frame_number) in enumerate(
+                    zip(video_data, frame_numbers)
+                ):
                     img = Image.open(io.BytesIO(np.array(img_bytes, dtype=np.uint8)))
                     img = np.array(img)
-                    if i==0:
-                        video_path = os.path.join(base_output_dir,'videos',video_names[video_group].split('/')[-1])
-                        config['video_sets'][video_path] = {'crop': f'0, {img.shape[1]}, 0, {img.shape[0]}'}
+                    if i == 0:
+                        video_path = os.path.join(
+                            base_output_dir,
+                            "videos",
+                            video_names[video_group].split("/")[-1],
+                        )
+                        config["video_sets"][video_path] = {
+                            "crop": f"0, {img.shape[1]}, 0, {img.shape[0]}"
+                        }
                     frame_name = f"img{str(frame_number).zfill(8)}.png"
                     cv2.imwrite(f"{output_dir}/{frame_name}", img)
                     frame_names.append(frame_name)
                     print(f"Saved frame {frame_number} as {frame_name}")
 
-
             # extract coordinates and save them in a separate directory for each video
-            if video_group in hdf_file and 'frames' in hdf_file:
-                frames_dataset = hdf_file['frames']
+            if video_group in hdf_file and "frames" in hdf_file:
+                frames_dataset = hdf_file["frames"]
                 frame_references = {
-                    frame['frame_id']: frame['frame_idx']
+                    frame["frame_id"]: frame["frame_idx"]
                     for frame in frames_dataset
-                    if frame['video'] == int(video_group.replace('video', ''))
+                    if frame["video"] == int(video_group.replace("video", ""))
                 }
 
-
                 # Extract instances and points
-                points_dataset = hdf_file['points']
-                instances_dataset = hdf_file['instances']
+                points_dataset = hdf_file["points"]
+                instances_dataset = hdf_file["instances"]
 
                 data = []
                 for frame_id in frame_references.keys():
                     for i in range(len(instances_dataset)):
-                        if frame_id==instances_dataset[i]['frame_id']:
-                            point_id_start = instances_dataset[i+1]['point_id_start']
-                            point_id_end = instances_dataset[i+1]['point_id_end']
+                        if frame_id == instances_dataset[i]["frame_id"]:
+                            point_id_start = instances_dataset[i + 1]["point_id_start"]
+                            point_id_end = instances_dataset[i + 1]["point_id_end"]
                             break
 
                     points = points_dataset[point_id_start:point_id_end]
 
                     keypoints_flat = []
                     for kp in points:
-                        x, y, vis = kp['x'], kp['y'], kp['visible']
-                        if np.isnan(x) or np.isnan(y) or vis==False:
+                        x, y, vis = kp["x"], kp["y"], kp["visible"]
+                        if np.isnan(x) or np.isnan(y) or vis == False:
                             x, y = None, None
                         keypoints_flat.extend([x, y])
 
                     frame_idx = frame_references[frame_id]
                     data.append([frame_idx] + keypoints_flat)
 
-
                 # parse data
-                metadata_json = hdf_file['metadata'].attrs['json']
+                metadata_json = hdf_file["metadata"].attrs["json"]
                 metadata_dict = json.loads(metadata_json)
-                nodes = metadata_dict['nodes']
-                links = metadata_dict['skeletons'][0]['links']
+                nodes = metadata_dict["nodes"]
+                links = metadata_dict["skeletons"][0]["links"]
 
-                keypoints = [node['name'] for node in nodes]
-                skeleton = [[keypoints[l['source']], keypoints[l['target']]] for l in links]
-                config['skeleton'] = skeleton
-
-                keypoints_ids = [n['id'] for n in metadata_dict['skeletons'][0]['nodes']]
-                keypoints_ordered = [keypoints[idx] for idx in keypoints_ids]
-                config['bodyparts'] = keypoints_ordered
-
-                columns = [
-                    'frame'
-                ] + [
-                    f'{kp}_x' for kp in keypoints_ordered
-                ] + [
-                    f'{kp}_y' for kp in keypoints_ordered
+                keypoints = [node["name"] for node in nodes]
+                skeleton = [
+                    [keypoints[l["source"]], keypoints[l["target"]]] for l in links
                 ]
-                scorer_row = ['scorer'] + [f'{scorer}'] * (len(columns) - 1)
-                bodyparts_row = ['bodyparts'] + [f'{kp}' for kp in keypoints_ordered for _ in (0, 1)]
-                coords_row = ['coords'] + ['x', 'y'] * len(keypoints_ordered)
+                config["skeleton"] = skeleton
+
+                keypoints_ids = [
+                    n["id"] for n in metadata_dict["skeletons"][0]["nodes"]
+                ]
+                keypoints_ordered = [keypoints[idx] for idx in keypoints_ids]
+                config["bodyparts"] = keypoints_ordered
+
+                columns = (
+                    ["frame"]
+                    + [f"{kp}_x" for kp in keypoints_ordered]
+                    + [f"{kp}_y" for kp in keypoints_ordered]
+                )
+                scorer_row = ["scorer"] + [f"{scorer}"] * (len(columns) - 1)
+                bodyparts_row = ["bodyparts"] + [
+                    f"{kp}" for kp in keypoints_ordered for _ in (0, 1)
+                ]
+                coords_row = ["coords"] + ["x", "y"] * len(keypoints_ordered)
 
                 labels_df = pd.DataFrame(data, columns=columns)
-                video_base_name = os.path.basename(video_filename).split('.')[0]
-                labels_df['frame'] = labels_df['frame'].apply(
+                video_base_name = os.path.basename(video_filename).split(".")[0]
+                labels_df["frame"] = labels_df["frame"].apply(
                     lambda x: (
                         f"labeled-data/{video_base_name}/"
                         f"img{str(int(x)).zfill(8)}.png"
                     )
                 )
-                labels_df = labels_df.groupby('frame', as_index=False).first()
+                labels_df = labels_df.groupby("frame", as_index=False).first()
                 data_frames.append(labels_df)
 
                 # Combine all data frames into a single DataFrame
                 combined_df = pd.concat(data_frames, ignore_index=True)
 
                 header_df = pd.DataFrame(
-                    [scorer_row, bodyparts_row, coords_row],
-                    columns=combined_df.columns
+                    [scorer_row, bodyparts_row, coords_row], columns=combined_df.columns
                 )
                 final_df = pd.concat([header_df, combined_df], ignore_index=True)
                 final_df.columns = [None] * len(final_df.columns)  # Set header to None
 
                 # Save concatenated labels
-                final_df.to_csv(os.path.join(output_dir, f"CollectedData_{scorer}.csv"), index=False, header=None)
+                final_df.to_csv(
+                    os.path.join(output_dir, f"CollectedData_{scorer}.csv"),
+                    index=False,
+                    header=None,
+                )
 
-    with open(os.path.join(base_output_dir, 'config.yaml'), 'w') as outfile:
+    with open(os.path.join(base_output_dir, "config.yaml"), "w") as outfile:
         yaml.dump(config, outfile, default_flow_style=False)
