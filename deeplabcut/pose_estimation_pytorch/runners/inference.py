@@ -138,8 +138,8 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         """
         results = []
         for data in images:
-            self._prepare_inputs(data)
-            self._process_full_batches()
+            self._prepare_inputs(data) # here?
+            self._process_full_batches() # here?
             results += self._extract_results(shelf_writer)
 
         # Process the last batch even if not full

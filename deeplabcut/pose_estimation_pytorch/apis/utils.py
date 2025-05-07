@@ -650,7 +650,7 @@ def get_detector_inference_runner(
     if "pretrained" in det_cfg["model"]:
         det_cfg["model"]["pretrained"] = False
 
-    preprocessor = build_bottom_up_preprocessor(det_cfg["data"]["colormode"], transform)
+    preprocessor = build_bottom_up_preprocessor(det_cfg["data"]["colormode"], transform) # here
     postprocessor = build_detector_postprocessor(max_individuals=max_individuals)
     runner = build_inference_runner(
         task=Task.DETECT,
