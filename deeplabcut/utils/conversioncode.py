@@ -397,25 +397,32 @@ def robust_split_path(s):
     return tuple(s.split(sep))
 
 
-def extract_frames_from_pkg_sleap(file_path, base_output_dir, scorer="me"):
+def convert_sleap_to_deeplabcut(
+    sleap_file: str | Path,
+    deeplabcut_dir: str,
+    scorer: str = "me",
+):
     """
     Convert a SLEAP project into a DeepLabCut project
     WARNING: Conversion might corrupt the data.
-    file_path : string
-        Path to the .slp file.
-    base_output_dir: string
-        Output directory.
-    scorer: string, optional
-        Name of scorer.
+
     Once conversion is complete, you will need to manually create a DeepLabCut config.yaml file based
     on the keypoint names in the generated .csv files.
     Finally, run deeplabcut.convertcsv2h5('config.yaml')
+
+    Args:
+        sleap_file : string | Path
+            Path to the .slp file.
+        deeplabcut_dir: string
+            Output directory.
+        scorer: string, optional
+            Name of scorer.
     """
     config = {
         "scorer": scorer,
         "date": time.strftime("%Y-%m-%d"),
         "identity": None,
-        "project_path": base_output_dir,
+        "project_path": deeplabcut_dir,
         "engine": "pytorch",
         "video_sets": {},
         "start": 0,
@@ -445,13 +452,13 @@ def extract_frames_from_pkg_sleap(file_path, base_output_dir, scorer="me"):
     }
 
     # create directories
-    if not os.path.exists(base_output_dir):
-        os.makedirs(base_output_dir)
-        os.makedirs(os.path.join(base_output_dir, "labeled-data"))
-        os.makedirs(os.path.join(base_output_dir, "videos"))
+    if not os.path.exists(deeplabcut_dir):
+        os.makedirs(deeplabcut_dir)
+        os.makedirs(os.path.join(deeplabcut_dir, "labeled-data"))
+        os.makedirs(os.path.join(deeplabcut_dir, "videos"))
 
     # parse .slp file
-    with h5py.File(file_path, "r") as hdf_file:
+    with h5py.File(sleap_file, "r") as hdf_file:
         # Identify video names
         video_names = {}
         for video_group_name in hdf_file.keys():
@@ -468,7 +475,7 @@ def extract_frames_from_pkg_sleap(file_path, base_output_dir, scorer="me"):
             data_frames = []
             scorer_row, bodyparts_row, coords_row = None, None, None
             output_dir = os.path.join(
-                base_output_dir,
+                deeplabcut_dir,
                 "labeled-data",
                 os.path.basename(video_filename).split(".")[0],
             )
@@ -487,7 +494,7 @@ def extract_frames_from_pkg_sleap(file_path, base_output_dir, scorer="me"):
                     img = np.array(img)
                     if i == 0:
                         video_path = os.path.join(
-                            base_output_dir,
+                            deeplabcut_dir,
                             "videos",
                             video_names[video_group].split("/")[-1],
                         )
@@ -588,5 +595,5 @@ def extract_frames_from_pkg_sleap(file_path, base_output_dir, scorer="me"):
                     header=None,
                 )
 
-    with open(os.path.join(base_output_dir, "config.yaml"), "w") as outfile:
+    with open(os.path.join(deeplabcut_dir, "config.yaml"), "w") as outfile:
         yaml.dump(config, outfile, default_flow_style=False)
