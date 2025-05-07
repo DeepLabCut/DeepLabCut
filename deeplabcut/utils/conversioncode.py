@@ -17,24 +17,21 @@ Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
+import io
+import json
 import os
-import pandas as pd
-from deeplabcut.utils import auxiliaryfunctions
-
+import time
 from itertools import islice
 from pathlib import Path
 
-import io
-import json
-import yaml
-import time
-
-import h5py
-import numpy as np
-
 import PIL.Image as Image
 import cv2
+import h5py
+import numpy as np
+import pandas as pd
+import yaml
 
+from deeplabcut.utils import auxiliaryfunctions
 
 SUPPORTED_FILETYPES = "csv", "nwb"
 
