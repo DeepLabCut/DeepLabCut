@@ -118,12 +118,15 @@ of using an object detection model to localize individuals, it uses a bottom-up 
 estimation model. The predictions made by the bottom-up model are given as proposals (or
 _conditions_) to the pose estimation model. This is illustrated in the figure below. In modern language, one could state that CTD models are "pose-promptable". 
 
-<figure>
-  <img src="assets/buctd_figure_1.png" style="text-align: center; width: 400px;">
-  <figcaption>Zhou, Mu, et al. "Rethinking pose estimation in crowds: overcoming the 
-detection information bottleneck and ambiguity." Proceedings of the IEEE/CVF 
-International Conference on Computer Vision. 2023.</figcaption>
-</figure>
+```{figure} assets/buctd_figure_1.png
+---
+width: 500px
+name: buctd_figure_1
+---
+Zhou, Mu, et al. *"Rethinking pose estimation in crowds: overcoming the
+detection information bottleneck and ambiguity."* Proceedings of the IEEE/CVF
+International Conference on Computer Vision. 2023.
+```
 
 ### Bottom-up Models
 
