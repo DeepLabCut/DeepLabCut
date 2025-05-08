@@ -17,12 +17,11 @@ This is the helper class for video reading and saving in DeepLabCut.
 Updated by AM
 
 You can set various codecs below,
-fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-i.e. 'XVID'
+"ffmpeg -encoders | grep -e '^ V'"
+i.e. 'h264', 'libx265', 'mjpeg', 'mpeg4'
 """
 
-import cv2
-import numpy as np
+import ffmpegcv
 
 
 class VideoProcessor(object):
@@ -125,39 +124,36 @@ class VideoProcessor(object):
 
 class VideoProcessorCV(VideoProcessor):
     """
-    OpenCV implementation of VideoProcessor
-    requires opencv-python==3.4.0.12
+    FFmpegCV implementation of VideoProcessor
     """
 
     def __init__(self, *args, **kwargs):
         super(VideoProcessorCV, self).__init__(*args, **kwargs)
 
     def get_video(self):
-        return cv2.VideoCapture(self.fname)
+        return ffmpegcv.VideoCapture(self.fname, pix_fmt='rgb24')
 
     def get_info(self):
-        self.w = int(self.vid.get(cv2.CAP_PROP_FRAME_WIDTH))
-        self.h = int(self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        all_frames = int(self.vid.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.FPS = self.vid.get(cv2.CAP_PROP_FPS)
+        self.w = self.vid.width
+        self.h = self.vid.height
+        all_frames = len(self.vid)
+        self.FPS = self.vid.fps
         self.nc = 3
         if self.nframes == -1 or self.nframes > all_frames:
             self.nframes = all_frames
 
     def create_video(self):
-        fourcc = cv2.VideoWriter_fourcc(*self.codec)
-        return cv2.VideoWriter(self.sname, fourcc, self.FPS, (self.sw, self.sh), True)
+        return ffmpegcv.VideoWriter(self.sname, self.codec, self.FPS, pix_fmt="rgb24")
 
-    def _read_frame(self):  # return RGB (rather than BGR)!
-        # return cv2.cvtColor(np.flip(self.vid.read()[1],2), cv2.COLOR_BGR2RGB)
+    def _read_frame(self):
         success, frame = self.vid.read()
         if not success:
             return frame
-        return np.flip(frame, 2)
+        return frame.copy()
 
     def save_frame(self, frame):
         if frame is not None:
-            self.svid.write(np.flip(frame, 2))
+            self.svid.write(frame)
 
     def close(self):
         if hasattr(self, "svid") and self.svid is not None:
