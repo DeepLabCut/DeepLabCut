@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import logging
 import pickle
+import re
 from pathlib import Path
 
 import numpy as np
@@ -23,6 +24,7 @@ import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
+from deeplabcut.pose_estimation_pytorch.data.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.data.utils import read_image_shape_fast
 
 
@@ -67,13 +69,13 @@ class DLCLoader(Loader):
             engine=Engine.PYTORCH,
             modelprefix=modelprefix,
         )
-
-        super().__init__(
+        model_config_path = (
             self._project_root
             / self._model_folder
             / "train"
             / Engine.PYTORCH.pose_cfg_name
         )
+        super().__init__(self._project_root, self._project_root, model_config_path)
 
         # lazy-load split and DataFrames
         self._split: dict[str, list[int]] | None = None
@@ -133,6 +135,28 @@ class DLCLoader(Loader):
 
         return self._split
 
+    def scorer(
+        self,
+        snapshot: Snapshot | str | Path,
+        detector_snapshot: Snapshot | str | Path | None = None,
+    ) -> str:
+        """Returns the scorer for this DLCLoader and the given snapshot."""
+        task, date = self.project_cfg["Task"], self.project_cfg["date"]
+        name = "".join([p.capitalize() for p in self.model_cfg["net_type"].split("_")])
+
+        if not isinstance(snapshot, Snapshot):
+            snapshot = Snapshot.from_path(Path(snapshot))
+
+        snapshot_id = f"snapshot_{snapshot.uid()}"
+        if detector_snapshot is not None:
+            if not isinstance(detector_snapshot, Snapshot):
+                detector_snapshot = Snapshot.from_path(Path(detector_snapshot))
+
+            detect_id = detector_snapshot.uid()
+            snapshot_id = f"detector_{detect_id}_{snapshot_id}"
+
+        return f"DLC_{name}_{task}{date}shuffle{self.shuffle}_{snapshot_id}"
+
     def get_dataset_parameters(self) -> PoseDatasetParameters:
         """Retrieves dataset parameters based on the instance's configuration.
 
@@ -142,6 +166,7 @@ class DLCLoader(Loader):
         crop_cfg = self.model_cfg["data"]["train"].get("top_down_crop", {})
         crop_w, crop_h = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
         crop_margin = crop_cfg.get("margin", 0)
+        crop_with_context = crop_cfg.get("crop_with_context", True)
 
         return PoseDatasetParameters(
             bodyparts=self.model_cfg["metadata"]["bodyparts"],
@@ -151,6 +176,7 @@ class DLCLoader(Loader):
             color_mode=self.model_cfg.get("color_mode", "RGB"),
             top_down_crop_size=(crop_w, crop_h),
             top_down_crop_margin=crop_margin,
+            top_down_crop_with_context=crop_with_context,
         )
 
     def load_data(self, mode: str = "train") -> dict:
@@ -178,7 +204,10 @@ class DLCLoader(Loader):
         params = self.get_dataset_parameters()
         data = self.to_coco(str(self._project_root), self._dfs[mode], params)
         with_bbox = self._compute_bboxes(
-            data["images"], data["annotations"], method="keypoints"
+            data["images"],
+            data["annotations"],
+            method="keypoints",
+            bbox_margin=self.model_cfg["data"].get("bbox_margin", 20),
         )
         data["annotations"] = with_bbox
         return data
@@ -268,6 +297,59 @@ class DLCLoader(Loader):
         train_ids = [int(i) for i in meta[1]]
         test_ids = [int(i) for i in meta[2]]
         return {"train": train_ids, "test": test_ids}
+
+    @staticmethod
+    def load_predictions(
+        bu_snapshot: Path,
+        bu_predictions: Path,
+        parameters: PoseDatasetParameters,
+    ) -> pd.DataFrame:
+        if bu_predictions is None:
+            pred_path = Path(
+                str(bu_snapshot).replace("dlc-models", "evaluation-results")
+            ).parent.parent
+            cfg = af.read_config(pred_path.parent.parent.parent / "config.yaml")
+            scorer = af.get_scorer_name(
+                cfg=cfg,
+                shuffle=int(re.search(r"shuffle(\d+)", str(bu_snapshot)).group(1)),
+                trainFraction=int(
+                    re.search(r"trainset(\d+)", str(bu_snapshot)).group(1)
+                )
+                / 100,
+                engine=Engine.PYTORCH,
+                trainingsiterations=re.search(
+                    r"snapshot-(.+)\.pth", str(bu_snapshot)
+                ).group(1),
+                modelprefix="",
+            )
+
+            pred_file = pred_path / f"{scorer[0]}.h5"
+            dlc_preds = pd.read_hdf(pred_file, key="df_with_missing")
+
+            # FIXME: Implement the case where snapshot is loaded
+            raise NotImplementedError("Need to implement the case with loaded snapshot")
+
+        else:
+            pred_path = bu_predictions.parent.parent
+            dlc_preds = pd.read_hdf(bu_predictions, key="df_with_missing")
+
+        predictions = {}
+        for idx in dlc_preds.index.unique():
+            if type(idx) == tuple:
+                img_path = pred_path.parent.parent / Path(*idx)
+            else:
+                img_path = pred_path.parent.parent / Path(idx)
+
+            keypoints = dlc_preds.loc[idx].values.reshape(
+                -1, len(parameters.bodyparts), 3
+            )[..., :2]
+            keypoints = keypoints[~np.isnan(keypoints).all(axis=-1).all(axis=-1)]
+            cond_keypoints = np.zeros((*keypoints.shape[:-1], 3))
+            cond_keypoints[..., :2] = keypoints
+            cond_keypoints[..., 2] = 2
+            predictions[str(img_path)] = cond_keypoints
+
+        return predictions
 
     @staticmethod
     def split_data(

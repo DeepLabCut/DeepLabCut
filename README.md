@@ -38,7 +38,6 @@
 [![Downloads](https://pepy.tech/badge/deeplabcut)](https://pepy.tech/project/deeplabcut)
 [![Downloads](https://pepy.tech/badge/deeplabcut/month)](https://pepy.tech/project/deeplabcut)
 [![PyPI version](https://badge.fury.io/py/deeplabcut.svg)](https://badge.fury.io/py/deeplabcut)
-![Python package](https://github.com/DeepLabCut/DeepLabCut/workflows/Python%20package/badge.svg)
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 [![GitHub stars](https://img.shields.io/github/stars/DeepLabCut/DeepLabCut.svg?style=social&label=Star)](https://github.com/DeepLabCut/DeepLabCut)
@@ -70,12 +69,12 @@ CUDA version if you want to use a GPU**): `pip install torch torchvision`
 `pip install --pre  "deeplabcut[gui]"` or `pip install  --pre "deeplabcut"` (headless 
 version with PyTorch)!
 
-To use the TensorFlow engine (requires Python 3.10; TF up to v2.10 supported on Windows,
+To use the TensorFlow (TF) engine (requires Python 3.10; TF up to v2.10 supported on Windows,
 up to v2.12 on other platforms): you'll need to run `pip install "deeplabcut[gui,tf]"` 
 (which includes all functions plus GUIs) or `pip install "deeplabcut[tf]"` (headless
-version with PyTorch and TensorFlow).
+version with PyTorch and TensorFlow). We aim to depreciate the TF part in 2027.
 
-We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/main/conda-environments/README.md) or the new [`deeplabcut-docker` package](https://github.com/DeepLabCut/DeepLabCut/tree/main/docker). 
+We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/main/conda-environments/README.md) or the [`deeplabcut-docker` package](https://github.com/DeepLabCut/DeepLabCut/tree/main/docker). 
 
 # [Documentation: The DeepLabCut Process](https://deeplabcut.github.io/DeepLabCut/README.html)
 

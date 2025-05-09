@@ -303,6 +303,7 @@ def evaluate_multianimal_full(
                     ) = predict.setup_pose_prediction(test_pose_cfg)
 
                     PredicteData = {}
+                    predicted_poses = np.full((len(Data), len(all_bpts), 2), np.nan)
                     dist = np.full((len(Data), len(all_bpts)), np.nan)
                     conf = np.full_like(dist, np.nan)
                     print("Network Evaluation underway...")
@@ -342,10 +343,15 @@ def evaluate_multianimal_full(
                         # Form 2D array of shape (n_rows, 4) where the last dim is
                         # (sample_index, peak_y, peak_x, bpt_index) to slice the PAFs.
                         temp = df.reset_index(level="bodyparts").dropna()
-                        temp["bodyparts"].replace(
-                            dict(zip(joints, range(len(joints)))),
-                            inplace=True,
-                        )
+                        with pd.option_context("future.no_silent_downcasting", True):
+                            temp["bodyparts"] = (
+                                temp["bodyparts"]
+                                .replace(
+                                    dict(zip(joints, range(len(joints)))),
+                                )
+                                .infer_objects(copy=False)
+                            )
+
                         temp["sample"] = 0
                         peaks_gt = temp.loc[
                             :, ["sample", "y", "x", "bodyparts"]
@@ -396,6 +402,7 @@ def evaluate_multianimal_full(
                                 inds = np.flatnonzero(all_bpts == bpt)
                                 sl = imageindex, inds[inds_gt[found]]
                                 dist[sl] = min_dists
+                                predicted_poses[sl] = xy[neighbors[found]]
                                 conf[sl] = probs_pred[n_joint][
                                     neighbors[found]
                                 ].squeeze()
@@ -430,6 +437,32 @@ def evaluate_multianimal_full(
                             visualization.erase_artists(ax)
 
                     sess.close()  # closes the current tf session
+
+                    # Save predicted poses
+                    coordinates = ["x", "y", "conf"]
+                    # Create the new MultiIndex by repeating the existing index and adding the new level
+                    poses_multi_index = pd.MultiIndex.from_tuples(
+                        [
+                            (scorer, individual, bodypart, coordinate)
+                            for scorer, individual, bodypart in df.index
+                            for coordinate in coordinates
+                        ],
+                        names=df.index.names + ["coordinates"],
+                    )
+
+                    predicted_poses = np.concatenate(
+                        (predicted_poses, np.expand_dims(conf, axis=-1)), axis=-1
+                    )
+                    predicted_poses = predicted_poses.reshape(
+                        predicted_poses.shape[0], -1
+                    )
+                    df_predicted_poses = pd.DataFrame(
+                        predicted_poses, columns=poses_multi_index
+                    )
+                    write_poses_path = os.path.join(
+                        evaluationfolder, f"predicted_poses_{training_iterations}.h5"
+                    )
+                    df_predicted_poses.to_hdf(write_poses_path, key="df_with_missing")
 
                     # Compute all distance statistics
                     df_dist = pd.DataFrame(dist, columns=df.index)

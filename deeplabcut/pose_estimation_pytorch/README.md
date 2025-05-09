@@ -275,7 +275,7 @@ train_dataset = loader.create_dataset(
     task=loader.pose_task,
 )
 valid_dataset = loader.create_dataset(
-    transform=dlc_torch.build_transforms(loader.model_cfg["data"]["train"]),
+    transform=dlc_torch.build_transforms(loader.model_cfg["data"]["inference"]),
     mode="test",
     task=loader.pose_task,
 )
@@ -355,7 +355,7 @@ train_dataset = loader.create_dataset(
     task=loader.pose_task,
 )
 valid_dataset = loader.create_dataset(
-    transform=dlc_torch.build_transforms(loader.model_cfg["data"]["train"]),
+    transform=dlc_torch.build_transforms(loader.model_cfg["data"]["inference"]),
     mode="test",
     task=loader.pose_task,
 )

@@ -16,9 +16,11 @@ from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
 from deeplabcut.pose_estimation_pytorch.config.utils import (
     available_detectors,
     available_models,
+    is_model_top_down,
     update_config,
     update_config_by_dotpath,
 )
+
 # For backwards compatibility
 from deeplabcut.core.config import (
     read_config_as_dict,

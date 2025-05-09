@@ -20,7 +20,7 @@ print(available_detectors())
 ## Neural Networks Architectures
 
 Several architectures are currently implemented in DeepLabCut PyTorch (more will come,
-and you can add more easily in our new model registry).
+and you can add more easily in our new model registry). Also check out the explanations of bottom-up/top-down below. 
 
 **ResNets**
 - Adapted from [He, Kaiming, et al. "Deep residual learning for image recognition." Proceedings of the IEEE conference on Computer Vision and Pattern Recognition. 2016.](https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html) and [Insafutdinov, Eldar et al. "DeeperCut: A Deeper, Stronger, and Faster Multi-Person Pose Estimation Model". European Conference on Computer Vision (ECCV) 2016.]
@@ -73,9 +73,61 @@ but it might improve performance), you can simply edit your `pytorch_config.yaml
 
 Of course, any multi-animal model can also be used for single-animal projects!
 
-## Information on Multi-Animal Models
+## Approaches to multi-animal pose estimation
 
-### Backbones with Part-Affinity Fields
+Single-animal pose estimation is quite straightforward: the model takes an image as 
+input, and it outputs the predicted coordinate of each bodypart.
+
+Multi-animal pose estimation is more complex. Not only do you need to localize bodyparts
+in the image, but you also need to group bodyparts per individual. There are two main
+approaches to multi-animal pose estimation.
+
+The first approach, **bottom-up** pose estimation, starts by detecting bodyparts in the
+image before figuring out how they belong together (i.e., which keypoints belong to the
+same animal).
+
+![Schema representing the bottom-up approach to pose estimation](
+assets/bottom-up-approach.png)
+
+The second approach, **top-down** pose estimation, uses a two-step approach. A first 
+model (an object detector) is used to localize every animal present in the image through
+its bounding box. Then, the pose for each animal is determined by predicting bodyparts
+in each bounding box. The pose estimation 
+
+![Schema representing the top-down approach to pose estimation](
+assets/top-down-approach.png)
+
+The top-down approach tends to be more accurate in less crowded scenes, as the pose 
+model only needs to process the pixels related to a single animal. However, in more 
+crowded scenes, the pose estimation task becomes ambiguous. Multiple overlapping 
+individuals will have very similar bounding boxes, and the pose model has no way of 
+knowing which animal it is supposed to predict keypoints for.
+
+The bottom-up approach does not have this ambiguïty, and also has the advantage of
+only needing to run a pose estimation model, instead of needing to run an object 
+detector first. However, grouping keypoints is a difficult problem.
+
+A new approach to pose estimation, named bottom-up conditioned top-down (or BUCTD), was
+introduced in [Zhou, Stoffl, Mathis, Mathis. "Rethinking Pose Estimation in Crowds: 
+Overcoming the Detection Information Bottleneck and Ambiguity." Proceedings of the 
+IEEE/CVF International Conference on Computer Vision (ICCV). 2023](
+https://openaccess.thecvf.com/content/ICCV2023/papers/Zhou_Rethinking_Pose_Estimation_in_Crowds_Overcoming_the_Detection_Information_Bottleneck_ICCV_2023_paper.pdf)
+. It's a hybrid two-stage approach leveraging the strengths of the bottom-up and
+top-down approaches to overcome the ambiguïty introduced through bounding boxes. Instead
+of using an object detection model to localize individuals, it uses a bottom-up pose 
+estimation model. The predictions made by the bottom-up model are given as proposals (or
+_conditions_) to the pose estimation model. This is illustrated in the figure below. In modern language, one could state that CTD models are "pose-promptable". 
+
+<figure>
+  <img src="assets/buctd_figure_1.png" style="text-align: center; width: 400px;">
+  <figcaption>Zhou, Mu, et al. "Rethinking pose estimation in crowds: overcoming the 
+detection information bottleneck and ambiguity." Proceedings of the IEEE/CVF 
+International Conference on Computer Vision. 2023.</figcaption>
+</figure>
+
+### Bottom-up Models
+
+#### Backbones with Part-Affinity Fields 
 
 As in DeepLabCut 2.X, the base multi-animal model is composed of a backbone (encoder) 
 and a head predicting keypoints and part-affinity fields (PAFs). These PAFs are used to 

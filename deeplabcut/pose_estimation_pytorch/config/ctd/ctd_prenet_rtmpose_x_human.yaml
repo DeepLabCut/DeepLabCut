@@ -1,0 +1,94 @@
+data:
+  bbox_margin: 5
+  gen_sampling:
+    keypoint_sigmas: [ .079, .079, .072, .072, .062, .062, .107, .107, .087, .087, .089, .089, .025, .025 ]  # CrowdPose sigmas
+    keypoints_symmetry: [ [ 0, 1 ], [ 2, 3 ], [ 4, 5 ], [ 6, 7 ], [ 8, 9 ], [ 10, 11 ] ] # CrowdPose symmetries
+  inference:
+    top_down_crop:
+      width: 288
+      height: 384
+      crop_with_context: false
+  train:
+    top_down_crop:
+      width: 288
+      height: 384
+      crop_with_context: false
+method: ctd
+model:
+  backbone:
+    type: CondPreNet
+    backbone:
+      type: CSPNeXt
+      model_name: cspnext_x
+      freeze_bn_stats: false
+      freeze_bn_weights: false
+      deepen_factor: 1.33
+      widen_factor: 1.25
+    kpt_encoder:
+      type: ColoredKeypointEncoder
+      num_joints: "num_bodyparts"
+      kernel_size: [15, 15]
+    img_size: [384, 288]
+  backbone_output_channels: 1280
+  heads:
+    bodypart:
+      type: RTMCCHead
+      weight_init: RTMPose
+      target_generator:
+        type: SimCCGenerator
+        input_size: [288, 384]
+        smoothing_type: gaussian
+        sigma: [6., 6.93]
+        simcc_split_ratio: 2.0
+        label_smooth_weight: 0.0
+        normalize: false
+      criterion:
+        x:
+          type: KLDiscreteLoss
+          use_target_weight: true
+          beta: 10.0
+          label_softmax: true
+        y:
+          type: KLDiscreteLoss
+          use_target_weight: true
+          beta: 10.0
+          label_softmax: true
+      predictor:
+        type: SimCCPredictor
+        simcc_split_ratio: 2.0
+      input_size: [288, 384]
+      in_channels: 1280
+      out_channels: "num_bodyparts"
+      in_featuremap_size: [9, 12]  # input_size / backbone stride
+      simcc_split_ratio: 2.0
+      final_layer_kernel_size: 7
+      gau_cfg:
+        hidden_dims: 256
+        s: 128
+        expansion_factor: 2
+        dropout_rate: 0
+        drop_path: 0.0
+        act_fn: "SiLU"
+        use_rel_bias: false
+        pos_enc: false
+runner:
+  optimizer:
+    type: AdamW
+    params:
+      lr: 1e-5
+  scheduler:
+    type: LRListScheduler
+    params:
+      lr_list:
+      - - 1e-3
+      - - 1e-4
+      - - 1e-5
+      milestones:
+      - 5
+      - 300
+      - 360
+train_settings:
+  batch_size: 32
+  dataloader_workers: 4
+  dataloader_pin_memory: false
+  epochs: 400
