@@ -14,7 +14,9 @@ from typing import Tuple
 import pytest
 import torch
 
-from deeplabcut.pose_estimation_pytorch.models.target_generators import HeatmapPlateauGenerator
+from deeplabcut.pose_estimation_pytorch.models.target_generators import (
+    HeatmapPlateauGenerator,
+)
 
 
 def get_target(
@@ -59,7 +61,9 @@ def get_target(
     stride = 1
     prediction = {
         "heatmap": torch.rand((batch_size, num_joints, image_size[0], image_size[1])),
-        "locref": torch.rand((batch_size, 2 * num_joints, image_size[0], image_size[1])),
+        "locref": torch.rand(
+            (batch_size, 2 * num_joints, image_size[0], image_size[1])
+        ),
     }
     generator = HeatmapPlateauGenerator(
         num_heatmaps=num_joints,
@@ -189,7 +193,9 @@ def test_single_animal(
     )
 
     targets_output = torch.tensor(
-        targets_output["heatmap"]["target"].reshape(1, 10, image_size[0] * image_size[1])
+        targets_output["heatmap"]["target"].reshape(
+            1, 10, image_size[0] * image_size[1]
+        )
     )  # converting from dict to tensor. 'argmax' works on tensors.
 
     plt_max = torch.argmax(targets_output, dim=2)

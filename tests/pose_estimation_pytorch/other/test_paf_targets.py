@@ -28,7 +28,9 @@ def test_paf_target_generation(
     }  # 2 for x,y coords
     graph = [(i, j) for i in range(num_keypoints) for j in range(i + 1, num_keypoints)]
     prediction = {
-        "heatmap": torch.rand((batch_size, num_keypoints, image_size[0], image_size[1])),
+        "heatmap": torch.rand(
+            (batch_size, num_keypoints, image_size[0], image_size[1])
+        ),
         "paf": torch.rand((batch_size, len(graph) * 2, image_size[0], image_size[1])),
     }
     generator = pafs_targets.PartAffinityFieldGenerator(graph=graph, width=20)
