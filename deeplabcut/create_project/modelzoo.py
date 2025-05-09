@@ -133,7 +133,7 @@ def create_pretrained_project(
     net_name: str | None = None,
     detector_name: str | None = None,
 ):
-    """
+    r"""
     Creates a new project directory, sub-directories and a basic configuration file.
     Change its parameters to your projects need.
 
@@ -265,7 +265,7 @@ def create_pretrained_project_pytorch(
     net_name: str | None = None,
     detector_name: str | None = None,
 ):
-    """
+    r"""
     Method used specifically for Pytorch-based ModelZoo models.
 
     Creates a new project directory, sub-directories and a basic configuration file.
@@ -488,7 +488,7 @@ def create_pretrained_project_tensorflow(
     createlabeledvideo: bool = True,
     trainFraction: float | None = None,
 ):
-    """
+    r"""
     Method used specifically for Tensorflow-based ModelZoo models.
 
     Creates a new project directory, sub-directories and a basic configuration file.
