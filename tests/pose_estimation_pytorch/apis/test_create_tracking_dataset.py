@@ -37,7 +37,11 @@ class MockLoader(dlc_torch.Loader):
             net_type="resnet_50",
             save=True,
         )
-        super().__init__(model_config_path)
+        super().__init__(
+            str(tmp_folder),
+            str(tmp_folder / "labeled-data"),
+            model_config_path,
+        )
 
     def load_data(self, mode: str = "train") -> dict[str, list[dict]]:
         return {

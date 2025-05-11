@@ -1,3 +1,4 @@
+bbox_margin: 20
 colormode: RGB
 inference:
   normalize_images: true
@@ -10,11 +11,8 @@ train:
     rotation: 30
     scaling: [1.0, 1.0]
     translation: 0
-  collate: null
-  covering: false
   gaussian_noise: 12.75
-  hist_eq: false
-  motion_blur: false
+  motion_blur: true
   normalize_images: true
   top_down_crop:
     width: 256

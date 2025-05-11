@@ -441,7 +441,11 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
 
         inputs = batch["image"] # [B,3, 256, 256]
         inputs = inputs.to(self.device).float()
-        outputs = self.model(inputs) # {'bodypart':{'heatmap':[B,37,64,74]}, 'locref': {B, 74, 64,64} }
+        if 'cond_keypoints' in batch['context']:
+            cond_kpts = batch['context']['cond_keypoints']
+            outputs = self.model(inputs, cond_kpts=cond_kpts)
+        else:
+            outputs = self.model(inputs)
 
         if self._data_parallel:
             underlying_model = self.model.module

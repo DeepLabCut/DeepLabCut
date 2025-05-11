@@ -29,7 +29,7 @@ import platform
 
 print("Imported DLC!")
 
-engine = Engine.TF
+engine = Engine.PYTORCH
 
 basepath = os.path.dirname(os.path.abspath("testscript_cli.py"))
 videoname = "reachingvideo1"
@@ -122,30 +122,8 @@ dlc.create_training_dataset(
     path_config_file, net_type=net_type, augmenter_type=augmenter_type, engine=engine,
 )
 
-posefile = os.path.join(
-    cfg["project_path"],
-    "dlc-models/iteration-"
-    + str(cfg["iteration"])
-    + "/"
-    + cfg["Task"]
-    + cfg["date"]
-    + "-trainset"
-    + str(int(cfg["TrainingFraction"][0] * 100))
-    + "shuffle"
-    + str(1),
-    "train/pose_cfg.yaml",
-)
-
-DLC_config = dlc.auxiliaryfunctions.read_plainconfig(posefile)
-DLC_config["save_iters"] = numiter
-DLC_config["display_iters"] = 2
-DLC_config["multi_step"] = [[0.001, numiter]]
-
-print("CHANGING training parameters to end quickly!")
-dlc.auxiliaryfunctions.write_plainconfig(posefile, DLC_config)
-
 print("TRAIN")
-dlc.train_network(path_config_file)
+dlc.train_network(path_config_file, epochs=numiter, displayiters=2)
 
 print("EVALUATE")
 dlc.evaluate_network(path_config_file, plotting=True)

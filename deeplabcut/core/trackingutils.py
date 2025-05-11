@@ -28,6 +28,7 @@ warnings.simplefilter("ignore", category=NumbaPerformanceWarning)
 
 TRACK_METHODS = {
     "box": "_bx",
+    "ctd": "_ctd",
     "skeleton": "_sk",
     "ellipse": "_el",
     "transformer": "_tr",
@@ -178,20 +179,7 @@ class EllipseFitter:
             self._coeffs = self._fit(self.x, self.y)
             self.params = self.calc_parameters(self._coeffs)
         if not np.isnan(self.params).any():
-            el = Ellipse(*self.params)
-            # Regularize by forcing AR <= 5
-            # max_ar = 5
-            # if el.aspect_ratio >= max_ar:
-            #     if el.height > el.width:
-            #         el.width = el.height / max_ar
-            #     else:
-            #         el.height = el.width / max_ar
-            # Orient the ellipse such that it encompasses most points
-            # n_inside = el.contains_points(np.c_[self.x, self.y]).sum()
-            # el.theta += 0.5 * np.pi
-            # if el.contains_points(np.c_[self.x, self.y]).sum() < n_inside:
-            #     el.theta -= 0.5 * np.pi
-            return el
+            return Ellipse(*self.params)
         return None
 
     @staticmethod
@@ -783,12 +771,45 @@ def calc_bboxes_from_keypoints(data, slack=0, offset=0):
     bboxes = np.full((data.shape[0], 5), np.nan)
     bboxes[:, :2] = np.nanmin(data[..., :2], axis=1) - slack  # X1, Y1
     bboxes[:, 2:4] = np.nanmax(data[..., :2], axis=1) + slack  # X2, Y2
-    bboxes[:, -1] = np.nanmean(data[..., 2])  # Average confidence
+    bboxes[:, -1] = np.nanmean(data[..., 2], axis=1)  # Average confidence
     bboxes[:, [0, 2]] += offset
     return bboxes
 
 
 def reconstruct_all_ellipses(data, sd):
+    """
+    Reconstructs ellipses for multiple individuals based on their body part coordinates
+    across multiple frames. Each ellipse is fitted to the coordinates using an `EllipseFitter`.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        A multi-level DataFrame containing body part coordinates and likelihood values.
+        The index represents frames, and the columns follow a multi-level structure:
+        - Level 0: Scorer
+        - Level 1: Individuals
+        - Level 2: Body parts
+        - Level 3: Coordinates ("x" and "y") and "likelihood".
+    sd : float
+        The standard deviation used by the `EllipseFitter` for fitting ellipses.
+
+    Returns
+    -------
+    numpy.ndarray
+        A 3D array of shape (A, F, 5), where:
+        - A is the number of individuals (excluding "single" if present).
+        - F is the number of frames.
+        - Each row contains ellipse parameters [cx, cy, width, height, angle].
+
+    Notes
+    -----
+    - The method drops the "likelihood" column from the input DataFrame as it is not
+      relevant for ellipse fitting.
+    - If the "single" individual is present, it is excluded from the reconstruction process.
+    - The `EllipseFitter` is used to fit ellipses to the body part coordinates for each
+      individual in each frame.
+    - NaN values are assigned when no valid ellipse can be fitted.
+    """
     xy = data.droplevel("scorer", axis=1).drop("likelihood", axis=1, level=-1)
     if "single" in xy:
         xy.drop("single", axis=1, level="individuals", inplace=True)

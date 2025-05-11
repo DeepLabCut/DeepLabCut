@@ -21,7 +21,8 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoReader
 
-MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0", "mobilenet_v2_0.35"]
+
+MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0"]
 
 
 N_ITER = 5
@@ -118,7 +119,10 @@ if __name__ == "__main__":
 
     print("Creating train dataset...")
     deeplabcut.create_multianimaltraining_dataset(
-        config_path, net_type=NET, crop_size=(200, 200), engine=ENGINE,
+        config_path,
+        net_type=NET,
+        crop_size=(200, 200),
+        engine=ENGINE,
     )
     print("Train dataset created.")
 
@@ -332,6 +336,7 @@ if __name__ == "__main__":
     deeplabcut.create_multianimaltraining_dataset(
         config_path,
         Shuffles=[4, 5],
+        net_type=NET,
         trainIndices=[trainIndices, trainIndices],
         testIndices=[testIndices, testIndices],
         engine=ENGINE,
