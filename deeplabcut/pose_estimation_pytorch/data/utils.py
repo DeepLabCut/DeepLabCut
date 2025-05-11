@@ -52,6 +52,11 @@ def bbox_from_keypoints(
 
     # we do not estimate bbox on keypoints that have 0 or -1 flag
     keypoints = np.copy(keypoints)
+    
+    # debug
+    if np.all(keypoints[..., -1] <= 0):
+        print(f"All keypoints: {keypoints}")
+        
     keypoints[keypoints[..., -1] <= 0] = np.nan
 
     if len(keypoints.shape) == 2:
@@ -72,9 +77,14 @@ def bbox_from_keypoints(
     )
     bboxes[..., 2] = bboxes[..., 2] - bboxes[..., 0]  # to width
     bboxes[..., 3] = bboxes[..., 3] - bboxes[..., 1]  # to height
+    
+    # debug
+    if np.array_equal(bboxes[0], np.array([0, 0, 0, 0])):
+        print(f"All bboxes: {bboxes}")
+    
     if squeeze:
         return bboxes[0]
-
+        
     return bboxes
 
 
