@@ -308,9 +308,11 @@ class MainWindow(QMainWindow):
         Emits a signal to notify about the updated set of files.
         """
         new_video_files = set(new_video_files)
-        self.files.update(new_video_files) # Add new items to the existing set
-        self.video_files_.emit(self.files) # Emit the updated set of files
-        self.logger.info(f"Videos added to analyze:\n{new_video_files}\nCurrent video files:\n{self.files}")
+        self.files.update(new_video_files)  # Add new items to the existing set
+        self.video_files_.emit(self.files)  # Emit the updated set of files
+        self.logger.info(
+            f"Videos added to analyze:\n{new_video_files}\nCurrent video files:\n{self.files}"
+        )
 
     def clear_video_files(self):
         """

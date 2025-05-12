@@ -262,6 +262,7 @@ class PoseDataset(Dataset):
                     self.parameters.top_down_crop_margin,
                     crop_with_context=self.parameters.top_down_crop_with_context,
                 )
+                
 
                 keypoints[:, :, 0] = (keypoints[:, :, 0] - offsets[0]) / scales[0]
                 keypoints[:, :, 1] = (keypoints[:, :, 1] - offsets[1]) / scales[1]

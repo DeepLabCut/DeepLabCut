@@ -20,10 +20,34 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
 
 SHUFFLE_DATA = [
-    {"name": "pJun17-t50s1", "index": 1, "train_fraction": 0.5, "split": 1, "engine": "torch"},
-    {"name": "pJun17-t50s2", "index": 2, "train_fraction": 0.5, "split": 1, "engine": "tf"},
-    {"name": "pJun17-t60s1", "index": 1, "train_fraction": 0.6, "split": 2, "engine": "torch"},
-    {"name": "pJun17-t60s2", "index": 2, "train_fraction": 0.6, "split": 3, "engine": "torch"},
+    {
+        "name": "pJun17-t50s1",
+        "index": 1,
+        "train_fraction": 0.5,
+        "split": 1,
+        "engine": "torch",
+    },
+    {
+        "name": "pJun17-t50s2",
+        "index": 2,
+        "train_fraction": 0.5,
+        "split": 1,
+        "engine": "tf",
+    },
+    {
+        "name": "pJun17-t60s1",
+        "index": 1,
+        "train_fraction": 0.6,
+        "split": 2,
+        "engine": "torch",
+    },
+    {
+        "name": "pJun17-t60s2",
+        "index": 2,
+        "train_fraction": 0.6,
+        "split": 3,
+        "engine": "torch",
+    },
 ]
 SPLITS_DATA = {
     1: {"train": [0, 1], "test": [2, 3]},
@@ -53,7 +77,9 @@ SHUFFLES = {
     "data",
     [
         {
-            "shuffles": {SHUFFLE_DATA[idx]["name"]: SHUFFLE_DATA[idx] for idx in [0, 1, 2]},
+            "shuffles": {
+                SHUFFLE_DATA[idx]["name"]: SHUFFLE_DATA[idx] for idx in [0, 1, 2]
+            },
             "splits": {idx: SPLITS_DATA[idx] for idx in [1, 2]},
         },
         {
@@ -107,72 +133,93 @@ def test_load_metadata(tmpdir, data: dict, load_splits: bool):
             assert s_with_split.split.test_indices == tuple(split_idx["test"])
 
 
-@pytest.mark.parametrize("data", [
-    {
-        "task": "ch",
-        "date": "Aug1",
-        "shuffles": (SHUFFLES[1], ),
-        "expected": {
-            "shuffles": {
-                SHUFFLES[1].name: {
-                    "index": 1, "train_fraction": 0.5, "split": 1, "engine": "pytorch"
-                }
-            },
-        }
-    },
-    {
-        "task": "t",
-        "date": "Jan1",
-        "shuffles": (SHUFFLES[1], SHUFFLES[3]),
-        "expected": {
-            "shuffles": {
-                SHUFFLES[1].name: {
-                    "index": 1, "train_fraction": 0.5, "split": 1, "engine": "pytorch"
-                },
-                SHUFFLES[3].name: {
-                    "index": 3,
-                    "train_fraction": 0.5,
-                    "split": 1,
-                    "engine": "tensorflow",
-                },
-            },
-        }
-    },
-    {
-        "task": "t",
-        "date": "Jan1",
-        "shuffles": (SHUFFLES[1], SHUFFLES[2]),
-        "expected": {
-            "shuffles": {
-                SHUFFLES[1].name: {
-                    "index": 1, "train_fraction": 0.5, "split": 1, "engine": "pytorch"
-                },
-                SHUFFLES[2].name: {
-                    "index": 2, "train_fraction": 0.5, "split": 2, "engine": "pytorch"
+@pytest.mark.parametrize(
+    "data",
+    [
+        {
+            "task": "ch",
+            "date": "Aug1",
+            "shuffles": (SHUFFLES[1],),
+            "expected": {
+                "shuffles": {
+                    SHUFFLES[1].name: {
+                        "index": 1,
+                        "train_fraction": 0.5,
+                        "split": 1,
+                        "engine": "pytorch",
+                    }
                 },
             },
         },
-    },
-    {
-        "shuffles": (SHUFFLES[1], SHUFFLES[2], SHUFFLES[3]),
-        "expected": {
-            "shuffles": {
-                SHUFFLES[1].name: {
-                    "index": 1, "train_fraction": 0.5, "split": 1, "engine": "pytorch"
-                },
-                SHUFFLES[2].name: {
-                    "index": 2, "train_fraction": 0.5, "split": 2, "engine": "pytorch"
-                },
-                SHUFFLES[3].name: {
-                    "index": 3,
-                    "train_fraction": 0.5,
-                    "split": 1,
-                    "engine": "tensorflow",
+        {
+            "task": "t",
+            "date": "Jan1",
+            "shuffles": (SHUFFLES[1], SHUFFLES[3]),
+            "expected": {
+                "shuffles": {
+                    SHUFFLES[1].name: {
+                        "index": 1,
+                        "train_fraction": 0.5,
+                        "split": 1,
+                        "engine": "pytorch",
+                    },
+                    SHUFFLES[3].name: {
+                        "index": 3,
+                        "train_fraction": 0.5,
+                        "split": 1,
+                        "engine": "tensorflow",
+                    },
                 },
             },
         },
-    },
-])
+        {
+            "task": "t",
+            "date": "Jan1",
+            "shuffles": (SHUFFLES[1], SHUFFLES[2]),
+            "expected": {
+                "shuffles": {
+                    SHUFFLES[1].name: {
+                        "index": 1,
+                        "train_fraction": 0.5,
+                        "split": 1,
+                        "engine": "pytorch",
+                    },
+                    SHUFFLES[2].name: {
+                        "index": 2,
+                        "train_fraction": 0.5,
+                        "split": 2,
+                        "engine": "pytorch",
+                    },
+                },
+            },
+        },
+        {
+            "shuffles": (SHUFFLES[1], SHUFFLES[2], SHUFFLES[3]),
+            "expected": {
+                "shuffles": {
+                    SHUFFLES[1].name: {
+                        "index": 1,
+                        "train_fraction": 0.5,
+                        "split": 1,
+                        "engine": "pytorch",
+                    },
+                    SHUFFLES[2].name: {
+                        "index": 2,
+                        "train_fraction": 0.5,
+                        "split": 2,
+                        "engine": "pytorch",
+                    },
+                    SHUFFLES[3].name: {
+                        "index": 3,
+                        "train_fraction": 0.5,
+                        "split": 1,
+                        "engine": "tensorflow",
+                    },
+                },
+            },
+        },
+    ],
+)
 def test_save_metadata_simple(tmpdir, data):
     """Tests that saving the metadata creates the expected file"""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
@@ -187,15 +234,21 @@ def test_save_metadata_simple(tmpdir, data):
     assert data["expected"] == meta
 
 
-@pytest.mark.parametrize("shuffles", [
-    [SHUFFLES[i] for i in indices]
-    for indices in [[1], [1, 2], [1, 2, 3], [1, 2, 4], [1, 3, 4], [1, 2, 3, 4]]
-])
+@pytest.mark.parametrize(
+    "shuffles",
+    [
+        [SHUFFLES[i] for i in indices]
+        for indices in [[1], [1, 2], [1, 2, 3], [1, 2, 4], [1, 3, 4], [1, 2, 3, 4]]
+    ],
+)
 def test_save_metadata(tmpdir, shuffles):
     """Tests that saving the metadata and reloading it leads to the same instance"""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
     for s in shuffles:
-        train, test = s.split.train_indices, s.split.test_indices,
+        train, test = (
+            s.split.train_indices,
+            s.split.test_indices,
+        )
         _create_doc_data(cfg, trainset_dir, s.train_fraction, s.index, train, test)
 
     trainset_meta = metadata.TrainingDatasetMetadata(cfg, tuple(shuffles))
@@ -220,7 +273,7 @@ def test_save_metadata(tmpdir, shuffles):
 def test_add_shuffle(tmpdir):
     """Tests that a shuffle can be added correctlt"""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
-    trainset_meta = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1], ))
+    trainset_meta = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1],))
     trainset_meta_added = trainset_meta.add(SHUFFLES[2])
     assert len(trainset_meta.shuffles) == 1
     assert len(trainset_meta_added.shuffles) == 2
@@ -230,11 +283,11 @@ def test_add_shuffle(tmpdir):
 def test_add_shuffle_twice(tmpdir):
     """Tests that a shuffle can be added correctlt"""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
-    trainset_meta = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1], ))
+    trainset_meta = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1],))
     trainset_meta_added = trainset_meta.add(SHUFFLES[2])
     trainset_meta_added_2 = trainset_meta.add(SHUFFLES[2])
     assert len(trainset_meta.shuffles) == 1
-    assert trainset_meta.shuffles == (SHUFFLES[1], )
+    assert trainset_meta.shuffles == (SHUFFLES[1],)
     assert len(trainset_meta_added.shuffles) == len(trainset_meta_added_2.shuffles)
     assert trainset_meta_added.shuffles == trainset_meta_added_2.shuffles
 
@@ -249,12 +302,16 @@ def test_add_shuffle_sorts_to_correct_order(tmpdir):
     assert trainset_meta_added.shuffles == (SHUFFLES[1], SHUFFLES[2], SHUFFLES[3])
 
 
-@pytest.mark.parametrize("shuffles", [
-    indices for indices in [[1], [1, 2], [1, 2, 3], [1, 2, 4], [1, 3, 4], [1, 2, 3, 4]]
-])
+@pytest.mark.parametrize(
+    "shuffles",
+    [
+        indices
+        for indices in [[1], [1, 2], [1, 2, 3], [1, 2, 4], [1, 3, 4], [1, 2, 3, 4]]
+    ],
+)
 @pytest.mark.parametrize("shuffle_to_add", [1, 2, 3, 4])
 def test_add_shuffle(tmpdir, shuffles, shuffle_to_add):
-    """Tests """
+    """Tests"""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
     trainset_meta = metadata.TrainingDatasetMetadata(
         cfg, tuple([SHUFFLES[i] for i in shuffles])
@@ -316,25 +373,24 @@ def test_data_split_requires_sorted(
         )
 
     with pytest.raises(RuntimeError):
-        metadata.DataSplit(
-            train_indices=tuple(indices), test_indices=tuple(indices)
-        )
+        metadata.DataSplit(train_indices=tuple(indices), test_indices=tuple(indices))
 
     metadata.DataSplit(
         train_indices=tuple(sorted_indices), test_indices=tuple(sorted_indices)
     )
 
 
-@pytest.mark.parametrize("shuffles", [
-    (
-        {"idx": 3, "train": [1], "test": [2], "train_fraction": 0.5},
-    ),
-    (
-        {"idx": 1, "train": [1], "test": [2], "train_fraction": 0.5},
-        {"idx": 5, "train": [1, 2, 3], "test": [4, 5], "train_fraction": 0.6},
-        {"idx": 4, "train": [1, 3], "test": [2], "train_fraction": 0.66},
-    ),
-])
+@pytest.mark.parametrize(
+    "shuffles",
+    [
+        ({"idx": 3, "train": [1], "test": [2], "train_fraction": 0.5},),
+        (
+            {"idx": 1, "train": [1], "test": [2], "train_fraction": 0.5},
+            {"idx": 5, "train": [1, 2, 3], "test": [4, 5], "train_fraction": 0.6},
+            {"idx": 4, "train": [1, 3], "test": [2], "train_fraction": 0.66},
+        ),
+    ],
+)
 def test_create_metadata_from_shuffles(tmpdir, shuffles):
     """Tests that equality functions as expected for DataSplits"""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
@@ -344,8 +400,9 @@ def test_create_metadata_from_shuffles(tmpdir, shuffles):
         doc_path = trainset_dir.join(doc)
         with open(doc_path, "wb") as f:
             pickle.dump(
-                [[], s["train"], s["test"], s['train_fraction']], f,
-                pickle.HIGHEST_PROTOCOL
+                [[], s["train"], s["test"], s["train_fraction"]],
+                f,
+                pickle.HIGHEST_PROTOCOL,
             )
 
     trainset_metadata = metadata.TrainingDatasetMetadata.create(cfg)

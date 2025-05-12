@@ -181,9 +181,9 @@ class DEKRGenerator(BaseGenerator):
                                 weight_map[b, idx * 2, pos_y, pos_x] = 1.0 / np.sqrt(
                                     area[b, person_id]
                                 )
-                                weight_map[
-                                    b, idx * 2 + 1, pos_y, pos_x
-                                ] = 1.0 / np.sqrt(area[b, person_id])
+                                weight_map[b, idx * 2 + 1, pos_y, pos_x] = (
+                                    1.0 / np.sqrt(area[b, person_id])
+                                )
                                 area_map[b, pos_y, pos_x] = area[b, person_id]
 
         heatmap_weights[heatmap_weights == 2] = self.bg_weight
@@ -216,4 +216,4 @@ def dekr_heatmap_val(sigma: float, x: float, y: float, x0: float, y0: float) -> 
     Returns:
         g: calculated heat value represents the intensity of the heat at a given position
     """
-    return np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma ** 2))
+    return np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma**2))
