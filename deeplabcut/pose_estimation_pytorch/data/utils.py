@@ -412,7 +412,7 @@ def _annotation_to_keypoints(annotation: dict, h: int, w: int) -> np.array:
 
     Returns:
         keypoints: np.array where the first two columns are x and y coordinates of the
-    
+
     """
     # we don't mess up visibility flags here
     return annotation["keypoints"].reshape(-1, 3)

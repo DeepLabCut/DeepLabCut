@@ -19,10 +19,7 @@ import albumentations as A
 import numpy as np
 import torch
 
-from deeplabcut.pose_estimation_pytorch.data.image import (
-    load_image,
-    top_down_crop
-)
+from deeplabcut.pose_estimation_pytorch.data.image import load_image, top_down_crop
 from deeplabcut.pose_estimation_pytorch.data.utils import bbox_from_keypoints
 
 

@@ -29,21 +29,21 @@ from deeplabcut.pose_estimation_pytorch.data.preprocessor import (
             "resize_transform": {"height": 5, "width": 4, "keep_ratio": True},
             "output_shape": (2, 4, 4),
             "padded_shape": (5, 4, 4),  # single offset as not a batch
-            "output_context": {"offsets": (0, 0), "scales": (1, 1)}
+            "output_context": {"offsets": (0, 0), "scales": (1, 1)},
         },
         {
             "image_shape": (1, 2, 4, 4),  # as batch
             "resize_transform": {"height": 10, "width": 4, "keep_ratio": True},
             "output_shape": (1, 2, 4, 4),
             "padded_shape": (1, 10, 4, 4),
-            "output_context": {"offsets": [(0, 0)], "scales": [(1, 1)]}
+            "output_context": {"offsets": [(0, 0)], "scales": [(1, 1)]},
         },
         {
             "image_shape": (2, 4, 3),
             "resize_transform": {"height": 10, "width": 8, "keep_ratio": True},
             "output_shape": (4, 8, 3),
             "padded_shape": (10, 8, 3),
-            "output_context": {"offsets": (0, 0), "scales": (0.5, 0.5)}
+            "output_context": {"offsets": (0, 0), "scales": (0.5, 0.5)},
         },
     ],
 )
