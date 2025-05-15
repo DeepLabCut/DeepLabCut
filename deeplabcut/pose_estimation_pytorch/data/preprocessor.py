@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import Any, TypeVar, Callable
 
 import albumentations as A
 import numpy as np
@@ -151,6 +151,7 @@ def build_conditional_top_down_preprocessor(
     return ComposePreprocessor(
         components=[
             LoadImage(color_mode),
+            FilterLowConfidencePoses(),
             ComputeBoundingBoxesFromCondKeypoints(bbox_margin=bbox_margin),
             FilterInvalidBoundingBoxes(),
             TopDownCrop(
@@ -356,6 +357,33 @@ class ToBatch(Preprocessor):
 
     def __call__(self, image: Image, context: Context) -> tuple[np.ndarray, Context]:
         return image.unsqueeze(0), context
+
+
+class FilterLowConfidencePoses(Preprocessor):
+    """
+    Filters out poses with low confidence scores.
+    By default, the confidence associated to the pose is the max confidence value.
+    """
+
+    def __init__(
+        self,
+        confidence_threshold: float = 0.05,
+        aggregate_func: Callable[[np.ndarray], float] = lambda arr: np.max(arr, axis=1),
+    ) -> None:
+        self.confidence_threshold = confidence_threshold
+        self.aggregate_func = aggregate_func
+
+    def __call__(
+        self, image: np.ndarray, context: Context
+    ) -> tuple[np.ndarray, Context]:
+        if "cond_kpts" not in context:
+            raise ValueError(f"Must include cond_kpts, found {context}")
+
+        keypoints = context["cond_kpts"]
+        mask = self.aggregate_func(keypoints[:, :, 2]) >= self.confidence_threshold
+        context["cond_kpts"] = keypoints[mask]
+
+        return image, context
 
 
 class FilterInvalidBoundingBoxes(Preprocessor):
