@@ -28,6 +28,7 @@ import deeplabcut.pose_estimation_pytorch.data as data
 import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
 from deeplabcut.core.engine import Engine
 from deeplabcut.modelzoo.utils import get_superanimal_colormaps
+from deeplabcut.pose_estimation_pytorch.apis.ctd import get_condition_provider
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_detector_inference_runner,
     build_predictions_dataframe,
@@ -37,6 +38,7 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_scorer_uid,
     parse_snapshot_index_for_analysis,
 )
+from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import update_config
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import resolve_device
@@ -392,6 +394,7 @@ def analyze_image_folder(
     device: str | None = None,
     max_individuals: int | None = None,
     progress_bar: bool = True,
+    ctd_conditions: dict | CondFromModel | None = None,
 ) -> dict[str, dict[str, np.ndarray | np.ndarray]]:
     """Runs pose inference on a folder of images and returns the predictions
 
@@ -433,11 +436,29 @@ def analyze_image_folder(
     if device is None:
         device = resolve_device(model_cfg)
 
-    pose_runner = get_pose_inference_runner(
+    cond_provider = None
+    if pose_task == Task.COND_TOP_DOWN:
+        if ctd_conditions is None:
+            cond_provider = get_condition_provider(
+                condition_cfg=model_cfg["data"]["conditions"],
+                config=config,
+            )
+        elif isinstance(ctd_conditions, dict):
+            cond_provider = get_condition_provider(
+                condition_cfg=ctd_conditions, config=config,
+            )
+        else:
+            cond_provider = ctd_conditions
+
+    pose_runner = get_pose_inference_runner( # here, certainly missing something!
         model_config=model_cfg,
         snapshot_path=snapshot_path,
         device=device,
         max_individuals=max_individuals,
+        cond_provider=cond_provider,
+        # todo add transform?
+        # todo add batchsize?
+        # todo add dynamic?
     )
 
     image_suffixes = ".png", ".jpg", ".jpeg"
@@ -466,7 +487,7 @@ def analyze_image_folder(
     if progress_bar:
         pose_inputs = tqdm(pose_inputs)
 
-    predictions = pose_runner.inference(pose_inputs)
+    predictions = pose_runner.inference(pose_inputs) # Crashes here!!
 
     return {
         image_path: image_predictions

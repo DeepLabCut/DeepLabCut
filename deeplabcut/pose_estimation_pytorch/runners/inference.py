@@ -395,7 +395,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
 
         results = []
         for data in images:
-            data = self.add_conditions(data)
+            data = self.add_conditions(data) # crashes here
             self._prepare_inputs(data)
             self._process_full_batches()
             results += self._extract_results(shelf_writer)
@@ -456,7 +456,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
             return image, context
 
         # Run the pre-processor
-        if self.bu_runner.preprocessor is not None:
+        if self.bu_runner.preprocessor is not None: # crashes here because bu_runner is None!
             inputs, context = self.bu_runner.preprocessor(image, context)
         else:
             inputs = torch.as_tensor(image)

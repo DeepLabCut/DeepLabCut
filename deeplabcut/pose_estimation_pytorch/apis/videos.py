@@ -473,7 +473,7 @@ def analyze_videos(
         ctd_tracking = CTDTrackingConfig.build(ctd_tracking)
 
     print(f"Analyzing videos with {snapshot.path}")
-    pose_runner = utils.get_pose_inference_runner(
+    pose_runner = utils.get_pose_inference_runner( # here we create the pose runner with conditions
         model_config=loader.model_cfg,
         snapshot_path=snapshot.path,
         max_individuals=max_num_animals,
