@@ -353,7 +353,12 @@ class ToTensor(Preprocessor):
 
 
 class ToBatch(Preprocessor):
-    """TODO"""
+    """Adds a batch dimension to the image tensor.
+
+    This preprocessor is used to convert a single image tensor into a batched format
+    by unsqueezing along the 0th dimension. This is typically required before passing
+    the image to models that expect batched input (i.e., shape `[B, C, H, W]`).
+    """
 
     def __call__(self, image: Image, context: Context) -> tuple[np.ndarray, Context]:
         return image.unsqueeze(0), context
