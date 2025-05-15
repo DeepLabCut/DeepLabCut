@@ -10,6 +10,7 @@
 #
 from __future__ import annotations
 
+import warnings
 from collections import defaultdict
 from functools import reduce, lru_cache
 from pathlib import Path
@@ -56,8 +57,10 @@ def bbox_from_keypoints(
         keypoints = np.expand_dims(keypoints, axis=0)
 
     bboxes = np.full((keypoints.shape[0], 4), np.nan)
-    bboxes[:, :2] = np.nanmin(keypoints[..., :2], axis=1) - margin  # X1, Y1
-    bboxes[:, 2:4] = np.nanmax(keypoints[..., :2], axis=1) + margin  # X2, Y2
+    with warnings.catch_warnings():  # silence warnings when all pose confidence levels are <= 0
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        bboxes[:, :2] = np.nanmin(keypoints[..., :2], axis=1) - margin  # X1, Y1
+        bboxes[:, 2:4] = np.nanmax(keypoints[..., :2], axis=1) + margin  # X2, Y2
 
     # can have NaNs if some individuals have no visible keypoints
     bboxes = np.nan_to_num(bboxes, nan=0)
