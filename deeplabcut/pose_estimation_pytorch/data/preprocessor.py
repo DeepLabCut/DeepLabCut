@@ -152,6 +152,7 @@ def build_conditional_top_down_preprocessor(
         components=[
             LoadImage(color_mode),
             ComputeBoundingBoxesFromCondKeypoints(bbox_margin=bbox_margin),
+            FilterInvalidBoundingBoxes(),
             TopDownCrop(
                 output_size=top_down_crop_size,
                 margin=top_down_crop_margin,
@@ -355,6 +356,33 @@ class ToBatch(Preprocessor):
 
     def __call__(self, image: Image, context: Context) -> tuple[np.ndarray, Context]:
         return image.unsqueeze(0), context
+
+
+class FilterInvalidBoundingBoxes(Preprocessor):
+    """Filters out poses and bounding boxes that are invalid (e.g., area too small)."""
+
+    def __init__(self, min_area: int = 1) -> None:
+        self.min_area = min_area
+
+    def __call__(
+        self, image: np.ndarray, context: Context
+    ) -> tuple[np.ndarray, Context]:
+        bboxes = context.get("bboxes", [])
+        keypoints = context.get("cond_kpts", [])
+
+        valid_bboxes = []
+        valid_indices = []
+
+        for i, bbox in enumerate(bboxes):
+            _, _, w, h = bbox
+            if w * h >= self.min_area:
+                valid_bboxes.append(bbox)
+                valid_indices.append(i)
+
+        context["bboxes"] = valid_bboxes
+        context["cond_kpts"] = keypoints[valid_indices]
+
+        return image, context
 
 
 class TopDownCrop(Preprocessor):
