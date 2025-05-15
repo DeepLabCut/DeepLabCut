@@ -13,16 +13,13 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import Any, TypeVar, Callable
 
 import albumentations as A
 import numpy as np
 import torch
 
-from deeplabcut.pose_estimation_pytorch.data.image import (
-    load_image,
-    top_down_crop
-)
+from deeplabcut.pose_estimation_pytorch.data.image import load_image, top_down_crop
 from deeplabcut.pose_estimation_pytorch.data.utils import bbox_from_keypoints
 
 
@@ -151,7 +148,9 @@ def build_conditional_top_down_preprocessor(
     return ComposePreprocessor(
         components=[
             LoadImage(color_mode),
+            FilterLowConfidencePoses(),
             ComputeBoundingBoxesFromCondKeypoints(bbox_margin=bbox_margin),
+            FilterInvalidBoundingBoxes(),
             TopDownCrop(
                 output_size=top_down_crop_size,
                 margin=top_down_crop_margin,
@@ -351,10 +350,69 @@ class ToTensor(Preprocessor):
 
 
 class ToBatch(Preprocessor):
-    """TODO"""
+    """Adds a batch dimension to the image tensor.
+
+    This preprocessor is used to convert a single image tensor into a batched format
+    by unsqueezing along the 0th dimension. This is typically required before passing
+    the image to models that expect batched input (i.e., shape `[B, C, H, W]`).
+    """
 
     def __call__(self, image: Image, context: Context) -> tuple[np.ndarray, Context]:
         return image.unsqueeze(0), context
+
+
+class FilterLowConfidencePoses(Preprocessor):
+    """
+    Filters out poses with low confidence scores.
+    By default, the confidence associated to the pose is the max confidence value.
+    """
+
+    def __init__(
+        self,
+        confidence_threshold: float = 0.05,
+        aggregate_func: Callable[[np.ndarray], float] = lambda arr: np.max(arr, axis=1),
+    ) -> None:
+        self.confidence_threshold = confidence_threshold
+        self.aggregate_func = aggregate_func
+
+    def __call__(
+        self, image: np.ndarray, context: Context
+    ) -> tuple[np.ndarray, Context]:
+        if "cond_kpts" not in context:
+            raise ValueError(f"Must include cond_kpts, found {context}")
+
+        keypoints = context["cond_kpts"]
+        mask = self.aggregate_func(keypoints[:, :, 2]) >= self.confidence_threshold
+        context["cond_kpts"] = keypoints[mask]
+
+        return image, context
+
+
+class FilterInvalidBoundingBoxes(Preprocessor):
+    """Filters out poses and bounding boxes that are invalid (e.g., area too small)."""
+
+    def __init__(self, min_area: int = 1) -> None:
+        self.min_area = min_area
+
+    def __call__(
+        self, image: np.ndarray, context: Context
+    ) -> tuple[np.ndarray, Context]:
+        bboxes = context.get("bboxes", [])
+        keypoints = context.get("cond_kpts", [])
+
+        valid_bboxes = []
+        valid_indices = []
+
+        for i, bbox in enumerate(bboxes):
+            _, _, w, h = bbox
+            if w * h >= self.min_area:
+                valid_bboxes.append(bbox)
+                valid_indices.append(i)
+
+        context["bboxes"] = valid_bboxes
+        context["cond_kpts"] = keypoints[valid_indices]
+
+        return image, context
 
 
 class TopDownCrop(Preprocessor):
