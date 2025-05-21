@@ -103,7 +103,7 @@ def superanimal_analyze_images(
             The device to use to run image analysis.
 
         pose_threshold: float, default=0.4
-            The cutoff score when plotting pose predictions. To note, this is called 
+            The cutoff score when plotting pose predictions. To note, this is called
             pcutoff in other parts of the code. Must be in (0, 1).
 
         bbox_threshold: float, default=0.1
@@ -200,9 +200,7 @@ def superanimal_analyze_images(
         skeleton = []
         bodyparts = config["metadata"]["bodyparts"]
         for bpt_0, bpt_1 in skeleton_bodyparts:
-            skeleton.append(
-                (bodyparts.index(bpt_0), bodyparts.index(bpt_1))
-            )
+            skeleton.append((bodyparts.index(bpt_0), bodyparts.index(bpt_1)))
 
     visualization.create_labeled_images(
         predictions=predictions,
@@ -317,7 +315,8 @@ def analyze_images(
             )
         elif isinstance(ctd_conditions, dict):
             cond_provider = get_condition_provider(
-                condition_cfg=ctd_conditions, config=config,
+                condition_cfg=ctd_conditions,
+                config=config,
             )
         else:
             cond_provider = ctd_conditions
@@ -331,7 +330,7 @@ def analyze_images(
         device=device,
         max_individuals=max_individuals,
         progress_bar=progress_bar,
-        cond_provider= cond_provider,
+        cond_provider=cond_provider,
     )
 
     if len(predictions) == 0:
@@ -479,7 +478,7 @@ def analyze_image_folder(
 
     image_suffixes = ".png", ".jpg", ".jpeg"
     if frame_type is not None:
-        image_suffixes = (frame_type, )
+        image_suffixes = (frame_type,)
 
     image_paths = parse_images_and_image_folders(images, image_suffixes)
     pose_inputs = image_paths

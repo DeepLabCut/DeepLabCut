@@ -114,7 +114,7 @@ def create_labeled_images(
             if color_by_individual:
                 kwargs["c"] = cmap(idx / total_idv)
             else:
-                c = np.linspace(0, 1, total_bodyparts)[:len(pose)][mask]
+                c = np.linspace(0, 1, total_bodyparts)[: len(pose)][mask]
                 kwargs["c"] = c
                 kwargs["cmap"] = cmap
 
@@ -139,7 +139,7 @@ def create_labeled_images(
                 kwargs["c"] = cmap(1)
             else:
                 c = np.linspace(0, 1, total_bodyparts)
-                kwargs["c"] = c[-len(unique_pred):][mask]
+                kwargs["c"] = c[-len(unique_pred) :][mask]
                 kwargs["cmap"] = cmap
 
             xy = xy[mask]
