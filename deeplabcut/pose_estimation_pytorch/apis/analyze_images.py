@@ -28,6 +28,7 @@ import deeplabcut.pose_estimation_pytorch.data as data
 import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
 from deeplabcut.core.engine import Engine
 from deeplabcut.modelzoo.utils import get_superanimal_colormaps
+from deeplabcut.pose_estimation_pytorch.apis.ctd import get_condition_provider
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_detector_inference_runner,
     build_predictions_dataframe,
@@ -37,6 +38,7 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_scorer_uid,
     parse_snapshot_index_for_analysis,
 )
+from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import update_config
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import resolve_device
@@ -189,6 +191,7 @@ def superanimal_analyze_images(
         max_individuals=max_individuals,
         device=device,
         progress_bar=progress_bar,
+        # TODO: when COND_TOP_DOWN SuperAnimal models will be released - create & pass a conditions provider
     )
 
     skeleton_bodyparts = config.get("skeleton", [])
@@ -233,6 +236,7 @@ def analyze_images(
     pcutoff: float | None = None,
     bbox_pcutoff: float | None = None,
     plot_skeleton: bool = True,
+    ctd_conditions: dict | CondFromModel | None = None,
 ) -> dict[str, dict]:
     """Runs analysis on images using a pose model.
 
@@ -264,6 +268,14 @@ def analyze_images(
             None or in (0, 1). If None, it is read from the project configuration file.
         plot_skeleton: If a skeleton is defined in the model configuration file, whether
             to plot the skeleton connecting the predicted bodyparts on the images.
+        ctd_conditions: Only for CTD models. If None, the configuration for the
+            condition provider will be loaded from the pytorch_config file (under the
+            "data": "conditions"). If the ctd_conditions is given as a dict, creates a
+            CondFromModel from the dict. Otherwise, a CondFromModel can be given
+            directly. Example configuration:
+                ```
+                ctd_conditions = {"shuffle": 17, "snapshot": "snapshot-best-190.pt"}
+                ```
 
     Returns:
         A dictionary mapping each image filename to the different types of predictions
@@ -295,6 +307,21 @@ def analyze_images(
             detector_snapshot_index, train_folder, Task.DETECT
         )[0]
 
+    # Load the BU model for the conditions provider
+    cond_provider = None
+    if pose_task == Task.COND_TOP_DOWN:
+        if ctd_conditions is None:
+            cond_provider = get_condition_provider(
+                condition_cfg=model_cfg["data"]["conditions"],
+                config=config,
+            )
+        elif isinstance(ctd_conditions, dict):
+            cond_provider = get_condition_provider(
+                condition_cfg=ctd_conditions, config=config,
+            )
+        else:
+            cond_provider = ctd_conditions
+
     predictions = analyze_image_folder(
         model_cfg=model_cfg,
         images=images,
@@ -304,6 +331,7 @@ def analyze_images(
         device=device,
         max_individuals=max_individuals,
         progress_bar=progress_bar,
+        cond_provider= cond_provider,
     )
 
     if len(predictions) == 0:
@@ -392,6 +420,7 @@ def analyze_image_folder(
     device: str | None = None,
     max_individuals: int | None = None,
     progress_bar: bool = True,
+    cond_provider: CondFromModel | None = None,
 ) -> dict[str, dict[str, np.ndarray | np.ndarray]]:
     """Runs pose inference on a folder of images and returns the predictions
 
@@ -409,6 +438,7 @@ def analyze_image_folder(
         max_individuals: The maximum number of individuals to detect in each image. Set
             to the number of individuals in the project if None.
         progress_bar: Whether to display a progress bar when running inference.
+        cond_provider: If using a CTD model - this parameter is needed to provide the conditions
 
     Returns:
         A dictionary mapping each image filename to the different types of predictions
@@ -433,11 +463,18 @@ def analyze_image_folder(
     if device is None:
         device = resolve_device(model_cfg)
 
+    if pose_task == Task.COND_TOP_DOWN and cond_provider is None:
+        raise ValueError(
+            "A conditions provider must be specified for image analysis when using cond-top-down models"
+            f" Please specify the `cond_provider` parameter."
+        )
+
     pose_runner = get_pose_inference_runner(
         model_config=model_cfg,
         snapshot_path=snapshot_path,
         device=device,
         max_individuals=max_individuals,
+        cond_provider=cond_provider,
     )
 
     image_suffixes = ".png", ".jpg", ".jpeg"
@@ -483,6 +520,7 @@ def plot_images_coco(
     detector_path: str | Path | None = None,
     device: str | None = None,
     max_individuals: int | None = None,
+    cond_provider: CondFromModel | None = None,
 ) -> list[dict]:
     """
     Runs pose inference on a folder of images from a COCO dataset, and plots all
@@ -498,6 +536,7 @@ def plot_images_coco(
             if a top-down model was used.
         device: The device on which to run image inference
         max_individuals: The maximum number of individuals to detect in an image.
+        cond_provider: If using a CTD model - this parameter is needed to provide the conditions
 
     Returns:
         A list of dictionaries containing predictions made on each image.
@@ -543,6 +582,7 @@ def plot_images_coco(
         device=device,
         max_individuals=max_individuals,
         progress_bar=True,
+        cond_provider=cond_provider,
     )
 
     os.makedirs(out_path, exist_ok=True)
