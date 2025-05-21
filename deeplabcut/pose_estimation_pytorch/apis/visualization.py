@@ -146,7 +146,7 @@ def create_labeled_images(
             ax.scatter(xy[:, 0], xy[:, 1], **kwargs)
 
         # plot bounding boxes
-        if "bboxes" in image_predictions:
+        if "bboxes" in image_predictions and "bbox_scores" in image_predictions:
             bboxes = image_predictions["bboxes"]
             bbox_scores = image_predictions["bbox_scores"]
             for idx, (bbox, score) in enumerate(zip(bboxes, bbox_scores)):
