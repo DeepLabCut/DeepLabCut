@@ -529,14 +529,16 @@ need your GPU drivers installed.</p>
 conda<span class="w"> </span>activate<span class="w"> </span>DEEPLABCUT
 conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span><span class="nv">pytables</span><span class="o">==</span><span class="m">3</span>.8.0
 
-<span class="c1"># install torch with your desired CUDA version (or CPU) - check their website </span>
-<span class="c1"># for the exact command</span>
-pip<span class="w"> </span>install<span class="w"> </span>torch<span class="w"> </span>torchvision<span class="w"> </span>
+<span class="c1"># install PyTorch with your desired CUDA version (or for CPU only) - check [their</span>
+<span class="o">](</span>https://pytorch.org/get-started/locally/<span class="o">)</span><span class="w"> </span>website:
+<span class="c1"># GPU version of pytorch for CUDA 11.3</span>
+conda<span class="w"> </span>install<span class="w"> </span>pytorch<span class="w"> </span><span class="nv">cudatoolkit</span><span class="o">=</span><span class="m">11</span>.3<span class="w"> </span>-c<span class="w"> </span>pytorch
+
 
 <span class="c1"># install the latest version of DeepLabCut</span>
 pip<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span>deeplabcut
 <span class="c1"># or if you want to use the GUI</span>
-pip<span class="w"> </span>install<span class="w"> </span>deeplabcut<span class="o">[</span>gui<span class="o">]</span>
+pip<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span>deeplabcut<span class="o">[</span>gui<span class="o">]</span>
 
 <span class="c1"># ONLY IF YOU HAVE A CUDA GPU - check that PyTorch can access your GPU; this</span>
 <span class="c1"># should print `True`</span>
