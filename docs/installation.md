@@ -19,7 +19,8 @@ conda create -n DEEPLABCUT python=3.10
 conda activate DEEPLABCUT
 conda install -c conda-forge pytables==3.8.0
 
-# install PyTorch with your desired CUDA version (or for CPU only) - check their website:
+# install PyTorch with your desired CUDA version (or for CPU only) - check [their
+](https://pytorch.org/get-started/locally/) website:
 # GPU version of pytorch for CUDA 11.3
 conda install pytorch cudatoolkit=11.3 -c pytorch
 
