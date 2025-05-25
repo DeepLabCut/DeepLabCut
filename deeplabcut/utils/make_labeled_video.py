@@ -430,7 +430,7 @@ def create_labeled_video(
     Frames2plot: list[int] | None = None,
     displayedbodyparts: list[str] | str = "all",
     displayedindividuals: list[str] | str = "all",
-    codec: str = "mp4v",
+    codec: str = "h264",
     outputframerate: int | None = None,
     destfolder: Path | str | None = None,
     draw_skeleton: bool = False,
@@ -517,9 +517,9 @@ def create_labeled_video(
         Individuals plotted in the video.
         By default, all individuals present in the config will be shown.
 
-    codec: str, optional, default="mp4v"
+    codec: str, optional, default="h264"
         Codec for labeled video. For available options, see
-        http://www.fourcc.org/codecs.php. Note that this depends on your ffmpeg
+        `ffmpeg -encoders`. Note that this depends on your ffmpeg
         installation.
 
     outputframerate: int or None, optional, default=None
@@ -1033,7 +1033,7 @@ def create_video(
     trailpoints=0,
     bbox=None,
     display_cropped=False,
-    codec="mp4v",
+    codec="h264",
     fps=None,
     output_path="",
     confidence_to_alpha=None,
@@ -1310,7 +1310,7 @@ def create_video_with_all_detections(
 
             pcutoff = cfg["pcutoff"]
             dotsize = cfg["dotsize"]
-            clip = vp(fname=video, sname=outputname, codec="mp4v")
+            clip = vp(fname=video, sname=outputname, codec="h264")
             ny, nx = clip.height(), clip.width()
 
             bboxes_pcutoff = (

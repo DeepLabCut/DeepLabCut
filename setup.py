@@ -59,6 +59,7 @@ setuptools.setup(
         "dlclibrary>=0.0.7",
         "einops",
         "filterpy>=1.4.4",
+        "ffmpegcv>=0.3.17",
         "ruamel.yaml>=0.15.0",
         "imgaug>=0.4.0",
         "imageio-ffmpeg",
