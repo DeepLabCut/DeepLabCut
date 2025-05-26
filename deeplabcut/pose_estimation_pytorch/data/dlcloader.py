@@ -491,9 +491,15 @@ class DLCLoader(Loader):
     def _add_bbox_annotations(coco_dict: dict) -> dict:
         for annotation in coco_dict.get("annotations", []):
             if "bbox" not in annotation:
-                image = [img for img in coco_dict.get("images") if img.get("id") == annotation.get("image_id")][0]
+                image = [
+                    img
+                    for img in coco_dict.get("images")
+                    if img.get("id") == annotation.get("image_id")
+                ][0]
                 bbox = bbox_from_keypoints(
-                    keypoints=np.array(annotation["keypoints"]),  # (..., num_keypoints, xy)
+                    keypoints=np.array(
+                        annotation["keypoints"]
+                    ),  # (..., num_keypoints, xy)
                     image_h=image.get("height"),
                     image_w=image.get("width"),
                     margin=20,
