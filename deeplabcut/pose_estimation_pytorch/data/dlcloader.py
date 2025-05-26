@@ -25,6 +25,7 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.snapshots import Snapshot
+from deeplabcut.pose_estimation_pytorch.data.utils import bbox_from_keypoints
 from deeplabcut.pose_estimation_pytorch.data.utils import read_image_shape_fast
 
 
@@ -481,7 +482,36 @@ class DLCLoader(Loader):
                         }
                     )
 
-        return {"annotations": anns, "categories": categories, "images": images}
+        coco_dict = {"annotations": anns, "categories": categories, "images": images}
+        coco_dict = DLCLoader._add_bbox_annotations(coco_dict)
+        coco_dict = DLCLoader._remove_nans(coco_dict)
+        return coco_dict
+
+    @staticmethod
+    def _add_bbox_annotations(coco_dict: dict) -> dict:
+        for annotation in coco_dict.get("annotations", []):
+            if "bbox" not in annotation:
+                image = [img for img in coco_dict.get("images") if img.get("id") == annotation.get("image_id")][0]
+                bbox = bbox_from_keypoints(
+                    keypoints=np.array(annotation["keypoints"]),  # (..., num_keypoints, xy)
+                    image_h=image.get("height"),
+                    image_w=image.get("width"),
+                    margin=20,
+                )
+                annotation["bbox"] = list(bbox)
+        return coco_dict
+
+    @staticmethod
+    def _remove_nans(coco_dict: dict) -> dict:
+        # Iterate through annotations and fix keypoints
+        for annotation in coco_dict.get("annotations", []):
+            if "keypoints" in annotation:
+                for keypoint in annotation["keypoints"]:
+                    if any(isinstance(v, float) and np.isnan(v) for v in keypoint[:2]):
+                        keypoint[0] = 0.0  # Replace x with 0
+                        keypoint[1] = 0.0  # Replace y with 0
+                        keypoint[2] = 0.0  # Ensure visibility is also 0
+        return coco_dict
 
     @property
     def _dfs(self) -> dict[str, pd.DataFrame]:
