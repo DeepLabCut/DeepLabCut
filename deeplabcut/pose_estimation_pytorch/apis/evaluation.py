@@ -114,6 +114,7 @@ def evaluate(
     comparison_bodyparts: str | list[str] | None = None,
     per_keypoint_evaluation: bool = False,
     pcutoff: float | list[float] = 0.6,
+    force_multi_animal: bool = False,
 ) -> tuple[dict[str, float], dict[str, dict[str, np.ndarray]]]:
     """
     Args:
@@ -134,6 +135,9 @@ def evaluate(
         pcutoff: Confidence threshold for RMSE computation. If a list is provided,
             there should be one value for each bodypart and one value for each unique
             bodypart (if there are any).
+        force_multi_animal: If False - the scenario (single- or multi-animal) is inferred from the loader.
+            If True - the multi-animal is used during evaluation, even if the loader contains only a single animal.
+
 
     Returns:
         A dict containing the evaluation results
@@ -201,7 +205,7 @@ def evaluate(
     results = metrics.compute_metrics(
         gt_pose,
         pred_pose,
-        single_animal=parameters.max_num_animals == 1,
+        single_animal=False if force_multi_animal else parameters.max_num_animals == 1,
         pcutoff=pcutoff,
         unique_bodypart_poses=pred_unique,
         unique_bodypart_gt=gt_unique,
