@@ -29,6 +29,7 @@ class COCOLoader(Loader):
     """
     Attributes:
         project_root: root directory path of the COCO project.
+        model_config_path: path to the pytorch_config.yaml file
         train_json_filename: the name of the json file containing the train annotations
         test_json_filename: the name of the json file containing the train annotations.
             None if there is no test set.
