@@ -552,6 +552,16 @@ only (Has to be a subset of the body parts).
 - `gputouse: int, optional` - Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not
 have a GPU, put None. See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
+- `pcutoff: float | list[float] | dict[str, float], optional`
+(Only applicable when using the PyTorch engine. For TensorFlow, set `pcutoff` in the `config.yaml` file.)
+Specifies the cutoff value(s) used to compute evaluation metrics.
+  - If `None` (default), the cutoff will be loaded from the project configuration.
+  - To apply a single cutoff value to all bodyparts, provide a `float`.
+  - To specify different cutoffs per bodypart, provide either:
+    - A `list[float]`: one value per bodypart, with an additional value for each unique bodypart if applicable.
+    - A `dict[str, float]`: where keys are bodypart names and values are the corresponding cutoff values.
+If a bodypart is not included in the provided dictionary, a default `pcutoff` of `0.6` will be used for that bodypart.
+
 The plots can be customized by editing the **config.yaml** file (i.e., the colormap, scale, marker size (dotsize), and
 transparency of labels (alphavalue) can be modified). By default each body part is plotted in a different color
 (governed by the colormap) and the plot labels indicate their source. Note that by default the human labels are
