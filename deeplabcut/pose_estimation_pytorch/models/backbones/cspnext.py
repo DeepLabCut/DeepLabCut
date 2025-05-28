@@ -36,6 +36,7 @@ from deeplabcut.pose_estimation_pytorch.models.modules.csp import (
 @dataclass(frozen=True)
 class CSPNeXtLayerConfig:
     """Configuration for a CSPNeXt layer"""
+
     in_channels: int
     out_channels: int
     num_blocks: int
@@ -79,7 +80,7 @@ class CSPNeXt(HuggingFaceWeightsMixin, BaseBackbone):
             CSPNeXtLayerConfig(256, 512, 6, True, False),
             CSPNeXtLayerConfig(512, 768, 3, True, False),
             CSPNeXtLayerConfig(768, 1024, 3, False, True),
-        ]
+        ],
     }
 
     def __init__(
@@ -136,7 +137,7 @@ class CSPNeXt(HuggingFaceWeightsMixin, BaseBackbone):
                 stride=1,
                 norm_layer=norm_layer,
                 activation_fn=activation_fn,
-            )
+            ),
         )
         self.layers = ["stem"]
 
@@ -177,8 +178,8 @@ class CSPNeXt(HuggingFaceWeightsMixin, BaseBackbone):
                 activation_fn=activation_fn,
             )
             stage.append(csp_layer)
-            self.add_module(f'stage{i + 1}', nn.Sequential(*stage))
-            self.layers.append(f'stage{i + 1}')
+            self.add_module(f"stage{i + 1}", nn.Sequential(*stage))
+            self.layers.append(f"stage{i + 1}")
 
         self.single_output = isinstance(out_indices, int)
         if self.single_output:
