@@ -21,6 +21,7 @@ import pandas as pd
 
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.engine import Engine
+from deeplabcut.pose_estimation_pytorch.apis.ctd import get_condition_provider
 from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import (
@@ -738,14 +739,19 @@ def get_pose_inference_runner(
         margin = crop_cfg.get("margin", 0)
 
         if pose_task == Task.COND_TOP_DOWN:
-            if cond_provider is not None:
-                kwargs["bu_runner"] = get_pose_inference_runner(
-                    model_config=read_config_as_dict(cond_provider.config_path),
-                    snapshot_path=cond_provider.snapshot_path,
-                    batch_size=1,
-                    device=device,
-                    max_individuals=max_individuals,
+            if cond_provider is None:
+                cond_provider = get_condition_provider(
+                    condition_cfg=model_config["data"]["conditions"],
+                    config=Path(model_config["metadata"]["project_path"])/"config.yaml"
                 )
+
+            kwargs["bu_runner"] = get_pose_inference_runner(
+                model_config=read_config_as_dict(cond_provider.config_path),
+                snapshot_path=cond_provider.snapshot_path,
+                batch_size=1,
+                device=device,
+                max_individuals=max_individuals,
+            )
 
             kwargs["ctd_tracking"] = ctd_tracking
 
