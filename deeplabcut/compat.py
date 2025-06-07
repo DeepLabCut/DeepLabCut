@@ -741,7 +741,6 @@ def analyze_videos(
         Change batch size for inference; if given overwrites value in ``pose_cfg.yaml``.
 
     cropping: list or None, optional, default=None
-        Currently not supported by the PyTorch engine.
         List of cropping coordinates as [x1, x2, y1, y2].
         Note that the same cropping parameters will then be used for all videos.
         If different video crops are desired, run ``analyze_videos`` on individual
