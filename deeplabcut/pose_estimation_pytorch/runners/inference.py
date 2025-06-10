@@ -391,7 +391,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
             ]
         """
         if self.tracking:
-            return self._ctd_tracking_inference(images, shelf_writer)
+            return self._ctd_tracking_inference(images, shelf_writer) # crashes here
 
         results = []
         for data in images:
@@ -424,7 +424,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
                 }
             ]
         """
-        outputs = self.model(inputs.to(self.device), **kwargs)
+        outputs = self.model(inputs.to(self.device), **kwargs) # crashes here
         raw_predictions = self.model.get_predictions(outputs)
         predictions = [
             {
@@ -488,7 +488,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
         for data in images:
             inputs, context = self._prepare_ctd_inputs(data)
             model_kwargs = context.pop("model_kwargs", {})
-            predictions = self.predict(inputs, **model_kwargs)
+            predictions = self.predict(inputs, **model_kwargs) # chashes here... indeed, we don't seem to pass the cond_kpts
             if self.postprocessor is not None:
                 # Pop the "cond_kpts" from the context so there's no re-scoring
                 # This is required when tracking with CTD, otherwise scores go to 0
