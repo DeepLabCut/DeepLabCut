@@ -58,7 +58,6 @@ setuptools.setup(
         "albumentations<=1.4.3",
         "dlclibrary>=0.0.7",
         "einops",
-        "dlclibrary>=0.0.6",
         "filterpy>=1.4.4",
         "ffmpegcv>=0.3.17",
         "ruamel.yaml>=0.15.0",
