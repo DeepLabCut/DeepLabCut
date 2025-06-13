@@ -659,7 +659,7 @@ track individuals directly **during video analysis**. If you choose to train any
 with a name that starts with `ctd_`, you'll be able to call `deeplabcut.analyze_videos`
 with `ctd_tracking=True`. To learn more about tracking with CTD, see the [
 `COLAB_BUCTD_and_CTD_tracking`](
-https://github.com/DeepLabCut/DeepLabCut/main/examples/COLAB/COLAB_BUCTD_and_CTD_tracking.ipynb)
+https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/COLAB/COLAB_BUCTD_and_CTD_tracking.ipynb)
 COLAB notebook.
 ````
 
