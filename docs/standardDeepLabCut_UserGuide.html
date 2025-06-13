@@ -2109,8 +2109,7 @@ be passed.</p>
 <dt><strong>batchsize: int or None, optional, default=None</strong></dt><dd><p>Currently not supported by the PyTorch engine.
 Change batch size for inference; if given overwrites value in <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code>.</p>
 </dd>
-<dt><strong>cropping: list or None, optional, default=None</strong></dt><dd><p>Currently not supported by the PyTorch engine.
-List of cropping coordinates as [x1, x2, y1, y2].
+<dt><strong>cropping: list or None, optional, default=None</strong></dt><dd><p>List of cropping coordinates as [x1, x2, y1, y2].
 Note that the same cropping parameters will then be used for all videos.
 If different video crops are desired, run <code class="docutils literal notranslate"><span class="pre">analyze_videos</span></code> on individual
 videos with the corresponding cropping coordinates.</p>
