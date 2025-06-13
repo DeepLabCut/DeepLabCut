@@ -1859,6 +1859,33 @@ Ideally, DeepLabCut labeled unseen (test images) according to the user’s requi
 and test errors are comparable (good generalization). What (numerically) comprises an acceptable MAE depends on
 many factors (including the size of the tracked body parts, the labeling variability, etc.). Note that the test error can
 also be larger than the training error due to human variability (in labeling, see Figure 2 in Mathis et al, Nature Neuroscience 2018).</p>
+<p><strong>Optional parameters:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Shuffles:</span> <span class="pre">list,</span> <span class="pre">optional</span></code> - List of integers specifying the shuffle indices of the training dataset.
+The default is [1]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plotting:</span> <span class="pre">bool</span> <span class="pre">|</span> <span class="pre">str,</span> <span class="pre">optional</span></code> - Plots the predictions on the train and test images. The default is <code class="docutils literal notranslate"><span class="pre">False</span></code>;
+if provided it must be either <code class="docutils literal notranslate"><span class="pre">True</span></code>, <code class="docutils literal notranslate"><span class="pre">False</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;bodypart&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;individual&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">show_errors:</span> <span class="pre">bool,</span> <span class="pre">optional</span></code> - Display train and test errors. The default is <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">comparisonbodyparts:</span> <span class="pre">list</span> <span class="pre">of</span> <span class="pre">bodyparts,</span> <span class="pre">Default</span> <span class="pre">is</span> <span class="pre">all</span></code> - The average error will be computed for those body parts
+only (Has to be a subset of the body parts).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gputouse:</span> <span class="pre">int,</span> <span class="pre">optional</span></code> - Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not
+have a GPU, put None. See: <a class="reference external" href="https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries">https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries</a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pcutoff:</span> <span class="pre">float</span> <span class="pre">|</span> <span class="pre">list[float]</span> <span class="pre">|</span> <span class="pre">dict[str,</span> <span class="pre">float],</span> <span class="pre">optional</span></code>
+(Only applicable when using the PyTorch engine. For TensorFlow, set <code class="docutils literal notranslate"><span class="pre">pcutoff</span></code> in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> file.)
+Specifies the cutoff value(s) used to compute evaluation metrics.</p>
+<ul>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">None</span></code> (default), the cutoff will be loaded from the project configuration.</p></li>
+<li><p>To apply a single cutoff value to all bodyparts, provide a <code class="docutils literal notranslate"><span class="pre">float</span></code>.</p></li>
+<li><p>To specify different cutoffs per bodypart, provide either:</p>
+<ul>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">list[float]</span></code>: one value per bodypart, with an additional value for each unique bodypart if applicable.</p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">dict[str,</span> <span class="pre">float]</span></code>: where keys are bodypart names and values are the corresponding cutoff values.
+If a bodypart is not included in the provided dictionary, a default <code class="docutils literal notranslate"><span class="pre">pcutoff</span></code> of <code class="docutils literal notranslate"><span class="pre">0.6</span></code> will be used for that bodypart.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 <p>The plots can be customized by editing the <strong>config.yaml</strong> file (i.e., the colormap, scale, marker size (dotsize), and
 transparency of labels (alpha-value) can be modified). By default each body part is plotted in a different color
 (governed by the colormap) and the plot labels indicate their source. Note that by default the human labels are
