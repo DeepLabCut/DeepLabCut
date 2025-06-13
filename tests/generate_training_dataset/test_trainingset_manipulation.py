@@ -36,5 +36,5 @@ def test_compute_padding(train_fraction: int, n_train: int, n_test: int) -> None
     )
     print()
     print(train_fraction, n_train, n_test, train_pad, test_pad)
-    frac = round((n_train + train_pad)/(n_train + n_test + train_pad + test_pad), 2)
+    frac = round((n_train + train_pad) / (n_train + n_test + train_pad + test_pad), 2)
     assert train_frac == frac

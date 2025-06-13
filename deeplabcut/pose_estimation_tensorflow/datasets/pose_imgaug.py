@@ -407,7 +407,8 @@ class ImgaugPoseDataset(BasePoseDataset):
             ) = self.get_batch()
 
             pipeline = self.build_augmentation_pipeline(
-                height=target_size[0], width=target_size[1],
+                height=target_size[0],
+                width=target_size[1],
                 apply_prob=cfg.get("apply_prob", 0.5),
             )
 

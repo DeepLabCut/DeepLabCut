@@ -21,6 +21,7 @@ from deeplabcut.utils import auxiliaryfunctions
 
 class SelectedShuffleDisplay(QtWidgets.QWidget):
     """A widget displaying information about the selected shuffle"""
+
     pose_cfg_signal = QtCore.Signal(dict)
 
     def __init__(self, root, row_margin: int = 25):

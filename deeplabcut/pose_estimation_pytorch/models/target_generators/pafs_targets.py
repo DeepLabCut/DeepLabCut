@@ -72,7 +72,7 @@ class PartAffinityFieldGenerator(BaseGenerator):
                     j2_x, j2_y = kpts_animal[bp2]
                     vec_x = j2_x - j1_x
                     vec_y = j2_y - j1_y
-                    dist = sqrt(vec_x ** 2 + vec_y ** 2)
+                    dist = sqrt(vec_x**2 + vec_y**2)
                     if dist > 0:
                         vec_x_norm = vec_x / dist
                         vec_y_norm = vec_y / dist
@@ -100,10 +100,4 @@ class PartAffinityFieldGenerator(BaseGenerator):
                         paf_map[b, mask, l * 2 + 1] = vec_y_norm * temp
 
         paf_map = paf_map.transpose((0, 3, 1, 2))
-        return {
-            "paf": {
-                "target": torch.tensor(
-                    paf_map, device=outputs["paf"].device
-                )
-            }
-        }
+        return {"paf": {"target": torch.tensor(paf_map, device=outputs["paf"].device)}}

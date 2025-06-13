@@ -200,10 +200,12 @@ def keypoint_matching(
 
     # get the SuperAnimal detector and pose model snapshot paths
     pose_model_path = modelzoo.get_super_animal_snapshot_path(
-        dataset=superanimal_name, model_name=model_name,
+        dataset=superanimal_name,
+        model_name=model_name,
     )
     detector_path = modelzoo.get_super_animal_snapshot_path(
-        dataset=superanimal_name, model_name=detector_name,
+        dataset=superanimal_name,
+        model_name=detector_name,
     )
 
     config = update_config(config, max_individuals, device)
@@ -413,7 +415,7 @@ def dlc3predictions_2_annotation_from_video(
     if not superanimal_name.startswith("superanimal_"):
         raise ValueError("not supporting non superanimal model video adaptation yet")
 
-    category_name = superanimal_name[len("superanimal_"):]
+    category_name = superanimal_name[len("superanimal_") :]
     categories = [
         {
             "name": category_name,

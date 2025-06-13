@@ -55,6 +55,7 @@ class DynamicCropper:
         >>>     predictions.append(pose)
         >>>
     """
+
     threshold: float
     margin: int
     _crop: tuple[int, int, int, int] | None = field(default=None, repr=False)
