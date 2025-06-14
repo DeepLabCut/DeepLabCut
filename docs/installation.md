@@ -1,21 +1,23 @@
 (how-to-install)=
 # How To Install DeepLabCut
 
-- DeepLabCut can be run on Windows, Linux, or MacOS as long as you have Python 3.10 installed (see also [technical considerations](tech-considerations-during-install) and if you run into issues also check out the [Installation Tips](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html) page).
-- Please note, there are several modes of installation, and the user should decide to either use a **system-wide** (see [note below](system-wide-considerations-during-install)), **conda environment** based installation (**recommended**), or the supplied [**Docker container**](docker-containers) (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but **Anaconda is the easiest route.**
-- We recommend for most users to use our supplied CONDA environment.
-- Please note, you will get the best performance with using a GPU! Please see the section on [GPU support](https://deeplabcut.github.io/DeepLabCut/docs/installation.html#gpu-support) to install your GPU driver and CUDA.
+- **DeepLabCut can be run on Windows, Linux, or MacOS as long as you have Python 3.10 installed**
+  - (see also [technical considerations](tech-considerations-during-install) and if you run into issues also check out the [Installation Tips](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html) page).
+- 🚧 Please note, there are several modes of installation:
+  -  please decide to either use a [**conda environment**](https://deeplabcut.github.io/DeepLabCut/docs/installation.html#conda-the-installation-process-is-as-easy-as-this-figure) based installation (**recommended**),
+  -  or the supplied [**Docker container**](docker-containers) (recommended for Ubuntu advanced users).
+- 🚀 Please note, you will get the best performance with using a **GPU**!
+  - Please see the section on [GPU support](https://deeplabcut.github.io/DeepLabCut/docs/installation.html#gpu-support) to install your GPU driver and CUDA.
 
-````{admonition} Familiar with python packages and conda? Quick install here.
-:class: dropdown
+```{Hint} Familiar with python packages and conda? Quick Install Guide:
 
-This assumes you have `conda`/`mamba` installed and installs DeepLabCut in a fresh
+This assumes you have `conda`/`mamba` installed and this will install DeepLabCut in a fresh
 environment. If you have an NVIDIA GPU, install PyTorch according to [their instructions
 ](https://pytorch.org/get-started/locally/) (with your desired CUDA version) - you just
 need your GPU drivers installed.
 
 ```bash
-conda create -n DEEPLABCUT python=3.10
+conda create -n DEEPLABCUT python=3.12
 conda activate DEEPLABCUT
 conda install -c conda-forge pytables==3.8.0
 
@@ -35,11 +37,11 @@ pip install --pre deeplabcut[gui]
 python -c "import torch; print(torch.cuda.is_available())"
 ```
 
-Why do we install [pytables](https://www.pytables.org/usersguide/installation.html) with
+- Why do we install [pytables](https://www.pytables.org/usersguide/installation.html) with
 `conda` and not `pip`? Because it requires some libraries that not all users will have
 installed, and conda will ensure that they are installed as well.
 
-If you're familiar with the command line and want TensorFlow support, look [below](
+- If you're familiar with the command line and want TensorFlow support, look [below](
 deeplabcut-with-tf-install) for a fresh installation that has worked for us (on Linux)
 and makes it possible to use the GPU with both PyTorch and TensorFlow.
 ````
@@ -48,7 +50,7 @@ and makes it possible to use the GPU with both PyTorch and TensorFlow.
 
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/71e5d954-75a0-4534-9fa6-7ecc4bf1b76d/installDLC.png?format=1500w" width="250" title="DLC" alt="DLC" align="right" vspace = "50">
 
-#### 🚨 Before you start, do you have a GPU?
+#### 🚨 Before you start with our conda file, do you have a GPU?
 ````{admonition} 🚨 Click here for more information!
 :class: dropdown
 - We recommend having a GPU if possible!
