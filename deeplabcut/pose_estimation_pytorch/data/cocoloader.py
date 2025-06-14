@@ -243,7 +243,6 @@ class COCOLoader(Loader):
         Returns:
             the train or test data
         """
-        # todo: add validation
         if mode == "train":
             data = self.train_json
         elif mode == "test":
