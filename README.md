@@ -59,14 +59,27 @@
 
 Please click the link above for all the information you need to get started! Please note that currently we support only Python 3.10+ (see conda files for guidance).
 
+## Quick start
+
 Developers Stable Release: very quick start (Python 3.10+ required) to install 
 DeepLabCut with the PyTorch engine
 
-- [Install PyTorch](https://pytorch.org/get-started/locally/) (**select the desired
-CUDA version if you want to use a GPU**): `pip install torch torchvision`
-- Then, [install `pytables`](https://www.pytables.org/usersguide/installation.html): `conda install -c conda-forge pytables==3.8.0`
-- Finally, install `DeepLabCut` (with all functions + the GUI): 
-`pip install --pre  "deeplabcut[gui]"` or `pip install  --pre "deeplabcut"` (headless 
+- [1] [Install PyTorch](https://pytorch.org/get-started/locally/) (**install and then select the desired
+CUDA version if you want to use a GPU**): `pip install torch torchvision`.
+Or as an example for GPU support (please check pytorch docs to get the perfect version for your CUDA):
+```python
+# GPU version of pytorch for CUDA 11.3
+conda install pytorch cudatoolkit=11.3 -c pytorch
+```
+- [2] Then, [install `pytables`](https://www.pytables.org/usersguide/installation.html):
+```python
+conda install -c conda-forge pytables==3.8.0`
+```
+- [3] Finally, install `DeepLabCut` (with all functions + the GUI):
+```python
+pip install --pre  "deeplabcut[gui]"`
+```
+or `pip install  --pre "deeplabcut"` (headless 
 version with PyTorch)!
 
 To use the TensorFlow (TF) engine (requires Python 3.10; TF up to v2.10 supported on Windows,
