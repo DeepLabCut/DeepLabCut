@@ -326,7 +326,12 @@ def _to_coco_ground_truth(
 
     keypoints = [f"bpt{i}" for i in range(num_joints)]
     category = dict(id=1, name="animal", supercategory="animal", keypoints=keypoints)
-    return {"annotations": anns, "categories": [category], "images": images}
+    return {
+        "info": {"description": "Generated COCO ground truth dataset"},  # Add this
+        "annotations": anns,
+        "categories": [category],
+        "images": images,
+    }
 
 
 def _to_coco_predictions(
