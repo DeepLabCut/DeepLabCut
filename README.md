@@ -59,14 +59,27 @@
 
 Please click the link above for all the information you need to get started! Please note that currently we support only Python 3.10+ (see conda files for guidance).
 
+## Quick start
+
 Developers Stable Release: very quick start (Python 3.10+ required) to install 
 DeepLabCut with the PyTorch engine
 
-- [Install PyTorch](https://pytorch.org/get-started/locally/) (**select the desired
-CUDA version if you want to use a GPU**): `pip install torch torchvision`
-- Then, [install `pytables`](https://www.pytables.org/usersguide/installation.html): `conda install -c conda-forge pytables==3.8.0`
-- Finally, install `DeepLabCut` (with all functions + the GUI): 
-`pip install --pre  "deeplabcut[gui]"` or `pip install  --pre "deeplabcut"` (headless 
+- [1] [Install PyTorch](https://pytorch.org/get-started/locally/) (**install and then select the desired
+CUDA version if you want to use a GPU**): `pip install torch torchvision`.
+Or as an example for GPU support (please check pytorch docs to get the perfect version for your CUDA):
+```python
+# GPU version of pytorch for CUDA 11.3
+conda install pytorch cudatoolkit=11.3 -c pytorch
+```
+- [2] Then, [install `pytables`](https://www.pytables.org/usersguide/installation.html):
+```python
+conda install -c conda-forge pytables==3.8.0`
+```
+- [3] Finally, install `DeepLabCut` (with all functions + the GUI):
+```python
+pip install --pre  "deeplabcut[gui]"`
+```
+or `pip install  --pre "deeplabcut"` (headless 
 version with PyTorch)!
 
 To use the TensorFlow (TF) engine (requires Python 3.10; TF up to v2.10 supported on Windows,
@@ -124,12 +137,13 @@ This is an actively developed package and we welcome community development and i
 
 | 🚉 Platform                                                 | 🎯 Goal                                                                      | ⏱️ Estimated Response Time | 📢 Support Squad                        |
 |------------------------------------------------------------|-----------------------------------------------------------------------------|---------------------------|----------------------------------------|
-| [![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftag%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tag/deeplabcut) <br /> 🐭Tag: DeepLabCut | To ask help and support questions👋                                          | Promptly🔥                 | DLC Team and The DLC Community |
-| GitHub DeepLabCut/[Issues](https://github.com/DeepLabCut/DeepLabCut/issues)                                  | To report bugs and code issues🐛   (we encourage you to search issues first) | 2-3 days                  | DLC Team                               |
-|[![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)                               | To discuss with other users,  share ideas and collaborate💡                  | 2 days                    | The DLC Community                      |
-| GitHub DeepLabCut/[Contributing](https://github.com/DeepLabCut/DeepLabCut/blob/master/CONTRIBUTING.md)                          | To contribute your expertise and experience🙏💯                               | Promptly🔥                 | DLC Team                               |
-| 🚧 GitHub DeepLabCut/[Roadmap](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/roadmap.md)                             | To learn more about our journey✈️                                            | N/A                       | N/A                                    |
-| [![Twitter Follow](https://img.shields.io/twitter/follow/DeepLabCut.svg?label=DeepLabCut&style=social)](https://twitter.com/DeepLabCut)                                                   | To keep up with our latest news and updates 📢                               | Daily                     | DLC Team                               |
+| GitHub DeepLabCut/[Issues](https://github.com/DeepLabCut/DeepLabCut/issues)                                  | To report bugs and code issues🐛   (we encourage you to search issues first) | 2-5 days                  | DLC Core Dev Team                               |
+| GitHub DeepLabCut/[Contributing](https://github.com/DeepLabCut/DeepLabCut/blob/master/CONTRIBUTING.md)                          | To contribute your expertise and experience🙏💯                               | 2-5 days                | DLC Core Dev Team                               |
+| 🚧 GitHub DeepLabCut/[Roadmap](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/roadmap.md)                             | To learn more about our journey✈️                                            | N/A                       | N/A                                    
+| [![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftag%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tag/deeplabcut) <br /> 🐭Tag: DeepLabCut | To ask help and support questions 👋                                          | Promptly🔥                 | The DLC Community |
+|[![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)                               | To discuss with other users,  share ideas and collaborate💡                  | 2-5 days                    | The DLC Community                      |
+| [BluSky🦋](https://bsky.app/profile/deeplabcut.bsky.social)                                                  | To keep up with our latest news and updates 📢                               | 2-5 days                     | DLC Team                               |
+| [![Twitter Follow](https://img.shields.io/twitter/follow/DeepLabCut.svg?label=DeepLabCut&style=social)](https://twitter.com/DeepLabCut)                                                   | To keep up with our latest news and updates 📢                               | 2-5 days                     | DLC Team                               |
 | The DeepLabCut [AI Residency Program](https://www.deeplabcutairesidency.org/)                        | To come and work with us next summer👏                                       | Annually                  | DLC Team                               |
 
 
