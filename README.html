@@ -472,7 +472,10 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Welcome! 👋</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#installation-how-to-install-deeplabcut">Installation: how to install DeepLabCut</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#installation-how-to-install-deeplabcut">Installation: how to install DeepLabCut</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-start">Quick start</a></li>
+</ul>
+</li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation-the-deeplabcut-process">Documentation: The DeepLabCut Process</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#demo-the-code"><span class="xref myst">DEMO the code</span></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#why-use-deeplabcut">Why use DeepLabCut?</a><ul class="visible nav section-nav flex-column">
@@ -541,21 +544,39 @@ document.write(`
 <section class="tex2jax_ignore mathjax_ignore" id="installation-how-to-install-deeplabcut">
 <h1><a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/installation.html">Installation: how to install DeepLabCut</a><a class="headerlink" href="#installation-how-to-install-deeplabcut" title="Link to this heading">#</a></h1>
 <p>Please click the link above for all the information you need to get started! Please note that currently we support only Python 3.10+ (see conda files for guidance).</p>
+<section id="quick-start">
+<h2>Quick start<a class="headerlink" href="#quick-start" title="Link to this heading">#</a></h2>
 <p>Developers Stable Release: very quick start (Python 3.10+ required) to install
 DeepLabCut with the PyTorch engine</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://pytorch.org/get-started/locally/">Install PyTorch</a> (<strong>select the desired
-CUDA version if you want to use a GPU</strong>): <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">torch</span> <span class="pre">torchvision</span></code></p></li>
-<li><p>Then, <a class="reference external" href="https://www.pytables.org/usersguide/installation.html">install <code class="docutils literal notranslate"><span class="pre">pytables</span></code></a>: <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">pytables==3.8.0</span></code></p></li>
-<li><p>Finally, install <code class="docutils literal notranslate"><span class="pre">DeepLabCut</span></code> (with all functions + the GUI):
-<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--pre</span>&#160; <span class="pre">&quot;deeplabcut[gui]&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span>&#160; <span class="pre">--pre</span> <span class="pre">&quot;deeplabcut&quot;</span></code> (headless
-version with PyTorch)!</p></li>
+<li><p>[1] <a class="reference external" href="https://pytorch.org/get-started/locally/">Install PyTorch</a> (<strong>install and then select the desired
+CUDA version if you want to use a GPU</strong>): <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">torch</span> <span class="pre">torchvision</span></code>.
+Or as an example for GPU support (please check pytorch docs to get the perfect version for your CUDA):</p></li>
 </ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># GPU version of pytorch for CUDA 11.3</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="n">pytorch</span> <span class="n">cudatoolkit</span><span class="o">=</span><span class="mf">11.3</span> <span class="o">-</span><span class="n">c</span> <span class="n">pytorch</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>[2] Then, <a class="reference external" href="https://www.pytables.org/usersguide/installation.html">install <code class="docutils literal notranslate"><span class="pre">pytables</span></code></a>:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">pytables</span><span class="o">==</span><span class="mf">3.8.0</span><span class="err">`</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>[3] Finally, install <code class="docutils literal notranslate"><span class="pre">DeepLabCut</span></code> (with all functions + the GUI):</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">pre</span>  <span class="s2">&quot;deeplabcut[gui]&quot;</span><span class="err">`</span>
+</pre></div>
+</div>
+<p>or <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span>&#160; <span class="pre">--pre</span> <span class="pre">&quot;deeplabcut&quot;</span></code> (headless
+version with PyTorch)!</p>
 <p>To use the TensorFlow (TF) engine (requires Python 3.10; TF up to v2.10 supported on Windows,
 up to v2.12 on other platforms): you’ll need to run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">&quot;deeplabcut[gui,tf]&quot;</span></code>
 (which includes all functions plus GUIs) or <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">&quot;deeplabcut[tf]&quot;</span></code> (headless
 version with PyTorch and TensorFlow). We aim to depreciate the TF part in 2027.</p>
 <p>We recommend using our conda file, see <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/main/conda-environments/README.md">here</a> or the <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/main/docker"><code class="docutils literal notranslate"><span class="pre">deeplabcut-docker</span></code> package</a>.</p>
+</section>
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="documentation-the-deeplabcut-process">
 <h1><a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/README.html">Documentation: The DeepLabCut Process</a><a class="headerlink" href="#documentation-the-deeplabcut-process" title="Link to this heading">#</a></h1>
@@ -604,37 +625,42 @@ DeepLabCut is an open-source tool and has benefited from suggestions and edits b
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://forum.image.sc/tag/deeplabcut"><img alt="Image.sc forum" src="https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftag%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC" /></a> <br /> 🐭Tag: DeepLabCut</p></td>
-<td><p>To ask help and support questions👋</p></td>
-<td><p>Promptly🔥</p></td>
-<td><p>DLC Team and The DLC Community</p></td>
-</tr>
-<tr class="row-odd"><td><p>GitHub DeepLabCut/<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/issues">Issues</a></p></td>
+<tr class="row-even"><td><p>GitHub DeepLabCut/<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/issues">Issues</a></p></td>
 <td><p>To report bugs and code issues🐛   (we encourage you to search issues first)</p></td>
-<td><p>2-3 days</p></td>
-<td><p>DLC Team</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://gitter.im/DeepLabCut/community?utm_source=badge&amp;amp;utm_medium=badge&amp;amp;utm_campaign=pr-badge"><img alt="Gitter" src="https://badges.gitter.im/DeepLabCut/community.svg" /></a></p></td>
-<td><p>To discuss with other users,  share ideas and collaborate💡</p></td>
-<td><p>2 days</p></td>
-<td><p>The DLC Community</p></td>
+<td><p>2-5 days</p></td>
+<td><p>DLC Core Dev Team</p></td>
 </tr>
 <tr class="row-odd"><td><p>GitHub DeepLabCut/<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/CONTRIBUTING.md">Contributing</a></p></td>
 <td><p>To contribute your expertise and experience🙏💯</p></td>
-<td><p>Promptly🔥</p></td>
-<td><p>DLC Team</p></td>
+<td><p>2-5 days</p></td>
+<td><p>DLC Core Dev Team</p></td>
 </tr>
 <tr class="row-even"><td><p>🚧 GitHub DeepLabCut/<a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/roadmap.md">Roadmap</a></p></td>
 <td><p>To learn more about our journey✈️</p></td>
 <td><p>N/A</p></td>
 <td><p>N/A</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://twitter.com/DeepLabCut"><img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/DeepLabCut.svg?label=DeepLabCut&amp;style=social" /></a></p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://forum.image.sc/tag/deeplabcut"><img alt="Image.sc forum" src="https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftag%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC" /></a> <br /> 🐭Tag: DeepLabCut</p></td>
+<td><p>To ask help and support questions 👋</p></td>
+<td><p>Promptly🔥</p></td>
+<td><p>The DLC Community</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://gitter.im/DeepLabCut/community?utm_source=badge&amp;amp;utm_medium=badge&amp;amp;utm_campaign=pr-badge"><img alt="Gitter" src="https://badges.gitter.im/DeepLabCut/community.svg" /></a></p></td>
+<td><p>To discuss with other users,  share ideas and collaborate💡</p></td>
+<td><p>2-5 days</p></td>
+<td><p>The DLC Community</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://bsky.app/profile/deeplabcut.bsky.social">BluSky🦋</a></p></td>
 <td><p>To keep up with our latest news and updates 📢</p></td>
-<td><p>Daily</p></td>
+<td><p>2-5 days</p></td>
 <td><p>DLC Team</p></td>
 </tr>
-<tr class="row-even"><td><p>The DeepLabCut <a class="reference external" href="https://www.deeplabcutairesidency.org/">AI Residency Program</a></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://twitter.com/DeepLabCut"><img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/DeepLabCut.svg?label=DeepLabCut&amp;style=social" /></a></p></td>
+<td><p>To keep up with our latest news and updates 📢</p></td>
+<td><p>2-5 days</p></td>
+<td><p>DLC Team</p></td>
+</tr>
+<tr class="row-odd"><td><p>The DeepLabCut <a class="reference external" href="https://www.deeplabcutairesidency.org/">AI Residency Program</a></p></td>
 <td><p>To come and work with us next summer👏</p></td>
 <td><p>Annually</p></td>
 <td><p>DLC Team</p></td>
@@ -796,7 +822,10 @@ importing a project into the new data format for DLC 2.0</p></li>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Welcome! 👋</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#installation-how-to-install-deeplabcut">Installation: how to install DeepLabCut</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#installation-how-to-install-deeplabcut">Installation: how to install DeepLabCut</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-start">Quick start</a></li>
+</ul>
+</li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation-the-deeplabcut-process">Documentation: The DeepLabCut Process</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#demo-the-code"><span class="xref myst">DEMO the code</span></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#why-use-deeplabcut">Why use DeepLabCut?</a><ul class="visible nav section-nav flex-column">

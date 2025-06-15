@@ -468,20 +468,16 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-the-installation-process-is-as-easy-as-this-figure">CONDA: The installation process is as easy as this figure! –&gt;</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#before-you-start-do-you-have-a-gpu">🚨 Before you start, do you have a GPU?</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-install-python-via-anaconda">Step 1: Install Python via Anaconda</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#install-anaconda-or-use-miniconda3-for-macos-users-see-below">Install anaconda, or use miniconda3 for MacOS users (see below)</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#miniconda-for-mac">💡 miniconda for Mac</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-install-python-via-anaconda">Step 1: Install Python via Anaconda</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-anaconda-or-use-miniconda3-for-macos-users-see-below">Install anaconda, or use miniconda3 for MacOS users (see below)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#miniconda-for-mac">💡 miniconda for Mac</a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-build-an-env-using-our-conda-file">Step 2: Build an Env using our Conda file!</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#notice-pytorch-and-tensorflow-support-within-deeplabcut">💡 Notice: PyTorch and TensorFlow Support within DeepLabCut</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-build-an-env-using-our-conda-file">Step 2: Build an Env using our Conda file!</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#notice-pytorch-and-tensorflow-support-within-deeplabcut">💡 Notice: PyTorch and TensorFlow Support within DeepLabCut</a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-really-that-s-it-let-s-run-deeplabcut">Step 3: Really, that’s it! Let’s run DeepLabCut</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-really-that-s-it-let-s-run-deeplabcut">Step 3: Really, that’s it! Let’s run DeepLabCut</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-ways-to-install-deeplabcut-and-additional-tips">Other ways to install DeepLabCut and additional tips</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#alternatively-you-can-git-clone-this-repo-and-install-from-source">Alternatively, you can git clone this repo and install from source!</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pip">PIP:</a></li>
@@ -514,18 +510,31 @@ document.write(`
   <section class="tex2jax_ignore mathjax_ignore" id="how-to-install-deeplabcut">
 <span id="how-to-install"></span><h1>How To Install DeepLabCut<a class="headerlink" href="#how-to-install-deeplabcut" title="Link to this heading">#</a></h1>
 <ul class="simple">
-<li><p>DeepLabCut can be run on Windows, Linux, or MacOS as long as you have Python 3.10 installed (see also <a class="reference internal" href="#tech-considerations-during-install"><span class="std std-ref">technical considerations</span></a> and if you run into issues also check out the <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html">Installation Tips</a> page).</p></li>
-<li><p>Please note, there are several modes of installation, and the user should decide to either use a <strong>system-wide</strong> (see <a class="reference internal" href="#system-wide-considerations-during-install"><span class="std std-ref">note below</span></a>), <strong>conda environment</strong> based installation (<strong>recommended</strong>), or the supplied <a class="reference internal" href="docker.html#docker-containers"><span class="std std-ref"><strong>Docker container</strong></span></a> (recommended for Ubuntu advanced users). One can of course also use other Python distributions than Anaconda, but <strong>Anaconda is the easiest route.</strong></p></li>
-<li><p>We recommend for most users to use our supplied CONDA environment.</p></li>
-<li><p>Please note, you will get the best performance with using a GPU! Please see the section on <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/installation.html#gpu-support">GPU support</a> to install your GPU driver and CUDA.</p></li>
+<li><p><strong>DeepLabCut can be run on Windows, Linux, or MacOS as long as you have Python 3.10 installed</strong></p>
+<ul>
+<li><p>(see also <a class="reference internal" href="#tech-considerations-during-install"><span class="std std-ref">technical considerations</span></a> and if you run into issues also check out the <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html">Installation Tips</a> page).</p></li>
 </ul>
-<div class="dropdown admonition">
-<p class="admonition-title">Familiar with python packages and conda? Quick install here.</p>
-<p>This assumes you have <code class="docutils literal notranslate"><span class="pre">conda</span></code>/<code class="docutils literal notranslate"><span class="pre">mamba</span></code> installed and installs DeepLabCut in a fresh
+</li>
+<li><p>🚧 Please note, there are several modes of installation:</p>
+<ul>
+<li><p>please decide to either use a <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/installation.html#conda-the-installation-process-is-as-easy-as-this-figure"><strong>conda environment</strong></a> based installation (<strong>recommended</strong>),</p></li>
+<li><p>or the supplied <a class="reference internal" href="docker.html#docker-containers"><span class="std std-ref"><strong>Docker container</strong></span></a> (recommended for Ubuntu advanced users).</p></li>
+</ul>
+</li>
+<li><p>🚀 Please note, you will get the best performance with using a <strong>GPU</strong>!</p>
+<ul>
+<li><p>Please see the section on <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/installation.html#gpu-support">GPU support</a> to install your GPU driver and CUDA.</p></li>
+</ul>
+</li>
+</ul>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>Familiar with python packages and conda? Quick Install Guide:</p>
+<p>This assumes you have <code class="docutils literal notranslate"><span class="pre">conda</span></code>/<code class="docutils literal notranslate"><span class="pre">mamba</span></code> installed and this will install DeepLabCut in a fresh
 environment. If you have an NVIDIA GPU, install PyTorch according to <a class="reference external" href="https://pytorch.org/get-started/locally/">their instructions
 </a> (with your desired CUDA version) - you just
 need your GPU drivers installed.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>DEEPLABCUT<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>DEEPLABCUT<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.12
 conda<span class="w"> </span>activate<span class="w"> </span>DEEPLABCUT
 conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span><span class="nv">pytables</span><span class="o">==</span><span class="m">3</span>.8.0
 
@@ -545,35 +554,36 @@ pip<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> 
 python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import torch; print(torch.cuda.is_available())&quot;</span>
 </pre></div>
 </div>
-<p>Why do we install <a class="reference external" href="https://www.pytables.org/usersguide/installation.html">pytables</a> with
-<code class="docutils literal notranslate"><span class="pre">conda</span></code> and not <code class="docutils literal notranslate"><span class="pre">pip</span></code>? Because it requires some libraries that not all users will have
-installed, and conda will ensure that they are installed as well.</p>
-<p>If you’re familiar with the command line and want TensorFlow support, look <a class="reference internal" href="#deeplabcut-with-tf-install"><span class="std std-ref">below</span></a> for a fresh installation that has worked for us (on Linux)
-and makes it possible to use the GPU with both PyTorch and TensorFlow.</p>
 </div>
-<section id="conda-the-installation-process-is-as-easy-as-this-figure">
-<h2>CONDA: The installation process is as easy as this figure! –&gt;<a class="headerlink" href="#conda-the-installation-process-is-as-easy-as-this-figure" title="Link to this heading">#</a></h2>
- <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/71e5d954-75a0-4534-9fa6-7ecc4bf1b76d/installDLC.png?format=1500w" width="250" title="DLC" alt="DLC" align="right" vspace = "50">
-<section id="before-you-start-do-you-have-a-gpu">
-<h3>🚨 Before you start, do you have a GPU?<a class="headerlink" href="#before-you-start-do-you-have-a-gpu" title="Link to this heading">#</a></h3>
-<div class="dropdown admonition">
-<p class="admonition-title">🚨 Click here for more information!</p>
 <ul class="simple">
-<li><p>We recommend having a GPU if possible!</p></li>
-<li><p>You <strong>need to decide if you want to use a CPU or GPU for your models</strong>: (Note, you can also use the CPU-only for project management and labeling the data! Then, for example, use Google Colaboratory GPUs for free (read more <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/tree/master/examples#demo-4-deeplabcut-training-and-analysis-on-google-colaboratory-with-googles-gpus">here</a> and there are a lot of helper videos on <a class="reference external" href="https://www.youtube.com/playlist?list=PLjpMSEOb9vRFwwgIkLLN1NmJxFprkO_zi">our YouTube channel!</a>).</p>
-<ul>
-<li><p><strong>CPU?</strong> Great, jump to the next section below!</p></li>
-<li><p><strong>NVIDIA GPU?</strong>  If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatible GPU, CUDA, and cuDNN installed. Please note, which CUDA you install depends on what version of PyTorch you want to use. So, please check “GPU Support” below carefully. <strong>Note, DeepLabCut is up to date with the latest CUDA and PyTorch!</strong></p></li>
-<li><p><strong>Apple M-chip GPU?</strong> Be sure to install miniconda3, and your GPU will be used by default.</p></li>
+<li><p>Why do we install <a class="reference external" href="https://www.pytables.org/usersguide/installation.html">pytables</a> with
+<code class="docutils literal notranslate"><span class="pre">conda</span></code> and not <code class="docutils literal notranslate"><span class="pre">pip</span></code>? Because it requires some libraries that not all users will have
+installed, and conda will ensure that they are installed as well.</p></li>
+<li><p>If you’re familiar with the command line and want TensorFlow support, look <a class="reference internal" href="#deeplabcut-with-tf-install"><span class="std std-ref">below</span></a> for a fresh installation that has worked for us (on Linux)
+and makes it possible to use the GPU with both PyTorch and TensorFlow.</p></li>
 </ul>
-</li>
-</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+## CONDA: The installation process is as easy as this figure! --&gt;
+
+ &lt;img src=&quot;https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/71e5d954-75a0-4534-9fa6-7ecc4bf1b76d/installDLC.png?format=1500w&quot; width=&quot;250&quot; title=&quot;DLC&quot; alt=&quot;DLC&quot; align=&quot;right&quot; vspace = &quot;50&quot;&gt;
+
+#### 🚨 Before you start with our conda file, do you have a GPU?
+````{admonition} 🚨 Click here for more information!
+:class: dropdown
+- We recommend having a GPU if possible!
+- You **need to decide if you want to use a CPU or GPU for your models**: (Note, you can also use the CPU-only for project management and labeling the data! Then, for example, use Google Colaboratory GPUs for free (read more [here](https://github.com/DeepLabCut/DeepLabCut/tree/master/examples#demo-4-deeplabcut-training-and-analysis-on-google-colaboratory-with-googles-gpus) and there are a lot of helper videos on [our YouTube channel!](https://www.youtube.com/playlist?list=PLjpMSEOb9vRFwwgIkLLN1NmJxFprkO_zi)).
+
+  - **CPU?** Great, jump to the next section below!
+
+  - **NVIDIA GPU?**  If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatible GPU, CUDA, and cuDNN installed. Please note, which CUDA you install depends on what version of PyTorch you want to use. So, please check &quot;GPU Support&quot; below carefully. **Note, DeepLabCut is up to date with the latest CUDA and PyTorch!**
+  
+  - **Apple M-chip GPU?** Be sure to install miniconda3, and your GPU will be used by default.
+</pre></div>
 </div>
-</section>
 <section id="step-1-install-python-via-anaconda">
-<h3>Step 1: Install Python via Anaconda<a class="headerlink" href="#step-1-install-python-via-anaconda" title="Link to this heading">#</a></h3>
+<h2>Step 1: Install Python via Anaconda<a class="headerlink" href="#step-1-install-python-via-anaconda" title="Link to this heading">#</a></h2>
 <section id="install-anaconda-or-use-miniconda3-for-macos-users-see-below">
-<h4>Install <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html#">anaconda</a>, or use miniconda3 for MacOS users (see below)<a class="headerlink" href="#install-anaconda-or-use-miniconda3-for-macos-users-see-below" title="Link to this heading">#</a></h4>
+<h3>Install <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html#">anaconda</a>, or use miniconda3 for MacOS users (see below)<a class="headerlink" href="#install-anaconda-or-use-miniconda3-for-macos-users-see-below" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Anaconda is an easy way to install Python and additional packages across various operating systems. With Anaconda you create all the dependencies in an <a class="reference external" href="https://conda.io/docs/user-guide/tasks/manage-environments.html">environment</a> on your machine.</p></li>
 </ul>
@@ -587,7 +597,7 @@ and makes it possible to use the GPU with both PyTorch and TensorFlow.</p>
 </ul>
 </section>
 <section id="miniconda-for-mac">
-<h4>💡 miniconda for Mac<a class="headerlink" href="#miniconda-for-mac" title="Link to this heading">#</a></h4>
+<h3>💡 miniconda for Mac<a class="headerlink" href="#miniconda-for-mac" title="Link to this heading">#</a></h3>
 <div class="dropdown admonition">
 <p class="admonition-title">Click the button to see code for miniconda for Mac</p>
 <p>wget <a class="reference external" href="https://repo.anaconda.com/miniconda/Miniconda3-py310_4.12.0-MacOSX-arm64.sh">https://repo.anaconda.com/miniconda/Miniconda3-py310_4.12.0-MacOSX-arm64.sh</a> -O ~/miniconda.sh
@@ -598,7 +608,7 @@ conda init zsh</p>
 </section>
 </section>
 <section id="step-2-build-an-env-using-our-conda-file">
-<h3>Step 2: Build an Env using our Conda file!<a class="headerlink" href="#step-2-build-an-env-using-our-conda-file" title="Link to this heading">#</a></h3>
+<h2>Step 2: Build an Env using our Conda file!<a class="headerlink" href="#step-2-build-an-env-using-our-conda-file" title="Link to this heading">#</a></h2>
 <p>You simply need to have this <code class="docutils literal notranslate"><span class="pre">.yaml</span></code> file anywhere locally on your computer. So, let’s download it!</p>
 <div class="admonition hint">
 <p class="admonition-title">Hint</p>
@@ -636,7 +646,7 @@ You can (on Windows) hold SHIFT and right-click &gt; Copy as path, or (on Mac) r
 <p>Now you should see (<code class="docutils literal notranslate"><span class="pre">nameofenv</span></code>) on the left of your terminal screen, i.e. <code class="docutils literal notranslate"><span class="pre">(DEEPLABCUT)</span> <span class="pre">YourName-MacBook...</span></code>
 NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)</p>
 <section id="notice-pytorch-and-tensorflow-support-within-deeplabcut">
-<span id="deeplabcut-with-tf-install"></span><h4>💡 Notice: PyTorch and TensorFlow Support within DeepLabCut<a class="headerlink" href="#notice-pytorch-and-tensorflow-support-within-deeplabcut" title="Link to this heading">#</a></h4>
+<span id="deeplabcut-with-tf-install"></span><h3>💡 Notice: PyTorch and TensorFlow Support within DeepLabCut<a class="headerlink" href="#notice-pytorch-and-tensorflow-support-within-deeplabcut" title="Link to this heading">#</a></h3>
 <div class="dropdown admonition">
 <p class="admonition-title">DeepLabCut TensorFlow Support</p>
 <p>As of June 2024 we have a PyTorch Engine backend and we will be depreciating the
@@ -675,10 +685,9 @@ pip<span class="w"> </span>install<span class="w">  </span>--pre<span class="w">
 </section>
 </section>
 <section id="step-3-really-that-s-it-let-s-run-deeplabcut">
-<h3>Step 3: Really, that’s it! Let’s run DeepLabCut<a class="headerlink" href="#step-3-really-that-s-it-let-s-run-deeplabcut" title="Link to this heading">#</a></h3>
+<h2>Step 3: Really, that’s it! Let’s run DeepLabCut<a class="headerlink" href="#step-3-really-that-s-it-let-s-run-deeplabcut" title="Link to this heading">#</a></h2>
 <p>Head over to the <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/UseOverviewGuide.html">User Guide Overview</a> for information.</p>
 <p>🎉 Launch DeepLabCut in your new env by running <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">deeplabcut</span></code></p>
-</section>
 </section>
 <section id="other-ways-to-install-deeplabcut-and-additional-tips">
 <h2>Other ways to install DeepLabCut and additional tips<a class="headerlink" href="#other-ways-to-install-deeplabcut-and-additional-tips" title="Link to this heading">#</a></h2>
@@ -915,20 +924,16 @@ Here are some additional resources users have found helpful (posted without endo
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-the-installation-process-is-as-easy-as-this-figure">CONDA: The installation process is as easy as this figure! –&gt;</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#before-you-start-do-you-have-a-gpu">🚨 Before you start, do you have a GPU?</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-install-python-via-anaconda">Step 1: Install Python via Anaconda</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#install-anaconda-or-use-miniconda3-for-macos-users-see-below">Install anaconda, or use miniconda3 for MacOS users (see below)</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#miniconda-for-mac">💡 miniconda for Mac</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-install-python-via-anaconda">Step 1: Install Python via Anaconda</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-anaconda-or-use-miniconda3-for-macos-users-see-below">Install anaconda, or use miniconda3 for MacOS users (see below)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#miniconda-for-mac">💡 miniconda for Mac</a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-build-an-env-using-our-conda-file">Step 2: Build an Env using our Conda file!</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#notice-pytorch-and-tensorflow-support-within-deeplabcut">💡 Notice: PyTorch and TensorFlow Support within DeepLabCut</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-build-an-env-using-our-conda-file">Step 2: Build an Env using our Conda file!</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#notice-pytorch-and-tensorflow-support-within-deeplabcut">💡 Notice: PyTorch and TensorFlow Support within DeepLabCut</a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-really-that-s-it-let-s-run-deeplabcut">Step 3: Really, that’s it! Let’s run DeepLabCut</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-really-that-s-it-let-s-run-deeplabcut">Step 3: Really, that’s it! Let’s run DeepLabCut</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-ways-to-install-deeplabcut-and-additional-tips">Other ways to install DeepLabCut and additional tips</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#alternatively-you-can-git-clone-this-repo-and-install-from-source">Alternatively, you can git clone this repo and install from source!</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pip">PIP:</a></li>
