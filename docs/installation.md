@@ -44,7 +44,7 @@ installed, and conda will ensure that they are installed as well.
 - If you're familiar with the command line and want TensorFlow support, look [below](
 deeplabcut-with-tf-install) for a fresh installation that has worked for us (on Linux)
 and makes it possible to use the GPU with both PyTorch and TensorFlow.
-````
+
 
 ## CONDA: The installation process is as easy as this figure! -->
 
