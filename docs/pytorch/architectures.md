@@ -73,7 +73,7 @@ but it might improve performance), you can simply edit your `pytorch_config.yaml
 
 Of course, any multi-animal model can also be used for single-animal projects!
 
-## Approaches to multi-animal pose estimation
+## Approaches to Multi-Animal pose estimation
 
 Single-animal pose estimation is quite straightforward: the model takes an image as 
 input, and it outputs the predicted coordinate of each bodypart.
@@ -82,12 +82,25 @@ Multi-animal pose estimation is more complex. Not only do you need to localize b
 in the image, but you also need to group bodyparts per individual. There are two main
 approaches to multi-animal pose estimation.
 
+### Bottom-up estimation
+
 The first approach, **bottom-up** pose estimation, starts by detecting bodyparts in the
 image before figuring out how they belong together (i.e., which keypoints belong to the
 same animal).
 
 ![Schema representing the bottom-up approach to pose estimation](
 assets/bottom-up-approach.png)
+
+#### Backbones with Part-Affinity Fields 
+
+As in DeepLabCut 2.X, the base multi-animal model is composed of a backbone (encoder) 
+and a head predicting keypoints and part-affinity fields (PAFs). These PAFs are used to 
+assemble keypoints for individuals.
+
+Passing a backbone as a net type (e.g., `resnet_50`, `hrnet_w32`) for a multi-animal 
+project will create a model consisting of a backbone and a heatmap + PAF head.
+
+### Top-down estimation
 
 The second approach, **top-down** pose estimation, uses a two-step approach. A first 
 model (an object detector) is used to localize every animal present in the image through
@@ -107,7 +120,16 @@ The bottom-up approach does not have this ambiguïty, and also has the advantage
 only needing to run a pose estimation model, instead of needing to run an object 
 detector first. However, grouping keypoints is a difficult problem.
 
-A new approach to pose estimation, named bottom-up conditioned top-down (or BUCTD), was
+
+Hence any single-animal model can be transformed into a top-down, multi-animal model. To
+do so, simply prefix `top_down` to your single-animal model name. Currently, the 
+following detectors are available: `ssdlite`, `fasterrcnn_mobilenet_v3_large_fpn`,
+`fasterrcnn_resnet50_fpn_v2`.
+
+
+### Hybrid, Bottom-up (BU) plus a ``conditioned" Top-down (CTD)
+
+A new approach to pose estimation, named bottom-up conditioned top-down (or **BUCTD**), was
 introduced in [Zhou, Stoffl, Mathis, Mathis. "Rethinking Pose Estimation in Crowds: 
 Overcoming the Detection Information Bottleneck and Ambiguity." Proceedings of the 
 IEEE/CVF International Conference on Computer Vision (ICCV). 2023](
@@ -118,41 +140,8 @@ of using an object detection model to localize individuals, it uses a bottom-up 
 estimation model. The predictions made by the bottom-up model are given as proposals (or
 _conditions_) to the pose estimation model. This is illustrated in the figure below. In modern language, one could state that CTD models are "pose-promptable". 
 
-```{figure} assets/buctd_figure_1.png
----
-width: 500px
-name: buctd_figure_1
----
+
+![BUCTD](https://github.com/amathislab/BUCTD/raw/main/media/BUCTD_fig1.png)
 Zhou, Mu, et al. *"Rethinking pose estimation in crowds: overcoming the
 detection information bottleneck and ambiguity."* Proceedings of the IEEE/CVF
 International Conference on Computer Vision. 2023.
-```
-
-### Bottom-up Models
-
-#### Backbones with Part-Affinity Fields 
-
-As in DeepLabCut 2.X, the base multi-animal model is composed of a backbone (encoder) 
-and a head predicting keypoints and part-affinity fields (PAFs). These PAFs are used to 
-assemble keypoints for individuals.
-
-Passing a backbone as a net type (e.g., `resnet_50`, `hrnet_w32`) for a multi-animal 
-project will create a model consisting of a backbone and a heatmap + PAF head.
-
-### Top-Down Models
-
-Top-down pose estimation models split the task into two distinct parts: individual 
-localization (through an object detector), followed by pose estimation (for each 
-individual). As localization of individuals is handled by the detector, this simplifies
-the pose task to single-animal pose estimation!
-
-Hence any single-animal model can be transformed into a top-down, multi-animal model. To
-do so, simply prefix `top_down` to your single-animal model name. Currently, the 
-following detectors are available: `ssdlite`, `fasterrcnn_mobilenet_v3_large_fpn`,
-`fasterrcnn_resnet50_fpn_v2`. Other variants will be added soon!  
-
-The pose model for top-down nets is simply the backbone followed by a single convolution
-for pose estimation. It's also possible to add deconvolutional layers to top-down model
-heads.
-
-Example top-down models would be `top_down_resnet_50` and `top_down_hrnet_w32`.
