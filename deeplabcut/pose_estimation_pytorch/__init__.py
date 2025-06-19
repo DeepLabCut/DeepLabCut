@@ -35,6 +35,7 @@ from deeplabcut.pose_estimation_pytorch.config import (
     available_detectors,
     available_models,
     is_model_top_down,
+    is_model_cond_top_down,
 )
 from deeplabcut.pose_estimation_pytorch.data import (
     build_transforms,
