@@ -12,10 +12,10 @@ from __future__ import annotations
 
 import json
 import os
-import torch
 from pathlib import Path
 from typing import Optional, Union
 
+import torch
 from dlclibrary.dlcmodelzoo.modelzoo_download import download_huggingface_model
 from ruamel.yaml import YAML
 
