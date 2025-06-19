@@ -118,7 +118,7 @@ class BodypartListWidget(QtWidgets.QListWidget):
         # NOTE: Is there a case where a specific list should
         # have bodyparts other than the root? I don't think so.
     ):
-        super(BodypartListWidget, self).__init__()
+        super().__init__()
 
         self.root = root
         self.parent = parent
@@ -146,7 +146,7 @@ class BodypartListWidget(QtWidgets.QListWidget):
 
 class VideoSelectionWidget(QtWidgets.QWidget):
     def __init__(self, root: QtWidgets.QMainWindow, parent: QtWidgets.QWidget):
-        super(VideoSelectionWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.root = root
         self.parent = parent
@@ -237,7 +237,7 @@ class SnapshotSelectionWidget(QtWidgets.QWidget):
         margins: tuple,
         select_button_text: str,
     ):
-        super(SnapshotSelectionWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.root = root
         self.parent = parent
@@ -306,7 +306,7 @@ class SnapshotSelectionWidget(QtWidgets.QWidget):
 
 class TrainingSetSpinBox(QtWidgets.QSpinBox):
     def __init__(self, root, parent):
-        super(TrainingSetSpinBox, self).__init__(parent)
+        super().__init__(parent)
 
         self.root = root
         self.parent = parent
@@ -318,7 +318,7 @@ class TrainingSetSpinBox(QtWidgets.QSpinBox):
 
 class ShuffleSpinBox(QtWidgets.QSpinBox):
     def __init__(self, root, parent):
-        super(ShuffleSpinBox, self).__init__(parent)
+        super().__init__(parent)
 
         self.root = root
         self.parent = parent
@@ -341,7 +341,7 @@ class DefaultTab(QtWidgets.QWidget):
         parent: QtWidgets.QWidget = None,
         h1_description: str = "",
     ):
-        super(DefaultTab, self).__init__(parent)
+        super().__init__(parent)
 
         self.parent = parent
         self.root = root
@@ -377,7 +377,7 @@ class EditYamlButton(QtWidgets.QPushButton):
     def __init__(
         self, button_label: str, filepath: str, parent: QtWidgets.QWidget = None
     ):
-        super(EditYamlButton, self).__init__(button_label)
+        super().__init__(parent)
         self.filepath = filepath
         self.parent = parent
 
@@ -399,7 +399,7 @@ class BrowseFilesButton(QtWidgets.QPushButton):
         file_text: str = None,
         parent=None,
     ):
-        super(BrowseFilesButton, self).__init__(button_label)
+        super().__init__(parent)
         self.filetype = filetype
         self.single_file_only = single_file
         self.cwd = cwd
