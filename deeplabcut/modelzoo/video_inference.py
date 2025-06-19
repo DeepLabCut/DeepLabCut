@@ -42,7 +42,7 @@ def get_checkpoint_epoch(checkpoint_path):
         checkpoint_path (str): Path to the checkpoint file
         
     Returns: 
-        int: Current epoch number, or None if not found
+        int: Current epoch number, or 0 if not found
     """ 
     checkpoint = torch.load(checkpoint_path)
     if 'metadata' in checkpoint and 'epoch' in checkpoint['metadata']:
