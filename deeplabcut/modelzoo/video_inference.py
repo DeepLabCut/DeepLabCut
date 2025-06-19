@@ -512,6 +512,22 @@ def video_inference_superanimal(
                     detector_batch_size=video_adapt_batch_size,
                 )
 
+            # after video adaptation, re-update the adapted checkpoint path, if the checkpoint does not exist, use the best checkpoint
+            adapted_detector_checkpoint = (
+                model_folder / f"{detector_snapshot_prefix}-{current_detector_epoch + detector_epochs:03}.pt"
+            )
+            adapted_pose_checkpoint = (
+                model_folder / f"{model_snapshot_prefix}-{current_pose_epoch + pose_epochs:03}.pt"
+            )
+            if not Path(adapted_detector_checkpoint).exists():
+                            adapted_detector_checkpoint = (
+                            model_folder / f"{detector_snapshot_prefix}-best-{current_detector_epoch + detector_epochs:03}.pt"
+                        )
+            if not Path(adapted_pose_checkpoint).exists():
+                adapted_pose_checkpoint = (
+                model_folder / f"{model_snapshot_prefix}-best-{current_pose_epoch + pose_epochs:03}.pt"
+            )
+                
             # Set the customized checkpoint paths and
             output_suffix = "_after_adapt"
             detector_path = adapted_detector_checkpoint
