@@ -444,11 +444,23 @@ def video_inference_superanimal(
                 yaml = YAML()
                 yaml.dump(config, f)
 
+            # get the current epoch of the detector and pose model
+            current_pose_epoch = get_checkpoint_epoch(pose_model_path)
+            current_detector_epoch = get_checkpoint_epoch(detector_path)
+            # update the checkpoint path with the current epoch, if the checkpoint does not exist, use the best checkpoint
             adapted_detector_checkpoint = (
-                model_folder / f"{detector_snapshot_prefix}-{detector_epochs:03}.pt"
+                model_folder / f"{detector_snapshot_prefix}-{current_detector_epoch + detector_epochs:03}.pt"
             )
             adapted_pose_checkpoint = (
-                model_folder / f"{model_snapshot_prefix}-{pose_epochs:03}.pt"
+                model_folder / f"{model_snapshot_prefix}-{current_pose_epoch + pose_epochs:03}.pt"
+            )
+            if not Path(adapted_detector_checkpoint).exists():
+                            adapted_detector_checkpoint = (
+                            model_folder / f"{detector_snapshot_prefix}-best-{current_detector_epoch + detector_epochs:03}.pt"
+                        )
+            if not Path(adapted_pose_checkpoint).exists():
+                adapted_pose_checkpoint = (
+                model_folder / f"{model_snapshot_prefix}-best-{current_pose_epoch + pose_epochs:03}.pt"
             )
 
             if (
