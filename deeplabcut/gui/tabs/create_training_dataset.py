@@ -29,6 +29,7 @@ from deeplabcut.gui.components import (
     ShuffleSpinBox,
     _create_grid_layout,
     _create_label_widget,
+    set_combo_items,
 )
 from deeplabcut.gui.displays.shuffle_metadata_viewer import ShuffleMetadataViewer
 from deeplabcut.gui.dlc_params import DLCParams
@@ -412,13 +413,8 @@ class CreateTrainingDataset(DefaultTab):
                     )
                 ]
 
-        while self.net_choice.count() > 0:
-            self.net_choice.removeItem(0)
-
-        self.net_choice.addItems(nets)
         if default_net is None:
             default_net = self.root.cfg.get("default_net_type", "resnet_50")
-
         if (
             engine == Engine.TF
             and default_net not in DLCParams.NNETS
@@ -427,8 +423,12 @@ class CreateTrainingDataset(DefaultTab):
         ):
             default_net = "resnet_50"
 
-        if default_net in nets:
-            self.net_choice.setCurrentIndex(nets.index(default_net))
+        set_combo_items(
+            combo_box=self.net_choice,
+            items=nets,
+            index=nets.index(default_net) if default_net in nets else 0,
+        )
+
 
     @Slot(Engine)
     def update_detectors(
@@ -450,15 +450,19 @@ class CreateTrainingDataset(DefaultTab):
             if det_filter is not None:
                 detectors = [d for d in detectors if d in det_filter]
 
-        while self.detector_choice.count() > 0:
-            self.detector_choice.removeItem(0)
-
-        self.detector_choice.addItems(detectors)
         default_detector = self.get_default_detector()
-        if default_detector in detectors:
-            self.detector_choice.setCurrentIndex(detectors.index(default_detector))
-        elif "ssdlite" in detectors:
-            self.detector_choice.setCurrentIndex(detectors.index("ssdlite"))
+        try:
+            index = detectors.index(default_detector)
+        except ValueError:
+            try:
+                index = detectors.index("ssdlite")
+            except ValueError:
+                index = -1
+        set_combo_items(
+            combo_box=self.detector_choice,
+            items=detectors,
+            index=index,
+        )
 
         if net_choice is None:
             net_choice = self.net_choice.currentText()
@@ -473,11 +477,11 @@ class CreateTrainingDataset(DefaultTab):
     @Slot(Engine)
     def update_aug_methods(self, engine: Engine) -> None:
         methods = compat.get_available_aug_methods(engine)
-        while self.aug_choice.count() > 0:
-            self.aug_choice.removeItem(0)
-
-        self.aug_choice.addItems(methods)
-        self.aug_choice.setCurrentText(methods[0])
+        set_combo_items(
+            combo_box=self.aug_choice,
+            items=methods,
+            index=0,
+        )
 
     @Slot(Engine)
     def update_weight_init_methods(self, engine: Engine) -> None:
@@ -585,9 +589,10 @@ class WeightInitializationSelector(QtWidgets.QWidget):
 
     def update_choices(self, choices: list[str]) -> None:
         """Updates the WeightInitialization methods that can be selected"""
-        while self.weight_init_choice.count() > 0:
-            self.weight_init_choice.removeItem(0)
-        self.weight_init_choice.addItems(choices)
+        set_combo_items(
+            combo_box=self.weight_init_choice,
+            items=choices,
+        )
 
     def get_super_animal_weight_init(
         self,

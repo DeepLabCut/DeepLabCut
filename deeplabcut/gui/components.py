@@ -64,6 +64,51 @@ def _create_grid_layout(
     return layout
 
 
+def set_combo_items(combo_box: QtWidgets.QComboBox, items: list[str], index: int = 0):
+    """
+    Safely replaces all items in a QComboBox and sets the current index,
+    ensuring that the `currentTextChanged` signal is emitted exactly once
+    (and only if items are present).
+
+    This method suppresses intermediate signal emissions that can be triggered
+    by `clear()` and `addItems()` — both of which may emit multiple signals
+    depending on the underlying Qt model and signal connections.
+
+    It also handles the edge case where the item at the target index is already
+    selected: by default, Qt will not emit a signal if the index doesn't change.
+    To ensure consistent behavior, this method temporarily sets the index to -1
+    (i.e., no selection), which is done with signals blocked, then restores the
+    intended index — causing the signal to emit once and only once.
+
+    Parameters:
+        combo_box (QComboBox): The combo box to update.
+        items (list of str): New items to populate the combo box.
+        index (int): The index to select after updating items. Defaults to 0.
+
+    Note:
+        - If the items list is empty, no item will be selected and no signal will be emitted.
+        - This method is designed to be safe for use with PySide, where signals
+          cannot be manually emitted, and future-proof if multiple slots are connected.
+    """
+    combo_box.blockSignals(True)
+    combo_box.clear()
+    combo_box.addItems(items)
+    combo_box.blockSignals(False)
+
+    if not items:
+        combo_box.setCurrentIndex(-1)
+        return
+
+    current = combo_box.currentIndex()
+    if current == index:
+        # Temporarily change index to suppress duplicate signal
+        combo_box.blockSignals(True)
+        combo_box.setCurrentIndex(-1)
+        combo_box.blockSignals(False)
+
+    combo_box.setCurrentIndex(index)
+
+
 class BodypartListWidget(QtWidgets.QListWidget):
     def __init__(
         self,
