@@ -45,7 +45,10 @@ def get_checkpoint_epoch(checkpoint_path):
         int: Current epoch number, or None if not found
     """ 
     checkpoint = torch.load(checkpoint_path)
-    return checkpoint['metadata']['epoch']
+    if 'metadata' in checkpoint and 'epoch' in checkpoint['metadata']:
+        return checkpoint['metadata']['epoch']
+    else:
+        return 0
 
 def video_inference_superanimal(
     videos: Union[str, list],
