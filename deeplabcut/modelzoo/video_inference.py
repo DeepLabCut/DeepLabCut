@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import os
+import torch
 from pathlib import Path
 from typing import Optional, Union
 
@@ -33,6 +34,21 @@ from deeplabcut.utils.pseudo_label import (
     video_to_frames,
 )
 
+def get_checkpoint_epoch(checkpoint_path):
+    """
+    Load a PyTorch checkpoint and return the current epoch number.
+    
+    Args:
+        checkpoint_path (str): Path to the checkpoint file
+        
+    Returns: 
+        int: Current epoch number, or None if not found
+    """ 
+    checkpoint = torch.load(checkpoint_path)
+    if 'metadata' in checkpoint and 'epoch' in checkpoint['metadata']:
+        return checkpoint['metadata']['epoch']
+    else:
+        return 0
 
 def video_inference_superanimal(
     videos: Union[str, list],
