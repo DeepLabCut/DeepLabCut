@@ -467,7 +467,7 @@ class CreateTrainingDataset(DefaultTab):
         if net_choice is None:
             net_choice = self.net_choice.currentText()
 
-        if is_model_top_down(net_choice):
+        if engine == Engine.PYTORCH and is_model_top_down(net_choice):
             self.detector_label.show()
             self.detector_choice.show()
         else:
