@@ -30,13 +30,19 @@ from deeplabcut.gui.components import (
     ConditionsSelectionWidget,
     _create_grid_layout,
     _create_label_widget,
-    set_combo_items, _create_message_box, _create_confirmation_box,
+    set_combo_items,
+    _create_message_box,
+    _create_confirmation_box,
 )
 from deeplabcut.gui.displays.shuffle_metadata_viewer import ShuffleMetadataViewer
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import launch_napari
 from deeplabcut.modelzoo import build_weight_init
-from deeplabcut.pose_estimation_pytorch import available_models, is_model_top_down, is_model_cond_top_down
+from deeplabcut.pose_estimation_pytorch import (
+    available_models,
+    is_model_top_down,
+    is_model_cond_top_down,
+)
 from deeplabcut.utils.auxiliaryfunctions import (
     get_data_and_metadata_filenames,
     get_training_set_folder,
@@ -151,13 +157,17 @@ class CreateTrainingDataset(DefaultTab):
 
         # Conditions selection for CTD models
         self.conditions_label = QtWidgets.QLabel("Conditions")
-        self.conditions_selection_widget = ConditionsSelectionWidget(root=self.root, parent=self)
+        self.conditions_selection_widget = ConditionsSelectionWidget(
+            root=self.root, parent=self
+        )
         self.update_conditions(engine=self.root.engine)
         self.root.engine_change.connect(
             lambda engine: self.update_conditions(engine=engine)
         )
         self.net_choice.currentTextChanged.connect(
-            lambda new_net_choice: self.update_conditions(engine=self.root.engine, net_choice=new_net_choice)
+            lambda new_net_choice: self.update_conditions(
+                engine=self.root.engine, net_choice=new_net_choice
+            )
         )
 
         # Overwrite selection
@@ -259,7 +269,9 @@ class CreateTrainingDataset(DefaultTab):
                     if is_model_top_down(net_type):
                         detector_type = self.detector_choice.currentText()
                     elif is_model_cond_top_down(net_type):
-                        ctd_conditions = self._build_ctd_conditions(self.conditions_selection_widget.selected_conditions)
+                        ctd_conditions = self._build_ctd_conditions(
+                            self.conditions_selection_widget.selected_conditions
+                        )
 
                 try:
                     weight_init = (
@@ -407,8 +419,9 @@ class CreateTrainingDataset(DefaultTab):
 
         return True
 
-
-    def _build_ctd_conditions(self, conditions_path: str | Path) -> Path | tuple[int, str]:
+    def _build_ctd_conditions(
+        self, conditions_path: str | Path
+    ) -> Path | tuple[int, str]:
         """
         Builds CTD conditions in appropriate format from path to conditions.
         Args:
@@ -483,7 +496,6 @@ class CreateTrainingDataset(DefaultTab):
             index=nets.index(default_net) if default_net in nets else 0,
         )
 
-
     @Slot(Engine)
     def update_detectors(
         self,
@@ -530,9 +542,9 @@ class CreateTrainingDataset(DefaultTab):
 
     @Slot(Engine)
     def update_conditions(
-            self,
-            engine: Engine | None = None,
-            net_choice: str | None = None,
+        self,
+        engine: Engine | None = None,
+        net_choice: str | None = None,
     ) -> None:
         if engine is None:
             engine = self.root.engine

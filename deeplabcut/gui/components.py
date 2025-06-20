@@ -341,12 +341,13 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
         def _shorten_path(path: str, max_length: int = 30) -> str:
             if len(path) <= max_length:
                 return path
-            return '...' + path[-(max_length - 3):]
+            return "..." + path[-(max_length - 3) :]
 
         self.selected_conditions_text.setText(
-            "" if self.selected_conditions is None else f"{_shorten_path(self.selected_conditions)}"
+            ""
+            if self.selected_conditions is None
+            else f"{_shorten_path(self.selected_conditions)}"
         )
-
 
     def select_conditions(self):
         def _is_model_bu(selected_conditions) -> bool:
@@ -361,11 +362,13 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
         snapshot_types = ["*.pt", "*.PT"]
         h5_predictions_types = ["*.h5", "*.H5"]
         json_prediction_types = ["*.json", "*.JSON"]
-        conditions_filter = ";;".join([
-            f"{snapshots_label} ({' '.join(snapshot_types)})",
-            f"{h5_predictions_label} ({' '.join(h5_predictions_types)})",
-            f"{json_prediction_label} ({' '.join(json_prediction_types)})",
-        ])
+        conditions_filter = ";;".join(
+            [
+                f"{snapshots_label} ({' '.join(snapshot_types)})",
+                f"{h5_predictions_label} ({' '.join(h5_predictions_types)})",
+                f"{json_prediction_label} ({' '.join(json_prediction_types)})",
+            ]
+        )
 
         directory_to_open = self.root.project_folder
 
@@ -388,7 +391,9 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
                 selected_conditions = None
 
         # When Canceling a file selection, Qt returns an empty string as selected file
-        self.selected_conditions = str(os.path.abspath(selected_conditions)) if selected_conditions else None
+        self.selected_conditions = (
+            str(os.path.abspath(selected_conditions)) if selected_conditions else None
+        )
 
         self._update_selected_conditions_display()
 
