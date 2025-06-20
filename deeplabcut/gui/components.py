@@ -204,20 +204,20 @@ class VideoSelectionWidget(QtWidgets.QWidget):
             self.select_video_button.setText("Select videos")
 
     def update_videos(self):
-        cwd = self.root.project_folder
+        directory_to_open = self.root.project_folder
 
         # Create a filter string with both lowercase and uppercase extensions
 
         video_types = [f"*.{ext.lower()}" for ext in DLCParams.VIDEOTYPES[1:]] + [
             f"*.{ext.upper()}" for ext in DLCParams.VIDEOTYPES[1:]
         ]
-        video_files = f"Videos ({' '.join(video_types)})"
+        video_filter = f"Videos ({' '.join(video_types)})"
 
         filenames = QtWidgets.QFileDialog.getOpenFileNames(
-            self,
-            "Select video(s) to analyze",
-            cwd,
-            video_files,
+            parent=self,
+            caption="Select video(s) to analyze",
+            dir=directory_to_open,
+            filter=video_filter,
         )
 
         if filenames[0]:
@@ -238,18 +238,15 @@ class SnapshotSelectionWidget(QtWidgets.QWidget):
         select_button_text: str,
     ):
         super().__init__(parent)
-
         self.root = root
         self.parent = parent
-
         self.selected_snapshot = None
-
         self._init_layout(margins, select_button_text)
 
     def _init_layout(self, margins, select_button_text):
         layout = _create_horizontal_layout(margins=margins)
 
-        # Select videos
+        # Select snapshot
         self.select_snapshot_button = QtWidgets.QPushButton(select_button_text)
         self.select_snapshot_button.setMaximumWidth(200)
         self.select_snapshot_button.clicked.connect(self.select_snapshot)
@@ -283,15 +280,15 @@ class SnapshotSelectionWidget(QtWidgets.QWidget):
     def select_snapshot(self):
         # Create a filter string with both lowercase and uppercase extensions
         snapshot_types = ["*.pt", "*.PT"]
-        snapshot_files = f"Snapshots ({' '.join(snapshot_types)})"
+        snapshot_filter = f"Snapshots ({' '.join(snapshot_types)})"
 
         directory_to_open = self.root.models_folder
 
         selected_snapshot, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self,
-            "Select snapshot to start training from",
-            directory_to_open,
-            snapshot_files,
+            parent=self,
+            caption="Select snapshot to start training from",
+            dir=directory_to_open,
+            filter=snapshot_filter,
         )
         # When Canceling a file selection, Qt returns an empty string as selected file
         if selected_snapshot:
