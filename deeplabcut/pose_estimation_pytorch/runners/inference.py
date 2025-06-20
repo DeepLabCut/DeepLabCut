@@ -13,6 +13,9 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from typing import Any, Generic, Iterable
+import threading
+from queue import Queue, Empty
+import time
 
 import numpy as np
 import torch
@@ -34,6 +37,8 @@ from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
+
+
 class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
     """Base class for inference runners
 
@@ -49,6 +54,9 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         preprocessor: Preprocessor | None = None,
         postprocessor: Postprocessor | None = None,
         load_weights_only: bool | None = None,
+        async_mode: bool = True,
+        num_prefetch_batches: int = 2,
+        timeout: float = 30.0,
     ):
         """
         Args:
@@ -65,6 +73,9 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                         https://pytorch.org/docs/stable/generated/torch.load.html
                 If None, the default value is used:
                     `deeplabcut.pose_estimation_pytorch.get_load_weights_only()`
+            async_mode: Whether to use async inference with pipeline parallelism
+            num_prefetch_batches: Number of batches to prefetch in async mode
+            timeout: Timeout for queue operations in async mode
         """
         super().__init__(model=model, device=device, snapshot_path=snapshot_path)
         if not isinstance(batch_size, int) or batch_size <= 0:
@@ -73,6 +84,10 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.batch_size = batch_size
         self.preprocessor = preprocessor
         self.postprocessor = postprocessor
+        self.async_mode = async_mode
+
+        self.num_prefetch_batches = num_prefetch_batches
+        self.timeout = timeout
 
         if self.snapshot_path is not None and self.snapshot_path != "":
             self.load_snapshot(
@@ -92,6 +107,13 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self._image_batch_sizes: list[int] = []
         self._predictions: list = []
 
+        # Async-specific attributes
+        if self.async_mode:
+            self._input_queue = Queue(maxsize=num_prefetch_batches)
+            self._preprocessing_thread = None
+            self._stop_event = threading.Event()
+            self._exception = None
+
     @abstractmethod
     def predict(
         self, inputs: torch.Tensor, **kwargs
@@ -105,7 +127,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             the predictions for each of the 'batch_size' inputs
         """
 
-    @torch.no_grad()
+    @torch.inference_mode()
     def inference(
         self,
         images: (
@@ -136,6 +158,20 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 }
             ]
         """
+        if self.async_mode:
+            return self._async_inference(images, shelf_writer)
+        else:
+            return self._sequential_inference(images, shelf_writer)
+
+    def _sequential_inference(
+        self,
+        images: (
+            Iterable[str | Path | np.ndarray]
+            | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]
+        ),
+        shelf_writer: shelving.ShelfWriter | None = None,
+    ) -> list[dict[str, np.ndarray]]:
+        """Original sequential inference implementation"""
         results = []
         for data in images:
             self._prepare_inputs(data)
@@ -147,6 +183,72 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             self._process_batch()
             results += self._extract_results(shelf_writer)
 
+        return results
+
+    def _async_inference(
+        self,
+        images: (
+            Iterable[str | Path | np.ndarray]
+            | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]
+        ),
+        shelf_writer: shelving.ShelfWriter | None = None,
+    ) -> list[dict[str, np.ndarray]]:
+        """Async inference with pipeline parallelism"""
+        # Reset state
+        self._stop_event.clear()
+        self._exception = None
+        self._batch = None
+        self._model_kwargs = {}
+        self._contexts = []
+        self._image_batch_sizes = []
+        self._predictions = []
+        
+        # Start preprocessing thread
+        self._preprocessing_thread = threading.Thread(
+            target=self._preprocessing_worker, args=(images,)
+        )
+        self._preprocessing_thread.start()
+        
+        results = []
+        
+        try:
+            while True:
+                # Get next batch from queue
+                try:
+                    item = self._input_queue.get(timeout=self.timeout)
+                except Empty:
+                    # Check if preprocessing thread is still alive
+                    if self._preprocessing_thread.is_alive():
+                        continue
+                    else:
+                        break
+                
+                if item is None:
+                    # Preprocessing is done
+                    break
+                
+                batch, model_kwargs = item
+                
+                # Run model inference
+                predictions = self.predict(batch, **model_kwargs)
+                self._predictions.extend(predictions)
+                
+                # Extract and return results
+                batch_results = self._extract_results(shelf_writer)
+                results.extend(batch_results)
+                
+        except Exception as e:
+            self._stop_event.set()
+            raise e
+        finally:
+            # Wait for preprocessing thread to finish
+            if self._preprocessing_thread is not None:
+                self._preprocessing_thread.join(timeout=self.timeout)
+                
+            # Check for exceptions in preprocessing thread
+            if self._exception is not None:
+                raise self._exception
+        
         return results
 
     def _prepare_inputs(
@@ -259,6 +361,56 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         """Returns: Whether there are inputs which have not yet been processed"""
         return self._batch is not None and len(self._batch) > 0
 
+    def _preprocessing_worker(self, images: Iterable) -> None:
+        """Background worker that prepares inputs and puts them in the input queue"""
+        try:
+            for data in images:
+                if self._stop_event.is_set():
+                    break
+                    
+                # Prepare inputs using the parent class method
+                self._prepare_inputs(data)
+                
+                # Process full batches and put them in the queue
+                while self._batch is not None and len(self._batch) >= self.batch_size:
+                    batch = self._batch[:self.batch_size]
+                    model_kwargs = {
+                        mk: v[:self.batch_size] for mk, v in self._model_kwargs.items()
+                    }
+                    
+                    # Put the batch in the queue for processing
+                    self._input_queue.put((batch, model_kwargs), timeout=self.timeout)
+                    
+                    # Remove processed inputs from batch
+                    if len(self._batch) <= self.batch_size:
+                        self._batch = None
+                        self._model_kwargs = {}
+                    else:
+                        self._batch = self._batch[self.batch_size:]
+                        self._model_kwargs = {
+                            mk: v[self.batch_size:] for mk, v in self._model_kwargs.items()
+                        }
+            
+            # Process any remaining inputs
+            if self._batch is not None and len(self._batch) > 0:
+                batch = self._batch
+                model_kwargs = self._model_kwargs
+                self._input_queue.put((batch, model_kwargs), timeout=self.timeout)
+                
+        except Exception as e:
+            self._exception = e
+            self._stop_event.set()
+        finally:
+            # Signal that preprocessing is done
+            self._input_queue.put(None, timeout=self.timeout)
+
+    def __del__(self):
+        """Cleanup method to ensure threads are stopped"""
+        if hasattr(self, '_stop_event'):
+            self._stop_event.set()
+        if hasattr(self, '_preprocessing_thread') and self._preprocessing_thread is not None:
+            self._preprocessing_thread.join(timeout=1.0)
+
 
 class PoseInferenceRunner(InferenceRunner[PoseModel]):
     """Runner for pose estimation inference"""
@@ -298,8 +450,11 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
         if self.dynamic is not None:
             # dynamic cropping can use patches
             inputs = self.dynamic.crop(inputs)
-
-        outputs = self.model(inputs.to(self.device), **kwargs)
+        if 'cuda' in self.device:
+            with torch.autocast(device_type = self.device):
+                outputs = self.model(inputs.to(self.device), **kwargs)
+        else:
+            outputs = self.model(inputs.to(self.device), **kwargs)
         raw_predictions = self.model.get_predictions(outputs)
 
         if self.dynamic is not None:
@@ -362,7 +517,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
         self._idx_to_id = None
         self._ctd_track_ages = None   # the age of each CTD tracklet
 
-    @torch.no_grad()
+    @torch.inference_mode()
     def inference(
         self,
         images: (
@@ -424,7 +579,10 @@ class CTDInferenceRunner(PoseInferenceRunner):
                 }
             ]
         """
-        outputs = self.model(inputs.to(self.device), **kwargs)
+
+
+        
+
         raw_predictions = self.model.get_predictions(outputs)
         predictions = [
             {
@@ -681,9 +839,16 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
                 {
                     "bodypart": {"poses": np.ndarray},
                     "unique_bodypart": "poses": np.ndarray},
+                }
             ]
         """
-        _, raw_predictions = self.model(inputs.to(self.device))
+
+        if 'cuda' in self.device:
+             with torch.autocast(device_type = self.device):
+                 _, raw_predictions = self.model(inputs.to(self.device))
+        else:
+            _, raw_predictions = self.model(inputs.to(self.device))
+        
         predictions = [
             {
                 "detection": {
@@ -706,6 +871,9 @@ def build_inference_runner(
     postprocessor: Postprocessor | None = None,
     dynamic: DynamicCropper | None = None,
     load_weights_only: bool | None = None,
+    async_mode: bool = True,
+    num_prefetch_batches: int = 4,
+    timeout: float = 30.0,
     **kwargs,
 ) -> InferenceRunner:
     """
@@ -730,6 +898,9 @@ def build_inference_runner(
                 https://pytorch.org/docs/stable/generated/torch.load.html
             If None, the default value is used:
                 `deeplabcut.pose_estimation_pytorch.get_load_weights_only()`
+        async_mode: Whether to use async inference with pipeline parallelism
+        num_prefetch_batches: Number of batches to prefetch in async mode
+        timeout: Timeout for queue operations in async mode
         **kwargs: Other arguments for the InferenceRunner.
 
     Returns:
@@ -743,8 +914,12 @@ def build_inference_runner(
         preprocessor=preprocessor,
         postprocessor=postprocessor,
         load_weights_only=load_weights_only,
+        async_mode=async_mode,
+        num_prefetch_batches=num_prefetch_batches,
+        timeout=timeout,
         **kwargs,
     )
+    
     if task == Task.DETECT:
         if dynamic is not None:
             raise ValueError(
