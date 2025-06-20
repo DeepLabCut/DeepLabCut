@@ -37,6 +37,8 @@ from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
+
+
 class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
     """Base class for inference runners
 
@@ -125,7 +127,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             the predictions for each of the 'batch_size' inputs
         """
 
-    @torch.no_grad()
+    @torch.inference_mode()
     def inference(
         self,
         images: (
@@ -448,8 +450,11 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
         if self.dynamic is not None:
             # dynamic cropping can use patches
             inputs = self.dynamic.crop(inputs)
-
-        outputs = self.model(inputs.to(self.device), **kwargs)
+        if 'cuda' in self.device:
+            with torch.autocast(device_type = self.device):
+                outputs = self.model(inputs.to(self.device), **kwargs)
+        else:
+            outputs = self.model(inputs.to(self.device), **kwargs)
         raw_predictions = self.model.get_predictions(outputs)
 
         if self.dynamic is not None:
@@ -512,7 +517,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
         self._idx_to_id = None
         self._ctd_track_ages = None   # the age of each CTD tracklet
 
-    @torch.no_grad()
+    @torch.inference_mode()
     def inference(
         self,
         images: (
@@ -574,7 +579,10 @@ class CTDInferenceRunner(PoseInferenceRunner):
                 }
             ]
         """
-        outputs = self.model(inputs.to(self.device), **kwargs)
+
+
+        
+
         raw_predictions = self.model.get_predictions(outputs)
         predictions = [
             {
@@ -834,7 +842,13 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
                 }
             ]
         """
-        _, raw_predictions = self.model(inputs.to(self.device))
+
+        if 'cuda' in self.device:
+             with torch.autocast(device_type = self.device):
+                 _, raw_predictions = self.model(inputs.to(self.device))
+        else:
+            _, raw_predictions = self.model(inputs.to(self.device))
+        
         predictions = [
             {
                 "detection": {
