@@ -16,8 +16,10 @@ from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QIcon
 
+from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import ConfigEditor
+from pathlib import Path
 
 
 def _create_label_widget(
@@ -303,6 +305,92 @@ class SnapshotSelectionWidget(QtWidgets.QWidget):
     def clear_selected_snapshot(self):
         self.selected_snapshot = None
         self._update_selected_snapshot_display()
+
+
+class ConditionsSelectionWidget(QtWidgets.QWidget):
+    def __init__(
+        self,
+        root: QtWidgets.QMainWindow,
+        parent: QtWidgets.QWidget,
+    ):
+        super().__init__(parent=parent)
+        self.root = root
+        self.parent = parent
+        self.selected_conditions = None
+        self._init_layout()
+
+    def _init_layout(self):
+        layout = _create_horizontal_layout()
+
+        # Select conditions
+        self.select_conditions_button = QtWidgets.QPushButton("Select conditions")
+        self.select_conditions_button.setMaximumWidth(200)
+        self.select_conditions_button.clicked.connect(self.select_conditions)
+
+        # Selected conditions text
+        self.selected_conditions_text = QtWidgets.QLabel(
+            ""
+        )  # updated when conditions are selected
+
+        layout.addWidget(self.select_conditions_button)
+        layout.addWidget(self.selected_conditions_text)
+
+        self.setLayout(layout)
+
+    def _update_selected_conditions_display(self):
+        def _shorten_path(path: str, max_length: int = 30) -> str:
+            if len(path) <= max_length:
+                return path
+            return '...' + path[-(max_length - 3):]
+
+        self.selected_conditions_text.setText(
+            "" if self.selected_conditions is None else f"{_shorten_path(self.selected_conditions)}"
+        )
+
+
+    def select_conditions(self):
+        def _is_model_bu(selected_conditions) -> bool:
+            model_config_path = Path(selected_conditions).parent / "pytorch_config.yaml"
+            model_config = read_config_as_dict(model_config_path)
+            return model_config.get("method").lower() == "bu"
+
+        # Create a filter string with both lowercase and uppercase extensions
+        snapshots_label = "Snapshots"
+        h5_predictions_label = "H5 predictions"
+        json_prediction_label = "Json predictions"
+        snapshot_types = ["*.pt", "*.PT"]
+        h5_predictions_types = ["*.h5", "*.H5"]
+        json_prediction_types = ["*.json", "*.JSON"]
+        conditions_filter = ";;".join([
+            f"{snapshots_label} ({' '.join(snapshot_types)})",
+            f"{h5_predictions_label} ({' '.join(h5_predictions_types)})",
+            f"{json_prediction_label} ({' '.join(json_prediction_types)})",
+        ])
+
+        directory_to_open = self.root.project_folder
+
+        selected_conditions, selected_filter = QtWidgets.QFileDialog.getOpenFileName(
+            parent=self,
+            caption="Select conditions to use during inference (snapshot or predictions file)",
+            dir=directory_to_open,
+            filter=conditions_filter,
+        )
+        if selected_filter.startswith(snapshots_label) and selected_conditions:
+            if not _is_model_bu(selected_conditions):
+                msg = _create_message_box(
+                    f"Invalid conditions",
+                    (
+                        f"The selected snapshot ({selected_conditions}) cannot be "
+                        "used as conditions because it is not a Bottom-Up model."
+                    ),
+                )
+                msg.exec_()
+                selected_conditions = None
+
+        # When Canceling a file selection, Qt returns an empty string as selected file
+        self.selected_conditions = str(os.path.abspath(selected_conditions)) if selected_conditions else None
+
+        self._update_selected_conditions_display()
 
 
 class TrainingSetSpinBox(QtWidgets.QSpinBox):
