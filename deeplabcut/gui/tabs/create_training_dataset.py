@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+import re
 
 import dlclibrary
 from PySide6 import QtWidgets
@@ -26,6 +27,7 @@ from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 from deeplabcut.gui.components import (
     DefaultTab,
     ShuffleSpinBox,
+    ConditionsSelectionWidget,
     _create_grid_layout,
     _create_label_widget,
     set_combo_items, _create_message_box, _create_confirmation_box,
@@ -34,7 +36,7 @@ from deeplabcut.gui.displays.shuffle_metadata_viewer import ShuffleMetadataViewe
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import launch_napari
 from deeplabcut.modelzoo import build_weight_init
-from deeplabcut.pose_estimation_pytorch import available_models, is_model_top_down
+from deeplabcut.pose_estimation_pytorch import available_models, is_model_top_down, is_model_cond_top_down
 from deeplabcut.utils.auxiliaryfunctions import (
     get_data_and_metadata_filenames,
     get_training_set_folder,
@@ -147,6 +149,17 @@ class CreateTrainingDataset(DefaultTab):
             lambda new_net_choice: self.update_detectors(net_choice=new_net_choice)
         )
 
+        # Conditions selection for CTD models
+        self.conditions_label = QtWidgets.QLabel("Conditions")
+        self.conditions_selection_widget = ConditionsSelectionWidget(root=self.root, parent=self)
+        self.update_conditions(engine=self.root.engine)
+        self.root.engine_change.connect(
+            lambda engine: self.update_conditions(engine=engine)
+        )
+        self.net_choice.currentTextChanged.connect(
+            lambda new_net_choice: self.update_conditions(engine=self.root.engine, net_choice=new_net_choice)
+        )
+
         # Overwrite selection
         self.overwrite = QtWidgets.QCheckBox("Overwrite if exists")
         self.overwrite.setChecked(False)
@@ -175,8 +188,11 @@ class CreateTrainingDataset(DefaultTab):
         layout.addWidget(self.detector_label, 2, 0)
         layout.addWidget(self.detector_choice, 2, 1)
 
-        layout.addWidget(self.overwrite, 3, 0)
-        layout.addWidget(self.data_split_selection, 4, 0)
+        layout.addWidget(self.conditions_label, 3, 0)
+        layout.addWidget(self.conditions_selection_widget, 3, 1)
+
+        layout.addWidget(self.overwrite, 4, 0)
+        layout.addWidget(self.data_split_selection, 5, 0)
 
     def log_net_choice(self, net):
         self.root.logger.info(f"Network architecture set to {net.upper()}")
@@ -233,13 +249,17 @@ class CreateTrainingDataset(DefaultTab):
                 engine = self.root.engine
                 net_type = self.net_choice.currentText()
                 detector_type = None
+                ctd_conditions = None
                 if engine == Engine.TF:
                     import tensorflow
 
                     # try importing TF so they can't create shuffles for it if they
                     # don't have it installed
-                elif engine == Engine.PYTORCH and is_model_top_down(net_type):
-                    detector_type = self.detector_choice.currentText()
+                elif engine == Engine.PYTORCH:
+                    if is_model_top_down(net_type):
+                        detector_type = self.detector_choice.currentText()
+                    elif is_model_cond_top_down(net_type):
+                        ctd_conditions = self._build_ctd_conditions(self.conditions_selection_widget.selected_conditions)
 
                 try:
                     weight_init = (
@@ -262,6 +282,7 @@ class CreateTrainingDataset(DefaultTab):
                         userfeedback=not overwrite,
                         weight_init=weight_init,
                         engine=engine,
+                        ctd_conditions=ctd_conditions,
                     )
 
                 elif self.root.is_multianimal:
@@ -274,6 +295,7 @@ class CreateTrainingDataset(DefaultTab):
                         userfeedback=not overwrite,
                         weight_init=weight_init,
                         engine=engine,
+                        ctd_conditions=ctd_conditions,
                     )
                 else:
                     deeplabcut.create_training_dataset(
@@ -286,6 +308,7 @@ class CreateTrainingDataset(DefaultTab):
                         userfeedback=not overwrite,
                         weight_init=weight_init,
                         engine=engine,
+                        ctd_conditions=ctd_conditions,
                     )
             except ValueError as err:
                 msg = _create_message_box(
@@ -384,6 +407,38 @@ class CreateTrainingDataset(DefaultTab):
 
         return True
 
+
+    def _build_ctd_conditions(self, conditions_path: str | Path) -> Path | tuple[int, str]:
+        """
+        Builds CTD conditions in appropriate format from path to conditions.
+        Args:
+            conditions_path: str | Path:
+                 path to conditions (path to snapshot or to predictions)
+
+        Returns:
+            ctd_conditions: Path | tuple[int, str]
+                ctd conditions in the right formar for deeplabcut.create_training_dataset() API method.
+
+        Raises:
+            Value error if conditions are missing or invalid.
+        """
+        if conditions_path is None:
+            raise ValueError("No conditions were selected for CTD model.")
+        else:
+            conditions_path = Path(conditions_path)
+            if conditions_path.suffix.lower() in [".h5", ".json"]:
+                return conditions_path
+            elif conditions_path.suffix.lower() == ".pt":
+                match = re.search(r"shuffle(\d+)", str(conditions_path))
+                if match:
+                    shuffle_number = int(match.group(1))
+                else:
+                    raise ValueError("Shuffle number could not be extracted from path.")
+                snapshot_filename = conditions_path.name
+                return shuffle_number, snapshot_filename
+            else:
+                raise ValueError("Unsupported conditions file type")
+
     @Slot(Engine)
     def update_nets(self, engine: Engine | None) -> None:
         if engine is None:
@@ -472,6 +527,25 @@ class CreateTrainingDataset(DefaultTab):
         else:
             self.detector_label.hide()
             self.detector_choice.hide()
+
+    @Slot(Engine)
+    def update_conditions(
+            self,
+            engine: Engine | None = None,
+            net_choice: str | None = None,
+    ) -> None:
+        if engine is None:
+            engine = self.root.engine
+
+        if net_choice is None:
+            net_choice = self.net_choice.currentText()
+
+        if engine == Engine.PYTORCH and is_model_cond_top_down(net_choice):
+            self.conditions_label.show()
+            self.conditions_selection_widget.show()
+        else:
+            self.conditions_label.hide()
+            self.conditions_selection_widget.hide()
 
     @Slot(Engine)
     def update_aug_methods(self, engine: Engine) -> None:
