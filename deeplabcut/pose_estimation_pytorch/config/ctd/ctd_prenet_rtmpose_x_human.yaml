@@ -7,12 +7,12 @@ data:
     top_down_crop:
       width: 288
       height: 384
-      crop_with_context: false
+      crop_with_context: true
   train:
     top_down_crop:
       width: 288
       height: 384
-      crop_with_context: false
+      crop_with_context: true
 method: ctd
 model:
   backbone:
@@ -25,7 +25,7 @@ model:
       deepen_factor: 1.33
       widen_factor: 1.25
     kpt_encoder:
-      type: ColoredKeypointEncoder
+      type: StackedKeypointEncoder
       num_joints: "num_bodyparts"
       kernel_size: [15, 15]
     img_size: [384, 288]

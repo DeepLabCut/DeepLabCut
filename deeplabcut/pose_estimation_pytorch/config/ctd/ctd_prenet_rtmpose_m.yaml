@@ -24,7 +24,7 @@ model:
       deepen_factor: 0.67
       widen_factor: 0.75
     kpt_encoder:
-      type: ColoredKeypointEncoder
+      type: StackedKeypointEncoder
       num_joints: "num_bodyparts"
       kernel_size: [15, 15]
     img_size: [256, 256]
