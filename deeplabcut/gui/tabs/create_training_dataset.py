@@ -16,7 +16,6 @@ from pathlib import Path
 import dlclibrary
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtGui import QIcon
 
 import deeplabcut
 import deeplabcut.compat as compat
@@ -29,7 +28,7 @@ from deeplabcut.gui.components import (
     ShuffleSpinBox,
     _create_grid_layout,
     _create_label_widget,
-    set_combo_items,
+    set_combo_items, _create_message_box, _create_confirmation_box,
 )
 from deeplabcut.gui.displays.shuffle_metadata_viewer import ShuffleMetadataViewer
 from deeplabcut.gui.dlc_params import DLCParams
@@ -715,36 +714,6 @@ class DataSplitSelector(QtWidgets.QWidget):
         else:
             self.shuffle_selector.hide()
             self.shuffle_label.hide()
-
-
-def _create_message_box(text, info_text):
-    msg = QtWidgets.QMessageBox()
-    msg.setIcon(QtWidgets.QMessageBox.Information)
-    msg.setText(text)
-    msg.setInformativeText(info_text)
-
-    msg.setWindowTitle("Info")
-    msg.setMinimumWidth(900)
-    logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-    logo = logo_dir + "/assets/logo.png"
-    msg.setWindowIcon(QIcon(logo))
-    msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-    return msg
-
-
-def _create_confirmation_box(title, description):
-    msg = QtWidgets.QMessageBox()
-    msg.setIcon(QtWidgets.QMessageBox.Information)
-    msg.setText(title)
-    msg.setInformativeText(description)
-
-    msg.setWindowTitle("Confirmation")
-    msg.setMinimumWidth(900)
-    logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-    logo = logo_dir + "/assets/logo.png"
-    msg.setWindowIcon(QIcon(logo))
-    msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
-    return msg
 
 
 _WEIGHT_INIT_OPTIONS = {  # FIXME - Generate dynamically

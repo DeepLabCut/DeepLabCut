@@ -8,10 +8,14 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from __future__ import annotations
+
 import os
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
+from PySide6.QtGui import QIcon
+
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import ConfigEditor
 
@@ -437,3 +441,33 @@ class BrowseFilesButton(QtWidgets.QPushButton):
 
         if filepaths:
             self.files.update(filepaths[0])
+
+
+def _create_message_box(text, info_text):
+    msg = QtWidgets.QMessageBox()
+    msg.setIcon(QtWidgets.QMessageBox.Information)
+    msg.setText(text)
+    msg.setInformativeText(info_text)
+
+    msg.setWindowTitle("Info")
+    msg.setMinimumWidth(900)
+    logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+    logo = logo_dir + "/assets/logo.png"
+    msg.setWindowIcon(QIcon(logo))
+    msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+    return msg
+
+
+def _create_confirmation_box(title, description):
+    msg = QtWidgets.QMessageBox()
+    msg.setIcon(QtWidgets.QMessageBox.Information)
+    msg.setText(title)
+    msg.setInformativeText(description)
+
+    msg.setWindowTitle("Confirmation")
+    msg.setMinimumWidth(900)
+    logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+    logo = logo_dir + "/assets/logo.png"
+    msg.setWindowIcon(QIcon(logo))
+    msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+    return msg
