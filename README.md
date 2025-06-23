@@ -109,7 +109,7 @@ See [more demos here](https://github.com/DeepLabCut/DeepLabCut/blob/main/example
 
 # Why use DeepLabCut?
 
-DeepLabCut continues to be actively maintained and we strive to provide a user-friendly `GUI` and `API` for computer vision researchers and life scientists alike. This means we integrate sate-of-the-art models and frameworks, while providing our "best-guess" defaults for life scientists. We higgly encourge you to read our papers to get a better understanding of what to use and how to modify the models for your setting. 
+DeepLabCut continues to be actively maintained and we strive to provide a user-friendly `GUI` and `API` for computer vision researchers and life scientists alike. This means we integrate state-of-the-art models and frameworks, while providing our "best-guess" defaults for life scientists. We higgly encourge you to read our papers to get a better understanding of what to use and how to modify the models for your setting. 
 
 ## Performance 🔥
 
