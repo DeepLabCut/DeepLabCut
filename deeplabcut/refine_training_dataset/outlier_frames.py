@@ -938,7 +938,7 @@ def ExtractFramesbasedonPreselection(
                 df.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
 
         print(
-            "The outlier frames are extracted. They are stored in the subdirectory labeled-data\%s."
+            r"The outlier frames are extracted. They are stored in the subdirectory labeled-data\%s."
             % vname
         )
         print(
