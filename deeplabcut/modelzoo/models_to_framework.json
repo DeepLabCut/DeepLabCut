@@ -1,5 +1,6 @@
 {
     "dlcrnet": "tensorflow",
     "hrnet_w32": "pytorch",
-    "resnet_50": "pytorch"
+    "resnet_50": "pytorch",
+    "rtmpose_s": "pytorch"
 }
