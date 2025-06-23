@@ -370,14 +370,15 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
 class CSVLogger(BaseLogger):
     """Logger saving stats and metrics to a CSV file"""
 
-    def __init__(self, train_folder: Path, log_filename: str) -> None:
-        """Initialize the WandbLogger class.
+    def __init__(self, train_folder: str, log_filename: str) -> None:
+        """Initialize the CSVLogger class.
 
         Args:
             train_folder: The path of the folder containing training files.
             log_filename: The name of the file in which to store training stats
         """
         super().__init__()
+        train_folder = Path(train_folder)
         self.train_folder = train_folder
         self.log_filename = log_filename
         self.log_file = train_folder / log_filename
