@@ -22,6 +22,7 @@ import torchvision.transforms as transforms
 import torchvision.transforms.functional as F
 from torch.utils.data import DataLoader
 from torchvision.utils import draw_bounding_boxes, draw_keypoints
+import yaml
 
 try:
     import wandb
@@ -259,6 +260,7 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
         run_name: str = "tmp",
         image_log_interval: int | None = None,
         model: PoseModel = None,
+        train_folder: str = None,
         **wandb_kwargs,
     ) -> None:
         """Initialize the WandbLogger class.
@@ -269,6 +271,7 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
             image_log_interval: How often train/test images are logged in epochs (if
                 None, train/test inputs are never logged).
             model: The model to log. Defaults to None.
+            train_folder: path to the train folder (used to store the W&B run identifiers)
             wandb_kwargs: extra arguments to pass to ``wb.init``
 
         Example:
@@ -294,6 +297,23 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
         if model is None:
             raise ValueError("Specify the model to track!")
         self.run.watch(model)
+        if train_folder is None:
+            raise ValueError("Specify the train folder!")
+        self.train_folder = Path(train_folder)
+        self._save_wandb_info()
+
+    def _save_wandb_info(self):
+        wandb_info = {
+            "entity": self.run.entity,
+            "project": self.run.project,
+            "run_id": self.run.id,
+        }
+
+        output_path = self.train_folder / "wandb_info.yaml"
+        with open(output_path, "w") as f:
+            yaml.dump(wandb_info, f)
+
+        print(f"WandB run info saved to {output_path}")
 
     def log(self, metrics: dict[str, Any], step: Optional[int] = None) -> None:
         """Logs metrics from runs

@@ -98,7 +98,7 @@ def train(
 
     logger = None
     if logger_config is not None:
-        logger = LOGGER.build(dict(**logger_config, model=model))
+        logger = LOGGER.build({**logger_config, "model":model, "train_folder":loader.model_folder})
         logger.log_config(run_config)
 
     if device is None:
