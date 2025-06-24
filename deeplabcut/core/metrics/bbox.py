@@ -63,7 +63,7 @@ def compute_bbox_metrics(
 
     if len(detections) != len(ground_truth):
         raise ValueError()
-    
+
     coco = COCO()
     coco.dataset["annotations"] = []
     coco.dataset["categories"] = [{"id": 1, "name": "animals", "supercategory": "obj"}]
