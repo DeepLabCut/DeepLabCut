@@ -26,6 +26,7 @@ import yaml
 
 try:
     import wandb
+
     has_wandb = True
 except ImportError:
     has_wandb = False
@@ -130,7 +131,9 @@ class ImageLoggerMixin(ABC):
         self._logged = {}
         self._denormalize = transforms.Compose(
             [
-                transforms.Normalize(mean=[0, 0, 0], std=[1/0.229, 1/0.224, 1/0.225]),
+                transforms.Normalize(
+                    mean=[0, 0, 0], std=[1 / 0.229, 1 / 0.224, 1 / 0.225]
+                ),
                 transforms.Normalize(mean=[-0.485, -0.456, -0.406], std=[1, 1, 1]),
             ]
         )
@@ -161,6 +164,7 @@ class ImageLoggerMixin(ABC):
             train: the training dataloader
             valid: the inference dataloader
         """
+
         def _caption(image_path: str) -> str:
             p = Path(image_path)
             return f"{p.parent.name}.{p.stem}"
@@ -229,7 +233,9 @@ class ImageLoggerMixin(ABC):
             if keypoints is not None:
                 keypoints = keypoints[idx]
             image_logs[f"{base}.input"] = self._prepare_image(
-                inputs["image"][idx], keypoints=keypoints, denormalize=True,
+                inputs["image"][idx],
+                keypoints=keypoints,
+                denormalize=True,
             )
 
             for head, head_outputs in outputs.items():
@@ -432,7 +438,7 @@ class CSVLogger(BaseLogger):
     def save(self):
         """Saves the metrics to the file system"""
         logs = self._prepare_logs()
-        with open(self.log_file, 'w', newline='') as f:
+        with open(self.log_file, "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerows(logs)
 

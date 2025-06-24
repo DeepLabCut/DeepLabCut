@@ -57,12 +57,17 @@ def build_from_cfg(
     else:
         raise TypeError(f"type must be a str or valid type, but got {type(obj_type)}")
     try:
-        sig = inspect.signature(obj_cls.__init__ if inspect.isclass(obj_cls) else obj_cls)
-        accepts_kwargs = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values())
-        valid_params = {p for p in sig.parameters if p not in ("self", "args", "kwargs")}
+        sig = inspect.signature(
+            obj_cls.__init__ if inspect.isclass(obj_cls) else obj_cls
+        )
+        accepts_kwargs = any(
+            p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()
+        )
+        valid_params = {
+            p for p in sig.parameters if p not in ("self", "args", "kwargs")
+        }
         filtered_args = {
-            k: v for k, v in args.items()
-            if accepts_kwargs or k in valid_params
+            k: v for k, v in args.items() if accepts_kwargs or k in valid_params
         }
         return obj_cls(**filtered_args)
     except Exception as e:
