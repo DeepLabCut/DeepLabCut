@@ -1,0 +1,98 @@
+data:
+  colormode: RGB
+  inference:
+    normalize_images: true
+  train:
+    affine:
+      p: 0.5
+      scaling: [1.0, 1.0]
+      rotation: 30
+      translation: 0
+    gaussian_noise: 12.75
+    normalize_images: true
+device: auto
+method: td
+model:
+  backbone:
+    type: CSPNeXt
+    model_name: cspnext_s
+    freeze_bn_stats: false
+    freeze_bn_weights: false
+    deepen_factor: 0.33
+    widen_factor: 0.5
+  backbone_output_channels: 512
+  heads:
+    bodypart:
+      type: RTMCCHead
+      weight_init: RTMPose
+      target_generator:
+        type: SimCCGenerator
+        input_size:
+        - 256
+        - 256
+        smoothing_type: gaussian
+        sigma:
+        - 5.66
+        - 5.66
+        simcc_split_ratio: 2.0
+        label_smooth_weight: 0.0
+        normalize: false
+      criterion:
+        x:
+          type: KLDiscreteLoss
+          use_target_weight: true
+          beta: 10.0
+          label_softmax: true
+        y:
+          type: KLDiscreteLoss
+          use_target_weight: true
+          beta: 10.0
+          label_softmax: true
+      predictor:
+        type: SimCCPredictor
+        simcc_split_ratio: 2.0
+      input_size:
+      - 256
+      - 256
+      in_channels: 512
+      out_channels: 39
+      in_featuremap_size:
+      - 8
+      - 8
+      simcc_split_ratio: 2.0
+      final_layer_kernel_size: 7
+      gau_cfg:
+        hidden_dims: 256
+        s: 128
+        expansion_factor: 2
+        dropout_rate: 0
+        drop_path: 0.0
+        act_fn: SiLU
+        use_rel_bias: false
+        pos_enc: false
+net_type: rtmpose_s
+runner:
+  type: PoseTrainingRunner
+  key_metric: "test.mAP"
+  key_metric_asc: true
+  eval_interval: 10
+  optimizer:
+    type: AdamW
+    params:
+      lr: 1e-5
+  scheduler:
+    type: LRListScheduler
+    params:
+      lr_list: [ [ 1e-6 ], [ 1e-7 ] ]
+      milestones: [ 160, 190 ]
+  snapshots:
+    max_snapshots: 5
+    save_epochs: 25
+    save_optimizer_state: false
+train_settings:
+  batch_size: 1
+  dataloader_workers: 0
+  dataloader_pin_memory: false
+  display_iters: 500
+  epochs: 100
+  seed: 42
