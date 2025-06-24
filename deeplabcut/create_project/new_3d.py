@@ -17,7 +17,7 @@ from deeplabcut import DEBUG
 
 
 def create_new_project_3d(project, experimenter, num_cameras=2, working_directory=None):
-    """Creates a new project directory, sub-directories and a basic configuration file for 3d project.
+    r"""Creates a new project directory, sub-directories and a basic configuration file for 3d project.
     The configuration file is loaded with the default values. Adjust the parameters to your project's needs.
 
     Parameters
@@ -42,7 +42,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
 
     Windows:
     >>> deeplabcut.create_new_project('reaching-task','Bill',2)
-    Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
+    Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \\ )
 
     """
     from datetime import datetime as dt
