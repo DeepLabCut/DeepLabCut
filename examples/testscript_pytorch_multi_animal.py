@@ -38,6 +38,7 @@ def main(
     max_snapshots_to_keep: int = 5,
     device: str = "cpu",
     logger: dict | None = None,
+    conditions_shuffle: int = 0,
     create_labeled_videos: bool = False,
     delete_after_test_run: bool = False,
 ) -> None:
@@ -64,6 +65,8 @@ def main(
                     device=device,
                     engine=engine,
                     pytorch_cfg_updates={
+                        "data.conditions.shuffle": conditions_shuffle,
+                        "data.conditions.snapshot_index": -1,
                         "train_settings.display_iters": 50,
                         "train_settings.epochs": epochs_,
                         "train_settings.batch_size": batch_size,
@@ -96,8 +99,9 @@ if __name__ == "__main__":
         "project_name": "testscript-dev",
         "run_name": "test-logging",
     }
+    net_types = ["top_down_resnet_50", "resnet_50", "dekr_w32", "rtmpose_m", "ctd_coam_w32"]
     main(
-        net_types=["top_down_resnet_50", "resnet_50", "dekr_w32", "rtmpose_m"],
+        net_types=net_types,
         params=SyntheticProjectParameters(
             multianimal=True,
             num_bodyparts=4,
@@ -115,6 +119,7 @@ if __name__ == "__main__":
         max_snapshots_to_keep=2,
         device="cpu",  # "cpu", "cuda:0", "mps"
         logger=None,
+        conditions_shuffle = net_types.index("resnet_50") + 1, # shuffles start at index 1
         create_labeled_videos=True,
         delete_after_test_run=True,
     )
