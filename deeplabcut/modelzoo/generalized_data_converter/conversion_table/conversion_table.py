@@ -38,7 +38,7 @@ class ConversionTableFromCSV:
         self.table_path = table_path
 
         # sep removes leading and tailing white space
-        df = pd.read_csv(table_path, sep="\s*,\s*")
+        df = pd.read_csv(table_path, sep=r"\s*,\s*")
 
         df.dropna(inplace=True, how="all")
         # drop the row is MasterName has nan in the row
