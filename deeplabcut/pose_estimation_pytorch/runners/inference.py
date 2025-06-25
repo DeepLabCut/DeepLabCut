@@ -37,8 +37,6 @@ from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
-
-
 class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
     """Base class for inference runners
 
@@ -202,15 +200,15 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self._contexts = []
         self._image_batch_sizes = []
         self._predictions = []
-        
+
         # Start preprocessing thread
         self._preprocessing_thread = threading.Thread(
             target=self._preprocessing_worker, args=(images,)
         )
         self._preprocessing_thread.start()
-        
+
         results = []
-        
+
         try:
             while True:
                 # Get next batch from queue
@@ -222,21 +220,21 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                         continue
                     else:
                         break
-                
+
                 if item is None:
                     # Preprocessing is done
                     break
-                
+
                 batch, model_kwargs = item
-                
+
                 # Run model inference
                 predictions = self.predict(batch, **model_kwargs)
                 self._predictions.extend(predictions)
-                
+
                 # Extract and return results
                 batch_results = self._extract_results(shelf_writer)
                 results.extend(batch_results)
-                
+
         except Exception as e:
             self._stop_event.set()
             raise e
@@ -244,11 +242,11 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             # Wait for preprocessing thread to finish
             if self._preprocessing_thread is not None:
                 self._preprocessing_thread.join(timeout=self.timeout)
-                
+
             # Check for exceptions in preprocessing thread
             if self._exception is not None:
                 raise self._exception
-        
+
         return results
 
     def _prepare_inputs(
@@ -367,36 +365,37 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             for data in images:
                 if self._stop_event.is_set():
                     break
-                    
+
                 # Prepare inputs using the parent class method
                 self._prepare_inputs(data)
-                
+
                 # Process full batches and put them in the queue
                 while self._batch is not None and len(self._batch) >= self.batch_size:
-                    batch = self._batch[:self.batch_size]
+                    batch = self._batch[: self.batch_size]
                     model_kwargs = {
-                        mk: v[:self.batch_size] for mk, v in self._model_kwargs.items()
+                        mk: v[: self.batch_size] for mk, v in self._model_kwargs.items()
                     }
-                    
+
                     # Put the batch in the queue for processing
                     self._input_queue.put((batch, model_kwargs), timeout=self.timeout)
-                    
+
                     # Remove processed inputs from batch
                     if len(self._batch) <= self.batch_size:
                         self._batch = None
                         self._model_kwargs = {}
                     else:
-                        self._batch = self._batch[self.batch_size:]
+                        self._batch = self._batch[self.batch_size :]
                         self._model_kwargs = {
-                            mk: v[self.batch_size:] for mk, v in self._model_kwargs.items()
+                            mk: v[self.batch_size :]
+                            for mk, v in self._model_kwargs.items()
                         }
-            
+
             # Process any remaining inputs
             if self._batch is not None and len(self._batch) > 0:
                 batch = self._batch
                 model_kwargs = self._model_kwargs
                 self._input_queue.put((batch, model_kwargs), timeout=self.timeout)
-                
+
         except Exception as e:
             self._exception = e
             self._stop_event.set()
@@ -406,9 +405,12 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
     def __del__(self):
         """Cleanup method to ensure threads are stopped"""
-        if hasattr(self, '_stop_event'):
+        if hasattr(self, "_stop_event"):
             self._stop_event.set()
-        if hasattr(self, '_preprocessing_thread') and self._preprocessing_thread is not None:
+        if (
+            hasattr(self, "_preprocessing_thread")
+            and self._preprocessing_thread is not None
+        ):
             self._preprocessing_thread.join(timeout=1.0)
 
 
@@ -450,8 +452,8 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
         if self.dynamic is not None:
             # dynamic cropping can use patches
             inputs = self.dynamic.crop(inputs)
-        if 'cuda' in self.device:
-            with torch.autocast(device_type = self.device):
+        if "cuda" in self.device:
+            with torch.autocast(device_type=self.device):
                 outputs = self.model(inputs.to(self.device), **kwargs)
         else:
             outputs = self.model(inputs.to(self.device), **kwargs)
@@ -515,7 +517,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
         self._missing_idvs = False
         self._prev_pose = None
         self._idx_to_id = None
-        self._ctd_track_ages = None   # the age of each CTD tracklet
+        self._ctd_track_ages = None  # the age of each CTD tracklet
 
     @torch.inference_mode()
     def inference(
@@ -579,9 +581,6 @@ class CTDInferenceRunner(PoseInferenceRunner):
                 }
             ]
         """
-
-
-        
 
         raw_predictions = self.model.get_predictions(outputs)
         predictions = [
@@ -706,7 +705,9 @@ class CTDInferenceRunner(PoseInferenceRunner):
         return inputs, context
 
     def _ctd_tracking_postprocess(
-        self, predictions: dict[str, np.ndarray], image_size: tuple[int, int],
+        self,
+        predictions: dict[str, np.ndarray],
+        image_size: tuple[int, int],
     ) -> None:
         """Post-processes predictions. In-place changes to the predictions dict."""
         # reorder the previous poses so the indices match the track IDs
@@ -794,16 +795,14 @@ class CTDInferenceRunner(PoseInferenceRunner):
             for ctd_pose in self._prev_pose:
                 best_oks = max(
                     best_oks,
-                    calc_object_keypoint_similarity(bu_pose, ctd_pose, sigma=0.1)
+                    calc_object_keypoint_similarity(bu_pose, ctd_pose, sigma=0.1),
                 )
 
             if best_oks < self.tracking.threshold_bu_add:
                 new_conditions.append((best_oks, bu_pose))
 
         # add the conditions with the lowest OKS score
-        new_conditions = [
-            c[1] for c in sorted(new_conditions, key=lambda x: x[0])
-        ]
+        new_conditions = [c[1] for c in sorted(new_conditions, key=lambda x: x[0])]
 
         # if there are no new conditions,
         if len(new_conditions) == 0:
@@ -811,7 +810,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
 
         new_conditions = np.stack(new_conditions, axis=0)
         cond_pose = np.concatenate([self._prev_pose, new_conditions], axis=0)
-        return cond_pose[:len(self._idx_to_id)]
+        return cond_pose[: len(self._idx_to_id)]
 
 
 class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
@@ -843,12 +842,12 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
             ]
         """
 
-        if 'cuda' in self.device:
-             with torch.autocast(device_type = self.device):
-                 _, raw_predictions = self.model(inputs.to(self.device))
+        if "cuda" in self.device:
+            with torch.autocast(device_type=self.device):
+                _, raw_predictions = self.model(inputs.to(self.device))
         else:
             _, raw_predictions = self.model(inputs.to(self.device))
-        
+
         predictions = [
             {
                 "detection": {
@@ -919,7 +918,7 @@ def build_inference_runner(
         timeout=timeout,
         **kwargs,
     )
-    
+
     if task == Task.DETECT:
         if dynamic is not None:
             raise ValueError(
