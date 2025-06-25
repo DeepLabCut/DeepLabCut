@@ -83,7 +83,6 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.preprocessor = preprocessor
         self.postprocessor = postprocessor
         self.async_mode = async_mode
-
         self.num_prefetch_batches = num_prefetch_batches
         self.timeout = timeout
 
@@ -581,7 +580,11 @@ class CTDInferenceRunner(PoseInferenceRunner):
                 }
             ]
         """
-
+        if 'cuda' in self.device:
+            with torch.autocast(device_type = self.device):
+                outputs = self.model(inputs.to(self.device), **kwargs)
+        else:
+            outputs = self.model(inputs.to(self.device), **kwargs)
         raw_predictions = self.model.get_predictions(outputs)
         predictions = [
             {
@@ -841,13 +844,11 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
                 }
             ]
         """
-
         if "cuda" in self.device:
             with torch.autocast(device_type=self.device):
                 _, raw_predictions = self.model(inputs.to(self.device))
         else:
             _, raw_predictions = self.model(inputs.to(self.device))
-
         predictions = [
             {
                 "detection": {
