@@ -453,9 +453,10 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
         if 'cuda' in self.device:
             with torch.autocast(device_type = self.device):
                 outputs = self.model(inputs.to(self.device), **kwargs)
+                raw_predictions = self.model.get_predictions(outputs)
         else:
             outputs = self.model(inputs.to(self.device), **kwargs)
-        raw_predictions = self.model.get_predictions(outputs)
+            raw_predictions = self.model.get_predictions(outputs)
 
         if self.dynamic is not None:
             raw_predictions["bodypart"]["poses"] = self.dynamic.update(
