@@ -314,7 +314,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             if self.postprocessor is not None:
                 # TODO: Should we return context?
                 # TODO: typing update - the post-processor can remove a dict level
-                image_predictions, _ = self.postprocessor(image_predictions, context)
+                image_predictions, _ = self.postprocessor(image_predictions, context) # the bboxes are added here!
 
             if shelf_writer is not None:
                 shelf_writer.add_prediction(
@@ -550,7 +550,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
         if self.tracking:
             return self._ctd_tracking_inference(images, shelf_writer)
 
-        results = []
+        results = [] # results contains bboxes in different formats!
         for data in images:
             data = self.add_conditions(data)
             self._prepare_inputs(data)

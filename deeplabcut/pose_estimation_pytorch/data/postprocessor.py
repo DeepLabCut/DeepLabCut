@@ -108,6 +108,10 @@ def build_bottom_up_postprocessor(
                 "identity_scores": max_individuals,
             },
             pad_value=-1,
+            expected_shapes={
+                "bodyparts": (num_bodyparts, 3),
+                "identity_scores": (4,), # TODO!!
+            }
         ),
     ]
 
@@ -122,7 +126,7 @@ def build_bottom_up_postprocessor(
     return ComposePostprocessor(components=components)
 
 
-def build_top_down_postprocessor(
+def build_top_down_postprocessor( # This post-processor is used for CTD models as well??
     max_individuals: int,
     num_bodyparts: int,
     num_unique_bodyparts: int,
@@ -172,6 +176,11 @@ def build_top_down_postprocessor(
                     "bbox_scores": max_individuals,
                 },
                 pad_value=-1,
+                expected_shapes={
+                    "bodyparts": (num_bodyparts, 3),
+                    "bboxes": (4,),
+                    "bbox_scores": (),  # scalar
+                }
             ),
         ]
     )
@@ -271,26 +280,36 @@ class PadOutputs(Postprocessor):
         self,
         max_individuals: dict[str, int],
         pad_value: int,
+        expected_shapes: dict[str, tuple[int, ...]],
     ):
         self.max_individuals = max_individuals
         self.pad_value = pad_value
+        self.expected_shapes = expected_shapes
 
     def __call__(
         self, predictions: dict[str, np.ndarray], context: Context
     ) -> tuple[dict[str, np.ndarray], Context]:
         for name in predictions:
             output = predictions[name]
-            if isinstance(output, list):
-                output = np.array(output)
+            output = np.array(output)  # Normalize all inputs to np.ndarray
+
+            # Special handling for empty arrays
+            if len(output) == 0:
+                tail_shape = self.expected_shapes.get(name, ())
+                output = np.empty((0, *tail_shape), dtype=float)
+            elif output.ndim == 1:
+                output = output[np.newaxis, :]
 
             if (
-                name in self.max_individuals
-                and len(output) < self.max_individuals[name]
+                    name in self.max_individuals
+                    and len(output) < self.max_individuals[name]
             ):
                 pad_size = self.max_individuals[name] - len(output)
                 tail_shape = output.shape[1:]
                 padding = self.pad_value * np.ones((pad_size, *tail_shape))
-                predictions[name] = np.concatenate([output, padding])
+                output = np.concatenate([output, padding])
+
+            predictions[name] = output
 
         return predictions, context
 
@@ -386,7 +405,7 @@ class RescaleAndOffset(Postprocessor):
                         rescaled = np.stack(rescaled_individuals)
 
                         # rescoring: https://github.com/amathislab/BUCTD/blob/main/lib/dataset/crowdpose.py#L182-L206
-                        if "cond_kpts" in context:
+                        if "cond_kpts" in context: # may be interesting!
                             kpt_scores = rescaled[:, :, 2].copy()
                             valid_kpt_scores = kpt_scores >= 0.2
 
@@ -446,7 +465,7 @@ class AddContextToOutput(Postprocessor):
         for k in self.keys:
             if k in context:
                 predictions[k] = context[k].copy()
-        return predictions, context
+        return predictions, context # here the bboxes are still in the right format (list of single bboxes, 2 or 3)
 
 
 class PredictKeypointIdentities(Postprocessor):

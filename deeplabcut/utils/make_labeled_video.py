@@ -173,7 +173,7 @@ def CreateVideo(
                 n_bboxes = len(bboxes)
                 for i in range(n_bboxes):
                     bbox = bboxes[i]
-                    x, y = bbox[0], bbox[1]
+                    x, y = bbox[0], bbox[1] # here!
                     x += x1
                     y += y1
                     w, h = bbox[2], bbox[3]
