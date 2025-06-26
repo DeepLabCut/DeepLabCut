@@ -418,7 +418,7 @@ class CondFromFile(CondProvider):
             data = pickle.load(f)
 
         frames = [f for f in data.keys() if isinstance(f, int)]
-        n_frames = max(*frames)
+        n_frames = max(*frames) + 1
 
         parsed = []
         for i in range(n_frames):
