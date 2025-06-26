@@ -451,7 +451,7 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
         if self.dynamic is not None:
             # dynamic cropping can use patches
             inputs = self.dynamic.crop(inputs)
-        if "cuda" in self.device:
+        if self.device and "cuda" in self.device:
             with torch.autocast(device_type=self.device):
                 outputs = self.model(inputs.to(self.device), **kwargs)
                 raw_predictions = self.model.get_predictions(outputs)
@@ -581,7 +581,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
                 }
             ]
         """
-        if 'cuda' in self.device:
+        if self.device and "cuda" in self.device:
             with torch.autocast(device_type = self.device):
                 outputs = self.model(inputs.to(self.device), **kwargs)
         else:
@@ -845,7 +845,7 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
                 }
             ]
         """
-        if "cuda" in self.device:
+        if self.device and "cuda" in self.device:
             with torch.autocast(device_type=self.device):
                 _, raw_predictions = self.model(inputs.to(self.device))
         else:
