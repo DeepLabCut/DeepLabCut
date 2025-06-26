@@ -64,7 +64,8 @@ def build_from_cfg(
             p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()
         )
         valid_params = {
-            p for p in sig.parameters if p not in ("self", "args", "kwargs")
+            p for p, param in sig.parameters.items()
+            if param.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD) and p != "self"
         }
         filtered_args = {
             k: v for k, v in args.items() if accepts_kwargs or k in valid_params
