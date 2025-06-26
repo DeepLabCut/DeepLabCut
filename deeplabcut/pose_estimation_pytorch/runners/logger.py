@@ -317,7 +317,7 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
 
         output_path = self.train_folder / "wandb_info.yaml"
         with open(output_path, "w") as f:
-            yaml.dump(wandb_info, f)
+            yaml.safe_dump(wandb_info, f)
 
         print(f"WandB run info saved to {output_path}")
 
