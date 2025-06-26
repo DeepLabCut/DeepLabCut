@@ -1330,7 +1330,7 @@ def create_video_with_all_detections(
                     ind = frames.index(n)
 
                     # Draw bounding boxes of required and present
-                    if plot_bboxes and "bboxes" in data[frame_names[ind]]:
+                    if plot_bboxes and "bboxes" in data[frame_names[ind]] and "bbox_scores" in data[frame_names[ind]]:
                         bboxes = data[frame_names[ind]]["bboxes"]
                         bbox_scores = data[frame_names[ind]]["bbox_scores"]
                         n_bboxes = bboxes.shape[0]
