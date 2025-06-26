@@ -430,7 +430,7 @@ class CreateTrainingDataset(DefaultTab):
 
         Returns:
             ctd_conditions: Path | tuple[int, str]
-                ctd conditions in the right formar for deeplabcut.create_training_dataset() API method.
+                ctd conditions in the right format for deeplabcut.create_training_dataset() API method.
 
         Raises:
             Value error if conditions are missing or invalid.
