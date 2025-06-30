@@ -286,7 +286,11 @@ def plot_trajectories(
 
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
-        cfg, shuffle, trainFraction, modelprefix=modelprefix, engine=engine,
+        cfg,
+        shuffle,
+        trainFraction,
+        modelprefix=modelprefix,
+        engine=engine,
     )  # automatically loads corresponding model (even training iteration based on snapshot index)
     bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
         cfg, displayedbodyparts

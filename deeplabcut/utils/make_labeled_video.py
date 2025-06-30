@@ -706,7 +706,11 @@ def create_labeled_video(
 
     if init_weights == "":
         DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
-            cfg, shuffle, train_fraction, modelprefix=modelprefix, engine=engine,
+            cfg,
+            shuffle,
+            train_fraction,
+            modelprefix=modelprefix,
+            engine=engine,
         )  # automatically loads corresponding model (even training iteration based on snapshot index)
     else:
         DLCscorer = "DLC_" + Path(init_weights).stem
@@ -1059,8 +1063,8 @@ def create_video(
         fname=video,
         sname=output_path,
         codec=codec,
-        sw=bbox[1]-bbox[0] if display_cropped else "",
-        sh=bbox[3]-bbox[2] if display_cropped else "",
+        sw=bbox[1] - bbox[0] if display_cropped else "",
+        sh=bbox[3] - bbox[2] if display_cropped else "",
         fps=fps,
     )
 
