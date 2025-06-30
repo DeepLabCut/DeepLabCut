@@ -46,6 +46,12 @@ parts:
   chapters:
   - file: docs/ModelZoo
   - file: docs/recipes/UsingModelZooPupil
+- caption: 🚀 Demos (see the notebooks in action)
+  chapters:
+  - file: examples/COLAB/COLAB_DEMO_SuperAnimal
+  - file: examples/COLAB/COLAB_DEMO_mouse_openfield
+  - file: examples/COLAB/COLAB_3miceDemo
+  - file: examples/COLAB/COLAB_HumanPose_with_RTMPose
 - caption: 🧑‍🍳 Cookbook (detailed helper guides)
   chapters:
   - file: docs/convert_maDLC
