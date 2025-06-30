@@ -500,6 +500,8 @@ document.write(`
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation-the-deeplabcut-process">Documentation: The DeepLabCut Process</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#demo-the-code"><span class="xref myst">DEMO the code</span></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#why-use-deeplabcut">Why use DeepLabCut?</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#performance">Performance 🔥</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-history">The History</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-contributors">Code contributors:</a></li>
 </ul>
 </li>
@@ -529,10 +531,9 @@ document.write(`
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1628250004229-KVYD7JJVHYEFDJ32L9VJ/DLClogo2021.jpg?format=1000w" width="95%">
 </p>
 <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1665060917309-V0YVY2UKVLKSS6O18XDI/MousereachGIF.gif?format=1000w?format=180w" height="150">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1619609897110-TKSTWKEM6HTGXID9D489/ke17ZwdGBToddI8pDm48kAvjv6tW_eojYQmNU0ncbllZw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVHBSTXHtjUKlhRtWJ1Vo6l1B2bxJtByvWSjL6Vz3amc5yb8BodarTVrzIWCp72ioWw/triMouseDLC.gif?format=180w" height="150">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/daed7f16-527f-4150-8bdd-cbb20e267451/cheetah-ezgif.com-video-to-gif-converter.gif?format=180w" height="150">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1534797521117-EIEUED03C68241QZ4KCK/ke17ZwdGBToddI8pDm48kAx9qLOWpcHWRGxWsJQSczRZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpwdr4GYy30vFzf31Oe7KAPZKkqgaiEgc5jBNdhZmDPlzxdkDSclo6ofuXZm6YCEhUo/MATHIS_2018_fly.gif?format=180w" height="150">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1619609897110-TKSTWKEM6HTGXID9D489/ke17ZwdGBToddI8pDm48kAvjv6tW_eojYQmNU0ncbllZw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVHBSTXHtjUKlhRtWJ1Vo6l1B2bxJtByvWSjL6Vz3amc5yb8BodarTVrzIWCp72ioWw/triMouseDLC.gif?format=180w" height="150">
 <p><a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/README.html">📚Documentation</a> |
 <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/installation.html">🛠️ Installation</a> |
 <a class="reference external" href="https://www.deeplabcut.org">🌎 Home Page</a> |
@@ -613,6 +614,67 @@ version with PyTorch and TensorFlow). We aim to depreciate the TF part in 2027.<
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="why-use-deeplabcut">
 <h1>Why use DeepLabCut?<a class="headerlink" href="#why-use-deeplabcut" title="Link to this heading">#</a></h1>
+<p>DeepLabCut continues to be actively maintained and we strive to provide a user-friendly <code class="docutils literal notranslate"><span class="pre">GUI</span></code> and <code class="docutils literal notranslate"><span class="pre">API</span></code> for computer vision researchers and life scientists alike. This means we integrate state-of-the-art models and frameworks, while providing our “best-guess” defaults for life scientists. We highly encourage you to read our papers to get a better understanding of what to use and how to modify the models for your setting.</p>
+<section id="performance">
+<h2>Performance 🔥<a class="headerlink" href="#performance" title="Link to this heading">#</a></h2>
+<p>In general, we provide all the tooling for you to train and use custom models with various high-performance backbones.
+We also provide two foundation pretrained animal models: <code class="docutils literal notranslate"><span class="pre">SuperAnimal-Quadruped</span></code>, <code class="docutils literal notranslate"><span class="pre">SuperAnimal-TopViewMouse</span></code>. To gauge their <em>out-of-distribution</em> performance, we provide the following tables.</p>
+<p>These models are trained on the <a class="reference internal" href="#%5Bhttps://cocodataset.org/%5D(https://www.nature.com/articles/s41467-024-48792-2)"><span class="xref myst">SuperAnimal-Quadruped with AP-10K held out for out-of-domain testing</span></a> and the <a class="reference external" href="https://www.nature.com/articles/s41467-024-48792-2">SuperAnimal-TopViewMouse with DLC-openfield held out for out-of-distribution testing</a>. We provide models that include AP-10K in the API (and GUI).
+Note, there are many different models to select from in DeepLabCut 3.0. We strongly recommend you check <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/pytorch/architectures.html">this Guide</a> for more details.
+This table, and those below, give you a sense of performance in real-world complex in-the-wild and lab mouse data, respectively.
+This <a class="reference external" href="https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-Quadruped">link provides the model weights</a> to reproduce the numbers; but please note, our <code class="docutils literal notranslate"><span class="pre">full</span></code> models are in our DLClibrary and released in the API.</p>
+<details open><summary>DLC 3.0 Pose Estimation (Top Down Models)</summary>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Model Name</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>mAP SA-Q on AP-10K</p></th>
+<th class="head"><p>mAP SA-TVM on DLC-OpenField</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>top_down_resnet_50</p></td>
+<td><p>Top-Down</p></td>
+<td><p>54.9</p></td>
+<td><p>93.5</p></td>
+</tr>
+<tr class="row-odd"><td><p>top_down_resnet_101</p></td>
+<td><p>Top-Down</p></td>
+<td><p>55.9</p></td>
+<td><p>94.1</p></td>
+</tr>
+<tr class="row-even"><td><p>top_down_hrnet_w32</p></td>
+<td><p>Top-Down</p></td>
+<td><p>52.5</p></td>
+<td><p>92.4</p></td>
+</tr>
+<tr class="row-odd"><td><p>top_down_hrnet_w48</p></td>
+<td><p>Top-Down</p></td>
+<td><p>55.3</p></td>
+<td><p>93.8</p></td>
+</tr>
+<tr class="row-even"><td><p>rtmpose_s</p></td>
+<td><p>Top-Down</p></td>
+<td><p>52.9</p></td>
+<td><p>92.9</p></td>
+</tr>
+<tr class="row-odd"><td><p>rtmpose_m</p></td>
+<td><p>Top-Down</p></td>
+<td><p>55.4</p></td>
+<td><p>94.8</p></td>
+</tr>
+<tr class="row-even"><td><p>rtmpose_x</p></td>
+<td><p>Top-Down</p></td>
+<td><p>57.6</p></td>
+<td><p>94.5</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</details>
+</section>
+<section id="the-history">
+<h2>The History<a class="headerlink" href="#the-history" title="Link to this heading">#</a></h2>
 <p>In 2018, we demonstrated the capabilities for <a class="reference external" href="https://vnmurthylab.org/">trail tracking</a>, <a class="reference external" href="http://www.mousemotorlab.org/">reaching in mice</a> and various Drosophila behaviors during egg-laying (see <a class="reference external" href="https://www.nature.com/articles/s41593-018-0209-y">Mathis et al.</a> for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has already been successfully applied (by us and others) to <a class="reference external" href="http://www.mousemotorlab.org/deeplabcut">rats</a>, humans, various fish species, bacteria, leeches, various robots, cheetahs, <a class="reference external" href="http://www.mousemotorlab.org/deeplabcut">mouse whiskers</a> and <a class="reference external" href="http://www.mousemotorlab.org/deeplabcut">race horses</a>. DeepLabCut utilized the feature detectors (ResNets + readout layers) of one of the state-of-the-art algorithms for human pose estimation by Insafutdinov et al., called DeeperCut, which inspired the name for our toolbox (see references below). Since this time, the package has changed substantially.  The code has been re-tooled and re-factored since 2.1+: We have added faster and higher performance variants with MobileNetV2s, EfficientNets, and our own DLCRNet backbones (see <a class="reference external" href="https://arxiv.org/abs/1909.11229">Pretraining boosts out-of-domain robustness for pose estimation</a> and <a class="reference external" href="https://www.nature.com/articles/s41592-022-01443-0">Lauer et al 2022</a>). Additionally, we have improved the inference speed and provided both additional and novel augmentation methods, added real-time, and multi-animal support.
 In v3.0+ we have changed the backend to support PyTorch. This brings not only an easier installation process for users, but performance gains, developer flexibility, and a lot of new tools! Importantly, the high-level API stays the same, so it will be a seamless transition for users 💜!
 We currently provide state-of-the-art performance for animal pose estimation and the labs (M. Mathis Lab and A. Mathis Group) have both top journal and computer vision conference papers.</p>
@@ -627,11 +689,13 @@ We currently provide state-of-the-art performance for animal pose estimation and
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588292233203-FD1DVKAQYNV2TU91CO7R/ke17ZwdGBToddI8pDm48kIX24IsDPzy6M4KUaihfICJZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIxtGUdkzp028KVNnpOijF3PweOM5su6FUQHO6Wkh72Nw/dlc_eco.gif?format=1000w" width="80%">
 </p>
+</section>
 <section id="code-contributors">
 <h2>Code contributors:<a class="headerlink" href="#code-contributors" title="Link to this heading">#</a></h2>
-<p>DLC code was originally developed by <a class="reference external" href="https://github.com/AlexEMG">Alexander Mathis</a> &amp; <a class="reference external" href="https://github.com/MMathisLab">Mackenzie Mathis</a>, and was extended in 2.0 with the core dev team consisting of <a class="reference external" href="https://github.com/meet10may">Tanmay Nath</a> (2.0-2.1), and currently (2.1+) with <a class="reference external" href="https://github.com/jeylau">Jessy Lauer</a> and (2.3+) <a class="reference external" href="https://github.com/n-poulsen">Niels Poulsen</a>.
-DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including  Mert Yuksekgonul, Tom Biasi, Richard Warren, Ronny Eichler, Hao Wu, Federico Claudi, Gary Kane and Jonny Saunders as well as the <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/graphs/contributors">100+ contributors</a>. Please see <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS">AUTHORS</a> for more details!</p>
-<p>This is an actively developed package and we welcome community development and involvement.</p>
+<p>DLC code was originally developed by <a class="reference external" href="https://github.com/AlexEMG">Alexander Mathis</a> &amp; <a class="reference external" href="https://github.com/MMathisLab">Mackenzie Mathis</a>, and was extended in 2.0 with the core dev team consisting of <a class="reference external" href="https://github.com/meet10may">Tanmay Nath</a> (2.0-2.1), <a class="reference external" href="https://github.com/jeylau">Jessy Lauer</a> (2.1-2.4), and <a class="reference external" href="https://github.com/n-poulsen">Niels Poulsen</a> (2.3-3.0).
+DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including early contributors: Mert Yuksekgonul, Tom Biasi, Richard Warren, Ronny Eichler, Hao Wu, Federico Claudi, Gary Kane and Jonny Saunders as well as the <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/graphs/contributors">100+ contributors</a>. Please see <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS">AUTHORS</a> for more details!</p>
+<p>🤩 This is an actively developed package and we welcome community development and involvement:</p>
+<p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/graphs/contributors"><img alt="Contributors" src="https://contrib.rocks/image?repo=DeepLabCut/DeepLabCut" /></a></p>
 </section>
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="get-assistance-be-part-of-the-dlc-community">
@@ -699,9 +763,7 @@ DeepLabCut is an open-source tool and has benefited from suggestions and edits b
 </section>
 <section id="major-versions">
 <h2>Major Versions:<a class="headerlink" href="#major-versions" title="Link to this heading">#</a></h2>
-<ul class="simple">
-<li><p>For all versions, please see <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/releases">here</a>.</p></li>
-</ul>
+<p><strong>For all versions, please see <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/releases">here</a>.</strong></p>
 <p>VERSION 3.0: A whole new experience with PyTorch🔥. While the high-level API remains the same, the backend and developer friendliness have greatly improved, along with performance gains!</p>
 <p>VERSION 2.3: Model Zoo SuperAnimals, and a whole new GUI experience.</p>
 <p>VERSION 2.2: Multi-animal pose estimation, identification, and tracking with DeepLabCut is supported (as well as single-animal projects).</p>
@@ -855,6 +917,8 @@ importing a project into the new data format for DLC 2.0</p></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation-the-deeplabcut-process">Documentation: The DeepLabCut Process</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#demo-the-code"><span class="xref myst">DEMO the code</span></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#why-use-deeplabcut">Why use DeepLabCut?</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#performance">Performance 🔥</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-history">The History</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-contributors">Code contributors:</a></li>
 </ul>
 </li>
