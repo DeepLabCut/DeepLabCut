@@ -121,14 +121,13 @@ This table, and those below, give you a sense of performance in real-world compl
 
 | Model Name                    | Type       | mAP SA-Q on AP-10K | mAP SA-TVM on DLC-OpenField |
 |------------------------------|------------|---------------------|-----------------------------|
-| top_down_resnet_50           | Top-Down   |          |            |
-| top_down_resnet_101          | Top-Down   |          |            |
-| top_down_hrnet_w18           | Top-Down   |          |            |
-| top_down_hrnet_w32            | Top-Down   | 68.038   |     95.219   |
-| top_down_hrnet_w48           | Top-Down   |          |            |
-| rtmpose_s                    | Top-Down     |          |            |
-| rtmpose_m                    | Top-Down     |          |            |
-| rtmpose_x                    | Top-Down     |          |            |
+| top_down_resnet_50           | Top-Down   |   54.9       |      93.5      |
+| top_down_resnet_101          | Top-Down   |   55.9       |      94.1      |
+| top_down_hrnet_w32            | Top-Down  |   52.5       |                |
+| top_down_hrnet_w48           | Top-Down   |   55.3       |      93.8      |
+| rtmpose_s                    | Top-Down     | 52.9        |     92.9       |
+| rtmpose_m                    | Top-Down     | 55.4         |    94.8        |
+| rtmpose_x                    | Top-Down     |  57.6        |    94.5        |
 </details>
 
 <details><summary>Pose Estimation (Bottom-Up Models)</summary>
