@@ -330,6 +330,14 @@ class MainWindow(QMainWindow):
         icon = os.path.join(BASE_DIR, "assets", "logo.png")
         self.setWindowIcon(QIcon(icon))
 
+        # Set default window size and allow resizing
+        self.resize(int(self.screen_width * 0.8), int(self.screen_height * 0.8))
+        self.setMinimumSize(800, 600)
+        self.setMaximumSize(self.screen_width, self.screen_height)
+        self.setWindowFlag(Qt.WindowMaximizeButtonHint, True)
+        self.setWindowFlag(Qt.WindowMinimizeButtonHint, True)
+        self.setWindowFlag(Qt.WindowCloseButtonHint, True)
+
         self.status_bar = self.statusBar()
         self.status_bar.setObjectName("Status Bar")
         self.status_bar.showMessage("www.deeplabcut.org")
