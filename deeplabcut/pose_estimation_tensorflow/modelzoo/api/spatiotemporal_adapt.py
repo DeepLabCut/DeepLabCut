@@ -206,7 +206,7 @@ class SpatiotemporalAdaptation:
             **kwargs,
         )
 
-    def after_adapt_inference(self, **kwargs):
+    def after_adapt_inference(self, create_labeled_video, **kwargs):
         pattern = os.path.join(
             self.modelfolder, f"snapshot-{self.adapt_iterations}.index"
         )
@@ -238,13 +238,14 @@ class SpatiotemporalAdaptation:
         if kwargs.pop("plot_trajectories", True):
             _plot_trajectories(datafiles[0])
 
-        create_labeled_video(
-            ref_proj_config_path,
-            [self.video_path],
-            videotype=self.videotype,
-            filtered=False,
-            init_weights=adapt_weights,
-            draw_skeleton=True,
-            superanimal_name=self.project_name,
-            **kwargs,
-        )
+        if create_labeled_video:
+            create_labeled_video(
+                ref_proj_config_path,
+                [self.video_path],
+                videotype=self.videotype,
+                filtered=False,
+                init_weights=adapt_weights,
+                draw_skeleton=True,
+                superanimal_name=self.project_name,
+                **kwargs,
+            )

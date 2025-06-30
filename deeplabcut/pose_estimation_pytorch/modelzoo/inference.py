@@ -60,6 +60,7 @@ def _video_inference_superanimal(
     output_suffix: str = "",
     plot_bboxes: bool = True,
     bboxes_pcutoff: float = 0.9,
+    create_labeled_video: bool = True,
 ) -> dict:
     """
     Perform inference on a video using a superanimal model from the model zoo specified by `superanimal_name`.
@@ -89,6 +90,8 @@ def _video_inference_superanimal(
         dest_folder: Destination folder for the results. If not specified, the
             results are saved in the same folder as the video. Defaults to None.
         output_suffix: The suffix to add to output file names (e.g. _before_adapt)
+        create_labeled_video (bool):
+            Specifies if a labeled video needs to be created, True by default.
 
     Returns:
         results: Dictionary with the result pd.DataFrame for each video
@@ -172,18 +175,19 @@ def _video_inference_superanimal(
         superanimal_colormaps = get_superanimal_colormaps()
         colormap = superanimal_colormaps[superanimal_name]
 
-        create_video(
-            video_path,
-            output_h5,
-            pcutoff=pcutoff,
-            fps=video.fps,
-            bbox=bbox,
-            cmap=colormap,
-            output_path=str(output_video),
-            plot_bboxes=plot_bboxes,
-            bboxes_list=bboxes_list,
-            bboxes_pcutoff=bboxes_pcutoff,
-        )
-        print(f"Video with predictions was saved as {output_path}")
+        if create_labeled_video:
+            create_video(
+                video_path,
+                output_h5,
+                pcutoff=pcutoff,
+                fps=video.fps,
+                bbox=bbox,
+                cmap=colormap,
+                output_path=str(output_video),
+                plot_bboxes=plot_bboxes,
+                bboxes_list=bboxes_list,
+                bboxes_pcutoff=bboxes_pcutoff,
+            )
+            print(f"Video with predictions was saved as {output_path}")
 
     return results
