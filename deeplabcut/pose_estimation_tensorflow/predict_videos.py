@@ -34,6 +34,7 @@ from tqdm import tqdm
 from deeplabcut.core import trackingutils, inferenceutils
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import predict
+from deeplabcut import Engine
 
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, auxfun_models
@@ -169,6 +170,7 @@ def create_tracking_dataset(
         trainFraction,
         trainingsiterations=trainingsiterations,
         modelprefix=modelprefix,
+        engine=Engine.TF,
     )
     if dlc_cfg["num_outputs"] > 1:
         if TFGPUinference:
@@ -561,6 +563,7 @@ def analyze_videos(
         trainFraction,
         trainingsiterations=trainingsiterations,
         modelprefix=modelprefix,
+        engine=Engine.TF,
     )
     if dlc_cfg["num_outputs"] > 1:
         if TFGPUinference:
@@ -1327,6 +1330,7 @@ def analyze_time_lapse_frames(
         trainFraction,
         trainingsiterations=trainingsiterations,
         modelprefix=modelprefix,
+        engine=Engine.TF,
     )
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
@@ -1687,6 +1691,7 @@ def convert_detections2tracklets(
         trainFraction,
         trainingsiterations=trainingsiterations,
         modelprefix=modelprefix,
+        engine=Engine.TF,
     )
 
     ##################################################

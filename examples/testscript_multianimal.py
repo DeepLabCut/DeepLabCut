@@ -193,7 +193,7 @@ if __name__ == "__main__":
         pass
 
     print("Create video with all detections...")
-    scorer, _ = auxiliaryfunctions.get_scorer_name(cfg, 1, TRAIN_SIZE)
+    scorer, _ = auxiliaryfunctions.get_scorer_name(cfg, 1, TRAIN_SIZE, engine=ENGINE)
 
     deeplabcut.create_video_with_all_detections(
         config_path, [new_video_path], shuffle=1, displayedbodyparts=["bodypart1"]
