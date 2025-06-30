@@ -127,11 +127,11 @@ The links provide the model weights to reproduce the numbers below; but please n
 |------------------------------|------------|---------------------|-----------------------------|
 | top_down_resnet_50           | Top-Down   |   54.9       |      93.5      |
 | top_down_resnet_101          | Top-Down   |   55.9       |      94.1      |
-| top_down_hrnet_w32            | Top-Down  |   52.5       |                |
+| top_down_hrnet_w32            | Top-Down  |   52.5       |      92.4      |
 | top_down_hrnet_w48           | Top-Down   |   55.3       |      93.8      |
-| rtmpose_s                    | Top-Down     | 52.9        |     92.9       |
-| rtmpose_m                    | Top-Down     | 55.4         |    94.8        |
-| rtmpose_x                    | Top-Down     |  57.6        |    94.5        |
+| rtmpose_s                    | Top-Down     | 52.9        |     92.9      |
+| rtmpose_m                    | Top-Down     | 55.4         |    94.8      |
+| rtmpose_x                    | Top-Down     |  57.6        |    94.5      |
 </details>
 
 
