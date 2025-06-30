@@ -10,6 +10,7 @@ parts:
   - file: docs/installation
   - file: docs/recipes/installTips
   - file: docs/docker
+  - file: conda-environments/README
 - caption: Main User Guides
   chapters:
   - file: docs/standardDeepLabCut_UserGuide
@@ -46,12 +47,30 @@ parts:
   chapters:
   - file: docs/ModelZoo
   - file: docs/recipes/UsingModelZooPupil
-- caption: 🚀 Demos (see the notebooks in action)
+- caption: 🚀 Main Demo Notebooks
   chapters:
   - file: examples/COLAB/COLAB_DEMO_SuperAnimal
   - file: examples/COLAB/COLAB_DEMO_mouse_openfield
   - file: examples/COLAB/COLAB_3miceDemo
   - file: examples/COLAB/COLAB_HumanPose_with_RTMPose
+  - file: examples/COLAB/COLAB_DLC_ModelZoo
+- caption: 🚀 Notebooks For Your Data
+  chapters:
+  - file: examples/COLAB/COLAB_YOURDATA_SuperAnimal
+  - file: examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis
+  - file: examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis
+  
+  - file: examples/JUPYTER/Demo_labeledexample_MouseReaching
+  - file: examples/JUPYTER/Demo_labeledexample_Openfield
+  - file: examples/JUPYTER/Demo_napari
+  - file: examples/JUPYTER/Demo_yourowndata
+  - file: examples/JUPYTER/Docker_TrainNetwork_VideoAnalysis
+- caption: 🚀 Special Feature Demos
+  chapters:
+  - file: examples/COLAB/COLAB_transformer_reID
+  - file: examples/COLAB/COLAB_BUCTD_and_CTD_tracking
+  - file: examples/JUPYTER/Demo_3D_DeepLabCut
+
 - caption: 🧑‍🍳 Cookbook (detailed helper guides)
   chapters:
   - file: docs/convert_maDLC
@@ -75,6 +94,7 @@ parts:
   - file: docs/MISSION_AND_VALUES
   - file: docs/roadmap
   - file: docs/Governance
+  - file: CONTRIBUTING
 - caption: Citations for DeepLabCut
   chapters:
   - file: docs/citation

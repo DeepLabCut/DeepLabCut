@@ -112,7 +112,7 @@ There are docs for this: [convert single to multianimal annotation data](convert
 
 ![Box 1 - Multi Animal Project Configuration File Glossary](images/box1-multi.png)
 
-#### API Docs
+### API Docs
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -759,7 +759,7 @@ path to the **folder** or exact video(s) you wish to analyze:
 deeplabcut.analyze_videos(config_path, ['/fullpath/project/videos/'], videotype='.mp4', auto_track=True)
 ```
 
-#### IF auto_track = True:
+### IF auto_track = True:
 
 ```{versionadded} v2.2.0.3
 A new argument `auto_track=True`, was added to `deeplabcut.analyze_videos` chaining pose
@@ -770,7 +770,7 @@ DLC. If `auto_track=False`, one must run `convert_detections2tracklets` and
 the workflow (ideal for advanced users).
 ```
 
-#### IF auto_track = False:
+### IF auto_track = False:
 
 You can validate the tracking parameters. Namely, you can iteratively change the
 parameters, run `convert_detections2tracklets` then load them in the GUI 
@@ -835,7 +835,7 @@ deeplabcut.stitch_tracklets(..., n_tracks=n)
 
 In such cases, file columns will default to dummy animal names (ind1, ind2, ..., up to indn).
 
-#### API Docs
+### API Docs
 
 ````{admonition} Click the button to see API Docs for analyze_videos
 :class: dropdown
