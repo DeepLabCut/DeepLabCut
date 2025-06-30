@@ -8,6 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from deeplabcut import Engine
 
 
 def transformer_reID(
@@ -23,6 +24,7 @@ def transformer_reID(
     train_frac: float = 0.8,
     modelprefix: str = "",
     destfolder: str = None,
+    engine: Engine | None = None,
 ):
     """
     Enables tracking with transformer.
@@ -73,6 +75,12 @@ def transformer_reID(
     train_frac: (optional), fraction
         fraction of triplets used for training/testing of the transformer
 
+    engine: Engine, optional, default = None.
+        The default behavior loads the engine for the shuffle from the metadata. You can
+        overwrite this by passing the engine as an argument, but this should generally
+        not be done.
+
+
     Examples
     --------
 
@@ -102,6 +110,7 @@ def transformer_reID(
         shuffle=shuffle,
         trainFraction=cfg["TrainingFraction"][trainingsetindex],
         modelprefix=modelprefix,
+        engine=engine,
     )
 
     deeplabcut.compat.create_tracking_dataset(
@@ -114,6 +123,7 @@ def transformer_reID(
         modelprefix=modelprefix,
         n_triplets=n_triplets,
         destfolder=destfolder,
+        engine=engine,
     )
 
     (
@@ -125,6 +135,7 @@ def transformer_reID(
         shuffle=shuffle,
         modelprefix=modelprefix,
         trainingsetindex=trainingsetindex,
+        engine=engine,
     )
 
     deeplabcut.pose_tracking_pytorch.train_tracking_transformer(
@@ -157,4 +168,5 @@ def transformer_reID(
         n_tracks=n_tracks,
         transformer_checkpoint=transformer_checkpoint,
         destfolder=destfolder,
+        engine=engine,
     )
