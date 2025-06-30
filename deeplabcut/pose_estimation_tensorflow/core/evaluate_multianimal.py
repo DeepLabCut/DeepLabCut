@@ -215,7 +215,7 @@ def evaluate_multianimal_full(
                 cfg["project_path"],
                 str(
                     auxiliaryfunctions.get_evaluation_folder(
-                        trainFraction, shuffle, cfg, modelprefix=modelprefix
+                        trainFraction, shuffle, cfg, modelprefix=modelprefix, engine=Engine.TF,
                     )
                 ),
             )

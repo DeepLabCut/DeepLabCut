@@ -11,6 +11,8 @@
 import os
 import matplotlib.pyplot as plt
 from skimage.transform import resize
+
+from deeplabcut import Engine
 from deeplabcut.core.visualization import (
     form_figure,  # for backwards compatibility
     visualize_scoremaps,
@@ -155,7 +157,7 @@ def extract_maps(
             cfg["project_path"],
             str(
                 auxiliaryfunctions.get_evaluation_folder(
-                    trainFraction, shuffle, cfg, modelprefix=modelprefix
+                    trainFraction, shuffle, cfg, modelprefix=modelprefix, engine=Engine.TF,
                 )
             ),
         )
@@ -353,7 +355,7 @@ def extract_save_all_maps(
         if not dest_folder:
             dest_folder = os.path.join(
                 cfg["project_path"],
-                str(get_evaluation_folder(frac, shuffle, cfg, modelprefix=modelprefix)),
+                str(get_evaluation_folder(frac, shuffle, cfg, modelprefix=modelprefix, engine=Engine.TF)),
                 "maps",
             )
         attempt_to_make_folder(dest_folder)
