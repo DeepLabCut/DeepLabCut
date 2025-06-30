@@ -609,6 +609,27 @@ document.write(`
 
 <span class="c1"># Loading example data set:</span>
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">load_demo_data</span><span class="p">(</span><span class="n">path_config_file</span><span class="p">)</span>
+
+<span class="c1"># Automatically update some hyperparameters for training, </span>
+<span class="c1"># here rotations to +/- 180 degrees. This can be helpful for optimizing performance. </span>
+<span class="c1"># see Primer -- Mathis et al. Neuron 2020</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.core.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_config_as_dict</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut.pose_estimation_pytorch</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dlc_torch</span>
+
+<span class="n">loader</span> <span class="o">=</span> <span class="n">dlc_torch</span><span class="o">.</span><span class="n">DLCLoader</span><span class="p">(</span>
+    <span class="n">config</span><span class="o">=</span><span class="n">path_config_file</span><span class="p">,</span>  
+    <span class="n">trainset_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Get the pytorch config path </span>
+<span class="n">pytorch_config_path</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">model_folder</span> <span class="o">/</span> <span class="s2">&quot;pytorch_config.yaml&quot;</span>
+
+<span class="n">model_cfg</span> <span class="o">=</span> <span class="n">read_config_as_dict</span><span class="p">(</span><span class="n">pytorch_config_path</span><span class="p">)</span>
+<span class="n">model_cfg</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s2">&quot;train&quot;</span><span class="p">][</span><span class="s2">&quot;affine&quot;</span><span class="p">][</span><span class="s2">&quot;rotation&quot;</span><span class="p">]</span><span class="o">=</span><span class="mi">180</span>
+
+<span class="c1"># Save the modified config</span>
+<span class="n">dlc_torch</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">write_config</span><span class="p">(</span><span class="n">pytorch_config_path</span><span class="p">,</span><span class="n">model_cfg</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
