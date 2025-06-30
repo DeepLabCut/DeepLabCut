@@ -15,6 +15,7 @@ from pathlib import Path
 
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.compat import Engine
+from deeplabcut.pose_estimation_pytorch.config.utils import is_model_top_down
 
 from utils import (
     cleanup,
@@ -51,7 +52,7 @@ def main(
     try:
         for net_type in net_types:
             epochs_ = epochs
-            if "top_down" in net_type:
+            if is_model_top_down(net_type):
                 epochs_ = top_down_epochs
             try:
                 run(
@@ -96,7 +97,7 @@ if __name__ == "__main__":
         "run_name": "test-logging",
     }
     main(
-        net_types=["top_down_resnet_50", "resnet_50", "dekr_w32"],
+        net_types=["top_down_resnet_50", "resnet_50", "dekr_w32", "rtmpose_m"],
         params=SyntheticProjectParameters(
             multianimal=True,
             num_bodyparts=4,
