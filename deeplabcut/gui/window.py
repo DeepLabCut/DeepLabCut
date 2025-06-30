@@ -16,8 +16,8 @@ from functools import cached_property
 from pathlib import Path
 from typing import List
 from urllib.error import URLError
-import qdarkstyle
 import warnings
+import qdarkstyle
 
 import deeplabcut
 from deeplabcut import auxiliaryfunctions, VERSION, compat
