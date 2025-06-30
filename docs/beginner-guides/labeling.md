@@ -11,7 +11,7 @@ In DeepLabCut, choosing the right frames for labeling is a key step. The trick i
 
 2. **Pick Frames Yourself:** Just like flipping through a photo album, you can go through your video and pick the frames that catch your eye - this is great for finding rare frames. Choose the **`manual`** extraction method.
 
-#### Here's how to get started:
+### Here's how to get started:
 
 - **Step 1:** Click on **`automatic`** in the frame selection area.
 - **Step 2:** Choose **`k-means`** for some variety.

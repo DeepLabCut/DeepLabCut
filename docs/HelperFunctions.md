@@ -19,7 +19,7 @@ Or perhaps you sort of know the name of the function, but not fully, then you ca
 
 Now, for any of these functions, you type ``deeplabcut.analyze_videos_converth5_to_csv?`` you get:
 
-```python
+```text
 Signature: deeplabcut.analyze_videos_converth5_to_csv(videopath, videotype='.avi')
 Docstring:
 By default the output poses (when running analyze_videos) are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position  in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) in the same directory, where the video is stored. If the flag save_as_csv is set to True, the data is also exported as comma-separated value file. However, if the flag was *not* set, then this function allows the conversion of all h5 files to csv files (without having to analyze the videos again)!

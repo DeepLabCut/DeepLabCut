@@ -50,7 +50,7 @@ and makes it possible to use the GPU with both PyTorch and TensorFlow.
 
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/71e5d954-75a0-4534-9fa6-7ecc4bf1b76d/installDLC.png?format=1500w" width="250" title="DLC" alt="DLC" align="right" vspace = "50">
 
-#### 🚨 Before you start with our conda file, do you have a GPU?
+### 🚨 Before you start with our conda file, do you have a GPU?
 ````{admonition} 🚨 Click here for more information!
 :class: dropdown
 - We recommend having a GPU if possible!
@@ -65,7 +65,7 @@ and makes it possible to use the GPU with both PyTorch and TensorFlow.
 
 ### Step 1: Install Python via Anaconda
 
-#### Install [anaconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html#), or use miniconda3 for MacOS users (see below)
+### Install [anaconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html#), or use miniconda3 for MacOS users (see below)
 
 - Anaconda is an easy way to install Python and additional packages across various operating systems. With Anaconda you create all the dependencies in an [environment](https://conda.io/docs/user-guide/tasks/manage-environments.html) on your machine.
 
@@ -76,7 +76,7 @@ Download anaconda for your operating system: [anaconda.com/download/
 
 - IF you use a M1 or M2 chip in your MacBook with v12.5+ (typically 2020 or newer machines), we recommend **miniconda3,** which operates with the same principles as anaconda. This is straight forward and explained in detail here: https://docs.conda.io/projects/conda/en/latest/user-guide/install/macos.html. But in short, open the program "terminal" and copy/paste and run the code that is supplied below.
 
-#### 💡 miniconda for Mac
+### 💡 miniconda for Mac
 ````{admonition} Click the button to see code for miniconda for Mac
 :class: dropdown
 wget https://repo.anaconda.com/miniconda/Miniconda3-py310_4.12.0-MacOSX-arm64.sh -O ~/miniconda.sh
@@ -123,7 +123,7 @@ Now you should see (`nameofenv`) on the left of your terminal screen, i.e. ``(DE
 NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)
 
 (deeplabcut-with-tf-install)=
-#### 💡 Notice: PyTorch and TensorFlow Support within DeepLabCut
+### 💡 Notice: PyTorch and TensorFlow Support within DeepLabCut
 
 ````{admonition} DeepLabCut TensorFlow Support
 :class: dropdown
@@ -257,7 +257,7 @@ https://www.nvidia.com/download/index.aspx
 
 **THIRD:** Follow the steps above to get the `DEEPLABCUT` conda file and install it!
 
-#### Notes:
+### Notes:
 
 - **As of version 3.0+ we moved to PyTorch. The Last supported version of TensorFlow is 
 2.10  (window users) and 2.12 for others (we have not tested beyond this).**
