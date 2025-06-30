@@ -157,7 +157,11 @@ def extract_maps(
             cfg["project_path"],
             str(
                 auxiliaryfunctions.get_evaluation_folder(
-                    trainFraction, shuffle, cfg, modelprefix=modelprefix, engine=Engine.TF,
+                    trainFraction,
+                    shuffle,
+                    cfg,
+                    modelprefix=modelprefix,
+                    engine=Engine.TF,
                 )
             ),
         )
@@ -355,7 +359,11 @@ def extract_save_all_maps(
         if not dest_folder:
             dest_folder = os.path.join(
                 cfg["project_path"],
-                str(get_evaluation_folder(frac, shuffle, cfg, modelprefix=modelprefix, engine=Engine.TF)),
+                str(
+                    get_evaluation_folder(
+                        frac, shuffle, cfg, modelprefix=modelprefix, engine=Engine.TF
+                    )
+                ),
                 "maps",
             )
         attempt_to_make_folder(dest_folder)

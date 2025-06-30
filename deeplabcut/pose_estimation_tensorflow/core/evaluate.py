@@ -343,7 +343,11 @@ def return_evaluate_network_data(
         cfg["project_path"],
         str(
             auxiliaryfunctions.get_evaluation_folder(
-                trainFraction, shuffle, cfg, modelprefix=modelprefix, engine=Engine.TF,
+                trainFraction,
+                shuffle,
+                cfg,
+                modelprefix=modelprefix,
+                engine=Engine.TF,
             )
         ),
     )
@@ -375,7 +379,12 @@ def return_evaluate_network_data(
 
         # name for deeplabcut net (based on its parameters)
         DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
-            cfg, shuffle, trainFraction, trainingsiterations, modelprefix=modelprefix, engine=Engine.TF,
+            cfg,
+            shuffle,
+            trainFraction,
+            trainingsiterations,
+            modelprefix=modelprefix,
+            engine=Engine.TF,
         )
         if not returnjustfns:
             print(
@@ -763,7 +772,11 @@ def evaluate_network(
                     cfg["project_path"],
                     str(
                         auxiliaryfunctions.get_evaluation_folder(
-                            trainFraction, shuffle, cfg, modelprefix=modelprefix, engine=Engine.TF,
+                            trainFraction,
+                            shuffle,
+                            cfg,
+                            modelprefix=modelprefix,
+                            engine=Engine.TF,
                         )
                     ),
                 )
