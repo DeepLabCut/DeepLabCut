@@ -114,7 +114,7 @@ DeepLabCut continues to be actively maintained and we strive to provide a user-f
 ## Performance 🔥
 
 In general, we provide all the tooling for you to train and use custom models with various high-performance backbones. 
-We also provide two foundation pretrained animal models: `SuperAnimal-Quadruped`, `SuperAnimal-TopViewMouse`. To guage their performance, we provide the following tables.
+We also provide two foundation pretrained animal models: `SuperAnimal-Quadruped`, `SuperAnimal-TopViewMouse`. To gauge their performance, we provide the following tables.
 
 These models are trained on the [SuperAnimal-Quadruped with AP-10K held out for out-of-domain testing]([https://cocodataset.org/](https://www.nature.com/articles/s41467-024-48792-2)) and the [SuperAnimal-TopViewMouse with DLC-openfield held out for out-of-distribution testing](https://www.nature.com/articles/s41467-024-48792-2). We provide models that include AP-10K in the API (and GUI).
 Note, there are many different models to select from in DeepLabCut 3.0. We strongly recommend you check [this Guide](https://deeplabcut.github.io/DeepLabCut/docs/pytorch/architectures.html) for more details.
