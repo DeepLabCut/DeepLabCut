@@ -401,9 +401,9 @@ def extract_frames(
                         )
                 else:
                     print(
-                         "Please implement this method yourself and send us a pull "
-                         "request! Otherwise, choose 'uniform' or 'kmeans'."
-                     )
+                        "Please implement this method yourself and send us a pull "
+                        "request! Otherwise, choose 'uniform' or 'kmeans'."
+                    )
                     frames2pick = []
 
                 if not len(frames2pick):
