@@ -327,6 +327,9 @@ class MainWindow(QMainWindow):
         self.logger.info("All video files have been cleared.")
 
     def window_set(self):
+        WINDOW_RESIZE_FACTOR=.8
+        DEFAULT_MINIMUM_WIDTH, DEFAULT_MINIMUM_HEIGHT = 800, 600
+        
         self.setWindowTitle("DeepLabCut")
 
         palette = QtGui.QPalette()
