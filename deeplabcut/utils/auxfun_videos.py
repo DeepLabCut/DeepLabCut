@@ -327,9 +327,9 @@ class VideoWriter(VideoReader):
         command = f'ffmpeg -n -i "{self.video_path}" -vf '
         if rotatecw == "Arbitrary":
             angle = np.deg2rad(angle)
-            command += f'rotate={angle} '
+            command += f"rotate={angle} "
         elif rotatecw == "Yes":
-            command += 'transpose=1 '
+            command += "transpose=1 "
         else:
             raise ValueError("Unknown rotation direction.")
 

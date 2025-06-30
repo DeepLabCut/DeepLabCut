@@ -12,7 +12,7 @@
 #
 """
 
-This is a test script to compare the loaders and models. 
+This is a test script to compare the loaders and models.
 
 This script creates one identical splits for the openfield test dataset and trains it with imgaug (default), scalecrop
 and the tensorpack loader. We also compare 3 backbones (mobilenet, resnet, efficientnet)

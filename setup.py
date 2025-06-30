@@ -128,7 +128,9 @@ setuptools.setup(
                 "deeplabcut/gui/assets/icons/new_project2.png",
                 "deeplabcut/gui/assets/icons/open.png",
                 "deeplabcut/gui/assets/icons/open2.png",
-            ] + super_animal_config_paths() + pytorch_config_paths(),
+            ]
+            + super_animal_config_paths()
+            + pytorch_config_paths(),
         )
     ],
     include_package_data=True,

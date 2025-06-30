@@ -56,7 +56,7 @@ class DEKROffsetLoss(BaseCriterion):
         l1_loss = torch.abs(pred - gt)
         return torch.where(
             l1_loss < self.beta,
-            0.5 * l1_loss ** 2 / self.beta,
+            0.5 * l1_loss**2 / self.beta,
             l1_loss - 0.5 * self.beta,
         )
 

@@ -23,8 +23,9 @@ import torch.nn as nn
 
 ModelType = TypeVar("ModelType", bound=nn.Module)
 
-_load_weights_only: bool = (
-    os.getenv("TORCH_LOAD_WEIGHTS_ONLY", "true").lower() in ("true", "1")
+_load_weights_only: bool = os.getenv("TORCH_LOAD_WEIGHTS_ONLY", "true").lower() in (
+    "true",
+    "1",
 )
 
 
@@ -218,6 +219,7 @@ def _add_numpy_to_torch_safe_globals():
     try:
         from numpy.core.multiarray import scalar
         from numpy.dtypes import Float64DType
+
         torch.serialization.add_safe_globals([np.dtype, Float64DType, scalar])
     except Exception:
         pass

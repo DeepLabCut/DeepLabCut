@@ -86,14 +86,18 @@ def test_dynamic_cropper_does_nothing_with_low_quality(threshold: float):
                 [[float("nan"), float("nan"), float("nan")]],
                 [[float("nan"), float("nan"), float("nan")]],
             ],
-            0.15, 10, [0, 0, 64, 64]
+            0.15,
+            10,
+            [0, 0, 64, 64],
         ),
         (
             [
                 [[20, 30, 0.8], [5, 12, 0.2]],
                 [[40, 10, 0.2], [35, 15, 0.79]],
             ],
-            0.15, 5, [0, 5, 45, 35]
+            0.15,
+            5,
+            [0, 5, 45, 35],
         ),
     ],
 )
@@ -101,7 +105,7 @@ def test_dynamic_cropper_basic_crop(
     pose: list[list[float]],
     threshold: float,
     margin: int,
-    expected_crop: tuple[int, int, int, int]
+    expected_crop: tuple[int, int, int, int],
 ) -> None:
     x0, y0, x1, y1 = expected_crop
     crop_w, crop_h = x1 - x0, y1 - y0

@@ -76,7 +76,7 @@ def test_build_transforms(transform_dict, size_image, num_keypoints, num_animals
             keypoints=keypoints.copy(),
             bboxes=bboxes.copy(),
             bbox_labels=np.arange(num_animals),
-            class_labels=[0 for _ in range(len(keypoints))]
+            class_labels=[0 for _ in range(len(keypoints))],
         )
 
         if "resize" in transform_dict.keys():

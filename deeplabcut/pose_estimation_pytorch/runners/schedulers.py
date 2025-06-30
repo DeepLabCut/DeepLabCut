@@ -127,4 +127,4 @@ def load_scheduler_state(
 
     # Update the learning rate for the optimizer based on the scheduler
     for group, resume_lr in zip(param_groups, resume_lrs):
-        group['lr'] = resume_lr
+        group["lr"] = resume_lr
