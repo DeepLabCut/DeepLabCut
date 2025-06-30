@@ -33,6 +33,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
+from deeplabcut import Engine
 from deeplabcut.core import crossvalutils
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
 
@@ -189,6 +190,7 @@ def plot_trajectories(
     linewidth=1.0,
     track_method="",
     pcutoff: float | None = None,
+    engine: Engine | None = None,
 ):
     """Plots the trajectories of various bodyparts across the video.
 
@@ -256,6 +258,11 @@ def plot_trajectories(
     pcutoff: string, optional, default=None
         Overrides the pcutoff set in the project configuration to plot the trajectories.
 
+    engine: Engine, optional, default = None.
+        The default behavior loads the engine for the shuffle from the metadata. You can
+        overwrite this by passing the engine as an argument, but this should generally
+        not be done.
+
     Returns
     -------
     None
@@ -279,7 +286,7 @@ def plot_trajectories(
 
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
-        cfg, shuffle, trainFraction, modelprefix=modelprefix
+        cfg, shuffle, trainFraction, modelprefix=modelprefix, engine=engine,
     )  # automatically loads corresponding model (even training iteration based on snapshot index)
     bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
         cfg, displayedbodyparts

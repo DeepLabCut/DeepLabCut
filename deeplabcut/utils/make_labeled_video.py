@@ -451,6 +451,7 @@ def create_labeled_video(
     confidence_to_alpha: Union[bool, Callable[[float], float]] = False,
     plot_bboxes: bool = True,
     bboxes_pcutoff: float | None = None,
+    engine: Engine | None = None,
 ):
     """Labels the bodyparts in a video.
 
@@ -596,6 +597,11 @@ def create_labeled_video(
     bboxes_pcutoff, float, optional, default=None:
         If plotting bounding boxes, this overrides the bboxes_pcutoff set in the model configuration.
 
+    engine: Engine, optional, default = None.
+        The default behavior loads the engine for the shuffle from the metadata. You can
+        overwrite this by passing the engine as an argument, but this should generally
+        not be done.
+
     Returns
     -------
         results : list[bool]
@@ -700,7 +706,7 @@ def create_labeled_video(
 
     if init_weights == "":
         DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
-            cfg, shuffle, train_fraction, modelprefix=modelprefix
+            cfg, shuffle, train_fraction, modelprefix=modelprefix, engine=engine,
         )  # automatically loads corresponding model (even training iteration based on snapshot index)
     else:
         DLCscorer = "DLC_" + Path(init_weights).stem

@@ -17,6 +17,7 @@ import pandas as pd
 from scipy import signal
 from scipy.interpolate import CubicSpline
 
+from deeplabcut import Engine
 from deeplabcut.refine_training_dataset.outlier_frames import FitSARIMAXModel
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
@@ -83,6 +84,7 @@ def filterpredictions(
     modelprefix="",
     track_method="",
     return_data=False,
+    engine: Engine | None = None,
 ):
     """Fits frame-by-frame pose predictions.
 
@@ -152,6 +154,11 @@ def filterpredictions(
     return_data: bool, optional, default=False
         If True, returns a dictionary of the filtered data keyed by video names.
 
+    engine: Engine, optional, default = None.
+        The default behavior loads the engine for the shuffle from the metadata. You can
+        overwrite this by passing the engine as an argument, but this should generally
+        not be done.
+
     Returns
     -------
     video_to_filtered_df
@@ -208,6 +215,7 @@ def filterpredictions(
         shuffle,
         trainFraction=cfg["TrainingFraction"][trainingsetindex],
         modelprefix=modelprefix,
+        engine=engine,
     )
     Videos = auxiliaryfunctions.get_list_of_videos(video, videotype)
 
