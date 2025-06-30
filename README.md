@@ -79,7 +79,7 @@ conda install -c conda-forge pytables==3.8.0
 ```
 - [3] Finally, install `DeepLabCut` (with all functions + the GUI):
 ```python
-pip install --pre  "deeplabcut[gui]"`
+pip install --pre  "deeplabcut[gui]"
 ```
 or `pip install  --pre "deeplabcut"` (headless 
 version with PyTorch)!
@@ -113,11 +113,15 @@ DeepLabCut continues to be actively maintained and we strive to provide a user-f
 
 ## Performance 🔥
 
-These models are trained on the [SuperAnimal-Quadruped with AP-10K held out for out-of-domain testing]([https://cocodataset.org/](https://www.nature.com/articles/s41467-024-48792-2)) and the [SuperAnimal-TopViewMouse with DLC-openfield held out for out-of-distribution testing](https://www.nature.com/articles/s41467-024-48792-2). 
+In general, we provide all the tooling for you to train and use custom models with various high-performance backbones. 
+We also provide two foundation pretrained animal models: `SuperAnimal-Quadruped`, `SuperAnimal-TopViewMouse`. To guage their performance, we provide the following tables.
+
+These models are trained on the [SuperAnimal-Quadruped with AP-10K held out for out-of-domain testing]([https://cocodataset.org/](https://www.nature.com/articles/s41467-024-48792-2)) and the [SuperAnimal-TopViewMouse with DLC-openfield held out for out-of-distribution testing](https://www.nature.com/articles/s41467-024-48792-2). We provide models that include AP-10K in the API (and GUI).
 Note, there are many different models to select from in DeepLabCut 3.0. We strongly recommend you check [this Guide](https://deeplabcut.github.io/DeepLabCut/docs/pytorch/architectures.html) for more details.
 This table, and those below, give you a sense of performance in real-world complex in-the-wild and lab mouse data, repectfully.
+The links provide the model weights to reproduce the numbers below; but please note, our `full` models are in our DLClibrary and released in the API.
 
-<details open><summary>Pose Estimation (Top Down Models)</summary>
+<details open><summary>DLC 3.0 Pose Estimation (Top Down Models)</summary>
 
 | Model Name                    | Type       | mAP SA-Q on AP-10K | mAP SA-TVM on DLC-OpenField |
 |------------------------------|------------|---------------------|-----------------------------|
@@ -130,24 +134,6 @@ This table, and those below, give you a sense of performance in real-world compl
 | rtmpose_x                    | Top-Down     |  57.6        |    94.5        |
 </details>
 
-<details><summary>Pose Estimation (Bottom-Up Models)</summary>
-
-These models are typically best for single-animal pose estimation, and tend to be faster.
-
-| Model Name                    | Type       | mAP SA-Q on AP-10K | mAP SA-TVM on DLC-OpenField |
-|------------------------------|------------|---------------------|-----------------------------|
-| resnet_50                    | Bottom-Up  |          |            |
-| resnet_101                   | Bottom-Up  |          |            |
-| dekr_w18                     | Bottom-Up  |          |            |
-| dekr_w32                     | Bottom-Up  |          |            |
-| dekr_w48                     | Bottom-Up  |          |            |
-| dlcrnet_stride16_ms5         | Bottom-Up   |         |     50.397       |
-| dlcrnet_stride32_ms5         | Bottom-Up   |         |            |
-| hrnet_w18                    | Bottom-Up   |         |            |
-| hrnet_w32                    | Bottom-Up   |         |            |
-| hrnet_w48                    | Bottom-Up   |         |            |
-
-</details>
 
 <details><summary>Pose Estimation (Hybrid Models)</summary>
 
