@@ -492,6 +492,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-deeplabcut-3-0">Using DeepLabCut 3.0</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-gui">Using the GUI</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-guide">Quick guide</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#major-changes">Major changes</a><ul class="nav section-nav flex-column">
@@ -541,6 +542,10 @@ models. To train Tensorflow models again, you can set <code class="docutils lite
 <p>You can use the GUI to train DeepLabCut projects. You can switch between the PyTorch
 and TensorFlow engine through the drop-down menu in the top right corner.</p>
 </section>
+<section id="quick-guide">
+<h3>Quick guide<a class="headerlink" href="#quick-guide" title="Link to this heading">#</a></h3>
+<p>The standard use of DLC does not change (via the high-level API), as you can see in the standard guide: for <a class="reference internal" href="#docs/standardDeepLabCut_UserGuide"><span class="xref myst">single</span></a> and <a class="reference internal" href="#docs/maDLC_UserGuide"><span class="xref myst">multiple individuals</span></a>. Also check out several COLAB notebooks on how you can use the code.</p>
+</section>
 </section>
 <section id="major-changes">
 <h2>Major changes<a class="headerlink" href="#major-changes" title="Link to this heading">#</a></h2>
@@ -564,7 +569,7 @@ size 1 (or 32 iterations with batch size 2, 16 with batch size 4, etc.).</p></li
 DeepLabCut 3.0 as you did for Tensorflow models (<code class="docutils literal notranslate"><span class="pre">deeplabcut.create_training_dataset</span></code>
 and <code class="docutils literal notranslate"><span class="pre">deeplabcut.create_training_model_comparison</span></code>).</p>
 <p>More information about the different PyTorch model architectures available in DeepLabCut
-is available <a class="reference internal" href="pytorch_config.html#dlc3-pytorch-config"><span class="std std-ref">here</span></a>. You can see a list of supported
+is available <a class="reference internal" href="architectures.html"><span class="doc std std-doc">here</span></a>. You can see a list of supported
 architectures/variants by using:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.pose_estimation_pytorch</span><span class="w"> </span><span class="kn">import</span> <span class="n">available_models</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">available_models</span><span class="p">())</span>
@@ -729,6 +734,7 @@ parameters are not valid for the DLC 3.0 PyTorch API.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-deeplabcut-3-0">Using DeepLabCut 3.0</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-gui">Using the GUI</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-guide">Quick guide</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#major-changes">Major changes</a><ul class="nav section-nav flex-column">
