@@ -69,16 +69,16 @@ DeepLabCut with the PyTorch engine
 - [1] [Install PyTorch](https://pytorch.org/get-started/locally/) (**install and then select the desired
 CUDA version if you want to use a GPU**): `pip install torch torchvision`.
 Or as an example for GPU support (please check pytorch docs to get the perfect version for your CUDA):
-```python
-# GPU version of pytorch for CUDA 11.3
+```bash
 conda install pytorch cudatoolkit=11.3 -c pytorch
 ```
 - [2] Then, [install `pytables`](https://www.pytables.org/usersguide/installation.html):
-```python
+```bash
 conda install -c conda-forge pytables==3.8.0
 ```
 - [3] Finally, install `DeepLabCut` (with all functions + the GUI):
-```python
+
+```bash
 pip install --pre  "deeplabcut[gui]"
 ```
 or `pip install  --pre "deeplabcut"` (headless 
@@ -101,7 +101,7 @@ For a deeper understanding and more resources for you to get started with Python
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1609244903687-US1SN063QIFJS4BP4IJD/ke17ZwdGBToddI8pDm48kFG9xAYub2PPnmh56PTVg7gUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcAju5e7u9RZJEVbVQPZRu9xb_m-kUO2M3I1IeDqD4l8YcGqu2nZPx1UhKV8wc1ELN/dlc_overview_whitebkgrnd.png?format=2500w" width="95%">
 </p>
 
-# [DEMO the code](/examples)
+# [DEMO the code](examples/README.md)
 
 🐭 pose tracking of single animals demo [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_DEMO_mouse_openfield.ipynb)
 

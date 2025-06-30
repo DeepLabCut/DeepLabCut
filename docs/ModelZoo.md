@@ -68,7 +68,7 @@ To provide the community with easy access to such high performance models across
 ![SA-TVM](https://user-images.githubusercontent.com/28102185/209957260-c0db72e0-4fdf-434c-8579-34bc5f27f907.png)
 
 
-#### Practical example: Using SuperAnimal models for inference without training.
+### Practical example: Using SuperAnimal models for inference without training.
 
 You can simply call the model and run video inference. 
 
@@ -87,7 +87,7 @@ deeplabcut.video_inference_superanimal([video_path],
 ```
 
 
-#### Practical example: Using SuperAnimal model bottom up, considering video/animal size.
+### Practical example: Using SuperAnimal model bottom up, considering video/animal size.
 
 In our work we introduced a spatial-pyramid for smartly rescaling images. Imagine if you frames are much larger than what we trained on, it would be hard for the model to find the animal! Here, you can simply guide the model with the `scale_list`:
 
@@ -107,7 +107,7 @@ deeplabcut.video_inference_superanimal([video_path],
                                         video_adapt = False)
 ```
 
-#### Practical example: Using transfer learning with superanimal weights.
+### Practical example: Using transfer learning with superanimal weights.
 In the `deeplabcut.train_network` function, the `superanimal_transfer_learning` option plays a pivotal role. If it's set to __True__, it uses a new decoding layer and allows you to use superanimal weights in any project, no matter the number of keypoints. However, if it's set to __False__, you are doing fine-tuning. So, make sure your dataset has the right number of keypoints.  
 
 Specifically:

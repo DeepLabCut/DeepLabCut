@@ -171,6 +171,7 @@ def _video_inference_superanimal(
 
         superanimal_colormaps = get_superanimal_colormaps()
         colormap = superanimal_colormaps[superanimal_name]
+
         create_video(
             video_path,
             output_h5,

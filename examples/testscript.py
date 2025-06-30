@@ -35,6 +35,8 @@ import deeplabcut
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
 
+import matplotlib
+matplotlib.use("Agg")  # Non-interactive backend, for CI/CD on Windows
 
 USE_SHELVE = random.choice([True, False])
 MODELS = ["resnet_50", "efficientnet-b0"]

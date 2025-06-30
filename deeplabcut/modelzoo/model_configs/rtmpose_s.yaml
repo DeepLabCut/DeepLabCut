@@ -1,43 +1,39 @@
 data:
-  bbox_margin: 25
-  gen_sampling:
-    keypoint_sigmas: 0.1
+  colormode: RGB
   inference:
-    top_down_crop:
-      width: 384
-      height: 384
-      crop_with_context: false
+    normalize_images: true
   train:
-    top_down_crop:
-      width: 384
-      height: 384
-      crop_with_context: false
-method: ctd
+    affine:
+      p: 0.5
+      scaling: [1.0, 1.0]
+      rotation: 30
+      translation: 0
+    gaussian_noise: 12.75
+    normalize_images: true
+device: auto
+method: td
 model:
   backbone:
-    type: CondPreNet
-    backbone:
-      type: CSPNeXt
-      model_name: cspnext_x
-      freeze_bn_stats: false
-      freeze_bn_weights: false
-      deepen_factor: 1.33
-      widen_factor: 1.25
-    kpt_encoder:
-      type: StackedKeypointEncoder
-      num_joints: "num_bodyparts"
-      kernel_size: [15, 15]
-    img_size: [384, 384]
-  backbone_output_channels: 1280
+    type: CSPNeXt
+    model_name: cspnext_s
+    freeze_bn_stats: false
+    freeze_bn_weights: false
+    deepen_factor: 0.33
+    widen_factor: 0.5
+  backbone_output_channels: 512
   heads:
     bodypart:
       type: RTMCCHead
       weight_init: RTMPose
       target_generator:
         type: SimCCGenerator
-        input_size: [384, 384]
+        input_size:
+        - 256
+        - 256
         smoothing_type: gaussian
-        sigma: [6.93, 6.93]
+        sigma:
+        - 5.66
+        - 5.66
         simcc_split_ratio: 2.0
         label_smooth_weight: 0.0
         normalize: false
@@ -55,10 +51,14 @@ model:
       predictor:
         type: SimCCPredictor
         simcc_split_ratio: 2.0
-      input_size: [384, 384]
-      in_channels: 1280
-      out_channels: "num_bodyparts"
-      in_featuremap_size: [12, 12]  # input_size / backbone stride
+      input_size:
+      - 256
+      - 256
+      in_channels: 512
+      out_channels: 39
+      in_featuremap_size:
+      - 8
+      - 8
       simcc_split_ratio: 2.0
       final_layer_kernel_size: 7
       gau_cfg:
@@ -67,10 +67,15 @@ model:
         expansion_factor: 2
         dropout_rate: 0
         drop_path: 0.0
-        act_fn: "SiLU"
+        act_fn: SiLU
         use_rel_bias: false
         pos_enc: false
+net_type: rtmpose_s
 runner:
+  type: PoseTrainingRunner
+  key_metric: "test.mAP"
+  key_metric_asc: true
+  eval_interval: 10
   optimizer:
     type: AdamW
     params:
@@ -78,16 +83,16 @@ runner:
   scheduler:
     type: LRListScheduler
     params:
-      lr_list:
-      - - 1e-3
-      - - 1e-4
-      - - 1e-5
-      milestones:
-      - 5
-      - 300
-      - 360
+      lr_list: [ [ 1e-6 ], [ 1e-7 ] ]
+      milestones: [ 160, 190 ]
+  snapshots:
+    max_snapshots: 5
+    save_epochs: 25
+    save_optimizer_state: false
 train_settings:
-  batch_size: 32
-  dataloader_workers: 4
+  batch_size: 1
+  dataloader_workers: 0
   dataloader_pin_memory: false
-  epochs: 400
+  display_iters: 500
+  epochs: 100
+  seed: 42

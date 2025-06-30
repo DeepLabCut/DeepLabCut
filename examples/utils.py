@@ -17,6 +17,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import matplotlib
+matplotlib.use("Agg")  # Non-interactive backend, for CI/CD on Windows
+
 import cv2
 import deeplabcut
 import deeplabcut.utils.auxiliaryfunctions as af

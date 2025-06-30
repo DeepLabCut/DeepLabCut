@@ -12,11 +12,11 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+import re
 
 import dlclibrary
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtGui import QIcon
 
 import deeplabcut
 import deeplabcut.compat as compat
@@ -27,14 +27,22 @@ from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 from deeplabcut.gui.components import (
     DefaultTab,
     ShuffleSpinBox,
+    ConditionsSelectionWidget,
     _create_grid_layout,
     _create_label_widget,
+    set_combo_items,
+    _create_message_box,
+    _create_confirmation_box,
 )
 from deeplabcut.gui.displays.shuffle_metadata_viewer import ShuffleMetadataViewer
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import launch_napari
 from deeplabcut.modelzoo import build_weight_init
-from deeplabcut.pose_estimation_pytorch import available_models, is_model_top_down
+from deeplabcut.pose_estimation_pytorch import (
+    available_models,
+    is_model_top_down,
+    is_model_cond_top_down,
+)
 from deeplabcut.utils.auxiliaryfunctions import (
     get_data_and_metadata_filenames,
     get_training_set_folder,
@@ -147,6 +155,21 @@ class CreateTrainingDataset(DefaultTab):
             lambda new_net_choice: self.update_detectors(net_choice=new_net_choice)
         )
 
+        # Conditions selection for CTD models
+        self.conditions_label = QtWidgets.QLabel("Conditions")
+        self.conditions_selection_widget = ConditionsSelectionWidget(
+            root=self.root, parent=self
+        )
+        self.update_conditions(engine=self.root.engine)
+        self.root.engine_change.connect(
+            lambda engine: self.update_conditions(engine=engine)
+        )
+        self.net_choice.currentTextChanged.connect(
+            lambda new_net_choice: self.update_conditions(
+                engine=self.root.engine, net_choice=new_net_choice
+            )
+        )
+
         # Overwrite selection
         self.overwrite = QtWidgets.QCheckBox("Overwrite if exists")
         self.overwrite.setChecked(False)
@@ -175,8 +198,11 @@ class CreateTrainingDataset(DefaultTab):
         layout.addWidget(self.detector_label, 2, 0)
         layout.addWidget(self.detector_choice, 2, 1)
 
-        layout.addWidget(self.overwrite, 3, 0)
-        layout.addWidget(self.data_split_selection, 4, 0)
+        layout.addWidget(self.conditions_label, 3, 0)
+        layout.addWidget(self.conditions_selection_widget, 3, 1)
+
+        layout.addWidget(self.overwrite, 4, 0)
+        layout.addWidget(self.data_split_selection, 5, 0)
 
     def log_net_choice(self, net):
         self.root.logger.info(f"Network architecture set to {net.upper()}")
@@ -233,13 +259,19 @@ class CreateTrainingDataset(DefaultTab):
                 engine = self.root.engine
                 net_type = self.net_choice.currentText()
                 detector_type = None
+                ctd_conditions = None
                 if engine == Engine.TF:
                     import tensorflow
 
                     # try importing TF so they can't create shuffles for it if they
                     # don't have it installed
-                elif engine == Engine.PYTORCH and is_model_top_down(net_type):
-                    detector_type = self.detector_choice.currentText()
+                elif engine == Engine.PYTORCH:
+                    if is_model_top_down(net_type):
+                        detector_type = self.detector_choice.currentText()
+                    elif is_model_cond_top_down(net_type):
+                        ctd_conditions = self._build_ctd_conditions(
+                            self.conditions_selection_widget.selected_conditions
+                        )
 
                 try:
                     weight_init = (
@@ -262,6 +294,7 @@ class CreateTrainingDataset(DefaultTab):
                         userfeedback=not overwrite,
                         weight_init=weight_init,
                         engine=engine,
+                        ctd_conditions=ctd_conditions,
                     )
 
                 elif self.root.is_multianimal:
@@ -274,6 +307,7 @@ class CreateTrainingDataset(DefaultTab):
                         userfeedback=not overwrite,
                         weight_init=weight_init,
                         engine=engine,
+                        ctd_conditions=ctd_conditions,
                     )
                 else:
                     deeplabcut.create_training_dataset(
@@ -286,6 +320,7 @@ class CreateTrainingDataset(DefaultTab):
                         userfeedback=not overwrite,
                         weight_init=weight_init,
                         engine=engine,
+                        ctd_conditions=ctd_conditions,
                     )
             except ValueError as err:
                 msg = _create_message_box(
@@ -384,6 +419,39 @@ class CreateTrainingDataset(DefaultTab):
 
         return True
 
+    def _build_ctd_conditions(
+        self, conditions_path: str | Path
+    ) -> Path | tuple[int, str]:
+        """
+        Builds CTD conditions in appropriate format from path to conditions.
+        Args:
+            conditions_path: str | Path:
+                 path to conditions (path to snapshot or to predictions)
+
+        Returns:
+            ctd_conditions: Path | tuple[int, str]
+                ctd conditions in the right format for deeplabcut.create_training_dataset() API method.
+
+        Raises:
+            Value error if conditions are missing or invalid.
+        """
+        if conditions_path is None:
+            raise ValueError("No conditions were selected for CTD model.")
+        else:
+            conditions_path = Path(conditions_path)
+            if conditions_path.suffix.lower() in [".h5", ".json"]:
+                return conditions_path
+            elif conditions_path.suffix.lower() == ".pt":
+                match = re.search(r"shuffle(\d+)", str(conditions_path))
+                if match:
+                    shuffle_number = int(match.group(1))
+                else:
+                    raise ValueError("Shuffle number could not be extracted from path.")
+                snapshot_filename = conditions_path.name
+                return shuffle_number, snapshot_filename
+            else:
+                raise ValueError("Unsupported conditions file type")
+
     @Slot(Engine)
     def update_nets(self, engine: Engine | None) -> None:
         if engine is None:
@@ -412,13 +480,8 @@ class CreateTrainingDataset(DefaultTab):
                     )
                 ]
 
-        while self.net_choice.count() > 0:
-            self.net_choice.removeItem(0)
-
-        self.net_choice.addItems(nets)
         if default_net is None:
             default_net = self.root.cfg.get("default_net_type", "resnet_50")
-
         if (
             engine == Engine.TF
             and default_net not in DLCParams.NNETS
@@ -427,8 +490,11 @@ class CreateTrainingDataset(DefaultTab):
         ):
             default_net = "resnet_50"
 
-        if default_net in nets:
-            self.net_choice.setCurrentIndex(nets.index(default_net))
+        set_combo_items(
+            combo_box=self.net_choice,
+            items=nets,
+            index=nets.index(default_net) if default_net in nets else 0,
+        )
 
     @Slot(Engine)
     def update_detectors(
@@ -450,20 +516,24 @@ class CreateTrainingDataset(DefaultTab):
             if det_filter is not None:
                 detectors = [d for d in detectors if d in det_filter]
 
-        while self.detector_choice.count() > 0:
-            self.detector_choice.removeItem(0)
-
-        self.detector_choice.addItems(detectors)
         default_detector = self.get_default_detector()
-        if default_detector in detectors:
-            self.detector_choice.setCurrentIndex(detectors.index(default_detector))
-        elif "ssdlite" in detectors:
-            self.detector_choice.setCurrentIndex(detectors.index("ssdlite"))
+        try:
+            index = detectors.index(default_detector)
+        except ValueError:
+            try:
+                index = detectors.index("ssdlite")
+            except ValueError:
+                index = -1
+        set_combo_items(
+            combo_box=self.detector_choice,
+            items=detectors,
+            index=index,
+        )
 
         if net_choice is None:
             net_choice = self.net_choice.currentText()
 
-        if is_model_top_down(net_choice):
+        if engine == Engine.PYTORCH and is_model_top_down(net_choice):
             self.detector_label.show()
             self.detector_choice.show()
         else:
@@ -471,13 +541,32 @@ class CreateTrainingDataset(DefaultTab):
             self.detector_choice.hide()
 
     @Slot(Engine)
+    def update_conditions(
+        self,
+        engine: Engine | None = None,
+        net_choice: str | None = None,
+    ) -> None:
+        if engine is None:
+            engine = self.root.engine
+
+        if net_choice is None:
+            net_choice = self.net_choice.currentText()
+
+        if engine == Engine.PYTORCH and is_model_cond_top_down(net_choice):
+            self.conditions_label.show()
+            self.conditions_selection_widget.show()
+        else:
+            self.conditions_label.hide()
+            self.conditions_selection_widget.hide()
+
+    @Slot(Engine)
     def update_aug_methods(self, engine: Engine) -> None:
         methods = compat.get_available_aug_methods(engine)
-        while self.aug_choice.count() > 0:
-            self.aug_choice.removeItem(0)
-
-        self.aug_choice.addItems(methods)
-        self.aug_choice.setCurrentText(methods[0])
+        set_combo_items(
+            combo_box=self.aug_choice,
+            items=methods,
+            index=0,
+        )
 
     @Slot(Engine)
     def update_weight_init_methods(self, engine: Engine) -> None:
@@ -585,9 +674,10 @@ class WeightInitializationSelector(QtWidgets.QWidget):
 
     def update_choices(self, choices: list[str]) -> None:
         """Updates the WeightInitialization methods that can be selected"""
-        while self.weight_init_choice.count() > 0:
-            self.weight_init_choice.removeItem(0)
-        self.weight_init_choice.addItems(choices)
+        set_combo_items(
+            combo_box=self.weight_init_choice,
+            items=choices,
+        )
 
     def get_super_animal_weight_init(
         self,
@@ -710,36 +800,6 @@ class DataSplitSelector(QtWidgets.QWidget):
         else:
             self.shuffle_selector.hide()
             self.shuffle_label.hide()
-
-
-def _create_message_box(text, info_text):
-    msg = QtWidgets.QMessageBox()
-    msg.setIcon(QtWidgets.QMessageBox.Information)
-    msg.setText(text)
-    msg.setInformativeText(info_text)
-
-    msg.setWindowTitle("Info")
-    msg.setMinimumWidth(900)
-    logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-    logo = logo_dir + "/assets/logo.png"
-    msg.setWindowIcon(QIcon(logo))
-    msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-    return msg
-
-
-def _create_confirmation_box(title, description):
-    msg = QtWidgets.QMessageBox()
-    msg.setIcon(QtWidgets.QMessageBox.Information)
-    msg.setText(title)
-    msg.setInformativeText(description)
-
-    msg.setWindowTitle("Confirmation")
-    msg.setMinimumWidth(900)
-    logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-    logo = logo_dir + "/assets/logo.png"
-    msg.setWindowIcon(QIcon(logo))
-    msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
-    return msg
 
 
 _WEIGHT_INIT_OPTIONS = {  # FIXME - Generate dynamically
