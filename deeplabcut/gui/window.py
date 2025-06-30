@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import List
 from urllib.error import URLError
 import qdarkstyle
+import warnings
 
 import deeplabcut
 from deeplabcut import auxiliaryfunctions, VERSION, compat
@@ -40,6 +41,11 @@ from PySide6.QtGui import QIcon, QAction, QPixmap
 from PySide6 import QtWidgets, QtGui
 from PySide6.QtCore import Qt, QTimer
 
+warnings.filterwarnings(
+    "ignore",
+    message=r".*shibokensupport/signature/parser.py:269: RuntimeWarning: pyside_type_init:_resolve_value.*",
+    category=RuntimeWarning
+)
 
 def _check_for_updates(silent=True):
     try:
