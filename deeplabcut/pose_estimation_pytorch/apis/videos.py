@@ -24,6 +24,7 @@ from tqdm import tqdm
 
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
+from deeplabcut import Engine
 from deeplabcut.pose_estimation_pytorch.apis.ctd import (
     get_condition_provider,
     get_conditions_provider_for_video,
@@ -653,6 +654,7 @@ def analyze_videos(
                         animal_names=animal_names,
                         destfolder=str(output_path),
                         save_as_csv=save_as_csv,
+                        engine=Engine.PYTORCH,
                     )
 
     print(

@@ -214,6 +214,7 @@ if __name__ == "__main__":
             "mp4",
             output_name=h5path,
             track_method=TESTTRACKER,
+            engine=ENGINE,
         )
     except ValueError:
         # Sometimes tracks cannot be reconstructed as test data are randomly

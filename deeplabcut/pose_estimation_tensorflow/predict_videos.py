@@ -644,6 +644,7 @@ def analyze_videos(
                         animal_names=animal_names,
                         modelprefix=modelprefix,
                         save_as_csv=save_as_csv,
+                        engine=Engine.TF,
                     )
         else:
             for video in Videos:

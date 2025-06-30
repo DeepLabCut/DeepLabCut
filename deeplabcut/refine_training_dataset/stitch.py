@@ -23,6 +23,7 @@ import warnings
 from collections import defaultdict
 
 import deeplabcut
+from deeplabcut import Engine
 from deeplabcut.utils.auxfun_videos import VideoWriter
 from functools import partial
 from deeplabcut.core.trackingutils import (
@@ -1048,6 +1049,7 @@ def stitch_tracklets(
     output_name="",
     transformer_checkpoint="",
     save_as_csv=False,
+    engine: Engine | None = None,
 ):
     """
     Stitch sparse tracklets into full tracks via a graph-based,
@@ -1136,6 +1138,11 @@ def stitch_tracklets(
     save_as_csv: bool, optional
         Whether to write the tracks to a CSV file too (False by default).
 
+    engine: Engine, optional, default = None.
+        The default behavior loads the engine for the shuffle from the metadata. You can
+        overwrite this by passing the engine as an argument, but this should generally
+        not be done.
+
     Returns
     -------
     A TrackletStitcher object
@@ -1169,6 +1176,7 @@ def stitch_tracklets(
         shuffle,
         cfg["TrainingFraction"][trainingsetindex],
         modelprefix=modelprefix,
+        engine=engine,
     )
 
     if transformer_checkpoint:
