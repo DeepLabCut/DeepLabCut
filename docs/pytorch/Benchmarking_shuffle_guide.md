@@ -42,7 +42,7 @@ dlc-project
 ### Creating a shuffle
 
 Creating a new shuffle with the same train/test split as an existing one:
-#### In the DeepLabCut GUI
+### In the DeepLabCut GUI
 1. Front page > Load project > Open project folder > choose *config.yaml*
 2. Select *'Create training dataset'* tab
 3. Tick *Use an existing data split* option    
@@ -82,7 +82,7 @@ set to the new shuffle entered at the previous step (in this case, 4)
                 |__ pytorch_config.yaml
     ```
 
-#### In Code 
+### In Code 
 
 With the `deeplabcut` module in Python, use the
 `create_training_dataset_from_existing_split()` method to create new shuffles from
@@ -119,7 +119,7 @@ deeplabcut.evaluate_network(config, Shuffles=[4], snapshotindex="all")
 ```
 Now, we can compare performances with peace of mind!
 
-#### Good practices: naming shuffles created from existing ones
+### Good practices: naming shuffles created from existing ones
 
 In a setting where one has multiple TensorFlow models and intends to benchmark 
 their performances against new PyTorch models, it is good practice to follow 
