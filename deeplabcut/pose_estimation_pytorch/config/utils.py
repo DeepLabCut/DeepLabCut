@@ -282,6 +282,19 @@ def is_model_top_down(net_type: str) -> bool:
     return model_cfg.get("method", "BU").upper() == "TD"
 
 
+def is_model_cond_top_down(net_type: str) -> bool:
+    """Checks whether a given net_type is conditional top-down or not"""
+    if net_type not in available_models():
+        raise ValueError(
+            f"Model {net_type} is not part of available models, which are {str(available_models())}"
+        )
+
+    if net_type.startswith("ctd_"):
+        return True
+    else:
+        return False
+
+
 def available_detectors() -> list[str]:
     """Returns: all the possible detectors that can be used"""
     return load_detectors(get_config_folder_path())
