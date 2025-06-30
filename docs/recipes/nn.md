@@ -71,7 +71,7 @@ where to start.
 faster, needs less memory on your GPU to train and nearly as accurate.**
 
 ***
-#### ResNets:
+### ResNets:
 
 In Mathis et al. 2018 we benchmarked three networks: **ResNet-50, ResNet-101, and
 ResNet-101ws**. For ALL lab applications, ResNet-50 was enough. For all the demo videos
@@ -106,7 +106,7 @@ like multiple humans dancing, this is a good option. You should then also set
 shuffle folder (before you train). Note, for ResNet-50 this does NOT help, and can
 hurt.
 
-#### When should I use a MobileNet?
+### When should I use a MobileNet?
 
 MobileNets are fast to run, fast to train, more memory efficient, and faster for
 analysis (inference) - e.g. on CPUs they are 4 times faster, on GPUs up to 2x! So, if
@@ -134,7 +134,7 @@ red - read more here: https://arxiv.org/abs/1909.11229)
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1570054117297-YA8WOYG50EK55WM6Y8ZI/ke17ZwdGBToddI8pDm48kAWg0301pwdoqO-Bo48aILYUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcZbh5EzlyubXk7Q3qHw5ayJHISnXwMOq8Pp90__8eMJefaZFcnumpU7B4DHTHEFkQ/speedtables.png?format=1000w" width="100%">
 </p>
 
-#### When should I use an EfficientNet?
+### When should I use an EfficientNet?
 
 Built with inverse residual blocks like MobileNets, but more powerful than ResNets, due
 to optimal depth/width/resolution scaling, [EfficientNet](
@@ -149,7 +149,7 @@ http://horse10.deeplabcut.org
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1615891029784-87JAZJN1C5S4HS62F752/ke17ZwdGBToddI8pDm48kLId9V2zDiOqQ5EIZz4b_S0UqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKctCpCjeabgTq1Hv_G9BIks_zjAnmEpAaVGioFPvsrieXDegXGHA0z-h8QeHOQDokM/speedTest.png?format=1000w" width="100%">
 </p>
 
-#### How can I compare them?
+### How can I compare them?
 
 Great question! So, the best way to do this is to use the **same** test/train split (
 that is generated in create_training_dataset) with different models. Here, as of 2.1+,

@@ -91,7 +91,7 @@ same animal).
 ![Schema representing the bottom-up approach to pose estimation](
 assets/bottom-up-approach.png)
 
-#### Backbones with Part-Affinity Fields 
+### Backbones with Part-Affinity Fields 
 
 As in DeepLabCut 2.X, the base multi-animal model is composed of a backbone (encoder) 
 and a head predicting keypoints and part-affinity fields (PAFs). These PAFs are used to 
