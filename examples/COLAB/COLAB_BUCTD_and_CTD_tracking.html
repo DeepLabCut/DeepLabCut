@@ -1,0 +1,2340 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>DeepLabCut - Tutorial for BUCTD models &#8212; DeepLabCut</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/COLAB/COLAB_BUCTD_and_CTD_tracking';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="3D DeepLabCut Toolbox" href="../JUPYTER/Demo_3D_DeepLabCut.html" />
+    <link rel="prev" title="Demo: How to use our Pose Transformer for unsupervised identity tracking of animals" href="COLAB_transformer_reID.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../README.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/logo.png" class="logo__image only-light" alt="DeepLabCut - Home"/>
+    <script>document.write(`<img src="../../_static/logo.png" class="logo__image only-dark" alt="DeepLabCut - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../README.html">
+                    Welcome! 👋
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/UseOverviewGuide.html">🥳 Get started with DeepLabCut: our key recommendations</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../docs/course.html">DeepLabCut Self-paced Course</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/installation.html">How To Install DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/installTips.html">Installation Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/docker.html">DeepLabCut Docker containers</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main User Guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/standardDeepLabCut_UserGuide.html">DeepLabCut User Guide (for single animal projects)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/maDLC_UserGuide.html">DeepLabCut for Multi-Animal Projects</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../../docs/Overviewof3D.html">3D DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Graphical User Interfaces (GUIs)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/gui/PROJECT_GUI.html">Interactive Project Manager GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/gui/napari_GUI.html">napari labeling GUI</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Quick Start Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/quick-start/single_animal_quick_guide.html">QUICK GUIDE to single Animal Training:</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/quick-start/tutorial_maDLC.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Beginner's Guide to DeepLabCut</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/beginner-guides/beginners-guide.html">Using DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/beginner-guides/manage-project.html">Setting up what keypoints to track</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/beginner-guides/labeling.html">Labeling GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/beginner-guides/Training-Evaluation.html">Neural Network training and evaluation in the GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/beginner-guides/video-analysis.html">Video Analysis with DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Main Demo Notebooks</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Notebooks For Your Data</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Special Feature Demos</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
+
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">DeepLabCut - Tutorial for BUCTD models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
+<li class="toctree-l1"><a class="reference internal" href="COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/TechHardware.html">Technical (Hardware) Considerations</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut-Live!</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/deeplabcutlive.html">DeepLabCut-Live!</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🦄 DeepLabCut Model Zoo</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmarking</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/benchmark.html">DeepLabCut benchmark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/pytorch/Benchmarking_shuffle_guide.html">DeepLabCut Benchmarking - User Guide</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mission &amp; Contribute</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/roadmap.html">A development roadmap for DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/Governance.html">Governance Model of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../CONTRIBUTING.html">How to Contribute to DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Citations for DeepLabCut</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/citation.html">How to Cite DeepLabCut</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-launch-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Launch interactive content">
+    <i class="fas fa-rocket"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.ipynb/github/DeepLabCut/DeepLabCut/blob/main/docs/examples/COLAB/COLAB_BUCTD_and_CTD_tracking.ipynb" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch on Colab"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img alt="Colab logo" src="../../_static/images/logo_colab.png">
+  </span>
+<span class="btn__text-container">Colab</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fexamples/COLAB/COLAB_BUCTD_and_CTD_tracking.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/examples/COLAB/COLAB_BUCTD_and_CTD_tracking.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>DeepLabCut - Tutorial for BUCTD models</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#change-the-runtime-type-to-use-a-gpu">⚠️⚠️ Change the Runtime type to use a GPU!⚠️⚠️</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-deeplabcut-on-colab">Installing DeepLabCut on COLAB</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#imports">Imports</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-the-tri-mouse-dataset">Downloading the Tri-Mouse Dataset</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-a-ctd-model-in-deeplabcut">Training a CTD Model in DeepLabCut</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#training-a-bu-model">Training a BU Model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#training-the-ctd-model">Training the CTD Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-advanced-learning-and-visualizing-generative-sampling-during-training">(Optional/Advanced) Learning and visualizing generative sampling during training</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#training-and-evaluating-the-ctd-model">Training and Evaluating the CTD Model</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tracking-with-ctd">Tracking with CTD</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-a-tri-mouse-video">Downloading a Tri-Mouse video</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#running-video-analysis">Running Video Analysis</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="deeplabcut-tutorial-for-buctd-models">
+<h1>DeepLabCut - Tutorial for BUCTD models<a class="headerlink" href="#deeplabcut-tutorial-for-buctd-models" title="Link to this heading">#</a></h1>
+<a target="_blank" href="https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/main/examples/COLAB/COLAB_BUCTD_and_CTD_tracking.ipynb">
+<img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a>
+<p><strong>This tutorial introduces the use of <a class="reference external" href="https://openaccess.thecvf.com/content/ICCV2023/papers/Zhou_Rethinking_Pose_Estimation_in_Crowds_Overcoming_the_Detection_Information_Bottleneck_ICCV_2023_paper.pdf">bottom-up conditioned top-down</a> pose estimation models (also named BUCTD or CTD) in DeepLabCut. This architecture is state-of-the-art in crowded images (when animals are interacting closly with one another), and carry the huge advantage that they can be used to directly track animals, removing the need for tracklet creation or stitching.</strong></p>
+<p>Some resources that can be useful:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut">github.com/DeepLabCut/DeepLabCut</a></p></li>
+<li><p><a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/maDLC_UserGuide.html">DeepLabCut’s Documentation: User Guide for Multi-Animal projects</a></p></li>
+<li><p><a class="reference external" href="https://openaccess.thecvf.com/content/ICCV2023/papers/Zhou_Rethinking_Pose_Estimation_in_Crowds_Overcoming_the_Detection_Information_Bottleneck_ICCV_2023_paper.pdf">Zhou, Stoffl, Mathis, Mathis. “Rethinking Pose Estimation in Crowds: Overcoming the Detection Information Bottleneck and Ambiguity.” Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV). 2023</a></p></li>
+</ul>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">#</a></h2>
+<p>This notebook is an introduction to training and using CTD models in DeepLabCut, through the <a class="reference external" href="https://zenodo.org/records/5851157">maDLC Tri-Mouse Benchmark Dataset</a> presented Lauer et al. 2022 (Nature Methods). For more information, you can check out the <a class="reference external" href="https://benchmark.deeplabcut.org/datasets.html">DeepLabCut Benchmark Datasets</a>.</p>
+<p>In this notebook, we’ll</p>
+<ul class="simple">
+<li><p>train an bottom-up model that can provide conditions for the CTD model</p></li>
+<li><p>evaluate the bottom-up model</p></li>
+<li><p>(optional/advanced) learn how the CTD model is trained with generative sampling</p></li>
+<li><p>train the CTD model</p></li>
+<li><p>evaluate the CTD model</p></li>
+<li><p><strong>(Nice feature of CTD models)</strong> use the CTD model to track individuals</p></li>
+</ul>
+<p>Note: This notebook <strong>can also be run locally</strong>. However, using a GPU is recommended to train the models and run video inference. Just skip the <em>Installing DeepLabCut on COLAB</em> section</p>
+<section id="change-the-runtime-type-to-use-a-gpu">
+<h3>⚠️⚠️ Change the Runtime type to use a GPU!⚠️⚠️<a class="headerlink" href="#change-the-runtime-type-to-use-a-gpu" title="Link to this heading">#</a></h3>
+<p>First, go to “Runtime” -&gt;”change runtime type”-&gt;select “Python3”, and then select “GPU”.</p>
+</section>
+<section id="installing-deeplabcut-on-colab">
+<h3>Installing DeepLabCut on COLAB<a class="headerlink" href="#installing-deeplabcut-on-colab" title="Link to this heading">#</a></h3>
+<p>Let’s install the latest version of DeepLabCut, straight from GitHub.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span>deeplabcut
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Collecting deeplabcut
+  Cloning https://github.com/DeepLabCut/DeepLabCut.git (to revision lucas/buctd_v2) to /tmp/pip-install-p_2aupou/deeplabcut_38affa993eac4f18a4fcf05ba8f80e79
+  Running command git clone --filter=blob:none --quiet https://github.com/DeepLabCut/DeepLabCut.git /tmp/pip-install-p_2aupou/deeplabcut_38affa993eac4f18a4fcf05ba8f80e79
+  Running command git checkout -b lucas/buctd_v2 --track origin/lucas/buctd_v2
+  Switched to a new branch &#39;lucas/buctd_v2&#39;
+  Branch &#39;lucas/buctd_v2&#39; set up to track remote branch &#39;lucas/buctd_v2&#39; from &#39;origin&#39;.
+  Resolved https://github.com/DeepLabCut/DeepLabCut.git to commit 12cf3fa01b91bbc8c73c1efcecebf83815164da0
+  Installing build dependencies ... ?25l?25hdone
+  Getting requirements to build wheel ... ?25l?25hdone
+  Preparing metadata (pyproject.toml) ... ?25l?25hdone
+Collecting albumentations&lt;=1.4.3 (from deeplabcut)
+  Downloading albumentations-1.4.3-py3-none-any.whl.metadata (37 kB)
+Collecting dlclibrary&gt;=0.0.7 (from deeplabcut)
+  Downloading dlclibrary-0.0.7-py3-none-any.whl.metadata (4.2 kB)
+Requirement already satisfied: einops in /usr/local/lib/python3.11/dist-packages (from deeplabcut) (0.8.1)
+Collecting filterpy&gt;=1.4.4 (from deeplabcut)
+  Downloading filterpy-1.4.5.zip (177 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">178.0/178.0 kB</span> <span class=" -Color -Color-Red">10.1 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25h  Preparing metadata (setup.py) ... ?25l?25hdone
+Collecting ruamel.yaml&gt;=0.15.0 (from deeplabcut)
+  Downloading ruamel.yaml-0.18.10-py3-none-any.whl.metadata (23 kB)
+Collecting imgaug&gt;=0.4.0 (from deeplabcut)
+  Downloading imgaug-0.4.0-py2.py3-none-any.whl.metadata (1.8 kB)
+Requirement already satisfied: imageio-ffmpeg in /usr/local/lib/python3.11/dist-packages (from deeplabcut) (0.6.0)
+Requirement already satisfied: numba&gt;=0.54 in /usr/local/lib/python3.11/dist-packages (from deeplabcut) (0.60.0)
+Collecting matplotlib!=3.7.0,!=3.7.1,&lt;3.9,&gt;=3.3 (from deeplabcut)
+  Downloading matplotlib-3.8.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (5.8 kB)
+Requirement already satisfied: networkx&gt;=2.6 in /usr/local/lib/python3.11/dist-packages (from deeplabcut) (3.4.2)
+Collecting numpy&lt;2.0.0,&gt;=1.18.5 (from deeplabcut)
+  Downloading numpy-1.26.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (61 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">61.0/61.0 kB</span> <span class=" -Color -Color-Red">5.2 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hRequirement already satisfied: pandas!=1.5.0,&gt;=1.0.1 in /usr/local/lib/python3.11/dist-packages (from deeplabcut) (2.2.2)
+Requirement already satisfied: scikit-image&gt;=0.17 in /usr/local/lib/python3.11/dist-packages (from deeplabcut) (0.25.2)
+Requirement already satisfied: scikit-learn&gt;=1.0 in /usr/local/lib/python3.11/dist-packages (from deeplabcut) (1.6.1)
+Requirement already satisfied: scipy&gt;=1.9 in /usr/local/lib/python3.11/dist-packages (from deeplabcut) (1.14.1)
+Requirement already satisfied: statsmodels&gt;=0.11 in /usr/local/lib/python3.11/dist-packages (from deeplabcut) (0.14.4)
+Collecting tables==3.8.0 (from deeplabcut)
+  Downloading tables-3.8.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.2 kB)
+Requirement already satisfied: timm in /usr/local/lib/python3.11/dist-packages (from deeplabcut) (1.0.15)
+Requirement already satisfied: torch&gt;=2.0.0 in /usr/local/lib/python3.11/dist-packages (from deeplabcut) (2.6.0+cu124)
+Requirement already satisfied: torchvision in /usr/local/lib/python3.11/dist-packages (from deeplabcut) (0.21.0+cu124)
+Requirement already satisfied: tqdm in /usr/local/lib/python3.11/dist-packages (from deeplabcut) (4.67.1)
+Requirement already satisfied: pycocotools in /usr/local/lib/python3.11/dist-packages (from deeplabcut) (2.0.8)
+Requirement already satisfied: pyyaml in /usr/local/lib/python3.11/dist-packages (from deeplabcut) (6.0.2)
+Requirement already satisfied: Pillow&gt;=7.1 in /usr/local/lib/python3.11/dist-packages (from deeplabcut) (11.1.0)
+Requirement already satisfied: cython&gt;=0.29.21 in /usr/local/lib/python3.11/dist-packages (from tables==3.8.0-&gt;deeplabcut) (3.0.12)
+Requirement already satisfied: numexpr&gt;=2.6.2 in /usr/local/lib/python3.11/dist-packages (from tables==3.8.0-&gt;deeplabcut) (2.10.2)
+Collecting blosc2~=2.0.0 (from tables==3.8.0-&gt;deeplabcut)
+  Downloading blosc2-2.0.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (11 kB)
+Requirement already satisfied: packaging in /usr/local/lib/python3.11/dist-packages (from tables==3.8.0-&gt;deeplabcut) (24.2)
+Requirement already satisfied: py-cpuinfo in /usr/local/lib/python3.11/dist-packages (from tables==3.8.0-&gt;deeplabcut) (9.0.0)
+Requirement already satisfied: typing-extensions&gt;=4.9.0 in /usr/local/lib/python3.11/dist-packages (from albumentations&lt;=1.4.3-&gt;deeplabcut) (4.13.1)
+Requirement already satisfied: opencv-python-headless&gt;=4.9.0 in /usr/local/lib/python3.11/dist-packages (from albumentations&lt;=1.4.3-&gt;deeplabcut) (4.11.0.86)
+Requirement already satisfied: huggingface-hub in /usr/local/lib/python3.11/dist-packages (from dlclibrary&gt;=0.0.7-&gt;deeplabcut) (0.30.1)
+Requirement already satisfied: six in /usr/local/lib/python3.11/dist-packages (from imgaug&gt;=0.4.0-&gt;deeplabcut) (1.17.0)
+Requirement already satisfied: opencv-python in /usr/local/lib/python3.11/dist-packages (from imgaug&gt;=0.4.0-&gt;deeplabcut) (4.11.0.86)
+Requirement already satisfied: imageio in /usr/local/lib/python3.11/dist-packages (from imgaug&gt;=0.4.0-&gt;deeplabcut) (2.37.0)
+Requirement already satisfied: Shapely in /usr/local/lib/python3.11/dist-packages (from imgaug&gt;=0.4.0-&gt;deeplabcut) (2.1.0)
+Requirement already satisfied: contourpy&gt;=1.0.1 in /usr/local/lib/python3.11/dist-packages (from matplotlib!=3.7.0,!=3.7.1,&lt;3.9,&gt;=3.3-&gt;deeplabcut) (1.3.1)
+Requirement already satisfied: cycler&gt;=0.10 in /usr/local/lib/python3.11/dist-packages (from matplotlib!=3.7.0,!=3.7.1,&lt;3.9,&gt;=3.3-&gt;deeplabcut) (0.12.1)
+Requirement already satisfied: fonttools&gt;=4.22.0 in /usr/local/lib/python3.11/dist-packages (from matplotlib!=3.7.0,!=3.7.1,&lt;3.9,&gt;=3.3-&gt;deeplabcut) (4.57.0)
+Requirement already satisfied: kiwisolver&gt;=1.3.1 in /usr/local/lib/python3.11/dist-packages (from matplotlib!=3.7.0,!=3.7.1,&lt;3.9,&gt;=3.3-&gt;deeplabcut) (1.4.8)
+Requirement already satisfied: pyparsing&gt;=2.3.1 in /usr/local/lib/python3.11/dist-packages (from matplotlib!=3.7.0,!=3.7.1,&lt;3.9,&gt;=3.3-&gt;deeplabcut) (3.2.3)
+Requirement already satisfied: python-dateutil&gt;=2.7 in /usr/local/lib/python3.11/dist-packages (from matplotlib!=3.7.0,!=3.7.1,&lt;3.9,&gt;=3.3-&gt;deeplabcut) (2.8.2)
+Requirement already satisfied: llvmlite&lt;0.44,&gt;=0.43.0dev0 in /usr/local/lib/python3.11/dist-packages (from numba&gt;=0.54-&gt;deeplabcut) (0.43.0)
+Requirement already satisfied: pytz&gt;=2020.1 in /usr/local/lib/python3.11/dist-packages (from pandas!=1.5.0,&gt;=1.0.1-&gt;deeplabcut) (2025.2)
+Requirement already satisfied: tzdata&gt;=2022.7 in /usr/local/lib/python3.11/dist-packages (from pandas!=1.5.0,&gt;=1.0.1-&gt;deeplabcut) (2025.2)
+Collecting ruamel.yaml.clib&gt;=0.2.7 (from ruamel.yaml&gt;=0.15.0-&gt;deeplabcut)
+  Downloading ruamel.yaml.clib-0.2.12-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.7 kB)
+Requirement already satisfied: tifffile&gt;=2022.8.12 in /usr/local/lib/python3.11/dist-packages (from scikit-image&gt;=0.17-&gt;deeplabcut) (2025.3.30)
+Requirement already satisfied: lazy-loader&gt;=0.4 in /usr/local/lib/python3.11/dist-packages (from scikit-image&gt;=0.17-&gt;deeplabcut) (0.4)
+Requirement already satisfied: joblib&gt;=1.2.0 in /usr/local/lib/python3.11/dist-packages (from scikit-learn&gt;=1.0-&gt;deeplabcut) (1.4.2)
+Requirement already satisfied: threadpoolctl&gt;=3.1.0 in /usr/local/lib/python3.11/dist-packages (from scikit-learn&gt;=1.0-&gt;deeplabcut) (3.6.0)
+Requirement already satisfied: patsy&gt;=0.5.6 in /usr/local/lib/python3.11/dist-packages (from statsmodels&gt;=0.11-&gt;deeplabcut) (1.0.1)
+Requirement already satisfied: filelock in /usr/local/lib/python3.11/dist-packages (from torch&gt;=2.0.0-&gt;deeplabcut) (3.18.0)
+Requirement already satisfied: jinja2 in /usr/local/lib/python3.11/dist-packages (from torch&gt;=2.0.0-&gt;deeplabcut) (3.1.6)
+Requirement already satisfied: fsspec in /usr/local/lib/python3.11/dist-packages (from torch&gt;=2.0.0-&gt;deeplabcut) (2025.3.2)
+Collecting nvidia-cuda-nvrtc-cu12==12.4.127 (from torch&gt;=2.0.0-&gt;deeplabcut)
+  Downloading nvidia_cuda_nvrtc_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl.metadata (1.5 kB)
+Collecting nvidia-cuda-runtime-cu12==12.4.127 (from torch&gt;=2.0.0-&gt;deeplabcut)
+  Downloading nvidia_cuda_runtime_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl.metadata (1.5 kB)
+Collecting nvidia-cuda-cupti-cu12==12.4.127 (from torch&gt;=2.0.0-&gt;deeplabcut)
+  Downloading nvidia_cuda_cupti_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl.metadata (1.6 kB)
+Collecting nvidia-cudnn-cu12==9.1.0.70 (from torch&gt;=2.0.0-&gt;deeplabcut)
+  Downloading nvidia_cudnn_cu12-9.1.0.70-py3-none-manylinux2014_x86_64.whl.metadata (1.6 kB)
+Collecting nvidia-cublas-cu12==12.4.5.8 (from torch&gt;=2.0.0-&gt;deeplabcut)
+  Downloading nvidia_cublas_cu12-12.4.5.8-py3-none-manylinux2014_x86_64.whl.metadata (1.5 kB)
+Collecting nvidia-cufft-cu12==11.2.1.3 (from torch&gt;=2.0.0-&gt;deeplabcut)
+  Downloading nvidia_cufft_cu12-11.2.1.3-py3-none-manylinux2014_x86_64.whl.metadata (1.5 kB)
+Collecting nvidia-curand-cu12==10.3.5.147 (from torch&gt;=2.0.0-&gt;deeplabcut)
+  Downloading nvidia_curand_cu12-10.3.5.147-py3-none-manylinux2014_x86_64.whl.metadata (1.5 kB)
+Collecting nvidia-cusolver-cu12==11.6.1.9 (from torch&gt;=2.0.0-&gt;deeplabcut)
+  Downloading nvidia_cusolver_cu12-11.6.1.9-py3-none-manylinux2014_x86_64.whl.metadata (1.6 kB)
+Collecting nvidia-cusparse-cu12==12.3.1.170 (from torch&gt;=2.0.0-&gt;deeplabcut)
+  Downloading nvidia_cusparse_cu12-12.3.1.170-py3-none-manylinux2014_x86_64.whl.metadata (1.6 kB)
+Requirement already satisfied: nvidia-cusparselt-cu12==0.6.2 in /usr/local/lib/python3.11/dist-packages (from torch&gt;=2.0.0-&gt;deeplabcut) (0.6.2)
+Requirement already satisfied: nvidia-nccl-cu12==2.21.5 in /usr/local/lib/python3.11/dist-packages (from torch&gt;=2.0.0-&gt;deeplabcut) (2.21.5)
+Requirement already satisfied: nvidia-nvtx-cu12==12.4.127 in /usr/local/lib/python3.11/dist-packages (from torch&gt;=2.0.0-&gt;deeplabcut) (12.4.127)
+Collecting nvidia-nvjitlink-cu12==12.4.127 (from torch&gt;=2.0.0-&gt;deeplabcut)
+  Downloading nvidia_nvjitlink_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl.metadata (1.5 kB)
+Requirement already satisfied: triton==3.2.0 in /usr/local/lib/python3.11/dist-packages (from torch&gt;=2.0.0-&gt;deeplabcut) (3.2.0)
+Requirement already satisfied: sympy==1.13.1 in /usr/local/lib/python3.11/dist-packages (from torch&gt;=2.0.0-&gt;deeplabcut) (1.13.1)
+Requirement already satisfied: mpmath&lt;1.4,&gt;=1.1.0 in /usr/local/lib/python3.11/dist-packages (from sympy==1.13.1-&gt;torch&gt;=2.0.0-&gt;deeplabcut) (1.3.0)
+Requirement already satisfied: safetensors in /usr/local/lib/python3.11/dist-packages (from timm-&gt;deeplabcut) (0.5.3)
+Requirement already satisfied: msgpack in /usr/local/lib/python3.11/dist-packages (from blosc2~=2.0.0-&gt;tables==3.8.0-&gt;deeplabcut) (1.1.0)
+Requirement already satisfied: requests in /usr/local/lib/python3.11/dist-packages (from huggingface-hub-&gt;dlclibrary&gt;=0.0.7-&gt;deeplabcut) (2.32.3)
+Requirement already satisfied: MarkupSafe&gt;=2.0 in /usr/local/lib/python3.11/dist-packages (from jinja2-&gt;torch&gt;=2.0.0-&gt;deeplabcut) (3.0.2)
+Requirement already satisfied: charset-normalizer&lt;4,&gt;=2 in /usr/local/lib/python3.11/dist-packages (from requests-&gt;huggingface-hub-&gt;dlclibrary&gt;=0.0.7-&gt;deeplabcut) (3.4.1)
+Requirement already satisfied: idna&lt;4,&gt;=2.5 in /usr/local/lib/python3.11/dist-packages (from requests-&gt;huggingface-hub-&gt;dlclibrary&gt;=0.0.7-&gt;deeplabcut) (3.10)
+Requirement already satisfied: urllib3&lt;3,&gt;=1.21.1 in /usr/local/lib/python3.11/dist-packages (from requests-&gt;huggingface-hub-&gt;dlclibrary&gt;=0.0.7-&gt;deeplabcut) (2.3.0)
+Requirement already satisfied: certifi&gt;=2017.4.17 in /usr/local/lib/python3.11/dist-packages (from requests-&gt;huggingface-hub-&gt;dlclibrary&gt;=0.0.7-&gt;deeplabcut) (2025.1.31)
+Downloading tables-3.8.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (6.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">6.5/6.5 MB</span> <span class=" -Color -Color-Red">105.3 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hDownloading albumentations-1.4.3-py3-none-any.whl (137 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">137.0/137.0 kB</span> <span class=" -Color -Color-Red">13.7 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hDownloading dlclibrary-0.0.7-py3-none-any.whl (16 kB)
+Downloading imgaug-0.4.0-py2.py3-none-any.whl (948 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">948.0/948.0 kB</span> <span class=" -Color -Color-Red">52.0 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hDownloading matplotlib-3.8.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (11.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">11.6/11.6 MB</span> <span class=" -Color -Color-Red">103.8 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hDownloading numpy-1.26.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (18.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">18.3/18.3 MB</span> <span class=" -Color -Color-Red">95.4 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hDownloading ruamel.yaml-0.18.10-py3-none-any.whl (117 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">117.7/117.7 kB</span> <span class=" -Color -Color-Red">11.0 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hDownloading nvidia_cublas_cu12-12.4.5.8-py3-none-manylinux2014_x86_64.whl (363.4 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">363.4/363.4 MB</span> <span class=" -Color -Color-Red">4.2 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hDownloading nvidia_cuda_cupti_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl (13.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">13.8/13.8 MB</span> <span class=" -Color -Color-Red">99.4 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hDownloading nvidia_cuda_nvrtc_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl (24.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">24.6/24.6 MB</span> <span class=" -Color -Color-Red">88.6 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hDownloading nvidia_cuda_runtime_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl (883 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">883.7/883.7 kB</span> <span class=" -Color -Color-Red">54.9 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hDownloading nvidia_cudnn_cu12-9.1.0.70-py3-none-manylinux2014_x86_64.whl (664.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">664.8/664.8 MB</span> <span class=" -Color -Color-Red">1.2 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hDownloading nvidia_cufft_cu12-11.2.1.3-py3-none-manylinux2014_x86_64.whl (211.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">211.5/211.5 MB</span> <span class=" -Color -Color-Red">3.9 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hDownloading nvidia_curand_cu12-10.3.5.147-py3-none-manylinux2014_x86_64.whl (56.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">56.3/56.3 MB</span> <span class=" -Color -Color-Red">22.8 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hDownloading nvidia_cusolver_cu12-11.6.1.9-py3-none-manylinux2014_x86_64.whl (127.9 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">127.9/127.9 MB</span> <span class=" -Color -Color-Red">7.3 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hDownloading nvidia_cusparse_cu12-12.3.1.170-py3-none-manylinux2014_x86_64.whl (207.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">207.5/207.5 MB</span> <span class=" -Color -Color-Red">5.4 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hDownloading nvidia_nvjitlink_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl (21.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">21.1/21.1 MB</span> <span class=" -Color -Color-Red">41.7 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hDownloading blosc2-2.0.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.9 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">3.9/3.9 MB</span> <span class=" -Color -Color-Red">91.9 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hDownloading ruamel.yaml.clib-0.2.12-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (739 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ <span class=" -Color -Color-Green">739.1/739.1 kB</span> <span class=" -Color -Color-Red">51.2 MB/s</span> eta <span class=" -Color -Color-Cyan">0:00:00</span>
+?25hBuilding wheels for collected packages: deeplabcut, filterpy
+  Building wheel for deeplabcut (pyproject.toml) ... ?25l?25hdone
+  Created wheel for deeplabcut: filename=deeplabcut-3.0.0rc8-py3-none-any.whl size=2135196 sha256=5fed7cbc1c688b63dba5c4ec999ec8cd64ff183633f52f61dae83c99bef61086
+  Stored in directory: /tmp/pip-ephem-wheel-cache-mksbbfnl/wheels/f5/b8/31/9da4b9cf29c390764ce8fb3cda190fa42dce894367ddf37cc9
+  Building wheel for filterpy (setup.py) ... ?25l?25hdone
+  Created wheel for filterpy: filename=filterpy-1.4.5-py3-none-any.whl size=110460 sha256=ba55d3e7bb10d2a01b1ad749dd6776e6fe11dc542fa55874879db636b2932478
+  Stored in directory: /root/.cache/pip/wheels/12/dc/3c/e12983eac132d00f82a20c6cbe7b42ce6e96190ef8fa2d15e1
+Successfully built deeplabcut filterpy
+Installing collected packages: ruamel.yaml.clib, nvidia-nvjitlink-cu12, nvidia-curand-cu12, nvidia-cufft-cu12, nvidia-cuda-runtime-cu12, nvidia-cuda-nvrtc-cu12, nvidia-cuda-cupti-cu12, nvidia-cublas-cu12, numpy, blosc2, ruamel.yaml, nvidia-cusparse-cu12, nvidia-cudnn-cu12, tables, nvidia-cusolver-cu12, matplotlib, dlclibrary, imgaug, filterpy, albumentations, deeplabcut
+  Attempting uninstall: nvidia-nvjitlink-cu12
+    Found existing installation: nvidia-nvjitlink-cu12 12.5.82
+    Uninstalling nvidia-nvjitlink-cu12-12.5.82:
+      Successfully uninstalled nvidia-nvjitlink-cu12-12.5.82
+  Attempting uninstall: nvidia-curand-cu12
+    Found existing installation: nvidia-curand-cu12 10.3.6.82
+    Uninstalling nvidia-curand-cu12-10.3.6.82:
+      Successfully uninstalled nvidia-curand-cu12-10.3.6.82
+  Attempting uninstall: nvidia-cufft-cu12
+    Found existing installation: nvidia-cufft-cu12 11.2.3.61
+    Uninstalling nvidia-cufft-cu12-11.2.3.61:
+      Successfully uninstalled nvidia-cufft-cu12-11.2.3.61
+  Attempting uninstall: nvidia-cuda-runtime-cu12
+    Found existing installation: nvidia-cuda-runtime-cu12 12.5.82
+    Uninstalling nvidia-cuda-runtime-cu12-12.5.82:
+      Successfully uninstalled nvidia-cuda-runtime-cu12-12.5.82
+  Attempting uninstall: nvidia-cuda-nvrtc-cu12
+    Found existing installation: nvidia-cuda-nvrtc-cu12 12.5.82
+    Uninstalling nvidia-cuda-nvrtc-cu12-12.5.82:
+      Successfully uninstalled nvidia-cuda-nvrtc-cu12-12.5.82
+  Attempting uninstall: nvidia-cuda-cupti-cu12
+    Found existing installation: nvidia-cuda-cupti-cu12 12.5.82
+    Uninstalling nvidia-cuda-cupti-cu12-12.5.82:
+      Successfully uninstalled nvidia-cuda-cupti-cu12-12.5.82
+  Attempting uninstall: nvidia-cublas-cu12
+    Found existing installation: nvidia-cublas-cu12 12.5.3.2
+    Uninstalling nvidia-cublas-cu12-12.5.3.2:
+      Successfully uninstalled nvidia-cublas-cu12-12.5.3.2
+  Attempting uninstall: numpy
+    Found existing installation: numpy 2.0.2
+    Uninstalling numpy-2.0.2:
+      Successfully uninstalled numpy-2.0.2
+  Attempting uninstall: blosc2
+    Found existing installation: blosc2 3.2.1
+    Uninstalling blosc2-3.2.1:
+      Successfully uninstalled blosc2-3.2.1
+  Attempting uninstall: nvidia-cusparse-cu12
+    Found existing installation: nvidia-cusparse-cu12 12.5.1.3
+    Uninstalling nvidia-cusparse-cu12-12.5.1.3:
+      Successfully uninstalled nvidia-cusparse-cu12-12.5.1.3
+  Attempting uninstall: nvidia-cudnn-cu12
+    Found existing installation: nvidia-cudnn-cu12 9.3.0.75
+    Uninstalling nvidia-cudnn-cu12-9.3.0.75:
+      Successfully uninstalled nvidia-cudnn-cu12-9.3.0.75
+  Attempting uninstall: tables
+    Found existing installation: tables 3.10.2
+    Uninstalling tables-3.10.2:
+      Successfully uninstalled tables-3.10.2
+  Attempting uninstall: nvidia-cusolver-cu12
+    Found existing installation: nvidia-cusolver-cu12 11.6.3.83
+    Uninstalling nvidia-cusolver-cu12-11.6.3.83:
+      Successfully uninstalled nvidia-cusolver-cu12-11.6.3.83
+  Attempting uninstall: matplotlib
+    Found existing installation: matplotlib 3.10.0
+    Uninstalling matplotlib-3.10.0:
+      Successfully uninstalled matplotlib-3.10.0
+  Attempting uninstall: albumentations
+    Found existing installation: albumentations 2.0.5
+    Uninstalling albumentations-2.0.5:
+      Successfully uninstalled albumentations-2.0.5
+<span class=" -Color -Color-Red">ERROR: pip&#39;s dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.</span>
+<span class=" -Color -Color-Red">thinc 8.3.6 requires numpy&lt;3.0.0,&gt;=2.0.0, but you have numpy 1.26.4 which is incompatible.</span>
+Successfully installed albumentations-1.4.3 blosc2-2.0.0 deeplabcut-3.0.0rc8 dlclibrary-0.0.7 filterpy-1.4.5 imgaug-0.4.0 matplotlib-3.8.4 numpy-1.26.4 nvidia-cublas-cu12-12.4.5.8 nvidia-cuda-cupti-cu12-12.4.127 nvidia-cuda-nvrtc-cu12-12.4.127 nvidia-cuda-runtime-cu12-12.4.127 nvidia-cudnn-cu12-9.1.0.70 nvidia-cufft-cu12-11.2.1.3 nvidia-curand-cu12-10.3.5.147 nvidia-cusolver-cu12-11.6.1.9 nvidia-cusparse-cu12-12.3.1.170 nvidia-nvjitlink-cu12-12.4.127 ruamel.yaml-0.18.10 ruamel.yaml.clib-0.2.12 tables-3.8.0
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>(Be sure to click “RESTART RUNTIME” if it is displayed above before moving on !)</strong> You will see this button at the output of the cells above ^.</p>
+</section>
+<section id="imports">
+<h3>Imports<a class="headerlink" href="#imports" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zipfile</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZipFile</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut.pose_estimation_pytorch</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dlc_torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut.utils.auxiliaryfunctions</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">auxiliaryfunctions</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading DLC 3.0.0rc8...
+DLC loaded in light mode; you cannot use any GUI (labeling, relabeling and standalone GUI)
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="downloading-the-tri-mouse-dataset">
+<h3>Downloading the Tri-Mouse Dataset<a class="headerlink" href="#downloading-the-tri-mouse-dataset" title="Link to this heading">#</a></h3>
+<p>This cell downloads the Tri-Mouse dataset from Zenodo into the current working directory (or <code class="docutils literal notranslate"><span class="pre">cwd</span></code>), which should be the directory you launched the jupyter server from.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">download_path</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
+<span class="n">config</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;trimice-dlc-2021-06-22&quot;</span> <span class="o">/</span> <span class="s2">&quot;config.yaml&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading the tri-mouse dataset into </span><span class="si">{</span><span class="n">download_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">url_record</span> <span class="o">=</span> <span class="s2">&quot;https://zenodo.org/api/records/5851157&quot;</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url_record</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;files&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">file</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">file</span><span class="p">[</span><span class="s1">&#39;links&#39;</span><span class="p">][</span><span class="s1">&#39;self&#39;</span><span class="p">],</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="p">))</span> <span class="k">as</span> <span class="n">zf</span><span class="p">:</span>
+            <span class="n">zf</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">download_path</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The URL </span><span class="si">{</span><span class="n">url_record</span><span class="si">}</span><span class="s2"> could not be reached.&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># Check that the config was downloaded correctly</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Config path: </span><span class="si">{</span><span class="n">config</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">config</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find config at </span><span class="si">{</span><span class="n">config</span><span class="si">}</span><span class="s2">: check that the dataset was downloaded correctly!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Downloading the tri-mouse dataset into /content
+Downloading trimice-dlc-2021-06-22.zip...
+Config path: /content/trimice-dlc-2021-06-22/config.yaml
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="training-a-ctd-model-in-deeplabcut">
+<h2>Training a CTD Model in DeepLabCut<a class="headerlink" href="#training-a-ctd-model-in-deeplabcut" title="Link to this heading">#</a></h2>
+<p>BUCTD (or bottom-up conditioned top-down), as its name suggests, requires a bottom-up model to provide conditions (or <strong>pose proposals</strong>) for the CTD model to fix. So the first step in getting a CTD model that can be used to run inference is to train a bottom-up model to provide conditions!</p>
+<p>We’ll also <strong>ensure that we’re training the bottom-up and CTD models on the same train/test splits!</strong> This is important: if you’re training the models on different training images and evaluating them on different test images, then their results aren’t comparable!</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span> <span class="o">=</span> <span class="n">auxiliaryfunctions</span><span class="o">.</span><span class="n">read_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<span class="n">train_frac</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;TrainingFraction&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="mi">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">train_frac</span><span class="p">)</span><span class="si">}</span><span class="s2">% of the data in the training set.&quot;</span><span class="p">)</span>
+
+<span class="n">num_images</span> <span class="o">=</span> <span class="mi">112</span>
+<span class="n">train_images</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">train_frac</span> <span class="o">*</span> <span class="n">num_images</span><span class="p">)</span>
+
+<span class="n">seed</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+<span class="n">train_indices</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">num_images</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">train_images</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="n">test_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">idx</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_images</span><span class="p">)</span> <span class="k">if</span> <span class="n">idx</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">train_indices</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Using 70% of the data in the training set.
+</pre></div>
+</div>
+</div>
+</div>
+<section id="training-a-bu-model">
+<h3>Training a BU Model<a class="headerlink" href="#training-a-bu-model" title="Link to this heading">#</a></h3>
+<p>We’ll take the simplest approach possible here and train a ResNet pose estimation model. As the CTD model will be used to improve the predictions made by the BU model, we want something light and fast rather than something heavy and slow!</p>
+<p>We’ll start by <strong>creating the shuffle for the bottom-up model (with index 1) with the selected train/test split</strong>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">BU_SHUFFLE</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">,</span>
+    <span class="n">Shuffles</span><span class="o">=</span><span class="p">[</span><span class="n">BU_SHUFFLE</span><span class="p">],</span>
+    <span class="n">trainIndices</span><span class="o">=</span><span class="p">[</span><span class="n">train_indices</span><span class="p">],</span>
+    <span class="n">testIndices</span><span class="o">=</span><span class="p">[</span><span class="n">test_indices</span><span class="p">],</span>
+    <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;resnet_50&quot;</span><span class="p">,</span>
+    <span class="n">engine</span><span class="o">=</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">Engine</span><span class="o">.</span><span class="n">PYTORCH</span><span class="p">,</span>
+    <span class="n">userfeedback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Utilizing the following graph: [[0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8], [0, 9], [0, 10], [0, 11], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [1, 8], [1, 9], [1, 10], [1, 11], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [2, 8], [2, 9], [2, 10], [2, 11], [3, 4], [3, 5], [3, 6], [3, 7], [3, 8], [3, 9], [3, 10], [3, 11], [4, 5], [4, 6], [4, 7], [4, 8], [4, 9], [4, 10], [4, 11], [5, 6], [5, 7], [5, 8], [5, 9], [5, 10], [5, 11], [6, 7], [6, 8], [6, 9], [6, 10], [6, 11], [7, 8], [7, 9], [7, 10], [7, 11], [8, 9], [8, 10], [8, 11], [9, 10], [9, 11], [10, 11]]
+You passed a split with the following fraction: 70%
+Creating training data for: Shuffle: 1 TrainFraction:  0.7
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 78/78 [00:00&lt;00:00, 1613.55it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The training dataset is successfully created. Use the function &#39;train_network&#39; to start training. Happy training!
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We can then train the model defined in the created bottom-up shuffle. To make running this notebook a bit quicker, we’ll <strong>only train the BU model for 100 epochs</strong>. The model should still perform well enough, and as we’re less interested in the BU model than the CTD model we’ll save a bit of time and compute here. Training the model should <strong>take 10 to 20 minutes</strong>, depending on your CPU and GPU performance.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">,</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="n">BU_SHUFFLE</span><span class="p">,</span>
+    <span class="n">epochs</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Training with configuration:
+data:
+  bbox_margin: 20
+  colormode: RGB
+  inference:
+    normalize_images: True
+  train:
+    affine:
+      p: 0.5
+      rotation: 30
+      scaling: [0.5, 1.25]
+      translation: 0
+    crop_sampling:
+      width: 448
+      height: 448
+      max_shift: 0.1
+      method: hybrid
+    gaussian_noise: 12.75
+    motion_blur: True
+    normalize_images: True
+device: auto
+metadata:
+  project_path: /content/trimice-dlc-2021-06-22
+  pose_config_path: /content/trimice-dlc-2021-06-22/dlc-models-pytorch/iteration-0/trimiceJun22-trainset70shuffle1/train/pytorch_config.yaml
+  bodyparts: [&#39;snout&#39;, &#39;leftear&#39;, &#39;rightear&#39;, &#39;shoulder&#39;, &#39;spine1&#39;, &#39;spine2&#39;, &#39;spine3&#39;, &#39;spine4&#39;, &#39;tailbase&#39;, &#39;tail1&#39;, &#39;tail2&#39;, &#39;tailend&#39;]
+  unique_bodyparts: []
+  individuals: [&#39;mus1&#39;, &#39;mus2&#39;, &#39;mus3&#39;]
+  with_identity: None
+method: bu
+model:
+  backbone:
+    type: ResNet
+    model_name: resnet50_gn
+    output_stride: 16
+    freeze_bn_stats: False
+    freeze_bn_weights: False
+  backbone_output_channels: 2048
+  heads:
+    bodypart:
+      type: DLCRNetHead
+      predictor:
+        type: PartAffinityFieldPredictor
+        num_animals: 3
+        num_multibodyparts: 12
+        num_uniquebodyparts: 0
+        nms_radius: 5
+        sigma: 1.0
+        locref_stdev: 7.2801
+        min_affinity: 0.05
+        graph: [[0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8], [0, 9], [0, 10], [0, 11], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [1, 8], [1, 9], [1, 10], [1, 11], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [2, 8], [2, 9], [2, 10], [2, 11], [3, 4], [3, 5], [3, 6], [3, 7], [3, 8], [3, 9], [3, 10], [3, 11], [4, 5], [4, 6], [4, 7], [4, 8], [4, 9], [4, 10], [4, 11], [5, 6], [5, 7], [5, 8], [5, 9], [5, 10], [5, 11], [6, 7], [6, 8], [6, 9], [6, 10], [6, 11], [7, 8], [7, 9], [7, 10], [7, 11], [8, 9], [8, 10], [8, 11], [9, 10], [9, 11], [10, 11]]
+        edges_to_keep: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
+        apply_sigmoid: True
+        clip_scores: False
+      target_generator:
+        type: SequentialGenerator
+        generators: [{&#39;type&#39;: &#39;HeatmapPlateauGenerator&#39;, &#39;num_heatmaps&#39;: 12, &#39;pos_dist_thresh&#39;: 17, &#39;heatmap_mode&#39;: &#39;KEYPOINT&#39;, &#39;gradient_masking&#39;: False, &#39;generate_locref&#39;: True, &#39;locref_std&#39;: 7.2801}, {&#39;type&#39;: &#39;PartAffinityFieldGenerator&#39;, &#39;graph&#39;: [[0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8], [0, 9], [0, 10], [0, 11], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [1, 8], [1, 9], [1, 10], [1, 11], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [2, 8], [2, 9], [2, 10], [2, 11], [3, 4], [3, 5], [3, 6], [3, 7], [3, 8], [3, 9], [3, 10], [3, 11], [4, 5], [4, 6], [4, 7], [4, 8], [4, 9], [4, 10], [4, 11], [5, 6], [5, 7], [5, 8], [5, 9], [5, 10], [5, 11], [6, 7], [6, 8], [6, 9], [6, 10], [6, 11], [7, 8], [7, 9], [7, 10], [7, 11], [8, 9], [8, 10], [8, 11], [9, 10], [9, 11], [10, 11]], &#39;width&#39;: 20}]
+      criterion:
+        heatmap:
+          type: WeightedBCECriterion
+          weight: 1.0
+        locref:
+          type: WeightedHuberCriterion
+          weight: 0.05
+        paf:
+          type: WeightedHuberCriterion
+          weight: 0.1
+      heatmap_config:
+        channels: [2048, 12]
+        kernel_size: [3]
+        strides: [2]
+      locref_config:
+        channels: [2048, 24]
+        kernel_size: [3]
+        strides: [2]
+      paf_config:
+        channels: [2048, 132]
+        kernel_size: [3]
+        strides: [2]
+      num_stages: 5
+net_type: resnet_50
+runner:
+  type: PoseTrainingRunner
+  gpus: None
+  key_metric: test.mAP
+  key_metric_asc: True
+  eval_interval: 10
+  optimizer:
+    type: AdamW
+    params:
+      lr: 0.0005
+  scheduler:
+    type: LRListScheduler
+    params:
+      lr_list: [[0.0001], [1e-05]]
+      milestones: [90, 120]
+  snapshots:
+    max_snapshots: 5
+    save_epochs: 25
+    save_optimizer_state: False
+train_settings:
+  batch_size: 8
+  dataloader_workers: 0
+  dataloader_pin_memory: False
+  display_iters: 500
+  epochs: 100
+  seed: 42
+Loading pretrained weights from Hugging Face hub (timm/resnet50_gn.a1h_in1k)
+/usr/local/lib/python3.11/dist-packages/huggingface_hub/utils/_auth.py:94: UserWarning: 
+The secret `HF_TOKEN` does not exist in your Colab secrets.
+To authenticate with the Hugging Face Hub, create a token in your settings tab (https://huggingface.co/settings/tokens), set it as secret in your Google Colab and restart your session.
+You will be able to reuse this secret in all of your notebooks.
+Please note that authentication is recommended but still optional to access public models or datasets.
+  warnings.warn(
+</pre></div>
+</div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "2e74326b630a4d4fa879ec3a154eecb4", "version_major": 2, "version_minor": 0}</script><div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[timm/resnet50_gn.a1h_in1k] Safe alternative available for &#39;pytorch_model.bin&#39; (as &#39;model.safetensors&#39;). Loading weights using safetensors.
+Data Transforms:
+  Training:   Compose([
+  Affine(always_apply=False, p=0.5, interpolation=1, mask_interpolation=0, cval=0, mode=0, scale={&#39;x&#39;: (0.5, 1.25), &#39;y&#39;: (0.5, 1.25)}, translate_percent=None, translate_px={&#39;x&#39;: (0, 0), &#39;y&#39;: (0, 0)}, rotate=(-30, 30), fit_output=False, shear={&#39;x&#39;: (0.0, 0.0), &#39;y&#39;: (0.0, 0.0)}, cval_mask=0, keep_ratio=True, rotate_method=&#39;largest_box&#39;),
+  PadIfNeeded(always_apply=True, p=1.0, min_height=448, min_width=448, pad_height_divisor=None, pad_width_divisor=None, position=PositionType.CENTER, border_mode=0, value=None, mask_value=None),
+  KeypointAwareCrop(always_apply=True, p=1.0, width=448, height=448, max_shift=0.1, crop_sampling=&#39;hybrid&#39;),
+  MotionBlur(always_apply=False, p=0.5, blur_limit=(3, 7), allow_shifted=True),
+  GaussNoise(always_apply=False, p=0.5, var_limit=(0, 162.5625), per_channel=True, mean=0),
+  Normalize(always_apply=False, p=1.0, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255.0),
+], p=1.0, bbox_params={&#39;format&#39;: &#39;coco&#39;, &#39;label_fields&#39;: [&#39;bbox_labels&#39;], &#39;min_area&#39;: 0.0, &#39;min_visibility&#39;: 0.0, &#39;min_width&#39;: 0.0, &#39;min_height&#39;: 0.0, &#39;check_each_transform&#39;: True}, keypoint_params={&#39;format&#39;: &#39;xy&#39;, &#39;label_fields&#39;: [&#39;class_labels&#39;], &#39;remove_invisible&#39;: False, &#39;angle_in_degrees&#39;: True, &#39;check_each_transform&#39;: True}, additional_targets={}, is_check_shapes=True)
+  Validation: Compose([
+  Normalize(always_apply=False, p=1.0, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255.0),
+], p=1.0, bbox_params={&#39;format&#39;: &#39;coco&#39;, &#39;label_fields&#39;: [&#39;bbox_labels&#39;], &#39;min_area&#39;: 0.0, &#39;min_visibility&#39;: 0.0, &#39;min_width&#39;: 0.0, &#39;min_height&#39;: 0.0, &#39;check_each_transform&#39;: True}, keypoint_params={&#39;format&#39;: &#39;xy&#39;, &#39;label_fields&#39;: [&#39;class_labels&#39;], &#39;remove_invisible&#39;: False, &#39;angle_in_degrees&#39;: True, &#39;check_each_transform&#39;: True}, additional_targets={}, is_check_shapes=True)
+Using 78 images and 34 for testing
+
+Starting pose model training...
+--------------------------------------------------
+Epoch 1/100 (lr=0.0005), train loss 0.08699
+Epoch 2/100 (lr=0.0005), train loss 0.02512
+Epoch 3/100 (lr=0.0005), train loss 0.02266
+Epoch 4/100 (lr=0.0005), train loss 0.02117
+Epoch 5/100 (lr=0.0005), train loss 0.02038
+Epoch 6/100 (lr=0.0005), train loss 0.01967
+Epoch 7/100 (lr=0.0005), train loss 0.01796
+Epoch 8/100 (lr=0.0005), train loss 0.01739
+Epoch 9/100 (lr=0.0005), train loss 0.01615
+Training for epoch 10 done, starting evaluation
+Epoch 10/100 (lr=0.0005), train loss 0.01435, valid loss 0.01307
+Model performance:
+  metrics/test.rmse:          52.10
+  metrics/test.rmse_pcutoff:  42.00
+  metrics/test.mAP:           28.63
+  metrics/test.mAR:           37.16
+Epoch 11/100 (lr=0.0005), train loss 0.01340
+Epoch 12/100 (lr=0.0005), train loss 0.01192
+Epoch 13/100 (lr=0.0005), train loss 0.01072
+Epoch 14/100 (lr=0.0005), train loss 0.01012
+Epoch 15/100 (lr=0.0005), train loss 0.00917
+Epoch 16/100 (lr=0.0005), train loss 0.00888
+Epoch 17/100 (lr=0.0005), train loss 0.00848
+Epoch 18/100 (lr=0.0005), train loss 0.00810
+Epoch 19/100 (lr=0.0005), train loss 0.00742
+Training for epoch 20 done, starting evaluation
+Epoch 20/100 (lr=0.0005), train loss 0.00693, valid loss 0.00716
+Model performance:
+  metrics/test.rmse:          31.48
+  metrics/test.rmse_pcutoff:  29.16
+  metrics/test.mAP:           56.98
+  metrics/test.mAR:           63.14
+Epoch 21/100 (lr=0.0005), train loss 0.00636
+Epoch 22/100 (lr=0.0005), train loss 0.00645
+Epoch 23/100 (lr=0.0005), train loss 0.00596
+Epoch 24/100 (lr=0.0005), train loss 0.00534
+Epoch 25/100 (lr=0.0005), train loss 0.00545
+Epoch 26/100 (lr=0.0005), train loss 0.00507
+Epoch 27/100 (lr=0.0005), train loss 0.00502
+Epoch 28/100 (lr=0.0005), train loss 0.00492
+Epoch 29/100 (lr=0.0005), train loss 0.00456
+Training for epoch 30 done, starting evaluation
+Epoch 30/100 (lr=0.0005), train loss 0.00456, valid loss 0.00507
+Model performance:
+  metrics/test.rmse:          15.23
+  metrics/test.rmse_pcutoff:  11.35
+  metrics/test.mAP:           79.63
+  metrics/test.mAR:           83.04
+Epoch 31/100 (lr=0.0005), train loss 0.00453
+Epoch 32/100 (lr=0.0005), train loss 0.00434
+Epoch 33/100 (lr=0.0005), train loss 0.00425
+Epoch 34/100 (lr=0.0005), train loss 0.00434
+Epoch 35/100 (lr=0.0005), train loss 0.00403
+Epoch 36/100 (lr=0.0005), train loss 0.00402
+Epoch 37/100 (lr=0.0005), train loss 0.00389
+Epoch 38/100 (lr=0.0005), train loss 0.00377
+Epoch 39/100 (lr=0.0005), train loss 0.00365
+Training for epoch 40 done, starting evaluation
+Epoch 40/100 (lr=0.0005), train loss 0.00368, valid loss 0.00457
+Model performance:
+  metrics/test.rmse:           9.55
+  metrics/test.rmse_pcutoff:   8.73
+  metrics/test.mAP:           84.75
+  metrics/test.mAR:           86.86
+Epoch 41/100 (lr=0.0005), train loss 0.00369
+Epoch 42/100 (lr=0.0005), train loss 0.00369
+Epoch 43/100 (lr=0.0005), train loss 0.00350
+Epoch 44/100 (lr=0.0005), train loss 0.00338
+Epoch 45/100 (lr=0.0005), train loss 0.00321
+Epoch 46/100 (lr=0.0005), train loss 0.00337
+Epoch 47/100 (lr=0.0005), train loss 0.00328
+Epoch 48/100 (lr=0.0005), train loss 0.00354
+Epoch 49/100 (lr=0.0005), train loss 0.00315
+Training for epoch 50 done, starting evaluation
+Epoch 50/100 (lr=0.0005), train loss 0.00304, valid loss 0.00439
+Model performance:
+  metrics/test.rmse:           7.60
+  metrics/test.rmse_pcutoff:   6.95
+  metrics/test.mAP:           86.14
+  metrics/test.mAR:           88.43
+Epoch 51/100 (lr=0.0005), train loss 0.00314
+Epoch 52/100 (lr=0.0005), train loss 0.00312
+Epoch 53/100 (lr=0.0005), train loss 0.00306
+Epoch 54/100 (lr=0.0005), train loss 0.00308
+Epoch 55/100 (lr=0.0005), train loss 0.00303
+Epoch 56/100 (lr=0.0005), train loss 0.00313
+Epoch 57/100 (lr=0.0005), train loss 0.00320
+Epoch 58/100 (lr=0.0005), train loss 0.00286
+Epoch 59/100 (lr=0.0005), train loss 0.00284
+Training for epoch 60 done, starting evaluation
+Epoch 60/100 (lr=0.0005), train loss 0.00284, valid loss 0.00423
+Model performance:
+  metrics/test.rmse:           8.43
+  metrics/test.rmse_pcutoff:   7.91
+  metrics/test.mAP:           84.27
+  metrics/test.mAR:           86.76
+Epoch 61/100 (lr=0.0005), train loss 0.00271
+Epoch 62/100 (lr=0.0005), train loss 0.00283
+Epoch 63/100 (lr=0.0005), train loss 0.00293
+Epoch 64/100 (lr=0.0005), train loss 0.00282
+Epoch 65/100 (lr=0.0005), train loss 0.00273
+Epoch 66/100 (lr=0.0005), train loss 0.00286
+Epoch 67/100 (lr=0.0005), train loss 0.00299
+Epoch 68/100 (lr=0.0005), train loss 0.00299
+Epoch 69/100 (lr=0.0005), train loss 0.00260
+Training for epoch 70 done, starting evaluation
+Epoch 70/100 (lr=0.0005), train loss 0.00268, valid loss 0.00412
+Model performance:
+  metrics/test.rmse:           6.21
+  metrics/test.rmse_pcutoff:   5.85
+  metrics/test.mAP:           89.50
+  metrics/test.mAR:           90.88
+Epoch 71/100 (lr=0.0005), train loss 0.00254
+Epoch 72/100 (lr=0.0005), train loss 0.00270
+Epoch 73/100 (lr=0.0005), train loss 0.00281
+Epoch 74/100 (lr=0.0005), train loss 0.00269
+Epoch 75/100 (lr=0.0005), train loss 0.00262
+Epoch 76/100 (lr=0.0005), train loss 0.00273
+Epoch 77/100 (lr=0.0005), train loss 0.00260
+Epoch 78/100 (lr=0.0005), train loss 0.00250
+Epoch 79/100 (lr=0.0005), train loss 0.00270
+Training for epoch 80 done, starting evaluation
+Epoch 80/100 (lr=0.0005), train loss 0.00259, valid loss 0.00393
+Model performance:
+  metrics/test.rmse:           5.40
+  metrics/test.rmse_pcutoff:   5.14
+  metrics/test.mAP:           91.43
+  metrics/test.mAR:           92.25
+Epoch 81/100 (lr=0.0005), train loss 0.00278
+Epoch 82/100 (lr=0.0005), train loss 0.00270
+Epoch 83/100 (lr=0.0005), train loss 0.00266
+Epoch 84/100 (lr=0.0005), train loss 0.00266
+Epoch 85/100 (lr=0.0005), train loss 0.00257
+Epoch 86/100 (lr=0.0005), train loss 0.00250
+Epoch 87/100 (lr=0.0005), train loss 0.00270
+Epoch 88/100 (lr=0.0005), train loss 0.00247
+Epoch 89/100 (lr=0.0005), train loss 0.00220
+Training for epoch 90 done, starting evaluation
+Epoch 90/100 (lr=0.0001), train loss 0.00224, valid loss 0.00405
+Model performance:
+  metrics/test.rmse:           8.61
+  metrics/test.rmse_pcutoff:   8.10
+  metrics/test.mAP:           88.81
+  metrics/test.mAR:           90.20
+Epoch 91/100 (lr=0.0001), train loss 0.00224
+Epoch 92/100 (lr=0.0001), train loss 0.00227
+Epoch 93/100 (lr=0.0001), train loss 0.00205
+Epoch 94/100 (lr=0.0001), train loss 0.00229
+Epoch 95/100 (lr=0.0001), train loss 0.00206
+Epoch 96/100 (lr=0.0001), train loss 0.00214
+Epoch 97/100 (lr=0.0001), train loss 0.00192
+Epoch 98/100 (lr=0.0001), train loss 0.00197
+Epoch 99/100 (lr=0.0001), train loss 0.00208
+Training for epoch 100 done, starting evaluation
+Epoch 100/100 (lr=0.0001), train loss 0.00187, valid loss 0.00378
+Model performance:
+  metrics/test.rmse:           4.67
+  metrics/test.rmse_pcutoff:   4.59
+  metrics/test.mAP:           91.37
+  metrics/test.mAR:           91.96
+</pre></div>
+</div>
+</div>
+</div>
+<p>And finally we evaluate it! If you trained for 100 epochs, you should get an mAP around 90, and RMSE around 4-5 pixels. When calling <code class="docutils literal notranslate"><span class="pre">evaluate_network</span></code>, the PAF graph is pruned (as described in <a class="reference external" href="https://www.nature.com/articles/s41592-022-01443-0">Lauer et al. 2022 (Nature Methods)</a>) to boost performance.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">evaluate_network</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">Shuffles</span><span class="o">=</span><span class="p">[</span><span class="n">BU_SHUFFLE</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 78/78 [00:05&lt;00:00, 13.04it/s]
+100%|██████████| 34/34 [00:05&lt;00:00,  6.33it/s]
+100%|██████████| 78/78 [00:05&lt;00:00, 15.49it/s]
+100%|██████████| 34/34 [00:02&lt;00:00, 16.35it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Evaluation results for DLC_Resnet50_trimiceJun22shuffle1_snapshot_080-results.csv (pcutoff: 0.01):
+train rmse             2.42
+train rmse_pcutoff     2.42
+train mAP             97.23
+train mAR             97.52
+test rmse              3.95
+test rmse_pcutoff      3.95
+test mAP              92.69
+test mAR              93.04
+Name: (0.7, 1, 80, -1, 0.01), dtype: float64
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="training-the-ctd-model">
+<h3>Training the CTD Model<a class="headerlink" href="#training-the-ctd-model" title="Link to this heading">#</a></h3>
+<p>As for the BU model, we need to start by creating the shuffle for the CTD model. We’ll use <code class="docutils literal notranslate"><span class="pre">create_training_dataset_from_existing_split</span></code> to create a shuffle with the same train/test split as the BU shuffle. You could equivalently call <code class="docutils literal notranslate"><span class="pre">create_training_dataset(...,</span> <span class="pre">trainIndices=[train_indices],</span> <span class="pre">testIndices=[test_indices],</span> <span class="pre">...)</span></code> again, as done above for the BU shuffle.</p>
+<p>In this notebook, we’ll use a preNet CTD architecture. You can check out the paper for more information on how preNet models are designed!</p>
+<p>We’ll also specify which model we want to use to provide conditions with the <code class="docutils literal notranslate"><span class="pre">ctd_conditions</span></code> parameter. As is indicated in the docstring:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ctd_conditions</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">default</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+  <span class="n">If</span> <span class="n">using</span> <span class="n">a</span> <span class="n">conditional</span><span class="o">-</span><span class="n">top</span><span class="o">-</span><span class="n">down</span> <span class="p">(</span><span class="n">CTD</span><span class="p">)</span> <span class="n">net_type</span><span class="p">,</span> <span class="n">this</span> <span class="n">argument</span> <span class="n">should</span> <span class="n">be</span> <span class="n">specified</span><span class="o">.</span> <span class="n">It</span> <span class="n">defines</span> <span class="n">the</span>
+  <span class="n">conditions</span> <span class="n">that</span> <span class="n">will</span> <span class="n">be</span> <span class="n">used</span> <span class="k">with</span> <span class="n">the</span> <span class="n">CTD</span> <span class="n">model</span><span class="o">.</span> <span class="n">It</span> <span class="n">can</span> <span class="n">be</span> <span class="n">either</span><span class="p">:</span>
+    <span class="o">*</span> <span class="n">A</span> <span class="n">shuffle</span> <span class="n">number</span> <span class="p">(</span><span class="n">ctd_conditions</span><span class="p">:</span> <span class="nb">int</span><span class="p">),</span> <span class="n">which</span> <span class="n">must</span> <span class="n">correspond</span> <span class="n">to</span> <span class="n">a</span> <span class="n">bottom</span><span class="o">-</span><span class="n">up</span> <span class="p">(</span><span class="n">BU</span><span class="p">)</span> <span class="n">network</span> <span class="nb">type</span><span class="o">.</span>
+    <span class="o">*</span> <span class="n">A</span> <span class="n">predictions</span> <span class="n">file</span> <span class="n">path</span> <span class="p">(</span><span class="n">ctd_conditions</span><span class="p">:</span> <span class="n">string</span> <span class="o">|</span> <span class="n">Path</span><span class="p">),</span> <span class="n">which</span> <span class="n">must</span> <span class="n">correspond</span> <span class="n">to</span> <span class="n">a</span>
+      <span class="o">.</span><span class="n">json</span> <span class="ow">or</span> <span class="o">.</span><span class="n">h5</span> <span class="n">predictions</span> <span class="n">file</span><span class="o">.</span>
+    <span class="o">*</span> <span class="n">A</span> <span class="n">shuffle</span> <span class="n">number</span> <span class="ow">and</span> <span class="n">a</span> <span class="n">particular</span> <span class="n">snapshot</span> <span class="p">(</span><span class="n">ctd_conditions</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]),</span>
+      <span class="n">which</span> <span class="n">respectively</span> <span class="n">correspond</span> <span class="n">to</span> <span class="n">a</span> <span class="n">bottom</span><span class="o">-</span><span class="n">up</span> <span class="p">(</span><span class="n">BU</span><span class="p">)</span> <span class="n">network</span> <span class="nb">type</span> <span class="ow">and</span> <span class="n">a</span> <span class="n">particular</span> <span class="n">snapshot</span> <span class="n">name</span> <span class="ow">or</span>
+      <span class="n">index</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>We’ll use the index of the BU shuffle defined above, and the best snapshot that was saved (indicated through a -1). You can edit which model is used to provide conditions through the <code class="docutils literal notranslate"><span class="pre">pytorch_config</span></code> for the <code class="docutils literal notranslate"><span class="pre">CTD_SHUFFLE</span></code> (in this case shuffle <code class="docutils literal notranslate"><span class="pre">2</span></code>):</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example: Loading the predictions for snapshot-250.pt of shuffle 1.</span>
+<span class="nt">data</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">conditions</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">shuffle</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">    </span><span class="nt">snapshot</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snapshot-250.pt</span>
+
+<span class="c1"># Example: Loading the predictions for the last snapshot of shuffle 1.</span>
+<span class="nt">data</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">conditions</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">shuffle</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">    </span><span class="nt">snapshot_index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-1</span>
+</pre></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CTD_SHUFFLE</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_training_dataset_from_existing_split</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">,</span>
+    <span class="n">from_shuffle</span><span class="o">=</span><span class="n">BU_SHUFFLE</span><span class="p">,</span>
+    <span class="n">shuffles</span><span class="o">=</span><span class="p">[</span><span class="n">CTD_SHUFFLE</span><span class="p">],</span>
+    <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;ctd_prenet_rtmpose_m&quot;</span><span class="p">,</span>
+    <span class="n">engine</span><span class="o">=</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">Engine</span><span class="o">.</span><span class="n">PYTORCH</span><span class="p">,</span>
+    <span class="n">ctd_conditions</span><span class="o">=</span><span class="p">(</span><span class="n">BU_SHUFFLE</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Utilizing the following graph: [[0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8], [0, 9], [0, 10], [0, 11], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [1, 8], [1, 9], [1, 10], [1, 11], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [2, 8], [2, 9], [2, 10], [2, 11], [3, 4], [3, 5], [3, 6], [3, 7], [3, 8], [3, 9], [3, 10], [3, 11], [4, 5], [4, 6], [4, 7], [4, 8], [4, 9], [4, 10], [4, 11], [5, 6], [5, 7], [5, 8], [5, 9], [5, 10], [5, 11], [6, 7], [6, 8], [6, 9], [6, 10], [6, 11], [7, 8], [7, 9], [7, 10], [7, 11], [8, 9], [8, 10], [8, 11], [9, 10], [9, 11], [10, 11]]
+You passed a split with the following fraction: 70%
+Creating training data for: Shuffle: 2 TrainFraction:  0.7
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 78/78 [00:00&lt;00:00, 8165.62it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>The training dataset is successfully created. Use the function &#39;train_network&#39; to start training. Happy training!
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="optional-advanced-learning-and-visualizing-generative-sampling-during-training">
+<h4>(Optional/Advanced) Learning and visualizing generative sampling during training<a class="headerlink" href="#optional-advanced-learning-and-visualizing-generative-sampling-during-training" title="Link to this heading">#</a></h4>
+<p>You can skip this section (and move on to <em>Training and Evaluating the CTD Model</em>) as it’s simply to visualize how CTD models are trained, if you aren’t interested in learning about it.</p>
+<p>This section <strong>uses some internal DeepLabCut functions which may seem a bit complicated if you’re not used to using them; you can ignore most of the code and just read the text/comments and look at the outputs if you’re more comfortable with that.</strong></p>
+<p>Conditional top-down models are trained using <em>generative sampling</em>, as introduced in PoseFix [1]. For every ground truth pose, we’ll add some errors. The errors that can be introduced are:</p>
+<ul class="simple">
+<li><p>Jitter error is defined as a small displacement from the GT keypoint.</p></li>
+<li><p>Swap error represents a confusion between the same or similar parts which belong to different persons.</p></li>
+<li><p>Inversion error occurs when a pose estimation model is confused between semantically similar parts that belong to the same instance.</p></li>
+<li><p>Miss error represents a large displacement from the GT keypoint position.</p></li>
+</ul>
+<p>It’s important that “enough” generative sampling is applied (so the model can learn how to correct errors), but applying too much can be bad too! You want the model to learn to correct errors that are realistic (w.r.t. the task at hand), not just receive random points and have to learn by itself where the keypoints go. <strong>The default parameters should work well on most datasets.</strong></p>
+<p>The way these keypoints are “sampled” can be visuallized below. We’ll create a <code class="docutils literal notranslate"><span class="pre">dataset</span></code> (which is used by DeepLabCut for training) and sample some data from this dataset. You can see that every time we sample an image, we get different keypoint conditions that will be given to the model. This ensures that the model is well trained to deal with a variety of mistakes that can be made by the bottom up model. On the left side of the plots, you have an image with the ground truth keypoints annotated. On the right side of the plots, you have the pose conditions that the CTD model will receive and will be tasked with fixing.</p>
+<blockquote>
+<div><p>[1]: Moon, Gyeongsik, Ju Yong Chang, and Kyoung Mu Lee. “Posefix: Model-agnostic general human pose refinement network.” Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. 2019</p>
+</div></blockquote>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">plot_generative_sampling</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">dlc_torch</span><span class="o">.</span><span class="n">PoseDataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># Sample the same image 3 times and plot the results</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Remove ImageNet normalization from the image so it displays well</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">])</span>
+        <span class="n">std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">])</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">img</span> <span class="o">*</span> <span class="n">std</span> <span class="o">+</span> <span class="n">mean</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Get the ground trouth and &quot;conditional pose&quot;</span>
+        <span class="n">gt_pose</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;annotations&quot;</span><span class="p">][</span><span class="s2">&quot;keypoints&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">gen_samples</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">][</span><span class="s2">&quot;cond_keypoints&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axs</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+
+        <span class="c1"># plot the ground truth on the left and conditions on the right</span>
+        <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">keypoints</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="n">axs</span><span class="p">,</span>
+            <span class="p">[</span><span class="s2">&quot;Ground Truth Pose&quot;</span><span class="p">,</span> <span class="s2">&quot;Pose Conditions&quot;</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">gt_pose</span><span class="p">,</span> <span class="n">gen_samples</span><span class="p">],</span>
+        <span class="p">):</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">vis</span> <span class="ow">in</span> <span class="n">keypoints</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">vis</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="p">[</span><span class="n">y</span><span class="p">])</span>
+
+
+<span class="n">ctd_loader</span> <span class="o">=</span> <span class="n">dlc_torch</span><span class="o">.</span><span class="n">DLCLoader</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="n">CTD_SHUFFLE</span><span class="p">)</span>
+
+<span class="n">transform</span> <span class="o">=</span> <span class="n">dlc_torch</span><span class="o">.</span><span class="n">build_transforms</span><span class="p">(</span><span class="n">ctd_loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;train&quot;</span><span class="p">])</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">ctd_loader</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">ctd_loader</span><span class="o">.</span><span class="n">pose_task</span><span class="p">)</span>
+
+<span class="c1"># Fix the seeds for reproducibility; you can change the seed from `0` to another value</span>
+<span class="c1"># to change the results</span>
+<span class="n">dlc_torch</span><span class="o">.</span><span class="n">fix_seeds</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">plot_generative_sampling</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/364d3eb3e824d3d2e6db5fae4a0077819c39305e44131d2356943104abebbf25.png" src="../../_images/364d3eb3e824d3d2e6db5fae4a0077819c39305e44131d2356943104abebbf25.png" />
+<img alt="../../_images/46e37a0dc7476386d985f07ef780ddbd3cc84976628af6221496f0465e99d71e.png" src="../../_images/46e37a0dc7476386d985f07ef780ddbd3cc84976628af6221496f0465e99d71e.png" />
+<img alt="../../_images/51e9b31c7f002527ee8e8ca5d85330a95db62ecc65e042c5e0df9001ea9f4b10.png" src="../../_images/51e9b31c7f002527ee8e8ca5d85330a95db62ecc65e042c5e0df9001ea9f4b10.png" />
+</div>
+</div>
+<p>The generative sampling can be parameterized through the <code class="docutils literal notranslate"><span class="pre">pytorch_config.yaml</span></code> as well. Let’s play around with these parameters a bit and see how that changes the conditions that will be given to the model.</p>
+<p>First, we’ll just lower the <code class="docutils literal notranslate"><span class="pre">keypoint_sigmas</span></code>, which impacts how much pose conditions can move during jittering.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ctd_loader</span> <span class="o">=</span> <span class="n">dlc_torch</span><span class="o">.</span><span class="n">DLCLoader</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="n">CTD_SHUFFLE</span><span class="p">)</span>
+
+<span class="c1"># We&#39;ll edit the model config here directly; In practice, edit the pytorch_config file instead.</span>
+<span class="c1"># The parameters that can be set here are the parameters of the `dlc_torch.GenSamplingConfig`</span>
+<span class="n">ctd_loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;gen_sampling&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># lower the keypoint sigma by a factor of 2 (default: 0.1)</span>
+    <span class="c1">#   -&gt; this changes by how much keypoints are jittered; the smaller</span>
+    <span class="c1">#      the value, the smaller the jitter</span>
+    <span class="s2">&quot;keypoint_sigmas&quot;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">transform</span> <span class="o">=</span> <span class="n">dlc_torch</span><span class="o">.</span><span class="n">build_transforms</span><span class="p">(</span><span class="n">ctd_loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;train&quot;</span><span class="p">])</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">ctd_loader</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">ctd_loader</span><span class="o">.</span><span class="n">pose_task</span><span class="p">)</span>
+
+<span class="c1"># Fix the seeds for reproducibility; you can change the seed from `0` to another value</span>
+<span class="c1"># to change the results</span>
+<span class="n">dlc_torch</span><span class="o">.</span><span class="n">fix_seeds</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">plot_generative_sampling</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/45cf4bf2890741eb4e56598887946dab08bf59ffd3edfd43fa02b2a205263456.png" src="../../_images/45cf4bf2890741eb4e56598887946dab08bf59ffd3edfd43fa02b2a205263456.png" />
+<img alt="../../_images/220aa2f41e227c2594804a0c4b1912ead32a52ecb6a75ae63df0a506fb960b0b.png" src="../../_images/220aa2f41e227c2594804a0c4b1912ead32a52ecb6a75ae63df0a506fb960b0b.png" />
+<img alt="../../_images/770fa52f4f283423bb7dca9281e947686a4d42e896fc96c8e099f3e6c3eedfdf.png" src="../../_images/770fa52f4f283423bb7dca9281e947686a4d42e896fc96c8e099f3e6c3eedfdf.png" />
+</div>
+</div>
+<p>Next, we’ll update the probabilities of make errors. You can edit these values yourself to see how it impacts the generative sampling. Note that these probabilities are <strong>not absolute</strong> - as a single type of error is applied to each keypoint, changing the probability of one type of error happening will change the probability that other types of errors occur.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ctd_loader</span> <span class="o">=</span> <span class="n">dlc_torch</span><span class="o">.</span><span class="n">DLCLoader</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="n">CTD_SHUFFLE</span><span class="p">)</span>
+
+<span class="c1"># We&#39;ll edit the model config here directly; In practice, edit the pytorch_config file instead.</span>
+<span class="c1"># The parameters that can be set here are the parameters of the `dlc_torch.GenSamplingConfig`</span>
+<span class="n">ctd_loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;gen_sampling&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;jitter_prob&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="s2">&quot;swap_prob&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="s2">&quot;inv_prob&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="s2">&quot;miss_prob&quot;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">transform</span> <span class="o">=</span> <span class="n">dlc_torch</span><span class="o">.</span><span class="n">build_transforms</span><span class="p">(</span><span class="n">ctd_loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;train&quot;</span><span class="p">])</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">ctd_loader</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">ctd_loader</span><span class="o">.</span><span class="n">pose_task</span><span class="p">)</span>
+
+<span class="c1"># Fix the seeds for reproducibility; you can change the seed from `0` to another value</span>
+<span class="c1"># to change the results</span>
+<span class="n">dlc_torch</span><span class="o">.</span><span class="n">fix_seeds</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">plot_generative_sampling</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/0d317576789a0c4e02bbeca939404ea6fb750a1ddc3be30a73eb3e6de398e030.png" src="../../_images/0d317576789a0c4e02bbeca939404ea6fb750a1ddc3be30a73eb3e6de398e030.png" />
+<img alt="../../_images/8cba4b8df6a12f9816906ea92c0b54ce57701bc28b4de558ea31e18fed5cedca.png" src="../../_images/8cba4b8df6a12f9816906ea92c0b54ce57701bc28b4de558ea31e18fed5cedca.png" />
+<img alt="../../_images/43ba8e9ebdace6702dbbea421fb60d53b9d5b025999eaa85a519207ec5ed6a73.png" src="../../_images/43ba8e9ebdace6702dbbea421fb60d53b9d5b025999eaa85a519207ec5ed6a73.png" />
+</div>
+</div>
+</section>
+<section id="training-and-evaluating-the-ctd-model">
+<h4>Training and Evaluating the CTD Model<a class="headerlink" href="#training-and-evaluating-the-ctd-model" title="Link to this heading">#</a></h4>
+<p>Next, we can simply train the CTD model. It should take <strong>20 to 60 minutes</strong> to train the model to 150 epochs on a GPU, depending on the performance of the machine you’re on.</p>
+<p>If you think your model has converged before the end of training, you can always interrupt the execution of the cell using the “Stop” button, as I did here after 150 epochs. The best-performing model up to that point should be saved.</p>
+<p>You’ll notice that in the logs for the bottom-up model above, it’s printed <code class="docutils literal notranslate"><span class="pre">using</span> <span class="pre">78</span> <span class="pre">images</span> <span class="pre">and</span> <span class="pre">34</span> <span class="pre">for</span> <span class="pre">testing</span></code> while now it’s showing <code class="docutils literal notranslate"><span class="pre">using</span> <span class="pre">234</span> <span class="pre">images</span> <span class="pre">and</span> <span class="pre">102</span> <span class="pre">for</span> <span class="pre">testing</span></code>. This is because CTD models (and top-down models) perform pose estimation on each mouse indenpendently! As their are 3 mice per image, each ground-truth image creates 3 examples the model can use for training. Checkout the <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/pytorch/architectures.html#information-on-multi-animal-models">docs</a> for more information on different approaches to pose estimation!</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="n">CTD_SHUFFLE</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Training with configuration:
+data:
+  bbox_margin: 25
+  colormode: RGB
+  inference:
+    normalize_images: True
+    top_down_crop:
+      width: 256
+      height: 256
+      crop_with_context: False
+  train:
+    affine:
+      p: 0.5
+      rotation: 30
+      scaling: [1.0, 1.0]
+      translation: 0
+    gaussian_noise: 12.75
+    motion_blur: True
+    normalize_images: True
+    top_down_crop:
+      width: 256
+      height: 256
+      crop_with_context: False
+  conditions:
+    shuffle: 1
+    snapshot_index: -1
+  gen_sampling:
+    keypoint_sigmas: 0.1
+device: auto
+metadata:
+  project_path: /content/trimice-dlc-2021-06-22
+  pose_config_path: /content/trimice-dlc-2021-06-22/dlc-models-pytorch/iteration-0/trimiceJun22-trainset70shuffle2/train/pytorch_config.yaml
+  bodyparts: [&#39;snout&#39;, &#39;leftear&#39;, &#39;rightear&#39;, &#39;shoulder&#39;, &#39;spine1&#39;, &#39;spine2&#39;, &#39;spine3&#39;, &#39;spine4&#39;, &#39;tailbase&#39;, &#39;tail1&#39;, &#39;tail2&#39;, &#39;tailend&#39;]
+  unique_bodyparts: []
+  individuals: [&#39;mus1&#39;, &#39;mus2&#39;, &#39;mus3&#39;]
+  with_identity: None
+method: ctd
+model:
+  backbone:
+    type: CondPreNet
+    backbone:
+      type: CSPNeXt
+      model_name: cspnext_m
+      freeze_bn_stats: False
+      freeze_bn_weights: False
+      deepen_factor: 0.67
+      widen_factor: 0.75
+    kpt_encoder:
+      type: ColoredKeypointEncoder
+      num_joints: 12
+      kernel_size: [15, 15]
+    img_size: [256, 256]
+  backbone_output_channels: 768
+  heads:
+    bodypart:
+      type: HeatmapHead
+      weight_init: normal
+      predictor:
+        type: HeatmapPredictor
+        apply_sigmoid: False
+        clip_scores: True
+        location_refinement: True
+        locref_std: 7.2801
+      target_generator:
+        type: HeatmapGaussianGenerator
+        num_heatmaps: 12
+        pos_dist_thresh: 17
+        heatmap_mode: KEYPOINT
+        generate_locref: True
+        locref_std: 7.2801
+      criterion:
+        heatmap:
+          type: WeightedMSECriterion
+          weight: 1.0
+        locref:
+          type: WeightedHuberCriterion
+          weight: 0.05
+      heatmap_config:
+        channels: [768, 12]
+        kernel_size: [3]
+        strides: [2]
+      locref_config:
+        channels: [768, 24]
+        kernel_size: [3]
+        strides: [2]
+net_type: ctd_prenet_cspnext_m
+runner:
+  type: PoseTrainingRunner
+  gpus: None
+  key_metric: test.mAP
+  key_metric_asc: True
+  eval_interval: 10
+  optimizer:
+    type: AdamW
+    params:
+      lr: 1e-05
+  scheduler:
+    type: LRListScheduler
+    params:
+      lr_list: [[0.0005], [0.0001], [1e-05]]
+      milestones: [5, 90, 120]
+  snapshots:
+    max_snapshots: 5
+    save_epochs: 25
+    save_optimizer_state: False
+train_settings:
+  batch_size: 8
+  dataloader_workers: 0
+  dataloader_pin_memory: False
+  display_iters: 500
+  epochs: 200
+  seed: 42
+Downloading the pre-trained backbone to /usr/local/lib/python3.11/dist-packages/deeplabcut/pose_estimation_pytorch/models/backbones/pretrained_weights/cspnext_m.pt
+</pre></div>
+</div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "c95c172c3f4c468c8d3c4ed859405670", "version_major": 2, "version_minor": 0}</script><div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Data Transforms:
+  Training:   Compose([
+  Affine(always_apply=False, p=0.5, interpolation=1, mask_interpolation=0, cval=0, mode=0, scale={&#39;x&#39;: (1.0, 1.0), &#39;y&#39;: (1.0, 1.0)}, translate_percent=None, translate_px={&#39;x&#39;: (0, 0), &#39;y&#39;: (0, 0)}, rotate=(-30, 30), fit_output=False, shear={&#39;x&#39;: (0.0, 0.0), &#39;y&#39;: (0.0, 0.0)}, cval_mask=0, keep_ratio=True, rotate_method=&#39;largest_box&#39;),
+  MotionBlur(always_apply=False, p=0.5, blur_limit=(3, 7), allow_shifted=True),
+  GaussNoise(always_apply=False, p=0.5, var_limit=(0, 162.5625), per_channel=True, mean=0),
+  Normalize(always_apply=False, p=1.0, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255.0),
+], p=1.0, bbox_params={&#39;format&#39;: &#39;coco&#39;, &#39;label_fields&#39;: [&#39;bbox_labels&#39;], &#39;min_area&#39;: 0.0, &#39;min_visibility&#39;: 0.0, &#39;min_width&#39;: 0.0, &#39;min_height&#39;: 0.0, &#39;check_each_transform&#39;: True}, keypoint_params={&#39;format&#39;: &#39;xy&#39;, &#39;label_fields&#39;: [&#39;class_labels&#39;], &#39;remove_invisible&#39;: False, &#39;angle_in_degrees&#39;: True, &#39;check_each_transform&#39;: True}, additional_targets={}, is_check_shapes=True)
+  Validation: Compose([
+  Normalize(always_apply=False, p=1.0, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255.0),
+], p=1.0, bbox_params={&#39;format&#39;: &#39;coco&#39;, &#39;label_fields&#39;: [&#39;bbox_labels&#39;], &#39;min_area&#39;: 0.0, &#39;min_visibility&#39;: 0.0, &#39;min_width&#39;: 0.0, &#39;min_height&#39;: 0.0, &#39;check_each_transform&#39;: True}, keypoint_params={&#39;format&#39;: &#39;xy&#39;, &#39;label_fields&#39;: [&#39;class_labels&#39;], &#39;remove_invisible&#39;: False, &#39;angle_in_degrees&#39;: True, &#39;check_each_transform&#39;: True}, additional_targets={}, is_check_shapes=True)
+Using 234 images and 102 for testing
+
+Starting pose model training...
+--------------------------------------------------
+Epoch 1/200 (lr=1e-05), train loss 0.01711
+Epoch 2/200 (lr=1e-05), train loss 0.01699
+Epoch 3/200 (lr=1e-05), train loss 0.01687
+Epoch 4/200 (lr=1e-05), train loss 0.01690
+Epoch 5/200 (lr=0.0005), train loss 0.01683
+Epoch 6/200 (lr=0.0005), train loss 0.01477
+Epoch 7/200 (lr=0.0005), train loss 0.01076
+Epoch 8/200 (lr=0.0005), train loss 0.00796
+Epoch 9/200 (lr=0.0005), train loss 0.00670
+Training for epoch 10 done, starting evaluation
+Epoch 10/200 (lr=0.0005), train loss 0.00602, valid loss 0.00515
+Model performance:
+  metrics/test.rmse:           7.56
+  metrics/test.rmse_pcutoff:   5.56
+  metrics/test.mAP:           90.48
+  metrics/test.mAR:           92.35
+Epoch 11/200 (lr=0.0005), train loss 0.00472
+Epoch 12/200 (lr=0.0005), train loss 0.00448
+Epoch 13/200 (lr=0.0005), train loss 0.00435
+Epoch 14/200 (lr=0.0005), train loss 0.00387
+Epoch 15/200 (lr=0.0005), train loss 0.00341
+Epoch 16/200 (lr=0.0005), train loss 0.00344
+Epoch 17/200 (lr=0.0005), train loss 0.00309
+Epoch 18/200 (lr=0.0005), train loss 0.00310
+Epoch 19/200 (lr=0.0005), train loss 0.00308
+Training for epoch 20 done, starting evaluation
+Epoch 20/200 (lr=0.0005), train loss 0.00305, valid loss 0.00318
+Model performance:
+  metrics/test.rmse:           6.61
+  metrics/test.rmse_pcutoff:   5.61
+  metrics/test.mAP:           94.12
+  metrics/test.mAR:           95.00
+Epoch 21/200 (lr=0.0005), train loss 0.00273
+Epoch 22/200 (lr=0.0005), train loss 0.00267
+Epoch 23/200 (lr=0.0005), train loss 0.00256
+Epoch 24/200 (lr=0.0005), train loss 0.00254
+Epoch 25/200 (lr=0.0005), train loss 0.00241
+Epoch 26/200 (lr=0.0005), train loss 0.00247
+Epoch 27/200 (lr=0.0005), train loss 0.00246
+Epoch 28/200 (lr=0.0005), train loss 0.00233
+Epoch 29/200 (lr=0.0005), train loss 0.00234
+Training for epoch 30 done, starting evaluation
+Epoch 30/200 (lr=0.0005), train loss 0.00222, valid loss 0.00280
+Model performance:
+  metrics/test.rmse:           5.40
+  metrics/test.rmse_pcutoff:   4.04
+  metrics/test.mAP:           95.15
+  metrics/test.mAR:           96.18
+Epoch 31/200 (lr=0.0005), train loss 0.00223
+Epoch 32/200 (lr=0.0005), train loss 0.00239
+Epoch 33/200 (lr=0.0005), train loss 0.00211
+Epoch 34/200 (lr=0.0005), train loss 0.00193
+Epoch 35/200 (lr=0.0005), train loss 0.00210
+Epoch 36/200 (lr=0.0005), train loss 0.00204
+Epoch 37/200 (lr=0.0005), train loss 0.00201
+Epoch 38/200 (lr=0.0005), train loss 0.00186
+Epoch 39/200 (lr=0.0005), train loss 0.00197
+Training for epoch 40 done, starting evaluation
+Epoch 40/200 (lr=0.0005), train loss 0.00195, valid loss 0.00255
+Model performance:
+  metrics/test.rmse:           4.46
+  metrics/test.rmse_pcutoff:   3.74
+  metrics/test.mAP:           97.18
+  metrics/test.mAR:           97.84
+Epoch 41/200 (lr=0.0005), train loss 0.00188
+Epoch 42/200 (lr=0.0005), train loss 0.00198
+Epoch 43/200 (lr=0.0005), train loss 0.00192
+Epoch 44/200 (lr=0.0005), train loss 0.00186
+Epoch 45/200 (lr=0.0005), train loss 0.00188
+Epoch 46/200 (lr=0.0005), train loss 0.00178
+Epoch 47/200 (lr=0.0005), train loss 0.00180
+Epoch 48/200 (lr=0.0005), train loss 0.00186
+Epoch 49/200 (lr=0.0005), train loss 0.00171
+Training for epoch 50 done, starting evaluation
+Epoch 50/200 (lr=0.0005), train loss 0.00183, valid loss 0.00262
+Model performance:
+  metrics/test.rmse:           5.46
+  metrics/test.rmse_pcutoff:   3.90
+  metrics/test.mAP:           95.49
+  metrics/test.mAR:           95.78
+Epoch 51/200 (lr=0.0005), train loss 0.00191
+Epoch 52/200 (lr=0.0005), train loss 0.00198
+Epoch 53/200 (lr=0.0005), train loss 0.00173
+Epoch 54/200 (lr=0.0005), train loss 0.00179
+Epoch 55/200 (lr=0.0005), train loss 0.00181
+Epoch 56/200 (lr=0.0005), train loss 0.00187
+Epoch 57/200 (lr=0.0005), train loss 0.00162
+Epoch 58/200 (lr=0.0005), train loss 0.00156
+Epoch 59/200 (lr=0.0005), train loss 0.00154
+Training for epoch 60 done, starting evaluation
+Epoch 60/200 (lr=0.0005), train loss 0.00152, valid loss 0.00216
+Model performance:
+  metrics/test.rmse:           4.11
+  metrics/test.rmse_pcutoff:   3.40
+  metrics/test.mAP:           97.45
+  metrics/test.mAR:           97.65
+Epoch 61/200 (lr=0.0005), train loss 0.00151
+Epoch 62/200 (lr=0.0005), train loss 0.00156
+Epoch 63/200 (lr=0.0005), train loss 0.00143
+Epoch 64/200 (lr=0.0005), train loss 0.00155
+Epoch 65/200 (lr=0.0005), train loss 0.00149
+Epoch 66/200 (lr=0.0005), train loss 0.00149
+Epoch 67/200 (lr=0.0005), train loss 0.00148
+Epoch 68/200 (lr=0.0005), train loss 0.00147
+Epoch 69/200 (lr=0.0005), train loss 0.00160
+Training for epoch 70 done, starting evaluation
+Epoch 70/200 (lr=0.0005), train loss 0.00159, valid loss 0.00240
+Model performance:
+  metrics/test.rmse:           4.21
+  metrics/test.rmse_pcutoff:   3.46
+  metrics/test.mAP:           97.49
+  metrics/test.mAR:           97.65
+Epoch 71/200 (lr=0.0005), train loss 0.00186
+Epoch 72/200 (lr=0.0005), train loss 0.00187
+Epoch 73/200 (lr=0.0005), train loss 0.00158
+Epoch 74/200 (lr=0.0005), train loss 0.00161
+Epoch 75/200 (lr=0.0005), train loss 0.00146
+Epoch 76/200 (lr=0.0005), train loss 0.00145
+Epoch 77/200 (lr=0.0005), train loss 0.00145
+Epoch 78/200 (lr=0.0005), train loss 0.00144
+Epoch 79/200 (lr=0.0005), train loss 0.00154
+Training for epoch 80 done, starting evaluation
+Epoch 80/200 (lr=0.0005), train loss 0.00154, valid loss 0.00225
+Model performance:
+  metrics/test.rmse:           4.01
+  metrics/test.rmse_pcutoff:   3.53
+  metrics/test.mAP:           96.84
+  metrics/test.mAR:           97.35
+Epoch 81/200 (lr=0.0005), train loss 0.00154
+Epoch 82/200 (lr=0.0005), train loss 0.00144
+Epoch 83/200 (lr=0.0005), train loss 0.00138
+Epoch 84/200 (lr=0.0005), train loss 0.00131
+Epoch 85/200 (lr=0.0005), train loss 0.00143
+Epoch 86/200 (lr=0.0005), train loss 0.00140
+Epoch 87/200 (lr=0.0005), train loss 0.00142
+Epoch 88/200 (lr=0.0005), train loss 0.00148
+Epoch 89/200 (lr=0.0005), train loss 0.00139
+Training for epoch 90 done, starting evaluation
+Epoch 90/200 (lr=0.0001), train loss 0.00137, valid loss 0.00210
+Model performance:
+  metrics/test.rmse:           3.86
+  metrics/test.rmse_pcutoff:   3.39
+  metrics/test.mAP:           98.17
+  metrics/test.mAR:           98.33
+Epoch 91/200 (lr=0.0001), train loss 0.00132
+Epoch 92/200 (lr=0.0001), train loss 0.00114
+Epoch 93/200 (lr=0.0001), train loss 0.00105
+Epoch 94/200 (lr=0.0001), train loss 0.00102
+Epoch 95/200 (lr=0.0001), train loss 0.00107
+Epoch 96/200 (lr=0.0001), train loss 0.00102
+Epoch 97/200 (lr=0.0001), train loss 0.00103
+Epoch 98/200 (lr=0.0001), train loss 0.00104
+Epoch 99/200 (lr=0.0001), train loss 0.00109
+Training for epoch 100 done, starting evaluation
+Epoch 100/200 (lr=0.0001), train loss 0.00101, valid loss 0.00182
+Model performance:
+  metrics/test.rmse:           3.91
+  metrics/test.rmse_pcutoff:   3.06
+  metrics/test.mAP:           97.78
+  metrics/test.mAR:           97.94
+Epoch 101/200 (lr=0.0001), train loss 0.00105
+Epoch 102/200 (lr=0.0001), train loss 0.00098
+Epoch 103/200 (lr=0.0001), train loss 0.00101
+Epoch 104/200 (lr=0.0001), train loss 0.00093
+Epoch 105/200 (lr=0.0001), train loss 0.00102
+Epoch 106/200 (lr=0.0001), train loss 0.00093
+Epoch 107/200 (lr=0.0001), train loss 0.00104
+Epoch 108/200 (lr=0.0001), train loss 0.00094
+Epoch 109/200 (lr=0.0001), train loss 0.00094
+Training for epoch 110 done, starting evaluation
+Epoch 110/200 (lr=0.0001), train loss 0.00096, valid loss 0.00184
+Model performance:
+  metrics/test.rmse:           3.62
+  metrics/test.rmse_pcutoff:   3.03
+  metrics/test.mAP:           98.36
+  metrics/test.mAR:           98.43
+Epoch 111/200 (lr=0.0001), train loss 0.00096
+Epoch 112/200 (lr=0.0001), train loss 0.00105
+Epoch 113/200 (lr=0.0001), train loss 0.00092
+Epoch 114/200 (lr=0.0001), train loss 0.00098
+Epoch 115/200 (lr=0.0001), train loss 0.00098
+Epoch 116/200 (lr=0.0001), train loss 0.00092
+Epoch 117/200 (lr=0.0001), train loss 0.00088
+Epoch 118/200 (lr=0.0001), train loss 0.00092
+Epoch 119/200 (lr=0.0001), train loss 0.00085
+Training for epoch 120 done, starting evaluation
+Epoch 120/200 (lr=1e-05), train loss 0.00086, valid loss 0.00177
+Model performance:
+  metrics/test.rmse:           3.85
+  metrics/test.rmse_pcutoff:   3.37
+  metrics/test.mAP:           97.23
+  metrics/test.mAR:           97.94
+Epoch 121/200 (lr=1e-05), train loss 0.00087
+Epoch 122/200 (lr=1e-05), train loss 0.00092
+Epoch 123/200 (lr=1e-05), train loss 0.00084
+Epoch 124/200 (lr=1e-05), train loss 0.00082
+Epoch 125/200 (lr=1e-05), train loss 0.00087
+Epoch 126/200 (lr=1e-05), train loss 0.00081
+Epoch 127/200 (lr=1e-05), train loss 0.00077
+Epoch 128/200 (lr=1e-05), train loss 0.00083
+Epoch 129/200 (lr=1e-05), train loss 0.00087
+Training for epoch 130 done, starting evaluation
+Epoch 130/200 (lr=1e-05), train loss 0.00081, valid loss 0.00165
+Model performance:
+  metrics/test.rmse:           3.36
+  metrics/test.rmse_pcutoff:   3.01
+  metrics/test.mAP:           98.75
+  metrics/test.mAR:           98.82
+Epoch 131/200 (lr=1e-05), train loss 0.00078
+Epoch 132/200 (lr=1e-05), train loss 0.00083
+Epoch 133/200 (lr=1e-05), train loss 0.00079
+Epoch 134/200 (lr=1e-05), train loss 0.00088
+Epoch 135/200 (lr=1e-05), train loss 0.00087
+Epoch 136/200 (lr=1e-05), train loss 0.00084
+Epoch 137/200 (lr=1e-05), train loss 0.00085
+Epoch 138/200 (lr=1e-05), train loss 0.00083
+Epoch 139/200 (lr=1e-05), train loss 0.00088
+Training for epoch 140 done, starting evaluation
+Epoch 140/200 (lr=1e-05), train loss 0.00081, valid loss 0.00170
+Model performance:
+  metrics/test.rmse:           3.40
+  metrics/test.rmse_pcutoff:   3.04
+  metrics/test.mAP:           98.34
+  metrics/test.mAR:           98.43
+Epoch 141/200 (lr=1e-05), train loss 0.00084
+Epoch 142/200 (lr=1e-05), train loss 0.00081
+Epoch 143/200 (lr=1e-05), train loss 0.00085
+Epoch 144/200 (lr=1e-05), train loss 0.00085
+Epoch 145/200 (lr=1e-05), train loss 0.00083
+Epoch 146/200 (lr=1e-05), train loss 0.00089
+Epoch 147/200 (lr=1e-05), train loss 0.00075
+Epoch 148/200 (lr=1e-05), train loss 0.00079
+Epoch 149/200 (lr=1e-05), train loss 0.00079
+Training for epoch 150 done, starting evaluation
+Epoch 150/200 (lr=1e-05), train loss 0.00084, valid loss 0.00167
+Model performance:
+  metrics/test.rmse:           3.56
+  metrics/test.rmse_pcutoff:   2.89
+  metrics/test.mAP:           98.04
+  metrics/test.mAR:           98.24
+</pre></div>
+</div>
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">KeyboardInterrupt</span><span class="g g-Whitespace">                         </span>Traceback (most recent call last)
+<span class="nn">&lt;ipython-input-12-c3e173cb6d8a&gt;</span> in <span class="ni">&lt;cell line: 0&gt;</span><span class="nt">()</span>
+<span class="ne">----&gt; </span><span class="mi">1</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">train_network</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="n">CTD_SHUFFLE</span><span class="p">)</span>
+
+<span class="nn">/usr/local/lib/python3.11/dist-packages/deeplabcut/compat.py</span> in <span class="ni">train_network</span><span class="nt">(config, shuffle, trainingsetindex, max_snapshots_to_keep, displayiters, saveiters, maxiters, epochs, save_epochs, allow_growth, gputouse, autotune, keepdeconvweights, modelprefix, superanimal_name, superanimal_transfer_learning, engine, device, snapshot_path, detector_path, batch_size, detector_batch_size, detector_epochs, detector_save_epochs, pose_threshold, pytorch_cfg_updates)</span>
+<span class="g g-Whitespace">    </span><span class="mi">285</span>         <span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.pose_estimation_pytorch.apis</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_network</span>
+<span class="g g-Whitespace">    </span><span class="mi">286</span> 
+<span class="ne">--&gt; </span><span class="mi">287</span>         <span class="k">return</span> <span class="n">train_network</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">288</span>             <span class="n">config</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">289</span>             <span class="n">shuffle</span><span class="o">=</span><span class="n">shuffle</span><span class="p">,</span>
+
+<span class="nn">/usr/local/lib/python3.11/dist-packages/deeplabcut/pose_estimation_pytorch/apis/training.py</span> in <span class="ni">train_network</span><span class="nt">(config, shuffle, trainingsetindex, modelprefix, device, snapshot_path, detector_path, load_head_weights, batch_size, epochs, save_epochs, detector_batch_size, detector_epochs, detector_save_epochs, display_iters, max_snapshots_to_keep, pose_threshold, pytorch_cfg_updates)</span>
+<span class="g g-Whitespace">    </span><span class="mi">358</span> 
+<span class="g g-Whitespace">    </span><span class="mi">359</span>     <span class="k">if</span> <span class="n">loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">[</span><span class="s2">&quot;train_settings&quot;</span><span class="p">][</span><span class="s2">&quot;epochs&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">360</span>         <span class="n">train</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">361</span>             <span class="n">loader</span><span class="o">=</span><span class="n">loader</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">362</span>             <span class="n">run_config</span><span class="o">=</span><span class="n">loader</span><span class="o">.</span><span class="n">model_cfg</span><span class="p">,</span>
+
+<span class="nn">/usr/local/lib/python3.11/dist-packages/deeplabcut/pose_estimation_pytorch/apis/training.py</span> in <span class="ni">train</span><span class="nt">(loader, run_config, task, device, gpus, logger_config, snapshot_path, transform, inference_transform, max_snapshots_to_keep, load_head_weights)</span>
+<span class="g g-Whitespace">    </span><span class="mi">190</span>         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Starting pose model training...</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="p">(</span><span class="mi">50</span> <span class="o">*</span> <span class="s2">&quot;-&quot;</span><span class="p">))</span>
+<span class="g g-Whitespace">    </span><span class="mi">191</span> 
+<span class="ne">--&gt; </span><span class="mi">192</span>     <span class="n">runner</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">193</span>         <span class="n">train_dataloader</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">194</span>         <span class="n">valid_dataloader</span><span class="p">,</span>
+
+<span class="nn">/usr/local/lib/python3.11/dist-packages/deeplabcut/pose_estimation_pytorch/runners/train.py</span> in <span class="ni">fit</span><span class="nt">(self, train_loader, valid_loader, epochs, display_iters)</span>
+<span class="g g-Whitespace">    </span><span class="mi">212</span>             <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span> <span class="o">=</span> <span class="n">e</span>
+<span class="g g-Whitespace">    </span><span class="mi">213</span>             <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;epoch&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
+<span class="ne">--&gt; </span><span class="mi">214</span>             <span class="n">train_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epoch</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">215</span>                 <span class="n">train_loader</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="n">display_iters</span><span class="o">=</span><span class="n">display_iters</span>
+<span class="g g-Whitespace">    </span><span class="mi">216</span>             <span class="p">)</span>
+
+<span class="nn">/usr/local/lib/python3.11/dist-packages/deeplabcut/pose_estimation_pytorch/runners/train.py</span> in <span class="ni">_epoch</span><span class="nt">(self, loader, mode, display_iters)</span>
+<span class="g g-Whitespace">    </span><span class="mi">274</span>         <span class="n">loss_metrics</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">275</span>         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">batch</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">loader</span><span class="p">):</span>
+<span class="ne">--&gt; </span><span class="mi">276</span>             <span class="n">losses_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">277</span>             <span class="k">if</span> <span class="s2">&quot;total_loss&quot;</span> <span class="ow">in</span> <span class="n">losses_dict</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">278</span>                 <span class="n">epoch_loss</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">losses_dict</span><span class="p">[</span><span class="s2">&quot;total_loss&quot;</span><span class="p">])</span>
+
+<span class="nn">/usr/local/lib/python3.11/dist-packages/deeplabcut/pose_estimation_pytorch/runners/train.py</span> in <span class="ni">step</span><span class="nt">(self, batch, mode)</span>
+<span class="g g-Whitespace">    </span><span class="mi">438</span>         <span class="k">if</span> <span class="s1">&#39;cond_keypoints&#39;</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;context&#39;</span><span class="p">]:</span>
+<span class="g g-Whitespace">    </span><span class="mi">439</span>             <span class="n">cond_kpts</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s1">&#39;context&#39;</span><span class="p">][</span><span class="s1">&#39;cond_keypoints&#39;</span><span class="p">]</span>
+<span class="ne">--&gt; </span><span class="mi">440</span>             <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">cond_kpts</span><span class="o">=</span><span class="n">cond_kpts</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">441</span>         <span class="k">else</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">442</span>             <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+<span class="nn">/usr/local/lib/python3.11/dist-packages/torch/nn/modules/module.py</span> in <span class="ni">_wrapped_call_impl</span><span class="nt">(self, *args, **kwargs)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1737</span>             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compiled_call_impl</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore[misc]</span>
+<span class="g g-Whitespace">   </span><span class="mi">1738</span>         <span class="k">else</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1739</span>             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_impl</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1740</span> 
+<span class="g g-Whitespace">   </span><span class="mi">1741</span>     <span class="c1"># torchrec tests the code consistency with the following code</span>
+
+<span class="nn">/usr/local/lib/python3.11/dist-packages/torch/nn/modules/module.py</span> in <span class="ni">_call_impl</span><span class="nt">(self, *args, **kwargs)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1748</span>                 <span class="ow">or</span> <span class="n">_global_backward_pre_hooks</span> <span class="ow">or</span> <span class="n">_global_backward_hooks</span>
+<span class="g g-Whitespace">   </span><span class="mi">1749</span>                 <span class="ow">or</span> <span class="n">_global_forward_hooks</span> <span class="ow">or</span> <span class="n">_global_forward_pre_hooks</span><span class="p">):</span>
+<span class="ne">-&gt; </span><span class="mi">1750</span>             <span class="k">return</span> <span class="n">forward_call</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1751</span> 
+<span class="g g-Whitespace">   </span><span class="mi">1752</span>         <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="nn">/usr/local/lib/python3.11/dist-packages/deeplabcut/pose_estimation_pytorch/models/model.py</span> in <span class="ni">forward</span><span class="nt">(self, x, **backbone_kwargs)</span>
+<span class="g g-Whitespace">     </span><span class="mi">76</span>         <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">77</span>             <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
+<span class="ne">---&gt; </span><span class="mi">78</span>         <span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">backbone_kwargs</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">79</span>         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">neck</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">80</span>             <span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">neck</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+
+<span class="nn">/usr/local/lib/python3.11/dist-packages/torch/nn/modules/module.py</span> in <span class="ni">_wrapped_call_impl</span><span class="nt">(self, *args, **kwargs)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1737</span>             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compiled_call_impl</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore[misc]</span>
+<span class="g g-Whitespace">   </span><span class="mi">1738</span>         <span class="k">else</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1739</span>             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_impl</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1740</span> 
+<span class="g g-Whitespace">   </span><span class="mi">1741</span>     <span class="c1"># torchrec tests the code consistency with the following code</span>
+
+<span class="nn">/usr/local/lib/python3.11/dist-packages/torch/nn/modules/module.py</span> in <span class="ni">_call_impl</span><span class="nt">(self, *args, **kwargs)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1748</span>                 <span class="ow">or</span> <span class="n">_global_backward_pre_hooks</span> <span class="ow">or</span> <span class="n">_global_backward_hooks</span>
+<span class="g g-Whitespace">   </span><span class="mi">1749</span>                 <span class="ow">or</span> <span class="n">_global_forward_hooks</span> <span class="ow">or</span> <span class="n">_global_forward_pre_hooks</span><span class="p">):</span>
+<span class="ne">-&gt; </span><span class="mi">1750</span>             <span class="k">return</span> <span class="n">forward_call</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1751</span> 
+<span class="g g-Whitespace">   </span><span class="mi">1752</span>         <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="nn">/usr/local/lib/python3.11/dist-packages/deeplabcut/pose_estimation_pytorch/models/backbones/cond_prenet.py</span> in <span class="ni">forward</span><span class="nt">(self, x, cond_kpts)</span>
+<span class="g g-Whitespace">     </span><span class="mi">98</span>             <span class="n">cond_kpts</span> <span class="o">=</span> <span class="n">cond_kpts</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+<span class="g g-Whitespace">     </span><span class="mi">99</span> 
+<span class="ne">--&gt; </span><span class="mi">100</span>         <span class="n">cond_hm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cond_enc</span><span class="p">(</span><span class="n">cond_kpts</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">2</span><span class="p">:])</span>
+<span class="g g-Whitespace">    </span><span class="mi">101</span>         <span class="n">cond_hm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">cond_hm</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">102</span>         <span class="n">cond_hm</span> <span class="o">=</span> <span class="n">cond_hm</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># (B, C, H, W)</span>
+
+<span class="nn">/usr/local/lib/python3.11/dist-packages/deeplabcut/pose_estimation_pytorch/models/modules/kpt_encoders.py</span> in <span class="ni">__call__</span><span class="nt">(self, keypoints, size)</span>
+<span class="g g-Whitespace">    </span><span class="mi">243</span> 
+<span class="g g-Whitespace">    </span><span class="mi">244</span>         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+<span class="ne">--&gt; </span><span class="mi">245</span>             <span class="n">condition_heatmap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blur_heatmap</span><span class="p">(</span><span class="n">condition</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+<span class="g g-Whitespace">    </span><span class="mi">246</span>             <span class="n">condition</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">condition_heatmap</span>
+<span class="g g-Whitespace">    </span><span class="mi">247</span>         <span class="c1"># condition = self.blur_heatmap_batch(torch.from_numpy(condition))</span>
+
+<span class="nn">/usr/local/lib/python3.11/dist-packages/deeplabcut/pose_estimation_pytorch/models/modules/kpt_encoders.py</span> in <span class="ni">blur_heatmap</span><span class="nt">(self, heatmap)</span>
+<span class="g g-Whitespace">     </span><span class="mi">76</span>             <span class="n">The</span> <span class="n">heatmap</span> <span class="k">with</span> <span class="n">a</span> <span class="n">Gaussian</span> <span class="n">blur</span><span class="p">,</span> <span class="n">such</span> <span class="n">that</span> <span class="nb">max</span><span class="p">(</span><span class="n">heatmap</span><span class="p">)</span> <span class="o">=</span> <span class="mi">255</span>
+<span class="g g-Whitespace">     </span><span class="mi">77</span>         <span class="s2">&quot;&quot;&quot;</span>
+<span class="ne">---&gt; </span><span class="mi">78</span><span class="s2">         heatmap = cv2.GaussianBlur(heatmap, self.kernel_size, sigmaX=0)</span>
+<span class="g g-Whitespace">     </span><span class="mi">79</span><span class="s2">         am = np.amax(heatmap)</span>
+<span class="g g-Whitespace">     </span><span class="mi">80</span><span class="s2">         if am == 0:</span>
+
+<span class="ne">KeyboardInterrupt</span>: 
+</pre></div>
+</div>
+</div>
+</div>
+<p>If your CTD model is well trained, it should now outperform the performance of the BU model who’s predictions it uses as conditions!</p>
+<p>Note that during training, the model is evaluated using pose conditions that were created with generative sampling. When you evaluate the network with the <code class="docutils literal notranslate"><span class="pre">evaluate_network</span></code> method, the performance will be different as you’re using the actual conditions from the bottom-up model we trained first.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">evaluate_network</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">Shuffles</span><span class="o">=</span><span class="p">[</span><span class="n">CTD_SHUFFLE</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 78/78 [00:05&lt;00:00, 14.65it/s]
+100%|██████████| 34/34 [00:02&lt;00:00, 14.91it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Evaluation results for DLC_CtdPrenetCspnextM_trimiceJun22shuffle2_snapshot_130-results.csv (pcutoff: 0.01):
+train rmse             2.46
+train rmse_pcutoff     2.46
+train mAP             98.51
+train mAR             98.93
+test rmse              4.41
+test rmse_pcutoff      4.41
+test mAP              96.88
+test mAR              97.06
+Name: (0.7, 2, 130, -1, 0.01), dtype: float64
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="tracking-with-ctd">
+<h2>Tracking with CTD<a class="headerlink" href="#tracking-with-ctd" title="Link to this heading">#</a></h2>
+<p>One of the big advantages of having a CTD model is that it can be used to track individuals directly! Let’s say you have the pose for your animals at <code class="docutils literal notranslate"><span class="pre">frame</span> <span class="pre">T</span></code>. Then you can use those poses as conditions for <code class="docutils literal notranslate"><span class="pre">frame</span> <span class="pre">T+1</span></code>, and let your CTD model simply “update” the poses depending on how much your mice moved.</p>
+<p>In the simplest scenario, you only need to run the BU model on the first frame, and then the CTD model takes over for inference and tracking:</p>
+<ol class="arabic simple">
+<li><p>Run the BU model to generate conditions for the 1st frame of the video</p></li>
+<li><p>For every frame after that, use the predictions from the previous frame as conditions</p></li>
+</ol>
+<p>However, this may not fit your scenario perfectly. Maybe all the mice aren’t present in the first frame, and if they aren’t detected by the BU model they’ll never be tracked. Maybe at some point the CTD model makes an error and you lose track of a mouse. There are some options to deal with this:</p>
+<ul class="simple">
+<li><p>Run the BU model every time at least one mouse is not detected (if you expect N mice to be in the video and you only detect N-1 mice, run the BU model):</p>
+<ul>
+<li><p>In this case, the predictions from the BU model need to be “merged in” to the existing N-1 tracks</p></li>
+<li><p>We can merge them in by using a similarity score between poses (OKS) which ranges from 0 to 1</p></li>
+<li><p>You likely don’t want to run the BU model every frame, as this would slow down inference.</p></li>
+</ul>
+</li>
+<li><p>Run the BU model every K frames in case new mice appear</p></li>
+</ul>
+<section id="downloading-a-tri-mouse-video">
+<h3>Downloading a Tri-Mouse video<a class="headerlink" href="#downloading-a-tri-mouse-video" title="Link to this heading">#</a></h3>
+<p>First, let’s download a video from the Tri-Mouse dataset. Note that this may take some time to run (1 minute or 2). If you have any issues downloading the files through the code, you can simply download the zipfile through <a class="reference external" href="https://zenodo.org/records/7883589/files/demo-me-2021-07-14.zip?download=1">zenodo.org/records/7883589/files/demo-me-2021-07-14.zip</a>, and then drag-and-drop the video in <code class="docutils literal notranslate"><span class="pre">demo-me-2021-07-14/videos/videocompressed1.mp4</span></code> file into COLAB in the right panel to upload it. Make sure the video is fully uploaded before you run analysis.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">download_path</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
+<span class="n">video_name</span> <span class="o">=</span> <span class="s2">&quot;videocompressed1.mp4&quot;</span>
+<span class="n">video_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="n">video_name</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Video will be saved in </span><span class="si">{</span><span class="n">video_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Video will be saved in /content/videocompressed1.mp4
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading the tri-mouse video into </span><span class="si">{</span><span class="n">download_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">url_video_record</span> <span class="o">=</span> <span class="s2">&quot;https://zenodo.org/api/records/7883589&quot;</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url_video_record</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;files&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">file</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">file</span><span class="p">[</span><span class="s1">&#39;links&#39;</span><span class="p">][</span><span class="s1">&#39;self&#39;</span><span class="p">],</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="p">))</span> <span class="k">as</span> <span class="n">zf</span><span class="p">:</span>
+            <span class="n">zf</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">download_path</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The URL </span><span class="si">{</span><span class="n">url_video_record</span><span class="si">}</span><span class="s2"> could not be reached.&quot;</span><span class="p">)</span>
+
+<span class="c1"># Check that the video was downloaded</span>
+<span class="n">src_video_path</span> <span class="o">=</span> <span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;demo-me-2021-07-14&quot;</span> <span class="o">/</span> <span class="s2">&quot;videos&quot;</span> <span class="o">/</span> <span class="n">video_name</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">src_video_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to download the video&quot;</span><span class="p">)</span>
+
+<span class="c1"># Move the video to the final path</span>
+<span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">src_video_path</span><span class="p">,</span> <span class="n">video_path</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Failed to move the video&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="running-video-analysis">
+<h3>Running Video Analysis<a class="headerlink" href="#running-video-analysis" title="Link to this heading">#</a></h3>
+<p>You can track using your CTD model by setting <code class="docutils literal notranslate"><span class="pre">ctd_tracking=True</span></code> when calling <code class="docutils literal notranslate"><span class="pre">analyze_videos</span></code>. Of course, you then won’t need to convert detections to tracklets or link tracklets, as the CTD model will directly be tracking the animals. This should run at 15 to 40 FPS depending on your hardware.</p>
+<p>You can create a labeled video containing the predictions made with the CTD tracker by setting <code class="docutils literal notranslate"><span class="pre">track_method=&quot;ctd&quot;</span></code> when calling <code class="docutils literal notranslate"><span class="pre">create_labeled_video</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">,</span>
+    <span class="p">[</span><span class="n">video_path</span><span class="p">],</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="n">CTD_SHUFFLE</span><span class="p">,</span>
+    <span class="n">ctd_tracking</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">,</span>
+    <span class="p">[</span><span class="n">video_path</span><span class="p">],</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="n">CTD_SHUFFLE</span><span class="p">,</span>
+    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;ctd&quot;</span><span class="p">,</span>
+    <span class="n">color_by</span><span class="o">=</span><span class="s2">&quot;individual&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Analyzing videos with /content/trimice-dlc-2021-06-22/dlc-models-pytorch/iteration-0/trimiceJun22-trainset70shuffle2/train/snapshot-best-130.pt
+CTD tracking can only be used with batch size 1. Updating it.
+Starting to analyze /content/videocompressed1.mp4
+Video metadata: 
+  Overall # of frames:    2330
+  Duration of video [s]:  77.67
+  fps:                    30.0
+  resolution:             w=640, h=480
+
+Running pose prediction with batch size 1
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 2330/2330 [02:10&lt;00:00, 17.80it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Saving results in /content/videocompressed1DLC_CtdPrenetCspnextM_trimiceJun22shuffle2_snapshot_130_ctd.h5 and /content/videocompressed1DLC_CtdPrenetCspnextM_trimiceJun22shuffle2_snapshot_130_ctd_full.pickle
+The videos are analyzed. Now your research can truly start!
+You can create labeled videos with &#39;create_labeled_video&#39;.
+If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function &#39;extract_outlier_frames&#39; to extract a few representative outlier frames.
+
+Starting to process video: /content/videocompressed1.mp4
+Loading /content/videocompressed1.mp4 and data.
+Duration of video [s]: 77.67, recorded with 30.0 fps!
+Overall # of frames: 2330 with cropped frame dimensions: 640 480
+Generating frames and creating video.
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.11/dist-packages/deeplabcut/utils/make_labeled_video.py:146: FutureWarning: DataFrame.groupby with axis=1 is deprecated. Do `frame.T.groupby(...)` without axis instead.
+  Dataframe.groupby(level=&quot;individuals&quot;, axis=1).size().values // 3
+100%|██████████| 2330/2330 [00:58&lt;00:00, 39.95it/s]
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[True]
+</pre></div>
+</div>
+</div>
+</div>
+<p>We can then visualize the results of tracking with CTD.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTML</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">base64</span><span class="w"> </span><span class="kn">import</span> <span class="n">b64encode</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">show_video</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">640</span><span class="p">):</span>
+    <span class="n">video_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">video_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;data:video/mp4;base64,</span><span class="si">{</span><span class="n">b64encode</span><span class="p">(</span><span class="n">video_file</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">HTML</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    &lt;video width=&quot;</span><span class="si">{</span><span class="n">width</span><span class="si">}</span><span class="s2">&quot; controls&gt;</span>
+<span class="s2">        &lt;source src=&quot;</span><span class="si">{</span><span class="n">video_url</span><span class="si">}</span><span class="s2">&quot; type=&quot;video/mp4&quot;&gt;</span>
+<span class="s2">    &lt;/video&gt;</span>
+<span class="s2">    &quot;&quot;&quot;</span><span class="p">)</span>
+
+
+<span class="n">show_video</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;videocompressed1DLC_CtdPrenetCspnextM_trimiceJun22shuffle2_snapshot_130_ctd_id_p1_labeled.mp4&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>It can be beneficial to customize the tracking parameters a bit. The tracking paramaters you can set are:</p>
+<p>Note: <a class="reference external" href="https://cocodataset.org/#keypoints-eval">OKS (object-keypoint similarity)</a> is a similarity metric for pose estimation, ranging from 0 to 1 (where 1 means the pose is identical)</p>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">bu_on_lost_idv</span></code></strong>: When True, the BU model is run when there are fewer conditions found than the expected number of individuals in the video.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">bu_min_frequency</span></code></strong>: The minimum frequency at which the BU model is run to generate conditions. If None, the BU model is only run to initialize the pose in the first frame, and then is not run again. If a positive number N, the BU model is run every N frames. The BU predictions are then combined with the CTD predictions to continue the tracklets.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">bu_max_frequency</span></code></strong>: The maximum frequency at which the BU model can be run. Must be greater than <code class="docutils literal notranslate"><span class="pre">bu_min_frequency</span></code>. When there are fewer conditions than individuals expected in the video and <code class="docutils literal notranslate"><span class="pre">bu_on_lost_idv</span></code> is True, the BU model may be run on every frame. This can happen if individuals can disappear from the video, and each frame may have a variable number of individuals. If <code class="docutils literal notranslate"><span class="pre">bu_max_frequency</span></code> is set to N, then the BU model will be run at most every N-th frame, which improves the inference speed of the model.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">threshold_bu_add</span></code></strong>: The OKS threshold below which a BU pose must be (wrt. any existing CTD pose) to be added to the poses.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">threshold_ctd</span></code></strong>: The score threshold below which detected keypoints are NOT given to the CTD model to predict pose for the next frame.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">threshold_nms</span></code></strong>: The OKS threshold to use for non-maximum suppression. This is used to remove duplicates poses when two CTD model predictions converge to a single animal. If two poses have an OKS above this threshold, one of the poses is removed.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dest_folder</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;custom-ctd-tracking&quot;</span><span class="p">)</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">,</span>
+    <span class="p">[</span><span class="n">video_path</span><span class="p">],</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="n">CTD_SHUFFLE</span><span class="p">,</span>
+    <span class="n">destfolder</span><span class="o">=</span><span class="n">dest_folder</span><span class="p">,</span>
+    <span class="n">ctd_tracking</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+        <span class="n">bu_on_lost_idv</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">bu_max_frequency</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">threshold_bu_add</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">threshold_ctd</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+        <span class="n">threshold_nms</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">,</span>
+    <span class="p">[</span><span class="n">video_path</span><span class="p">],</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="n">CTD_SHUFFLE</span><span class="p">,</span>
+    <span class="n">destfolder</span><span class="o">=</span><span class="n">dest_folder</span><span class="p">,</span>
+    <span class="n">track_method</span><span class="o">=</span><span class="s2">&quot;ctd&quot;</span><span class="p">,</span>
+    <span class="n">color_by</span><span class="o">=</span><span class="s2">&quot;individual&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./examples/COLAB"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="COLAB_transformer_reID.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../JUPYTER/Demo_3D_DeepLabCut.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">3D DeepLabCut Toolbox</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#introduction">Introduction</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#change-the-runtime-type-to-use-a-gpu">⚠️⚠️ Change the Runtime type to use a GPU!⚠️⚠️</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#installing-deeplabcut-on-colab">Installing DeepLabCut on COLAB</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#imports">Imports</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-the-tri-mouse-dataset">Downloading the Tri-Mouse Dataset</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-a-ctd-model-in-deeplabcut">Training a CTD Model in DeepLabCut</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#training-a-bu-model">Training a BU Model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#training-the-ctd-model">Training the CTD Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-advanced-learning-and-visualizing-generative-sampling-during-training">(Optional/Advanced) Learning and visualizing generative sampling during training</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#training-and-evaluating-the-ctd-model">Training and Evaluating the CTD Model</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tracking-with-ctd">Tracking with CTD</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-a-tri-mouse-video">Downloading a Tri-Mouse video</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#running-video-analysis">Running Video Analysis</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The DeepLabCut Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

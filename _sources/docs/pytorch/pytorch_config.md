@@ -166,7 +166,7 @@ motion_blur: true  # bool: whether to apply motion blur
 normalize_images: true  # normalizes images
 ```
 
-#### Dealing with Variable Image Sizes
+### Dealing with Variable Image Sizes
 
 ```{NOTE}
 When training with batch size 1 (or if all images in your dataset have the same size), 

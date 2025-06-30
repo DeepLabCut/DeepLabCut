@@ -14,9 +14,9 @@ After creating your DeepLabCut project, you'll go to the main GUI window, where 
 
 A **`Configuration Editor`** window will open, displaying all the configuration details. You'll need to modify some of these settings to align with your research requirements.
 
-### Steps to Edit the Configuration
+## Steps to Edit the Configuration
 
-#### 1. Defining Bodyparts
+### 1. Defining Bodyparts
 
 - **Locate the Bodyparts Section:** In the Configuration Editor, find the **`bodyparts`** category.
 - **Modify the List:** Click on the arrow next to **`bodyparts`** to expand the list. Here, you can:
@@ -27,7 +27,7 @@ A **`Configuration Editor`** window will open, displaying all the configuration 
 ![Editing Bodyparts in DeepLabCut's Config File](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779624617-CIVZCM23U69NYK9BO3GY/bodyparts.png?format=500w)
 
 
-#### 2. Defining the Skeleton
+### 2. Defining the Skeleton
 
 - **Navigate to the Skeleton Section:** Scroll down to the **`skeleton`** category.
 - **Adjust the Skeleton List:** Click on the arrow to expand this section. You can then:
