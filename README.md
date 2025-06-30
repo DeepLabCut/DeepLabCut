@@ -118,7 +118,7 @@ We also provide two foundation pretrained animal models: `SuperAnimal-Quadruped`
 
 These models are trained on the [SuperAnimal-Quadruped with AP-10K held out for out-of-domain testing]([https://cocodataset.org/](https://www.nature.com/articles/s41467-024-48792-2)) and the [SuperAnimal-TopViewMouse with DLC-openfield held out for out-of-distribution testing](https://www.nature.com/articles/s41467-024-48792-2). We provide models that include AP-10K in the API (and GUI).
 Note, there are many different models to select from in DeepLabCut 3.0. We strongly recommend you check [this Guide](https://deeplabcut.github.io/DeepLabCut/docs/pytorch/architectures.html) for more details.
-This table, and those below, give you a sense of performance in real-world complex in-the-wild and lab mouse data, repectfully.
+This table, and those below, give you a sense of performance in real-world complex in-the-wild and lab mouse data, respectively.
 This [link provides the model weights](https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-Quadruped) to reproduce the numbers; but please note, our `full` models are in our DLClibrary and released in the API.
 
 <details open><summary>DLC 3.0 Pose Estimation (Top Down Models)</summary>
