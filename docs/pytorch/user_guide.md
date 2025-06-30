@@ -30,10 +30,13 @@ To see the DeepLabCut 3.0 installation guide, check the [installation docs](how-
 You can use the GUI to train DeepLabCut projects. You can switch between the PyTorch
 and TensorFlow engine through the drop-down menu in the top right corner.
 
-### Quick guide 
+### Quick guide (standard API)
 
-The standard use of DLC does not change (via the high-level API), as you can see in the standard guide: for [single](docs/standardDeepLabCut_UserGuide) and [multiple individuals](docs/maDLC_UserGuide). Also check out several COLAB notebooks on how you can use the code. 
+The standard use of DLC does not change (via the high-level API), as you can see in the standard guide: for [single](https://deeplabcut.github.io/DeepLabCut/standardDeepLabCut_UserGuide) and [multiple individuals](https://deeplabcut.github.io/DeepLabCut/docs/maDLC_UserGuide). 
 
+Also check out several COLAB notebooks on how you can use the code. 
+
+For the 
 
 ## Major changes
 
