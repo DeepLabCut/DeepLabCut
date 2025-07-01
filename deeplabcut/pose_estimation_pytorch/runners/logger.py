@@ -22,9 +22,11 @@ import torchvision.transforms as transforms
 import torchvision.transforms.functional as F
 from torch.utils.data import DataLoader
 from torchvision.utils import draw_bounding_boxes, draw_keypoints
+import yaml
 
 try:
     import wandb
+
     has_wandb = True
 except ImportError:
     has_wandb = False
@@ -129,7 +131,9 @@ class ImageLoggerMixin(ABC):
         self._logged = {}
         self._denormalize = transforms.Compose(
             [
-                transforms.Normalize(mean=[0, 0, 0], std=[1/0.229, 1/0.224, 1/0.225]),
+                transforms.Normalize(
+                    mean=[0, 0, 0], std=[1 / 0.229, 1 / 0.224, 1 / 0.225]
+                ),
                 transforms.Normalize(mean=[-0.485, -0.456, -0.406], std=[1, 1, 1]),
             ]
         )
@@ -160,6 +164,7 @@ class ImageLoggerMixin(ABC):
             train: the training dataloader
             valid: the inference dataloader
         """
+
         def _caption(image_path: str) -> str:
             p = Path(image_path)
             return f"{p.parent.name}.{p.stem}"
@@ -228,7 +233,9 @@ class ImageLoggerMixin(ABC):
             if keypoints is not None:
                 keypoints = keypoints[idx]
             image_logs[f"{base}.input"] = self._prepare_image(
-                inputs["image"][idx], keypoints=keypoints, denormalize=True,
+                inputs["image"][idx],
+                keypoints=keypoints,
+                denormalize=True,
             )
 
             for head, head_outputs in outputs.items():
@@ -259,6 +266,7 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
         run_name: str = "tmp",
         image_log_interval: int | None = None,
         model: PoseModel = None,
+        train_folder: str = None,
         **wandb_kwargs,
     ) -> None:
         """Initialize the WandbLogger class.
@@ -269,6 +277,7 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
             image_log_interval: How often train/test images are logged in epochs (if
                 None, train/test inputs are never logged).
             model: The model to log. Defaults to None.
+            train_folder: path to the train folder (used to store the W&B run identifiers)
             wandb_kwargs: extra arguments to pass to ``wb.init``
 
         Example:
@@ -294,6 +303,23 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
         if model is None:
             raise ValueError("Specify the model to track!")
         self.run.watch(model)
+        if train_folder is None:
+            raise ValueError("Specify the train folder!")
+        self.train_folder = Path(train_folder)
+        self._save_wandb_info()
+
+    def _save_wandb_info(self):
+        wandb_info = {
+            "entity": self.run.entity,
+            "project": self.run.project,
+            "run_id": self.run.id,
+        }
+
+        output_path = self.train_folder / "wandb_info.yaml"
+        with open(output_path, "w") as f:
+            yaml.safe_dump(wandb_info, f)
+
+        logging.info(f"WandB run info saved to {output_path}")
 
     def log(self, metrics: dict[str, Any], step: Optional[int] = None) -> None:
         """Logs metrics from runs
@@ -370,14 +396,15 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
 class CSVLogger(BaseLogger):
     """Logger saving stats and metrics to a CSV file"""
 
-    def __init__(self, train_folder: Path, log_filename: str) -> None:
-        """Initialize the WandbLogger class.
+    def __init__(self, train_folder: str, log_filename: str) -> None:
+        """Initialize the CSVLogger class.
 
         Args:
             train_folder: The path of the folder containing training files.
             log_filename: The name of the file in which to store training stats
         """
         super().__init__()
+        train_folder = Path(train_folder)
         self.train_folder = train_folder
         self.log_filename = log_filename
         self.log_file = train_folder / log_filename
@@ -411,7 +438,7 @@ class CSVLogger(BaseLogger):
     def save(self):
         """Saves the metrics to the file system"""
         logs = self._prepare_logs()
-        with open(self.log_file, 'w', newline='') as f:
+        with open(self.log_file, "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerows(logs)
 
