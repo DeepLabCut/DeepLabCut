@@ -30,9 +30,9 @@ class Snapshot:
 
     def uid(self) -> str:
         if self.best:
-            return "best"
+            return f"best-{self.epochs}"
         else:
-            return self.path.stem.split("-")[-1]
+            return str(self.epochs)
 
     @staticmethod
     def from_path(path: Path) -> "Snapshot":
