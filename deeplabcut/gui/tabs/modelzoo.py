@@ -116,6 +116,9 @@ class ModelZoo(DefaultTab):
         )
         action.triggered.connect(self.select_folder)
 
+        self.create_labeled_video_checkbox = QtWidgets.QCheckBox("Create labeled video")
+        self.create_labeled_video_checkbox.setChecked(True)
+
         settings_layout.addWidget(section_title, 0, 0)
         settings_layout.addWidget(model_combo_text, 1, 0)
         settings_layout.addWidget(self.model_combo, 1, 1)
@@ -123,9 +126,9 @@ class ModelZoo(DefaultTab):
         settings_layout.addWidget(self.net_type_selector, 2, 1)
         settings_layout.addWidget(self.detector_type_text, 3, 0)
         settings_layout.addWidget(self.detector_type_selector, 3, 1)
-
         settings_layout.addWidget(loc_label, 4, 0)
         settings_layout.addWidget(self.loc_line, 4, 1)
+        settings_layout.addWidget(self.create_labeled_video_checkbox, 5, 0)
 
         self.settings_widget = QtWidgets.QWidget()
         self.settings_widget.setLayout(settings_layout)
@@ -284,6 +287,7 @@ class ModelZoo(DefaultTab):
 
         supermodel_name = self.model_combo.currentText()
         videotype = self.video_selection_widget.videotype_widget.currentText()
+        create_labeled_video = self.create_labeled_video_checkbox.isChecked()
         kwargs = self._gather_kwargs()
 
         can_run_in_background = False
@@ -294,6 +298,7 @@ class ModelZoo(DefaultTab):
                 supermodel_name,
                 videotype=videotype,
                 dest_folder=self._destfolder,
+                create_labeled_video=create_labeled_video,
                 **kwargs,
             )
 
@@ -309,6 +314,7 @@ class ModelZoo(DefaultTab):
                 supermodel_name,
                 videotype=videotype,
                 dest_folder=self._destfolder,
+                create_labeled_video=create_labeled_video,
                 **kwargs,
             )
             self.signal_analysis_complete()
