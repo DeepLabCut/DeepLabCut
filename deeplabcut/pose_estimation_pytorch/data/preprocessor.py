@@ -382,7 +382,14 @@ class FilterLowConfidencePoses(Preprocessor):
             raise ValueError(f"Must include cond_kpts, found {context}")
 
         keypoints = context["cond_kpts"]
-        mask = self.aggregate_func(keypoints[:, :, 2]) >= self.confidence_threshold
+
+        if 0 in keypoints.shape:
+            # No poses to filter; return early
+            return image, context
+
+        confidences = keypoints[:, :, 2]
+        aggregated_confidence = self.aggregate_func(confidences)
+        mask = aggregated_confidence >= self.confidence_threshold
         context["cond_kpts"] = keypoints[mask]
 
         return image, context
