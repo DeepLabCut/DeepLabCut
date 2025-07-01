@@ -319,7 +319,7 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
         with open(output_path, "w") as f:
             yaml.safe_dump(wandb_info, f)
 
-        print(f"WandB run info saved to {output_path}")
+        logging.info(f"WandB run info saved to {output_path}")
 
     def log(self, metrics: dict[str, Any], step: Optional[int] = None) -> None:
         """Logs metrics from runs
