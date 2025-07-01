@@ -64,7 +64,7 @@ class ModelZoo(DefaultTab):
         self._build_torch_attributes()
 
         self.run_button = QtWidgets.QPushButton("Run")
-        self.run_button.clicked.connect(self.run_video_adaptation)
+        self.run_button.clicked.connect(self.run_video_inference_superanimal)
         self.main_layout.addWidget(self.run_button, alignment=Qt.AlignRight)
 
         self.home_button = QtWidgets.QPushButton("Return to Welcome page")
@@ -270,7 +270,7 @@ class ModelZoo(DefaultTab):
         self.scales_line.setStyleSheet(f"border: 1px solid {color}")
         QTimer.singleShot(500, lambda: self.scales_line.setStyleSheet(""))
 
-    def run_video_adaptation(self):
+    def run_video_inference_superanimal(self):
         videos = list(self.files)
         if not videos:
             msg = QtWidgets.QMessageBox()
