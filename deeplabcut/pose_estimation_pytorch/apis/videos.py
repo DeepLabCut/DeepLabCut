@@ -605,9 +605,12 @@ def analyze_videos(
         )
 
     dlc_scorer = loader.scorer(snapshot, detector_snapshot)
+    print(f"Using scorer: {dlc_scorer}")
 
     # Reading video and init variables
     videos = utils.list_videos_in_folder(videos, videotype, shuffle=in_random_order)
+    h5_files_created = False  # Track if any .h5 files were created
+    
     for video in videos:
         if destfolder is None:
             output_path = video.parent
@@ -679,6 +682,7 @@ def analyze_videos(
                         output_prefix=output_prefix,
                         save_as_csv=save_as_csv,
                     )
+                    h5_files_created = True  # .h5 file was created
 
             if multi_animal:
                 assemblies_path = output_path / f"{output_prefix}_assemblies.pickle"
@@ -727,6 +731,7 @@ def analyze_videos(
                         output_prefix=output_prefix + "_ctd",
                         save_as_csv=save_as_csv,
                     )
+                    h5_files_created = True  # .h5 file was created for CTD tracking
 
                 elif auto_track:
                     convert_detections2tracklets(
@@ -750,14 +755,21 @@ def analyze_videos(
                         destfolder=str(output_path),
                         save_as_csv=save_as_csv,
                     )
+                    h5_files_created = True  # .h5 file was created by stitch_tracklets
 
-    print(
-        "The videos are analyzed. Now your research can truly start!\n"
-        "You can create labeled videos with 'create_labeled_video'.\n"
-        "If the tracking is not satisfactory for some videos, consider expanding the "
-        "training set. You can use the function 'extract_outlier_frames' to extract a "
-        "few representative outlier frames.\n"
-    )
+    if h5_files_created:
+        print(
+            "The videos are analyzed. Now your research can truly start!\n"
+            "You can create labeled videos with 'create_labeled_video'.\n"
+            "If the tracking is not satisfactory for some videos, consider expanding the "
+            "training set. You can use the function 'extract_outlier_frames' to extract a "
+            "few representative outlier frames.\n"
+        )
+    else:
+        print(
+            "No .h5 files were created during video analysis. Please check your code and "
+            "ensure that the video inference and output generation are correct.\n"
+        )
 
     return dlc_scorer
 

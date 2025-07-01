@@ -29,7 +29,10 @@ class Snapshot:
     path: Path
 
     def uid(self) -> str:
-        return self.path.stem.split("-")[-1]
+        if self.best:
+            return "best"
+        else:
+            return self.path.stem.split("-")[-1]
 
     @staticmethod
     def from_path(path: Path) -> "Snapshot":
