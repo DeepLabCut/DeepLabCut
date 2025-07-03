@@ -337,6 +337,8 @@ class ModelZoo(DefaultTab):
         supermodel_name = self.model_combo.currentText()
         videotype = self.video_selection_widget.videotype_widget.currentText()
         create_labeled_video = self.create_labeled_video_checkbox.isChecked()
+        batch_size = int(self.batch_size_combo.currentText())
+        detector_batch_size = int(self.detector_batch_size_combo.currentText())
         kwargs = self._gather_kwargs()
 
         can_run_in_background = False
@@ -348,6 +350,8 @@ class ModelZoo(DefaultTab):
                 videotype=videotype,
                 dest_folder=self._destfolder,
                 create_labeled_video=create_labeled_video,
+                batch_size=batch_size,
+                detector_batch_size=detector_batch_size,
                 **kwargs,
             )
 
@@ -364,6 +368,8 @@ class ModelZoo(DefaultTab):
                 videotype=videotype,
                 dest_folder=self._destfolder,
                 create_labeled_video=create_labeled_video,
+                batch_size=batch_size,
+                detector_batch_size=detector_batch_size,
                 **kwargs,
             )
             self.signal_analysis_complete()
