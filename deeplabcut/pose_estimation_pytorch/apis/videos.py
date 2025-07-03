@@ -24,6 +24,7 @@ from tqdm import tqdm
 
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
+from deeplabcut import Engine
 from deeplabcut.pose_estimation_pytorch.apis.ctd import (
     get_condition_provider,
     get_conditions_provider_for_video,
@@ -396,7 +397,10 @@ def analyze_videos(
     pose_cfg = auxiliaryfunctions.read_plainconfig(pose_cfg_path)
 
     snapshot_index, detector_snapshot_index = utils.parse_snapshot_index_for_analysis(
-        loader.project_cfg, loader.model_cfg, snapshot_index, detector_snapshot_index,
+        loader.project_cfg,
+        loader.model_cfg,
+        snapshot_index,
+        detector_snapshot_index,
     )
 
     if cropping is None and loader.project_cfg.get("cropping", False):
@@ -512,7 +516,8 @@ def analyze_videos(
             )
         elif isinstance(ctd_conditions, dict):
             cond_provider = get_condition_provider(
-                condition_cfg=ctd_conditions, config=config,
+                condition_cfg=ctd_conditions,
+                config=config,
             )
         else:
             cond_provider = ctd_conditions
@@ -706,7 +711,9 @@ def analyze_videos(
                     for i in range(num_frames):
                         frame_data = full_data.get("frame" + str(i).zfill(str_width))
                         if frame_data is None:
-                            pose = np.full((len(individuals), len(bodyparts), 3), np.nan)
+                            pose = np.full(
+                                (len(individuals), len(bodyparts), 3), np.nan
+                            )
                             ctd_predictions.append(dict(bodyparts=pose))
                             continue
 
@@ -754,6 +761,7 @@ def analyze_videos(
                         animal_names=animal_names,
                         destfolder=str(output_path),
                         save_as_csv=save_as_csv,
+                        engine=Engine.PYTORCH,
                     )
                     h5_files_created = True  # .h5 file was created by stitch_tracklets
 

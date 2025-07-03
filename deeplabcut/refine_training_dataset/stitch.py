@@ -23,6 +23,7 @@ import warnings
 from collections import defaultdict
 
 import deeplabcut
+from deeplabcut import Engine
 from deeplabcut.utils.auxfun_videos import VideoWriter
 from functools import partial
 from deeplabcut.core.trackingutils import (
@@ -125,7 +126,9 @@ class Tracklet:
         return self._centroid
 
     def _update_centroid(self):
-        like = self.data[..., 2:3] + 1e-10 # Avoid division by zero in very uncertain tracklets
+        like = (
+            self.data[..., 2:3] + 1e-10
+        )  # Avoid division by zero in very uncertain tracklets
         self._centroid = np.nansum(self.xy * like, axis=1) / np.nansum(like, axis=1)
 
     @property
@@ -896,7 +899,7 @@ class TrackletStitcher:
         if not animal_names or len(animal_names) < self.n_tracks:
             animal_names = [f"ind{i}" for i in range(1, self.n_tracks + 1)]
         elif len(animal_names) > self.n_tracks:
-            animal_names = animal_names[:self.n_tracks]
+            animal_names = animal_names[: self.n_tracks]
 
         coords = ["x", "y", "likelihood"]
         n_multi_bpts = data.shape[1] // (len(animal_names) * len(coords))
@@ -1048,6 +1051,7 @@ def stitch_tracklets(
     output_name="",
     transformer_checkpoint="",
     save_as_csv=False,
+    engine: Engine | None = None,
 ):
     """
     Stitch sparse tracklets into full tracks via a graph-based,
@@ -1136,6 +1140,11 @@ def stitch_tracklets(
     save_as_csv: bool, optional
         Whether to write the tracks to a CSV file too (False by default).
 
+    engine: Engine, optional, default = None.
+        The default behavior loads the engine for the shuffle from the metadata. You can
+        overwrite this by passing the engine as an argument, but this should generally
+        not be done.
+
     Returns
     -------
     A TrackletStitcher object
@@ -1159,7 +1168,8 @@ def stitch_tracklets(
         raise ValueError(
             "When setting both `n_tracks` and `animal_names`, `n_tracks` must be equal "
             f"to len(animal_names)`. Found `n_tracks`={n_tracks} and `animal_names`="
-            f"{animal_names} of length {len(animal_names)}.`")
+            f"{animal_names} of length {len(animal_names)}.`"
+        )
 
     if n_tracks is None:
         n_tracks = len(animal_names)
@@ -1169,6 +1179,7 @@ def stitch_tracklets(
         shuffle,
         cfg["TrainingFraction"][trainingsetindex],
         modelprefix=modelprefix,
+        engine=engine,
     )
 
     if transformer_checkpoint:
