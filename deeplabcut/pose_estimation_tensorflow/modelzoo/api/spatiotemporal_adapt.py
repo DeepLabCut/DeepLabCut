@@ -198,7 +198,6 @@ class SpatiotemporalAdaptation:
 
         self.adapt_iterations = kwargs.get("adapt_iterations", self.adapt_iterations)
 
-
         self.train_without_project(
             pseudo_label_path,
             displayiters=displayiters,

@@ -172,7 +172,9 @@ class ModelZoo(DefaultTab):
         self.adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
         self.adapt_checkbox.setChecked(True)
 
-        self.pseudo_threshold_label = QtWidgets.QLabel("Pseudo-label confidence threshold")
+        self.pseudo_threshold_label = QtWidgets.QLabel(
+            "Pseudo-label confidence threshold"
+        )
         self.pseudo_threshold_spinbox = QtWidgets.QDoubleSpinBox(
             decimals=2,
             minimum=0.01,
@@ -213,7 +215,9 @@ class ModelZoo(DefaultTab):
         self.torch_adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
         self.torch_adapt_checkbox.setChecked(True)
 
-        self.torch_pseudo_threshold_label = QtWidgets.QLabel("Pseudo-label confidence threshold")
+        self.torch_pseudo_threshold_label = QtWidgets.QLabel(
+            "Pseudo-label confidence threshold"
+        )
         self.torch_pseudo_threshold_label.setMinimumWidth(300)
         self.torch_pseudo_threshold_spinbox = QtWidgets.QDoubleSpinBox(
             decimals=2,
@@ -232,14 +236,18 @@ class ModelZoo(DefaultTab):
         self.torch_adapt_epoch_spinbox.setValue(4)
         self.torch_adapt_epoch_spinbox.setMaximumWidth(300)
 
-        self.torch_adapt_det_epoch_label = QtWidgets.QLabel("Number of detector adaptation epochs")
+        self.torch_adapt_det_epoch_label = QtWidgets.QLabel(
+            "Number of detector adaptation epochs"
+        )
         self.torch_adapt_det_epoch_label.setMinimumWidth(300)
         self.torch_adapt_det_epoch_spinbox = QtWidgets.QSpinBox()
         self.torch_adapt_det_epoch_spinbox.setRange(1, 50)
         self.torch_adapt_det_epoch_spinbox.setValue(4)
         self.torch_adapt_det_epoch_spinbox.setMaximumWidth(300)
 
-        self.torch_adapt_checkbox.stateChanged.connect(self._torch_adapt_checkbox_status_changed)
+        self.torch_adapt_checkbox.stateChanged.connect(
+            self._torch_adapt_checkbox_status_changed
+        )
 
         self.detector_batch_size_combo_label = QtWidgets.QLabel("Detector batch size")
         self.detector_batch_size_combo = QtWidgets.QComboBox()
@@ -416,33 +424,39 @@ class ModelZoo(DefaultTab):
         set_combo_items(
             combo_box=self.model_combo,
             items=supermodels,
-            index=supermodels.index(current_dataset) if current_dataset in supermodels else 0,
+            index=(
+                supermodels.index(current_dataset)
+                if current_dataset in supermodels
+                else 0
+            ),
         )
 
     def _update_pose_models(self, super_animal: str) -> None:
         if len(super_animal) == 0:
-            set_combo_items(
-                combo_box=self.net_type_selector,
-                items=[]
-            )
+            set_combo_items(combo_box=self.net_type_selector, items=[])
             return
 
         set_combo_items(
             combo_box=self.net_type_selector,
-            items = ["dlcrnet"] if self.root.engine == Engine.TF else dlclibrary.get_available_models(super_animal)
+            items=(
+                ["dlcrnet"]
+                if self.root.engine == Engine.TF
+                else dlclibrary.get_available_models(super_animal)
+            ),
         )
 
     def _update_detectors(self, super_animal: str) -> None:
         if len(super_animal) == 0:
-            set_combo_items(
-                combo_box=self.detector_type_selector,
-                items=[]
-            )
+            set_combo_items(combo_box=self.detector_type_selector, items=[])
             return
 
         set_combo_items(
             combo_box=self.detector_type_selector,
-            items=[] if self.root.engine == Engine.TF else dlclibrary.get_available_detectors(super_animal)
+            items=(
+                []
+                if self.root.engine == Engine.TF
+                else dlclibrary.get_available_detectors(super_animal)
+            ),
         )
 
     @Slot(Engine)
@@ -462,4 +476,3 @@ class ModelZoo(DefaultTab):
             self.detector_type_selector.hide()
             self.detector_batch_size_combo_label.hide()
             self.detector_batch_size_combo.hide()
-
