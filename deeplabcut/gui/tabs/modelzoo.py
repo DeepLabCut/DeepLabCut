@@ -25,6 +25,7 @@ from deeplabcut.gui.components import (
     _create_label_widget,
     DefaultTab,
     VideoSelectionWidget,
+    set_combo_items,
 )
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.gui.widgets import ClickableLabel
@@ -64,7 +65,7 @@ class ModelZoo(DefaultTab):
         self._build_torch_attributes()
 
         self.run_button = QtWidgets.QPushButton("Run")
-        self.run_button.clicked.connect(self.run_video_adaptation)
+        self.run_button.clicked.connect(self.run_video_inference_superanimal)
         self.main_layout.addWidget(self.run_button, alignment=Qt.AlignRight)
 
         self.home_button = QtWidgets.QPushButton("Return to Welcome page")
@@ -116,6 +117,15 @@ class ModelZoo(DefaultTab):
         )
         action.triggered.connect(self.select_folder)
 
+        self.create_labeled_video_checkbox = QtWidgets.QCheckBox("Create labeled video")
+        self.create_labeled_video_checkbox.setChecked(True)
+
+        batch_size_combo_label = QtWidgets.QLabel("Pose model batch size")
+        self.batch_size_combo = QtWidgets.QComboBox()
+        self.batch_size_combo.setMaximumWidth(100)
+        self.batch_size_combo.addItems([str(2**i) for i in range(6)])
+        self.batch_size_combo.setCurrentIndex(0)
+
         settings_layout.addWidget(section_title, 0, 0)
         settings_layout.addWidget(model_combo_text, 1, 0)
         settings_layout.addWidget(self.model_combo, 1, 1)
@@ -123,9 +133,11 @@ class ModelZoo(DefaultTab):
         settings_layout.addWidget(self.net_type_selector, 2, 1)
         settings_layout.addWidget(self.detector_type_text, 3, 0)
         settings_layout.addWidget(self.detector_type_selector, 3, 1)
-
         settings_layout.addWidget(loc_label, 4, 0)
         settings_layout.addWidget(self.loc_line, 4, 1)
+        settings_layout.addWidget(self.create_labeled_video_checkbox, 5, 0)
+        settings_layout.addWidget(batch_size_combo_label, 6, 0)
+        settings_layout.addWidget(self.batch_size_combo, 6, 1)
 
         self.settings_widget = QtWidgets.QWidget()
         self.settings_widget.setLayout(settings_layout)
@@ -160,7 +172,9 @@ class ModelZoo(DefaultTab):
         self.adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
         self.adapt_checkbox.setChecked(True)
 
-        pseudo_threshold_label = QtWidgets.QLabel("Pseudo-label confidence threshold")
+        self.pseudo_threshold_label = QtWidgets.QLabel(
+            "Pseudo-label confidence threshold"
+        )
         self.pseudo_threshold_spinbox = QtWidgets.QDoubleSpinBox(
             decimals=2,
             minimum=0.01,
@@ -171,8 +185,8 @@ class ModelZoo(DefaultTab):
         )
         self.pseudo_threshold_spinbox.setMaximumWidth(300)
 
-        adapt_iter_label = QtWidgets.QLabel("Number of adaptation iterations")
-        adapt_iter_label.setMinimumWidth(300)
+        self.adapt_iter_label = QtWidgets.QLabel("Number of adaptation iterations")
+        self.adapt_iter_label.setMinimumWidth(300)
         self.adapt_iter_spinbox = QtWidgets.QSpinBox()
         self.adapt_iter_spinbox.setRange(100, 10000)
         self.adapt_iter_spinbox.setValue(1000)
@@ -180,13 +194,15 @@ class ModelZoo(DefaultTab):
         self.adapt_iter_spinbox.setGroupSeparatorShown(True)
         self.adapt_iter_spinbox.setMaximumWidth(300)
 
+        self.adapt_checkbox.stateChanged.connect(self._adapt_checkbox_status_changed)
+
         model_settings_layout.addWidget(scales_label, 1, 0)
         model_settings_layout.addWidget(self.scales_line, 1, 1)
         model_settings_layout.addWidget(tooltip_label, 1, 2)
         model_settings_layout.addWidget(self.adapt_checkbox, 2, 0)
-        model_settings_layout.addWidget(pseudo_threshold_label, 3, 0)
+        model_settings_layout.addWidget(self.pseudo_threshold_label, 3, 0)
         model_settings_layout.addWidget(self.pseudo_threshold_spinbox, 3, 1)
-        model_settings_layout.addWidget(adapt_iter_label, 4, 0)
+        model_settings_layout.addWidget(self.adapt_iter_label, 4, 0)
         model_settings_layout.addWidget(self.adapt_iter_spinbox, 4, 1)
         self.tf_widget = QtWidgets.QWidget()
         self.tf_widget.setLayout(model_settings_layout)
@@ -199,8 +215,10 @@ class ModelZoo(DefaultTab):
         self.torch_adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
         self.torch_adapt_checkbox.setChecked(True)
 
-        pseudo_threshold_label = QtWidgets.QLabel("Pseudo-label confidence threshold")
-        pseudo_threshold_label.setMinimumWidth(300)
+        self.torch_pseudo_threshold_label = QtWidgets.QLabel(
+            "Pseudo-label confidence threshold"
+        )
+        self.torch_pseudo_threshold_label.setMinimumWidth(300)
         self.torch_pseudo_threshold_spinbox = QtWidgets.QDoubleSpinBox(
             decimals=2,
             minimum=0.01,
@@ -211,31 +229,73 @@ class ModelZoo(DefaultTab):
         )
         self.torch_pseudo_threshold_spinbox.setMaximumWidth(300)
 
-        adapt_epoch_label = QtWidgets.QLabel("Number of adaptation epochs")
-        adapt_epoch_label.setMinimumWidth(300)
+        self.torch_adapt_epoch_label = QtWidgets.QLabel("Number of adaptation epochs")
+        self.torch_adapt_epoch_label.setMinimumWidth(300)
         self.torch_adapt_epoch_spinbox = QtWidgets.QSpinBox()
         self.torch_adapt_epoch_spinbox.setRange(1, 50)
         self.torch_adapt_epoch_spinbox.setValue(4)
         self.torch_adapt_epoch_spinbox.setMaximumWidth(300)
 
-        adapt_det_epoch_label = QtWidgets.QLabel("Number of detector adaptation epochs")
-        adapt_det_epoch_label.setMinimumWidth(300)
+        self.torch_adapt_det_epoch_label = QtWidgets.QLabel(
+            "Number of detector adaptation epochs"
+        )
+        self.torch_adapt_det_epoch_label.setMinimumWidth(300)
         self.torch_adapt_det_epoch_spinbox = QtWidgets.QSpinBox()
         self.torch_adapt_det_epoch_spinbox.setRange(1, 50)
         self.torch_adapt_det_epoch_spinbox.setValue(4)
         self.torch_adapt_det_epoch_spinbox.setMaximumWidth(300)
 
+        self.torch_adapt_checkbox.stateChanged.connect(
+            self._torch_adapt_checkbox_status_changed
+        )
+
+        self.detector_batch_size_combo_label = QtWidgets.QLabel("Detector batch size")
+        self.detector_batch_size_combo = QtWidgets.QComboBox()
+        self.detector_batch_size_combo.setMinimumWidth(100)
+        self.detector_batch_size_combo.addItems([str(2**i) for i in range(6)])
+        self.detector_batch_size_combo.setCurrentIndex(0)
+
         torch_settings_layout.addWidget(self.torch_adapt_checkbox, 1, 0)
-        torch_settings_layout.addWidget(pseudo_threshold_label, 2, 0)
+        torch_settings_layout.addWidget(self.torch_pseudo_threshold_label, 2, 0)
         torch_settings_layout.addWidget(self.torch_pseudo_threshold_spinbox, 2, 1)
-        torch_settings_layout.addWidget(adapt_epoch_label, 3, 0)
+        torch_settings_layout.addWidget(self.torch_adapt_epoch_label, 3, 0)
         torch_settings_layout.addWidget(self.torch_adapt_epoch_spinbox, 3, 1)
-        torch_settings_layout.addWidget(adapt_det_epoch_label, 4, 0)
+        torch_settings_layout.addWidget(self.torch_adapt_det_epoch_label, 4, 0)
         torch_settings_layout.addWidget(self.torch_adapt_det_epoch_spinbox, 4, 1)
+        torch_settings_layout.addWidget(self.detector_batch_size_combo_label, 5, 0)
+        torch_settings_layout.addWidget(self.detector_batch_size_combo, 5, 1)
         self.torch_widget = QtWidgets.QWidget()
         self.torch_widget.setLayout(torch_settings_layout)
         self.torch_widget.hide()
         self.main_layout.addWidget(self.torch_widget)
+
+    def _adapt_checkbox_status_changed(self, state: int) -> None:
+        if Qt.CheckState(state) == Qt.Checked:
+            self.pseudo_threshold_label.show()
+            self.pseudo_threshold_spinbox.show()
+            self.adapt_iter_label.show()
+            self.adapt_iter_spinbox.show()
+        else:
+            self.pseudo_threshold_label.hide()
+            self.pseudo_threshold_spinbox.hide()
+            self.adapt_iter_label.hide()
+            self.adapt_iter_spinbox.hide()
+
+    def _torch_adapt_checkbox_status_changed(self, state: int) -> None:
+        if Qt.CheckState(state) == Qt.Checked:
+            self.torch_pseudo_threshold_label.show()
+            self.torch_pseudo_threshold_spinbox.show()
+            self.torch_adapt_epoch_label.show()
+            self.torch_adapt_epoch_spinbox.show()
+            self.torch_adapt_det_epoch_label.show()
+            self.torch_adapt_det_epoch_spinbox.show()
+        else:
+            self.torch_pseudo_threshold_label.hide()
+            self.torch_pseudo_threshold_spinbox.hide()
+            self.torch_adapt_epoch_label.hide()
+            self.torch_adapt_epoch_spinbox.hide()
+            self.torch_adapt_det_epoch_label.hide()
+            self.torch_adapt_det_epoch_spinbox.hide()
 
     def select_folder(self):
         dirname = QtWidgets.QFileDialog.getExistingDirectory(
@@ -270,7 +330,7 @@ class ModelZoo(DefaultTab):
         self.scales_line.setStyleSheet(f"border: 1px solid {color}")
         QTimer.singleShot(500, lambda: self.scales_line.setStyleSheet(""))
 
-    def run_video_adaptation(self):
+    def run_video_inference_superanimal(self):
         videos = list(self.files)
         if not videos:
             msg = QtWidgets.QMessageBox()
@@ -284,6 +344,9 @@ class ModelZoo(DefaultTab):
 
         supermodel_name = self.model_combo.currentText()
         videotype = self.video_selection_widget.videotype_widget.currentText()
+        create_labeled_video = self.create_labeled_video_checkbox.isChecked()
+        batch_size = int(self.batch_size_combo.currentText())
+        detector_batch_size = int(self.detector_batch_size_combo.currentText())
         kwargs = self._gather_kwargs()
 
         can_run_in_background = False
@@ -294,6 +357,9 @@ class ModelZoo(DefaultTab):
                 supermodel_name,
                 videotype=videotype,
                 dest_folder=self._destfolder,
+                create_labeled_video=create_labeled_video,
+                batch_size=batch_size,
+                detector_batch_size=detector_batch_size,
                 **kwargs,
             )
 
@@ -309,6 +375,9 @@ class ModelZoo(DefaultTab):
                 supermodel_name,
                 videotype=videotype,
                 dest_folder=self._destfolder,
+                create_labeled_video=create_labeled_video,
+                batch_size=batch_size,
+                detector_batch_size=detector_batch_size,
                 **kwargs,
             )
             self.signal_analysis_complete()
@@ -347,56 +416,63 @@ class ModelZoo(DefaultTab):
     def _update_available_models(self, engine: Engine) -> None:
         current_dataset = self.model_combo.currentText()
 
-        while self.model_combo.count() > 0:
-            self.model_combo.removeItem(0)
-
         if engine == Engine.TF:
             supermodels = ["superanimal_topviewmouse", "superanimal_quadruped"]
         else:
             supermodels = dlclibrary.get_available_datasets()
 
-        self.model_combo.addItems(supermodels)
-        if current_dataset in supermodels:
-            self.model_combo.setCurrentIndex(supermodels.index(current_dataset))
+        set_combo_items(
+            combo_box=self.model_combo,
+            items=supermodels,
+            index=(
+                supermodels.index(current_dataset)
+                if current_dataset in supermodels
+                else 0
+            ),
+        )
 
     def _update_pose_models(self, super_animal: str) -> None:
-        while self.net_type_selector.count() > 0:
-            self.net_type_selector.removeItem(0)
-
         if len(super_animal) == 0:
+            set_combo_items(combo_box=self.net_type_selector, items=[])
             return
 
-        if self.root.engine == Engine.TF:
-            self.net_type_selector.addItems(["dlcrnet"])
-        else:
-            self.net_type_selector.addItems(
-                dlclibrary.get_available_models(super_animal)
-            )
+        set_combo_items(
+            combo_box=self.net_type_selector,
+            items=(
+                ["dlcrnet"]
+                if self.root.engine == Engine.TF
+                else dlclibrary.get_available_models(super_animal)
+            ),
+        )
 
     def _update_detectors(self, super_animal: str) -> None:
-        while self.detector_type_selector.count() > 0:
-            self.detector_type_selector.removeItem(0)
-
         if len(super_animal) == 0:
+            set_combo_items(combo_box=self.detector_type_selector, items=[])
             return
 
-        if self.root.engine == Engine.TF:
-            self.detector_type_selector.addItems(["dlcrnet"])
-        else:
-            self.detector_type_selector.addItems(
-                dlclibrary.get_available_detectors(super_animal)
-            )
+        set_combo_items(
+            combo_box=self.detector_type_selector,
+            items=(
+                []
+                if self.root.engine == Engine.TF
+                else dlclibrary.get_available_detectors(super_animal)
+            ),
+        )
 
     @Slot(Engine)
     def _on_engine_change(self, engine: Engine) -> None:
         self._update_available_models(engine)
         if engine == Engine.PYTORCH:
             self.tf_widget.hide()
+            self.torch_widget.show()
             self.detector_type_text.show()
             self.detector_type_selector.show()
-            self.torch_widget.show()
+            self.detector_batch_size_combo_label.show()
+            self.detector_batch_size_combo.show()
         else:
+            self.tf_widget.show()
             self.torch_widget.hide()
             self.detector_type_text.hide()
             self.detector_type_selector.hide()
-            self.tf_widget.show()
+            self.detector_batch_size_combo_label.hide()
+            self.detector_batch_size_combo.hide()
