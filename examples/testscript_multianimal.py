@@ -16,6 +16,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+import matplotlib
+matplotlib.use("Agg")  # Non-interactive backend, for CI/CD on Windows
+
 import deeplabcut
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions

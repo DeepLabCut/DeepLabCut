@@ -29,12 +29,21 @@ class Snapshot:
     path: Path
 
     def uid(self) -> str:
-        return self.path.stem.split("-")[-1]
+        if self.best:
+            return f"best-{self.epochs}"
+        else:
+            return str(self.epochs)
 
     @staticmethod
     def from_path(path: Path) -> "Snapshot":
         best = "-best" in path.stem
-        epochs = int(path.stem.split("-")[-1])
+        # Use regex to extract epoch number more robustly
+        match = re.search(r'-(\d+)\.pt$', path.name)
+        if match:
+            epochs = int(match.group(1))
+        else:
+            # Fallback to original method if regex fails
+            epochs = int(path.stem.split("-")[-1])
         return Snapshot(best=best, epochs=epochs, path=path)
 
 
