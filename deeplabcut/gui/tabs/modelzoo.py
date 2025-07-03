@@ -120,6 +120,12 @@ class ModelZoo(DefaultTab):
         self.create_labeled_video_checkbox = QtWidgets.QCheckBox("Create labeled video")
         self.create_labeled_video_checkbox.setChecked(True)
 
+        batch_size_combo_label = QtWidgets.QLabel("Pose model batch size")
+        self.batch_size_combo = QtWidgets.QComboBox()
+        self.batch_size_combo.setMaximumWidth(100)
+        self.batch_size_combo.addItems([str(2**i) for i in range(6)])
+        self.batch_size_combo.setCurrentIndex(0)
+
         settings_layout.addWidget(section_title, 0, 0)
         settings_layout.addWidget(model_combo_text, 1, 0)
         settings_layout.addWidget(self.model_combo, 1, 1)
@@ -130,6 +136,8 @@ class ModelZoo(DefaultTab):
         settings_layout.addWidget(loc_label, 4, 0)
         settings_layout.addWidget(self.loc_line, 4, 1)
         settings_layout.addWidget(self.create_labeled_video_checkbox, 5, 0)
+        settings_layout.addWidget(batch_size_combo_label, 6, 0)
+        settings_layout.addWidget(self.batch_size_combo, 6, 1)
 
         self.settings_widget = QtWidgets.QWidget()
         self.settings_widget.setLayout(settings_layout)
@@ -233,6 +241,12 @@ class ModelZoo(DefaultTab):
 
         self.torch_adapt_checkbox.stateChanged.connect(self._torch_adapt_checkbox_status_changed)
 
+        self.detector_batch_size_combo_label = QtWidgets.QLabel("Detector batch size")
+        self.detector_batch_size_combo = QtWidgets.QComboBox()
+        self.detector_batch_size_combo.setMinimumWidth(100)
+        self.detector_batch_size_combo.addItems([str(2**i) for i in range(6)])
+        self.detector_batch_size_combo.setCurrentIndex(0)
+
         torch_settings_layout.addWidget(self.torch_adapt_checkbox, 1, 0)
         torch_settings_layout.addWidget(self.torch_pseudo_threshold_label, 2, 0)
         torch_settings_layout.addWidget(self.torch_pseudo_threshold_spinbox, 2, 1)
@@ -240,6 +254,8 @@ class ModelZoo(DefaultTab):
         torch_settings_layout.addWidget(self.torch_adapt_epoch_spinbox, 3, 1)
         torch_settings_layout.addWidget(self.torch_adapt_det_epoch_label, 4, 0)
         torch_settings_layout.addWidget(self.torch_adapt_det_epoch_spinbox, 4, 1)
+        torch_settings_layout.addWidget(self.detector_batch_size_combo_label, 5, 0)
+        torch_settings_layout.addWidget(self.detector_batch_size_combo, 5, 1)
         self.torch_widget = QtWidgets.QWidget()
         self.torch_widget.setLayout(torch_settings_layout)
         self.torch_widget.hide()
@@ -428,11 +444,16 @@ class ModelZoo(DefaultTab):
         self._update_available_models(engine)
         if engine == Engine.PYTORCH:
             self.tf_widget.hide()
+            self.torch_widget.show()
             self.detector_type_text.show()
             self.detector_type_selector.show()
-            self.torch_widget.show()
+            self.detector_batch_size_combo_label.show()
+            self.detector_batch_size_combo.show()
         else:
+            self.tf_widget.show()
             self.torch_widget.hide()
             self.detector_type_text.hide()
             self.detector_type_selector.hide()
-            self.tf_widget.show()
+            self.detector_batch_size_combo_label.hide()
+            self.detector_batch_size_combo.hide()
+
