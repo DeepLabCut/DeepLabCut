@@ -163,7 +163,7 @@ class ModelZoo(DefaultTab):
         self.adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
         self.adapt_checkbox.setChecked(True)
 
-        pseudo_threshold_label = QtWidgets.QLabel("Pseudo-label confidence threshold")
+        self.pseudo_threshold_label = QtWidgets.QLabel("Pseudo-label confidence threshold")
         self.pseudo_threshold_spinbox = QtWidgets.QDoubleSpinBox(
             decimals=2,
             minimum=0.01,
@@ -174,8 +174,8 @@ class ModelZoo(DefaultTab):
         )
         self.pseudo_threshold_spinbox.setMaximumWidth(300)
 
-        adapt_iter_label = QtWidgets.QLabel("Number of adaptation iterations")
-        adapt_iter_label.setMinimumWidth(300)
+        self.adapt_iter_label = QtWidgets.QLabel("Number of adaptation iterations")
+        self.adapt_iter_label.setMinimumWidth(300)
         self.adapt_iter_spinbox = QtWidgets.QSpinBox()
         self.adapt_iter_spinbox.setRange(100, 10000)
         self.adapt_iter_spinbox.setValue(1000)
@@ -183,13 +183,15 @@ class ModelZoo(DefaultTab):
         self.adapt_iter_spinbox.setGroupSeparatorShown(True)
         self.adapt_iter_spinbox.setMaximumWidth(300)
 
+        self.adapt_checkbox.stateChanged.connect(self._adapt_checkbox_status_changed)
+
         model_settings_layout.addWidget(scales_label, 1, 0)
         model_settings_layout.addWidget(self.scales_line, 1, 1)
         model_settings_layout.addWidget(tooltip_label, 1, 2)
         model_settings_layout.addWidget(self.adapt_checkbox, 2, 0)
-        model_settings_layout.addWidget(pseudo_threshold_label, 3, 0)
+        model_settings_layout.addWidget(self.pseudo_threshold_label, 3, 0)
         model_settings_layout.addWidget(self.pseudo_threshold_spinbox, 3, 1)
-        model_settings_layout.addWidget(adapt_iter_label, 4, 0)
+        model_settings_layout.addWidget(self.adapt_iter_label, 4, 0)
         model_settings_layout.addWidget(self.adapt_iter_spinbox, 4, 1)
         self.tf_widget = QtWidgets.QWidget()
         self.tf_widget.setLayout(model_settings_layout)
@@ -202,8 +204,8 @@ class ModelZoo(DefaultTab):
         self.torch_adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
         self.torch_adapt_checkbox.setChecked(True)
 
-        pseudo_threshold_label = QtWidgets.QLabel("Pseudo-label confidence threshold")
-        pseudo_threshold_label.setMinimumWidth(300)
+        self.torch_pseudo_threshold_label = QtWidgets.QLabel("Pseudo-label confidence threshold")
+        self.torch_pseudo_threshold_label.setMinimumWidth(300)
         self.torch_pseudo_threshold_spinbox = QtWidgets.QDoubleSpinBox(
             decimals=2,
             minimum=0.01,
@@ -214,31 +216,61 @@ class ModelZoo(DefaultTab):
         )
         self.torch_pseudo_threshold_spinbox.setMaximumWidth(300)
 
-        adapt_epoch_label = QtWidgets.QLabel("Number of adaptation epochs")
-        adapt_epoch_label.setMinimumWidth(300)
+        self.torch_adapt_epoch_label = QtWidgets.QLabel("Number of adaptation epochs")
+        self.torch_adapt_epoch_label.setMinimumWidth(300)
         self.torch_adapt_epoch_spinbox = QtWidgets.QSpinBox()
         self.torch_adapt_epoch_spinbox.setRange(1, 50)
         self.torch_adapt_epoch_spinbox.setValue(4)
         self.torch_adapt_epoch_spinbox.setMaximumWidth(300)
 
-        adapt_det_epoch_label = QtWidgets.QLabel("Number of detector adaptation epochs")
-        adapt_det_epoch_label.setMinimumWidth(300)
+        self.torch_adapt_det_epoch_label = QtWidgets.QLabel("Number of detector adaptation epochs")
+        self.torch_adapt_det_epoch_label.setMinimumWidth(300)
         self.torch_adapt_det_epoch_spinbox = QtWidgets.QSpinBox()
         self.torch_adapt_det_epoch_spinbox.setRange(1, 50)
         self.torch_adapt_det_epoch_spinbox.setValue(4)
         self.torch_adapt_det_epoch_spinbox.setMaximumWidth(300)
 
+        self.torch_adapt_checkbox.stateChanged.connect(self._torch_adapt_checkbox_status_changed)
+
         torch_settings_layout.addWidget(self.torch_adapt_checkbox, 1, 0)
-        torch_settings_layout.addWidget(pseudo_threshold_label, 2, 0)
+        torch_settings_layout.addWidget(self.torch_pseudo_threshold_label, 2, 0)
         torch_settings_layout.addWidget(self.torch_pseudo_threshold_spinbox, 2, 1)
-        torch_settings_layout.addWidget(adapt_epoch_label, 3, 0)
+        torch_settings_layout.addWidget(self.torch_adapt_epoch_label, 3, 0)
         torch_settings_layout.addWidget(self.torch_adapt_epoch_spinbox, 3, 1)
-        torch_settings_layout.addWidget(adapt_det_epoch_label, 4, 0)
+        torch_settings_layout.addWidget(self.torch_adapt_det_epoch_label, 4, 0)
         torch_settings_layout.addWidget(self.torch_adapt_det_epoch_spinbox, 4, 1)
         self.torch_widget = QtWidgets.QWidget()
         self.torch_widget.setLayout(torch_settings_layout)
         self.torch_widget.hide()
         self.main_layout.addWidget(self.torch_widget)
+
+    def _adapt_checkbox_status_changed(self, state: int) -> None:
+        if Qt.CheckState(state) == Qt.Checked:
+            self.pseudo_threshold_label.show()
+            self.pseudo_threshold_spinbox.show()
+            self.adapt_iter_label.show()
+            self.adapt_iter_spinbox.show()
+        else:
+            self.pseudo_threshold_label.hide()
+            self.pseudo_threshold_spinbox.hide()
+            self.adapt_iter_label.hide()
+            self.adapt_iter_spinbox.hide()
+
+    def _torch_adapt_checkbox_status_changed(self, state: int) -> None:
+        if Qt.CheckState(state) == Qt.Checked:
+            self.torch_pseudo_threshold_label.show()
+            self.torch_pseudo_threshold_spinbox.show()
+            self.torch_adapt_epoch_label.show()
+            self.torch_adapt_epoch_spinbox.show()
+            self.torch_adapt_det_epoch_label.show()
+            self.torch_adapt_det_epoch_spinbox.show()
+        else:
+            self.torch_pseudo_threshold_label.hide()
+            self.torch_pseudo_threshold_spinbox.hide()
+            self.torch_adapt_epoch_label.hide()
+            self.torch_adapt_epoch_spinbox.hide()
+            self.torch_adapt_det_epoch_label.hide()
+            self.torch_adapt_det_epoch_spinbox.hide()
 
     def select_folder(self):
         dirname = QtWidgets.QFileDialog.getExistingDirectory(
