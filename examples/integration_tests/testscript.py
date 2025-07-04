@@ -48,7 +48,9 @@ if __name__ == "__main__":
     engine = Engine.TF
 
     print("Imported DLC!")
-    basepath = os.path.dirname(os.path.realpath(__file__))
+    script_dir = Path(__file__).resolve().parent
+    
+    basepath = script_dir.parent  
     videoname = "reachingvideo1"
     video = [
         os.path.join(
@@ -56,11 +58,7 @@ if __name__ == "__main__":
         )
     ]
 
-    # For testing a color video:
-    # videoname='baby4hin2min'
-    # video=[os.path.join('/home/alex/Desktop/Data',videoname+'.mp4')]
-    # to test destination folder:
-    DESTFOLDER = basepath
+    DESTFOLDER = script_dir
 
     DESTFOLDER = None
     NET = random.choice(MODELS)
@@ -96,7 +94,8 @@ if __name__ == "__main__":
     print("CREATING-SOME LABELS FOR THE FRAMES")
     frames = os.listdir(os.path.join(cfg["project_path"], "labeled-data", videoname))
     frames = [fn for fn in frames if fn.endswith(".png")]
-    # As this next step is manual, we update the labels by putting them on the diagonal (fixed for all frames)
+    # As this next step is manual, 
+    # we update the labels by putting them on the diagonal (fixed for all frames)
     for index, bodypart in enumerate(cfg["bodyparts"]):
         columnindex = pd.MultiIndex.from_product(
             [[scorer], [bodypart], ["x", "y"]], names=["scorer", "bodyparts", "coords"]

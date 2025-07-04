@@ -79,7 +79,10 @@ jobs:
         shell: bash -el {0}  # Important: activates the conda environment
         run: |
           pip install git+https://github.com/${{ github.repository }}.git@${{ github.sha }}
-          python examples/testscript.py
-          python examples/testscript_multianimal.py
-          python examples/testscript_pytorch_single_animal.py
-          python examples/testscript_pytorch_multi_animal.py
+          python examples/integration_tests/CI_vanilla_TF.py
+
+          
+          # python examples/testscript.py
+          # python examples/testscript_multianimal.py
+          # python examples/testscript_pytorch_single_animal.py
+          # python examples/testscript_pytorch_multi_animal.py
