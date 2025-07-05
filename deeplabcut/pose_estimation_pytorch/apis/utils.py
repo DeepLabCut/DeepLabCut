@@ -569,8 +569,13 @@ def get_inference_runners(
         if device == "mps":
             detector_device = "cpu"
 
-        if detector_path is not None:
-            detector_path = str(detector_path)
+        # Check if this is a torchvision detector (no detector path needed)
+        detector_variant = model_config.get("detector", {}).get("model", {}).get("variant", "")
+        is_torchvision_detector = detector_variant in ["fasterrcnn_mobilenet_v3_large_fpn", "fasterrcnn_resnet50_fpn_v2"]
+        
+        if detector_path is not None or is_torchvision_detector:
+            if detector_path is not None:
+                detector_path = str(detector_path)
             if detector_transform is None:
                 detector_transform = build_transforms(
                     model_config["detector"]["data"]["inference"]

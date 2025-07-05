@@ -783,6 +783,20 @@ def create_df_from_prediction(
     output_prefix: str | Path,
     save_as_csv: bool = False,
 ) -> pd.DataFrame:
+    # Check if any predictions were made
+    if not predictions:
+        raise ValueError(
+            "No objects were detected in the video. This can happen if:\n"
+            "1. The video doesn't contain the type of objects the model was trained to detect\n"
+            "2. The objects are too small, blurry, or occluded\n"
+            "3. The detector confidence threshold is too high\n"
+            "4. The video quality is poor\n\n"
+            "Try:\n"
+            "- Using a different video with clearer objects\n"
+            "- Adjusting the detector confidence threshold\n"
+            "- Checking if the model is appropriate for your use case"
+        )
+    
     pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
     pred_unique_bodyparts = None
     if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:

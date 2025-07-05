@@ -120,10 +120,19 @@ def load_super_animal_config(
     if detector_name is None:
         model_config["method"] = "BU"
     else:
-        detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name, super_animal=super_animal)
-        detector_cfg = read_config_as_dict(detector_cfg_path)
-        model_config["method"] = "TD"
-        model_config["detector"] = detector_cfg
+        # Check if this is a torchvision detector (not in dlclibrary)
+        if super_animal == "superanimal_humanbody" and detector_name == "fasterrcnn_mobilenet_v3_large_fpn":
+            # Use torchvision detector - set method to TD and load detector config
+            model_config["method"] = "TD"
+            detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name, super_animal=super_animal)
+            detector_cfg = read_config_as_dict(detector_cfg_path)
+            model_config["detector"] = detector_cfg
+        else:
+            # Load detector config from dlclibrary
+            detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name, super_animal=super_animal)
+            detector_cfg = read_config_as_dict(detector_cfg_path)
+            model_config["method"] = "TD"
+            model_config["detector"] = detector_cfg
     return model_config
 
 
@@ -141,14 +150,25 @@ def download_super_animal_snapshot(dataset: str, model_name: str) -> Path:
         RuntimeError if the model fails to download.
     """
     snapshot_dir = get_snapshot_folder_path()
-    model_name = f"{dataset}_{model_name}"
-    model_path = snapshot_dir / f"{model_name}.pt"
+    full_model_name = f"{dataset}_{model_name}"
+    model_path = snapshot_dir / f"{full_model_name}.pt"
 
-    download_huggingface_model(model_name, target_dir=str(snapshot_dir))
+    # Use the full name for dlclibrary lookup (consistent with dlclibrary naming)
+    download_huggingface_model(full_model_name, target_dir=str(snapshot_dir))
+    
+    # Check if the file was downloaded with the expected name
     if not model_path.exists():
-        raise RuntimeError(f"Failed to download {model_name} to {model_path}")
+        # If not, look for the actual downloaded filename and rename it
+        if dataset == "superanimal_humanbody" and model_name == "rtmpose_x":
+            actual_file = snapshot_dir / "rtmpose-x_simcc-body7.pt"
+            if actual_file.exists():
+                actual_file.rename(model_path)
+            else:
+                raise RuntimeError(f"Failed to download {model_name} to {model_path}")
+        else:
+            raise RuntimeError(f"Failed to download {model_name} to {model_path}")
 
-    return snapshot_dir / f"{model_name}.pt"
+    return snapshot_dir / f"{full_model_name}.pt"
 
 
 def get_gpu_memory_map():

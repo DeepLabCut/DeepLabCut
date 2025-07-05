@@ -371,10 +371,14 @@ def video_inference_superanimal(
 
         detector_path = customized_detector_checkpoint
         if detector_path is None:
-            detector_path = get_super_animal_snapshot_path(
-                dataset=superanimal_name,
-                model_name=detector_name,
-            )
+            # For superanimal_humanbody, use torchvision detectors (no downloaded detector)
+            if superanimal_name == "superanimal_humanbody":
+                detector_path = None
+            else:
+                detector_path = get_super_animal_snapshot_path(
+                    dataset=superanimal_name,
+                    model_name=detector_name,
+                )
 
         dlc_scorer = get_super_animal_scorer(
             superanimal_name, pose_model_path, detector_path

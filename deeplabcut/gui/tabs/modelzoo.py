@@ -16,6 +16,7 @@ import dlclibrary
 from PySide6 import QtWidgets
 from PySide6.QtCore import QRegularExpression, Qt, QTimer, Signal, Slot
 from PySide6.QtGui import QIcon, QPixmap, QRegularExpressionValidator
+import cv2
 
 import deeplabcut
 from deeplabcut.core.engine import Engine
@@ -25,6 +26,7 @@ from deeplabcut.gui.components import (
     _create_label_widget,
     DefaultTab,
     VideoSelectionWidget,
+    MediaSelectionWidget,
 )
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.gui.widgets import ClickableLabel
@@ -52,16 +54,19 @@ class ModelZoo(DefaultTab):
 
     @property
     def files(self):
-        return self.video_selection_widget.files
+        return self.media_selection_widget.files
 
     def _set_page(self):
-        self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
-        self.video_selection_widget = VideoSelectionWidget(self.root, self)
-        self.main_layout.addWidget(self.video_selection_widget)
+        self.main_layout.addWidget(_create_label_widget("Media Selection", "font:bold"))
+        self.media_selection_widget = MediaSelectionWidget(self.root, self)
+        self.main_layout.addWidget(self.media_selection_widget)
 
         self._build_common_attributes()
         self._build_tf_attributes()
         self._build_torch_attributes()
+        
+        # Connect media type changes to update adaptation options
+        self.media_selection_widget.media_type_widget.currentTextChanged.connect(self._update_adaptation_options)
 
         self.run_button = QtWidgets.QPushButton("Run")
         self.run_button.clicked.connect(self.run_video_adaptation)
@@ -106,7 +111,7 @@ class ModelZoo(DefaultTab):
         loc_label = ClickableLabel("Folder to store results:", parent=self)
         loc_label.signal.connect(self.select_folder)
         self.loc_line = QtWidgets.QLineEdit(
-            "<Select a folder - Default: store in same folder as video>",
+            "<Select a folder - Default: store in same folder as media>",
             self,
         )
         self.loc_line.setReadOnly(True)
@@ -250,7 +255,15 @@ class ModelZoo(DefaultTab):
     def show_help_dialog(self):
         dialog = QtWidgets.QDialog(self)
         layout = QtWidgets.QVBoxLayout()
-        label = QtWidgets.QLabel(deeplabcut.video_inference_superanimal.__doc__, self)
+        
+        # Show different help based on media type
+        media_type = self.media_selection_widget.media_type_widget.currentText()
+        if media_type == "Videos":
+            help_text = deeplabcut.video_inference_superanimal.__doc__
+        else:  # Images
+            help_text = deeplabcut.superanimal_analyze_images.__doc__
+        
+        label = QtWidgets.QLabel(help_text, self)
         scroll = QtWidgets.QScrollArea()
         scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -271,11 +284,11 @@ class ModelZoo(DefaultTab):
         QTimer.singleShot(500, lambda: self.scales_line.setStyleSheet(""))
 
     def run_video_adaptation(self):
-        videos = list(self.files)
-        if not videos:
+        files = list(self.files)
+        if not files:
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Critical)
-            msg.setText("You must select a video file")
+            msg.setText("You must select video or image files")
             msg.setWindowTitle("Error")
             msg.setMinimumWidth(400)
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
@@ -283,19 +296,34 @@ class ModelZoo(DefaultTab):
             return
 
         supermodel_name = self.model_combo.currentText()
-        videotype = self.video_selection_widget.videotype_widget.currentText()
+        media_type = self.media_selection_widget.media_type_widget.currentText()
         kwargs = self._gather_kwargs()
 
         can_run_in_background = False
         if can_run_in_background:
-            func = partial(
-                deeplabcut.video_inference_superanimal,
-                videos,
-                supermodel_name,
-                videotype=videotype,
-                dest_folder=self._destfolder,
-                **kwargs,
-            )
+            if media_type == "Videos":
+                videotype = self.media_selection_widget.videotype_widget.currentText()
+                func = partial(
+                    deeplabcut.video_inference_superanimal,
+                    files,
+                    supermodel_name,
+                    videotype=videotype,
+                    dest_folder=self._destfolder,
+                    **kwargs,
+                )
+            else:  # Images
+                func = partial(
+                    deeplabcut.superanimal_analyze_images,
+                    superanimal_name=supermodel_name,
+                    model_name=kwargs["model_name"],
+                    detector_name=kwargs.get("detector_name"),
+                    images=files,
+                    max_individuals=kwargs.get("max_individuals", 10),
+                    out_folder=self._destfolder or "labeled_images",
+                    device=kwargs.get("device", "auto"),
+                    pose_threshold=kwargs.get("pseudo_threshold", 0.1),
+                    bbox_threshold=kwargs.get("bbox_threshold", 0.9),
+                )
 
             self.worker, self.thread = move_to_separate_thread(func)
             self.worker.finished.connect(self.signal_analysis_complete)
@@ -303,25 +331,80 @@ class ModelZoo(DefaultTab):
             self.run_button.setEnabled(False)
             self.root._progress_bar.show()
         else:
-            print(f"Calling video_inference_superanimal with kwargs={kwargs}")
-            deeplabcut.video_inference_superanimal(
-                videos,
-                supermodel_name,
-                videotype=videotype,
-                dest_folder=self._destfolder,
-                **kwargs,
-            )
+            if media_type == "Videos":
+                videotype = self.media_selection_widget.videotype_widget.currentText()
+                print(f"Calling video_inference_superanimal with kwargs={kwargs}")
+                results = deeplabcut.video_inference_superanimal(
+                    files,
+                    supermodel_name,
+                    videotype=videotype,
+                    dest_folder=self._destfolder,
+                    **kwargs,
+                )
+                # Check for skipped frames and show warning if needed
+                for video_path in files:
+                    try:
+                        df = results[video_path]
+                        n_processed = len(df)
+                        cap = cv2.VideoCapture(video_path)
+                        n_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                        cap.release()
+                        if n_processed < n_total:
+                            msg = QtWidgets.QMessageBox()
+                            msg.setIcon(QtWidgets.QMessageBox.Warning)
+                            msg.setText(f"Warning: Only {n_processed} out of {n_total} frames had detections. The output movie and results include only those frames.")
+                            msg.setWindowTitle("Partial Detections")
+                            msg.setMinimumWidth(400)
+                            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                            msg.exec_()
+                    except Exception as e:
+                        print(f"[GUI Warning] Could not check processed frames: {e}")
+            else:  # Images
+                print(f"Calling superanimal_analyze_images with kwargs={kwargs}")
+                deeplabcut.superanimal_analyze_images(
+                    superanimal_name=supermodel_name,
+                    model_name=kwargs["model_name"],
+                    detector_name=kwargs.get("detector_name"),
+                    images=files,
+                    max_individuals=kwargs.get("max_individuals", 10),
+                    out_folder=self._destfolder or "labeled_images",
+                    device=kwargs.get("device", "auto"),
+                    pose_threshold=kwargs.get("pseudo_threshold", 0.1),
+                    bbox_threshold=kwargs.get("bbox_threshold", 0.9),
+                )
             self.signal_analysis_complete()
 
     def signal_analysis_complete(self):
         self.run_button.setEnabled(True)
         self.root._progress_bar.hide()
-        msg = QtWidgets.QMessageBox(text="SuperAnimal video inference complete!")
+        media_type = self.media_selection_widget.media_type_widget.currentText()
+        msg = QtWidgets.QMessageBox(text=f"SuperAnimal {media_type.lower()} inference complete!")
         msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.exec_()
 
+    def _update_adaptation_options(self, media_type: str):
+        """Update adaptation options based on selected media type"""
+        if media_type == "Images":
+            # Disable video adaptation for images
+            self.adapt_checkbox.setChecked(False)
+            self.adapt_checkbox.setEnabled(False)
+            self.torch_adapt_checkbox.setChecked(False)
+            self.torch_adapt_checkbox.setEnabled(False)
+            
+            # Update labels to reflect image analysis
+            self.run_button.setText("Analyze Images")
+        else:  # Videos
+            # Re-enable video adaptation for videos
+            self.adapt_checkbox.setEnabled(True)
+            self.torch_adapt_checkbox.setEnabled(True)
+            
+            # Update labels to reflect video analysis
+            self.run_button.setText("Run")
+
     def _gather_kwargs(self) -> dict:
         kwargs = dict(model_name=self.net_type_selector.currentText())
+        media_type = self.media_selection_widget.media_type_widget.currentText()
+        
         if self.root.engine == Engine.TF:
             scales = []
             scales_ = self.scales_line.text()
@@ -332,12 +415,20 @@ class ModelZoo(DefaultTab):
                 ):
                     scales = list(map(int, scales_.split(",")))
             kwargs["scale_list"] = scales
-            kwargs["video_adapt"] = self.adapt_checkbox.isChecked()
+            # Only allow video adaptation for videos
+            if media_type == "Videos":
+                kwargs["video_adapt"] = self.adapt_checkbox.isChecked()
+            else:
+                kwargs["video_adapt"] = False
             kwargs["pseudo_threshold"] = self.pseudo_threshold_spinbox.value()
             kwargs["adapt_iterations"] = self.adapt_iter_spinbox.value()
         else:
             kwargs["detector_name"] = self.detector_type_selector.currentText()
-            kwargs["video_adapt"] = self.torch_adapt_checkbox.isChecked()
+            # Only allow video adaptation for videos
+            if media_type == "Videos":
+                kwargs["video_adapt"] = self.torch_adapt_checkbox.isChecked()
+            else:
+                kwargs["video_adapt"] = False
             kwargs["pseudo_threshold"] = self.torch_pseudo_threshold_spinbox.value()
             kwargs["detector_epochs"] = self.torch_adapt_det_epoch_spinbox.value()
             kwargs["pose_epochs"] = self.torch_adapt_epoch_spinbox.value()
@@ -383,9 +474,17 @@ class ModelZoo(DefaultTab):
         if self.root.engine == Engine.TF:
             self.detector_type_selector.addItems(["dlcrnet"])
         else:
-            self.detector_type_selector.addItems(
-                dlclibrary.get_available_detectors(super_animal)
-            )
+            try:
+                detectors = dlclibrary.get_available_detectors(super_animal)
+                self.detector_type_selector.addItems(detectors)
+            except KeyError:
+                # Handle SuperAnimal models that don't have detectors defined in dlclibrary
+                # For example, superanimal_humanbody uses torchvision detectors
+                if super_animal == "superanimal_humanbody":
+                    self.detector_type_selector.addItems(["fasterrcnn_mobilenet_v3_large_fpn"])
+                else:
+                    # For other models without detectors, add a placeholder or leave empty
+                    pass
 
     @Slot(Engine)
     def _on_engine_change(self, engine: Engine) -> None:
@@ -400,3 +499,7 @@ class ModelZoo(DefaultTab):
             self.detector_type_text.hide()
             self.detector_type_selector.hide()
             self.tf_widget.show()
+        
+        # Initialize adaptation options based on current media type
+        current_media_type = self.media_selection_widget.media_type_widget.currentText()
+        self._update_adaptation_options(current_media_type)
