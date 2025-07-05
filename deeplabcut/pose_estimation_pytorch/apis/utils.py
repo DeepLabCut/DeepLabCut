@@ -408,6 +408,36 @@ def build_predictions_dataframe(
     """
     image_names = []
     prediction_data = []
+    
+    # Calculate the actual number of individuals from the prediction data
+    # This ensures we use the correct number of individuals that were actually predicted
+    actual_num_individuals = None
+    for image_name, image_predictions in predictions.items():
+        if "bodyparts" in image_predictions:
+            num_individuals = image_predictions["bodyparts"].shape[0]
+            if actual_num_individuals is None:
+                actual_num_individuals = num_individuals
+            elif actual_num_individuals != num_individuals:
+                # If different images have different numbers of individuals, use the maximum
+                actual_num_individuals = max(actual_num_individuals, num_individuals)
+    
+    # If no predictions found, use the parameters from the model config
+    if actual_num_individuals is None:
+        actual_num_individuals = parameters.max_num_animals
+    
+    # Create parameters with the actual number of individuals
+    actual_parameters = PoseDatasetParameters(
+        bodyparts=parameters.bodyparts,
+        unique_bpts=parameters.unique_bpts,
+        individuals=[f"individual{i:03d}" for i in range(actual_num_individuals)],
+        with_center_keypoints=parameters.with_center_keypoints,
+        color_mode=parameters.color_mode,
+        ctd_config=parameters.ctd_config,
+        top_down_crop_size=parameters.top_down_crop_size,
+        top_down_crop_margin=parameters.top_down_crop_margin,
+        top_down_crop_with_context=parameters.top_down_crop_with_context,
+    )
+    
     for image_name, image_predictions in predictions.items():
         image_data = image_predictions["bodyparts"][..., :3].reshape(-1)
         if "unique_bodyparts" in image_predictions:
@@ -424,7 +454,7 @@ def build_predictions_dataframe(
         index=index,
         columns=build_dlc_dataframe_columns(
             scorer=scorer,
-            parameters=parameters,
+            parameters=actual_parameters,
             with_likelihood=True,
         ),
     )
