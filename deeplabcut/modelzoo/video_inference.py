@@ -370,12 +370,19 @@ def video_inference_superanimal(
             
             # Map parameters to the dedicated function
             # Note: analyze_videos_superanimal_humanbody has its own parameter set
+            # Handle device parameter - convert "auto" to actual device
+            if device == "auto":
+                import torch
+                actual_device = "cuda" if torch.cuda.is_available() else "cpu"
+            else:
+                actual_device = device
+            
             dedicated_kwargs = {
                 "videotype": videotype,
                 "destfolder": str(dest_folder),
                 "bbox_threshold": bbox_threshold,
                 "pose_threshold": pcutoff,
-                "device": device,
+                "device": actual_device,
                 "cropping": cropping,
                 "batch_size": batch_size,
                 "detector_batch_size": detector_batch_size,
