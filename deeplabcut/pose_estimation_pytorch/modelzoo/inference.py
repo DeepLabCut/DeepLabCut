@@ -108,7 +108,6 @@ def _video_inference_superanimal(
         batch_size=batch_size,
         detector_batch_size=detector_batch_size,
         detector_path=detector_snapshot_path,
-        bbox_threshold=bboxes_pcutoff,
     )
     results = {}
 

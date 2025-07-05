@@ -590,13 +590,12 @@ class CTDInferenceRunner(PoseInferenceRunner):
         raw_predictions = self.model.get_predictions(outputs)
         predictions = [
             {
-                head: {
-                    pred_name: pred[b].cpu().numpy()
-                    for pred_name, pred in head_outputs.items()
+                "detection": {
+                    "bboxes": item["boxes"].cpu().numpy().reshape(-1, 4),
+                    "bbox_scores": item["scores"].cpu().numpy().reshape(-1),
                 }
-                for head, head_outputs in raw_predictions.items()
             }
-            for b in range(len(inputs))
+            for item in raw_predictions
         ]
 
         return predictions
@@ -855,7 +854,7 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
             {
                 "detection": {
                     "bboxes": item["boxes"].cpu().numpy().reshape(-1, 4),
-                    "scores": item["scores"].cpu().numpy().reshape(-1),
+                    "bbox_scores": item["scores"].cpu().numpy().reshape(-1),
                 }
             }
             for item in raw_predictions
@@ -897,7 +896,7 @@ class TorchvisionDetectorInferenceRunner(InferenceRunner[BaseDetector]):
                 predictions.append({
                     "detection": {
                         "bboxes": item["boxes"].cpu().numpy().reshape(-1, 4),
-                        "scores": item["scores"].cpu().numpy().reshape(-1),
+                        "bbox_scores": item["scores"].cpu().numpy().reshape(-1),
                     }
                 })
             else:
@@ -905,7 +904,7 @@ class TorchvisionDetectorInferenceRunner(InferenceRunner[BaseDetector]):
                 predictions.append({
                     "detection": {
                         "bboxes": np.zeros((0, 4)),
-                        "scores": np.zeros(0),
+                        "bbox_scores": np.zeros(0),
                     }
                 })
         

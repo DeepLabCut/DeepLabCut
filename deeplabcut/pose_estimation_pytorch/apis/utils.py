@@ -479,7 +479,6 @@ def get_inference_runners(
     detector_path: str | Path | None = None,
     detector_transform: A.BaseCompose | None = None,
     dynamic: DynamicCropper | None = None,
-    bbox_threshold: float | None = None,
 ) -> tuple[InferenceRunner, InferenceRunner | None]:
     """Builds the runners for pose estimation
 
@@ -570,11 +569,10 @@ def get_inference_runners(
         if device == "mps":
             detector_device = "cpu"
 
-        # Check if this is a torchvision detector (no detector path needed)
-        detector_variant = model_config.get("detector", {}).get("model", {}).get("variant", "")
-        is_torchvision_detector = detector_variant in ["fasterrcnn_mobilenet_v3_large_fpn", "fasterrcnn_resnet50_fpn_v2"]
-        
-        if detector_path is not None or is_torchvision_detector:
+        # Get superanimal name for filtering logic
+        superanimal_name = model_config.get("metadata", {}).get("superanimal_name", "")
+
+        if detector_path is not None or "detector" in model_config:
             if detector_path is not None:
                 detector_path = str(detector_path)
             if detector_transform is None:
@@ -582,15 +580,33 @@ def get_inference_runners(
                     model_config["detector"]["data"]["inference"]
                 )
 
-            detector_config = model_config["detector"]["model"].copy()  # Make a copy to avoid modifying original
-            if "pretrained" in detector_config:
-                detector_config["pretrained"] = False
-            
-            # Override box_score_thresh if bbox_threshold is provided
-            if bbox_threshold is not None:
-                detector_config["box_score_thresh"] = bbox_threshold
-
-            detector_model = DETECTORS.build(detector_config)
+            print(f"DEBUG: Creating detector for superanimal_name: '{superanimal_name}'")
+            if superanimal_name == "superanimal_humanbody":
+                # Only for superanimal_humanbody, use torchvision detector
+                from deeplabcut.pose_estimation_pytorch.models.detectors.torchvision import TorchvisionDetectorAdaptor
+                detector_config = model_config["detector"]["model"].copy()
+                # Remove registry-specific fields that TorchvisionDetectorAdaptor doesn't expect
+                expected_fields = {
+                    "model", "weights", "num_classes", "freeze_bn_stats", "freeze_bn_weights", 
+                    "box_score_thresh", "model_kwargs", "model_name", "superanimal_name"
+                }
+                unexpected_fields = [k for k in detector_config.keys() if k not in expected_fields]
+                for field in unexpected_fields:
+                    detector_config.pop(field, None)
+                print(f"DEBUG: Removed unexpected fields for torchvision detector: {unexpected_fields}")
+                # If we have a custom snapshot path, don't use pretrained weights
+                if detector_path is not None:
+                    detector_config["weights"] = None
+                detector_model = TorchvisionDetectorAdaptor(**detector_config)
+                print(f"DEBUG: Created TorchvisionDetectorAdaptor for {superanimal_name}")
+            else:
+                # All other superanimal_* use custom detectors as before
+                detector_config = model_config["detector"]["model"].copy()
+                # If a custom snapshot is provided, do not use pretrained weights
+                pretrained = False if detector_path is not None else True
+                detector_model = DETECTORS.build(detector_config, pretrained=pretrained)
+                print(f"DEBUG: Created custom detector from DETECTORS registry for {superanimal_name}")
+                print(f"DEBUG: Custom detector type: {type(detector_model)}")
             detector_runner = build_inference_runner(
                 task=Task.DETECT,
                 model=detector_model,

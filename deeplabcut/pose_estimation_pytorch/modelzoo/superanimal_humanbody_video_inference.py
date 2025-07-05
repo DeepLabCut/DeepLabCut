@@ -397,8 +397,10 @@ def analyze_videos_superanimal_humanbody(
             try:
                 import yaml
                 import os
-                # Get the correct path to the config file
-                config_path = "deeplabcut/modelzoo/project_configs/superanimal_humanbody.yaml"
+                # Get the correct path to the config file using DeepLabCut's path resolution
+                from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
+                dlc_root_path = get_deeplabcut_path()
+                config_path = os.path.join(dlc_root_path, "modelzoo", "project_configs", "superanimal_humanbody.yaml")
                 with open(config_path, 'r') as f:
                     config = yaml.safe_load(f)
                 skeleton_indices = config.get('skeleton', None)

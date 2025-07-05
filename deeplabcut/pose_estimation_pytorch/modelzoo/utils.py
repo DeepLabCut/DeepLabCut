@@ -154,6 +154,11 @@ def load_super_animal_config(
     # Update config after detector is added (if any)
     model_config = update_config(model_config, max_individuals, device)
     
+    # Add superanimal_name to metadata for proper detector routing
+    if "metadata" not in model_config:
+        model_config["metadata"] = {}
+    model_config["metadata"]["superanimal_name"] = super_animal
+    
     return model_config
 
 
@@ -234,6 +239,8 @@ def update_config(config: dict, max_individuals: int, device: str):
     Returns:
         The model configuration for a SuperAnimal-pretrained model.
     """
+    print(f"DEBUG: update_config called with superanimal_name: {config.get('metadata', {}).get('superanimal_name', 'NOT_SET')}")
+    
     config = config_utils.replace_default_values(
         config,
         num_bodyparts=len(config["metadata"]["bodyparts"]),
@@ -246,4 +253,5 @@ def update_config(config: dict, max_individuals: int, device: str):
     if "detector" in config:
         config["detector"]["device"] = device
 
+    print(f"DEBUG: update_config returning with superanimal_name: {config.get('metadata', {}).get('superanimal_name', 'NOT_SET')}")
     return config
