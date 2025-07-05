@@ -56,7 +56,9 @@ class ModelZoo(DefaultTab):
         self._update_pose_models(self.model_combo.currentText())
         self._update_detectors(self.model_combo.currentText())
         self._destfolder = None
-
+        self.worker = None
+        self.thread = None
+        
     @property
     def files(self):
         return self.media_selection_widget.files
@@ -456,6 +458,8 @@ class ModelZoo(DefaultTab):
                         files,
                         **dedicated_kwargs,
                     )
+                    # Patch: Call signal_analysis_complete for non-background execution
+                    self.signal_analysis_complete()
             else:
                 # Use standard function for other models
                 if can_run_in_background:
@@ -510,10 +514,52 @@ class ModelZoo(DefaultTab):
         self.run_button.setEnabled(True)
         self.run_button.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold;")  # Green when enabled
         self.root._progress_bar.hide()
+        
+        # Check if labeled videos were actually created
+        files = list(self.files)
+        videos_created = []
+        for video_path in files:
+            video_name = Path(video_path).stem
+            if self.model_combo.currentText() == "superanimal_humanbody":
+                # Check for humanbody labeled video
+                labeled_video = Path(video_path).parent / f"{video_name}_superanimal_humanbody_rtmpose_x_labeled_before_adapt.mp4"
+            else:
+                # Check for standard labeled video
+                labeled_video = Path(video_path).parent / f"{video_name}_labeled.mp4"
+            
+            if labeled_video.exists():
+                videos_created.append(str(labeled_video))
+        
+        # Show appropriate message
         media_type = self.media_selection_widget.media_type_widget.currentText()
-        msg = QtWidgets.QMessageBox(text=f"SuperAnimal {media_type.lower()} inference complete!")
-        msg.setIcon(QtWidgets.QMessageBox.Information)
-        msg.exec_()
+        if videos_created:
+            msg = QtWidgets.QMessageBox(text=f"SuperAnimal {media_type.lower()} inference complete!\n\nCreated labeled videos:\n" + "\n".join(videos_created))
+            msg.setIcon(QtWidgets.QMessageBox.Information)
+            msg.exec_()
+        else:
+            msg = QtWidgets.QMessageBox(text=f"SuperAnimal {media_type.lower()} inference complete, but no labeled videos were created.")
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.exec_()
+
+    def stop_processes(self):
+        """Stop any running processes"""
+        if self.thread and self.thread.isRunning():
+            print("Stopping running processes...")
+            self.thread.quit()
+            self.thread.wait(5000)  # Wait up to 5 seconds
+            if self.thread.isRunning():
+                self.thread.terminate()
+                self.thread.wait(2000)
+            self.worker = None
+            self.thread = None
+            self.run_button.setEnabled(True)
+            self.run_button.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold;")
+            self.root._progress_bar.hide()
+
+    def closeEvent(self, event):
+        """Override closeEvent to stop processes when tab is closed"""
+        self.stop_processes()
+        super().closeEvent(event)
 
     def _update_adaptation_options(self, media_type: str):
         # Only allow video adaptation for videos (no images)
