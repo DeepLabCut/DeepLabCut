@@ -349,6 +349,50 @@ def video_inference_superanimal(
                 "You have to specify a detector_name when using the Pytorch framework."
             )
 
+        # Special handling for superanimal_humanbody - use dedicated implementation
+        if superanimal_name == "superanimal_humanbody":
+            from deeplabcut.pose_estimation_pytorch.modelzoo.superanimal_humanbody_video_inference import (
+                analyze_videos_superanimal_humanbody,
+            )
+            
+            # Convert videos to list if needed
+            if isinstance(videos, str):
+                videos = [videos]
+            
+            # Set destination folder
+            if dest_folder is None:
+                dest_folder = Path(videos[0]).parent
+            else:
+                dest_folder = Path(dest_folder)
+            
+            if not dest_folder.exists():
+                dest_folder.mkdir(parents=True, exist_ok=True)
+            
+            # Map parameters to the dedicated function
+            # Note: analyze_videos_superanimal_humanbody has its own parameter set
+            dedicated_kwargs = {
+                "videotype": videotype,
+                "destfolder": str(dest_folder),
+                "bbox_threshold": bbox_threshold,
+                "pose_threshold": pcutoff,
+                "device": device,
+                "cropping": cropping,
+                "batch_size": batch_size,
+                "detector_batch_size": detector_batch_size,
+            }
+            
+            # Use a dummy config path since the dedicated function loads its own config
+            dummy_config = "superanimal_humanbody"
+            
+            results = analyze_videos_superanimal_humanbody(
+                dummy_config,
+                videos,
+                **dedicated_kwargs,
+            )
+            
+            return results
+
+        # Standard PyTorch implementation for other models
         from deeplabcut.pose_estimation_pytorch.modelzoo.inference import (
             _video_inference_superanimal,
         )
@@ -371,14 +415,10 @@ def video_inference_superanimal(
 
         detector_path = customized_detector_checkpoint
         if detector_path is None:
-            # For superanimal_humanbody, use torchvision detectors (no downloaded detector)
-            if superanimal_name == "superanimal_humanbody":
-                detector_path = None
-            else:
-                detector_path = get_super_animal_snapshot_path(
-                    dataset=superanimal_name,
-                    model_name=detector_name,
-                )
+            detector_path = get_super_animal_snapshot_path(
+                dataset=superanimal_name,
+                model_name=detector_name,
+            )
 
         dlc_scorer = get_super_animal_scorer(
             superanimal_name, pose_model_path, detector_path

@@ -85,7 +85,6 @@ class TorchvisionDetectorAdaptor(BaseDetector):
             else:
                 weights = None
 
-        # PATCH: Do not pass num_classes when using pretrained weights (Colab logic)
         if weights is not None:
             self.model = model_fn(
                 weights=weights,
@@ -100,7 +99,7 @@ class TorchvisionDetectorAdaptor(BaseDetector):
                 **model_kwargs,
             )
 
-        # Use only weights.transforms() for preprocessing (Colab logic)
+        self.transforms = weights.transforms() if weights is not None else None
         self.transforms = weights.transforms() if weights is not None else None
 
         self.model.eager_outputs = lambda losses, detections: (losses, detections)
