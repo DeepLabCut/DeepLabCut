@@ -1,4 +1,4 @@
-name: Intelligent Python Testing
+name: "Intelligent Python Testing"
 
 on:
   push:
@@ -29,8 +29,9 @@ jobs:
         id: test-selector
         shell: bash
         run: |
-          # Make test selector executable
+          # Make scripts executable
           chmod +x tools/test_selector.py
+          chmod +x tools/parse_test_selection.py
           
           # Determine the base reference to use
           BASE_REF="origin/main"
@@ -54,65 +55,13 @@ jobs:
           # Parse the JSON output and set GitHub outputs
           cat test_selection.json
           
-          # Extract commands for the next job
-          commands=$(python -c "
-          import json
-          import sys
-          try:
-              with open('test_selection.json') as f:
-                  data = json.load(f)
-              print(json.dumps(data.get('commands', [])))
-          except Exception as e:
-              print('[]')  # Default to empty array if parsing fails
-              sys.stderr.write(f'Warning: Error parsing test selection: {e}\n')
-          ")
-          
-          # Check if we need full tests (fallback case)
-          run_full=$(python -c "
-          import json
-          import sys
-          try:
-              with open('test_selection.json') as f:
-                  data = json.load(f)
-              full_tests = any('examples/testscript.py' in str(cmd) or (('pytest' in cmd) and len(cmd.split()) <= 3) for cmd in data.get('commands', []))
-              print('true' if full_tests else 'false')
-          except Exception as e:
-              print('false')  # Default to not running full tests
-              sys.stderr.write(f'Warning: Error checking full tests: {e}\n')
-          ")
+          # Use external scripts to parse JSON safely
+          commands=$(python tools/parse_test_selection.py commands)
+          run_full=$(python tools/parse_test_selection.py full-tests)
+          matrix=$(python tools/parse_test_selection.py matrix)
           
           echo "commands=$commands" >> $GITHUB_OUTPUT
           echo "run-full-tests=$run_full" >> $GITHUB_OUTPUT
-          
-          # Create test matrix for parallel execution
-          matrix=$(python -c "
-          import json
-          import sys
-          try:
-              with open('test_selection.json') as f:
-                  data = json.load(f)
-              
-              # Create matrix based on test categories
-              categories = list(data.get('categories', {}).keys())
-              commands = data.get('commands', [])
-              
-              if not commands:
-                  matrix = [{'name': 'minimal', 'commands': ['echo \"No tests to run\"']}]
-              elif 'docs' in categories and len(categories) == 1:
-                  matrix = [{'name': 'docs-only', 'commands': [cmd for cmd in commands if 'docs' in cmd]}]
-              elif 'superanimal' in categories:
-                  matrix = [{'name': 'superanimal', 'commands': [cmd for cmd in commands if 'superanimal' in cmd or 'modelzoo' in cmd]}]
-              else:
-                  matrix = [{'name': 'selected-tests', 'commands': commands}]
-              
-              print(json.dumps(matrix))
-          except Exception as e:
-              # Fallback matrix if parsing fails
-              matrix = [{'name': 'fallback', 'commands': ['echo \"Test selection failed, skipping tests\"']}]
-              print(json.dumps(matrix))
-              sys.stderr.write(f'Warning: Error creating test matrix: {e}\n')
-          ")
-          
           echo "test-matrix=$matrix" >> $GITHUB_OUTPUT
 
   fast-tests:
@@ -159,27 +108,8 @@ jobs:
           echo "Running test configuration: ${{ matrix.test-config.name }}"
           echo "Commands to run: $TEST_COMMANDS"
           
-          # Parse and execute commands
-          python -c "
-          import json
-          import subprocess
-          import sys
-          import os
-          
-          commands = json.loads(os.environ['TEST_COMMANDS'])
-          all_passed = True
-          
-          for i, cmd in enumerate(commands, 1):
-              print(f'[{i}/{len(commands)}] Running: {cmd}')
-              try:
-                  result = subprocess.run(cmd.split(), check=True)
-                  print(f'✅ Passed: {cmd}')
-              except subprocess.CalledProcessError as e:
-                  print(f'❌ Failed: {cmd}')
-                  all_passed = False
-          
-          sys.exit(0 if all_passed else 1)
-          "
+          # Use external script to execute commands safely
+          python tools/execute_test_commands.py
 
   full-tests:
     needs: intelligent-test-selection
