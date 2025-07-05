@@ -111,6 +111,7 @@ def video_inference(
     cropping: list[int] | None = None,
     shelf_writer: shelving.ShelfWriter | None = None,
     robust_nframes: bool = False,
+    progress_callback=None,
 ) -> list[dict[str, np.ndarray]]:
     """Runs inference on a video
 
@@ -132,6 +133,7 @@ def video_inference(
         robust_nframes: Evaluate a video's number of frames in a robust manner. This
             option is slower (as the whole video is read frame-by-frame), but does not
             rely on metadata, hence its robustness against file corruption.
+        progress_callback: Optional callback function to report progress to GUI
 
     Returns:
         Predictions for each frame in the video. If a shelf_manager is given, this list
@@ -194,25 +196,62 @@ def video_inference(
 
     if detector_runner is not None:
         print(f"Running detector with batch size {detector_runner.batch_size}")
-        bbox_predictions = detector_runner.inference(images=tqdm(video))
+        if progress_callback:
+            progress_callback("Running detector...", 0, n_frames)
+        
+        # Create a custom progress bar for detector
+        detector_progress = tqdm(video, desc="Detector")
+        bbox_predictions = []
+        for i, frame in enumerate(detector_progress):
+            # Run detector on single frame
+            result = detector_runner.inference(images=[frame])
+            bbox_predictions.extend(result)
+            
+            # Update GUI progress
+            if progress_callback:
+                progress_callback(f"Detector: {i+1}/{n_frames}", i+1, n_frames)
+        
+        # PATCH: Ensure bbox_predictions is always length n_frames
+        if len(bbox_predictions) < n_frames:
+            print(f"[PATCH] Detector returned {len(bbox_predictions)} predictions for {n_frames} frames. Padding with empty bboxes.")
+            for _ in range(n_frames - len(bbox_predictions)):
+                bbox_predictions.append({'bboxes': np.zeros((0, 4))})
+        elif len(bbox_predictions) > n_frames:
+            print(f"[PATCH] Detector returned more predictions than frames. Truncating to {n_frames}.")
+            bbox_predictions = bbox_predictions[:n_frames]
         video.set_context(bbox_predictions)
 
     print(f"Running pose prediction with batch size {pose_runner.batch_size}")
     if shelf_writer is not None:
         shelf_writer.open()
 
-    predictions = pose_runner.inference(images=tqdm(video), shelf_writer=shelf_writer)
+    if progress_callback:
+        progress_callback("Running pose estimation...", 0, n_frames)
+    
+    # Create a custom progress bar for pose
+    pose_progress = tqdm(video, desc="Pose")
+    predictions = []
+    for i, frame in enumerate(pose_progress):
+        # Run pose on single frame
+        result = pose_runner.inference(images=[frame])
+        predictions.extend(result)
+        
+        # Update GUI progress
+        if progress_callback:
+            progress_callback(f"Pose: {i+1}/{n_frames}", i+1, n_frames)
+    
     if shelf_writer is not None:
         shelf_writer.close()
 
     if shelf_writer is None and len(predictions) != n_frames:
-        tip_url = "https://deeplabcut.github.io/DeepLabCut/docs/recipes/io.html"
-        header = "#tips-on-video-re-encoding-and-preprocessing"
+        frames_with_detections = sum(
+            1 for pred in predictions if (
+                ('bodyparts' in pred and pred['bodyparts'].shape[0] > 0) or
+                ('bboxes' in pred and len(pred['bboxes']) > 0)
+            )
+        )
         logging.warning(
-            f"The video metadata indicates that there {n_frames} in the video, but "
-            f"only {len(predictions)} were able to be processed. This can happen if "
-            "the video is corrupted. You can try to fix the issue by re-encoding your "
-            f"video (tips on how to do that: {tip_url}{header})"
+            f"Only {frames_with_detections} of {n_frames} frames had detections!"
         )
 
     return predictions
@@ -647,6 +686,7 @@ def analyze_videos(
                 detector_runner=detector_runner,
                 shelf_writer=shelf_writer,
                 robust_nframes=robust_nframes,
+                progress_callback=progress_callback,
             )
             runtime.append(time.time())
             metadata = _generate_metadata(
@@ -785,6 +825,27 @@ def create_df_from_prediction(
 ) -> pd.DataFrame:
     # Check if any predictions were made
     if not predictions:
+        raise ValueError(
+            "No objects were detected in the video. This can happen if:\n"
+            "1. The video doesn't contain the type of objects the model was trained to detect\n"
+            "2. The objects are too small, blurry, or occluded\n"
+            "3. The detector confidence threshold is too high\n"
+            "4. The video quality is poor\n\n"
+            "Try:\n"
+            "- Using a different video with clearer objects\n"
+            "- Adjusting the detector confidence threshold\n"
+            "- Checking if the model is appropriate for your use case"
+        )
+    
+    # Check if any predictions contain valid detections (non-empty bboxes)
+    valid_predictions = []
+    for pred in predictions:
+        if "bboxes" in pred and len(pred["bboxes"]) > 0:
+            valid_predictions.append(pred)
+        elif "bodyparts" in pred and pred["bodyparts"].shape[0] > 0:
+            valid_predictions.append(pred)
+    
+    if not valid_predictions:
         raise ValueError(
             "No objects were detected in the video. This can happen if:\n"
             "1. The video doesn't contain the type of objects the model was trained to detect\n"

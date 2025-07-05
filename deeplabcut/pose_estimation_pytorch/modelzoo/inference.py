@@ -60,6 +60,7 @@ def _video_inference_superanimal(
     output_suffix: str = "",
     plot_bboxes: bool = True,
     bboxes_pcutoff: float = 0.9,
+    progress_callback=None,
 ) -> dict:
     """
     Perform inference on a video using a superanimal model from the model zoo specified by `superanimal_name`.
@@ -89,6 +90,9 @@ def _video_inference_superanimal(
         dest_folder: Destination folder for the results. If not specified, the
             results are saved in the same folder as the video. Defaults to None.
         output_suffix: The suffix to add to output file names (e.g. _before_adapt)
+        plot_bboxes: Whether to plot bounding boxes in the output video
+        bboxes_pcutoff: Confidence threshold for bounding box plotting
+        progress_callback: Optional callback function to report progress to GUI
 
     Returns:
         results: Dictionary with the result pd.DataFrame for each video
@@ -138,6 +142,7 @@ def _video_inference_superanimal(
             video,
             pose_runner=pose_runner,
             detector_runner=detector_runner,
+            progress_callback=progress_callback,
         )
 
         bbox_keys_in_predictions = {"bboxes", "bbox_scores"}

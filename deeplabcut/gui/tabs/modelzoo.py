@@ -17,6 +17,8 @@ from PySide6 import QtWidgets
 from PySide6.QtCore import QRegularExpression, Qt, QTimer, Signal, Slot
 from PySide6.QtGui import QIcon, QPixmap, QRegularExpressionValidator
 import cv2
+import torch
+import numpy as np
 
 import deeplabcut
 from deeplabcut.core.engine import Engine
@@ -57,6 +59,16 @@ class ModelZoo(DefaultTab):
         return self.media_selection_widget.files
 
     def _set_page(self):
+        # Create Run button first so it exists for any method that references it
+        self.run_button = QtWidgets.QPushButton("Run")
+        self.run_button.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold;")
+        self.run_button.setFixedWidth(120)
+        self.run_button.clicked.connect(self.run_video_adaptation)
+        button_layout = QtWidgets.QHBoxLayout()
+        button_layout.addStretch()
+        button_layout.addWidget(self.run_button)
+        button_layout.addStretch()
+
         self.main_layout.addWidget(_create_label_widget("Media Selection", "font:bold"))
         self.media_selection_widget = MediaSelectionWidget(self.root, self)
         self.main_layout.addWidget(self.media_selection_widget)
@@ -67,10 +79,6 @@ class ModelZoo(DefaultTab):
         
         # Connect media type changes to update adaptation options
         self.media_selection_widget.media_type_widget.currentTextChanged.connect(self._update_adaptation_options)
-
-        self.run_button = QtWidgets.QPushButton("Run")
-        self.run_button.clicked.connect(self.run_video_adaptation)
-        self.main_layout.addWidget(self.run_button, alignment=Qt.AlignRight)
 
         self.home_button = QtWidgets.QPushButton("Return to Welcome page")
         self.home_button.clicked.connect(self.root._generate_welcome_page)
@@ -87,26 +95,84 @@ class ModelZoo(DefaultTab):
             )
         )
         self.main_layout.addWidget(self.go_to_button, alignment=Qt.AlignLeft)
+        
+        # Add the Run button layout
+        self.main_layout.addLayout(button_layout)
+        
         self._on_engine_change(self.root.engine)
 
     def _build_common_attributes(self) -> None:
         settings_layout = _create_grid_layout(margins=(20, 0, 0, 0))
-        section_title = _create_label_widget(
-            "Supermodel Settings", "font:bold", (0, 50, 0, 0)
-        )
 
-        model_combo_text = QtWidgets.QLabel("Supermodel name")
-        model_combo_text.setMinimumWidth(300)
+        # --- Supermodel selection ---
+        section_title = QtWidgets.QLabel("Supermodel settings")
+        section_title.setStyleSheet("font-weight: bold; font-size: 16px;")
+        model_combo_text = QtWidgets.QLabel("Supermodel")
+        model_combo_text.setMinimumWidth(150)
         self.model_combo = QtWidgets.QComboBox()
         self.model_combo.setMinimumWidth(250)
+        settings_layout.addWidget(section_title, 0, 0, 1, 6)
+        settings_layout.addWidget(model_combo_text, 1, 0)
+        settings_layout.addWidget(self.model_combo, 1, 1)
 
-        net_type_text = QtWidgets.QLabel("Net Type")
-        net_type_text.setMinimumWidth(300)
+        # --- Pose Model Type and Pose Confidence Threshold on the same line (now row 2) ---
+        pose_model_row = QtWidgets.QHBoxLayout()
+        pose_model_label = QtWidgets.QLabel("Pose Model Type")
+        pose_model_label.setMinimumWidth(150)
         self.net_type_selector = QtWidgets.QComboBox()
+        self.net_type_selector.setMinimumWidth(180)
+        pose_conf_label = QtWidgets.QLabel("Pose confidence threshold")
+        pose_conf_label.setMinimumWidth(170)
+        self.pose_threshold_spinbox = QtWidgets.QDoubleSpinBox(
+            decimals=2,
+            minimum=0.0,
+            maximum=1.0,
+            singleStep=0.01,
+            value=0.4,
+            wrapping=True,
+        )
+        self.pose_threshold_spinbox.setMaximumWidth(100)
+        pose_model_row.addWidget(pose_model_label)
+        pose_model_row.addWidget(self.net_type_selector)
+        pose_model_row.addSpacing(20)
+        pose_model_row.addWidget(pose_conf_label)
+        pose_model_row.addWidget(self.pose_threshold_spinbox)
+        pose_model_row.addStretch()
+        settings_layout.addLayout(pose_model_row, 2, 0, 1, 6)
 
-        self.detector_type_text = QtWidgets.QLabel("Detector Type")
-        self.detector_type_text.setMinimumWidth(300)
+        # --- Detector Type and Detector Confidence Threshold on the same line (now row 3) ---
+        detector_row = QtWidgets.QHBoxLayout()
+        detector_label = QtWidgets.QLabel("Detector Type")
+        detector_label.setMinimumWidth(150)
         self.detector_type_selector = QtWidgets.QComboBox()
+        self.detector_type_selector.setMinimumWidth(180)
+        detector_conf_label = QtWidgets.QLabel("Detector confidence threshold")
+        detector_conf_label.setMinimumWidth(170)
+        self.detector_threshold_spinbox = QtWidgets.QDoubleSpinBox(
+            decimals=2,
+            minimum=0.0,
+            maximum=1.0,
+            singleStep=0.01,
+            value=0.9,
+            wrapping=True,
+        )
+        self.detector_threshold_spinbox.setMaximumWidth(100)
+        max_individuals_label = QtWidgets.QLabel("Maximum number of individuals")
+        max_individuals_label.setMinimumWidth(180)
+        self.max_individuals_spinbox = QtWidgets.QSpinBox()
+        self.max_individuals_spinbox.setRange(1, 100)
+        self.max_individuals_spinbox.setValue(1)
+        self.max_individuals_spinbox.setMaximumWidth(100)
+        detector_row.addWidget(detector_label)
+        detector_row.addWidget(self.detector_type_selector)
+        detector_row.addSpacing(20)
+        detector_row.addWidget(detector_conf_label)
+        detector_row.addWidget(self.detector_threshold_spinbox)
+        detector_row.addSpacing(20)
+        detector_row.addWidget(max_individuals_label)
+        detector_row.addWidget(self.max_individuals_spinbox)
+        detector_row.addStretch()
+        settings_layout.addLayout(detector_row, 3, 0, 1, 6)
 
         loc_label = ClickableLabel("Folder to store results:", parent=self)
         loc_label.signal.connect(self.select_folder)
@@ -120,14 +186,6 @@ class ModelZoo(DefaultTab):
             QtWidgets.QLineEdit.TrailingPosition,
         )
         action.triggered.connect(self.select_folder)
-
-        settings_layout.addWidget(section_title, 0, 0)
-        settings_layout.addWidget(model_combo_text, 1, 0)
-        settings_layout.addWidget(self.model_combo, 1, 1)
-        settings_layout.addWidget(net_type_text, 2, 0)
-        settings_layout.addWidget(self.net_type_selector, 2, 1)
-        settings_layout.addWidget(self.detector_type_text, 3, 0)
-        settings_layout.addWidget(self.detector_type_selector, 3, 1)
 
         settings_layout.addWidget(loc_label, 4, 0)
         settings_layout.addWidget(self.loc_line, 4, 1)
@@ -201,11 +259,10 @@ class ModelZoo(DefaultTab):
     def _build_torch_attributes(self) -> None:
         torch_settings_layout = _create_grid_layout(margins=(20, 0, 0, 0))
 
-        self.torch_adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
-        self.torch_adapt_checkbox.setChecked(True)
-
+        # Compact adaptation settings row
+        adapt_row = QtWidgets.QHBoxLayout()
         pseudo_threshold_label = QtWidgets.QLabel("Pseudo-label confidence threshold")
-        pseudo_threshold_label.setMinimumWidth(300)
+        pseudo_threshold_label.setMinimumWidth(200)
         self.torch_pseudo_threshold_spinbox = QtWidgets.QDoubleSpinBox(
             decimals=2,
             minimum=0.01,
@@ -214,29 +271,34 @@ class ModelZoo(DefaultTab):
             value=0.1,
             wrapping=True,
         )
-        self.torch_pseudo_threshold_spinbox.setMaximumWidth(300)
-
+        self.torch_pseudo_threshold_spinbox.setMaximumWidth(100)
         adapt_epoch_label = QtWidgets.QLabel("Number of adaptation epochs")
-        adapt_epoch_label.setMinimumWidth(300)
+        adapt_epoch_label.setMinimumWidth(180)
         self.torch_adapt_epoch_spinbox = QtWidgets.QSpinBox()
         self.torch_adapt_epoch_spinbox.setRange(1, 50)
         self.torch_adapt_epoch_spinbox.setValue(4)
-        self.torch_adapt_epoch_spinbox.setMaximumWidth(300)
-
+        self.torch_adapt_epoch_spinbox.setMaximumWidth(100)
         adapt_det_epoch_label = QtWidgets.QLabel("Number of detector adaptation epochs")
-        adapt_det_epoch_label.setMinimumWidth(300)
+        adapt_det_epoch_label.setMinimumWidth(200)
         self.torch_adapt_det_epoch_spinbox = QtWidgets.QSpinBox()
         self.torch_adapt_det_epoch_spinbox.setRange(1, 50)
         self.torch_adapt_det_epoch_spinbox.setValue(4)
-        self.torch_adapt_det_epoch_spinbox.setMaximumWidth(300)
+        self.torch_adapt_det_epoch_spinbox.setMaximumWidth(100)
+        adapt_row.addWidget(pseudo_threshold_label)
+        adapt_row.addWidget(self.torch_pseudo_threshold_spinbox)
+        adapt_row.addSpacing(20)
+        adapt_row.addWidget(adapt_epoch_label)
+        adapt_row.addWidget(self.torch_adapt_epoch_spinbox)
+        adapt_row.addSpacing(20)
+        adapt_row.addWidget(adapt_det_epoch_label)
+        adapt_row.addWidget(self.torch_adapt_det_epoch_spinbox)
+        adapt_row.addStretch()
+        torch_settings_layout.addLayout(adapt_row, 2, 0, 1, 6)
 
+        self.torch_adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
+        self.torch_adapt_checkbox.setChecked(True)
         torch_settings_layout.addWidget(self.torch_adapt_checkbox, 1, 0)
-        torch_settings_layout.addWidget(pseudo_threshold_label, 2, 0)
-        torch_settings_layout.addWidget(self.torch_pseudo_threshold_spinbox, 2, 1)
-        torch_settings_layout.addWidget(adapt_epoch_label, 3, 0)
-        torch_settings_layout.addWidget(self.torch_adapt_epoch_spinbox, 3, 1)
-        torch_settings_layout.addWidget(adapt_det_epoch_label, 4, 0)
-        torch_settings_layout.addWidget(self.torch_adapt_det_epoch_spinbox, 4, 1)
+
         self.torch_widget = QtWidgets.QWidget()
         self.torch_widget.setLayout(torch_settings_layout)
         self.torch_widget.hide()
@@ -283,6 +345,16 @@ class ModelZoo(DefaultTab):
         self.scales_line.setStyleSheet(f"border: 1px solid {color}")
         QTimer.singleShot(500, lambda: self.scales_line.setStyleSheet(""))
 
+    def update_progress(self, message, current, total):
+        """Update the GUI progress bar with current step and progress"""
+        if hasattr(self.root, '_progress_bar'):
+            progress_percent = int((current / total) * 100) if total > 0 else 0
+            self.root._progress_bar.setValue(progress_percent)
+            # Update progress bar text if available
+            if hasattr(self.root._progress_bar, 'setFormat'):
+                self.root._progress_bar.setFormat(f"{message} ({current}/{total})")
+            print(f"[GUI Progress] {message} ({current}/{total})")
+
     def run_video_adaptation(self):
         files = list(self.files)
         if not files:
@@ -300,82 +372,97 @@ class ModelZoo(DefaultTab):
         kwargs = self._gather_kwargs()
 
         can_run_in_background = False
-        if can_run_in_background:
-            if media_type == "Videos":
-                videotype = self.media_selection_widget.videotype_widget.currentText()
-                func = partial(
-                    deeplabcut.video_inference_superanimal,
-                    files,
-                    supermodel_name,
-                    videotype=videotype,
-                    dest_folder=self._destfolder,
-                    **kwargs,
-                )
-            else:  # Images
-                func = partial(
-                    deeplabcut.superanimal_analyze_images,
-                    superanimal_name=supermodel_name,
-                    model_name=kwargs["model_name"],
-                    detector_name=kwargs.get("detector_name"),
-                    images=files,
-                    max_individuals=kwargs.get("max_individuals", 10),
-                    out_folder=self._destfolder or "labeled_images",
-                    device=kwargs.get("device", "auto"),
-                    pose_threshold=kwargs.get("pseudo_threshold", 0.1),
-                    bbox_threshold=kwargs.get("bbox_threshold", 0.9),
-                )
+        self.run_button.setEnabled(False)
+        self.run_button.setStyleSheet("background-color: #9E9E9E; color: white; font-weight: bold;")  # Gray when disabled
+        self.root._progress_bar.show()
+        try:
+            if can_run_in_background:
+                if media_type == "Videos":
+                    videotype = self.media_selection_widget.videotype_widget.currentText()
+                    func = partial(
+                        deeplabcut.video_inference_superanimal,
+                        files,
+                        supermodel_name,
+                        videotype=videotype,
+                        dest_folder=self._destfolder,
+                        **kwargs,
+                    )
+                else:  # Images
+                    func = partial(
+                        deeplabcut.superanimal_analyze_images,
+                        superanimal_name=supermodel_name,
+                        model_name=kwargs["model_name"],
+                        detector_name=kwargs.get("detector_name"),
+                        images=files,
+                        max_individuals=kwargs.get("max_individuals", 10),
+                        out_folder=self._destfolder or "labeled_images",
+                        device=kwargs.get("device", "auto"),
+                        pose_threshold=kwargs.get("pseudo_threshold", 0.1),
+                        bbox_threshold=kwargs.get("bbox_threshold", 0.9),
+                    )
 
-            self.worker, self.thread = move_to_separate_thread(func)
-            self.worker.finished.connect(self.signal_analysis_complete)
-            self.thread.start()
-            self.run_button.setEnabled(False)
-            self.root._progress_bar.show()
-        else:
-            if media_type == "Videos":
-                videotype = self.media_selection_widget.videotype_widget.currentText()
-                print(f"Calling video_inference_superanimal with kwargs={kwargs}")
-                results = deeplabcut.video_inference_superanimal(
-                    files,
-                    supermodel_name,
-                    videotype=videotype,
-                    dest_folder=self._destfolder,
-                    **kwargs,
-                )
-                # Check for skipped frames and show warning if needed
-                for video_path in files:
-                    try:
-                        df = results[video_path]
-                        n_processed = len(df)
-                        cap = cv2.VideoCapture(video_path)
-                        n_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-                        cap.release()
-                        if n_processed < n_total:
-                            msg = QtWidgets.QMessageBox()
-                            msg.setIcon(QtWidgets.QMessageBox.Warning)
-                            msg.setText(f"Warning: Only {n_processed} out of {n_total} frames had detections. The output movie and results include only those frames.")
-                            msg.setWindowTitle("Partial Detections")
-                            msg.setMinimumWidth(400)
-                            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-                            msg.exec_()
-                    except Exception as e:
-                        print(f"[GUI Warning] Could not check processed frames: {e}")
-            else:  # Images
-                print(f"Calling superanimal_analyze_images with kwargs={kwargs}")
-                deeplabcut.superanimal_analyze_images(
-                    superanimal_name=supermodel_name,
-                    model_name=kwargs["model_name"],
-                    detector_name=kwargs.get("detector_name"),
-                    images=files,
-                    max_individuals=kwargs.get("max_individuals", 10),
-                    out_folder=self._destfolder or "labeled_images",
-                    device=kwargs.get("device", "auto"),
-                    pose_threshold=kwargs.get("pseudo_threshold", 0.1),
-                    bbox_threshold=kwargs.get("bbox_threshold", 0.9),
-                )
-            self.signal_analysis_complete()
+                self.worker, self.thread = move_to_separate_thread(func)
+                self.worker.finished.connect(self.signal_analysis_complete)
+                self.thread.start()
+            else:
+                if media_type == "Videos":
+                    videotype = self.media_selection_widget.videotype_widget.currentText()
+                    print(f"Calling video_inference_superanimal with kwargs={kwargs}")
+                    
+                    # Import the video inference function to pass progress callback
+                    from deeplabcut.pose_estimation_pytorch.apis.videos import video_inference
+                    
+                    # For now, we'll need to call the lower-level functions to get progress
+                    # This is a simplified approach - in practice you might want to modify
+                    # the higher-level video_inference_superanimal function to accept progress_callback
+                    results = deeplabcut.video_inference_superanimal(
+                        files,
+                        supermodel_name,
+                        videotype=videotype,
+                        dest_folder=self._destfolder,
+                        **kwargs,
+                    )
+                    # Check for skipped frames and show warning if needed
+                    for video_path in files:
+                        try:
+                            df = results[video_path]
+                            n_processed = len(df)
+                            cap = cv2.VideoCapture(video_path)
+                            n_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                            cap.release()
+                            if n_processed < n_total:
+                                msg = QtWidgets.QMessageBox()
+                                msg.setIcon(QtWidgets.QMessageBox.Warning)
+                                msg.setText(f"Warning: Only {n_processed} out of {n_total} frames had detections. The output movie and results include only those frames.")
+                                msg.setWindowTitle("Partial Detections")
+                                msg.setMinimumWidth(400)
+                                msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                                msg.exec_()
+                        except Exception as e:
+                            print(f"[GUI Warning] Could not check processed frames: {e}")
+                else:  # Images
+                    print(f"Calling superanimal_analyze_images with kwargs={kwargs}")
+                    deeplabcut.superanimal_analyze_images(
+                        superanimal_name=supermodel_name,
+                        model_name=kwargs["model_name"],
+                        detector_name=kwargs.get("detector_name"),
+                        images=files,
+                        max_individuals=kwargs.get("max_individuals", 10),
+                        out_folder=self._destfolder or "labeled_images",
+                        device=kwargs.get("device", "auto"),
+                        pose_threshold=kwargs.get("pseudo_threshold", 0.1),
+                        bbox_threshold=kwargs.get("bbox_threshold", 0.9),
+                    )
+                self.signal_analysis_complete()
+        except Exception as e:
+            print(f"[Error] {e}")
+            self.run_button.setEnabled(True)
+            self.run_button.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold;")  # Green when enabled
+            self.root._progress_bar.hide()
 
     def signal_analysis_complete(self):
         self.run_button.setEnabled(True)
+        self.run_button.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold;")  # Green when enabled
         self.root._progress_bar.hide()
         media_type = self.media_selection_widget.media_type_widget.currentText()
         msg = QtWidgets.QMessageBox(text=f"SuperAnimal {media_type.lower()} inference complete!")
@@ -429,9 +516,11 @@ class ModelZoo(DefaultTab):
                 kwargs["video_adapt"] = self.torch_adapt_checkbox.isChecked()
             else:
                 kwargs["video_adapt"] = False
-            kwargs["pseudo_threshold"] = self.torch_pseudo_threshold_spinbox.value()
+            kwargs["pseudo_threshold"] = self.pose_threshold_spinbox.value()
+            kwargs["bbox_threshold"] = self.detector_threshold_spinbox.value()
             kwargs["detector_epochs"] = self.torch_adapt_det_epoch_spinbox.value()
             kwargs["pose_epochs"] = self.torch_adapt_epoch_spinbox.value()
+            kwargs["max_individuals"] = self.max_individuals_spinbox.value()
 
         return kwargs
 
@@ -491,12 +580,10 @@ class ModelZoo(DefaultTab):
         self._update_available_models(engine)
         if engine == Engine.PYTORCH:
             self.tf_widget.hide()
-            self.detector_type_text.show()
             self.detector_type_selector.show()
             self.torch_widget.show()
         else:
             self.torch_widget.hide()
-            self.detector_type_text.hide()
             self.detector_type_selector.hide()
             self.tf_widget.show()
         
