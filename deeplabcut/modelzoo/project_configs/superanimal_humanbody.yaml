@@ -38,7 +38,26 @@ stop:
 numframes2pick:
 
 # Plotting configuration
-skeleton: []
+skeleton:
+  - [16, 14]
+  - [14, 12]
+  - [17, 15]
+  - [15, 13]
+  - [12, 13]
+  - [6, 12]
+  - [7, 13]
+  - [6, 7]
+  - [6, 8]
+  - [7, 9]
+  - [8, 10]
+  - [9, 11]
+  - [2, 3]
+  - [1, 2]
+  - [1, 3]
+  - [2, 4]
+  - [3, 5]
+  - [4, 6]
+  - [5, 7]
 skeleton_color: black
 pcutoff:
 dotsize:
@@ -46,10 +65,10 @@ alphavalue:
 colormap: rainbow
 
 # Training,Evaluation and Analysis configuration
-TrainingFraction:
-iteration:
-default_net_type:
-default_augmenter:
+TrainingFraction: [0.95]
+iteration: 0
+default_net_type: rtmpose_x
+default_augmenter: 
 snapshotindex:
 detector_snapshotindex: -1
 batch_size: 1
