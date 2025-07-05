@@ -1,0 +1,222 @@
+name: Intelligent Python Testing
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  intelligent-test-selection:
+    runs-on: ubuntu-latest
+    outputs:
+      test-commands: ${{ steps.test-selector.outputs.commands }}
+      run-full-tests: ${{ steps.test-selector.outputs.run-full-tests }}
+      test-matrix: ${{ steps.test-selector.outputs.test-matrix }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch full history for diff comparison
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      
+      - name: Run intelligent test selector
+        id: test-selector
+        shell: bash
+        run: |
+          # Make test selector executable
+          chmod +x tools/test_selector.py
+          
+          # Run test selector and capture output
+          python tools/test_selector.py --output-json --base origin/main > test_selection.json
+          
+          # Parse the JSON output and set GitHub outputs
+          cat test_selection.json
+          
+          # Extract commands for the next job
+          commands=$(python -c "
+          import json
+          with open('test_selection.json') as f:
+              data = json.load(f)
+          print(json.dumps(data['commands']))
+          ")
+          
+          # Check if we need full tests (fallback case)
+          run_full=$(python -c "
+          import json
+          with open('test_selection.json') as f:
+              data = json.load(f)
+          full_tests = any('pytest' in cmd and len(cmd.split()) == 2 for cmd in data['commands'])
+          print('true' if full_tests else 'false')
+          ")
+          
+          echo "commands=$commands" >> $GITHUB_OUTPUT
+          echo "run-full-tests=$run_full" >> $GITHUB_OUTPUT
+          
+          # Create test matrix for parallel execution
+          matrix=$(python -c "
+          import json
+          with open('test_selection.json') as f:
+              data = json.load(f)
+          
+          # Create matrix based on test categories
+          categories = list(data.get('categories', {}).keys())
+          if 'docs' in categories and len(categories) == 1:
+              matrix = [{'name': 'docs-only', 'commands': [cmd for cmd in data['commands'] if 'docs' in cmd]}]
+          elif 'superanimal' in categories:
+              matrix = [{'name': 'superanimal', 'commands': [cmd for cmd in data['commands'] if 'superanimal' in cmd or 'modelzoo' in cmd]}]
+          else:
+              matrix = [{'name': 'selected-tests', 'commands': data['commands']}]
+          
+          print(json.dumps(matrix))
+          ")
+          
+          echo "test-matrix=$matrix" >> $GITHUB_OUTPUT
+
+  fast-tests:
+    needs: intelligent-test-selection
+    if: needs.intelligent-test-selection.outputs.run-full-tests == 'false'
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.10"]
+        test-config: ${{ fromJson(needs.intelligent-test-selection.outputs.test-matrix) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          channels: conda-forge,defaults
+          channel-priority: strict
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies (minimal)
+        shell: bash -el {0}
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install pytest
+          # Only install minimal dependencies for fast tests
+          pip install numpy pandas matplotlib scikit-learn
+
+      - name: Install DeepLabCut (minimal)
+        shell: bash -el {0}
+        run: |
+          pip install -e . --no-deps
+
+      - name: Run selected tests
+        shell: bash -el {0}
+        run: |
+          echo "Running test configuration: ${{ matrix.test-config.name }}"
+          commands='${{ toJson(matrix.test-config.commands) }}'
+          echo "Commands to run: $commands"
+          
+          # Parse and execute commands
+          python -c "
+          import json
+          import subprocess
+          import sys
+          
+          commands = json.loads('$commands')
+          all_passed = True
+          
+          for i, cmd in enumerate(commands, 1):
+              print(f'[{i}/{len(commands)}] Running: {cmd}')
+              try:
+                  result = subprocess.run(cmd.split(), check=True)
+                  print(f'✅ Passed: {cmd}')
+              except subprocess.CalledProcessError as e:
+                  print(f'❌ Failed: {cmd}')
+                  all_passed = False
+          
+          sys.exit(0 if all_passed else 1)
+          "
+
+  full-tests:
+    needs: intelligent-test-selection
+    if: needs.intelligent-test-selection.outputs.run-full-tests == 'true'
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-14, windows-latest]
+        python-version: ["3.10"]
+        include:
+          - os: ubuntu-latest
+            path: ~/.cache/pip
+          - os: macos-14
+            path: ~/Library/Caches/pip
+          - os: windows-latest
+            path: ~\AppData\Local\pip\Cache
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          channels: conda-forge,defaults
+          channel-priority: strict
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install TensorFlow
+        shell: bash -el {0}  # Important: activates the conda environment
+        if: runner.os != 'macOS'
+        run: |
+          pip install tensorflow==2.12.0 tensorpack==0.11 tf_slim==1.1.0
+
+      - name: Install TensorFlow on macOS
+        shell: bash -el {0}  # Important: activates the conda environment
+        if: runner.os == 'macOS'
+        run: |
+          pip install tensorflow-macos==2.12.0 tensorpack==0.11 tf_slim==1.1.0
+
+      - name: Install PyTables through Conda
+        shell: bash -el {0}  # Important: activates the conda environment
+        run: |
+          conda install pytables==3.8.0 "numpy<2"
+
+      - name: Install dependencies
+        shell: bash -el {0}  # Important: activates the conda environment
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt
+
+      - name: Install ffmpeg
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get install ffmpeg
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            brew install ffmpeg || true
+          else
+            choco install ffmpeg
+          fi
+        shell: bash
+
+      - name: Run pytest tests
+        shell: bash -el {0}  # Important: activates the conda environment
+        run: |
+          pip install pytest
+          python -m pytest
+
+      - name: Run functional tests
+        shell: bash -el {0}  # Important: activates the conda environment
+        run: |
+          pip install git+https://github.com/${{ github.repository }}.git@${{ github.sha }}
+          python examples/testscript.py
+          python examples/testscript_multianimal.py
+          python examples/testscript_pytorch_single_animal.py
+          python examples/testscript_pytorch_multi_animal.py
