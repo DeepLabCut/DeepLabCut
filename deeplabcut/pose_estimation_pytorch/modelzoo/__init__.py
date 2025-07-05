@@ -16,3 +16,7 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     get_super_animal_snapshot_path,
     load_super_animal_config,
 )
+
+from deeplabcut.pose_estimation_pytorch.modelzoo.superanimal_humanbody_video_inference import (
+    analyze_videos_superanimal_humanbody,
+)

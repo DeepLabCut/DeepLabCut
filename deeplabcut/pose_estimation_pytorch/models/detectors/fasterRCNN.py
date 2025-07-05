@@ -57,18 +57,21 @@ class FasterRCNN(TorchvisionDetectorAdaptor):
                 "https://pytorch.org/vision/stable/models.html#object-detection"
             )
 
+        print(f"DEBUG: FasterRCNN.__init__ called with variant={variant}, pretrained={pretrained}")
         super().__init__(
             model=variant,
             weights=("COCO_V1" if pretrained else None),
-            num_classes=None,
+            num_classes=(2 if not pretrained else None),  # Only set num_classes for custom detector
             freeze_bn_stats=freeze_bn_stats,
             freeze_bn_weights=freeze_bn_weights,
             box_score_thresh=box_score_thresh,
         )
 
-        # Modify the base predictor to output the correct number of classes
-        num_classes = 2
-        in_features = self.model.roi_heads.box_predictor.cls_score.in_features
-        self.model.roi_heads.box_predictor = detection.faster_rcnn.FastRCNNPredictor(
-            in_features, num_classes
-        )
+        # Only replace the head if not using COCO weights
+        if not pretrained:
+            num_classes = 2
+            in_features = self.model.roi_heads.box_predictor.cls_score.in_features
+            self.model.roi_heads.box_predictor = detection.faster_rcnn.FastRCNNPredictor(
+                in_features, num_classes
+            )
+        print(f"DEBUG: FasterRCNN.__init__ completed, model type: {type(self.model)}")

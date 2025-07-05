@@ -408,6 +408,36 @@ def build_predictions_dataframe(
     """
     image_names = []
     prediction_data = []
+    
+    # Calculate the actual number of individuals from the prediction data
+    # This ensures we use the correct number of individuals that were actually predicted
+    actual_num_individuals = None
+    for image_name, image_predictions in predictions.items():
+        if "bodyparts" in image_predictions:
+            num_individuals = image_predictions["bodyparts"].shape[0]
+            if actual_num_individuals is None:
+                actual_num_individuals = num_individuals
+            elif actual_num_individuals != num_individuals:
+                # If different images have different numbers of individuals, use the maximum
+                actual_num_individuals = max(actual_num_individuals, num_individuals)
+    
+    # If no predictions found, use the parameters from the model config
+    if actual_num_individuals is None:
+        actual_num_individuals = parameters.max_num_animals
+    
+    # Create parameters with the actual number of individuals
+    actual_parameters = PoseDatasetParameters(
+        bodyparts=parameters.bodyparts,
+        unique_bpts=parameters.unique_bpts,
+        individuals=[f"individual{i:03d}" for i in range(actual_num_individuals)],
+        with_center_keypoints=parameters.with_center_keypoints,
+        color_mode=parameters.color_mode,
+        ctd_config=parameters.ctd_config,
+        top_down_crop_size=parameters.top_down_crop_size,
+        top_down_crop_margin=parameters.top_down_crop_margin,
+        top_down_crop_with_context=parameters.top_down_crop_with_context,
+    )
+    
     for image_name, image_predictions in predictions.items():
         image_data = image_predictions["bodyparts"][..., :3].reshape(-1)
         if "unique_bodyparts" in image_predictions:
@@ -424,7 +454,7 @@ def build_predictions_dataframe(
         index=index,
         columns=build_dlc_dataframe_columns(
             scorer=scorer,
-            parameters=parameters,
+            parameters=actual_parameters,
             with_likelihood=True,
         ),
     )
@@ -569,20 +599,47 @@ def get_inference_runners(
         if device == "mps":
             detector_device = "cpu"
 
-        if detector_path is not None:
-            detector_path = str(detector_path)
+        # Get superanimal name for filtering logic
+        superanimal_name = model_config.get("metadata", {}).get("superanimal_name", "")
+
+        if detector_path is not None or "detector" in model_config:
+            if detector_path is not None:
+                detector_path = str(detector_path)
             if detector_transform is None:
                 detector_transform = build_transforms(
                     model_config["detector"]["data"]["inference"]
                 )
 
-            detector_config = model_config["detector"]["model"]
-            if "pretrained" in detector_config:
-                detector_config["pretrained"] = False
-
+            print(f"DEBUG: Creating detector for superanimal_name: '{superanimal_name}'")
+            if superanimal_name == "superanimal_humanbody":
+                # Only for superanimal_humanbody, use torchvision detector
+                from deeplabcut.pose_estimation_pytorch.models.detectors.torchvision import TorchvisionDetectorAdaptor
+                detector_config = model_config["detector"]["model"].copy()
+                # Remove registry-specific fields that TorchvisionDetectorAdaptor doesn't expect
+                expected_fields = {
+                    "model", "weights", "num_classes", "freeze_bn_stats", "freeze_bn_weights", 
+                    "box_score_thresh", "model_kwargs", "model_name", "superanimal_name"
+                }
+                unexpected_fields = [k for k in detector_config.keys() if k not in expected_fields]
+                for field in unexpected_fields:
+                    detector_config.pop(field, None)
+                print(f"DEBUG: Removed unexpected fields for torchvision detector: {unexpected_fields}")
+                # If we have a custom snapshot path, don't use pretrained weights
+                if detector_path is not None:
+                    detector_config["weights"] = None
+                detector_model = TorchvisionDetectorAdaptor(**detector_config)
+                print(f"DEBUG: Created TorchvisionDetectorAdaptor for {superanimal_name}")
+            else:
+                # All other superanimal_* use custom detectors as before
+                detector_config = model_config["detector"]["model"].copy()
+                # If a custom snapshot is provided, do not use pretrained weights
+                pretrained = False if detector_path is not None else True
+                detector_model = DETECTORS.build(detector_config, pretrained=pretrained)
+                print(f"DEBUG: Created custom detector from DETECTORS registry for {superanimal_name}")
+                print(f"DEBUG: Custom detector type: {type(detector_model)}")
             detector_runner = build_inference_runner(
                 task=Task.DETECT,
-                model=DETECTORS.build(detector_config),
+                model=detector_model,
                 device=detector_device,
                 snapshot_path=detector_path,
                 batch_size=detector_batch_size,

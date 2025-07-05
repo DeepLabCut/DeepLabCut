@@ -78,6 +78,10 @@ def train(
     if weight_init_cfg := run_config["train_settings"].get("weight_init"):
         weight_init = WeightInitialization.from_dict(weight_init_cfg)
         pretrained = False
+    elif snapshot_path is not None:
+        # If we're loading from a snapshot, don't use pretrained backbone weights
+        # since the weights will be loaded from the snapshot
+        pretrained = False
 
     if task == Task.DETECT:
         model = DETECTORS.build(

@@ -20,7 +20,7 @@ from deeplabcut.utils import auxiliaryfunctions
 
 @pytest.mark.parametrize("max_individuals", [1, 3])
 @pytest.mark.parametrize(
-    "project_name", ["superanimal_quadruped", "superanimal_topviewmouse"]
+    "project_name", ["superanimal_quadruped", "superanimal_topviewmouse", "superanimal_humanbody"]
 )
 @pytest.mark.parametrize("pose_model_type", ["hrnet_w32"])
 def test_class_init(project_name, pose_model_type, max_individuals):
@@ -35,7 +35,7 @@ def test_class_init(project_name, pose_model_type, max_individuals):
 
 @pytest.mark.skip(reason="require-models")
 @pytest.mark.parametrize(
-    "project_name", ["superanimal_quadruped", "superanimal_topviewmouse"]
+    "project_name", ["superanimal_quadruped", "superanimal_topviewmouse", "superanimal_humanbody"]
 )
 @pytest.mark.parametrize("pose_model_type", ["hrnet_w32"])
 def test_runner_init(project_name, pose_model_type):
@@ -55,7 +55,7 @@ def test_runner_init(project_name, pose_model_type):
 @pytest.mark.skip(reason="require-models")
 @pytest.mark.parametrize("max_individuals", [10, 4, 1])
 @pytest.mark.parametrize(
-    "project_name", ["superanimal_quadruped", "superanimal_topviewmouse"]
+    "project_name", ["superanimal_quadruped", "superanimal_topviewmouse", "superanimal_humanbody"]
 )
 @pytest.mark.parametrize("pose_model_type", ["hrnet_w32"])
 def test_predict(project_name, pose_model_type, max_individuals):

@@ -69,6 +69,8 @@ def superanimal_analyze_images(
                 - "superanimal_bird"
                 - "superanimal_topviewmouse"
                 - "superanimal_quadruped"
+                - "superanimal_superbird"
+                - "superanimal_humanbody"
 
         model_name: str
             The name of the pose model architecture to use for inference. To get a list
@@ -422,10 +424,14 @@ def analyze_image_folder(
 
     pose_task = Task(model_cfg["method"])
     if pose_task == Task.TOP_DOWN and detector_path is None:
-        raise ValueError(
-            "A detector path must be specified for image analysis using top-down models"
-            f" Please specify the `detector_path` parameter."
-        )
+        detector_variant = model_cfg.get("detector", {}).get("model", {}).get("variant", "")
+        # Allow torchvision detectors to be loaded without a checkpoint
+        if detector_variant not in ["fasterrcnn_mobilenet_v3_large_fpn", "fasterrcnn_resnet50_fpn_v2"]:
+            raise ValueError(
+                "A detector path must be specified for image analysis using top-down models"
+                f" Please specify the `detector_path` parameter."
+            )
+        # else: will be handled by TorchvisionDetectorAdaptor
 
     if max_individuals is None:
         max_individuals = len(model_cfg["metadata"]["individuals"])

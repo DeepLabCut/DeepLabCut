@@ -67,6 +67,12 @@ To provide the community with easy access to such high performance models across
 -  Here are example images of what the model is trained on:
 ![SA-TVM](https://user-images.githubusercontent.com/28102185/209957260-c0db72e0-4fdf-434c-8579-34bc5f27f907.png)
 
+### SuperAnimal-Human:
+
+- `superanimal_humanbody` models aim to work across human body pose estimation from various camera perspectives and environments. The models are designed to handle different human poses, activities, and lighting conditions commonly found in human motion analysis, sports analysis, and behavioral studies.
+    - `superanimal_humanbody_rtmpose_x` (pytorch engine)
+        - `superanimal_humanbody_rtmpose_x` is a top-down model that is paired with a detector pretrained from `torchvision`. That means it takes a cropped image from an object detector and predicts the keypoints. This model uses 17 body parts in the COCO body7 format.
+
 
 ### Practical example: Using SuperAnimal models for inference without training.
 
@@ -111,8 +117,9 @@ deeplabcut.video_inference_superanimal([video_path],
 In the `deeplabcut.train_network` function, the `superanimal_transfer_learning` option plays a pivotal role. If it's set to __True__, it uses a new decoding layer and allows you to use superanimal weights in any project, no matter the number of keypoints. However, if it's set to __False__, you are doing fine-tuning. So, make sure your dataset has the right number of keypoints.  
 
 Specifically:
-* `superanimal_quadruped_x` uses 39 keypoints and,
-* `superanimal_topviewmouse_x` uses 27 keypoints
+    * `superanimal_quadruped_x` uses 39 keypoints
+    * `superanimal_topviewmouse_x` uses 27 keypoints
+    * `superanimal_humanbody_x` uses 17 keypoints
 
 ```python
 import os

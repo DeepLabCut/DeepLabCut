@@ -156,9 +156,9 @@ import deeplabcut.core.metrics.identity
             },
             "identity_scores": {
                 "img0.png": [  # (num_assemblies, num_bodyparts, num_individuals)
-                    [[0.7, 0.3], [0.6, 0.2]],  # assigned to correct ID
-                    [[0.6, 0.3], [0.6, 0.2]],  # should not matter, not assigned to GT
-                    [[0.6, 0.3], [0.6, 0.2]],  # should not matter, not assigned to GT
+                    [[0.7, 0.3, 0.0], [0.6, 0.2, 0.2]],  # assigned to correct ID
+                    [[0.6, 0.3, 0.1], [0.6, 0.2, 0.2]],  # should not matter, not assigned to GT
+                    [[0.6, 0.3, 0.1], [0.6, 0.2, 0.2]],  # should not matter, not assigned to GT
                 ],
             },
             "ground_truth": {

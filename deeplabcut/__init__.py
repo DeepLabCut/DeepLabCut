@@ -60,6 +60,7 @@ from deeplabcut.generate_training_dataset import (
 )
 
 from deeplabcut.modelzoo.video_inference import video_inference_superanimal
+from deeplabcut.pose_estimation_pytorch.modelzoo.superanimal_humanbody_video_inference import analyze_videos_superanimal_humanbody
 
 from deeplabcut.utils import (
     create_labeled_video,
