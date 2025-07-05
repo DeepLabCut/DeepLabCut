@@ -430,59 +430,20 @@ def analyze_videos_superanimal_humanbody(
             
             # Get cropping info
             bbox = cropping if cropping is not None else (0, 1920, 0, 1080)  # Default bbox
-            x1, x2, y1, y2 = bbox
-            cropping_bool = bbox != (0, 1920, 0, 1080)
             
             print(f"Creating labeled video for {video_path}...")
-            
-            # Use CreateVideo directly for proper skeleton support
-            from deeplabcut.utils.video_processor import VideoProcessor
-            from deeplabcut.utils.make_labeled_video import CreateVideo
-            import pandas as pd
-            
-            # Use the original video path directly instead of VideoProcessor
-            clip = VideoProcessor(
-                fname=video_path,
-                sname=str(output_video),
-                codec="mp4v",
-                fps=30,
-            )
-            
-            # Read the HDF5 file
-            df = pd.read_hdf(output_h5)
-            
-            # Get video dimensions from the original video
-            import cv2
-            cap = cv2.VideoCapture(video_path)
-            video_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            video_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            cap.release()
-            
-            # Update cropping coordinates if needed
-            if not cropping_bool:
-                x1, x2, y1, y2 = 0, video_width, 0, video_height
-            
-            CreateVideo(
-                clip,
-                df,
+            create_video(
+                video_path,
+                output_h5,
                 pcutoff=pose_threshold,
-                dotsize=6,
-                colormap=colormap,
-                bodyparts2plot=model_config["metadata"]["bodyparts"],
-                trailpoints=0,
-                cropping=cropping_bool,
-                x1=x1,
-                x2=x2,
-                y1=y1,
-                y2=y2,
-                bodyparts2connect=skeleton_edges,
-                skeleton_color="k",
-                draw_skeleton=True if skeleton_edges else False,
-                displaycropped=False,
-                color_by="bodypart",
+                fps=30,  # Default fps
+                bbox=bbox,
+                cmap=colormap,
+                output_path=str(output_video),
                 plot_bboxes=True,
                 bboxes_list=bboxes_list,
                 bboxes_pcutoff=bbox_threshold,
+                skeleton_edges=skeleton_edges,  # Add skeleton support
             )
             print(f"Labeled video created: {output_video}")
             
