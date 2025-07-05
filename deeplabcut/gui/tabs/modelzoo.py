@@ -532,11 +532,13 @@ class ModelZoo(DefaultTab):
                 if labeled_videos:
                     videos_created.extend([str(v) for v in labeled_videos])
             else:
-                # Check for standard labeled video
-                labeled_video = Path(output_folder) / f"{video_name}_labeled.mp4"
-                
-                if labeled_video.exists():
-                    videos_created.append(str(labeled_video))
+                # Check for standard labeled video - use the pattern that the standard function creates
+                # The standard function creates: {video_name}_{dlc_scorer}_labeled.mp4
+                # For video adaptation, it also creates: {video_name}_{dlc_scorer}_labeled_before_adapt.mp4 and _after_adapt.mp4
+                # We need to look for files that match any of these patterns
+                labeled_videos = list(Path(output_folder).glob(f"{video_name}_*_labeled*.mp4"))
+                if labeled_videos:
+                    videos_created.extend([str(v) for v in labeled_videos])
         
         # Show appropriate message
         media_type = self.media_selection_widget.media_type_widget.currentText()

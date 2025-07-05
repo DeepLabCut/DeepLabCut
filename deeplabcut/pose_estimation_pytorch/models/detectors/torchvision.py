@@ -118,50 +118,28 @@ class TorchvisionDetectorAdaptor(BaseDetector):
             losses: {'loss_name': loss_value}
             detections: for each of the b images, {"boxes": bounding_boxes}
         """
-        print(f"DEBUG: TorchvisionDetectorAdaptor.forward called")
-        print(f"DEBUG: Model training mode: {self.model.training}")
-        print(f"DEBUG: Targets provided: {targets is not None}")
-        if targets is not None:
-            print(f"DEBUG: Number of targets: {len(targets)}")
-            print(f"DEBUG: First target keys: {targets[0].keys() if targets else 'No targets'}")
-            print(f"DEBUG: First target boxes shape: {targets[0]['boxes'].shape if targets and 'boxes' in targets[0] else 'No boxes'}")
-        
         result = self.model(x, targets)
-        
-        print(f"DEBUG: Model result type: {type(result)}")
-        if isinstance(result, tuple):
-            print(f"DEBUG: Model result length: {len(result)}")
-            print(f"DEBUG: First element type: {type(result[0])}")
-            if len(result) > 0 and isinstance(result[0], dict):
-                print(f"DEBUG: First element keys: {result[0].keys()}")
-                if 'loss_classifier' in result[0]:
-                    print(f"DEBUG: Loss classifier type: {type(result[0]['loss_classifier'])}")
-                    print(f"DEBUG: Loss classifier requires_grad: {result[0]['loss_classifier'].requires_grad if hasattr(result[0]['loss_classifier'], 'requires_grad') else 'N/A'}")
-        else:
-            print(f"DEBUG: Model result is not a tuple, it's: {result}")
         
         # Handle different return formats from torchvision models
         if isinstance(result, tuple):
             if len(result) == 2:
                 # Standard format: (losses, predictions)
-                print(f"DEBUG: Returning standard format (losses, predictions)")
                 return result
             elif len(result) > 2:
                 # Some models return additional values, take first two
-                print(f"DEBUG: Model returned {len(result)} values, taking first two")
                 return result[0], result[1]
             else:
                 # Single value, assume it's predictions
-                print(f"DEBUG: Model returned single value, assuming predictions")
                 # Return zero loss tensor for training compatibility
                 device = x.device
-                return {"total_loss": torch.tensor(0.0, device=device)}, result[0]
+                dummy_loss = torch.tensor(0.0, device=device, requires_grad=True)
+                return {"total_loss": dummy_loss}, result[0]
         else:
             # Single value, assume it's predictions
-            print(f"DEBUG: Model returned non-tuple, assuming predictions")
             # Return zero loss tensor for training compatibility
             device = x.device
-            return {"total_loss": torch.tensor(0.0, device=device)}, result
+            dummy_loss = torch.tensor(0.0, device=device, requires_grad=True)
+            return {"total_loss": dummy_loss}, result
 
     def inference(self, images) -> list[dict[str, np.ndarray]]:
         """
@@ -178,31 +156,19 @@ class TorchvisionDetectorAdaptor(BaseDetector):
         self.model.eval()
         device = next(self.model.parameters()).device
         
-        print(f"DEBUG: Device: {device}")
-        # Check if model has roi_heads (FasterRCNN) or not (SSD)
-        if hasattr(self.model, 'roi_heads'):
-            print(f"DEBUG: Model threshold: {self.model.roi_heads.score_thresh}")
-        else:
-            print(f"DEBUG: SSD model detected")
-        
         results = []
         
         with torch.no_grad():
             for i, image in enumerate(images):
-                print(f"DEBUG: Processing image {i}")
-                
                 # Convert to PIL Image if needed
                 if isinstance(image, np.ndarray):
                     image = Image.fromarray(image).convert("RGB")
                 elif not isinstance(image, Image.Image):
                     image = Image.open(image).convert("RGB")
                 
-                print(f"DEBUG: Image size: {image.size}")
-                
                 # Apply proper preprocessing
                 if self.transforms is not None:
                     batch = [self.transforms(image).to(device)]
-                    print(f"DEBUG: Using transforms preprocessing")
                 else:
                     # For SSD models, we need specific preprocessing
                     if hasattr(self.model, 'roi_heads'):
@@ -221,43 +187,35 @@ class TorchvisionDetectorAdaptor(BaseDetector):
                             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
                         ])
                     batch = [preprocess(image).to(device)]
-                    print(f"DEBUG: Using {'SSD' if not hasattr(self.model, 'roi_heads') else 'FasterRCNN'} preprocessing")
-                
-                print(f"DEBUG: Batch tensor shape: {batch[0].shape}")
                 
                 # Run detection - call model directly without going through forward method
-                print(f"DEBUG: Model type: {type(self.model)}")
-                print(f"DEBUG: Model training mode: {self.model.training}")
-                print(f"DEBUG: Model device: {next(self.model.parameters()).device}")
-                print(f"DEBUG: Model box_score_thresh: {self.model.roi_heads.score_thresh}")
-                print(f"DEBUG: Model nms_thresh: {self.model.roi_heads.nms_thresh}")
+                # Check if model has roi_heads (FasterRCNN) or not (SSD)
+                if hasattr(self.model, 'roi_heads'):
+                    pass  # Model has roi_heads (FasterRCNN)
+                else:
+                    pass  # Model is SSD - no roi_heads attribute
                 
                 # Call the underlying torchvision model directly for inference
                 predictions = self.model(batch)
-                print(f"DEBUG: Raw predictions type: {type(predictions)}")
-                print(f"DEBUG: Raw predictions length: {len(predictions) if isinstance(predictions, (list, tuple)) else 'Not list/tuple'}")
                 
                 # Handle the output format - during inference, should be list of dicts
                 if isinstance(predictions, (list, tuple)) and len(predictions) > 0:
                     prediction = predictions[0]  # First image
-                    print(f"DEBUG: Prediction type: {type(prediction)}")
-                    print(f"DEBUG: Prediction keys: {prediction.keys() if isinstance(prediction, dict) else 'Not a dict'}")
-                    print(f"DEBUG: Prediction content: {prediction}")
                 else:
                     prediction = predictions
-                    print(f"DEBUG: Single prediction type: {type(prediction)}")
-                    print(f"DEBUG: Single prediction keys: {prediction.keys() if isinstance(prediction, dict) else 'Not a dict'}")
-                    print(f"DEBUG: Single prediction content: {prediction}")
                 
                 # Check if predictions are empty due to threshold
                 if isinstance(prediction, dict) and len(prediction) > 0:
                     if 'scores' in prediction:
                         print(f"DEBUG: Max score: {prediction['scores'].max() if len(prediction['scores']) > 0 else 'No scores'}")
-                        print(f"DEBUG: Scores above threshold: {(prediction['scores'] > self.model.roi_heads.score_thresh).sum()}")
+                        # Check if model has roi_heads (FasterRCNN) or not (SSD)
+                        if hasattr(self.model, 'roi_heads'):
+                            print(f"DEBUG: Scores above threshold: {(prediction['scores'] > self.model.roi_heads.score_thresh).sum()}")
+                        else:
+                            print(f"DEBUG: SSD model - using default threshold comparison")
                 
                 if not isinstance(prediction, dict) or "boxes" not in prediction:
                     # Unexpected output, return empty
-                    print(f"DEBUG: Unexpected output format")
                     results.append({
                         "bboxes": np.zeros((0, 4)),
                         "bbox_scores": np.zeros(0)
@@ -267,27 +225,21 @@ class TorchvisionDetectorAdaptor(BaseDetector):
                 bboxes = prediction["boxes"].cpu().numpy()
                 labels = prediction["labels"].cpu().numpy()
                 scores = prediction["scores"].cpu().numpy()
-                
-                print(f"DEBUG: All detections - bboxes: {bboxes.shape}, labels: {labels}, scores: {scores}")
 
                 # Handle empty detections
                 if len(bboxes) == 0:
                     detected_bboxes = np.zeros((0, 4))
                     detected_scores = np.zeros(0)
-                    print(f"DEBUG: No detections at all")
                 else:
                     # For humanbody models, filter for humans (COCO class 1)
                     # For quadruped and other models, return all detections
                     if self.superanimal_name == 'superanimal_humanbody':
                         detection_mask = labels == 1
-                        print(f"DEBUG: Filtering for humans (COCO class 1) - humanbody model")
                     else:
                         detection_mask = np.ones(len(bboxes), dtype=bool)
-                        print(f"DEBUG: Returning all detections for non-humanbody model - {self.superanimal_name}")
                     detected_bboxes = bboxes[detection_mask]
                     detected_scores = scores[detection_mask]
                     detected_labels = labels[detection_mask]
-                    print(f"DEBUG: Detections - bboxes: {detected_bboxes.shape}, labels: {detected_labels}, scores: {detected_scores}")
 
                 # Convert to xywh format
                 if len(detected_bboxes) > 0:
