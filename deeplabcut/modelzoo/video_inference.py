@@ -232,6 +232,26 @@ def video_inference_superanimal(
     (Model Explanation) SuperAnimal-Bird:
     TODO(shaokai)
 
+    (Model Explanation) SuperAnimal-HumanBody:
+    `superanimal_humanbody` models aim to work across human body pose estimation
+    from various camera perspectives and environments. The models are designed to
+    handle different human poses, activities, and lighting conditions commonly
+    found in human motion analysis, sports analysis, and behavioral studies.
+
+    All model snapshots are automatically downloaded to modelzoo/checkpoints when used.
+
+    - We provide:
+        - `rtmpose_x` (Top-Down pose estimation model, PyTorch engine)
+            An `rtmpose_x` is a top-down model that is paired with a detector. That
+            means it takes a cropped image from an object detector and predicts the
+            keypoints. When selecting this variant, a `detector_name` must be set with
+            one of the provided object detectors. This model uses 17 body parts in
+            the COCO body7 format.
+    - We provide an object detector (PyTorch engine):
+        - `fasterrcnn_mobilenet_v3_large_fpn`
+            This is a FasterRCNN model with a MobileNet backbone, see
+            https://pytorch.org/vision/stable/models/faster_rcnn.html
+
     Examples (PyTorch Engine)
     --------
     >>> import deeplabcut.modelzoo.video_inference.video_inference_superanimal as video_inference_superanimal

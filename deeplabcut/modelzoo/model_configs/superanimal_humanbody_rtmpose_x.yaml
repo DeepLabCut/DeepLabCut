@@ -1,0 +1,124 @@
+data:
+  colormode: RGB
+  inference:
+    normalize_images: true
+    top_down_crop:
+      width: 288
+      height: 384
+  train:
+    affine:
+      p: 0.5
+      rotation: 30
+      scaling:
+      - 1.0
+      - 1.0
+      translation: 0
+    collate:
+    covering: false
+    gaussian_noise: 12.75
+    hist_eq: false
+    motion_blur: false
+    normalize_images: true
+    top_down_crop:
+      width: 288
+      height: 384
+device: auto
+method: td
+model:
+  backbone:
+    type: CSPNeXt
+    model_name: cspnext_p5
+    freeze_bn_stats: false
+    freeze_bn_weights: false
+    expand_ratio: 0.5
+    deepen_factor: 1.33
+    widen_factor: 1.25
+    channel_attention: true
+    norm_layer: SyncBN
+    activation_fn: SiLU
+  backbone_output_channels: 1280
+  heads:
+    bodypart:
+      type: RTMCCHead
+      weight_init: RTMPose
+      target_generator:
+        type: SimCCGenerator
+        input_size:
+        - 288
+        - 384
+        smoothing_type: gaussian
+        sigma:
+        - 6.0
+        - 6.93
+        simcc_split_ratio: 2.0
+        label_smooth_weight: 0.0
+        normalize: false
+      criterion:
+        x:
+          type: KLDiscreteLoss
+          use_target_weight: true
+          beta: 10.0
+          label_softmax: true
+        y:
+          type: KLDiscreteLoss
+          use_target_weight: true
+          beta: 10.0
+          label_softmax: true
+      predictor:
+        type: SimCCPredictor
+        simcc_split_ratio: 2.0
+      input_size:
+      - 288
+      - 384
+      in_channels: 1280
+      out_channels: 17
+      in_featuremap_size:
+      - 9
+      - 12
+      simcc_split_ratio: 2.0
+      final_layer_kernel_size: 7
+      gau_cfg:
+        hidden_dims: 256
+        s: 128
+        expansion_factor: 2
+        dropout_rate: 0
+        drop_path: 0.0
+        act_fn: SiLU
+        use_rel_bias: false
+        pos_enc: false
+net_type: rtmpose_x
+runner:
+  type: PoseTrainingRunner
+  gpus:
+  key_metric: test.mAP
+  key_metric_asc: true
+  eval_interval: 10
+  optimizer:
+    type: AdamW
+    params:
+      lr: 0.0005
+  scheduler:
+    type: SequentialLR
+    params:
+      schedulers:
+      - type: ConstantLR
+        params:
+          factor: 0.001
+          total_iters: 5
+      - type: CosineAnnealingLR
+        params:
+          T_max: 250
+          eta_min: 1e-05
+      milestones:
+      - 100
+  snapshots:
+    max_snapshots: 5
+    save_epochs: 25
+    save_optimizer_state: false
+train_settings:
+  batch_size: 1
+  dataloader_workers: 0
+  dataloader_pin_memory: false
+  display_iters: 500
+  epochs: 200
+  seed: 42 

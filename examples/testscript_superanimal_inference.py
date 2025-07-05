@@ -47,3 +47,14 @@ if __name__ == "__main__":
         videotype=".avi",
         scale_list=scale_list,
     )
+
+    print("testing superanimal_humanbody")
+    superanimal_name = "superanimal_humanbody"
+    deeplabcut.video_inference_superanimal(
+        video,
+        superanimal_name,
+        model_name="rtmpose_x",
+        detector_name="fasterrcnn_mobilenet_v3_large_fpn",
+        videotype=".avi",
+        scale_list=scale_list,
+    )

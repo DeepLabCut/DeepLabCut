@@ -39,15 +39,20 @@ def get_snapshot_folder_path() -> Path:
     return Path(auxiliaryfunctions.get_deeplabcut_path()) / "modelzoo" / "checkpoints"
 
 
-def get_super_animal_model_config_path(model_name: str) -> Path:
+def get_super_animal_model_config_path(model_name: str, super_animal: str = None) -> Path:
     """Gets the path to the configuration file for a SuperAnimal model.
 
     Args:
         model_name: The name of the model for which to get the path.
+        super_animal: The name of the SuperAnimal (used for specific model configs).
 
     Returns:
         The path to the config file for a SuperAnimal model.
     """
+    # Special case for superanimal_humanbody with rtmpose_x
+    if model_name == "rtmpose_x" and super_animal == "superanimal_humanbody":
+        return get_model_configs_folder_path() / "superanimal_humanbody_rtmpose_x.yaml"
+    
     return get_model_configs_folder_path() / f"{model_name}.yaml"
 
 
@@ -107,7 +112,7 @@ def load_super_animal_config(
     project_cfg_path = get_super_animal_project_config_path(super_animal=super_animal)
     project_config = read_config_as_dict(project_cfg_path)
 
-    model_cfg_path = get_super_animal_model_config_path(model_name=model_name)
+    model_cfg_path = get_super_animal_model_config_path(model_name=model_name, super_animal=super_animal)
     model_config = read_config_as_dict(model_cfg_path)
     model_config = add_metadata(project_config, model_config, model_cfg_path)
     model_config = update_config(model_config, max_individuals, device)
@@ -115,7 +120,7 @@ def load_super_animal_config(
     if detector_name is None:
         model_config["method"] = "BU"
     else:
-        detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name)
+        detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name, super_animal=super_animal)
         detector_cfg = read_config_as_dict(detector_cfg_path)
         model_config["method"] = "TD"
         model_config["detector"] = detector_cfg
