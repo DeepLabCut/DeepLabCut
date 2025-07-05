@@ -10,11 +10,14 @@
 #
 import os
 import webbrowser
+import tempfile
+import yaml
 from functools import partial
+from pathlib import Path
 
 import dlclibrary
 from PySide6 import QtWidgets
-from PySide6.QtCore import QRegularExpression, Qt, QTimer, Signal, Slot
+from PySide6.QtCore import QRegularExpression, Qt, QTimer, Signal, Slot, QSize
 from PySide6.QtGui import QIcon, QPixmap, QRegularExpressionValidator
 import cv2
 import torch
@@ -73,13 +76,14 @@ class ModelZoo(DefaultTab):
         self.media_selection_widget = MediaSelectionWidget(self.root, self)
         self.main_layout.addWidget(self.media_selection_widget)
 
+        # Remove/hide image selection widgets
+        self.media_selection_widget.media_type_widget.hide()
+        self.media_selection_widget.media_type_widget.setCurrentText("Videos")
+
         self._build_common_attributes()
         self._build_tf_attributes()
         self._build_torch_attributes()
         
-        # Connect media type changes to update adaptation options
-        self.media_selection_widget.media_type_widget.currentTextChanged.connect(self._update_adaptation_options)
-
         self.home_button = QtWidgets.QPushButton("Return to Welcome page")
         self.home_button.clicked.connect(self.root._generate_welcome_page)
         self.main_layout.addWidget(self.home_button, alignment=Qt.AlignLeft)
@@ -153,7 +157,7 @@ class ModelZoo(DefaultTab):
             minimum=0.0,
             maximum=1.0,
             singleStep=0.01,
-            value=0.9,
+            value=0.1,
             wrapping=True,
         )
         self.detector_threshold_spinbox.setMaximumWidth(100)
@@ -220,8 +224,27 @@ class ModelZoo(DefaultTab):
             "blank, defaults to video height +/- 50 pixels"
         )
 
+        # --- Adaptation Checkbox with Help Button (TF section) ---
+        adapt_row = QtWidgets.QHBoxLayout()
         self.adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
         self.adapt_checkbox.setChecked(True)
+        self.adapt_checkbox.setStyleSheet("font-weight: bold; font-size: 16px; padding: 6px 12px;")
+        # Add help button
+        adapt_help_btn = QtWidgets.QToolButton()
+        adapt_help_btn.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", "help2.png")))
+        adapt_help_btn.setIconSize(QSize(24, 24))
+        adapt_help_btn.setToolTip("What is video adaptation?")
+        def show_adapt_help():
+            QtWidgets.QMessageBox.information(
+                self,
+                "Video Adaptation",
+                "This will adapt the model on the fly to your video data in a self-supervised way."
+            )
+        adapt_help_btn.clicked.connect(show_adapt_help)
+        adapt_row.addWidget(self.adapt_checkbox)
+        adapt_row.addWidget(adapt_help_btn)
+        adapt_row.addStretch()
+        model_settings_layout.addLayout(adapt_row, 2, 0, 1, 2)
 
         pseudo_threshold_label = QtWidgets.QLabel("Pseudo-label confidence threshold")
         self.pseudo_threshold_spinbox = QtWidgets.QDoubleSpinBox(
@@ -246,9 +269,6 @@ class ModelZoo(DefaultTab):
         model_settings_layout.addWidget(scales_label, 1, 0)
         model_settings_layout.addWidget(self.scales_line, 1, 1)
         model_settings_layout.addWidget(tooltip_label, 1, 2)
-        model_settings_layout.addWidget(self.adapt_checkbox, 2, 0)
-        model_settings_layout.addWidget(pseudo_threshold_label, 3, 0)
-        model_settings_layout.addWidget(self.pseudo_threshold_spinbox, 3, 1)
         model_settings_layout.addWidget(adapt_iter_label, 4, 0)
         model_settings_layout.addWidget(self.adapt_iter_spinbox, 4, 1)
         self.tf_widget = QtWidgets.QWidget()
@@ -295,9 +315,26 @@ class ModelZoo(DefaultTab):
         adapt_row.addStretch()
         torch_settings_layout.addLayout(adapt_row, 2, 0, 1, 6)
 
+        # --- Torch section adaptation checkbox with help button ---
+        torch_adapt_row = QtWidgets.QHBoxLayout()
         self.torch_adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
         self.torch_adapt_checkbox.setChecked(True)
-        torch_settings_layout.addWidget(self.torch_adapt_checkbox, 1, 0)
+        self.torch_adapt_checkbox.setStyleSheet("font-weight: bold; font-size: 16px; padding: 6px 12px;")
+        torch_adapt_help_btn = QtWidgets.QToolButton()
+        torch_adapt_help_btn.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", "help2.png")))
+        torch_adapt_help_btn.setIconSize(QSize(24, 24))
+        torch_adapt_help_btn.setToolTip("What is video adaptation?")
+        def show_torch_adapt_help():
+            QtWidgets.QMessageBox.information(
+                self,
+                "Video Adaptation",
+                "This will adapt the model on the fly to your video data in a self-supervised way."
+            )
+        torch_adapt_help_btn.clicked.connect(show_torch_adapt_help)
+        torch_adapt_row.addWidget(self.torch_adapt_checkbox)
+        torch_adapt_row.addWidget(torch_adapt_help_btn)
+        torch_adapt_row.addStretch()
+        torch_settings_layout.addLayout(torch_adapt_row, 1, 0, 1, 2)
 
         self.torch_widget = QtWidgets.QWidget()
         self.torch_widget.setLayout(torch_settings_layout)
@@ -360,7 +397,7 @@ class ModelZoo(DefaultTab):
         if not files:
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Critical)
-            msg.setText("You must select video or image files")
+            msg.setText("You must select video files")
             msg.setWindowTitle("Error")
             msg.setMinimumWidth(400)
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
@@ -368,7 +405,6 @@ class ModelZoo(DefaultTab):
             return
 
         supermodel_name = self.model_combo.currentText()
-        media_type = self.media_selection_widget.media_type_widget.currentText()
         kwargs = self._gather_kwargs()
 
         can_run_in_background = False
@@ -376,8 +412,53 @@ class ModelZoo(DefaultTab):
         self.run_button.setStyleSheet("background-color: #9E9E9E; color: white; font-weight: bold;")  # Gray when disabled
         self.root._progress_bar.show()
         try:
-            if can_run_in_background:
-                if media_type == "Videos":
+            # Use dedicated function for superanimal_humanbody
+            if supermodel_name == "superanimal_humanbody":
+                # Download config from HuggingFace (needed for the dedicated function)
+                from deeplabcut.pose_estimation_pytorch.modelzoo.utils import get_snapshot_folder_path
+                import huggingface_hub
+                
+                model_files = get_snapshot_folder_path()
+                model_files.mkdir(exist_ok=True)
+                
+                # Download config file from HuggingFace
+                config_path = Path(
+                    huggingface_hub.hf_hub_download(
+                        "DeepLabCut/HumanBody",
+                        "rtmpose-x_simcc-body7_pytorch_config.yaml",
+                        local_dir=model_files,
+                    )
+                )
+                
+                # Map GUI parameters to dedicated function parameters
+                dedicated_kwargs = {
+                    "videotype": self.media_selection_widget.videotype_widget.currentText(),
+                    "destfolder": self._destfolder,
+                    "bbox_threshold": kwargs.get("bbox_threshold", 0.1),
+                    "pose_threshold": kwargs.get("pseudo_threshold", 0.4),  # Use pose threshold from GUI
+                    "device": "cuda" if torch.cuda.is_available() else "cpu",
+                }
+                
+                if can_run_in_background:
+                    func = partial(
+                        deeplabcut.analyze_videos_superanimal_humanbody,
+                        config_path,
+                        files,
+                        **dedicated_kwargs,
+                    )
+                    self.worker, self.thread = move_to_separate_thread(func)
+                    self.worker.finished.connect(self.signal_analysis_complete)
+                    self.thread.start()
+                else:
+                    print(f"Calling analyze_videos_superanimal_humanbody with config={config_path}, kwargs={dedicated_kwargs}")
+                    results = deeplabcut.analyze_videos_superanimal_humanbody(
+                        config_path,
+                        files,
+                        **dedicated_kwargs,
+                    )
+            else:
+                # Use standard function for other models
+                if can_run_in_background:
                     videotype = self.media_selection_widget.videotype_widget.currentText()
                     func = partial(
                         deeplabcut.video_inference_superanimal,
@@ -387,34 +468,12 @@ class ModelZoo(DefaultTab):
                         dest_folder=self._destfolder,
                         **kwargs,
                     )
-                else:  # Images
-                    func = partial(
-                        deeplabcut.superanimal_analyze_images,
-                        superanimal_name=supermodel_name,
-                        model_name=kwargs["model_name"],
-                        detector_name=kwargs.get("detector_name"),
-                        images=files,
-                        max_individuals=kwargs.get("max_individuals", 10),
-                        out_folder=self._destfolder or "labeled_images",
-                        device=kwargs.get("device", "auto"),
-                        pose_threshold=kwargs.get("pseudo_threshold", 0.1),
-                        bbox_threshold=kwargs.get("bbox_threshold", 0.9),
-                    )
-
-                self.worker, self.thread = move_to_separate_thread(func)
-                self.worker.finished.connect(self.signal_analysis_complete)
-                self.thread.start()
-            else:
-                if media_type == "Videos":
+                    self.worker, self.thread = move_to_separate_thread(func)
+                    self.worker.finished.connect(self.signal_analysis_complete)
+                    self.thread.start()
+                else:
                     videotype = self.media_selection_widget.videotype_widget.currentText()
                     print(f"Calling video_inference_superanimal with kwargs={kwargs}")
-                    
-                    # Import the video inference function to pass progress callback
-                    from deeplabcut.pose_estimation_pytorch.apis.videos import video_inference
-                    
-                    # For now, we'll need to call the lower-level functions to get progress
-                    # This is a simplified approach - in practice you might want to modify
-                    # the higher-level video_inference_superanimal function to accept progress_callback
                     results = deeplabcut.video_inference_superanimal(
                         files,
                         supermodel_name,
@@ -422,37 +481,24 @@ class ModelZoo(DefaultTab):
                         dest_folder=self._destfolder,
                         **kwargs,
                     )
-                    # Check for skipped frames and show warning if needed
-                    for video_path in files:
-                        try:
-                            df = results[video_path]
-                            n_processed = len(df)
-                            cap = cv2.VideoCapture(video_path)
-                            n_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-                            cap.release()
-                            if n_processed < n_total:
-                                msg = QtWidgets.QMessageBox()
-                                msg.setIcon(QtWidgets.QMessageBox.Warning)
-                                msg.setText(f"Warning: Only {n_processed} out of {n_total} frames had detections. The output movie and results include only those frames.")
-                                msg.setWindowTitle("Partial Detections")
-                                msg.setMinimumWidth(400)
-                                msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-                                msg.exec_()
-                        except Exception as e:
-                            print(f"[GUI Warning] Could not check processed frames: {e}")
-                else:  # Images
-                    print(f"Calling superanimal_analyze_images with kwargs={kwargs}")
-                    deeplabcut.superanimal_analyze_images(
-                        superanimal_name=supermodel_name,
-                        model_name=kwargs["model_name"],
-                        detector_name=kwargs.get("detector_name"),
-                        images=files,
-                        max_individuals=kwargs.get("max_individuals", 10),
-                        out_folder=self._destfolder or "labeled_images",
-                        device=kwargs.get("device", "auto"),
-                        pose_threshold=kwargs.get("pseudo_threshold", 0.1),
-                        bbox_threshold=kwargs.get("bbox_threshold", 0.9),
-                    )
+                # Check for skipped frames and show warning if needed
+                for video_path in files:
+                    try:
+                        df = results[video_path]
+                        n_processed = len(df)
+                        cap = cv2.VideoCapture(video_path)
+                        n_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                        cap.release()
+                        if n_processed < n_total:
+                            msg = QtWidgets.QMessageBox()
+                            msg.setIcon(QtWidgets.QMessageBox.Warning)
+                            msg.setText(f"Warning: Only {n_processed} out of {n_total} frames had detections. The output movie and results include only those frames.")
+                            msg.setWindowTitle("Partial Detections")
+                            msg.setMinimumWidth(400)
+                            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                            msg.exec_()
+                    except Exception as e:
+                        print(f"[GUI Warning] Could not check processed frames: {e}")
                 self.signal_analysis_complete()
         except Exception as e:
             print(f"[Error] {e}")
@@ -470,23 +516,10 @@ class ModelZoo(DefaultTab):
         msg.exec_()
 
     def _update_adaptation_options(self, media_type: str):
-        """Update adaptation options based on selected media type"""
-        if media_type == "Images":
-            # Disable video adaptation for images
-            self.adapt_checkbox.setChecked(False)
-            self.adapt_checkbox.setEnabled(False)
-            self.torch_adapt_checkbox.setChecked(False)
-            self.torch_adapt_checkbox.setEnabled(False)
-            
-            # Update labels to reflect image analysis
-            self.run_button.setText("Analyze Images")
-        else:  # Videos
-            # Re-enable video adaptation for videos
-            self.adapt_checkbox.setEnabled(True)
-            self.torch_adapt_checkbox.setEnabled(True)
-            
-            # Update labels to reflect video analysis
-            self.run_button.setText("Run")
+        # Only allow video adaptation for videos (no images)
+        self.adapt_checkbox.setEnabled(True)
+        self.torch_adapt_checkbox.setEnabled(True)
+        self.run_button.setText("Run")
 
     def _gather_kwargs(self) -> dict:
         kwargs = dict(model_name=self.net_type_selector.currentText())
@@ -552,6 +585,14 @@ class ModelZoo(DefaultTab):
             self.net_type_selector.addItems(
                 dlclibrary.get_available_models(super_animal)
             )
+
+        # Hide adaptation controls if superanimal_humanbody is selected
+        if super_animal == "superanimal_humanbody":
+            self.torch_widget.hide()
+            self.torch_adapt_checkbox.hide()
+        else:
+            self.torch_widget.show()
+            self.torch_adapt_checkbox.show()
 
     def _update_detectors(self, super_animal: str) -> None:
         while self.detector_type_selector.count() > 0:

@@ -479,6 +479,7 @@ def get_inference_runners(
     detector_path: str | Path | None = None,
     detector_transform: A.BaseCompose | None = None,
     dynamic: DynamicCropper | None = None,
+    bbox_threshold: float | None = None,
 ) -> tuple[InferenceRunner, InferenceRunner | None]:
     """Builds the runners for pose estimation
 
@@ -581,13 +582,18 @@ def get_inference_runners(
                     model_config["detector"]["data"]["inference"]
                 )
 
-            detector_config = model_config["detector"]["model"]
+            detector_config = model_config["detector"]["model"].copy()  # Make a copy to avoid modifying original
             if "pretrained" in detector_config:
                 detector_config["pretrained"] = False
+            
+            # Override box_score_thresh if bbox_threshold is provided
+            if bbox_threshold is not None:
+                detector_config["box_score_thresh"] = bbox_threshold
 
+            detector_model = DETECTORS.build(detector_config)
             detector_runner = build_inference_runner(
                 task=Task.DETECT,
-                model=DETECTORS.build(detector_config),
+                model=detector_model,
                 device=detector_device,
                 snapshot_path=detector_path,
                 batch_size=detector_batch_size,

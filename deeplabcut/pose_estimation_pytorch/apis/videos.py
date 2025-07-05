@@ -111,7 +111,6 @@ def video_inference(
     cropping: list[int] | None = None,
     shelf_writer: shelving.ShelfWriter | None = None,
     robust_nframes: bool = False,
-    progress_callback=None,
 ) -> list[dict[str, np.ndarray]]:
     """Runs inference on a video
 
@@ -133,7 +132,6 @@ def video_inference(
         robust_nframes: Evaluate a video's number of frames in a robust manner. This
             option is slower (as the whole video is read frame-by-frame), but does not
             rely on metadata, hence its robustness against file corruption.
-        progress_callback: Optional callback function to report progress to GUI
 
     Returns:
         Predictions for each frame in the video. If a shelf_manager is given, this list
@@ -196,20 +194,12 @@ def video_inference(
 
     if detector_runner is not None:
         print(f"Running detector with batch size {detector_runner.batch_size}")
-        if progress_callback:
-            progress_callback("Running detector...", 0, n_frames)
         
-        # Create a custom progress bar for detector
         detector_progress = tqdm(video, desc="Detector")
         bbox_predictions = []
         for i, frame in enumerate(detector_progress):
-            # Run detector on single frame
             result = detector_runner.inference(images=[frame])
             bbox_predictions.extend(result)
-            
-            # Update GUI progress
-            if progress_callback:
-                progress_callback(f"Detector: {i+1}/{n_frames}", i+1, n_frames)
         
         # PATCH: Ensure bbox_predictions is always length n_frames
         if len(bbox_predictions) < n_frames:
@@ -224,21 +214,12 @@ def video_inference(
     print(f"Running pose prediction with batch size {pose_runner.batch_size}")
     if shelf_writer is not None:
         shelf_writer.open()
-
-    if progress_callback:
-        progress_callback("Running pose estimation...", 0, n_frames)
     
-    # Create a custom progress bar for pose
     pose_progress = tqdm(video, desc="Pose")
     predictions = []
     for i, frame in enumerate(pose_progress):
-        # Run pose on single frame
         result = pose_runner.inference(images=[frame])
         predictions.extend(result)
-        
-        # Update GUI progress
-        if progress_callback:
-            progress_callback(f"Pose: {i+1}/{n_frames}", i+1, n_frames)
     
     if shelf_writer is not None:
         shelf_writer.close()
@@ -686,7 +667,6 @@ def analyze_videos(
                 detector_runner=detector_runner,
                 shelf_writer=shelf_writer,
                 robust_nframes=robust_nframes,
-                progress_callback=progress_callback,
             )
             runtime.append(time.time())
             metadata = _generate_metadata(

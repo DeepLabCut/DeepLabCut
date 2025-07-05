@@ -15,6 +15,7 @@ from pathlib import Path
 
 import torch
 from dlclibrary import download_huggingface_model
+import huggingface_hub
 
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
 from deeplabcut.core.config import read_config_as_dict
@@ -112,10 +113,26 @@ def load_super_animal_config(
     project_cfg_path = get_super_animal_project_config_path(super_animal=super_animal)
     project_config = read_config_as_dict(project_cfg_path)
 
-    model_cfg_path = get_super_animal_model_config_path(model_name=model_name, super_animal=super_animal)
-    model_config = read_config_as_dict(model_cfg_path)
-    model_config = add_metadata(project_config, model_config, model_cfg_path)
-    model_config = update_config(model_config, max_individuals, device)
+    # Special handling for superanimal_humanbody with rtmpose_x - download config from HuggingFace
+    if super_animal == "superanimal_humanbody" and model_name == "rtmpose_x":
+        # Download config from HuggingFace
+        model_files = get_snapshot_folder_path()
+        model_files.mkdir(exist_ok=True)
+        
+        path_model_config = Path(
+            huggingface_hub.hf_hub_download(
+                "DeepLabCut/HumanBody",
+                "rtmpose-x_simcc-body7_pytorch_config.yaml",
+                local_dir=model_files,
+            )
+        )
+        model_config = read_config_as_dict(path_model_config)
+    else:
+        # Use local config file for other models
+        model_cfg_path = get_super_animal_model_config_path(model_name=model_name, super_animal=super_animal)
+        model_config = read_config_as_dict(model_cfg_path)
+    
+    model_config = add_metadata(project_config, model_config, model_cfg_path if 'model_cfg_path' in locals() else path_model_config)
 
     if detector_name is None:
         model_config["method"] = "BU"
@@ -133,6 +150,10 @@ def load_super_animal_config(
             detector_cfg = read_config_as_dict(detector_cfg_path)
             model_config["method"] = "TD"
             model_config["detector"] = detector_cfg
+    
+    # Update config after detector is added (if any)
+    model_config = update_config(model_config, max_individuals, device)
+    
     return model_config
 
 

@@ -40,13 +40,11 @@ def get_checkpoint_epoch(checkpoint_path):
     Load a PyTorch checkpoint and return the current epoch number.
 
     Args:
-        checkpoint_path (str): Path to the checkpoint file, can be None for torchvision detectors
+        checkpoint_path (str): Path to the checkpoint file
 
     Returns:
-        int: Current epoch number, or 0 if not found or None path
+        int: Current epoch number, or 0 if not found
     """
-    if checkpoint_path is None:
-        return 0
     checkpoint = torch.load(checkpoint_path)
     if "metadata" in checkpoint and "epoch" in checkpoint["metadata"]:
         return checkpoint["metadata"]["epoch"]
@@ -474,44 +472,33 @@ def video_inference_superanimal(
                 yaml = YAML()
                 yaml.dump(config, f)
 
-            # Check if using torchvision detector (no checkpoint to adapt)
-            use_torchvision_detector = detector_path is None
-            
             # get the current epoch of the detector and pose model
             current_pose_epoch = get_checkpoint_epoch(pose_model_path)
             current_detector_epoch = get_checkpoint_epoch(detector_path)
-            
             # update the checkpoint path with the current epoch, if the checkpoint does not exist, use the best checkpoint
-            if use_torchvision_detector:
-                # For torchvision detectors, we don't adapt the detector
-                adapted_detector_checkpoint = None
-                print("Using torchvision detector - skipping detector adaptation")
-            else:
-                adapted_detector_checkpoint = (
-                    model_folder
-                    / f"{detector_snapshot_prefix}-{current_detector_epoch + detector_epochs:03}.pt"
-                )
-                if not Path(adapted_detector_checkpoint).exists():
-                    adapted_detector_checkpoint = (
-                        model_folder
-                        / f"{detector_snapshot_prefix}-best-{current_detector_epoch + detector_epochs:03}.pt"
-                    )
-            
+            adapted_detector_checkpoint = (
+                model_folder
+                / f"{detector_snapshot_prefix}-{current_detector_epoch + detector_epochs:03}.pt"
+            )
             adapted_pose_checkpoint = (
                 model_folder
                 / f"{model_snapshot_prefix}-{current_pose_epoch + pose_epochs:03}.pt"
             )
+            if not Path(adapted_detector_checkpoint).exists():
+                adapted_detector_checkpoint = (
+                    model_folder
+                    / f"{detector_snapshot_prefix}-best-{current_detector_epoch + detector_epochs:03}.pt"
+                )
             if not Path(adapted_pose_checkpoint).exists():
                 adapted_pose_checkpoint = (
                     model_folder
                     / f"{model_snapshot_prefix}-best-{current_pose_epoch + pose_epochs:03}.pt"
                 )
 
-            # Check if adaptation already ran
-            pose_exists = adapted_pose_checkpoint.exists()
-            detector_exists = adapted_detector_checkpoint is None or adapted_detector_checkpoint.exists()
-            
-            if pose_exists and detector_exists:
+            if (
+                adapted_detector_checkpoint.exists()
+                and adapted_pose_checkpoint.exists()
+            ):
                 print(
                     f"Video adaptation already ran; pose ({adapted_pose_checkpoint}) "
                     f"and detector ({adapted_detector_checkpoint}) already exist. To "
@@ -524,11 +511,10 @@ def video_inference_superanimal(
                     "Running video adaptation with following parameters:\n"
                     f"  (pose training) pose_epochs: {pose_epochs}\n"
                     "  (pose) save_epochs: 1\n"
+                    f"  detector_epochs: {detector_epochs}\n"
+                    "  detector_save_epochs: 1\n"
+                    f"  video adaptation batch size: {video_adapt_batch_size}\n"
                 )
-                if not use_torchvision_detector:
-                    print(f"  detector_epochs: {detector_epochs}\n  detector_save_epochs: 1\n")
-                print(f"  video adaptation batch size: {video_adapt_batch_size}\n")
-                
                 train_file = pseudo_dataset_folder / "annotations" / "train.json"
                 with open(train_file, "r") as f:
                     temp_obj = json.load(f)
@@ -550,7 +536,7 @@ def video_inference_superanimal(
                     device=device,
                     epochs=pose_epochs,
                     save_epochs=1,
-                    detector_epochs=0 if use_torchvision_detector else detector_epochs,
+                    detector_epochs=detector_epochs,
                     detector_save_epochs=1,
                     snapshot_path=pose_model_path,
                     detector_path=detector_path,
@@ -559,23 +545,19 @@ def video_inference_superanimal(
                 )
 
             # after video adaptation, re-update the adapted checkpoint path, if the checkpoint does not exist, use the best checkpoint
-            if use_torchvision_detector:
-                adapted_detector_checkpoint = None
-            else:
-                adapted_detector_checkpoint = (
-                    model_folder
-                    / f"{detector_snapshot_prefix}-{current_detector_epoch + detector_epochs:03}.pt"
-                )
-                if not Path(adapted_detector_checkpoint).exists():
-                    adapted_detector_checkpoint = (
-                        model_folder
-                        / f"{detector_snapshot_prefix}-best-{current_detector_epoch + detector_epochs:03}.pt"
-                    )
-            
+            adapted_detector_checkpoint = (
+                model_folder
+                / f"{detector_snapshot_prefix}-{current_detector_epoch + detector_epochs:03}.pt"
+            )
             adapted_pose_checkpoint = (
                 model_folder
                 / f"{model_snapshot_prefix}-{current_pose_epoch + pose_epochs:03}.pt"
             )
+            if not Path(adapted_detector_checkpoint).exists():
+                adapted_detector_checkpoint = (
+                    model_folder
+                    / f"{detector_snapshot_prefix}-best-{current_detector_epoch + detector_epochs:03}.pt"
+                )
             if not Path(adapted_pose_checkpoint).exists():
                 adapted_pose_checkpoint = (
                     model_folder

@@ -822,11 +822,6 @@ _WEIGHT_INIT_OPTIONS = {  # FIXME - Generate dynamically
         "default_detector": "fasterrcnn_mobilenet_v3_large_fpn",
         "super_animal": "superanimal_topviewmouse",
     },
-    "Transfer Learning - SuperAnimal HumanBody": {
-        "default_net": "rtmpose_x",
-        "default_detector": "fasterrcnn_mobilenet_v3_large_fpn", #from torchvision
-        "super_animal": "superanimal_humanbody",
-    },
     "Fine-tuning - SuperAnimal Bird": {
         "default_net": "top_down_resnet_50",
         "default_detector": "fasterrcnn_mobilenet_v3_large_fpn",
@@ -841,10 +836,5 @@ _WEIGHT_INIT_OPTIONS = {  # FIXME - Generate dynamically
         "default_net": "top_down_hrnet_w32",
         "default_detector": "fasterrcnn_mobilenet_v3_large_fpn",
         "super_animal": "superanimal_topviewmouse",
-    },
-    "Fine-tuning - SuperAnimal HumanBody": {
-        "default_net": "rtmpose_x",
-        "default_detector": "fasterrcnn_mobilenet_v3_large_fpn",
-        "super_animal": "superanimal_humanbody",
     },
 }
