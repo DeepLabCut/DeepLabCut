@@ -348,22 +348,25 @@ class TestSelector:
         
         return all_commands
     
-    def run(self, base_ref: str = 'origin/main', dry_run: bool = False) -> Dict:
+    def run(self, base_ref: str = 'origin/main', dry_run: bool = False, json_output: bool = False) -> Dict:
         """Main execution method."""
-        print("🔍 DeepLabCut Intelligent Test Selector")
-        print("=" * 50)
+        if not json_output:
+            print("🔍 DeepLabCut Intelligent Test Selector")
+            print("=" * 50)
         
         # Get changed files
         changed_files = self.get_changed_files(base_ref)
-        print(f"📁 Found {len(changed_files)} changed files:")
-        for file in changed_files[:10]:  # Show first 10
-            print(f"   - {file}")
-        if len(changed_files) > 10:
-            print(f"   ... and {len(changed_files) - 10} more files")
-        print()
+        if not json_output:
+            print(f"📁 Found {len(changed_files)} changed files:")
+            for file in changed_files[:10]:  # Show first 10
+                print(f"   - {file}")
+            if len(changed_files) > 10:
+                print(f"   ... and {len(changed_files) - 10} more files")
+            print()
         
         if not changed_files:
-            print("⚠️  No changed files detected. Running minimal test suite.")
+            if not json_output:
+                print("⚠️  No changed files detected. Running minimal test suite.")
             return {
                 'changed_files': [],
                 'categories': {},
@@ -374,10 +377,11 @@ class TestSelector:
         
         # Categorize changes
         categories = self.categorize_changes(changed_files)
-        print("📂 Change categories:")
-        for category, files in categories.items():
-            print(f"   - {category}: {len(files)} files")
-        print()
+        if not json_output:
+            print("📂 Change categories:")
+            for category, files in categories.items():
+                print(f"   - {category}: {len(files)} files")
+            print()
         
         # Determine tests to run
         tests, commands = self.get_tests_to_run(categories)
@@ -386,10 +390,11 @@ class TestSelector:
         # Estimate runtime
         estimated_time = self.estimate_runtime(categories, len(test_commands))
         
-        print("🧪 Tests to run:")
-        for cmd in test_commands:
-            print(f"   - {cmd}")
-        print(f"\n⏱️  Estimated runtime: {estimated_time}")
+        if not json_output:
+            print("🧪 Tests to run:")
+            for cmd in test_commands:
+                print(f"   - {cmd}")
+            print(f"\n⏱️  Estimated runtime: {estimated_time}")
         
         result = {
             'changed_files': changed_files,
@@ -399,7 +404,7 @@ class TestSelector:
             'estimated_time': estimated_time
         }
         
-        if not dry_run:
+        if not dry_run and not json_output:
             print("\n🚀 Executing tests...")
             self.execute_tests(test_commands)
         
@@ -479,7 +484,7 @@ Examples:
     
     try:
         selector = TestSelector(args.repo_root)
-        result = selector.run(args.base, args.dry_run)
+        result = selector.run(args.base, args.dry_run, args.output_json)
         
         if args.output_json:
             import json
@@ -492,7 +497,8 @@ Examples:
             sys.exit(1)
             
     except Exception as e:
-        print(f"❌ Error: {e}")
+        if not args.output_json:
+            print(f"❌ Error: {e}")
         sys.exit(1)
 
 
