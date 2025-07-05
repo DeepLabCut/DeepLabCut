@@ -153,18 +153,20 @@ jobs:
 
       - name: Run selected tests
         shell: bash -el {0}
+        env:
+          TEST_COMMANDS: ${{ toJson(matrix.test-config.commands) }}
         run: |
           echo "Running test configuration: ${{ matrix.test-config.name }}"
-          commands='${{ toJson(matrix.test-config.commands) }}'
-          echo "Commands to run: $commands"
+          echo "Commands to run: $TEST_COMMANDS"
           
           # Parse and execute commands
           python -c "
           import json
           import subprocess
           import sys
+          import os
           
-          commands = json.loads('$commands')
+          commands = json.loads(os.environ['TEST_COMMANDS'])
           all_passed = True
           
           for i, cmd in enumerate(commands, 1):
