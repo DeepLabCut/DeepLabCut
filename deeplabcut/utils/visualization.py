@@ -34,6 +34,37 @@ from tqdm import trange
 from deeplabcut.utils import auxiliaryfunctions, auxfun_videos
 
 
+def safe_reshape(array: np.ndarray, shape: tuple, context: str = "") -> np.ndarray:
+    """
+    Safely reshape an array with validation and descriptive error messages.
+    
+    Args:
+        array: The numpy array to reshape
+        shape: The target shape for reshaping  
+        context: Optional context string to include in error messages
+        
+    Returns:
+        The reshaped array
+        
+    Raises:
+        ValueError: If the array cannot be reshaped to the target shape with
+                   a descriptive error message
+    """
+    expected_size = np.prod(shape)
+    actual_size = array.size
+    
+    if actual_size != expected_size:
+        context_str = f" for {context}" if context else ""
+        raise ValueError(
+            f"Cannot reshape array of size {actual_size} into shape {shape}{context_str}. "
+            f"Expected {expected_size} elements but got {actual_size}. "
+            f"This may indicate missing data or inconsistent data structure. "
+            f"Please verify that all expected individuals, bodyparts, and coordinates are present in the data."
+        )
+    
+    return array.reshape(shape)
+
+
 def get_cmap(n: int, name: str = "hsv") -> Colormap:
     """
     Args:
@@ -514,8 +545,16 @@ def plot_evaluation_results(
         df_predictions = row_multi[model_name]
 
         # Shape (num_individuals, num_bodyparts, xy)
-        ground_truth = df_gt.to_numpy().reshape((individuals, bodyparts, 2))
-        predictions = df_predictions.to_numpy().reshape((individuals, bodyparts, 3))
+        ground_truth = safe_reshape(
+            df_gt.to_numpy(), 
+            (individuals, bodyparts, 2),
+            f"ground truth data with {individuals} individuals and {bodyparts} bodyparts"
+        )
+        predictions = safe_reshape(
+            df_predictions.to_numpy(), 
+            (individuals, bodyparts, 3),
+            f"prediction data with {individuals} individuals and {bodyparts} bodyparts"
+        )
 
         bboxes = bounding_boxes.get(row_index)
 
@@ -527,15 +566,15 @@ def plot_evaluation_results(
             unique_bodyparts = len(
                 row_unique.index.get_level_values("bodyparts").unique()
             )
-            unique_ground_truth = (
-                row_unique[scorer]
-                .to_numpy()
-                .reshape((unique_individuals, unique_bodyparts, 2))
+            unique_ground_truth = safe_reshape(
+                row_unique[scorer].to_numpy(),
+                (unique_individuals, unique_bodyparts, 2),
+                f"unique ground truth data with {unique_individuals} individuals and {unique_bodyparts} bodyparts"
             )
-            unique_predictions = (
-                row_unique[model_name]
-                .to_numpy()
-                .reshape((unique_individuals, unique_bodyparts, 3))
+            unique_predictions = safe_reshape(
+                row_unique[model_name].to_numpy(),
+                (unique_individuals, unique_bodyparts, 3),
+                f"unique prediction data with {unique_individuals} individuals and {unique_bodyparts} bodyparts"
             )
 
         fig, ax = create_minimal_figure()
