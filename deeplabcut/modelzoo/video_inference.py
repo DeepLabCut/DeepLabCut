@@ -230,7 +230,9 @@ def video_inference_superanimal(
             https://pytorch.org/vision/stable/models/faster_rcnn.html
 
     (Model Explanation) SuperAnimal-Bird:
-    TODO(shaokai)
+    `superanimal_superbird` model aims to work on various bird species. It was developed 
+    during the 2024 DLC AI Residency Program. More info can be 
+    [found here](https://deeplabcut.medium.com/deeplabcut-ai-residency-2024-recap-working-with-the-superanimal-bird-model-and-dlc-3-0-live-e55807ca2c7c)
 
     (Model Explanation) SuperAnimal-HumanBody:
     `superanimal_humanbody` models aim to work across human body pose estimation
