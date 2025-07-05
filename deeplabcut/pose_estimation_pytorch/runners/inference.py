@@ -994,9 +994,9 @@ def build_inference_runner(
                 f"detection. Please turn off dynamic cropping."
             )
         
-        # Check if this is a torchvision detector
-        model_type = type(model).__name__
-        if model_type in ["FasterRCNN", "SSDLite"] and hasattr(model, 'transforms'):
+        # Check if this is a torchvision detector by looking for the inference method
+        # Torchvision detectors have a custom inference method that handles preprocessing
+        if hasattr(model, 'inference') and callable(getattr(model, 'inference')):
             return TorchvisionDetectorInferenceRunner(**kwargs)
         else:
             return DetectorInferenceRunner(**kwargs)
