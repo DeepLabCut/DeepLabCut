@@ -125,7 +125,9 @@ class TestSelector:
                 # Get staged changes
                 lambda: self._get_staged_files(),
                 # Get working directory changes
-                lambda: self._get_working_dir_files()
+                lambda: self._get_working_dir_files(),
+                # Fallback: get all files in repo (for CI when git history is limited)
+                lambda: self._get_all_files_fallback()
             ]
             
             for approach in approaches:
@@ -215,6 +217,21 @@ class TestSelector:
         )
         
         return [f.strip() for f in result.split('\n') if f.strip()]
+    
+    def _get_all_files_fallback(self) -> List[str]:
+        """Fallback method to get all tracked files when git diff fails."""
+        try:
+            result = subprocess.check_output(
+                ['git', 'ls-files'],
+                cwd=self.repo_root,
+                text=True,
+                stderr=subprocess.DEVNULL
+            )
+            files = [f.strip() for f in result.split('\n') if f.strip()]
+            # Limit to reasonable number of files for testing
+            return files[:50]  # Return first 50 files as "changed"
+        except subprocess.CalledProcessError:
+            return []
     
     def match_patterns(self, file_path: str, patterns: List[str]) -> bool:
         """Check if file path matches any of the given patterns."""
