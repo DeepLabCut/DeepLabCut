@@ -1,0 +1,90 @@
+# Project definitions (do not edit)
+Task:
+scorer:
+date:
+multianimalproject:
+identity:
+
+# Project path (change when moving around)
+project_path:
+
+# Default DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)
+engine: pytorch
+
+# Annotation data set configuration (and individual video cropping parameters)
+video_sets:
+bodyparts:
+- nose
+- left_eye
+- right_eye
+- left_ear
+- right_ear
+- left_shoulder
+- right_shoulder
+- left_elbow
+- right_elbow
+- left_wrist
+- right_wrist
+- left_hip
+- right_hip
+- left_knee
+- right_knee
+- left_ankle
+- right_ankle
+
+# Fraction of video to start/stop when extracting frames for labeling/refinement
+start:
+stop:
+numframes2pick:
+
+# Plotting configuration
+skeleton:
+  - [16, 14]
+  - [14, 12]
+  - [17, 15]
+  - [15, 13]
+  - [12, 13]
+  - [6, 12]
+  - [7, 13]
+  - [6, 7]
+  - [6, 8]
+  - [7, 9]
+  - [8, 10]
+  - [9, 11]
+  - [2, 3]
+  - [1, 2]
+  - [1, 3]
+  - [2, 4]
+  - [3, 5]
+  - [4, 6]
+  - [5, 7]
+skeleton_color: black
+pcutoff:
+dotsize:
+alphavalue:
+colormap: rainbow
+
+# Training,Evaluation and Analysis configuration
+TrainingFraction: [0.95]
+iteration: 0
+default_net_type: rtmpose_x
+default_augmenter: 
+snapshotindex:
+detector_snapshotindex: -1
+batch_size: 1
+detector_batch_size: 1
+
+# Cropping Parameters (for analysis and outlier frame detection)
+cropping:
+#if cropping is true for analysis, then set the values here:
+x1:
+x2:
+y1:
+y2:
+
+# Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+corner2move2:
+move2corner:
+
+# Conversion tables to fine-tune SuperAnimal weights
+SuperAnimalConversionTables:

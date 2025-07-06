@@ -89,6 +89,8 @@ def _video_inference_superanimal(
         dest_folder: Destination folder for the results. If not specified, the
             results are saved in the same folder as the video. Defaults to None.
         output_suffix: The suffix to add to output file names (e.g. _before_adapt)
+        plot_bboxes: Whether to plot bounding boxes in the output video
+        bboxes_pcutoff: Confidence threshold for bounding box plotting
 
     Returns:
         results: Dictionary with the result pd.DataFrame for each video

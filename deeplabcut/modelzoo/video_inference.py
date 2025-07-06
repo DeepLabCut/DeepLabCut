@@ -230,7 +230,29 @@ def video_inference_superanimal(
             https://pytorch.org/vision/stable/models/faster_rcnn.html
 
     (Model Explanation) SuperAnimal-Bird:
-    TODO(shaokai)
+    `superanimal_superbird` model aims to work on various bird species. It was developed 
+    during the 2024 DLC AI Residency Program. More info can be 
+    [found here](https://deeplabcut.medium.com/deeplabcut-ai-residency-2024-recap-working-with-the-superanimal-bird-model-and-dlc-3-0-live-e55807ca2c7c)
+
+    (Model Explanation) SuperAnimal-HumanBody:
+    `superanimal_humanbody` models aim to work across human body pose estimation
+    from various camera perspectives and environments. The models are designed to
+    handle different human poses, activities, and lighting conditions commonly
+    found in human motion analysis, sports analysis, and behavioral studies.
+
+    All model snapshots are automatically downloaded to modelzoo/checkpoints when used.
+
+    - We provide:
+        - `rtmpose_x` (Top-Down pose estimation model, PyTorch engine)
+            An `rtmpose_x` is a top-down model that is paired with a detector. That
+            means it takes a cropped image from an object detector and predicts the
+            keypoints. When selecting this variant, a `detector_name` must be set with
+            one of the provided object detectors. This model uses 17 body parts in
+            the COCO body7 format.
+    - We provide an object detector (PyTorch engine):
+        - `fasterrcnn_mobilenet_v3_large_fpn`
+            This is a FasterRCNN model with a MobileNet backbone, see
+            https://pytorch.org/vision/stable/models/faster_rcnn.html
 
     Examples (PyTorch Engine)
     --------
@@ -327,6 +349,57 @@ def video_inference_superanimal(
                 "You have to specify a detector_name when using the Pytorch framework."
             )
 
+        # Special handling for superanimal_humanbody - use dedicated implementation
+        if superanimal_name == "superanimal_humanbody":
+            from deeplabcut.pose_estimation_pytorch.modelzoo.superanimal_humanbody_video_inference import (
+                analyze_videos_superanimal_humanbody,
+            )
+            
+            # Convert videos to list if needed
+            if isinstance(videos, str):
+                videos = [videos]
+            
+            # Set destination folder
+            if dest_folder is None:
+                dest_folder = Path(videos[0]).parent
+            else:
+                dest_folder = Path(dest_folder)
+            
+            if not dest_folder.exists():
+                dest_folder.mkdir(parents=True, exist_ok=True)
+            
+            # Map parameters to the dedicated function
+            # Note: analyze_videos_superanimal_humanbody has its own parameter set
+            # Handle device parameter - convert "auto" to actual device
+            if device == "auto":
+                import torch
+                actual_device = "cuda" if torch.cuda.is_available() else "cpu"
+            else:
+                actual_device = device
+            
+            dedicated_kwargs = {
+                "videotype": videotype,
+                "destfolder": str(dest_folder),
+                "bbox_threshold": bbox_threshold,
+                "pose_threshold": pcutoff,
+                "device": actual_device,
+                "cropping": cropping,
+                "batch_size": batch_size,
+                "detector_batch_size": detector_batch_size,
+            }
+            
+            # Use a dummy config path since the dedicated function loads its own config
+            dummy_config = "superanimal_humanbody"
+            
+            results = analyze_videos_superanimal_humanbody(
+                dummy_config,
+                videos,
+                **dedicated_kwargs,
+            )
+            
+            return results
+
+        # Standard PyTorch implementation for other models
         from deeplabcut.pose_estimation_pytorch.modelzoo.inference import (
             _video_inference_superanimal,
         )
@@ -358,7 +431,14 @@ def video_inference_superanimal(
             superanimal_name, pose_model_path, detector_path
         )
 
+        # Add superanimal_name to config metadata for proper detector routing
+        if "metadata" not in config:
+            config["metadata"] = {}
+        config["metadata"]["superanimal_name"] = superanimal_name
+        print(f"DEBUG: video_inference_superanimal set superanimal_name: {superanimal_name}")
+        
         config = update_config(config, max_individuals, device)
+        print(f"DEBUG: video_inference_superanimal after update_config superanimal_name: {config.get('metadata', {}).get('superanimal_name', 'NOT_SET')}")
         output_suffix = "_before_adapt"
         if video_adapt:
             # the users can pass in many videos. For now, we only use one video for
