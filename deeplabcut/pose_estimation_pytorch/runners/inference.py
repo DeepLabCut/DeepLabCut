@@ -862,7 +862,7 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
         return predictions
 
 
-class TorchvisionDetectorInferenceRunner(InferenceRunner[BaseDetector]):
+class TorchvisionDetectorInferenceRunner(DetectorInferenceRunner):
     """Runner for torchvision detector inference that bypasses standard preprocessing"""
     
     def __init__(self, model: BaseDetector, **kwargs):
