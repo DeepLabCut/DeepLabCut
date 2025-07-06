@@ -240,7 +240,7 @@ def update_config(config: dict, max_individuals: int, device: str):
     Returns:
         The model configuration for a SuperAnimal-pretrained model.
     """
-    print(f"DEBUG: update_config called with superanimal_name: {config.get('metadata', {}).get('superanimal_name', 'NOT_SET')}")
+ 
     
     config = config_utils.replace_default_values(
         config,
@@ -253,6 +253,4 @@ def update_config(config: dict, max_individuals: int, device: str):
     config["device"] = device
     if "detector" in config:
         config["detector"]["device"] = device
-
-    print(f"DEBUG: update_config returning with superanimal_name: {config.get('metadata', {}).get('superanimal_name', 'NOT_SET')}")
     return config

@@ -436,10 +436,9 @@ def video_inference_superanimal(
             if "metadata" not in config:
                 config["metadata"] = {}
             config["metadata"]["superanimal_name"] = superanimal_name
-            print(f"DEBUG: video_inference_superanimal set superanimal_name: {superanimal_name}")
         
         config = update_config(config, max_individuals, device)
-        print(f"DEBUG: video_inference_superanimal after update_config superanimal_name: {config.get('metadata', {}).get('superanimal_name', 'NOT_SET')}")
+        
         output_suffix = "_before_adapt"
         if video_adapt:
             # the users can pass in many videos. For now, we only use one video for
