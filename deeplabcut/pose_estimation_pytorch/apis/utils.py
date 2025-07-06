@@ -390,66 +390,56 @@ def build_predictions_dataframe(
     Args:
         scorer: The name of the scorer used to generate the predictions.
         predictions: A dictionary where each key is an image name and its value is
-            another dictionary. The inner dictionary contains prediction arrays for
-            bodyparts and optionally unique_bodyparts.
-        parameters: Dataset parameters containing information about bodyparts,
-            individuals, and other configuration.
-        image_name_to_index: Optional function to convert image names to index tuples.
-            If None, image names are used directly as indices.
+            another dictionary. The inner dictionary contains prediction data for
+            "bodyparts" and optionally "unique_bodyparts". The "bodyparts" and
+            "unique_bodyparts" data arrays are expected to be 3-dimensional, containing
+            pose predictions in format (num_predicted_individuals, num_bodyparts, 3).
+        parameters: Dataset-specific parameters required for constructing DataFrame
+            columns.
+        image_name_to_index: A callable function that takes an image name and returns
+            a tuple representing the DataFrame index. If None, indices will be
+            generated without transformation.
 
     Returns:
-        A pandas DataFrame with multi-level columns and properly formatted indices.
+        A pandas DataFrame containing the processed prediction data for all provided
+        images. The DataFrame index corresponds to the image names or their
+        transformed values (if `image_name_to_index` is provided). The DataFrame
+        columns are constructed using the provided scorer and parameters.
     """
     image_names = []
     prediction_data = []
     
-    # Always use the number of individuals from the config
-    expected_num_individuals = len(parameters.individuals)
-    expected_num_bodyparts = len(parameters.bodyparts)
+    # Check if this is a humanbody model by looking at the first prediction
+    if predictions:
+        first_pred = next(iter(predictions.values()))
+        if "bodyparts" in first_pred:
+            actual_num_individuals = first_pred["bodyparts"].shape[0]
+            expected_num_individuals = len(parameters.individuals)
+            
+            # For humanbody models, if the actual number of individuals differs from expected,
+            # we need to adjust the parameters to match the actual predictions
+            if actual_num_individuals != expected_num_individuals:
+                # Create adjusted parameters with the actual number of individuals
+                adjusted_individuals = [f"individual_{i}" for i in range(actual_num_individuals)]
+                parameters = PoseDatasetParameters(
+                    bodyparts=parameters.bodyparts,
+                    unique_bpts=parameters.unique_bpts,
+                    individuals=adjusted_individuals,
+                )
     
     for image_name, image_predictions in predictions.items():
-        # Get the actual predictions for this image
-        if "bodyparts" in image_predictions:
-            actual_predictions = image_predictions["bodyparts"]  # Shape: (num_detected, num_bodyparts, 3)
-            actual_num_detected = actual_predictions.shape[0]
-            
-            # Pad or truncate to match expected number of individuals
-            if actual_num_detected < expected_num_individuals:
-                # Pad with NaN rows
-                padded_predictions = np.full((expected_num_individuals, expected_num_bodyparts, 3), np.nan)
-                padded_predictions[:actual_num_detected] = actual_predictions
-                image_data = padded_predictions.reshape(-1)
-            elif actual_num_detected > expected_num_individuals:
-                # Truncate to expected number
-                image_data = actual_predictions[:expected_num_individuals].reshape(-1)
-            else:
-                # Perfect match
-                image_data = actual_predictions.reshape(-1)
-        else:
-            # No bodypart predictions, fill with NaNs
-            image_data = np.full(expected_num_individuals * expected_num_bodyparts * 3, np.nan)
-        
-        # Handle unique bodyparts if present
+        image_data = image_predictions["bodyparts"][..., :3].reshape(-1)
         if "unique_bodyparts" in image_predictions:
-            unique_predictions = image_predictions["unique_bodyparts"]
-            unique_data = unique_predictions.reshape(-1)
-            image_data = np.concatenate([image_data, unique_data])
-        else:
-            # No unique bodyparts, add empty array
-            unique_data = np.array([])
-            image_data = np.concatenate([image_data, unique_data])
-
+            image_data = np.concatenate(
+                [image_data, image_predictions["unique_bodyparts"][..., :3].reshape(-1)]
+            )
         image_names.append(image_name)
         prediction_data.append(image_data)
 
-    # Build the index
-    if image_name_to_index is not None:
-        index = [image_name_to_index(name) for name in image_names]
-    else:
-        index = image_names
+    index = _image_names_to_df_index(image_names, image_name_to_index)
 
     return pd.DataFrame(
-        data=prediction_data,
+        prediction_data,
         index=index,
         columns=build_dlc_dataframe_columns(
             scorer=scorer,
