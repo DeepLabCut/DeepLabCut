@@ -154,10 +154,11 @@ def load_super_animal_config(
     # Update config after detector is added (if any)
     model_config = update_config(model_config, max_individuals, device)
     
-    # Add superanimal_name to metadata for proper detector routing
-    if "metadata" not in model_config:
-        model_config["metadata"] = {}
-    model_config["metadata"]["superanimal_name"] = super_animal
+    # Only add superanimal_name to metadata for humanbody models (for special detector routing)
+    if super_animal == "superanimal_humanbody":
+        if "metadata" not in model_config:
+            model_config["metadata"] = {}
+        model_config["metadata"]["superanimal_name"] = super_animal
     
     return model_config
 
