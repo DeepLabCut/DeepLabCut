@@ -29,9 +29,9 @@ jobs:
         id: test-selector
         shell: bash
         run: |
-          # Make scripts executable
-          chmod +x tools/test_selector.py
-          chmod +x tools/parse_test_selection.py
+          # Install minimal dependencies for test selector
+          python -m pip install --upgrade pip setuptools wheel
+          pip install pytest numpy pandas
           
           # Determine the base reference to use
           BASE_REF="origin/main"
@@ -63,6 +63,10 @@ jobs:
           echo "commands=$commands" >> $GITHUB_OUTPUT
           echo "run-full-tests=$run_full" >> $GITHUB_OUTPUT
           echo "test-matrix=$matrix" >> $GITHUB_OUTPUT
+          
+          # Validate the test selection system
+          echo "Running validation..."
+          python tools/validate_test_selection.py
 
   fast-tests:
     needs: intelligent-test-selection
