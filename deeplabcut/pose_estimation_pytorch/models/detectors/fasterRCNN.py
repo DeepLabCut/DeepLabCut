@@ -57,7 +57,6 @@ class FasterRCNN(TorchvisionDetectorAdaptor):
                 "https://pytorch.org/vision/stable/models.html#object-detection"
             )
 
-        print(f"DEBUG: FasterRCNN.__init__ called with variant={variant}, pretrained={pretrained}")
         super().__init__(
             model=variant,
             weights=("COCO_V1" if pretrained else None),
@@ -74,4 +73,3 @@ class FasterRCNN(TorchvisionDetectorAdaptor):
             self.model.roi_heads.box_predictor = detection.faster_rcnn.FastRCNNPredictor(
                 in_features, num_classes
             )
-        print(f"DEBUG: FasterRCNN.__init__ completed, model type: {type(self.model)}")
