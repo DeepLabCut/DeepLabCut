@@ -495,6 +495,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#superanimal-members">SuperAnimal members:</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#superanimal-quadruped">SuperAnimal-Quadruped:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#superanimal-topviewmouse">SuperAnimal-TopViewMouse:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#superanimal-human">SuperAnimal-Human:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example-using-superanimal-models-for-inference-without-training">Practical example: Using SuperAnimal models for inference without training.</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example-using-superanimal-model-bottom-up-considering-video-animal-size">Practical example: Using SuperAnimal model bottom up, considering video/animal size.</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example-using-transfer-learning-with-superanimal-weights">Practical example: Using transfer learning with superanimal weights.</a></li>
@@ -597,6 +598,20 @@ test our models in 🕸<a class="reference external" href="https://contrib.deepl
 <img alt="SA-TVM" src="https://user-images.githubusercontent.com/28102185/209957260-c0db72e0-4fdf-434c-8579-34bc5f27f907.png" /></p></li>
 </ul>
 </section>
+<section id="superanimal-human">
+<h3>SuperAnimal-Human:<a class="headerlink" href="#superanimal-human" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">superanimal_humanbody</span></code> models aim to work across human body pose estimation from various camera perspectives and environments. The models are designed to handle different human poses, activities, and lighting conditions commonly found in human motion analysis, sports analysis, and behavioral studies.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">superanimal_humanbody_rtmpose_x</span></code> (pytorch engine)</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">superanimal_humanbody_rtmpose_x</span></code> is a top-down model that is paired with a detector pretrained from <code class="docutils literal notranslate"><span class="pre">torchvision</span></code>. That means it takes a cropped image from an object detector and predicts the keypoints. This model uses 17 body parts in the COCO body7 format.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
 <section id="practical-example-using-superanimal-models-for-inference-without-training">
 <h3>Practical example: Using SuperAnimal models for inference without training.<a class="headerlink" href="#practical-example-using-superanimal-models-for-inference-without-training" title="Link to this heading">#</a></h3>
 <p>You can simply call the model and run video inference.</p>
@@ -635,11 +650,10 @@ test our models in 🕸<a class="reference external" href="https://contrib.deepl
 <section id="practical-example-using-transfer-learning-with-superanimal-weights">
 <h3>Practical example: Using transfer learning with superanimal weights.<a class="headerlink" href="#practical-example-using-transfer-learning-with-superanimal-weights" title="Link to this heading">#</a></h3>
 <p>In the <code class="docutils literal notranslate"><span class="pre">deeplabcut.train_network</span></code> function, the <code class="docutils literal notranslate"><span class="pre">superanimal_transfer_learning</span></code> option plays a pivotal role. If it’s set to <strong>True</strong>, it uses a new decoding layer and allows you to use superanimal weights in any project, no matter the number of keypoints. However, if it’s set to <strong>False</strong>, you are doing fine-tuning. So, make sure your dataset has the right number of keypoints.</p>
-<p>Specifically:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">superanimal_quadruped_x</span></code> uses 39 keypoints and,</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">superanimal_topviewmouse_x</span></code> uses 27 keypoints</p></li>
-</ul>
+<p>Specifically:
+* <code class="docutils literal notranslate"><span class="pre">superanimal_quadruped_x</span></code> uses 39 keypoints
+* <code class="docutils literal notranslate"><span class="pre">superanimal_topviewmouse_x</span></code> uses 27 keypoints
+* <code class="docutils literal notranslate"><span class="pre">superanimal_humanbody_x</span></code> uses 17 keypoints</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.modelzoo</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_weight_init</span>
@@ -772,6 +786,7 @@ preprint={abs/2203.07436}
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#superanimal-members">SuperAnimal members:</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#superanimal-quadruped">SuperAnimal-Quadruped:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#superanimal-topviewmouse">SuperAnimal-TopViewMouse:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#superanimal-human">SuperAnimal-Human:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example-using-superanimal-models-for-inference-without-training">Practical example: Using SuperAnimal models for inference without training.</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example-using-superanimal-model-bottom-up-considering-video-animal-size">Practical example: Using SuperAnimal model bottom up, considering video/animal size.</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example-using-transfer-learning-with-superanimal-weights">Practical example: Using transfer learning with superanimal weights.</a></li>
