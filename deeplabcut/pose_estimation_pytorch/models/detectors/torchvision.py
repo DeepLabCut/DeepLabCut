@@ -209,7 +209,7 @@ class TorchvisionDetectorAdaptor(BaseDetector):
                     if 'scores' in prediction:
                         print(f"DEBUG: Max score: {prediction['scores'].max() if len(prediction['scores']) > 0 else 'No scores'}")
                         # Check if model has roi_heads (FasterRCNN) or not (SSD)
-                        if hasattr(self.model, 'roi_heads'):
+                        if hasattr(self.model, 'roi_heads') and hasattr(self.model.roi_heads, 'score_thresh'):
                             print(f"DEBUG: Scores above threshold: {(prediction['scores'] > self.model.roi_heads.score_thresh).sum()}")
                         else:
                             print(f"DEBUG: SSD model - using default threshold comparison")
