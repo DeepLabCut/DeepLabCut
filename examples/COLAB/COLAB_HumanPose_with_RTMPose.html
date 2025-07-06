@@ -578,6 +578,12 @@ document.write(`
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Loading DLC 3.0.0rc10...
+DLC loaded in light mode; you cannot use any GUI (labeling, relabeling and standalone GUI)
+</pre></div>
+</div>
+</div>
 </div>
 <p>We can now download the pre-trained RTMPose model weights with which we’ll run pose estimation.</p>
 <div class="cell docutils container">
@@ -607,6 +613,16 @@ document.write(`
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.11/dist-packages/huggingface_hub/utils/_auth.py:94: UserWarning: 
+The secret `HF_TOKEN` does not exist in your Colab secrets.
+To authenticate with the Hugging Face Hub, create a token in your settings tab (https://huggingface.co/settings/tokens), set it as secret in your Google Colab and restart your session.
+You will be able to reuse this secret in all of your notebooks.
+Please note that authentication is recommended but still optional to access public models or datasets.
+  warnings.warn(
+</pre></div>
+</div>
+</div>
 </div>
 <p>We’ll now also define some parameters that we’ll later use to plot predictions:</p>
 <ul class="simple">
@@ -617,7 +633,30 @@ document.write(`
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cmap_keypoints</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;rainbow&quot;</span><span class="p">)</span>
-<span class="n">cmap_skeleton</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;rainbow&quot;</span><span class="p">)</span>
+<span class="n">cmap_skeleton</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;rainbow_r&quot;</span><span class="p">)</span>
+
+<span class="n">bodyparts2connect</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">&quot;right_ankle&quot;</span><span class="p">,</span> <span class="s2">&quot;right_knee&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;right_knee&quot;</span><span class="p">,</span> <span class="s2">&quot;right_hip&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;left_ankle&quot;</span><span class="p">,</span> <span class="s2">&quot;left_knee&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;left_hip&quot;</span><span class="p">,</span> <span class="s2">&quot;left_knee&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;left_hip&quot;</span><span class="p">,</span> <span class="s2">&quot;right_hip&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;right_shoulder&quot;</span><span class="p">,</span> <span class="s2">&quot;right_hip&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;left_shoulder&quot;</span><span class="p">,</span> <span class="s2">&quot;left_hip&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;left_shoulder&quot;</span><span class="p">,</span> <span class="s2">&quot;right_shoulder&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;left_shoulder&quot;</span><span class="p">,</span> <span class="s2">&quot;left_elbow&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;right_shoulder&quot;</span><span class="p">,</span> <span class="s2">&quot;right_elbow&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;left_elbow&quot;</span><span class="p">,</span> <span class="s2">&quot;left_wrist&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;right_elbow&quot;</span><span class="p">,</span> <span class="s2">&quot;right_wrist&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;right_eye&quot;</span><span class="p">,</span> <span class="s2">&quot;left_ear&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;left_eye&quot;</span><span class="p">,</span> <span class="s2">&quot;right_eye&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;left_eye&quot;</span><span class="p">,</span> <span class="s2">&quot;left_ear&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;right_eye&quot;</span><span class="p">,</span> <span class="s2">&quot;right_ear&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;left_ear&quot;</span><span class="p">,</span> <span class="s2">&quot;left_shoulder&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;right_ear&quot;</span><span class="p">,</span> <span class="s2">&quot;right_shoulder&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;left_shoulder&quot;</span><span class="p">,</span> <span class="s2">&quot;left_elbow&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;right_shoulder&quot;</span><span class="p">,</span> <span class="s2">&quot;right_elbow&quot;</span><span class="p">),</span>
+<span class="p">]</span>
 <span class="n">skeleton</span> <span class="o">=</span> <span class="p">[</span>
     <span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">14</span><span class="p">],</span>
     <span class="p">[</span><span class="mi">14</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span>
@@ -651,6 +690,7 @@ document.write(`
 <div class="cell_input docutils container">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.colab</span><span class="w"> </span><span class="kn">import</span> <span class="n">files</span>
 
+<span class="c1">#JPG or PNG is recommended:</span>
 <span class="n">uploaded</span> <span class="o">=</span> <span class="n">files</span><span class="o">.</span><span class="n">upload</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">uploaded</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;User uploaded file &#39;</span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s2">&#39; with length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="si">}</span><span class="s2"> bytes&quot;</span><span class="p">)</span>
@@ -665,6 +705,194 @@ document.write(`
 <span class="c1">#   Path(&quot;/path/to/my/image_000.png&quot;),</span>
 <span class="c1">#   Path(&quot;/path/to/my/image_001.png&quot;),</span>
 <span class="c1"># ]</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html">
+     <input type="file" id="files-4b44d1ed-8af6-45fb-ad9f-9cde2442e4fc" name="files[]" multiple disabled
+        style="border:none" />
+     <output id="result-4b44d1ed-8af6-45fb-ad9f-9cde2442e4fc">
+      Upload widget is only available when the cell has been executed in the
+      current browser session. Please rerun this cell to enable.
+      </output>
+      <script>// Copyright 2017 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Helpers for google.colab Python module.
+ */
+(function(scope) {
+function span(text, styleAttributes = {}) {
+  const element = document.createElement('span');
+  element.textContent = text;
+  for (const key of Object.keys(styleAttributes)) {
+    element.style[key] = styleAttributes[key];
+  }
+  return element;
+}
+
+// Max number of bytes which will be uploaded at a time.
+const MAX_PAYLOAD_SIZE = 100 * 1024;
+
+function _uploadFiles(inputId, outputId) {
+  const steps = uploadFilesStep(inputId, outputId);
+  const outputElement = document.getElementById(outputId);
+  // Cache steps on the outputElement to make it available for the next call
+  // to uploadFilesContinue from Python.
+  outputElement.steps = steps;
+
+  return _uploadFilesContinue(outputId);
+}
+
+// This is roughly an async generator (not supported in the browser yet),
+// where there are multiple asynchronous steps and the Python side is going
+// to poll for completion of each step.
+// This uses a Promise to block the python side on completion of each step,
+// then passes the result of the previous step as the input to the next step.
+function _uploadFilesContinue(outputId) {
+  const outputElement = document.getElementById(outputId);
+  const steps = outputElement.steps;
+
+  const next = steps.next(outputElement.lastPromiseValue);
+  return Promise.resolve(next.value.promise).then((value) => {
+    // Cache the last promise value to make it available to the next
+    // step of the generator.
+    outputElement.lastPromiseValue = value;
+    return next.value.response;
+  });
+}
+
+/**
+ * Generator function which is called between each async step of the upload
+ * process.
+ * @param {string} inputId Element ID of the input file picker element.
+ * @param {string} outputId Element ID of the output display.
+ * @return {!Iterable<!Object>} Iterable of next steps.
+ */
+function* uploadFilesStep(inputId, outputId) {
+  const inputElement = document.getElementById(inputId);
+  inputElement.disabled = false;
+
+  const outputElement = document.getElementById(outputId);
+  outputElement.innerHTML = '';
+
+  const pickedPromise = new Promise((resolve) => {
+    inputElement.addEventListener('change', (e) => {
+      resolve(e.target.files);
+    });
+  });
+
+  const cancel = document.createElement('button');
+  inputElement.parentElement.appendChild(cancel);
+  cancel.textContent = 'Cancel upload';
+  const cancelPromise = new Promise((resolve) => {
+    cancel.onclick = () => {
+      resolve(null);
+    };
+  });
+
+  // Wait for the user to pick the files.
+  const files = yield {
+    promise: Promise.race([pickedPromise, cancelPromise]),
+    response: {
+      action: 'starting',
+    }
+  };
+
+  cancel.remove();
+
+  // Disable the input element since further picks are not allowed.
+  inputElement.disabled = true;
+
+  if (!files) {
+    return {
+      response: {
+        action: 'complete',
+      }
+    };
+  }
+
+  for (const file of files) {
+    const li = document.createElement('li');
+    li.append(span(file.name, {fontWeight: 'bold'}));
+    li.append(span(
+        `(${file.type || 'n/a'}) - ${file.size} bytes, ` +
+        `last modified: ${
+            file.lastModifiedDate ? file.lastModifiedDate.toLocaleDateString() :
+                                    'n/a'} - `));
+    const percent = span('0% done');
+    li.appendChild(percent);
+
+    outputElement.appendChild(li);
+
+    const fileDataPromise = new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        resolve(e.target.result);
+      };
+      reader.readAsArrayBuffer(file);
+    });
+    // Wait for the data to be ready.
+    let fileData = yield {
+      promise: fileDataPromise,
+      response: {
+        action: 'continue',
+      }
+    };
+
+    // Use a chunked sending to avoid message size limits. See b/62115660.
+    let position = 0;
+    do {
+      const length = Math.min(fileData.byteLength - position, MAX_PAYLOAD_SIZE);
+      const chunk = new Uint8Array(fileData, position, length);
+      position += length;
+
+      const base64 = btoa(String.fromCharCode.apply(null, chunk));
+      yield {
+        response: {
+          action: 'append',
+          file: file.name,
+          data: base64,
+        },
+      };
+
+      let percentDone = fileData.byteLength === 0 ?
+          100 :
+          Math.round((position / fileData.byteLength) * 100);
+      percent.textContent = `${percentDone}% done`;
+
+    } while (position < fileData.byteLength);
+  }
+
+  // All done.
+  yield {
+    response: {
+      action: 'complete',
+    }
+  };
+}
+
+scope.google = scope.google || {};
+scope.google.colab = scope.google.colab || {};
+scope.google.colab._files = {
+  _uploadFiles,
+  _uploadFilesContinue,
+};
+})(self);
+</script> </div><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Saving taylor_swift.jpg to taylor_swift.jpg
+User uploaded file &#39;taylor_swift.jpg&#39; with length 46915 bytes
 </pre></div>
 </div>
 </div>
@@ -758,6 +986,24 @@ document.write(`
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Running object detection
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 1/1 [00:00&lt;00:00,  1.95it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Running pose estimation
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1it [00:00, 78.27it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Saving the predictions to a CSV file
+Done!
+</pre></div>
+</div>
+</div>
 </div>
 <p>Finally, we can plot the predictions!</p>
 <div class="cell docutils container">
@@ -816,6 +1062,9 @@ document.write(`
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<img alt="../../_images/94588dcf5e8557c11e8e2becc211769570424dae22fc950db06b42934c50a43b.png" src="../../_images/94588dcf5e8557c11e8e2becc211769570424dae22fc950db06b42934c50a43b.png" />
+</div>
 </div>
 </section>
 <section id="running-inference-on-a-video">
@@ -837,6 +1086,194 @@ document.write(`
 <span class="c1"># `video_path` yourself with right `click` &gt; `copy path` on the video:</span>
 <span class="c1">#</span>
 <span class="c1"># video_path = Path(&quot;/path/to/my/video.mp4&quot;)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html">
+     <input type="file" id="files-f1dd023f-c99c-4afc-a331-b1484a3903d2" name="files[]" multiple disabled
+        style="border:none" />
+     <output id="result-f1dd023f-c99c-4afc-a331-b1484a3903d2">
+      Upload widget is only available when the cell has been executed in the
+      current browser session. Please rerun this cell to enable.
+      </output>
+      <script>// Copyright 2017 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * @fileoverview Helpers for google.colab Python module.
+ */
+(function(scope) {
+function span(text, styleAttributes = {}) {
+  const element = document.createElement('span');
+  element.textContent = text;
+  for (const key of Object.keys(styleAttributes)) {
+    element.style[key] = styleAttributes[key];
+  }
+  return element;
+}
+
+// Max number of bytes which will be uploaded at a time.
+const MAX_PAYLOAD_SIZE = 100 * 1024;
+
+function _uploadFiles(inputId, outputId) {
+  const steps = uploadFilesStep(inputId, outputId);
+  const outputElement = document.getElementById(outputId);
+  // Cache steps on the outputElement to make it available for the next call
+  // to uploadFilesContinue from Python.
+  outputElement.steps = steps;
+
+  return _uploadFilesContinue(outputId);
+}
+
+// This is roughly an async generator (not supported in the browser yet),
+// where there are multiple asynchronous steps and the Python side is going
+// to poll for completion of each step.
+// This uses a Promise to block the python side on completion of each step,
+// then passes the result of the previous step as the input to the next step.
+function _uploadFilesContinue(outputId) {
+  const outputElement = document.getElementById(outputId);
+  const steps = outputElement.steps;
+
+  const next = steps.next(outputElement.lastPromiseValue);
+  return Promise.resolve(next.value.promise).then((value) => {
+    // Cache the last promise value to make it available to the next
+    // step of the generator.
+    outputElement.lastPromiseValue = value;
+    return next.value.response;
+  });
+}
+
+/**
+ * Generator function which is called between each async step of the upload
+ * process.
+ * @param {string} inputId Element ID of the input file picker element.
+ * @param {string} outputId Element ID of the output display.
+ * @return {!Iterable<!Object>} Iterable of next steps.
+ */
+function* uploadFilesStep(inputId, outputId) {
+  const inputElement = document.getElementById(inputId);
+  inputElement.disabled = false;
+
+  const outputElement = document.getElementById(outputId);
+  outputElement.innerHTML = '';
+
+  const pickedPromise = new Promise((resolve) => {
+    inputElement.addEventListener('change', (e) => {
+      resolve(e.target.files);
+    });
+  });
+
+  const cancel = document.createElement('button');
+  inputElement.parentElement.appendChild(cancel);
+  cancel.textContent = 'Cancel upload';
+  const cancelPromise = new Promise((resolve) => {
+    cancel.onclick = () => {
+      resolve(null);
+    };
+  });
+
+  // Wait for the user to pick the files.
+  const files = yield {
+    promise: Promise.race([pickedPromise, cancelPromise]),
+    response: {
+      action: 'starting',
+    }
+  };
+
+  cancel.remove();
+
+  // Disable the input element since further picks are not allowed.
+  inputElement.disabled = true;
+
+  if (!files) {
+    return {
+      response: {
+        action: 'complete',
+      }
+    };
+  }
+
+  for (const file of files) {
+    const li = document.createElement('li');
+    li.append(span(file.name, {fontWeight: 'bold'}));
+    li.append(span(
+        `(${file.type || 'n/a'}) - ${file.size} bytes, ` +
+        `last modified: ${
+            file.lastModifiedDate ? file.lastModifiedDate.toLocaleDateString() :
+                                    'n/a'} - `));
+    const percent = span('0% done');
+    li.appendChild(percent);
+
+    outputElement.appendChild(li);
+
+    const fileDataPromise = new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        resolve(e.target.result);
+      };
+      reader.readAsArrayBuffer(file);
+    });
+    // Wait for the data to be ready.
+    let fileData = yield {
+      promise: fileDataPromise,
+      response: {
+        action: 'continue',
+      }
+    };
+
+    // Use a chunked sending to avoid message size limits. See b/62115660.
+    let position = 0;
+    do {
+      const length = Math.min(fileData.byteLength - position, MAX_PAYLOAD_SIZE);
+      const chunk = new Uint8Array(fileData, position, length);
+      position += length;
+
+      const base64 = btoa(String.fromCharCode.apply(null, chunk));
+      yield {
+        response: {
+          action: 'append',
+          file: file.name,
+          data: base64,
+        },
+      };
+
+      let percentDone = fileData.byteLength === 0 ?
+          100 :
+          Math.round((position / fileData.byteLength) * 100);
+      percent.textContent = `${percentDone}% done`;
+
+    } while (position < fileData.byteLength);
+  }
+
+  // All done.
+  yield {
+    response: {
+      action: 'complete',
+    }
+  };
+}
+
+scope.google = scope.google || {};
+scope.google.colab = scope.google.colab || {};
+scope.google.colab._files = {
+  _uploadFiles,
+  _uploadFilesContinue,
+};
+})(self);
+</script> </div><div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Saving taylor-dancing.mov to taylor-dancing.mov
+User uploaded file &#39;taylor-dancing.mov&#39; with length 1415324 bytes
 </pre></div>
 </div>
 </div>
@@ -933,6 +1370,24 @@ document.write(`
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Running object detection
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 81%|████████▏ | 66/81 [00:02&lt;00:00, 25.37it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Running pose estimation
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 81%|████████▏ | 66/81 [00:01&lt;00:00, 53.25it/s]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Saving the predictions to a CSV file
+Done!
+</pre></div>
+</div>
+</div>
 </div>
 <p>Finally, we can plot the predictions on the video! The labeled video output is saved in the <code class="docutils literal notranslate"><span class="pre">&quot;video_predictions.mp4&quot;</span></code> file, and can be downloaded to be viewed.</p>
 <div class="cell docutils container">
@@ -956,12 +1411,26 @@ document.write(`
     <span class="n">x2</span><span class="o">=</span><span class="n">clip</span><span class="o">.</span><span class="n">w</span><span class="p">,</span>
     <span class="n">y1</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">y2</span><span class="o">=</span><span class="n">clip</span><span class="o">.</span><span class="n">h</span><span class="p">,</span>
-    <span class="n">bodyparts2connect</span><span class="o">=</span><span class="n">skeleton</span><span class="p">,</span>
-    <span class="n">skeleton_color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span>
+    <span class="n">bodyparts2connect</span><span class="o">=</span><span class="n">bodyparts2connect</span><span class="p">,</span>
+    <span class="n">skeleton_color</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span>
     <span class="n">draw_skeleton</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">displaycropped</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">displaycropped</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">color_by</span><span class="o">=</span><span class="s2">&quot;bodypart&quot;</span><span class="p">,</span>
 <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.11/dist-packages/deeplabcut/utils/make_labeled_video.py:146: FutureWarning: DataFrame.groupby with axis=1 is deprecated. Do `frame.T.groupby(...)` without axis instead.
+  Dataframe.groupby(level=&quot;individuals&quot;, axis=1).size().values // 3
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Duration of video [s]: 1.57, recorded with 51.7 fps!
+Overall # of frames: 81 with cropped frame dimensions: 828 768
+Generating frames and creating video.
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>100%|██████████| 66/66 [00:01&lt;00:00, 35.27it/s]
 </pre></div>
 </div>
 </div>
