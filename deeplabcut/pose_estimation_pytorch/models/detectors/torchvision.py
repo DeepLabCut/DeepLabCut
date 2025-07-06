@@ -207,8 +207,6 @@ class TorchvisionDetectorAdaptor(BaseDetector):
                 # Check if predictions are empty due to threshold
                 if isinstance(prediction, dict) and len(prediction) > 0:
                     if 'scores' in prediction:
-                        print(f"DEBUG: Max score: {prediction['scores'].max() if len(prediction['scores']) > 0 else 'No scores'}")
-                        # Check if model has roi_heads (FasterRCNN) or not (SSD)
                         # Skip threshold check for SSD models that don't have roi_heads
                         print(f"DEBUG: SSD model - using default threshold comparison")
                 

@@ -599,7 +599,6 @@ def get_inference_runners(
                     model_config["detector"]["data"]["inference"]
                 )
 
-            print(f"DEBUG: Creating detector for superanimal_name: '{superanimal_name}'")
             if superanimal_name == "superanimal_humanbody":
                 # Only for superanimal_humanbody, use torchvision detector
                 from deeplabcut.pose_estimation_pytorch.models.detectors.torchvision import TorchvisionDetectorAdaptor
@@ -612,20 +611,16 @@ def get_inference_runners(
                 unexpected_fields = [k for k in detector_config.keys() if k not in expected_fields]
                 for field in unexpected_fields:
                     detector_config.pop(field, None)
-                print(f"DEBUG: Removed unexpected fields for torchvision detector: {unexpected_fields}")
                 # If we have a custom snapshot path, don't use pretrained weights
                 if detector_path is not None:
                     detector_config["weights"] = None
                 detector_model = TorchvisionDetectorAdaptor(**detector_config)
-                print(f"DEBUG: Created TorchvisionDetectorAdaptor for {superanimal_name}")
             else:
                 # All other superanimal_* use custom detectors as before
                 detector_config = model_config["detector"]["model"].copy()
                 # If a custom snapshot is provided, do not use pretrained weights
                 pretrained = False if detector_path is not None else True
                 detector_model = DETECTORS.build(detector_config, pretrained=pretrained)
-                print(f"DEBUG: Created custom detector from DETECTORS registry for {superanimal_name}")
-                print(f"DEBUG: Custom detector type: {type(detector_model)}")
             detector_runner = build_inference_runner(
                 task=Task.DETECT,
                 model=detector_model,
