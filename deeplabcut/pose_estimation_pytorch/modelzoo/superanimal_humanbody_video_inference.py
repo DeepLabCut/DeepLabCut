@@ -315,7 +315,9 @@ def analyze_videos_superanimal_humanbody(
             print(f"Results saved to {output_json}")
             results[video_path] = predictions
 
+        # Always create labeled video, regardless of whether predictions already existed
         # Create labeled video just like other superanimal_* models
+        # Note: This always runs regardless of whether predictions were loaded or newly created
         try:
             from deeplabcut.pose_estimation_pytorch.apis.videos import create_df_from_prediction
             from deeplabcut.utils.make_labeled_video import create_video
@@ -336,13 +338,29 @@ def analyze_videos_superanimal_humanbody(
                     # Initialize with NaN values
                     bodyparts_array = np.full((num_individuals, num_bodyparts, 3), np.nan)
                     
-                    # Fill in the predictions from our format
-                    if 'bodyparts' in frame_pred and isinstance(frame_pred['bodyparts'], list):
-                        for i, individual_preds in enumerate(frame_pred['bodyparts']):
-                            if i < num_individuals and isinstance(individual_preds, list):
-                                for j, pred in enumerate(individual_preds):
-                                    if j < num_bodyparts and len(pred) >= 3:
-                                        bodyparts_array[i, j] = [pred[0], pred[1], pred[2]]
+                    # Handle different prediction formats
+                    if 'bodyparts' in frame_pred:
+                        if isinstance(frame_pred['bodyparts'], list):
+                            # Handle list format (from JSON loading)
+                            for i, individual_preds in enumerate(frame_pred['bodyparts']):
+                                if i < num_individuals and isinstance(individual_preds, list):
+                                    for j, pred in enumerate(individual_preds):
+                                        if j < num_bodyparts and len(pred) >= 3:
+                                            bodyparts_array[i, j] = [pred[0], pred[1], pred[2]]
+                        elif isinstance(frame_pred['bodyparts'], np.ndarray):
+                            # Handle numpy array format (from fresh predictions after postprocessing)
+                            poses = frame_pred['bodyparts']
+                            if poses.shape[1] == num_bodyparts:
+                                # poses shape: (num_individuals, num_bodyparts, 3)
+                                num_detected = min(poses.shape[0], num_individuals)
+                                bodyparts_array[:num_detected] = poses[:num_detected]
+                    elif 'bodypart' in frame_pred and 'poses' in frame_pred['bodypart']:
+                        # Handle pose runner format (fresh predictions before postprocessing)
+                        poses = frame_pred['bodypart']['poses']
+                        if isinstance(poses, np.ndarray) and poses.shape[1] == num_bodyparts:
+                            # poses shape: (num_individuals, num_bodyparts, 3)
+                            num_detected = min(poses.shape[0], num_individuals)
+                            bodyparts_array[:num_detected] = poses[:num_detected]
                     
                     # Create the converted prediction
                     converted_pred = {
