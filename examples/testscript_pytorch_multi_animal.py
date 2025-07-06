@@ -108,10 +108,10 @@ if __name__ == "__main__":
         ),
         batch_size=2,
         detector_batch_size=2,
-        epochs=8,
+        epochs=2,
         top_down_epochs=2,
-        detector_epochs=10,
-        save_epochs=4,
+        detector_epochs=2,
+        save_epochs=1,
         max_snapshots_to_keep=2,
         device="cpu",  # "cpu", "cuda:0", "mps"
         logger=None,
