@@ -431,11 +431,10 @@ def video_inference_superanimal(
             superanimal_name, pose_model_path, detector_path
         )
 
-        # Only add superanimal_name to config metadata for humanbody models (for special detector routing)
-        if superanimal_name == "superanimal_humanbody":
-            if "metadata" not in config:
-                config["metadata"] = {}
-            config["metadata"]["superanimal_name"] = superanimal_name
+        # Add superanimal_name to config metadata for all superanimal models (needed for detector routing)
+        if "metadata" not in config:
+            config["metadata"] = {}
+        config["metadata"]["superanimal_name"] = superanimal_name
         
         config = update_config(config, max_individuals, device)
         

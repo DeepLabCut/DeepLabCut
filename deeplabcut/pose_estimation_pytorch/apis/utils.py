@@ -599,8 +599,17 @@ def get_inference_runners(
                     model_config["detector"]["data"]["inference"]
                 )
 
-            if superanimal_name == "superanimal_humanbody":
-                # Only for superanimal_humanbody, use torchvision detector
+            # Check if detector exists in dlclibrary for this superanimal
+            try:
+                import dlclibrary.dlcmodelzoo.modelzoo_download as mz
+                dataset_config = mz._load_pytorch_dataset_models(superanimal_name)
+                detector_exists_in_dlclibrary = "detectors" in dataset_config
+            except (KeyError, ImportError):
+                # If no detectors defined in dlclibrary, use torchvision detector
+                detector_exists_in_dlclibrary = False
+            
+            if not detector_exists_in_dlclibrary:
+                # Use torchvision detector for models without custom detectors in dlclibrary
                 from deeplabcut.pose_estimation_pytorch.models.detectors.torchvision import TorchvisionDetectorAdaptor
                 detector_config = model_config["detector"]["model"].copy()
                 # Remove registry-specific fields that TorchvisionDetectorAdaptor doesn't expect
@@ -616,7 +625,7 @@ def get_inference_runners(
                     detector_config["weights"] = None
                 detector_model = TorchvisionDetectorAdaptor(**detector_config)
             else:
-                # All other superanimal_* use custom detectors as before
+                # Use custom detectors for models that have detectors defined in dlclibrary
                 detector_config = model_config["detector"]["model"].copy()
                 # If a custom snapshot is provided, do not use pretrained weights
                 pretrained = False if detector_path is not None else True
