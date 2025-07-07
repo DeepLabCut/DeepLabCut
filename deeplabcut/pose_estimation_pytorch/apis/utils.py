@@ -601,26 +601,22 @@ def get_inference_runners(
 
             print(f"DEBUG: Creating detector for superanimal_name: '{superanimal_name}'")
             if superanimal_name == "superanimal_humanbody":
-                # Only for superanimal_humanbody, use torchvision detector
                 from deeplabcut.pose_estimation_pytorch.models.detectors.torchvision import TorchvisionDetectorAdaptor
-                detector_config = model_config["detector"]["model"].copy()
                 expected_fields = {
                     "model", "weights", "num_classes", "freeze_bn_stats", "freeze_bn_weights", 
                     "box_score_thresh", "model_kwargs", "model_name", "superanimal_name"
                 }
-                unexpected_fields = [k for k in detector_config.keys() if k not in expected_fields]
+                unexpected_fields = [k for k in model_config["detector"]["model"].keys() if k not in expected_fields]
                 for field in unexpected_fields:
-                    detector_config.pop(field, None)
+                    model_config["detector"]["model"].pop(field, None)
                 if detector_path is not None:
-                    detector_config["weights"] = None
-                detector_model = TorchvisionDetectorAdaptor(**detector_config)
+                    model_config["detector"]["model"]["weights"] = None
+                detector_model = TorchvisionDetectorAdaptor(**model_config["detector"]["model"])
                 detector_model.superanimal_name = superanimal_name
                 print(f"DEBUG: Created TorchvisionDetectorAdaptor for {superanimal_name}")
             else:
-                # For all other superanimal models, use the original logic (pre-humanbody integration)
-                detector_config = model_config["detector"]["model"].copy()
                 pretrained = False if detector_path is not None else True
-                detector_model = DETECTORS.build(detector_config, pretrained=pretrained)
+                detector_model = DETECTORS.build(model_config["detector"]["model"], pretrained=pretrained)
                 detector_model.superanimal_name = superanimal_name
                 print(f"DEBUG: Created custom detector from DETECTORS registry for {superanimal_name}")
                 print(f"DEBUG: Custom detector type: {type(detector_model)}")
