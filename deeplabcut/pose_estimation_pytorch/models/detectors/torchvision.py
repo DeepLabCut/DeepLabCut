@@ -67,7 +67,6 @@ class TorchvisionDetectorAdaptor(BaseDetector):
         model_name: str | None = None,
         superanimal_name: str | None = None,
     ) -> None:
-        print(f"[DEBUG] TorchvisionDetectorAdaptor __init__ called for superanimal_name={superanimal_name}")
         super().__init__(
             freeze_bn_stats=freeze_bn_stats,
             freeze_bn_weights=freeze_bn_weights,
