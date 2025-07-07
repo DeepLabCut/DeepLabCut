@@ -45,7 +45,9 @@ def get_checkpoint_epoch(checkpoint_path):
     Returns:
         int: Current epoch number, or 0 if not found
     """
-    checkpoint = torch.load(checkpoint_path)
+    # Use CUDA if available, otherwise use CPU
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    checkpoint = torch.load(checkpoint_path, map_location=device)
     if "metadata" in checkpoint and "epoch" in checkpoint["metadata"]:
         return checkpoint["metadata"]["epoch"]
     else:
