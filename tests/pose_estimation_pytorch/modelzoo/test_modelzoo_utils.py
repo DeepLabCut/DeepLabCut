@@ -13,6 +13,7 @@ import pytest
 
 import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
 
+# TODO: make a proper test incl. human model, bird model and that skips the require... at least once per week.
 
 @pytest.mark.parametrize(
     "super_animal", ["superanimal_quadruped", "superanimal_topviewmouse"]

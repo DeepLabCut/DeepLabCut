@@ -363,6 +363,59 @@ def get_superanimal_colormaps():
         )
         / 255
     )
+    superanimal_humanbody_colors = (
+        np.array(
+            [
+                [255, 0, 0],
+                [255, 20, 0],
+                [255, 40, 0],
+                [255, 60, 0],
+                [255, 80, 0],
+                [255, 100, 0],
+                [255, 120, 0],
+                [255, 140, 0],
+                [255, 160, 0],
+                [255, 180, 0],
+                [255, 200, 0],
+                [255, 220, 0],
+                [255, 240, 0],
+                [255, 255, 0],
+                [220, 255, 0],
+                [180, 255, 0],
+                [140, 255, 0],
+                [100, 255, 0],
+                [60, 255, 0],
+                [20, 255, 0],
+                [0, 255, 0],
+                [0, 255, 40],
+                [0, 255, 80],
+                [0, 255, 120],
+                [0, 255, 160],
+                [0, 255, 200],
+                [0, 255, 240],
+                [0, 220, 255],
+                [0, 180, 255],
+                [0, 140, 255],
+                [0, 100, 255],
+                [0, 60, 255],
+                [0, 20, 255],
+                [0, 0, 255],
+                [40, 0, 255],
+                [80, 0, 255],
+                [120, 0, 255],
+                [160, 0, 255],
+                [200, 0, 255],
+                [240, 0, 255],
+                [255, 0, 240],
+                [255, 0, 200],
+                [255, 0, 160],
+                [255, 0, 120],
+                [255, 0, 80],
+                [255, 0, 40],
+            ]
+        )
+        / 255
+    )
 
     superanimal_colormaps = {
         "superanimal_bird": ListedColormap(
@@ -373,6 +426,9 @@ def get_superanimal_colormaps():
         ),
         "superanimal_quadruped": ListedColormap(
             list(superanimal_quadruped_colors), name="superanimal_quadruped"
+        ),
+        "superanimal_humanbody": ListedColormap(
+            list(superanimal_humanbody_colors), name="superanimal_humanbody"
         ),
     }
     return superanimal_colormaps
