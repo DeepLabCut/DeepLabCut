@@ -72,6 +72,4 @@ class FasterRCNN(TorchvisionDetectorAdaptor):
             self.model.roi_heads.box_predictor = detection.faster_rcnn.FastRCNNPredictor(
                 in_features, num_classes
             )
-        # Debug: print head shape after model creation
-        print(f"DEBUG: Head cls_score weight shape: {self.model.roi_heads.box_predictor.cls_score.weight.shape}")
-        print(f"DEBUG: Head bbox_pred weight shape: {self.model.roi_heads.box_predictor.bbox_pred.weight.shape}")
+            
