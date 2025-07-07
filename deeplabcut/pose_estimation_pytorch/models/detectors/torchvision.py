@@ -67,6 +67,7 @@ class TorchvisionDetectorAdaptor(BaseDetector):
         model_name: str | None = None,
         superanimal_name: str | None = None,
     ) -> None:
+        print(f"[DEBUG] TorchvisionDetectorAdaptor __init__ called for superanimal_name={superanimal_name}")
         super().__init__(
             freeze_bn_stats=freeze_bn_stats,
             freeze_bn_weights=freeze_bn_weights,
@@ -210,7 +211,6 @@ class TorchvisionDetectorAdaptor(BaseDetector):
                         print(f"DEBUG: Max score: {prediction['scores'].max() if len(prediction['scores']) > 0 else 'No scores'}")
                         # Check if model has roi_heads (FasterRCNN) or not (SSD)
                         # Skip threshold check for SSD models that don't have roi_heads
-                        print(f"DEBUG: SSD model - using default threshold comparison")
                 
                 if not isinstance(prediction, dict) or "boxes" not in prediction:
                     # Unexpected output, return empty

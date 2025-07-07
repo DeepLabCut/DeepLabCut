@@ -604,7 +604,6 @@ def get_inference_runners(
                 # Only for superanimal_humanbody, use torchvision detector
                 from deeplabcut.pose_estimation_pytorch.models.detectors.torchvision import TorchvisionDetectorAdaptor
                 detector_config = model_config["detector"]["model"].copy()
-                # Remove registry-specific fields that TorchvisionDetectorAdaptor doesn't expect
                 expected_fields = {
                     "model", "weights", "num_classes", "freeze_bn_stats", "freeze_bn_weights", 
                     "box_score_thresh", "model_kwargs", "model_name", "superanimal_name"
@@ -612,16 +611,14 @@ def get_inference_runners(
                 unexpected_fields = [k for k in detector_config.keys() if k not in expected_fields]
                 for field in unexpected_fields:
                     detector_config.pop(field, None)
-                print(f"DEBUG: Removed unexpected fields for torchvision detector: {unexpected_fields}")
-                # If we have a custom snapshot path, don't use pretrained weights
                 if detector_path is not None:
                     detector_config["weights"] = None
                 detector_model = TorchvisionDetectorAdaptor(**detector_config)
+                detector_model.superanimal_name = superanimal_name
                 print(f"DEBUG: Created TorchvisionDetectorAdaptor for {superanimal_name}")
             else:
-                # Use custom detectors for models that have detectors defined in dlclibrary
+                # For all other superanimal models, use the original logic (pre-humanbody integration)
                 detector_config = model_config["detector"]["model"].copy()
-                # If a custom snapshot is provided, do not use pretrained weights
                 pretrained = False if detector_path is not None else True
                 detector_model = DETECTORS.build(detector_config, pretrained=pretrained)
                 print(f"DEBUG: Created custom detector from DETECTORS registry for {superanimal_name}")
