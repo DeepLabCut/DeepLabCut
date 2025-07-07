@@ -436,8 +436,9 @@ class ModelZoo(DefaultTab):
                 dedicated_kwargs = {
                     "destfolder": self._destfolder,
                     "bbox_threshold": kwargs.get("bbox_threshold", 0.1),
-                    "pose_threshold": kwargs.get("pseudo_threshold", 0.4),  # Use pose threshold from GUI
+                    "pose_threshold": kwargs.get("pseudo_threshold", 0.4),
                     "device": "cuda" if torch.cuda.is_available() else "cpu",
+                    "detector_name": kwargs.get("detector_name", "fasterrcnn_mobilenet_v3_large_fpn"),
                 }
                 
                 if can_run_in_background:
@@ -655,16 +656,17 @@ class ModelZoo(DefaultTab):
         if self.root.engine == Engine.TF:
             self.detector_type_selector.addItems(["dlcrnet"])
         else:
-            try:
-                detectors = dlclibrary.get_available_detectors(super_animal)
-                self.detector_type_selector.addItems(detectors)
-            except KeyError:
-                # Handle SuperAnimal models that don't have detectors defined in dlclibrary
-                # For example, superanimal_humanbody uses torchvision detectors
-                if super_animal == "superanimal_humanbody":
-                    self.detector_type_selector.addItems(["fasterrcnn_mobilenet_v3_large_fpn"])
-                else:
-                    # For other models without detectors, add a placeholder or leave empty
+            if super_animal == "superanimal_humanbody":
+                self.detector_type_selector.clear()
+                self.detector_type_selector.addItems([
+                    "fasterrcnn_mobilenet_v3_large_fpn",
+                    "fasterrcnn_resnet50_fpn_v2"
+                ])
+            else:
+                try:
+                    detectors = dlclibrary.get_available_detectors(super_animal)
+                    self.detector_type_selector.addItems(detectors)
+                except KeyError:
                     pass
 
     @Slot(Engine)
