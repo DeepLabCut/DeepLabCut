@@ -621,6 +621,7 @@ def get_inference_runners(
                 detector_config = model_config["detector"]["model"].copy()
                 pretrained = False if detector_path is not None else True
                 detector_model = DETECTORS.build(detector_config, pretrained=pretrained)
+                detector_model.superanimal_name = superanimal_name
                 print(f"DEBUG: Created custom detector from DETECTORS registry for {superanimal_name}")
                 print(f"DEBUG: Custom detector type: {type(detector_model)}")
             detector_runner = build_inference_runner(

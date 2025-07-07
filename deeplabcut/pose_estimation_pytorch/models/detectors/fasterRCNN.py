@@ -59,17 +59,17 @@ class FasterRCNN(TorchvisionDetectorAdaptor):
 
         super().__init__(
             model=variant,
-            weights=("COCO_V1" if pretrained else None),
-            num_classes=(2 if not pretrained else None),  # Only set num_classes for custom detector
+            weights=None,  # Always pass None to ensure num_classes=2 is used
+            num_classes=2,  # Always use 2 classes for superanimal models
             freeze_bn_stats=freeze_bn_stats,
             freeze_bn_weights=freeze_bn_weights,
             box_score_thresh=box_score_thresh,
         )
 
-        # Only replace the head if not using COCO weights
         if not pretrained:
             num_classes = 2
             in_features = self.model.roi_heads.box_predictor.cls_score.in_features
             self.model.roi_heads.box_predictor = detection.faster_rcnn.FastRCNNPredictor(
                 in_features, num_classes
             )
+            
