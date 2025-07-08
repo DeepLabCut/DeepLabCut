@@ -10,8 +10,6 @@
 #
 import os
 import webbrowser
-import tempfile
-import yaml
 from functools import partial
 from pathlib import Path
 
@@ -21,7 +19,6 @@ from PySide6.QtCore import QRegularExpression, Qt, QTimer, Signal, Slot, QSize
 from PySide6.QtGui import QIcon, QPixmap, QRegularExpressionValidator
 import cv2
 import torch
-import numpy as np
 
 import deeplabcut
 from deeplabcut.core.engine import Engine
@@ -30,7 +27,6 @@ from deeplabcut.gui.components import (
     _create_grid_layout,
     _create_label_widget,
     DefaultTab,
-    VideoSelectionWidget,
     MediaSelectionWidget,
 )
 from deeplabcut.gui.utils import move_to_separate_thread
