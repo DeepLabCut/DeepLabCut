@@ -28,6 +28,7 @@ from deeplabcut.gui.components import (
     _create_label_widget,
     DefaultTab,
     MediaSelectionWidget,
+    set_layout_contents_visible,
 )
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.gui.widgets import ClickableLabel
@@ -267,13 +268,15 @@ class ModelZoo(DefaultTab):
         self.adapt_iter_spinbox.setSingleStep(100)
         self.adapt_iter_spinbox.setGroupSeparatorShown(True)
         self.adapt_iter_spinbox.setMaximumWidth(300)
-        adaptation_settings_row = QtWidgets.QHBoxLayout()
-        adaptation_settings_row.addWidget(pseudo_threshold_label)
-        adaptation_settings_row.addWidget(self.pseudo_threshold_spinbox)
-        adaptation_settings_row.addSpacing(20)
-        adaptation_settings_row.addWidget(adapt_iter_label)
-        adaptation_settings_row.addWidget(self.adapt_iter_spinbox)
-        tf_settings_layout.addLayout(adaptation_settings_row, 3, 0, 1, 6)
+        self.tf_adaptation_settings_row = QtWidgets.QHBoxLayout()
+        self.tf_adaptation_settings_row.addWidget(pseudo_threshold_label)
+        self.tf_adaptation_settings_row.addWidget(self.pseudo_threshold_spinbox)
+        self.tf_adaptation_settings_row.addSpacing(20)
+        self.tf_adaptation_settings_row.addWidget(adapt_iter_label)
+        self.tf_adaptation_settings_row.addWidget(self.adapt_iter_spinbox)
+        tf_settings_layout.addLayout(self.tf_adaptation_settings_row, 3, 0, 1, 6)
+
+        self.adapt_checkbox.stateChanged.connect(self._adapt_checkbox_status_changed)
 
         self.tf_widget = QtWidgets.QWidget()
         self.tf_widget.setLayout(tf_settings_layout)
@@ -328,22 +331,32 @@ class ModelZoo(DefaultTab):
         self.torch_adapt_det_epoch_spinbox.setRange(1, 50)
         self.torch_adapt_det_epoch_spinbox.setValue(4)
         self.torch_adapt_det_epoch_spinbox.setMaximumWidth(100)
-        adaptation_settings_row = QtWidgets.QHBoxLayout()
-        adaptation_settings_row.addWidget(pseudo_threshold_label)
-        adaptation_settings_row.addWidget(self.torch_pseudo_threshold_spinbox)
-        adaptation_settings_row.addSpacing(20)
-        adaptation_settings_row.addWidget(adapt_epoch_label)
-        adaptation_settings_row.addWidget(self.torch_adapt_epoch_spinbox)
-        adaptation_settings_row.addSpacing(20)
-        adaptation_settings_row.addWidget(adapt_det_epoch_label)
-        adaptation_settings_row.addWidget(self.torch_adapt_det_epoch_spinbox)
-        adaptation_settings_row.addStretch()
-        torch_settings_layout.addLayout(adaptation_settings_row, 2, 0, 1, 6)
+        self.torch_adaptation_settings_row = QtWidgets.QHBoxLayout()
+        self.torch_adaptation_settings_row.addWidget(pseudo_threshold_label)
+        self.torch_adaptation_settings_row.addWidget(self.torch_pseudo_threshold_spinbox)
+        self.torch_adaptation_settings_row.addSpacing(20)
+        self.torch_adaptation_settings_row.addWidget(adapt_epoch_label)
+        self.torch_adaptation_settings_row.addWidget(self.torch_adapt_epoch_spinbox)
+        self.torch_adaptation_settings_row.addSpacing(20)
+        self.torch_adaptation_settings_row.addWidget(adapt_det_epoch_label)
+        self.torch_adaptation_settings_row.addWidget(self.torch_adapt_det_epoch_spinbox)
+        self.torch_adaptation_settings_row.addStretch()
+        torch_settings_layout.addLayout(self.torch_adaptation_settings_row, 2, 0, 1, 6)
+
+        self.torch_adapt_checkbox.stateChanged.connect(
+            self._torch_adapt_checkbox_status_changed
+        )
 
         self.torch_widget = QtWidgets.QWidget()
         self.torch_widget.setLayout(torch_settings_layout)
         self.torch_widget.hide()
         self.main_layout.addWidget(self.torch_widget)
+
+    def _adapt_checkbox_status_changed(self, state: int) -> None:
+        set_layout_contents_visible(self.tf_adaptation_settings_row, Qt.CheckState(state) == Qt.Checked)
+
+    def _torch_adapt_checkbox_status_changed(self, state: int) -> None:
+        set_layout_contents_visible(self.torch_adaptation_settings_row, Qt.CheckState(state) == Qt.Checked)
 
     def select_folder(self):
         dirname = QtWidgets.QFileDialog.getExistingDirectory(

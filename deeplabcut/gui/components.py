@@ -670,3 +670,18 @@ def _create_confirmation_box(title, description):
     msg.setWindowIcon(QIcon(logo))
     msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
     return msg
+
+
+def set_layout_contents_visible(layout: QtWidgets.QLayout, visible: bool):
+    for i in range(layout.count()):
+        item = layout.itemAt(i)
+
+        # If it's a widget item
+        widget = item.widget()
+        if widget is not None:
+            widget.setVisible(visible)
+
+        # If it's a nested layout
+        child_layout = item.layout()
+        if child_layout is not None:
+            set_layout_contents_visible(child_layout, visible)
