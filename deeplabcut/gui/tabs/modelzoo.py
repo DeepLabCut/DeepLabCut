@@ -663,18 +663,10 @@ class ModelZoo(DefaultTab):
         if self.root.engine == Engine.TF:
             self.detector_type_selector.addItems(["dlcrnet"])
         else:
-            if super_animal == "superanimal_humanbody":
-                self.detector_type_selector.clear()
-                self.detector_type_selector.addItems([
-                    "fasterrcnn_mobilenet_v3_large_fpn",
-                    "fasterrcnn_resnet50_fpn_v2"
-                ])
-            else:
-                try:
-                    detectors = dlclibrary.get_available_detectors(super_animal)
-                    self.detector_type_selector.addItems(detectors)
-                except KeyError:
-                    pass
+            detectors = dlclibrary.get_available_detectors(super_animal)
+            self.detector_type_selector.addItems(detectors)
+            set_layout_contents_visible(self.detector_row, super_animal != "superanimal_humanbody")
+
 
     @Slot(Engine)
     def _on_engine_change(self, engine: Engine) -> None:
@@ -687,7 +679,7 @@ class ModelZoo(DefaultTab):
             self.tf_widget.show()
 
         # Hide widgets in detector row
-        set_layout_contents_visible(self.detector_row, engine == Engine.PYTORCH)
+        set_layout_contents_visible(self.detector_row, engine == Engine.PYTORCH and self.model_combo.currentText() != "superanimal_humanbody")
 
         # Initialize adaptation options based on current media type
         current_media_type = self.media_selection_widget.media_type_widget.currentText()
