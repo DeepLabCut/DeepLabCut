@@ -199,18 +199,18 @@ class ModelZoo(DefaultTab):
         self.model_combo.currentTextChanged.connect(self._update_detectors)
 
     def _build_tf_attributes(self) -> None:
-        model_settings_layout = _create_grid_layout(margins=(20, 0, 0, 0))
+        tf_settings_layout = _create_grid_layout(margins=(20, 0, 0, 0))
 
         scales_label = QtWidgets.QLabel("Scale list")
         scales_label.setMinimumWidth(300)
         self.scales_line = QtWidgets.QLineEdit("", parent=self)
+        self.scales_line.setMinimumWidth(500)
         self.scales_line.setPlaceholderText(
             "Optionally input a list of integer sizes separated by commas..."
         )
         validator = RegExpValidator(self._val_pattern, self)
         validator.validationChanged.connect(self._handle_validation_change)
         self.scales_line.setValidator(validator)
-
         tooltip_label = QtWidgets.QLabel()
         tooltip_label.setPixmap(
             QPixmap(
@@ -221,9 +221,13 @@ class ModelZoo(DefaultTab):
             "Approximate animal sizes in pixels, for spatial pyramid search. If left "
             "blank, defaults to video height +/- 50 pixels"
         )
+        scales_row = QtWidgets.QHBoxLayout()
+        scales_row.addWidget(scales_label)
+        scales_row.addWidget(self.scales_line)
+        scales_row.addWidget(tooltip_label)
+        tf_settings_layout.addLayout(scales_row, 1, 0, 1, 2)
 
         # --- Adaptation Checkbox with Help Button (TF section) ---
-        adapt_row = QtWidgets.QHBoxLayout()
         self.adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
         self.adapt_checkbox.setChecked(True)
         self.adapt_checkbox.setStyleSheet("font-weight: bold; font-size: 16px; padding: 6px 12px;")
@@ -239,10 +243,11 @@ class ModelZoo(DefaultTab):
                 "This will adapt the model on the fly to your video data in a self-supervised way."
             )
         adapt_help_btn.clicked.connect(show_adapt_help)
-        adapt_row.addWidget(self.adapt_checkbox)
-        adapt_row.addWidget(adapt_help_btn)
-        adapt_row.addStretch()
-        model_settings_layout.addLayout(adapt_row, 2, 0, 1, 2)
+        use_adaptation_row = QtWidgets.QHBoxLayout()
+        use_adaptation_row.addWidget(self.adapt_checkbox)
+        use_adaptation_row.addWidget(adapt_help_btn)
+        use_adaptation_row.addStretch()
+        tf_settings_layout.addLayout(use_adaptation_row, 2, 0, 1, 2)
 
         pseudo_threshold_label = QtWidgets.QLabel("Pseudo-label confidence threshold")
         self.pseudo_threshold_spinbox = QtWidgets.QDoubleSpinBox(
@@ -253,8 +258,7 @@ class ModelZoo(DefaultTab):
             value=0.1,
             wrapping=True,
         )
-        self.pseudo_threshold_spinbox.setMaximumWidth(300)
-
+        self.pseudo_threshold_spinbox.setMaximumWidth(100)
         adapt_iter_label = QtWidgets.QLabel("Number of adaptation iterations")
         adapt_iter_label.setMinimumWidth(300)
         self.adapt_iter_spinbox = QtWidgets.QSpinBox()
@@ -263,22 +267,44 @@ class ModelZoo(DefaultTab):
         self.adapt_iter_spinbox.setSingleStep(100)
         self.adapt_iter_spinbox.setGroupSeparatorShown(True)
         self.adapt_iter_spinbox.setMaximumWidth(300)
+        adaptation_settings_row = QtWidgets.QHBoxLayout()
+        adaptation_settings_row.addWidget(pseudo_threshold_label)
+        adaptation_settings_row.addWidget(self.pseudo_threshold_spinbox)
+        adaptation_settings_row.addSpacing(20)
+        adaptation_settings_row.addWidget(adapt_iter_label)
+        adaptation_settings_row.addWidget(self.adapt_iter_spinbox)
+        tf_settings_layout.addLayout(adaptation_settings_row, 3, 0, 1, 6)
 
-        model_settings_layout.addWidget(scales_label, 1, 0)
-        model_settings_layout.addWidget(self.scales_line, 1, 1)
-        model_settings_layout.addWidget(tooltip_label, 1, 2)
-        model_settings_layout.addWidget(adapt_iter_label, 4, 0)
-        model_settings_layout.addWidget(self.adapt_iter_spinbox, 4, 1)
         self.tf_widget = QtWidgets.QWidget()
-        self.tf_widget.setLayout(model_settings_layout)
+        self.tf_widget.setLayout(tf_settings_layout)
         self.tf_widget.hide()
         self.main_layout.addWidget(self.tf_widget)
 
     def _build_torch_attributes(self) -> None:
         torch_settings_layout = _create_grid_layout(margins=(20, 0, 0, 0))
 
+        # --- Torch section adaptation checkbox with help button ---
+        self.torch_adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
+        self.torch_adapt_checkbox.setChecked(True)
+        self.torch_adapt_checkbox.setStyleSheet("font-weight: bold; font-size: 16px; padding: 6px 12px;")
+        torch_adapt_help_btn = QtWidgets.QToolButton()
+        torch_adapt_help_btn.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", "help2.png")))
+        torch_adapt_help_btn.setIconSize(QSize(24, 24))
+        torch_adapt_help_btn.setToolTip("What is video adaptation?")
+        def show_torch_adapt_help():
+            QtWidgets.QMessageBox.information(
+                self,
+                "Video Adaptation",
+                "This will adapt the model on the fly to your video data in a self-supervised way."
+            )
+        torch_adapt_help_btn.clicked.connect(show_torch_adapt_help)
+        use_adaptation_row = QtWidgets.QHBoxLayout()
+        use_adaptation_row.addWidget(self.torch_adapt_checkbox)
+        use_adaptation_row.addWidget(torch_adapt_help_btn)
+        use_adaptation_row.addStretch()
+        torch_settings_layout.addLayout(use_adaptation_row, 1, 0, 1, 2)
+
         # Compact adaptation settings row
-        adapt_row = QtWidgets.QHBoxLayout()
         pseudo_threshold_label = QtWidgets.QLabel("Pseudo-label confidence threshold")
         pseudo_threshold_label.setMinimumWidth(200)
         self.torch_pseudo_threshold_spinbox = QtWidgets.QDoubleSpinBox(
@@ -302,37 +328,17 @@ class ModelZoo(DefaultTab):
         self.torch_adapt_det_epoch_spinbox.setRange(1, 50)
         self.torch_adapt_det_epoch_spinbox.setValue(4)
         self.torch_adapt_det_epoch_spinbox.setMaximumWidth(100)
-        adapt_row.addWidget(pseudo_threshold_label)
-        adapt_row.addWidget(self.torch_pseudo_threshold_spinbox)
-        adapt_row.addSpacing(20)
-        adapt_row.addWidget(adapt_epoch_label)
-        adapt_row.addWidget(self.torch_adapt_epoch_spinbox)
-        adapt_row.addSpacing(20)
-        adapt_row.addWidget(adapt_det_epoch_label)
-        adapt_row.addWidget(self.torch_adapt_det_epoch_spinbox)
-        adapt_row.addStretch()
-        torch_settings_layout.addLayout(adapt_row, 2, 0, 1, 6)
-
-        # --- Torch section adaptation checkbox with help button ---
-        torch_adapt_row = QtWidgets.QHBoxLayout()
-        self.torch_adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
-        self.torch_adapt_checkbox.setChecked(True)
-        self.torch_adapt_checkbox.setStyleSheet("font-weight: bold; font-size: 16px; padding: 6px 12px;")
-        torch_adapt_help_btn = QtWidgets.QToolButton()
-        torch_adapt_help_btn.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", "help2.png")))
-        torch_adapt_help_btn.setIconSize(QSize(24, 24))
-        torch_adapt_help_btn.setToolTip("What is video adaptation?")
-        def show_torch_adapt_help():
-            QtWidgets.QMessageBox.information(
-                self,
-                "Video Adaptation",
-                "This will adapt the model on the fly to your video data in a self-supervised way."
-            )
-        torch_adapt_help_btn.clicked.connect(show_torch_adapt_help)
-        torch_adapt_row.addWidget(self.torch_adapt_checkbox)
-        torch_adapt_row.addWidget(torch_adapt_help_btn)
-        torch_adapt_row.addStretch()
-        torch_settings_layout.addLayout(torch_adapt_row, 1, 0, 1, 2)
+        adaptation_settings_row = QtWidgets.QHBoxLayout()
+        adaptation_settings_row.addWidget(pseudo_threshold_label)
+        adaptation_settings_row.addWidget(self.torch_pseudo_threshold_spinbox)
+        adaptation_settings_row.addSpacing(20)
+        adaptation_settings_row.addWidget(adapt_epoch_label)
+        adaptation_settings_row.addWidget(self.torch_adapt_epoch_spinbox)
+        adaptation_settings_row.addSpacing(20)
+        adaptation_settings_row.addWidget(adapt_det_epoch_label)
+        adaptation_settings_row.addWidget(self.torch_adapt_det_epoch_spinbox)
+        adaptation_settings_row.addStretch()
+        torch_settings_layout.addLayout(adaptation_settings_row, 2, 0, 1, 6)
 
         self.torch_widget = QtWidgets.QWidget()
         self.torch_widget.setLayout(torch_settings_layout)
