@@ -399,16 +399,6 @@ class ModelZoo(DefaultTab):
         self.scales_line.setStyleSheet(f"border: 1px solid {color}")
         QTimer.singleShot(500, lambda: self.scales_line.setStyleSheet(""))
 
-    def update_progress(self, message, current, total):
-        """Update the GUI progress bar with current step and progress"""
-        if hasattr(self.root, '_progress_bar'):
-            progress_percent = int((current / total) * 100) if total > 0 else 0
-            self.root._progress_bar.setValue(progress_percent)
-            # Update progress bar text if available
-            if hasattr(self.root._progress_bar, 'setFormat'):
-                self.root._progress_bar.setFormat(f"{message} ({current}/{total})")
-            print(f"[GUI Progress] {message} ({current}/{total})")
-
     def run_video_adaptation(self):
         files = list(self.files)
         if not files:
