@@ -198,6 +198,7 @@ class ModelZoo(DefaultTab):
         self.main_layout.addWidget(self.settings_widget)
         self.model_combo.currentTextChanged.connect(self._update_pose_models)
         self.model_combo.currentTextChanged.connect(self._update_detectors)
+        self.model_combo.currentTextChanged.connect(self._update_adaptation_visibility)
 
     def _build_tf_attributes(self) -> None:
         tf_settings_layout = _create_grid_layout(margins=(20, 0, 0, 0))
@@ -657,6 +658,11 @@ class ModelZoo(DefaultTab):
             self.detector_type_selector.addItems(detectors)
             set_layout_contents_visible(self.detector_row, super_animal != "superanimal_humanbody")
 
+    def _update_adaptation_visibility(self, super_animal: str):
+        if self.root.engine == Engine.PYTORCH and super_animal != "superanimal_humanbody":
+            self.torch_widget.show()
+        else:
+            self.torch_widget.hide()
 
     @Slot(Engine)
     def _on_engine_change(self, engine: Engine) -> None:
