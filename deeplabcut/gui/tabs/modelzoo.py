@@ -626,45 +626,43 @@ class ModelZoo(DefaultTab):
     def _update_available_models(self, engine: Engine) -> None:
         current_dataset = self.model_combo.currentText()
 
-        while self.model_combo.count() > 0:
-            self.model_combo.removeItem(0)
-
         if engine == Engine.TF:
             supermodels = ["superanimal_topviewmouse", "superanimal_quadruped"]
         else:
             supermodels = dlclibrary.get_available_datasets()
 
-        self.model_combo.addItems(supermodels)
-        if current_dataset in supermodels:
-            self.model_combo.setCurrentIndex(supermodels.index(current_dataset))
+        set_combo_items(
+            combo_box = self.model_combo,
+            items = supermodels,
+            index = supermodels.index(current_dataset) if current_dataset in supermodels else 0,
+        )
 
     def _update_pose_models(self, super_animal: str) -> None:
-        while self.net_type_selector.count() > 0:
-            self.net_type_selector.removeItem(0)
-
         if len(super_animal) == 0:
+            set_combo_items(
+                combo_box = self.net_type_selector,
+                items = []
+            )
             return
 
-        if self.root.engine == Engine.TF:
-            self.net_type_selector.addItems(["dlcrnet"])
-        else:
-            self.net_type_selector.addItems(
-                dlclibrary.get_available_models(super_animal)
-            )
+        set_combo_items(
+            combo_box = self.net_type_selector,
+            items = ["dlcrnet"] if self.root.engine == Engine.TF else dlclibrary.get_available_models(super_animal)
+        )
 
     def _update_detectors(self, super_animal: str) -> None:
-        while self.detector_type_selector.count() > 0:
-            self.detector_type_selector.removeItem(0)
-
         if len(super_animal) == 0:
+            set_combo_items(
+                combo_box = self.detector_type_selector,
+                items = []
+            )
             return
 
-        if self.root.engine == Engine.TF:
-            self.detector_type_selector.addItems(["dlcrnet"])
-        else:
-            detectors = dlclibrary.get_available_detectors(super_animal)
-            self.detector_type_selector.addItems(detectors)
-            set_layout_contents_visible(self.detector_row, super_animal != "superanimal_humanbody")
+        set_combo_items(
+            combo_box = self.detector_type_selector,
+            items = [] if self.root.engine == Engine.TF else dlclibrary.get_available_detectors(super_animal)
+        )
+        set_layout_contents_visible(self.detector_row, self.root.engine == Engine.PYTORCH and super_animal != "superanimal_humanbody")
 
     def _update_adaptation_visibility(self, super_animal: str):
         if self.root.engine == Engine.PYTORCH and super_animal != "superanimal_humanbody":
