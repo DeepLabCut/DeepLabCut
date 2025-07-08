@@ -45,7 +45,9 @@ def get_checkpoint_epoch(checkpoint_path):
     Returns:
         int: Current epoch number, or 0 if not found
     """
-    checkpoint = torch.load(checkpoint_path)
+    # Use CUDA if available, otherwise use CPU
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    checkpoint = torch.load(checkpoint_path, map_location=device)
     if "metadata" in checkpoint and "epoch" in checkpoint["metadata"]:
         return checkpoint["metadata"]["epoch"]
     else:
@@ -431,14 +433,13 @@ def video_inference_superanimal(
             superanimal_name, pose_model_path, detector_path
         )
 
-        # Add superanimal_name to config metadata for proper detector routing
+        # Add superanimal_name to config metadata for all superanimal models (needed for detector routing)
         if "metadata" not in config:
             config["metadata"] = {}
         config["metadata"]["superanimal_name"] = superanimal_name
-        print(f"DEBUG: video_inference_superanimal set superanimal_name: {superanimal_name}")
         
         config = update_config(config, max_individuals, device)
-        print(f"DEBUG: video_inference_superanimal after update_config superanimal_name: {config.get('metadata', {}).get('superanimal_name', 'NOT_SET')}")
+        
         output_suffix = "_before_adapt"
         if video_adapt:
             # the users can pass in many videos. For now, we only use one video for

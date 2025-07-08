@@ -75,10 +75,10 @@ class ModelZoo(DefaultTab):
         button_layout.addStretch()
 
         self.main_layout.addWidget(_create_label_widget("Media Selection", "font:bold"))
-        self.media_selection_widget = MediaSelectionWidget(self.root, self)
+        self.media_selection_widget = MediaSelectionWidget(self.root, self, hide_videotype=True)
         self.main_layout.addWidget(self.media_selection_widget)
 
-        # Remove/hide image selection widgets
+        # Remove/hide image selection widgets (not needed for modelzoo)
         self.media_selection_widget.media_type_widget.hide()
         self.media_selection_widget.media_type_widget.setCurrentText("Videos")
 
@@ -434,11 +434,11 @@ class ModelZoo(DefaultTab):
                 
                 # Map GUI parameters to dedicated function parameters
                 dedicated_kwargs = {
-                    "videotype": self.media_selection_widget.videotype_widget.currentText(),
                     "destfolder": self._destfolder,
                     "bbox_threshold": kwargs.get("bbox_threshold", 0.1),
-                    "pose_threshold": kwargs.get("pseudo_threshold", 0.4),  # Use pose threshold from GUI
+                    "pose_threshold": kwargs.get("pseudo_threshold", 0.4),
                     "device": "cuda" if torch.cuda.is_available() else "cpu",
+                    "detector_name": kwargs.get("detector_name", "fasterrcnn_mobilenet_v3_large_fpn"),
                 }
                 
                 if can_run_in_background:
@@ -463,12 +463,10 @@ class ModelZoo(DefaultTab):
             else:
                 # Use standard function for other models
                 if can_run_in_background:
-                    videotype = self.media_selection_widget.videotype_widget.currentText()
                     func = partial(
                         deeplabcut.video_inference_superanimal,
                         files,
                         supermodel_name,
-                        videotype=videotype,
                         dest_folder=self._destfolder,
                         **kwargs,
                     )
@@ -476,12 +474,10 @@ class ModelZoo(DefaultTab):
                     self.worker.finished.connect(self.signal_analysis_complete)
                     self.thread.start()
                 else:
-                    videotype = self.media_selection_widget.videotype_widget.currentText()
                     print(f"Calling video_inference_superanimal with kwargs={kwargs}")
                     results = deeplabcut.video_inference_superanimal(
                         files,
                         supermodel_name,
-                        videotype=videotype,
                         dest_folder=self._destfolder,
                         **kwargs,
                     )
@@ -660,16 +656,17 @@ class ModelZoo(DefaultTab):
         if self.root.engine == Engine.TF:
             self.detector_type_selector.addItems(["dlcrnet"])
         else:
-            try:
-                detectors = dlclibrary.get_available_detectors(super_animal)
-                self.detector_type_selector.addItems(detectors)
-            except KeyError:
-                # Handle SuperAnimal models that don't have detectors defined in dlclibrary
-                # For example, superanimal_humanbody uses torchvision detectors
-                if super_animal == "superanimal_humanbody":
-                    self.detector_type_selector.addItems(["fasterrcnn_mobilenet_v3_large_fpn"])
-                else:
-                    # For other models without detectors, add a placeholder or leave empty
+            if super_animal == "superanimal_humanbody":
+                self.detector_type_selector.clear()
+                self.detector_type_selector.addItems([
+                    "fasterrcnn_mobilenet_v3_large_fpn",
+                    "fasterrcnn_resnet50_fpn_v2"
+                ])
+            else:
+                try:
+                    detectors = dlclibrary.get_available_detectors(super_animal)
+                    self.detector_type_selector.addItems(detectors)
+                except KeyError:
                     pass
 
     @Slot(Engine)

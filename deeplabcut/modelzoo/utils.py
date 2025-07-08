@@ -62,31 +62,31 @@ def get_super_animal_project_cfg(super_animal: str) -> dict:
 def get_super_animal_scorer(
     super_animal: str,
     model_snapshot_path: Path,
-    detector_snapshot_path: Path | None,
+    detector_snapshot_path: Path | str | None,
 ) -> str:
     """
     Args:
         super_animal: The SuperAnimal dataset on which the models were trained
         model_snapshot_path: The path for the SuperAnimal pose model snapshot
-        detector_snapshot_path: The path for the SuperAnimal detector snapshot, if a
-            detector is being used.
+        detector_snapshot_path: The path or name for the SuperAnimal detector, if a detector is being used.
 
     Returns:
         The DLC scorer name to use for the given SuperAnimal models.
     """
     super_animal_prefix = super_animal + "_"
-    dlc_scorer = super_animal_prefix
-
-    if detector_snapshot_path is not None:
-        detector_name = detector_snapshot_path.stem
-        if detector_name.startswith(super_animal_prefix):
-            detector_name = detector_name[len(super_animal_prefix) :]
-        dlc_scorer += f"{detector_name}_"
-
-    model_name = model_snapshot_path.stem
+    # Always use model name first
+    model_name = model_snapshot_path.stem if hasattr(model_snapshot_path, "stem") else str(model_snapshot_path)
     if model_name.startswith(super_animal_prefix):
         model_name = model_name[len(super_animal_prefix) :]
-    dlc_scorer += f"{model_name}"
+    dlc_scorer = f"{super_animal_prefix}{model_name}"
+
+    # Then add detector name if provided
+    if detector_snapshot_path:
+        if isinstance(detector_snapshot_path, (str, Path)):
+            detector_name = Path(detector_snapshot_path).stem if hasattr(detector_snapshot_path, "stem") else str(detector_snapshot_path)
+            if detector_name.startswith(super_animal_prefix):
+                detector_name = detector_name[len(super_animal_prefix) :]
+            dlc_scorer += f"_{detector_name}"
 
     return dlc_scorer
 

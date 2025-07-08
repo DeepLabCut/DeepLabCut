@@ -236,10 +236,11 @@ class VideoSelectionWidget(QtWidgets.QWidget):
 
 
 class MediaSelectionWidget(QtWidgets.QWidget):
-    def __init__(self, root: QtWidgets.QMainWindow, parent: QtWidgets.QWidget):
+    def __init__(self, root: QtWidgets.QMainWindow, parent: QtWidgets.QWidget, hide_videotype: bool = False):
         super().__init__(parent)
         self.root = root
         self.parent = parent
+        self.hide_videotype = hide_videotype
         self._init_layout()
 
     def _init_layout(self):
@@ -275,7 +276,8 @@ class MediaSelectionWidget(QtWidgets.QWidget):
         self.clear_files.clicked.connect(self.clear_selected_files)
 
         layout.addWidget(self.media_type_widget)
-        layout.addWidget(self.videotype_widget)
+        if not self.hide_videotype:
+            layout.addWidget(self.videotype_widget)
         layout.addWidget(self.select_media_button)
         layout.addWidget(self.selected_files_text)
         layout.addWidget(self.clear_files, alignment=Qt.AlignRight)
@@ -288,9 +290,9 @@ class MediaSelectionWidget(QtWidgets.QWidget):
 
     def update_media_type(self, media_type):
         self.clear_selected_files()
-        if media_type == "Videos":
+        if media_type == "Videos" and not self.hide_videotype:
             self.videotype_widget.show()
-        else:
+        elif not self.hide_videotype:
             self.videotype_widget.hide()
 
     def update_videotype(self, vtype):

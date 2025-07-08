@@ -83,7 +83,7 @@ class TorchvisionDetectorAdaptor(BaseDetector):
         if weights == "COCO_V1" or weights is None:
             if model == "fasterrcnn_mobilenet_v3_large_fpn":
                 weights = detection.FasterRCNN_MobileNet_V3_Large_FPN_Weights.DEFAULT
-            elif model == "fasterrcnn_resnet50_fpn_v2":
+            elif model == "fasterrcnn_resnet50_fpn_v2" and self.superanimal_name == "superanimal_humanbody":
                 weights = detection.FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT
             else:
                 weights = None
@@ -210,7 +210,6 @@ class TorchvisionDetectorAdaptor(BaseDetector):
                         print(f"DEBUG: Max score: {prediction['scores'].max() if len(prediction['scores']) > 0 else 'No scores'}")
                         # Check if model has roi_heads (FasterRCNN) or not (SSD)
                         # Skip threshold check for SSD models that don't have roi_heads
-                        print(f"DEBUG: SSD model - using default threshold comparison")
                 
                 if not isinstance(prediction, dict) or "boxes" not in prediction:
                     # Unexpected output, return empty
