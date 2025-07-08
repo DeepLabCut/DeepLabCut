@@ -640,14 +640,6 @@ class ModelZoo(DefaultTab):
                 dlclibrary.get_available_models(super_animal)
             )
 
-        # Hide adaptation controls if superanimal_humanbody is selected
-        if super_animal == "superanimal_humanbody":
-            self.torch_widget.hide()
-            self.torch_adapt_checkbox.hide()
-        else:
-            self.torch_widget.show()
-            self.torch_adapt_checkbox.show()
-
     def _update_detectors(self, super_animal: str) -> None:
         while self.detector_type_selector.count() > 0:
             self.detector_type_selector.removeItem(0)
