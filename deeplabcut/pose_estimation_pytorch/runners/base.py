@@ -114,7 +114,43 @@ class Runner(ABC, Generic[ModelType]):
             The content of the snapshot file.
         """
         snapshot = attempt_snapshot_load(snapshot_path, device, weights_only)
-        model.load_state_dict(snapshot["model"])
+        
+        # Handle the case where snapshot keys have 'model.' prefix
+        snapshot_weights = snapshot["model"]
+        model_state_dict = model.state_dict()
+        
+        # Diagnostic: Always add 'model.' prefix for superanimal_topviewmouse detectors
+        is_topviewmouse = hasattr(model, 'superanimal_name') and getattr(model, 'superanimal_name', None) == 'superanimal_topviewmouse'
+        is_detector = 'FasterRCNN' in str(type(model)) or 'SSDLite' in str(type(model))
+        if is_topviewmouse and is_detector:
+            print(f"DEBUG: Forcing prefix ADD for superanimal_topviewmouse detector!")
+            cleaned_weights = {}
+            for key, value in snapshot_weights.items():
+                if not key.startswith('model.'):
+                    cleaned_key = 'model.' + key  # Add 'model.' prefix
+                    cleaned_weights[cleaned_key] = value
+                else:
+                    cleaned_weights[key] = value
+            print(f"DEBUG: Loading cleaned weights with {len(cleaned_weights)} keys")
+            model.load_state_dict(cleaned_weights)
+        elif (any(key.startswith('model.') for key in snapshot_weights.keys()) and 
+            not any(key.startswith('model.') for key in model_state_dict.keys())):
+            print(f"DEBUG: Detected 'model.' prefix mismatch, cleaning keys...")
+            # Strip the 'model.' prefix from snapshot keys
+            cleaned_weights = {}
+            for key, value in snapshot_weights.items():
+                if key.startswith('model.'):
+                    cleaned_key = key[6:]  # Remove 'model.' prefix
+                    cleaned_weights[cleaned_key] = value
+                else:
+                    cleaned_weights[key] = value
+            print(f"DEBUG: Loading cleaned weights with {len(cleaned_weights)} keys")
+            model.load_state_dict(cleaned_weights)
+        else:
+            print(f"DEBUG: No prefix mismatch, loading original weights")
+            # Use original snapshot weights
+            model.load_state_dict(snapshot["model"])
+        
         return snapshot
 
 

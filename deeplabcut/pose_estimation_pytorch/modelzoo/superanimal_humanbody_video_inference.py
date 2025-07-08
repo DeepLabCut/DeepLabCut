@@ -20,6 +20,7 @@ import pandas as pd
 from deeplabcut.pose_estimation_pytorch.apis.videos import VideoIterator
 from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
 from deeplabcut.pose_estimation_pytorch.modelzoo.inference import _video_inference_superanimal
+from deeplabcut.modelzoo.utils import get_super_animal_scorer, get_superanimal_colormaps
 
 
 def torchvision_detector_inference(images, threshold=0.1, device="cpu"):
@@ -240,6 +241,7 @@ def analyze_videos_superanimal_humanbody(
     bbox_threshold: float = 0.1,
     pose_threshold: float = 0.4,  # Add pose threshold parameter
     model_snapshot_path: str = None,
+    detector_name: str = "fasterrcnn_mobilenet_v3_large_fpn",
 ) -> str:
     """
     Wrapper function that uses the dedicated superanimal_humanbody implementation.
@@ -255,7 +257,7 @@ def analyze_videos_superanimal_humanbody(
     model_config = load_super_animal_config(
         super_animal="superanimal_humanbody",
         model_name="rtmpose_x",
-        detector_name="fasterrcnn_mobilenet_v3_large_fpn",
+        detector_name=detector_name,
         max_individuals=10,  # Default value
         device=device
     )
@@ -289,8 +291,12 @@ def analyze_videos_superanimal_humanbody(
     for video_path in videos:
         print(f"Processing video {video_path}")
         video_name = Path(video_path).stem
-        video_name = Path(video_path).stem
-        output_json = destfolder / f"{video_name}_superanimal_humanbody_rtmpose_x_before_adapt.json"
+        # Use detector_name in scorer and output file names
+        dlc_scorer = get_super_animal_scorer(
+            "superanimal_humanbody", model_snapshot_path, detector_name
+        )
+        output_prefix = f"{video_name}_{dlc_scorer}"
+        output_json = destfolder / f"{output_prefix}_before_adapt.json"
 
         if output_json.exists():
             print(f"Predictions already exist for {video_path}, skipping inference.")
@@ -321,7 +327,6 @@ def analyze_videos_superanimal_humanbody(
         try:
             from deeplabcut.pose_estimation_pytorch.apis.videos import create_df_from_prediction
             from deeplabcut.utils.make_labeled_video import create_video
-            from deeplabcut.modelzoo.utils import get_super_animal_scorer, get_superanimal_colormaps
             
             # Convert our predictions to the format expected by create_df_from_prediction
             def convert_predictions_format(predictions, model_config):
@@ -382,10 +387,9 @@ def analyze_videos_superanimal_humanbody(
             
             # Get the proper scorer name
             dlc_scorer = get_super_animal_scorer(
-                "superanimal_humanbody", model_snapshot_path, None
+                "superanimal_humanbody", model_snapshot_path, detector_name
             )
             
-            output_prefix = f"{video_name}_{dlc_scorer}"
             output_path = destfolder
             output_h5 = output_path / f"{output_prefix}.h5"
             
