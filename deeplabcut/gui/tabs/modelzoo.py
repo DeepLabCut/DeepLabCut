@@ -144,7 +144,6 @@ class ModelZoo(DefaultTab):
         settings_layout.addLayout(pose_model_row, 2, 0, 1, 6)
 
         # --- Detector Type and Detector Confidence Threshold on the same line (now row 3) ---
-        detector_row = QtWidgets.QHBoxLayout()
         detector_label = QtWidgets.QLabel("Detector Type")
         detector_label.setMinimumWidth(150)
         self.detector_type_selector = QtWidgets.QComboBox()
@@ -166,16 +165,17 @@ class ModelZoo(DefaultTab):
         self.max_individuals_spinbox.setRange(1, 100)
         self.max_individuals_spinbox.setValue(1)
         self.max_individuals_spinbox.setMaximumWidth(100)
-        detector_row.addWidget(detector_label)
-        detector_row.addWidget(self.detector_type_selector)
-        detector_row.addSpacing(20)
-        detector_row.addWidget(detector_conf_label)
-        detector_row.addWidget(self.detector_threshold_spinbox)
-        detector_row.addSpacing(20)
-        detector_row.addWidget(max_individuals_label)
-        detector_row.addWidget(self.max_individuals_spinbox)
-        detector_row.addStretch()
-        settings_layout.addLayout(detector_row, 3, 0, 1, 6)
+        self.detector_row = QtWidgets.QHBoxLayout()
+        self.detector_row.addWidget(detector_label)
+        self.detector_row.addWidget(self.detector_type_selector)
+        self.detector_row.addSpacing(20)
+        self.detector_row.addWidget(detector_conf_label)
+        self.detector_row.addWidget(self.detector_threshold_spinbox)
+        self.detector_row.addSpacing(20)
+        self.detector_row.addWidget(max_individuals_label)
+        self.detector_row.addWidget(self.max_individuals_spinbox)
+        self.detector_row.addStretch()
+        settings_layout.addLayout(self.detector_row, 3, 0, 1, 6)
 
         loc_label = ClickableLabel("Folder to store results:", parent=self)
         loc_label.signal.connect(self.select_folder)
@@ -681,13 +681,14 @@ class ModelZoo(DefaultTab):
         self._update_available_models(engine)
         if engine == Engine.PYTORCH:
             self.tf_widget.hide()
-            self.detector_type_selector.show()
             self.torch_widget.show()
         else:
             self.torch_widget.hide()
-            self.detector_type_selector.hide()
             self.tf_widget.show()
-        
+
+        # Hide widgets in detector row
+        set_layout_contents_visible(self.detector_row, engine == Engine.PYTORCH)
+
         # Initialize adaptation options based on current media type
         current_media_type = self.media_selection_widget.media_type_widget.currentText()
         self._update_adaptation_options(current_media_type)
