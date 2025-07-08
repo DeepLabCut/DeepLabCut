@@ -29,6 +29,7 @@ from deeplabcut.gui.components import (
     DefaultTab,
     MediaSelectionWidget,
     set_layout_contents_visible,
+    set_combo_items,
 )
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.gui.widgets import ClickableLabel
@@ -190,8 +191,12 @@ class ModelZoo(DefaultTab):
         )
         action.triggered.connect(self.select_folder)
 
+        self.create_labeled_video_checkbox = QtWidgets.QCheckBox("Create labeled video")
+        self.create_labeled_video_checkbox.setChecked(True)
+
         settings_layout.addWidget(loc_label, 4, 0)
         settings_layout.addWidget(self.loc_line, 4, 1)
+        settings_layout.addWidget(self.create_labeled_video_checkbox, 5, 0)
 
         self.settings_widget = QtWidgets.QWidget()
         self.settings_widget.setLayout(settings_layout)
@@ -413,6 +418,7 @@ class ModelZoo(DefaultTab):
             return
 
         supermodel_name = self.model_combo.currentText()
+        create_labeled_video = self.create_labeled_video_checkbox.isChecked()
         kwargs = self._gather_kwargs()
 
         can_run_in_background = False
@@ -474,6 +480,7 @@ class ModelZoo(DefaultTab):
                         files,
                         supermodel_name,
                         dest_folder=self._destfolder,
+                        create_labeled_video=create_labeled_video,
                         **kwargs,
                     )
                     self.worker, self.thread = move_to_separate_thread(func)
@@ -485,6 +492,7 @@ class ModelZoo(DefaultTab):
                         files,
                         supermodel_name,
                         dest_folder=self._destfolder,
+                        create_labeled_video=create_labeled_video,
                         **kwargs,
                     )
                 # Check for skipped frames and show warning if needed
