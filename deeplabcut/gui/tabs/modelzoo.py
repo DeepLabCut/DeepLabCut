@@ -65,7 +65,7 @@ class ModelZoo(DefaultTab):
         self.run_button = QtWidgets.QPushButton("Run")
         self.run_button.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold;")
         self.run_button.setFixedWidth(120)
-        self.run_button.clicked.connect(self.run_video_adaptation)
+        self.run_button.clicked.connect(self.run_video_inference_superanimal)
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.addStretch()
         button_layout.addWidget(self.run_button)
@@ -400,7 +400,7 @@ class ModelZoo(DefaultTab):
         self.scales_line.setStyleSheet(f"border: 1px solid {color}")
         QTimer.singleShot(500, lambda: self.scales_line.setStyleSheet(""))
 
-    def run_video_adaptation(self):
+    def run_video_inference_superanimal(self):
         files = list(self.files)
         if not files:
             msg = QtWidgets.QMessageBox()
