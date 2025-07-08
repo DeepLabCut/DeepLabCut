@@ -136,11 +136,19 @@ class ModelZoo(DefaultTab):
             wrapping=True,
         )
         self.pose_threshold_spinbox.setMaximumWidth(100)
+        batch_size_combo_label = QtWidgets.QLabel("Pose model batch size")
+        self.batch_size_combo = QtWidgets.QComboBox()
+        self.batch_size_combo.setMinimumWidth(100)
+        self.batch_size_combo.addItems([str(2 ** i) for i in range(6)])
+        self.batch_size_combo.setCurrentIndex(0)
         pose_model_row.addWidget(pose_model_label)
         pose_model_row.addWidget(self.net_type_selector)
         pose_model_row.addSpacing(20)
         pose_model_row.addWidget(pose_conf_label)
         pose_model_row.addWidget(self.pose_threshold_spinbox)
+        pose_model_row.addSpacing(20)
+        pose_model_row.addWidget(batch_size_combo_label)
+        pose_model_row.addWidget(self.batch_size_combo)
         pose_model_row.addStretch()
         settings_layout.addLayout(pose_model_row, 2, 0, 1, 6)
 
@@ -166,6 +174,11 @@ class ModelZoo(DefaultTab):
         self.max_individuals_spinbox.setRange(1, 100)
         self.max_individuals_spinbox.setValue(1)
         self.max_individuals_spinbox.setMaximumWidth(100)
+        detector_batch_size_combo_label = QtWidgets.QLabel("Detector batch size")
+        self.detector_batch_size_combo = QtWidgets.QComboBox()
+        self.detector_batch_size_combo.setMinimumWidth(100)
+        self.detector_batch_size_combo.addItems([str(2 ** i) for i in range(6)])
+        self.detector_batch_size_combo.setCurrentIndex(0)
         self.detector_row = QtWidgets.QHBoxLayout()
         self.detector_row.addWidget(detector_label)
         self.detector_row.addWidget(self.detector_type_selector)
@@ -175,6 +188,9 @@ class ModelZoo(DefaultTab):
         self.detector_row.addSpacing(20)
         self.detector_row.addWidget(max_individuals_label)
         self.detector_row.addWidget(self.max_individuals_spinbox)
+        self.detector_row.addSpacing(20)
+        self.detector_row.addWidget(detector_batch_size_combo_label)
+        self.detector_row.addWidget(self.detector_batch_size_combo)
         self.detector_row.addStretch()
         settings_layout.addLayout(self.detector_row, 3, 0, 1, 6)
 
@@ -419,6 +435,8 @@ class ModelZoo(DefaultTab):
 
         supermodel_name = self.model_combo.currentText()
         create_labeled_video = self.create_labeled_video_checkbox.isChecked()
+        batch_size = int(self.batch_size_combo.currentText())
+        detector_batch_size = int(self.detector_batch_size_combo.currentText())
         kwargs = self._gather_kwargs()
 
         can_run_in_background = False
@@ -481,6 +499,8 @@ class ModelZoo(DefaultTab):
                         supermodel_name,
                         dest_folder=self._destfolder,
                         create_labeled_video=create_labeled_video,
+                        batch_size = batch_size,
+                        detector_batch_size = detector_batch_size,
                         **kwargs,
                     )
                     self.worker, self.thread = move_to_separate_thread(func)
@@ -493,6 +513,8 @@ class ModelZoo(DefaultTab):
                         supermodel_name,
                         dest_folder=self._destfolder,
                         create_labeled_video=create_labeled_video,
+                        batch_size = batch_size,
+                        detector_batch_size = detector_batch_size,
                         **kwargs,
                     )
                 # Check for skipped frames and show warning if needed
