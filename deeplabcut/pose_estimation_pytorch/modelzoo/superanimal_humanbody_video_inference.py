@@ -279,19 +279,19 @@ def video_inference_superanimal_humanbody(
         destfolder = Path(videos[0]).parent
     else:
         destfolder = Path(destfolder)
-    
     if not destfolder.exists():
         destfolder.mkdir(parents=True, exist_ok=True)
-    
+
+    # Use detector_name in scorer and output file names
+    dlc_scorer = get_super_animal_scorer(
+        "superanimal_humanbody", model_snapshot_path, detector_name
+    )
+
     results = {}
     
     for video_path in videos:
         print(f"Processing video {video_path}")
         video_name = Path(video_path).stem
-        # Use detector_name in scorer and output file names
-        dlc_scorer = get_super_animal_scorer(
-            "superanimal_humanbody", model_snapshot_path, detector_name
-        )
         output_prefix = f"{video_name}_{dlc_scorer}"
         output_json = destfolder / f"{output_prefix}_before_adapt.json"
 
