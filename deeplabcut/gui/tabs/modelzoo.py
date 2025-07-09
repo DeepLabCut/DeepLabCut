@@ -73,7 +73,7 @@ class ModelZoo(DefaultTab):
         button_layout.addStretch()
 
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
-        self.video_selection_widget = VideoSelectionWidget(self.root, self)
+        self.video_selection_widget = VideoSelectionWidget(self.root, self, hide_videotype=True)
         self.main_layout.addWidget(self.video_selection_widget)
 
         self._build_common_attributes()

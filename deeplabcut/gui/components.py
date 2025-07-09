@@ -151,15 +151,15 @@ class BodypartListWidget(QtWidgets.QListWidget):
 
 
 class VideoSelectionWidget(QtWidgets.QWidget):
-    def __init__(self, root: QtWidgets.QMainWindow, parent: QtWidgets.QWidget):
+    def __init__(self, root: QtWidgets.QMainWindow, parent: QtWidgets.QWidget, hide_videotype: bool = False):
         super().__init__(parent)
 
         self.root = root
         self.parent = parent
 
-        self._init_layout()
+        self._init_layout(hide_videotype)
 
-    def _init_layout(self):
+    def _init_layout(self, hide_videotype: bool):
         layout = _create_horizontal_layout()
 
         # Videotype selection
@@ -185,7 +185,8 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         self.clear_videos = QtWidgets.QPushButton("Clear selection")
         self.clear_videos.clicked.connect(self.clear_selected_videos)
 
-        layout.addWidget(self.videotype_widget)
+        if not hide_videotype:
+            layout.addWidget(self.videotype_widget)
         layout.addWidget(self.select_video_button)
         layout.addWidget(self.selected_videos_text)
         layout.addWidget(self.clear_videos, alignment=Qt.AlignRight)
