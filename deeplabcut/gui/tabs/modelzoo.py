@@ -27,7 +27,7 @@ from deeplabcut.gui.components import (
     _create_grid_layout,
     _create_label_widget,
     DefaultTab,
-    MediaSelectionWidget,
+    VideoSelectionWidget,
     set_layout_contents_visible,
     set_combo_items,
 )
@@ -59,7 +59,7 @@ class ModelZoo(DefaultTab):
         
     @property
     def files(self):
-        return self.media_selection_widget.files
+        return self.video_selection_widget.files
 
     def _set_page(self):
         # Create Run button first so it exists for any method that references it
@@ -72,13 +72,9 @@ class ModelZoo(DefaultTab):
         button_layout.addWidget(self.run_button)
         button_layout.addStretch()
 
-        self.main_layout.addWidget(_create_label_widget("Media Selection", "font:bold"))
-        self.media_selection_widget = MediaSelectionWidget(self.root, self, hide_videotype=True)
-        self.main_layout.addWidget(self.media_selection_widget)
-
-        # Remove/hide image selection widgets (not needed for modelzoo)
-        self.media_selection_widget.media_type_widget.hide()
-        self.media_selection_widget.media_type_widget.setCurrentText("Videos")
+        self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
+        self.video_selection_widget = VideoSelectionWidget(self.root, self)
+        self.main_layout.addWidget(self.video_selection_widget)
 
         self._build_common_attributes()
         self._build_tf_attributes()
@@ -197,7 +193,7 @@ class ModelZoo(DefaultTab):
         loc_label = ClickableLabel("Folder to store results:", parent=self)
         loc_label.signal.connect(self.select_folder)
         self.loc_line = QtWidgets.QLineEdit(
-            "<Select a folder - Default: store in same folder as media>",
+            "<Select a folder - Default: store in same folder as video>",
             self,
         )
         self.loc_line.setReadOnly(True)
@@ -393,14 +389,8 @@ class ModelZoo(DefaultTab):
     def show_help_dialog(self):
         dialog = QtWidgets.QDialog(self)
         layout = QtWidgets.QVBoxLayout()
-        
-        # Show different help based on media type
-        media_type = self.media_selection_widget.media_type_widget.currentText()
-        if media_type == "Videos":
-            help_text = deeplabcut.video_inference_superanimal.__doc__
-        else:  # Images
-            help_text = deeplabcut.superanimal_analyze_images.__doc__
-        
+        help_text = deeplabcut.video_inference_superanimal.__doc__
+
         label = QtWidgets.QLabel(help_text, self)
         scroll = QtWidgets.QScrollArea()
         scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -573,13 +563,12 @@ class ModelZoo(DefaultTab):
                     videos_created.extend([str(v) for v in labeled_videos])
         
         # Show appropriate message
-        media_type = self.media_selection_widget.media_type_widget.currentText()
         if videos_created:
-            msg = QtWidgets.QMessageBox(text=f"SuperAnimal {media_type.lower()} inference complete!\n\nCreated labeled videos:\n" + "\n".join(videos_created))
+            msg = QtWidgets.QMessageBox(text=f"SuperAnimal video inference complete!\n\nCreated labeled videos:\n" + "\n".join(videos_created))
             msg.setIcon(QtWidgets.QMessageBox.Information)
             msg.exec_()
         else:
-            msg = QtWidgets.QMessageBox(text=f"SuperAnimal {media_type.lower()} inference complete, but no labeled videos were created.")
+            msg = QtWidgets.QMessageBox(text=f"SuperAnimal video inference complete, but no labeled videos were created.")
             msg.setIcon(QtWidgets.QMessageBox.Warning)
             msg.exec_()
 
@@ -603,16 +592,10 @@ class ModelZoo(DefaultTab):
         self.stop_processes()
         super().closeEvent(event)
 
-    def _update_adaptation_options(self, media_type: str):
-        # Only allow video adaptation for videos (no images)
-        self.adapt_checkbox.setEnabled(True)
-        self.torch_adapt_checkbox.setEnabled(True)
-        self.run_button.setText("Run")
 
     def _gather_kwargs(self) -> dict:
         kwargs = dict(model_name=self.net_type_selector.currentText())
-        media_type = self.media_selection_widget.media_type_widget.currentText()
-        
+
         if self.root.engine == Engine.TF:
             scales = []
             scales_ = self.scales_line.text()
@@ -623,20 +606,13 @@ class ModelZoo(DefaultTab):
                 ):
                     scales = list(map(int, scales_.split(",")))
             kwargs["scale_list"] = scales
-            # Only allow video adaptation for videos
-            if media_type == "Videos":
-                kwargs["video_adapt"] = self.adapt_checkbox.isChecked()
-            else:
-                kwargs["video_adapt"] = False
+            kwargs["video_adapt"] = self.adapt_checkbox.isChecked()
             kwargs["pseudo_threshold"] = self.pseudo_threshold_spinbox.value()
             kwargs["adapt_iterations"] = self.adapt_iter_spinbox.value()
         else:
             kwargs["detector_name"] = self.detector_type_selector.currentText()
             # Only allow video adaptation for videos
-            if media_type == "Videos":
-                kwargs["video_adapt"] = self.torch_adapt_checkbox.isChecked()
-            else:
-                kwargs["video_adapt"] = False
+            kwargs["video_adapt"] = self.torch_adapt_checkbox.isChecked()
             kwargs["pseudo_threshold"] = self.pose_threshold_spinbox.value()
             kwargs["bbox_threshold"] = self.detector_threshold_spinbox.value()
             kwargs["detector_epochs"] = self.torch_adapt_det_epoch_spinbox.value()
@@ -704,7 +680,3 @@ class ModelZoo(DefaultTab):
 
         # Hide widgets in detector row
         set_layout_contents_visible(self.detector_row, engine == Engine.PYTORCH and self.model_combo.currentText() != "superanimal_humanbody")
-
-        # Initialize adaptation options based on current media type
-        current_media_type = self.media_selection_widget.media_type_widget.currentText()
-        self._update_adaptation_options(current_media_type)
