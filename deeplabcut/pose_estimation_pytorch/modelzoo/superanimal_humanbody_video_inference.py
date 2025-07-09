@@ -202,7 +202,7 @@ def analyze_videos_superanimal_humanbody(
     
     return predictions
 
-
+# Saving directory is incorrect
 def video_inference_superanimal_humanbody(
     config: str,
     videos: str | list[str],
@@ -241,7 +241,7 @@ def video_inference_superanimal_humanbody(
     """
     Wrapper function that uses the dedicated superanimal_humanbody implementation.
     
-    This function mimics the interface of the standard analyze_videos function
+    This function mimics the interface of the standard analyze_videos function  # rewrite
     but uses our dedicated implementation for superanimal_humanbody.
     """
     if device == "auto":
@@ -255,9 +255,9 @@ def video_inference_superanimal_humanbody(
         super_animal="superanimal_humanbody",
         model_name="rtmpose_x",
         detector_name=detector_name,
-        max_individuals=10,  # Default value
+        max_individuals=10,  # Default value ?
         device=device
-    )
+    ) # todo pass customized_model_config , customized_pose_checkpoint , customized_detector_checkpoint , model_name
     
     # Use provided model snapshot path or get it from dlclibrary
     if model_snapshot_path is None:
@@ -281,6 +281,7 @@ def video_inference_superanimal_humanbody(
         destfolder = Path(destfolder)
     if not destfolder.exists():
         destfolder.mkdir(parents=True, exist_ok=True)
+    # should we have this setup here?
 
     # Use detector_name in scorer and output file names
     dlc_scorer = get_super_animal_scorer(
@@ -317,6 +318,7 @@ def video_inference_superanimal_humanbody(
                 json.dump(predictions, f, cls=NumpyEncoder, indent=2)
             print(f"Results saved to {output_json}")
             results[video_path] = predictions
+        # Why don't we do adaptation in humanpose?
 
         # Always create labeled video, regardless of whether predictions already existed
         # Create labeled video just like other superanimal_* models
@@ -326,7 +328,7 @@ def video_inference_superanimal_humanbody(
             from deeplabcut.utils.make_labeled_video import create_video
             
             # Convert our predictions to the format expected by create_df_from_prediction
-            def convert_predictions_format(predictions, model_config):
+            def convert_predictions_format(predictions, model_config): #?
                 """Convert our prediction format to the format expected by create_df_from_prediction."""
                 bodyparts = model_config['metadata']['bodyparts']
                 individuals = model_config['metadata'].get('individuals', ['individual_0'])
@@ -391,7 +393,7 @@ def video_inference_superanimal_humanbody(
             output_h5 = output_path / f"{output_prefix}.h5"
             
             # Convert predictions to DataFrame format
-            df = create_df_from_prediction(
+            df = create_df_from_prediction( # ?
                 predictions=converted_predictions,
                 dlc_scorer=dlc_scorer,
                 multi_animal=True,
@@ -457,7 +459,7 @@ def video_inference_superanimal_humanbody(
                 video_path,
                 output_h5,
                 pcutoff=pose_threshold,
-                fps=30,  # Default fps
+                fps=30,  # Default fps # ?
                 bbox=bbox,
                 cmap=colormap,
                 output_path=str(output_video),
@@ -473,10 +475,10 @@ def video_inference_superanimal_humanbody(
             import traceback
             traceback.print_exc()
     
-    return str(destfolder)
+    return str(destfolder) # should return results in form of dict
 
 
-class NumpyEncoder(json.JSONEncoder):
+class NumpyEncoder(json.JSONEncoder): #?
     """JSON encoder that handles numpy arrays"""
     def default(self, obj):
         if isinstance(obj, np.ndarray):
