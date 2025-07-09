@@ -65,9 +65,9 @@ alphavalue:
 colormap: rainbow
 
 # Training,Evaluation and Analysis configuration
-TrainingFraction: [0.95]
-iteration: 0
-default_net_type: rtmpose_x
+TrainingFraction:
+iteration:
+default_net_type:
 default_augmenter: 
 snapshotindex:
 detector_snapshotindex: -1
