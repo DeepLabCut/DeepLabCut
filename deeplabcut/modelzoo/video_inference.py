@@ -354,49 +354,25 @@ def video_inference_superanimal(
             from deeplabcut.pose_estimation_pytorch.modelzoo.superanimal_humanbody_video_inference import (
                 analyze_videos_superanimal_humanbody,
             )
-            
-            # Convert videos to list if needed
-            if isinstance(videos, str):
-                videos = [videos]
-            
-            # Set destination folder
-            if dest_folder is None:
-                dest_folder = Path(videos[0]).parent
-            else:
-                dest_folder = Path(dest_folder)
-            
-            if not dest_folder.exists():
-                dest_folder.mkdir(parents=True, exist_ok=True)
-            
-            # Map parameters to the dedicated function
+
             # Note: analyze_videos_superanimal_humanbody has its own parameter set
             # Handle device parameter - convert "auto" to actual device
             if device == "auto":
-                import torch
-                actual_device = "cuda" if torch.cuda.is_available() else "cpu"
-            else:
-                actual_device = device
-            
-            dedicated_kwargs = {
-                "videotype": videotype,
-                "destfolder": str(dest_folder),
-                "bbox_threshold": bbox_threshold,
-                "pose_threshold": pcutoff,
-                "device": actual_device,
-                "cropping": cropping,
-                "batch_size": batch_size,
-                "detector_batch_size": detector_batch_size,
-            }
-            
+                device = "cuda" if torch.cuda.is_available() else "cpu"
+
             # Use a dummy config path since the dedicated function loads its own config
-            dummy_config = "superanimal_humanbody"
-            
             results = analyze_videos_superanimal_humanbody(
-                dummy_config,
-                videos,
-                **dedicated_kwargs,
+                config="superanimal_humanbody",
+                videos=videos,
+                videotype=videotype,
+                destfolder=str(dest_folder),
+                bbox_threshold=bbox_threshold,
+                pose_threshold=pcutoff,
+                device=device,
+                cropping=cropping,
+                batch_size=batch_size,
+                detector_batch_size=detector_batch_size,
             )
-            
             return results
 
         # Standard PyTorch implementation for other models
