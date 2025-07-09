@@ -13,7 +13,6 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Optional, Union
 
 import torch
 from dlclibrary.dlcmodelzoo.modelzoo_download import download_huggingface_model
@@ -55,13 +54,13 @@ def get_checkpoint_epoch(checkpoint_path):
 
 
 def video_inference_superanimal(
-    videos: Union[str, list],
+    videos: str | list,
     superanimal_name: str,
     model_name: str,
     detector_name: str | None = None,
-    scale_list: Optional[list] = None,
+    scale_list: list | None = None,
     videotype: str = ".mp4",
-    dest_folder: Optional[str] = None,
+    dest_folder: str | None = None,
     cropping: list[int] | None = None,
     video_adapt: bool = False,
     plot_trajectories: bool = False,
@@ -75,10 +74,10 @@ def video_inference_superanimal(
     pose_epochs: int = 4,
     max_individuals: int = 10,
     video_adapt_batch_size: int = 8,
-    device: Optional[str] = "auto",
-    customized_pose_checkpoint: Optional[str] = None,
-    customized_detector_checkpoint: Optional[str] = None,
-    customized_model_config: Optional[str] = None,
+    device: str | None = "auto",
+    customized_pose_checkpoint: str | None = None,
+    customized_detector_checkpoint: str | None = None,
+    customized_model_config: str | None = None,
     plot_bboxes: bool = True,
 ):
     """
