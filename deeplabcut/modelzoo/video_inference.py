@@ -354,12 +354,6 @@ def video_inference_superanimal(
             from deeplabcut.pose_estimation_pytorch.modelzoo.superanimal_humanbody_video_inference import (
                 video_inference_superanimal_humanbody,
             )
-
-            # Note: analyze_videos_superanimal_humanbody has its own parameter set
-            # Handle device parameter - convert "auto" to actual device
-            if device == "auto":
-                device = "cuda" if torch.cuda.is_available() else "cpu"
-
             # Use a dummy config path since the dedicated function loads its own config
             results = video_inference_superanimal_humanbody(
                 config="superanimal_humanbody",

@@ -244,7 +244,9 @@ def video_inference_superanimal_humanbody(
     This function mimics the interface of the standard analyze_videos function
     but uses our dedicated implementation for superanimal_humanbody.
     """
-    
+    if device == "auto":
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+
     # Load model configuration using the standard function (which handles detector config)
     from deeplabcut.pose_estimation_pytorch.modelzoo.utils import load_super_animal_config
     
