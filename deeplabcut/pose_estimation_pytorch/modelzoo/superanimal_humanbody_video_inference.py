@@ -6,7 +6,6 @@ This avoids modifying core functions and provides a clean, specific implementati
 
 import numpy as np
 from pathlib import Path
-from typing import List, Dict, Any, Union
 import torch
 import torchvision.models.detection as detection
 from PIL import Image
@@ -75,17 +74,17 @@ def torchvision_detector_inference(images, threshold=0.1, device="cpu"):
 
 
 def analyze_videos_superanimal_humanbody(
-    video: Union[str, Path, VideoIterator],
+    video: str | Path | VideoIterator,
     model_config: dict,
-    model_snapshot_path: Union[str, Path],
-    detector_snapshot_path: Union[str, Path] = None,
+    model_snapshot_path: str | Path,
+    detector_snapshot_path: str | Path = None,
     max_individuals: int = 1,
     bbox_threshold: float = 0.1,
     device: str = "cpu",
-    cropping: List[int] = None,
+    cropping: list[int] = None,
     dest_folder: str = None,
     output_suffix: str = "",
-) -> List[Dict[str, np.ndarray]]:
+) -> list[dict[str, np.ndarray]]:
     """
     Dedicated video inference for superanimal_humanbody with torchvision detector.
     
@@ -206,15 +205,15 @@ def analyze_videos_superanimal_humanbody(
 
 def video_inference_superanimal_humanbody(
     config: str,
-    videos: Union[str, List[str]],
+    videos: str | list[str],
     videotype: str = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     save_as_csv: bool = False,
     in_random_order: bool = False,
-    snapshot_index: Union[int, str] = None,
-    detector_snapshot_index: Union[int, str] = None,
-    device: str = None,
+    snapshot_index: int | str = None,
+    detector_snapshot_index: int | str = None,
+    device: str | None = None,
     destfolder: str = None,
     batch_size: int = None,
     detector_batch_size: int = None,
@@ -228,11 +227,11 @@ def video_inference_superanimal_humanbody(
     transform = None,
     auto_track: bool = True,
     n_tracks: int = None,
-    animal_names: List[str] = None,
+    animal_names: list[str] = None,
     calibrate: bool = False,
     identity_only: bool = None,
     overwrite: bool = False,
-    cropping: List[int] = None,
+    cropping: list[int] = None,
     save_as_df: bool = False,
     bbox_threshold: float = 0.1,
     pose_threshold: float = 0.4,  # Add pose threshold parameter
