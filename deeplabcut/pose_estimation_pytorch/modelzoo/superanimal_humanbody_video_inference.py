@@ -4,7 +4,6 @@ Dedicated video inference implementation for superanimal_humanbody with torchvis
 This avoids modifying core functions and provides a clean, specific implementation.
 """
 
-import cv2
 import numpy as np
 from pathlib import Path
 from typing import List, Dict, Any, Union
@@ -14,12 +13,9 @@ from PIL import Image
 from tqdm import tqdm
 import json
 import logging
-import yaml
-import pandas as pd
 
 from deeplabcut.pose_estimation_pytorch.apis.videos import VideoIterator
 from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
-from deeplabcut.pose_estimation_pytorch.modelzoo.inference import _video_inference_superanimal
 from deeplabcut.modelzoo.utils import get_super_animal_scorer, get_superanimal_colormaps
 
 
