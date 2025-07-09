@@ -78,7 +78,7 @@ def torchvision_detector_inference(images, threshold=0.1, device="cpu"):
     return results
 
 
-def video_inference_superanimal_humanbody(
+def analyze_videos_superanimal_humanbody(
     video: Union[str, Path, VideoIterator],
     model_config: dict,
     model_snapshot_path: Union[str, Path],
@@ -208,7 +208,7 @@ def video_inference_superanimal_humanbody(
     return predictions
 
 
-def analyze_videos_superanimal_humanbody(
+def video_inference_superanimal_humanbody(
     config: str,
     videos: Union[str, List[str]],
     videotype: str = None,
@@ -306,7 +306,7 @@ def analyze_videos_superanimal_humanbody(
             results[video_path] = predictions
         else:
             # Run our dedicated inference
-            predictions = video_inference_superanimal_humanbody(
+            predictions = analyze_videos_superanimal_humanbody(
                 video=video_path,
                 model_config=model_config,
                 model_snapshot_path=model_snapshot_path,

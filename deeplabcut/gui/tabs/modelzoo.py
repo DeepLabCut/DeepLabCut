@@ -443,7 +443,7 @@ class ModelZoo(DefaultTab):
                 
                 if can_run_in_background:
                     func = partial(
-                        deeplabcut.analyze_videos_superanimal_humanbody,
+                        deeplabcut.video_inference_superanimal_humanbody,
                         config_path,
                         files,
                         **dedicated_kwargs,
@@ -453,7 +453,7 @@ class ModelZoo(DefaultTab):
                     self.thread.start()
                 else:
                     print(f"Calling analyze_videos_superanimal_humanbody with config={config_path}, kwargs={dedicated_kwargs}")
-                    results = deeplabcut.analyze_videos_superanimal_humanbody(
+                    results = deeplabcut.video_inference_superanimal_humanbody(
                         config_path,
                         files,
                         **dedicated_kwargs,

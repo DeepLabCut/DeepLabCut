@@ -352,7 +352,7 @@ def video_inference_superanimal(
         # Special handling for superanimal_humanbody - use dedicated implementation
         if superanimal_name == "superanimal_humanbody":
             from deeplabcut.pose_estimation_pytorch.modelzoo.superanimal_humanbody_video_inference import (
-                analyze_videos_superanimal_humanbody,
+                video_inference_superanimal_humanbody,
             )
 
             # Note: analyze_videos_superanimal_humanbody has its own parameter set
@@ -361,7 +361,7 @@ def video_inference_superanimal(
                 device = "cuda" if torch.cuda.is_available() else "cpu"
 
             # Use a dummy config path since the dedicated function loads its own config
-            results = analyze_videos_superanimal_humanbody(
+            results = video_inference_superanimal_humanbody(
                 config="superanimal_humanbody",
                 videos=videos,
                 videotype=videotype,

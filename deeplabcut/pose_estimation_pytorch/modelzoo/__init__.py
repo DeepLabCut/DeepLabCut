@@ -18,5 +18,5 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
 )
 
 from deeplabcut.pose_estimation_pytorch.modelzoo.superanimal_humanbody_video_inference import (
-    analyze_videos_superanimal_humanbody,
+    video_inference_superanimal_humanbody,
 )
