@@ -349,27 +349,6 @@ def video_inference_superanimal(
                 "You have to specify a detector_name when using the Pytorch framework."
             )
 
-        # Special handling for superanimal_humanbody - use dedicated implementation
-        if superanimal_name == "superanimal_humanbody":
-            from deeplabcut.pose_estimation_pytorch.modelzoo.superanimal_humanbody_video_inference import (
-                video_inference_superanimal_humanbody,
-            )
-            # Use a dummy config path since the dedicated function loads its own config
-            results = video_inference_superanimal_humanbody(
-                config="superanimal_humanbody",
-                videos=videos,
-                videotype=videotype,
-                destfolder=str(dest_folder),
-                bbox_threshold=bbox_threshold,
-                pose_threshold=pcutoff,
-                device=device,
-                cropping=cropping,
-                batch_size=batch_size,
-                detector_batch_size=detector_batch_size,
-            )
-            return results
-
-        # Standard PyTorch implementation for other models
         from deeplabcut.pose_estimation_pytorch.modelzoo.inference import (
             _video_inference_superanimal,
         )
@@ -391,7 +370,7 @@ def video_inference_superanimal(
             )
 
         detector_path = customized_detector_checkpoint
-        if detector_path is None:
+        if detector_path is None and superanimal_name != "superanimal_humanbody":
             detector_path = get_super_animal_snapshot_path(
                 dataset=superanimal_name,
                 model_name=detector_name,
@@ -409,6 +388,10 @@ def video_inference_superanimal(
         config = update_config(config, max_individuals, device)
         
         output_suffix = "_before_adapt"
+
+        if video_adapt and superanimal_name == "superanimal_humanbody":
+            raise NotImplementedError(f"Video adaptation is currently not supported for {superanimal_name}")
+
         if video_adapt:
             # the users can pass in many videos. For now, we only use one video for
             # video adaptation. As reported in Ye et al. 2024, one video should be
