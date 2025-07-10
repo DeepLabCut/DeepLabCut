@@ -151,15 +151,15 @@ class BodypartListWidget(QtWidgets.QListWidget):
 
 
 class VideoSelectionWidget(QtWidgets.QWidget):
-    def __init__(self, root: QtWidgets.QMainWindow, parent: QtWidgets.QWidget):
+    def __init__(self, root: QtWidgets.QMainWindow, parent: QtWidgets.QWidget, hide_videotype: bool = False):
         super().__init__(parent)
 
         self.root = root
         self.parent = parent
 
-        self._init_layout()
+        self._init_layout(hide_videotype)
 
-    def _init_layout(self):
+    def _init_layout(self, hide_videotype: bool):
         layout = _create_horizontal_layout()
 
         # Videotype selection
@@ -185,7 +185,8 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         self.clear_videos = QtWidgets.QPushButton("Clear selection")
         self.clear_videos.clicked.connect(self.clear_selected_videos)
 
-        layout.addWidget(self.videotype_widget)
+        if not hide_videotype:
+            layout.addWidget(self.videotype_widget)
         layout.addWidget(self.select_video_button)
         layout.addWidget(self.selected_videos_text)
         layout.addWidget(self.clear_videos, alignment=Qt.AlignRight)
@@ -233,112 +234,6 @@ class VideoSelectionWidget(QtWidgets.QWidget):
     def clear_selected_videos(self):
         self.root.clear_video_files()
         self.root.logger.info(f"Cleared selected videos")
-
-
-class MediaSelectionWidget(QtWidgets.QWidget):
-    def __init__(self, root: QtWidgets.QMainWindow, parent: QtWidgets.QWidget, hide_videotype: bool = False):
-        super().__init__(parent)
-        self.root = root
-        self.parent = parent
-        self.hide_videotype = hide_videotype
-        self._init_layout()
-
-    def _init_layout(self):
-        layout = _create_horizontal_layout()
-
-        # Media type selection
-        self.media_type_widget = QtWidgets.QComboBox()
-        self.media_type_widget.setMinimumWidth(100)
-        self.media_type_widget.addItems(["Videos", "Images"])
-        self.media_type_widget.currentTextChanged.connect(self.update_media_type)
-
-        # Videotype selection (for videos)
-        self.videotype_widget = QtWidgets.QComboBox()
-        self.videotype_widget.setMinimumWidth(100)
-        self.videotype_widget.addItems(DLCParams.VIDEOTYPES)
-        self.videotype_widget.setCurrentText(self.root.video_type)
-        self.root.video_type_.connect(self.videotype_widget.setCurrentText)
-        self.videotype_widget.currentTextChanged.connect(self.update_videotype)
-
-        # Select media button
-        self.select_media_button = QtWidgets.QPushButton("Select files")
-        self.select_media_button.setMaximumWidth(200)
-        self.select_media_button.clicked.connect(self.update_media)
-        self.root.video_files_.connect(self._update_media_selection)
-
-        # Number of selected files text
-        self.selected_files_text = QtWidgets.QLabel(
-            ""
-        )  # updated when files are selected
-
-        # Clear selection
-        self.clear_files = QtWidgets.QPushButton("Clear selection")
-        self.clear_files.clicked.connect(self.clear_selected_files)
-
-        layout.addWidget(self.media_type_widget)
-        if not self.hide_videotype:
-            layout.addWidget(self.videotype_widget)
-        layout.addWidget(self.select_media_button)
-        layout.addWidget(self.selected_files_text)
-        layout.addWidget(self.clear_files, alignment=Qt.AlignRight)
-
-        self.setLayout(layout)
-
-    @property
-    def files(self):
-        return self.root.video_files
-
-    def update_media_type(self, media_type):
-        self.clear_selected_files()
-        if media_type == "Videos" and not self.hide_videotype:
-            self.videotype_widget.show()
-        elif not self.hide_videotype:
-            self.videotype_widget.hide()
-
-    def update_videotype(self, vtype):
-        self.clear_selected_files()
-        self.root.video_type = vtype
-
-    def _update_media_selection(self, filepaths):
-        n_files = len(self.root.video_files)
-        if n_files:
-            media_type = self.media_type_widget.currentText().lower()
-            self.selected_files_text.setText(f"{n_files} {media_type} selected")
-            self.select_media_button.setText(f"Add more {media_type}")
-        else:
-            self.selected_files_text.setText("")
-            self.select_media_button.setText("Select files")
-
-    def update_media(self):
-        directory_to_open = self.root.project_folder
-        media_type = self.media_type_widget.currentText()
-
-        if media_type == "Videos":
-            # Create a filter string with both lowercase and uppercase extensions
-            video_types = [f"*.{ext.lower()}" for ext in DLCParams.VIDEOTYPES[1:]] + [
-                f"*.{ext.upper()}" for ext in DLCParams.VIDEOTYPES[1:]
-            ]
-            media_filter = f"Videos ({' '.join(video_types)})"
-            caption = "Select video(s) to analyze"
-        else:  # Images
-            image_types = ["*.png", "*.PNG", "*.jpg", "*.JPG", "*.jpeg", "*.JPEG"]
-            media_filter = f"Images ({' '.join(image_types)})"
-            caption = "Select image(s) to analyze"
-
-        filenames = QtWidgets.QFileDialog.getOpenFileNames(
-            parent=self,
-            caption=caption,
-            dir=directory_to_open,
-            filter=media_filter,
-        )
-
-        if filenames[0]:
-            # Qt returns a tuple (list of files, filetype)
-            self.root.add_video_files([os.path.abspath(f) for f in filenames[0]])
-
-    def clear_selected_files(self):
-        self.root.clear_video_files()
-        self.root.logger.info(f"Cleared selected files")
 
 
 class SnapshotSelectionWidget(QtWidgets.QWidget):
