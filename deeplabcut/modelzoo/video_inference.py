@@ -80,6 +80,7 @@ def video_inference_superanimal(
     customized_detector_checkpoint: Optional[str] = None,
     customized_model_config: Optional[str] = None,
     plot_bboxes: bool = True,
+    create_labeled_video: bool = True,
 ):
     """
     This function performs inference on videos using a pretrained SuperAnimal model.
@@ -173,6 +174,9 @@ def video_inference_superanimal(
 
     plot_bboxes (bool):
         If using Top-Down approach, whether to plot the detector's bounding boxes. The default is True.
+
+    create_labeled_video (bool):
+        Specifies if a labeled video needs to be created, True by default.
 
     Raises:
         NotImplementedError:
@@ -344,6 +348,7 @@ def video_inference_superanimal(
             pcutoff,
             adapt_iterations,
             pseudo_threshold,
+            create_labeled_video=create_labeled_video,
         )
     elif framework == "pytorch":
         if detector_name is None:
@@ -464,6 +469,7 @@ def video_inference_superanimal(
                 output_suffix=output_suffix,
                 plot_bboxes=plot_bboxes,
                 bboxes_pcutoff=bbox_threshold,
+                create_labeled_video=create_labeled_video,
             )
 
             # we prepare the pseudo dataset in the same folder of the target video
@@ -639,4 +645,5 @@ def video_inference_superanimal(
             output_suffix=output_suffix,
             plot_bboxes=plot_bboxes,
             bboxes_pcutoff=bbox_threshold,
+            create_labeled_video=create_labeled_video,
         )
