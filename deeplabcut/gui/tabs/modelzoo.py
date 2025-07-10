@@ -258,7 +258,7 @@ class ModelZoo(DefaultTab):
         scales_row.addWidget(tooltip_label)
         layout.addLayout(scales_row, 1, 0, 1, 2)
 
-    def _add_tf_use_adaptation_row(self, layout: QtWidgets.QGridLayout):
+    def _add_use_adaptation_row(self, layout: QtWidgets.QGridLayout, layout_row: int):
         # --- Adaptation Checkbox with Help Button (TF section) ---
         self.adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
         self.adapt_checkbox.setChecked(True)
@@ -279,7 +279,7 @@ class ModelZoo(DefaultTab):
         use_adaptation_row.addWidget(self.adapt_checkbox)
         use_adaptation_row.addWidget(adapt_help_btn)
         use_adaptation_row.addStretch()
-        layout.addLayout(use_adaptation_row, 2, 0, 1, 2)
+        layout.addLayout(use_adaptation_row, layout_row, 0, 1, 2)
 
     def _add_tf_adaptation_settings_row(self, layout: QtWidgets.QGridLayout):
         pseudo_threshold_label = QtWidgets.QLabel("Pseudo-label confidence threshold")
@@ -312,7 +312,7 @@ class ModelZoo(DefaultTab):
         tf_settings_layout = _create_grid_layout(margins=(20, 0, 0, 0))
 
         self._add_tf_scales_row(tf_settings_layout)
-        self._add_tf_use_adaptation_row(tf_settings_layout)
+        self._add_use_adaptation_row(tf_settings_layout, 2)
         self._add_tf_adaptation_settings_row(tf_settings_layout)
 
         self.adapt_checkbox.stateChanged.connect(self._adapt_checkbox_status_changed)
@@ -321,28 +321,6 @@ class ModelZoo(DefaultTab):
         self.tf_widget.setLayout(tf_settings_layout)
         self.tf_widget.hide()
         self.main_layout.addWidget(self.tf_widget)
-
-    def _add_torch_use_adaptation_row(self, layout: QtWidgets.QGridLayout):
-        # --- Torch section adaptation checkbox with help button ---
-        self.torch_adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
-        self.torch_adapt_checkbox.setChecked(True)
-        self.torch_adapt_checkbox.setStyleSheet("font-weight: bold; font-size: 16px; padding: 6px 12px;")
-        torch_adapt_help_btn = QtWidgets.QToolButton()
-        torch_adapt_help_btn.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", "help2.png")))
-        torch_adapt_help_btn.setIconSize(QSize(24, 24))
-        torch_adapt_help_btn.setToolTip("What is video adaptation?")
-        def show_torch_adapt_help():
-            QtWidgets.QMessageBox.information(
-                self,
-                "Video Adaptation",
-                "This will adapt the model on the fly to your video data in a self-supervised way."
-            )
-        torch_adapt_help_btn.clicked.connect(show_torch_adapt_help)
-        use_adaptation_row = QtWidgets.QHBoxLayout()
-        use_adaptation_row.addWidget(self.torch_adapt_checkbox)
-        use_adaptation_row.addWidget(torch_adapt_help_btn)
-        use_adaptation_row.addStretch()
-        layout.addLayout(use_adaptation_row, 1, 0, 1, 2)
 
     def _add_torch_adaptation_settings_row(self, layout: QtWidgets.QGridLayout):
         # Compact adaptation settings row
@@ -384,12 +362,10 @@ class ModelZoo(DefaultTab):
     def _build_torch_attributes(self) -> None:
         torch_settings_layout = _create_grid_layout(margins=(20, 0, 0, 0))
 
-        self._add_torch_use_adaptation_row(torch_settings_layout)
+        self._add_use_adaptation_row(torch_settings_layout, 1)
         self._add_torch_adaptation_settings_row(torch_settings_layout)
 
-        self.torch_adapt_checkbox.stateChanged.connect(
-            self._torch_adapt_checkbox_status_changed
-        )
+        self.adapt_checkbox.stateChanged.connect(self._adapt_checkbox_status_changed)
 
         self.torch_widget = QtWidgets.QWidget()
         self.torch_widget.setLayout(torch_settings_layout)
@@ -397,10 +373,10 @@ class ModelZoo(DefaultTab):
         self.main_layout.addWidget(self.torch_widget)
 
     def _adapt_checkbox_status_changed(self, state: int) -> None:
-        set_layout_contents_visible(self.tf_adaptation_settings_row, Qt.CheckState(state) == Qt.Checked)
-
-    def _torch_adapt_checkbox_status_changed(self, state: int) -> None:
-        set_layout_contents_visible(self.torch_adaptation_settings_row, Qt.CheckState(state) == Qt.Checked)
+        if self.root.engine == Engine.TF:
+            set_layout_contents_visible(self.tf_adaptation_settings_row, Qt.CheckState(state) == Qt.Checked)
+        elif self.root.engine == Engine.PYTORCH:
+            set_layout_contents_visible(self.torch_adaptation_settings_row, Qt.CheckState(state) == Qt.Checked)
 
     def select_folder(self):
         dirname = QtWidgets.QFileDialog.getExistingDirectory(
@@ -628,7 +604,6 @@ class ModelZoo(DefaultTab):
     def _update_adaptation_options(self, media_type: str):
         # Only allow video adaptation for videos (no images)
         self.adapt_checkbox.setEnabled(True)
-        self.torch_adapt_checkbox.setEnabled(True)
         self.run_button.setText("Run")
 
     def _gather_kwargs(self) -> dict:
@@ -656,7 +631,7 @@ class ModelZoo(DefaultTab):
             kwargs["detector_name"] = self.detector_type_selector.currentText()
             # Only allow video adaptation for videos
             if media_type == "Videos":
-                kwargs["video_adapt"] = self.torch_adapt_checkbox.isChecked()
+                kwargs["video_adapt"] = self.adapt_checkbox.isChecked()
             else:
                 kwargs["video_adapt"] = False
             kwargs["pseudo_threshold"] = self.pose_threshold_spinbox.value()
