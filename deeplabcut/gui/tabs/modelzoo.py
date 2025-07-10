@@ -105,9 +105,7 @@ class ModelZoo(DefaultTab):
         
         self._on_engine_change(self.root.engine)
 
-    def _build_common_attributes(self) -> None:
-        settings_layout = _create_grid_layout(margins=(20, 0, 0, 0))
-
+    def _add_supermodel_section(self, layout: QtWidgets.QGridLayout) -> None:
         # --- Supermodel selection ---
         section_title = QtWidgets.QLabel("Supermodel settings")
         section_title.setStyleSheet("font-weight: bold; font-size: 16px;")
@@ -115,10 +113,11 @@ class ModelZoo(DefaultTab):
         model_combo_text.setMinimumWidth(150)
         self.model_combo = QtWidgets.QComboBox()
         self.model_combo.setMinimumWidth(250)
-        settings_layout.addWidget(section_title, 0, 0, 1, 6)
-        settings_layout.addWidget(model_combo_text, 1, 0)
-        settings_layout.addWidget(self.model_combo, 1, 1)
+        layout.addWidget(section_title, 0, 0, 1, 6)
+        layout.addWidget(model_combo_text, 1, 0)
+        layout.addWidget(self.model_combo, 1, 1)
 
+    def _add_pose_model_settings_row(self, layout: QtWidgets.QGridLayout):
         # --- Pose Model Type and Pose Confidence Threshold on the same line (now row 2) ---
         pose_model_row = QtWidgets.QHBoxLayout()
         pose_model_label = QtWidgets.QLabel("Pose Model Type")
@@ -150,8 +149,9 @@ class ModelZoo(DefaultTab):
         pose_model_row.addWidget(batch_size_combo_label)
         pose_model_row.addWidget(self.batch_size_combo)
         pose_model_row.addStretch()
-        settings_layout.addLayout(pose_model_row, 2, 0, 1, 6)
+        layout.addLayout(pose_model_row, 2, 0, 1, 6)
 
+    def _add_detector_settings_row(self, layout: QtWidgets.QGridLayout):
         # --- Detector Type and Detector Confidence Threshold on the same line (now row 3) ---
         detector_label = QtWidgets.QLabel("Detector Type")
         detector_label.setMinimumWidth(150)
@@ -192,8 +192,9 @@ class ModelZoo(DefaultTab):
         self.detector_row.addWidget(detector_batch_size_combo_label)
         self.detector_row.addWidget(self.detector_batch_size_combo)
         self.detector_row.addStretch()
-        settings_layout.addLayout(self.detector_row, 3, 0, 1, 6)
+        layout.addLayout(self.detector_row, 3, 0, 1, 6)
 
+    def _add_output_settings_section(self, layout: QtWidgets.QGridLayout):
         loc_label = ClickableLabel("Folder to store results:", parent=self)
         loc_label.signal.connect(self.select_folder)
         self.loc_line = QtWidgets.QLineEdit(
@@ -210,13 +211,22 @@ class ModelZoo(DefaultTab):
         self.create_labeled_video_checkbox = QtWidgets.QCheckBox("Create labeled video")
         self.create_labeled_video_checkbox.setChecked(True)
 
-        settings_layout.addWidget(loc_label, 4, 0)
-        settings_layout.addWidget(self.loc_line, 4, 1)
-        settings_layout.addWidget(self.create_labeled_video_checkbox, 5, 0)
+        layout.addWidget(loc_label, 4, 0)
+        layout.addWidget(self.loc_line, 4, 1)
+        layout.addWidget(self.create_labeled_video_checkbox, 5, 0)
+
+    def _build_common_attributes(self) -> None:
+        settings_layout = _create_grid_layout(margins=(20, 0, 0, 0))
+
+        self._add_supermodel_section(settings_layout)
+        self._add_pose_model_settings_row(settings_layout)
+        self._add_detector_settings_row(settings_layout)
+        self._add_output_settings_section(settings_layout)
 
         self.settings_widget = QtWidgets.QWidget()
         self.settings_widget.setLayout(settings_layout)
         self.main_layout.addWidget(self.settings_widget)
+
         self.model_combo.currentTextChanged.connect(self._update_pose_models)
         self.model_combo.currentTextChanged.connect(self._update_detectors)
         self.model_combo.currentTextChanged.connect(self._update_adaptation_visibility)
