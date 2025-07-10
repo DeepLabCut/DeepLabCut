@@ -231,9 +231,7 @@ class ModelZoo(DefaultTab):
         self.model_combo.currentTextChanged.connect(self._update_detectors)
         self.model_combo.currentTextChanged.connect(self._update_adaptation_visibility)
 
-    def _build_tf_attributes(self) -> None:
-        tf_settings_layout = _create_grid_layout(margins=(20, 0, 0, 0))
-
+    def _add_tf_scales_row(self, layout: QtWidgets.QGridLayout):
         scales_label = QtWidgets.QLabel("Scale list")
         scales_label.setMinimumWidth(300)
         self.scales_line = QtWidgets.QLineEdit("", parent=self)
@@ -258,8 +256,9 @@ class ModelZoo(DefaultTab):
         scales_row.addWidget(scales_label)
         scales_row.addWidget(self.scales_line)
         scales_row.addWidget(tooltip_label)
-        tf_settings_layout.addLayout(scales_row, 1, 0, 1, 2)
+        layout.addLayout(scales_row, 1, 0, 1, 2)
 
+    def _add_tf_use_adaptation_row(self, layout: QtWidgets.QGridLayout):
         # --- Adaptation Checkbox with Help Button (TF section) ---
         self.adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
         self.adapt_checkbox.setChecked(True)
@@ -280,8 +279,9 @@ class ModelZoo(DefaultTab):
         use_adaptation_row.addWidget(self.adapt_checkbox)
         use_adaptation_row.addWidget(adapt_help_btn)
         use_adaptation_row.addStretch()
-        tf_settings_layout.addLayout(use_adaptation_row, 2, 0, 1, 2)
+        layout.addLayout(use_adaptation_row, 2, 0, 1, 2)
 
+    def _add_tf_adaptation_settings_row(self, layout: QtWidgets.QGridLayout):
         pseudo_threshold_label = QtWidgets.QLabel("Pseudo-label confidence threshold")
         self.pseudo_threshold_spinbox = QtWidgets.QDoubleSpinBox(
             decimals=2,
@@ -306,7 +306,14 @@ class ModelZoo(DefaultTab):
         self.tf_adaptation_settings_row.addSpacing(20)
         self.tf_adaptation_settings_row.addWidget(adapt_iter_label)
         self.tf_adaptation_settings_row.addWidget(self.adapt_iter_spinbox)
-        tf_settings_layout.addLayout(self.tf_adaptation_settings_row, 3, 0, 1, 6)
+        layout.addLayout(self.tf_adaptation_settings_row, 3, 0, 1, 6)
+
+    def _build_tf_attributes(self) -> None:
+        tf_settings_layout = _create_grid_layout(margins=(20, 0, 0, 0))
+
+        self._add_tf_scales_row(tf_settings_layout)
+        self._add_tf_use_adaptation_row(tf_settings_layout)
+        self._add_tf_adaptation_settings_row(tf_settings_layout)
 
         self.adapt_checkbox.stateChanged.connect(self._adapt_checkbox_status_changed)
 
@@ -315,9 +322,7 @@ class ModelZoo(DefaultTab):
         self.tf_widget.hide()
         self.main_layout.addWidget(self.tf_widget)
 
-    def _build_torch_attributes(self) -> None:
-        torch_settings_layout = _create_grid_layout(margins=(20, 0, 0, 0))
-
+    def _add_torch_use_adaptation_row(self, layout: QtWidgets.QGridLayout):
         # --- Torch section adaptation checkbox with help button ---
         self.torch_adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
         self.torch_adapt_checkbox.setChecked(True)
@@ -337,8 +342,9 @@ class ModelZoo(DefaultTab):
         use_adaptation_row.addWidget(self.torch_adapt_checkbox)
         use_adaptation_row.addWidget(torch_adapt_help_btn)
         use_adaptation_row.addStretch()
-        torch_settings_layout.addLayout(use_adaptation_row, 1, 0, 1, 2)
+        layout.addLayout(use_adaptation_row, 1, 0, 1, 2)
 
+    def _add_torch_adaptation_settings_row(self, layout: QtWidgets.QGridLayout):
         # Compact adaptation settings row
         pseudo_threshold_label = QtWidgets.QLabel("Pseudo-label confidence threshold")
         pseudo_threshold_label.setMinimumWidth(200)
@@ -373,7 +379,13 @@ class ModelZoo(DefaultTab):
         self.torch_adaptation_settings_row.addWidget(adapt_det_epoch_label)
         self.torch_adaptation_settings_row.addWidget(self.torch_adapt_det_epoch_spinbox)
         self.torch_adaptation_settings_row.addStretch()
-        torch_settings_layout.addLayout(self.torch_adaptation_settings_row, 2, 0, 1, 6)
+        layout.addLayout(self.torch_adaptation_settings_row, 2, 0, 1, 6)
+
+    def _build_torch_attributes(self) -> None:
+        torch_settings_layout = _create_grid_layout(margins=(20, 0, 0, 0))
+
+        self._add_torch_use_adaptation_row(torch_settings_layout)
+        self._add_torch_adaptation_settings_row(torch_settings_layout)
 
         self.torch_adapt_checkbox.stateChanged.connect(
             self._torch_adapt_checkbox_status_changed
