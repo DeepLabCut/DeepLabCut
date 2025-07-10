@@ -17,6 +17,7 @@ import pytest
 from deeplabcut.modelzoo.webapp.inference import SuperanimalPyTorchInference
 from deeplabcut.utils import auxiliaryfunctions
 
+# TODO: make a proper test incl. human model, bird model and that skips the require... at least once per week.
 
 @pytest.mark.parametrize("max_individuals", [1, 3])
 @pytest.mark.parametrize(
@@ -55,7 +56,7 @@ def test_runner_init(project_name, pose_model_type):
 @pytest.mark.skip(reason="require-models")
 @pytest.mark.parametrize("max_individuals", [10, 4, 1])
 @pytest.mark.parametrize(
-    "project_name", ["superanimal_quadruped", "superanimal_topviewmouse"]
+    "project_name", ["superanimal_quadruped", "superanimal_topviewmouse", "superanimal_humanbody"]
 )
 @pytest.mark.parametrize("pose_model_type", ["hrnet_w32"])
 def test_predict(project_name, pose_model_type, max_individuals):

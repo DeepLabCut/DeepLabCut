@@ -408,6 +408,25 @@ def build_predictions_dataframe(
     """
     image_names = []
     prediction_data = []
+    
+    # Check if this is a humanbody model by looking at the first prediction
+    if predictions:
+        first_pred = next(iter(predictions.values()))
+        if "bodyparts" in first_pred:
+            actual_num_individuals = first_pred["bodyparts"].shape[0]
+            expected_num_individuals = len(parameters.individuals)
+            
+            # For humanbody models, if the actual number of individuals differs from expected,
+            # we need to adjust the parameters to match the actual predictions
+            if actual_num_individuals != expected_num_individuals:
+                # Create adjusted parameters with the actual number of individuals
+                adjusted_individuals = [f"individual_{i}" for i in range(actual_num_individuals)]
+                parameters = PoseDatasetParameters(
+                    bodyparts=parameters.bodyparts,
+                    unique_bpts=parameters.unique_bpts,
+                    individuals=adjusted_individuals,
+                )
+    
     for image_name, image_predictions in predictions.items():
         image_data = image_predictions["bodyparts"][..., :3].reshape(-1)
         if "unique_bodyparts" in image_predictions:
@@ -569,20 +588,45 @@ def get_inference_runners(
         if device == "mps":
             detector_device = "cpu"
 
-        if detector_path is not None:
-            detector_path = str(detector_path)
+        # Get superanimal name for filtering logic
+        superanimal_name = model_config.get("metadata", {}).get("superanimal_name", "")
+
+        if detector_path is not None or "detector" in model_config:
+            if detector_path is not None:
+                detector_path = str(detector_path)
             if detector_transform is None:
                 detector_transform = build_transforms(
                     model_config["detector"]["data"]["inference"]
                 )
 
-            detector_config = model_config["detector"]["model"]
-            if "pretrained" in detector_config:
-                detector_config["pretrained"] = False
-
+            print(f"DEBUG: Creating detector for superanimal_name: '{superanimal_name}'")
+            if superanimal_name == "superanimal_humanbody":
+                # Only for superanimal_humanbody, use torchvision detector
+                from deeplabcut.pose_estimation_pytorch.models.detectors.torchvision import TorchvisionDetectorAdaptor
+                detector_config = model_config["detector"]["model"].copy()
+                expected_fields = {
+                    "model", "weights", "num_classes", "freeze_bn_stats", "freeze_bn_weights", 
+                    "box_score_thresh", "model_kwargs", "model_name", "superanimal_name"
+                }
+                unexpected_fields = [k for k in detector_config.keys() if k not in expected_fields]
+                for field in unexpected_fields:
+                    detector_config.pop(field, None)
+                if detector_path is not None:
+                    detector_config["weights"] = None
+                detector_model = TorchvisionDetectorAdaptor(**detector_config)
+                detector_model.superanimal_name = superanimal_name
+                print(f"DEBUG: Created TorchvisionDetectorAdaptor for {superanimal_name}")
+            else:
+                # For all other superanimal models, use the original logic (pre-humanbody integration)
+                detector_config = model_config["detector"]["model"].copy()
+                pretrained = False if detector_path is not None else True
+                detector_model = DETECTORS.build(detector_config, pretrained=pretrained)
+                detector_model.superanimal_name = superanimal_name
+                print(f"DEBUG: Created custom detector from DETECTORS registry for {superanimal_name}")
+                print(f"DEBUG: Custom detector type: {type(detector_model)}")
             detector_runner = build_inference_runner(
                 task=Task.DETECT,
-                model=DETECTORS.build(detector_config),
+                model=detector_model,
                 device=detector_device,
                 snapshot_path=detector_path,
                 batch_size=detector_batch_size,

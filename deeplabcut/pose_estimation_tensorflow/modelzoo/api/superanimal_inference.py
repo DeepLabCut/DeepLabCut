@@ -471,7 +471,7 @@ def _video_inference_superanimal(
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
 
     superanimal_name: str
-        The name of the superanimal model. We currently only support "superanimal_quadruped" and "superanimal_topviewmouse"
+        The name of the superanimal model. In TensorFlow, we only support "superanimal_quadruped", "superanimal_topviewmouse". Check out the PyTorch version for active development, better performance and additional models (humans, birds, ...)
     scale_list: list
         A list of int containing the target height of the multi scale test time augmentation. By default it uses the original size. Users are advised to try a wide range of scale list when the super model does not give reasonable results
 
