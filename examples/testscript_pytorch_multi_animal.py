@@ -15,7 +15,7 @@ from pathlib import Path
 
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.compat import Engine
-from deeplabcut.pose_estimation_pytorch.config.utils import is_model_top_down
+from deeplabcut.pose_estimation_pytorch.config.utils import is_model_top_down, is_model_cond_top_down
 
 from utils import (
     cleanup,
@@ -56,16 +56,7 @@ def main(
             if is_model_top_down(net_type):
                 epochs_ = top_down_epochs
             try:
-                run(
-                    config_path=config_path,
-                    train_fraction=train_frac,
-                    trainset_index=trainset_index,
-                    net_type=net_type,
-                    videos=[str(project_path / "videos" / "video.mp4")],
-                    device=device,
-                    engine=engine,
-                    pytorch_cfg_updates={
-                        "data.conditions.shuffle": conditions_shuffle,
+                pytorch_cfg_updates = {
                         "data.conditions.snapshot_index": -1,
                         "train_settings.display_iters": 50,
                         "train_settings.epochs": epochs_,
@@ -79,7 +70,18 @@ def main(
                         "detector.runner.snapshots.save_epochs": save_epochs,
                         "detector.runner.snapshots.max_snapshots": max_snapshots_to_keep,
                         "logger": logger,
-                    },
+                    }
+                if is_model_cond_top_down(net_type):
+                    pytorch_cfg_updates["data.conditions.shuffle"] = conditions_shuffle
+                run(
+                    config_path=config_path,
+                    train_fraction=train_frac,
+                    trainset_index=trainset_index,
+                    net_type=net_type,
+                    videos=[str(project_path / "videos" / "video.mp4")],
+                    device=device,
+                    engine=engine,
+                    pytorch_cfg_updates=pytorch_cfg_updates,
                     create_labeled_videos=create_labeled_videos,
                 )
             except Exception as err:
