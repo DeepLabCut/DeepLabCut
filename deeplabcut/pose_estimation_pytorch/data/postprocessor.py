@@ -108,6 +108,10 @@ def build_bottom_up_postprocessor(
                 "identity_scores": max_individuals,
             },
             pad_value=-1,
+            expected_shapes={
+                "bodyparts": (num_bodyparts, 3),
+                "identity_scores": (num_bodyparts, max_individuals),
+            }
         ),
     ]
 
@@ -172,6 +176,11 @@ def build_top_down_postprocessor(
                     "bbox_scores": max_individuals,
                 },
                 pad_value=-1,
+                expected_shapes={
+                    "bodyparts": (num_bodyparts, 3),
+                    "bboxes": (4,),
+                    "bbox_scores": (),  # scalar
+                }
             ),
         ]
     )
@@ -271,26 +280,38 @@ class PadOutputs(Postprocessor):
         self,
         max_individuals: dict[str, int],
         pad_value: int,
+        expected_shapes: dict[str, tuple[int, ...]],
     ):
         self.max_individuals = max_individuals
         self.pad_value = pad_value
+        self.expected_shapes = expected_shapes
 
     def __call__(
         self, predictions: dict[str, np.ndarray], context: Context
     ) -> tuple[dict[str, np.ndarray], Context]:
         for name in predictions:
             output = predictions[name]
-            if isinstance(output, list):
-                output = np.array(output)
+            output = np.array(output)  # Normalize all inputs to np.ndarray
+
+            expected_shape = self.expected_shapes.get(name, ())
+            expected_ndim = 1 + len(expected_shape)  # individuals_dimension + expected shape for single individual
+
+            # Special handling for empty arrays
+            if len(output) == 0:
+                output = np.empty((0, *expected_shape), dtype=float)
+            elif output.ndim < expected_ndim:
+                output = np.reshape(output, (len(output), *expected_shape))
 
             if (
-                name in self.max_individuals
-                and len(output) < self.max_individuals[name]
+                    name in self.max_individuals
+                    and len(output) < self.max_individuals[name]
             ):
                 pad_size = self.max_individuals[name] - len(output)
                 tail_shape = output.shape[1:]
-                padding = self.pad_value * np.ones((pad_size, *tail_shape))
-                predictions[name] = np.concatenate([output, padding])
+                padding = self.pad_value * np.ones((pad_size, *tail_shape), dtype=output.dtype)
+                output = np.concatenate([output, padding], axis=0)
+
+            predictions[name] = output
 
         return predictions, context
 
