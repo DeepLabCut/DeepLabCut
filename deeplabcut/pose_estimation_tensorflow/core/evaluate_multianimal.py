@@ -18,6 +18,7 @@ import pandas as pd
 from tqdm import tqdm
 from typing import List
 
+from deeplabcut import Engine
 from deeplabcut.core import crossvalutils
 from deeplabcut.core.crossvalutils import find_closest_neighbors
 from deeplabcut.pose_estimation_tensorflow.core.evaluate import (
@@ -214,7 +215,11 @@ def evaluate_multianimal_full(
                 cfg["project_path"],
                 str(
                     auxiliaryfunctions.get_evaluation_folder(
-                        trainFraction, shuffle, cfg, modelprefix=modelprefix
+                        trainFraction,
+                        shuffle,
+                        cfg,
+                        modelprefix=modelprefix,
+                        engine=Engine.TF,
                     )
                 ),
             )
@@ -264,6 +269,7 @@ def evaluate_multianimal_full(
                     trainFraction,
                     trainingsiterations=training_iterations,
                     modelprefix=modelprefix,
+                    engine=Engine.TF,
                 )
                 print(
                     "Running ",

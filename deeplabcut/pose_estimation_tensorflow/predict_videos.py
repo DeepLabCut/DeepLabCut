@@ -34,6 +34,7 @@ from tqdm import tqdm
 from deeplabcut.core import trackingutils, inferenceutils
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import predict
+from deeplabcut import Engine
 
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, auxfun_models
@@ -169,6 +170,7 @@ def create_tracking_dataset(
         trainFraction,
         trainingsiterations=trainingsiterations,
         modelprefix=modelprefix,
+        engine=Engine.TF,
     )
     if dlc_cfg["num_outputs"] > 1:
         if TFGPUinference:
@@ -561,6 +563,7 @@ def analyze_videos(
         trainFraction,
         trainingsiterations=trainingsiterations,
         modelprefix=modelprefix,
+        engine=Engine.TF,
     )
     if dlc_cfg["num_outputs"] > 1:
         if TFGPUinference:
@@ -641,6 +644,7 @@ def analyze_videos(
                         animal_names=animal_names,
                         modelprefix=modelprefix,
                         save_as_csv=save_as_csv,
+                        engine=Engine.TF,
                     )
         else:
             for video in Videos:
@@ -1327,6 +1331,7 @@ def analyze_time_lapse_frames(
         trainFraction,
         trainingsiterations=trainingsiterations,
         modelprefix=modelprefix,
+        engine=Engine.TF,
     )
     sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
 
@@ -1475,7 +1480,7 @@ def _convert_detections_to_tracklets(
         greedy=greedy,
         pcutoff=inference_cfg.get("pcutoff", 0.1),
         min_affinity=inference_cfg.get("pafthreshold", 0.05),
-        min_n_links=inference_cfg["minimalnumberofconnections"]
+        min_n_links=inference_cfg["minimalnumberofconnections"],
     )
     if calibrate:
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
@@ -1687,6 +1692,7 @@ def convert_detections2tracklets(
         trainFraction,
         trainingsiterations=trainingsiterations,
         modelprefix=modelprefix,
+        engine=Engine.TF,
     )
 
     ##################################################
@@ -1768,7 +1774,7 @@ def convert_detections2tracklets(
                     min_affinity=inferencecfg.get("pafthreshold", 0.05),
                     window_size=window_size,
                     identity_only=identity_only,
-                    min_n_links=inferencecfg["minimalnumberofconnections"]
+                    min_n_links=inferencecfg["minimalnumberofconnections"],
                 )
                 assemblies_filename = dataname.split(".h5")[0] + "_assemblies.pickle"
                 if not os.path.exists(assemblies_filename) or overwrite:
