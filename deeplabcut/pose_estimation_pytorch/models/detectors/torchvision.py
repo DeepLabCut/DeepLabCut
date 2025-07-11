@@ -104,6 +104,7 @@ class TorchvisionDetectorAdaptor(BaseDetector):
 
         self.transforms = weights.transforms() if weights is not None else None
 
+# todo check detector training loss = 0 bug (multianimal pytorch integration test)
     def forward(
         self, x: torch.Tensor, targets: list[dict[str, torch.Tensor]] | None = None
     ) -> tuple[dict[str, torch.Tensor], list[dict[str, torch.Tensor]]]:
@@ -120,7 +121,7 @@ class TorchvisionDetectorAdaptor(BaseDetector):
         """
         result = self.model(x, targets)
         
-        # Handle different return formats from torchvision models
+        # Handle different return formats from torchvision models # todo review this?
         if isinstance(result, tuple):
             if len(result) == 2:
                 # Standard format: (losses, predictions)
@@ -151,7 +152,7 @@ class TorchvisionDetectorAdaptor(BaseDetector):
         Returns:
             List of detection results, each containing "bboxes" in xywh format
         """
-
+        # Maybe the seed should be fixed here
 
         self.model.eval()
         device = next(self.model.parameters()).device
@@ -207,7 +208,7 @@ class TorchvisionDetectorAdaptor(BaseDetector):
                 # Check if predictions are empty due to threshold
                 if isinstance(prediction, dict) and len(prediction) > 0:
                     if 'scores' in prediction:
-                        print(f"DEBUG: Max score: {prediction['scores'].max() if len(prediction['scores']) > 0 else 'No scores'}")
+                        print(f"DEBUG: Max score: {prediction['scores'].max() if len(prediction['scores']) > 0 else 'No scores'}") # todo delete
                         # Check if model has roi_heads (FasterRCNN) or not (SSD)
                         # Skip threshold check for SSD models that don't have roi_heads
                 

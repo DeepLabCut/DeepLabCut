@@ -51,7 +51,8 @@ def get_checkpoint_epoch(checkpoint_path):
     else:
         return 0
 
-
+# problem with bboxes plotting when using detector
+# todo check why result is different when calling from the GUI or console.
 def video_inference_superanimal(
     videos: str | list,
     superanimal_name: str,
@@ -347,7 +348,8 @@ def video_inference_superanimal(
         if detector_name is None:
             raise ValueError(
                 "You have to specify a detector_name when using the Pytorch framework."
-            )
+            ) # If superanimal_humanbody - we don't want to be able to execute without a detector!
+        # or do we?
 
         from deeplabcut.pose_estimation_pytorch.modelzoo.inference import (
             _video_inference_superanimal,
@@ -376,10 +378,12 @@ def video_inference_superanimal(
                 model_name=detector_name,
             )
 
+        # detector_path is not defined for the superanimal_humanbody, detector_name could be used instead
         dlc_scorer = get_super_animal_scorer(
             superanimal_name, pose_model_path, detector_path
         )
 
+        # This has been added
         # Add superanimal_name to config metadata for all superanimal models (needed for detector routing)
         if "metadata" not in config:
             config["metadata"] = {}
@@ -580,7 +584,7 @@ def video_inference_superanimal(
             superanimal_name,
             model_cfg=config,
             model_snapshot_path=pose_model_path,
-            detector_snapshot_path=detector_path,
+            detector_snapshot_path=detector_path, # todo pass None for superanimal_humanbody?
             max_individuals=max_individuals,
             pcutoff=pcutoff,
             batch_size=batch_size,

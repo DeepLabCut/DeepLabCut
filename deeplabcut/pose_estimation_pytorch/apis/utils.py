@@ -408,7 +408,8 @@ def build_predictions_dataframe(
     """
     image_names = []
     prediction_data = []
-    
+
+    # What is this block for?
     # Check if this is a humanbody model by looking at the first prediction
     if predictions:
         first_pred = next(iter(predictions.values()))
@@ -592,14 +593,14 @@ def get_inference_runners(
         superanimal_name = model_config.get("metadata", {}).get("superanimal_name", "")
 
         if detector_path is not None or "detector" in model_config:
-            if detector_path is not None:
+            if detector_path is not None: # Is this correct?
                 detector_path = str(detector_path)
             if detector_transform is None:
                 detector_transform = build_transforms(
                     model_config["detector"]["data"]["inference"]
                 )
 
-            print(f"DEBUG: Creating detector for superanimal_name: '{superanimal_name}'")
+            print(f"DEBUG: Creating detector for superanimal_name: '{superanimal_name}'") # what is the following block for?
             if superanimal_name == "superanimal_humanbody":
                 # Only for superanimal_humanbody, use torchvision detector
                 from deeplabcut.pose_estimation_pytorch.models.detectors.torchvision import TorchvisionDetectorAdaptor

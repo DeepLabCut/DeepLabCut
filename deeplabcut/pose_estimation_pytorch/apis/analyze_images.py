@@ -69,7 +69,6 @@ def superanimal_analyze_images(
                 - "superanimal_bird"
                 - "superanimal_topviewmouse"
                 - "superanimal_quadruped"
-                - "superanimal_superbird"
                 - "superanimal_humanbody"
 
         model_name: str
@@ -424,9 +423,9 @@ def analyze_image_folder(
 
     pose_task = Task(model_cfg["method"])
     if pose_task == Task.TOP_DOWN and detector_path is None:
-        detector_variant = model_cfg.get("detector", {}).get("model", {}).get("variant", "")
+        detector_variant = model_cfg.get("detector", {}).get("model", {}).get("variant", "") # well no,
         # Allow torchvision detectors to be loaded without a checkpoint
-        if detector_variant not in ["fasterrcnn_mobilenet_v3_large_fpn", "fasterrcnn_resnet50_fpn_v2"]:
+        if detector_variant not in ["fasterrcnn_mobilenet_v3_large_fpn", "fasterrcnn_resnet50_fpn_v2"]: # we do have other detectors, don't we?
             raise ValueError(
                 "A detector path must be specified for image analysis using top-down models"
                 f" Please specify the `detector_path` parameter."

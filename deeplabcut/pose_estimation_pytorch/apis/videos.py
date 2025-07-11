@@ -198,9 +198,11 @@ def video_inference(
         detector_progress = tqdm(video, desc="Detector")
         bbox_predictions = []
         for i, frame in enumerate(detector_progress):
+            # human detector is very slow compared to the quadruped detector
             result = detector_runner.inference(images=[frame])
             bbox_predictions.extend(result)
-        
+
+        # Why do we need a patch here?
         # PATCH: Ensure bbox_predictions is always length n_frames
         if len(bbox_predictions) < n_frames:
             print(f"[PATCH] Detector returned {len(bbox_predictions)} predictions for {n_frames} frames. Padding with empty bboxes.")
@@ -211,6 +213,8 @@ def video_inference(
             bbox_predictions = bbox_predictions[:n_frames]
         video.set_context(bbox_predictions)
 
+    # at this stage, for people, there are 10 bboxes, all with scores of 1
+    # while for horse, there is only 1 bbox with a reasonable score
     print(f"Running pose prediction with batch size {pose_runner.batch_size}")
     if shelf_writer is not None:
         shelf_writer.open()
@@ -837,7 +841,8 @@ def create_df_from_prediction(
             "- Adjusting the detector confidence threshold\n"
             "- Checking if the model is appropriate for your use case"
         )
-    
+
+    # This should be done by the postprocessor
     # Ensure all predictions have the same shape by padding with zeros if needed
     max_individuals = max(p["bodyparts"].shape[0] for p in predictions) if predictions else 0
     num_bodyparts = predictions[0]["bodyparts"].shape[1] if predictions else 0

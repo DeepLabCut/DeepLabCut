@@ -850,7 +850,8 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
                 _, raw_predictions = self.model(inputs.to(self.device))
         else:
             _, raw_predictions = self.model(inputs.to(self.device))
-        
+
+        # This has been completely modified
         predictions = []
         for item in raw_predictions:
             if isinstance(item, dict) and "boxes" in item and "scores" in item:

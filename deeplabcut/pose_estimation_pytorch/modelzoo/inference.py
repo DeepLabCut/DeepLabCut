@@ -25,6 +25,7 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     raise_warning_if_called_directly,
 )
+from deeplabcut.pose_estimation_pytorch import fix_seeds # tmp, todo find better location
 from deeplabcut.utils.make_labeled_video import create_video
 
 
@@ -98,6 +99,8 @@ def _video_inference_superanimal(
     Raises:
         Warning: If the function is called directly.
     """
+    fix_seeds(42) # todo find better location for this
+
     raise_warning_if_called_directly()
     pose_runner, detector_runner = get_inference_runners(
         model_config=model_cfg,

@@ -59,7 +59,7 @@ def get_super_animal_project_cfg(super_animal: str) -> dict:
     return read_config_as_dict(super_animal_projects[super_animal])
 
 
-def get_super_animal_scorer(
+def get_super_animal_scorer( # This has been changed
     super_animal: str,
     model_snapshot_path: Path,
     detector_snapshot_path: Path | str | None,
