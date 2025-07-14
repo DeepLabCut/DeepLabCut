@@ -143,6 +143,9 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
             A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         )
 
+    if augmentations.get("scale_to_unit_range"):
+        transforms.append(ScaleToUnitRange())
+
     return A.Compose(
         transforms,
         keypoint_params=A.KeypointParams(
@@ -669,3 +672,11 @@ class RandomBBoxTransform(A.DualTransform):
             return low + (delta * np.random.random(size))
 
         raise ValueError(f"Unknown sampling: {self.sampling}")
+
+
+class ScaleToUnitRange(A.ImageOnlyTransform):
+    def __init__(self, always_apply=True, p=1.0):
+        super().__init__(always_apply=always_apply, p=p)
+
+    def apply(self, img, **params):
+        return img.astype(np.float32) / 255.0

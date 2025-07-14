@@ -112,13 +112,14 @@ def load_super_animal_config(
     model_config = add_metadata(project_config, model_config, model_cfg_path)
     model_config = update_config(model_config, max_individuals, device)
 
-    if detector_name is None:
+    if detector_name is None and super_animal != "superanimal_humanbody":
         model_config["method"] = "BU"
     else:
-        detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name)
-        detector_cfg = read_config_as_dict(detector_cfg_path)
         model_config["method"] = "TD"
-        model_config["detector"] = detector_cfg
+        if super_animal != "superanimal_humanbody":
+            detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name)
+            detector_cfg = read_config_as_dict(detector_cfg_path)
+            model_config["detector"] = detector_cfg
     return model_config
 
 
@@ -197,7 +198,7 @@ def update_config(config: dict, max_individuals: int, device: str):
     config["metadata"]["individuals"] = [f"animal{i}" for i in range(max_individuals)]
 
     config["device"] = device
-    if "detector" in config:
+    if config.get("detector", None) is not None:
         config["detector"]["device"] = device
 
     return config

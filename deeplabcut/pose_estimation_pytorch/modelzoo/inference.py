@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 import numpy as np
+from torchvision.models import detection
 
 from deeplabcut.modelzoo.utils import get_super_animal_scorer, get_superanimal_colormaps
 from deeplabcut.pose_estimation_pytorch.apis.videos import (
@@ -21,10 +22,15 @@ from deeplabcut.pose_estimation_pytorch.apis.videos import (
     video_inference,
     VideoIterator,
 )
-from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
+from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners, get_pose_inference_runner
+from deeplabcut.pose_estimation_pytorch.data import build_bottom_up_preprocessor, build_detector_postprocessor, build_transforms
+from deeplabcut.pose_estimation_pytorch.models.detectors.filtered_detector import FilteredDetector
+from deeplabcut.pose_estimation_pytorch.runners.inference import build_inference_runner
+from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     raise_warning_if_called_directly,
 )
+from deeplabcut.pose_estimation_pytorch.utils import resolve_device
 from deeplabcut.utils.make_labeled_video import create_video
 
 
@@ -107,6 +113,38 @@ def _video_inference_superanimal(
         detector_batch_size=detector_batch_size,
         detector_path=detector_snapshot_path,
     )
+    # If superanimal_humanbody - need to create detector_runner based on FilteredDetector
+    if superanimal_name == "superanimal_humanbody":
+        device = resolve_device(model_config=model_cfg)
+
+        weights = detection.FasterRCNN_MobileNet_V3_Large_FPN_Weights.DEFAULT
+        coco_detector = detection.fasterrcnn_mobilenet_v3_large_fpn(
+            weights=weights, box_score_thresh=0.6,
+        )
+        coco_detector.eval().to(device)
+        COCO_PERSON = 1  # COCO class ID for person
+        person_detector = FilteredDetector(coco_detector, class_id=COCO_PERSON).to(device)
+        detector_runner = build_inference_runner(
+            task=Task.DETECT,
+            model=person_detector,
+            device=device,
+            snapshot_path=None,
+            batch_size=detector_batch_size,
+            preprocessor=build_bottom_up_preprocessor(
+                color_mode=model_cfg["data"]["colormode"],
+                transform=build_transforms({"scale_to_unit_range": True}),
+            ),
+            postprocessor=build_detector_postprocessor(
+                max_individuals=max_individuals,
+            ),
+        )
+
+        pose_runner = get_pose_inference_runner(
+            model_cfg,
+            snapshot_path=model_snapshot_path,
+            batch_size=batch_size,
+            max_individuals=max_individuals,
+        )
     results = {}
 
     if isinstance(video_paths, str):

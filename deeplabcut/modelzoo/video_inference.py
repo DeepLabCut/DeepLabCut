@@ -322,7 +322,7 @@ def video_inference_superanimal(
             pseudo_threshold,
         )
     elif framework == "pytorch":
-        if detector_name is None:
+        if detector_name is None and superanimal_name != "superanimal_humanbody":
             raise ValueError(
                 "You have to specify a detector_name when using the Pytorch framework."
             )
@@ -348,7 +348,7 @@ def video_inference_superanimal(
             )
 
         detector_path = customized_detector_checkpoint
-        if detector_path is None:
+        if detector_path is None and superanimal_name != "superanimal_humanbody":
             detector_path = get_super_animal_snapshot_path(
                 dataset=superanimal_name,
                 model_name=detector_name,
