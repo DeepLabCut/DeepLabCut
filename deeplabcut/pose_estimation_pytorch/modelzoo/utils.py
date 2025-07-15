@@ -138,9 +138,10 @@ def download_super_animal_snapshot(dataset: str, model_name: str) -> Path:
     """
     snapshot_dir = get_snapshot_folder_path()
     model_name = f"{dataset}_{model_name}"
-    model_path = snapshot_dir / f"{model_name}.pt"
+    model_filename = f"{model_name}.pt"
+    model_path = snapshot_dir / model_filename
 
-    download_huggingface_model(model_name, target_dir=str(snapshot_dir))
+    download_huggingface_model(model_name, target_dir=str(snapshot_dir), rename_mapping=model_filename)
     if not model_path.exists():
         raise RuntimeError(f"Failed to download {model_name} to {model_path}")
 
