@@ -323,8 +323,8 @@ def train_network(
         if display_iters is not None:
             detector_cfg["train_settings"]["display_iters"] = display_iters
 
-    if pytorch_cfg_updates is not None:
-        loader.update_model_cfg(pytorch_cfg_updates)
+    # Save updated model config
+    loader.update_model_cfg(pytorch_cfg_updates or {})
 
     setup_file_logging(loader.model_folder / "train.txt")
 
