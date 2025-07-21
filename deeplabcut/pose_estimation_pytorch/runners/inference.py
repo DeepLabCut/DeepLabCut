@@ -850,44 +850,15 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
                 _, raw_predictions = self.model(inputs.to(self.device))
         else:
             _, raw_predictions = self.model(inputs.to(self.device))
-        
-        predictions = []
-        for item in raw_predictions:
-            if isinstance(item, dict) and "boxes" in item and "scores" in item:
-                predictions.append({
-                    "detection": {
-                        "bboxes": item["boxes"].cpu().numpy().reshape(-1, 4),
-                        "bbox_scores": item["scores"].cpu().numpy().reshape(-1),
-                    }
-                })
-            else:
-                # Handle unexpected output format
-                predictions.append({
-                    "detection": {
-                        "bboxes": np.zeros((0, 4)),
-                        "bbox_scores": np.zeros(0),
-                    }
-                })
-        
-        return predictions
-    
-    def inference(self, images) -> list[dict[str, np.ndarray]]:
-        """Run inference using the detector's own inference method if available
-        
-        Args:
-            images: List of image paths, PIL Images, or numpy arrays
-            
-        Returns:
-            List of detection results with bboxes in xywh format
-        """
-        # Use the detector's own inference method if it exists
-        if hasattr(self.model, 'inference'):
-            return self.model.inference(images)
-        else:
-            # Fall back to standard inference pipeline
-            return super().inference(images)
-
-
+        predictions = [
+            {
+                "detection": {
+                    "bboxes": item["boxes"].cpu().numpy().reshape(-1, 4),
+                    "scores": item["scores"].cpu().numpy().reshape(-1),
+                }
+            }
+            for item in raw_predictions
+        ]
         return predictions
 
 
