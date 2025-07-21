@@ -231,8 +231,8 @@ def video_inference_superanimal(
             https://pytorch.org/vision/stable/models/faster_rcnn.html
 
     (Model Explanation) SuperAnimal-Bird:
-    `superanimal_superbird` model aims to work on various bird species. It was developed 
-    during the 2024 DLC AI Residency Program. More info can be 
+    `superanimal_superbird` model aims to work on various bird species. It was developed
+    during the 2024 DLC AI Residency Program. More info can be
     [found here](https://deeplabcut.medium.com/deeplabcut-ai-residency-2024-recap-working-with-the-superanimal-bird-model-and-dlc-3-0-live-e55807ca2c7c)
 
     (Model Explanation) SuperAnimal-HumanBody:
@@ -250,10 +250,12 @@ def video_inference_superanimal(
             keypoints. When selecting this variant, a `detector_name` must be set with
             one of the provided object detectors. This model uses 17 body parts in
             the COCO body7 format.
-    - We provide an object detector (PyTorch engine):
-        - `fasterrcnn_mobilenet_v3_large_fpn`
-            This is a FasterRCNN model with a MobileNet backbone, see
-            https://pytorch.org/vision/stable/models/faster_rcnn.html
+    - The following object detectors can be used:
+        - `fasterrcnn_mobilenet_v3_large_fpn` (default)
+            This is a FasterRCNN model with a MobileNet backbone
+        - `fasterrcnn_resnet50_fpn`
+        - `fasterrcnn_resnet50_fpn_v2`
+        For more info, see https://pytorch.org/vision/stable/models/faster_rcnn.html
 
     Examples (PyTorch Engine)
     --------
@@ -345,62 +347,17 @@ def video_inference_superanimal(
             pseudo_threshold,
         )
     elif framework == "pytorch":
-        if detector_name is None:
+        torchvision_detector_name = None
+        if superanimal_name != "superanimal_humanbody" and detector_name is None:
             raise ValueError(
                 "You have to specify a detector_name when using the Pytorch framework."
             )
-
-        # Special handling for superanimal_humanbody - use dedicated implementation
-        if superanimal_name == "superanimal_humanbody":
-            from deeplabcut.pose_estimation_pytorch.modelzoo.superanimal_humanbody_video_inference import (
-                analyze_videos_superanimal_humanbody,
-            )
-            
-            # Convert videos to list if needed
-            if isinstance(videos, str):
-                videos = [videos]
-            
-            # Set destination folder
-            if dest_folder is None:
-                dest_folder = Path(videos[0]).parent
+        elif superanimal_name == "superanimal_humanbody":
+            if detector_name is not None:
+                torchvision_detector_name = detector_name
             else:
-                dest_folder = Path(dest_folder)
-            
-            if not dest_folder.exists():
-                dest_folder.mkdir(parents=True, exist_ok=True)
-            
-            # Map parameters to the dedicated function
-            # Note: analyze_videos_superanimal_humanbody has its own parameter set
-            # Handle device parameter - convert "auto" to actual device
-            if device == "auto":
-                import torch
-                actual_device = "cuda" if torch.cuda.is_available() else "cpu"
-            else:
-                actual_device = device
-            
-            dedicated_kwargs = {
-                "videotype": videotype,
-                "destfolder": str(dest_folder),
-                "bbox_threshold": bbox_threshold,
-                "pose_threshold": pcutoff,
-                "device": actual_device,
-                "cropping": cropping,
-                "batch_size": batch_size,
-                "detector_batch_size": detector_batch_size,
-            }
-            
-            # Use a dummy config path since the dedicated function loads its own config
-            dummy_config = "superanimal_humanbody"
-            
-            results = analyze_videos_superanimal_humanbody(
-                dummy_config,
-                videos,
-                **dedicated_kwargs,
-            )
-            
-            return results
+                torchvision_detector_name = "fasterrcnn_mobilenet_v3_large_fpn"
 
-        # Standard PyTorch implementation for other models
         from deeplabcut.pose_estimation_pytorch.modelzoo.inference import (
             _video_inference_superanimal,
         )
@@ -411,7 +368,7 @@ def video_inference_superanimal(
             config = load_super_animal_config(
                 super_animal=superanimal_name,
                 model_name=model_name,
-                detector_name=detector_name,
+                detector_name=detector_name if superanimal_name != "superanimal_humanbody" else None,
             )
 
         pose_model_path = customized_pose_checkpoint
@@ -422,23 +379,17 @@ def video_inference_superanimal(
             )
 
         detector_path = customized_detector_checkpoint
-        if detector_path is None:
+        if detector_path is None and superanimal_name != "superanimal_humanbody":
             detector_path = get_super_animal_snapshot_path(
                 dataset=superanimal_name,
                 model_name=detector_name,
             )
 
         dlc_scorer = get_super_animal_scorer(
-            superanimal_name, pose_model_path, detector_path
+            superanimal_name, pose_model_path, detector_path, torchvision_detector_name
         )
 
-        # Add superanimal_name to config metadata for all superanimal models (needed for detector routing)
-        if "metadata" not in config:
-            config["metadata"] = {}
-        config["metadata"]["superanimal_name"] = superanimal_name
-        
         config = update_config(config, max_individuals, device)
-        
         output_suffix = "_before_adapt"
         if video_adapt:
             # the users can pass in many videos. For now, we only use one video for
@@ -638,4 +589,5 @@ def video_inference_superanimal(
             output_suffix=output_suffix,
             plot_bboxes=plot_bboxes,
             bboxes_pcutoff=bbox_threshold,
+            torchvision_detector_name=torchvision_detector_name,
         )
