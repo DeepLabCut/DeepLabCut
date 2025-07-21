@@ -40,20 +40,15 @@ def get_snapshot_folder_path() -> Path:
     return Path(auxiliaryfunctions.get_deeplabcut_path()) / "modelzoo" / "checkpoints"
 
 
-def get_super_animal_model_config_path(model_name: str, super_animal: str = None) -> Path:
+def get_super_animal_model_config_path(model_name: str) -> Path:
     """Gets the path to the configuration file for a SuperAnimal model.
 
     Args:
         model_name: The name of the model for which to get the path.
-        super_animal: The name of the SuperAnimal (used for specific model configs).
 
     Returns:
         The path to the config file for a SuperAnimal model.
     """
-    # Special case for superanimal_humanbody with rtmpose_x
-    if model_name == "rtmpose_x" and super_animal == "superanimal_humanbody":
-        return get_model_configs_folder_path() / "superanimal_humanbody_rtmpose_x.yaml"
-    
     return get_model_configs_folder_path() / f"{model_name}.yaml"
 
 
