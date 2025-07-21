@@ -590,12 +590,13 @@ class CTDInferenceRunner(PoseInferenceRunner):
         raw_predictions = self.model.get_predictions(outputs)
         predictions = [
             {
-                "detection": {
-                    "bboxes": item["boxes"].cpu().numpy().reshape(-1, 4),
-                    "bbox_scores": item["scores"].cpu().numpy().reshape(-1),
+                head: {
+                    pred_name: pred[b].cpu().numpy()
+                    for pred_name, pred in head_outputs.items()
                 }
+                for head, head_outputs in raw_predictions.items()
             }
-            for item in raw_predictions
+            for b in range(len(inputs))
         ]
 
         return predictions
