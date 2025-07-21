@@ -194,45 +194,25 @@ def video_inference(
 
     if detector_runner is not None:
         print(f"Running detector with batch size {detector_runner.batch_size}")
-        
-        detector_progress = tqdm(video, desc="Detector")
-        bbox_predictions = []
-        for i, frame in enumerate(detector_progress):
-            result = detector_runner.inference(images=[frame])
-            bbox_predictions.extend(result)
-        
-        # PATCH: Ensure bbox_predictions is always length n_frames
-        if len(bbox_predictions) < n_frames:
-            print(f"[PATCH] Detector returned {len(bbox_predictions)} predictions for {n_frames} frames. Padding with empty bboxes.")
-            for _ in range(n_frames - len(bbox_predictions)):
-                bbox_predictions.append({'bboxes': np.zeros((0, 4))})
-        elif len(bbox_predictions) > n_frames:
-            print(f"[PATCH] Detector returned more predictions than frames. Truncating to {n_frames}.")
-            bbox_predictions = bbox_predictions[:n_frames]
+        bbox_predictions = detector_runner.inference(images=tqdm(video))
         video.set_context(bbox_predictions)
 
     print(f"Running pose prediction with batch size {pose_runner.batch_size}")
     if shelf_writer is not None:
         shelf_writer.open()
-    
-    pose_progress = tqdm(video, desc="Pose")
-    predictions = []
-    for i, frame in enumerate(pose_progress):
-        result = pose_runner.inference(images=[frame])
-        predictions.extend(result)
-    
+
+    predictions = pose_runner.inference(images=tqdm(video), shelf_writer=shelf_writer)
     if shelf_writer is not None:
         shelf_writer.close()
 
     if shelf_writer is None and len(predictions) != n_frames:
-        frames_with_detections = sum(
-            1 for pred in predictions if (
-                ('bodyparts' in pred and pred['bodyparts'].shape[0] > 0) or
-                ('bboxes' in pred and len(pred['bboxes']) > 0)
-            )
-        )
+        tip_url = "https://deeplabcut.github.io/DeepLabCut/docs/recipes/io.html"
+        header = "#tips-on-video-re-encoding-and-preprocessing"
         logging.warning(
-            f"Only {frames_with_detections} of {n_frames} frames had detections!"
+            f"The video metadata indicates that there {n_frames} in the video, but "
+            f"only {len(predictions)} were able to be processed. This can happen if "
+            "the video is corrupted. You can try to fix the issue by re-encoding your "
+            f"video (tips on how to do that: {tip_url}{header})"
         )
 
     return predictions
