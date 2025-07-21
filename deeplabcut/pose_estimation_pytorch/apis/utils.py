@@ -418,25 +418,6 @@ def build_predictions_dataframe(
     """
     image_names = []
     prediction_data = []
-    
-    # Check if this is a humanbody model by looking at the first prediction
-    if predictions:
-        first_pred = next(iter(predictions.values()))
-        if "bodyparts" in first_pred:
-            actual_num_individuals = first_pred["bodyparts"].shape[0]
-            expected_num_individuals = len(parameters.individuals)
-            
-            # For humanbody models, if the actual number of individuals differs from expected,
-            # we need to adjust the parameters to match the actual predictions
-            if actual_num_individuals != expected_num_individuals:
-                # Create adjusted parameters with the actual number of individuals
-                adjusted_individuals = [f"individual_{i}" for i in range(actual_num_individuals)]
-                parameters = PoseDatasetParameters(
-                    bodyparts=parameters.bodyparts,
-                    unique_bpts=parameters.unique_bpts,
-                    individuals=adjusted_individuals,
-                )
-    
     for image_name, image_predictions in predictions.items():
         image_data = image_predictions["bodyparts"][..., :3].reshape(-1)
         if "unique_bodyparts" in image_predictions:
