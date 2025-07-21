@@ -137,25 +137,15 @@ def download_super_animal_snapshot(dataset: str, model_name: str) -> Path:
         RuntimeError if the model fails to download.
     """
     snapshot_dir = get_snapshot_folder_path()
-    full_model_name = f"{dataset}_{model_name}"
-    model_path = snapshot_dir / f"{full_model_name}.pt"
+    model_name = f"{dataset}_{model_name}"
+    model_filename = f"{model_name}.pt"
+    model_path = snapshot_dir / model_filename
 
-    # Use the full name for dlclibrary lookup (consistent with dlclibrary naming)
-    download_huggingface_model(full_model_name, target_dir=str(snapshot_dir))
-    
-    # Check if the file was downloaded with the expected name
+    download_huggingface_model(model_name, target_dir=str(snapshot_dir), rename_mapping=model_filename)
     if not model_path.exists():
-        # If not, look for the actual downloaded filename and rename it
-        if dataset == "superanimal_humanbody" and model_name == "rtmpose_x":
-            actual_file = snapshot_dir / "rtmpose-x_simcc-body7.pt"
-            if actual_file.exists():
-                actual_file.rename(model_path)
-            else:
-                raise RuntimeError(f"Failed to download {model_name} to {model_path}")
-        else:
-            raise RuntimeError(f"Failed to download {model_name} to {model_path}")
+        raise RuntimeError(f"Failed to download {model_name} to {model_path}")
 
-    return snapshot_dir / f"{full_model_name}.pt"
+    return snapshot_dir / f"{model_name}.pt"
 
 
 def get_gpu_memory_map():
