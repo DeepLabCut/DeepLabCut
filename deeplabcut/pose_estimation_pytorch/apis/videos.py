@@ -783,59 +783,7 @@ def create_df_from_prediction(
     output_prefix: str | Path,
     save_as_csv: bool = False,
 ) -> pd.DataFrame:
-    # Check if any predictions were made
-    if not predictions:
-        raise ValueError(
-            "No objects were detected in the video. This can happen if:\n"
-            "1. The video doesn't contain the type of objects the model was trained to detect\n"
-            "2. The objects are too small, blurry, or occluded\n"
-            "3. The detector confidence threshold is too high\n"
-            "4. The video quality is poor\n\n"
-            "Try:\n"
-            "- Using a different video with clearer objects\n"
-            "- Adjusting the detector confidence threshold\n"
-            "- Checking if the model is appropriate for your use case"
-        )
-    
-    # Check if any predictions contain valid detections (non-empty bboxes)
-    valid_predictions = []
-    for pred in predictions:
-        if "bboxes" in pred and len(pred["bboxes"]) > 0:
-            valid_predictions.append(pred)
-        elif "bodyparts" in pred and pred["bodyparts"].shape[0] > 0:
-            valid_predictions.append(pred)
-    
-    if not valid_predictions:
-        raise ValueError(
-            "No objects were detected in the video. This can happen if:\n"
-            "1. The video doesn't contain the type of objects the model was trained to detect\n"
-            "2. The objects are too small, blurry, or occluded\n"
-            "3. The detector confidence threshold is too high\n"
-            "4. The video quality is poor\n\n"
-            "Try:\n"
-            "- Using a different video with clearer objects\n"
-            "- Adjusting the detector confidence threshold\n"
-            "- Checking if the model is appropriate for your use case"
-        )
-    
-    # Ensure all predictions have the same shape by padding with zeros if needed
-    max_individuals = max(p["bodyparts"].shape[0] for p in predictions) if predictions else 0
-    num_bodyparts = predictions[0]["bodyparts"].shape[1] if predictions else 0
-    
-    # Pad all predictions to have the same number of individuals
-    padded_predictions = []
-    for p in predictions:
-        current_individuals = p["bodyparts"].shape[0]
-        if current_individuals < max_individuals:
-            # Pad with zeros for missing individuals
-            padding = np.zeros((max_individuals - current_individuals, num_bodyparts, 3))
-            padded_bodyparts = np.concatenate([p["bodyparts"][..., :3], padding], axis=0)
-        else:
-            padded_bodyparts = p["bodyparts"][..., :3]
-        padded_predictions.append(padded_bodyparts)
-    
-    pred_bodyparts = np.stack(padded_predictions)
-    
+    pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
     pred_unique_bodyparts = None
     if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:
         pred_unique_bodyparts = np.stack([p["unique_bodyparts"] for p in predictions])
