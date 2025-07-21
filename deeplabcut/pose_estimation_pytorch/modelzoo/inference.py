@@ -22,15 +22,14 @@ from deeplabcut.pose_estimation_pytorch.apis.videos import (
     video_inference,
     VideoIterator,
 )
-from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners, get_pose_inference_runner
-from deeplabcut.pose_estimation_pytorch.data import build_bottom_up_preprocessor, build_detector_postprocessor, build_transforms
-from deeplabcut.pose_estimation_pytorch.models.detectors.filtered_detector import FilteredDetector
-from deeplabcut.pose_estimation_pytorch.runners.inference import build_inference_runner
-from deeplabcut.pose_estimation_pytorch.task import Task
+from deeplabcut.pose_estimation_pytorch.apis.utils import (
+    get_inference_runners,
+    get_pose_inference_runner,
+    get_filtered_coco_detector_inference_runner
+)
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     raise_warning_if_called_directly,
 )
-from deeplabcut.pose_estimation_pytorch.utils import resolve_device
 from deeplabcut.utils.make_labeled_video import create_video
 
 
@@ -66,6 +65,7 @@ def _video_inference_superanimal(
     output_suffix: str = "",
     plot_bboxes: bool = True,
     bboxes_pcutoff: float = 0.9,
+    torchvision_detector_name: str | None = None,
 ) -> dict:
     """
     Perform inference on a video using a superanimal model from the model zoo specified by `superanimal_name`.
@@ -103,48 +103,36 @@ def _video_inference_superanimal(
         Warning: If the function is called directly.
     """
     raise_warning_if_called_directly()
-    pose_runner, detector_runner = get_inference_runners(
-        model_config=model_cfg,
-        snapshot_path=model_snapshot_path,
-        max_individuals=max_individuals,
-        num_bodyparts=len(model_cfg["metadata"]["bodyparts"]),
-        num_unique_bodyparts=0,
-        batch_size=batch_size,
-        detector_batch_size=detector_batch_size,
-        detector_path=detector_snapshot_path,
-    )
-    # If superanimal_humanbody - need to create detector_runner based on FilteredDetector
+
     if superanimal_name == "superanimal_humanbody":
-        device = resolve_device(model_config=model_cfg)
-
-        weights = detection.FasterRCNN_MobileNet_V3_Large_FPN_Weights.DEFAULT
-        coco_detector = detection.fasterrcnn_mobilenet_v3_large_fpn(
-            weights=weights, box_score_thresh=0.6,
-        )
-        coco_detector.eval().to(device)
+        if torchvision_detector_name is None:
+            torchvision_detector_name = "fasterrcnn_mobilenet_v3_large_fpn"
         COCO_PERSON = 1  # COCO class ID for person
-        person_detector = FilteredDetector(coco_detector, class_id=COCO_PERSON).to(device)
-        detector_runner = build_inference_runner(
-            task=Task.DETECT,
-            model=person_detector,
-            device=device,
-            snapshot_path=None,
+        detector_runner = get_filtered_coco_detector_inference_runner(
+            model_name=torchvision_detector_name,
+            category_id=COCO_PERSON,
             batch_size=detector_batch_size,
-            preprocessor=build_bottom_up_preprocessor(
-                color_mode=model_cfg["data"]["colormode"],
-                transform=build_transforms({"scale_to_unit_range": True}),
-            ),
-            postprocessor=build_detector_postprocessor(
-                max_individuals=max_individuals,
-            ),
+            max_individuals=max_individuals,
+            model_config=model_cfg,
         )
-
         pose_runner = get_pose_inference_runner(
             model_cfg,
             snapshot_path=model_snapshot_path,
             batch_size=batch_size,
             max_individuals=max_individuals,
         )
+    else:
+        pose_runner, detector_runner = get_inference_runners(
+            model_config=model_cfg,
+            snapshot_path=model_snapshot_path,
+            max_individuals=max_individuals,
+            num_bodyparts=len(model_cfg["metadata"]["bodyparts"]),
+            num_unique_bodyparts=0,
+            batch_size=batch_size,
+            detector_batch_size=detector_batch_size,
+            detector_path=detector_snapshot_path,
+        )
+
     results = {}
 
     if isinstance(video_paths, str):
@@ -160,7 +148,7 @@ def _video_inference_superanimal(
         print(f"Processing video {video_path}")
 
         dlc_scorer = get_super_animal_scorer(
-            superanimal_name, model_snapshot_path, detector_snapshot_path
+            superanimal_name, model_snapshot_path, detector_snapshot_path, torchvision_detector_name
         )
 
         output_prefix = f"{Path(video_path).stem}_{dlc_scorer}"

@@ -322,10 +322,16 @@ def video_inference_superanimal(
             pseudo_threshold,
         )
     elif framework == "pytorch":
-        if detector_name is None and superanimal_name != "superanimal_humanbody":
+        torchvision_detector_name = None
+        if superanimal_name != "superanimal_humanbody" and detector_name is None:
             raise ValueError(
                 "You have to specify a detector_name when using the Pytorch framework."
             )
+        elif superanimal_name == "superanimal_humanbody":
+            if detector_name is not None:
+                torchvision_detector_name = detector_name
+            else:
+                torchvision_detector_name = "fasterrcnn_mobilenet_v3_large_fpn"
 
         from deeplabcut.pose_estimation_pytorch.modelzoo.inference import (
             _video_inference_superanimal,
@@ -337,7 +343,7 @@ def video_inference_superanimal(
             config = load_super_animal_config(
                 super_animal=superanimal_name,
                 model_name=model_name,
-                detector_name=detector_name,
+                detector_name=detector_name if superanimal_name != "superanimal_humanbody" else None,
             )
 
         pose_model_path = customized_pose_checkpoint
@@ -355,7 +361,7 @@ def video_inference_superanimal(
             )
 
         dlc_scorer = get_super_animal_scorer(
-            superanimal_name, pose_model_path, detector_path
+            superanimal_name, pose_model_path, detector_path, torchvision_detector_name
         )
 
         config = update_config(config, max_individuals, device)
@@ -558,4 +564,5 @@ def video_inference_superanimal(
             output_suffix=output_suffix,
             plot_bboxes=plot_bboxes,
             bboxes_pcutoff=bbox_threshold,
+            torchvision_detector_name=torchvision_detector_name,
         )
