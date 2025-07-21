@@ -190,8 +190,6 @@ def update_config(config: dict, max_individuals: int, device: str):
     Returns:
         The model configuration for a SuperAnimal-pretrained model.
     """
- 
-    
     config = config_utils.replace_default_values(
         config,
         num_bodyparts=len(config["metadata"]["bodyparts"]),
@@ -201,6 +199,7 @@ def update_config(config: dict, max_individuals: int, device: str):
     config["metadata"]["individuals"] = [f"animal{i}" for i in range(max_individuals)]
 
     config["device"] = device
-    if "detector" in config:
+    if config.get("detector", None) is not None:
         config["detector"]["device"] = device
+
     return config
