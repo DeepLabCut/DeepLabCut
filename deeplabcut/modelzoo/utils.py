@@ -62,17 +62,23 @@ def get_super_animal_project_cfg(super_animal: str) -> dict:
 def get_super_animal_scorer(
     super_animal: str,
     model_snapshot_path: Path,
-    detector_snapshot_path: Path | str | None,
+    detector_snapshot_path: Path | None,
+    torchvision_detector_name: str | None = None,
 ) -> str:
     """
     Args:
         super_animal: The SuperAnimal dataset on which the models were trained
         model_snapshot_path: The path for the SuperAnimal pose model snapshot
-        detector_snapshot_path: The path or name for the SuperAnimal detector, if a detector is being used.
+        detector_snapshot_path: The path for the SuperAnimal detector snapshot, if a
+            detector is being used.
+        torchvision_detector_name: The name of a pretrained COCO detector from torchvision,
+            if such a detector is used instead of a snapshot.
 
     Returns:
         The DLC scorer name to use for the given SuperAnimal models.
     """
+    if detector_snapshot_path is not None and torchvision_detector_name is not None:
+        raise ValueError("Provide only one of `detector_snapshot_path` or `torchvision_detector_name`, not both.")
     super_animal_prefix = super_animal + "_"
     # Always use model name first
     model_name = model_snapshot_path.stem if hasattr(model_snapshot_path, "stem") else str(model_snapshot_path)
@@ -81,12 +87,13 @@ def get_super_animal_scorer(
     dlc_scorer = f"{super_animal_prefix}{model_name}"
 
     # Then add detector name if provided
-    if detector_snapshot_path:
-        if isinstance(detector_snapshot_path, (str, Path)):
-            detector_name = Path(detector_snapshot_path).stem if hasattr(detector_snapshot_path, "stem") else str(detector_snapshot_path)
-            if detector_name.startswith(super_animal_prefix):
-                detector_name = detector_name[len(super_animal_prefix) :]
-            dlc_scorer += f"_{detector_name}"
+    if detector_snapshot_path is not None:
+        detector_name = detector_snapshot_path.stem
+        if detector_name.startswith(super_animal_prefix):
+            detector_name = detector_name[len(super_animal_prefix):]
+        dlc_scorer += f"_{detector_name}_"
+    elif torchvision_detector_name is not None:
+        dlc_scorer += f"_{torchvision_detector_name}_"
 
     return dlc_scorer
 
