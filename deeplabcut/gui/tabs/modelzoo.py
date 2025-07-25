@@ -432,98 +432,51 @@ class ModelZoo(DefaultTab):
         self.run_button.setStyleSheet("background-color: #9E9E9E; color: white; font-weight: bold;")  # Gray when disabled
         self.root._progress_bar.show()
         try:
-            # Use dedicated function for superanimal_humanbody
-            if supermodel_name == "superanimal_humanbody":
-                # Download config from HuggingFace (needed for the dedicated function)
-                from deeplabcut.pose_estimation_pytorch.modelzoo.utils import get_snapshot_folder_path
-                import huggingface_hub
-                
-                model_files = get_snapshot_folder_path()
-                model_files.mkdir(exist_ok=True)
-                
-                # Download config file from HuggingFace
-                config_path = Path(
-                    huggingface_hub.hf_hub_download(
-                        "DeepLabCut/HumanBody",
-                        "rtmpose-x_simcc-body7_pytorch_config.yaml",
-                        local_dir=model_files,
-                    )
+            # Use standard function for other models
+            if can_run_in_background:
+                func = partial(
+                    deeplabcut.video_inference_superanimal,
+                    files,
+                    supermodel_name,
+                    dest_folder=self._destfolder,
+                    create_labeled_video=create_labeled_video,
+                    batch_size=batch_size,
+                    detector_batch_size=detector_batch_size,
+                    **kwargs,
                 )
-                
-                # Map GUI parameters to dedicated function parameters
-                dedicated_kwargs = {
-                    "destfolder": self._destfolder,
-                    "bbox_threshold": kwargs.get("bbox_threshold", 0.1),
-                    "pose_threshold": kwargs.get("pseudo_threshold", 0.4),
-                    "device": "cuda" if torch.cuda.is_available() else "cpu",
-                    "detector_name": kwargs.get("detector_name", "fasterrcnn_mobilenet_v3_large_fpn"),
-                }
-                
-                if can_run_in_background:
-                    func = partial(
-                        deeplabcut.analyze_videos_superanimal_humanbody,
-                        config_path,
-                        files,
-                        **dedicated_kwargs,
-                    )
-                    self.worker, self.thread = move_to_separate_thread(func)
-                    self.worker.finished.connect(self.signal_analysis_complete)
-                    self.thread.start()
-                else:
-                    print(f"Calling analyze_videos_superanimal_humanbody with config={config_path}, kwargs={dedicated_kwargs}")
-                    results = deeplabcut.analyze_videos_superanimal_humanbody(
-                        config_path,
-                        files,
-                        **dedicated_kwargs,
-                    )
-                    # Patch: Call signal_analysis_complete for non-background execution
-                    self.signal_analysis_complete()
+                self.worker, self.thread = move_to_separate_thread(func)
+                self.worker.finished.connect(self.signal_analysis_complete)
+                self.thread.start()
             else:
-                # Use standard function for other models
-                if can_run_in_background:
-                    func = partial(
-                        deeplabcut.video_inference_superanimal,
-                        files,
-                        supermodel_name,
-                        dest_folder=self._destfolder,
-                        create_labeled_video=create_labeled_video,
-                        batch_size = batch_size,
-                        detector_batch_size = detector_batch_size,
-                        **kwargs,
-                    )
-                    self.worker, self.thread = move_to_separate_thread(func)
-                    self.worker.finished.connect(self.signal_analysis_complete)
-                    self.thread.start()
-                else:
-                    print(f"Calling video_inference_superanimal with kwargs={kwargs}")
-                    results = deeplabcut.video_inference_superanimal(
-                        files,
-                        supermodel_name,
-                        dest_folder=self._destfolder,
-                        create_labeled_video=create_labeled_video,
-                        batch_size = batch_size,
-                        detector_batch_size = detector_batch_size,
-                        **kwargs,
-                    )
-                # Check for skipped frames and show warning if needed
-                for video_path in files:
-                    try:
-                        df = results[video_path]
-                        n_processed = len(df)
-                        cap = cv2.VideoCapture(video_path)
-                        n_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-                        cap.release()
-                        if n_processed < n_total:
-                            msg = QtWidgets.QMessageBox()
-                            msg.setIcon(QtWidgets.QMessageBox.Warning)
-                            msg.setText(f"Warning: Only {n_processed} out of {n_total} frames had detections. The output movie and results include only those frames.")
-                            msg.setWindowTitle("Partial Detections")
-                            msg.setMinimumWidth(400)
-                            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-                            msg.exec_()
-                    except Exception as e:
-                        print(f"[GUI Warning] Could not check processed frames: {e}")
-                self.signal_analysis_complete()
+                print(f"Calling video_inference_superanimal with kwargs={kwargs}")
+                results = deeplabcut.video_inference_superanimal(
+                    files,
+                    supermodel_name,
+                    dest_folder=self._destfolder,
+                    create_labeled_video=create_labeled_video,
+                    batch_size=batch_size,
+                    detector_batch_size=detector_batch_size,
+                    **kwargs,
+                )
+            # Check for skipped frames and show warning if needed
+            for video_path in files:
+                try:
+                    df = results[video_path]
+                    n_processed = len(df)
+                    cap = cv2.VideoCapture(video_path)
+                    n_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                    cap.release()
+                    if n_processed < n_total:
+                        msg = QtWidgets.QMessageBox()
+                        msg.setIcon(QtWidgets.QMessageBox.Warning)
+                        msg.setText(f"Warning: Only {n_processed} out of {n_total} frames had detections. The output movie and results include only those frames.")
+                        msg.setWindowTitle("Partial Detections")
+                        msg.setMinimumWidth(400)
+                        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                        msg.exec_()
+                except Exception as e:
+                    print(f"[GUI Warning] Could not check processed frames: {e}")
+            self.signal_analysis_complete()
         except Exception as e:
             print(f"[Error] {e}")
             self.run_button.setEnabled(True)
