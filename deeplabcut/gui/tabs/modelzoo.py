@@ -563,7 +563,7 @@ class ModelZoo(DefaultTab):
             kwargs["adapt_iterations"] = self.adapt_iter_spinbox.value()
         else:
             kwargs["detector_name"] = self.detector_type_selector.currentText()
-            kwargs["video_adapt"] = self.adapt_checkbox.isChecked()
+            kwargs["video_adapt"] = self.adapt_checkbox.isChecked() if self.model_combo.currentText() != "superanimal_humanbody" else False
             kwargs["pseudo_threshold"] = self.pose_threshold_spinbox.value()
             kwargs["bbox_threshold"] = self.detector_threshold_spinbox.value()
             kwargs["detector_epochs"] = self.torch_adapt_det_epoch_spinbox.value()
