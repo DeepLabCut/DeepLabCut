@@ -33,6 +33,7 @@ from deeplabcut.gui.components import (
 )
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.gui.widgets import ClickableLabel
+from deeplabcut.pose_estimation_pytorch.apis.utils import TORCHVISION_DETECTORS
 
 
 class RegExpValidator(QRegularExpressionValidator):
@@ -584,11 +585,17 @@ class ModelZoo(DefaultTab):
             )
             return
 
+        items = []
+        if self.root.engine == Engine.PYTORCH:
+            if super_animal == "superanimal_humanbody":
+                items = list(TORCHVISION_DETECTORS.keys())
+            else:
+                items = dlclibrary.get_available_detectors(super_animal)
         set_combo_items(
             combo_box = self.detector_type_selector,
-            items = [] if self.root.engine == Engine.TF else dlclibrary.get_available_detectors(super_animal)
+            items = items
         )
-        set_layout_contents_visible(self.detector_row, self.root.engine == Engine.PYTORCH and super_animal != "superanimal_humanbody")
+        set_layout_contents_visible(self.detector_row, self.root.engine == Engine.PYTORCH)
 
     def _update_adaptation_visibility(self, super_animal: str):
         if self.root.engine == Engine.PYTORCH and super_animal != "superanimal_humanbody":
@@ -607,4 +614,4 @@ class ModelZoo(DefaultTab):
             self.tf_widget.show()
 
         # Hide widgets in detector row
-        set_layout_contents_visible(self.detector_row, engine == Engine.PYTORCH and self.model_combo.currentText() != "superanimal_humanbody")
+        set_layout_contents_visible(self.detector_row, engine == Engine.PYTORCH)
