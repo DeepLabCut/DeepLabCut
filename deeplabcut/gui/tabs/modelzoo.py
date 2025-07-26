@@ -64,7 +64,18 @@ class ModelZoo(DefaultTab):
     def _set_page(self):
         # Create Run button first so it exists for any method that references it
         self.run_button = QtWidgets.QPushButton("Run")
-        self.run_button.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold;")
+        self.run_button.setStyleSheet("""
+            QPushButton {
+                background-color: #4CAF50;
+                color: white;
+                font-weight: bold;
+            }
+            QPushButton:disabled {
+                background-color: #9E9E9E;
+                color: white;
+                font-weight: bold;
+            }
+        """)
         self.run_button.setFixedWidth(120)
         self.run_button.clicked.connect(self.run_video_inference_superanimal)
         button_layout = QtWidgets.QHBoxLayout()
@@ -427,9 +438,8 @@ class ModelZoo(DefaultTab):
         detector_batch_size = int(self.detector_batch_size_combo.currentText())
         kwargs = self._gather_kwargs()
 
-        can_run_in_background = False
+        can_run_in_background = True
         self.run_button.setEnabled(False)
-        self.run_button.setStyleSheet("background-color: #9E9E9E; color: white; font-weight: bold;")  # Gray when disabled
         self.root._progress_bar.show()
         try:
             # Use standard function for other models
@@ -458,15 +468,14 @@ class ModelZoo(DefaultTab):
                     detector_batch_size=detector_batch_size,
                     **kwargs,
                 )
+                self.signal_analysis_complete()
         except Exception as e:
             print(f"[Error] {e}")
             self.run_button.setEnabled(True)
-            self.run_button.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold;")  # Green when enabled
             self.root._progress_bar.hide()
 
     def signal_analysis_complete(self):
         self.run_button.setEnabled(True)
-        self.run_button.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold;")  # Green when enabled
         self.root._progress_bar.hide()
         
         # Check if labeled videos were actually created
@@ -516,7 +525,6 @@ class ModelZoo(DefaultTab):
             self.worker = None
             self.thread = None
             self.run_button.setEnabled(True)
-            self.run_button.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold;")
             self.root._progress_bar.hide()
 
     def closeEvent(self, event):
