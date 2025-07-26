@@ -458,25 +458,6 @@ class ModelZoo(DefaultTab):
                     detector_batch_size=detector_batch_size,
                     **kwargs,
                 )
-            # Check for skipped frames and show warning if needed
-            for video_path in files:
-                try:
-                    df = results[video_path]
-                    n_processed = len(df)
-                    cap = cv2.VideoCapture(video_path)
-                    n_total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-                    cap.release()
-                    if n_processed < n_total:
-                        msg = QtWidgets.QMessageBox()
-                        msg.setIcon(QtWidgets.QMessageBox.Warning)
-                        msg.setText(f"Warning: Only {n_processed} out of {n_total} frames had detections. The output movie and results include only those frames.")
-                        msg.setWindowTitle("Partial Detections")
-                        msg.setMinimumWidth(400)
-                        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-                        msg.exec_()
-                except Exception as e:
-                    print(f"[GUI Warning] Could not check processed frames: {e}")
-            self.signal_analysis_complete()
         except Exception as e:
             print(f"[Error] {e}")
             self.run_button.setEnabled(True)
