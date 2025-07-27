@@ -49,6 +49,7 @@ from deeplabcut.utils.visualization import (
     save_labeled_frame,
 )
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 from typing import Optional, Union, List, Tuple, Dict
 import logging
 
