@@ -464,6 +464,10 @@ logger:
  ...  # any other argument you can pass to `wandb.init`, such as `tags: ["dekr", "split=0"]`
 ```
 
+If you set up a `WandbLogger`, the corresponding run info (`entity`, `project`, `run_id`) 
+will be saved in a `wandb_info.yaml` file in the model train directory, so that the WandB run 
+can be easily be recovered at a later stage.
+
 You can also log images as they are seen by the model to `wandb` 
 with the `image_log_interval`. This logs a random train and test image, as well as the 
 targets and heatmaps for that image.
