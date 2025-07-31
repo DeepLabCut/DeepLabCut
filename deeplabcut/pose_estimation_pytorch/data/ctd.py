@@ -225,6 +225,7 @@ class CondFromFile(CondProvider):
                 Each array has shape (num_conditions, num_bodyparts, 3).
             If "images" is None: a list containing the conditions for each frame.
         """
+
         def _parse_row(df_row) -> np.ndarray:
             # Row to numpy and reshape
             pose = df_row.to_numpy().reshape((num_conditions, num_bodyparts, 3))
@@ -418,7 +419,7 @@ class CondFromFile(CondProvider):
             data = pickle.load(f)
 
         frames = [f for f in data.keys() if isinstance(f, int)]
-        n_frames = max(*frames)
+        n_frames = max(*frames) + 1
 
         parsed = []
         for i in range(n_frames):
