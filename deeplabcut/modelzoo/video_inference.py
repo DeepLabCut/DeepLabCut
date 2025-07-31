@@ -390,7 +390,13 @@ def video_inference_superanimal(
         )
 
         config = update_config(config, max_individuals, device)
+
         output_suffix = "_before_adapt"
+
+        if superanimal_name == "superanimal_humanbody" and video_adapt:
+            print(f"Video adaptation currently not supported for {superanimal_name}. Setting it to false.")
+            video_adapt = False
+
         if video_adapt:
             # the users can pass in many videos. For now, we only use one video for
             # video adaptation. As reported in Ye et al. 2024, one video should be
@@ -414,6 +420,7 @@ def video_inference_superanimal(
                 output_suffix=output_suffix,
                 plot_bboxes=plot_bboxes,
                 bboxes_pcutoff=bbox_threshold,
+                torchvision_detector_name=torchvision_detector_name,
             )
 
             # we prepare the pseudo dataset in the same folder of the target video
