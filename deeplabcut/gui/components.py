@@ -151,7 +151,12 @@ class BodypartListWidget(QtWidgets.QListWidget):
 
 
 class VideoSelectionWidget(QtWidgets.QWidget):
-    def __init__(self, root: QtWidgets.QMainWindow, parent: QtWidgets.QWidget, hide_videotype: bool = False):
+    def __init__(
+        self,
+        root: QtWidgets.QMainWindow,
+        parent: QtWidgets.QWidget,
+        hide_videotype: bool = False,
+    ):
         super().__init__(parent)
 
         self.root = root
