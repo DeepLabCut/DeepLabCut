@@ -1053,8 +1053,8 @@ def create_video(
         fname=video,
         sname=output_path,
         codec=codec,
-        sw=bbox[1]-bbox[0] if display_cropped else "",
-        sh=bbox[3]-bbox[2] if display_cropped else "",
+        sw=bbox[1] - bbox[0] if display_cropped else "",
+        sh=bbox[3] - bbox[2] if display_cropped else "",
         fps=fps,
     )
 
@@ -1330,7 +1330,11 @@ def create_video_with_all_detections(
                     ind = frames.index(n)
 
                     # Draw bounding boxes of required and present
-                    if plot_bboxes and "bboxes" in data[frame_names[ind]] and "bbox_scores" in data[frame_names[ind]]:
+                    if (
+                        plot_bboxes
+                        and "bboxes" in data[frame_names[ind]]
+                        and "bbox_scores" in data[frame_names[ind]]
+                    ):
                         bboxes = data[frame_names[ind]]["bboxes"]
                         bbox_scores = data[frame_names[ind]]["bbox_scores"]
                         n_bboxes = bboxes.shape[0]

@@ -15,7 +15,10 @@ from pathlib import Path
 
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.compat import Engine
-from deeplabcut.pose_estimation_pytorch.config.utils import is_model_top_down, is_model_cond_top_down
+from deeplabcut.pose_estimation_pytorch.config.utils import (
+    is_model_top_down,
+    is_model_cond_top_down,
+)
 
 from utils import (
     cleanup,
@@ -57,20 +60,20 @@ def main(
                 epochs_ = top_down_epochs
             try:
                 pytorch_cfg_updates = {
-                        "data.conditions.snapshot_index": -1,
-                        "train_settings.display_iters": 50,
-                        "train_settings.epochs": epochs_,
-                        "train_settings.batch_size": batch_size,
-                        "runner.device": device,
-                        "runner.snapshots.save_epochs": save_epochs,
-                        "runner.snapshots.max_snapshots": max_snapshots_to_keep,
-                        "detector.train_settings.display_iters": 1,
-                        "detector.train_settings.epochs": detector_epochs,
-                        "detector.train_settings.batch_size": detector_batch_size,
-                        "detector.runner.snapshots.save_epochs": save_epochs,
-                        "detector.runner.snapshots.max_snapshots": max_snapshots_to_keep,
-                        "logger": logger,
-                    }
+                    "data.conditions.snapshot_index": -1,
+                    "train_settings.display_iters": 50,
+                    "train_settings.epochs": epochs_,
+                    "train_settings.batch_size": batch_size,
+                    "runner.device": device,
+                    "runner.snapshots.save_epochs": save_epochs,
+                    "runner.snapshots.max_snapshots": max_snapshots_to_keep,
+                    "detector.train_settings.display_iters": 1,
+                    "detector.train_settings.epochs": detector_epochs,
+                    "detector.train_settings.batch_size": detector_batch_size,
+                    "detector.runner.snapshots.save_epochs": save_epochs,
+                    "detector.runner.snapshots.max_snapshots": max_snapshots_to_keep,
+                    "logger": logger,
+                }
                 if is_model_cond_top_down(net_type):
                     pytorch_cfg_updates["data.conditions.shuffle"] = conditions_shuffle
                 run(
@@ -101,7 +104,13 @@ if __name__ == "__main__":
         "project_name": "testscript-dev",
         "run_name": "test-logging",
     }
-    net_types = ["top_down_resnet_50", "resnet_50", "dekr_w32", "rtmpose_m", "ctd_coam_w32"]
+    net_types = [
+        "top_down_resnet_50",
+        "resnet_50",
+        "dekr_w32",
+        "rtmpose_m",
+        "ctd_coam_w32",
+    ]
     main(
         net_types=net_types,
         params=SyntheticProjectParameters(
@@ -121,7 +130,8 @@ if __name__ == "__main__":
         max_snapshots_to_keep=2,
         device="cpu",  # "cpu", "cuda:0", "mps"
         logger=None,
-        conditions_shuffle = net_types.index("resnet_50") + 1, # shuffles start at index 1
+        conditions_shuffle=net_types.index("resnet_50")
+        + 1,  # shuffles start at index 1
         create_labeled_videos=True,
         delete_after_test_run=True,
     )

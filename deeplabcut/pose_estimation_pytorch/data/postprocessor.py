@@ -111,7 +111,7 @@ def build_bottom_up_postprocessor(
             expected_shapes={
                 "bodyparts": (num_bodyparts, 3),
                 "identity_scores": (num_bodyparts, max_individuals),
-            }
+            },
         ),
     ]
 
@@ -180,7 +180,7 @@ def build_top_down_postprocessor(
                     "bodyparts": (num_bodyparts, 3),
                     "bboxes": (4,),
                     "bbox_scores": (),  # scalar
-                }
+                },
             ),
         ]
     )
@@ -294,7 +294,9 @@ class PadOutputs(Postprocessor):
             output = np.array(output)  # Normalize all inputs to np.ndarray
 
             expected_shape = self.expected_shapes.get(name, ())
-            expected_ndim = 1 + len(expected_shape)  # individuals_dimension + expected shape for single individual
+            expected_ndim = 1 + len(
+                expected_shape
+            )  # individuals_dimension + expected shape for single individual
 
             # Special handling for empty arrays
             if len(output) == 0:
@@ -303,12 +305,14 @@ class PadOutputs(Postprocessor):
                 output = np.reshape(output, (len(output), *expected_shape))
 
             if (
-                    name in self.max_individuals
-                    and len(output) < self.max_individuals[name]
+                name in self.max_individuals
+                and len(output) < self.max_individuals[name]
             ):
                 pad_size = self.max_individuals[name] - len(output)
                 tail_shape = output.shape[1:]
-                padding = self.pad_value * np.ones((pad_size, *tail_shape), dtype=output.dtype)
+                padding = self.pad_value * np.ones(
+                    (pad_size, *tail_shape), dtype=output.dtype
+                )
                 output = np.concatenate([output, padding], axis=0)
 
             predictions[name] = output

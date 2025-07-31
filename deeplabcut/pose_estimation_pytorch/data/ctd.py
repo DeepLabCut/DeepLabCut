@@ -225,6 +225,7 @@ class CondFromFile(CondProvider):
                 Each array has shape (num_conditions, num_bodyparts, 3).
             If "images" is None: a list containing the conditions for each frame.
         """
+
         def _parse_row(df_row) -> np.ndarray:
             # Row to numpy and reshape
             pose = df_row.to_numpy().reshape((num_conditions, num_bodyparts, 3))
