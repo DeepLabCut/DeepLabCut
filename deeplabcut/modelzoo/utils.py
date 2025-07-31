@@ -78,10 +78,16 @@ def get_super_animal_scorer(
         The DLC scorer name to use for the given SuperAnimal models.
     """
     if detector_snapshot_path is not None and torchvision_detector_name is not None:
-        raise ValueError("Provide only one of `detector_snapshot_path` or `torchvision_detector_name`, not both.")
+        raise ValueError(
+            "Provide only one of `detector_snapshot_path` or `torchvision_detector_name`, not both."
+        )
     super_animal_prefix = super_animal + "_"
     # Always use model name first
-    model_name = model_snapshot_path.stem if hasattr(model_snapshot_path, "stem") else str(model_snapshot_path)
+    model_name = (
+        model_snapshot_path.stem
+        if hasattr(model_snapshot_path, "stem")
+        else str(model_snapshot_path)
+    )
     if model_name.startswith(super_animal_prefix):
         model_name = model_name[len(super_animal_prefix) :]
     dlc_scorer = f"{super_animal_prefix}{model_name}"
@@ -90,7 +96,7 @@ def get_super_animal_scorer(
     if detector_snapshot_path is not None:
         detector_name = detector_snapshot_path.stem
         if detector_name.startswith(super_animal_prefix):
-            detector_name = detector_name[len(super_animal_prefix):]
+            detector_name = detector_name[len(super_animal_prefix) :]
         dlc_scorer += f"_{detector_name}_"
     elif torchvision_detector_name is not None:
         dlc_scorer += f"_{torchvision_detector_name}_"

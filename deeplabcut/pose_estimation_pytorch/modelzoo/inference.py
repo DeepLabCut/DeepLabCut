@@ -24,7 +24,7 @@ from deeplabcut.pose_estimation_pytorch.apis.videos import (
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_inference_runners,
     get_pose_inference_runner,
-    get_filtered_coco_detector_inference_runner
+    get_filtered_coco_detector_inference_runner,
 )
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     raise_warning_if_called_directly,
@@ -153,7 +153,10 @@ def _video_inference_superanimal(
         print(f"Processing video {video_path}")
 
         dlc_scorer = get_super_animal_scorer(
-            superanimal_name, model_snapshot_path, detector_snapshot_path, torchvision_detector_name
+            superanimal_name,
+            model_snapshot_path,
+            detector_snapshot_path,
+            torchvision_detector_name,
         )
 
         output_prefix = f"{Path(video_path).stem}_{dlc_scorer}"

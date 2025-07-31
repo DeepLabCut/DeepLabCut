@@ -47,7 +47,9 @@ from deeplabcut.pose_estimation_pytorch.data.preprocessor import (
 )
 from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
-from deeplabcut.pose_estimation_pytorch.models.detectors.filtered_detector import FilteredDetector
+from deeplabcut.pose_estimation_pytorch.models.detectors.filtered_detector import (
+    FilteredDetector,
+)
 from deeplabcut.pose_estimation_pytorch.runners import (
     build_inference_runner,
     CTDTrackingConfig,
@@ -693,6 +695,8 @@ TORCHVISION_DETECTORS = {
         "weights": FasterRCNN_MobileNet_V3_Large_FPN_Weights.DEFAULT,
     },
 }
+
+
 def get_filtered_coco_detector_inference_runner(
     model_name: str,
     category_id: int,

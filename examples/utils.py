@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any
 
 import matplotlib
+
 matplotlib.use("Agg")  # Non-interactive backend, for CI/CD on Windows
 
 import cv2
@@ -256,7 +257,6 @@ def generate_video_from_images(image_dir: Path, output_video: Path) -> None:
 
 def create_fake_project(path: Path, params: SyntheticProjectParameters) -> None:
     if path.exists():
-        print(f"[DEBUG] Path exists: {path} (is_dir={path.is_dir()}, is_file={path.is_file()})")
         raise ValueError(f"Cannot create a fake project at an existing path")
 
     scorer = "synthetic"

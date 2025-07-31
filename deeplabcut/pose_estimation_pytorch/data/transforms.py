@@ -127,7 +127,7 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
             noise = 0.05 * 255
         transforms.append(
             A.GaussNoise(
-                var_limit=(0, noise ** 2),
+                var_limit=(0, noise**2),
                 mean=0,
                 per_channel=True,
                 # Albumentations doesn't support per_channel = 0.5
@@ -475,7 +475,7 @@ class ElasticTransform(A.ElasticTransform):
             p,
         )
         self._neighbor_dist = 3
-        self._neighbor_dist_square = self._neighbor_dist ** 2
+        self._neighbor_dist_square = self._neighbor_dist**2
 
     def apply_to_keypoints(
         self, keypoints: Sequence[float], random_state: int | None = None, **params
