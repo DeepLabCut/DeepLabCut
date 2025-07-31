@@ -35,7 +35,8 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_pose_inference_runner,
     get_scorer_name,
     get_scorer_uid,
-    parse_snapshot_index_for_analysis, get_filtered_coco_detector_inference_runner,
+    parse_snapshot_index_for_analysis,
+    get_filtered_coco_detector_inference_runner,
 )
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import update_config
 from deeplabcut.pose_estimation_pytorch.task import Task
@@ -103,7 +104,7 @@ def superanimal_analyze_images(
             The device to use to run image analysis.
 
         pose_threshold: float, default=0.4
-            The cutoff score when plotting pose predictions. To note, this is called 
+            The cutoff score when plotting pose predictions. To note, this is called
             pcutoff in other parts of the code. Must be in (0, 1).
 
         bbox_threshold: float, default=0.1
@@ -182,7 +183,9 @@ def superanimal_analyze_images(
         config = modelzoo.load_super_animal_config(
             super_animal=superanimal_name,
             model_name=model_name,
-            detector_name=detector_name if superanimal_name != "superanimal_humanbody" else None,
+            detector_name=(
+                detector_name if superanimal_name != "superanimal_humanbody" else None
+            ),
         )
     elif isinstance(customized_model_config, (str, Path)):
         config = config_utils.read_config_as_dict(customized_model_config)
@@ -211,9 +214,7 @@ def superanimal_analyze_images(
         skeleton = []
         bodyparts = config["metadata"]["bodyparts"]
         for bpt_0, bpt_1 in skeleton_bodyparts:
-            skeleton.append(
-                (bodyparts.index(bpt_0), bodyparts.index(bpt_1))
-            )
+            skeleton.append((bodyparts.index(bpt_0), bodyparts.index(bpt_1)))
 
     visualization.create_labeled_images(
         predictions=predictions,
@@ -438,7 +439,11 @@ def analyze_image_folder(
         model_cfg = config_utils.read_config_as_dict(model_cfg)
 
     pose_task = Task(model_cfg["method"])
-    if pose_task == Task.TOP_DOWN and detector_path is None and filtered_detector_config is None:
+    if (
+        pose_task == Task.TOP_DOWN
+        and detector_path is None
+        and filtered_detector_config is None
+    ):
         raise ValueError(
             "A detector path or filtered_detector_config must be specified for image analysis using top-down models"
             f" Please specify the `detector_path` parameter or the `filtered_detector_config` parameter."
@@ -459,7 +464,7 @@ def analyze_image_folder(
 
     image_suffixes = ".png", ".jpg", ".jpeg"
     if frame_type is not None:
-        image_suffixes = (frame_type, )
+        image_suffixes = (frame_type,)
 
     image_paths = parse_images_and_image_folders(images, image_suffixes)
     pose_inputs = image_paths
@@ -477,7 +482,9 @@ def analyze_image_folder(
         model_name = filtered_detector_config["torchvision_detector_name"]
         category_id = filtered_detector_config["category_id"]
 
-        logging.info(f"Running object detection with filtered torchvision detector '{model_name}', category_id={category_id}")
+        logging.info(
+            f"Running object detection with filtered torchvision detector '{model_name}', category_id={category_id}"
+        )
         detector_runner = get_filtered_coco_detector_inference_runner(
             model_name=model_name,
             category_id=category_id,

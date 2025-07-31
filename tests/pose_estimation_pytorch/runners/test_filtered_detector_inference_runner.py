@@ -3,10 +3,15 @@
 Test script for superanimal_humanbody with torchvision detector
 """
 
-from deeplabcut.pose_estimation_pytorch.apis.utils import TORCHVISION_DETECTORS, \
-    get_filtered_coco_detector_inference_runner
-from deeplabcut.pose_estimation_pytorch.models.detectors.filtered_detector import FilteredDetector
+from deeplabcut.pose_estimation_pytorch.apis.utils import (
+    TORCHVISION_DETECTORS,
+    get_filtered_coco_detector_inference_runner,
+)
+from deeplabcut.pose_estimation_pytorch.models.detectors.filtered_detector import (
+    FilteredDetector,
+)
 from deeplabcut.pose_estimation_pytorch.modelzoo import load_super_animal_config
+
 
 def test_torchvision_detector():
     """Test that the torchvision detector works with superanimal_humanbody"""
@@ -42,13 +47,20 @@ def test_torchvision_detector():
         )
         print("Filtered detector runner created successfully!")
 
-    print("\n✅ All tests passed! The torchvision detector integration is working correctly.")
+    print(
+        "\n✅ All tests passed! The torchvision detector integration is working correctly."
+    )
     return True
+
 
 if __name__ == "__main__":
     print("Testing superanimal_humanbody with torchvision detector...")
     success = test_torchvision_detector()
     if success:
-        print("\n✅ Test passed! The torchvision detector works with superanimal_humanbody")
+        print(
+            "\n✅ Test passed! The torchvision detector works with superanimal_humanbody"
+        )
     else:
-        print("\n❌ Test failed! There's an issue with the torchvision detector integration") 
+        print(
+            "\n❌ Test failed! There's an issue with the torchvision detector integration"
+        )

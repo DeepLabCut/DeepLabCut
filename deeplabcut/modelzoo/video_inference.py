@@ -368,7 +368,11 @@ def video_inference_superanimal(
             config = load_super_animal_config(
                 super_animal=superanimal_name,
                 model_name=model_name,
-                detector_name=detector_name if superanimal_name != "superanimal_humanbody" else None,
+                detector_name=(
+                    detector_name
+                    if superanimal_name != "superanimal_humanbody"
+                    else None
+                ),
             )
 
         pose_model_path = customized_pose_checkpoint
@@ -394,7 +398,9 @@ def video_inference_superanimal(
         output_suffix = "_before_adapt"
 
         if superanimal_name == "superanimal_humanbody" and video_adapt:
-            print(f"Video adaptation currently not supported for {superanimal_name}. Setting it to false.")
+            print(
+                f"Video adaptation currently not supported for {superanimal_name}. Setting it to false."
+            )
             video_adapt = False
 
         if video_adapt:
