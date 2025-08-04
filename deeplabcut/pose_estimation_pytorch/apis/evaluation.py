@@ -52,6 +52,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from typing import Optional, Union, List, Tuple, Dict
 import logging
+import matplotlib.patches as patches
 
 def predict(
     pose_runner: InferenceRunner,
@@ -545,6 +546,197 @@ def visualize_predictions_PFM(
     # Clean up logging handler
     logger.removeHandler(handler)
     handler.close()
+
+def get_dynamic_skeleton(skeleton, keypoints, p_cutoff=0.6):
+    """
+    Modify skeleton connections based on keypoint confidence scores.
+    
+    If certain keypoints have low confidence (below threshold), alternative 
+    skeleton connections will be used instead of the original ones.
+    
+    Args:
+        skeleton (list): List of tuples/lists representing skeleton connections as (start_idx, end_idx)
+        keypoints (numpy.ndarray): Array of shape (..., 3) where the last dimension contains
+                                  [x, y, confidence] for each keypoint
+        p_cutoff (float): Confidence threshold (0.0-1.0)
+    
+    Returns:
+        list: Modified skeleton connections based on confidence scores
+    """
+    dynamic_skeleton = skeleton.copy()
+    confidences = keypoints[..., 2]  # Get confidence scores
+    
+    # Dictionary to store special connection rules
+    # dict_name_to_idx = {name: idx for idx, name in enumerate(keypoint_name_simplified)}
+    dict_name_to_idx = {"L_Shoulder" : 12, "R_Shoulder" : 13, "L_Elbow": 18, "R_Elbow": 19, "neck": 11,
+                        "L_Wrist": 20, "R_Wrist": 21, "L_Hand": 22, "R_Hand": 23, "L_Knee": 27, "R_Knee": 28, "L_hip": 24, "R_hip": 25, "C_hip": 26}
+    
+    
+    # Template for special connections with rules for alternative connections
+    special_connections = {
+        # Format: (point_to_check, [(original_connections), (alternative_connection)])
+        "L_Shoulder": [(("neck", "L_Shoulder"), ("L_Shoulder", "L_Elbow") ), ("neck", "L_Elbow")],  # L_S: ori_connection: {L_S to L_elbow, L_S to neck}; alt_connection: L_Elbow to neck if L_S is below threshold
+        "R_Shoulder": [(("neck", "R_Shoulder"), ("R_Shoulder", "R_Elbow") ), ("neck", "R_Elbow")],  # R_S: ori_connection: {R_S to R_elbow, R_S to neck}; alt_connection: R_Elbow to neck if R_S is below threshold
+        "L_Wrist": [(("L_Hand", "L_Wrist"), ("L_Wrist", "L_Elbow")), ("L_Hand", "L_Elbow")],  # L_W: ori_connection: {L_H to L_W, L_W to L_Elbow}; alt_connection: L_H to L_Elbow if L_W is below threshold
+        "R_Wrist": [(("R_Hand", "R_Wrist"), ("R_Wrist", "R_Elbow")), ("R_Hand", "R_Elbow")],  # R_W: ori_connection: {R_H to R_W, R_W to R_Elbow}; alt_connection: R_H to R_Elbow if R_W is below threshold
+        "L_hip": [(( "L_Knee", "L_hip"), ("L_hip", "C_hip")), ("L_Knee", "C_hip")], 
+        "R_hip": [(( "R_Knee", "R_hip"), ("R_hip", "C_hip")), ("R_Knee", "C_hip")], 
+    }
+    # Process each keypoint in special connections
+    for keypoint_name, (original_connections, alternative_connection) in special_connections.items():
+        # Get the index of the keypoint
+        keypoint_idx = dict_name_to_idx[keypoint_name]
+        
+        # Check if keypoint confidence is below threshold
+        if confidences[keypoint_idx] < p_cutoff:
+            # Convert named connections to index-based connections
+            original_connections_idx = []
+            for conn1, conn2 in original_connections:
+                # Add both connections to the list
+                original_connections_idx.append([dict_name_to_idx[conn1], dict_name_to_idx[conn2]])
+                # Also consider reverse connection
+                original_connections_idx.append([dict_name_to_idx[conn2], dict_name_to_idx[conn1]])
+            
+            # Convert alternative connection to index-based
+            # todo: alternative_connection also could contain multiple connections
+            alt_conn_idx = [dict_name_to_idx[alternative_connection[0]], dict_name_to_idx[alternative_connection[1]]]
+            
+            # Remove original connections from dynamic skeleton
+            for conn in original_connections_idx:
+                if conn in dynamic_skeleton:
+                    dynamic_skeleton.remove(conn)
+                
+            # Add alternative connection if it's not already in the skeleton
+            if alt_conn_idx not in dynamic_skeleton and [alt_conn_idx[1], alt_conn_idx[0]] not in dynamic_skeleton:
+                dynamic_skeleton.append(alt_conn_idx) 
+    return dynamic_skeleton
+
+
+class DynamicSkeleton:
+    def __init__(self,  pred_bodyparts, p_cutoff=0.6):
+        self.keypoints = [
+            "forehead",
+            "head",
+            "L_Eye",
+            "R_Eye",
+            "nose",
+            "L_Ear",
+            "R_Ear",
+            "mouth_front_top",
+            "mouth_front_bottom",
+            "mouth_B_L",
+            "mouth_B_R",
+            "neck",
+            "L_Shoulder",
+            "R_Shoulder",
+            "upper_B",
+            "torso_M_B",
+            "body_C",
+            "lower_B",
+            "L_Elbow",
+            "R_Elbow",
+            "L_Wrist",
+            "R_Wrist",
+            "L_Hand",
+            "R_Hand",
+            "L_hip",
+            "R_hip",
+            "C_hip",
+            "L_Knee",
+            "R_Knee",
+            "L_Ankle",
+            "R_Ankle",
+            "L_foot",
+            "R_foot",
+            "root_tail",
+            "M_tail",
+            "M_end_tail",
+            "end_tail"
+        ]
+        self.parent_mapping = {
+            # body part
+            'head': "neck",
+            'neck': None, # root
+            'L_Shoulder': 'neck',    # Left Shoulder
+            'R_Shoulder': 'neck',    # Right Shoulder
+            'L_Elbow': 'L_Shoulder',
+            'R_Elbow': 'R_Shoulder',
+            'L_Wrist': 'L_Elbow',
+            'R_Wrist': 'R_Elbow',
+            'L_Hand': 'L_Wrist',
+            'R_Hand': 'R_Wrist',
+            'C_hip': None,  # Hip connected to lower body
+            'L_hip': 'C_hip',
+            'R_hip': 'C_hip',
+            'L_Knee': 'L_hip',
+            'R_Knee': 'R_hip',
+            'L_Ankle': 'L_Knee',
+            'R_Ankle': 'R_Knee',
+            'L_foot': 'L_Ankle',
+            'R_foot': 'R_Ankle',
+            'root_tail': 'C_hip',
+            'M_tail': 'root_tail',
+            'M_end_tail': 'M_tail',
+            'end_tail': 'M_end_tail',
+            # mouse part
+            'L_Ear': 'L_Eye',
+            'R_Ear': 'R_Eye',
+            'L_Eye' : 'nose',
+            'R_Eye' : 'nose',
+            'nose' : None,
+        }
+        
+        confidence_dict = {}
+        for idx, keypoint in enumerate(self.keypoints):
+            confidence_dict[keypoint] = pred_bodyparts[idx, 2]
+        self.confidence_dict = confidence_dict
+        self.p_cutoff = p_cutoff
+        self.dynamic_skeleton = []
+        
+        # if C_hip is None, then we use root_tail to replace C_hip, and remove {'root_tail': 'C_hip'}
+        if self.confidence_dict.get('C_hip') < self.p_cutoff:
+            self.parent_mapping['L_hip'] = 'root_tail'
+            self.parent_mapping['R_hip'] = 'root_tail'
+            self.parent_mapping['M_tail'] = 'root_tail'
+            self.parent_mapping['root_tail'] = None
+            self.dynamic_skeleton.append(('root_tail', 'C_hip'))
+    
+    def change_name_to_idx_dynamic_skeleton(self, dynamic_skeleton):
+        # change the dynamic skeleton index to the new index;
+        dynamic_skeleton = []
+        for idx, (from_node, end_node) in enumerate(self.dynamic_skeleton):
+            # print((self.keypoints.index(from_node), self.keypoints.index(end_node)))
+            dynamic_skeleton.append((self.keypoints.index(from_node), self.keypoints.index(end_node)))
+        return dynamic_skeleton
+        
+        
+    def find_nearest_ancester(self, node):
+        current_node = self.parent_mapping.get(node)
+        while current_node is not None:
+            current_node_conf = self.confidence_dict[current_node]
+            if current_node_conf > self.p_cutoff:
+                return current_node
+            else:
+                current_node = self.parent_mapping.get(current_node)                
+        return None
+    
+    def get_dynamic_skeleton(self):
+        # only consider the keypoints that are in the parent_mapping
+        for keypoint in self.parent_mapping.keys():
+            keypoint_conf = self.confidence_dict[keypoint]
+            if keypoint_conf > self.p_cutoff:
+                ancester = self.find_nearest_ancester(keypoint)
+                if ancester is not None:
+                    self.dynamic_skeleton.append((ancester, keypoint))
+
+        # add connection between C_hip and neck
+        if self.confidence_dict.get('C_hip') > self.p_cutoff and self.confidence_dict.get('neck') > self.p_cutoff:
+            self.dynamic_skeleton.append(('C_hip', 'neck'))
+        # if conf[C_hip]<p_cutoff, then we use root_tail to replace C_hip
+        elif self.confidence_dict.get('C_hip') < self.p_cutoff and self.confidence_dict.get('neck') > self.p_cutoff and self.confidence_dict.get('root_tail') > self.p_cutoff:
+            self.dynamic_skeleton.append(('root_tail', 'neck'))
+            
+        return self.change_name_to_idx_dynamic_skeleton(self.dynamic_skeleton) 
     
 def plot_gt_and_predictions_PFM(
     image_path: Union[str, Path],
@@ -604,11 +796,10 @@ def plot_gt_and_predictions_PFM(
         dot_size = base_size
         
     # Ensure dot size stays within reasonable bounds
-    dot_size = int(max(4, min(dot_size, 15)))*0.8  # Tighter bounds for dots
+    dot_size = int(max(4, min(dot_size, 15)))*0.8 # *5 for oap # # Tighter bounds for dots
     
-    # filter out the individuals that without GT keypoints 
+    # filter out the non exist individuals  
     if bounding_boxes is not None:
-        # filter out the individuals that without GT keypoints 
         valid_individuals = []
         for idx, bbox_score in enumerate(bounding_boxes[1]):
             if bbox_score > bboxes_pcutoff:
@@ -640,7 +831,6 @@ def plot_gt_and_predictions_PFM(
         # print(f"Found {len(valid_individuals)} valid individuals out of {gt_bodyparts.shape[0]}")
         # Filter both ground truth and predictions
         
-        # print(f"valid_individuals: {valid_individuals}")
         if valid_individuals:
             if gt_bodyparts is not None:
                 gt_bodyparts = gt_bodyparts[valid_individuals]
@@ -702,8 +892,6 @@ def plot_gt_and_predictions_PFM(
             )
             ax.add_patch(rect)
 
-    # Track existing text positions to avoid overlap
-    existing_text_positions = []
     scale_factor = min(w, h) / 1000  # Normalize scale factor based on image size
 
         
@@ -766,9 +954,9 @@ def plot_gt_and_predictions_PFM(
                             x_text = min(max(0, x_text), w - 100)
                             y_text = min(max(0, y_text), h - 10)
                             
-                            while any(abs(x_text - ex) < 50 * scale_factor and abs(y_text - ey) < 20 * scale_factor 
-                                    for ex, ey in existing_text_positions):
-                                y_text += 20 * scale_factor
+                            while any(abs(x_text - existing_x) < 50 * scale_factor and abs(y_text - existing_y) < 30 * scale_factor 
+                                    for existing_x, existing_y in existing_text_positions):
+                                y_text += 5 * scale_factor
                                 if y_text > h - 10:
                                     y_text = y_kp
                                     x_text += 50 * scale_factor
@@ -813,6 +1001,9 @@ def plot_gt_and_predictions_PFM(
             plt.close(fig_ind)
     
     # Original combined plot
+    # Track existing text positions to avoid overlap
+    existing_text_positions = []
+    
     for idx_individual in range(num_pred):
         for idx_keypoint in range(num_keypoints):
             if pred_bodyparts is not None and keypoint_vis_mask[idx_keypoint]:
@@ -844,13 +1035,16 @@ def plot_gt_and_predictions_PFM(
                         x_text = min(max(0, x_text), w - 100)
                         y_text = min(max(0, y_text), h - 10)
                         
+                        # ToDo
+                        # dynamic text position;
                         # Avoid overlapping with existing text
-                        while any(abs(x_text - ex) < 50 * scale_factor and abs(y_text - ey) < 20 * scale_factor 
-                                for ex, ey in existing_text_positions):
-                            y_text += 20 * scale_factor
-                            if y_text > h - 10:  # If we run out of vertical space
-                                y_text = pred_bodyparts[idx_individual, idx_keypoint, 1]  # Reset to original y
-                                x_text += 50 * scale_factor  # Move text horizontally instead
+                        while any(abs(x_text - existing_x) <= 15 * scale_factor and abs(y_text - existing_y) <= 15 * scale_factor 
+                                for existing_x, existing_y in existing_text_positions):
+                            y_text += 7.5 * scale_factor
+                            x_text += 4 * scale_factor
+                            # if y_text > h - 10:  # If we run out of vertical space
+                            #     y_text = pred_bodyparts[idx_individual, idx_keypoint, 1]  # Reset to original y
+                            #     x_text += 50 * scale_factor  # Move text horizontally instead
                         
                         # Record this position
                         existing_text_positions.append((x_text, y_text))
@@ -879,7 +1073,13 @@ def plot_gt_and_predictions_PFM(
                         # Draw all valid connections
                         # plot the skeleton is the skeleton is not None
                         connection_pairs = []
-                        for [idx1, idx2] in skeleton:
+
+                        # dynamic_skeleton = skeleton.copy()
+                        # dynamic_skeleton = get_dynamic_skeleton(dynamic_skeleton, pred_bodyparts[idx_individual], p_cutoff)
+                        
+                        dynamic_skeleton = DynamicSkeleton(pred_bodyparts[idx_individual], p_cutoff).get_dynamic_skeleton()
+                        
+                        for [idx1, idx2] in dynamic_skeleton:
                             # idx1 = idx1 - 1
                             # idx2 = idx2 - 1
                             # Only add the connection if both keypoints are visible and have confidence above threshold
@@ -892,48 +1092,6 @@ def plot_gt_and_predictions_PFM(
                                         pred_bodyparts[idx_individual, idx2, 1])
                                 })
                             
-                            # if center_hip (26) is below the p_cutoff, and root_tail (33) is above the p_cutoff,
-                            # then we can use root_tail to replace center_hip (just for connection!), otherwise we use center_hip
-                            # if idx1 == 26 and pred_bodyparts[idx_individual, 26, 2] < p_cutoff and pred_bodyparts[idx_individual, 33, 2] > p_cutoff:
-                            #     # Replace center_hip with root_tail for this connection
-                            #     if pred_bodyparts[idx_individual, idx2, 2] > p_cutoff:
-                            #         connection_pairs.append({
-                            #             'start': (pred_bodyparts[idx_individual, 33, 0], 
-                            #                     pred_bodyparts[idx_individual, 33, 1]),
-                            #             'end': (pred_bodyparts[idx_individual, idx2, 0], 
-                            #                 pred_bodyparts[idx_individual, idx2, 1])
-                            #         })
-                            # elif idx2 == 26 and pred_bodyparts[idx_individual, 26, 2] < p_cutoff and pred_bodyparts[idx_individual, 33, 2] > p_cutoff:
-                            #     # Handle case where center_hip is the end point
-                            #     if pred_bodyparts[idx_individual, idx1, 2] > p_cutoff:
-                            #         connection_pairs.append({
-                            #             'start': (pred_bodyparts[idx_individual, idx1, 0], 
-                            #                     pred_bodyparts[idx_individual, idx1, 1]),
-                            #             'end': (pred_bodyparts[idx_individual, 33, 0], 
-                            #                 pred_bodyparts[idx_individual, 33, 1])
-                            #         })
-                                    
-                            # if left hip (idx: 24) is below the p_cutoff and left knee (idx: 27) is above the p_cutoff,
-                            # if center hip (idx: 26) is above the p_cutoff, then connect left knee to center hip,
-                            # if center hip (idx: 26) is below the p_cutoff and root_tail (idx: 33) is above the p_cutoff, then we connect left knee to root_tail
-                            if pred_bodyparts[idx_individual, 24, 2] < p_cutoff and pred_bodyparts[idx_individual, 26, 2] > p_cutoff and pred_bodyparts[idx_individual, 27, 2] > p_cutoff:
-                                connection_pairs.append({
-                                    'start': (pred_bodyparts[idx_individual, 27, 0], 
-                                            pred_bodyparts[idx_individual, 27, 1]),
-                                    'end': (pred_bodyparts[idx_individual, 26, 0], 
-                                        pred_bodyparts[idx_individual, 26, 1])
-                                })
-                                
-                            # if right hip (idx: 25) is below the p_cutoff, and center hip (idx: 26) and right knee (idx: 28) are above the p_cutoff,
-                            # then we can draw a line from the right knee (idx: 28) to the center hip (idx: 26)
-                            if pred_bodyparts[idx_individual, 25, 2] < p_cutoff and pred_bodyparts[idx_individual, 26, 2] > p_cutoff and pred_bodyparts[idx_individual, 28, 2] > p_cutoff:
-                                connection_pairs.append({
-                                    'start': (pred_bodyparts[idx_individual, 28, 0], 
-                                            pred_bodyparts[idx_individual, 28, 1]),
-                                    'end': (pred_bodyparts[idx_individual, 26, 0], 
-                                        pred_bodyparts[idx_individual, 26, 1])
-                                })
-                                
                         for connection in connection_pairs:
                             ax.plot(
                                 [connection['start'][0], connection['end'][0]],

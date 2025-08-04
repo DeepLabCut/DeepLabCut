@@ -237,6 +237,14 @@ def top_down_crop(
     image_h, image_w, c = image.shape
     out_w, out_h = output_size
     x, y, w, h = bbox
+    
+    # Safety check for zero dimensions
+    # if w <= 0:
+    #     print(f"ERROR: Zero width in bbox {bbox}, using default width=1")
+    #     w = 1
+    # if h <= 0:
+    #     print(f"ERROR: Zero height in bbox {bbox}, using default height=1")
+    #     h = 1
 
     cx = x + w / 2
     cy = y + h / 2

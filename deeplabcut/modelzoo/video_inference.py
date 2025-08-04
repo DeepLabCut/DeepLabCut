@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import os
+import torch
 from pathlib import Path
 from typing import Optional, Union
 
@@ -33,6 +34,21 @@ from deeplabcut.utils.pseudo_label import (
     video_to_frames,
 )
 
+def get_checkpoint_epoch(checkpoint_path):
+    """
+    Load a PyTorch checkpoint and return the current epoch number.
+    
+    Args:
+        checkpoint_path (str): Path to the checkpoint file
+        
+    Returns: 
+        int: Current epoch number, or None if not found
+    """ 
+    checkpoint = torch.load(checkpoint_path)
+    if 'metadata' in checkpoint and 'epoch' in checkpoint['metadata']:
+        return checkpoint['metadata']['epoch']
+    else:
+        return 0
 
 def video_inference_superanimal(
     videos: Union[str, list],
@@ -418,7 +434,6 @@ def video_inference_superanimal(
 
             model_snapshot_prefix = f"snapshot-{model_name}"
             detector_snapshot_prefix = f"snapshot-{detector_name}"
-
             config["runner"]["snapshot_prefix"] = model_snapshot_prefix
             config["detector"]["runner"]["snapshot_prefix"] = detector_snapshot_prefix
 
@@ -427,14 +442,26 @@ def video_inference_superanimal(
             with open(model_config_path, "w") as f:
                 yaml = YAML()
                 yaml.dump(config, f)
-
+            
+            # get the current epoch of the detector and pose model
+            current_pose_epoch = get_checkpoint_epoch(pose_model_path)
+            current_detector_epoch = get_checkpoint_epoch(detector_path)
+            
             adapted_detector_checkpoint = (
-                model_folder / f"{detector_snapshot_prefix}-{detector_epochs:03}.pt"
+                model_folder / f"{detector_snapshot_prefix}-{current_detector_epoch + detector_epochs:03}.pt"
             )
             adapted_pose_checkpoint = (
-                model_folder / f"{model_snapshot_prefix}-{pose_epochs:03}.pt"
+                model_folder / f"{model_snapshot_prefix}-{current_pose_epoch + pose_epochs:03}.pt"
             )
-
+            if not Path(adapted_detector_checkpoint).exists():
+                            adapted_detector_checkpoint = (
+                            model_folder / f"{detector_snapshot_prefix}-best-{current_detector_epoch + detector_epochs:03}.pt"
+                        )
+            if not Path(adapted_pose_checkpoint).exists():
+                adapted_pose_checkpoint = (
+                model_folder / f"{model_snapshot_prefix}-best-{current_pose_epoch + pose_epochs:03}.pt"
+            )
+                            
             if (
                 adapted_detector_checkpoint.exists()
                 and adapted_pose_checkpoint.exists()
@@ -484,6 +511,22 @@ def video_inference_superanimal(
                     detector_batch_size=video_adapt_batch_size,
                 )
 
+            # recheck the checkpoint paths after adaptation training
+            adapted_detector_checkpoint = (
+                model_folder / f"{detector_snapshot_prefix}-{current_detector_epoch + detector_epochs:03}.pt"
+            )
+            adapted_pose_checkpoint = (
+                model_folder / f"{model_snapshot_prefix}-{current_pose_epoch + pose_epochs:03}.pt"
+            )
+            if not Path(adapted_detector_checkpoint).exists():
+                            adapted_detector_checkpoint = (
+                            model_folder / f"{detector_snapshot_prefix}-best-{current_detector_epoch + detector_epochs:03}.pt"
+                        )
+            if not Path(adapted_pose_checkpoint).exists():
+                adapted_pose_checkpoint = (
+                model_folder / f"{model_snapshot_prefix}-best-{current_pose_epoch + pose_epochs:03}.pt"
+            )
+                
             # Set the customized checkpoint paths and
             output_suffix = "_after_adapt"
             detector_path = adapted_detector_checkpoint
