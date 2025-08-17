@@ -276,10 +276,12 @@ def compute_rmse(
     if pixel_errors is not None:
         bpt_cutoffs = pcutoff
         if not isinstance(pcutoff, (int, float)):
-            bpt_cutoffs = pcutoff[:pixel_errors.shape[1]]
+            bpt_cutoffs = pcutoff[: pixel_errors.shape[1]]
 
         error, support, cutoff_error, cutoff_support = collect_pixel_errors(
-            pixel_errors, keypoint_scores, bpt_cutoffs,
+            pixel_errors,
+            keypoint_scores,
+            bpt_cutoffs,
         )
 
     unique_pixel_errors, unique_keypoint_scores = None, None
@@ -291,9 +293,11 @@ def compute_rmse(
 
             bpt_cutoffs = pcutoff
             if not isinstance(pcutoff, (int, float)):
-                bpt_cutoffs = pcutoff[-unique_pixel_errors.shape[1]:]
+                bpt_cutoffs = pcutoff[-unique_pixel_errors.shape[1] :]
             u_error, u_support, u_cutoff_error, u_cutoff_support = collect_pixel_errors(
-                unique_pixel_errors, unique_keypoint_scores, bpt_cutoffs,
+                unique_pixel_errors,
+                unique_keypoint_scores,
+                bpt_cutoffs,
             )
             error += u_error
             support += u_support

@@ -125,7 +125,9 @@ def compute_metrics(
 
     if compute_detection_rmse and not single_animal:
         det_rmse, det_rmse_p = distance_metrics.compute_detection_rmse(
-            data, pcutoff, data_unique=data_unique,
+            data,
+            pcutoff,
+            data_unique=data_unique,
         )
         results["rmse_detections"] = det_rmse
         results["rmse_detections_pcutoff"] = det_rmse_p

@@ -28,7 +28,7 @@ PREDICT = Mock()
     [
         (["nose", "left_ear"], [5, 10]),
         (["nose", "left_ear", "right_ear"], [2, 3, 4]),
-    ]
+    ],
 )
 def test_evaluate_basic(
     num_individuals: int,
@@ -54,14 +54,14 @@ def test_evaluate_basic(
     [
         (["nose", "left_ear"], [5, 10]),
         (["nose", "left_ear", "right_ear"], [2, 3, 4]),
-    ]
+    ],
 )
 @pytest.mark.parametrize(
     "unique_bodyparts, unique_error",
     [
         (["top_left"], [2]),
         (["top_left", "bottom_right"], [2, 3]),
-    ]
+    ],
 )
 def test_evaluate_with_unique_bodyparts(
     num_individuals: int,
@@ -103,8 +103,8 @@ class CompTestConfig:
     num_individuals: int = 1
     bodyparts: tuple[str, ...] = ("nose", "left_ear")
     error: tuple[float, ...] = (5, 10)
-    unique_bodyparts: tuple[str, ...] = ("top_left", )
-    unique_error: tuple[float, ...] = (2, )
+    unique_bodyparts: tuple[str, ...] = ("top_left",)
+    unique_error: tuple[float, ...] = (2,)
     comparison_bodyparts: str | list[str] | None = None
     expected_error: float = (2 + 5 + 10) / 3
 
@@ -149,13 +149,15 @@ class CompTestConfig:
             comparison_bodyparts=["nose", "left_ear", "a", "b"],
             expected_error=((7 * 5) + (7 * 10) + 3.0 + 4.0) / (7 + 7 + 2),
         ),
-    ]
+    ],
 )
 def test_evaluate_with_comparison_bodyparts(cfg: CompTestConfig) -> None:
     print()
     num_images = 5
     gt, pred = generate_data(num_images, cfg.num_individuals, cfg.num_bpt(), cfg.error)
-    gt_unique, pred_unique = generate_data(num_images, 1, cfg.num_unique(), cfg.unique_error)
+    gt_unique, pred_unique = generate_data(
+        num_images, 1, cfg.num_unique(), cfg.unique_error
+    )
 
     pose_runner = Mock()
     PREDICT.return_value = {
@@ -170,7 +172,10 @@ def test_evaluate_with_comparison_bodyparts(cfg: CompTestConfig) -> None:
         unique=cfg.unique_bodyparts,
     )
     results, preds = apis.evaluate(
-        pose_runner, loader, mode="test", comparison_bodyparts=cfg.comparison_bodyparts,
+        pose_runner,
+        loader,
+        mode="test",
+        comparison_bodyparts=cfg.comparison_bodyparts,
     )
     print(cfg)
     print("results", results)
@@ -197,24 +202,44 @@ class KeypointData:
 
 @patch("deeplabcut.pose_estimation_pytorch.apis.evaluation.predict", PREDICT)
 @pytest.mark.parametrize(
-    "pcutoff", [0.4, 0.6, 0.8, [0.3, 0.5, 0.7]],
+    "pcutoff",
+    [0.4, 0.6, 0.8, [0.3, 0.5, 0.7]],
 )
 @pytest.mark.parametrize(
-    "keypoints", [
+    "keypoints",
+    [
         [
-            KeypointData(img=0, idv=0, bodypart="a", gt=(10, 10), pred=(11, 10), score=0.7),
-            KeypointData(img=0, idv=0, bodypart="b", gt=(20, 20), pred=(21, 20), score=0.7),
-            KeypointData(img=0, idv=0, bodypart="c", gt=(20, 20), pred=(20, 22), score=0.5),
+            KeypointData(
+                img=0, idv=0, bodypart="a", gt=(10, 10), pred=(11, 10), score=0.7
+            ),
+            KeypointData(
+                img=0, idv=0, bodypart="b", gt=(20, 20), pred=(21, 20), score=0.7
+            ),
+            KeypointData(
+                img=0, idv=0, bodypart="c", gt=(20, 20), pred=(20, 22), score=0.5
+            ),
         ],
         [
-            KeypointData(img=0, idv=0, bodypart="a", gt=(10, 10), pred=(11, 10), score=0.7),
-            KeypointData(img=0, idv=0, bodypart="b", gt=(20, 20), pred=(21, 20), score=0.5),
-            KeypointData(img=0, idv=0, bodypart="c", gt=(30, 30), pred=(30, 32), score=0.2),
-            KeypointData(img=0, idv=1, bodypart="a", gt=(40, 10), pred=(41, 10), score=0.7),
-            KeypointData(img=0, idv=1, bodypart="b", gt=(50, 20), pred=(49, 20), score=0.5),
-            KeypointData(img=0, idv=1, bodypart="c", gt=(60, 20), pred=(58, 20), score=0.2),
+            KeypointData(
+                img=0, idv=0, bodypart="a", gt=(10, 10), pred=(11, 10), score=0.7
+            ),
+            KeypointData(
+                img=0, idv=0, bodypart="b", gt=(20, 20), pred=(21, 20), score=0.5
+            ),
+            KeypointData(
+                img=0, idv=0, bodypart="c", gt=(30, 30), pred=(30, 32), score=0.2
+            ),
+            KeypointData(
+                img=0, idv=1, bodypart="a", gt=(40, 10), pred=(41, 10), score=0.7
+            ),
+            KeypointData(
+                img=0, idv=1, bodypart="b", gt=(50, 20), pred=(49, 20), score=0.5
+            ),
+            KeypointData(
+                img=0, idv=1, bodypart="c", gt=(60, 20), pred=(58, 20), score=0.2
+            ),
         ],
-    ]
+    ],
 )
 def test_evaluate_with_pcutoff(
     pcutoff: float | list[float],
@@ -267,9 +292,7 @@ def test_evaluate_with_pcutoff(
     np.testing.assert_almost_equal(results["rmse"], np.mean(errors))
     np.testing.assert_almost_equal(results["rmse_pcutoff"], np.mean(errors_cutoff))
     if "rmse_detections" in results:
-        np.testing.assert_almost_equal(
-            results["rmse_detections"], np.mean(errors)
-        )
+        np.testing.assert_almost_equal(results["rmse_detections"], np.mean(errors))
         np.testing.assert_almost_equal(
             results["rmse_detections_pcutoff"], np.mean(errors_cutoff)
         )
@@ -277,7 +300,8 @@ def test_evaluate_with_pcutoff(
 
 @patch("deeplabcut.pose_estimation_pytorch.apis.evaluation.predict", PREDICT)
 @pytest.mark.parametrize(
-    "pcutoff", [
+    "pcutoff",
+    [
         0.4,
         0.6,
         0.8,
@@ -288,49 +312,116 @@ def test_evaluate_with_pcutoff(
     ],
 )
 @pytest.mark.parametrize(
-    "keypoints", [
+    "keypoints",
+    [
         [
-            KeypointData(img=0, idv=0, bodypart="a", gt=(10, 10), pred=(11, 10), score=0.7),
-            KeypointData(img=0, idv=0, bodypart="b", gt=(20, 20), pred=(21, 20), score=0.7),
-            KeypointData(img=0, idv=0, bodypart="c", gt=(20, 20), pred=(20, 22), score=0.5),
-            KeypointData(img=0, idv=-1, bodypart="u1", gt=(20, 20), pred=(20, 22), score=0.5),
-            KeypointData(img=0, idv=-1, bodypart="u2", gt=(20, 20), pred=(20, 22), score=0.3),
+            KeypointData(
+                img=0, idv=0, bodypart="a", gt=(10, 10), pred=(11, 10), score=0.7
+            ),
+            KeypointData(
+                img=0, idv=0, bodypart="b", gt=(20, 20), pred=(21, 20), score=0.7
+            ),
+            KeypointData(
+                img=0, idv=0, bodypart="c", gt=(20, 20), pred=(20, 22), score=0.5
+            ),
+            KeypointData(
+                img=0, idv=-1, bodypart="u1", gt=(20, 20), pred=(20, 22), score=0.5
+            ),
+            KeypointData(
+                img=0, idv=-1, bodypart="u2", gt=(20, 20), pred=(20, 22), score=0.3
+            ),
         ],
         [
-            KeypointData(img=0, idv=0, bodypart="a", gt=(10, 10), pred=(11, 10), score=0.7),
-            KeypointData(img=0, idv=0, bodypart="b", gt=(20, 20), pred=(21, 20), score=0.5),
-            KeypointData(img=0, idv=0, bodypart="c", gt=(30, 30), pred=(30, 32), score=0.2),
-            KeypointData(img=0, idv=1, bodypart="a", gt=(40, 10), pred=(41, 10), score=0.7),
-            KeypointData(img=0, idv=1, bodypart="b", gt=(50, 20), pred=(49, 20), score=0.5),
-            KeypointData(img=0, idv=1, bodypart="c", gt=(60, 20), pred=(58, 20), score=0.2),
-            KeypointData(img=0, idv=-1, bodypart="u1", gt=(2, 3), pred=(3, 3), score=0.7),
-            KeypointData(img=0, idv=-1, bodypart="u2", gt=(20, 20), pred=(20, 22), score=0.9),
+            KeypointData(
+                img=0, idv=0, bodypart="a", gt=(10, 10), pred=(11, 10), score=0.7
+            ),
+            KeypointData(
+                img=0, idv=0, bodypart="b", gt=(20, 20), pred=(21, 20), score=0.5
+            ),
+            KeypointData(
+                img=0, idv=0, bodypart="c", gt=(30, 30), pred=(30, 32), score=0.2
+            ),
+            KeypointData(
+                img=0, idv=1, bodypart="a", gt=(40, 10), pred=(41, 10), score=0.7
+            ),
+            KeypointData(
+                img=0, idv=1, bodypart="b", gt=(50, 20), pred=(49, 20), score=0.5
+            ),
+            KeypointData(
+                img=0, idv=1, bodypart="c", gt=(60, 20), pred=(58, 20), score=0.2
+            ),
+            KeypointData(
+                img=0, idv=-1, bodypart="u1", gt=(2, 3), pred=(3, 3), score=0.7
+            ),
+            KeypointData(
+                img=0, idv=-1, bodypart="u2", gt=(20, 20), pred=(20, 22), score=0.9
+            ),
         ],
         [
-            KeypointData(img=0, idv=0, bodypart="a", gt=(8, 13), pred=(11, 10), score=0.7),
-            KeypointData(img=0, idv=0, bodypart="b", gt=(20, 27), pred=(21, 20), score=0.5),
-            KeypointData(img=0, idv=0, bodypart="c", gt=(30, 36), pred=(30, 32), score=0.2),
-            KeypointData(img=0, idv=-1, bodypart="u1", gt=(2, 3), pred=(3, 3), score=0.7),
-            KeypointData(img=0, idv=-1, bodypart="u2", gt=(20, 20), pred=(20, 22), score=0.9),
-            KeypointData(img=1, idv=0, bodypart="a", gt=(15, 20), pred=(41, 10), score=0.7),
-            KeypointData(img=1, idv=0, bodypart="b", gt=(20, 12), pred=(49, 20), score=0.5),
-            KeypointData(img=1, idv=0, bodypart="c", gt=(17, 32), pred=(58, 20), score=0.2),
-            KeypointData(img=1, idv=-1, bodypart="u1", gt=(37, 4), pred=(3, 3), score=0.7),
-            KeypointData(img=1, idv=-1, bodypart="u2", gt=(12, 6), pred=(20, 22), score=0.9),
+            KeypointData(
+                img=0, idv=0, bodypart="a", gt=(8, 13), pred=(11, 10), score=0.7
+            ),
+            KeypointData(
+                img=0, idv=0, bodypart="b", gt=(20, 27), pred=(21, 20), score=0.5
+            ),
+            KeypointData(
+                img=0, idv=0, bodypart="c", gt=(30, 36), pred=(30, 32), score=0.2
+            ),
+            KeypointData(
+                img=0, idv=-1, bodypart="u1", gt=(2, 3), pred=(3, 3), score=0.7
+            ),
+            KeypointData(
+                img=0, idv=-1, bodypart="u2", gt=(20, 20), pred=(20, 22), score=0.9
+            ),
+            KeypointData(
+                img=1, idv=0, bodypart="a", gt=(15, 20), pred=(41, 10), score=0.7
+            ),
+            KeypointData(
+                img=1, idv=0, bodypart="b", gt=(20, 12), pred=(49, 20), score=0.5
+            ),
+            KeypointData(
+                img=1, idv=0, bodypart="c", gt=(17, 32), pred=(58, 20), score=0.2
+            ),
+            KeypointData(
+                img=1, idv=-1, bodypart="u1", gt=(37, 4), pred=(3, 3), score=0.7
+            ),
+            KeypointData(
+                img=1, idv=-1, bodypart="u2", gt=(12, 6), pred=(20, 22), score=0.9
+            ),
         ],
         [
-            KeypointData(img=0, idv=0, bodypart="a", gt=(8, 13), pred=(11, 10), score=0.7),
-            KeypointData(img=0, idv=0, bodypart="b", gt=(20, 27), pred=(21, 20), score=0.5),
-            KeypointData(img=0, idv=-1, bodypart="u1", gt=(30, 36), pred=(30, 32), score=0.2),
-            KeypointData(img=0, idv=-1, bodypart="u2", gt=(2, 3), pred=(3, 3), score=0.7),
-            KeypointData(img=0, idv=-1, bodypart="u3", gt=(20, 20), pred=(20, 22), score=0.9),
-            KeypointData(img=1, idv=0, bodypart="a", gt=(15, 20), pred=(41, 10), score=0.7),
-            KeypointData(img=1, idv=0, bodypart="b", gt=(20, 12), pred=(49, 20), score=0.5),
-            KeypointData(img=1, idv=-1, bodypart="u1", gt=(17, 32), pred=(58, 20), score=0.2),
-            KeypointData(img=1, idv=-1, bodypart="u2", gt=(37, 4), pred=(3, 3), score=0.7),
-            KeypointData(img=1, idv=-1, bodypart="u3", gt=(12, 6), pred=(20, 22), score=0.9),
-        ]
-    ]
+            KeypointData(
+                img=0, idv=0, bodypart="a", gt=(8, 13), pred=(11, 10), score=0.7
+            ),
+            KeypointData(
+                img=0, idv=0, bodypart="b", gt=(20, 27), pred=(21, 20), score=0.5
+            ),
+            KeypointData(
+                img=0, idv=-1, bodypart="u1", gt=(30, 36), pred=(30, 32), score=0.2
+            ),
+            KeypointData(
+                img=0, idv=-1, bodypart="u2", gt=(2, 3), pred=(3, 3), score=0.7
+            ),
+            KeypointData(
+                img=0, idv=-1, bodypart="u3", gt=(20, 20), pred=(20, 22), score=0.9
+            ),
+            KeypointData(
+                img=1, idv=0, bodypart="a", gt=(15, 20), pred=(41, 10), score=0.7
+            ),
+            KeypointData(
+                img=1, idv=0, bodypart="b", gt=(20, 12), pred=(49, 20), score=0.5
+            ),
+            KeypointData(
+                img=1, idv=-1, bodypart="u1", gt=(17, 32), pred=(58, 20), score=0.2
+            ),
+            KeypointData(
+                img=1, idv=-1, bodypart="u2", gt=(37, 4), pred=(3, 3), score=0.7
+            ),
+            KeypointData(
+                img=1, idv=-1, bodypart="u3", gt=(12, 6), pred=(20, 22), score=0.9
+            ),
+        ],
+    ],
 )
 def test_evaluate_with_pcutoff_and_unique_bodyparts(
     pcutoff: float | list[float],
@@ -395,9 +486,7 @@ def test_evaluate_with_pcutoff_and_unique_bodyparts(
     np.testing.assert_almost_equal(results["rmse"], np.mean(errors))
     np.testing.assert_almost_equal(results["rmse_pcutoff"], np.mean(errors_cutoff))
     if "rmse_detections" in results:
-        np.testing.assert_almost_equal(
-            results["rmse_detections"], np.mean(errors)
-        )
+        np.testing.assert_almost_equal(results["rmse_detections"], np.mean(errors))
         np.testing.assert_almost_equal(
             results["rmse_detections_pcutoff"], np.mean(errors_cutoff)
         )
