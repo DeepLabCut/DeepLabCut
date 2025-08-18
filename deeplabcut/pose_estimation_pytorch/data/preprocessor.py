@@ -370,7 +370,7 @@ class FilterLowConfidencePoses(Preprocessor):
     def __init__(
         self,
         confidence_threshold: float = 0.05,
-        aggregate_func: Callable[[np.ndarray], float] = lambda arr: np.max(arr, axis=1),
+        aggregate_func: Callable[[np.ndarray], float] = lambda arr: np.nanmax(arr, axis=1),
     ) -> None:
         self.confidence_threshold = confidence_threshold
         self.aggregate_func = aggregate_func
@@ -382,7 +382,14 @@ class FilterLowConfidencePoses(Preprocessor):
             raise ValueError(f"Must include cond_kpts, found {context}")
 
         keypoints = context["cond_kpts"]
-        mask = self.aggregate_func(keypoints[:, :, 2]) >= self.confidence_threshold
+
+        if 0 in keypoints.shape:
+            # No poses to filter; return early
+            return image, context
+
+        confidences = keypoints[:, :, 2]
+        aggregated_confidence = self.aggregate_func(confidences)
+        mask = aggregated_confidence >= self.confidence_threshold
         context["cond_kpts"] = keypoints[mask]
 
         return image, context
