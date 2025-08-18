@@ -370,7 +370,7 @@ class FilterLowConfidencePoses(Preprocessor):
     def __init__(
         self,
         confidence_threshold: float = 0.05,
-        aggregate_func: Callable[[np.ndarray], float] = lambda arr: np.max(arr, axis=1),
+        aggregate_func: Callable[[np.ndarray], float] = lambda arr: np.nanmax(arr, axis=1),
     ) -> None:
         self.confidence_threshold = confidence_threshold
         self.aggregate_func = aggregate_func
