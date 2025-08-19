@@ -469,7 +469,9 @@ class TopDownCrop(Preprocessor):
 
         # can have no bounding boxes if detector made no detections
         if len(images) == 0:
-            images = np.zeros((0, *image.shape))
+            h, w = self.output_size[1], self.output_size[0]  # output_size = (w, h)
+            c = image.shape[2] if image.ndim == 3 else 1
+            images = np.zeros((0, h, w, c), dtype=image.dtype)
         else:
             images = np.stack(images, axis=0)
 
