@@ -181,7 +181,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             return ""
         used = torch.cuda.memory_reserved() / 1024 ** 2
         total = torch.cuda.get_device_properties(0).total_memory / 1024 ** 2
-        return f", GPU: {used:.1f}/{total:.1f} MB"
+        return f", GPU: {used:.1f}/{total:.1f} MiB"
 
     def fit(
         self,
