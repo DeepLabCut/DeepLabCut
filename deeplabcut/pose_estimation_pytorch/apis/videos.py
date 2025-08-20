@@ -113,8 +113,8 @@ class GpuTqdm(tqdm):
     def __iter__(self):
         for obj in super().__iter__():
             if self._cuda_available:
-                used = torch.cuda.memory_reserved() / 1024 ** 2
-                total = torch.cuda.get_device_properties(0).total_memory / 1024 ** 2
+                used = torch.cuda.memory_reserved() / 1024**2
+                total = torch.cuda.get_device_properties(0).total_memory / 1024**2
                 self.set_postfix({"GPU": f"{used:.1f}/{total:.1f} MiB"})
             yield obj
 
@@ -216,7 +216,9 @@ def video_inference(
     if shelf_writer is not None:
         shelf_writer.open()
 
-    predictions = pose_runner.inference(images=GpuTqdm(video), shelf_writer=shelf_writer)
+    predictions = pose_runner.inference(
+        images=GpuTqdm(video), shelf_writer=shelf_writer
+    )
     if shelf_writer is not None:
         shelf_writer.close()
 

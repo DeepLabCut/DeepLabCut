@@ -179,8 +179,8 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
     def _gpu_usage_str(self) -> str:
         if not torch.cuda.is_available():
             return ""
-        used = torch.cuda.memory_reserved() / 1024 ** 2
-        total = torch.cuda.get_device_properties(0).total_memory / 1024 ** 2
+        used = torch.cuda.memory_reserved() / 1024**2
+        total = torch.cuda.get_device_properties(0).total_memory / 1024**2
         return f", GPU: {used:.1f}/{total:.1f} MiB"
 
     def fit(
@@ -443,8 +443,8 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
 
         inputs = batch["image"]
         inputs = inputs.to(self.device).float()
-        if 'cond_keypoints' in batch['context']:
-            cond_kpts = batch['context']['cond_keypoints']
+        if "cond_keypoints" in batch["context"]:
+            cond_kpts = batch["context"]["cond_keypoints"]
             outputs = self.model(inputs, cond_kpts=cond_kpts)
         else:
             outputs = self.model(inputs)
