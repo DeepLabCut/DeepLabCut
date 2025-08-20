@@ -176,6 +176,13 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         """
         raise NotImplementedError
 
+    def _gpu_usage_str(self) -> str:
+        if not torch.cuda.is_available():
+            return ""
+        used = torch.cuda.memory_reserved() / 1024 ** 2
+        total = torch.cuda.get_device_properties(0).total_memory / 1024 ** 2
+        return f", GPU: {used:.1f}/{total:.1f} MB"
+
     def fit(
         self,
         train_loader: DataLoader,
@@ -227,6 +234,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                     )
                     if self._print_valid_loss:
                         msg += f", valid loss {float(valid_loss):.5f}"
+            msg += self._gpu_usage_str()
 
             self.snapshot_manager.update(e, self.state_dict(), last=(e == epochs))
             logging.info(msg)
