@@ -20,6 +20,7 @@ from typing import Any
 import albumentations as A
 import numpy as np
 import pandas as pd
+import torch
 from tqdm import tqdm
 
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils
@@ -102,6 +103,20 @@ class VideoIterator(VideoReader):
         context = copy.deepcopy(self._context[self._index])
         self._index += 1
         return frame, context
+
+
+class GpuTqdm(tqdm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._cuda_available = torch.cuda.is_available()
+
+    def __iter__(self):
+        for obj in super().__iter__():
+            if self._cuda_available:
+                used = torch.cuda.memory_reserved() / 1024 ** 2
+                total = torch.cuda.get_device_properties(0).total_memory / 1024 ** 2
+                self.set_postfix({"GPU": f"{used:.1f}/{total:.1f} MB"})
+            yield obj
 
 
 def video_inference(
@@ -194,14 +209,14 @@ def video_inference(
 
     if detector_runner is not None:
         print(f"Running detector with batch size {detector_runner.batch_size}")
-        bbox_predictions = detector_runner.inference(images=tqdm(video))
+        bbox_predictions = detector_runner.inference(images=GpuTqdm(video))
         video.set_context(bbox_predictions)
 
     print(f"Running pose prediction with batch size {pose_runner.batch_size}")
     if shelf_writer is not None:
         shelf_writer.open()
 
-    predictions = pose_runner.inference(images=tqdm(video), shelf_writer=shelf_writer)
+    predictions = pose_runner.inference(images=GpuTqdm(video), shelf_writer=shelf_writer)
     if shelf_writer is not None:
         shelf_writer.close()
 
