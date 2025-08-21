@@ -135,7 +135,14 @@ def get_simcc_maximum(
         locs = locs.reshape(N, K, 2)
         vals = vals.reshape(N, K)
 
-    return locs, vals
+        # Compute entropy-based confidence
+        conf = get_entropy_confidence(simcc_x, simcc_y).reshape(N, K)
+
+    else:
+        # Single batch
+        conf = get_entropy_confidence(simcc_x, simcc_y)
+
+    return locs, conf
 
 
 def get_simcc_normalized(pred: torch.Tensor) -> torch.Tensor:
@@ -161,3 +168,25 @@ def get_simcc_normalized(pred: torch.Tensor) -> torch.Tensor:
 
     # return the normalized tensor
     return torch.where(mask, norm, pred)
+
+
+def get_entropy_confidence(simcc_x: np.ndarray, simcc_y: np.ndarray) -> np.ndarray:
+    """Compute entropy-based confidence for SimCC distributions."""
+    # Apply softmax (safe normalization)
+    ex = np.exp(simcc_x - np.max(simcc_x, axis=1, keepdims=True))
+    px = ex / np.sum(ex, axis=1, keepdims=True)
+
+    ey = np.exp(simcc_y - np.max(simcc_y, axis=1, keepdims=True))
+    py = ey / np.sum(ey, axis=1, keepdims=True)
+
+    # Compute entropy along each axis
+    Hx = -np.sum(px * np.log(px + 1e-9), axis=1)  # shape: (N*K,)
+    Hy = -np.sum(py * np.log(py + 1e-9), axis=1)
+
+    # Normalize entropy to [0,1] by dividing by log(W)
+    Hx /= np.log(simcc_x.shape[1])
+    Hy /= np.log(simcc_y.shape[1])
+
+    # Confidence = 1 - entropy
+    conf = 1 - 0.5 * (Hx + Hy)
+    return conf
