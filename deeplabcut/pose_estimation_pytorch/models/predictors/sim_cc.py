@@ -42,21 +42,33 @@ class SimCCPredictor(BasePredictor):
     def __init__(
         self,
         simcc_split_ratio: float = 2.0,
-        apply_softmax: bool = False,
         normalize_outputs: bool = False,
+        apply_softmax: bool = True,
+        sigma: float | int | tuple[float, ...] = 6.0,
+        decode_beta: float = 150.0,
     ) -> None:
         super().__init__()
         self.simcc_split_ratio = simcc_split_ratio
-        self.apply_softmax = apply_softmax
         self.normalize_outputs = normalize_outputs
+        self.apply_softmax = apply_softmax
+
+        if isinstance(sigma, (float, int)):
+            self.sigma = np.array([sigma, sigma])
+        else:
+            self.sigma = np.array(sigma)
+        self.decode_beta = decode_beta
 
     def forward(
         self, stride: float, outputs: dict[str, torch.Tensor]
     ) -> dict[str, torch.Tensor]:
         x, y = outputs["x"].detach(), outputs["y"].detach()
+
         if self.normalize_outputs:
             x = get_simcc_normalized(x)
             y = get_simcc_normalized(y)
+        else:
+            x = x * (self.sigma[0] * self.decode_beta)
+            y = y * (self.sigma[1] * self.decode_beta)
 
         keypoints, scores = get_simcc_maximum(
             x.cpu().numpy(), y.cpu().numpy(), self.apply_softmax
