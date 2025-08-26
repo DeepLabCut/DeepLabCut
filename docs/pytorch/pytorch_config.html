@@ -931,6 +931,9 @@ and metrics.</p>
 <span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w">  </span><span class="c1"># any other argument you can pass to `wandb.init`, such as `tags: [&quot;dekr&quot;, &quot;split=0&quot;]`</span>
 </pre></div>
 </div>
+<p>If you set up a <code class="docutils literal notranslate"><span class="pre">WandbLogger</span></code>, the corresponding run info (<code class="docutils literal notranslate"><span class="pre">entity</span></code>, <code class="docutils literal notranslate"><span class="pre">project</span></code>, <code class="docutils literal notranslate"><span class="pre">run_id</span></code>)
+will be saved in a <code class="docutils literal notranslate"><span class="pre">wandb_info.yaml</span></code> file in the model train directory, so that the WandB run
+can be easily be recovered at a later stage.</p>
 <p>You can also log images as they are seen by the model to <code class="docutils literal notranslate"><span class="pre">wandb</span></code>
 with the <code class="docutils literal notranslate"><span class="pre">image_log_interval</span></code>. This logs a random train and test image, as well as the
 targets and heatmaps for that image.</p>
