@@ -14,7 +14,7 @@ from datetime import datetime
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtGui import QBrush, QColor, QDesktopServices, QIcon, QPainter, QPen
 
-import deeplabcut
+from deeplabcut.create_project import create_new_project, create_new_project_3d
 from deeplabcut.gui import BASE_DIR
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import ClickableLabel, ItemSelectionFrame
@@ -397,7 +397,11 @@ class ProjectCreator(QtWidgets.QDialog):
         self.copy_box = QtWidgets.QCheckBox("Copy videos to project folder")
         self.copy_box.setChecked(False)
 
-        browse_button = QtWidgets.QPushButton("Browse folders for videos")
+        # Add checkbox for selecting individual files
+        self.select_files_box = QtWidgets.QCheckBox("Select individual files")
+        self.select_files_box.setChecked(False)
+
+        browse_button = QtWidgets.QPushButton("Browse for videos")
         browse_button.clicked.connect(self.browse_videos)
         clear_button = QtWidgets.QPushButton("Clear")
         clear_button.clicked.connect(video_frame.fancy_list.clear)
@@ -407,31 +411,54 @@ class ProjectCreator(QtWidgets.QDialog):
         layout.addWidget(clear_button)
         video_frame.layout.addLayout(layout)
         video_frame.layout.addWidget(self.copy_box)
+        video_frame.layout.addWidget(self.select_files_box)
 
         self.toggle_3d.toggled.connect(lambda yes: self.copy_box.setVisible(not yes))
         self.toggle_3d.toggled.connect(lambda yes: browse_button.setVisible(not yes))
         self.toggle_3d.toggled.connect(lambda yes: clear_button.setVisible(not yes))
         self.toggle_3d.toggled.connect(lambda yes: video_frame.setVisible(not yes))
+        self.toggle_3d.toggled.connect(lambda yes: self.select_files_box.setVisible(not yes))
         return video_frame
 
     def browse_videos(self):
         options = QtWidgets.QFileDialog.Options()
         options |= QtWidgets.QFileDialog.DontUseNativeDialog
-        folder = QtWidgets.QFileDialog.getExistingDirectory(
-            self,
-            "Please select a folder",
-            self.loc_default,
-            options,
-        )
-        if not folder:
-            return
+        
+        if self.select_files_box.isChecked():
+            # Select individual video files
+            video_types = [f"*.{ext.lower()}" for ext in DLCParams.VIDEOTYPES[1:]] + [
+                f"*.{ext.upper()}" for ext in DLCParams.VIDEOTYPES[1:]
+            ]
+            video_filter = f"Videos ({' '.join(video_types)})"
+            
+            files, _ = QtWidgets.QFileDialog.getOpenFileNames(
+                self,
+                "Select video files",
+                self.loc_default,
+                video_filter,
+                options=options,
+            )
+            
+            if files:
+                for video in files:
+                    self.video_frame.fancy_list.add_item(video)
+        else:
+            # Browse folders for videos
+            folder = QtWidgets.QFileDialog.getExistingDirectory(
+                self,
+                "Please select a folder",
+                self.loc_default,
+                options,
+            )
+            if not folder:
+                return
 
-        for video in auxiliaryfunctions.grab_files_in_folder(
-            folder,
-            relative=False,
-        ):
-            if os.path.splitext(video)[1][1:].lower() in DLCParams.VIDEOTYPES[1:]:
-                self.video_frame.fancy_list.add_item(video)
+            for video in auxiliaryfunctions.grab_files_in_folder(
+                folder,
+                relative=False,
+            ):
+                if os.path.splitext(video)[1][1:].lower() in DLCParams.VIDEOTYPES[1:]:
+                    self.video_frame.fancy_list.add_item(video)
 
     def finalize_project(self):
         fields = [self.proj_line, self.exp_line]
@@ -447,7 +474,7 @@ class ProjectCreator(QtWidgets.QDialog):
         create_3d = self.toggle_3d.isChecked()
         try:
             if create_3d:
-                _ = deeplabcut.create_new_project_3d(
+                _ = create_new_project_3d(
                     self.proj_default,
                     self.exp_default,
                     2,
@@ -465,7 +492,7 @@ class ProjectCreator(QtWidgets.QDialog):
                     )
                 to_copy = self.copy_box.isChecked()
                 is_madlc = self.madlc_toggle.isChecked()
-                config = deeplabcut.create_new_project(
+                config = create_new_project(
                     self.proj_default,
                     self.exp_default,
                     videos,

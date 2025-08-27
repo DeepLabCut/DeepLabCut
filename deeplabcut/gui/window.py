@@ -16,6 +16,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import List
 from urllib.error import URLError
+import warnings
 import qdarkstyle
 
 import deeplabcut
@@ -40,6 +41,11 @@ from PySide6.QtGui import QIcon, QAction, QPixmap
 from PySide6 import QtWidgets, QtGui
 from PySide6.QtCore import Qt, QTimer
 
+warnings.filterwarnings(
+    "ignore",
+    message=r".*shibokensupport/signature/parser.py:269: RuntimeWarning: pyside_type_init:_resolve_value.*",
+    category=RuntimeWarning
+)
 
 def _check_for_updates(silent=True):
     try:
@@ -321,6 +327,9 @@ class MainWindow(QMainWindow):
         self.logger.info("All video files have been cleared.")
 
     def window_set(self):
+        WINDOW_RESIZE_FACTOR=.8
+        DEFAULT_MINIMUM_WIDTH, DEFAULT_MINIMUM_HEIGHT = 800, 600
+        
         self.setWindowTitle("DeepLabCut")
 
         palette = QtGui.QPalette()
@@ -329,6 +338,14 @@ class MainWindow(QMainWindow):
 
         icon = os.path.join(BASE_DIR, "assets", "logo.png")
         self.setWindowIcon(QIcon(icon))
+
+        # Set default window size and allow resizing
+        self.resize(int(self.screen_width * WINDOW_RESIZE_FACTOR), int(self.screen_height * WINDOW_RESIZE_FACTOR))
+        self.setMinimumSize(DEFAULT_MINIMUM_WIDTH, DEFAULT_MINIMUM_HEIGHT)
+        self.setMaximumSize(self.screen_width, self.screen_height)
+        self.setWindowFlag(Qt.WindowMaximizeButtonHint, True)
+        self.setWindowFlag(Qt.WindowMinimizeButtonHint, True)
+        self.setWindowFlag(Qt.WindowCloseButtonHint, True)
 
         self.status_bar = self.statusBar()
         self.status_bar.setObjectName("Status Bar")
