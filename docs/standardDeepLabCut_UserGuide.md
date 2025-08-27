@@ -130,7 +130,7 @@ list of videos can be changed by adding new videos or manually removing videos.
 
 ![Box 1 - Single Animal Project Configuration File Glossary](images/box1-single.png)
 
-#### API Docs
+### API Docs
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -219,7 +219,7 @@ reloading the set and then manually annotating them.
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c71bfbc71c10b4a23d20567/1550958540700/cropMANUAL.gif?format=750w" width="70%">
 </p>
 
-#### API Docs
+### API Docs
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -278,7 +278,7 @@ directories contain the frames plotted with the annotated body parts. The user c
 labeled correctly. If they are not correct, the user can reload the frames (i.e. `deeplabcut.label_frames`), move them
 around, and click save again.
 
-#### API Docs
+### API Docs
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -591,7 +591,7 @@ deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 ```
 you can drop "Indices" to run this on all training/testing images (this is slow!)
 
-#### API Docs
+### API Docs
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -634,7 +634,7 @@ However, if the flag `save_as_csv` is set to `True`, the data can also be export
 by default. You can also set a destination folder (`destfolder`) for the output files by passing a path of the folder
 you wish to write to.
 
-#### API Docs
+### API Docs
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -644,7 +644,7 @@ you wish to write to.
 
 ### Novel Video Analysis: extra features
 
-#### Dynamic-cropping of videos:
+### Dynamic-cropping of videos:
 
 As of 2.1+ we have a dynamic cropping option. Namely, if you have large frames and the animal/object occupies a smaller
 fraction, you can crop around your animal/object to make processing speeds faster. For example, if you have a large open
@@ -703,7 +703,7 @@ deeplabcut.filterpredictions(
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc8b8ae6e8df000100a995/1556908943893/filter_example-01.png?format=1000w" width="70%">
 </p>
 
-#### API Docs
+### API Docs
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -732,7 +732,7 @@ body part detections across frames). Here are example plot outputs on a demo vid
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559939762886-CCB0R107I2HXAHZLHECP/ke17ZwdGBToddI8pDm48kNeA8e5AnyMqj80u4_mB0hV7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UcpboONgOQYHLzaUWEI1Ir9fXt7Ehyn7DSgU3GCReAA-ZDqXZYzu2fuaodM4POSZ4w/plot_poses-01.png?format=1000w" height="250">
 </p>
 
-#### API Docs
+### API Docs
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -823,7 +823,7 @@ deeplabcut.create_labeled_video(
 This function has various other parameters, in particular the user can set the `colormap`, the `dotsize`, and
 `alphavalue` of the labels in **config.yaml** file.
 
-#### API Docs
+### API Docs
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -831,7 +831,7 @@ This function has various other parameters, in particular the user can set the `
 ```
 ````
 
-#### Extract "Skeleton" Features:
+### Extract "Skeleton" Features:
 
 NEW, as of 2.0.7+: You can save the "skeleton" that was applied in `create_labeled_videos` for more computations.
 Namely,  it extracts length and orientation of each "bone" of the skeleton as defined in the **config.yaml** file. You
@@ -849,7 +849,7 @@ deeplabcut.analyzeskeleton(
 )
 ```
 
-#### API Docs
+### API Docs
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -914,7 +914,7 @@ can run the `extract_outlier_frames` method iteratively, and (even) extract addi
 Once enough outlier frames are extracted the refinement GUI can be used to adjust the labels based on user feedback
 (see below).
 
-#### API Docs
+### API Docs
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -966,7 +966,7 @@ weights (see Box 2).
 If after training the network generalizes well to the data, proceed to analyze new videos. Otherwise, consider labeling
 more data.
 
-#### API Docs for deeplabcut.refine_labels
+### API Docs for deeplabcut.refine_labels
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -974,7 +974,7 @@ more data.
 ```
 ````
 
-#### API Docs for deeplabcut.merge_datasets
+### API Docs for deeplabcut.merge_datasets
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}

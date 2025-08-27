@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 from typing import Optional, Union
 
+import torch
 from dlclibrary.dlcmodelzoo.modelzoo_download import download_huggingface_model
 from ruamel.yaml import YAML
 
@@ -32,6 +33,25 @@ from deeplabcut.utils.pseudo_label import (
     dlc3predictions_2_annotation_from_video,
     video_to_frames,
 )
+
+
+def get_checkpoint_epoch(checkpoint_path):
+    """
+    Load a PyTorch checkpoint and return the current epoch number.
+
+    Args:
+        checkpoint_path (str): Path to the checkpoint file
+
+    Returns:
+        int: Current epoch number, or 0 if not found
+    """
+    # Use CUDA if available, otherwise use CPU
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    checkpoint = torch.load(checkpoint_path, map_location=device)
+    if "metadata" in checkpoint and "epoch" in checkpoint["metadata"]:
+        return checkpoint["metadata"]["epoch"]
+    else:
+        return 0
 
 
 def video_inference_superanimal(
@@ -212,7 +232,29 @@ def video_inference_superanimal(
             https://pytorch.org/vision/stable/models/faster_rcnn.html
 
     (Model Explanation) SuperAnimal-Bird:
-    TODO(shaokai)
+    `superanimal_superbird` model aims to work on various bird species. It was developed 
+    during the 2024 DLC AI Residency Program. More info can be 
+    [found here](https://deeplabcut.medium.com/deeplabcut-ai-residency-2024-recap-working-with-the-superanimal-bird-model-and-dlc-3-0-live-e55807ca2c7c)
+
+    (Model Explanation) SuperAnimal-HumanBody:
+    `superanimal_humanbody` models aim to work across human body pose estimation
+    from various camera perspectives and environments. The models are designed to
+    handle different human poses, activities, and lighting conditions commonly
+    found in human motion analysis, sports analysis, and behavioral studies.
+
+    All model snapshots are automatically downloaded to modelzoo/checkpoints when used.
+
+    - We provide:
+        - `rtmpose_x` (Top-Down pose estimation model, PyTorch engine)
+            An `rtmpose_x` is a top-down model that is paired with a detector. That
+            means it takes a cropped image from an object detector and predicts the
+            keypoints. When selecting this variant, a `detector_name` must be set with
+            one of the provided object detectors. This model uses 17 body parts in
+            the COCO body7 format.
+    - We provide an object detector (PyTorch engine):
+        - `fasterrcnn_mobilenet_v3_large_fpn`
+            This is a FasterRCNN model with a MobileNet backbone, see
+            https://pytorch.org/vision/stable/models/faster_rcnn.html
 
     Examples (PyTorch Engine)
     --------
@@ -309,6 +351,57 @@ def video_inference_superanimal(
                 "You have to specify a detector_name when using the Pytorch framework."
             )
 
+        # Special handling for superanimal_humanbody - use dedicated implementation
+        if superanimal_name == "superanimal_humanbody":
+            from deeplabcut.pose_estimation_pytorch.modelzoo.superanimal_humanbody_video_inference import (
+                analyze_videos_superanimal_humanbody,
+            )
+            
+            # Convert videos to list if needed
+            if isinstance(videos, str):
+                videos = [videos]
+            
+            # Set destination folder
+            if dest_folder is None:
+                dest_folder = Path(videos[0]).parent
+            else:
+                dest_folder = Path(dest_folder)
+            
+            if not dest_folder.exists():
+                dest_folder.mkdir(parents=True, exist_ok=True)
+            
+            # Map parameters to the dedicated function
+            # Note: analyze_videos_superanimal_humanbody has its own parameter set
+            # Handle device parameter - convert "auto" to actual device
+            if device == "auto":
+                import torch
+                actual_device = "cuda" if torch.cuda.is_available() else "cpu"
+            else:
+                actual_device = device
+            
+            dedicated_kwargs = {
+                "videotype": videotype,
+                "destfolder": str(dest_folder),
+                "bbox_threshold": bbox_threshold,
+                "pose_threshold": pcutoff,
+                "device": actual_device,
+                "cropping": cropping,
+                "batch_size": batch_size,
+                "detector_batch_size": detector_batch_size,
+            }
+            
+            # Use a dummy config path since the dedicated function loads its own config
+            dummy_config = "superanimal_humanbody"
+            
+            results = analyze_videos_superanimal_humanbody(
+                dummy_config,
+                videos,
+                **dedicated_kwargs,
+            )
+            
+            return results
+
+        # Standard PyTorch implementation for other models
         from deeplabcut.pose_estimation_pytorch.modelzoo.inference import (
             _video_inference_superanimal,
         )
@@ -340,7 +433,13 @@ def video_inference_superanimal(
             superanimal_name, pose_model_path, detector_path
         )
 
+        # Add superanimal_name to config metadata for all superanimal models (needed for detector routing)
+        if "metadata" not in config:
+            config["metadata"] = {}
+        config["metadata"]["superanimal_name"] = superanimal_name
+        
         config = update_config(config, max_individuals, device)
+        
         output_suffix = "_before_adapt"
         if video_adapt:
             # the users can pass in many videos. For now, we only use one video for
@@ -428,12 +527,28 @@ def video_inference_superanimal(
                 yaml = YAML()
                 yaml.dump(config, f)
 
+            # get the current epoch of the detector and pose model
+            current_pose_epoch = get_checkpoint_epoch(pose_model_path)
+            current_detector_epoch = get_checkpoint_epoch(detector_path)
+            # update the checkpoint path with the current epoch, if the checkpoint does not exist, use the best checkpoint
             adapted_detector_checkpoint = (
-                model_folder / f"{detector_snapshot_prefix}-{detector_epochs:03}.pt"
+                model_folder
+                / f"{detector_snapshot_prefix}-{current_detector_epoch + detector_epochs:03}.pt"
             )
             adapted_pose_checkpoint = (
-                model_folder / f"{model_snapshot_prefix}-{pose_epochs:03}.pt"
+                model_folder
+                / f"{model_snapshot_prefix}-{current_pose_epoch + pose_epochs:03}.pt"
             )
+            if not Path(adapted_detector_checkpoint).exists():
+                adapted_detector_checkpoint = (
+                    model_folder
+                    / f"{detector_snapshot_prefix}-best-{current_detector_epoch + detector_epochs:03}.pt"
+                )
+            if not Path(adapted_pose_checkpoint).exists():
+                adapted_pose_checkpoint = (
+                    model_folder
+                    / f"{model_snapshot_prefix}-best-{current_pose_epoch + pose_epochs:03}.pt"
+                )
 
             if (
                 adapted_detector_checkpoint.exists()
@@ -482,6 +597,26 @@ def video_inference_superanimal(
                     detector_path=detector_path,
                     batch_size=video_adapt_batch_size,
                     detector_batch_size=video_adapt_batch_size,
+                )
+
+            # after video adaptation, re-update the adapted checkpoint path, if the checkpoint does not exist, use the best checkpoint
+            adapted_detector_checkpoint = (
+                model_folder
+                / f"{detector_snapshot_prefix}-{current_detector_epoch + detector_epochs:03}.pt"
+            )
+            adapted_pose_checkpoint = (
+                model_folder
+                / f"{model_snapshot_prefix}-{current_pose_epoch + pose_epochs:03}.pt"
+            )
+            if not Path(adapted_detector_checkpoint).exists():
+                adapted_detector_checkpoint = (
+                    model_folder
+                    / f"{detector_snapshot_prefix}-best-{current_detector_epoch + detector_epochs:03}.pt"
+                )
+            if not Path(adapted_pose_checkpoint).exists():
+                adapted_pose_checkpoint = (
+                    model_folder
+                    / f"{model_snapshot_prefix}-best-{current_pose_epoch + pose_epochs:03}.pt"
                 )
 
             # Set the customized checkpoint paths and

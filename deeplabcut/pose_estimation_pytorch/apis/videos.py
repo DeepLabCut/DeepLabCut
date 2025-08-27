@@ -194,25 +194,45 @@ def video_inference(
 
     if detector_runner is not None:
         print(f"Running detector with batch size {detector_runner.batch_size}")
-        bbox_predictions = detector_runner.inference(images=tqdm(video))
+        
+        detector_progress = tqdm(video, desc="Detector")
+        bbox_predictions = []
+        for i, frame in enumerate(detector_progress):
+            result = detector_runner.inference(images=[frame])
+            bbox_predictions.extend(result)
+        
+        # PATCH: Ensure bbox_predictions is always length n_frames
+        if len(bbox_predictions) < n_frames:
+            print(f"[PATCH] Detector returned {len(bbox_predictions)} predictions for {n_frames} frames. Padding with empty bboxes.")
+            for _ in range(n_frames - len(bbox_predictions)):
+                bbox_predictions.append({'bboxes': np.zeros((0, 4))})
+        elif len(bbox_predictions) > n_frames:
+            print(f"[PATCH] Detector returned more predictions than frames. Truncating to {n_frames}.")
+            bbox_predictions = bbox_predictions[:n_frames]
         video.set_context(bbox_predictions)
 
     print(f"Running pose prediction with batch size {pose_runner.batch_size}")
     if shelf_writer is not None:
         shelf_writer.open()
-
-    predictions = pose_runner.inference(images=tqdm(video), shelf_writer=shelf_writer)
+    
+    pose_progress = tqdm(video, desc="Pose")
+    predictions = []
+    for i, frame in enumerate(pose_progress):
+        result = pose_runner.inference(images=[frame])
+        predictions.extend(result)
+    
     if shelf_writer is not None:
         shelf_writer.close()
 
     if shelf_writer is None and len(predictions) != n_frames:
-        tip_url = "https://deeplabcut.github.io/DeepLabCut/docs/recipes/io.html"
-        header = "#tips-on-video-re-encoding-and-preprocessing"
+        frames_with_detections = sum(
+            1 for pred in predictions if (
+                ('bodyparts' in pred and pred['bodyparts'].shape[0] > 0) or
+                ('bboxes' in pred and len(pred['bboxes']) > 0)
+            )
+        )
         logging.warning(
-            f"The video metadata indicates that there {n_frames} in the video, but "
-            f"only {len(predictions)} were able to be processed. This can happen if "
-            "the video is corrupted. You can try to fix the issue by re-encoding your "
-            f"video (tips on how to do that: {tip_url}{header})"
+            f"Only {frames_with_detections} of {n_frames} frames had detections!"
         )
 
     return predictions
@@ -449,9 +469,58 @@ def analyze_videos(
         print(f"Creating a TopDownDynamicCropper with configuration {top_down_dynamic}")
         dynamic = TopDownDynamicCropper(**top_down_dynamic)
 
-    snapshot = utils.get_model_snapshots(
-        snapshot_index, loader.model_folder, loader.pose_task
-    )[0]
+    try:
+        snapshot = utils.get_model_snapshots(
+            snapshot_index, loader.model_folder, loader.pose_task
+        )[0]
+    except (ValueError, IndexError) as e:
+        print(f"Error loading snapshot with index {snapshot_index}: {e}")
+        print("Attempting to find available snapshots...")
+        
+        # Try to get all available snapshots
+        try:
+            all_snapshots = utils.get_model_snapshots("all", loader.model_folder, loader.pose_task)
+            if all_snapshots:
+                # Try to find a "best" snapshot first
+                best_snapshots = [s for s in all_snapshots if s.best]
+                if best_snapshots:
+                    snapshot = best_snapshots[0]
+                    print(f"Found and using best snapshot: {snapshot.path}")
+                else:
+                    # Use the last available snapshot
+                    snapshot = all_snapshots[-1]
+                    print(f"No best snapshot found, using last available: {snapshot.path}")
+            else:
+                raise FileNotFoundError(f"No snapshots found in {loader.model_folder}")
+        except Exception as fallback_error:
+            raise FileNotFoundError(f"Failed to load any snapshots from {loader.model_folder}. Original error: {e}. Fallback error: {fallback_error}")
+
+    # Additional validation for best snapshots
+    if "best" in str(snapshot.path) and not snapshot.path.exists():
+        print(f"Warning: Best snapshot path {snapshot.path} does not exist. Checking for alternative snapshots...")
+        # Try to find any available snapshot
+        try:
+            all_snapshots = utils.get_model_snapshots("all", loader.model_folder, loader.pose_task)
+            if all_snapshots:
+                # Try to find a different best snapshot
+                best_snapshots = [s for s in all_snapshots if s.best and s.path.exists()]
+                if best_snapshots:
+                    snapshot = best_snapshots[0]
+                    print(f"Using alternative best snapshot: {snapshot.path}")
+                else:
+                    # Use the last available snapshot
+                    snapshot = all_snapshots[-1]
+                    print(f"Using alternative snapshot: {snapshot.path}")
+            else:
+                raise FileNotFoundError(f"No snapshots found in {loader.model_folder}")
+        except Exception as e:
+            raise FileNotFoundError(f"Failed to find alternative snapshots: {e}")
+
+    # Verify the snapshot file exists
+    if not snapshot.path.exists():
+        raise FileNotFoundError(f"Snapshot file not found: {snapshot.path}")
+    
+    print(f"Successfully loaded snapshot: {snapshot.path}")
 
     # Load the BU model for the conditions provider
     cond_provider = None
@@ -497,9 +566,56 @@ def analyze_videos(
         if detector_batch_size is None:
             detector_batch_size = loader.project_cfg.get("detector_batch_size", 1)
 
-        detector_snapshot = utils.get_model_snapshots(
-            detector_snapshot_index, loader.model_folder, Task.DETECT
-        )[0]
+        try:
+            detector_snapshot = utils.get_model_snapshots(
+                detector_snapshot_index, loader.model_folder, Task.DETECT
+            )[0]
+        except (ValueError, IndexError) as e:
+            print(f"Error loading detector snapshot with index {detector_snapshot_index}: {e}")
+            print("Attempting to find available detector snapshots...")
+            
+            # Try to get all available detector snapshots
+            try:
+                all_detector_snapshots = utils.get_model_snapshots("all", loader.model_folder, Task.DETECT)
+                if all_detector_snapshots:
+                    # Try to find a "best" detector snapshot first
+                    best_detector_snapshots = [s for s in all_detector_snapshots if s.best]
+                    if best_detector_snapshots:
+                        detector_snapshot = best_detector_snapshots[0]
+                        print(f"Found and using best detector snapshot: {detector_snapshot.path}")
+                    else:
+                        # Use the last available detector snapshot
+                        detector_snapshot = all_detector_snapshots[-1]
+                        print(f"No best detector snapshot found, using last available: {detector_snapshot.path}")
+                else:
+                    raise FileNotFoundError(f"No detector snapshots found in {loader.model_folder}")
+            except Exception as fallback_error:
+                raise FileNotFoundError(f"Failed to load any detector snapshots from {loader.model_folder}. Original error: {e}. Fallback error: {fallback_error}")
+
+        # Additional validation for detector snapshots
+        if "best" in str(detector_snapshot.path) and not detector_snapshot.path.exists():
+            print(f"Warning: Best detector snapshot path {detector_snapshot.path} does not exist. Checking for alternative detector snapshots...")
+            try:
+                all_detector_snapshots = utils.get_model_snapshots("all", loader.model_folder, Task.DETECT)
+                if all_detector_snapshots:
+                    # Try to find a different best detector snapshot
+                    best_detector_snapshots = [s for s in all_detector_snapshots if s.best and s.path.exists()]
+                    if best_detector_snapshots:
+                        detector_snapshot = best_detector_snapshots[0]
+                        print(f"Using alternative best detector snapshot: {detector_snapshot.path}")
+                    else:
+                        # Use the last available detector snapshot
+                        detector_snapshot = all_detector_snapshots[-1]
+                        print(f"Using alternative detector snapshot: {detector_snapshot.path}")
+                else:
+                    raise FileNotFoundError(f"No detector snapshots found in {loader.model_folder}")
+            except Exception as e:
+                raise FileNotFoundError(f"Failed to find alternative detector snapshots: {e}")
+
+        # Verify the detector snapshot file exists
+        if not detector_snapshot.path.exists():
+            raise FileNotFoundError(f"Detector snapshot file not found: {detector_snapshot.path}")
+
         print(f"  -> Using detector {detector_snapshot.path}")
         detector_runner = utils.get_detector_inference_runner(
             model_config=loader.model_cfg,
@@ -509,9 +625,12 @@ def analyze_videos(
         )
 
     dlc_scorer = loader.scorer(snapshot, detector_snapshot)
+    print(f"Using scorer: {dlc_scorer}")
 
     # Reading video and init variables
     videos = utils.list_videos_in_folder(videos, videotype, shuffle=in_random_order)
+    h5_files_created = False  # Track if any .h5 files were created
+    
     for video in videos:
         if destfolder is None:
             output_path = video.parent
@@ -583,6 +702,7 @@ def analyze_videos(
                         output_prefix=output_prefix,
                         save_as_csv=save_as_csv,
                     )
+                    h5_files_created = True  # .h5 file was created
 
             if multi_animal:
                 assemblies_path = output_path / f"{output_prefix}_assemblies.pickle"
@@ -631,6 +751,7 @@ def analyze_videos(
                         output_prefix=output_prefix + "_ctd",
                         save_as_csv=save_as_csv,
                     )
+                    h5_files_created = True  # .h5 file was created for CTD tracking
 
                 elif auto_track:
                     convert_detections2tracklets(
@@ -654,14 +775,21 @@ def analyze_videos(
                         destfolder=str(output_path),
                         save_as_csv=save_as_csv,
                     )
+                    h5_files_created = True  # .h5 file was created by stitch_tracklets
 
-    print(
-        "The videos are analyzed. Now your research can truly start!\n"
-        "You can create labeled videos with 'create_labeled_video'.\n"
-        "If the tracking is not satisfactory for some videos, consider expanding the "
-        "training set. You can use the function 'extract_outlier_frames' to extract a "
-        "few representative outlier frames.\n"
-    )
+    if h5_files_created:
+        print(
+            "The videos are analyzed. Now your research can truly start!\n"
+            "You can create labeled videos with 'create_labeled_video'.\n"
+            "If the tracking is not satisfactory for some videos, consider expanding the "
+            "training set. You can use the function 'extract_outlier_frames' to extract a "
+            "few representative outlier frames.\n"
+        )
+    else:
+        print(
+            "No .h5 files were created during video analysis. Please check your code and "
+            "ensure that the video inference and output generation are correct.\n"
+        )
 
     return dlc_scorer
 
@@ -675,7 +803,59 @@ def create_df_from_prediction(
     output_prefix: str | Path,
     save_as_csv: bool = False,
 ) -> pd.DataFrame:
-    pred_bodyparts = np.stack([p["bodyparts"][..., :3] for p in predictions])
+    # Check if any predictions were made
+    if not predictions:
+        raise ValueError(
+            "No objects were detected in the video. This can happen if:\n"
+            "1. The video doesn't contain the type of objects the model was trained to detect\n"
+            "2. The objects are too small, blurry, or occluded\n"
+            "3. The detector confidence threshold is too high\n"
+            "4. The video quality is poor\n\n"
+            "Try:\n"
+            "- Using a different video with clearer objects\n"
+            "- Adjusting the detector confidence threshold\n"
+            "- Checking if the model is appropriate for your use case"
+        )
+    
+    # Check if any predictions contain valid detections (non-empty bboxes)
+    valid_predictions = []
+    for pred in predictions:
+        if "bboxes" in pred and len(pred["bboxes"]) > 0:
+            valid_predictions.append(pred)
+        elif "bodyparts" in pred and pred["bodyparts"].shape[0] > 0:
+            valid_predictions.append(pred)
+    
+    if not valid_predictions:
+        raise ValueError(
+            "No objects were detected in the video. This can happen if:\n"
+            "1. The video doesn't contain the type of objects the model was trained to detect\n"
+            "2. The objects are too small, blurry, or occluded\n"
+            "3. The detector confidence threshold is too high\n"
+            "4. The video quality is poor\n\n"
+            "Try:\n"
+            "- Using a different video with clearer objects\n"
+            "- Adjusting the detector confidence threshold\n"
+            "- Checking if the model is appropriate for your use case"
+        )
+    
+    # Ensure all predictions have the same shape by padding with zeros if needed
+    max_individuals = max(p["bodyparts"].shape[0] for p in predictions) if predictions else 0
+    num_bodyparts = predictions[0]["bodyparts"].shape[1] if predictions else 0
+    
+    # Pad all predictions to have the same number of individuals
+    padded_predictions = []
+    for p in predictions:
+        current_individuals = p["bodyparts"].shape[0]
+        if current_individuals < max_individuals:
+            # Pad with zeros for missing individuals
+            padding = np.zeros((max_individuals - current_individuals, num_bodyparts, 3))
+            padded_bodyparts = np.concatenate([p["bodyparts"][..., :3], padding], axis=0)
+        else:
+            padded_bodyparts = p["bodyparts"][..., :3]
+        padded_predictions.append(padded_bodyparts)
+    
+    pred_bodyparts = np.stack(padded_predictions)
+    
     pred_unique_bodyparts = None
     if len(predictions) > 0 and "unique_bodyparts" in predictions[0]:
         pred_unique_bodyparts = np.stack([p["unique_bodyparts"] for p in predictions])

@@ -6,14 +6,16 @@
 </p>
 
 <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1665060917309-V0YVY2UKVLKSS6O18XDI/MousereachGIF.gif?format=1000w?format=180w" height="150">
+
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1619609897110-TKSTWKEM6HTGXID9D489/ke17ZwdGBToddI8pDm48kAvjv6tW_eojYQmNU0ncbllZw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVHBSTXHtjUKlhRtWJ1Vo6l1B2bxJtByvWSjL6Vz3amc5yb8BodarTVrzIWCp72ioWw/triMouseDLC.gif?format=180w" height="150">
+  
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/daed7f16-527f-4150-8bdd-cbb20e267451/cheetah-ezgif.com-video-to-gif-converter.gif?format=180w" height="150">
 
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1534797521117-EIEUED03C68241QZ4KCK/ke17ZwdGBToddI8pDm48kAx9qLOWpcHWRGxWsJQSczRZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpwdr4GYy30vFzf31Oe7KAPZKkqgaiEgc5jBNdhZmDPlzxdkDSclo6ofuXZm6YCEhUo/MATHIS_2018_fly.gif?format=180w" height="150">
 
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1619609897110-TKSTWKEM6HTGXID9D489/ke17ZwdGBToddI8pDm48kAvjv6tW_eojYQmNU0ncbllZw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVHBSTXHtjUKlhRtWJ1Vo6l1B2bxJtByvWSjL6Vz3amc5yb8BodarTVrzIWCp72ioWw/triMouseDLC.gif?format=180w" height="150">
+
 
 
   
@@ -67,17 +69,17 @@ DeepLabCut with the PyTorch engine
 - [1] [Install PyTorch](https://pytorch.org/get-started/locally/) (**install and then select the desired
 CUDA version if you want to use a GPU**): `pip install torch torchvision`.
 Or as an example for GPU support (please check pytorch docs to get the perfect version for your CUDA):
-```python
-# GPU version of pytorch for CUDA 11.3
+```bash
 conda install pytorch cudatoolkit=11.3 -c pytorch
 ```
 - [2] Then, [install `pytables`](https://www.pytables.org/usersguide/installation.html):
-```python
+```bash
 conda install -c conda-forge pytables==3.8.0
 ```
 - [3] Finally, install `DeepLabCut` (with all functions + the GUI):
-```python
-pip install --pre  "deeplabcut[gui]"`
+
+```bash
+pip install --pre  "deeplabcut[gui]"
 ```
 or `pip install  --pre "deeplabcut"` (headless 
 version with PyTorch)!
@@ -99,13 +101,40 @@ For a deeper understanding and more resources for you to get started with Python
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1609244903687-US1SN063QIFJS4BP4IJD/ke17ZwdGBToddI8pDm48kFG9xAYub2PPnmh56PTVg7gUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcAju5e7u9RZJEVbVQPZRu9xb_m-kUO2M3I1IeDqD4l8YcGqu2nZPx1UhKV8wc1ELN/dlc_overview_whitebkgrnd.png?format=2500w" width="95%">
 </p>
 
-# [DEMO the code](/examples)
+# [DEMO the code](examples/README.md)
 
 🐭 pose tracking of single animals demo [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_DEMO_mouse_openfield.ipynb)
 
 See [more demos here](https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/README.md). We provide data and several Jupyter Notebooks: one that walks you through a demo dataset to test your installation, and another Notebook to run DeepLabCut from the beginning on your own data. We also show you how to use the code in Docker, and on Google Colab.
 
 # Why use DeepLabCut?
+
+DeepLabCut continues to be actively maintained and we strive to provide a user-friendly `GUI` and `API` for computer vision researchers and life scientists alike. This means we integrate state-of-the-art models and frameworks, while providing our "best-guess" defaults for life scientists. We highly encourage you to read our papers to get a better understanding of what to use and how to modify the models for your setting. 
+
+## Performance 🔥
+
+In general, we provide all the tooling for you to train and use custom models with various high-performance backbones. 
+We also provide two foundation pretrained animal models: `SuperAnimal-Quadruped`, `SuperAnimal-TopViewMouse`. To gauge their *out-of-distribution* performance, we provide the following tables.
+
+These models are trained on the [SuperAnimal-Quadruped with AP-10K held out for out-of-domain testing]([https://cocodataset.org/](https://www.nature.com/articles/s41467-024-48792-2)) and the [SuperAnimal-TopViewMouse with DLC-openfield held out for out-of-distribution testing](https://www.nature.com/articles/s41467-024-48792-2). We provide models that include AP-10K in the API (and GUI).
+Note, there are many different models to select from in DeepLabCut 3.0. We strongly recommend you check [this Guide](https://deeplabcut.github.io/DeepLabCut/docs/pytorch/architectures.html) for more details.
+This table, and those below, give you a sense of performance in real-world complex in-the-wild and lab mouse data, respectively.
+This [link provides the model weights](https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-Quadruped) to reproduce the numbers; but please note, our `full` models are in our DLClibrary and released in the API.
+
+<details open><summary>DLC 3.0 Pose Estimation (Top Down Models)</summary>
+
+| Model Name                    | Type       | mAP SA-Q on AP-10K | mAP SA-TVM on DLC-OpenField |
+|------------------------------|------------|---------------------|-----------------------------|
+| top_down_resnet_50           | Top-Down   |   54.9       |      93.5      |
+| top_down_resnet_101          | Top-Down   |   55.9       |      94.1      |
+| top_down_hrnet_w32            | Top-Down  |   52.5       |      92.4      |
+| top_down_hrnet_w48           | Top-Down   |   55.3       |      93.8      |
+| rtmpose_s                    | Top-Down     | 52.9        |     92.9      |
+| rtmpose_m                    | Top-Down     | 55.4         |    94.8      |
+| rtmpose_x                    | Top-Down     |  57.6        |    94.5      |
+</details>
+
+## The History
 
 In 2018, we demonstrated the capabilities for [trail tracking](https://vnmurthylab.org/), [reaching in mice](http://www.mousemotorlab.org/) and various Drosophila behaviors during egg-laying (see [Mathis et al.](https://www.nature.com/articles/s41593-018-0209-y) for details). There is, however, nothing specific that makes the toolbox only applicable to these tasks and/or species. The toolbox has already been successfully applied (by us and others) to [rats](http://www.mousemotorlab.org/deeplabcut), humans, various fish species, bacteria, leeches, various robots, cheetahs, [mouse whiskers](http://www.mousemotorlab.org/deeplabcut) and [race horses](http://www.mousemotorlab.org/deeplabcut). DeepLabCut utilized the feature detectors (ResNets + readout layers) of one of the state-of-the-art algorithms for human pose estimation by Insafutdinov et al., called DeeperCut, which inspired the name for our toolbox (see references below). Since this time, the package has changed substantially.  The code has been re-tooled and re-factored since 2.1+: We have added faster and higher performance variants with MobileNetV2s, EfficientNets, and our own DLCRNet backbones (see [Pretraining boosts out-of-domain robustness for pose estimation](https://arxiv.org/abs/1909.11229) and [Lauer et al 2022](https://www.nature.com/articles/s41592-022-01443-0)). Additionally, we have improved the inference speed and provided both additional and novel augmentation methods, added real-time, and multi-animal support.
 In v3.0+ we have changed the backend to support PyTorch. This brings not only an easier installation process for users, but performance gains, developer flexibility, and a lot of new tools! Importantly, the high-level API stays the same, so it will be a seamless transition for users 💜!
@@ -128,10 +157,15 @@ We currently provide state-of-the-art performance for animal pose estimation and
 
 ## Code contributors:
 
-DLC code was originally developed by [Alexander Mathis](https://github.com/AlexEMG) & [Mackenzie Mathis](https://github.com/MMathisLab), and was extended in 2.0 with the core dev team consisting of [Tanmay Nath](https://github.com/meet10may) (2.0-2.1), and currently (2.1+) with [Jessy Lauer](https://github.com/jeylau) and (2.3+) [Niels Poulsen](https://github.com/n-poulsen).
-DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including  Mert Yuksekgonul, Tom Biasi, Richard Warren, Ronny Eichler, Hao Wu, Federico Claudi, Gary Kane and Jonny Saunders as well as the [100+ contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors). Please see [AUTHORS](https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS) for more details!
+DLC code was originally developed by [Alexander Mathis](https://github.com/AlexEMG) & [Mackenzie Mathis](https://github.com/MMathisLab), and was extended in 2.0 with the core dev team consisting of [Tanmay Nath](https://github.com/meet10may) (2.0-2.1), [Jessy Lauer](https://github.com/jeylau) (2.1-2.4), and [Niels Poulsen](https://github.com/n-poulsen) (2.3-3.0).
+DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals including early contributors: Mert Yuksekgonul, Tom Biasi, Richard Warren, Ronny Eichler, Hao Wu, Federico Claudi, Gary Kane and Jonny Saunders as well as the [100+ contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors). Please see [AUTHORS](https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS) for more details!
 
-This is an actively developed package and we welcome community development and involvement.
+🤩 This is an actively developed package and we welcome community development and involvement:
+
+[![Contributors](https://contrib.rocks/image?repo=DeepLabCut/DeepLabCut)](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors)
+
+
+
 
 # Get Assistance & be part of the DLC Community✨:
 
@@ -159,7 +193,7 @@ SuperAnimal models are provided for research use only (non-commercial use).
 
 ## Major Versions:
 
-- For all versions, please see [here](https://github.com/DeepLabCut/DeepLabCut/releases).
+**For all versions, please see [here](https://github.com/DeepLabCut/DeepLabCut/releases).**
 
 VERSION 3.0: A whole new experience with PyTorch🔥. While the high-level API remains the same, the backend and developer friendliness have greatly improved, along with performance gains!
 

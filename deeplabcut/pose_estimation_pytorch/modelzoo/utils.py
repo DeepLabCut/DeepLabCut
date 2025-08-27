@@ -15,6 +15,7 @@ from pathlib import Path
 
 import torch
 from dlclibrary import download_huggingface_model
+import huggingface_hub
 
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
 from deeplabcut.core.config import read_config_as_dict
@@ -39,15 +40,20 @@ def get_snapshot_folder_path() -> Path:
     return Path(auxiliaryfunctions.get_deeplabcut_path()) / "modelzoo" / "checkpoints"
 
 
-def get_super_animal_model_config_path(model_name: str) -> Path:
+def get_super_animal_model_config_path(model_name: str, super_animal: str = None) -> Path:
     """Gets the path to the configuration file for a SuperAnimal model.
 
     Args:
         model_name: The name of the model for which to get the path.
+        super_animal: The name of the SuperAnimal (used for specific model configs).
 
     Returns:
         The path to the config file for a SuperAnimal model.
     """
+    # Special case for superanimal_humanbody with rtmpose_x
+    if model_name == "rtmpose_x" and super_animal == "superanimal_humanbody":
+        return get_model_configs_folder_path() / "superanimal_humanbody_rtmpose_x.yaml"
+    
     return get_model_configs_folder_path() / f"{model_name}.yaml"
 
 
@@ -107,18 +113,52 @@ def load_super_animal_config(
     project_cfg_path = get_super_animal_project_config_path(super_animal=super_animal)
     project_config = read_config_as_dict(project_cfg_path)
 
-    model_cfg_path = get_super_animal_model_config_path(model_name=model_name)
-    model_config = read_config_as_dict(model_cfg_path)
-    model_config = add_metadata(project_config, model_config, model_cfg_path)
-    model_config = update_config(model_config, max_individuals, device)
+    # Special handling for superanimal_humanbody with rtmpose_x - download config from HuggingFace
+    if super_animal == "superanimal_humanbody" and model_name == "rtmpose_x":
+        # Download config from HuggingFace
+        model_files = get_snapshot_folder_path()
+        model_files.mkdir(exist_ok=True)
+        
+        path_model_config = Path(
+            huggingface_hub.hf_hub_download(
+                "DeepLabCut/HumanBody",
+                "rtmpose-x_simcc-body7_pytorch_config.yaml",
+                local_dir=model_files,
+            )
+        )
+        model_config = read_config_as_dict(path_model_config)
+    else:
+        # Use local config file for other models
+        model_cfg_path = get_super_animal_model_config_path(model_name=model_name, super_animal=super_animal)
+        model_config = read_config_as_dict(model_cfg_path)
+    
+    model_config = add_metadata(project_config, model_config, model_cfg_path if 'model_cfg_path' in locals() else path_model_config)
 
     if detector_name is None:
         model_config["method"] = "BU"
     else:
-        detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name)
-        detector_cfg = read_config_as_dict(detector_cfg_path)
-        model_config["method"] = "TD"
-        model_config["detector"] = detector_cfg
+        # Check if this is a torchvision detector (not in dlclibrary)
+        if super_animal == "superanimal_humanbody" and detector_name == "fasterrcnn_mobilenet_v3_large_fpn":
+            # Use torchvision detector - set method to TD and load detector config
+            model_config["method"] = "TD"
+            detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name, super_animal=super_animal)
+            detector_cfg = read_config_as_dict(detector_cfg_path)
+            model_config["detector"] = detector_cfg
+        else:
+            # Load detector config from dlclibrary
+            detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name, super_animal=super_animal)
+            detector_cfg = read_config_as_dict(detector_cfg_path)
+            model_config["method"] = "TD"
+            model_config["detector"] = detector_cfg
+    
+    # Update config after detector is added (if any)
+    model_config = update_config(model_config, max_individuals, device)
+    
+    # Add superanimal_name to metadata for all superanimal models (needed for detector routing)
+    if "metadata" not in model_config:
+        model_config["metadata"] = {}
+    model_config["metadata"]["superanimal_name"] = super_animal
+    
     return model_config
 
 
@@ -136,14 +176,25 @@ def download_super_animal_snapshot(dataset: str, model_name: str) -> Path:
         RuntimeError if the model fails to download.
     """
     snapshot_dir = get_snapshot_folder_path()
-    model_name = f"{dataset}_{model_name}"
-    model_path = snapshot_dir / f"{model_name}.pt"
+    full_model_name = f"{dataset}_{model_name}"
+    model_path = snapshot_dir / f"{full_model_name}.pt"
 
-    download_huggingface_model(model_name, target_dir=str(snapshot_dir))
+    # Use the full name for dlclibrary lookup (consistent with dlclibrary naming)
+    download_huggingface_model(full_model_name, target_dir=str(snapshot_dir))
+    
+    # Check if the file was downloaded with the expected name
     if not model_path.exists():
-        raise RuntimeError(f"Failed to download {model_name} to {model_path}")
+        # If not, look for the actual downloaded filename and rename it
+        if dataset == "superanimal_humanbody" and model_name == "rtmpose_x":
+            actual_file = snapshot_dir / "rtmpose-x_simcc-body7.pt"
+            if actual_file.exists():
+                actual_file.rename(model_path)
+            else:
+                raise RuntimeError(f"Failed to download {model_name} to {model_path}")
+        else:
+            raise RuntimeError(f"Failed to download {model_name} to {model_path}")
 
-    return snapshot_dir / f"{model_name}.pt"
+    return snapshot_dir / f"{full_model_name}.pt"
 
 
 def get_gpu_memory_map():
@@ -188,6 +239,8 @@ def update_config(config: dict, max_individuals: int, device: str):
     Returns:
         The model configuration for a SuperAnimal-pretrained model.
     """
+ 
+    
     config = config_utils.replace_default_values(
         config,
         num_bodyparts=len(config["metadata"]["bodyparts"]),
@@ -199,5 +252,4 @@ def update_config(config: dict, max_individuals: int, device: str):
     config["device"] = device
     if "detector" in config:
         config["detector"]["device"] = device
-
     return config

@@ -514,8 +514,22 @@ def plot_evaluation_results(
         df_predictions = row_multi[model_name]
 
         # Shape (num_individuals, num_bodyparts, xy)
-        ground_truth = df_gt.to_numpy().reshape((individuals, bodyparts, 2))
-        predictions = df_predictions.to_numpy().reshape((individuals, bodyparts, 3))
+        try:
+            ground_truth = df_gt.to_numpy().reshape((individuals, bodyparts, 2))
+            predictions = df_predictions.to_numpy().reshape((individuals, bodyparts, 3))
+        except ValueError as e:
+            # Handle cases where the actual data size doesn't match expected shape
+            actual_size_gt = df_gt.size
+            actual_size_pred = df_predictions.size
+            expected_size_gt = individuals * bodyparts * 2
+            expected_size_pred = individuals * bodyparts * 3
+            
+            print(f"Warning: DataFrame reshape failed for {image}")
+            print(f"  Expected: {individuals} individuals, {bodyparts} bodyparts")
+            print(f"  Ground truth: {actual_size_gt} elements (expected {expected_size_gt})")
+            print(f"  Predictions: {actual_size_pred} elements (expected {expected_size_pred})")
+            print(f"  Skipping visualization for this image")
+            continue
 
         bboxes = bounding_boxes.get(row_index)
 
@@ -527,16 +541,21 @@ def plot_evaluation_results(
             unique_bodyparts = len(
                 row_unique.index.get_level_values("bodyparts").unique()
             )
-            unique_ground_truth = (
-                row_unique[scorer]
-                .to_numpy()
-                .reshape((unique_individuals, unique_bodyparts, 2))
-            )
-            unique_predictions = (
-                row_unique[model_name]
-                .to_numpy()
-                .reshape((unique_individuals, unique_bodyparts, 3))
-            )
+            try:
+                unique_ground_truth = (
+                    row_unique[scorer]
+                    .to_numpy()
+                    .reshape((unique_individuals, unique_bodyparts, 2))
+                )
+                unique_predictions = (
+                    row_unique[model_name]
+                    .to_numpy()
+                    .reshape((unique_individuals, unique_bodyparts, 3))
+                )
+            except ValueError as e:
+                # Handle cases where unique bodyparts reshape fails
+                print(f"Warning: Unique bodyparts reshape failed for {image}, skipping unique bodyparts")
+                plot_unique_bodyparts = False
 
         fig, ax = create_minimal_figure()
         h, w, _ = np.shape(frame)

@@ -63,6 +63,7 @@ def label_frames(
         ├── ...
         ├── 2025-01-01-experiment7    # folder containing the images to label
         └── ...
+
     >>> deeplabcut.label_frames(
     >>>     "C:\\myproject\\reaching-task\\config.yaml",
     >>>     "2025-01-01-experiment7",

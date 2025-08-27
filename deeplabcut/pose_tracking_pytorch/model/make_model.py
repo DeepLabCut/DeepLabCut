@@ -47,7 +47,9 @@ class build_dlc_transformer(nn.Module):
         return q
 
     def load_param(self, trained_path):
-        param_dict = torch.load(trained_path)
+        # Use CUDA if available, otherwise use CPU
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        param_dict = torch.load(trained_path, map_location=device)
         for i in param_dict:
             self.state_dict()[i.replace("module.", "")].copy_(param_dict[i])
         print("Loading pretrained model from {}".format(trained_path))

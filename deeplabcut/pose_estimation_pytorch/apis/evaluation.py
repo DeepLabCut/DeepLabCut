@@ -630,6 +630,7 @@ def evaluate_snapshot(
     )
     scores_filepath = output_filename.with_suffix(".csv")
     scores_filepath = scores_filepath.with_stem(scores_filepath.stem + "-results")
+    print(f"Evaluation results file: {scores_filepath.name}")
     save_evaluation_results(df_scores, scores_filepath, show_errors, pcutoff)
 
     if per_keypoint_evaluation:
@@ -833,6 +834,7 @@ def evaluate_network(
                         snapshot_uid=get_scorer_uid(snapshot, detector_snapshot),
                         modelprefix=modelprefix,
                     )
+                    print(f"Evaluation scorer: {scorer}")
                     evaluate_snapshot(
                         loader=loader,
                         cfg=cfg,

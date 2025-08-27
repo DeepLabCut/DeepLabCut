@@ -27,7 +27,7 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
 )
 from deeplabcut.utils.make_labeled_video import create_video
 
-    
+
 class NumpyEncoder(json.JSONEncoder):
     """Special json encoder for numpy types"""
 
@@ -89,6 +89,8 @@ def _video_inference_superanimal(
         dest_folder: Destination folder for the results. If not specified, the
             results are saved in the same folder as the video. Defaults to None.
         output_suffix: The suffix to add to output file names (e.g. _before_adapt)
+        plot_bboxes: Whether to plot bounding boxes in the output video
+        bboxes_pcutoff: Confidence threshold for bounding box plotting
 
     Returns:
         results: Dictionary with the result pd.DataFrame for each video
@@ -120,7 +122,7 @@ def _video_inference_superanimal(
 
     for video_path in video_paths:
         print(f"Processing video {video_path}")
-        
+
         dlc_scorer = get_super_animal_scorer(
             superanimal_name, model_snapshot_path, detector_snapshot_path
         )
@@ -183,7 +185,7 @@ def _video_inference_superanimal(
             plot_bboxes=plot_bboxes,
             bboxes_list=bboxes_list,
             bboxes_pcutoff=bboxes_pcutoff,
-        )        
+        )
         print(f"Video with predictions was saved as {output_path}")
 
     return results

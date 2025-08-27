@@ -62,7 +62,7 @@ DLC_VERSION=3.0.0 CUDA_VERSION=12.1 deeplabcut-docker bash --gpus all
 *Note: Advanced users can also directly download and use the `deeplabcut-docker.sh`
 script if this is preferred over a python helper script.*
 
-#### Jupyter Notebooks Running on Remote Servers
+### Jupyter Notebooks Running on Remote Servers
 
 Sometimes, we want to run Jupyter Notebooks on remote servers but connect to them 
 through the browser on our local machine. To do so, port forwarding needs to be used.

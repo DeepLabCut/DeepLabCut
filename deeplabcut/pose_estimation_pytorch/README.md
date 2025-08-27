@@ -46,7 +46,7 @@ print(deeplabcut.pose_estimation_pytorch.available_models())
 print(deeplabcut.pose_estimation_pytorch.available_detectors())
 ```
 
-#### Model Configuration Files
+### Model Configuration Files
 
 Model architectures are built according to a configuration specified in a `yaml` file.
 This file (named `pytorch_cfg.yaml`) describes the architecture of the model you want to
@@ -77,7 +77,7 @@ model_cfg = dlc_torch.config.make_pytorch_pose_config(
 )
 ```
 
-#### Adding Models
+### Adding Models
 
 If you want to add a novel model, you'll ideally build them from the following
 implemented parts:
@@ -94,7 +94,7 @@ You can either use existing classes and only replace some elements, or rewrite
 everything you need for your model. We use Model Registries to simplify the process of
 adding models.
 
-#### Model Registry
+### Model Registry
 
 Registries are created for all model building blocks to make it easy to add new models.
 All you need to do is add the decorator `REGISTRY.register_module` to be able to load 

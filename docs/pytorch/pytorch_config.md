@@ -166,7 +166,7 @@ motion_blur: true  # bool: whether to apply motion blur
 normalize_images: true  # normalizes images
 ```
 
-#### Dealing with Variable Image Sizes
+### Dealing with Variable Image Sizes
 
 ```{NOTE}
 When training with batch size 1 (or if all images in your dataset have the same size), 
@@ -463,6 +463,10 @@ logger:
  run_name: dekr-w32-shuffle0  # the name of the run to log
  ...  # any other argument you can pass to `wandb.init`, such as `tags: ["dekr", "split=0"]`
 ```
+
+If you set up a `WandbLogger`, the corresponding run info (`entity`, `project`, `run_id`) 
+will be saved in a `wandb_info.yaml` file in the model train directory, so that the WandB run 
+can be easily be recovered at a later stage.
 
 You can also log images as they are seen by the model to `wandb` 
 with the `image_log_interval`. This logs a random train and test image, as well as the 
