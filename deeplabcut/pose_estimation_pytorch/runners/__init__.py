@@ -24,7 +24,6 @@ from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (
 from deeplabcut.pose_estimation_pytorch.runners.inference import (
     build_inference_runner,
     DetectorInferenceRunner,
-    TorchvisionDetectorInferenceRunner,
     InferenceRunner,
     PoseInferenceRunner,
 )
