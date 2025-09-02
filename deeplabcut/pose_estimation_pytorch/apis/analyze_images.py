@@ -59,7 +59,7 @@ def superanimal_analyze_images(
     customized_model_config: str | Path | dict | None = None,
     customized_pose_checkpoint: str | Path | None = None,
     customized_detector_checkpoint: str | Path | None = None,
-    close_figure_after_save=False,
+    close_figure_after_save=True,
 ) -> dict[str, dict]:
     """
     This function inferences a superanimal model on a set of images and saves the
