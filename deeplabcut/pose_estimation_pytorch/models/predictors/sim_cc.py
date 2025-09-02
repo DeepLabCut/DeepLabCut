@@ -42,15 +42,15 @@ class SimCCPredictor(BasePredictor):
     def __init__(
         self,
         simcc_split_ratio: float = 2.0,
-        normalize_outputs: bool = False,
         apply_softmax: bool = True,
+        normalize_outputs: bool = False,
         sigma: float | int | tuple[float, ...] = 6.0,
         decode_beta: float = 150.0,
     ) -> None:
         super().__init__()
         self.simcc_split_ratio = simcc_split_ratio
-        self.normalize_outputs = normalize_outputs
         self.apply_softmax = apply_softmax
+        self.normalize_outputs = normalize_outputs
 
         if isinstance(sigma, (float, int)):
             self.sigma = np.array([sigma, sigma])
