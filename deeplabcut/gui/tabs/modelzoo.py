@@ -241,7 +241,7 @@ class ModelZoo(DefaultTab):
 
         self.model_combo.currentTextChanged.connect(self._update_pose_models)
         self.model_combo.currentTextChanged.connect(self._update_detectors)
-        self.model_combo.currentTextChanged.connect(self._update_adaptation_visibility)
+        self.model_combo.currentTextChanged.connect(self._update_adaptation_detector_visibility)
 
     def _add_tf_scales_row(self, layout: QtWidgets.QGridLayout):
         scales_label = QtWidgets.QLabel("Scale list")
@@ -359,8 +359,8 @@ class ModelZoo(DefaultTab):
         self.torch_adapt_epoch_spinbox.setRange(1, 50)
         self.torch_adapt_epoch_spinbox.setValue(4)
         self.torch_adapt_epoch_spinbox.setMaximumWidth(100)
-        adapt_det_epoch_label = QtWidgets.QLabel("Number of detector adaptation epochs")
-        adapt_det_epoch_label.setMinimumWidth(200)
+        self.adapt_det_epoch_label = QtWidgets.QLabel("Number of detector adaptation epochs")
+        self.adapt_det_epoch_label.setMinimumWidth(200)
         self.torch_adapt_det_epoch_spinbox = QtWidgets.QSpinBox()
         self.torch_adapt_det_epoch_spinbox.setRange(1, 50)
         self.torch_adapt_det_epoch_spinbox.setValue(4)
@@ -374,7 +374,7 @@ class ModelZoo(DefaultTab):
         self.torch_adaptation_settings_row.addWidget(adapt_epoch_label)
         self.torch_adaptation_settings_row.addWidget(self.torch_adapt_epoch_spinbox)
         self.torch_adaptation_settings_row.addSpacing(20)
-        self.torch_adaptation_settings_row.addWidget(adapt_det_epoch_label)
+        self.torch_adaptation_settings_row.addWidget(self.adapt_det_epoch_label)
         self.torch_adaptation_settings_row.addWidget(self.torch_adapt_det_epoch_spinbox)
         self.torch_adaptation_settings_row.addStretch()
         layout.addLayout(self.torch_adaptation_settings_row, 2, 0, 1, 6)
@@ -401,6 +401,8 @@ class ModelZoo(DefaultTab):
             set_layout_contents_visible(
                 self.torch_adaptation_settings_row, Qt.CheckState(state) == Qt.Checked
             )
+            if Qt.CheckState(state) == Qt.Checked:
+                self._update_adaptation_detector_visibility(self.model_combo.currentText())
 
     def select_folder(self):
         dirname = QtWidgets.QFileDialog.getExistingDirectory(
@@ -624,14 +626,9 @@ class ModelZoo(DefaultTab):
             self.detector_row, self.root.engine == Engine.PYTORCH
         )
 
-    def _update_adaptation_visibility(self, super_animal: str):
-        if (
-            self.root.engine == Engine.PYTORCH
-            and super_animal != "superanimal_humanbody"
-        ):
-            self.torch_widget.show()
-        else:
-            self.torch_widget.hide()
+    def _update_adaptation_detector_visibility(self, superanimal: str):
+        self.adapt_det_epoch_label.setVisible((superanimal != "superanimal_humanbody"))
+        self.torch_adapt_det_epoch_spinbox.setVisible((superanimal != "superanimal_humanbody"))
 
     @Slot(Engine)
     def _on_engine_change(self, engine: Engine) -> None:
