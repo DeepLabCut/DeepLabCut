@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
+from deeplabcut import Engine
 from deeplabcut.pose_estimation_tensorflow.training import return_train_network_path
 
 
@@ -342,7 +343,11 @@ def return_evaluate_network_data(
         cfg["project_path"],
         str(
             auxiliaryfunctions.get_evaluation_folder(
-                trainFraction, shuffle, cfg, modelprefix=modelprefix
+                trainFraction,
+                shuffle,
+                cfg,
+                modelprefix=modelprefix,
+                engine=Engine.TF,
             )
         ),
     )
@@ -374,7 +379,12 @@ def return_evaluate_network_data(
 
         # name for deeplabcut net (based on its parameters)
         DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
-            cfg, shuffle, trainFraction, trainingsiterations, modelprefix=modelprefix
+            cfg,
+            shuffle,
+            trainFraction,
+            trainingsiterations,
+            modelprefix=modelprefix,
+            engine=Engine.TF,
         )
         if not returnjustfns:
             print(
@@ -762,7 +772,11 @@ def evaluate_network(
                     cfg["project_path"],
                     str(
                         auxiliaryfunctions.get_evaluation_folder(
-                            trainFraction, shuffle, cfg, modelprefix=modelprefix
+                            trainFraction,
+                            shuffle,
+                            cfg,
+                            modelprefix=modelprefix,
+                            engine=Engine.TF,
                         )
                     ),
                 )
@@ -820,6 +834,7 @@ def evaluate_network(
                         trainFraction,
                         trainingsiterations=training_iterations,
                         modelprefix=modelprefix,
+                        engine=Engine.TF,
                     )
                     print(
                         "Running ",
