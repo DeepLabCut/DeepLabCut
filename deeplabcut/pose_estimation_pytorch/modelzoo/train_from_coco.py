@@ -57,13 +57,15 @@ def adaptation_train(
         "train_settings.epochs": epochs or 4,
     }
     if not skip_detector:
-        updates.update({
-            "detector.model.freeze_bn_stats": True,
-            "detector.runner.snapshots.max_snapshots": 5,
-            "detector.runner.snapshots.save_epochs": detector_save_epochs or 1,
-            "detector.train_settings.batch_size": detector_batch_size,
-            "detector.train_settings.epochs": detector_epochs or 4,
-        })
+        updates.update(
+            {
+                "detector.model.freeze_bn_stats": True,
+                "detector.runner.snapshots.max_snapshots": 5,
+                "detector.runner.snapshots.save_epochs": detector_save_epochs or 1,
+                "detector.train_settings.batch_size": detector_batch_size,
+                "detector.train_settings.epochs": detector_epochs or 4,
+            }
+        )
 
     if eval_interval is not None:
         updates["runner.eval_interval"] = eval_interval
