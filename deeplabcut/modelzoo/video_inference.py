@@ -553,6 +553,9 @@ def video_inference_superanimal(
                     )
                     return
 
+                if superanimal_name == "superanimal_humanbody":
+                    print("Warning, with the superanimal_humanbody type, only the pose model is adapted")
+
                 adaptation_train(
                     project_root=pseudo_dataset_folder,
                     model_folder=model_folder,
