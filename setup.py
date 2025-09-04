@@ -89,7 +89,7 @@ setuptools.setup(
         "docs": ["numpydoc"],
         "tf": [
             "tensorflow>=2.0,<=2.10;platform_system=='Windows'",
-            "tensorflow>=2.0,<=2.12;platform_system!='Windows'",
+            "tensorflow>=2.0;platform_system!='Windows'",
             "tensorpack>=0.11",
             "tf_slim>=1.1.0",
         ],  # Last supported TF version on Windows Native is 2.10
