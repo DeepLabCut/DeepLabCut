@@ -31,12 +31,12 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
-def make_super_animal_finetune_config(
+def make_super_animal_finetune_config( # todo this creates the pytorch_config with the detector
     weight_init: WeightInitialization,
     project_config: dict,
     pose_config_path: str | Path,
     model_name: str,
-    detector_name: str | None,
+    detector_name: str | None, # here
     save: bool = False,
 ) -> dict:
     """

@@ -57,7 +57,7 @@ def get_available_aug_methods(engine: Engine) -> tuple[str, ...]:
 
     raise RuntimeError(f"Unknown augmentation for engine: {engine}")
 
-
+# todo what happens here when the user passes epochs higher than 0 in the superanimal_humanbody case?
 def train_network(
     config: str | Path,
     shuffle: int = 1,

@@ -1624,7 +1624,7 @@ def create_training_model_comparison(
 
     return shuffle_list
 
-
+# todo try with detector_name = 'fasterrcnn_resnet50_fpn' , how should this case be handeled?
 def create_training_dataset_from_existing_split(
     config: str,
     from_shuffle: int,

@@ -24,7 +24,7 @@ def build_weight_init(
     super_animal: str,
     model_name: str,
     detector_name: str | None,
-    with_decoder: bool = False,
+    with_decoder: bool = False,# TODO Also try with_decoder=True
     memory_replay: bool = False,
     customized_pose_checkpoint: str | Path | None = None,
     customized_detector_checkpoint: str | Path | None = None,
@@ -90,7 +90,7 @@ def build_weight_init(
         )
 
     detector_snapshot_path = customized_detector_checkpoint
-    if detector_snapshot_path is None and detector_name is not None:
+    if detector_snapshot_path is None and detector_name is not None and super_animal != "superanimal_humanbody":
         detector_snapshot_path = get_super_animal_snapshot_path(
             dataset=super_animal,
             model_name=detector_name,

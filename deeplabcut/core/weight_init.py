@@ -136,7 +136,7 @@ class WeightInitialization:
                 dataset=data["dataset"],
                 model_name="hrnet_w32",
             ),
-            detector_snapshot_path=utils.get_super_animal_snapshot_path(
+            detector_snapshot_path=utils.get_super_animal_snapshot_path( # what about here?
                 dataset=data["dataset"],
                 model_name="fasterrcnn_resnet50_fpn_v2",
             ),

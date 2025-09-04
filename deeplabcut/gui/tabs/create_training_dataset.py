@@ -707,7 +707,7 @@ class WeightInitializationSelector(QtWidgets.QWidget):
         if net_type.startswith("top_down_"):
             net_type = net_type[len("top_down_") :]
         try:
-            weight_init = build_weight_init(
+            weight_init = build_weight_init( # todo check here!
                 self.root.cfg,
                 super_animal=super_animal,
                 model_name=net_type,

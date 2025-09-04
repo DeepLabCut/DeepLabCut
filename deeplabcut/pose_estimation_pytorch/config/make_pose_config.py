@@ -27,12 +27,12 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 
-def make_pytorch_pose_config(
+def make_pytorch_pose_config( # todo this creates the pytorch_config with the detector
     project_config: dict,
     pose_config_path: str | Path,
     net_type: str | None = None,
     top_down: bool = False,
-    detector_type: str | None = None,
+    detector_type: str | None = None, # here
     weight_init: WeightInitialization | None = None,
     save: bool = False,
     ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
