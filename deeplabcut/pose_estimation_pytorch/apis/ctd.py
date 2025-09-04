@@ -79,7 +79,7 @@ def get_conditions_provider_for_video(
     video = Path(video)
 
     # Load pickle for multi-animal projects
-    cond_file = video.parent / f"{video.stem}{cond_provider.scorer}_full.pickle"
+    cond_file = video.parent / f"{video.stem}{cond_provider.scorer}_assemblies.pickle"
     if not cond_file.exists():
 
         # Load h5 for single-animal projects

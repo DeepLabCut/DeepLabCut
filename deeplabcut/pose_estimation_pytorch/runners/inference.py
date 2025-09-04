@@ -581,6 +581,12 @@ class CTDInferenceRunner(PoseInferenceRunner):
                 }
             ]
         """
+        cond_kpts = kwargs.get("cond_kpts", None)
+        if cond_kpts is not None and cond_kpts.shape[0] == 0:
+            # No conditions, so just return an empty prediction list
+            return []
+
+        # Normal prediction path
         if self.device and "cuda" in str(self.device):
             with torch.autocast(device_type=str(self.device)):
                 outputs = self.model(inputs.to(self.device), **kwargs)
