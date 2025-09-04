@@ -46,11 +46,6 @@ jobs:
         run: |
           pip install tensorflow-macos tensorpack==0.11 tf_slim==1.1.0
 
-      - name: Install PyTables through Conda
-        shell: bash -el {0}  # Important: activates the conda environment
-        run: |
-          conda install pytables "numpy<2"
-
       - name: Install dependencies
         shell: bash -el {0}  # Important: activates the conda environment
         run: |
