@@ -15,7 +15,7 @@ import deeplabcut.modelzoo.utils as utils
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
-    get_super_animal_snapshot_path
+    get_super_animal_snapshot_path,
 )
 
 
@@ -71,6 +71,11 @@ def build_weight_init(
     Returns:
         The built WeightInitialization.
     """
+    if super_animal == "superanimal_humanbody":
+        raise NotImplementedError(
+            "Weight Initialization, Transfer-Learning and Finetuning is currently not supported for superanimal_humanbody"
+        )
+
     if isinstance(cfg, (str, Path)):
         cfg = read_config_as_dict(cfg)
 

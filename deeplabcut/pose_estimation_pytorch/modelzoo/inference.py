@@ -64,6 +64,7 @@ def _video_inference_superanimal(
     output_suffix: str = "",
     plot_bboxes: bool = True,
     bboxes_pcutoff: float = 0.9,
+    create_labeled_video: bool = True,
     torchvision_detector_name: str | None = None,
 ) -> dict:
     """
@@ -96,6 +97,8 @@ def _video_inference_superanimal(
         output_suffix: The suffix to add to output file names (e.g. _before_adapt)
         plot_bboxes: Whether to plot bounding boxes in the output video
         bboxes_pcutoff: Confidence threshold for bounding box plotting
+        create_labeled_video (bool):
+            Specifies if a labeled video needs to be created, True by default.
         torchvision_detector_name: If using a filtered torchvision detector, the torchvision model name
 
     Returns:
@@ -107,7 +110,7 @@ def _video_inference_superanimal(
     raise_warning_if_called_directly()
 
     if superanimal_name == "superanimal_humanbody":
-        if torchvision_detector_name is None:
+        if not torchvision_detector_name:
             torchvision_detector_name = "fasterrcnn_mobilenet_v3_large_fpn"
         COCO_PERSON = 1  # COCO class ID for person
         detector_runner = get_filtered_coco_detector_inference_runner(
@@ -203,18 +206,19 @@ def _video_inference_superanimal(
         superanimal_colormaps = get_superanimal_colormaps()
         colormap = superanimal_colormaps[superanimal_name]
 
-        create_video(
-            video_path,
-            output_h5,
-            pcutoff=pcutoff,
-            fps=video.fps,
-            bbox=bbox,
-            cmap=colormap,
-            output_path=str(output_video),
-            plot_bboxes=plot_bboxes,
-            bboxes_list=bboxes_list,
-            bboxes_pcutoff=bboxes_pcutoff,
-        )
-        print(f"Video with predictions was saved as {output_path}")
+        if create_labeled_video:
+            create_video(
+                video_path,
+                output_h5,
+                pcutoff=pcutoff,
+                fps=video.fps,
+                bbox=bbox,
+                cmap=colormap,
+                output_path=str(output_video),
+                plot_bboxes=plot_bboxes,
+                bboxes_list=bboxes_list,
+                bboxes_pcutoff=bboxes_pcutoff,
+            )
+            print(f"Video with predictions was saved as {output_path}")
 
     return results
