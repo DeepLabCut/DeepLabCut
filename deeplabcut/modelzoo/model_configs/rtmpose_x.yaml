@@ -102,6 +102,10 @@ model:
       predictor:
         type: SimCCPredictor
         simcc_split_ratio: 2.0
+        sigma:
+          - 6.0
+          - 6.93
+        decode_beta: 150.0
       input_size:
       - 288
       - 384
