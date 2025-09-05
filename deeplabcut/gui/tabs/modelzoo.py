@@ -486,6 +486,7 @@ class ModelZoo(DefaultTab):
                     **kwargs,
                 )
                 self.signal_analysis_complete()
+
         except Exception as e:
             print(f"[Error] {e}")
             self.run_button.setEnabled(True)

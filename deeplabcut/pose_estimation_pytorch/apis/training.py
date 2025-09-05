@@ -102,7 +102,9 @@ def train(
 
     logger = None
     if logger_config is not None:
-        logger = LOGGER.build(dict(**logger_config, model=model))
+        logger = LOGGER.build(
+            {**logger_config, "model": model, "train_folder": loader.model_folder}
+        )
         logger.log_config(run_config)
 
     if device is None:
@@ -303,28 +305,36 @@ def train_network(
                 train_json_filename="memory_replay_train.json",
             )
 
+    cfg_updates = {}
+
+    # Pose model training settings
     if batch_size is not None:
-        loader.model_cfg["train_settings"]["batch_size"] = batch_size
+        cfg_updates["train_settings.batch_size"] = batch_size
     if epochs is not None:
-        loader.model_cfg["train_settings"]["epochs"] = epochs
+        cfg_updates["train_settings.epochs"] = epochs
     if save_epochs is not None:
-        loader.model_cfg["runner"]["snapshots"]["save_epochs"] = save_epochs
+        cfg_updates["runner.snapshots.save_epochs"] = save_epochs
     if display_iters is not None:
-        loader.model_cfg["train_settings"]["display_iters"] = display_iters
+        cfg_updates["train_settings.display_iters"] = display_iters
 
-    detector_cfg = loader.model_cfg.get("detector")
-    if detector_cfg is not None:
+    # Detector config settings (if exists)
+    if loader.model_cfg.get("detector") is not None:
         if detector_batch_size is not None:
-            detector_cfg["train_settings"]["batch_size"] = detector_batch_size
+            cfg_updates["detector.train_settings.batch_size"] = detector_batch_size
         if detector_epochs is not None:
-            detector_cfg["train_settings"]["epochs"] = detector_epochs
+            cfg_updates["detector.train_settings.epochs"] = detector_epochs
         if detector_save_epochs is not None:
-            detector_cfg["runner"]["snapshots"]["save_epochs"] = detector_save_epochs
+            cfg_updates["detector.runner.snapshots.save_epochs"] = detector_save_epochs
         if display_iters is not None:
-            detector_cfg["train_settings"]["display_iters"] = display_iters
+            cfg_updates["detector.train_settings.display_iters"] = display_iters
 
+    # Optional generic overrides
     if pytorch_cfg_updates is not None:
-        loader.update_model_cfg(pytorch_cfg_updates)
+        cfg_updates.update(pytorch_cfg_updates)
+
+    # Only call update if anything changed
+    if cfg_updates:
+        loader.update_model_cfg(cfg_updates)
 
     setup_file_logging(loader.model_folder / "train.txt")
 
