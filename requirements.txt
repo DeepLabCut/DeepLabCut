@@ -24,6 +24,7 @@ scikit-image>=0.17
 scikit-learn>=1.0
 scipy>=1.9
 statsmodels>=0.11
+tables
 torch==2.7.1
 torchvision
 tqdm
