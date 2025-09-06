@@ -81,7 +81,7 @@ setuptools.setup(
     ],
     extras_require={
         "gui": [
-            "pyside6==6.4.2",
+            "pyside6",
             "qdarkstyle==3.1",
             "napari-deeplabcut>=0.2.1.6",
         ],
@@ -89,7 +89,8 @@ setuptools.setup(
         "docs": ["numpydoc"],
         "tf": [
             "tensorflow>=2.0,<=2.10;platform_system=='Windows'",
-            "tensorflow>=2.0,<=2.12;platform_system!='Windows'",
+            "tensorflow>=2.0;platform_system!='Windows'",
+            "tf-keras;platform_system!='Windows'",
             "tensorpack>=0.11",
             "tf_slim>=1.1.0",
         ],  # Last supported TF version on Windows Native is 2.10

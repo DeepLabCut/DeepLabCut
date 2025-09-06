@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-14, windows-latest]
-        python-version: ["3.10"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
         include:
           - os: ubuntu-latest
             path: ~/.cache/pip
@@ -38,18 +38,14 @@ jobs:
         shell: bash -el {0}  # Important: activates the conda environment
         if: runner.os != 'macOS'
         run: |
-          pip install tensorflow==2.12.0 tensorpack==0.11 tf_slim==1.1.0
+          pip install tensorflow tensorpack==0.11 tf_slim==1.1.0 tf-keras
+          echo "TF_USE_LEGACY_KERAS=1" >> $GITHUB_ENV
 
       - name: Install TensorFlow on macOS
         shell: bash -el {0}  # Important: activates the conda environment
         if: runner.os == 'macOS'
         run: |
-          pip install tensorflow-macos==2.12.0 tensorpack==0.11 tf_slim==1.1.0
-
-      - name: Install PyTables through Conda
-        shell: bash -el {0}  # Important: activates the conda environment
-        run: |
-          conda install pytables==3.8.0 "numpy<2"
+          pip install tensorflow-macos tensorpack==0.11 tf_slim==1.1.0
 
       - name: Install dependencies
         shell: bash -el {0}  # Important: activates the conda environment
