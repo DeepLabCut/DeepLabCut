@@ -39,6 +39,7 @@ jobs:
         if: runner.os != 'macOS'
         run: |
           pip install tensorflow tensorpack==0.11 tf_slim==1.1.0 tf-keras
+          echo "TF_USE_LEGACY_KERAS=1" >> $GITHUB_ENV
 
       - name: Install TensorFlow on macOS
         shell: bash -el {0}  # Important: activates the conda environment
