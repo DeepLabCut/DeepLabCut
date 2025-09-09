@@ -16,7 +16,7 @@ scikit-learn>=1.0
 scipy>=1.9
 statsmodels>=0.11
 tensorflow>=2.0,<2.13.0
-tables==3.8.0
+tables
 tensorpack==0.11
 tf_slim==1.1.0
 torch==1.12
