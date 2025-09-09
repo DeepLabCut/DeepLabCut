@@ -78,6 +78,7 @@ setuptools.setup(
         "pycocotools",
         "pyyaml",
         "Pillow>=7.1",
+        "tables",
     ],
     extras_require={
         "gui": [
