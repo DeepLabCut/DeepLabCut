@@ -3,9 +3,9 @@ name: Codespell
 
 on:
   push:
-    branches: [main]
+    branches: [LTS-DLC-2]
   pull_request:
-    branches: [main]
+    branches: [LTS-DLC-2]
 
 jobs:
   codespell:
