@@ -12,10 +12,6 @@
 
 import os
 
-# Suppress tensorflow warning messages
-import tensorflow as tf
-
-tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 DEBUG = True and "DEBUG" in os.environ and os.environ["DEBUG"]
 from deeplabcut.version import __version__, VERSION
 
