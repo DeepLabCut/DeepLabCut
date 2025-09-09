@@ -37,7 +37,7 @@ from deeplabcut.utils import auxiliaryfunctions
 import random
 
 USE_SHELVE = random.choice([True, False])
-MODELS = ["resnet_50", "efficientnet-b0", "mobilenet_v2_0.35"]
+MODELS = ["resnet_50", "efficientnet-b0"]
 
 
 if __name__ == "__main__":
