@@ -147,7 +147,7 @@ def prune_paf_graph(list_of_edges, desired_n_edges=None, average_degree=None):
         )
 
     while True:
-        g = nx.Graph(random.sample(G.edges, desired_n_edges))
+        g = nx.Graph(random.sample(list(G.edges), desired_n_edges))
         if len(g.nodes) == n_nodes and nx.is_connected(g):
             print("Valid subgraph found...")
             break
