@@ -25,9 +25,11 @@ import deeplabcut.utils.auxfun_multianimal as auxfun_multianimal
 from deeplabcut.core import trackingutils
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.inferenceutils import Assembly
+from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_scorer_name,
     list_videos_in_folder,
+    parse_snapshot_index_for_analysis
 )
 
 
@@ -47,6 +49,8 @@ def convert_detections2tracklets(
     window_size: int = 0,  # TODO(niels): implement window size selection for assembly during video analysis
     identity_only=False,
     track_method="",
+    snapshot_index: int | str | None = None,
+    detector_snapshot_index: int | str | None = None,
 ):
     """TODO: Documentation, clean & remove code duplication (with analyze video)"""
     cfg = auxiliaryfunctions.read_config(config)
@@ -102,12 +106,24 @@ def convert_detections2tracklets(
         # between trackers cannot be evaluated, resulting in empty tracklets.
         inference_cfg["boundingboxslack"] = max(inference_cfg["boundingboxslack"], 40)
 
+    loader = DLCLoader(
+        config,
+        trainset_index=trainingsetindex,
+        shuffle=shuffle,
+        modelprefix=modelprefix,
+    )
+    snapshot_index, detector_snapshot_index = parse_snapshot_index_for_analysis(
+        loader.project_cfg,
+        loader.model_cfg,
+        snapshot_index,
+        detector_snapshot_index,
+    )
     dlc_scorer = get_scorer_name(
         cfg,
         shuffle,
         train_fraction,
-        snapshot_index=None,
-        detector_index=None,
+        snapshot_index=snapshot_index,
+        detector_index=detector_snapshot_index,
         modelprefix=modelprefix,
     )
 

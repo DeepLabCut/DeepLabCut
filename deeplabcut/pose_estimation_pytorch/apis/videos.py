@@ -794,6 +794,8 @@ def analyze_videos(
                         overwrite=False,
                         identity_only=identity_only,
                         destfolder=str(output_path),
+                        snapshot_index=snapshot_index,
+                        detector_snapshot_index=detector_snapshot_index,
                     )
                     stitch_tracklets(
                         config,
