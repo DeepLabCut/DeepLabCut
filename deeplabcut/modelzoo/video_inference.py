@@ -402,12 +402,6 @@ def video_inference_superanimal(
 
         output_suffix = "_before_adapt"
 
-        if superanimal_name == "superanimal_humanbody" and video_adapt:
-            print(
-                f"Video adaptation currently not supported for {superanimal_name}. Setting it to false."
-            )
-            video_adapt = False
-
         if video_adapt:
             # the users can pass in many videos. For now, we only use one video for
             # video adaptation. As reported in Ye et al. 2024, one video should be
@@ -485,10 +479,13 @@ def video_inference_superanimal(
                 )
 
             model_snapshot_prefix = f"snapshot-{model_name}"
-            detector_snapshot_prefix = f"snapshot-{detector_name}"
-
             config["runner"]["snapshot_prefix"] = model_snapshot_prefix
-            config["detector"]["runner"]["snapshot_prefix"] = detector_snapshot_prefix
+
+            if superanimal_name != "superanimal_humanbody":
+                detector_snapshot_prefix = f"snapshot-{detector_name}"
+                config["detector"]["runner"][
+                    "snapshot_prefix"
+                ] = detector_snapshot_prefix
 
             # the model config's parameters need to be updated for adaptation training
             model_config_path = model_folder / "pytorch_config.yaml"
@@ -496,49 +493,58 @@ def video_inference_superanimal(
                 yaml = YAML()
                 yaml.dump(config, f)
 
-            # get the current epoch of the detector and pose model
+            # get the current epoch of the pose model
             current_pose_epoch = get_checkpoint_epoch(pose_model_path)
-            current_detector_epoch = get_checkpoint_epoch(detector_path)
             # update the checkpoint path with the current epoch, if the checkpoint does not exist, use the best checkpoint
-            adapted_detector_checkpoint = (
-                model_folder
-                / f"{detector_snapshot_prefix}-{current_detector_epoch + detector_epochs:03}.pt"
-            )
             adapted_pose_checkpoint = (
                 model_folder
                 / f"{model_snapshot_prefix}-{current_pose_epoch + pose_epochs:03}.pt"
             )
-            if not Path(adapted_detector_checkpoint).exists():
-                adapted_detector_checkpoint = (
-                    model_folder
-                    / f"{detector_snapshot_prefix}-best-{current_detector_epoch + detector_epochs:03}.pt"
-                )
             if not Path(adapted_pose_checkpoint).exists():
                 adapted_pose_checkpoint = (
                     model_folder
                     / f"{model_snapshot_prefix}-best-{current_pose_epoch + pose_epochs:03}.pt"
                 )
 
+            if superanimal_name != "superanimal_humanbody":
+                current_detector_epoch = get_checkpoint_epoch(detector_path)
+                adapted_detector_checkpoint = (
+                    model_folder
+                    / f"{detector_snapshot_prefix}-{current_detector_epoch + detector_epochs:03}.pt"
+                )
+                if not Path(adapted_detector_checkpoint).exists():
+                    adapted_detector_checkpoint = (
+                        model_folder
+                        / f"{detector_snapshot_prefix}-best-{current_detector_epoch + detector_epochs:03}.pt"
+                    )
+
             if (
-                adapted_detector_checkpoint.exists()
-                and adapted_pose_checkpoint.exists()
-            ):
+                superanimal_name == "superanimal_humanbody"
+                or adapted_detector_checkpoint.exists()
+            ) and adapted_pose_checkpoint.exists():
+                snapshots_msg = f"pose ({adapted_pose_checkpoint})"
+                if superanimal_name != "superanimal_humanbody":
+                    snapshots_msg += f" and detector ({adapted_detector_checkpoint})"
                 print(
-                    f"Video adaptation already ran; pose ({adapted_pose_checkpoint}) "
-                    f"and detector ({adapted_detector_checkpoint}) already exist. To "
-                    "rerun video adaptation training, delete the checkpoints or select"
-                    "a different number of adaptation epochs. Continuing with the"
-                    "existing checkpoints."
+                    f"Video adaptation already ran; {snapshots_msg} already exist. "
+                    "To rerun video adaptation training, delete the checkpoints or select a different "
+                    "number of adaptation epochs. Continuing with the existing checkpoints."
                 )
             else:
-                print(
-                    "Running video adaptation with following parameters:\n"
+                params_msg = (
+                    f"  video adaptation batch size: {video_adapt_batch_size}\n"
                     f"  (pose training) pose_epochs: {pose_epochs}\n"
                     "  (pose) save_epochs: 1\n"
-                    f"  detector_epochs: {detector_epochs}\n"
-                    "  detector_save_epochs: 1\n"
-                    f"  video adaptation batch size: {video_adapt_batch_size}\n"
                 )
+                if superanimal_name != "superanimal_humanbody":
+                    params_msg += (
+                        f"  detector_epochs: {detector_epochs}\n"
+                        "  detector_save_epochs: 1\n"
+                    )
+                print(
+                    "Running video adaptation with following parameters:\n" + params_msg
+                )
+
                 train_file = pseudo_dataset_folder / "annotations" / "train.json"
                 with open(train_file, "r") as f:
                     temp_obj = json.load(f)
@@ -550,6 +556,11 @@ def video_inference_superanimal(
                         "quality of the video"
                     )
                     return
+
+                if superanimal_name == "superanimal_humanbody":
+                    print(
+                        "Warning, with the superanimal_humanbody type, only the pose model is adapted"
+                    )
 
                 adaptation_train(
                     project_root=pseudo_dataset_folder,
@@ -566,32 +577,35 @@ def video_inference_superanimal(
                     detector_path=detector_path,
                     batch_size=video_adapt_batch_size,
                     detector_batch_size=video_adapt_batch_size,
+                    skip_detector=(superanimal_name == "superanimal_humanbody"),
                 )
 
             # after video adaptation, re-update the adapted checkpoint path, if the checkpoint does not exist, use the best checkpoint
-            adapted_detector_checkpoint = (
-                model_folder
-                / f"{detector_snapshot_prefix}-{current_detector_epoch + detector_epochs:03}.pt"
-            )
             adapted_pose_checkpoint = (
                 model_folder
                 / f"{model_snapshot_prefix}-{current_pose_epoch + pose_epochs:03}.pt"
             )
-            if not Path(adapted_detector_checkpoint).exists():
-                adapted_detector_checkpoint = (
-                    model_folder
-                    / f"{detector_snapshot_prefix}-best-{current_detector_epoch + detector_epochs:03}.pt"
-                )
             if not Path(adapted_pose_checkpoint).exists():
                 adapted_pose_checkpoint = (
                     model_folder
                     / f"{model_snapshot_prefix}-best-{current_pose_epoch + pose_epochs:03}.pt"
                 )
+            pose_model_path = adapted_pose_checkpoint
+
+            if superanimal_name != "superanimal_humanbody":
+                adapted_detector_checkpoint = (
+                    model_folder
+                    / f"{detector_snapshot_prefix}-{current_detector_epoch + detector_epochs:03}.pt"
+                )
+                if not Path(adapted_detector_checkpoint).exists():
+                    adapted_detector_checkpoint = (
+                        model_folder
+                        / f"{detector_snapshot_prefix}-best-{current_detector_epoch + detector_epochs:03}.pt"
+                    )
+                detector_path = adapted_detector_checkpoint
 
             # Set the customized checkpoint paths and
             output_suffix = "_after_adapt"
-            detector_path = adapted_detector_checkpoint
-            pose_model_path = adapted_pose_checkpoint
 
         return _video_inference_superanimal(
             videos,
