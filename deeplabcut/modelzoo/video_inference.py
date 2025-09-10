@@ -79,6 +79,7 @@ def video_inference_superanimal(
     customized_detector_checkpoint: Optional[str] = None,
     customized_model_config: Optional[str] = None,
     plot_bboxes: bool = True,
+    create_labeled_video: bool = True,
 ):
     """
     This function performs inference on videos using a pretrained SuperAnimal model.
@@ -172,6 +173,9 @@ def video_inference_superanimal(
 
     plot_bboxes (bool):
         If using Top-Down approach, whether to plot the detector's bounding boxes. The default is True.
+
+    create_labeled_video (bool):
+        Specifies if a labeled video needs to be created, True by default.
 
     Raises:
         NotImplementedError:
@@ -345,6 +349,7 @@ def video_inference_superanimal(
             pcutoff,
             adapt_iterations,
             pseudo_threshold,
+            create_labeled_video=create_labeled_video,
         )
     elif framework == "pytorch":
         torchvision_detector_name = None
@@ -353,7 +358,7 @@ def video_inference_superanimal(
                 "You have to specify a detector_name when using the Pytorch framework."
             )
         elif superanimal_name == "superanimal_humanbody":
-            if detector_name is not None:
+            if detector_name:
                 torchvision_detector_name = detector_name
             else:
                 torchvision_detector_name = "fasterrcnn_mobilenet_v3_large_fpn"
@@ -426,6 +431,7 @@ def video_inference_superanimal(
                 output_suffix=output_suffix,
                 plot_bboxes=plot_bboxes,
                 bboxes_pcutoff=bbox_threshold,
+                create_labeled_video=create_labeled_video,
                 torchvision_detector_name=torchvision_detector_name,
             )
 
@@ -602,5 +608,6 @@ def video_inference_superanimal(
             output_suffix=output_suffix,
             plot_bboxes=plot_bboxes,
             bboxes_pcutoff=bbox_threshold,
+            create_labeled_video=create_labeled_video,
             torchvision_detector_name=torchvision_detector_name,
         )
