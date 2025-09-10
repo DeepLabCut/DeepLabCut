@@ -452,6 +452,7 @@ def _video_inference_superanimal(
     pcutoff=0.1,
     adapt_iterations=1000,
     pseudo_threshold=0.1,
+    create_labeled_video: bool = True,
 ):
     """
     WARNING: This function is an internal utility function and should not be
@@ -493,6 +494,9 @@ def _video_inference_superanimal(
     pseudo_threshold: float, default 0.1
         Video adaptation only uses predictions that are above pseudo_threshold
 
+    create_labeled_video (bool):
+        Specifies if a labeled video needs to be created, True by default.
+
     Given a list of scales for spatial pyramid, i.e. [600, 700]
 
     scale_list = range(600,800,100)
@@ -526,10 +530,10 @@ def _video_inference_superanimal(
         )
         if not video_adapt:
             adapter.before_adapt_inference(
-                make_video=True, pcutoff=pcutoff, plot_trajectories=plot_trajectories
+                make_video=create_labeled_video, pcutoff=pcutoff, plot_trajectories=plot_trajectories
             )
         else:
-            adapter.before_adapt_inference(make_video=False)
+            adapter.before_adapt_inference(make_video=create_labeled_video)
             adapter.adaptation_training(
                 adapt_iterations=adapt_iterations,
                 pseudo_threshold=pseudo_threshold,
@@ -537,4 +541,5 @@ def _video_inference_superanimal(
             adapter.after_adapt_inference(
                 pcutoff=pcutoff,
                 plot_trajectories=plot_trajectories,
+                create_labeled_video=create_labeled_video,
             )
