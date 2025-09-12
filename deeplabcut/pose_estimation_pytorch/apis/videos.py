@@ -216,9 +216,7 @@ def video_inference(
     if shelf_writer is not None:
         shelf_writer.open()
 
-    predictions = pose_runner.inference(
-        images=GpuTqdm(video), shelf_writer=shelf_writer
-    )
+    predictions = pose_runner.inference(images=GpuTqdm(video), shelf_writer=shelf_writer)
     if shelf_writer is not None:
         shelf_writer.close()
 

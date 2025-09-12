@@ -370,7 +370,7 @@ class FilterLowConfidencePoses(Preprocessor):
     def __init__(
         self,
         confidence_threshold: float = 0.05,
-        aggregate_func: Callable[[np.ndarray], float] = lambda arr: np.max(arr, axis=1),
+        aggregate_func: Callable[[np.ndarray], float] = lambda arr: np.nanmax(arr, axis=1),
     ) -> None:
         self.confidence_threshold = confidence_threshold
         self.aggregate_func = aggregate_func
@@ -382,7 +382,14 @@ class FilterLowConfidencePoses(Preprocessor):
             raise ValueError(f"Must include cond_kpts, found {context}")
 
         keypoints = context["cond_kpts"]
-        mask = self.aggregate_func(keypoints[:, :, 2]) >= self.confidence_threshold
+
+        if 0 in keypoints.shape:
+            # No poses to filter; return early
+            return image, context
+
+        confidences = keypoints[:, :, 2]
+        aggregated_confidence = self.aggregate_func(confidences)
+        mask = aggregated_confidence >= self.confidence_threshold
         context["cond_kpts"] = keypoints[mask]
 
         return image, context
@@ -462,7 +469,9 @@ class TopDownCrop(Preprocessor):
 
         # can have no bounding boxes if detector made no detections
         if len(images) == 0:
-            images = np.zeros((0, *image.shape))
+            h, w = self.output_size[1], self.output_size[0]  # output_size = (w, h)
+            c = image.shape[2] if image.ndim == 3 else 1
+            images = np.zeros((0, h, w, c), dtype=image.dtype)
         else:
             images = np.stack(images, axis=0)
 
@@ -508,12 +517,11 @@ class ConditionalKeypointsToModelInputs(Preprocessor):
         self, image: np.ndarray, context: Context
     ) -> tuple[np.ndarray, Context]:
         cond_keypoints = context[self.cond_kpt_key]
-        if len(cond_keypoints) == 0:
-            return image, context
 
         rescaled = cond_keypoints.copy()
-        rescaled[..., :2] = (
-            rescaled[..., :2] - np.array(context["offsets"])[:, None]
-        ) / np.array(context["scales"])[:, None]
+        if rescaled.size > 0:  # only rescale if non-empty
+            rescaled[..., :2] = (
+                rescaled[..., :2] - np.array(context["offsets"])[:, None]
+            ) / np.array(context["scales"])[:, None]
         context["model_kwargs"] = {"cond_kpts": np.expand_dims(rescaled, axis=1)}
         return image, context
