@@ -29,7 +29,7 @@ from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_scorer_name,
     list_videos_in_folder,
-    parse_snapshot_index_for_analysis
+    parse_snapshot_index_for_analysis,
 )
 
 
@@ -180,7 +180,7 @@ def convert_detections2tracklets(
                 num_frames=data["metadata"]["nframes"],
                 ignore_bodyparts=ignore_bodyparts,
                 unique_bodyparts=cfg["uniquebodyparts"],
-                identity_only=identity_only
+                identity_only=identity_only,
             )
 
             with open(track_filename, "wb") as f:
@@ -201,10 +201,10 @@ def build_tracklets(
     joints: list[str],
     scorer: str,
     num_frames: int,
-    ignore_bodyparts: list[str]|None = None,
-    unique_bodyparts: list|None = None,
-    identity_only: bool = False
-) -> dict :
+    ignore_bodyparts: list[str] | None = None,
+    unique_bodyparts: list | None = None,
+    identity_only: bool = False,
+) -> dict:
 
     if track_method == "box":
         mot_tracker = trackingutils.SORTBox(
@@ -274,16 +274,12 @@ def build_tracklets(
                 # Optimal identity assignment based on soft voting
                 mat = np.zeros((len(animals), inference_cfg["topktoretain"]))
                 for row, animal_pose in enumerate(animals):
-                    animal_pose = animal_pose[
-                        ~np.isnan(animal_pose).any(axis=1)
-                    ]
-                    unique_ids, idx = np.unique(
-                        animal_pose[:, 3], return_inverse=True
-                    )
+                    animal_pose = animal_pose[~np.isnan(animal_pose).any(axis=1)]
+                    unique_ids, idx = np.unique(animal_pose[:, 3], return_inverse=True)
                     total_scores = np.bincount(idx, weights=animal_pose[:, 2])
                     softmax_id_scores = softmax(total_scores)
                     for pred_id, softmax_score in zip(
-                            unique_ids.astype(int), softmax_id_scores
+                        unique_ids.astype(int), softmax_id_scores
                     ):
                         mat[row, pred_id] = softmax_score
 

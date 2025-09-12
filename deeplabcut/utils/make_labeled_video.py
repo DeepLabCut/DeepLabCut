@@ -706,7 +706,11 @@ def create_labeled_video(
 
     if init_weights == "":
         DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
-            cfg, shuffle, train_fraction, modelprefix=modelprefix, **kwargs,
+            cfg,
+            shuffle,
+            train_fraction,
+            modelprefix=modelprefix,
+            **kwargs,
         )  # automatically loads corresponding model (even training iteration based on snapshot index)
     else:
         DLCscorer = "DLC_" + Path(init_weights).stem
@@ -1262,7 +1266,11 @@ def create_video_with_all_detections(
     cfg = auxiliaryfunctions.read_config(config)
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     DLCscorername, _ = auxiliaryfunctions.get_scorer_name(
-        cfg, shuffle, trainFraction, modelprefix=modelprefix, **kwargs,
+        cfg,
+        shuffle,
+        trainFraction,
+        modelprefix=modelprefix,
+        **kwargs,
     )
 
     videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
