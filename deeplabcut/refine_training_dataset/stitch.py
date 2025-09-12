@@ -1048,6 +1048,7 @@ def stitch_tracklets(
     output_name="",
     transformer_checkpoint="",
     save_as_csv=False,
+    **kwargs,
 ):
     """
     Stitch sparse tracklets into full tracks via a graph-based,
@@ -1136,6 +1137,11 @@ def stitch_tracklets(
     save_as_csv: bool, optional
         Whether to write the tracks to a CSV file too (False by default).
 
+    kwargs: additional arguments.
+        For torch-based shuffles, can be used to specify:
+            - snapshot_index
+            - detector_snapshot_index
+
     Returns
     -------
     A TrackletStitcher object
@@ -1169,6 +1175,7 @@ def stitch_tracklets(
         shuffle,
         cfg["TrainingFraction"][trainingsetindex],
         modelprefix=modelprefix,
+        **kwargs,
     )
 
     if transformer_checkpoint:
