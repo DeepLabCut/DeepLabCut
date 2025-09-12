@@ -200,6 +200,7 @@ def extract_outlier_frames(
     destfolder=None,
     modelprefix="",
     track_method="",
+    **kwargs,
 ):
     """Extracts the outlier frames.
 
@@ -320,6 +321,11 @@ def extract_outlier_frames(
          For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
          be taken from the config.yaml file if none is given.
 
+    kwargs: additional arguments.
+        For torch-based shuffles, can be used to specify:
+            - snapshot_index
+            - detector_snapshot_index
+
     Returns
     -------
     None
@@ -373,6 +379,7 @@ def extract_outlier_frames(
         shuffle,
         trainFraction=cfg["TrainingFraction"][trainingsetindex],
         modelprefix=modelprefix,
+        **kwargs,
     )
 
     Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
