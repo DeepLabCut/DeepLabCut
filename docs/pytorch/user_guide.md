@@ -30,6 +30,14 @@ To see the DeepLabCut 3.0 installation guide, check the [installation docs](how-
 You can use the GUI to train DeepLabCut projects. You can switch between the PyTorch
 and TensorFlow engine through the drop-down menu in the top right corner.
 
+### Quick guide (standard API)
+
+The standard use of DLC does not change (via the high-level API), as you can see in the standard guide: for [single](https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide) and [multiple individuals](https://deeplabcut.github.io/DeepLabCut/docs/maDLC_UserGuide). 
+
+Also check out several COLAB notebooks on how you can use the code. 
+
+For the 
+
 ## Major changes
 
 ### From iterations to epochs
@@ -51,13 +59,15 @@ DeepLabCut 3.0 as you did for Tensorflow models (`deeplabcut.create_training_dat
 and `deeplabcut.create_training_model_comparison`).
 
 More information about the different PyTorch model architectures available in DeepLabCut
-is available [here](dlc3-pytorch-config). You can see a list of supported 
+is available [here](architectures). You can see a list of supported 
 architectures/variants by using:
 
 ```python
 from deeplabcut.pose_estimation_pytorch import available_models
 print(available_models())
 ```
+
+
 
 ### Development State and Road Map 🚧
 

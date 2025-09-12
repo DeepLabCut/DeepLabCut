@@ -37,6 +37,7 @@ def adaptation_train(
     batch_size: int = 8,
     detector_batch_size: int = 8,
     eval_interval: int | None = None,
+    skip_detector: bool = False,
 ):
     setup_file_logging(Path(model_folder) / "log.txt")
     loader = COCOLoader(
@@ -49,17 +50,22 @@ def adaptation_train(
     utils.fix_seeds(loader.model_cfg["train_settings"]["seed"])
 
     updates = {
-        "detector.model.freeze_bn_stats": True,
-        "detector.runner.snapshots.max_snapshots": 5,
-        "detector.runner.snapshots.save_epochs": detector_save_epochs or 1,
-        "detector.train_settings.batch_size": detector_batch_size,
-        "detector.train_settings.epochs": detector_epochs or 4,
         "model.backbone.freeze_bn_stats": True,
         "runner.snapshots.max_snapshots": 5,
         "runner.snapshots.save_epochs": save_epochs or 1,
         "train_settings.batch_size": batch_size,
         "train_settings.epochs": epochs or 4,
     }
+    if not skip_detector:
+        updates.update(
+            {
+                "detector.model.freeze_bn_stats": True,
+                "detector.runner.snapshots.max_snapshots": 5,
+                "detector.runner.snapshots.save_epochs": detector_save_epochs or 1,
+                "detector.train_settings.batch_size": detector_batch_size,
+                "detector.train_settings.epochs": detector_epochs or 4,
+            }
+        )
 
     if eval_interval is not None:
         updates["runner.eval_interval"] = eval_interval
@@ -67,7 +73,7 @@ def adaptation_train(
     loader.update_model_cfg(updates)
 
     pose_task = Task(loader.model_cfg["method"])
-    if pose_task == Task.TOP_DOWN:
+    if pose_task == Task.TOP_DOWN and not skip_detector:
         logger_config = None
         if loader.model_cfg.get("logger"):
             logger_config = copy.deepcopy(loader.model_cfg["logger"])

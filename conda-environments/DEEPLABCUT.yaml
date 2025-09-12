@@ -35,4 +35,4 @@ dependencies:
   - pip:
     - torch
     - torchvision
-    - deeplabcut[gui,modelzoo,wandb]==3.0.0rc8
+    - deeplabcut[gui,modelzoo,wandb]==3.0.0rc9

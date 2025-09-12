@@ -12,7 +12,7 @@ After training and evaluating your model, the next step is to apply it to your v
   - **Select Videos:** Click **`Select Videos`** to find and open your video file.
 3. **Start Analysis:** Click **`Analyze`**. The analysis time depends on video length and resolution. Track progress in the terminal or Anaconda prompt.
 
-### Reviewing Analysis Results
+## Reviewing Analysis Results
 
 - **Find Results in Your Project Folder:** After analysis, go to your project's video folder.
 - **Analysis Files:** Look also for a `.metapickle`, an `.h5`, and possibly a `.csv` file for detailed analysis data.
@@ -26,7 +26,7 @@ After training and evaluating your model, the next step is to apply it to your v
 2. If not already selected, choose your video.
 3. Click **`Create Videos`**.
 
-### Viewing the Labeled Video
+## Viewing the Labeled Video
 
 - Your labeled video will be in your video folder, named after the original video plus model details and 'labeled'.
 - Watch the video to assess the model's labeling accuracy.

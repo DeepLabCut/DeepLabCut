@@ -19,6 +19,15 @@ import albumentations as A
 import numpy as np
 import pandas as pd
 
+from torchvision.models import detection
+from torchvision.models.detection import (
+    fasterrcnn_resnet50_fpn,
+    fasterrcnn_mobilenet_v3_large_fpn,
+    FasterRCNN_ResNet50_FPN_Weights,
+    FasterRCNN_ResNet50_FPN_V2_Weights,
+    FasterRCNN_MobileNet_V3_Large_FPN_Weights,
+)
+
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
@@ -38,6 +47,9 @@ from deeplabcut.pose_estimation_pytorch.data.preprocessor import (
 )
 from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
+from deeplabcut.pose_estimation_pytorch.models.detectors.filtered_detector import (
+    FilteredDetector,
+)
 from deeplabcut.pose_estimation_pytorch.runners import (
     build_inference_runner,
     CTDTrackingConfig,
@@ -667,6 +679,121 @@ def get_detector_inference_runner(
         raise RuntimeError(f"Failed to build DetectorInferenceRunner: {model_config}")
 
     return runner
+
+
+TORCHVISION_DETECTORS = {
+    "fasterrcnn_resnet50_fpn": {
+        "fn": fasterrcnn_resnet50_fpn,
+        "weights": FasterRCNN_ResNet50_FPN_Weights.DEFAULT,
+    },
+    "fasterrcnn_resnet50_fpn_v2": {
+        "fn": detection.fasterrcnn_resnet50_fpn_v2,
+        "weights": FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT,
+    },
+    "fasterrcnn_mobilenet_v3_large_fpn": {
+        "fn": fasterrcnn_mobilenet_v3_large_fpn,
+        "weights": FasterRCNN_MobileNet_V3_Large_FPN_Weights.DEFAULT,
+    },
+}
+
+
+def get_filtered_coco_detector_inference_runner(
+    model_name: str,
+    category_id: int,
+    batch_size: int = 1,
+    device: str | None = None,
+    box_score_thresh: float = 0.6,
+    max_individuals: int | None = None,
+    color_mode: str | None = None,
+    model_config: dict | None = None,
+    transform: A.BaseCompose | None = None,
+) -> DetectorInferenceRunner:
+    """
+    Builds a detector inference runner using a pretrained COCO detector from torchvision.
+
+    This function loads a pretrained object detection model from `torchvision.models.detection`,
+    wraps it in a `FilteredDetector` that keeps only detections for a specified COCO category,
+    and packages it into a `DetectorInferenceRunner` ready for inference.
+
+    You can optionally provide a model configuration dictionary to resolve `device`, `max_individuals`,
+    and `color_mode`. If no `model_config` is given, these must be specified explicitly.
+
+    Args:
+        model_name (str): Name of the torchvision detection model to load.
+                          Supported values include:
+                          "fasterrcnn_resnet50_fpn",
+                          "fasterrcnn_resnet50_fpn_v2",
+                          "fasterrcnn_mobilenet_v3_large_fpn".
+        category_id (int): The COCO category ID to retain in the detections.
+        batch_size (int, optional): Batch size for inference. Defaults to 1.
+        device (str or None, optional): Device to run the model on (e.g., "cuda", "cpu", or "mps").
+                                        If None, resolved from model_config or defaults to CUDA.
+        box_score_thresh (float, optional): Confidence threshold for filtering bounding boxes.
+                                            Defaults to 0.6.
+        max_individuals (int or None, optional): Maximum number of individuals to retain per image.
+                                                 If None, resolved from model_config.
+        color_mode (str or None, optional): Color mode used for preprocessing (e.g., "RGB").
+                                            If None, resolved from model_config.
+        model_config (dict or None, optional): Optional configuration dictionary used to resolve
+                                               `device`, `max_individuals`, and `color_mode`.
+        transform (A.BaseCompose or None, optional): Optional preprocessing pipeline.
+                                                     If None, uses the model's default transform.
+
+    Returns:
+        DetectorInferenceRunner: A configured detector inference runner.
+
+    Raises:
+        ValueError: If `model_config` is not provided and required fields are missing.
+    """
+    if model_name not in TORCHVISION_DETECTORS:
+        raise ValueError(f"Unsupported model: {model_name}")
+
+    if model_config is not None:
+        if device is None:
+            device = resolve_device(model_config)
+        if max_individuals is None:
+            max_individuals = len(model_config["metadata"]["individuals"])
+        if color_mode is None:
+            color_mode = model_config["data"]["colormode"]
+    else:
+        missing = []
+        if device is None:
+            missing.append("device")
+        if max_individuals is None:
+            missing.append("max_individuals")
+        if color_mode is None:
+            missing.append("color_mode")
+        if missing:
+            raise ValueError(
+                f"If `model_config` is not provided, you must explicitly specify: {', '.join(missing)}."
+            )
+    if device == "mps":
+        device = "cpu"
+
+    if transform is None:
+        transform = build_transforms({"scale_to_unit_range": True})
+
+    entry = TORCHVISION_DETECTORS[model_name]
+    weights = entry["weights"]
+    detector = entry["fn"](weights=weights, box_score_thresh=box_score_thresh)
+
+    detector.eval().to(device)
+    filtered_detector = FilteredDetector(detector, class_id=category_id).to(device)
+    detector_runner = build_inference_runner(
+        task=Task.DETECT,
+        model=filtered_detector,
+        device=device,
+        snapshot_path=None,
+        batch_size=batch_size,
+        preprocessor=build_bottom_up_preprocessor(
+            color_mode=color_mode,
+            transform=transform,
+        ),
+        postprocessor=build_detector_postprocessor(
+            max_individuals=max_individuals,
+        ),
+    )
+    return detector_runner
 
 
 def get_pose_inference_runner(

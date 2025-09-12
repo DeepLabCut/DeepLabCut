@@ -1,7 +1,7 @@
 # novel for pytorch DLC:
 albumentations<=1.4.3
 einops
-pycocotools
+pycocotools<=2.0.8
 timm
 wandb
 
@@ -25,6 +25,6 @@ scikit-learn>=1.0
 scipy>=1.9
 statsmodels>=0.11
 tables==3.8.0
-torch==2.6.0
+torch==2.7.1
 torchvision
 tqdm

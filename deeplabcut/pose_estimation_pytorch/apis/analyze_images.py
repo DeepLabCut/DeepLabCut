@@ -37,6 +37,7 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_scorer_name,
     get_scorer_uid,
     parse_snapshot_index_for_analysis,
+    get_filtered_coco_detector_inference_runner,
 )
 from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import update_config
@@ -60,6 +61,7 @@ def superanimal_analyze_images(
     customized_model_config: str | Path | dict | None = None,
     customized_pose_checkpoint: str | Path | None = None,
     customized_detector_checkpoint: str | Path | None = None,
+    close_figure_after_save=True,
 ) -> dict[str, dict]:
     """
     This function inferences a superanimal model on a set of images and saves the
@@ -71,6 +73,8 @@ def superanimal_analyze_images(
                 - "superanimal_bird"
                 - "superanimal_topviewmouse"
                 - "superanimal_quadruped"
+                - "superanimal_superbird"
+                - "superanimal_humanbody"
 
         model_name: str
             The name of the pose model architecture to use for inference. To get a list
@@ -159,19 +163,32 @@ def superanimal_analyze_images(
     else:
         snapshot_path = Path(customized_pose_checkpoint)
 
-    if customized_detector_checkpoint is None:
+    detector_path = customized_detector_checkpoint
+    if detector_path is None and superanimal_name != "superanimal_humanbody":
         detector_path = modelzoo.get_super_animal_snapshot_path(
             dataset=superanimal_name,
             model_name=detector_name,
         )
-    else:
-        detector_path = Path(customized_detector_checkpoint)
+
+    filtered_detector_config = None
+    if superanimal_name == "superanimal_humanbody":
+        if detector_name is not None:
+            torchvision_detector_name = detector_name
+        else:
+            torchvision_detector_name = "fasterrcnn_mobilenet_v3_large_fpn"
+        COCO_PERSON = 1  # COCO class ID for person
+        filtered_detector_config = {
+            "torchvision_detector_name": torchvision_detector_name,
+            "category_id": COCO_PERSON,
+        }
 
     if customized_model_config is None:
         config = modelzoo.load_super_animal_config(
             super_animal=superanimal_name,
             model_name=model_name,
-            detector_name=detector_name,
+            detector_name=(
+                detector_name if superanimal_name != "superanimal_humanbody" else None
+            ),
         )
     elif isinstance(customized_model_config, (str, Path)):
         config = config_utils.read_config_as_dict(customized_model_config)
@@ -180,7 +197,7 @@ def superanimal_analyze_images(
 
     config = update_config(config, max_individuals, device)
     config["metadata"]["individuals"] = [f"animal{i}" for i in range(max_individuals)]
-    if "detector" in config:
+    if config.get("detector") is not None:
         config["detector"]["model"]["box_score_thresh"] = bbox_threshold
 
     predictions = analyze_image_folder(
@@ -191,6 +208,7 @@ def superanimal_analyze_images(
         max_individuals=max_individuals,
         device=device,
         progress_bar=progress_bar,
+        filtered_detector_config=filtered_detector_config,
         # TODO: when COND_TOP_DOWN SuperAnimal models will be released - create & pass a conditions provider
     )
 
@@ -210,7 +228,7 @@ def superanimal_analyze_images(
         cmap=get_superanimal_colormaps()[superanimal_name],
         skeleton=skeleton,
         skeleton_color=config.get("skeleton_color", "black"),
-        close_figure_after_save=False,
+        close_figure_after_save=close_figure_after_save,
     )
 
     return predictions
@@ -419,6 +437,7 @@ def analyze_image_folder(
     device: str | None = None,
     max_individuals: int | None = None,
     progress_bar: bool = True,
+    filtered_detector_config: dict | None = None,
     cond_provider: CondFromModel | None = None,
 ) -> dict[str, dict[str, np.ndarray | np.ndarray]]:
     """Runs pose inference on a folder of images and returns the predictions
@@ -437,6 +456,8 @@ def analyze_image_folder(
         max_individuals: The maximum number of individuals to detect in each image. Set
             to the number of individuals in the project if None.
         progress_bar: Whether to display a progress bar when running inference.
+        filtered_detector_config: If using a filtered torchvision detector instead of a saved detector snapshot,
+            specify the filtered detector configuration
         cond_provider: If using a CTD model - this parameter is needed to provide the conditions
 
     Returns:
@@ -450,10 +471,14 @@ def analyze_image_folder(
         model_cfg = config_utils.read_config_as_dict(model_cfg)
 
     pose_task = Task(model_cfg["method"])
-    if pose_task == Task.TOP_DOWN and detector_path is None:
+    if (
+        pose_task == Task.TOP_DOWN
+        and detector_path is None
+        and filtered_detector_config is None
+    ):
         raise ValueError(
-            "A detector path must be specified for image analysis using top-down models"
-            f" Please specify the `detector_path` parameter."
+            "A detector path or filtered_detector_config must be specified for image analysis using top-down models"
+            f" Please specify the `detector_path` parameter or the `filtered_detector_config` parameter."
         )
 
     if max_individuals is None:
@@ -482,6 +507,8 @@ def analyze_image_folder(
 
     image_paths = parse_images_and_image_folders(images, image_suffixes)
     pose_inputs = image_paths
+
+    detector_runner = None
     if detector_path is not None:
         logging.info(f"Running object detection with {detector_path}")
         detector_runner = get_detector_inference_runner(
@@ -490,14 +517,29 @@ def analyze_image_folder(
             device=device,
             max_individuals=max_individuals,
         )
+    elif filtered_detector_config is not None:
+        model_name = filtered_detector_config["torchvision_detector_name"]
+        category_id = filtered_detector_config["category_id"]
 
-        detector_image_paths = image_paths
-        if progress_bar:
-            detector_image_paths = tqdm(detector_image_paths)
+        logging.info(
+            f"Running object detection with filtered torchvision detector '{model_name}', category_id={category_id}"
+        )
+        detector_runner = get_filtered_coco_detector_inference_runner(
+            model_name=model_name,
+            category_id=category_id,
+            batch_size=1,
+            device=device,
+            max_individuals=max_individuals,
+            color_mode=model_cfg["data"]["colormode"],
+            model_config=model_cfg,
+        )
+
+    if detector_runner is not None:
+        detector_image_paths = tqdm(image_paths) if progress_bar else image_paths
         bbox_predictions = detector_runner.inference(images=detector_image_paths)
         pose_inputs = list(zip(image_paths, bbox_predictions))
 
-    logging.info(f"Running pose estimation with {detector_path}")
+    logging.info(f"Running pose estimation with {snapshot_path}")
 
     if progress_bar:
         pose_inputs = tqdm(pose_inputs)
