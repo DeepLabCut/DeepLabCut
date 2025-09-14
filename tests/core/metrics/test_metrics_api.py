@@ -109,4 +109,3 @@ def test_computing_metrics_single_animal(error):
     )
     assert_almost_equal(results["rmse"], np.sqrt(2) * error)
     assert_almost_equal(results["rmse_pcutoff"], np.sqrt(2) * error)
-

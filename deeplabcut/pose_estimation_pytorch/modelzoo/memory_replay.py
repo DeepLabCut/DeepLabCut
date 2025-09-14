@@ -102,10 +102,7 @@ def get_pose_predictions(
     #  boxes and predicted bounding boxes - keep the larger of the two
     # bbox_predictions = detector_runner.inference(images=images_to_process)
     pose_inputs = [
-        (
-            str(loader.project_path / Path(image)),
-            {"bboxes": np.array(bboxes[image])}
-        )
+        (str(loader.project_path / Path(image)), {"bboxes": np.array(bboxes[image])})
         for image in images_to_process
     ]
     predictions = pose_runner.inference(pose_inputs)
@@ -352,7 +349,10 @@ def prepare_memory_replay(
     )
 
     dataset.materialize(
-        memory_replay_folder, framework="coco", deepcopy=False, no_image_copy=True,
+        memory_replay_folder,
+        framework="coco",
+        deepcopy=False,
+        no_image_copy=True,
     )
 
     # then in this function, we do pseudo label to match prediction and gts to create

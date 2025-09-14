@@ -157,7 +157,7 @@ class PartAffinityFieldPredictor(BasePredictor):
             )
             results = dict(poses=poses)
             if self.return_preds:
-                results["preds"] = [dict(coordinates=[[]], costs=[])],
+                results["preds"] = ([dict(coordinates=[[]], costs=[])],)
 
             return results
 
@@ -207,7 +207,7 @@ class PartAffinityFieldPredictor(BasePredictor):
     @staticmethod
     def make_2d_gaussian_kernel(sigma: float, size: int) -> torch.Tensor:
         k = torch.arange(-size // 2 + 1, size // 2 + 1, dtype=torch.float32) ** 2
-        k = F.softmax(-k / (2 * (sigma ** 2)), dim=0)
+        k = F.softmax(-k / (2 * (sigma**2)), dim=0)
         return torch.einsum("i,j->ij", k, k)
 
     @staticmethod

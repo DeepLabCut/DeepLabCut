@@ -15,9 +15,7 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 
-def assign_identity(
-    predictions: np.ndarray, identity_scores: np.ndarray
-) -> np.ndarray:
+def assign_identity(predictions: np.ndarray, identity_scores: np.ndarray) -> np.ndarray:
     """
     Args:
         predictions: Pose predictions for an image, with shape (num_individuals,
