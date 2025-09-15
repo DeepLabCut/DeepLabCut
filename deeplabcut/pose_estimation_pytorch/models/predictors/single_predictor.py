@@ -93,7 +93,9 @@ class HeatmapPredictor(BasePredictor):
         poses = self.get_pose_prediction(heatmaps, locrefs, scale_factors)
 
         if self.clip_scores:
-            poses[..., 2] = torch.clip(poses[..., 2], min=0, max=1)
+            # Avoid in-place operation that breaks gradient computation
+            clipped_scores = torch.clip(poses[..., 2], min=0, max=1)
+            poses = torch.cat([poses[..., :2], clipped_scores.unsqueeze(-1)], dim=-1)
 
         return {"poses": poses}
 

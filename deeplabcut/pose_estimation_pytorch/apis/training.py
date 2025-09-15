@@ -133,6 +133,7 @@ def train(
         snapshot_path=snapshot_path,
         load_head_weights=load_head_weights,
         logger=logger,
+        model_cfg=run_config,
     )
 
     if transform is None:
@@ -153,6 +154,13 @@ def train(
     if collate_fn_cfg := run_config["data"]["train"].get("collate"):
         collate_fn = COLLATE_FUNCTIONS.build(collate_fn_cfg)
         logging.info(f"Using custom collate function: {collate_fn_cfg}")
+    else:
+        # Check if we need skeletal-aware collate function
+        from deeplabcut.pose_estimation_pytorch.data.dataset import SkeletalPoseDataset
+        if isinstance(train_dataset, SkeletalPoseDataset):
+            from deeplabcut.pose_estimation_pytorch.data.collate import skeletal_aware_collate
+            collate_fn = skeletal_aware_collate
+            logging.info("Using skeletal-aware collate function for skeletal data")
 
     batch_size = run_config["train_settings"]["batch_size"]
     num_workers = run_config["train_settings"]["dataloader_workers"]
@@ -165,7 +173,11 @@ def train(
         num_workers=num_workers,
         pin_memory=pin_memory,
     )
-    valid_dataloader = DataLoader(valid_dataset, batch_size=1, shuffle=False)
+    # Use the same collate function for validation if skeletal data is present
+    valid_collate_fn = None
+    if collate_fn is not None:
+        valid_collate_fn = collate_fn
+    valid_dataloader = DataLoader(valid_dataset, batch_size=1, shuffle=False, collate_fn=valid_collate_fn)
 
     if (
         loader.model_cfg["model"].get("freeze_bn_stats", False)

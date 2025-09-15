@@ -19,6 +19,7 @@ from typing import Any, Generic
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.nn.parallel import DataParallel
 from torch.utils.data import DataLoader
 
@@ -38,6 +39,174 @@ from deeplabcut.pose_estimation_pytorch.runners.logger import (
 )
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import TorchSnapshotManager
 from deeplabcut.pose_estimation_pytorch.task import Task
+
+
+def compute_skeletal_constraint_loss(
+    predicted_keypoints: torch.Tensor,
+    skeletal_data: dict,
+    bodyparts: list[str],
+    device: torch.device,
+    loss_weight: float = 1.0
+) -> torch.Tensor:
+    """
+    Compute skeletal constraint loss based on expected limb lengths.
+
+    Args:
+        predicted_keypoints: Tensor of shape (batch_size, num_animals, num_joints, 3)
+                           where last dim is [x, y, visibility]
+        skeletal_data: Dict containing 'links' and 'link_lengths' arrays
+        bodyparts: List of bodypart names to get indices
+        device: Device to put tensors on
+        loss_weight: Weight for the skeletal loss
+
+    Returns:
+        Skeletal constraint loss tensor
+    """
+    if not skeletal_data or len(skeletal_data.get('links', [])) == 0:
+        return torch.tensor(0.0, device=device, requires_grad=True)
+
+    batch_size = predicted_keypoints.shape[0]
+    sample_losses = []
+
+    # Get indices for snout and tail1 for normalization
+    try:
+        snout_idx = bodyparts.index('snout')
+        tail1_idx = bodyparts.index('tail1')
+    except ValueError:
+        # If snout or tail1 not in bodyparts, return zero loss
+        return torch.tensor(0.0, device=device, requires_grad=True)
+
+    for batch_idx in range(batch_size):
+        # Get skeletal data for this sample
+        if isinstance(skeletal_data['links'], torch.Tensor):
+            # If it's already a tensor, assume it's the same for all samples in batch
+            links = skeletal_data['links']
+            link_lengths = skeletal_data['link_lengths']
+        elif isinstance(skeletal_data['links'], (list, np.ndarray)):
+            # If it's a list/array, get the data for this batch index
+            if len(skeletal_data['links']) > batch_idx:
+                links = skeletal_data['links'][batch_idx]
+                link_lengths = skeletal_data['link_lengths'][batch_idx]
+            else:
+                # Use the same data for all samples (broadcast)
+                links = skeletal_data['links'][0] if len(skeletal_data['links']) > 0 else []
+                link_lengths = skeletal_data['link_lengths'][0] if len(skeletal_data['link_lengths']) > 0 else []
+        else:
+            links = skeletal_data['links']
+            link_lengths = skeletal_data['link_lengths']
+
+        if len(links) == 0:
+            continue
+
+        # Convert to tensors if needed
+        if not isinstance(links, torch.Tensor):
+            links = torch.tensor(links, device=device, dtype=torch.long)
+        if not isinstance(link_lengths, torch.Tensor):
+            link_lengths = torch.tensor(link_lengths, device=device, dtype=torch.float32)
+
+        # Get keypoints for this sample (assuming single animal for now)
+        kpts = predicted_keypoints[batch_idx, 0]  # Shape: (num_joints, 3)
+
+        # Check if snout and tail1 are visible and valid for normalization
+        snout_vis = kpts[snout_idx, 2] > 0.5  # visibility threshold
+        tail1_vis = kpts[tail1_idx, 2] > 0.5
+
+        if not (snout_vis and tail1_vis):
+            # Cannot normalize, skip this sample
+            continue
+
+        # Compute normalization factor (snout to tail1 distance)
+        snout_pos = kpts[snout_idx, :2]  # [x, y]
+        tail1_pos = kpts[tail1_idx, :2]  # [x, y]
+        svl_distance = torch.norm(snout_pos - tail1_pos)
+
+        if svl_distance < 1e-6:  # Avoid division by zero
+            continue
+
+        link_losses = []
+
+        for link_idx in range(len(links)):
+            # Check bounds for both links and link_lengths
+            if link_idx >= len(link_lengths):
+                continue  # Skip if no corresponding length data
+
+            link = links[link_idx]
+            expected_length = link_lengths[link_idx]
+
+            # Handle different tensor/list formats
+            if isinstance(link, torch.Tensor):
+                if link.dim() == 0:  # 0-d tensor (scalar)
+                    continue  # Skip invalid links
+                elif link.dim() == 1 and len(link) >= 2:
+                    bp1_idx, bp2_idx = link[0].item(), link[1].item()
+                else:
+                    continue  # Skip invalid links
+            elif isinstance(link, (list, tuple)) and len(link) >= 2:
+                bp1_idx, bp2_idx = link[0], link[1]
+            else:
+                continue  # Skip invalid links
+
+            # Handle expected_length format
+            if isinstance(expected_length, torch.Tensor):
+                if expected_length.dim() == 0:
+                    expected_length = expected_length.item()
+                else:
+                    continue  # Skip invalid expected lengths
+
+            # Skip if expected length is NaN or invalid
+            if torch.isnan(torch.tensor(expected_length)) or expected_length <= 0:
+                continue
+
+            # Check if both keypoints are visible
+            bp1_vis = kpts[bp1_idx, 2] > 0.5
+            bp2_vis = kpts[bp2_idx, 2] > 0.5
+
+            if not (bp1_vis and bp2_vis):
+                continue
+
+            # Compute predicted distance
+            bp1_pos = kpts[bp1_idx, :2]
+            bp2_pos = kpts[bp2_idx, :2]
+            predicted_distance = torch.norm(bp1_pos - bp2_pos)
+
+            # Normalize both distances by predicted SVL to make them scale-invariant
+            normalized_predicted = predicted_distance / svl_distance
+
+            # For the expected length, we need to normalize it by the expected SVL
+            # to get the relative proportion, then we can compare with the predicted proportion
+            expected_svl_length = None
+
+            # Try to find SVL link in the current links to get expected SVL
+            for svl_idx in range(len(links)):
+                svl_bp1, svl_bp2 = links[svl_idx]
+                if (svl_bp1 == snout_idx and svl_bp2 == tail1_idx) or (svl_bp1 == tail1_idx and svl_bp2 == snout_idx):
+                    expected_svl_length = link_lengths[svl_idx]
+                    break
+
+            if expected_svl_length is not None and expected_svl_length > 0:
+                # Normalize expected length by expected SVL to get relative proportion
+                normalized_expected = expected_length / expected_svl_length
+            else:
+                # If we can't find expected SVL, skip this constraint
+                continue
+
+            # Compute constraint loss: 0 if pred <= expected, (pred - expected)^2 if pred > expected
+            diff = normalized_predicted - normalized_expected
+            link_loss = torch.where(diff > 0, diff ** 2, torch.tensor(0.0, device=device))
+            link_losses.append(link_loss)
+
+        if len(link_losses) > 0:
+            # Stack and average the losses to avoid in-place operations
+            sample_loss = torch.stack(link_losses).mean()
+            sample_losses.append(sample_loss)
+
+    if len(sample_losses) > 0:
+        # Stack and average all sample losses to avoid in-place operations
+        total_loss = torch.stack(sample_losses).mean() * loss_weight
+    else:
+        total_loss = torch.tensor(0.0, device=device, requires_grad=True)
+
+    return total_loss
 
 
 class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
@@ -91,6 +260,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         logger: BaseLogger | None = None,
         log_filename: str = "learning_stats.csv",
         load_weights_only: bool | None = None,
+        model_cfg: dict | None = None,
     ):
         super().__init__(
             model=model, device=device, gpus=gpus, snapshot_path=snapshot_path
@@ -104,6 +274,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.snapshot_manager = snapshot_manager
+        self.model_cfg = model_cfg or {}
         self.history: dict[str, list] = dict(train_loss=[], eval_loss=[])
         self.csv_logger = CSVLogger(
             train_folder=snapshot_manager.model_folder,
@@ -448,6 +619,46 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
 
         target = underlying_model.get_target(outputs, batch["annotations"])
         losses_dict = underlying_model.get_loss(outputs, target)
+
+        # Add skeletal constraint loss if skeletal data is available
+        if "skeletal_data" in batch:
+            # Get bodyparts from model config metadata
+            bodyparts = None
+            if hasattr(self, 'model_cfg') and 'metadata' in self.model_cfg:
+                bodyparts = self.model_cfg['metadata'].get('bodyparts')
+
+            if bodyparts is not None:
+                # Get predicted keypoints from the model outputs
+                predictions = underlying_model.get_predictions(outputs)
+                if "bodypart" in predictions and "poses" in predictions["bodypart"]:
+                    predicted_keypoints = predictions["bodypart"]["poses"]  # Shape: (batch, num_animals, num_joints, 3)
+
+                    # Get skeletal loss weight from model config or use default
+                    skeletal_loss_weight = 0.25  # Default weight
+                    if hasattr(self, 'model_cfg') and 'skeletal_loss_weight' in self.model_cfg:
+                        skeletal_loss_weight = self.model_cfg['skeletal_loss_weight']
+                    elif hasattr(self, 'model_cfg') and 'train_settings' in self.model_cfg:
+                        skeletal_loss_weight = self.model_cfg['train_settings'].get('skeletal_loss_weight', 0.25)
+
+                    # Convert skeletal data from batch format to loss function format
+                    skeletal_data_for_loss = {
+                        "links": batch["skeletal_data"]["links"],
+                        "link_lengths": batch["skeletal_data"]["link_lengths"]
+                    }
+
+                    # Get skeletal constraint loss
+                    skeletal_loss = compute_skeletal_constraint_loss(
+                        predicted_keypoints=predicted_keypoints,
+                        skeletal_data=skeletal_data_for_loss,
+                        bodyparts=bodyparts,
+                        device=self.device,
+                        loss_weight=skeletal_loss_weight
+                    )
+
+                    losses_dict["skeletal_loss"] = skeletal_loss
+                    # Create a new tensor to avoid in-place operations
+                    losses_dict["total_loss"] = losses_dict["total_loss"] + skeletal_loss
+
         if mode == "train":
             losses_dict["total_loss"].backward()
             self.optimizer.step()
@@ -696,6 +907,7 @@ def build_training_runner(
     snapshot_path: str | Path | None = None,
     load_head_weights: bool = True,
     logger: BaseLogger | None = None,
+    model_cfg: dict | None = None,
 ) -> TrainingRunner:
     """
     Build a runner object according to a pytorch configuration file
@@ -743,6 +955,7 @@ def build_training_runner(
         load_scheduler_state_dict=runner_config.get("load_scheduler_state_dict", True),
         logger=logger,
         load_weights_only=runner_config.get("load_weights_only", None),
+        model_cfg=model_cfg,
     )
     if task == Task.DETECT:
         return DetectorTrainingRunner(**kwargs)

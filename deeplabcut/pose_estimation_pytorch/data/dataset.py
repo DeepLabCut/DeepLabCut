@@ -11,9 +11,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 
 import albumentations as A
 import numpy as np
+import pandas as pd
 from torch.utils.data import Dataset
 
 from deeplabcut.pose_estimation_pytorch.data.generative_sampling import (
@@ -542,3 +544,123 @@ class PoseDataset(Dataset):
         np.nan_to_num(centers, copy=False, nan=0)
 
         return np.concatenate((keypoints, centers), axis=1)
+
+
+def create_skeleton_dictionary(cfg, skeletal_csv_path):
+    """
+    Loads skeletal data from CSV and maps it to body part indices from the DLC config.
+    """
+    print("Creating skeleton dictionary from CSV...")
+    bodyparts = cfg['bodyparts']
+
+    # Mapping from CSV columns to body part pairs
+    # Based on the specific skeletal measurements provided
+    link_mapping = {
+        'svl': [('snout', 'tail1')],
+        'head.length': [('snout', 'base_of_head')],
+        'upper.forelimb': [('left_shoulder', 'left_elbow'), ('right_shoulder', 'right_elbow')],
+        'lower.forelimb': [('left_elbow', 'left_wrist'), ('right_elbow', 'right_wrist')],
+        'upper.hindlimb': [('left_hip', 'left_knee'), ('right_hip', 'right_knee')],
+        'lower.hindlimb': [('left_knee', 'left_ankle'), ('right_knee', 'right_ankle')],
+    }
+
+    try:
+        df = pd.read_csv(skeletal_csv_path)
+    except FileNotFoundError:
+        print(f"Error: Skeletal CSV not found at {skeletal_csv_path}")
+        exit()
+
+    skeleton_dict = {}
+    for _, row in df.iterrows():
+        subject_id = str(row['lizard_id']).zfill(4)
+
+        subject_links = []
+        subject_lengths = []
+
+        for col, pairs in link_mapping.items():
+            if col in row and pd.notna(row[col]):
+                link_length = row[col]
+                for bp1_name, bp2_name in pairs:
+                    if bp1_name in bodyparts and bp2_name in bodyparts:
+                        bp1_idx = bodyparts.index(bp1_name)
+                        bp2_idx = bodyparts.index(bp2_name)
+                        subject_links.append((bp1_idx, bp2_idx))
+                        subject_lengths.append(link_length)
+
+        skeleton_dict[subject_id] = {
+            "links": subject_links,
+            "link_lengths": subject_lengths,
+        }
+
+    print(f"Loaded skeletal data for {len(skeleton_dict)} subjects.")
+    return skeleton_dict
+
+
+class SkeletalPoseDataset(PoseDataset):
+    """A pose dataset with additional skeletal data"""
+
+    def __init__(self, skeleton_dict=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.skeleton_dict = skeleton_dict or {}
+
+    def __getitem__(self, index: int) -> dict:
+        """
+        Gets the item at the specified index from the dataset, including skeletal data.
+
+        Returns the same data as PoseDataset.__getitem__ but with additional skeletal data
+        in the returned dictionary under the "skeletal_data" key.
+        """
+        # Get the standard data from the parent class
+        data = super().__getitem__(index)
+
+        # Extract subject ID from the image path
+        image_path = data["path"]
+        subject_id = self._extract_subject_id(image_path)
+
+        # Add skeletal data if available for this subject
+        skeletal_data = self.skeleton_dict.get(subject_id, {
+            "links": [],
+            "link_lengths": []
+        })
+
+        # Return skeletal data as lists to avoid collation issues with variable-sized arrays
+        data["skeletal_data"] = {
+            "links": skeletal_data["links"],  # Keep as list
+            "link_lengths": skeletal_data["link_lengths"]  # Keep as list
+        }
+
+        return data
+
+    def _extract_subject_id(self, image_path: str) -> str:
+        """
+        Extract subject ID from image path.
+        The subject ID is in the video directory name (first part when splitting on "_").
+        For example: "0001_1_notes/image.jpg" -> "0001"
+        """
+        # Get the directory path and extract the video directory name
+        path_parts = image_path.split(os.sep)
+
+        # Look for the video directory (should contain the subject ID)
+        for part in reversed(path_parts):
+            if part and '_' in part:
+                # Split on underscore and take the first part as subject ID
+                subject_id = part.split('_')[0]
+                # Ensure it's a 4-digit zero-padded number
+                if subject_id.isdigit():
+                    return subject_id.zfill(4)
+
+        # Fallback: look for any 4-digit number in the path
+        import re
+        for part in reversed(path_parts):
+            match = re.search(r'\b(\d{4})\b', part)
+            if match:
+                return match.group(1)
+
+        # Final fallback: look for any number and zero-pad it
+        for part in reversed(path_parts):
+            match = re.search(r'(\d+)', part)
+            if match:
+                return str(match.group(1)).zfill(4)
+
+        # If no number found, return empty string
+        return ""

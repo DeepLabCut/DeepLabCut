@@ -20,6 +20,40 @@ from deeplabcut.pose_estimation_pytorch.data.image import resize_and_random_crop
 from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
 
 
+def skeletal_aware_collate(batch):
+    """
+    Custom collate function that handles skeletal data with variable sizes.
+
+    This function uses the default PyTorch collate for most data, but handles
+    skeletal data specially by keeping it as lists instead of trying to stack
+    into tensors.
+    """
+    # Separate skeletal data from the rest
+    skeletal_data_batch = []
+    clean_batch = []
+
+    for item in batch:
+        if "skeletal_data" in item:
+            skeletal_data_batch.append(item["skeletal_data"])
+            # Create a copy without skeletal data for default collation
+            clean_item = {k: v for k, v in item.items() if k != "skeletal_data"}
+            clean_batch.append(clean_item)
+        else:
+            skeletal_data_batch.append({"links": [], "link_lengths": []})
+            clean_batch.append(item)
+
+    # Use default collate for everything except skeletal data
+    collated_batch = default_collate(clean_batch)
+
+    # Add skeletal data back as lists (not tensors)
+    collated_batch["skeletal_data"] = {
+        "links": [item["links"] for item in skeletal_data_batch],
+        "link_lengths": [item["link_lengths"] for item in skeletal_data_batch]
+    }
+
+    return collated_batch
+
+
 COLLATE_FUNCTIONS = Registry("collate_functions", build_func=build_from_cfg)
 
 
@@ -30,6 +64,15 @@ class CollateFunction(ABC):
     def __call__(self, batch) -> dict | list:
         """Returns: the collated batch"""
         raise NotImplementedError()
+
+
+@COLLATE_FUNCTIONS.register_module
+class SkeletalAwareCollate(CollateFunction):
+    """A collate function that handles skeletal data with variable sizes"""
+
+    def __call__(self, batch) -> dict:
+        """Returns: the collated batch with properly handled skeletal data"""
+        return skeletal_aware_collate(batch)
 
 
 class ResizeCollate(CollateFunction, ABC):

@@ -21,6 +21,8 @@ import deeplabcut.pose_estimation_pytorch.config as config
 from deeplabcut.pose_estimation_pytorch.data.dataset import (
     PoseDataset,
     PoseDatasetParameters,
+    SkeletalPoseDataset,
+    create_skeleton_dictionary,
 )
 from deeplabcut.pose_estimation_pytorch.data.generative_sampling import (
     GenSamplingConfig,
@@ -258,15 +260,37 @@ class Loader(ABC):
                 **self.model_cfg["data"].get("gen_sampling", {}),
             )
 
-        dataset = PoseDataset(
-            images=data["images"],
-            annotations=data["annotations"],
-            transform=transform,
-            mode=mode,
-            task=task,
-            parameters=parameters,
-            ctd_config=ctd_config,
-        )
+        # Check if skeletal data is configured
+        skeleton_dict = None
+        if hasattr(self, '_project_config') and self._project_config.get('lizard_skeletal_data_path'):
+            skeletal_csv_path = self._project_config['lizard_skeletal_data_path']
+            if Path(skeletal_csv_path).exists():
+                skeleton_dict = create_skeleton_dictionary(self._project_config, skeletal_csv_path)
+            else:
+                print(f"Warning: Skeletal data path {skeletal_csv_path} does not exist. Proceeding without skeletal data.")
+
+        # Use SkeletalPoseDataset if skeletal data is available, otherwise use regular PoseDataset
+        if skeleton_dict:
+            dataset = SkeletalPoseDataset(
+                skeleton_dict=skeleton_dict,
+                images=data["images"],
+                annotations=data["annotations"],
+                transform=transform,
+                mode=mode,
+                task=task,
+                parameters=parameters,
+                ctd_config=ctd_config,
+            )
+        else:
+            dataset = PoseDataset(
+                images=data["images"],
+                annotations=data["annotations"],
+                transform=transform,
+                mode=mode,
+                task=task,
+                parameters=parameters,
+                ctd_config=ctd_config,
+            )
         return dataset
 
     @abstractmethod
