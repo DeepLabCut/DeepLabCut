@@ -54,7 +54,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         load_weights_only: bool | None = None,
         async_mode: bool = True,
         num_prefetch_batches: int = 2,
-        timeout: float = 30.0,
+        timeout: float | None = None,
     ):
         """
         Args:
@@ -73,7 +73,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                     `deeplabcut.pose_estimation_pytorch.get_load_weights_only()`
             async_mode: Whether to use async inference with pipeline parallelism
             num_prefetch_batches: Number of batches to prefetch in async mode
-            timeout: Timeout for queue operations in async mode
+            timeout: Timeout for queue operations in async mode, default: None
         """
         super().__init__(model=model, device=device, snapshot_path=snapshot_path)
         if not isinstance(batch_size, int) or batch_size <= 0:
@@ -880,7 +880,7 @@ def build_inference_runner(
     load_weights_only: bool | None = None,
     async_mode: bool = True,
     num_prefetch_batches: int = 4,
-    timeout: float = 30.0,
+    timeout: float | None = None,
     **kwargs,
 ) -> InferenceRunner:
     """
@@ -907,7 +907,7 @@ def build_inference_runner(
                 `deeplabcut.pose_estimation_pytorch.get_load_weights_only()`
         async_mode: Whether to use async inference with pipeline parallelism
         num_prefetch_batches: Number of batches to prefetch in async mode
-        timeout: Timeout for queue operations in async mode
+        timeout: Timeout for queue operations in async mode, default: None
         **kwargs: Other arguments for the InferenceRunner.
 
     Returns:
