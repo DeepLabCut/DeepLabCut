@@ -48,14 +48,15 @@ def apply_skeletal_target_masking(
     bodyparts: list[str],
     device: torch.device,
     stride: float = 4.0,  # Default stride for ResNet-based models
-    skeletal_radius_multiplier: float = 1.0
+    skeletal_radius_multiplier: float = 1.0,
+    union_intersect_adjacent_skeletal_mask_alpha: float = 0.5
 ) -> dict:
     """
     Apply skeletal-aware masking to target heatmaps based on anatomical limb lengths.
 
     For limb landmarks (elbows, wrists, knees, ankles), creates circular masks around
     adjacent landmarks with radius equal to the expected limb length. The masks from
-    adjacent landmarks are OR'ed together and then multiplied with the target heatmap.
+    adjacent landmarks are combined and then multiplied with the target heatmap.
 
     Args:
         target: Target dictionary containing heatmap targets
@@ -63,6 +64,11 @@ def apply_skeletal_target_masking(
         skeletal_data: Dict containing 'links' and 'link_lengths' arrays
         bodyparts: List of bodypart names to get indices
         device: Device to put tensors on
+        stride: Model stride for coordinate conversion
+        skeletal_radius_multiplier: Multiplier for limb length radii
+        union_intersect_adjacent_skeletal_mask_alpha: Interpolation factor between
+                                                    union (0.0) and intersection (1.0).
+                                                    0.0 = pure union (OR), 1.0 = pure intersection (AND)
 
     Returns:
         Modified target dictionary with masked heatmaps
@@ -167,8 +173,8 @@ def apply_skeletal_target_masking(
 
             limb_idx = bodyparts.index(limb_name)
 
-            # Start with zeros mask
-            mask = torch.zeros(height, width, device=device)
+            # Collect all circular masks for interpolation
+            circular_masks = []
             mask_applied = False
 
             # Add circular masks from each adjacent landmark
@@ -215,12 +221,31 @@ def apply_skeletal_target_masking(
                 # Create circular mask (1 inside circle, 0 outside)
                 circle_mask = (distances <= radius).float()
 
-                # OR with existing mask
-                mask = torch.maximum(mask, circle_mask)
+                # Collect mask for interpolation
+                circular_masks.append(circle_mask)
                 mask_applied = True
 
             # Apply mask to target heatmap
-            if mask_applied:
+            if mask_applied and len(circular_masks) > 0:
+                # Interpolate between union and intersection
+                if len(circular_masks) == 1:
+                    # Single mask - no interpolation needed
+                    mask = circular_masks[0]
+                else:
+                    # Multiple masks - interpolate between union and intersection
+                    # Stack masks for efficient computation
+                    stacked_masks = torch.stack(circular_masks, dim=0)  # Shape: (num_masks, height, width)
+
+                    # Compute union (maximum across masks)
+                    union_mask = torch.max(stacked_masks, dim=0)[0]
+
+                    # Compute intersection (minimum across masks)
+                    intersection_mask = torch.min(stacked_masks, dim=0)[0]
+
+                    # Interpolate: mask = (1 - alpha) * union + alpha * intersection
+                    alpha = union_intersect_adjacent_skeletal_mask_alpha
+                    mask = (1.0 - alpha) * union_mask + alpha * intersection_mask
+
                 # Multiply target heatmap by mask
                 heatmap_targets[batch_idx, :, :, limb_idx] *= mask
             # If no mask was applied, leave target unchanged (equivalent to mask of all 1's)
@@ -566,6 +591,45 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         if self.starting_epoch > 0:
             epochs = self.starting_epoch + epochs
 
+        self.union_intersect_adjacent_skeletal_mask_alpha_start = 0.0
+        if "union_intersect_adjacent_skeletal_mask_alpha_start" in self.model_cfg:
+            self.union_intersect_adjacent_skeletal_mask_alpha_start = self.model_cfg[
+                "union_intersect_adjacent_skeletal_mask_alpha_start"
+            ]
+        self.union_intersect_adjacent_skeletal_mask_alpha_end = 1.0
+        if "union_intersect_adjacent_skeletal_mask_alpha_end" in self.model_cfg:
+            self.union_intersect_adjacent_skeletal_mask_alpha_end = self.model_cfg[
+                "union_intersect_adjacent_skeletal_mask_alpha_end"
+            ]
+
+        self.skeletal_radius_multiplier_start = 1.1
+        if "skeletal_radius_multiplier_start" in self.model_cfg:
+            self.skeletal_radius_multiplier_start = self.model_cfg[
+                "skeletal_radius_multiplier_start"
+            ]
+        self.skeletal_radius_multiplier_end = 1.1
+        if "skeletal_radius_multiplier_end" in self.model_cfg:
+            self.skeletal_radius_multiplier_end = self.model_cfg[
+                "skeletal_radius_multiplier_end"
+            ]
+
+        self.union_intersect_adjacent_skeletal_mask_alpha = self.union_intersect_adjacent_skeletal_mask_alpha_start
+        self.skeletal_radius_multiplier = self.skeletal_radius_multiplier_start
+
+        union_intersect_adjacent_skeletal_mask_start_epoch = 50
+        if "union_intersect_adjacent_skeletal_mask_start_epoch" in self.model_cfg:
+            union_intersect_adjacent_skeletal_mask_start_epoch = self.model_cfg[
+                "union_intersect_adjacent_skeletal_mask_start_epoch"
+            ]
+        union_intersect_adjacent_skeletal_mask_end_epoch = 150
+        if "union_intersect_adjacent_skeletal_mask_end_epoch" in self.model_cfg:
+            union_intersect_adjacent_skeletal_mask_end_epoch = self.model_cfg[
+                "union_intersect_adjacent_skeletal_mask_end_epoch"
+            ]
+
+        n_union_intersection_steps = union_intersect_adjacent_skeletal_mask_end_epoch - union_intersect_adjacent_skeletal_mask_start_epoch
+
+
         for e in range(self.starting_epoch + 1, epochs + 1):
             self.current_epoch = e
             self._metadata["epoch"] = e
@@ -574,6 +638,19 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             )
             if self.scheduler:
                 self.scheduler.step()
+
+            # Interpolate between union and intersection
+            if e < epochs:
+                t = (e - union_intersect_adjacent_skeletal_mask_start_epoch) / n_union_intersection_steps
+                t = np.clip(t, 0, 1)
+                self.union_intersect_adjacent_skeletal_mask_alpha = (
+                    self.union_intersect_adjacent_skeletal_mask_alpha_start + (
+                        self.union_intersect_adjacent_skeletal_mask_alpha_end - self.union_intersect_adjacent_skeletal_mask_alpha_start
+                        ) * t)
+                self.skeletal_radius_multiplier = (
+                    self.skeletal_radius_multiplier_start + (
+                        self.skeletal_radius_multiplier_end - self.skeletal_radius_multiplier_start
+                        ) * t)
 
             lr = self.optimizer.param_groups[0]["lr"]
             msg = f"Epoch {e}/{epochs} (lr={lr}), train loss {float(train_loss):.5f}"
@@ -812,9 +889,13 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             if hasattr(self, 'model_cfg') and 'metadata' in self.model_cfg and 'bodyparts' in self.model_cfg['metadata']:
                 bodyparts = self.model_cfg['metadata']['bodyparts']
 
-                skeleletal_radius_multiplier = 1.0
-                if hasattr(self, 'model_cfg') and 'skeletal_radius_multiplier' in self.model_cfg:
-                    skeleletal_radius_multiplier = self.model_cfg['skeletal_radius_multiplier']
+                skeleletal_radius_multiplier = self.skeletal_radius_multiplier
+                # if hasattr(self, 'model_cfg') and 'skeletal_radius_multiplier' in self.model_cfg:
+                #     skeleletal_radius_multiplier = self.model_cfg['skeletal_radius_multiplier']
+
+                union_intersect_adjacent_skeletal_mask_alpha = self.union_intersect_adjacent_skeletal_mask_alpha
+                # if hasattr(self, 'model_cfg') and 'union_intersect_adjacent_skeletal_mask_alpha' in self.model_cfg:
+                #     union_intersect_adjacent_skeletal_mask_alpha = self.model_cfg['union_intersect_adjacent_skeletal_mask_alpha']
 
                 # Get the stride for the bodypart head
                 try:
@@ -830,7 +911,8 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
                     bodyparts=bodyparts,
                     device=self.device,
                     stride=stride,
-                    skeletal_radius_multiplier=skeleletal_radius_multiplier
+                    skeletal_radius_multiplier=skeleletal_radius_multiplier,
+                    union_intersect_adjacent_skeletal_mask_alpha=union_intersect_adjacent_skeletal_mask_alpha
                 )
 
         losses_dict = underlying_model.get_loss(outputs, target)
