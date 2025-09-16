@@ -84,7 +84,7 @@ def create_labeled_video_3d(
         A list of strings containing the full paths to triangulated files for analysis or a path to the directory, where all the triangulated files are stored.
 
     videofolder: string
-        Full path of the folder where the videos are stored. Use this if the vidoes are stored in a different location other than where the triangulation files are stored. By default is ``None`` and therefore looks for video files in the directory where the triangulation file is stored.
+        Full path of the folder where the videos are stored. Use this if the videos are stored in a different location other than where the triangulation files are stored. By default is ``None`` and therefore looks for video files in the directory where the triangulation file is stored.
 
     start: int
         Integer specifying the start of frame index to select. Default is set to 0.
