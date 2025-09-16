@@ -653,6 +653,8 @@ def analyze_videos(
                         overwrite=False,
                         identity_only=identity_only,
                         destfolder=str(output_path),
+                        snapshot_index=snapshot_index,
+                        detector_snapshot_index=detector_snapshot_index,
                     )
                     stitch_tracklets(
                         config,
@@ -664,6 +666,8 @@ def analyze_videos(
                         animal_names=animal_names,
                         destfolder=str(output_path),
                         save_as_csv=save_as_csv,
+                        snapshot_index=snapshot_index,
+                        detector_snapshot_index=detector_snapshot_index,
                     )
                     h5_files_created = True  # .h5 file was created by stitch_tracklets
 
