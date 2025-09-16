@@ -274,7 +274,7 @@ https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-
 (or `testscript.py` for the TensorFlow engine); this is inside the examples folder you
 acquired when you git cloned the repo. Here is more information/a short 
 [video on running the testscript](https://www.youtube.com/watch?v=IOWtKn3l33s).
-- Additionally, if you want to use the bleeding edge, with yout git clone you also get
+- Additionally, if you want to use the bleeding edge, with your git clone you also get
 the latest code. While inside the main DeepLabCut folder, you can run `./reinstall.sh`
 to be sure it's installed (more [here](installation-tips))
 - You can test that your GPU is being properly engaged with these additional [tips](

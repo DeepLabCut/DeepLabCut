@@ -668,7 +668,7 @@ document.write(`
 </section>
 <section id="structuring-the-project-for-testing">
 <h2>Structuring the project for testing<a class="headerlink" href="#structuring-the-project-for-testing" title="Link to this heading">#</a></h2>
-<p>Since bats are such a challenging animal to automatcially digitize, in my lab, we’ve been relying on what I call “refining” to improve DLC accuracy. This just means that for each video that we want to analyze, we first digitize a few frames from it and include those frames as training data for the DeepLabCut network.</p>
+<p>Since bats are such a challenging animal to automatically digitize, in my lab, we’ve been relying on what I call “refining” to improve DLC accuracy. This just means that for each video that we want to analyze, we first digitize a few frames from it and include those frames as training data for the DeepLabCut network.</p>
 <p>We typically digitize approximately one frame per wingbeat. For a wingbeat frequency of 15 and a framerate of 800, this means approximately every 50th frame. For a lower framerate, say 400, we instead need to digitize every 50th frame. This is obviously less labour than digitizing every frame, but the workflow still scales poorly with increased acquisition. Therefore, I want to reduce the required amount of manual digitization. The challenge I’ve set myself is therefore this - <strong>to use augmentation to match or beat the accuracy of refining</strong>.</p>
 <section id="test-data">
 <h3>Test data<a class="headerlink" href="#test-data" title="Link to this heading">#</a></h3>
@@ -1021,7 +1021,7 @@ document.write(`
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="perform-evaluation">
 <h1>Perform evaluation<a class="headerlink" href="#perform-evaluation" title="Link to this heading">#</a></h1>
-<p>After training the networks, we need to test how they perform. To do that, we first need to evaluate them using the buil-in DeepLabCut method <code class="docutils literal notranslate"><span class="pre">evaluate_network</span></code>. By default this will evaluate the last snapshot, in our case, this means that the network will be evaluated after 150k iterations, but we want to know how well it does at 50k and 100k too, so let’s edit our config file to test all saved snapshot.</p>
+<p>After training the networks, we need to test how they perform. To do that, we first need to evaluate them using the built-in DeepLabCut method <code class="docutils literal notranslate"><span class="pre">evaluate_network</span></code>. By default this will evaluate the last snapshot, in our case, this means that the network will be evaluated after 150k iterations, but we want to know how well it does at 50k and 100k too, so let’s edit our config file to test all saved snapshot.</p>
 <div class="cell tag_hide-output docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># in case we restarted the kernel or something, let&#39;s make</span>

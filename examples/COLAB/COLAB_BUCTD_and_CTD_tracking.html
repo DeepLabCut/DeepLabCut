@@ -557,13 +557,13 @@ document.write(`
 <a target="_blank" href="https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/main/examples/COLAB/COLAB_BUCTD_and_CTD_tracking.ipynb">
 <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
 </a>
-<p><strong>This tutorial introduces the use of <a class="reference external" href="https://openaccess.thecvf.com/content/ICCV2023/papers/Zhou_Rethinking_Pose_Estimation_in_Crowds_Overcoming_the_Detection_Information_Bottleneck_ICCV_2023_paper.pdf">bottom-up conditioned top-down</a> pose estimation models (also named BUCTD or CTD) in DeepLabCut. This architecture is state-of-the-art in crowded images (when animals are interacting closly with one another), and carry the huge advantage that they can be used to directly track animals, removing the need for tracklet creation or stitching.</strong></p>
+<p><strong>This tutorial introduces the use of <a class="reference external" href="https://openaccess.thecvf.com/content/ICCV2023/papers/Zhou_Rethinking_Pose_Estimation_in_Crowds_Overcoming_the_Detection_Information_Bottleneck_ICCV_2023_paper.pdf">bottom-up conditioned top-down</a> pose estimation models (also named BUCTD or CTD) in DeepLabCut. This architecture is state-of-the-art in crowded images (when animals are interacting closely with one another), and carry the huge advantage that they can be used to directly track animals, removing the need for tracklet creation or stitching.</strong></p>
 <p>Some resources that can be useful:</p>
 <ul class="simple">
 <li><p>The original paper: <a class="reference external" href="https://openaccess.thecvf.com/content/ICCV2023/papers/Zhou_Rethinking_Pose_Estimation_in_Crowds_Overcoming_the_Detection_Information_Bottleneck_ICCV_2023_paper.pdf">Zhou, Stoffl, Mathis, Mathis. “Rethinking Pose Estimation in Crowds: Overcoming the Detection Information Bottleneck and Ambiguity.” Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV). 2023</a></p></li>
 <li><p>Multi-animal user guide: <a class="reference external" href="https://deeplabcut.github.io/DeepLabCut/docs/maDLC_UserGuide.html">DeepLabCut’s Documentation: User Guide for Multi-Animal projects</a></p></li>
 </ul>
-<p>Note: In this notebook, we first train a BU model. Typically, you would already have a BU model, that is not performant enought. That’s why you go for the BUCTD approach.</p>
+<p>Note: In this notebook, we first train a BU model. Typically, you would already have a BU model, that is not performant enough. That’s why you go for the BUCTD approach.</p>
 <section id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">#</a></h2>
 <p>This notebook is an introduction to training and using CTD models in DeepLabCut, through the <a class="reference external" href="https://zenodo.org/records/5851157">maDLC Tri-Mouse Benchmark Dataset</a> presented Lauer et al. 2022 (Nature Methods). For more information, you can check out the <a class="reference external" href="https://benchmark.deeplabcut.org/datasets.html">DeepLabCut Benchmark Datasets</a>.</p>
@@ -2151,7 +2151,7 @@ Generating frames and creating video.
 </div>
 </div>
 </div>
-<p>It can be beneficial to customize the tracking parameters a bit. The tracking paramaters you can set are:</p>
+<p>It can be beneficial to customize the tracking parameters a bit. The tracking parameters you can set are:</p>
 <p>Note: <a class="reference external" href="https://cocodataset.org/#keypoints-eval">OKS (object-keypoint similarity)</a> is a similarity metric for pose estimation, ranging from 0 to 1 (where 1 means the pose is identical)</p>
 <ul class="simple">
 <li><p><strong><code class="docutils literal notranslate"><span class="pre">bu_on_lost_idv</span></code></strong>: When True, the BU model is run when there are fewer conditions found than the expected number of individuals in the video.</p></li>

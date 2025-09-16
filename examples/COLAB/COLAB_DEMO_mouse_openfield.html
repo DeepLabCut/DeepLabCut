@@ -683,7 +683,7 @@ and stores the results as .csv file in a subdirectory under <strong>evaluation-r
 </div>
 </div>
 <p><strong>Check the images</strong>:</p>
-<p>You can go look in the newly created <code class="docutils literal notranslate"><span class="pre">&quot;evalutaion-results-pytorch&quot;</span></code> folder at the images. At around 100 epochs, the error is ~3 pixels (but this can vary on how your demo data was split for training).</p>
+<p>You can go look in the newly created <code class="docutils literal notranslate"><span class="pre">&quot;evaluation-results-pytorch&quot;</span></code> folder at the images. At around 100 epochs, the error is ~3 pixels (but this can vary on how your demo data was split for training).</p>
 </section>
 <section id="start-analyzing-videos">
 <h2>Start Analyzing videos:<a class="headerlink" href="#start-analyzing-videos" title="Link to this heading">#</a></h2>
@@ -702,7 +702,7 @@ and stores the results as .csv file in a subdirectory under <strong>evaluation-r
 </section>
 <section id="create-labeled-video">
 <h2>Create labeled video:<a class="headerlink" href="#create-labeled-video" title="Link to this heading">#</a></h2>
-<p>This function is for visualiztion purpose and can be used to create a video in .mp4 format with labels predicted by the network. This video is saved in the same directory where the original video resides. This should run around 215 FPS on the demo video!</p>
+<p>This function is for visualization purpose and can be used to create a video in .mp4 format with labels predicted by the network. This video is saved in the same directory where the original video resides. This should run around 215 FPS on the demo video!</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span><span class="n">path_config_file</span><span class="p">,</span> <span class="n">videofile_path</span><span class="p">)</span>
