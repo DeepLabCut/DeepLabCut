@@ -452,70 +452,9 @@ def analyze_videos(
         print(f"Creating a TopDownDynamicCropper with configuration {top_down_dynamic}")
         dynamic = TopDownDynamicCropper(**top_down_dynamic)
 
-    try:
-        snapshot = utils.get_model_snapshots(
-            snapshot_index, loader.model_folder, loader.pose_task
-        )[0]
-    except (ValueError, IndexError) as e:
-        print(f"Error loading snapshot with index {snapshot_index}: {e}")
-        print("Attempting to find available snapshots...")
-
-        # Try to get all available snapshots
-        try:
-            all_snapshots = utils.get_model_snapshots(
-                "all", loader.model_folder, loader.pose_task
-            )
-            if all_snapshots:
-                # Try to find a "best" snapshot first
-                best_snapshots = [s for s in all_snapshots if s.best]
-                if best_snapshots:
-                    snapshot = best_snapshots[0]
-                    print(f"Found and using best snapshot: {snapshot.path}")
-                else:
-                    # Use the last available snapshot
-                    snapshot = all_snapshots[-1]
-                    print(
-                        f"No best snapshot found, using last available: {snapshot.path}"
-                    )
-            else:
-                raise FileNotFoundError(f"No snapshots found in {loader.model_folder}")
-        except Exception as fallback_error:
-            raise FileNotFoundError(
-                f"Failed to load any snapshots from {loader.model_folder}. Original error: {e}. Fallback error: {fallback_error}"
-            )
-
-    # Additional validation for best snapshots
-    if "best" in str(snapshot.path) and not snapshot.path.exists():
-        print(
-            f"Warning: Best snapshot path {snapshot.path} does not exist. Checking for alternative snapshots..."
-        )
-        # Try to find any available snapshot
-        try:
-            all_snapshots = utils.get_model_snapshots(
-                "all", loader.model_folder, loader.pose_task
-            )
-            if all_snapshots:
-                # Try to find a different best snapshot
-                best_snapshots = [
-                    s for s in all_snapshots if s.best and s.path.exists()
-                ]
-                if best_snapshots:
-                    snapshot = best_snapshots[0]
-                    print(f"Using alternative best snapshot: {snapshot.path}")
-                else:
-                    # Use the last available snapshot
-                    snapshot = all_snapshots[-1]
-                    print(f"Using alternative snapshot: {snapshot.path}")
-            else:
-                raise FileNotFoundError(f"No snapshots found in {loader.model_folder}")
-        except Exception as e:
-            raise FileNotFoundError(f"Failed to find alternative snapshots: {e}")
-
-    # Verify the snapshot file exists
-    if not snapshot.path.exists():
-        raise FileNotFoundError(f"Snapshot file not found: {snapshot.path}")
-
-    print(f"Successfully loaded snapshot: {snapshot.path}")
+    snapshot = utils.get_model_snapshots(
+        snapshot_index, loader.model_folder, loader.pose_task
+    )[0]
 
     # Load the BU model for the conditions provider
     cond_provider = None
@@ -562,89 +501,9 @@ def analyze_videos(
         if detector_batch_size is None:
             detector_batch_size = loader.project_cfg.get("detector_batch_size", 1)
 
-        try:
-            detector_snapshot = utils.get_model_snapshots(
-                detector_snapshot_index, loader.model_folder, Task.DETECT
-            )[0]
-        except (ValueError, IndexError) as e:
-            print(
-                f"Error loading detector snapshot with index {detector_snapshot_index}: {e}"
-            )
-            print("Attempting to find available detector snapshots...")
-
-            # Try to get all available detector snapshots
-            try:
-                all_detector_snapshots = utils.get_model_snapshots(
-                    "all", loader.model_folder, Task.DETECT
-                )
-                if all_detector_snapshots:
-                    # Try to find a "best" detector snapshot first
-                    best_detector_snapshots = [
-                        s for s in all_detector_snapshots if s.best
-                    ]
-                    if best_detector_snapshots:
-                        detector_snapshot = best_detector_snapshots[0]
-                        print(
-                            f"Found and using best detector snapshot: {detector_snapshot.path}"
-                        )
-                    else:
-                        # Use the last available detector snapshot
-                        detector_snapshot = all_detector_snapshots[-1]
-                        print(
-                            f"No best detector snapshot found, using last available: {detector_snapshot.path}"
-                        )
-                else:
-                    raise FileNotFoundError(
-                        f"No detector snapshots found in {loader.model_folder}"
-                    )
-            except Exception as fallback_error:
-                raise FileNotFoundError(
-                    f"Failed to load any detector snapshots from {loader.model_folder}. Original error: {e}. Fallback error: {fallback_error}"
-                )
-
-        # Additional validation for detector snapshots
-        if (
-            "best" in str(detector_snapshot.path)
-            and not detector_snapshot.path.exists()
-        ):
-            print(
-                f"Warning: Best detector snapshot path {detector_snapshot.path} does not exist. Checking for alternative detector snapshots..."
-            )
-            try:
-                all_detector_snapshots = utils.get_model_snapshots(
-                    "all", loader.model_folder, Task.DETECT
-                )
-                if all_detector_snapshots:
-                    # Try to find a different best detector snapshot
-                    best_detector_snapshots = [
-                        s for s in all_detector_snapshots if s.best and s.path.exists()
-                    ]
-                    if best_detector_snapshots:
-                        detector_snapshot = best_detector_snapshots[0]
-                        print(
-                            f"Using alternative best detector snapshot: {detector_snapshot.path}"
-                        )
-                    else:
-                        # Use the last available detector snapshot
-                        detector_snapshot = all_detector_snapshots[-1]
-                        print(
-                            f"Using alternative detector snapshot: {detector_snapshot.path}"
-                        )
-                else:
-                    raise FileNotFoundError(
-                        f"No detector snapshots found in {loader.model_folder}"
-                    )
-            except Exception as e:
-                raise FileNotFoundError(
-                    f"Failed to find alternative detector snapshots: {e}"
-                )
-
-        # Verify the detector snapshot file exists
-        if not detector_snapshot.path.exists():
-            raise FileNotFoundError(
-                f"Detector snapshot file not found: {detector_snapshot.path}"
-            )
-
+        detector_snapshot = utils.get_model_snapshots(
+            detector_snapshot_index, loader.model_folder, Task.DETECT
+        )[0]
         print(f"  -> Using detector {detector_snapshot.path}")
         detector_runner = utils.get_detector_inference_runner(
             model_config=loader.model_cfg,
@@ -794,6 +653,8 @@ def analyze_videos(
                         overwrite=False,
                         identity_only=identity_only,
                         destfolder=str(output_path),
+                        snapshot_index=snapshot_index,
+                        detector_snapshot_index=detector_snapshot_index,
                     )
                     stitch_tracklets(
                         config,
@@ -805,6 +666,8 @@ def analyze_videos(
                         animal_names=animal_names,
                         destfolder=str(output_path),
                         save_as_csv=save_as_csv,
+                        snapshot_index=snapshot_index,
+                        detector_snapshot_index=detector_snapshot_index,
                     )
                     h5_files_created = True  # .h5 file was created by stitch_tracklets
 
