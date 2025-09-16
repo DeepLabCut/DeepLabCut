@@ -271,7 +271,7 @@ def extract_outlier_frames(
         See https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
 
     MAdegree: int, optional, default=1
-        For outlieralgorithm ``'fitting'``: MovingAvarage degree of ARIMA model degree.
+        For outlieralgorithm ``'fitting'``: Moving Average degree of ARIMA model degree.
         (Note we use SARIMAX without exogeneous and seasonal part)
         See https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
 

@@ -342,7 +342,7 @@ def plot_trajectories(
                 multianimal_errors.append(error_message)
 
     if len(failures) > 0:
-        # Some vidoes were not evaluated.
+        # Some videos were not evaluated.
         failed_videos = ",".join(failures)
         if len(multianimal_errors) > 0:
             verbose_error = ": " + " ".join(multianimal_errors)
