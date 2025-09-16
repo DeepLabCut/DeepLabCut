@@ -83,6 +83,7 @@ def filterpredictions(
     modelprefix="",
     track_method="",
     return_data=False,
+    **kwargs,
 ):
     """Fits frame-by-frame pose predictions.
 
@@ -152,6 +153,11 @@ def filterpredictions(
     return_data: bool, optional, default=False
         If True, returns a dictionary of the filtered data keyed by video names.
 
+    kwargs: additional arguments.
+        For torch-based shuffles, can be used to specify:
+            - snapshot_index
+            - detector_snapshot_index
+
     Returns
     -------
     video_to_filtered_df
@@ -208,6 +214,7 @@ def filterpredictions(
         shuffle,
         trainFraction=cfg["TrainingFraction"][trainingsetindex],
         modelprefix=modelprefix,
+        **kwargs,
     )
     Videos = auxiliaryfunctions.get_list_of_videos(video, videotype)
 

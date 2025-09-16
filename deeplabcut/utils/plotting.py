@@ -189,6 +189,7 @@ def plot_trajectories(
     linewidth=1.0,
     track_method="",
     pcutoff: float | None = None,
+    **kwargs,
 ):
     """Plots the trajectories of various bodyparts across the video.
 
@@ -256,6 +257,11 @@ def plot_trajectories(
     pcutoff: string, optional, default=None
         Overrides the pcutoff set in the project configuration to plot the trajectories.
 
+    kwargs: additional arguments.
+        For torch-based shuffles, can be used to specify:
+            - snapshot_index
+            - detector_snapshot_index
+
     Returns
     -------
     None
@@ -279,7 +285,11 @@ def plot_trajectories(
 
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
-        cfg, shuffle, trainFraction, modelprefix=modelprefix
+        cfg,
+        shuffle,
+        trainFraction,
+        modelprefix=modelprefix,
+        **kwargs,
     )  # automatically loads corresponding model (even training iteration based on snapshot index)
     bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
         cfg, displayedbodyparts

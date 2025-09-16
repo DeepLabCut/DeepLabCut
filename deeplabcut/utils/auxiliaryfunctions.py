@@ -753,9 +753,15 @@ def get_scorer_name(
     trainingsiterations: str | int = "unknown",
     modelprefix: str = "",
     engine: Engine | None = None,
+    **kwargs,
 ):
     """Extract the scorer/network name for a particular shuffle, training fraction, etc.
     If the engine is not specified, determines which to use from
+    kwargs: additional arguments.
+        For torch-based shuffles, can be used to specify:
+            - snapshot_index
+            - detector_snapshot_index
+
     Returns tuple of DLCscorer, DLCscorerlegacy (old naming convention)
     """
     if engine is None:
@@ -771,16 +777,14 @@ def get_scorer_name(
     if engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch.apis.utils import get_scorer_name
 
-        snapshot_index = None
-        if isinstance(trainingsiterations, int):
-            snapshot_index = trainingsiterations
-
+        snapshot_index = kwargs.get("snapshot_index", None)
+        detector_snapshot_index = kwargs.get("detector_snapshot_index", None)
         dlc3_scorer = get_scorer_name(
             cfg=cfg,
             shuffle=shuffle,
             train_fraction=trainFraction,
             snapshot_index=snapshot_index,
-            detector_index=None,
+            detector_index=detector_snapshot_index,
             modelprefix=modelprefix,
         )
         return dlc3_scorer, dlc3_scorer
