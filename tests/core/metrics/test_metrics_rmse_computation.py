@@ -143,7 +143,7 @@ def test_rmse_with_nans(gt: list, pred: list, result: tuple[float, float]):
                 [[10.0, 10.0, 2], [20.0, 20.0, 2], [30.0, 30.0, 2]],
                 [[40.0, 40.0, 2], [50.0, 50.0, 2], [60.0, 60.0, 2]],
             ],
-            [  # predicted pose, perfect detections but mis-assembled
+            [  # predicted pose, perfect detections but misassembled
                 [[10.0, 10.0, 0.9], [50.0, 50.0, 0.9], [30.0, 30.0, 0.9]],
                 [[40.0, 40.0, 0.9], [20.0, 20.0, 0.4], [60.0, 60.0, 0.9]],
             ],
@@ -155,7 +155,7 @@ def test_rmse_with_nans(gt: list, pred: list, result: tuple[float, float]):
                 [[10.0, 10.0, 2], [20.0, 20.0, 2], [30.0, 30.0, 2]],
                 [[40.0, 40.0, 2], [50.0, 50.0, 2], [60.0, 60.0, 2]],
             ],
-            [  # predicted pose, small error in pose and mis-assembled
+            [  # predicted pose, small error in pose and misassembled
                 [[12.0, 10.0, 0.9], [52.0, 50.0, 0.9], [32.0, 30.0, 0.9]],
                 [[42.0, 40.0, 0.9], [18.0, 20.0, 0.4], [62.0, 60.0, 0.9]],
             ],
@@ -167,7 +167,7 @@ def test_rmse_with_nans(gt: list, pred: list, result: tuple[float, float]):
                 [[10.0, 10.0, 2], [20.0, 20.0, 2], [30.0, 30.0, 2]],
                 [[40.0, 40.0, 2], [50.0, 50.0, 2], [60.0, 60.0, 2]],
             ],
-            [  # predicted pose, small error in low-conf pose and mis-assembled
+            [  # predicted pose, small error in low-conf pose and misassembled
                 [[12.0, 10.0, 0.4], [50.0, 50.0, 0.9], [30.0, 30.0, 0.9]],
                 [[40.0, 40.0, 0.9], [22.0, 20.0, 0.4], [62.0, 60.0, 0.4]],
             ],
@@ -218,7 +218,7 @@ def test_rmse_with_nans(gt: list, pred: list, result: tuple[float, float]):
                     [[10.0, 10.0, 2], [20.0, 20.0, 2], [30.0, 30.0, 2]],
                     [[40.0, 40.0, 2], [50.0, 50.0, 2], [60.0, 60.0, 2]],
                 ],
-                [  # predicted pose, perfect detections but mis-assembled
+                [  # predicted pose, perfect detections but misassembled
                     [[10.0, 10.0, 0.9], [50.0, 50.0, 0.9], [30.0, 30.0, 0.9]],
                     [[40.0, 40.0, 0.9], [20.0, 20.0, 0.4], [60.0, 60.0, 0.9]],
                 ],

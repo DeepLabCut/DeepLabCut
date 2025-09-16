@@ -71,7 +71,7 @@ def rmse_match_prediction_to_gt(
     if np.all(np.isnan(distance_matrix)):
         return np.arange(num_idv)
 
-    # np.inf and np.nan in linear_sum_assigment raises error; so when a prediction
+    # np.inf and np.nan in linear_sum_assignment raises error; so when a prediction
     # cannot be assigned to a ground truth (e.g. with PAFs, where predicted bodyparts
     # can be NaN) set the distance to a distance greater than the maximum distance
     max_dist = np.nanmax(distance_matrix)
