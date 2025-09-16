@@ -181,6 +181,7 @@ def analyzeskeleton(
     modelprefix="",
     track_method="",
     return_data=False,
+    **kwargs,
 ):
     """Extracts length and orientation of each "bone" of the skeleton.
 
@@ -235,6 +236,11 @@ def analyzeskeleton(
     return_data: bool, optional, default=False
         If True, returns a dictionary of the filtered data keyed by video names.
 
+    kwargs: additional arguments.
+        For torch-based shuffles, can be used to specify:
+            - snapshot_index
+            - detector_snapshot_index
+
     Returns
     -------
     video_to_skeleton_df
@@ -257,6 +263,7 @@ def analyzeskeleton(
         shuffle,
         trainFraction=cfg["TrainingFraction"][trainingsetindex],
         modelprefix=modelprefix,
+        **kwargs,
     )
 
     Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)

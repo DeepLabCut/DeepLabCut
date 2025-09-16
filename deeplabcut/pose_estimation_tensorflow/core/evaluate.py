@@ -597,7 +597,7 @@ def evaluate_network(
 
     per_keypoint_evaluation: bool, default=False
         Compute the train and test RMSE for each keypoint, and save the results to
-        a {model_name}-keypoint-results.csv in the evalution-results folder
+        a {model_name}-keypoint-results.csv in the evaluation-results folder
 
     snapshots_to_evaluate: List[str], optional, default=None
         List of snapshot names to evaluate (e.g. ["snapshot-50000", "snapshot-75000", ...])
