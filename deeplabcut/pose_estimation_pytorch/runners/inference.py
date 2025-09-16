@@ -412,7 +412,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                         }
 
             # Process any remaining inputs
-            if not self._stop_event.is_set() and self._batch:
+            if self._batch is not None and len(self._batch) > 0:
                 self._safe_put((self._batch, self._model_kwargs))
 
         except BaseException as e:  # catches KeyboardInterrupt, SystemExit, etc.
