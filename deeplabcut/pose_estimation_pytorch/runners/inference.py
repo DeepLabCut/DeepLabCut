@@ -96,6 +96,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
         self.model.to(self.device)
         self.model.eval()
+        self.model = torch.compile(self.model)
 
         self._batch: torch.Tensor | None = None
         self._model_kwargs: dict[str, np.ndarray | torch.Tensor] = {}
