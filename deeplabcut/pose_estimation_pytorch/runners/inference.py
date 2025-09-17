@@ -56,6 +56,8 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         async_mode: bool = True,
         num_prefetch_batches: int = 2,
         timeout: float = 30.0,
+        use_compile: bool = False,
+        compile_backend: str = "inductor",
     ):
         """
         Args:
@@ -97,10 +99,14 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
         self.model.to(self.device)
         self.model.eval()
-        try:
-            self.model = torch.compile(self.model)
-        except Exception as e:
-            warnings.warn(f"torch.compile failed, falling back to eager mode: {e}")
+        if use_compile:
+            try:
+                self.model = torch.compile(self.model, backend=compile_backend)
+            except Exception as e:
+                warnings.warn(
+                    f"torch.compile failed with backend='{compile_backend}', "
+                    f"falling back to eager mode. Error: {e}"
+                )
 
         self._batch: torch.Tensor | None = None
         self._model_kwargs: dict[str, np.ndarray | torch.Tensor] = {}
