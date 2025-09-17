@@ -10,6 +10,7 @@
 #
 from __future__ import annotations
 
+import warnings
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from typing import Any, Generic, Iterable
@@ -96,7 +97,10 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
         self.model.to(self.device)
         self.model.eval()
-        self.model = torch.compile(self.model)
+        try:
+            self.model = torch.compile(self.model)
+        except Exception as e:
+            warnings.warn(f"torch.compile failed, falling back to eager mode: {e}")
 
         self._batch: torch.Tensor | None = None
         self._model_kwargs: dict[str, np.ndarray | torch.Tensor] = {}
