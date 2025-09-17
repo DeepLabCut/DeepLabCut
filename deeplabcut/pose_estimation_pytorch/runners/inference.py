@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import warnings
 from abc import ABCMeta, abstractmethod
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Generic, Iterable
 import threading
@@ -38,6 +39,35 @@ from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
+@dataclass(frozen=True)
+class InferenceThreadingConfig:
+    """Configuration for multithreading in inference runners."""
+    async_mode: bool = True
+    num_prefetch_batches: int = 4
+    timeout: float = 30.0
+
+    @classmethod
+    def from_dict(cls, cfg: dict[str, Any] | None) -> InferenceThreadingConfig:
+        """Create a config from a dictionary, falling back to defaults."""
+        if cfg is None:
+            return cls()
+        return cls(**cfg)
+
+
+@dataclass(frozen=True)
+class InferenceCompileConfig:
+    """Configuration for torch compile option in inference runners."""
+    use_compile: bool = False
+    compile_backend: str = "inductor"
+
+    @classmethod
+    def from_dict(cls, cfg: dict[str, Any] | None) -> InferenceCompileConfig:
+        """Create a config from a dictionary, falling back to defaults."""
+        if cfg is None:
+            return cls()
+        return cls(**cfg)
+
+
 class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
     """Base class for inference runners
 
@@ -53,11 +83,8 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         preprocessor: Preprocessor | None = None,
         postprocessor: Postprocessor | None = None,
         load_weights_only: bool | None = None,
-        async_mode: bool = True,
-        num_prefetch_batches: int = 2,
-        timeout: float = 30.0,
-        use_compile: bool = False,
-        compile_backend: str = "inductor",
+        threading_cfg: InferenceThreadingConfig | dict | None = None,
+        compile_cfg: InferenceCompileConfig | dict | None = None,
     ):
         """
         Args:
@@ -74,9 +101,8 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                         https://pytorch.org/docs/stable/generated/torch.load.html
                 If None, the default value is used:
                     `deeplabcut.pose_estimation_pytorch.get_load_weights_only()`
-            async_mode: Whether to use async inference with pipeline parallelism
-            num_prefetch_batches: Number of batches to prefetch in async mode
-            timeout: Timeout for queue operations in async mode
+            threading_cfg: Configuration for multithreading in inference runners
+            compile_cfg: Configuration for torch compile option in inference runners
         """
         super().__init__(model=model, device=device, snapshot_path=snapshot_path)
         if not isinstance(batch_size, int) or batch_size <= 0:
@@ -85,9 +111,14 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.batch_size = batch_size
         self.preprocessor = preprocessor
         self.postprocessor = postprocessor
-        self.async_mode = async_mode
-        self.num_prefetch_batches = num_prefetch_batches
-        self.timeout = timeout
+
+        threading_cfg = (
+            threading_cfg if isinstance(threading_cfg, InferenceThreadingConfig)
+            else InferenceThreadingConfig.from_dict(threading_cfg)
+        )
+        self.async_mode = threading_cfg.async_mode
+        self.num_prefetch_batches = threading_cfg.num_prefetch_batches
+        self.timeout = threading_cfg.timeout
 
         if self.snapshot_path is not None and self.snapshot_path != "":
             self.load_snapshot(
@@ -99,12 +130,17 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
         self.model.to(self.device)
         self.model.eval()
-        if use_compile:
+
+        compile_cfg = (
+            compile_cfg if isinstance(compile_cfg, InferenceCompileConfig)
+            else InferenceCompileConfig.from_dict(compile_cfg)
+        )
+        if compile_cfg.use_compile:
             try:
-                self.model = torch.compile(self.model, backend=compile_backend)
+                self.model = torch.compile(self.model, backend=compile_cfg.compile_backend)
             except Exception as e:
                 warnings.warn(
-                    f"torch.compile failed with backend='{compile_backend}', "
+                    f"torch.compile failed with backend='{compile_cfg.compile_backend}', "
                     f"falling back to eager mode. Error: {e}"
                 )
 
@@ -117,7 +153,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
         # Async-specific attributes
         if self.async_mode:
-            self._input_queue = Queue(maxsize=num_prefetch_batches)
+            self._input_queue = Queue(maxsize=self.num_prefetch_batches)
             self._preprocessing_thread = None
             self._stop_event = threading.Event()
             self._exception = None
@@ -889,9 +925,8 @@ def build_inference_runner(
     postprocessor: Postprocessor | None = None,
     dynamic: DynamicCropper | None = None,
     load_weights_only: bool | None = None,
-    async_mode: bool = True,
-    num_prefetch_batches: int = 4,
-    timeout: float = 30.0,
+    threading_cfg: InferenceThreadingConfig | dict | None = None,
+    compile_cfg: InferenceCompileConfig | dict | None = None,
     **kwargs,
 ) -> InferenceRunner:
     """
@@ -916,9 +951,8 @@ def build_inference_runner(
                 https://pytorch.org/docs/stable/generated/torch.load.html
             If None, the default value is used:
                 `deeplabcut.pose_estimation_pytorch.get_load_weights_only()`
-        async_mode: Whether to use async inference with pipeline parallelism
-        num_prefetch_batches: Number of batches to prefetch in async mode
-        timeout: Timeout for queue operations in async mode
+        threading_cfg: Configuration for multithreading in inference runners
+        compile_cfg: Configuration for torch compile option in inference runners
         **kwargs: Other arguments for the InferenceRunner.
 
     Returns:
@@ -932,9 +966,8 @@ def build_inference_runner(
         preprocessor=preprocessor,
         postprocessor=postprocessor,
         load_weights_only=load_weights_only,
-        async_mode=async_mode,
-        num_prefetch_batches=num_prefetch_batches,
-        timeout=timeout,
+        threading_cfg=threading_cfg,
+        compile_cfg=compile_cfg,
         **kwargs,
     )
 

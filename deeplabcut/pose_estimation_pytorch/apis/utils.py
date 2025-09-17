@@ -59,6 +59,7 @@ from deeplabcut.pose_estimation_pytorch.runners import (
     PoseInferenceRunner,
     TopDownDynamicCropper,
 )
+from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceThreadingConfig, InferenceCompileConfig
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import (
     Snapshot,
     TorchSnapshotManager,
@@ -491,6 +492,8 @@ def get_inference_runners(
     detector_path: str | Path | None = None,
     detector_transform: A.BaseCompose | None = None,
     dynamic: DynamicCropper | None = None,
+    threading_cfg: InferenceThreadingConfig | dict | None = None,
+    compile_cfg: InferenceCompileConfig | dict | None = None,
 ) -> tuple[InferenceRunner, InferenceRunner | None]:
     """Builds the runners for pose estimation
 
@@ -517,6 +520,8 @@ def get_inference_runners(
             cropping should not be used. Only for bottom-up pose estimation models.
             Should only be used when creating inference runners for video pose
             estimation with batch size 1.
+        threading_cfg: Configuration for multithreading in inference runners
+        compile_cfg: Configuration for torch compile option in inference runners
 
     Returns:
         a runner for pose estimation
@@ -609,6 +614,8 @@ def get_inference_runners(
                     "load_weights_only",
                     None,
                 ),
+                threading_cfg=threading_cfg,
+                compile_cfg=compile_cfg,
             )
 
     pose_runner = build_inference_runner(
@@ -621,6 +628,8 @@ def get_inference_runners(
         postprocessor=pose_postprocessor,
         dynamic=dynamic,
         load_weights_only=model_config["runner"].get("load_weights_only", None),
+        threading_cfg=threading_cfg,
+        compile_cfg=compile_cfg,
     )
     return pose_runner, detector_runner
 
@@ -632,6 +641,8 @@ def get_detector_inference_runner(
     device: str | None = None,
     max_individuals: int | None = None,
     transform: A.BaseCompose | None = None,
+    threading_cfg: InferenceThreadingConfig | dict | None = None,
+    compile_cfg: InferenceCompileConfig | dict | None = None,
 ) -> DetectorInferenceRunner:
     """Builds an inference runner for object detection.
 
@@ -643,6 +654,8 @@ def get_detector_inference_runner(
         device: if defined, overwrites the device selection from the model config
         transform: the transform for pose estimation. if None, uses the transform
             defined in the config.
+        threading_cfg: Configuration for multithreading in inference runners
+        compile_cfg: Configuration for torch compile option in inference runners
 
     Returns:
         an inference runner for object detection
@@ -673,6 +686,8 @@ def get_detector_inference_runner(
         preprocessor=preprocessor,
         postprocessor=postprocessor,
         load_weights_only=det_cfg["runner"].get("load_weights_only", None),
+        threading_cfg=threading_cfg,
+        compile_cfg=compile_cfg,
     )
 
     if not isinstance(runner, DetectorInferenceRunner):
@@ -707,6 +722,8 @@ def get_filtered_coco_detector_inference_runner(
     color_mode: str | None = None,
     model_config: dict | None = None,
     transform: A.BaseCompose | None = None,
+    threading_cfg: InferenceThreadingConfig | dict | None = None,
+    compile_cfg: InferenceCompileConfig | dict | None = None,
 ) -> DetectorInferenceRunner:
     """
     Builds a detector inference runner using a pretrained COCO detector from torchvision.
@@ -738,6 +755,8 @@ def get_filtered_coco_detector_inference_runner(
                                                `device`, `max_individuals`, and `color_mode`.
         transform (A.BaseCompose or None, optional): Optional preprocessing pipeline.
                                                      If None, uses the model's default transform.
+        threading_cfg: Configuration for multithreading in inference runners
+        compile_cfg: Configuration for torch compile option in inference runners
 
     Returns:
         DetectorInferenceRunner: A configured detector inference runner.
@@ -792,6 +811,8 @@ def get_filtered_coco_detector_inference_runner(
         postprocessor=build_detector_postprocessor(
             max_individuals=max_individuals,
         ),
+        threading_cfg=threading_cfg,
+        compile_cfg=compile_cfg,
     )
     return detector_runner
 
@@ -806,6 +827,8 @@ def get_pose_inference_runner(
     dynamic: DynamicCropper | None = None,
     cond_provider: CondFromModel | None = None,
     ctd_tracking: bool | CTDTrackingConfig = False,
+    threading_cfg: InferenceThreadingConfig | dict | None = None,
+    compile_cfg: InferenceCompileConfig | dict | None = None,
 ) -> PoseInferenceRunner:
     """Builds an inference runner for pose estimation.
 
@@ -829,6 +852,8 @@ def get_pose_inference_runner(
             pose in the first frame, and for the remaining frames only the CTD model is
             needed. To configure conditional pose tracking differently, you can pass a
             CTDTrackingConfig instance.
+        threading_cfg: Configuration for multithreading in inference runners
+        compile_cfg: Configuration for torch compile option in inference runners
 
     Returns:
         an inference runner for pose estimation
@@ -909,6 +934,8 @@ def get_pose_inference_runner(
         postprocessor=pose_postprocessor,
         dynamic=dynamic,
         load_weights_only=model_config["runner"].get("load_weights_only", None),
+        threading_cfg=threading_cfg,
+        compile_cfg=compile_cfg,
         **kwargs,
     )
     if not isinstance(runner, PoseInferenceRunner):
