@@ -63,7 +63,7 @@ subfolders = getsubfolders(basepath)
 for subfolder in subfolders: #this would be January, February etc. in the upper example
     print("Starting analyze data in: ", subfolder)
     subsubfolders = getsubfolders(subfolder)
-    for subsubfolder in subsubfolders: #this would be Febuary1, etc. in the upper example...
+    for subsubfolder in subsubfolders: #this would be February1, etc. in the upper example...
         print("Starting analyze data in: ", subsubfolder)
         for vtype in [".mp4", ".m4v", ".mpg"]:
             deeplabcut.analyze_videos(config,[subsubfolder],shuffle=shuffle,videotype=vtype,save_as_csv=True)

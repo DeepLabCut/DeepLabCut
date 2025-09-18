@@ -328,7 +328,7 @@ the values, and start again!
 here
 ```python
 videofolder: string
-    Full path of the folder where the videos are stored. Use this if the vidoes are stored in a different location other than where the triangulation files are stored. By default is ``None`` and therefore looks for video files in the directory where the triangulation file is stored.
+    Full path of the folder where the videos are stored. Use this if the videos are stored in a different location other than where the triangulation files are stored. By default is ``None`` and therefore looks for video files in the directory where the triangulation file is stored.
 
 trailpoints: int
     Number of previous frames whose body parts are plotted in a frame (for displaying history). Default is set to 0.

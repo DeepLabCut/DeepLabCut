@@ -14,13 +14,11 @@ from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from typing import Any, Generic, Iterable
 import threading
-from queue import Queue, Empty
-import time
+from queue import Queue, Empty, Full
 
 import numpy as np
 import torch
 import torch.nn as nn
-import torchvision
 
 import deeplabcut.pose_estimation_pytorch.post_processing.nms as nms
 import deeplabcut.pose_estimation_pytorch.runners.ctd as ctd
@@ -212,17 +210,10 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         try:
             while True:
                 # Get next batch from queue
-                try:
-                    item = self._input_queue.get(timeout=self.timeout)
-                except Empty:
-                    # Check if preprocessing thread is still alive
-                    if self._preprocessing_thread.is_alive():
-                        continue
-                    else:
-                        break
+                item = self._safe_get()
 
+                # None means either producer finished or stop_event triggered
                 if item is None:
-                    # Preprocessing is done
                     break
 
                 batch, model_kwargs = item
@@ -235,7 +226,12 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 batch_results = self._extract_results(shelf_writer)
                 results.extend(batch_results)
 
-        except Exception as e:
+                # propagate any exception from the producer immediately
+                if self._exception is not None:
+                    raise self._exception
+
+        except BaseException as e:  # catches KeyboardInterrupt, SystemExit, etc.
+            # tell producer to quit
             self._stop_event.set()
             raise e
         finally:
@@ -359,6 +355,33 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         """Returns: Whether there are inputs which have not yet been processed"""
         return self._batch is not None and len(self._batch) > 0
 
+    def _safe_put(self, item: Any) -> bool:
+        """Put item in the queue, retrying until successful or stop_event is set"""
+        while not self._stop_event.is_set():
+            try:
+                self._input_queue.put(item, timeout=1.0)
+                return True
+            except Full:
+                continue
+        return False
+
+    def _safe_get(self) -> Any:
+        """
+        Get the next item from the queue safely, retrying until successful or stop_event is set
+
+        Returns:
+            The item from the queue, or None if the producer is dead or stop_signal is raised and queue empty.
+        """
+        while True:
+            try:
+                item = self._input_queue.get(timeout=1.0)
+                return item
+            except Empty:
+                # check if producer is still running
+                if self._stop_event.is_set() or self._preprocessing_thread is None or not self._preprocessing_thread.is_alive():
+                    return None
+                continue
+
     def _preprocessing_worker(self, images: Iterable) -> None:
         """Background worker that prepares inputs and puts them in the input queue"""
         try:
@@ -376,13 +399,11 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                         mk: v[: self.batch_size] for mk, v in self._model_kwargs.items()
                     }
 
-                    # Put the batch in the queue for processing
-                    self._input_queue.put((batch, model_kwargs), timeout=self.timeout)
+                    self._safe_put((batch, model_kwargs))
 
                     # Remove processed inputs from batch
                     if len(self._batch) <= self.batch_size:
-                        self._batch = None
-                        self._model_kwargs = {}
+                        self._batch, self._model_kwargs = None, {}
                     else:
                         self._batch = self._batch[self.batch_size :]
                         self._model_kwargs = {
@@ -392,16 +413,14 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
             # Process any remaining inputs
             if self._batch is not None and len(self._batch) > 0:
-                batch = self._batch
-                model_kwargs = self._model_kwargs
-                self._input_queue.put((batch, model_kwargs), timeout=self.timeout)
+                self._safe_put((self._batch, self._model_kwargs))
 
-        except Exception as e:
+        except BaseException as e:  # catches KeyboardInterrupt, SystemExit, etc.
             self._exception = e
             self._stop_event.set()
         finally:
             # Signal that preprocessing is done
-            self._input_queue.put(None, timeout=self.timeout)
+            self._safe_put(None)
 
     def __del__(self):
         """Cleanup method to ensure threads are stopped"""
@@ -582,6 +601,12 @@ class CTDInferenceRunner(PoseInferenceRunner):
                 }
             ]
         """
+        cond_kpts = kwargs.get("cond_kpts", None)
+        if cond_kpts is not None and cond_kpts.shape[0] == 0:
+            # No conditions, so just return an empty prediction list
+            return []
+
+        # Normal prediction path
         if self.device and "cuda" in str(self.device):
             with torch.autocast(device_type=str(self.device)):
                 outputs = self.model(inputs.to(self.device), **kwargs)
@@ -590,12 +615,13 @@ class CTDInferenceRunner(PoseInferenceRunner):
         raw_predictions = self.model.get_predictions(outputs)
         predictions = [
             {
-                "detection": {
-                    "bboxes": item["boxes"].cpu().numpy().reshape(-1, 4),
-                    "bbox_scores": item["scores"].cpu().numpy().reshape(-1),
+                head: {
+                    pred_name: pred[b].cpu().numpy()
+                    for pred_name, pred in head_outputs.items()
                 }
+                for head, head_outputs in raw_predictions.items()
             }
-            for item in raw_predictions
+            for b in range(len(inputs))
         ]
 
         return predictions
@@ -850,107 +876,16 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
                 _, raw_predictions = self.model(inputs.to(self.device))
         else:
             _, raw_predictions = self.model(inputs.to(self.device))
-        
-        predictions = []
-        for item in raw_predictions:
-            if isinstance(item, dict) and "boxes" in item and "scores" in item:
-                predictions.append({
-                    "detection": {
-                        "bboxes": item["boxes"].cpu().numpy().reshape(-1, 4),
-                        "bbox_scores": item["scores"].cpu().numpy().reshape(-1),
-                    }
-                })
-            else:
-                # Handle unexpected output format
-                predictions.append({
-                    "detection": {
-                        "bboxes": np.zeros((0, 4)),
-                        "bbox_scores": np.zeros(0),
-                    }
-                })
-        
+        predictions = [
+            {
+                "detection": {
+                    "bboxes": item["boxes"].cpu().numpy().reshape(-1, 4),
+                    "scores": item["scores"].cpu().numpy().reshape(-1),
+                }
+            }
+            for item in raw_predictions
+        ]
         return predictions
-    
-    def inference(self, images) -> list[dict[str, np.ndarray]]:
-        """Run inference using the detector's own inference method if available
-        
-        Args:
-            images: List of image paths, PIL Images, or numpy arrays
-            
-        Returns:
-            List of detection results with bboxes in xywh format
-        """
-        # Use the detector's own inference method if it exists
-        if hasattr(self.model, 'inference'):
-            return self.model.inference(images)
-        else:
-            # Fall back to standard inference pipeline
-            return super().inference(images)
-
-
-class TorchvisionDetectorInferenceRunner(DetectorInferenceRunner):
-    """Runner for torchvision detector inference that bypasses standard preprocessing"""
-    
-    def __init__(self, model: BaseDetector, **kwargs):
-        """
-        Args:
-            model: The torchvision detector to use for inference.
-            **kwargs: Inference runner kwargs.
-        """
-        super().__init__(model, **kwargs)
-        
-    def predict(
-        self, inputs: torch.Tensor, **kwargs
-    ) -> list[dict[str, dict[str, np.ndarray]]]:
-        """Makes predictions from a model input and output
-
-        Args:
-            inputs: the inputs to the model, of shape (batch_size, ...)
-
-        Returns:
-            predictions for each of the 'batch_size' inputs, made by each head
-        """
-        if self.device and "cuda" in str(self.device):
-            with torch.autocast(device_type=str(self.device)):
-                _, raw_predictions = self.model(inputs.to(self.device))
-        else:
-            _, raw_predictions = self.model(inputs.to(self.device))
-        
-        predictions = []
-        for item in raw_predictions:
-            if isinstance(item, dict) and "boxes" in item:
-                predictions.append({
-                    "detection": {
-                        "bboxes": item["boxes"].cpu().numpy().reshape(-1, 4),
-                        "bbox_scores": item["scores"].cpu().numpy().reshape(-1),
-                    }
-                })
-            else:
-                # Handle unexpected output format
-                predictions.append({
-                    "detection": {
-                        "bboxes": np.zeros((0, 4)),
-                        "bbox_scores": np.zeros(0),
-                    }
-                })
-        
-        return predictions
-        
-    def inference(self, images) -> list[dict[str, np.ndarray]]:
-        """Run inference using the torchvision detector's inference method
-        
-        Args:
-            images: List of image paths, PIL Images, or numpy arrays
-            
-        Returns:
-            List of detection results with bboxes in xywh format
-        """
-        # Always use the detector's own inference method for torchvision detectors
-        if hasattr(self.model, 'inference'):
-            return self.model.inference(images)
-        else:
-            # This should never happen for torchvision detectors
-            raise RuntimeError("TorchvisionDetectorInferenceRunner requires model to have inference method")
 
 
 def build_inference_runner(
@@ -1018,13 +953,7 @@ def build_inference_runner(
                 f"The DynamicCropper can only be used for pose estimation; not object "
                 f"detection. Please turn off dynamic cropping."
             )
-        
-        # Simple check: if superanimal_humanbody, use torchvision inference
-        # Otherwise, use standard inference
-        if hasattr(model, 'superanimal_name') and model.superanimal_name == "superanimal_humanbody":
-            return TorchvisionDetectorInferenceRunner(**kwargs)
-        else:
-            return DetectorInferenceRunner(**kwargs)
+        return DetectorInferenceRunner(**kwargs)
 
     if task != Task.BOTTOM_UP:
         if dynamic is not None and not isinstance(dynamic, TopDownDynamicCropper):
