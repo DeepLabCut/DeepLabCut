@@ -39,6 +39,7 @@ from deeplabcut.pose_estimation_pytorch.runners import (
     InferenceRunner,
     TopDownDynamicCropper,
 )
+from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceCompileConfig
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxiliaryfunctions, VideoReader
@@ -248,6 +249,7 @@ def analyze_videos(
     overwrite: bool = False,
     cropping: list[int] | None = None,
     save_as_df: bool = False,
+    compile_cfg: InferenceCompileConfig | dict | None = None,
 ) -> str:
     """Makes prediction based on a trained network.
 
@@ -376,6 +378,7 @@ def analyze_videos(
             predictions (before tracking results) to an H5 file containing a pandas
             DataFrame. If ``save_as_csv==True`` than the full predictions will also be
             saved in a CSV file.
+        compile_cfg: Configuration for torch compile option in inference runners
 
     Returns:
         The scorer used to analyze the videos
@@ -486,6 +489,7 @@ def analyze_videos(
         dynamic=dynamic,
         cond_provider=cond_provider,
         ctd_tracking=ctd_tracking,
+        compile_cfg=compile_cfg,
     )
 
     detector_runner = None
@@ -510,6 +514,7 @@ def analyze_videos(
             snapshot_path=detector_snapshot.path,
             max_individuals=max_num_animals,
             batch_size=detector_batch_size,
+            compile_cfg=compile_cfg,
         )
 
     dlc_scorer = loader.scorer(snapshot, detector_snapshot)
