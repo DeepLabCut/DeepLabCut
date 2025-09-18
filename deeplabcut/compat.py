@@ -830,7 +830,8 @@ def analyze_videos(
 
     torch_kwargs:
         Any extra parameters to pass to the PyTorch API, such as ``device`` which can
-        be used to specify the CUDA device to use for training.
+        be used to specify the CUDA device to use for training. An other argument is
+        ``compile_cfg``, which is used to activate and configure the torch.compile method.
 
     Returns
     -------
