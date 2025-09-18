@@ -59,7 +59,10 @@ from deeplabcut.pose_estimation_pytorch.runners import (
     PoseInferenceRunner,
     TopDownDynamicCropper,
 )
-from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceThreadingConfig, InferenceCompileConfig
+from deeplabcut.pose_estimation_pytorch.runners.inference import (
+    InferenceThreadingConfig,
+    InferenceCompileConfig,
+)
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import (
     Snapshot,
     TorchSnapshotManager,

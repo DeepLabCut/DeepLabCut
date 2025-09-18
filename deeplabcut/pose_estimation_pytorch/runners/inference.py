@@ -42,6 +42,7 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 @dataclass(frozen=True)
 class InferenceThreadingConfig:
     """Configuration for multithreading in inference runners."""
+
     async_mode: bool = True
     num_prefetch_batches: int = 4
     timeout: float = 30.0
@@ -57,6 +58,7 @@ class InferenceThreadingConfig:
 @dataclass(frozen=True)
 class InferenceCompileConfig:
     """Configuration for torch compile option in inference runners."""
+
     use_compile: bool = False
     compile_backend: str = "inductor"
 
@@ -113,7 +115,8 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.postprocessor = postprocessor
 
         threading_cfg = (
-            threading_cfg if isinstance(threading_cfg, InferenceThreadingConfig)
+            threading_cfg
+            if isinstance(threading_cfg, InferenceThreadingConfig)
             else InferenceThreadingConfig.from_dict(threading_cfg)
         )
         self.async_mode = threading_cfg.async_mode
@@ -132,12 +135,15 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.model.eval()
 
         compile_cfg = (
-            compile_cfg if isinstance(compile_cfg, InferenceCompileConfig)
+            compile_cfg
+            if isinstance(compile_cfg, InferenceCompileConfig)
             else InferenceCompileConfig.from_dict(compile_cfg)
         )
         if compile_cfg.use_compile:
             try:
-                self.model = torch.compile(self.model, backend=compile_cfg.compile_backend)
+                self.model = torch.compile(
+                    self.model, backend=compile_cfg.compile_backend
+                )
             except Exception as e:
                 warnings.warn(
                     f"torch.compile failed with backend='{compile_cfg.compile_backend}', "
