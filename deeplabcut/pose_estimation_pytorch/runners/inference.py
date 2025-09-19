@@ -471,13 +471,9 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
         if self.dynamic is not None:
             # dynamic cropping can use patches
             inputs = self.dynamic.crop(inputs)
-        if self.device and "cuda" in str(self.device):
-            with torch.autocast(device_type=str(self.device)):
-                outputs = self.model(inputs.to(self.device), **kwargs)
-                raw_predictions = self.model.get_predictions(outputs)
-        else:
-            outputs = self.model(inputs.to(self.device), **kwargs)
-            raw_predictions = self.model.get_predictions(outputs)
+
+        outputs = self.model(inputs.to(self.device), **kwargs)
+        raw_predictions = self.model.get_predictions(outputs)
 
         if self.dynamic is not None:
             raw_predictions["bodypart"]["poses"] = self.dynamic.update(
@@ -607,11 +603,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
             return []
 
         # Normal prediction path
-        if self.device and "cuda" in str(self.device):
-            with torch.autocast(device_type=str(self.device)):
-                outputs = self.model(inputs.to(self.device), **kwargs)
-        else:
-            outputs = self.model(inputs.to(self.device), **kwargs)
+        outputs = self.model(inputs.to(self.device), **kwargs)
         raw_predictions = self.model.get_predictions(outputs)
         predictions = [
             {
@@ -871,11 +863,7 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
                 }
             ]
         """
-        if self.device and "cuda" in str(self.device):
-            with torch.autocast(device_type=str(self.device)):
-                _, raw_predictions = self.model(inputs.to(self.device))
-        else:
-            _, raw_predictions = self.model(inputs.to(self.device))
+        _, raw_predictions = self.model(inputs.to(self.device))
         predictions = [
             {
                 "detection": {
