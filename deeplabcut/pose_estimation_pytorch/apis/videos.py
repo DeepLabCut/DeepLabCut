@@ -126,6 +126,7 @@ def video_inference(
     cropping: list[int] | None = None,
     shelf_writer: shelving.ShelfWriter | None = None,
     robust_nframes: bool = False,
+    show_gpu_memory: bool = False,
 ) -> list[dict[str, np.ndarray]]:
     """Runs inference on a video
 
@@ -147,6 +148,8 @@ def video_inference(
         robust_nframes: Evaluate a video's number of frames in a robust manner. This
             option is slower (as the whole video is read frame-by-frame), but does not
             rely on metadata, hence its robustness against file corruption.
+        show_gpu_memory: When true, the tqdm progress bar shows the gpu memory usage
+            of the current process.
 
     Returns:
         Predictions for each frame in the video. If a shelf_manager is given, this list
@@ -209,14 +212,19 @@ def video_inference(
 
     if detector_runner is not None:
         print(f"Running detector with batch size {detector_runner.batch_size}")
-        bbox_predictions = detector_runner.inference(images=GpuTqdm(video))
+        bbox_predictions = detector_runner.inference(
+            images = GpuTqdm(video) if show_gpu_memory else tqdm(video)
+        )
         video.set_context(bbox_predictions)
 
     print(f"Running pose prediction with batch size {pose_runner.batch_size}")
     if shelf_writer is not None:
         shelf_writer.open()
 
-    predictions = pose_runner.inference(images=GpuTqdm(video), shelf_writer=shelf_writer)
+    predictions = pose_runner.inference(
+        images = GpuTqdm(video) if show_gpu_memory else tqdm(video),
+        shelf_writer=shelf_writer
+    )
     if shelf_writer is not None:
         shelf_writer.close()
 
@@ -263,6 +271,7 @@ def analyze_videos(
     overwrite: bool = False,
     cropping: list[int] | None = None,
     save_as_df: bool = False,
+    show_gpu_memory: bool = False,
 ) -> str:
     """Makes prediction based on a trained network.
 
@@ -391,6 +400,8 @@ def analyze_videos(
             predictions (before tracking results) to an H5 file containing a pandas
             DataFrame. If ``save_as_csv==True`` than the full predictions will also be
             saved in a CSV file.
+        show_gpu_memory: When true, the tqdm progress bar shows the gpu memory usage
+            of the current process.
 
     Returns:
         The scorer used to analyze the videos
@@ -570,6 +581,7 @@ def analyze_videos(
                 detector_runner=detector_runner,
                 shelf_writer=shelf_writer,
                 robust_nframes=robust_nframes,
+                show_gpu_memory=show_gpu_memory,
             )
             runtime.append(time.time())
             metadata = _generate_metadata(
