@@ -14,8 +14,7 @@ from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from typing import Any, Generic, Iterable
 import threading
-from queue import Queue, Empty
-import time
+from queue import Queue, Empty, Full
 
 import numpy as np
 import torch
@@ -97,7 +96,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.model.to(self.device)
         self.model.eval()
 
-        self._batch: torch.Tensor | None = None
+        self._batch_list: list[torch.Tensor] = []
         self._model_kwargs: dict[str, np.ndarray | torch.Tensor] = {}
 
         self._contexts: list[dict] = []
@@ -194,7 +193,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         # Reset state
         self._stop_event.clear()
         self._exception = None
-        self._batch = None
+        self._batch_list = []
         self._model_kwargs = {}
         self._contexts = []
         self._image_batch_sizes = []
@@ -211,17 +210,10 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         try:
             while True:
                 # Get next batch from queue
-                try:
-                    item = self._input_queue.get(timeout=self.timeout)
-                except Empty:
-                    # Check if preprocessing thread is still alive
-                    if self._preprocessing_thread.is_alive():
-                        continue
-                    else:
-                        break
+                item = self._safe_get()
 
+                # None means either producer finished or stop_event triggered
                 if item is None:
-                    # Preprocessing is done
                     break
 
                 batch, model_kwargs = item
@@ -234,7 +226,12 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 batch_results = self._extract_results(shelf_writer)
                 results.extend(batch_results)
 
-        except Exception as e:
+                # propagate any exception from the producer immediately
+                if self._exception is not None:
+                    raise self._exception
+
+        except BaseException as e:  # catches KeyboardInterrupt, SystemExit, etc.
+            # tell producer to quit
             self._stop_event.set()
             raise e
         finally:
@@ -291,14 +288,12 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         if len(inputs) == 0:
             return
 
-        if self._batch is None:
-            self._batch = inputs
-        else:
-            self._batch = torch.cat([self._batch, inputs], dim=0)
+        # extend the list with individual image tensors (slice along first dim)
+        self._batch_list.extend(list(inputs))
 
     def _process_full_batches(self) -> None:
         """Processes prepared inputs in batches of the desired batch size."""
-        while self._batch is not None and len(self._batch) >= self.batch_size:
+        while len(self._batch_list) >= self.batch_size:
             self._process_batch()
 
     def _extract_results(self, shelf_writer: shelving.ShelfWriter) -> list:
@@ -337,26 +332,53 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         Processes a batch. There must be inputs waiting to be processed before this is
         called, otherwise this method will raise an error.
         """
-        batch = self._batch[: self.batch_size]
+        batch = torch.stack(self._batch_list[: self.batch_size], dim=0)
         model_kwargs = {
             mk: v[: self.batch_size] for mk, v in self._model_kwargs.items()
         }
 
         self._predictions += self.predict(batch, **model_kwargs)
 
-        # remove processed inputs from batch
-        if len(self._batch) <= self.batch_size:
-            self._batch = None
+        # remove processed inputs
+        if len(self._batch_list) <= self.batch_size:
+            self._batch_list = []
             self._model_kwargs = {}
         else:
-            self._batch = self._batch[self.batch_size :]
+            self._batch_list = self._batch_list[self.batch_size :]
             self._model_kwargs = {
                 mk: v[self.batch_size :] for mk, v in self._model_kwargs.items()
             }
 
     def _inputs_waiting_for_processing(self) -> bool:
         """Returns: Whether there are inputs which have not yet been processed"""
-        return self._batch is not None and len(self._batch) > 0
+        return len(self._batch_list) > 0
+
+    def _safe_put(self, item: Any) -> bool:
+        """Put item in the queue, retrying until successful or stop_event is set"""
+        while not self._stop_event.is_set():
+            try:
+                self._input_queue.put(item, timeout=1.0)
+                return True
+            except Full:
+                continue
+        return False
+
+    def _safe_get(self) -> Any:
+        """
+        Get the next item from the queue safely, retrying until successful or stop_event is set
+
+        Returns:
+            The item from the queue, or None if the producer is dead or stop_signal is raised and queue empty.
+        """
+        while True:
+            try:
+                item = self._input_queue.get(timeout=1.0)
+                return item
+            except Empty:
+                # check if producer is still running
+                if self._stop_event.is_set() or self._preprocessing_thread is None or not self._preprocessing_thread.is_alive():
+                    return None
+                continue
 
     def _preprocessing_worker(self, images: Iterable) -> None:
         """Background worker that prepares inputs and puts them in the input queue"""
@@ -369,38 +391,35 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 self._prepare_inputs(data)
 
                 # Process full batches and put them in the queue
-                while self._batch is not None and len(self._batch) >= self.batch_size:
-                    batch = self._batch[: self.batch_size]
+                while len(self._batch_list) >= self.batch_size:
+                    batch = torch.stack(self._batch_list[: self.batch_size], dim=0)
                     model_kwargs = {
                         mk: v[: self.batch_size] for mk, v in self._model_kwargs.items()
                     }
 
-                    # Put the batch in the queue for processing
-                    self._input_queue.put((batch, model_kwargs), timeout=self.timeout)
+                    self._safe_put((batch, model_kwargs))
 
                     # Remove processed inputs from batch
-                    if len(self._batch) <= self.batch_size:
-                        self._batch = None
-                        self._model_kwargs = {}
+                    if len(self._batch_list) <= self.batch_size:
+                        self._batch_list, self._model_kwargs = [], {}
                     else:
-                        self._batch = self._batch[self.batch_size :]
+                        self._batch_list = self._batch_list[self.batch_size :]
                         self._model_kwargs = {
                             mk: v[self.batch_size :]
                             for mk, v in self._model_kwargs.items()
                         }
 
             # Process any remaining inputs
-            if self._batch is not None and len(self._batch) > 0:
-                batch = self._batch
-                model_kwargs = self._model_kwargs
-                self._input_queue.put((batch, model_kwargs), timeout=self.timeout)
+            if len(self._batch_list) > 0:
+                batch = torch.stack(self._batch_list, dim=0)
+                self._safe_put((batch, self._model_kwargs))
 
-        except Exception as e:
+        except BaseException as e:  # catches KeyboardInterrupt, SystemExit, etc.
             self._exception = e
             self._stop_event.set()
         finally:
             # Signal that preprocessing is done
-            self._input_queue.put(None, timeout=self.timeout)
+            self._safe_put(None)
 
     def __del__(self):
         """Cleanup method to ensure threads are stopped"""
