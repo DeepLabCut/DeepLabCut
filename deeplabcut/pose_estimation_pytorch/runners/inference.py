@@ -149,7 +149,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                     f"falling back to eager mode. Error: {e}"
                 )
 
-        self._batch: torch.Tensor | None = None
+        self._batch_list: list[torch.Tensor] = []
         self._model_kwargs: dict[str, np.ndarray | torch.Tensor] = {}
 
         self._contexts: list[dict] = []
@@ -246,7 +246,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         # Reset state
         self._stop_event.clear()
         self._exception = None
-        self._batch = None
+        self._batch_list = []
         self._model_kwargs = {}
         self._contexts = []
         self._image_batch_sizes = []
@@ -341,14 +341,12 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         if len(inputs) == 0:
             return
 
-        if self._batch is None:
-            self._batch = inputs
-        else:
-            self._batch = torch.cat([self._batch, inputs], dim=0)
+        # extend the list with individual image tensors (slice along first dim)
+        self._batch_list.extend(list(inputs))
 
     def _process_full_batches(self) -> None:
         """Processes prepared inputs in batches of the desired batch size."""
-        while self._batch is not None and len(self._batch) >= self.batch_size:
+        while len(self._batch_list) >= self.batch_size:
             self._process_batch()
 
     def _extract_results(self, shelf_writer: shelving.ShelfWriter) -> list:
@@ -387,26 +385,26 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         Processes a batch. There must be inputs waiting to be processed before this is
         called, otherwise this method will raise an error.
         """
-        batch = self._batch[: self.batch_size]
+        batch = torch.stack(self._batch_list[: self.batch_size], dim=0)
         model_kwargs = {
             mk: v[: self.batch_size] for mk, v in self._model_kwargs.items()
         }
 
         self._predictions += self.predict(batch, **model_kwargs)
 
-        # remove processed inputs from batch
-        if len(self._batch) <= self.batch_size:
-            self._batch = None
+        # remove processed inputs
+        if len(self._batch_list) <= self.batch_size:
+            self._batch_list = []
             self._model_kwargs = {}
         else:
-            self._batch = self._batch[self.batch_size :]
+            self._batch_list = self._batch_list[self.batch_size :]
             self._model_kwargs = {
                 mk: v[self.batch_size :] for mk, v in self._model_kwargs.items()
             }
 
     def _inputs_waiting_for_processing(self) -> bool:
         """Returns: Whether there are inputs which have not yet been processed"""
-        return self._batch is not None and len(self._batch) > 0
+        return len(self._batch_list) > 0
 
     def _safe_put(self, item: Any) -> bool:
         """Put item in the queue, retrying until successful or stop_event is set"""
@@ -446,8 +444,8 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 self._prepare_inputs(data)
 
                 # Process full batches and put them in the queue
-                while self._batch is not None and len(self._batch) >= self.batch_size:
-                    batch = self._batch[: self.batch_size]
+                while len(self._batch_list) >= self.batch_size:
+                    batch = torch.stack(self._batch_list[: self.batch_size], dim=0)
                     model_kwargs = {
                         mk: v[: self.batch_size] for mk, v in self._model_kwargs.items()
                     }
@@ -455,18 +453,19 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                     self._safe_put((batch, model_kwargs))
 
                     # Remove processed inputs from batch
-                    if len(self._batch) <= self.batch_size:
-                        self._batch, self._model_kwargs = None, {}
+                    if len(self._batch_list) <= self.batch_size:
+                        self._batch_list, self._model_kwargs = [], {}
                     else:
-                        self._batch = self._batch[self.batch_size :]
+                        self._batch_list = self._batch_list[self.batch_size :]
                         self._model_kwargs = {
                             mk: v[self.batch_size :]
                             for mk, v in self._model_kwargs.items()
                         }
 
             # Process any remaining inputs
-            if self._batch is not None and len(self._batch) > 0:
-                self._safe_put((self._batch, self._model_kwargs))
+            if len(self._batch_list) > 0:
+                batch = torch.stack(self._batch_list, dim=0)
+                self._safe_put((batch, self._model_kwargs))
 
         except BaseException as e:  # catches KeyboardInterrupt, SystemExit, etc.
             self._exception = e

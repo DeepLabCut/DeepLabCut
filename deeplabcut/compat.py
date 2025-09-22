@@ -1092,6 +1092,7 @@ def create_tracking_dataset(
         )
     elif engine == Engine.PYTORCH:
         from deeplabcut.pose_estimation_pytorch.apis import create_tracking_dataset
+
         return create_tracking_dataset(
             config,
             videos,
@@ -1127,6 +1128,7 @@ def analyze_images(
     pcutoff: float | None = None,
     bbox_pcutoff: float | None = None,
     plot_skeleton: bool = False,
+    **torch_kwargs,
 ) -> dict[str, dict[str, np.ndarray | np.ndarray]]:
     """Analyzes images with a DeepLabCut model and stores the output in an H5 file.
 
@@ -1214,6 +1216,9 @@ def analyze_images(
         If a skeleton is defined in the project's config.yaml, whether
         to plot the skeleton connecting the predicted bodyparts on the images.
 
+    torch_kwargs:
+        Any extra parameters to pass to the PyTorch API, such as ``ctd_conditions``
+
     Returns
     -------
         A dictionary mapping image paths (as strings) to model predictions.
@@ -1276,6 +1281,7 @@ def analyze_images(
             pcutoff=pcutoff,
             bbox_pcutoff=bbox_pcutoff,
             plot_skeleton=plot_skeleton,
+            **torch_kwargs,
         )
 
     raise NotImplementedError(f"This function is not implemented for {engine}")
