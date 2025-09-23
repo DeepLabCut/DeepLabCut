@@ -67,6 +67,9 @@ class MultithreadingConfig:
     def from_dict(cls, data: dict[str, Any]) -> "MultithreadingConfig":
         return cls(**_merge_defaults(cls, data or {}))
 
+    def to_dict(self) -> dict:
+        return asdict(self)
+
 @dataclass
 class InferenceConfig:
     """
@@ -85,6 +88,11 @@ class InferenceConfig:
         return cls(
             multithreading=MultithreadingConfig.from_dict(data.get("multithreading", {})),
         )
+
+    def to_dict(self) -> dict:
+        return {
+            "multithreading": self.multithreading.to_dict(),
+        }
 
 
 class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
