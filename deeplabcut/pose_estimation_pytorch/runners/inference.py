@@ -10,6 +10,7 @@
 #
 from __future__ import annotations
 
+import warnings
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
@@ -71,12 +72,30 @@ class MultithreadingConfig:
         return asdict(self)
 
 @dataclass
+class CompileConfig:
+    """
+    Parameters for the torch.compile option:
+        enabled: Whether to use torch.compile on the model during InferenceRunner initialization
+        backed: torch.compile backend to use
+    """
+    enabled: bool = False
+    backend: str = "inductor"
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "CompileConfig":
+        return cls(**_merge_defaults(cls, data or {}))
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+@dataclass
 class InferenceConfig:
     """
     Top-level inference configuration that mirrors the `inference` block
     in pytorch_config.yaml.
     """
     multithreading: MultithreadingConfig = field(default_factory=MultithreadingConfig)
+    compile: CompileConfig = field(default_factory=CompileConfig)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any] | None) -> "InferenceConfig":
@@ -87,11 +106,13 @@ class InferenceConfig:
         data = data or {}
         return cls(
             multithreading=MultithreadingConfig.from_dict(data.get("multithreading", {})),
+            compile=CompileConfig.from_dict(data.get("compile", {})),
         )
 
     def to_dict(self) -> dict:
         return {
             "multithreading": self.multithreading.to_dict(),
+            "compile": self.compile.to_dict(),
         }
 
 
@@ -154,6 +175,17 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
         self.model.to(self.device)
         self.model.eval()
+
+        if self.inference_cfg.compile.enabled:
+            try:
+                self.model = torch.compile(
+                    self.model, backend=self.inference_cfg.compile.backend
+                )
+            except Exception as e:
+                warnings.warn(
+                    f"torch.compile failed with backend='{self.inference_cfg.compile.backend}', "
+                    f"falling back to eager mode. Error: {e}"
+                )
 
         self._batch_list: list[torch.Tensor] = []
         self._model_kwargs: dict[str, np.ndarray | torch.Tensor] = {}
