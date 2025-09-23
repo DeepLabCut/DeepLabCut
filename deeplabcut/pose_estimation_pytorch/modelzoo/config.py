@@ -28,6 +28,7 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     get_super_animal_model_config_path,
     get_super_animal_project_config_path,
 )
+from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
@@ -169,6 +170,8 @@ def create_config_from_modelzoo(
         model_cfg["model"], num_bodyparts=len(converted_bodyparts)
     )
     model_cfg["train_settings"]["weight_init"] = weight_init.to_dict()
+
+    model_cfg["inference"] = InferenceConfig().to_dict()
 
     # sort first-level keys to make it prettier
     return dict(sorted(model_cfg.items()))
