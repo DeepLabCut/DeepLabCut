@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
+from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any, Generic, Iterable
 import threading
@@ -36,6 +37,56 @@ from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
+def _merge_defaults(cls, data: dict[str, Any]):
+    """
+    Utility: merge a partial dict with the defaults of a dataclass.
+    Unknown keys are ignored.
+    """
+    defaults = asdict(cls())  # defaults from calling the dataclass constructor
+    for k, v in data.items():
+        if k in defaults and isinstance(defaults[k], dict) and isinstance(v, dict):
+            # merge nested dicts recursively
+            defaults[k].update(v)
+        elif k in defaults:
+            defaults[k] = v
+    return defaults
+
+@dataclass
+class MultithreadingConfig:
+    """
+    Parameters for the multithreaded inference pipeline:
+        enabled: Whether to use async inference with pipeline parallelism
+        queue_length: Number of batches to prefetch in async mode
+        timeout: Timeout for queue operations in async mode
+    """
+    enabled: bool = True
+    queue_length: int = 4
+    timeout: float = 30.0
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "MultithreadingConfig":
+        return cls(**_merge_defaults(cls, data or {}))
+
+@dataclass
+class InferenceConfig:
+    """
+    Top-level inference configuration that mirrors the `inference` block
+    in pytorch_config.yaml.
+    """
+    multithreading: MultithreadingConfig = field(default_factory=MultithreadingConfig)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any] | None) -> "InferenceConfig":
+        """
+        Build an InferenceConfig from a (possibly partial) dict
+        like the one loaded from pytorch_config.yaml["inference"].
+        """
+        data = data or {}
+        return cls(
+            multithreading=MultithreadingConfig.from_dict(data.get("multithreading", {})),
+        )
+
+
 class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
     """Base class for inference runners
 
@@ -51,9 +102,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         preprocessor: Preprocessor | None = None,
         postprocessor: Postprocessor | None = None,
         load_weights_only: bool | None = None,
-        async_mode: bool = True,
-        num_prefetch_batches: int = 2,
-        timeout: float = 30.0,
+        inference_cfg: InferenceConfig | dict | None = None,
     ):
         """
         Args:
@@ -70,9 +119,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                         https://pytorch.org/docs/stable/generated/torch.load.html
                 If None, the default value is used:
                     `deeplabcut.pose_estimation_pytorch.get_load_weights_only()`
-            async_mode: Whether to use async inference with pipeline parallelism
-            num_prefetch_batches: Number of batches to prefetch in async mode
-            timeout: Timeout for queue operations in async mode
+            inference_cfg: Configuration for the inference runner
         """
         super().__init__(model=model, device=device, snapshot_path=snapshot_path)
         if not isinstance(batch_size, int) or batch_size <= 0:
@@ -81,9 +128,13 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.batch_size = batch_size
         self.preprocessor = preprocessor
         self.postprocessor = postprocessor
-        self.async_mode = async_mode
-        self.num_prefetch_batches = num_prefetch_batches
-        self.timeout = timeout
+
+        if isinstance(inference_cfg, InferenceConfig):
+            self.inference_cfg = inference_cfg
+        elif isinstance(inference_cfg, dict):
+            self.inference_cfg = InferenceConfig.from_dict(inference_cfg)
+        elif inference_cfg is None:
+            self.inference_cfg = InferenceConfig()
 
         if self.snapshot_path is not None and self.snapshot_path != "":
             self.load_snapshot(
@@ -104,8 +155,8 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self._predictions: list = []
 
         # Async-specific attributes
-        if self.async_mode:
-            self._input_queue = Queue(maxsize=num_prefetch_batches)
+        if self.inference_cfg.multithreading.enabled:
+            self._input_queue = Queue(maxsize=self.inference_cfg.multithreading.queue_length)
             self._preprocessing_thread = None
             self._stop_event = threading.Event()
             self._exception = None
@@ -154,7 +205,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 }
             ]
         """
-        if self.async_mode:
+        if self.inference_cfg.multithreading.enabled:
             return self._async_inference(images, shelf_writer)
         else:
             return self._sequential_inference(images, shelf_writer)
@@ -237,7 +288,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         finally:
             # Wait for preprocessing thread to finish
             if self._preprocessing_thread is not None:
-                self._preprocessing_thread.join(timeout=self.timeout)
+                self._preprocessing_thread.join(timeout=self.inference_cfg.multithreading.timeout)
 
             # Check for exceptions in preprocessing thread
             if self._exception is not None:
@@ -897,9 +948,7 @@ def build_inference_runner(
     postprocessor: Postprocessor | None = None,
     dynamic: DynamicCropper | None = None,
     load_weights_only: bool | None = None,
-    async_mode: bool = True,
-    num_prefetch_batches: int = 4,
-    timeout: float = 30.0,
+    inference_cfg: InferenceConfig | dict | None = None,
     **kwargs,
 ) -> InferenceRunner:
     """
@@ -924,9 +973,7 @@ def build_inference_runner(
                 https://pytorch.org/docs/stable/generated/torch.load.html
             If None, the default value is used:
                 `deeplabcut.pose_estimation_pytorch.get_load_weights_only()`
-        async_mode: Whether to use async inference with pipeline parallelism
-        num_prefetch_batches: Number of batches to prefetch in async mode
-        timeout: Timeout for queue operations in async mode
+        inference_cfg: Configuration for the inference runner
         **kwargs: Other arguments for the InferenceRunner.
 
     Returns:
@@ -940,9 +987,7 @@ def build_inference_runner(
         preprocessor=preprocessor,
         postprocessor=postprocessor,
         load_weights_only=load_weights_only,
-        async_mode=async_mode,
-        num_prefetch_batches=num_prefetch_batches,
-        timeout=timeout,
+        inference_cfg=inference_cfg,
         **kwargs,
     )
 
