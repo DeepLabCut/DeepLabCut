@@ -89,6 +89,21 @@ class CompileConfig:
         return asdict(self)
 
 @dataclass
+class AutocastConfig:
+    """
+    Parameters for the torch.autocast option:
+        enabled: Whether to use torch.autocast when running inference
+    """
+    enabled: bool = False
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "AutocastConfig":
+        return cls(**_merge_defaults(cls, data or {}))
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+@dataclass
 class InferenceConfig:
     """
     Top-level inference configuration that mirrors the `inference` block
@@ -96,6 +111,7 @@ class InferenceConfig:
     """
     multithreading: MultithreadingConfig = field(default_factory=MultithreadingConfig)
     compile: CompileConfig = field(default_factory=CompileConfig)
+    autocast: AutocastConfig = field(default_factory=AutocastConfig)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any] | None) -> "InferenceConfig":
@@ -107,12 +123,14 @@ class InferenceConfig:
         return cls(
             multithreading=MultithreadingConfig.from_dict(data.get("multithreading", {})),
             compile=CompileConfig.from_dict(data.get("compile", {})),
+            autocast=AutocastConfig.from_dict(data.get("autocast", {})),
         )
 
     def to_dict(self) -> dict:
         return {
             "multithreading": self.multithreading.to_dict(),
             "compile": self.compile.to_dict(),
+            "autocast": self.autocast.to_dict(),
         }
 
 
@@ -561,7 +579,7 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
         if self.dynamic is not None:
             # dynamic cropping can use patches
             inputs = self.dynamic.crop(inputs)
-        if self.device and "cuda" in str(self.device):
+        if self.inference_cfg.autocast.enabled:
             with torch.autocast(device_type=str(self.device)):
                 outputs = self.model(inputs.to(self.device), **kwargs)
                 raw_predictions = self.model.get_predictions(outputs)
@@ -697,12 +715,14 @@ class CTDInferenceRunner(PoseInferenceRunner):
             return []
 
         # Normal prediction path
-        if self.device and "cuda" in str(self.device):
+        if self.inference_cfg.autocast.enabled:
             with torch.autocast(device_type=str(self.device)):
                 outputs = self.model(inputs.to(self.device), **kwargs)
+                raw_predictions = self.model.get_predictions(outputs)
         else:
             outputs = self.model(inputs.to(self.device), **kwargs)
-        raw_predictions = self.model.get_predictions(outputs)
+            raw_predictions = self.model.get_predictions(outputs)
+
         predictions = [
             {
                 head: {
@@ -961,7 +981,7 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
                 }
             ]
         """
-        if self.device and "cuda" in str(self.device):
+        if self.inference_cfg.autocast.enabled:
             with torch.autocast(device_type=str(self.device)):
                 _, raw_predictions = self.model(inputs.to(self.device))
         else:
