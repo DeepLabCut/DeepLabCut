@@ -321,7 +321,7 @@ def analyze_videos(
             animal).
         ctd_conditions: Only for CTD models. If None, the configuration for the
             condition provider will be loaded from the pytorch_config file (under the
-            "data": "conditions"). If the ctd_conditions is given as a dict, creates a
+            "inference": "conditions"). If the ctd_conditions is given as a dict, creates a
             CondFromModel from the dict. Otherwise, a CondFromModel can be given
             directly. Example configuration:
                 ```
@@ -491,7 +491,7 @@ def analyze_videos(
     if loader.pose_task == Task.COND_TOP_DOWN:
         if ctd_conditions is None:
             cond_provider = get_condition_provider(
-                condition_cfg=loader.model_cfg["data"]["conditions"],
+                condition_cfg=loader.model_cfg["inference"]["conditions"],
                 config=config,
             )
         elif isinstance(ctd_conditions, dict):

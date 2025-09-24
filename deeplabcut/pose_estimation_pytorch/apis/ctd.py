@@ -29,7 +29,7 @@ def get_condition_provider(
 
     Args:
         condition_cfg: The configuration for the condition provider. This is the
-            content of "data": "conditions" in the pytorch_config
+            content of "inference": "conditions" in the pytorch_config
         config: The path to the project config file, if the condition provider is
             given as a snapshot from a DeepLabCut shuffle.
 
@@ -106,7 +106,7 @@ def load_conditions_for_evaluation(
         raise ValueError(f"Conditions can only be loaded for CTD models")
 
     # load the conditions config
-    condition_cfg = loader.model_cfg["data"].get("conditions")
+    condition_cfg = loader.model_cfg["inference"].get("conditions")
 
     # prepare error message
     error_message = (
@@ -131,21 +131,21 @@ def load_conditions_for_evaluation(
 _CONDITION_EXAMPLES_INFERENCE = """
 Example: Using a bottom-up model for conditions
   ```
-  data:
+  inference:
     conditions:
       config_path: /path/to/model-dir/pytorch_config.yaml
       snapshot_path: /path/to/model-dir/snapshot-best-150.pth
   ```
 Example: Loading the predictions for snapshot-250.pt of shuffle 1.
   ```
-  data:
+  inference:
     conditions:
       shuffle: 1
       snapshot: snapshot-250.pt
   ```
 Example: Loading the predictions for the snapshot with index 2 of shuffle 1.
   ```
-  data:
+  inference:
     conditions:
       shuffle: 1
       snapshot_index: 2
@@ -156,12 +156,12 @@ Example: Loading the predictions for the snapshot with index 2 of shuffle 1.
 _CONDITION_EXAMPLES_FROM_FILE = """
 Example: Loading the predictions contained in an h5 file.
   ```
-  data:
+  inference:
     conditions: /path/to/bu_predictions.h5
   ```
 Example: Loading the predictions contained in an json file.
   ```
-  data:
+  inference:
     conditions: /path/to/bu_predictions.json
   ```
 """
