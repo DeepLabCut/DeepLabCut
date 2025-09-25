@@ -40,6 +40,7 @@ from deeplabcut.pose_estimation_pytorch.runners import (
     InferenceRunner,
     TopDownDynamicCropper,
 )
+from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxiliaryfunctions, VideoReader
@@ -272,6 +273,7 @@ def analyze_videos(
     cropping: list[int] | None = None,
     save_as_df: bool = False,
     show_gpu_memory: bool = False,
+    inference_cfg: InferenceConfig | dict | None = None,
 ) -> str:
     """Makes prediction based on a trained network.
 
@@ -319,7 +321,7 @@ def analyze_videos(
             animal).
         ctd_conditions: Only for CTD models. If None, the configuration for the
             condition provider will be loaded from the pytorch_config file (under the
-            "data": "conditions"). If the ctd_conditions is given as a dict, creates a
+            "inference": "conditions"). If the ctd_conditions is given as a dict, creates a
             CondFromModel from the dict. Otherwise, a CondFromModel can be given
             directly. Example configuration:
                 ```
@@ -402,6 +404,8 @@ def analyze_videos(
             saved in a CSV file.
         show_gpu_memory: When true, the tqdm progress bar shows the gpu memory usage
             of the current process.
+        inference_cfg: InferenceConfig to use
+            If None, the configuration from the `pytorch_cfg.yaml` will be used
 
     Returns:
         The scorer used to analyze the videos
@@ -487,7 +491,7 @@ def analyze_videos(
     if loader.pose_task == Task.COND_TOP_DOWN:
         if ctd_conditions is None:
             cond_provider = get_condition_provider(
-                condition_cfg=loader.model_cfg["data"]["conditions"],
+                condition_cfg=loader.model_cfg["inference"]["conditions"],
                 config=config,
             )
         elif isinstance(ctd_conditions, dict):
@@ -512,6 +516,7 @@ def analyze_videos(
         dynamic=dynamic,
         cond_provider=cond_provider,
         ctd_tracking=ctd_tracking,
+        inference_cfg=inference_cfg,
     )
 
     detector_runner = None
@@ -536,6 +541,7 @@ def analyze_videos(
             snapshot_path=detector_snapshot.path,
             max_individuals=max_num_animals,
             batch_size=detector_batch_size,
+            inference_cfg=inference_cfg,
         )
 
     dlc_scorer = loader.scorer(snapshot, detector_snapshot)
