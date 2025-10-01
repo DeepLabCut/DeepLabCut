@@ -12,6 +12,8 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
+from . import _tf_legacy
+
 # Suppress tensorflow warning messages
 import tensorflow as tf
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
