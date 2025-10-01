@@ -15,6 +15,7 @@ of the file is as follows:
 data:  # which data augmentations will be used
   ...
 device: auto # the default device to use for training and evaluation
+inference:  # configures inference-related parameters (multithreading, different torch options)
 metadata:  # metadata regarding the project (bodyparts, individuals, paths, ...) - filled automatically
   ...
 method: bu # indicates how pose predictions are made (bottom-up (`bu`) or top-down (`td`))
@@ -304,7 +305,7 @@ model:
 
 ### Runner
 
-The runner contains elements relating to the runner to use (including the optimizer and 
+The runner contains elements relating to the training runner to use (including the optimizer and
 learning rate schedulers). Unless you're experienced with machine learning and training 
 models **it is not recommended to change the optimizer or scheduler**.
 
@@ -491,6 +492,48 @@ that was being used (by editing the configuration under the `scheduler` key). Wh
 so, you *must set `load_scheduler_state_dict: false`* in your `runner` config! 
 Otherwise, the parameters for the scheduler your started training with will be loaded 
 from the state dictionary, and your edits might not be kept!
+
+### Inference
+The `inference:` block in `pytorch_config.yaml` allows configuring **inference-specific
+behavior** for your model. It is independent of training settings and can include multiple
+sub-configs, currently supporting **multithreading**, **compile**, **autocast**, and **conditions**.
+
+**Example**
+```yaml
+inference:
+  multithreading:
+    enabled: true
+    queue_length: 4
+    timeout: 30.0
+  compile:
+    enabled: false
+    backend: "inductor"
+  autocast:
+    enabled: false
+  conditions:
+    config_path: /path/to/model-dir/pytorch_config.yaml
+    snapshot_path: /path/to/model-dir/snapshot-best-150.pth
+```
+
+**Sub-configs**
+- `multithreading`
+  Controls producer-consumer threading during inference for preprocessing and batching.
+  - `enabled` (`bool`): Enable/disable multithreading.
+  - `queue_length` (`int`): Maximum number of batches to queue between preprocessing and model prediction.
+  - `timeout` (`float`): Timeout in seconds for the preprocessing queue.
+- `compile`
+  Controls optional `torch.compile` usage during inference.
+  **Note:** Using `torch.compile` may speed up inference but introduces some initialization overhead.
+  It is also known to fail in certain setups, environments, or architectures (e.g., `ctd_coam_*` models).
+  Use at your own risk.
+  - `enabled` (`bool`): Enable/disable compilation. Default: `false`.
+  - `backend` (`str`): Backend to use when compiling (`"inductor"`, `"aot_eager"`, etc.).
+- `autocast`
+  Controls optional mixed precision during inference.
+  - `enabled` (`bool`): Enable/disable `torch.autocast`. Default: `false`.
+  Note: Enabling autocast may reduce inference accuracy. It is disabled by default.
+- `conditions`
+  Only used for **Conditional Top-Down (CTD)** models to specify which conditions should be used during inference.
 
 ## Training Top-Down Models
 

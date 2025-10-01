@@ -498,6 +498,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#train-settings">Train Settings</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#logger">Logger</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#restarting-training-at-a-specific-checkpoint">Restarting Training at a Specific Checkpoint</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inference">Inference</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-top-down-models">Training Top-Down Models</a><ul class="nav section-nav flex-column">
@@ -530,6 +531,7 @@ of the file is as follows:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">data</span><span class="p">:</span><span class="w">  </span><span class="c1"># which data augmentations will be used</span>
 <span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
 <span class="nt">device</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">auto</span><span class="w"> </span><span class="c1"># the default device to use for training and evaluation</span>
+<span class="nt">inference</span><span class="p">:</span><span class="w">  </span><span class="c1"># configures inference-related parameters (multithreading, different torch options)</span>
 <span class="nt">metadata</span><span class="p">:</span><span class="w">  </span><span class="c1"># metadata regarding the project (bodyparts, individuals, paths, ...) - filled automatically</span>
 <span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
 <span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bu</span><span class="w"> </span><span class="c1"># indicates how pose predictions are made (bottom-up (`bu`) or top-down (`td`))</span>
@@ -791,7 +793,7 @@ in the configuration.</p>
 </section>
 <section id="runner">
 <h3>Runner<a class="headerlink" href="#runner" title="Link to this heading">#</a></h3>
-<p>The runner contains elements relating to the runner to use (including the optimizer and
+<p>The runner contains elements relating to the training runner to use (including the optimizer and
 learning rate schedulers). Unless you’re experienced with machine learning and training
 models <strong>it is not recommended to change the optimizer or scheduler</strong>.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">runner</span><span class="p">:</span>
@@ -955,6 +957,58 @@ that was being used (by editing the configuration under the <code class="docutil
 so, you <em>must set <code class="docutils literal notranslate"><span class="pre">load_scheduler_state_dict:</span> <span class="pre">false</span></code></em> in your <code class="docutils literal notranslate"><span class="pre">runner</span></code> config!
 Otherwise, the parameters for the scheduler your started training with will be loaded
 from the state dictionary, and your edits might not be kept!</p>
+</section>
+<section id="inference">
+<h3>Inference<a class="headerlink" href="#inference" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">inference:</span></code> block in <code class="docutils literal notranslate"><span class="pre">pytorch_config.yaml</span></code> allows configuring <strong>inference-specific
+behavior</strong> for your model. It is independent of training settings and can include multiple
+sub-configs, currently supporting <strong>multithreading</strong>, <strong>compile</strong>, <strong>autocast</strong>, and <strong>conditions</strong>.</p>
+<p><strong>Example</strong></p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">inference</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">multithreading</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">queue_length</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
+<span class="w">    </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30.0</span>
+<span class="w">  </span><span class="nt">compile</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">backend</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;inductor&quot;</span>
+<span class="w">  </span><span class="nt">autocast</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">conditions</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">config_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/model-dir/pytorch_config.yaml</span>
+<span class="w">    </span><span class="nt">snapshot_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/model-dir/snapshot-best-150.pth</span>
+</pre></div>
+</div>
+<p><strong>Sub-configs</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">multithreading</span></code>
+Controls producer-consumer threading during inference for preprocessing and batching.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">enabled</span></code> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>): Enable/disable multithreading.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">queue_length</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): Maximum number of batches to queue between preprocessing and model prediction.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code> (<code class="docutils literal notranslate"><span class="pre">float</span></code>): Timeout in seconds for the preprocessing queue.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compile</span></code>
+Controls optional <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> usage during inference.
+<strong>Note:</strong> Using <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> may speed up inference but introduces some initialization overhead.
+It is also known to fail in certain setups, environments, or architectures (e.g., <code class="docutils literal notranslate"><span class="pre">ctd_coam_*</span></code> models).
+Use at your own risk.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">enabled</span></code> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>): Enable/disable compilation. Default: <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">backend</span></code> (<code class="docutils literal notranslate"><span class="pre">str</span></code>): Backend to use when compiling (<code class="docutils literal notranslate"><span class="pre">&quot;inductor&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;aot_eager&quot;</span></code>, etc.).</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">autocast</span></code>
+Controls optional mixed precision during inference.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">enabled</span></code> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>): Enable/disable <code class="docutils literal notranslate"><span class="pre">torch.autocast</span></code>. Default: <code class="docutils literal notranslate"><span class="pre">false</span></code>.
+Note: Enabling autocast may reduce inference accuracy. It is disabled by default.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">conditions</span></code>
+Only used for <strong>Conditional Top-Down (CTD)</strong> models to specify which conditions should be used during inference.</p></li>
+</ul>
 </section>
 </section>
 <section id="training-top-down-models">
@@ -1146,6 +1200,7 @@ value (e.g. when you have very small or large images).</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#train-settings">Train Settings</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#logger">Logger</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#restarting-training-at-a-specific-checkpoint">Restarting Training at a Specific Checkpoint</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inference">Inference</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-top-down-models">Training Top-Down Models</a><ul class="nav section-nav flex-column">

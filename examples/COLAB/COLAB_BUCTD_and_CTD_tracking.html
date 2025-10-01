@@ -1307,13 +1307,13 @@ Name: (0.7, 1, 80, -1, 0.01), dtype: float64
 </div>
 <p>We’ll use the index of the BU shuffle defined above, and the best snapshot that was saved (indicated through a -1). You can edit which model is used to provide conditions through the <code class="docutils literal notranslate"><span class="pre">pytorch_config</span></code> for the <code class="docutils literal notranslate"><span class="pre">CTD_SHUFFLE</span></code> (in this case shuffle <code class="docutils literal notranslate"><span class="pre">2</span></code>):</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example: Loading the predictions for snapshot-250.pt of shuffle 1.</span>
-<span class="nt">data</span><span class="p">:</span>
+<span class="nt">inference</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">conditions</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">shuffle</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">    </span><span class="nt">snapshot</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">snapshot-250.pt</span>
 
 <span class="c1"># Example: Loading the predictions for the last snapshot of shuffle 1.</span>
-<span class="nt">data</span><span class="p">:</span>
+<span class="nt">inference</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">conditions</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">shuffle</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">    </span><span class="nt">snapshot_index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-1</span>
@@ -1327,7 +1327,7 @@ Name: (0.7, 1, 80, -1, 0.01), dtype: float64
     <span class="n">config</span><span class="p">,</span>
     <span class="n">from_shuffle</span><span class="o">=</span><span class="n">BU_SHUFFLE</span><span class="p">,</span>
     <span class="n">shuffles</span><span class="o">=</span><span class="p">[</span><span class="n">CTD_SHUFFLE</span><span class="p">],</span>
-    <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;ctd_prenet_rtmpose_m&quot;</span><span class="p">,</span>
+    <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;ctd_coam_w32&quot;</span><span class="p">,</span>
     <span class="n">engine</span><span class="o">=</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">Engine</span><span class="o">.</span><span class="n">PYTORCH</span><span class="p">,</span>
     <span class="n">ctd_conditions</span><span class="o">=</span><span class="p">(</span><span class="n">BU_SHUFFLE</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
 <span class="p">)</span>
@@ -2146,7 +2146,7 @@ Generating frames and creating video.
 <span class="s2">    &quot;&quot;&quot;</span><span class="p">)</span>
 
 
-<span class="n">show_video</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;videocompressed1DLC_CtdPrenetCspnextM_trimiceJun22shuffle2_snapshot_130_ctd_id_p1_labeled.mp4&quot;</span><span class="p">)</span>
+<span class="n">show_video</span><span class="p">(</span><span class="n">download_path</span> <span class="o">/</span> <span class="s2">&quot;videocompressed1DLC_CtdCoamW32_trimiceJun22shuffle2_snapshot_best-80_ctd_id_p1_labeled.mp4&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
