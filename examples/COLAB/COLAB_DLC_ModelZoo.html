@@ -567,37 +567,10 @@ document.write(`
 <section id="let-s-get-going-install-deeplabcut-into-colab">
 <h2><strong>Let’s get going: install DeepLabCut into COLAB:</strong><a class="headerlink" href="#let-s-get-going-install-deeplabcut-into-colab" title="Link to this heading">#</a></h2>
 <p><em>Also, be sure you are connected to a GPU: go to menu, click Runtime &gt; Change Runtime Type &gt; select “GPU”</em></p>
-<p>As the COLAB environments were updated to CUDA 12.X and Python 3.11, we need to install DeepLabCut and TensorFlow in a distinct way to get TensorFlow to connect to the GPU.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install TensorFlow, tensorpack and tf_slim versions compatible with DeepLabCut</span>
-<span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;tensorflow==2.12.1&quot;</span><span class="w"> </span><span class="s2">&quot;tensorpack&gt;=0.11&quot;</span><span class="w"> </span><span class="s2">&quot;tf_slim&gt;=1.1.0&quot;</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Downgrade PyTorch to a version using CUDA 11.8 and cudnn 8</span>
-<span class="c1"># This will also install the required CUDA libraries, for both PyTorch and TensorFlow</span>
-<span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span><span class="nv">torch</span><span class="o">==</span><span class="m">2</span>.3.1<span class="w"> </span>torchvision<span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu118
-</pre></div>
-</div>
-</div>
-</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install the latest version of DeepLabCut</span>
-<span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;git+https://github.com/DeepLabCut/DeepLabCut.git#egg=deeplabcut[modelzoo]&quot;</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># As described in https://www.tensorflow.org/install/pip#step-by-step_instructions, </span>
-<span class="c1"># create symbolic links to NVIDIA shared libraries:</span>
-<span class="o">!</span>ln<span class="w"> </span>-svf<span class="w"> </span>/usr/local/lib/python3.11/dist-packages/nvidia/*/lib/*.so*<span class="w"> </span>/usr/local/lib/python3.11/dist-packages/tensorflow
+<span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span><span class="s2">&quot;deeplabcut[tf,modelzoo]&quot;</span>
 </pre></div>
 </div>
 </div>

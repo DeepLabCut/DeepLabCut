@@ -562,37 +562,10 @@ document.write(`
 </ul>
 <section id="to-get-started-please-go-to-runtime-change-runtime-type-select-python3-and-then-select-gpu">
 <h3>To get started, please go to “Runtime” -&gt;”change runtime type”-&gt;select “Python3”, and then select “GPU”<a class="headerlink" href="#to-get-started-please-go-to-runtime-change-runtime-type-select-python3-and-then-select-gpu" title="Link to this heading">#</a></h3>
-<p>As the COLAB environments were updated to CUDA 12.X and Python 3.11, we need to install DeepLabCut and TensorFlow in a distinct way to get TensorFlow to connect to the GPU.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install TensorFlow, tensorpack and tf_slim versions compatible with DeepLabCut</span>
-<span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;tensorflow==2.12.1&quot;</span> <span class="s2">&quot;tensorpack&gt;=0.11&quot;</span> <span class="s2">&quot;tf_slim&gt;=1.1.0&quot;</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Downgrade PyTorch to a version using CUDA 11.8 and cudnn 8</span>
-<span class="c1"># This will also install the required CUDA libraries, for both PyTorch and TensorFlow</span>
-<span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span><span class="o">==</span><span class="mf">2.3.1</span> <span class="n">torchvision</span> <span class="o">--</span><span class="n">index</span><span class="o">-</span><span class="n">url</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">cu118</span>
-</pre></div>
-</div>
-</div>
-</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install the correct (older) version of DeepLabCut</span>
-<span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="n">deeplabcut</span><span class="o">==</span><span class="mf">2.3.11</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># As described in https://www.tensorflow.org/install/pip#step-by-step_instructions, </span>
-<span class="c1"># create symbolic links to NVIDIA shared libraries:</span>
-<span class="err">!</span><span class="n">ln</span> <span class="o">-</span><span class="n">svf</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.11</span><span class="o">/</span><span class="n">dist</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">nvidia</span><span class="o">/*/</span><span class="n">lib</span><span class="o">/*.</span><span class="n">so</span><span class="o">*</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.11</span><span class="o">/</span><span class="n">dist</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">tensorflow</span>
+<span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;deeplabcut[tf]&quot;</span>
 </pre></div>
 </div>
 </div>
