@@ -189,7 +189,6 @@ def make_pytorch_pose_config(
     if task == Task.COND_TOP_DOWN and ctd_conditions is not None:
         _add_ctd_conditions(pose_config, ctd_conditions)
 
-
     # sort first-level keys to make it prettier
     pose_config = dict(sorted(pose_config.items()))
 
