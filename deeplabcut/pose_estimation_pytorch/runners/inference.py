@@ -26,6 +26,7 @@ import deeplabcut.pose_estimation_pytorch.post_processing.nms as nms
 import deeplabcut.pose_estimation_pytorch.runners.ctd as ctd
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.core.inferenceutils import calc_object_keypoint_similarity
+from deeplabcut.pose_estimation_pytorch.config.utils import update_config_by_dotpath
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import Postprocessor
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import LoadImage, Preprocessor
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
@@ -112,26 +113,57 @@ class InferenceConfig:
     multithreading: MultithreadingConfig = field(default_factory=MultithreadingConfig)
     compile: CompileConfig = field(default_factory=CompileConfig)
     autocast: AutocastConfig = field(default_factory=AutocastConfig)
+    conditions: dict | None = None
 
     @classmethod
     def from_dict(cls, data: dict[str, Any] | None) -> "InferenceConfig":
         """
-        Build an InferenceConfig from a (possibly partial) dict
-        like the one loaded from pytorch_config.yaml["inference"].
+        Build an InferenceConfig from a dict, supporting:
+          - nested dictionaries
+          - dot-notation keys (e.g., {"compile.enabled": True})
+        Raises KeyError if a key does not exist.
         """
+        instance = cls()
         data = data or {}
-        return cls(
-            multithreading=MultithreadingConfig.from_dict(data.get("multithreading", {})),
-            compile=CompileConfig.from_dict(data.get("compile", {})),
-            autocast=AutocastConfig.from_dict(data.get("autocast", {})),
-        )
+
+        # Convert instance to dict for easy updates
+        cfg_dict = instance.to_dict()
+
+        # Use utility to apply dot-notation updates
+        updated_dict = update_config_by_dotpath(cfg_dict, data, copy_original=True)
+
+        # Validate keys against the dataclass structure
+        def validate_keys(obj, dct, path=""):
+            for k, v in dct.items():
+                if k == "conditions":
+                    if not (v is None or isinstance(v, dict)):
+                        raise TypeError(f"'conditions' must be a dict or None, got {type(v)}")
+                    continue
+                if not hasattr(obj, k):
+                    raise KeyError(f"Invalid key path: {path + k}")
+                sub_obj = getattr(obj, k)
+                if isinstance(v, dict):
+                    validate_keys(sub_obj, v, path=f"{path + k}.")
+
+        validate_keys(instance, updated_dict)
+
+        # Re-build nested dataclasses
+        instance.multithreading = MultithreadingConfig.from_dict(updated_dict["multithreading"])
+        instance.compile = CompileConfig.from_dict(updated_dict["compile"])
+        instance.autocast = AutocastConfig.from_dict(updated_dict["autocast"])
+        instance.conditions = updated_dict.get("conditions", None)
+
+        return instance
 
     def to_dict(self) -> dict:
-        return {
+        d = {
             "multithreading": self.multithreading.to_dict(),
             "compile": self.compile.to_dict(),
             "autocast": self.autocast.to_dict(),
         }
+        if self.conditions is not None:
+            d["conditions"] = self.conditions
+        return d
 
 
 class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):

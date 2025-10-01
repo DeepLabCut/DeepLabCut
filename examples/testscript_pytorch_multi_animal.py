@@ -60,7 +60,6 @@ def main(
                 epochs_ = top_down_epochs
             try:
                 pytorch_cfg_updates = {
-                    "data.conditions.snapshot_index": -1,
                     "train_settings.display_iters": 50,
                     "train_settings.epochs": epochs_,
                     "train_settings.batch_size": batch_size,
@@ -75,7 +74,8 @@ def main(
                     "logger": logger,
                 }
                 if is_model_cond_top_down(net_type):
-                    pytorch_cfg_updates["data.conditions.shuffle"] = conditions_shuffle
+                    pytorch_cfg_updates["inference.conditions.shuffle"] = conditions_shuffle
+                    pytorch_cfg_updates["inference.conditions.snapshot_index"] = -1
                 run(
                     config_path=config_path,
                     train_fraction=train_frac,
