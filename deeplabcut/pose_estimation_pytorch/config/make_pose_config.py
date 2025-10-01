@@ -23,6 +23,7 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     replace_default_values,
     update_config,
 )
+from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
@@ -186,6 +187,8 @@ def make_pytorch_pose_config(
             num_individuals=len(individuals),
             backbone_output_channels=pose_config["model"]["backbone_output_channels"],
         )
+
+    pose_config["inference"] = InferenceConfig().to_dict()
 
     # sort first-level keys to make it prettier
     pose_config = dict(sorted(pose_config.items()))
