@@ -523,6 +523,9 @@ inference:
   - `timeout` (`float`): Timeout in seconds for the preprocessing queue.
 - `compile`
   Controls optional `torch.compile` usage during inference.
+  **Note:** Using `torch.compile` may speed up inference but introduces some initialization overhead.
+  It is also known to fail in certain setups, environments, or architectures (e.g., `ctd_coam_*` models).
+  Use at your own risk.
   - `enabled` (`bool`): Enable/disable compilation. Default: `false`.
   - `backend` (`str`): Backend to use when compiling (`"inductor"`, `"aot_eager"`, etc.).
 - `autocast`
