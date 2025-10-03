@@ -11,9 +11,11 @@ from deeplabcut.core.weight_init import WeightInitialization
 from sklearn.model_selection import GroupKFold, KFold
 from deeplabcut.generate_training_dataset.trainingsetmanipulation import merge_annotateddatasets
 import json
+import shutil
+import datetime
 
 
-
+N_WORKERS = 1
 N_EPOCHS = 200
 MODEL = 'resnet_50'
 OUTPUT_STRIDE = 16
@@ -36,7 +38,7 @@ if not os.path.exists(config_path):
 
 # Number of folds for cross-validation
 k_folds = 4
-n_repeat = 1
+n_repeat = 2
 
 # 2. MERGE DATA AND PREPARE FOR SPLITTING
 # ------------------------------------------
@@ -46,7 +48,8 @@ n_repeat = 1
 
 # Read the merged data to get the total number of labeled frames.
 
-def run_experiment(config_path, n_folds, n_seeds, experiment_id, group_by_video=False, train_overrides={}, landmark_sets={'all': 'all'}):
+def run_experiment(config_path, n_folds, n_seeds, experiment_id='experiment_1', group_by_video=False, train_overrides={}, landmark_sets={'all': 'all'}):
+    timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     cfg = deeplabcut.auxiliaryfunctions.read_config(config_path)
     project_path = cfg['project_path']
     trainingsetfolder = deeplabcut.auxiliaryfunctions.get_training_set_folder(cfg)
@@ -58,6 +61,7 @@ def run_experiment(config_path, n_folds, n_seeds, experiment_id, group_by_video=
     num_frames = len(Data)
     print(f"Total number of labeled frames: {num_frames}")
 
+    evaluation_results_list = []
     for i in range(n_seeds):
         print(f"\n\n{'='*20} SEED {i+1}/{n_seeds} {'='*20}")
 
@@ -68,11 +72,10 @@ def run_experiment(config_path, n_folds, n_seeds, experiment_id, group_by_video=
             cv = KFold(n_splits=n_folds, random_state=42+i, shuffle=True)
             folds = cv.split(np.arange(num_frames))
 
-        evaluation_results_list = []
 
         for j,(train_indices, test_indices)  in enumerate(folds):
             shuffle_num = j + 1
-            print(f"\n\n{'='*20} FOLD {shuffle_num}/{n_folds} {'='*20}")
+            print(f"\n\n{'='*20} FOLD {shuffle_num}/{n_folds} SEED {i+1}/{n_seeds} {'='*20}")
             train_fraction = round(len(train_indices) / num_frames, 2)
             print(f"Train ratio: {train_fraction:.2f}")
 
@@ -133,46 +136,56 @@ def run_experiment(config_path, n_folds, n_seeds, experiment_id, group_by_video=
             # d. Evaluate the trained network on the held-out test set
             print(f"  Evaluating network for shuffle {shuffle_num}...")
             for l_idx, (landmark_set_name, landmark_set) in enumerate(landmark_sets.items()):   
+                iteration = cfg['iteration']
+                engine_name = deeplabcut.compat.get_project_engine(cfg).aliases[0]
+                trainingset_identifier = f"{cfg['Task']}{cfg['date']}-trainset{train_fraction_percent}shuffle{shuffle_num}"
+                evaluation_folder = Path(project_path) / f"evaluation-results-{engine_name}" / f"iteration-{iteration}" / trainingset_identifier
+                # recursively delete evaluation folder contents, but not the folder itself
+                if evaluation_folder.exists():
+                    for child in evaluation_folder.glob('*'):
+                        if child.is_file():
+                            child.unlink()
+                        else:
+                            shutil.rmtree(child)
+
+
                 deeplabcut.evaluate_network(config_path, Shuffles=[shuffle_num], plotting=False, comparisonbodyparts=landmark_set)
 
                 # e. Parse evaluation results and store them
                 print(f"  Parsing evaluation results for shuffle {shuffle_num}...")
-                try:
-                    # Construct the path to the evaluation folder
-                    iteration = cfg['iteration']
-                    engine_name = deeplabcut.compat.get_project_engine(cfg).aliases[0]
-                    trainingset_identifier = f"{cfg['Task']}{cfg['date']}-trainset{train_fraction_percent}shuffle{shuffle_num}"
-                    evaluation_folder = Path(project_path) / f"evaluation-results-{engine_name}" / f"iteration-{iteration}" / trainingset_identifier
+                # Construct the path to the evaluation folder
 
-                    # Find the results CSV file
-                    csv_files = list(evaluation_folder.glob('*-results.csv'))
-                    if not csv_files:
-                        raise FileNotFoundError(f"No evaluation CSV file found in {evaluation_folder}")
+                # Find the results CSV file
+                csv_files = list(evaluation_folder.glob('*-results.csv'))
+                if not csv_files:
+                    raise FileNotFoundError(f"No evaluation CSV file found in {evaluation_folder}")
 
-                    # Read the CSV and clean column names
-                    eval_df = pd.read_csv(csv_files[0])
-                    eval_df.columns = eval_df.columns.str.strip().str.replace('%', '') # Clean '%Training...'
+                # Read the CSV and clean column names
+                eval_df = pd.read_csv(csv_files[0])
+                eval_df.columns = eval_df.columns.str.strip().str.replace('%', '') # Clean '%Training...'
 
-                    prefix_columns = ['test rmse', 'test rmse_pcutoff', 'test mAP', 'test mAR']
+                prefix_columns = ['test rmse', 'test rmse_pcutoff', 'test mAP', 'test mAR']
 
-                    if not eval_df.empty:
-                        # Convert the first row to a dictionary to get all columns
-                        summary_dict = eval_df.iloc[0].to_dict()
-                        summary_dict['fold'] = j # Add our custom fold numbere
-                        summary_dict['seed'] = i
-                        summary_dict['experiment'] = experiment_id
-                        for col in prefix_columns:
-                            summary_dict[f'{landmark_set_name}__{col}'] = summary_dict.pop(col)
-                        if l_idx == 0:
-                            evaluation_results_list.append(summary_dict)
-                        else:
-                            evaluation_results_list[-1].update(summary_dict)
-                        print(f"  Fold {shuffle_num} - Test RMSE: {summary_dict.get('test rmse', 'N/A'):.2f} px")
+                if not eval_df.empty:
+                    # Convert the first row to a dictionary to get all columns
+                    summary_dict = eval_df.iloc[0].to_dict()
+                    summary_dict['fold'] = j # Add our custom fold numbere
+                    summary_dict['seed'] = i
+                    summary_dict['experiment'] = experiment_id
+                    # summary_dict['params'] = params_str
+                    summary_dict['group_by_video'] = group_by_video
+                    summary_dict['timestamp'] = timestamp
+                    for key, value in train_overrides.items():
+                        summary_dict[f'override__{key}'] = value
+                    for col in prefix_columns:
+                        summary_dict[f'{landmark_set_name}__{col}'] = summary_dict.pop(col)
+                    if l_idx == 0:
+                        evaluation_results_list.append(summary_dict)
                     else:
-                        raise ValueError("Evaluation CSV file is empty.")
+                        evaluation_results_list[-1].update(summary_dict)
+                else:
+                    raise ValueError("Evaluation CSV file is empty.")
 
-                except Exception as e:
-                    print(f"  Could not find or parse evaluation file for shuffle {shuffle_num}. Error: {e}")
 
 
     # 5. AGGREGATE AND REPORT FINAL RESULTS
@@ -186,6 +199,7 @@ def run_experiment(config_path, n_folds, n_seeds, experiment_id, group_by_video=
 
 
 if __name__ == "__main__":
+    import uuid
     # skeletal_loss_weight: 0.0
     # skeletal_radius_multiplier_start: 1.15
     # skeletal_radius_multiplier_end: 1.15
@@ -198,28 +212,172 @@ if __name__ == "__main__":
     # model.heads.bodypart.predictor.locref_std: 7.2801
     # model.heads.bodypart.target_generator.locref_std: 7.2801
     # model.heads.bodypart.target_generator.pos_dist_thresh: 17\
-    train_overrides={
-        'skeletal_loss_weight': 0.0,
-        'skeletal_radius_multiplier_start': 1.10,
-        'skeletal_radius_multiplier_end': 1.10,
-        'union_intersect_adjacent_skeletal_mask_alpha_start': 0.0,
-        'union_intersect_adjacent_skeletal_mask_alpha_end': 0.0,
-        'union_intersect_adjacent_skeletal_mask_start_epoch': 0,
-        'union_intersect_adjacent_skeletal_mask_end_epoch': 1,
-        'use_skeletal_reference': True,
-        'truncate_targets': True,
-        'model.heads.bodypart.predictor.locref_std': 7.2801,
-        'model.heads.bodypart.target_generator.locref_std': 7.2801,
-        'model.heads.bodypart.target_generator.pos_dist_thresh': 17,
-        'runner.key_metric': 'test.rmse',
-        'runner.key_metric_asc': False,
-    }
-    results: pd.DataFrame = run_experiment(config_path, k_folds, n_repeat, json.dumps(train_overrides | {'group_by_video': False}), group_by_video=False, train_overrides=train_overrides,
+    timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     landmark_sets={
         'all':'all',
         'truncated': ['left_elbow', 'left_wrist', 'right_elbow', 'right_wrist', 'left_knee', 'left_ankle', 'right_knee', 'right_ankle'],
         'non_truncated': ['snout', 'base_of_head', 'left_shoulder', 'right_shoulder', 'spine1', 'spine6', 'spine2', 'spine3', 'spine4', 'spine5', 'left_hip', 'right_hip', 'tail1', 'tail6', 'tail2', 'tail3', 'tail4', 'tail5'],
-        })
+        }
+    experiments = [
+        {
+            'train_overrides': {
+            'skeletal_loss_weight': 0.0,
+            'skeletal_radius_multiplier_start': 1.10,
+            'skeletal_radius_multiplier_end': 1.10,
+            'union_intersect_adjacent_skeletal_mask_alpha_start': 0.0,
+            'union_intersect_adjacent_skeletal_mask_alpha_end': 0.0,
+            'union_intersect_adjacent_skeletal_mask_start_epoch': 0,
+            'union_intersect_adjacent_skeletal_mask_end_epoch': 1,
+            'use_skeletal_reference': False,
+            'truncate_targets': False,
+            'model.heads.bodypart.predictor.locref_std': 7.2801,
+            'model.heads.bodypart.target_generator.locref_std': 7.2801,
+            'model.heads.bodypart.target_generator.pos_dist_thresh': 17,
+            'runner.key_metric': 'test.rmse',
+            'runner.key_metric_asc': False,
+          },
+          'experiment_id': 'control',
+          'group_by_video': False,
+        },
+        # {
+        #     'train_overrides': {
+        #     'skeletal_loss_weight': 0.0,
+        #     'skeletal_radius_multiplier_start': 1.10,
+        #     'skeletal_radius_multiplier_end': 1.10,
+        #     'union_intersect_adjacent_skeletal_mask_alpha_start': 0.0,
+        #     'union_intersect_adjacent_skeletal_mask_alpha_end': 0.0,
+        #     'union_intersect_adjacent_skeletal_mask_start_epoch': 0,
+        #     'union_intersect_adjacent_skeletal_mask_end_epoch': 1,
+        #     'use_skeletal_reference': False,
+        #     'truncate_targets': False,
+        #     'model.heads.bodypart.predictor.locref_std': 7.2801,
+        #     'model.heads.bodypart.target_generator.locref_std': 7.2801,
+        #     'model.heads.bodypart.target_generator.pos_dist_thresh': 17,
+        #     'runner.key_metric': 'test.rmse',
+        #     'runner.key_metric_asc': False,
+        #   },
+        #   'experiment_id': 'control2',
+        #   'group_by_video': False,
+        # },
+        # {
+        #     'train_overrides': {
+        #     'skeletal_loss_weight': 0.0,
+        #     'skeletal_radius_multiplier_start': 1.00,
+        #     'skeletal_radius_multiplier_end': 1.00,
+        #     'union_intersect_adjacent_skeletal_mask_alpha_start': 0.0,
+        #     'union_intersect_adjacent_skeletal_mask_alpha_end': 0.0,
+        #     'union_intersect_adjacent_skeletal_mask_start_epoch': 0,
+        #     'union_intersect_adjacent_skeletal_mask_end_epoch': 1,
+        #     'use_skeletal_reference': True,
+        #     'truncate_targets': True,
+        #     'model.heads.bodypart.predictor.locref_std': 7.2801,
+        #     'model.heads.bodypart.target_generator.locref_std': 7.2801,
+        #     'model.heads.bodypart.target_generator.pos_dist_thresh': 17,
+        #     'runner.key_metric': 'test.rmse',
+        #     'runner.key_metric_asc': False,
+        #   },
+        #   'experiment_id': 'xray_1.00',
+        #   'group_by_video': False,
+        # },
+        # {
+        #     'train_overrides': {
+        #     'skeletal_loss_weight': 0.0,
+        #     'skeletal_radius_multiplier_start': 1.05,
+        #     'skeletal_radius_multiplier_end': 1.05,
+        #     'union_intersect_adjacent_skeletal_mask_alpha_start': 0.0,
+        #     'union_intersect_adjacent_skeletal_mask_alpha_end': 0.0,
+        #     'union_intersect_adjacent_skeletal_mask_start_epoch': 0,
+        #     'union_intersect_adjacent_skeletal_mask_end_epoch': 1,
+        #     'use_skeletal_reference': True,
+        #     'truncate_targets': True,
+        #     'model.heads.bodypart.predictor.locref_std': 7.2801,
+        #     'model.heads.bodypart.target_generator.locref_std': 7.2801,
+        #     'model.heads.bodypart.target_generator.pos_dist_thresh': 17,
+        #     'runner.key_metric': 'test.rmse',
+        #     'runner.key_metric_asc': False,
+        #   },
+        #   'experiment_id': 'xray_1.05',
+        #   'group_by_video': False,
+        # },
+        # {
+        #     'train_overrides': {
+        #     'skeletal_loss_weight': 0.0,
+        #     'skeletal_radius_multiplier_start': 1.10,
+        #     'skeletal_radius_multiplier_end': 1.10,
+        #     'union_intersect_adjacent_skeletal_mask_alpha_start': 0.0,
+        #     'union_intersect_adjacent_skeletal_mask_alpha_end': 0.0,
+        #     'union_intersect_adjacent_skeletal_mask_start_epoch': 0,
+        #     'union_intersect_adjacent_skeletal_mask_end_epoch': 1,
+        #     'use_skeletal_reference': True,
+        #     'truncate_targets': True,
+        #     'model.heads.bodypart.predictor.locref_std': 7.2801,
+        #     'model.heads.bodypart.target_generator.locref_std': 7.2801,
+        #     'model.heads.bodypart.target_generator.pos_dist_thresh': 17,
+        #     'runner.key_metric': 'test.rmse',
+        #     'runner.key_metric_asc': False,
+        #   },
+        #   'experiment_id': 'xray_1.10',
+        #   'group_by_video': False,
+        # },
+        {
+            'train_overrides': {
+            'skeletal_loss_weight': 0.0,
+            'skeletal_radius_multiplier_start': 1.15,
+            'skeletal_radius_multiplier_end': 1.15,
+            'union_intersect_adjacent_skeletal_mask_alpha_start': 0.0,
+            'union_intersect_adjacent_skeletal_mask_alpha_end': 0.0,
+            'union_intersect_adjacent_skeletal_mask_start_epoch': 0,
+            'union_intersect_adjacent_skeletal_mask_end_epoch': 1,
+            'use_skeletal_reference': True,
+            'truncate_targets': True,
+            'model.heads.bodypart.predictor.locref_std': 7.2801,
+            'model.heads.bodypart.target_generator.locref_std': 7.2801,
+            'model.heads.bodypart.target_generator.pos_dist_thresh': 17,
+            'runner.key_metric': 'test.rmse',
+            'runner.key_metric_asc': False,
+          },
+          'experiment_id': 'xray_1.15',
+          'group_by_video': False,
+        },
+        {
+            'train_overrides': {
+            'skeletal_loss_weight': 0.0,
+            'skeletal_radius_multiplier_start': 0.80,
+            'skeletal_radius_multiplier_end': 0.80,
+            'union_intersect_adjacent_skeletal_mask_alpha_start': 0.0,
+            'union_intersect_adjacent_skeletal_mask_alpha_end': 0.0,
+            'union_intersect_adjacent_skeletal_mask_start_epoch': 0,
+            'union_intersect_adjacent_skeletal_mask_end_epoch': 1,
+            'use_skeletal_reference': False,
+            'truncate_targets': True,
+            'model.heads.bodypart.predictor.locref_std': 7.2801,
+            'model.heads.bodypart.target_generator.locref_std': 7.2801,
+            'model.heads.bodypart.target_generator.pos_dist_thresh': 17,
+            'runner.key_metric': 'test.rmse',
+            'runner.key_metric_asc': False,
+          },
+          'experiment_id': 'gt_0.80',
+          'group_by_video': False,
+        },
 
-    print(results)
-    results.to_csv('results.csv')
+    ]
+
+    all_results = []
+
+    for experiment in experiments:
+        results: pd.DataFrame = run_experiment(
+            config_path, 
+            k_folds, 
+            n_repeat, 
+            experiment['experiment_id'],
+            group_by_video=experiment['group_by_video'], 
+            train_overrides=experiment['train_overrides'], 
+            landmark_sets=landmark_sets
+        )
+
+        result_timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        results.to_csv(f'results_{result_timestamp}_{uuid.uuid4()}.csv')
+        all_results.append(results)
+
+    all_results_df = pd.concat(all_results)
+    all_results_df.to_csv(f'all_results_{timestamp}.csv')

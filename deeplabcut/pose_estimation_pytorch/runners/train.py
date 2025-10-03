@@ -41,214 +41,207 @@ from deeplabcut.pose_estimation_pytorch.runners.snapshots import TorchSnapshotMa
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
+def _get_heat( target: dict, head: str = "bodypart"):
+    if head not in target or "heatmap" not in target[head] or "target" not in target[head]["heatmap"]:
+        return None, None, None
+    heat = target[head]["heatmap"]["target"]  # torch.Tensor
+    if heat.ndim != 4:
+        return None, None, None
+    # layout detection
+    # DLC uses channels-last (B, H, W, C) layout for heatmaps
+    # Check if last dimension is smaller (likely to be channels)
+    if heat.shape[-1] < heat.shape[1]:
+        # Channels-last: (B, H, W, C)
+        C_first = False
+        H, W = heat.shape[1], heat.shape[2]
+    else:
+        # Channels-first: (B, C, H, W)
+        C_first = True
+        H, W = heat.shape[2], heat.shape[3]
+    return heat, C_first, (H, W)
+
+def _apply_mask_inplace(heat: torch.Tensor, b: int, c: int, mask: torch.Tensor, channels_first: bool):
+    # mask shape: (H, W)
+    if channels_first:
+        heat[b, c, :, :] *= mask
+    else:
+        heat[b, :, :, c] *= mask
+
+def _compute_scale_factor_svl(animal_keypoints, bodyparts, skeletal_links_lengths):
+    """Return mm->pixel scale using SVL if available; else None."""
+    try:
+        snout_idx = bodyparts.index('snout')
+        tail1_idx = bodyparts.index('tail1')
+    except ValueError:
+        return None
+
+    # GT SVL in pixels (requires both visible)
+    if (animal_keypoints[snout_idx, 2] > 0.5) and (animal_keypoints[tail1_idx, 2] > 0.5):
+        gt_svl_pix = float(torch.norm(
+            torch.tensor(animal_keypoints[snout_idx, :2]) -
+            torch.tensor(animal_keypoints[tail1_idx, :2])
+        ).item())
+    else:
+        return None
+
+    # Expected SVL (mm) from reference
+    expected_svl_mm = None
+    if ('snout', 'tail1') in skeletal_links_lengths:
+        expected_svl_mm = float(skeletal_links_lengths[('snout', 'tail1')])
+    elif ('tail1', 'snout') in skeletal_links_lengths:
+        expected_svl_mm = float(skeletal_links_lengths[('tail1', 'snout')])
+
+    if expected_svl_mm is None or expected_svl_mm <= 0:
+        return None
+
+    return gt_svl_pix / expected_svl_mm  # pixels per mm
+
+
 def apply_skeletal_target_masking(
     target: dict,
     batch_annotations: dict,
     skeletal_data: dict,
     bodyparts: list[str],
     device: torch.device,
-    stride: float = 4.0,  # Default stride for ResNet-based models
+    stride: float = 4.0,
     skeletal_radius_multiplier: float = 1.0,
-    union_intersect_adjacent_skeletal_mask_alpha: float = 0.5
+    union_intersect_adjacent_skeletal_mask_alpha: float = 0.5,
 ) -> dict:
     """
-    Apply skeletal-aware masking to target heatmaps based on anatomical limb lengths.
-
-    For limb landmarks (elbows, wrists, knees, ankles), creates circular masks around
-    adjacent landmarks with radius equal to the expected limb length. The masks from
-    adjacent landmarks are combined and then multiplied with the target heatmap.
-
-    Args:
-        target: Target dictionary containing heatmap targets
-        batch_annotations: Batch annotations containing keypoint positions
-        skeletal_data: Dict containing 'links' and 'link_lengths' arrays
-        bodyparts: List of bodypart names to get indices
-        device: Device to put tensors on
-        stride: Model stride for coordinate conversion
-        skeletal_radius_multiplier: Multiplier for limb length radii
-        union_intersect_adjacent_skeletal_mask_alpha: Interpolation factor between
-                                                    union (0.0) and intersection (1.0).
-                                                    0.0 = pure union (OR), 1.0 = pure intersection (AND)
-
-    Returns:
-        Modified target dictionary with masked heatmaps
+    Truncate gaussian targets using skeletal limb lengths.
+    Fixes:
+      - respects channels-first (B,C,H,W) layout
+      - converts mm->pixels via per-image SVL when available
     """
     if not skeletal_data or len(skeletal_data.get('links', [])) == 0:
-        return target  # Return unmodified if no skeletal data
+        return target
 
-    if "bodypart" not in target or "heatmap" not in target["bodypart"] or "target" not in target["bodypart"]["heatmap"]:
-        return target  # Return unmodified if target structure is unexpected
+    heat, channels_first, hw = _get_heat(target, head="bodypart")
+    if heat is None:
+        return target
+    H, W = hw
 
-    heatmap_targets = target["bodypart"]["heatmap"]["target"]  # Shape: (batch, height, width, num_joints)
-    batch_size, height, width, num_joints = heatmap_targets.shape
-
-    # Define limb landmarks and their adjacent landmarks
-    limb_landmark_mapping = {
-        'left_elbow': ['left_shoulder', 'left_wrist'],
+    # limb neighborhood definition
+    limb_adj = {
+        'left_elbow':  ['left_shoulder', 'left_wrist'],
         'right_elbow': ['right_shoulder', 'right_wrist'],
-        'left_wrist': ['left_elbow'],
+        'left_wrist':  ['left_elbow'],
         'right_wrist': ['right_elbow'],
-        'left_knee': ['left_hip', 'left_ankle'],
-        'right_knee': ['right_hip', 'right_ankle'],
-        'left_ankle': ['left_knee'],
-        'right_ankle': ['right_knee']
+        'left_knee':   ['left_hip', 'left_ankle'],
+        'right_knee':  ['right_hip', 'right_ankle'],
+        'left_ankle':  ['left_knee'],
+        'right_ankle': ['right_knee'],
     }
 
-    # Create mapping from limb names to expected lengths
-    limb_length_mapping = {
-        ('left_shoulder', 'left_elbow'): 'upper.forelimb',
-        ('right_shoulder', 'right_elbow'): 'upper.forelimb',
-        ('left_elbow', 'left_wrist'): 'lower.forelimb',
-        ('right_elbow', 'right_wrist'): 'lower.forelimb',
-        ('left_hip', 'left_knee'): 'upper.hindlimb',
-        ('right_hip', 'right_knee'): 'upper.hindlimb',
-        ('left_knee', 'left_ankle'): 'lower.hindlimb',
-        ('right_knee', 'right_ankle'): 'lower.hindlimb'
-    }
-
-    # Process each sample in the batch
-    for batch_idx in range(batch_size):
-        # Get skeletal data for this sample
-        if isinstance(skeletal_data['links'], (list, np.ndarray)) and len(skeletal_data['links']) > batch_idx:
-            sample_links = skeletal_data['links'][batch_idx]
-            sample_lengths = skeletal_data['link_lengths'][batch_idx]
+    B = heat.shape[0]
+    for b in range(B):
+        # per-sample skeletal refs (as lists)
+        if isinstance(skeletal_data['links'], (list, tuple)) and b < len(skeletal_data['links']):
+            sample_links = skeletal_data['links'][b]
+            sample_lengths = skeletal_data['link_lengths'][b] if b < len(skeletal_data['link_lengths']) else []
         else:
-            continue  # Skip if no skeletal data for this sample
+            continue
 
-        if len(sample_links) == 0:
-            continue  # Skip if no links
+        if not sample_links or b >= len(batch_annotations['keypoints']):
+            continue
 
-        # Get keypoint annotations for this sample
-        if batch_idx >= len(batch_annotations['keypoints']):
-            continue  # Skip if no annotations for this sample
+        # first animal only (single-animal assumption)
+        animal_kpts = batch_annotations['keypoints'][b][0]  # (num_joints, 3)
 
-        keypoints = batch_annotations['keypoints'][batch_idx]  # Shape: (num_animals, num_joints, 3)
-        if len(keypoints) == 0:
-            continue  # Skip if no keypoints
-
-        # Use first animal (assuming single animal)
-        animal_keypoints = keypoints[0]  # Shape: (num_joints, 3)
-
-        # Create length lookup from skeletal data
-        length_lookup = {}
-        for link_idx, link in enumerate(sample_links):
-            if link_idx >= len(sample_lengths):
+        # build length lookup in mm for all directed pairs
+        link_len = {}
+        for li, link in enumerate(sample_links):
+            if li >= len(sample_lengths):
                 continue
-
-            # Handle different tensor/list formats
             if isinstance(link, torch.Tensor):
-                if link.dim() == 0:
+                if link.numel() < 2: 
                     continue
-                elif link.dim() == 1 and len(link) >= 2:
-                    bp1_idx, bp2_idx = link[0].item(), link[1].item()
-                else:
-                    continue
-            elif isinstance(link, (list, tuple)) and len(link) >= 2:
-                bp1_idx, bp2_idx = link[0], link[1]
+                i1, i2 = int(link[0].item()), int(link[1].item())
             else:
-                continue
-
-            # Get expected length
-            expected_length = sample_lengths[link_idx]
-            if isinstance(expected_length, torch.Tensor):
-                if expected_length.dim() == 0:
-                    expected_length = expected_length.item()
-                else:
+                if len(link) < 2:
                     continue
-
-            if expected_length <= 0:
+                i1, i2 = int(link[0]), int(link[1])
+            if i1 >= len(bodyparts) or i2 >= len(bodyparts):
                 continue
+            L = sample_lengths[li]
+            if isinstance(L, torch.Tensor):
+                if L.numel() != 1: 
+                    continue
+                L = float(L.item())
+            else:
+                L = float(L)
+            if not (L > 0):
+                continue
+            bp1, bp2 = bodyparts[i1], bodyparts[i2]
+            link_len[(bp1, bp2)] = L
+            link_len[(bp2, bp1)] = L
 
-            # Store length for both directions
-            if bp1_idx < len(bodyparts) and bp2_idx < len(bodyparts):
-                bp1_name = bodyparts[bp1_idx]
-                bp2_name = bodyparts[bp2_idx]
-                length_lookup[(bp1_name, bp2_name)] = expected_length
-                length_lookup[(bp2_name, bp1_name)] = expected_length
+        # mm->pixel scale via SVL (if present/visible)
+        px_per_mm = _compute_scale_factor_svl(animal_kpts, bodyparts, link_len)
 
-        # Apply masking to each limb landmark
-        for limb_name, adjacent_landmarks in limb_landmark_mapping.items():
+        # precompute grid once per sample
+        yy, xx = torch.meshgrid(
+            torch.arange(H, device=device, dtype=torch.float32),
+            torch.arange(W, device=device, dtype=torch.float32),
+            indexing='ij'
+        )
+
+        for limb_name, adj_list in limb_adj.items():
             if limb_name not in bodyparts:
                 continue
-
             limb_idx = bodyparts.index(limb_name)
 
-            # Collect all circular masks for interpolation
             circular_masks = []
-            mask_applied = False
-
-            # Add circular masks from each adjacent landmark
-            for adj_name in adjacent_landmarks:
+            for adj_name in adj_list:
                 if adj_name not in bodyparts:
                     continue
-
                 adj_idx = bodyparts.index(adj_name)
-
-                # Check if keypoint is visible
-                if animal_keypoints[adj_idx, 2] < 0.5:  # visibility threshold
+                # require adjacent visible
+                if float(animal_kpts[adj_idx, 2]) < 0.5:
                     continue
 
-                # Get expected limb length
-                limb_key = (adj_name, limb_name)
-                if limb_key not in length_lookup:
+                adj_x_img = float(animal_kpts[adj_idx, 0])
+                adj_y_img = float(animal_kpts[adj_idx, 1])
+
+                # expected limb length (mm) -> pixels via SVL if possible
+                L_mm = link_len.get((adj_name, limb_name), None)
+                if L_mm is None:
                     continue
 
-                expected_length = length_lookup[limb_key]
-
-                # Get adjacent landmark position (in image coordinates)
-                adj_x = animal_keypoints[adj_idx, 0].item()
-                adj_y = animal_keypoints[adj_idx, 1].item()
-
-                # Convert to heatmap coordinates using stride
-                # Heatmap coordinates = image_coordinates / stride
-                heatmap_x = adj_x / stride
-                heatmap_y = adj_y / stride
-
-                # Calculate radius in heatmap coordinates
-                # Scale the expected length (in image coordinates) to heatmap coordinates
-                radius = expected_length / stride * skeletal_radius_multiplier
-
-                # Create circular mask
-                y_coords, x_coords = torch.meshgrid(
-                    torch.arange(height, device=device),
-                    torch.arange(width, device=device),
-                    indexing='ij'
-                )
-
-                # Calculate distance from adjacent landmark
-                distances = torch.sqrt((x_coords - heatmap_x) ** 2 + (y_coords - heatmap_y) ** 2)
-
-                # Create circular mask (1 inside circle, 0 outside)
-                circle_mask = (distances <= radius).float()
-
-                # Collect mask for interpolation
-                circular_masks.append(circle_mask)
-                mask_applied = True
-
-            # Apply mask to target heatmap
-            if mask_applied and len(circular_masks) > 0:
-                # Interpolate between union and intersection
-                if len(circular_masks) == 1:
-                    # Single mask - no interpolation needed
-                    mask = circular_masks[0]
+                if px_per_mm is not None:
+                    L_px = L_mm * px_per_mm
                 else:
-                    # Multiple masks - interpolate between union and intersection
-                    # Stack masks for efficient computation
-                    stacked_masks = torch.stack(circular_masks, dim=0)  # Shape: (num_masks, height, width)
+                    # Fallback: use GT distance (simple mode behavior)
+                    limb_idx2 = bodyparts.index(limb_name)
+                    if float(animal_kpts[limb_idx2, 2]) < 0.5:
+                        continue
+                    L_px = ((adj_x_img - float(animal_kpts[limb_idx2, 0]))**2 +
+                            (adj_y_img - float(animal_kpts[limb_idx2, 1]))**2) ** 0.5
+                    if L_px < 1.0:
+                        continue
 
-                    # Compute union (maximum across masks)
-                    union_mask = torch.max(stacked_masks, dim=0)[0]
+                # map to heatmap coordinates
+                cx = torch.tensor(adj_x_img / stride, device=device, dtype=torch.float32)
+                cy = torch.tensor(adj_y_img / stride, device=device, dtype=torch.float32)
+                r = torch.tensor(L_px / stride * skeletal_radius_multiplier,
+                                 device=device, dtype=torch.float32)
 
-                    # Compute intersection (minimum across masks)
-                    intersection_mask = torch.min(stacked_masks, dim=0)[0]
+                dist = torch.sqrt((xx - cx)**2 + (yy - cy)**2)
+                circular_masks.append((dist <= r).float())
 
-                    # Interpolate: mask = (1 - alpha) * union + alpha * intersection
-                    alpha = union_intersect_adjacent_skeletal_mask_alpha
-                    mask = (1.0 - alpha) * union_mask + alpha * intersection_mask
+            if not circular_masks:
+                continue
 
-                # Multiply target heatmap by mask
-                heatmap_targets[batch_idx, :, :, limb_idx] *= mask
-            # If no mask was applied, leave target unchanged (equivalent to mask of all 1's)
+            if len(circular_masks) == 1:
+                mask = circular_masks[0]
+            else:
+                stacked = torch.stack(circular_masks, dim=0)  # (M,H,W)
+                union_mask = torch.max(stacked, dim=0)[0]
+                inter_mask = torch.min(stacked, dim=0)[0]
+                alpha = float(union_intersect_adjacent_skeletal_mask_alpha)
+                mask = (1.0 - alpha) * union_mask + alpha * inter_mask
+
+            _apply_mask_inplace(heat, b, limb_idx, mask, channels_first=channels_first)
 
     return target
 
