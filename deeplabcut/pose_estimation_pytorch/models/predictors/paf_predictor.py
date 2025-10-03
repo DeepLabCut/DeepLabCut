@@ -129,9 +129,9 @@ class PartAffinityFieldPredictor(BasePredictor):
             >>> stride = 8
             >>> poses = predictor.forward(stride, output)
         """
-        heatmaps = outputs["heatmap"]
-        locrefs = outputs["locref"]
-        pafs = outputs["paf"]
+        heatmaps = outputs["heatmap"] # (batch_size, num_joints, height, width)
+        locrefs = outputs["locref"] # (batch_size, num_joints*2, height, width)
+        pafs = outputs["paf"] # (batch_size, num_edges*2, height, width)
         scale_factors = stride, stride
         batch_size, n_channels, height, width = heatmaps.shape
 
@@ -150,7 +150,7 @@ class PartAffinityFieldPredictor(BasePredictor):
 
         peaks = self.find_local_peak_indices_maxpool_nms(
             heatmaps, self.nms_radius, threshold=0.01
-        )
+        ) # (n_peaks, 4) -> columns: (batch, part, height, width)
         if ~torch.any(peaks):
             poses = -torch.ones(
                 (batch_size, self.num_animals, self.num_multibodyparts, 5)
@@ -162,10 +162,12 @@ class PartAffinityFieldPredictor(BasePredictor):
             return results
 
         locrefs = locrefs.reshape(batch_size, n_channels, 2, height, width)
-        locrefs = locrefs * self.locref_stdev
-        pafs = pafs.reshape(batch_size, -1, 2, height, width)
+        locrefs = locrefs * self.locref_stdev # (batch_size, num_joints, 2, height, width)
+        pafs = pafs.reshape(batch_size, -1, 2, height, width) # (batch_size, num_edges, 2, height, width)
 
+        # Use only the minimal tree edges for efficiency
         graph = [self.graph[ind] for ind in self.edges_to_keep]
+        # Compute refined peak coords + PAF line-integral costs
         preds = self.compute_peaks_and_costs(
             heatmaps,
             locrefs,
@@ -176,8 +178,10 @@ class PartAffinityFieldPredictor(BasePredictor):
             scale_factors,
             n_id_channels=0,  # FIXME Handle identity training
         )
-        poses = -torch.ones((batch_size, self.num_animals, self.num_multibodyparts, 5))
-        poses_unique = -torch.ones((batch_size, 1, self.num_uniquebodyparts, 4))
+        # Initialize output tensors
+        poses = -torch.ones((batch_size, self.num_animals, self.num_multibodyparts, 5)) # (batch_size, num_animals, num_joints, [x, y, prob, id, affinity])
+        poses_unique = -torch.ones((batch_size, 1, self.num_uniquebodyparts, 4)) # (batch_size, 1, num_unique_joints, [x, y, prob, id])
+        # Greedy bipartite assembly per frame
         for i, data_dict in enumerate(preds):
             assemblies, unique = self.assembler._assemble(data_dict, ind_frame=0)
             if assemblies is not None:
@@ -216,6 +220,7 @@ class PartAffinityFieldPredictor(BasePredictor):
         peak_inds_in_batch: torch.Tensor,
         strides: tuple[float, float],
     ) -> torch.Tensor:
+        """Refine peak coordinates to input-image pixels using locrefs and stride."""
         s, b, r, c = peak_inds_in_batch.T
         stride_y, stride_x = strides
         strides = torch.Tensor((stride_x, stride_y)).to(locrefs.device)
@@ -233,7 +238,12 @@ class PartAffinityFieldPredictor(BasePredictor):
         n_points: int = 10,
         n_decimals: int = 3,
     ) -> list[dict[int, NDArray]]:
-        # Clip peak locations to PAFs dimensions
+        """Compute PAF line-integral affinities per limb.
+
+        Returns:
+            List of per-image cost dicts, each with per-limb 'm1' (affinity) and 'distance' matrices.
+        """
+        # Clip peak locations to PAF map bounds
         h, w = pafs.shape[-2:]
         peak_inds_in_batch[:, 2] = np.clip(peak_inds_in_batch[:, 2], 0, h - 1)
         peak_inds_in_batch[:, 3] = np.clip(peak_inds_in_batch[:, 3], 0, w - 1)
@@ -243,6 +253,7 @@ class PartAffinityFieldPredictor(BasePredictor):
         edge_inds = []
         all_edges = []
         all_peaks = []
+        # Build candidate edges for each limb from source/target part peaks
         for i in range(n_samples):
             samples_i = peak_inds_in_batch[:, 0] == i
             peak_inds = peak_inds_in_batch[samples_i, 1:]
@@ -258,6 +269,7 @@ class PartAffinityFieldPredictor(BasePredictor):
                 inds_t = idx_per_bpt[t]
                 if not (inds_s and inds_t):
                     continue
+                # All (source, target) candidate pairs for this limb
                 candidate_edges = ((i, j) for i in inds_s for j in inds_t)
                 edges.extend(candidate_edges)
                 edge_inds.extend([k] * len(inds_s) * len(inds_t))
@@ -278,21 +290,24 @@ class PartAffinityFieldPredictor(BasePredictor):
         vecs = vecs_t - vecs_s
         lengths = np.linalg.norm(vecs, axis=1).astype(np.float32)
         lengths += np.spacing(1, dtype=np.float32)
-        xy = np.linspace(vecs_s, vecs_t, n_points, axis=1, dtype=np.int32)
+        # Sample n_points along the segment
+        xy = np.linspace(vecs_s, vecs_t, n_points, axis=1, dtype=np.int32) # (edges, n_points, 2)
+        # Gather PAF vectors at sampled pixels
         y = pafs[
             sample_inds.reshape((-1, 1)),
             edge_inds.reshape((-1, 1)),
             :,
             xy[..., 0],
             xy[..., 1],
-        ]
-        integ = np.trapz(y, xy[..., ::-1], axis=1)
+        ] # (edges, n_points, 2)
+        # Integrate PAF along segment (trapezoid rule)
+        integ = np.trapz(y, xy[..., ::-1], axis=1) # (edges, 2)
         affinities = np.linalg.norm(integ, axis=1).astype(np.float32)
         affinities /= lengths
         np.round(affinities, decimals=n_decimals, out=affinities)
         np.round(lengths, decimals=n_decimals, out=lengths)
 
-        # Form cost matrices
+        # Form per-image, per-limb cost matrices for bipartite matching
         all_costs = []
         for i in range(n_samples):
             samples_i_mask = sample_inds == i
@@ -331,17 +346,34 @@ class PartAffinityFieldPredictor(BasePredictor):
         n_points: int = 10,
         n_decimals: int = 3,
     ) -> list[dict[str, NDArray]]:
+        """
+        Compute refined peak coordinates, confidence scores, and PAF edge costs for pose estimation.
+        
+        Returns:
+            List of dictionaries, one per image in the batch. Each dictionary contains:
+                - "coordinates": Tuple containing a list of numpy arrays, one per body part.
+                    Each array has shape (n_peaks_for_bodypart, 2) with [x, y] coordinates.
+                - "confidence": List of numpy arrays, one per body part. Each array has shape 
+                    (n_peaks_for_bodypart, 1) containing confidence scores.
+                - "costs": (Optional) Cost matrix for PAF edge connections between body parts.
+                    Only present if PAF computation is successful.
+                - "identity": (Optional) List of numpy arrays containing identity features, 
+                    one per body part. Only present if n_id_channels > 0.
+        """
         n_samples, n_channels = heatmaps.shape[:2]
         n_bodyparts = n_channels - n_id_channels
+        # Refine peak positions to input-image pixels
         pos = self.calc_peak_locations(locrefs, peak_inds_in_batch, strides)
         pos = np.round(pos.detach().cpu().numpy(), decimals=n_decimals)
         heatmaps = heatmaps.detach().cpu().numpy()
         pafs = pafs.detach().cpu().numpy()
         peak_inds_in_batch = peak_inds_in_batch.detach().cpu().numpy()
+        # Compute per-limb affinity matrices via PAF line integral
         costs = self.compute_edge_costs(
             pafs, peak_inds_in_batch, graph, paf_inds, n_bodyparts, n_points, n_decimals
         )
         s, b, r, c = peak_inds_in_batch.T
+        # Extract confidence at each peak from smoothed heatmap
         prob = np.round(heatmaps[s, b, r, c], n_decimals).reshape((-1, 1))
         if n_id_channels:
             ids = np.round(heatmaps[s, -n_id_channels:, r, c], n_decimals)
