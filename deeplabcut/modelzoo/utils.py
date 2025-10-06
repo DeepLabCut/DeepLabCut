@@ -97,9 +97,9 @@ def get_super_animal_scorer(
         detector_name = detector_snapshot_path.stem
         if detector_name.startswith(super_animal_prefix):
             detector_name = detector_name[len(super_animal_prefix) :]
-        dlc_scorer += f"_{detector_name}_"
+        dlc_scorer += f"_{detector_name}"
     elif torchvision_detector_name is not None:
-        dlc_scorer += f"_{torchvision_detector_name}_"
+        dlc_scorer += f"_{torchvision_detector_name}"
 
     return dlc_scorer
 
