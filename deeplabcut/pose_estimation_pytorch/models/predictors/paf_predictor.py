@@ -280,26 +280,55 @@ class PartAffinityFieldPredictor(BasePredictor):
         src_bodypart_id   = graph[0]  # (n_edges,)
         dst_bodypart_id   = graph[1]  # (n_edges,)
 
-        # Masks of peaks that match each edge's source/dest bodypart: (n_edges, n_peaks)
-        src_mask = (peak_bodyparts.unsqueeze(0) == src_bodypart_id.unsqueeze(1))
-        dst_mask = (peak_bodyparts.unsqueeze(0) == dst_bodypart_id.unsqueeze(1))
+        # Process each batch separately to reduce memory usage
+        all_edge_idx = []
+        all_src_idx = []
+        all_dst_idx = []
+        all_batch_inds = []
 
-        # Batch equality across all src/dst peak pairs for each edge: (1, n_peaks, n_peaks)
-        same_batch = (peak_batches.unsqueeze(0).unsqueeze(2) == peak_batches.unsqueeze(0).unsqueeze(1))
+        for batch_idx in range(batch_size):
+            # Get peaks for this batch only
+            batch_mask = peak_batches == batch_idx
+            if not torch.any(batch_mask):
+                continue
+                
+            batch_peak_indices = torch.nonzero(batch_mask, as_tuple=False).squeeze(-1)
+            batch_bodyparts = peak_bodyparts[batch_mask]
+            
+            # Masks of peaks that match each edge's source/dest bodypart for this batch
+            src_mask = (batch_bodyparts.unsqueeze(0) == src_bodypart_id.unsqueeze(1))  # (n_edges, n_batch_peaks)
+            dst_mask = (batch_bodyparts.unsqueeze(0) == dst_bodypart_id.unsqueeze(1))  # (n_edges, n_batch_peaks)
 
-        # Valid src/dst peaks for each edge, same batch: (n_edges, n_peaks, n_peaks)
-        valid_pairs = src_mask.unsqueeze(2) & dst_mask.unsqueeze(1) & same_batch
+            # Valid src/dst peaks for each edge in this batch: (n_edges, n_batch_peaks, n_batch_peaks)
+            valid_pairs = src_mask.unsqueeze(2) & dst_mask.unsqueeze(1)
 
-        # Indices of all valid pairs
-        edge_idx, src_idx, dst_idx = valid_pairs.nonzero(as_tuple=True) # each (found_pairs,)
+            # Indices of all valid pairs for this batch
+            edge_idx, src_idx, dst_idx = valid_pairs.nonzero(as_tuple=True)
+            
+            if len(edge_idx) > 0:
+                # Map back to original peak indices
+                src_idx = batch_peak_indices[src_idx]
+                dst_idx = batch_peak_indices[dst_idx]
+                
+                all_edge_idx.append(edge_idx)
+                all_src_idx.append(src_idx)
+                all_dst_idx.append(dst_idx)
+                all_batch_inds.append(torch.full_like(edge_idx, batch_idx))
+
+        if not all_edge_idx:
+            return [{} for _ in range(batch_size)]
+
+        # Concatenate results from all batches
+        edge_idx = torch.cat(all_edge_idx)
+        src_idx = torch.cat(all_src_idx)
+        dst_idx = torch.cat(all_dst_idx)
+        batch_inds = torch.cat(all_batch_inds)
+        
         edge_idx = paf_limb_inds[edge_idx] # Map back to original PAF indices
 
         # Gather coordinates
         src_coords = torch.stack([peak_rows[src_idx], peak_cols[src_idx]], dim=1)  # (found_pairs, 2)
         dst_coords = torch.stack([peak_rows[dst_idx], peak_cols[dst_idx]], dim=1)  # (found_pairs, 2)
-
-        # Shape to (found_pairs, 2, 2): -> [src_limb, dst_limb], [row, col]
-        batch_inds = peak_batches[src_idx]
 
         vecs_s = src_coords.float()  # (found_pairs, 2)
         vecs_t = dst_coords.float()  # (found_pairs, 2)
