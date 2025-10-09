@@ -214,9 +214,7 @@ def build_detector_postprocessor(max_individuals: int) -> Postprocessor:
                 keys_to_rescale=["bboxes"],
                 mode=RescaleAndOffset.Mode.BBOX_XYWH,
             ),
-            RemoveLowConfidenceBoxes(
-                bbox_score_thresh=0.25
-            ),
+            RemoveLowConfidenceBoxes(bbox_score_thresh=0.25),
         ]
     )
 
@@ -445,12 +443,13 @@ class RemoveLowConfidenceBoxes(Postprocessor):
     """
 
     def __init__(self, bbox_score_thresh: float):
-        print('utilizing low confidence bbox filtering')
+        print("utilizing low confidence bbox filtering")
         self.bbox_score_thresh = bbox_score_thresh
 
-
-    def __call__(self, predictions: dict[str, np.ndarray], context: Context) -> tuple[dict[str, np.ndarray], Context]:
-        keepers = np.where(predictions['bbox_scores'] > self.bbox_score_thresh)
+    def __call__(
+        self, predictions: dict[str, np.ndarray], context: Context
+    ) -> tuple[dict[str, np.ndarray], Context]:
+        keepers = np.where(predictions["bbox_scores"] > self.bbox_score_thresh)
         for name in predictions:
             output = predictions[name]
             if len(output) > len(keepers):
