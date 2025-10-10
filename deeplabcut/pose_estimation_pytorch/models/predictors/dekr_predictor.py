@@ -139,12 +139,9 @@ class DEKRPredictor(BasePredictor):
         pose_ind, ctr_scores = self.get_top_values(center_heatmaps)
 
         posemap = posemap.permute(0, 2, 3, 1).view(batch_size, h * w, -1, 2)
-        poses = torch.zeros(batch_size, pose_ind.shape[1], num_joints, 2).to(
-            ctr_scores.device
-        )
-        for i in range(batch_size):
-            pose = posemap[i, pose_ind[i]]
-            poses[i] = pose
+        
+        batch_indices = torch.arange(batch_size, device=pose_ind.device)[:, None]
+        poses = posemap[batch_indices, pose_ind]
 
         if self.use_heatmap:
             poses = self._update_pose_with_heatmaps(poses, heatmaps[:, :-1])
@@ -384,6 +381,7 @@ class DEKRPredictor(BasePredictor):
             Pose proposals after non-maximum suppression.
         """
         batch_size, num_people, num_joints, _ = poses.shape
+        device = poses.device
         if num_people == 0:
             return poses
 
@@ -391,20 +389,12 @@ class DEKRPredictor(BasePredictor):
         w = xy[..., 0].max(dim=-1)[0] - xy[..., 0].min(dim=-1)[0]
         h = xy[..., 1].max(dim=-1)[0] - xy[..., 1].min(dim=-1)[0]
         area = torch.clamp((w * w) + (h * h), min=1)
-        area = area.repeat(1, 1, num_people * num_joints)
-        area = area.reshape(batch_size, num_people, num_people, num_joints)
-
-        # TODO(niels): Optimize code
-        # swap (batch, num_people) dims to be able to broadcast the diff
-        xy_ = xy.transpose(1, 0)
+        area = area.unsqueeze(1).unsqueeze(3).expand(batch_size, num_people, num_people, num_joints)
 
         # compute the difference between keypoints
-        pose_diff = xy_[:, None] - xy_
+        pose_diff = (xy.unsqueeze(2) - xy.unsqueeze(1))
         pose_diff.pow_(2)
-
-        # put batch first again
-        pose_diff = pose_diff.transpose(2, 0)
-
+        
         # Compute error between people pairs
         pose_dist = pose_diff.sum(dim=-1)
         pose_dist.sqrt_()
@@ -413,38 +403,28 @@ class DEKRPredictor(BasePredictor):
         pose_dist = (pose_dist < pose_thresh).sum(dim=-1)
         nms_pose = pose_dist > self.nms_threshold  # shape (b, num_people, num_people)
 
-        for batch_idx in range(batch_size):
-            # TODO(niels): Optimize code
-            kept = torch.zeros(num_people, dtype=torch.bool)
-            batch_order = []
-            kept_indices = set()
-            ignored_indices = set()
-            for person_idx in range(num_people):
-                if person_idx in ignored_indices:
-                    continue
+        # Upper triangular mask matrix to avoid double processing
+        triu_mask = torch.triu(torch.ones(num_people, num_people, device=device), diagonal=1).bool()
+        
+        suppress_pairs = nms_pose & triu_mask.unsqueeze(0)  # (batch_size, num_people, num_people)
+        
+        # For each batch, determine which poses to suppress
+        suppressed = suppress_pairs.any(dim=1)  # (batch_size, num_people)
+        
+        kept = ~suppressed  # (batch_size, num_people)
+        
+        # Indices for reordering
+        batch_indices = torch.arange(batch_size, device=device).unsqueeze(1)
+        people_indices = torch.arange(num_people, device=device).unsqueeze(0).expand(batch_size, -1)
+        
+        # non-suppressed first, then suppressed
+        sort_keys = kept.float() + (people_indices.float() + 1) / (num_people + 1)
+        _, sort_indices = torch.sort(sort_keys, dim=1, descending=True)
+        
+        # Mask out suppressed predictions
+        poses[~kept] = -1
 
-                kept_indices.add(person_idx)
-                batch_order.append(person_idx)
-                kept[person_idx] = True
-
-                suppressed = (
-                    nms_pose[batch_idx, person_idx]
-                    .nonzero()
-                    .detach()
-                    .reshape(-1)
-                    .tolist()
-                )
-                for to_suppress in suppressed:
-                    if to_suppress not in kept_indices:
-                        ignored_indices.add(to_suppress)
-
-            for idx in ignored_indices:
-                batch_order.append(idx)
-
-            # Mask out suppressed predictions
-            poses[batch_idx, ~kept] = -1
-
-            # Re-order predictions so the non-suppressed ones are up top
-            poses[batch_idx] = poses[batch_idx, batch_order]
+        # Re-order predictions so the non-suppressed ones are up top
+        poses = poses[batch_indices, sort_indices]
 
         return poses
