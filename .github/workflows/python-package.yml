@@ -45,6 +45,8 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           pip install tensorflow-macos tensorpack==0.11 tf_slim==1.1.0 tf-keras
+          # Diagnostic check for h5py / HDF5 library
+          python -c "import h5py; print('✅ h5py version:', h5py.__version__); import h5py.h5f; print('✅ h5py.h5f loaded successfully')"
 
       - name: Install dependencies
         shell: bash -el {0}  # Important: activates the conda environment
