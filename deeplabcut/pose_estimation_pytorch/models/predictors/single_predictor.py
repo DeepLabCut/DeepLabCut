@@ -134,8 +134,8 @@ class HeatmapPredictor(BasePredictor):
 
         Example:
             >>> predictor = HeatmapPredictor(location_refinement=True, locref_std=7.2801)
-            >>> heatmap = torch.rand(32, 17, 64, 64)
-            >>> locref = torch.rand(32, 17, 64, 64, 2)
+            >>> heatmap = torch.rand(32, 64, 64, 17)
+            >>> locref = torch.rand(32, 64, 64, 17, 2)
             >>> scale_factors = (0.5, 0.5)
             >>> poses = predictor.get_pose_prediction(heatmap, locref, scale_factors)
         """
