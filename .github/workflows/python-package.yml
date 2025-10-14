@@ -52,7 +52,7 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt
           # debug
-          python -c "from deeplabcut.pose_estimation_tensorflow import _tf_legacy; print('✅ Imported _tf_legacy')"
+          python -c "from deeplabcut.pose_estimation_tensorflow import _tf_legacy; print('Imported _tf_legacy')"
 
 
       - name: Install ffmpeg
