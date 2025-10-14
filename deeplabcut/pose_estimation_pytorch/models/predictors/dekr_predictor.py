@@ -139,7 +139,7 @@ class DEKRPredictor(BasePredictor):
         pose_ind, ctr_scores = self.get_top_values(center_heatmaps)
 
         posemap = posemap.permute(0, 2, 3, 1).view(batch_size, h * w, -1, 2)
-        
+
         batch_indices = torch.arange(batch_size, device=pose_ind.device)[:, None]
         poses = posemap[batch_indices, pose_ind]
 
@@ -323,28 +323,44 @@ class DEKRPredictor(BasePredictor):
 
         x = ind % w
         y = (ind / w).long()
-        heats_ind = torch.stack((x, y), dim=3)  # (batch_size, num_keypoints, num_animals, 2)
+        heats_ind = torch.stack(
+            (x, y), dim=3
+        )  # (batch_size, num_keypoints, num_animals, 2)
 
         # Calculate differences between all pose-heat pairs
         # (batch_size, num_animals, num_keypoints, 1, 2) - (batch_size, 1, num_keypoints, num_animals, 2)
-        pose_heat_diff = poses.unsqueeze(3) - heats_ind.unsqueeze(1)  # (batch_size, num_animals, num_keypoints, num_animals, 2)
-        
-        pose_heat_dist = torch.norm(pose_heat_diff, dim=-1)  # (batch_size, num_animals, num_keypoints, num_animals)
-        
+        pose_heat_diff = poses.unsqueeze(3) - heats_ind.unsqueeze(
+            1
+        )  # (batch_size, num_animals, num_keypoints, num_animals, 2)
+
+        pose_heat_dist = torch.norm(
+            pose_heat_diff, dim=-1
+        )  # (batch_size, num_animals, num_keypoints, num_animals)
+
         # Find closest heat point for each pose
-        keep_ind = torch.argmin(pose_heat_dist, dim=-1)  # (batch_size, num_animals, num_keypoints)
-        
+        keep_ind = torch.argmin(
+            pose_heat_dist, dim=-1
+        )  # (batch_size, num_animals, num_keypoints)
+
         # Get minimum distances for filtering
-        min_distances = torch.gather(pose_heat_dist, 3, keep_ind.unsqueeze(-1)).squeeze(-1)  # (batch_size, num_animals, num_keypoints)
-        
-        absorb_mask = min_distances < self.max_absorb_distance  # (batch_size, num_animals, num_keypoints)
-        
+        min_distances = torch.gather(pose_heat_dist, 3, keep_ind.unsqueeze(-1)).squeeze(
+            -1
+        )  # (batch_size, num_animals, num_keypoints)
+
+        absorb_mask = (
+            min_distances < self.max_absorb_distance
+        )  # (batch_size, num_animals, num_keypoints)
+
         # Create indices for gathering the correct heat points
         batch_indices = torch.arange(batch_size, device=poses.device).view(-1, 1, 1)
-        keypoint_indices = torch.arange(num_keypoints, device=poses.device).view(1, 1, -1)
-        
-        selected_heat_points = heats_ind[batch_indices, keypoint_indices, keep_ind]  # (batch_size, num_animals, num_keypoints, 2)
-        
+        keypoint_indices = torch.arange(num_keypoints, device=poses.device).view(
+            1, 1, -1
+        )
+
+        selected_heat_points = heats_ind[
+            batch_indices, keypoint_indices, keep_ind
+        ]  # (batch_size, num_animals, num_keypoints, 2)
+
         poses = torch.where(absorb_mask.unsqueeze(-1), selected_heat_points, poses)
 
         return poses
@@ -397,12 +413,16 @@ class DEKRPredictor(BasePredictor):
         w = xy[..., 0].max(dim=-1)[0] - xy[..., 0].min(dim=-1)[0]
         h = xy[..., 1].max(dim=-1)[0] - xy[..., 1].min(dim=-1)[0]
         area = torch.clamp((w * w) + (h * h), min=1)
-        area = area.unsqueeze(1).unsqueeze(3).expand(batch_size, num_people, num_people, num_joints)
+        area = (
+            area.unsqueeze(1)
+            .unsqueeze(3)
+            .expand(batch_size, num_people, num_people, num_joints)
+        )
 
         # compute the difference between keypoints
-        pose_diff = (xy.unsqueeze(2) - xy.unsqueeze(1))
+        pose_diff = xy.unsqueeze(2) - xy.unsqueeze(1)
         pose_diff.pow_(2)
-        
+
         # Compute error between people pairs
         pose_dist = pose_diff.sum(dim=-1)
         pose_dist.sqrt_()
@@ -412,23 +432,29 @@ class DEKRPredictor(BasePredictor):
         nms_pose = pose_dist > self.nms_threshold  # shape (b, num_people, num_people)
 
         # Upper triangular mask matrix to avoid double processing
-        triu_mask = torch.triu(torch.ones(num_people, num_people, device=device), diagonal=1).bool()
-        
-        suppress_pairs = nms_pose & triu_mask.unsqueeze(0)  # (batch_size, num_people, num_people)
-        
+        triu_mask = torch.triu(
+            torch.ones(num_people, num_people, device=device), diagonal=1
+        ).bool()
+
+        suppress_pairs = nms_pose & triu_mask.unsqueeze(
+            0
+        )  # (batch_size, num_people, num_people)
+
         # For each batch, determine which poses to suppress
         suppressed = suppress_pairs.any(dim=1)  # (batch_size, num_people)
-        
+
         kept = ~suppressed  # (batch_size, num_people)
-        
+
         # Indices for reordering
         batch_indices = torch.arange(batch_size, device=device).unsqueeze(1)
-        people_indices = torch.arange(num_people, device=device).unsqueeze(0).expand(batch_size, -1)
-        
+        people_indices = (
+            torch.arange(num_people, device=device).unsqueeze(0).expand(batch_size, -1)
+        )
+
         # non-suppressed first, then suppressed
         sort_keys = kept.float() + (people_indices.float() + 1) / (num_people + 1)
         _, sort_indices = torch.sort(sort_keys, dim=1, descending=True)
-        
+
         # Mask out suppressed predictions
         poses[~kept] = -1
 
