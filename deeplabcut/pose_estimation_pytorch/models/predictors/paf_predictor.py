@@ -350,7 +350,7 @@ class PartAffinityFieldPredictor(BasePredictor):
         vecs_t = dst_coords.float()  # (found_pairs, 2)
         vecs = vecs_t - vecs_s
         lengths = torch.norm(vecs, dim=1)
-        lengths += torch.finfo(torch.float32).eps
+        lengths += torch.tensor(np.spacing(1, dtype=np.float32), device=device)
 
         # Sample n_points along the segments
         t_vals = torch.linspace(0, 1, n_points, device=device, dtype=torch.float32)
@@ -358,36 +358,25 @@ class PartAffinityFieldPredictor(BasePredictor):
 
         # Interpolate points along each segment: (n_edges, n_points, 2)
         xy = vecs_s.unsqueeze(1) + t_vals * (vecs_t - vecs_s).unsqueeze(1)
-        xy_int = xy.round().long()  # Convert to integer coordinates for indexing
+        xy = xy.to(torch.int32)
+        xy[..., 0] = torch.clamp(xy[..., 0], 0, h - 1)
+        xy[..., 1] = torch.clamp(xy[..., 1], 0, w - 1)
 
         # Gather PAF vectors at sampled pixels: (n_edges, n_points, 2)
         y = pafs[
             batch_inds.unsqueeze(1).expand(-1, n_points),  # (n_edges, n_points)
             edge_idx.unsqueeze(1).expand(-1, n_points),  # (n_edges, n_points)
             :,  # both x and y components of each vector
-            xy_int[..., 0],  # row coordinates
-            xy_int[..., 1],  # col coordinates
+            xy[..., 0],  # row coordinates
+            xy[..., 1],  # col coordinates
         ]
 
-        # Integrate PAF along segment using trapezoidal rule: 0.5 * (y1 + y2) * dx
-        xy_reversed = torch.flip(xy, dims=[-1])  # (n_edges, n_points, 2) -> [col, row]
-        x1 = xy_reversed[:, :-1]
-        x2 = xy_reversed[:, 1:]
-        y1 = y[:, :-1]
-        y2 = y[:, 1:]
-        dx = torch.norm(x2 - x1, dim=-1)  # Distance between consecutive points
-        y_avg = (y1 + y2) / 2  # Average PAF vector
-
-        # Dot product of average PAF with unit direction vector
-        unit_dir = (x2 - x1) / (
-            dx.unsqueeze(-1) + torch.finfo(torch.float32).eps
-        )  # (n_edges, n_points-1, 2)
-        integrand = torch.sum(
-            y_avg * unit_dir, dim=-1
-        )  # (n_edges, n_points-1) - Dot product
-
-        # Sum over all segments to get total integral
-        affinities = torch.sum(integrand * dx, dim=1)  # (n_edges,)
+        # Integrate PAF along segment using trapezoidal rule
+        xy_reversed = torch.flip(
+            xy.float(), dims=[-1]
+        )
+        integ = torch.trapz(y, xy_reversed, dim=1)  # (n_edges, 2)
+        affinities = torch.norm(integ, dim=1)  # (n_edges,)
         affinities = affinities / lengths
         affinities = torch.round(affinities * (10**n_decimals)) / (10**n_decimals)
         lengths = torch.round(lengths * (10**n_decimals)) / (10**n_decimals)
