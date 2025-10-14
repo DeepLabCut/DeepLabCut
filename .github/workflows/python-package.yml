@@ -45,6 +45,8 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           pip install tensorflow-macos tensorpack==0.11 tf_slim==1.1.0 tf-keras
+          # debug
+          python -c "from deeplabcut.pose_estimation_tensorflow import _tf_legacy"
 
       - name: Install dependencies
         shell: bash -el {0}  # Important: activates the conda environment
