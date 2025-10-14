@@ -319,25 +319,33 @@ class DEKRPredictor(BasePredictor):
         kpt_heatmaps *= maxm
         batch_size, num_keypoints, h, w = kpt_heatmaps.shape
         kpt_heatmaps = kpt_heatmaps.view(batch_size, num_keypoints, -1)
-        val_k, ind = kpt_heatmaps.topk(self.num_animals, dim=2)
+        _val_k, ind = kpt_heatmaps.topk(self.num_animals, dim=2)
 
         x = ind % w
         y = (ind / w).long()
-        heats_ind = torch.stack((x, y), dim=3)
+        heats_ind = torch.stack((x, y), dim=3)  # (batch_size, num_keypoints, num_animals, 2)
 
-        for b in range(batch_size):
-            for i in range(num_keypoints):
-                heat_ind = heats_ind[b, i].float()
-                pose_ind = poses[b, :, i]
-                pose_heat_diff = pose_ind[:, None, :] - heat_ind
-                pose_heat_diff.pow_(2)
-                pose_heat_diff = pose_heat_diff.sum(2)
-                pose_heat_diff.sqrt_()
-                keep_ind = torch.argmin(pose_heat_diff, dim=1)
-
-                for p in range(keep_ind.shape[0]):
-                    if pose_heat_diff[p, keep_ind[p]] < self.max_absorb_distance:
-                        poses[b, p, i] = heat_ind[keep_ind[p]]
+        # Calculate differences between all pose-heat pairs
+        # (batch_size, num_animals, num_keypoints, 1, 2) - (batch_size, 1, num_keypoints, num_animals, 2)
+        pose_heat_diff = poses.unsqueeze(3) - heats_ind.unsqueeze(1)  # (batch_size, num_animals, num_keypoints, num_animals, 2)
+        
+        pose_heat_dist = torch.norm(pose_heat_diff, dim=-1)  # (batch_size, num_animals, num_keypoints, num_animals)
+        
+        # Find closest heat point for each pose
+        keep_ind = torch.argmin(pose_heat_dist, dim=-1)  # (batch_size, num_animals, num_keypoints)
+        
+        # Get minimum distances for filtering
+        min_distances = torch.gather(pose_heat_dist, 3, keep_ind.unsqueeze(-1)).squeeze(-1)  # (batch_size, num_animals, num_keypoints)
+        
+        absorb_mask = min_distances < self.max_absorb_distance  # (batch_size, num_animals, num_keypoints)
+        
+        # Create indices for gathering the correct heat points
+        batch_indices = torch.arange(batch_size, device=poses.device).view(-1, 1, 1)
+        keypoint_indices = torch.arange(num_keypoints, device=poses.device).view(1, 1, -1)
+        
+        selected_heat_points = heats_ind[batch_indices, keypoint_indices, keep_ind]  # (batch_size, num_animals, num_keypoints, 2)
+        
+        poses = torch.where(absorb_mask.unsqueeze(-1), selected_heat_points, poses)
 
         return poses
 
