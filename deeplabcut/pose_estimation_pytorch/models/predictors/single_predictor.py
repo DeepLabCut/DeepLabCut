@@ -139,31 +139,43 @@ class HeatmapPredictor(BasePredictor):
             >>> scale_factors = (0.5, 0.5)
             >>> poses = predictor.get_pose_prediction(heatmap, locref, scale_factors)
         """
-        y, x = self.get_top_values(heatmap) # y, x: (batch_size, num_joints)
+        y, x = self.get_top_values(heatmap)  # y, x: (batch_size, num_joints)
 
         batch_size, num_joints = x.shape
 
         # Create batch and joint indices for indexing
         # batch_idx: [[0,0,0,...], [1,1,1,...], [2,2,2,...], ...]
-        batch_idx = torch.arange(batch_size, device=heatmap.device).unsqueeze(1).expand(-1, num_joints) # (batch_size, num_joints)
+        batch_idx = (
+            torch.arange(batch_size, device=heatmap.device)
+            .unsqueeze(1)
+            .expand(-1, num_joints)
+        )  # (batch_size, num_joints)
         # joint_idx: [[0,1,2,...], [0,1,2,...], [0,1,2,...], ...]
-        joint_idx = torch.arange(num_joints, device=heatmap.device).unsqueeze(0).expand(batch_size, -1) # (batch_size, num_joints)
+        joint_idx = (
+            torch.arange(num_joints, device=heatmap.device)
+            .unsqueeze(0)
+            .expand(batch_size, -1)
+        )  # (batch_size, num_joints)
 
         # Vectorized extraction of heatmap scores and locref offsets
         scores = heatmap[batch_idx, y, x, joint_idx]  # (batch_size, num_joints)
-        
+
         dz = torch.zeros((batch_size, 1, num_joints, 3), device=heatmap.device)
         dz[:, 0, :, 2] = scores
-        
+
         if locref is not None:
-            offsets = locref[batch_idx, y, x, joint_idx, :]  # (batch_size, num_joints, 2)
+            offsets = locref[
+                batch_idx, y, x, joint_idx, :
+            ]  # (batch_size, num_joints, 2)
             dz[:, 0, :, :2] = offsets
 
-        x, y = x.unsqueeze(1), y.unsqueeze(1) # x, y: (batch_size, 1, num_joints)
+        x, y = x.unsqueeze(1), y.unsqueeze(1)  # x, y: (batch_size, 1, num_joints)
 
         x = x * scale_factors[1] + 0.5 * scale_factors[1] + dz[:, :, :, 0]
         y = y * scale_factors[0] + 0.5 * scale_factors[0] + dz[:, :, :, 1]
 
-        pose = torch.stack([x, y, dz[:, :, :, 2]], dim=-1)  # (batch_size, 1, num_joints, 3)
-        
+        pose = torch.stack(
+            [x, y, dz[:, :, :, 2]], dim=-1
+        )  # (batch_size, 1, num_joints, 3)
+
         return pose
