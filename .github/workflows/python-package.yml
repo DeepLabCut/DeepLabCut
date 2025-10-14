@@ -46,8 +46,6 @@ jobs:
         run: |
           pip install tensorflow-macos tensorpack==0.11 tf_slim==1.1.0 tf-keras
           # Diagnostic check for h5py / HDF5 library
-          python -c "import tensorflow as tf; print('✅ TensorFlow imported:', tf.__version__)"
-          python -c "import tf_keras; print('✅ tf_keras imported:', tf_keras.__version__)"
 
       - name: Install dependencies
         shell: bash -el {0}  # Important: activates the conda environment
