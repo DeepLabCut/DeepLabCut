@@ -408,7 +408,8 @@ def compute_skeletal_constraint_loss(
     skeletal_data: dict,
     bodyparts: list[str],
     device: torch.device,
-    loss_weight: float = 1.0
+    loss_weight: float = 1.0,
+    radius_multiplier: float = 1.0,
 ) -> torch.Tensor:
     """
     Compute skeletal constraint loss based on expected limb lengths.
@@ -420,6 +421,7 @@ def compute_skeletal_constraint_loss(
         bodyparts: List of bodypart names to get indices
         device: Device to put tensors on
         loss_weight: Weight for the skeletal loss
+        radius_multiplier: Multiplier for the skeletal radius
 
     Returns:
         Skeletal constraint loss tensor
@@ -553,7 +555,7 @@ def compute_skeletal_constraint_loss(
                 continue
 
             # Compute constraint loss: 0 if pred <= expected, (pred - expected)^2 if pred > expected
-            diff = normalized_predicted - normalized_expected
+            diff = normalized_predicted - normalized_expected * radius_multiplier
             link_loss = torch.where(diff > 0, diff ** 2, torch.tensor(0.0, device=device))
             link_losses.append(link_loss)
 
@@ -569,6 +571,96 @@ def compute_skeletal_constraint_loss(
         total_loss = torch.tensor(0.0, device=device, requires_grad=True)
 
     return total_loss
+
+def compute_skeletal_constraint_loss2(
+    predicted_keypoints: torch.Tensor,
+    skeletal_data: dict,
+    bodyparts: list[str],
+    device: torch.device,
+    loss_weight: float = 1.0,
+    radius_multiplier: float = 1.0,
+) -> torch.Tensor:
+    if not skeletal_data or len(skeletal_data.get('links', [])) == 0:
+        return torch.zeros((), device=device)
+
+    # required indices
+    try:
+        snout_idx = bodyparts.index('snout')
+        tail1_idx = bodyparts.index('tail1')
+    except ValueError:
+        return torch.zeros((), device=device)
+
+    B = predicted_keypoints.shape[0]
+    sample_losses = []
+
+    for b in range(B):
+        # per-batch links / lengths (list/ndarray/tensor -> tensors on device)
+        links_b = skeletal_data['links']
+        lens_b  = skeletal_data['link_lengths']
+
+        if isinstance(links_b, (list, np.ndarray)):
+            links_b = links_b[b] if len(links_b) > b else links_b[0] if len(links_b) else []
+        if isinstance(lens_b, (list, np.ndarray)):
+            lens_b = lens_b[b] if len(lens_b) > b else lens_b[0] if len(lens_b) else []
+
+        links_t = torch.as_tensor(links_b, device=device, dtype=torch.long)
+        lens_t  = torch.as_tensor(lens_b, device=device, dtype=torch.float32)
+        if links_t.numel() == 0 or lens_t.numel() == 0:
+            continue
+        if links_t.ndim == 1:
+            links_t = links_t.view(-1, 2)
+
+        # predicted kpts for (single) animal 0
+        kpts = predicted_keypoints[b, 0]  # (J, 3)
+
+        # need snout & tail1 visible to normalize
+        if not (kpts[snout_idx, 2] > 0.5 and kpts[tail1_idx, 2] > 0.5):
+            continue
+
+        svl = torch.norm(kpts[snout_idx, :2] - kpts[tail1_idx, :2])
+        if torch.isnan(svl) or svl < 1e-6:
+            continue
+
+        # find expected SVL in link set (handles both directions)
+        a = links_t[:, 0]
+        b2 = links_t[:, 1]
+        svl_mask = ((a == snout_idx) & (b2 == tail1_idx)) | ((a == tail1_idx) & (b2 == snout_idx))
+        if not torch.any(svl_mask):
+            # no reference SVL => skip constraints (unchanged from your intent)
+            continue
+        expected_svl = lens_t[svl_mask][0]
+        if not torch.isfinite(expected_svl) or expected_svl <= 0:
+            continue
+
+        # accumulate hinge^2 only when predicted proportion exceeds allowed proportion
+        link_losses = []
+        for i in range(links_t.shape[0]):
+            bp1 = int(links_t[i, 0].item()); bp2 = int(links_t[i, 1].item())
+            exp_len = lens_t[i]
+            if not torch.isfinite(exp_len) or exp_len <= 0:
+                continue
+
+            # require both endpoints visible
+            if not (kpts[bp1, 2] > 0.5 and kpts[bp2, 2] > 0.5):
+                continue
+
+            pred_d = torch.norm(kpts[bp1, :2] - kpts[bp2, :2])
+            if torch.isnan(pred_d):
+                continue
+
+            # normalize by predicted SVL (pred proportion) vs expected proportion
+            pred_prop = pred_d / svl
+            exp_prop  = (exp_len / expected_svl) * radius_multiplier
+
+            diff = pred_prop - exp_prop
+            link_losses.append(torch.where(diff > 0, diff * diff, torch.zeros_like(diff)))
+
+        if link_losses:
+            sample_losses.append(torch.stack(link_losses).mean())
+
+    if sample_losses:
+        return torch.stack(sample_losses).mean() * float(loss_weight)
+    return torch.zeros((), device=device)
 
 
 class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
@@ -761,6 +853,12 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         if "skeletal_radius_multiplier_end" in self.model_cfg:
             self.skeletal_radius_multiplier_end = self.model_cfg[
                 "skeletal_radius_multiplier_end"
+            ]
+
+        self.skeletal_loss_radius_multiplier = 1.0
+        if "skeletal_loss_radius_multiplier" in self.model_cfg:
+            self.skeletal_loss_radius_multiplier = self.model_cfg[
+                "skeletal_loss_radius_multiplier"
             ]
 
         self.truncate_targets = False
@@ -1117,7 +1215,8 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
                         skeletal_data=skeletal_data_for_loss,
                         bodyparts=bodyparts,
                         device=self.device,
-                        loss_weight=skeletal_loss_weight
+                        loss_weight=skeletal_loss_weight,
+                        radius_multiplier=self.skeletal_loss_radius_multiplier
                     )
 
                     losses_dict["skeletal_loss"] = skeletal_loss

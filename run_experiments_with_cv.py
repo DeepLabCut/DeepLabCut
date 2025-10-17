@@ -17,7 +17,7 @@ import multiprocessing as mp
 # Set to 1 for sequential execution (useful for debugging)
 # Set to higher values (e.g., 4, 8) to run multiple experiments in parallel
 # Note: Each worker will use GPU resources, so adjust based on available GPU memory
-N_WORKERS = 4
+N_WORKERS = 2
 
 N_EPOCHS = 200
 MODEL = 'resnet_50'
@@ -30,7 +30,7 @@ TRAIN_BATCH_SIZE = 16
 # ---------------------------------------
 # Set the full path to the project's config.yaml file
 # IMPORTANT: Use an absolute path to avoid issues.
-config_path = '/home/alek/projects/cdl-test1/data/cdl-projects/test1-haag-2025-05-21/config.yaml'
+config_path = '/home/alek/projects/cdl-test1/data/cdl-projects/test1-haag-2025-05-21/config_full.yaml'
 
 # Check if the config file exists
 if not os.path.exists(config_path):
@@ -41,7 +41,7 @@ if not os.path.exists(config_path):
 
 # Number of folds for cross-validation
 N_FOLDS = 4
-N_SEEDS = 1
+N_SEEDS = 4
 SHUFFLE_OFFSET = 100
 
 # Note: Shuffle numbers are automatically assigned to prevent collisions
@@ -107,7 +107,7 @@ def run_single_fold(args):
             # weight_init=WeightInitialization(CUSTOM_WEIGHTS) if CUSTOM_WEIGHTS else None
         )
 
-        # override output_stride (model.backbone.output_stride) and key_metric (runner.key_metric)
+        # override output_striFalsede (model.backbone.output_stride) and key_metric (runner.key_metric)
         # sample path: data/cdl-projects/test1-haag-2025-05-21/dlc-models-pytorch/iteration-0/test1May21-trainset75shuffle1/train/pytorch_config.yaml
         project_path = cfg['project_path']
         trainingset_identifier = f"{cfg['Task']}{cfg['date']}-trainset{train_fraction_percent}shuffle{shuffle_num}"
@@ -190,7 +190,7 @@ def run_single_fold(args):
             else:
                 raise ValueError("Evaluation CSV file is empty.")
 
-        return evaluation_results
+        return evaluation_resFalseults
 
     finally:
         # Clean up the temporary config file
@@ -290,26 +290,26 @@ if __name__ == "__main__":
         'non_truncated': ['snout', 'base_of_head', 'left_shoulder', 'right_shoulder', 'spine1', 'spine6', 'spine2', 'spine3', 'spine4', 'spine5', 'left_hip', 'right_hip', 'tail1', 'tail6', 'tail2', 'tail3', 'tail4', 'tail5'],
         }
     experiments = [
-        {
-            'train_overrides': {
-            'skeletal_loss_weight': 0.0,
-            'skeletal_radius_multiplier_start': 1.10,
-            'skeletal_radius_multiplier_end': 1.10,
-            'union_intersect_adjacent_skeletal_mask_alpha_start': 0.0,
-            'union_intersect_adjacent_skeletal_mask_alpha_end': 0.0,
-            'union_intersect_adjacent_skeletal_mask_start_epoch': 0,
-            'union_intersect_adjacent_skeletal_mask_end_epoch': 1,
-            'use_skeletal_reference': False,
-            'truncate_targets': False,
-            'model.heads.bodypart.predictor.locref_std': 7.2801,
-            'model.heads.bodypart.target_generator.locref_std': 7.2801,
-            'model.heads.bodypart.target_generator.pos_dist_thresh': 17,
-            'runner.key_metric': 'test.rmse',
-            'runner.key_metric_asc': False,
-          },
-          'experiment_id': 'control',
-          'group_by_video': False,
-        },
+        # {
+        #     'train_overrides': {
+        #     'skeletal_loss_weight': 0.0,
+        #     'skeletal_radius_multiplier_start': 1.10,
+        #     'skeletal_radius_multiplier_end': 1.10,
+        #     'union_intersect_adjacent_skeletal_mask_alpha_start': 0.0,
+        #     'union_intersect_adjacent_skeletal_mask_alpha_end': 0.0,
+        #     'union_intersect_adjacent_skeletal_mask_start_epoch': 0,
+        #     'union_intersect_adjacent_skeletal_mask_end_epoch': 1,
+        #     'use_skeletal_reference': False,
+        #     'truncate_targets': False,
+        #     'model.heads.bodypart.predictor.locref_std': 7.2801,
+        #     'model.heads.bodypart.target_generator.locref_std': 7.2801,
+        #     'model.heads.bodypart.target_generator.pos_dist_thresh': 17,
+        #     'runner.key_metric': 'test.rmse',
+        #     'runner.key_metric_asc': False,
+        #   },
+        #   'experiment_id': 'control',
+        #   'group_by_video': False,
+        # },
         # {
         #     'train_overrides': {
         #     'skeletal_loss_weight': 0.0,
@@ -390,26 +390,26 @@ if __name__ == "__main__":
         #   'experiment_id': 'xray_1.10',
         #   'group_by_video': False,
         # },
-        {
-            'train_overrides': {
-            'skeletal_loss_weight': 0.0,
-            'skeletal_radius_multiplier_start': 200.0,
-            'skeletal_radius_multiplier_end': 200.0,
-            'union_intersect_adjacent_skeletal_mask_alpha_start': 0.0,
-            'union_intersect_adjacent_skeletal_mask_alpha_end': 0.0,
-            'union_intersect_adjacent_skeletal_mask_start_epoch': 0,
-            'union_intersect_adjacent_skeletal_mask_end_epoch': 1,
-            'use_skeletal_reference': True,
-            'truncate_targets': True,
-            'model.heads.bodypart.predictor.locref_std': 7.2801,
-            'model.heads.bodypart.target_generator.locref_std': 7.2801,
-            'model.heads.bodypart.target_generator.pos_dist_thresh': 17,
-            'runner.key_metric': 'test.rmse',
-            'runner.key_metric_asc': False,
-          },
-          'experiment_id': 'xray_200',
-          'group_by_video': False,
-        },
+        # {
+        #     'train_overrides': {
+        #     'skeletal_loss_weight': 0.0,
+        #     'skeletal_radius_multiplier_start': 200.0,
+        #     'skeletal_radius_multiplier_end': 200.0,
+        #     'union_intersect_adjacent_skeletal_mask_alpha_start': 0.0,
+        #     'union_intersect_adjacent_skeletal_mask_alpha_end': 0.0,
+        #     'union_intersect_adjacent_skeletal_mask_start_epoch': 0,
+        #     'union_intersect_adjacent_skeletal_mask_end_epoch': 1,
+        #     'use_skeletal_reference': True,
+        #     'truncate_targets': True,
+        #     'model.heads.bodypart.predictor.locref_std': 7.2801,
+        #     'model.heads.bodypart.target_generator.locref_std': 7.2801,
+        #     'model.heads.bodypart.target_generator.pos_dist_thresh': 17,
+        #     'runner.key_metric': 'test.rmse',
+        #     'runner.key_metric_asc': False,
+        #   },
+        #   'experiment_id': 'xray_200',
+        #   'group_by_video': False,
+        # },
         # {
         #     'train_overrides': {
         #     'skeletal_loss_weight': 0.0,
@@ -430,9 +430,31 @@ if __name__ == "__main__":
         #   'experiment_id': 'gt_0.80',
         #   'group_by_video': False,
         # },
-                {
+        # {
+        #     'train_overrides': {
+        #     'skeletal_loss_weight': 0.0,
+        #     'skeletal_loss_radius_multiplier': 1.0,
+        #     'skeletal_radius_multiplier_start': 0.80,
+        #     'skeletal_radius_multiplier_end': 0.80,
+        #     'union_intersect_adjacent_skeletal_mask_alpha_start': 0.0,
+        #     'union_intersect_adjacent_skeletal_mask_alpha_end': 0.0,
+        #     'union_intersect_adjacent_skeletal_mask_start_epoch': 0,
+        #     'union_intersect_adjacent_skeletal_mask_end_epoch': 1,
+        #     'use_skeletal_reference': False,
+        #     'truncate_targets': False,
+        #     'model.heads.bodypart.predictor.locref_std': 7.2801,
+        #     'model.heads.bodypart.target_generator.locref_std': 7.2801,
+        #     'model.heads.bodypart.target_generator.pos_dist_thresh': 17,
+        #     'runner.key_metric': 'test.rmse',
+        #     'runner.key_metric_asc': False,
+        #   },
+        #   'experiment_id': 'control',
+        #   'group_by_video': False,
+        # },
+        {
             'train_overrides': {
             'skeletal_loss_weight': 0.1,
+            'skeletal_loss_radius_multiplier': 1.0,
             'skeletal_radius_multiplier_start': 0.80,
             'skeletal_radius_multiplier_end': 0.80,
             'union_intersect_adjacent_skeletal_mask_alpha_start': 0.0,
@@ -447,9 +469,51 @@ if __name__ == "__main__":
             'runner.key_metric': 'test.rmse',
             'runner.key_metric_asc': False,
           },
-          'experiment_id': 'll_0.1',
+          'experiment_id': 'll2_0.1_1.0',
           'group_by_video': False,
         },
+        {
+            'train_overrides': {
+            'skeletal_loss_weight': 0.0,
+            'skeletal_loss_radius_multiplier': 1.0,
+            'skeletal_radius_multiplier_start': 1.15,
+            'skeletal_radius_multiplier_end': 1.15,
+            'union_intersect_adjacent_skeletal_mask_alpha_start': 0.0,
+            'union_intersect_adjacent_skeletal_mask_alpha_end': 0.0,
+            'union_intersect_adjacent_skeletal_mask_start_epoch': 0,
+            'union_intersect_adjacent_skeletal_mask_end_epoch': 1,
+            'use_skeletal_reference': True,
+            'truncate_targets': True,
+            'model.heads.bodypart.predictor.locref_std': 7.2801,
+            'model.heads.bodypart.target_generator.locref_std': 7.2801,
+            'model.heads.bodypart.target_generator.pos_dist_thresh': 17,
+            'runner.key_metric': 'test.rmse',
+            'runner.key_metric_asc': False,
+          },
+          'experiment_id': 'xray2_1.15',
+          'group_by_video': False,
+        },
+        # {
+        #     'train_overrides': {
+        #     'skeletal_loss_weight': 0.1,
+        #     'skeletal_loss_radius_multiplier': 1.1,
+        #     'skeletal_radius_multiplier_start': 0.80,
+        #     'skeletal_radius_multiplier_end': 0.80,
+        #     'union_intersect_adjacent_skeletal_mask_alpha_start': 0.0,
+        #     'union_intersect_adjacent_skeletal_mask_alpha_end': 0.0,
+        #     'union_intersect_adjacent_skeletal_mask_start_epoch': 0,
+        #     'union_intersect_adjacent_skeletal_mask_end_epoch': 1,
+        #     'use_skeletal_reference': False,
+        #     'truncate_targets': False,
+        #     'model.heads.bodypart.predictor.locref_std': 7.2801,
+        #     'model.heads.bodypart.target_generator.locref_std': 7.2801,
+        #     'model.heads.bodypart.target_generator.pos_dist_thresh': 17,
+        #     'runner.key_metric': 'test.rmse',
+        #     'runner.key_metric_asc': False,
+        #   },
+        #   'experiment_id': 'll_0.1_1.1',
+        #   'group_by_video': False,
+        # },
 
     ]
 

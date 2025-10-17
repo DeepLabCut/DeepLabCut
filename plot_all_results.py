@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Load the results CSV file
-results_file = 'all_results_20251010-093539.csv'
+results_file = 'all_results.csv'
 results_df = pd.read_csv(results_file)
 
 # Group by experiment
@@ -85,7 +85,7 @@ means_non_truncated = [(exp, np.mean(deviations_df[deviations_df['experiment'] =
 print(means_all)
 
 data = data_all + data_truncated + data_non_truncated
-labels = [f'all' for exp in experiments] + [f't' for exp in experiments] + [f'nt' for exp in experiments]
+labels = [f'{exp}_all' for exp in experiments] + [f'{exp}_t' for exp in experiments] + [f'{exp}_nt' for exp in experiments]
 
 ax.boxplot(data, labels=labels, widths=0.6)
 ax.set_ylabel(r'RMSE Deviation from Control')
