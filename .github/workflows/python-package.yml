@@ -13,11 +13,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest]
-        python-version: ["3.11"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.11", "3.12"]
         include:
+          - os: ubuntu-latest
+            path: ~/.cache/pip
           - os: macos-latest
             path: ~/Library/Caches/pip
+          - os: windows-latest
+            path: ~\AppData\Local\pip\Cache
 
     steps:
       - name: Checkout code
@@ -29,6 +33,12 @@ jobs:
           channels: conda-forge,defaults
           channel-priority: strict
           python-version: ${{ matrix.python-version }}
+
+      - name: Install TensorFlow
+        shell: bash -el {0}  # Important: activates the conda environment
+        if: runner.os != 'macOS'
+        run: |
+          pip install tensorflow tensorpack==0.11 tf_slim==1.1.0 tf-keras
 
       - name: Install TensorFlow on macOS
         shell: bash -el {0}  # Important: activates the conda environment
@@ -53,6 +63,12 @@ jobs:
             choco install ffmpeg
           fi
         shell: bash
+
+      - name: Run pytest tests
+        shell: bash -el {0}  # Important: activates the conda environment
+        run: |
+          pip install pytest
+          python -m pytest
 
       - name: Run functional tests
         shell: bash -el {0}  # Important: activates the conda environment
