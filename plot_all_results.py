@@ -14,7 +14,7 @@ data_all = [group['all__test rmse'].values for _, group in grouped]
 labels = [experiment for experiment, _ in grouped]
 
 # Create boxplot
-fig, ax = plt.subplots(figsize=(10, 6))
+fig, ax = plt.subplots(figsize=(4, 3))
 ax.boxplot(data_all, labels=labels, widths=0.6)
 ax.set_ylabel('all__test rmse')
 ax.set_xlabel('Experiment')
@@ -59,6 +59,9 @@ for shuffle_num, group in results_df.groupby('Shuffle number'):
                 'rmse_deviation_all': deviation_all,
                 'rmse_deviation_truncated': deviation_truncated,
                 'rmse_deviation_non_truncated': deviation_non_truncated,
+                'relative_rmse_deviation_all': deviation_all / control_rmse_all,
+                'relative_rmse_deviation_truncated': deviation_truncated / control_rmse_truncated,
+                'relative_rmse_deviation_non_truncated': deviation_non_truncated / control_rmse_non_truncated,
             })
 
 # Create dataframe with deviations
@@ -77,12 +80,16 @@ data_non_truncated = [deviations_df[deviations_df['experiment'] == exp]['rmse_de
         for exp in experiments]
 means_all = [(exp, np.mean(deviations_df[deviations_df['experiment'] == exp]['rmse_deviation_all'].values))
         for exp in experiments]
+relative_means_all = [(exp, np.mean(deviations_df[deviations_df['experiment'] == exp]['relative_rmse_deviation_all'].values))
+        for exp in experiments]
+
 means_truncated = [(exp, np.mean(deviations_df[deviations_df['experiment'] == exp]['rmse_deviation_truncated'].values))
         for exp in experiments]
 means_non_truncated = [(exp, np.mean(deviations_df[deviations_df['experiment'] == exp]['rmse_deviation_non_truncated'].values))
         for exp in experiments]
 
 print(means_all)
+print(relative_means_all)
 
 data = data_all + data_truncated + data_non_truncated
 labels = [f'{exp}_all' for exp in experiments] + [f'{exp}_t' for exp in experiments] + [f'{exp}_nt' for exp in experiments]
