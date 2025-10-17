@@ -19,7 +19,7 @@
 #
 # install: conda env create -f DEEPLABCUT.yaml
 # update:  conda env update -f DEEPLABCUT.yaml
-name: DEEPLABCUT
+name: DLC-DEV
 channels:
   - conda-forge
   - defaults
@@ -35,4 +35,4 @@ dependencies:
   - pip:
     - torch
     - torchvision
-    - deeplabcut[gui,modelzoo,wandb]==3.0.0rc9
+    # - deeplabcut[gui,modelzoo,wandb]==3.0.0rc9
