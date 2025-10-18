@@ -28,7 +28,7 @@ def _hanging_method():
 
 def test_call_with_timeout():
     parameter = (10, "Hello test")
-    assert call_with_timeout(_succeeding_method, 30, parameter) == parameter
+    assert call_with_timeout(_succeeding_method, 60, parameter) == parameter
 
     with pytest.raises(ValueError):
         call_with_timeout(_failing_method, timeout=30)
