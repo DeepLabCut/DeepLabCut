@@ -35,8 +35,7 @@ work directly with DeepLabCut (but currently tailored to cheetah's, thus some co
 - **[anipose.org](https://anipose.readthedocs.io/en/latest/)**; a wrapper for 3D deeplabcut that provides >3 camera support and is built to work directly with
 DeepLabCut. You can `pip install anipose` into your DLC conda environment.
 
-- **Argus, easywand or DLTdv** w/DeepLabCut see https://github.com/haliaetus13/DLCconverterDLT; this can be used with
-the the highly popular Argus or DLTdv tools for wand calibration.
+- **Argus, easywand or DLTdv** w/DeepLabCut see https://github.com/backyardbiomech/DLCconverterDLT; this can be used with the the highly popular Argus or DLTdv tools for wand calibration. As of Summer, 2025, [Argus](https://github.com/kilmoretrout/argus_gui) now supports direct import and export of DeepLabCut output files in the GUI with new [workflow documentation](https://github.com/kilmoretrout/argus_gui/blob/master/docs/deeplabcut.md)
 
 ## Jump in with direct DeepLabCut 2-camera support:
 
