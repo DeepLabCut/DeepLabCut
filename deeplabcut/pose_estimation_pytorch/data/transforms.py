@@ -21,10 +21,12 @@ from numpy.typing import NDArray
 from scipy.spatial.distance import pdist, squareform
 from scipy.stats import truncnorm
 
+# add in second parameter to see if train or inference is passed for the training
 
 def build_transforms(augmentations: dict) -> A.BaseCompose:
     transforms = []
-
+    print("ADDING AUGMENTATIONS")
+    print(f"This is augmentations passed {augmentations}")
     if resize_aug := augmentations.get("resize", False):
         transforms += build_resize_transforms(resize_aug)
 
@@ -121,6 +123,9 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
         transforms.append(ElasticTransform(sigma=5, p=0.5))
     if augmentations.get("grayscale", False):
         transforms.append(Grayscale(alpha=(0.5, 1.0)))
+        
+   
+
     if noise := augmentations.get("gaussian_noise", False):
         # TODO inherit custom gaussian transform to support per_channel = 0.5
         if not isinstance(noise, (int, float)):
@@ -134,7 +139,66 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
                 p=0.5,
             )
         )
-
+    # If the custom_augmentation is set to true , it will add augmentations in training
+    if augmentations.get("custom_augmentation", False):    
+        # Add in compression tranformation
+        transforms.append(A.ImageCompression(quality_lower=50, quality_upper=90, p=1.0))
+        print("Image Compression augmentation added...")
+        # Add in sun flare that mimics the lights reflection in rat chamber
+        transforms.append(    # Custom physics-based sun flare
+        A.RandomSunFlare(
+            flare_roi=(0.4, 0.4, 0.6, 0.6),  # center of the image
+            # angle_range=(0.45, 0.55),        # roughly centered
+            angle_lower = 0.45,
+            angle_upper = 0.55,
+            # num_flare_circles_range=(5, 15), # same, you can increase for more effect
+            num_flare_circles_lower = 5,
+            num_flare_circles_upper = 15,
+            src_radius=200,                   # adjust size if needed
+            src_color=(255, 255, 100),        # bright yellow
+            # method="physics_based",
+            p=1.0                             # always apply
+            )
+        )
+        print("SunFlare augmentation added...")
+        # Add in rain augmentation
+        transforms.append(
+            A.RandomRain(
+            # slant_range=(-1, 1),       # angle of rain
+            slant_lower = -1,
+            slant_upper = 1,
+            drop_length=15,              # length of drops
+            # drop_width=20,                # width of drops
+            drop_width=5,
+            drop_color=(180, 180, 180),  # color of drops (grayish)
+            blur_value=5,                # motion blur
+            brightness_coefficient=0.8,  # darken slightly
+            rain_type="drizzle",           # heavy rain
+            p=1.0
+            )
+        )
+        print("Rain effect augmentation added...")
+        # Add in sharpen augmentation
+        transforms.append(
+            A.Sharpen(
+            alpha=(1.0, 1.0),        # strength of sharpening (0.0, 1.0) 0 is original
+            lightness=(1.0, 1.0),    # overall brightness adjustment (0.0, 1.0) 1 is original
+            # method='kernel',         # traditional sharpening
+            p=1.0                 
+            )
+        )
+        print("Sharpen augmentation added...")
+        # Add in hue saturation
+        transforms.append(   
+            A.HueSaturationValue(
+            hue_shift_limit=(-5, -5),           #(-180, 180)
+            sat_shift_limit=(-60, -60),         #(-255, 255)
+            val_shift_limit=(20, 20),           #(-255, 255)
+            p=1
+            )
+        )
+        print("Hue saturation augmentation added...")
+    
     if augmentations.get("auto_padding"):
         transforms.append(build_auto_padding(**augmentations["auto_padding"]))
 
@@ -145,6 +209,8 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
 
     if augmentations.get("scale_to_unit_range"):
         transforms.append(ScaleToUnitRange())
+
+    print(f"This is the augmentations passed {transforms}")
 
     return A.Compose(
         transforms,
