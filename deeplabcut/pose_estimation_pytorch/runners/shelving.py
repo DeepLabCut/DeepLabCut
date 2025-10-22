@@ -124,7 +124,6 @@ class ShelfWriter(ShelfManager):
         scores = [bpt[:, 2:3] for bpt in bodyparts]
 
         # full pickle has bodyparts and unique bodyparts in same array
-        unique_bodyparts = kwargs.get("unique_bodyparts", None)
         if unique_bodyparts is not None:
             unique_bpts = unique_bodyparts.transpose((1, 0, 2))
             coordinates += [bpt[:, :2] for bpt in unique_bpts]
@@ -132,7 +131,6 @@ class ShelfWriter(ShelfManager):
 
         output = dict(coordinates=(coordinates,), confidence=scores, costs=None)
 
-        identity_scores = kwargs.get("identity_scores", None)
         if identity_scores is not None:
             # Reshape id scores from (num_assemblies, num_bpts, num_individuals)
             # to the original DLC full pickle format: (num_bpts, num_assem, num_ind)
