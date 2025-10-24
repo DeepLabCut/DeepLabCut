@@ -1,20 +1,141 @@
-[tool.yapf]
- based_on_style = "google"
- indent_width = 4
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
- [tool.isort]
- multi_line_output = 3
- include_trailing_comma = true
- force_sort_within_sections = false
- lexicographical = true
- single_line_exclusions = ['typing']
- order_by_type = false
- group_by_package = true
- line_length = 88
- skip = [
-     "__init__.py",
- ] 
-[tool.pytest.ini_options]
-markers = [
-    "require_models: mark test as requiring models to run"
+[project]
+name = "deeplabcut"
+version = "3.0.0rc13"
+authors = [
+    { name = "A. & M.W. Mathis Labs", email = "alexander@deeplabcut.org" },
 ]
+description = "Markerless pose-estimation of user-defined features with deep learning"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.10"
+license = { text = "LGPL-3.0-or-later" }
+keywords = [
+    "animal behavior",
+    "markerless tracking",
+    "neuroscience",
+    "pose estimation",
+]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Processing",
+    "Topic :: Scientific/Engineering",
+]
+
+dependencies = [
+    "albumentations<=1.4.3",
+    "dlclibrary>=0.0.7",
+    "einops",
+    "filterpy>=1.4.4",
+    "ruamel.yaml>=0.15.0",
+    "imgaug>=0.4.0",
+    "imageio-ffmpeg",
+    "numba>=0.54",
+    "matplotlib>=3.3,<3.9,!=3.7.0,!=3.7.1",
+    "networkx>=2.6",
+    "numpy>=1.18.5,<2.0.0",
+    "pandas>=1.0.1,!=1.5.0",
+    "scikit-image>=0.17",
+    "scikit-learn>=1.0",
+    "scipy>=1.9",
+    "statsmodels>=0.11",
+    "timm",
+    "torch>=2.0.0",
+    "torchvision",
+    "tqdm",
+    "pycocotools",
+    "pyyaml",
+    "Pillow>=7.1",
+    "tables",
+    "h5py>=3.15.1; sys_platform == 'darwin'",
+    "black>=25.9.0",
+]
+
+[project.optional-dependencies]
+gui = ["pyside6", "qdarkstyle==3.1", "napari-deeplabcut>=0.2.1.6"]
+openvino = ["openvino-dev>=2022.1.0"]
+docs = [
+    "mike",
+    "mkdocs",
+    "mkdocs-gen-files",
+    "mkdocs-jupyter",
+    "mkdocs-literate-nav",
+    "mkdocs-material",
+    "mkdocs-section-index",
+    "mkdocstrings[python]",
+    "numpydoc",
+]
+tf = [
+    "tensorflow>=2.0,<=2.10; platform_system=='Windows'",
+    "tensorflow>=2.0; platform_system!='Windows'",
+    "tf-keras; platform_system!='Windows'",
+    "tensorpack>=0.11",
+    "tf_slim>=1.1.0",
+]
+apple_mchips = [
+    "tensorflow-macos",
+    "tf-keras",
+    "tensorflow-metal",
+    "tensorpack>=0.11",
+    "tf_slim>=1.1.0",
+]
+modelzoo = ["huggingface_hub"]
+wandb = ["wandb"]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "coverage",
+    "ruff",
+]
+
+[tool.uv.pip]
+torch-backend = "auto"
+
+[project.urls]
+Homepage = "https://www.deeplabcut.org"
+Repository = "https://github.com/DeepLabCut/DeepLabCut"
+Documentation = "https://deeplabcut.github.io/DeepLabCut/README.html"
+
+[project.scripts]
+dlc = "deeplabcut.__main__:main"
+
+[tool.setuptools.packages.find]
+exclude = ["tests*", "docs*", "examples*"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml", "*.yml", "*.json", "*.qss", "*.png", "*.md"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+
+[tool.ruff.lint]
+select = ["E", "F"]
+ignore = [
+    "E501",  # line-too-long
+]
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_sort_within_sections = false
+lexicographical = true
+single_line_exclusions = ['typing']
+order_by_type = false
+group_by_package = true
+line_length = 88
+skip = ["__init__.py"]
+
+[tool.pytest.ini_options]
+markers = ["require_models: mark test as requiring models to run"]
