@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
+        python-version: ["3.10", "3.11", "3.12"]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: "true" 
+          version: "0.9.5"
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install the project
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ] && [ "${{ matrix.python-version }}" != "3.10" ]; then
+            uv sync --all-extras --no-extra tf --dev
+          else
+            uv sync --all-extras --dev
+          fi
+        shell: bash
+
+      - name: Install ffmpeg
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get install ffmpeg
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            brew install ffmpeg || true
+          else
+            choco install ffmpeg
+          fi
+        shell: bash
+
+      - name: Run tests
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ] && [ "${{ matrix.python-version }}" != "3.10" ]; then
+            uv run pytest tests/pose_estimation_pytorch
+          else
+            uv run pytest tests/
+          fi
+        shell: bash
+
+      - name: Run functional tests
+        if: ${{ !(runner.os == 'Windows' && matrix.python-version != '3.10') }}
+        run: |
+          uv run python examples/testscript.py
+          uv run python examples/testscript_multianimal.py
+          uv run python examples/testscript_pytorch_single_animal.py
+          uv run python examples/testscript_pytorch_multi_animal.py

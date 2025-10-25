@@ -54,13 +54,13 @@ dependencies = [
     "pyyaml",
     "Pillow>=7.1",
     "tables",
-    "h5py>=3.15.1; sys_platform == 'darwin'",
+    "h5py>=3.15.1; platform_system == 'Darwin'",
     "black>=25.9.0",
 ]
 
 [project.optional-dependencies]
 gui = ["pyside6", "qdarkstyle==3.1", "napari-deeplabcut>=0.2.1.6"]
-openvino = ["openvino-dev>=2022.1.0"]
+openvino = ["openvino-dev==2022.1.0"]
 docs = [
     "mike",
     "mkdocs",
@@ -73,18 +73,20 @@ docs = [
     "numpydoc",
 ]
 tf = [
-    "tensorflow>=2.0,<=2.10; platform_system=='Windows'",
-    "tensorflow>=2.0; platform_system!='Windows'",
+    "tensorflow>=2.0,<=2.10;platform_system=='Windows' and python_version<'3.11'",
+    "tensorflow>=2.0;platform_system!='Windows'",
+    "tensorflow-io-gcs-filesystem==0.31.0; platform_system == 'Windows' and python_version<'3.11'",
+    "tensorflow-io-gcs-filesystem>0.31.0; platform_system != 'Windows'",
     "tf-keras; platform_system!='Windows'",
     "tensorpack>=0.11",
     "tf_slim>=1.1.0",
 ]
 apple_mchips = [
-    "tensorflow-macos",
-    "tf-keras",
-    "tensorflow-metal",
-    "tensorpack>=0.11",
-    "tf_slim>=1.1.0",
+    "tensorflow-macos; platform_system == 'Darwin'",
+    "tf-keras; platform_system == 'Darwin'",
+    "tensorflow-metal; platform_system == 'Darwin'",
+    "tensorpack>=0.11; platform_system == 'Darwin'",
+    "tf_slim>=1.1.0; platform_system == 'Darwin'",
 ]
 modelzoo = ["huggingface_hub"]
 wandb = ["wandb"]
@@ -95,6 +97,11 @@ dev = [
     "coverage",
     "ruff",
 ]
+
+[[tool.uv.dependency-metadata]]
+name = "openvino-dev"
+version = "2022.1.0"
+requires-dist = []
 
 [tool.uv.pip]
 torch-backend = "auto"
