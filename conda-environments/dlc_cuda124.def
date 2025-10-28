@@ -11,15 +11,27 @@ From: mambaorg/micromamba:jammy-cuda-12.4.1
 
 %post -c /bin/bash
     set -euo pipefail
+
+    # Sanity: the YAML Apptainer just copied MUST exist
+    ls -l /tmp || true
+    if [[ ! -s /tmp/environment.yaml ]]; then
+        echo "ERROR: /tmp/environment.yaml missing or empty" >&2
+        exit 2
+    fi
+
     export MAMBA_ROOT_PREFIX=/opt/micromamba
-    micromamba config set channels conda-forge pytorch nvidia
+
+    micromamba config set channels conda-forge,pytorch,nvidia
     micromamba config set channel_priority flexible
-    micromamba create -y -p /opt/envs/DLC-DEV -f /tmp/environment.yaml
+
+    micromamba create --no-rc -y -p /opt/envs/DLC-DEV -f /tmp/environment.yaml
     micromamba clean -a -y
+
     /opt/envs/DLC-DEV/bin/python -V
-    /opt/envs/DLC-DEV/bin/python - <<PY
+    /opt/envs/DLC-DEV/bin/python - <<'PY'
 import torch
-print("torch", getattr(torch,"__version__",None), "cuda?", getattr(torch,"cuda",None) and torch.cuda.is_available())
+print("torch", getattr(torch,"__version__",None),
+      "cuda?", bool(getattr(torch,"cuda",None) and torch.cuda.is_available()))
 print("cuda runtime:", getattr(getattr(torch,"version",None),"cuda",None))
 PY
 
