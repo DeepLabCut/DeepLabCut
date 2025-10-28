@@ -38,13 +38,12 @@ From: mambaorg/micromamba:jammy-cuda-12.4.1
     ls -l /opt/specs || true
     [[ -s "\$SPEC" ]]
 
-    # Avoid broken rc inside image
-    rm -f /root/.condarc || true
-    export CONDARC=/dev/null
+    # Ensure no stray rc is read, but DO NOT use --no-rc
+    rm -f /root/.condarc /etc/conda/condarc 2>/dev/null || true
     export MAMBA_ROOT_PREFIX=/opt/micromamba
 
-    # Create env WITHOUT reading any rc; pass channels explicitly
-    micromamba create --no-rc -y \
+    # Create env (channels passed explicitly)
+    micromamba create -y \
       -c conda-forge -c pytorch -c nvidia \
       -p /opt/envs/DLC-DEV -f "\$SPEC"
 
