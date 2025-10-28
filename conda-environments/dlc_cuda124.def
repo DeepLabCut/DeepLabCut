@@ -9,7 +9,7 @@ From: mambaorg/micromamba:jammy-cuda-12.4.1
     export PYTHONUNBUFFERED=1
     export MPLBACKEND=Agg
 
-%post
+%post -c /bin/bash
     set -euo pipefail
     export MAMBA_ROOT_PREFIX=/opt/micromamba
     micromamba config set channels conda-forge pytorch nvidia
