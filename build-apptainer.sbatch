@@ -2,6 +2,7 @@
 #SBATCH -J build_dlc_cuda124
 #SBATCH -t 01:30:00
 #SBATCH -n 1
+#SBATCH --mem=16G
 #SBATCH -o %x_%j.out
 set -euo pipefail
 
