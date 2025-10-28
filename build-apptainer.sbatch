@@ -24,9 +24,6 @@ From: mambaorg/micromamba:jammy-cuda-12.4.1
     purpose    "DeepLabCut CUDA 12.4 + cuDNN9 with baked conda env"
 
 %setup
-    if [ ! -s "$YAML_SRC" ]; then
-        echo "YAML not found: $YAML_SRC" >&2; exit 2
-    fi
     mkdir -p "\${APPTAINER_ROOTFS}/opt/specs"
     cp "$YAML_SRC" "\${APPTAINER_ROOTFS}/opt/specs/environment.yaml"
 
@@ -37,18 +34,20 @@ From: mambaorg/micromamba:jammy-cuda-12.4.1
 
 %post -c /bin/bash
     set -euo pipefail
-
-    ls -l /opt/specs || true
     SPEC=/opt/specs/environment.yaml
-    if [[ ! -s "\$SPEC" ]]; then
-        echo "ERROR: \$SPEC missing or empty" >&2; exit 2
-    fi
+    ls -l /opt/specs || true
+    [[ -s "\$SPEC" ]]
 
+    # Avoid broken rc inside image
+    rm -f /root/.condarc || true
+    export CONDARC=/dev/null
     export MAMBA_ROOT_PREFIX=/opt/micromamba
-    micromamba config set channels conda-forge,pytorch,nvidia
-    micromamba config set channel_priority flexible
 
-    micromamba create --no-rc -y -p /opt/envs/DLC-DEV -f "\$SPEC"
+    # Create env WITHOUT reading any rc; pass channels explicitly
+    micromamba create --no-rc -y \
+      -c conda-forge -c pytorch -c nvidia \
+      -p /opt/envs/DLC-DEV -f "\$SPEC"
+
     micromamba clean -a -y
 
     /opt/envs/DLC-DEV/bin/python -V
