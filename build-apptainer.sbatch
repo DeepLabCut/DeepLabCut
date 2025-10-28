@@ -10,7 +10,7 @@ ROOT_DIR="$SCRATCH/dlc-experiments"
 IMG_DIR="$ROOT_DIR/images"
 DEF="$IMG_DIR/dlc_cuda124.def"
 IMG="$IMG_DIR/dlc_cuda124.sif"
-YAML="$ROOT_DIR/DeepLabCut/conda-environments/environment.yaml"
+YAML="$ROOT_DIR/DeepLabCut/conda-environments/DEEPLABCUT.yaml"
 
 mkdir -p "$IMG_DIR"
 
