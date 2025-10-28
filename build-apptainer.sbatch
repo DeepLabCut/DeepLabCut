@@ -41,10 +41,10 @@ apt-get update && apt-get install -y --no-install-recommends ca-certificates cur
 curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest \
  | tar -xj -C /usr/local/bin bin/micromamba --strip-components=1
 # create env at fixed prefix
-micromamba create -y -p /opt/conda/envs/myenv -f "'"$YAML"'"
+micromamba create -y -p /opt/conda/envs/DLC-DEV -f "'"$YAML"'"
 # sanity checks
-/opt/conda/envs/myenv/bin/python -V
-/opt/conda/envs/myenv/bin/python - <<PY
+/opt/conda/envs/DLC-DEV/bin/python -V
+/opt/conda/envs/DLC-DEV/bin/python - <<PY
 import torch, sys
 print("torch", getattr(torch,"__version__",None), "cuda?", torch.cuda.is_available())
 print("cuda runtime version:", torch.version.cuda if hasattr(torch,"version") else None)
