@@ -8,18 +8,24 @@ set -euo pipefail
 SCRATCH="${HOME}/scratch"
 ROOT_DIR="$SCRATCH/dlc-experiments"
 IMG_DIR="$ROOT_DIR/images"
-DEF="$IMG_DIR/dlc_cuda124.def"
+DEF_SRC="$ROOT_DIR/DeepLabCut/conda-environments/dlc_cuda124.def"
+YAML_SRC="$ROOT_DIR/DeepLabCut/conda-environments/DEEPLABCUT.yaml"
 IMG="$IMG_DIR/dlc_cuda124.sif"
-YAML="$ROOT_DIR/DeepLabCut/conda-environments/DEEPLABCUT.yaml"
-DEF_FILE="$ROOT_DIR/DeepLabCut/conda-environments/dlc_cuda124.def"
 
 mkdir -p "$IMG_DIR"
 
-cp -f "$YAML" "$IMG_DIR/environment.yaml"
-cp -f "$DEF_FILE" "$IMG_DIR/dlc_cuda124.def"
+# Copy inputs next to the build
+cp -f "$DEF_SRC" "$IMG_DIR/dlc_cuda124.def"
+cp -f "$YAML_SRC" "$IMG_DIR/environment.yaml"
+
+# Build-time absolute path substitution for %files
+ABS_YAML="$IMG_DIR/environment.yaml"
+DEF_BUILD="$IMG_DIR/dlc_cuda124.build.def"
+sed "s|environment.yaml /tmp/environment.yaml|$ABS_YAML /tmp/environment.yaml|" \
+    "$IMG_DIR/dlc_cuda124.def" > "$DEF_BUILD"
 
 pushd "$IMG_DIR" >/dev/null
-apptainer build --fakeroot "$IMG" "dlc_cuda124.def"
+apptainer build --fakeroot "$IMG" "$DEF_BUILD"
 popd >/dev/null
 
 echo "Built image: $IMG"
