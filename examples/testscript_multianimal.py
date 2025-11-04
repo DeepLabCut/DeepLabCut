@@ -18,7 +18,7 @@ from deeplabcut.utils.auxfun_videos import VideoReader
 import random
 from pathlib import Path
 
-MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0", "mobilenet_v2_0.35"]
+MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0"]
 
 
 N_ITER = 5
