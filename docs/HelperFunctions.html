@@ -1,0 +1,750 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Helper &amp; Advanced Optional Function Documentation &#8212; DeepLabCut</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/HelperFunctions';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Interactive Project Manager GUI" href="gui/PROJECT_GUI.html" />
+    <link rel="prev" title="3D DeepLabCut" href="Overviewof3D.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../README.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.png" class="logo__image only-light" alt="DeepLabCut - Home"/>
+    <script>document.write(`<img src="../_static/logo.png" class="logo__image only-dark" alt="DeepLabCut - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../README.html">
+                    Welcome! 👋
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="UseOverviewGuide.html">🥳 Get started with DeepLabCut: our key recommendations</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="course.html">DeepLabCut Self-paced Course</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">How To Install DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/installTips.html">Installation Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">DeepLabCut Docker containers</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main User Guides</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="standardDeepLabCut_UserGuide.html">DeepLabCut User Guide (for single animal projects)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maDLC_UserGuide.html">DeepLabCut for Multi-Animal Projects</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="Overviewof3D.html">3D DeepLabCut</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Helper &amp; Advanced Optional Function Documentation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Graphical User Interfaces (GUIs)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="gui/PROJECT_GUI.html">Interactive Project Manager GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gui/napari_GUI.html">napari labeling GUI</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Quick Start Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="quick-start/single_animal_quick_guide.html">QUICK GUIDE to single Animal Training:</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick-start/tutorial_maDLC.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Beginner's Guide to DeepLabCut</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="beginner-guides/beginners-guide.html">Using DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="beginner-guides/manage-project.html">Setting up what keypoints to track</a></li>
+<li class="toctree-l1"><a class="reference internal" href="beginner-guides/labeling.html">Labeling GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="beginner-guides/Training-Evaluation.html">Neural Network training and evaluation in the GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="beginner-guides/video-analysis.html">Video Analysis with DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Main Demo Notebooks</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Notebooks For Your Data</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Special Feature Demos</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/COLAB/COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="recipes/TechHardware.html">Technical (Hardware) Considerations</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut-Live!</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="deeplabcutlive.html">DeepLabCut-Live!</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🦄 DeepLabCut Model Zoo</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmarking</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="benchmark.html">DeepLabCut benchmark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch/Benchmarking_shuffle_guide.html">DeepLabCut Benchmarking - User Guide</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mission &amp; Contribute</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">A development roadmap for DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Governance.html">Governance Model of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../CONTRIBUTING.html">How to Contribute to DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Citations for DeepLabCut</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="citation.html">How to Cite DeepLabCut</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/HelperFunctions.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/docs/HelperFunctions.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Helper & Advanced Optional Function Documentation</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-export-function">Model Export function:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-labeling-across-cameras">Advanced Labeling across Cameras:</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#if-you-have-two-cameras-and-you-want-to-make-a-3d-project-from-your-data-you-can-leverage-this-in-the-labeling-gui">If you have two cameras and you want to make a 3D Project from your data, you can leverage this in the Labeling GUI:</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="helper-advanced-optional-function-documentation">
+<span id="helper-functions"></span><h1>Helper &amp; Advanced Optional Function Documentation<a class="headerlink" href="#helper-advanced-optional-function-documentation" title="Link to this heading">#</a></h1>
+<p>There are additional functions that are not required, but can be extremely helpful.</p>
+<p>First off, if you are new to Python, you might not know this handy trick: you can see
+ALL the functions in deeplabcut by typing <code class="docutils literal notranslate"><span class="pre">deeplabcut.</span></code> then hitting “tab.” You will see a massive list!</p>
+<p align="center">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1567907875609-57X4S1LVZWTRJ8GPM34T/ke17ZwdGBToddI8pDm48kKLvSvW2qdCTCjZZgzhLzasUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKc0_818bg8q0aD7_W_W22OLw0yYD6y1fnQ3mVB6beYNdnbXafewWM7FbBaWqQqcLy-/options.png?format=1000w" width="90%">
+</p>
+<p>Or perhaps you sort of know the name of the function, but not fully, then you can start typing the command, i.e. as in <code class="docutils literal notranslate"><span class="pre">deeplabcut.a</span> </code> then hit tab:</p>
+<p align="center">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1567907844296-STHTZ2SD6UB5WCVEN2I8/ke17ZwdGBToddI8pDm48kJEw9Z-3B5ptjcdSkknf02DlfiSMXz2YNBs8ylwAJx2qgRUppHe6ToX8uSOdETM-XipuQpH02DE1EkoTaghKW779xRs5veesYFcByqmynT9oByNVWkh1tiIAZLs8gRhPycqbSMdPDHKAvTCdk8NbVnE/optionsA.png?format=1000w" width="90%">
+</p>
+<p>Now, for any of these functions, you type <code class="docutils literal notranslate"><span class="pre">deeplabcut.analyze_videos_converth5_to_csv?</span></code> you get:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Signature: deeplabcut.analyze_videos_converth5_to_csv(videopath, videotype=&#39;.avi&#39;)
+Docstring:
+By default the output poses (when running analyze_videos) are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position  in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) in the same directory, where the video is stored. If the flag save_as_csv is set to True, the data is also exported as comma-separated value file. However, if the flag was *not* set, then this function allows the conversion of all h5 files to csv files (without having to analyze the videos again)!
+
+This functions converts hdf (h5) files to the comma-separated values format (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.
+
+ Parameters
+----------
+
+    videopath : string
+        A strings containing the full paths to videos for analysis or a path to the directory where all the videos with same extension are stored.
+
+    videotype: string, optional
+        Checks for the extension of the video in case the input to the video is a directory.
+Only videos with this extension are analyzed. The default is ``.avi``
+
+ Examples
+-----------
+
+    Converts all pose-output files belonging to mp4 videos in the folder &#39;/media/alex/experimentaldata/cheetahvideos&#39; to csv files.
+    deeplabcut.analyze_videos_converth5_to_csv(&#39;/media/alex/experimentaldata/cheetahvideos&#39;,&#39;.mp4&#39;)  
+</pre></div>
+</div>
+<p>While some of the names are ridiculously long, we wanted them to be “self-explanatory.” Here is a list
+(that is bound to be continually updated)
+of currently available helper functions. To see information about any of them, including HOW
+to use them, use the <code class="docutils literal notranslate"><span class="pre">?</span></code> at the end of the call, as described above.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_videos_converth5_to_csv</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">mergeandsplit</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">analyze_time_lapse_frames</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">convertcsv2h5</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">ShortenVideo</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">DownSampleVideo</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">CropVideo</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">adddatasetstovideolistandviceversa</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">comparevideolistsanddatafolders</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">dropannotationfileentriesduetodeletedimages</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">dropduplicatesinannotatinfiles</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">load_demo_data</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">merge_datasets</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">export_model</span>
+
+</pre></div>
+</div>
+<section id="model-export-function">
+<h2>Model Export function:<a class="headerlink" href="#model-export-function" title="Link to this heading">#</a></h2>
+<p>This function allows you to export a well-trained single animal model for real-time applications, etc. This function is part of <a class="reference external" href="https://elifesciences.org/articles/61909">Kane et al, 2020 eLife</a>. Please see the paper and related code-base on how to use this utility.</p>
+<ul class="simple">
+<li><p>Another example use case is with the <a class="reference external" href="https://github.com/bonsai-rx/deeplabcut">Bonsai-DeepLabCut</a> plug in. Namely, you need to first export your trained model from DLC, then follow the instructions for Bonsai-specific use.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">export_model</span><span class="p">(</span><span class="n">cfg_path</span><span class="p">,</span> <span class="n">iteration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trainingsetindex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">snapshotindex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">TFGPUinference</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">make_tar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="advanced-labeling-across-cameras">
+<h2>Advanced Labeling across Cameras:<a class="headerlink" href="#advanced-labeling-across-cameras" title="Link to this heading">#</a></h2>
+<section id="if-you-have-two-cameras-and-you-want-to-make-a-3d-project-from-your-data-you-can-leverage-this-in-the-labeling-gui">
+<h3>If you have two cameras and you want to make a 3D Project from your data, you can leverage this in the Labeling GUI:<a class="headerlink" href="#if-you-have-two-cameras-and-you-want-to-make-a-3d-project-from-your-data-you-can-leverage-this-in-the-labeling-gui" title="Link to this heading">#</a></h3>
+<p>If you have multiple cameras, you may want to use epipolar lines projected on the images you are labeling to help you label the same position on the body in each camera angle. An epipolar line is a projection from one camera to all the possible points in the second camera’s image that could match the labeled point in the first camera’s image. A correctly labeled point will fall somewhere along this projected line.</p>
+<p>In order to label with epipolar lines, you must complete two additional sets of steps <strong>prior to labeling.</strong></p>
+<ul class="simple">
+<li><p>First, you must create a 3d project and calibrate the cameras - to do so, complete
+steps 1-3 in <a class="reference internal" href="Overviewof3D.html#d-overview"><span class="std std-ref">3D Overview</span></a>.</p></li>
+<li><p>Second, you must extract imagr from <code class="docutils literal notranslate"><span class="pre">camera_1</span></code> first; here you would have run the standard <code class="docutils literal notranslate"><span class="pre">deeplabcut.extract_frames(config_path,</span> <span class="pre">userfeedback=True)</span></code>, but just extract files from 1 camera. Next, you need to extract matching frames from <code class="docutils literal notranslate"><span class="pre">camera_2</span></code>:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">extract_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;match&#39;</span><span class="p">,</span> <span class="n">config3d</span><span class="o">=</span><span class="n">config_path3d</span><span class="p">,</span> <span class="n">extracted_cam</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can set <code class="docutils literal notranslate"><span class="pre">extracted_cam=0</span></code> to match all other camera images to the frame numbers in the <code class="docutils literal notranslate"><span class="pre">camera_1</span></code> folder, or change this to match to other cameras. If you <code class="docutils literal notranslate"><span class="pre">deeplabcut.extract_frames</span></code> with <code class="docutils literal notranslate"><span class="pre">mode='automatic'</span></code> before, it shouldn’t matter which camera you pick. If you already extracted from both cameras, be warned this will overwrite the images for <code class="docutils literal notranslate"><span class="pre">camera_2</span></code>.</p>
+<ul>
+<li><p>Three, now you can label with epipolar lines:</p>
+<ul class="simple">
+<li><p>Here, label <code class="docutils literal notranslate"><span class="pre">camera_1</span></code> as you would normally, i.e.:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">label_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Then for <code class="docutils literal notranslate"><span class="pre">camera_2</span></code> (now it will compute the epipolar lines based on camera_1 labels and project them onto the GUI):</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">label_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">config3d</span><span class="o">=</span><span class="n">config_path3d</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./docs"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="Overviewof3D.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">3D DeepLabCut</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="gui/PROJECT_GUI.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Interactive Project Manager GUI</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-export-function">Model Export function:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-labeling-across-cameras">Advanced Labeling across Cameras:</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#if-you-have-two-cameras-and-you-want-to-make-a-3d-project-from-your-data-you-can-leverage-this-in-the-labeling-gui">If you have two cameras and you want to make a 3D Project from your data, you can leverage this in the Labeling GUI:</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The DeepLabCut Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

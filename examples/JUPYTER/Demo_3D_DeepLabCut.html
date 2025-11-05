@@ -1,0 +1,852 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>3D DeepLabCut Toolbox &#8212; DeepLabCut</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/JUPYTER/Demo_3D_DeepLabCut';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="DeepLabCut Model Zoo user-contributed models" href="../COLAB/COLAB_DLC_ModelZoo.html" />
+    <link rel="prev" title="DeepLabCut - Tutorial for BUCTD models" href="../COLAB/COLAB_BUCTD_and_CTD_tracking.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../README.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/logo.png" class="logo__image only-light" alt="DeepLabCut - Home"/>
+    <script>document.write(`<img src="../../_static/logo.png" class="logo__image only-dark" alt="DeepLabCut - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../README.html">
+                    Welcome! 👋
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/UseOverviewGuide.html">🥳 Get started with DeepLabCut: our key recommendations</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../docs/course.html">DeepLabCut Self-paced Course</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/installation.html">How To Install DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/installTips.html">Installation Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/docker.html">DeepLabCut Docker containers</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main User Guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/standardDeepLabCut_UserGuide.html">DeepLabCut User Guide (for single animal projects)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/maDLC_UserGuide.html">DeepLabCut for Multi-Animal Projects</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../../docs/Overviewof3D.html">3D DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Graphical User Interfaces (GUIs)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/gui/PROJECT_GUI.html">Interactive Project Manager GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/gui/napari_GUI.html">napari labeling GUI</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Quick Start Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/quick-start/single_animal_quick_guide.html">QUICK GUIDE to single Animal Training:</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/quick-start/tutorial_maDLC.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Beginner's Guide to DeepLabCut</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/beginner-guides/beginners-guide.html">Using DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/beginner-guides/manage-project.html">Setting up what keypoints to track</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/beginner-guides/labeling.html">Labeling GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/beginner-guides/Training-Evaluation.html">Neural Network training and evaluation in the GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/beginner-guides/video-analysis.html">Video Analysis with DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Main Demo Notebooks</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../COLAB/COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../COLAB/COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../COLAB/COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../COLAB/COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Notebooks For Your Data</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../COLAB/COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Special Feature Demos</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../COLAB/COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../COLAB/COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">3D DeepLabCut Toolbox</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../COLAB/COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/TechHardware.html">Technical (Hardware) Considerations</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut-Live!</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/deeplabcutlive.html">DeepLabCut-Live!</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🦄 DeepLabCut Model Zoo</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmarking</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/benchmark.html">DeepLabCut benchmark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/pytorch/Benchmarking_shuffle_guide.html">DeepLabCut Benchmarking - User Guide</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mission &amp; Contribute</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/roadmap.html">A development roadmap for DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/Governance.html">Governance Model of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../CONTRIBUTING.html">How to Contribute to DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Citations for DeepLabCut</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/citation.html">How to Cite DeepLabCut</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-launch-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Launch interactive content">
+    <i class="fas fa-rocket"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.ipynb/github/DeepLabCut/DeepLabCut/blob/main/docs/examples/JUPYTER/Demo_3D_DeepLabCut.ipynb" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch on Colab"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img alt="Colab logo" src="../../_static/images/logo_colab.png">
+  </span>
+<span class="btn__text-container">Colab</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fexamples/JUPYTER/Demo_3D_DeepLabCut.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/examples/JUPYTER/Demo_3D_DeepLabCut.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>3D DeepLabCut Toolbox</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-new-3d-project">Create a New 3D Project:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#calibrate-your-cameras">Calibrate your cameras!</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#demo-images">DEMO images:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#edit-the-config-yaml-file">Edit the config.yaml file:</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#check-for-undistortion">Check for Undistortion:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#triangulation-converting-your-2d-to-3d">Triangulation –&gt; converting your 2D to 3D!</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#critical-edit-the-config-yaml-file">(<strong>CRITICAL!</strong>) Edit the config.yaml file:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualize-your-3d-deeplabcut-videos">Visualize your 3D DeepLabCut Videos:</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="d-deeplabcut-toolbox">
+<h1>3D DeepLabCut Toolbox<a class="headerlink" href="#d-deeplabcut-toolbox" title="Link to this heading">#</a></h1>
+<p><a class="github reference external" href="https://github.com/DeepLabCut/DeepLabCut">DeepLabCut/DeepLabCut</a></p>
+<p>This notebook will highlight the functionality of the newly released 3D project option (as of <strong>2.0.7+</strong>).</p>
+<p>We recommend you look through these commands, and then you can easily modify this notebook for your own projects.</p>
+<p><strong>In summary, the new functionality will:</strong></p>
+<ul class="simple">
+<li><p>allow you to calibrate your cameras using checkerboard images</p></li>
+<li><p>compute and fix camera distortions</p></li>
+<li><p>convert your 2D DeepLabCut tracking to 3D</p></li>
+<li><p>allow for plotting in 3D space</p></li>
+</ul>
+<section id="create-a-new-3d-project">
+<h2>Create a New 3D Project:<a class="headerlink" href="#create-a-new-3d-project" title="Link to this heading">#</a></h2>
+<p>You will run this first function <strong>one</strong> time per project; a project is defined as a given set of cameras and calibration images. You can always analyze new videos within this project.</p>
+<p>The function create_new_project_3d creates a new project directory specifically for converting the 2D pose to 3D pose, required subdirectories, and a basic 3D project configuration file. Each project is identified by the name of the project (e.g. Task1), name of the experimenter (e.g. YourName), as well as the date at creation.</p>
+<p>Thus, this function requires the user to input the enter the name of the project, the name of the experimenter and number of cameras to be used. Currently, DeepLabCut supports triangulation using 2 cameras, but will expand to more than 2 cameras in a future version.</p>
+<p>Optional arguments specify the working directory, i.e. where the project directory will be created. If the optional argument working_directory is unspecified, the project directory is created in the current working directory. Please note that the Full path of the 3D project configuration file will be referenced as <code class="docutils literal notranslate"><span class="pre">config_path3d</span></code>.</p>
+<p>NOTE: Be sure you are inside your DLC anaconda environment!</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#Setup your project variables:</span>
+<span class="n">YourName</span> <span class="o">=</span> <span class="s1">&#39;teamDLC&#39;</span>
+<span class="n">YourExperimentName</span> <span class="o">=</span> <span class="s1">&#39;testing&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">config_path</span> <span class="o">=</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project_3d</span><span class="p">(</span><span class="n">YourExperimentName</span><span class="p">,</span><span class="n">YourName</span><span class="p">,</span><span class="n">num_cameras</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Created &quot;/home/mackenzie/Desktop/DeepLabCut2.0-2.2/examples/testing-teamDLC-2019-10-29-3d/camera_matrix&quot;
+Created &quot;/home/mackenzie/Desktop/DeepLabCut2.0-2.2/examples/testing-teamDLC-2019-10-29-3d/calibration_images&quot;
+Created &quot;/home/mackenzie/Desktop/DeepLabCut2.0-2.2/examples/testing-teamDLC-2019-10-29-3d/undistortion&quot;
+Created &quot;/home/mackenzie/Desktop/DeepLabCut2.0-2.2/examples/testing-teamDLC-2019-10-29-3d/corners&quot;
+Generated &quot;/home/mackenzie/Desktop/DeepLabCut2.0-2.2/examples/testing-teamDLC-2019-10-29-3d/config.yaml&quot;
+
+A new project with name testing-teamDLC-2019-10-29-3d is created at /home/mackenzie/Desktop/DeepLabCut2.0-2.2/examples and a configurable file (config.yaml) is stored there. If you have not calibrated the cameras, then use the function &#39;calibrate_camera&#39; to start calibrating the camera otherwise use the function ``triangulate`` to triangulate the dataframe
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>TIP 1:</strong> you can also pass <code class="docutils literal notranslate"><span class="pre">working_directory='Full</span> <span class="pre">path</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">working</span> <span class="pre">directory'</span></code> if you want to place this folder somewhere beside the current directory you are working in.</p>
+<p><strong>TIP 2:</strong> you can also place config_path3d in front of deeplabcut.create_new_project_3d to create a variable that holds the path to the config.yaml file, i.e. <code class="docutils literal notranslate"><span class="pre">config_path3d=deeplabcut.create_new_project_3d(...</span></code></p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#If you&#39;re loading an already created project, just set the 3D Project config_path variable:</span>
+<span class="c1">#import os</span>
+<span class="c1">#from pathlib import Path</span>
+<span class="c1">#config_path3d = os.path.join(os.getcwd(),&#39;testing3D-DeepLabCutTeam-2019-06-05-3d/config.yaml&#39;)</span>
+<span class="c1">#print(config_path3d)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="calibrate-your-cameras">
+<h2>Calibrate your cameras!<a class="headerlink" href="#calibrate-your-cameras" title="Link to this heading">#</a></h2>
+<p>(<strong>CRITICAL!</strong>) You must take images of a checkerboard to calibrate your images. Here are example boards you could print and use (mount them on a flat, hard surface!): <a class="reference external" href="https://markhedleyjones.com/projects/calibration-checkerboard-collection">https://markhedleyjones.com/projects/calibration-checkerboard-collection</a>.</p>
+<ul class="simple">
+<li><p>You must save the image pairs as <strong>.jpg</strong> files.</p></li>
+<li><p>They should be named with the camera-# as the prefix, i.e. <strong>camera-1-01.jpg</strong> and <strong>camera-2-01.jpg</strong> for the first pair of images.</p></li>
+<li><p>While taking the images:</p>
+<ul>
+<li><p>Keep the orientation of the chessboard same and do not rotate more than 30 degrees. Rotating the chessboard circular will change the origin across the frames and may result in incorrect order of detected corners.</p></li>
+<li><p>Cover several distances, and within each distance, cover all parts of the image view (all corners and center).</p></li>
+<li><p>Use a checkerboard as big as possible, ideally with at least 8x6 squares.</p></li>
+<li><p>Aim for taking at least 70 pair of images as after corner detection, some of the images might need to be discarded due to either incorrect corner detection or incorrect order of detected corners.</p></li>
+</ul>
+</li>
+</ul>
+<section id="demo-images">
+<h3>DEMO images:<a class="headerlink" href="#demo-images" title="Link to this heading">#</a></h3>
+<p>Here, we used a standard set along with this notebook. These images are a part of the Camera Calibration ToolBox for Matlab; specifically example 5. The images can be downloaded at: <a class="reference external" href="https://data.caltech.edu/records/20164">https://data.caltech.edu/records/20164</a>. After downloading, the calibration images can be found at ../calib_doc/htmls/calib_example.zip</p>
+<p>If you wish to run this DEMO notebook, download the files and place inside the <strong>calibration_images</strong> directory. (To note, pairs 1 and 6 are not detected correctly, so please delete these images!).</p>
+<p>When acquiring calibration images from your own setup, it is recommended to take multiple pairs of image (around 50-70 pairs!).</p>
+<p>The camera calibration is an <strong>iterative process</strong>, where the user needs to select a set of calibration images where the grid pattern is correctly detected. The function:<code class="docutils literal notranslate"><span class="pre">deeplabcut.calibrate_cameras(config_path)</span></code>
+extracts the grid pattern from the calibration images and store them under the <code class="docutils literal notranslate"><span class="pre">corners</span></code> directory. The grid pattern could be 8x8 or 5x5 etc. We use a pattern of the 8x6 grid to find the internal corners of the checkerboard.</p>
+<p>In some cases, it may happen that the corners are not detected correctly or the order of corners detected in the camera-1 image and camera-2 image is incorrect. We need to remove these pair of images as they will reduce the calibration accuracy.</p>
+<p><strong>NEXT/if not done:</strong> please place your (or demo) images into the <strong>calibration_images</strong> directory.</p>
+</section>
+<section id="edit-the-config-yaml-file">
+<h3>Edit the config.yaml file:<a class="headerlink" href="#edit-the-config-yaml-file" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>change the camera names; i.e. if you do “”cam1, cam2””, or “camera-1, camera-2”, or “left, right”, etc.</p></li>
+<li><p>Note, that once this is set, you cannot edit these (they are used for other steps).</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">calibrate_cameras</span><span class="p">(</span><span class="n">config_path3d</span><span class="p">,</span> <span class="n">cbrow</span> <span class="o">=</span><span class="mi">9</span><span class="p">,</span><span class="n">cbcol</span> <span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">calibrate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>NOTE: you need to specify how many rows (<code class="docutils literal notranslate"><span class="pre">cbrow</span></code>) and columns (<code class="docutils literal notranslate"><span class="pre">cbcol</span></code>) your checkerboard has (i.e. the intersection points - see demo images if unclear). Also, first set the variable <code class="docutils literal notranslate"><span class="pre">calibrate</span></code> to <strong>False</strong>, so you can remove any faulty images. You need to  visually inspect the output to check for the detected corners and select those pair of images where the corners are correctly detected.</p>
+<p>Once all the set of images are selected (namely, delete from the folder any bad pairs!) where the corners and their orders are detected correctly, then the two cameras can be calibrated using:</p>
+<p><strong>They will look like this (one example frame):</strong></p>
+<p align="center">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559776966423-RATM6ZQT8JXHYAN768F6/ke17ZwdGBToddI8pDm48kKmw982fUOZVIQXHUCR1F55Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpw5XnxLBmEFHJGf_0qFdDpmIncOw4kq9OpCHNTYqzGO-E1YJr-Thht9Tdog4YtCwrE/right02_corner.jpg?format=500w" width="30%">
+</p> <div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">calibrate_cameras</span><span class="p">(</span><span class="n">config_path3d</span><span class="p">,</span> <span class="n">cbrow</span> <span class="o">=</span> <span class="mi">9</span><span class="p">,</span><span class="n">cbcol</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">calibrate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="check-for-undistortion">
+<h2>Check for Undistortion:<a class="headerlink" href="#check-for-undistortion" title="Link to this heading">#</a></h2>
+<p>In order to check how well the stereo calibration is, it is recommended to undistort the calibration images and the corner points using camera matrices and project these undistorted points on the undistorted images to check if they align correctly. This can be done in deeplabcut as:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">check_undistortion</span><span class="p">(</span><span class="n">config_path3d</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Each calibration image is undistorted and saved under the directory <code class="docutils literal notranslate"><span class="pre">undistortion</span></code>. A plot with a pair of undistorted camera images with its undistorted corner points overlaid is also stored. Please visually inspect this image. All the undistorted corner points from all the calibration images are triangulated and plotted for the user to visualize for any undistortion related errors. If they are not correct, go check and revise the calibration images (then repeat the calirbation and this step)!</p>
+</section>
+<section id="triangulation-converting-your-2d-to-3d">
+<h2>Triangulation –&gt; converting your 2D to 3D!<a class="headerlink" href="#triangulation-converting-your-2d-to-3d" title="Link to this heading">#</a></h2>
+<p>If there are no errors in the undistortion, then the pose from the 2 cameras can be triangulated to get the 3D DeepLabCut coordinates!</p>
+<p>(<strong>CRITICAL!</strong>) Name the video files in such a way that the file name contains the name of the cameras as specified in the <code class="docutils literal notranslate"><span class="pre">config</span> <span class="pre">file</span></code>. e.g. if the cameras as named as <code class="docutils literal notranslate"><span class="pre">camera-1</span></code> and <code class="docutils literal notranslate"><span class="pre">camera-2</span></code> (or <code class="docutils literal notranslate"><span class="pre">cam-1</span></code>, <code class="docutils literal notranslate"><span class="pre">cam-2</span></code> etc.) then the video filename must contain this naming, i.e. this could be named as <code class="docutils literal notranslate"><span class="pre">rig-1-mouse-day1-camera-1.avi</span></code> and <code class="docutils literal notranslate"><span class="pre">rig-1-mouse-day1-camera-2.avi</span></code>. Notably, the videos do not need to be the same pixel size, but be sure they are similar in size to the calibration images (and they must be the same cameras used for calibration).</p>
+</section>
+<section id="critical-edit-the-config-yaml-file">
+<h2>(<strong>CRITICAL!</strong>) Edit the config.yaml file:<a class="headerlink" href="#critical-edit-the-config-yaml-file" title="Link to this heading">#</a></h2>
+<p>You must also edit the <strong>3D project config.yaml</strong> file to denote which DeepLabCut projects have the information for the 2D views.</p>
+<ul class="simple">
+<li><p>Of critical importance is that you need to input the <strong>same</strong> body part names as in the config.yaml file of the 2D project.</p></li>
+<li><p>You must set the snapshot to use inside the 2D config file (default is -1, namely the last training snapnot of the network).</p></li>
+<li><p>You need to set a “scorer 3D” name; this will point to the project file and be set in future 3D output file names.</p></li>
+<li><p>You should define a “skeleton” here as well (note, this is not rigid, it just connects the points in the plotting step). Not every point needs to be “skeletonized”, i.e. these points can be a subset of the full body parts list. The other points will just be plotted into the 3D space.</p></li>
+</ul>
+<p><strong>Next,</strong> pass the <code class="docutils literal notranslate"><span class="pre">config_path3d</span></code> and now the <code class="docutils literal notranslate"><span class="pre">video_path</span></code>, which is the path to the <strong>folder</strong> where all the videos from two cameras are stored. The triangulation can be done in deeplabcut by typing:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Of course, this does not work on the demo calibration images, </span>
+<span class="c1"># but when you are ready for your own dataset, edit and then run the following!</span>
+
+<span class="n">video_path</span> <span class="o">=</span> <span class="s1">&#39;/home/yourname/videoFolder&#39;</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">triangulate</span><span class="p">(</span><span class="n">config_path3d</span><span class="p">,</span><span class="n">video_path</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;mp4&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>The <strong>triangulated file</strong> is now saved under the same directory where the video files reside (or you passed a destination folder path)! These files can now be used for future analysis. This step can now be run at anytime as you collect new videos, and easily added to your automated analysis pipeline, i.e. such as using<code class="docutils literal notranslate"><span class="pre">deeplabcut.triangulate(config_path3d,</span> <span class="pre">video_path)</span></code> instead of <code class="docutils literal notranslate"><span class="pre">deeplabcut.analyze_videos</span></code></p>
+</section>
+<section id="visualize-your-3d-deeplabcut-videos">
+<h2>Visualize your 3D DeepLabCut Videos:<a class="headerlink" href="#visualize-your-3d-deeplabcut-videos" title="Link to this heading">#</a></h2>
+<p>In order to visualize the pose in 3D, the user can create a 3D video for certain frames (these are large files, so we advise just looking at a subset of frames). The user can specify the path of the triangulated file and specify the start and end frame indices to create a 3D labeled video. Note that the triangulated_file is the newly created file that ends with yourDLC_3D_scorername.h5. This can be done using:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video_3d</span><span class="p">(</span><span class="n">config_path</span><span class="p">,[</span><span class="s1">&#39;triangulated_file_folder&#39;</span><span class="p">],</span><span class="n">start</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span><span class="n">end</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span> <span class="n">trailpoints</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./examples/JUPYTER"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../COLAB/COLAB_BUCTD_and_CTD_tracking.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">DeepLabCut - Tutorial for BUCTD models</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../COLAB/COLAB_DLC_ModelZoo.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">DeepLabCut Model Zoo user-contributed models</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-new-3d-project">Create a New 3D Project:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#calibrate-your-cameras">Calibrate your cameras!</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#demo-images">DEMO images:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#edit-the-config-yaml-file">Edit the config.yaml file:</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#check-for-undistortion">Check for Undistortion:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#triangulation-converting-your-2d-to-3d">Triangulation –&gt; converting your 2D to 3D!</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#critical-edit-the-config-yaml-file">(<strong>CRITICAL!</strong>) Edit the config.yaml file:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualize-your-3d-deeplabcut-videos">Visualize your 3D DeepLabCut Videos:</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The DeepLabCut Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

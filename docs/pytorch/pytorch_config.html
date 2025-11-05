@@ -1,0 +1,1270 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>The PyTorch Configuration file &#8212; DeepLabCut</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/pytorch/pytorch_config';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="DeepLabCut 3.0 - PyTorch Model Architectures" href="architectures.html" />
+    <link rel="prev" title="DeepLabCut 3.0 - PyTorch User Guide" href="user_guide.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../README.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/logo.png" class="logo__image only-light" alt="DeepLabCut - Home"/>
+    <script>document.write(`<img src="../../_static/logo.png" class="logo__image only-dark" alt="DeepLabCut - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../README.html">
+                    Welcome! 👋
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../UseOverviewGuide.html">🥳 Get started with DeepLabCut: our key recommendations</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../course.html">DeepLabCut Self-paced Course</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">How To Install DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/installTips.html">Installation Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docker.html">DeepLabCut Docker containers</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main User Guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../standardDeepLabCut_UserGuide.html">DeepLabCut User Guide (for single animal projects)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../maDLC_UserGuide.html">DeepLabCut for Multi-Animal Projects</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../Overviewof3D.html">3D DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Graphical User Interfaces (GUIs)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../gui/PROJECT_GUI.html">Interactive Project Manager GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gui/napari_GUI.html">napari labeling GUI</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">The PyTorch Configuration file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Quick Start Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../quick-start/single_animal_quick_guide.html">QUICK GUIDE to single Animal Training:</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start/tutorial_maDLC.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Beginner's Guide to DeepLabCut</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../beginner-guides/beginners-guide.html">Using DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner-guides/manage-project.html">Setting up what keypoints to track</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner-guides/labeling.html">Labeling GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner-guides/Training-Evaluation.html">Neural Network training and evaluation in the GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner-guides/video-analysis.html">Video Analysis with DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Main Demo Notebooks</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Notebooks For Your Data</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Special Feature Demos</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/COLAB/COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="../recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../recipes/TechHardware.html">Technical (Hardware) Considerations</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut-Live!</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../deeplabcutlive.html">DeepLabCut-Live!</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🦄 DeepLabCut Model Zoo</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmarking</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../benchmark.html">DeepLabCut benchmark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Benchmarking_shuffle_guide.html">DeepLabCut Benchmarking - User Guide</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mission &amp; Contribute</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../roadmap.html">A development roadmap for DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Governance.html">Governance Model of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../CONTRIBUTING.html">How to Contribute to DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Citations for DeepLabCut</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../citation.html">How to Cite DeepLabCut</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/pytorch/pytorch_config.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/docs/pytorch/pytorch_config.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>The PyTorch Configuration file</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sections">Sections</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#singleton-parameters">Singleton Parameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data">Data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dealing-with-variable-image-sizes">Dealing with Variable Image Sizes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#model">Model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#runner">Runner</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#train-settings">Train Settings</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#logger">Logger</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#restarting-training-at-a-specific-checkpoint">Restarting Training at a Specific Checkpoint</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inference">Inference</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-top-down-models">Training Top-Down Models</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#detector-configuration">Detector Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#restarting-training-of-an-object-detector-at-a-specific-checkpoint">Restarting Training of an Object Detector at a Specific Checkpoint</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#generating-bounding-boxes-from-pose">Generating Bounding Boxes from Pose</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="the-pytorch-configuration-file">
+<span id="dlc3-pytorch-config"></span><h1>The PyTorch Configuration file<a class="headerlink" href="#the-pytorch-configuration-file" title="Link to this heading">#</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">pytorch_config.yaml</span></code> file specifies the configuration for your PyTorch pose models,
+from the model architecture to which optimizer will be used for training, how training
+runs will be logged, the data augmentation that will be applied and which metric should
+be used to save the “best” model snapshot.</p>
+<p>You can create default configurations for a shuffle using
+<code class="docutils literal notranslate"><span class="pre">deeplabcut.create_training_set</span></code> or <code class="docutils literal notranslate"><span class="pre">deeplabcut.create_training_model_comparison</span></code>. This
+will create a <code class="docutils literal notranslate"><span class="pre">pytorch_config.yaml</span></code> file for your selected net type. The basic structure
+of the file is as follows:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">data</span><span class="p">:</span><span class="w">  </span><span class="c1"># which data augmentations will be used</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="nt">device</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">auto</span><span class="w"> </span><span class="c1"># the default device to use for training and evaluation</span>
+<span class="nt">inference</span><span class="p">:</span><span class="w">  </span><span class="c1"># configures inference-related parameters (multithreading, different torch options)</span>
+<span class="nt">metadata</span><span class="p">:</span><span class="w">  </span><span class="c1"># metadata regarding the project (bodyparts, individuals, paths, ...) - filled automatically</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bu</span><span class="w"> </span><span class="c1"># indicates how pose predictions are made (bottom-up (`bu`) or top-down (`td`))</span>
+<span class="nt">model</span><span class="p">:</span><span class="w">  </span><span class="c1"># configures the model architecture (which backbone, heads, ...)</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="nt">net_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">resnet_50</span><span class="w"> </span><span class="c1"># the type of neural net configured in the file</span>
+<span class="nt">runner</span><span class="p">:</span><span class="w">  </span><span class="c1"># configuring the runner used for training</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="nt">train_settings</span><span class="p">:</span><span class="w">  </span><span class="c1"># generic training settings, such as batch size and maximum number of epochs</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="nt">logger</span><span class="p">:</span><span class="w">  </span><span class="c1"># optional: the configuration for a logger if you want one</span>
+<span class="nt">resume_training_from</span><span class="p">:</span><span class="w">  </span><span class="c1"># optional: restart the training at the specific checkpoint</span>
+</pre></div>
+</div>
+<section id="sections">
+<h2>Sections<a class="headerlink" href="#sections" title="Link to this heading">#</a></h2>
+<section id="singleton-parameters">
+<h3>Singleton Parameters<a class="headerlink" href="#singleton-parameters" title="Link to this heading">#</a></h3>
+<p>There are a few singleton parameters defined in the PyTorch configuration file:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">device</span></code>: The device to use for training/inference. The default is <code class="docutils literal notranslate"><span class="pre">auto</span></code>, which sets
+the device to <code class="docutils literal notranslate"><span class="pre">cuda</span></code> if an NVIDIA GPU is available, and <code class="docutils literal notranslate"><span class="pre">cpu</span></code> otherwise. For users
+running models on macOS with an M1/M2/M3 chip, this is set to <code class="docutils literal notranslate"><span class="pre">mps</span></code> for certain models
+(not all operations are currently supported on Apple GPUs - so some models like HRNets
+need to be trained on CPU, while others like ResNets can take advantage of the GPU).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">method</span></code>: Either <code class="docutils literal notranslate"><span class="pre">bu</span></code> for bottom-up models, or <code class="docutils literal notranslate"><span class="pre">td</span></code> for top-down models.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">net_type</span></code>: The type of pose model configured by the file (e.g. <code class="docutils literal notranslate"><span class="pre">resnet_50</span></code>).</p></li>
+</ul>
+</section>
+<section id="data">
+<h3>Data<a class="headerlink" href="#data" title="Link to this heading">#</a></h3>
+<p>The data section configures:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">bbox_margin</span></code>: The margin (in pixels) to add around ground truth pose when generating
+bounding boxes. For more information, see <a class="reference internal" href="#bbox-from-pose">generating bounding boxes from pose</a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">colormode</span></code>: in which format images are given to the model (e.g., <code class="docutils literal notranslate"><span class="pre">RGB</span></code>, <code class="docutils literal notranslate"><span class="pre">BGR</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">inference</span></code>: which transformations should be applied to images when running evaluation
+or inference</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">train</span></code>: which transformations should be applied to images when training</p></li>
+</ul>
+<p>The default configuration for a pose model is:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">data</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">bbox_margin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">  </span><span class="nt">colormode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RGB</span><span class="w">  </span><span class="c1"># should never be changed</span>
+<span class="w">  </span><span class="nt">inference</span><span class="p">:</span><span class="w">  </span><span class="c1"># the augmentations to apply to images during inference </span>
+<span class="w">    </span><span class="nt">normalize_images</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># this should always be set to true</span>
+<span class="w">  </span><span class="nt">train</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">affine</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">p</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.5</span>
+<span class="w">      </span><span class="nt">rotation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
+<span class="w">      </span><span class="nt">scaling</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.5</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1.25</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">translation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">    </span><span class="nt">covering</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">crop_sampling</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">width</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">448</span><span class="w">   </span><span class="c1"># if your images are very small or very large, you may need to edit!</span>
+<span class="w">      </span><span class="nt">height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">448</span><span class="w">  </span><span class="c1"># see below for more information about crop_sampling! </span>
+<span class="w">      </span><span class="nt">max_shift</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span>
+<span class="w">      </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hybrid</span>
+<span class="w">    </span><span class="nt">gaussian_noise</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">12.75</span>
+<span class="w">    </span><span class="nt">motion_blur</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">normalize_images</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># this should always be set to true</span>
+</pre></div>
+</div>
+<p>The following transformations are available for the <code class="docutils literal notranslate"><span class="pre">train</span></code> and <code class="docutils literal notranslate"><span class="pre">inference</span></code> keys.</p>
+<p><strong>Affine</strong>: Applies an affine (rotation, translation, scaling) transformation to the
+images.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">affine</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">p</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.9</span><span class="w">  </span><span class="c1"># float: the probability that an affine transform is applied</span>
+<span class="w">  </span><span class="nt">rotation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span><span class="w">  </span><span class="c1"># int: the maximum angle of rotation applied to the image (in degrees)</span>
+<span class="w">  </span><span class="nt">scaling</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">0.5</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1.25</span><span class="w"> </span><span class="p p-Indicator">]</span><span class="w">  </span><span class="c1"># [float, float]: the (min, max) scale to use to resize images</span>
+<span class="w">  </span><span class="nt">translation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">40</span><span class="w">  </span><span class="c1"># int: the maximum translation to apply to images (in pixels)</span>
+</pre></div>
+</div>
+<p><strong>Auto-Padding</strong>: Pads the image to some desired shape (e.g., a minimum height/width or
+such that the height/width are divisible by a given number). Some backbones (such as
+HRNets) require the height and width of images to be multiples of 32. Setting up
+auto-padding with <code class="docutils literal notranslate"><span class="pre">pad_height_divisor:</span> <span class="pre">32</span></code> and <code class="docutils literal notranslate"><span class="pre">pad_width_divisor:</span> <span class="pre">32</span></code> ensures that is
+the case. Note that <strong>not all keys need to be set</strong>! The values shown are the default
+values. Only one of ‘min_height’ and ‘pad_height_divisor’ parameters must be set, and
+only one of ‘min_width’ and ‘pad_width_divisor’ parameters must be set.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">auto_padding</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">min_height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">  </span><span class="c1"># int: if not None, the minimum height of the image</span>
+<span class="w">  </span><span class="nt">min_width</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">  </span><span class="c1"># int: if not None, the minimum width of the image</span>
+<span class="w">  </span><span class="nt">pad_height_divisor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">  </span><span class="c1"># int: if not None, ensures image height is dividable by value of this argument.</span>
+<span class="w">  </span><span class="nt">pad_width_divisor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">  </span><span class="c1"># int: if not None, ensures image width is dividable by value of this argument.</span>
+<span class="w">  </span><span class="nt">position</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">random</span><span class="w">  </span><span class="c1"># str: position of the image, one of &#39;A.PadIfNeeded.Position&#39;</span>
+<span class="w">  </span><span class="nt">border_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reflect_101</span><span class="w">  </span><span class="c1"># str: &#39;constant&#39; or &#39;reflect_101&#39; (see cv2.BORDER modes)</span>
+<span class="w">  </span><span class="nt">border_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">  </span><span class="c1"># str: padding value if border_mode is &#39;constant&#39;</span>
+<span class="w">  </span><span class="nt">border_mask_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">  </span><span class="c1"># str: padding value for mask if border_mode is &#39;constant&#39;</span>
+</pre></div>
+</div>
+<p><strong>Covering</strong>: Based on Albumentations’s <a class="reference external" href="https://albumentations.ai/docs/api_reference/augmentations/dropout/coarse_dropout/#albumentations.augmentations.dropout.coarse_dropout">CoarseDropout</a>
+augmentation, this “cuts” holes out of the image. As defined in
+<a class="reference external" href="https://arxiv.org/abs/1708.04552">Improved Regularization of Convolutional Neural Networks with Cutout</a>.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">covering</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># bool: if true, applies a coarse dropout with probability 50%</span>
+</pre></div>
+</div>
+<p><strong>Gaussian Noise</strong>: Applies gaussian noise to the input image. Can either be a float
+(the standard deviation of the noise) or simply a boolean (the standard deviation of
+the noise will be set as 12.75).</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">gaussian_noise</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">12.75</span><span class="w">  </span><span class="c1"># bool, float: add gaussian noise</span>
+</pre></div>
+</div>
+<p><strong>Horizontal Flips</strong>: This flips the image horizontally around the y-axis. As the
+resulting image is mirrored, it does not preserve labels (the left hand would become the
+right hand, and vice versa). This augmentation should not be used for pose models if you
+have symmetric keypoints! However, it is safe to use it to train detectors. If you want
+to use horizontal flips with symmetric keypoints, you need to specify them through the
+<code class="docutils literal notranslate"><span class="pre">symmetries</span></code> parameter!</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># augmentation for object detectors or when no symmetric (left/right) keypoints exist: </span>
+<span class="nt">hflip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="c1"># augmentation if your bodyparts are [snout, eye_L, eye_R, ear_L, ear_R]</span>
+<span class="nt">hflip</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">p</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.5</span><span class="w">  </span><span class="c1"># apply a horizontal flip with 50% probability</span>
+<span class="w">  </span><span class="nt">symmetries</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[[</span><span class="nv">1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">2</span><span class="p p-Indicator">],</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">3</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">4</span><span class="p p-Indicator">]]</span><span class="w">  </span><span class="c1"># the indices of symmetric keypoints</span>
+</pre></div>
+</div>
+<p><strong>Histogram Equalization</strong>: Applies histogram equalization with probability 50%.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">hist_eq</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># bool: whether to apply histogram equalization</span>
+</pre></div>
+</div>
+<p><strong>Motion Blur</strong>: Applies motion blur to the image with probability 50%.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">motion_blur</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># bool: whether to apply motion blur</span>
+</pre></div>
+</div>
+<p><strong>Normalization</strong>: This should always be set to <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">normalize_images</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># normalizes images</span>
+</pre></div>
+</div>
+</section>
+<section id="dealing-with-variable-image-sizes">
+<h3>Dealing with Variable Image Sizes<a class="headerlink" href="#dealing-with-variable-image-sizes" title="Link to this heading">#</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When training with batch size 1 (or if all images in your dataset have the same size),
+you don’t need to worry about any of this! However, you can still use <code class="docutils literal notranslate"><span class="pre">crop_sampling</span></code>
+which may help your model generalize.</p>
+</div>
+<p>When training with a batch size greater than 1, all images in a batch <strong>must</strong> have the
+same size. PyTorch <strong>collates</strong> all images into one tensor of shape <code class="docutils literal notranslate"><span class="pre">[b,</span> <span class="pre">c,</span> <span class="pre">h,</span> <span class="pre">w]</span></code>,
+where <code class="docutils literal notranslate"><span class="pre">b</span></code> is the batch size, <code class="docutils literal notranslate"><span class="pre">c</span></code> the number of channels in the image, <code class="docutils literal notranslate"><span class="pre">h</span></code> and <code class="docutils literal notranslate"><span class="pre">w</span></code> the
+height and width of images in the batches. There are a few different ways to ensure that
+all images in a batch have the same size:</p>
+<ol class="arabic simple">
+<li><p><strong>Crop sampling</strong>. This is the default behavior for the PyTorch engine in DeepLabCut.
+A part of each image (of a fixed size) is cropped and given to the model to train. See
+below for more information.</p></li>
+<li><p><strong>A custom collate function</strong>. Collate functions define a way that images of different
+sizes can be combined into one tensor. This involves resizing and padding images to the
+same size and aspect ratio. Available collate functions are defined in
+<code class="docutils literal notranslate"><span class="pre">deeplabcut/pose_estimation_pytorch/data/collate.py</span></code>.</p></li>
+<li><p><strong>Resizing all images</strong>. All images can simply be resized to the same size. This
+usually doesn’t lead to the best performance.</p></li>
+</ol>
+<p><strong>Resizing - Crop Sampling</strong>: An alternative way to ensure all images have the same size
+is through cropping. The <code class="docutils literal notranslate"><span class="pre">crop_sampling</span></code> crops images down to a maximum width and
+height, with options to sample the center of the crop according to the positions of the
+keypoints. The methods to sample the center of the crop are as follows:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">uniform</span></code>: randomly over the image</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">keypoints</span></code>: randomly over the annotated keypoints</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">density</span></code>: weighing preferentially dense regions of keypoints</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hybrid</span></code>: alternating randomly between <code class="docutils literal notranslate"><span class="pre">uniform</span></code> and <code class="docutils literal notranslate"><span class="pre">density</span></code></p></li>
+</ul>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">crop_sampling</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">400</span><span class="w">  </span><span class="c1"># int: the height of the crop </span>
+<span class="w">  </span><span class="nt">width</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">400</span><span class="w">  </span><span class="c1"># int: the height of the crop </span>
+<span class="w">  </span><span class="nt">max_shift</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.4</span><span class="w">  </span><span class="c1"># float: maximum allowed shift of the cropping center position as a fraction of the crop size.</span>
+<span class="w">  </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hybrid</span><span class="w"> </span><span class="c1"># str: the center sampling method (one of &#39;uniform&#39;, &#39;keypoints&#39;, &#39;density&#39;, &#39;hybrid&#39;) </span>
+</pre></div>
+</div>
+<p><strong>Collate</strong>: Defines how images are collated into batches. The default way collate
+function to use is <code class="docutils literal notranslate"><span class="pre">ResizeFromDataSizeCollate</span></code> (other collate functions are defined in
+<code class="docutils literal notranslate"><span class="pre">deeplabcut/pose_estimation_pytorch/data/collate.py</span></code>). For each batch to collate, this
+implementation:</p>
+<ol class="arabic simple">
+<li><p>Selects the target width &amp; height all images will be resized to by getting the size
+of the first image in the batch, and multiplying it by a scale sampled uniformly at
+random from <code class="docutils literal notranslate"><span class="pre">(min_scale,</span> <span class="pre">max_scale)</span></code>.</p></li>
+<li><p>Resizes all images in the batch (while preserving their aspect ratio) such that they
+are the smallest size such that the target size fits entirely in the image.</p></li>
+<li><p>Crops each resulting image into the target size with a random crop.</p></li>
+</ol>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">collate</span><span class="p">:</span><span class="w">  </span><span class="c1"># rescales the images when putting them in a batch</span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ResizeFromDataSizeCollate</span><span class="w">  </span><span class="c1"># You can also use `ResizeFromListCollate`</span>
+<span class="w">  </span><span class="nt">max_shift</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span><span class="w">  </span><span class="c1"># the maximum shift, in pixels, to add to the random crop (this means</span>
+<span class="w">    </span><span class="c1"># there can be a slight border around the image)</span>
+<span class="w">  </span><span class="nt">max_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1024</span><span class="w">  </span><span class="c1">#  the maximum size of the long edge of the image when resized. If the</span>
+<span class="w">    </span><span class="c1"># longest side will be greater than this value, resizes such that the longest side </span>
+<span class="w">    </span><span class="c1"># is this size, and the shortest side is smaller than the desired size. This is </span>
+<span class="w">    </span><span class="c1"># useful to keep some information from images with extreme aspect ratios.</span>
+<span class="w">  </span><span class="nt">min_scale</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.4</span><span class="w">  </span><span class="c1"># the minimum scale to resize the image with</span>
+<span class="w">  </span><span class="nt">max_scale</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span><span class="w">  </span><span class="c1"># the maximum scale to resize the image with</span>
+<span class="w">  </span><span class="nt">min_short_side</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">128</span><span class="w">  </span><span class="c1"># the minimum size of the target short side</span>
+<span class="w">  </span><span class="nt">max_short_side</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1152</span><span class="w">  </span><span class="c1"># the maximum size of the target short side</span>
+<span class="w">  </span><span class="nt">multiple_of</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span><span class="w">  </span><span class="c1"># pads the target height, width such that they are multiples of 32</span>
+<span class="w">  </span><span class="nt">to_square</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># instead of using the aspect ratio of the first image, only the </span>
+<span class="w">    </span><span class="c1"># short side of the first image will be used to sample a &quot;side&quot;, and the images will</span>
+<span class="w">    </span><span class="c1"># be cropped in squares</span>
+</pre></div>
+</div>
+<p><strong>Resizing</strong>: Resizes the images while preserving the aspect ratio (first resizes to the
+maximum possible size, then adds padding for the missing pixels).</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">resize</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">640</span><span class="w"> </span><span class="c1"># int: the height to which all images will be resized</span>
+<span class="w">  </span><span class="nt">width</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">480</span><span class="w"> </span><span class="c1"># int: the width to which all images will be resized</span>
+<span class="w">  </span><span class="nt">keep_ratio</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># bool: whether the aspect ratio should be preserved when resizing</span>
+</pre></div>
+</div>
+</section>
+<section id="model">
+<h3>Model<a class="headerlink" href="#model" title="Link to this heading">#</a></h3>
+<p>The model configuration is further split into a <code class="docutils literal notranslate"><span class="pre">backbone</span></code>, optionally a <code class="docutils literal notranslate"><span class="pre">neck</span></code> and a
+number of heads.</p>
+<p>Changing the <code class="docutils literal notranslate"><span class="pre">model</span></code> configuration should only be done by expert users, and in rare
+occasions. When updating a model configuration (e.g. adding more deconvolution layers
+to a <code class="docutils literal notranslate"><span class="pre">HeatmapHead</span></code>) must be done in a way where the model configuration still makes
+sense for the project (e.g. the number of heatmaps output needs to match the number of
+bodyparts in the project).</p>
+<p>An example model configuration for a single-animal HRNet would look something like:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">model</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">backbone</span><span class="p">:</span><span class="w">  </span><span class="c1"># the BaseBackbone used by the pose model</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HRNet</span>
+<span class="w">    </span><span class="nt">model_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hrnet_w18</span><span class="w">  </span><span class="c1"># creates an HRNet W18 backbone</span>
+<span class="w">  </span><span class="nt">backbone_output_channels</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">18</span>
+<span class="w">  </span><span class="nt">heads</span><span class="p">:</span><span class="w">  </span><span class="c1"># configures how the different heads will make predictions</span>
+<span class="w">    </span><span class="nt">bodypart</span><span class="p">:</span><span class="w">  </span><span class="c1"># configures how pose will be predicted for bodyparts</span>
+<span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HeatmapHead</span>
+<span class="w">      </span><span class="nt">predictor</span><span class="p">:</span><span class="w">  </span><span class="c1"># the BasePredictor used to make predictions from the head&#39;s outputs</span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HeatmapPredictor</span>
+<span class="w">          </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">      </span><span class="nt">target_generator</span><span class="p">:</span><span class="w">  </span><span class="c1"># the BaseTargetGenerator used to create targets for the head</span>
+<span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HeatmapPlateauGenerator</span>
+<span class="w">          </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">      </span><span class="nt">criterion</span><span class="p">:</span><span class="w">  </span><span class="c1"># the loss criterion used for the head</span>
+<span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w">  </span><span class="c1"># head-specific options, such as `heatmap_config` or `locref_config` for a &quot;HeatmapHead&quot;</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">backbone</span></code>, <code class="docutils literal notranslate"><span class="pre">neck</span></code> and <code class="docutils literal notranslate"><span class="pre">head</span></code> configurations are loaded using the
+<code class="docutils literal notranslate"><span class="pre">deeplabcut.pose_estimation_pytorch.models.backbones.base.BACKBONES</span></code>,
+<code class="docutils literal notranslate"><span class="pre">deeplabcut.pose_estimation_pytorch.models.necks.base.NECKS</span></code> and
+<code class="docutils literal notranslate"><span class="pre">deeplabcut.pose_estimation_pytorch.models.heads.base.HEADS</span></code> registries. You specify
+which type to load with the <code class="docutils literal notranslate"><span class="pre">type</span></code> parameter. Any argument for the head can then be used
+in the configuration.</p>
+<p>So to use an <code class="docutils literal notranslate"><span class="pre">HRNet</span></code> backbone for your model (as defined in
+<code class="docutils literal notranslate"><span class="pre">deeplabcut.pose_estimation_pytorch.models.backbones.hrnet.HRNet</span></code>), you could set:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">model</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">backbone</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HRNet</span>
+<span class="w">    </span><span class="nt">model_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hrnet_w32</span><span class="w">  </span><span class="c1"># creates an HRNet W32</span>
+<span class="w">    </span><span class="nt">pretrained</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># the backbone weights for training will be loaded from TIMM (pre-trained on ImageNet)</span>
+<span class="w">    </span><span class="nt">interpolate_branches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># don&#39;t interpolate &amp; concatenate channels from all branches </span>
+<span class="w">    </span><span class="nt">increased_channel_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># use the incre_modules defined in the TIMM HRNet</span>
+<span class="w">  </span><span class="nt">backbone_output_channels</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">128</span><span class="w">  </span><span class="c1"># number of channels output by the backbone</span>
+</pre></div>
+</div>
+</section>
+<section id="runner">
+<h3>Runner<a class="headerlink" href="#runner" title="Link to this heading">#</a></h3>
+<p>The runner contains elements relating to the training runner to use (including the optimizer and
+learning rate schedulers). Unless you’re experienced with machine learning and training
+models <strong>it is not recommended to change the optimizer or scheduler</strong>.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">runner</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PoseTrainingRunner</span><span class="w">  </span><span class="c1"># should not need to modify this</span>
+<span class="w">  </span><span class="nt">key_metric</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;test.mAP&quot;</span><span class="w">  </span><span class="c1"># the metric to use to select the &quot;best snapshot&quot;</span>
+<span class="w">  </span><span class="nt">key_metric_asc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># whether &quot;larger=better&quot; for the key_metric</span>
+<span class="w">  </span><span class="nt">eval_interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">  </span><span class="c1"># the interval between each passes through the evaluation dataset</span>
+<span class="w">  </span><span class="nt">optimizer</span><span class="p">:</span><span class="w">  </span><span class="c1"># the optimizer to use to train the model</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">  </span><span class="nt">scheduler</span><span class="p">:</span><span class="w">  </span><span class="c1"># optional: a learning rate scheduler</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">  </span><span class="nt">load_scheduler_state_dict</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true/false</span><span class="w"> </span><span class="c1"># whether to load scheduler state when resuming training from a snapshot,</span>
+<span class="w">  </span><span class="nt">snapshots</span><span class="p">:</span><span class="w">  </span><span class="c1"># parameters for the TorchSnapshotManager</span>
+<span class="w">    </span><span class="nt">max_snapshots</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">  </span><span class="c1"># the maximum number of snapshots to save (the &quot;best&quot; model does not count as one of them)</span>
+<span class="w">    </span><span class="nt">save_epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">25</span><span class="w">  </span><span class="c1"># the interval between each snapshot save  </span>
+<span class="w">    </span><span class="nt">save_optimizer_state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># whether the optimizer state should be saved with the model snapshots (very little reason to set to true)</span>
+<span class="w">  </span><span class="nt">gpus</span><span class="p">:</span><span class="w"> </span><span class="c1"># GPUs to use to train the network</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+</pre></div>
+</div>
+<p><strong>Key metric</strong>: Every time the model is evaluated on the test set, metrics are computed
+to see how the model is performing. The key metric is used to determine whether the
+current model is the “best” so far. If it is, the snapshot is saved as <code class="docutils literal notranslate"><span class="pre">...-best.pt</span></code>.
+For pose models, metrics to choose from would be <code class="docutils literal notranslate"><span class="pre">test.mAP</span></code> (with <code class="docutils literal notranslate"><span class="pre">key_metric_asc:</span> <span class="pre">true</span></code>
+) or <code class="docutils literal notranslate"><span class="pre">test.rmse</span></code> (with <code class="docutils literal notranslate"><span class="pre">key_metric_asc:</span> <span class="pre">false</span></code>).</p>
+<p><strong>Evaluation interval</strong>: Evaluation slows down training (it takes time to go through all
+the evaluation images, make predictions and log results!). So instead of evaluating
+after every epoch, you could decide to evaluate every 5 epochs (by setting
+<code class="docutils literal notranslate"><span class="pre">eval_interval:</span> <span class="pre">5</span></code>). While this means you get coarser information about how your model
+is training, it can speed up training on large datasets.</p>
+<p><strong>Optimizer</strong>: Any optimizer inheriting <code class="docutils literal notranslate"><span class="pre">torch.optim.Optimizer</span></code>. More information about
+optimizers can be found in <a class="reference external" href="https://pytorch.org/docs/stable/optim.html">PyTorch’s documentation</a>. Examples:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="c1"># SGD with initial learning rate 1e-3 and momentum 0.9</span>
+<span class="w">  </span><span class="c1">#  see https://pytorch.org/docs/stable/generated/torch.optim.SGD.html</span>
+<span class="w">  </span><span class="nt">optimizer</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SGD</span>
+<span class="w">    </span><span class="nt">params</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">lr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1e-3</span>
+<span class="w">      </span><span class="nt">momentum</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.9</span>
+
+<span class="w">  </span><span class="c1"># AdamW optimizer with initial learning rate 1e-4</span>
+<span class="w">  </span><span class="c1">#  see https://pytorch.org/docs/stable/generated/torch.optim.AdamW.html</span>
+<span class="w">  </span><span class="nt">optimizer</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AdamW</span>
+<span class="w">    </span><span class="nt">params</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">lr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1e-4</span>
+</pre></div>
+</div>
+<p><strong>Scheduler</strong>: You can use <a class="reference external" href="https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate">any scheduler</a> defined in
+<code class="docutils literal notranslate"><span class="pre">torch.optim.lr_scheduler</span></code>, where the arguments given are arguments of the scheduler.
+The default scheduler is an LRListScheduler, which changes the learning rates at each
+milestone to the corresponding values in <code class="docutils literal notranslate"><span class="pre">lr_list</span></code>. Examples:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="c1"># reduce to 1e-5 at epoch 160 and 1e-6 at epoch 190</span>
+<span class="w">  </span><span class="nt">scheduler</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LRListScheduler</span>
+<span class="w">    </span><span class="nt">params</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">lr_list</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">1e-5</span><span class="w"> </span><span class="p p-Indicator">],</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">1e-6</span><span class="w"> </span><span class="p p-Indicator">]</span><span class="w"> </span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">milestones</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">160</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">190</span><span class="w"> </span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="c1"># Decays the learning rate of each parameter group by gamma every step_size epochs</span>
+<span class="w">  </span><span class="c1">#   see https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.StepLR.html</span>
+<span class="w">  </span><span class="nt">scheduler</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StepLR</span>
+<span class="w">    </span><span class="nt">params</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">step_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
+<span class="w">      </span><span class="nt">gamma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span>
+</pre></div>
+</div>
+<p>You can also use schedulers that use other schedulers as parameters, such as a
+<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ChainedScheduler.html"><code class="docutils literal notranslate"><span class="pre">ChainedScheduler</span></code></a>
+or a <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.SequentialLR.html"><code class="docutils literal notranslate"><span class="pre">SequentialLR</span></code></a>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">SequentialLR</span></code> can be particularly useful, such as to use a first scheduler for some
+warmup epochs, and a second scheduler later. An example usage would be:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="c1"># Multiply the learning rate by `factor` for the first `total_iters` epochs</span>
+<span class="w">  </span><span class="c1"># After 5 epochs, start decaying the learning rate by `gamma` every `step_size` epochs</span>
+<span class="w">  </span><span class="c1"># If the initial learning rate is set to 1, the learning rates will be:</span>
+<span class="w">  </span><span class="c1">#   epoch 0: 0.01  - using ConstantLR</span>
+<span class="w">  </span><span class="c1">#   epoch 1: 0.01  - using ConstantLR</span>
+<span class="w">  </span><span class="c1">#   epoch 2: 1.0   - using ConstantLR</span>
+<span class="w">  </span><span class="c1">#   epoch 3: 1.0   - using ConstantLR</span>
+<span class="w">  </span><span class="c1">#   epoch 4: 1.0   - using ConstantLR</span>
+<span class="w">  </span><span class="c1">#   epoch 5: 1.0   - using StepLR</span>
+<span class="w">  </span><span class="c1">#   epoch 6: 1.0   - using StepLR</span>
+<span class="w">  </span><span class="c1">#   epoch 7: 0.1   - using StepLR</span>
+<span class="w">  </span><span class="c1">#   epoch 8: 0.1   - using StepLR</span>
+<span class="w">  </span><span class="nt">scheduler</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SequentialLR</span>
+<span class="w">    </span><span class="nt">params</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">schedulers</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ConstantLR</span>
+<span class="w">        </span><span class="nt">params</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">factor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.01</span>
+<span class="w">          </span><span class="nt">total_iters</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StepLR</span>
+<span class="w">        </span><span class="nt">params</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">step_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">          </span><span class="nt">gamma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span>
+<span class="w">      </span><span class="nt">milestones</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+</pre></div>
+</div>
+</section>
+<section id="train-settings">
+<h3>Train Settings<a class="headerlink" href="#train-settings" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">train_settings</span></code> key contains parameters that are specific to training. For more
+information about the <code class="docutils literal notranslate"><span class="pre">dataloader_workers</span></code> and <code class="docutils literal notranslate"><span class="pre">dataloader_pin_memory</span></code> settings, see
+<a class="reference external" href="https://pytorch.org/docs/stable/data.html#single-and-multi-process-data-loading">Single- and Multi-process Data Loading</a>
+and <a class="reference external" href="https://pytorch.org/docs/stable/data.html#memory-pinning">memory pinning</a>. Setting
+<code class="docutils literal notranslate"><span class="pre">dataloader_workers:</span> <span class="pre">0</span></code> uses single-process data loading, while setting it to 1 or more
+will use multi-process data loading. You should always keep
+<code class="docutils literal notranslate"><span class="pre">dataloader_pin_memory:</span> <span class="pre">true</span></code> when training on an NVIDIA GPU.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">train_settings</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">  </span><span class="c1"># the batch size used for training</span>
+<span class="w">  </span><span class="nt">dataloader_workers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">  </span><span class="c1"># the number of workers for the PyTorch Dataloader </span>
+<span class="w">  </span><span class="nt">dataloader_pin_memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># pin DataLoader memory</span>
+<span class="w">  </span><span class="nt">display_iters</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">500</span><span class="w">  </span><span class="c1"># the number of iterations (steps) between each log print</span>
+<span class="w">  </span><span class="nt">epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">200</span><span class="w">  </span><span class="c1"># the maximum number of epochs for which to train the model</span>
+<span class="w">  </span><span class="nt">seed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">42</span><span class="w">  </span><span class="c1"># the random seed to set for reproducibility</span>
+</pre></div>
+</div>
+</section>
+<section id="logger">
+<h3>Logger<a class="headerlink" href="#logger" title="Link to this heading">#</a></h3>
+<p>Training runs are logged to the model folder (where the snapshots are stored) by
+default.</p>
+<p>Additionally, you can log results to <a class="reference external" href="https://wandb.ai/site">Weights and Biases</a>, by adding a
+<code class="docutils literal notranslate"><span class="pre">WandbLogger</span></code>. Just make sure you’re logged in to your <code class="docutils literal notranslate"><span class="pre">wandb</span></code> account before starting
+your training run (with <code class="docutils literal notranslate"><span class="pre">wandb</span> <span class="pre">login</span></code> from your shell). For more information, see their
+<a class="reference external" href="https://docs.wandb.ai/tutorials">tutorials</a> and their documentation for <a class="reference external" href="https://docs.wandb.ai/ref/python/init"><code class="docutils literal notranslate"><span class="pre">wandb.init</span></code></a>.</p>
+<p>Logging to <code class="docutils literal notranslate"><span class="pre">wandb</span></code> is a good way to keep track of what you’ve run, including performance
+and metrics.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">logger</span><span class="p">:</span>
+<span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">WandbLogger</span>
+<span class="w"> </span><span class="nt">project_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-dlc3-project</span><span class="w">  </span><span class="c1"># the name of the project where the run should be logged</span>
+<span class="w"> </span><span class="nt">run_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dekr-w32-shuffle0</span><span class="w">  </span><span class="c1"># the name of the run to log</span>
+<span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span><span class="w">  </span><span class="c1"># any other argument you can pass to `wandb.init`, such as `tags: [&quot;dekr&quot;, &quot;split=0&quot;]`</span>
+</pre></div>
+</div>
+<p>If you set up a <code class="docutils literal notranslate"><span class="pre">WandbLogger</span></code>, the corresponding run info (<code class="docutils literal notranslate"><span class="pre">entity</span></code>, <code class="docutils literal notranslate"><span class="pre">project</span></code>, <code class="docutils literal notranslate"><span class="pre">run_id</span></code>)
+will be saved in a <code class="docutils literal notranslate"><span class="pre">wandb_info.yaml</span></code> file in the model train directory, so that the WandB run
+can be easily be recovered at a later stage.</p>
+<p>You can also log images as they are seen by the model to <code class="docutils literal notranslate"><span class="pre">wandb</span></code>
+with the <code class="docutils literal notranslate"><span class="pre">image_log_interval</span></code>. This logs a random train and test image, as well as the
+targets and heatmaps for that image.</p>
+</section>
+<section id="restarting-training-at-a-specific-checkpoint">
+<h3>Restarting Training at a Specific Checkpoint<a class="headerlink" href="#restarting-training-at-a-specific-checkpoint" title="Link to this heading">#</a></h3>
+<p>If you wish to restart the training at a specific checkpoint, you can specify the
+full path of the checkpoint to the <code class="docutils literal notranslate"><span class="pre">resume_training_from</span></code> variable, as shown below. In this
+example, <code class="docutils literal notranslate"><span class="pre">snapshot-010.pt</span></code> will be loaded before training starts, and the model will
+continue to train from the 10th epoch on.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># model configuration</span>
+<span class="nn">...</span>
+<span class="c1"># weights from which to resume training</span>
+<span class="nt">resume_training_from</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/Users/john/dlc-project-2021-06-22/dlc-models-pytorch/iteration-0/dlcJun22-trainset95shuffle0/train/snapshot-010.pt</span>
+</pre></div>
+</div>
+<p>When continuing to train a model, you may want to modify the learning rate scheduling
+that was being used (by editing the configuration under the <code class="docutils literal notranslate"><span class="pre">scheduler</span></code> key). When doing
+so, you <em>must set <code class="docutils literal notranslate"><span class="pre">load_scheduler_state_dict:</span> <span class="pre">false</span></code></em> in your <code class="docutils literal notranslate"><span class="pre">runner</span></code> config!
+Otherwise, the parameters for the scheduler your started training with will be loaded
+from the state dictionary, and your edits might not be kept!</p>
+</section>
+<section id="inference">
+<h3>Inference<a class="headerlink" href="#inference" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">inference:</span></code> block in <code class="docutils literal notranslate"><span class="pre">pytorch_config.yaml</span></code> allows configuring <strong>inference-specific
+behavior</strong> for your model. It is independent of training settings and can include multiple
+sub-configs, currently supporting <strong>multithreading</strong>, <strong>compile</strong>, <strong>autocast</strong>, and <strong>conditions</strong>.</p>
+<p><strong>Example</strong></p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">inference</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">multithreading</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">queue_length</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
+<span class="w">    </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30.0</span>
+<span class="w">  </span><span class="nt">compile</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">backend</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;inductor&quot;</span>
+<span class="w">  </span><span class="nt">autocast</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">conditions</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">config_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/model-dir/pytorch_config.yaml</span>
+<span class="w">    </span><span class="nt">snapshot_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/model-dir/snapshot-best-150.pth</span>
+</pre></div>
+</div>
+<p><strong>Sub-configs</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">multithreading</span></code>
+Controls producer-consumer threading during inference for preprocessing and batching.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">enabled</span></code> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>): Enable/disable multithreading.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">queue_length</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): Maximum number of batches to queue between preprocessing and model prediction.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code> (<code class="docutils literal notranslate"><span class="pre">float</span></code>): Timeout in seconds for the preprocessing queue.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compile</span></code>
+Controls optional <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> usage during inference.
+<strong>Note:</strong> Using <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> may speed up inference but introduces some initialization overhead.
+It is also known to fail in certain setups, environments, or architectures (e.g., <code class="docutils literal notranslate"><span class="pre">ctd_coam_*</span></code> models).
+Use at your own risk.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">enabled</span></code> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>): Enable/disable compilation. Default: <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">backend</span></code> (<code class="docutils literal notranslate"><span class="pre">str</span></code>): Backend to use when compiling (<code class="docutils literal notranslate"><span class="pre">&quot;inductor&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;aot_eager&quot;</span></code>, etc.).</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">autocast</span></code>
+Controls optional mixed precision during inference.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">enabled</span></code> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>): Enable/disable <code class="docutils literal notranslate"><span class="pre">torch.autocast</span></code>. Default: <code class="docutils literal notranslate"><span class="pre">false</span></code>.
+Note: Enabling autocast may reduce inference accuracy. It is disabled by default.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">conditions</span></code>
+Only used for <strong>Conditional Top-Down (CTD)</strong> models to specify which conditions should be used during inference.</p></li>
+</ul>
+</section>
+</section>
+<section id="training-top-down-models">
+<h2>Training Top-Down Models<a class="headerlink" href="#training-top-down-models" title="Link to this heading">#</a></h2>
+<p>Top-down models are split into two main elements: a detector (localizing individuals in
+the images) and a pose model predicting each individual’s pose (once localization is
+done, obtaining pose is just like getting pose in a single-animal model!).</p>
+<p>The “pose” part of the model configuration is exactly the same as for single-animal or
+bottom-up models (configured through the <code class="docutils literal notranslate"><span class="pre">data</span></code>, <code class="docutils literal notranslate"><span class="pre">model</span></code>, <code class="docutils literal notranslate"><span class="pre">runner</span></code> and <code class="docutils literal notranslate"><span class="pre">train_settings</span></code>
+). The detector is configured through a detector key, at the top-level of the
+configuration.</p>
+<section id="detector-configuration">
+<h3>Detector Configuration<a class="headerlink" href="#detector-configuration" title="Link to this heading">#</a></h3>
+<p>When training top-down models, you also need to configure how the detector will be
+trained. All information relating to the detector is placed under the <code class="docutils literal notranslate"><span class="pre">detector</span></code> key.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">detector</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">data</span><span class="p">:</span><span class="w">  </span><span class="c1"># which data augmentations will be used, same options as for the pose model</span>
+<span class="w">    </span><span class="nt">colormode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RGB</span>
+<span class="w">    </span><span class="nt">inference</span><span class="p">:</span><span class="w">  </span><span class="c1"># default inference configuration for detectors</span>
+<span class="w">      </span><span class="nt">normalize_images</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">train</span><span class="p">:</span><span class="w">  </span><span class="c1"># default train configuration for detectors</span>
+<span class="w">      </span><span class="nt">affine</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">p</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.9</span>
+<span class="w">        </span><span class="nt">rotation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
+<span class="w">        </span><span class="nt">scaling</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="nv">0.5</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1.25</span><span class="w"> </span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">translation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">40</span>
+<span class="w">      </span><span class="nt">hflip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">normalize_images</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">  </span><span class="nt">model</span><span class="p">:</span><span class="w">  </span><span class="c1"># the detector to train</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FasterRCNN</span>
+<span class="w">    </span><span class="nt">variant</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fasterrcnn_mobilenet_v3_large_fpn</span>
+<span class="w">    </span><span class="nt">pretrained</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">  </span><span class="nt">runner</span><span class="p">:</span><span class="w">  </span><span class="c1">#  detector train runner configuration (same keys as for the pose model)</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DetectorTrainingRunner</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">  </span><span class="nt">train_settings</span><span class="p">:</span><span class="w"> </span><span class="c1"># detector train settings (same keys as for the pose model)</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">  </span><span class="nt">resume_training_from</span><span class="p">:</span><span class="w"> </span><span class="c1"># optional: restart the training at the specific checkpoint</span>
+</pre></div>
+</div>
+<p>Currently, the only detectors available are <code class="docutils literal notranslate"><span class="pre">FasterRCNN</span></code> and <code class="docutils literal notranslate"><span class="pre">SSDLite</span></code>. However, multiple variants of
+<code class="docutils literal notranslate"><span class="pre">FasterRCNN</span></code> are available (you can view the different variants on
+<a class="reference external" href="https://pytorch.org/vision/stable/models.html#object-detection">torchvision’s object detection page</a>). It’s recommended to use the fastest
+detector that brings enough performance. The recommended variants are the following
+(from fastest to most powerful, taken from torchvision’s documentation):</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>name</p></th>
+<th class="head text-right"><p>Box MAP (larger = more powerful)</p></th>
+<th class="head text-right"><p>Params (larger = more powerful)</p></th>
+<th class="head text-right"><p>GFLOPS (larger = slower)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>SSDLite</p></td>
+<td class="text-right"><p>21.3</p></td>
+<td class="text-right"><p>3.4M</p></td>
+<td class="text-right"><p>0.58</p></td>
+</tr>
+<tr class="row-odd"><td><p>fasterrcnn_mobilenet_v3_large_fpn</p></td>
+<td class="text-right"><p>32.8</p></td>
+<td class="text-right"><p>19.4M</p></td>
+<td class="text-right"><p>4.49</p></td>
+</tr>
+<tr class="row-even"><td><p>fasterrcnn_resnet50_fpn</p></td>
+<td class="text-right"><p>37</p></td>
+<td class="text-right"><p>41.8M</p></td>
+<td class="text-right"><p>134.38</p></td>
+</tr>
+<tr class="row-odd"><td><p>fasterrcnn_resnet50_fpn_v2</p></td>
+<td class="text-right"><p>46.7</p></td>
+<td class="text-right"><p>43.7M</p></td>
+<td class="text-right"><p>280.37</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="restarting-training-of-an-object-detector-at-a-specific-checkpoint">
+<h3>Restarting Training of an Object Detector at a Specific Checkpoint<a class="headerlink" href="#restarting-training-of-an-object-detector-at-a-specific-checkpoint" title="Link to this heading">#</a></h3>
+<p>If you wish to restart the training of a detector at a specific checkpoint, you can
+specify the full path of the checkpoint to the detector’s <code class="docutils literal notranslate"><span class="pre">resume_training_from</span></code> variable, as
+shown below. In this example, <code class="docutils literal notranslate"><span class="pre">snapshot-detector-020.pt</span></code> will be loaded before training
+starts, and the model will continue to train from the 20th epoch on.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">detector</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># detector configuration</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain"># weights from which to resume training</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">resume_training_from</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/Users/john/dlc-project-2021-06-22/dlc-models-pytorch/iteration-0/dlcJun22-trainset95shuffle0/train/snapshot-detector-020.pt</span>
+</pre></div>
+</div>
+<p>When continuing to train a detector, you may want to modify the learning rate scheduling
+that was being used (by editing the configuration under the <code class="docutils literal notranslate"><span class="pre">scheduler</span></code> key). When doing
+so, you <em>must set <code class="docutils literal notranslate"><span class="pre">load_scheduler_state_dict:</span> <span class="pre">false</span></code></em> in your <code class="docutils literal notranslate"><span class="pre">detector</span></code>: <code class="docutils literal notranslate"><span class="pre">runner</span></code>
+config! Otherwise, the parameters for the scheduler your started training with will be
+loaded from the state dictionary, and your edits might not be kept!</p>
+</section>
+<section id="generating-bounding-boxes-from-pose">
+<span id="bbox-from-pose"></span><h3>Generating Bounding Boxes from Pose<a class="headerlink" href="#generating-bounding-boxes-from-pose" title="Link to this heading">#</a></h3>
+<p>To train object detection models (for top-down pose estimation), ground truth bounding
+boxes are needed. As they are not annotated in DeepLabCut, they are generated from the
+ground truth pose: simply take the minimum and maximum for the x and y axes, add a small
+margin and you have your bounding box! The default setting adds a margin of 20 pixels
+around the pose. This works well in most cases, but in some cases you should update this
+value (e.g. when you have very small or large images).</p>
+<p>You can edit that value in the <code class="docutils literal notranslate"><span class="pre">pytorch_config.yaml</span></code> for your model through the
+<code class="docutils literal notranslate"><span class="pre">data:</span> <span class="pre">bbox_margin</span></code> parameter for the detector:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">detector</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">data</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">bbox_margin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</pre></div>
+</div>
+<p><img alt="Bounding boxes generated from pose with different margins" src="../../_images/bboxes_from_kpts.png" /></p>
+</section>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./docs/pytorch"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="user_guide.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">DeepLabCut 3.0 - PyTorch User Guide</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="architectures.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">DeepLabCut 3.0 - PyTorch Model Architectures</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sections">Sections</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#singleton-parameters">Singleton Parameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data">Data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dealing-with-variable-image-sizes">Dealing with Variable Image Sizes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#model">Model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#runner">Runner</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#train-settings">Train Settings</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#logger">Logger</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#restarting-training-at-a-specific-checkpoint">Restarting Training at a Specific Checkpoint</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inference">Inference</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-top-down-models">Training Top-Down Models</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#detector-configuration">Detector Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#restarting-training-of-an-object-detector-at-a-specific-checkpoint">Restarting Training of an Object Detector at a Specific Checkpoint</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#generating-bounding-boxes-from-pose">Generating Bounding Boxes from Pose</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The DeepLabCut Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

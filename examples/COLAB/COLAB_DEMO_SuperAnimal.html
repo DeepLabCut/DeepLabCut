@@ -1,0 +1,805 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>DeepLabCut SuperAnimal models &#8212; DeepLabCut</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/COLAB/COLAB_DEMO_SuperAnimal';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="DeepLabCut on Single Mouse Data Demo" href="COLAB_DEMO_mouse_openfield.html" />
+    <link rel="prev" title="Video Analysis with DeepLabCut" href="../../docs/beginner-guides/video-analysis.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../README.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/logo.png" class="logo__image only-light" alt="DeepLabCut - Home"/>
+    <script>document.write(`<img src="../../_static/logo.png" class="logo__image only-dark" alt="DeepLabCut - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../README.html">
+                    Welcome! 👋
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/UseOverviewGuide.html">🥳 Get started with DeepLabCut: our key recommendations</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../docs/course.html">DeepLabCut Self-paced Course</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/installation.html">How To Install DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/installTips.html">Installation Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/docker.html">DeepLabCut Docker containers</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main User Guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/standardDeepLabCut_UserGuide.html">DeepLabCut User Guide (for single animal projects)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/maDLC_UserGuide.html">DeepLabCut for Multi-Animal Projects</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../../docs/Overviewof3D.html">3D DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Graphical User Interfaces (GUIs)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/gui/PROJECT_GUI.html">Interactive Project Manager GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/gui/napari_GUI.html">napari labeling GUI</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Quick Start Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/quick-start/single_animal_quick_guide.html">QUICK GUIDE to single Animal Training:</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/quick-start/tutorial_maDLC.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Beginner's Guide to DeepLabCut</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/beginner-guides/beginners-guide.html">Using DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/beginner-guides/manage-project.html">Setting up what keypoints to track</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/beginner-guides/labeling.html">Labeling GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/beginner-guides/Training-Evaluation.html">Neural Network training and evaluation in the GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/beginner-guides/video-analysis.html">Video Analysis with DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Main Demo Notebooks</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">DeepLabCut SuperAnimal models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Notebooks For Your Data</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Special Feature Demos</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
+<li class="toctree-l1"><a class="reference internal" href="COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/TechHardware.html">Technical (Hardware) Considerations</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut-Live!</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/deeplabcutlive.html">DeepLabCut-Live!</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🦄 DeepLabCut Model Zoo</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmarking</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/benchmark.html">DeepLabCut benchmark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/pytorch/Benchmarking_shuffle_guide.html">DeepLabCut Benchmarking - User Guide</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mission &amp; Contribute</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/roadmap.html">A development roadmap for DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docs/Governance.html">Governance Model of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../CONTRIBUTING.html">How to Contribute to DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Citations for DeepLabCut</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../docs/citation.html">How to Cite DeepLabCut</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-launch-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Launch interactive content">
+    <i class="fas fa-rocket"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/master/examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.ipynb/github/DeepLabCut/DeepLabCut/blob/main/docs/examples/COLAB/COLAB_DEMO_SuperAnimal.ipynb" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch on Colab"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img alt="Colab logo" src="../../_static/images/logo_colab.png">
+  </span>
+<span class="btn__text-container">Colab</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fexamples/COLAB/COLAB_DEMO_SuperAnimal.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/examples/COLAB/COLAB_DEMO_SuperAnimal.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>DeepLabCut SuperAnimal models</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#let-s-get-going-install-deeplabcut-into-colab"><strong>Let’s get going: install DeepLabCut into COLAB:</strong></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#please-click-restart-runtime-from-the-output-above-before-proceeding">PLEASE, click “restart runtime” from the output above before proceeding!</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#please-select-a-video-you-want-to-run-superanimal-x-on">Please select a video you want to run SuperAnimal-X on:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-select-the-model-you-want-to-use-quadruped-or-topviewmouse">Next select the model you want to use, Quadruped or TopViewMouse</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#okay-let-s-go">Okay, let’s go! 🐭🦓🐻</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#let-s-view-the-video-in-colab">Let’s view the video in Colab:</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <a target="_blank" href="https://colab.research.google.com/github/DeepLabCut/DeepLabCut/blob/main/examples/COLAB/COLAB_DEMO_SuperAnimal.ipynb">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a><section class="tex2jax_ignore mathjax_ignore" id="deeplabcut-superanimal-models">
+<h1>DeepLabCut SuperAnimal models<a class="headerlink" href="#deeplabcut-superanimal-models" title="Link to this heading">#</a></h1>
+<p><img alt="alt text" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1616492373700-PGOAC72IOB6AUE47VTJX/ke17ZwdGBToddI8pDm48kB8JrdUaZR-OSkKLqWQPp_YUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYwL8IeDg6_3B-BRuF4nNrNcQkVuAT7tdErd0wQFEGFSnBqyW03PFN2MN6T6ry5cmXqqA9xITfsbVGDrg_goIDasRCalqV8R3606BuxERAtDaQ/modelzoo.png?format=1000w" /></p>
+<p><a class="reference external" href="http://modelzoo.deeplabcut.org">http://modelzoo.deeplabcut.org</a></p>
+<p>You can use this notebook to analyze videos with pretrained networks from our model zoo - NO local installation of DeepLabCut is needed!</p>
+<ul class="simple">
+<li><p><strong>What you need:</strong> a video of your favorite dog, cat, human, etc: check the list of currently available models here: <a class="reference external" href="http://modelzoo.deeplabcut.org">http://modelzoo.deeplabcut.org</a></p></li>
+<li><p><strong>What to do:</strong> (1) in the top right corner, click “CONNECT”. Then, just hit run (play icon) on each cell below and follow the instructions!</p></li>
+<li><p><strong>Note, if you performance is less that you would like:</strong> firstly check the labeled_video parameters (i.e. “pcutoff” that will set the video plotting) - see the end of this notebook.</p></li>
+<li><p>You can also use the model in your own projects locally. Please be sure to cite the papers for the model, i.e., <a class="reference external" href="https://arxiv.org/abs/2203.07436">Ye et al. 2024</a> 🎉</p></li>
+</ul>
+<section id="let-s-get-going-install-deeplabcut-into-colab">
+<h2><strong>Let’s get going: install DeepLabCut into COLAB:</strong><a class="headerlink" href="#let-s-get-going-install-deeplabcut-into-colab" title="Link to this heading">#</a></h2>
+<p><em>Also, be sure you are connected to a GPU: go to menu, click Runtime &gt; Change Runtime Type &gt; select “GPU”</em></p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span>deeplabcut
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="please-click-restart-runtime-from-the-output-above-before-proceeding">
+<h2>PLEASE, click “restart runtime” from the output above before proceeding!<a class="headerlink" href="#please-click-restart-runtime-from-the-output-above-before-proceeding" title="Link to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="please-select-a-video-you-want-to-run-superanimal-x-on">
+<h2>Please select a video you want to run SuperAnimal-X on:<a class="headerlink" href="#please-select-a-video-you-want-to-run-superanimal-x-on" title="Link to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.colab</span><span class="w"> </span><span class="kn">import</span> <span class="n">files</span>
+
+<span class="n">uploaded</span> <span class="o">=</span> <span class="n">files</span><span class="o">.</span><span class="n">upload</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">uploaded</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+  <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;User uploaded file &quot;</span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s1">&quot; with length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="si">}</span><span class="s1"> bytes&#39;</span><span class="p">)</span>
+
+<span class="n">video_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+
+<span class="c1"># If this cell fails (e.g., when using Safari in place of Google Chrome),</span>
+<span class="c1"># manually upload your video via the Files menu to the left</span>
+<span class="c1"># and define `video_path` yourself with right click &gt; copy path on the video.</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="next-select-the-model-you-want-to-use-quadruped-or-topviewmouse">
+<h2>Next select the model you want to use, Quadruped or TopViewMouse<a class="headerlink" href="#next-select-the-model-you-want-to-use-quadruped-or-topviewmouse" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>See <a class="reference external" href="http://modelzoo.deeplabcut.org/">http://modelzoo.deeplabcut.org/</a> for more details on these models</p></li>
+<li><p>The pcutoff is for visualization only, namely only keypoints with a value over what you set are shown. 0 is low confidience, 1 is perfect confidience of the model.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">&quot;superanimal_quadruped&quot;</span> <span class="c1">#@param [&quot;superanimal_topviewmouse&quot;, &quot;superanimal_quadruped&quot;]</span>
+<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;hrnet_w32&quot;</span> <span class="c1">#@param [&quot;hrnet_w32&quot;, &quot;resnet_50&quot;]</span>
+<span class="n">detector_name</span> <span class="o">=</span> <span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span> <span class="c1">#@param [&quot;fasterrcnn_resnet50_fpn_v2&quot;, &quot;fasterrcnn_mobilenet_v3_large_fpn&quot;]</span>
+<span class="n">pcutoff</span> <span class="o">=</span> <span class="mf">0.15</span> <span class="c1">#@param {type:&quot;slider&quot;, min:0, max:1, step:0.05}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="okay-let-s-go">
+<h2>Okay, let’s go! 🐭🦓🐻<a class="headerlink" href="#okay-let-s-go" title="Link to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">videotype</span> <span class="o">=</span> <span class="n">video_path</span><span class="o">.</span><span class="n">suffix</span>
+<span class="n">scale_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">video_inference_superanimal</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">video_path</span><span class="p">],</span>
+    <span class="n">superanimal_name</span><span class="p">,</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
+    <span class="n">detector_name</span><span class="o">=</span><span class="n">detector_name</span><span class="p">,</span>
+    <span class="n">videotype</span><span class="o">=</span><span class="n">videotype</span><span class="p">,</span>
+    <span class="n">video_adapt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">scale_list</span><span class="o">=</span><span class="n">scale_list</span><span class="p">,</span>
+    <span class="n">pcutoff</span><span class="o">=</span><span class="n">pcutoff</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="let-s-view-the-video-in-colab">
+<h2>Let’s view the video in Colab:<a class="headerlink" href="#let-s-view-the-video-in-colab" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>otherwise, you can download and look at the video from the left side of your screen! It will end with _labeled.mp4</p></li>
+<li><p>If your data doesn’t work as well as you’d like, consider fine-tuning our model on your data, changing the pcutoff, changing the scale-range
+(pick values smaller and larger than your video image input size). See our repo for more details.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">base64</span><span class="w"> </span><span class="kn">import</span> <span class="n">b64encode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTML</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+
+<span class="c1"># Get the parent directory and stem (filename without extension)</span>
+<span class="n">directory</span> <span class="o">=</span> <span class="n">video_path</span><span class="o">.</span><span class="n">parent</span>
+<span class="n">basename</span> <span class="o">=</span> <span class="n">video_path</span><span class="o">.</span><span class="n">stem</span>
+
+<span class="c1"># Build the pattern</span>
+<span class="c1"># This uses &#39;*&#39; to allow for any characters between the fixed parts</span>
+<span class="n">pattern</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">basename</span><span class="si">}</span><span class="s2">*</span><span class="si">{</span><span class="n">superanimal_name</span><span class="si">}</span><span class="s2">*</span><span class="si">{</span><span class="n">detector_name</span><span class="si">}</span><span class="s2">*</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">*_labeled_after_adapt.mp4&quot;</span>
+
+<span class="c1"># Search for matching files</span>
+<span class="n">matches</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">directory</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">))</span>
+
+<span class="c1"># Choose the first match if it exists</span>
+<span class="n">labeled_video_path</span> <span class="o">=</span> <span class="n">matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">matches</span> <span class="k">else</span> <span class="kc">None</span>
+
+<span class="n">view_video</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">labeled_video_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+<span class="n">data_url</span> <span class="o">=</span> <span class="s2">&quot;data:video/mp4;base64,&quot;</span> <span class="o">+</span> <span class="n">b64encode</span><span class="p">(</span><span class="n">view_video</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+<span class="n">HTML</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">&lt;video width=600 controls&gt;</span>
+<span class="s2">      &lt;source src=&quot;</span><span class="si">%s</span><span class="s2">&quot; type=&quot;video/mp4&quot;&gt;</span>
+<span class="s2">&lt;/video&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="n">data_url</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./examples/COLAB"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../../docs/beginner-guides/video-analysis.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Video Analysis with DeepLabCut</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="COLAB_DEMO_mouse_openfield.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">DeepLabCut on Single Mouse Data Demo</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#let-s-get-going-install-deeplabcut-into-colab"><strong>Let’s get going: install DeepLabCut into COLAB:</strong></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#please-click-restart-runtime-from-the-output-above-before-proceeding">PLEASE, click “restart runtime” from the output above before proceeding!</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#please-select-a-video-you-want-to-run-superanimal-x-on">Please select a video you want to run SuperAnimal-X on:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-select-the-model-you-want-to-use-quadruped-or-topviewmouse">Next select the model you want to use, Quadruped or TopViewMouse</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#okay-let-s-go">Okay, let’s go! 🐭🦓🐻</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#let-s-view-the-video-in-colab">Let’s view the video in Colab:</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The DeepLabCut Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
