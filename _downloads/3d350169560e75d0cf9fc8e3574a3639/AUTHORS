@@ -1,0 +1,139 @@
+DeepLabCut (www.deeplabcut.org) was initially developed by
+Alexander & Mackenzie Mathis in collaboration with Matthias Bethge in 2017.
+It is actively developed by Alexander & Mackenzie Mathis (steering council and owners).
+
+DeepLabCut is an open-source tool and has benefited from suggestions and edits by many
+individuals: DeepLabCut/graphs/contributors
+
+############################################################################################################
+
+DeepLabCut 1.0 Toolbox
+A Mathis, alexander.mathis@bethgelab.org | https://github.com/DeepLabCut/DeepLabCut
+M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
+
+Specific external contributors:
+E Insafutdinov and co-authors of DeeperCut (see README) for feature detectors: https://github.com/eldar
+- Thus, code in this subdirectory at the time of April 2018, deeplabcut/pose_estimation_tensorflow
+was adapted from: https://github.com/eldar/pose-tensorflow.
+
+Products:
+DeepLabCut: markerless pose estimation of user-defined body parts with deep learning. Nature Neuroscience, 2018.
+https://doi.org/10.1038/s41593-018-0209-y
+A. Mathis, P. Mamidanna, K.M. Cury, T. Abe, V.N. Murthy, M.W. Mathis* & M. Bethge*
+
+Contributions:
+Conceptualization: A.M., M.W.M. and M.B.
+Software: A.M. and M.W.M.
+Formal analysis: A.M.
+Experiments: A.M. and V.N.M. (trail-tracking), M.W.M. (mouse reaching), K.M.C. (Drosophila).
+Image Labeling: P.M., K.M.C., T.A., M.W.M., A.M.
+Writing: A.M. and M.W.M. with input from all authors.
+These authors jointly directed this work: M. Mathis, M. Bethge
+
+############################################################################################################
+
+DeepLabCut 2.0 Toolbox
+A Mathis, alexander.mathis@bethgelab.org | https://github.com/DeepLabCut/DeepLabCut
+T Nath, nath@rowland.harvard.edu | https://github.com/meet10may
+M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
+
+Products:
+Using DeepLabCut for 3D markerless pose estimation across species and behaviors. Nature Protocols, 2019.
+https://www.nature.com/articles/s41596-019-0176-0
+T. Nath*, A. Mathis*, AC. Chen, A. Patel, M. Bethge, M. Mathis
+
+Contributions:
+Conceptualization: AM, TN, MWM.
+Software: AM, TN and MWM.
+Dataset (cheetah): AP.
+Image Labeling: ACC.
+Formal analysis: ACC, AM and AP analyzed the cheetah data.
+Writing: MWM, AM and TN with inputs from all authors.
+
+############################################################################################################
+
+DeepLabCut 2.1 major additions:
+A Mathis, alexander.mathis@bethgelab.org | https://github.com/DeepLabCut/DeepLabCut
+T Nath, nath@rowland.harvard.edu | https://github.com/meet10may
+M Yüksekgönül, mertyuksekgonul@gmail.com | https://github.com/mertyg
+M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
+
+Specific external contributors:
+Tensorpack augmentation: https://github.com/DeepLabCut/DeepLabCut/pull/409 by Katie Rupp
+
+Products:
+Pretraining boosts out-of-domain robustness for pose estimation. WACV, 2021.
+http://www.mackenziemathislab.org/horse10
+A. Mathis, T. Biasi, S. Schneider, M. Yüksekgönül, B. Rogers, M. Bethge, M. Mathis
+
+############################################################################################################
+
+DeepLabCut 2.1 - 2.2 additions:
+A Mathis, alexander.mathis@epfl.ch | https://github.com/AlexEMG
+J Lauer, jessy@deeplabcut.org | https://github.com/jeylau
+M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
+M Zhou, https://github.com/zhoumu53
+S Ye, https://github.com/yeshaokai
+S Schneider, https://github.com/stes
+T Biasi, https://github.com/tbiasi
+G Kane, https://github.com/gkane26
+M Yüksekgönül, https://github.com/mertyg
+T Nath, https://github.com/meet10may
+
+Preprint:
+Multi-animal pose estimation and tracking with DeepLabCut
+J Lauer,  M Zhou,  S Ye,  W Menegas,  S Schneider, T Nath,  MM Rahman, V Di Santo,
+D Soberanes, G Feng, VN Murthy, G Lauder, C Dulac,  M Mathis, A Mathis (2021).
+https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1
+
+Publication:
+Multi-animal pose estimation, identification and tracking with DeepLabCut
+Lauer, J., Zhou, M., Ye, S., Menegas, W., Schneider, S., Nath, T., Rahman, M.M.,
+Di Santo, V., Soberanes, D., Feng, G., Murthy, V.N., Lauder, G.V., Dulac, C.,
+Mathis, M.W., & Mathis, A. (2022).
+Nature Methods, 19, 496 - 504.
+
+Conceptualization was done by A.M. and M.W.M. Formal analysis and code were done by J.L., A.M. and M.W.M.
+New deep architectures were designed by M.Z., S.Y. and A.M. GUIs were done by J.L., M.W.M. and T.N.
+Benchmark was set by S.S., M.W.M., A.M. and J.L. Marmoset data were gathered by W.M. and G.F.
+Marmoset behavioral analysis was carried out by W.M. Parenting data were gathered by M.M.R., A.M. and C.D.
+Tri-mouse data were gathered by D.S., A.M. and V.N.M. Fish data were gathered by V.D.S. and G.L.
+The article was written by A.M., M.W.M. and J.L. with input from all authors.
+M.W.M. and A.M. co-supervised the project.
+
+############################################################################################################
+
+DeepLabCut 2.2 - 3.0 additions:
+A Mathis, alexander.mathis@epfl.ch | https://github.com/AlexEMG
+M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
+J Lauer, jessy@deeplabcut.org | https://github.com/jeylau
+N Poulsen, neils.poulsen@epfl.ch | https://github.com/n-poulsen
+S Schneider, stes@hey.com | https://github.com/stes
+S Ye, shaokai.ye@epfl.ch | https://github.com/yeshaokai
+
+Preprint:
+Ye, S., Filippova, A., Lauer, J., Schneider, S., Vidal, M., Qiu, T., Mathis, A., & Mathis, M.W. (2023).
+SuperAnimal pretrained pose estimation models for behavioral analysis. https://arxiv.org/abs/2203.07436
+
+
+############################################################################################################
+
+DeepLabCut 3.0 Toolbox
+M Mathis, mackenzie@post.harvard.edu | https://github.com/MMathisLab
+A Mathis, alexander.mathis@epfl.ch | https://github.com/AlexEMG
+N Poulsen, neils.poulsen@epfl.ch | https://github.com/n-poulsen
+S Ye, shaokai.ye@epfl.ch | https://github.com/yeshaokai
+A Filippova, anastasiia.filippova@epfl.ch | https://github.com/nastya236
+Q Macé | https://github.com/QuentinJGMace
+J Lauer, jessy@deeplabcut.org | https://github.com/jeylau
+L Stoffl, lucas.stoffl@epfl.ch | https://github.com/LucZot
+
+We also greatly thank the 2023 DeepLabCut AI Residents who contributed:
+Anna Teruel-Sanchis | https://github.com/anna-teruel
+Riza Rae Pineda | https://github.com/rizarae-p
+Konrad Danielewski | https://github.com/KonradDanielewski
+
+Products:
+PyTorch backend for DeepLabCut
+Expanded SuperAnimal capabilities
+New model architectures (WIP: stay tuned, but includes BUCTD)
