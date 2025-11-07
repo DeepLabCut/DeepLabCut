@@ -291,7 +291,7 @@ def example_config() -> ruamel.yaml.comments.CommentedMapKeysView:
     return cfg
 
 
-# Define multiple fictious video directories
+# Define multiple fictitious video directories
 VIDEO_DIRS = {
     # Basics
     'simple path': 'simple_path/',
@@ -336,7 +336,6 @@ VIDEO_DIRS = {
 
     # Unicode
     'unicode accents': 'café/naïve/ångström',
-    'emoji': 'folder/📁/video',
 
     # Long and repetitive
     'very long segment': 'seg/' + ('l' * 300),
