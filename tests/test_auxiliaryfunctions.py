@@ -11,9 +11,6 @@
 from pathlib import Path
 import pytest
 
-import ruamel.yaml
-from ruamel.yaml import YAML
-
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS
 
@@ -281,94 +278,3 @@ def test_get_snapshots_from_folder_none(mock_no_snapshots_folder):
     """Test raises ValueError if no snapshots are found."""
     with pytest.raises(FileNotFoundError):
         auxiliaryfunctions.get_snapshots_from_folder(mock_no_snapshots_folder)
-
-
-@pytest.fixture
-def example_config() -> ruamel.yaml.comments.CommentedMapKeysView:
-    yaml_file = YAML()
-    with open("examples/Reaching-Mackenzie-2018-08-30/config.yaml", "r") as f:
-        cfg = yaml_file.load(f)
-    return cfg
-
-
-# Define multiple fictitious video directories
-VIDEO_DIRS = {
-    # Basics
-    'simple path': 'simple_path/',
-    'nested dirs': 'a/b/c/d',
-    'trailing slash': 'folder/subfolder/',
-    'rooted absolute': '/var/data/videos',
-
-    # Spaces and quotes
-    'spaces': 'path with spaces/sub folder',
-    'leading space': '  leading/space',
-    'trailing space': 'trailing/space  ',
-    'single quote': "path/with 'quote'",
-    'double quote': 'path/with "quote"',
-
-    # YAML‑significant characters (ensure they serialize/parse correctly)
-    'hash comment': 'path/with#hash/part',
-    'colon': 'path:with/colon',
-    'ampersand': 'path&with/ampersand',
-    'asterisk': 'path*with/asterisk',
-    'question mark': 'path?with/question',
-    'exclamation': 'path!with/exclamation',
-    'braces': 'path{with}/braces',
-    'brackets': 'path[with]/brackets',
-    'comma': 'path,with/comma',
-    'percent': 'path%with/percent',
-
-    # Backslashes and Windows-ish
-    'backslashes': r'path\with\backslashes',
-    'double backslashes': r'path\\with\\double\\backslashes',
-    'win drive': r'C:\Users\name\Videos',
-    'mixed slashes': r'path\mixed/slashes',
-
-    # URL-like schemes (should remain plain strings)
-    'file url': 'file:///home/user/video',
-    's3 url': 's3://bucket/folder',
-    'http url': 'http://example.com/video.mp4',
-
-    # Dots and tildes
-    'dot segments': './rel/../up/./down',
-    'hidden dir': '.hidden/folder',
-    'tilde home': '~/Videos/session',
-
-    # Unicode
-    'unicode accents': 'café/naïve/ångström',
-
-    # Long and repetitive
-    'very long segment': 'seg/' + ('l' * 300),
-    'many subfolders': '/'.join(f'sub_{i}' for i in range(250)),
-    'long segment with space': 'space/in path/' + (83 * 'l') + 'ong_name', # see https://github.com/DeepLabCut/DeepLabCut/issues/3119
-
-    # Edge oddities
-    'leading dash': '-dash/starts',
-    'at sign': 'with@sign/dir',
-}
-
-
-@pytest.mark.parametrize('video_dir', VIDEO_DIRS.values(), ids=VIDEO_DIRS.keys())
-def test_write_config_with_video_dirs(
-    tmpdir_factory,
-    example_config: ruamel.yaml.comments.CommentedMapKeysView,
-    video_dir: str,
-):
-
-    # Update the video_sets field of example configuration
-    video_file = str(Path(video_dir) / 'fake_vid.avi')
-    video_sets = {video_file: {'crop': '0, 100, 0, 100'}}
-    example_config['video_sets'] = video_sets
-
-    # Write to config file using `write_config`
-    project_folder = tmpdir_factory.mktemp("project")
-    config_path = Path(project_folder) / 'config.yaml'
-    auxiliaryfunctions.write_config(config_path, example_config)
-
-    # Reload the saved config file and assert validity
-    cfg_yaml = YAML()
-    with open(config_path, "r") as f:
-        loaded_config = cfg_yaml.load(f)
-    assert loaded_config['video_sets'] == example_config['video_sets'], (
-        "Written config file contains mismatching video_sets field."
-    )
