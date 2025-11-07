@@ -256,6 +256,7 @@ def write_config(configname, cfg):
         if not "skeleton" in cfg.keys():
             cfg_file["skeleton"] = []
             cfg_file["skeleton_color"] = "black"
+        ruamelFile.width = 1_000_000 # fixes this issue: https://stackoverflow.com/questions/31197268/pyyaml-yaml-dump-produces-complex-key-for-string-key-122-chars/31199123#31199123
         ruamelFile.dump(cfg_file, cf)
 
 
