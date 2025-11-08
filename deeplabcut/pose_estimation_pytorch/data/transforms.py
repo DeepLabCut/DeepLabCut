@@ -22,7 +22,7 @@ from scipy.spatial.distance import pdist, squareform
 from scipy.stats import truncnorm
 
 
-## KEEPS THE ORIGINAL AUGMENTATION CODE AND ORDER OF DEEPLABCUT 
+
 def transforms_legacy (augmentations):
 
     transforms = []
@@ -153,7 +153,7 @@ def transforms_legacy (augmentations):
     return transforms
 
 
-# Supports the list method 
+
 def transform_new(augmentations: list[dict[str, Any]], transforms =[]) -> list[A.BasicTransform]:
 
     custom_augmentations =['affine','auto_padding','gaussian_noise', 'crop_sampling','motion_blur', 'normalize_images']
@@ -161,12 +161,9 @@ def transform_new(augmentations: list[dict[str, Any]], transforms =[]) -> list[A
     for aug in augmentations:
 
         method = aug.pop('augmentation')
-
-        # Retrieve the default values set by DeepLabCut
         if method.lower() in custom_augmentations:
                 add_aug = transforms_legacy({method.lower(): aug})
                 transforms.extend(add_aug)
-        # Retrieves augmentations that are supported by Albumentations
         elif hasattr(A, method):
             func = getattr(A,method)
             transforms.append(func(**aug))
@@ -175,21 +172,16 @@ def transform_new(augmentations: list[dict[str, Any]], transforms =[]) -> list[A
 
     return transforms
 
+
 def build_transforms(augmentations: dict) -> A.BaseCompose:
 
-    # Get the transform 
     transforms = transforms_legacy(augmentations)
 
-    # if there is only transform in the config file 
     if "transform" in augmentations and len(augmentations) == 1:
         transforms = transform_new(augmentations['transform'])
-        print(f"Augmentations added {t_new}")
-
-    # if transform is in augmentations and with old method
     elif "transform" in augmentations:
         t_new = transform_new(augmentations['transform'])
         transforms.extend(t_new)
-
 
     return A.Compose(
     transforms,
@@ -198,14 +190,6 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
     ),
     bbox_params=A.BboxParams(format="coco", label_fields=["bbox_labels"]),
     )
-
-    
-
-
-    
-   
-
-    
 
 
 
