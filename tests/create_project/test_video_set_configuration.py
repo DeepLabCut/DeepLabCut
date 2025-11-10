@@ -10,11 +10,9 @@
 #
 """Unit tests for deeplabcut.create_project.new module"""
 
-import os
-import shutil
 import warnings
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 import pytest
 
 import deeplabcut.create_project.new as new_module
@@ -135,9 +133,9 @@ def test_video_directory(
 @pytest.mark.parametrize('copy_videos', [True, False])  
 def test_mixed_video_files_and_directories(
     tmpdir,
-    mock_video_file,
-    video_directory,
-    mock_video_reader,
+    mock_video_file: Path,
+    video_directory: Path,
+    mock_video_reader: VideoReader,
     copy_videos: bool,
 ):
     """Test adding both video files and directories"""
@@ -181,9 +179,9 @@ def test_empty_video_directory(
 
 
 def test_valid_video_included_in_config(
-    tmpdir,
-    mock_video_file,
-    mock_video_reader,
+    tmpdir: Path,
+    mock_video_file: Path,
+    mock_video_reader: VideoReader,
 ):
     """Test that valid videos are included in the config file"""
     with patch("deeplabcut.create_project.new.VideoReader", return_value=mock_video_reader):
@@ -206,8 +204,8 @@ def test_valid_video_included_in_config(
 
 
 def test_invalid_video_removed_from_project(
-    tmpdir,
-    mock_video_file,
+    tmpdir: Path,
+    mock_video_file: Path,
 ):
     """Test that invalid videos are removed from the project"""
     # Mock VideoReader to raise IOError
@@ -228,9 +226,9 @@ def test_invalid_video_removed_from_project(
 
     
 def test_config_file_video_sets_format(
-    tmpdir,
-    mock_video_file,
-    mock_video_reader,
+    tmpdir: Path,
+    mock_video_file: Path,
+    mock_video_reader: VideoReader,
 ):
     """Test that video_sets in config has correct format"""
     with patch("deeplabcut.create_project.new.VideoReader", return_value=mock_video_reader):
