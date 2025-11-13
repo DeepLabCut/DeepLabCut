@@ -23,8 +23,7 @@ from scipy.stats import truncnorm
 
 
 
-def transforms_legacy (augmentations):
-
+def transforms_legacy(augmentations):
     transforms = []
     if resize_aug := augmentations.get("resize", False):
         transforms += build_resize_transforms(resize_aug)
@@ -122,9 +121,7 @@ def transforms_legacy (augmentations):
         transforms.append(ElasticTransform(sigma=5, p=0.5))
     if augmentations.get("grayscale", False):
         transforms.append(Grayscale(alpha=(0.5, 1.0)))
-        
-   
-
+    
     if noise := augmentations.get("gaussian_noise", False):
         # TODO inherit custom gaussian transform to support per_channel = 0.5
         if not isinstance(noise, (int, float)):
@@ -154,19 +151,23 @@ def transforms_legacy (augmentations):
 
 
 
-def transform_new(augmentations: list[dict[str, Any]], transforms =[]) -> list[A.BasicTransform]:
+def transform_new(augmentations: list[dict[str, Any]]) -> list[A.BasicTransform]:
+    custom_augmentations =['auto_padding', 'gaussian_noise', 'motion_blur', 'normalize_images']
 
-    custom_augmentations =['affine','auto_padding','gaussian_noise', 'crop_sampling','motion_blur', 'normalize_images']
-
+    transforms =[]
     for aug in augmentations:
-
-        method = aug.pop('augmentation')
+        method = aug.get('augmentation', "")
+        if method == "":
+            warnings.warn("No augmentation method specified. Skipping this transform.")
+            continue
+        
+        args = {key:value for key, value in aug.items() if key != 'augmentation'}
         if method.lower() in custom_augmentations:
-                add_aug = transforms_legacy({method.lower(): aug})
+                add_aug = transforms_legacy({method.lower(): args})
                 transforms.extend(add_aug)
         elif hasattr(A, method):
             func = getattr(A,method)
-            transforms.append(func(**aug))
+            transforms.append(func(**args))
         else:
             warnings.warn(f"Albumentations has no method named {method}. Skipping this transform.")
 
@@ -174,21 +175,15 @@ def transform_new(augmentations: list[dict[str, Any]], transforms =[]) -> list[A
 
 
 def build_transforms(augmentations: dict) -> A.BaseCompose:
-
     transforms = transforms_legacy(augmentations)
-
-    if "transform" in augmentations and len(augmentations) == 1:
-        transforms = transform_new(augmentations['transform'])
-    elif "transform" in augmentations:
-        t_new = transform_new(augmentations['transform'])
-        transforms.extend(t_new)
-
+    transforms = transforms + transform_new(augmentations.get("transform", []))
+    
     return A.Compose(
-    transforms,
-    keypoint_params=A.KeypointParams(
-        "xy", remove_invisible=False, label_fields=["class_labels"]
-    ),
-    bbox_params=A.BboxParams(format="coco", label_fields=["bbox_labels"]),
+        transforms,
+        keypoint_params=A.KeypointParams(
+            "xy", remove_invisible=False, label_fields=["class_labels"]
+        ),
+        bbox_params=A.BboxParams(format="coco", label_fields=["bbox_labels"]),
     )
 
 
