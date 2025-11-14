@@ -12,6 +12,8 @@ IMG_DIR="$ROOT_DIR/images"
 IMG="$IMG_DIR/dlc_cuda124.sif"
 YAML_SRC="${YAML_SRC:-$ROOT_DIR/DeepLabCut/conda-environments/DEEPLABCUT.yaml}"
 
+DLC_SRC="${DLC_SRC:-$ROOT_DIR/DeepLabCut}"
+
 mkdir -p "$IMG_DIR"
 [[ -s "$YAML_SRC" ]] || { echo "ERROR: YAML not found: $YAML_SRC" >&2; exit 2; }
 

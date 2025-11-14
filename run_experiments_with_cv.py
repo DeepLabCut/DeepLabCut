@@ -11,13 +11,15 @@ from deeplabcut.generate_training_dataset.trainingsetmanipulation import merge_a
 import shutil
 import datetime
 import multiprocessing as mp
-
+import sys
+import json
+from ruamel.yaml import YAML
 
 # Number of parallel workers for running fold+seed combinations
 # Set to 1 for sequential execution (useful for debugging)
 # Set to higher values (e.g., 4, 8) to run multiple experiments in parallel
 # Note: Each worker will use GPU resources, so adjust based on available GPU memory
-N_WORKERS = 2
+N_WORKERS = 1
 
 N_EPOCHS = 200
 MODEL = 'resnet_50'
@@ -30,7 +32,7 @@ TRAIN_BATCH_SIZE = 16
 # ---------------------------------------
 # Set the full path to the project's config.yaml file
 # IMPORTANT: Use an absolute path to avoid issues.
-config_path = '/home/alek/projects/cdl-test1/data/cdl-projects/test1-haag-2025-05-21/config_full.yaml'
+config_path = '/workspace/workdir/config.yaml'
 
 # Check if the config file exists
 if not os.path.exists(config_path):
@@ -518,21 +520,34 @@ if __name__ == "__main__":
     ]
 
     all_results = []
+    config_filename = sys.argv[1]
 
+    exp_cfg = None
+    with open(config_filename, "r") as f:        
+        exp_cfg = YAML().load(f)
+    
+    print (f"{config_path}")
+    with open(config_path, "r") as f:        
+        print(f.read())
+
+
+
+    """
     for experiment in experiments:
-        results: pd.DataFrame = run_experiment(
-            config_path, 
-            N_FOLDS, 
-            N_SEEDS, 
-            experiment['experiment_id'],
-            group_by_video=experiment['group_by_video'], 
-            train_overrides=experiment['train_overrides'], 
-            landmark_sets=landmark_sets
-        )
-
         result_timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         results.to_csv(f'results_{result_timestamp}_{uuid.uuid4()}.csv')
         all_results.append(results)
+    """
+    results: pd.DataFrame = run_experiment(
+            config_path, 
+            N_FOLDS, 
+            N_SEEDS, 
+            exp_cfg['experiment_id'],
+            group_by_video=exp_cfg['group_by_video'], 
+            train_overrides=exp_cfg['train_overrides'], 
+            landmark_sets=landmark_sets
+        )
 
+        
     all_results_df = pd.concat(all_results)
     all_results_df.to_csv(f'all_results_{timestamp}.csv')

@@ -1,3 +1,4 @@
+from pathlib import Path
 import yaml
 import os
 import shutil
@@ -9,20 +10,30 @@ N_SEEDS = 1
 SEED_OFFSET = 0
 CODE_BRANCH = 'main'
 
-sbatch_template = './run_experiment.sbatch'
+sbatch_template = Path('run_experiment.sbatch').resolve()
+print (sbatch_template)
+
+# This will reside within the host system.
 data_archive_template = '$HOME/scratch/dlc-experiments/data/partial_project.zip'
-config_path_template = '$HOME/scratch/dlc-experiments/experiment_configs/{config_name}'
 apptainer_path = '$HOME/scratch/dlc-experiments/images/dlc_cuda124.sif'
 
-experiments_log_dir = '~/scratch/dlc-experiments/logs'
+# This contains configuration for the job.
+config_path_template = '$HOME/scratch/dlc-experiments/experiment_configs/{config_name}'
+
+
+
+data_dir =  Path('~/scratch/dlc-experiments/data').expanduser()
+os.makedirs(data_dir, exist_ok=True)
+
+experiments_log_dir =  Path('~/scratch/dlc-experiments/logs').expanduser()
 os.makedirs(experiments_log_dir, exist_ok=True)
 
-experiment_configs_dir = '~/scratch/dlc-experiments/experiment_configs'
+experiment_configs_dir = Path('~/scratch/dlc-experiments/experiment_configs').expanduser()
 os.makedirs(experiment_configs_dir, exist_ok=True)
 
 base_config = {
             'train_overrides': {
-            'skeletal_loss_weight': 0.0,
+            'skeletal_loss_weight': 0.0,    
             'skeletal_loss_radius_multiplier': 1.0,
             'skeletal_radius_multiplier_start': 0.80,
             'skeletal_radius_multiplier_end': 0.80,
@@ -46,13 +57,14 @@ base_config = {
           'fold_idx': 0,
           'seed_offset': SEED_OFFSET,
           'job_guid': ''
-        },
+        }
 
 username = os.environ['USER']
 
 for seed_idx in range(N_SEEDS):
     for fold_idx in range(N_FOLDS):
-        job_name =f'{base_config["experiment_id"]}_seed{seed_idx}_fold{fold_idx}'
+        job_name = f'{base_config["experiment_id"]}_seed{seed_idx}_fold{fold_idx}'
+        print (job_name)
         config = copy.deepcopy(base_config)
         config['seed_idx'] = seed_idx
         config['fold_idx'] = fold_idx
@@ -62,10 +74,11 @@ for seed_idx in range(N_SEEDS):
         config_filename = f'{job_guid}.yaml'
         sbatch_filename = f'{job_guid}.sbatch'
 
-        with open(os.path.join(experiment_configs_dir, config_filename), 'w') as f:
+        with open(os.path.join(experiment_configs_dir, config_filename), 'w+') as f:
             yaml.dump(config, f)
 
         # populate sbatch template
+        print (sbatch_template)
         with open(sbatch_template, 'r') as f:
             sbatch = f.read()
             sbatch = sbatch.replace('{{JOB_NAME_PLACEHOLDER}}', job_name)
