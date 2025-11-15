@@ -24,6 +24,22 @@ from scipy.stats import truncnorm
 
 
 def transforms_legacy(augmentations):
+
+    """
+    Apply DeepLabCut original augmentation methods.
+
+    This function preserves DLC's default augmentation implementations
+    for backward compatibility.
+
+    Args:
+        augmentations: dictionary of augmentations from config file
+    
+    Returns:
+        
+        The list of augmentation transforms
+    
+    """
+
     transforms = []
     if resize_aug := augmentations.get("resize", False):
         transforms += build_resize_transforms(resize_aug)
@@ -152,6 +168,23 @@ def transforms_legacy(augmentations):
 
 
 def transform_new(augmentations: list[dict[str, Any]]) -> list[A.BasicTransform]:
+
+    """
+    Creates augmentation using Albumentation library with hybrid support.
+
+    Args:
+        augmentations: the augmentations from "transform" in list format
+    
+    Raises:
+        Warnings:
+            Augmentation method must exist in augmentations.
+            Augmentation must exist in the Albumentation library.
+
+    Returns:
+        The list of augmentation transforms
+    
+    """
+
     custom_augmentations =['auto_padding', 'gaussian_noise', 'motion_blur', 'normalize_images']
 
     transforms =[]
