@@ -186,17 +186,21 @@ def build_top_down_postprocessor(
     )
 
 
-def build_detector_postprocessor(max_individuals: int) -> Postprocessor:
+def build_detector_postprocessor(
+    max_individuals: int, 
+    min_bbox_score: float | None = None,
+) -> Postprocessor:
     """Creates a postprocessor for top-down pose estimation
 
     Args:
         max_individuals: the maximum number of detections to keep in a single image
+        min_bbox_score: the threshold for filtering bounding boxes. Only bboxes
+            with a value higher than this threshold are kept, the rest is removed.
 
     Returns:
         A default top-down Postprocessor
     """
-    return ComposePostprocessor(
-        components=[
+    components = [
             ConcatenateOutputs(
                 keys_to_concatenate={
                     "bboxes": ("detection", "bboxes"),
@@ -213,10 +217,11 @@ def build_detector_postprocessor(max_individuals: int) -> Postprocessor:
             RescaleAndOffset(
                 keys_to_rescale=["bboxes"],
                 mode=RescaleAndOffset.Mode.BBOX_XYWH,
-            ),
-            RemoveLowConfidenceBoxes(bbox_score_thresh=0.25),
-        ]
-    )
+            )
+    ]
+    if min_bbox_score is not None: 
+        components.append(RemoveLowConfidenceBoxes(min_bbox_score))
+    return ComposePostprocessor(components=components)
 
 
 class ComposePostprocessor(Postprocessor):
