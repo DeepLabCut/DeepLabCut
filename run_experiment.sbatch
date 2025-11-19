@@ -30,6 +30,8 @@ mkdir -p $WORKDIR/processed
 ## Extract project files from archive and shift labelled data and config.yaml upwards
 unzip -q $DATA_ARCHIVE -d $WORKDIR
 mv $WORKDIR/data_archive/labeled-data $WORKDIR
+mv $WORKDIR/data_archive/dlc-models-pytorch $WORKDIR
+mv $WORKDIR/data_archive/training-datasets $WORKDIR
 mv $WORKDIR/data_archive/config.yaml $WORKDIR
 ## Clone DLC
 #git clone https://github.com/bit-wrangler/DeepLabCut.git $CODEDIR

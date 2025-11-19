@@ -128,6 +128,10 @@ def run_single_fold(args):
         # c. Train the network for this fold
         print(f"  Training network for shuffle {shuffle_num}...")
         # Adjust training parameters (e.g., maxiters) as needed.
+
+
+
+
         deeplabcut.train_network(
             config_path,
             shuffle=shuffle_num,
@@ -202,7 +206,7 @@ def run_single_fold(args):
 
 
 
-def run_experiment(config_path, n_folds, n_seeds, experiment_id='experiment_1', group_by_video=False, train_overrides={}, landmark_sets={'all': 'all'}):
+def run_experiment(config_path, exp_cfg, landmark_sets={'all': 'all'}):
     """Run cross-validation experiment with parallel processing of folds and seeds."""
     timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     cfg = deeplabcut.auxiliaryfunctions.read_config(config_path)
@@ -212,12 +216,23 @@ def run_experiment(config_path, n_folds, n_seeds, experiment_id='experiment_1', 
                 cfg,
                 Path(os.path.join(project_path, trainingsetfolder)),
             )
+
+    n_folds = exp_cfg["n_folds"]
+    fold_idx = exp_cfg["fold_idx"]
+    n_seeds = exp_cfg["n_seeds"]
+    seed_idx = exp_cfg["seed_idx"]
+    seed_offset = exp_cfg["seed_offset"]
+    experiment_id = exp_cfg["experiment_id"]
+    group_by_video = exp_cfg["group_by_video"]
+    train_overrides = exp_cfg["train_overrides"]
+
     groups = np.array(list(map(lambda x: x[1], Data.axes[0])))
     num_frames = len(Data)
     print(f"Total number of labeled frames: {num_frames}")
 
     # Prepare all fold+seed combinations
     all_tasks = []
+    """
     for i in range(n_seeds):
         print(f"\n\n{'='*20} Preparing SEED {i+1}/{n_seeds} {'='*20}")
 
@@ -252,6 +267,40 @@ def run_experiment(config_path, n_folds, n_seeds, experiment_id='experiment_1', 
                 timestamp
             )
             all_tasks.append(task_args)
+    """
+    if group_by_video:
+        # Note: GroupKFold doesn't support random_state directly, so we shuffle groups manually
+        unique_groups = np.unique(groups)
+        rng = np.random.RandomState(42 + seed_idx)
+        shuffled_group_order = rng.permutation(unique_groups)
+        # Create a mapping from old group to new group based on shuffled order
+        group_mapping = {old_g: new_g for new_g, old_g in enumerate(shuffled_group_order)}
+        shuffled_groups = np.array([group_mapping[g] for g in groups])
+        cv = GroupKFold(n_splits=n_folds)
+        folds = list(cv.split(np.arange(num_frames), groups=shuffled_groups))
+    else:
+        cv = KFold(n_splits=n_folds, random_state=42+seed_idx, shuffle=True)
+        folds = list(cv.split(np.arange(num_frames)))
+
+    
+    
+    train_indices, test_indices = folds[fold_idx]
+    task_args = (
+        seed_idx,
+        fold_idx,
+        train_indices,
+        test_indices,
+        config_path,  # config_path_template
+        experiment_id,
+        group_by_video,
+        train_overrides,
+        landmark_sets,
+        n_folds,
+        n_seeds,
+        num_frames,
+        timestamp
+    )
+    all_tasks.append(task_args)
 
     print(f"\n\n{'='*20} Running {len(all_tasks)} tasks with {N_WORKERS} workers {'='*20}")
 
@@ -524,13 +573,7 @@ if __name__ == "__main__":
 
     exp_cfg = None
     with open(config_filename, "r") as f:        
-        exp_cfg = YAML().load(f)
-    
-    print (f"{config_path}")
-    with open(config_path, "r") as f:        
-        print(f.read())
-
-
+        exp_cfg = deeplabcut.auxiliaryfunctions.read_config(config_filename)
 
     """
     for experiment in experiments:
@@ -540,11 +583,7 @@ if __name__ == "__main__":
     """
     results: pd.DataFrame = run_experiment(
             config_path, 
-            N_FOLDS, 
-            N_SEEDS, 
-            exp_cfg['experiment_id'],
-            group_by_video=exp_cfg['group_by_video'], 
-            train_overrides=exp_cfg['train_overrides'], 
+            exp_cfg,
             landmark_sets=landmark_sets
         )
 
