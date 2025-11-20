@@ -573,7 +573,7 @@ if __name__ == "__main__":
 
     exp_cfg = None
     with open(config_filename, "r") as f:        
-        exp_cfg = deeplabcut.auxiliaryfunctions.read_config(config_filename)
+        exp_cfg = YAML(typ="safe",pure=True).load(f)
 
     """
     for experiment in experiments:

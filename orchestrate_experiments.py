@@ -69,7 +69,7 @@ for seed_idx in range(N_SEEDS):
         config['seed_idx'] = seed_idx
         config['fold_idx'] = fold_idx
         job_guid = uuid.uuid4()
-        config['job_guid'] = job_guid
+        config['job_guid'] = str(job_guid)
 
         config_filename = f'{job_guid}.yaml'
         sbatch_filename = f'{job_guid}.sbatch'
