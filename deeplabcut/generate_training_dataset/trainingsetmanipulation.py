@@ -572,6 +572,11 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
     AnnotationData = AnnotationData.reindex(
         bodyparts, axis=1, level=AnnotationData.columns.names.index("bodyparts")
     )
+    if AnnotationData.empty:
+        logging.warning(
+            "The annotated dataframe is empty after reindexing using config. "
+            "Hint: are bodyparts correctly listed in the configuration?"
+        )
     filename = os.path.join(trainingsetfolder_full, f'CollectedData_{cfg["scorer"]}')
     AnnotationData.to_hdf(filename + ".h5", key="df_with_missing", mode="w")
     AnnotationData.to_csv(filename + ".csv")  # human readable.
