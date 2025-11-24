@@ -451,6 +451,7 @@ def create_labeled_video(
     confidence_to_alpha: Union[bool, Callable[[float], float]] = False,
     plot_bboxes: bool = True,
     bboxes_pcutoff: float | None = None,
+    max_workers: Optional[int] = None,
     **kwargs,
 ):
     """Labels the bodyparts in a video.
@@ -596,6 +597,11 @@ def create_labeled_video(
 
     bboxes_pcutoff, float, optional, default=None:
         If plotting bounding boxes, this overrides the bboxes_pcutoff set in the model configuration.
+
+    max_workers (int | None):
+        Maximum number of processes to use for multiprocessing. Set this parameter to limit the total RAM-usage of
+        simultaneous processes. Default: no maximum (i.e. number of spawned processes is based on the number of 
+        cores and the number of input videos).  
 
     kwargs: additional arguments.
         For torch-based shuffles, can be used to specify:
@@ -806,7 +812,8 @@ def create_labeled_video(
     )
 
     if get_start_method() == "fork":
-        with Pool(min(os.cpu_count(), len(Videos))) as pool:
+        n_workers = (max_workers or min(os.cpu_count(), len(Videos)))
+        with Pool(n_workers) as pool:
             results = pool.map(func, Videos)
     else:
         results = []
