@@ -981,13 +981,9 @@ def create_training_dataset(
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 
     if superanimal_name != "":
-        # FIXME(niels): this is deprecated
-        supermodels = parse_available_supermodels()
-        posecfg_template = os.path.join(
-            dlc_root_path,
-            "pose_estimation_tensorflow",
-            "superanimal_configs",
-            supermodels[superanimal_name],
+        raise ValueError(
+            "Invalid argument superanimal_name. This functionality has been "
+            "removed. Please use modelzoo.build_weight_init() instead."
         )
 
     if posecfg_template:
