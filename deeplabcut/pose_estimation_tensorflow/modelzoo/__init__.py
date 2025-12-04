@@ -8,4 +8,4 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from api.spatiotemporal_adapt import SpatiotemporalAdaptation
+from .api import SpatiotemporalAdaptation
