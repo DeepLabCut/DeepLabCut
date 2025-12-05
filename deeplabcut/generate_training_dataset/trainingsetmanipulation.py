@@ -1263,6 +1263,11 @@ def create_training_dataset(
                     )
                 )
                 if engine == Engine.TF:
+                    if weight_init is not None:
+                        raise ValueError(
+                            "Weight initialization is not supported for TensorFlow engine. "
+                            "Pretrained weights are automatically downloaded."
+                        )
                     items2change = {
                         "dataset": datafilename,
                         "engine": engine.aliases[0],
