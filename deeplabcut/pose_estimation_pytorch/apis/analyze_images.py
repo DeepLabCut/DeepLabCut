@@ -352,7 +352,7 @@ def analyze_images(
     )
 
     if len(predictions) == 0:
-        print(f"Found no images in {images}")
+        print(f"Images found in {images}, but no detections were made.")
         return {}
 
     if output_dir is None:
