@@ -174,8 +174,9 @@ def CreateVideo(
                 for i in range(n_bboxes):
                     bbox = bboxes[i]
                     x, y = bbox[0], bbox[1]
-                    x += x1
-                    y += y1
+                    if cropping and not displaycropped:
+                        x += x1
+                        y += y1
                     w, h = bbox[2], bbox[3]
                     if bbox_scores is not None and bbox_scores[i] < bboxes_pcutoff:
                         continue
