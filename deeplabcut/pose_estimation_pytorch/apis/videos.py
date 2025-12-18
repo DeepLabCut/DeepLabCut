@@ -444,17 +444,21 @@ def analyze_videos(
         detector_snapshot_index,
     )
 
-    if cropping is None and loader.project_cfg.get("cropping", False):
+    # Read the cropping parameters in the configuration file (only used when cropping=='from_config')
+    cropping_config = (
+        [loader.project_cfg[k] for k in ["x1", "x2", "y1", "y2"]]
+        if loader.project_cfg.get("cropping", False) else None
+    )
+
+    if cropping == "from_config":
+        cropping = cropping_config
+        logging.info(f"Using cropping parameters from config.yaml: cropping={cropping_config}")
+    elif cropping is None and cropping_config:
         logging.warning(
             "Found cropping configured in config.yaml, but analyze_videos received cropping=None. "
             "To enable cropping, run analyze_videos with cropping=[x1, x2, y1, y2] or "
             "cropping='from_config'. Continuing analysis without cropping..."
         )
-    elif cropping == "from_config":
-        cropping = [
-            loader.project_cfg[k] for k in ["x1", "x2", "y1", "y2"]
-        ]
-        logging.info(f"Using cropping parameters from config.yaml: cropping={cropping}")
 
     # Get general project parameters
     multi_animal = loader.project_cfg["multianimalproject"]
