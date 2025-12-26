@@ -277,3 +277,60 @@ def test_get_snapshots_from_folder_none(mock_no_snapshots_folder):
     """Test raises ValueError if no snapshots are found."""
     with pytest.raises(FileNotFoundError):
         auxiliaryfunctions.get_snapshots_from_folder(mock_no_snapshots_folder)
+
+
+def test_convert_multiindex_to_hdf_compatible(tmpdir_factory):
+    """Test converting MultiIndex with extension dtypes to HDF5-compatible format."""
+    import numpy as np
+    import pandas as pd
+    
+    # Create a DataFrame with MultiIndex columns using string dtype
+    # This simulates what happens when pandas creates MultiIndex with extension dtypes
+    scorer = "test_scorer"
+    bodyparts = ["nose", "ear"]
+    coords = ["x", "y"]
+    
+    # Create MultiIndex columns
+    col_tuples = []
+    for bp in bodyparts:
+        for coord in coords:
+            col_tuples.append((scorer, bp, coord))
+    
+    columns = pd.MultiIndex.from_tuples(col_tuples, names=["scorer", "bodyparts", "coords"])
+    
+    # Create sample data
+    data = np.random.rand(5, len(col_tuples))
+    df = pd.DataFrame(data, columns=columns)
+    
+    # Convert the MultiIndex to have extension dtypes (string dtype)
+    # This simulates what pandas 2.0+ does by default
+    if hasattr(pd, 'StringDtype'):
+        new_levels = []
+        for level in df.columns.levels:
+            if level.dtype == object:
+                # Convert to string dtype to simulate the issue
+                try:
+                    new_levels.append(level.astype(pd.StringDtype()))
+                except:
+                    new_levels.append(level)
+            else:
+                new_levels.append(level)
+        df.columns = df.columns.set_levels(new_levels)
+    
+    # Apply the conversion function
+    df_converted = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(df)
+    
+    # Check that all levels have object dtype (not extension dtypes)
+    for level in df_converted.columns.levels:
+        assert level.dtype == object or not hasattr(level.dtype, 'name') or level.dtype.name != 'string'
+    
+    # Test that the DataFrame can be saved to HDF5
+    temp_dir = tmpdir_factory.mktemp("hdf_test")
+    h5_file = temp_dir / "test.h5"
+    
+    # This should not raise an error
+    df_converted.to_hdf(str(h5_file), key="df_with_missing", mode="w")
+    
+    # Read it back and verify the data is the same
+    df_read = pd.read_hdf(str(h5_file), key="df_with_missing")
+    pd.testing.assert_frame_equal(df_converted, df_read)
