@@ -462,6 +462,7 @@ def evaluate_multianimal_full(
                     write_poses_path = os.path.join(
                         evaluationfolder, f"predicted_poses_{training_iterations}.h5"
                     )
+                    df_predicted_poses = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(df_predicted_poses)
                     df_predicted_poses.to_hdf(write_poses_path, key="df_with_missing")
 
                     # Compute all distance statistics

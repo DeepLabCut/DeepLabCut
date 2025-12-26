@@ -388,6 +388,7 @@ def analyze_images(
     output_filepath = output_dir / f"image_predictions_{scorer}.h5"
     print(f"Saving predictions to {output_filepath}")
 
+    df_predictions = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(df_predictions)
     df_predictions.to_hdf(output_filepath, key="predictions")
     if save_as_csv:
         print(f"Saving CSV as {output_filepath}")

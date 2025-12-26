@@ -334,6 +334,7 @@ def _generic2madlc(
                     df.loc[file_name][
                         scorer, f"individual{individual_id}", kpt_name, "y"
                     ] = -1
+        df = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(df)
         df.to_hdf(
             os.path.join(
                 proj_root, "labeled-data", dataset_name, f"CollectedData_{scorer}.h5"
@@ -572,6 +573,7 @@ def _generic2sdlc(
                     df.loc[file_name][scorer, kpt_name, "y"] = -1
 
         df = df.dropna(how="all")
+        df = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(df)
         df.to_hdf(
             os.path.join(
                 proj_root, "labeled-data", dataset_name, f"CollectedData_{scorer}.h5"

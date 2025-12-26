@@ -436,6 +436,7 @@ def video_inference(
                             temp[n, 2] = c
                     data[i] = temp.flatten()
             df = pd.DataFrame(data, columns=columnindex, index=imagenames)
+            df = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(df)
             df.to_hdf(dataname, key="df_with_missing")
 
     return init_weights, datafiles
