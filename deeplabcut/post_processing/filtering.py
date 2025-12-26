@@ -302,6 +302,7 @@ def filterpredictions(
         video_to_filtered_df[video] = data
 
         outdataname = filepath.replace(".h5", "_filtered.h5")
+        data = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(data)
         data.to_hdf(outdataname, key="df_with_missing", format="table", mode="w")
         if save_as_csv:
             print("Saving filtered csv poses!")

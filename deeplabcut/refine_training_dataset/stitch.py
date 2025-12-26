@@ -23,6 +23,7 @@ import warnings
 from collections import defaultdict
 
 import deeplabcut
+from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter
 from functools import partial
 from deeplabcut.core.trackingutils import (
@@ -938,6 +939,7 @@ class TrackletStitcher:
             if suffix:
                 suffix = "_" + suffix
             output_name = self.filename.replace(".pickle", f"{suffix}.h5")
+        df = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(df)
         df.to_hdf(output_name, "tracks", format="table", mode="w")
         if save_as_csv:
             df.to_csv(output_name.replace(".h5", ".csv"))

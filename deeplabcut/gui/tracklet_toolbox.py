@@ -17,7 +17,10 @@ from threading import Event
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.refine_training_dataset.tracklets import TrackletManager
 from deeplabcut.utils.auxfun_videos import VideoReader
-from deeplabcut.utils.auxiliaryfunctions import attempt_to_make_folder
+from deeplabcut.utils.auxiliaryfunctions import (
+    attempt_to_make_folder,
+    convert_multiindex_to_hdf_compatible,
+)
 from matplotlib.path import Path
 from matplotlib.widgets import Slider, LassoSelector, Button, CheckButtons, TextBox
 from PySide6.QtWidgets import QMessageBox
@@ -960,9 +963,11 @@ class TrackletVisualizer:
             df_old = pd.read_hdf(machinefile)
             df_joint = pd.concat([df_old, df])
             df_joint = df_joint[~df_joint.index.duplicated(keep="first")]
+            df_joint = convert_multiindex_to_hdf_compatible(df_joint)
             df_joint.to_hdf(machinefile, key="df_with_missing", mode="w")
             df_joint.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
         else:
+            df = convert_multiindex_to_hdf_compatible(df)
             df.to_hdf(machinefile, key="df_with_missing", mode="w")
             df.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
 
@@ -981,10 +986,12 @@ class TrackletVisualizer:
             # Now drop redundant ones keeping the first one [this will make sure that the refined machine file gets preference]
             df_joint = df_joint[~df_joint.index.duplicated(keep="first")]
             df_joint.sort_index(inplace=True)
+            df_joint = convert_multiindex_to_hdf_compatible(df_joint)
             df_joint.to_hdf(output_path, key="df_with_missing", mode="w")
             df_joint.to_csv(output_path.replace("h5", "csv"))
         else:
             df.sort_index(inplace=True)
+            df = convert_multiindex_to_hdf_compatible(df)
             df.to_hdf(output_path, key="df_with_missing", mode="w")
             df.to_csv(output_path.replace("h5", "csv"))
 

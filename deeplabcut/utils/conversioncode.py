@@ -86,6 +86,7 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
                 data = pd.read_csv(fn, index_col=index_col, header=header)
                 data.columns = data.columns.set_levels([scorer], level="scorer")
                 guarantee_multiindex_rows(data)
+                data = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(data)
                 data.to_hdf(fn.replace(".csv", ".h5"), key="df_with_missing", mode="w")
                 data.to_csv(fn)
         except FileNotFoundError:
