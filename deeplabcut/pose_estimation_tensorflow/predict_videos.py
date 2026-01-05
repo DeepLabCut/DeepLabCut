@@ -510,7 +510,7 @@ def analyze_videos(
                 f"missing from the project configuration: {missing_keys}"
             ) from e
         print(f"Using cropping parameters from config.yaml: cropping={cropping}")
-    
+
     modelfolder = os.path.join(
         cfg["project_path"],
         str(

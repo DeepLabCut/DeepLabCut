@@ -1078,7 +1078,7 @@ def create_video(
         fps=fps,
     )
 
-    # If not specified whether to crop or not, 
+    # If not specified whether to crop or not,
     # infer from the bounding box size if cropping is needed.
     if cropping is None:
         cropping = bbox != (0, clip.w, 0, clip.h)
