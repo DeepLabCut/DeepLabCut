@@ -494,7 +494,21 @@ def analyze_videos(
         print("Overwriting cropping parameters:", cropping)
         print("These are used for all videos, but won't be save to the cfg file.")
     elif cropping == 'from_config':
-        cropping = [cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]]
+        if not cfg.get("cropping", False):
+            raise ValueError(
+                "Cropping was set to 'from_config', but 'cropping' is not enabled in the "
+                "project configuration. Please either set 'cropping: true' and define "
+                "x1, x2, y1, y2 in the config.yaml, or pass explicit cropping coordinates "
+                "to the 'cropping' argument."
+            )
+        try:
+            cropping = [cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]]
+        except KeyError as e:
+            missing_keys = [k for k in ("x1", "x2", "y1", "y2") if k not in cfg]
+            raise KeyError(
+                "Cropping was set to 'from_config', but the following cropping keys are "
+                f"missing from the project configuration: {missing_keys}"
+            ) from e
         print(f"Using cropping parameters from config.yaml: cropping={cropping}")
     
     modelfolder = os.path.join(
