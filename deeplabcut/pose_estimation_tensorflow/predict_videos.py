@@ -495,7 +495,7 @@ def analyze_videos(
         print("These are used for all videos, but won't be save to the cfg file.")
     elif cropping == 'from_config':
         cropping = [cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]]
-        print("Using cropping parameters from config.yaml: cropping={cropping}")
+        print(f"Using cropping parameters from config.yaml: cropping={cropping}")
     
     modelfolder = os.path.join(
         cfg["project_path"],
