@@ -64,6 +64,10 @@ def PlottingResults(
     if individuals2plot:
         Dataframe = Dataframe.loc(axis=1)[:, individuals2plot]
     animal_bpts = Dataframe.columns.get_level_values("bodyparts")
+    
+    # Close previous figures before plotting
+    plt.close("all")
+
     # Pose X vs pose Y
     fig1 = plt.figure(figsize=(8, 6))
     ax1 = fig1.add_subplot(111)
@@ -161,9 +165,7 @@ def PlottingResults(
         os.path.join(tmpfolder, "hist" + suffix), bbox_inches="tight", dpi=resolution
     )
 
-    if not showfigures:
-        plt.close("all")
-    else:
+    if showfigures:
         plt.show()
 
 
