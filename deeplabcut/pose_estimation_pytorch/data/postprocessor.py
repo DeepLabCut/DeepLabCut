@@ -14,6 +14,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any
+import logging
 
 import numpy as np
 
@@ -187,7 +188,7 @@ def build_top_down_postprocessor(
 
 
 def build_detector_postprocessor(
-    max_individuals: int, 
+    max_individuals: int,
     min_bbox_score: float | None = None,
 ) -> Postprocessor:
     """Creates a postprocessor for top-down pose estimation
@@ -219,7 +220,7 @@ def build_detector_postprocessor(
                 mode=RescaleAndOffset.Mode.BBOX_XYWH,
             )
     ]
-    if min_bbox_score is not None: 
+    if min_bbox_score is not None:
         components.append(RemoveLowConfidenceBoxes(min_bbox_score))
     return ComposePostprocessor(components=components)
 
@@ -448,7 +449,8 @@ class RemoveLowConfidenceBoxes(Postprocessor):
     """
 
     def __init__(self, bbox_score_thresh: float):
-        print("utilizing low confidence bbox filtering")
+        super().__init__()
+        logging.info("utilizing low confidence bbox filtering")
         self.bbox_score_thresh = bbox_score_thresh
 
     def __call__(
@@ -457,8 +459,8 @@ class RemoveLowConfidenceBoxes(Postprocessor):
         above_threshold = predictions["bbox_scores"] > self.bbox_score_thresh
         keepers = np.where(above_threshold)
         if any(~above_threshold):
-            predictions['bboxes'] = predictions["bboxes"][keepers]
-            predictions['bbox_scores'] = predictions["bbox_scores"][keepers]
+            predictions["bboxes"] = predictions["bboxes"][keepers]
+            predictions["bbox_scores"] = predictions["bbox_scores"][keepers]
         return predictions, context
 
 
