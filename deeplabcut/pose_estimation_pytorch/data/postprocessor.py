@@ -456,7 +456,7 @@ class RemoveLowConfidenceBoxes(Postprocessor):
     def __call__(
         self, predictions: dict[str, np.ndarray], context: Context
     ) -> tuple[dict[str, np.ndarray], Context]:
-        above_threshold = predictions["bbox_scores"] > self.bbox_score_thresh
+        above_threshold = predictions["bbox_scores"] >= self.bbox_score_thresh
         keepers = np.where(above_threshold)
         if any(~above_threshold):
             predictions["bboxes"] = predictions["bboxes"][keepers]
