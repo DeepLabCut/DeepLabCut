@@ -141,6 +141,7 @@ def _video_inference_superanimal(
     if isinstance(video_paths, str):
         video_paths = [video_paths]
 
+    # TODO: actually we can remove dest_folder for output_path
     dest_folder = Path(video_paths[0]).parent if dest_folder is None else Path(dest_folder)
     dest_folder.mkdir(parents=True, exist_ok=True)
                     
@@ -155,8 +156,7 @@ def _video_inference_superanimal(
         )
 
         output_prefix = f"{Path(video_path).stem}_{dlc_scorer}"
-        output_path = Path(dest_folder)
-        output_h5 = Path(output_path) / f"{output_prefix}.h5"
+        output_h5 = dest_folder / f"{output_prefix}.h5"
 
         output_json = output_h5.with_suffix(".json")
         if len(output_suffix) > 0:
@@ -186,7 +186,7 @@ def _video_inference_superanimal(
             dlc_scorer=dlc_scorer,
             multi_animal=True,
             model_cfg=model_cfg,
-            output_path=output_path,
+            output_path=dest_folder,
             output_prefix=output_prefix,
         )
 
@@ -194,7 +194,7 @@ def _video_inference_superanimal(
         with open(output_json, "w") as f:
             json.dump(predictions, f, cls=NumpyEncoder)
 
-        output_video = output_path / f"{output_prefix}_labeled.mp4"
+        output_video = dest_folder / f"{output_prefix}_labeled.mp4"
         if len(output_suffix) > 0:
             output_video = output_video.with_stem(output_video.stem + output_suffix)
 
@@ -214,6 +214,6 @@ def _video_inference_superanimal(
                 bboxes_list=bboxes_list,
                 bboxes_pcutoff=bboxes_pcutoff,
             )
-            print(f"Video with predictions was saved as {output_path}")
+            print(f"Video with predictions was saved as {dest_folder}")
 
     return results
