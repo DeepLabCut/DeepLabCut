@@ -351,8 +351,8 @@ def analyze_images(
         cond_provider=cond_provider,
     )
 
-    if len(predictions) == 0:
-        print(f"Images found in {images}, but no detections were made.")
+    if not predictions:
+        logging.info(f"No predictions made for images {images}.")
         return {}
 
     if output_dir is None:
@@ -506,6 +506,12 @@ def analyze_image_folder(
         image_suffixes = (frame_type,)
 
     image_paths = parse_images_and_image_folders(images, image_suffixes)
+    if not image_paths:
+        logging.info(
+            f"No images found searching {images}, for extensions {image_suffixes}. "
+            "Skipping analysis."
+        )
+        return {}
     pose_inputs = image_paths
 
     detector_runner = None
