@@ -878,9 +878,9 @@ def proc_video(
     print("Starting to process video: {}".format(video))
     vname = Path(video).stem
     if init_weights is not None:
-        init_weights = Path(init_weights).stem
-        DLCscorer = "_DLC" + init_weights
-        DLCscorerlegacy = "_DLC" + init_weights
+        init_weights_name = Path(init_weights).stem
+        DLCscorer = "_DLC" + init_weights_name
+        DLCscorerlegacy = "_DLC" + init_weights_name
         if filtered:
             videooutname1 = destfolder / f"{vname}{DLCscorer}_filtered_labeled.mp4"
             videooutname2 = destfolder / f"{vname}{DLCscorerlegacy}_filtered_labeled.mp4"
@@ -895,6 +895,7 @@ def proc_video(
 
     try:
         # TODO: check whether Path disrupts these auxiliary calls
+        # This doesn't seem to break, cause .stem returns strings so works fine
         df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
             destfolder, vname, DLCscorer, filtered, track_method
         )
@@ -906,9 +907,9 @@ def proc_video(
         else:
             s = ""
 
-        # Note: care with filepath.replace in case filepath is a Path object
-        filepath = Path(filepath) # temp until refactor auxiliaryfunctions.load_analyzed_data functions
-        videooutname = filepath.stem / f"{s}_p{int(100 * pcutoff)}_labeled.mp4"
+        # temp until refactor auxiliaryfunctions.load_analyzed_data functions
+        filepath = Path(filepath) 
+        videooutname = filepath.with_name(f"{filepath.stem}{s}_p{int(100 * pcutoff)}_labeled.mp4")
 
         if videooutname.is_file() and not overwrite:
             print("Labeled video already created. Skipping...")
