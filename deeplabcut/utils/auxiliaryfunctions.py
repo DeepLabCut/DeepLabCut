@@ -965,12 +965,16 @@ def load_video_full_data(folder, videoname, scorer):
 
 def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method=""):
     """Find potential data files from the hints given to the function."""
+    
+    # TODO: if scorer is Path, replace mesh up with filesystem
     scorer_legacy = scorer.replace("DLC", "DeepCut")
     suffix = "_filtered" if filtered else ""
     tracker = TRACK_METHODS.get(track_method, "")
 
     candidates = []
     for file in grab_files_in_folder(folder, "h5"):
+        # TODO: same here, it is actually replacing the name of the files (?)
+        # stem = Path(file).stem.removesuffix("_filtered")
         stem = Path(file).stem.replace("_filtered", "")
         starts_by_scorer = file.startswith(videoname + scorer) or file.startswith(
             videoname + scorer_legacy

@@ -9,9 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import json
-import os
 from pathlib import Path
-from typing import Optional, Union
 
 import numpy as np
 
@@ -50,7 +48,7 @@ def construct_bodypart_names(max_individuals, bodyparts):
 
 
 def _video_inference_superanimal(
-    video_paths: Union[str, list],
+    video_paths:str | list,
     superanimal_name: str,
     model_cfg: dict,
     model_snapshot_path: str | Path,
@@ -60,7 +58,7 @@ def _video_inference_superanimal(
     batch_size: int = 1,
     detector_batch_size: int = 1,
     cropping: list[int] | None = None,
-    dest_folder: Optional[str] = None,
+    dest_folder: str | Path | None = None,
     output_suffix: str = "",
     plot_bboxes: bool = True,
     bboxes_pcutoff: float = 0.9,
@@ -143,12 +141,9 @@ def _video_inference_superanimal(
     if isinstance(video_paths, str):
         video_paths = [video_paths]
 
-    if dest_folder is None:
-        dest_folder = Path(video_paths[0]).parent
-
-    if not os.path.exists(dest_folder):
-        os.makedirs(dest_folder)
-
+    dest_folder = Path(video_paths[0]).parent if dest_folder is None else Path(dest_folder)
+    dest_folder.mkdir(parents=True, exist_ok=True)
+                    
     for video_path in video_paths:
         print(f"Processing video {video_path}")
 
