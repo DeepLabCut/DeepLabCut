@@ -141,13 +141,13 @@ def _video_inference_superanimal(
     if isinstance(video_paths, str):
         video_paths = [video_paths]
 
-    # TODO: actually we can remove dest_folder for output_path
     dest_folder = Path(video_paths[0]).parent if dest_folder is None else Path(dest_folder)
     dest_folder.mkdir(parents=True, exist_ok=True)
                     
     for video_path in video_paths:
         print(f"Processing video {video_path}")
 
+        # TODO: detector_snapshot_path has to be Path cause it calls stem
         dlc_scorer = get_super_animal_scorer(
             superanimal_name,
             model_snapshot_path,
@@ -209,7 +209,7 @@ def _video_inference_superanimal(
                 fps=video.fps,
                 bbox=bbox,
                 cmap=colormap,
-                output_path=str(output_video),
+                output_path=output_video,
                 plot_bboxes=plot_bboxes,
                 bboxes_list=bboxes_list,
                 bboxes_pcutoff=bboxes_pcutoff,

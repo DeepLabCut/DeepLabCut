@@ -711,6 +711,7 @@ def create_labeled_video(
                 bboxes_pcutoff = 0.6
 
     if init_weights == "":
+        # TODO: cfg breaks if config == ""
         DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
             cfg,
             shuffle,
@@ -906,9 +907,8 @@ def proc_video(
             s = "_id" if color_by == "individual" else "_bp"
         else:
             s = ""
-
-        # temp until refactor auxiliaryfunctions.load_analyzed_data functions
-        filepath = Path(filepath) 
+        
+        filepath = Path(filepath) # NOTE: temp until refactor auxiliaryfunctions.load_analyzed_data functions 
         videooutname = filepath.with_name(f"{filepath.stem}{s}_p{int(100 * pcutoff)}_labeled.mp4")
 
         if videooutname.is_file() and not overwrite:
@@ -975,7 +975,7 @@ def proc_video(
 
             tmpfolder = videofolder / f"temp-{vname}"
             if save_frames:
-                tmpfolder.folder.mkdir(exist_ok=True)
+                tmpfolder.mkdir(exist_ok=True)
 
             clip = vp(video)
             CreateVideoSlow(
@@ -1054,7 +1054,7 @@ def create_video(
     display_cropped=False,
     codec="mp4v",
     fps=None,
-    output_path=None,
+    output_path: str | Path | None = None,
     confidence_to_alpha=None,
     plot_bboxes=True,
     bboxes_list=None,
@@ -1065,13 +1065,12 @@ def create_video(
         raise ValueError("`color_by` should be either 'bodypart' or 'individual'.")
 
     if output_path is None:
-        h5_path = Path(h5file)
         s = "_id" if color_by == "individual" else "_bp"
-        output_path = h5_path.parent / f"{h5_path.stem}{s}_labeled.mp4"    
+        output_path = h5file.replace(".h5", f"{s}_labeled.mp4")    
 
     clip = vp(
         fname=video,
-        sname=output_path,
+        sname=str(output_path), # NOTE: inelegant solution for cv2, but probably better at this step
         codec=codec,
         sw=bbox[1] - bbox[0] if display_cropped else "",
         sh=bbox[3] - bbox[2] if display_cropped else "",

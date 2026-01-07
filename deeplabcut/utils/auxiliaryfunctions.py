@@ -18,6 +18,7 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 from __future__ import annotations
+from tracemalloc import start
 
 import os
 import typing
@@ -963,54 +964,51 @@ def load_video_full_data(folder, videoname, scorer):
     return read_pickle(find_video_full_data(folder, videoname, scorer))
 
 
-def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method=""):
+def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, track_method=""):
     """Find potential data files from the hints given to the function."""
     
-    # TODO: if scorer is Path, replace mesh up with filesystem
-    scorer_legacy = scorer.replace("DLC", "DeepCut")
+    # TODO: if scorer is Path '.replace' mesh up with filesystem
+    scorer_legacy = str(scorer).replace("DLC", "DeepCut")
     suffix = "_filtered" if filtered else ""
     tracker = TRACK_METHODS.get(track_method, "")
 
-    candidates = []
-    for file in grab_files_in_folder(folder, "h5"):
-        # TODO: same here, it is actually replacing the name of the files (?)
-        # stem = Path(file).stem.removesuffix("_filtered")
-        stem = Path(file).stem.replace("_filtered", "")
-        starts_by_scorer = file.startswith(videoname + scorer) or file.startswith(
-            videoname + scorer_legacy
-        )
-        if tracker:
-            matches_tracker = stem.endswith(tracker)
-        else:
-            matches_tracker = not any(stem.endswith(s) for s in TRACK_METHODS.values())
-        if all(
-            (
-                starts_by_scorer,
-                "skeleton" not in file,
-                matches_tracker,
-                (filtered and "filtered" in file)
-                or (not filtered and "filtered" not in file),
-            )
-        ):
-            candidates.append(file)
+    candidates = [] 
+    folder = Path(folder)
+    for p in folder.iterdir():
+        if p.suffix != ".h5":
+            continue
+        
+        file = p.stem
 
+        if "skeleton" in file or filtered != ("filtered" in file):
+            continue
+
+        stem = p.stem.removesuffix("_filtered")
+        starts_by_scorer = stem.startswith(videoname + scorer) or stem.startswith(videoname + scorer_legacy)
+
+        if not starts_by_scorer:
+            continue 
+        
+        if (tracker and  stem.endswith(tracker)) or all(not stem.endswith(s) for s in TRACK_METHODS.values()):
+            candidates.append(file)
+    
     if not len(candidates):
+
         msg = (
             f'No {"un" if not filtered else ""}filtered data file found in {folder} '
-            f"for video {videoname} and scorer {scorer}"
+            f'for video {videoname} and scorer {scorer}'
+            f'{f" and {track_method} tracker" if track_method else ""}.'
         )
-        if track_method:
-            msg += f" and {track_method} tracker"
-        msg += "."
         raise FileNotFoundError(msg)
 
-    n_candidates = len(candidates)
-    if n_candidates > 1:  # This should not be happening anyway...
+    if len(candidates) > 1:
         print(
-            f"{n_candidates} possible data files were found: {candidates}.\n"
+            f"{len(candidates)} possible data files were found: {candidates}.\n"
             f"Picking the first by default..."
         )
-    filepath = os.path.join(folder, candidates[0])
+
+    # Inelegant way to check 'scorer in filepath', but preserves compatibility returning str 
+    filepath = str(folder / candidates[0])
     scorer = scorer if scorer in filepath else scorer_legacy
     return filepath, scorer, suffix
 
