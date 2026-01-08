@@ -895,8 +895,7 @@ def proc_video(
     print(f"Loading {video} and data.")
 
     try:
-        # TODO: check whether Path disrupts these auxiliary calls
-        # This doesn't seem to break, cause .stem returns strings so works fine
+        
         df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
             destfolder, vname, DLCscorer, filtered, track_method
         )
@@ -1066,7 +1065,7 @@ def create_video(
 
     if output_path is None:
         s = "_id" if color_by == "individual" else "_bp"
-        output_path = h5file.replace(".h5", f"{s}_labeled.mp4")    
+        output_path = h5file.replace(".h5", f"{s}_labeled.mp4")
 
     clip = vp(
         fname=video,
