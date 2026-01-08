@@ -880,8 +880,8 @@ def proc_video(
     vname = Path(video).stem
     if init_weights is not None:
         init_weights_name = Path(init_weights).stem
-        DLCscorer = "_DLC" + init_weights_name
-        DLCscorerlegacy = "_DLC" + init_weights_name
+        DLCscorer = "DLC_" + init_weights_name
+        DLCscorerlegacy = "DLC_" + init_weights_name
         if filtered:
             videooutname1 = destfolder / f"{vname}{DLCscorer}_filtered_labeled.mp4"
             videooutname2 = destfolder / f"{vname}{DLCscorerlegacy}_filtered_labeled.mp4"
