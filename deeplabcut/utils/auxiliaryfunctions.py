@@ -992,12 +992,12 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
             candidates.append(file)
     
     if not len(candidates):
-
+        filtered_type = "unfiltered" if not filtered else "filtered"
+        tracker_info = f" and {track_method} tracker" if track_method else ""
         msg = (
-            f'No {"un" if not filtered else ""}filtered data file found in {folder} '
-            f'for video {videoname} and scorer {scorer}'
-            f'{f" and {track_method} tracker" if track_method else ""}.'
-        )
+            f"No {filtered_type} data file found in {folder}"
+            f"for video {videoname} and scorer {scorer}{tracker_info}."
+        ) 
         raise FileNotFoundError(msg)
 
     if len(candidates) > 1:
