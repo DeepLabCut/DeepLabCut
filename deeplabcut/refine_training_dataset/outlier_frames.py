@@ -176,6 +176,21 @@ def find_outliers_in_raw_detections(
     return candidates, data
 
 
+def _read_video_specific_cropping_margins(
+    config: str | Path | dict,
+    video_path: str | Path
+) -> tuple[int, int]:
+    if isinstance(video_path, (str, Path)):
+        config = auxiliaryfunctions.read_config(config)
+    output_crop = config["video_sets"].get(str(video_path), {}).get("crop")
+    x1, _, y1, _ = (
+        list(map(int, output_crop.split(", ")))
+        if output_crop is not None
+        else (0, 0, 0, 0)
+    )
+    return x1, y1
+
+
 def extract_outlier_frames(
     config,
     videos,
@@ -406,10 +421,12 @@ def extract_outlier_frames(
             Index = np.arange(stopindex - startindex) + startindex
 
             # offset if the data was cropped
+            # note: When output video is also cropped, the keypoints should be shifted back.
+            out_x1, out_y1 = _read_video_specific_cropping_margins(config, video)    
             if metadata.get("data", {}).get("cropping"):
                 x1, _, y1, _ = metadata["data"]["cropping_parameters"]
-                df.iloc[:, df.columns.get_level_values(level="coords") == "x"] += x1
-                df.iloc[:, df.columns.get_level_values(level="coords") == "y"] += y1
+                df.iloc[:, df.columns.get_level_values(level="coords") == "x"] += x1 - out_x1
+                df.iloc[:, df.columns.get_level_values(level="coords") == "y"] += y1 - out_y1
 
             df = df.iloc[Index]
             mask = df.columns.get_level_values("bodyparts").isin(bodyparts)
