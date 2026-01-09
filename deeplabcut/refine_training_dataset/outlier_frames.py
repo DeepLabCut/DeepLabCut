@@ -422,7 +422,7 @@ def extract_outlier_frames(
 
             # offset if the data was cropped
             # note: When output video is also cropped, the keypoints should be shifted back.
-            out_x1, out_y1 = _read_video_specific_cropping_margins(config, video)    
+            out_x1, out_y1 = _read_video_specific_cropping_margins(config, video)
             if metadata.get("data", {}).get("cropping"):
                 x1, _, y1, _ = metadata["data"]["cropping_parameters"]
                 df.iloc[:, df.columns.get_level_values(level="coords") == "x"] += x1 - out_x1
