@@ -941,8 +941,7 @@ def find_video_full_data(folder, videoname, scorer):
 def find_video_metadata(folder, videoname: str, scorer: str):
     """For backward compatibility, let us search the substring 'meta'"""
     
-    # TODO: if scorer is Path '.replace' mesh up with filesystem
-    scorer_legacy = str(scorer).replace("DLC", "DeepCut")
+    scorer_legacy = scorer.replace("DLC", "DeepCut")
     meta_files = filter_files_by_patterns(
         folder=folder,
         start_patterns={videoname + scorer, videoname + scorer_legacy},
