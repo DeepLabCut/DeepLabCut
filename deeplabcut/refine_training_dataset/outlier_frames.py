@@ -180,7 +180,7 @@ def _read_video_specific_cropping_margins(
     config: str | Path | dict,
     video_path: str | Path
 ) -> tuple[int, int]:
-    if isinstance(video_path, (str, Path)):
+    if isinstance(config, (str, Path)):
         config = auxiliaryfunctions.read_config(config)
     output_crop = config["video_sets"].get(str(video_path), {}).get("crop")
     x1, _, y1, _ = (
