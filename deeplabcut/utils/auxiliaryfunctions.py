@@ -461,12 +461,49 @@ def get_list_of_videos(
     return videos
 
 
+def convert_multiindex_to_hdf_compatible(df):
+    """
+    Convert MultiIndex levels with extension dtypes to object dtype for HDF5 compatibility.
+    
+    This fixes the issue where pandas MultiIndex with extension dtypes (like StringDtype)
+    cannot be saved to HDF5 with PyTables 3.10+.
+    
+    Args:
+        df: pandas DataFrame with MultiIndex columns and/or index
+        
+    Returns:
+        DataFrame with MultiIndex levels converted to object dtype
+    """
+    # Convert column MultiIndex if present
+    if isinstance(df.columns, pd.MultiIndex):
+        new_levels = []
+        for level in df.columns.levels:
+            if hasattr(level, 'dtype') and hasattr(level.dtype, 'name') and level.dtype.name == 'string':
+                new_levels.append(level.astype('object'))
+            else:
+                new_levels.append(level)
+        df.columns = df.columns.set_levels(new_levels)
+    
+    # Convert index MultiIndex if present
+    if isinstance(df.index, pd.MultiIndex):
+        new_levels = []
+        for level in df.index.levels:
+            if hasattr(level, 'dtype') and hasattr(level.dtype, 'name') and level.dtype.name == 'string':
+                new_levels.append(level.astype('object'))
+            else:
+                new_levels.append(level)
+        df.index = df.index.set_levels(new_levels)
+    
+    return df
+
+
 def save_data(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv):
     """Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py"""
     DataMachine = pd.DataFrame(PredicteData, columns=pdindex, index=imagenames)
     if save_as_csv:
         print("Saving csv poses!")
         DataMachine.to_csv(dataname.split(".h5")[0] + ".csv")
+    DataMachine = convert_multiindex_to_hdf_compatible(DataMachine)
     DataMachine.to_hdf(dataname, key="df_with_missing", format="table", mode="w")
     with open(dataname.split(".h5")[0] + "_meta.pickle", "wb") as f:
         # Pickle the 'data' dictionary using the highest protocol available.

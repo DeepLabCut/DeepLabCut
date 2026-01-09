@@ -617,6 +617,7 @@ def evaluate_snapshot(
     df_predictions = df_predictions.reindex(loader.df.index)
     output_filename = loader.evaluation_folder / results_filename
     output_filename.parent.mkdir(parents=True, exist_ok=True)
+    df_predictions = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(df_predictions)
     df_predictions.to_hdf(output_filename, key="df_with_missing")
 
     df_scores = pd.DataFrame([scores]).set_index(

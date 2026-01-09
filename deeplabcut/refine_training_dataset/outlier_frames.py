@@ -636,6 +636,7 @@ def compute_deviations(
     o = data.xs("sig", axis=1, level=-1).mean(axis=1).values
 
     if storeoutput == "full":
+        data = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(data)
         data.to_hdf(
             dataname.split(".h5")[0] + "filtered.h5",
             "df_with_missing",
@@ -936,11 +937,13 @@ def ExtractFramesbasedonPreselection(
                     ~DataCombined.index.duplicated(keep="first")
                 ]
 
+                DataCombined = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(DataCombined)
                 DataCombined.to_hdf(machinefile, key="df_with_missing", mode="w")
                 DataCombined.to_csv(
                     os.path.join(tmpfolder, "machinelabels.csv")
                 )  # this is always the most current one (as reading is from h5)
             else:
+                df = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(df)
                 df.to_hdf(machinefile, key="df_with_missing", mode="w")
                 df.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
 

@@ -887,6 +887,7 @@ def evaluate_network(
                         DataMachine = pd.DataFrame(
                             PredicteData, columns=index, index=Data.index
                         )
+                        DataMachine = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(DataMachine)
                         DataMachine.to_hdf(resultsfilename, "df_with_missing")
 
                         print(

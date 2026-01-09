@@ -236,6 +236,7 @@ def create_video_h5_from_pickle(proj_root, cfg, reference_pickle, videopath):
     with open(metadata_path, "wb") as f:
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
+    df = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(df)
     df.to_hdf(dataname, "df_with_missing", format="table", mode="w")
 
 

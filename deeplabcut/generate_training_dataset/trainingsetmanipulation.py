@@ -156,6 +156,7 @@ def dropduplicatesinannotatinfiles(config):
             DC = DC[~DC.index.duplicated(keep="first")]
             if len(DC.index) < numimages:
                 print("Dropped", numimages - len(DC.index))
+                DC = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(DC)
                 DC.to_hdf(fn, key="df_with_missing", mode="w")
                 DC.to_csv(
                     os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv")
@@ -197,6 +198,7 @@ def dropannotationfileentriesduetodeletedimages(config):
                 DC = DC.drop(imagename)
                 dropped = True
         if dropped == True:
+            DC = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(DC)
             DC.to_hdf(fn, key="df_with_missing", mode="w")
             DC.to_csv(
                 os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv")
@@ -280,6 +282,7 @@ def dropunlabeledframes(config):
         after_len = len(DC.index)
         dropped = before_len - after_len
         if dropped:
+            DC = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(DC)
             DC.to_hdf(h5file, key="df_with_missing", mode="w")
             DC.to_csv(
                 os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv")
@@ -573,6 +576,7 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
         bodyparts, axis=1, level=AnnotationData.columns.names.index("bodyparts")
     )
     filename = os.path.join(trainingsetfolder_full, f'CollectedData_{cfg["scorer"]}')
+    AnnotationData = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(AnnotationData)
     AnnotationData.to_hdf(filename + ".h5", key="df_with_missing", mode="w")
     AnnotationData.to_csv(filename + ".csv")  # human readable.
     return AnnotationData

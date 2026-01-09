@@ -369,12 +369,14 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
                 else:
                     dataFrame = pd.concat([dataFrame, frame], axis=1)
 
+            Data = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(Data)
             Data.to_hdf(
                 fn + "singleanimal.h5",
                 key="df_with_missing",
             )
             Data.to_csv(fn + "singleanimal.csv")
 
+            dataFrame = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(dataFrame)
             dataFrame.to_hdf(fn + ".h5", key="df_with_missing")
             dataFrame.to_csv(fn + ".csv")
 
@@ -444,12 +446,14 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
                     else:
                         DataFrame = pd.concat([DataFrame, dataFrame], axis=1)
 
+                Data = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(Data)
                 Data.to_hdf(
                     fn + "multianimal.h5",
                     key="df_with_missing",
                 )
                 Data.to_csv(fn + "multianimal.csv")
 
+                DataFrame = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(DataFrame)
                 DataFrame.to_hdf(
                     fn + ".h5",
                     key="df_with_missing",
@@ -533,12 +537,14 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
                     else:
                         DataFrame = pd.concat([DataFrame, dataFrame], axis=1)
 
+                Data = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(Data)
                 Data.to_hdf(
                     fn + "singleanimal.h5",
                     key="df_with_missing",
                 )
                 Data.to_csv(fn + "singleanimal.csv")
 
+                DataFrame = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(DataFrame)
                 DataFrame.to_hdf(
                     fn + ".h5",
                     key="df_with_missing",

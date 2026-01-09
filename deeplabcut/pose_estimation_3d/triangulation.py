@@ -477,6 +477,7 @@ def triangulate(
             # Fill up 3D dataframe
             df_3d = pd.DataFrame(triangulate, columns=columns, index=inds)
 
+            df_3d = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(df_3d)
             df_3d.to_hdf(
                 str(output_filename) + ".h5",
                 key="df_with_missing",
@@ -491,6 +492,7 @@ def triangulate(
                 df_2d_view2 = auxfun_multianimal.reorder_individuals_in_df(
                     df_2d_view2, individuals_order
                 )
+                df_2d_view2 = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(df_2d_view2)
                 df_2d_view2.to_hdf(
                     dataname[1],
                     key="tracks",

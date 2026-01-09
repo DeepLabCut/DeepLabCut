@@ -28,6 +28,8 @@ from scipy.optimize import linear_sum_assignment
 from scipy.spatial import cKDTree
 from scipy.spatial.distance import cdist, pdist
 from scipy.special import softmax
+
+from deeplabcut.utils import auxiliaryfunctions
 from scipy.stats import chi2, gaussian_kde
 from tqdm import tqdm
 
@@ -909,6 +911,7 @@ class Assembler:
         )
         temp = data[..., :3].reshape((data.shape[0], -1))
         df = pd.DataFrame(temp, columns=index)
+        df = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(df)
         df.to_hdf(output_name, key="ass")
 
     def to_pickle(self, output_name):

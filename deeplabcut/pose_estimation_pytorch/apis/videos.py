@@ -768,6 +768,7 @@ def create_df_from_prediction(
         )
         df = df.join(df_u, how="outer")
 
+    df = auxiliaryfunctions.convert_multiindex_to_hdf_compatible(df)
     df.to_hdf(output_h5, key="df_with_missing", format="table", mode="w")
     if save_as_csv:
         df.to_csv(output_h5.with_suffix(".csv"))
