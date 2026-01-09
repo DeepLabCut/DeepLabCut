@@ -876,20 +876,23 @@ def proc_video(
     if pcutoff is None:
         pcutoff = cfg["pcutoff"]
 
-    print("Starting to process video: {}".format(video))
+     # NOTE: THE VIDEO IS STILL IN THE VIDEO FOLDER
+    print(f"Starting to process video: {video}")
     vname = Path(video).stem
     if init_weights is not None:
         init_weights_name = Path(init_weights).stem
         DLCscorer = "DLC_" + init_weights_name
         DLCscorerlegacy = "DLC_" + init_weights_name
-        if filtered:
-            videooutname1 = destfolder / f"{vname}{DLCscorer}_filtered_labeled.mp4"
-            videooutname2 = destfolder / f"{vname}{DLCscorerlegacy}_filtered_labeled.mp4"
-        else:
-            videooutname1 = destfolder / f"{vname}{DLCscorer}_labeled.mp4"
-            videooutname2 = destfolder / f"{vname}{DLCscorerlegacy}_labeled.mp4"
+    
+    if filtered:
+        videooutname1 = destfolder / f"{vname}{DLCscorer}filtered_labeled.mp4"
+        videooutname2 = destfolder / f"{vname}{DLCscorerlegacy}filtered_labeled.mp4"
+    else:
+        videooutname1 = destfolder / f"{vname}{DLCscorer}_labeled.mp4"
+        videooutname2 = destfolder / f"{vname}{DLCscorerlegacy}_labeled.mp4"
 
     if (videooutname1.is_file() or videooutname2.is_file()) and not overwrite:
+        print(f"Labeled video {vname} already created.")
         return True
     
     print(f"Loading {video} and data.")
