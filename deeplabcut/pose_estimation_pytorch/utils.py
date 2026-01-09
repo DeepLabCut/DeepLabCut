@@ -69,3 +69,28 @@ def resolve_device(model_config: dict) -> str:
             return "mps"
         return "cpu"
     return device
+
+
+def get_or_default(d: dict, key, default):
+    """
+    Get a value from a dictionary or return a default value if the key doesn't exist or is None.
+    
+    Args:
+        d (dict): The dictionary to search in.
+        key: The key to look up in the dictionary.
+        default: The default value to return if the key is not found or its value is None.
+    
+    Returns:
+        The value associated with the key if it exists and is not None, otherwise the default value.
+    
+    Example:
+        >>> data = {'name': 'John', 'age': None, 'city': 'New York'}
+        >>> get_or_default(data, 'name', 'Unknown')
+        'John'
+        >>> get_or_default(data, 'age', 25)
+        25
+        >>> get_or_default(data, 'country', 'USA')
+        'USA'
+    """
+    val = d.get(key)
+    return default if val is None else val

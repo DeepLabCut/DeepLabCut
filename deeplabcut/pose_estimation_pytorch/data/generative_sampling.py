@@ -44,47 +44,8 @@ from __future__ import annotations
 
 import math
 import random
-from dataclasses import dataclass, asdict
 
 import numpy as np
-
-
-@dataclass(frozen=True)
-class GenSamplingConfig:
-    """Configuration for CTD models.
-
-    Args:
-        bbox_margin: The margin added around conditional keypoints
-        keypoint_sigmas: The sigma for each keypoint.
-        keypoints_symmetry: Indices of symmetric keypoints (e.g. left/right eye)
-        jitter_prob: The probability of applying jitter. Jitter error is defined as
-            a small displacement from the GT keypoint.
-        swap_prob: The probability of applying a swap error. Swap error represents
-            a confusion between the same or similar parts which belong to different
-            persons.
-        inv_prob: The probability of applying an inversion error. Inversion error
-            occurs when a pose estimation model is confused between semantically
-            similar parts that belong to the same instance.
-        miss_prob: The probability of applying a miss error. Miss error represents a
-            large displacement from the GT keypoint position.
-    """
-    bbox_margin: int
-    keypoint_sigmas: float | list[float] = 0.1
-    keypoints_symmetry: list[tuple[int, int]] | None = None
-    jitter_prob: float = 0.16
-    swap_prob: float = 0.08
-    inv_prob: float = 0.03
-    miss_prob: float = 0.10
-
-    def to_dict(self) -> dict:
-        return {
-            "keypoint_sigmas": self.keypoint_sigmas,
-            "keypoints_symmetry": self.keypoints_symmetry,
-            "jitter_prob": self.jitter_prob,
-            "swap_prob": self.swap_prob,
-            "inv_prob": self.inv_prob,
-            "miss_prob": self.miss_prob,
-        }
 
 
 class GenerativeSampler:

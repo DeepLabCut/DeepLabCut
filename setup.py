@@ -82,6 +82,8 @@ setuptools.setup(
         "Pillow>=7.1",
         "tables",
         "h5py>=3.15.1;sys_platform=='darwin'",
+        "omegaconf>=2.3.0",
+        "pydantic>=2.12.3",
     ],
     extras_require={
         "gui": [
