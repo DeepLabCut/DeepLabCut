@@ -48,7 +48,7 @@ def construct_bodypart_names(max_individuals, bodyparts):
 
 
 def _video_inference_superanimal(
-    video_paths:str | list,
+    video_paths: str | list,
     superanimal_name: str,
     model_cfg: dict,
     model_snapshot_path: str | Path,
@@ -143,7 +143,6 @@ def _video_inference_superanimal(
 
     dest_folder = Path(video_paths[0]).parent if dest_folder is None else Path(dest_folder)
     dest_folder.mkdir(parents=True, exist_ok=True)
-    
     if create_labeled_video:
         superanimal_colormaps = get_superanimal_colormaps()
         colormap = superanimal_colormaps[superanimal_name]
@@ -151,7 +150,6 @@ def _video_inference_superanimal(
     for video_path in video_paths:
         print(f"Processing video {video_path}")
 
-        # TODO: detector_snapshot_path has to be Path cause it calls stem
         dlc_scorer = get_super_animal_scorer(
             superanimal_name,
             model_snapshot_path,
@@ -217,6 +215,6 @@ def _video_inference_superanimal(
                 bboxes_list=bboxes_list,
                 bboxes_pcutoff=bboxes_pcutoff,
             )
-            print(f"Video with predictions was saved as {dest_folder}")
+            print(f"Video with predictions was saved as {output_video}")
 
     return results

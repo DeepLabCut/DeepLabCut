@@ -896,9 +896,7 @@ def proc_video(
         return True
     
     print(f"Loading {video} and data.")
-
     try:
-        
         df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
             destfolder, vname, DLCscorer, filtered, track_method
         )
@@ -912,7 +910,6 @@ def proc_video(
         
         filepath = Path(filepath) # NOTE: temp until refactor auxiliaryfunctions.load_analyzed_data functions 
         videooutname = filepath.with_name(f"{filepath.stem}{s}_p{int(100 * pcutoff)}_labeled.mp4")
-
         if videooutname.is_file() and not overwrite:
             print("Labeled video already created. Skipping...")
             return None

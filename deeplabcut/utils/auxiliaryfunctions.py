@@ -968,8 +968,7 @@ def load_video_full_data(folder, videoname, scorer):
 def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, track_method=""):
     """Find potential data files from the hints given to the function."""
     
-    # TODO: if scorer is Path '.replace' mesh up with filesystem
-    scorer_legacy = str(scorer).replace("DLC", "DeepCut")
+    scorer_legacy = scorer.replace("DLC", "DeepCut")
     suffix = "_filtered" if filtered else ""
     tracker = TRACK_METHODS.get(track_method, "")
 
@@ -979,18 +978,21 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
         if p.suffix != ".h5":
             continue
         
-        file = p.stem
-
+        file = p.name
         if "skeleton" in file or filtered != ("filtered" in file):
             continue
 
         stem = p.stem.removesuffix("_filtered")
         starts_by_scorer = stem.startswith(videoname + scorer) or stem.startswith(videoname + scorer_legacy)
-
         if not starts_by_scorer:
             continue 
         
-        if (tracker and  stem.endswith(tracker)) or all(not stem.endswith(s) for s in TRACK_METHODS.values()):
+        if tracker:
+            matches_tracker = stem.endswith(tracker)
+        else:
+            matches_tracker = not any(stem.endswith(s) for s in TRACK_METHODS.values())
+
+        if matches_tracker:
             candidates.append(file)
     
     if not len(candidates):
@@ -998,7 +1000,7 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
         tracker_info = f" and {track_method} tracker" if track_method else ""
         msg = (
             f"No {filtered_type} data file found in {folder}"
-            f"for video {videoname} and scorer {scorer}{tracker_info}."
+            f" for video {videoname} and scorer {scorer}{tracker_info}."
         ) 
         raise FileNotFoundError(msg)
 
