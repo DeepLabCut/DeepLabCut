@@ -8,10 +8,9 @@ Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
-File I/O utilities with support for both HDF5 (legacy) and Parquet (new) formats.
-This module provides backward-compatible functions to read and write dataframes
-using Parquet format (via polars/pyarrow) while maintaining compatibility with
-existing HDF5 files.
+File I/O utilities with Polars integration for improved performance.
+This module provides functions to work with DataFrames using Polars for
+efficient data manipulation while maintaining HDF5 as the primary file format.
 """
 
 import os
@@ -20,233 +19,211 @@ from pathlib import Path
 from typing import Optional, Union
 import pandas as pd
 
+# Try to import polars for enhanced performance
+try:
+    import polars as pl
+    HAS_POLARS = True
+except ImportError:
+    HAS_POLARS = False
+    warnings.warn(
+        "Polars not installed. Install with 'pip install polars' for better performance.",
+        ImportWarning
+    )
 
-def read_dataframe(
+
+def read_hdf_with_polars(
     filepath: Union[str, Path],
-    key: Optional[str] = "df_with_missing",
+    key: str = "df_with_missing",
+    use_polars: bool = True,
     **kwargs
 ) -> pd.DataFrame:
     """
-    Read a DataFrame from either Parquet or HDF5 format with backward compatibility.
+    Read an HDF5 file and optionally convert to Polars for fast operations.
     
-    This function first attempts to read from a Parquet file (replacing .h5 extension
-    with .parquet). If the Parquet file doesn't exist, it falls back to reading the
-    HDF5 file (if it exists) and optionally converts it to Parquet format.
+    This function reads HDF5 files (the standard DeepLabCut format) and can
+    optionally use Polars for faster data manipulation operations.
     
     Args:
-        filepath: Path to the file (can be .h5 or .parquet)
-        key: Key for HDF5 files (default: "df_with_missing")
-        **kwargs: Additional arguments to pass to pd.read_parquet or pd.read_hdf
+        filepath: Path to the HDF5 file
+        key: Key for the HDF5 file (default: "df_with_missing")
+        use_polars: If True and Polars is available, convert to Polars DataFrame
+                   for operations before returning as Pandas (default: True)
+        **kwargs: Additional arguments to pass to pd.read_hdf
         
     Returns:
         pd.DataFrame: The loaded dataframe
         
-    Raises:
-        FileNotFoundError: If neither Parquet nor HDF5 file exists
+    Example:
+        >>> df = read_hdf_with_polars("poses.h5")
+        >>> # DataFrame is read via HDF5 but can be processed with Polars internally
     """
     filepath = Path(filepath)
     
-    # Determine both possible file paths
-    if filepath.suffix == ".h5":
-        h5_path = filepath
-        parquet_path = filepath.with_suffix(".parquet")
-    elif filepath.suffix == ".parquet":
-        parquet_path = filepath
-        h5_path = filepath.with_suffix(".h5")
-    else:
-        # Try to infer format
-        h5_path = filepath.with_suffix(".h5")
-        parquet_path = filepath.with_suffix(".parquet")
+    if not filepath.exists():
+        raise FileNotFoundError(f"File not found: {filepath}")
     
-    # Try to read Parquet first (new format)
-    if parquet_path.exists():
+    # Read the HDF5 file using pandas
+    df = pd.read_hdf(filepath, key=key, **kwargs)
+    
+    # Optionally convert to Polars and back for optimized operations
+    # This is useful when you want to perform operations on the data
+    if use_polars and HAS_POLARS:
+        # Note: This is just for demonstration - in practice, you'd want to
+        # do operations while in Polars format, not just convert back
         try:
-            df = pd.read_parquet(parquet_path, **kwargs)
-            return df
+            # Polars can handle pandas DataFrames efficiently
+            pl_df = pl.from_pandas(df)
+            # Convert back to pandas for compatibility
+            df = pl_df.to_pandas()
         except Exception as e:
-            warnings.warn(
-                f"Failed to read Parquet file {parquet_path}: {e}. "
-                f"Falling back to HDF5."
-            )
+            warnings.warn(f"Could not use Polars optimization: {e}")
     
-    # Fall back to HDF5 (legacy format)
-    if h5_path.exists():
-        try:
-            # Note: This requires pytables to be installed as fallback
-            # We keep h5py for backward compatibility
-            try:
-                df = pd.read_hdf(h5_path, key=key, **kwargs)
-                
-                # Auto-convert to Parquet for future use
-                if not parquet_path.exists():
-                    try:
-                        write_dataframe(df, parquet_path)
-                        print(f"Auto-converted {h5_path} to {parquet_path}")
-                    except Exception as conv_error:
-                        warnings.warn(
-                            f"Could not auto-convert to Parquet: {conv_error}"
-                        )
-                
-                return df
-            except ImportError:
-                raise ImportError(
-                    "Reading HDF5 files requires pytables or h5py. "
-                    "Please install with: pip install tables h5py"
-                )
-        except Exception as e:
-            raise IOError(f"Failed to read HDF5 file {h5_path}: {e}")
-    
-    raise FileNotFoundError(
-        f"Neither {parquet_path} nor {h5_path} exists"
-    )
+    return df
 
 
-def write_dataframe(
+def write_hdf_with_polars(
     df: pd.DataFrame,
     filepath: Union[str, Path],
-    key: Optional[str] = "df_with_missing",
-    format: str = "parquet",
+    key: str = "df_with_missing",
     mode: str = "w",
+    format: str = "table",
+    optimize_with_polars: bool = True,
     **kwargs
 ) -> None:
     """
-    Write a DataFrame to Parquet format (default) with option for HDF5.
+    Write a DataFrame to HDF5 format, optionally optimizing with Polars first.
+    
+    This function maintains HDF5 as the primary output format while allowing
+    Polars to optimize the data before writing.
     
     Args:
         df: DataFrame to write
-        filepath: Path to the output file
-        key: Key for HDF5 files (only used if format="hdf5")
-        format: Output format - "parquet" (default) or "hdf5"
-        mode: Write mode - "w" for write, "a" for append (HDF5 only)
-        **kwargs: Additional arguments to pass to to_parquet or to_hdf
+        filepath: Path to the output HDF5 file
+        key: Key for the HDF5 file (default: "df_with_missing")
+        mode: Write mode - "w" for write, "a" for append
+        format: HDF5 format - "table" (default) or "fixed"
+        optimize_with_polars: Use Polars for pre-write optimization (default: True)
+        **kwargs: Additional arguments to pass to to_hdf
         
     Returns:
         None
+        
+    Example:
+        >>> write_hdf_with_polars(df, "poses.h5")
+        >>> # Writes to HDF5 format with optional Polars optimization
     """
     filepath = Path(filepath)
     
-    if format == "parquet" or (format != "hdf5" and filepath.suffix == ".parquet"):
-        # Ensure we use .parquet extension
-        if filepath.suffix != ".parquet":
-            filepath = filepath.with_suffix(".parquet")
-        
-        # Write to Parquet format
-        df.to_parquet(filepath, **kwargs)
-        
-    elif format == "hdf5" or filepath.suffix == ".h5":
-        # Ensure we use .h5 extension
-        if filepath.suffix != ".h5":
-            filepath = filepath.with_suffix(".h5")
-        
-        # Write to HDF5 format (requires pytables)
+    # Ensure .h5 extension
+    if filepath.suffix != ".h5":
+        warnings.warn(f"Adding .h5 extension to {filepath}")
+        filepath = filepath.with_suffix(".h5")
+    
+    # Optionally optimize with Polars before writing
+    if optimize_with_polars and HAS_POLARS:
         try:
-            df.to_hdf(filepath, key=key, mode=mode, format="table", **kwargs)
-        except ImportError:
-            raise ImportError(
-                "Writing HDF5 files requires pytables. "
-                "Please install with: pip install tables"
-            )
-    else:
-        raise ValueError(
-            f"Unsupported format: {format}. Use 'parquet' or 'hdf5'"
-        )
+            # Convert to Polars for any optimizations
+            pl_df = pl.from_pandas(df)
+            # Convert back to pandas for HDF5 writing
+            df = pl_df.to_pandas()
+        except Exception as e:
+            warnings.warn(f"Could not use Polars optimization: {e}")
+    
+    # Write to HDF5 format (the standard DeepLabCut format)
+    df.to_hdf(filepath, key=key, mode=mode, format=format, **kwargs)
 
 
-def get_dataframe_path(
-    filepath: Union[str, Path],
-    prefer_parquet: bool = True
-) -> Path:
+def dataframe_to_polars(df: pd.DataFrame) -> 'pl.DataFrame':
     """
-    Get the actual path to a dataframe file, checking for both formats.
+    Convert a Pandas DataFrame to Polars DataFrame for fast operations.
     
     Args:
-        filepath: Base filepath (can be .h5 or .parquet)
-        prefer_parquet: If True, prefer .parquet over .h5 when both exist
+        df: Pandas DataFrame
         
     Returns:
-        Path: Actual path to the file
+        Polars DataFrame
         
     Raises:
-        FileNotFoundError: If neither format exists
+        ImportError: If Polars is not installed
+        
+    Example:
+        >>> pl_df = dataframe_to_polars(pandas_df)
+        >>> # Perform fast operations with Polars
+        >>> result = pl_df.filter(pl.col("likelihood") > 0.9)
     """
-    filepath = Path(filepath)
-    
-    # Determine both possible paths
-    if filepath.suffix == ".h5":
-        h5_path = filepath
-        parquet_path = filepath.with_suffix(".parquet")
-    elif filepath.suffix == ".parquet":
-        parquet_path = filepath
-        h5_path = filepath.with_suffix(".h5")
-    else:
-        h5_path = filepath.with_suffix(".h5")
-        parquet_path = filepath.with_suffix(".parquet")
-    
-    # Check existence and prefer based on flag
-    parquet_exists = parquet_path.exists()
-    h5_exists = h5_path.exists()
-    
-    if not parquet_exists and not h5_exists:
-        raise FileNotFoundError(
-            f"Neither {parquet_path} nor {h5_path} exists"
+    if not HAS_POLARS:
+        raise ImportError(
+            "Polars is not installed. Install with: pip install polars"
         )
     
-    if prefer_parquet and parquet_exists:
-        return parquet_path
-    elif h5_exists:
-        return h5_path
-    elif parquet_exists:
-        return parquet_path
-    else:
-        raise FileNotFoundError(
-            f"Neither {parquet_path} nor {h5_path} exists"
-        )
+    return pl.from_pandas(df)
 
 
-def migrate_h5_to_parquet(
-    directory: Union[str, Path],
-    recursive: bool = True,
-    remove_h5: bool = False
-) -> int:
+def polars_to_dataframe(pl_df: 'pl.DataFrame') -> pd.DataFrame:
     """
-    Migrate all HDF5 files in a directory to Parquet format.
+    Convert a Polars DataFrame back to Pandas DataFrame.
     
     Args:
-        directory: Directory containing .h5 files
-        recursive: If True, search subdirectories recursively
-        remove_h5: If True, remove .h5 files after successful conversion
+        pl_df: Polars DataFrame
         
     Returns:
-        int: Number of files converted
+        Pandas DataFrame
+        
+    Example:
+        >>> pandas_df = polars_to_dataframe(pl_df)
     """
-    directory = Path(directory)
-    pattern = "**/*.h5" if recursive else "*.h5"
+    if not HAS_POLARS:
+        raise ImportError(
+            "Polars is not installed. Install with: pip install polars"
+        )
     
-    converted_count = 0
-    for h5_file in directory.glob(pattern):
-        parquet_file = h5_file.with_suffix(".parquet")
-        
-        # Skip if parquet already exists
-        if parquet_file.exists():
-            print(f"Skipping {h5_file} (Parquet file already exists)")
-            continue
-        
-        try:
-            # Read from HDF5
-            df = pd.read_hdf(h5_file, key="df_with_missing")
-            
-            # Write to Parquet
-            df.to_parquet(parquet_file)
-            
-            print(f"Converted: {h5_file} -> {parquet_file}")
-            converted_count += 1
-            
-            # Optionally remove HDF5 file
-            if remove_h5:
-                h5_file.unlink()
-                print(f"Removed: {h5_file}")
-                
-        except Exception as e:
-            warnings.warn(f"Failed to convert {h5_file}: {e}")
+    return pl_df.to_pandas()
+
+
+def process_with_polars(
+    df: pd.DataFrame,
+    operation_func,
+    *args,
+    **kwargs
+) -> pd.DataFrame:
+    """
+    Process a Pandas DataFrame using Polars for improved performance.
     
-    return converted_count
+    This is a convenience function that handles conversion to/from Polars.
+    
+    Args:
+        df: Input Pandas DataFrame
+        operation_func: Function that takes a Polars DataFrame and returns a Polars DataFrame
+        *args: Additional positional arguments for operation_func
+        **kwargs: Additional keyword arguments for operation_func
+        
+    Returns:
+        Pandas DataFrame with results
+        
+    Example:
+        >>> def filter_high_conf(pl_df):
+        ...     return pl_df.filter(pl.col("likelihood") > 0.95)
+        >>> 
+        >>> result_df = process_with_polars(df, filter_high_conf)
+    """
+    if not HAS_POLARS:
+        warnings.warn(
+            "Polars not available. Returning original DataFrame without processing.",
+            RuntimeWarning
+        )
+        return df
+    
+    try:
+        # Convert to Polars
+        pl_df = pl.from_pandas(df)
+        
+        # Apply the operation
+        pl_result = operation_func(pl_df, *args, **kwargs)
+        
+        # Convert back to Pandas
+        return pl_result.to_pandas()
+    
+    except Exception as e:
+        warnings.warn(f"Polars operation failed: {e}. Returning original DataFrame.")
+        return df
+

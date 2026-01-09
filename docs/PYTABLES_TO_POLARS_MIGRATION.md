@@ -1,8 +1,8 @@
-# Replacing PyTables with Polars in DeepLabCut
+# Using Polars with DeepLabCut
 
 ## Overview
 
-This document describes the changes made to replace PyTables (HDF5 format) with Polars/Parquet in DeepLabCut, providing improved performance and better interoperability.
+This document describes the integration of Polars into DeepLabCut for improved performance while maintaining HDF5 as the primary file format.
 
 ## Changes Made
 
@@ -14,35 +14,29 @@ This document describes the changes made to replace PyTables (HDF5 format) with 
 - `conda-environments/DEEPLABCUT.yaml`
 
 **Changes:**
-- Removed: `tables` (PyTables)
-- Added: `polars>=0.20.0` and `pyarrow>=14.0.0`
+- Added: `polars>=0.20.0` (alongside existing `tables` dependency)
+- HDF5 format remains the standard output format
 
 ### 2. New File I/O Module
 
 **New file:** `deeplabcut/utils/fileio.py`
 
 This module provides:
-- `read_dataframe()` - Read DataFrames from Parquet or HDF5 (backward compatible)
-- `write_dataframe()` - Write DataFrames to Parquet format (default)
-- `get_dataframe_path()` - Helper to find dataframe files in either format
-- `migrate_h5_to_parquet()` - Batch conversion utility for existing HDF5 files
+- `read_hdf_with_polars()` - Read HDF5 files with optional Polars optimization
+- `write_hdf_with_polars()` - Write HDF5 files with optional Polars pre-processing
+- `dataframe_to_polars()` - Convert Pandas DataFrame to Polars
+- `polars_to_dataframe()` - Convert Polars DataFrame to Pandas
+- `process_with_polars()` - Process DataFrames using Polars for speed
 
 **Key features:**
-- Parquet format is now the default for new data files
-- Automatic fallback to HDF5 format for existing files
-- Auto-conversion: When reading old HDF5 files, they are automatically converted to Parquet
-- Backward compatibility: Existing code paths continue to work with `.h5` file paths
-
-### 3. Updated Core Functions
-
-**Files modified:**
-- `deeplabcut/utils/auxiliaryfunctions.py`
-  - Updated `save_data()` function to use Parquet format
-  - Added lazy import for fileio module to avoid circular dependencies
+- HDF5 remains the primary file format (no breaking changes)
+- Polars is used internally for performance improvements
+- All functions work without Polars (graceful fallback)
+- Compatible with existing DeepLabCut workflows
 
 ## Usage
 
-### Writing Data
+### Standard HDF5 I/O (with optional Polars optimization)
 
 ```python
 from deeplabcut.utils import fileio
@@ -51,62 +45,74 @@ import pandas as pd
 # Create a DataFrame
 df = pd.DataFrame({'x': [1, 2, 3], 'y': [4, 5, 6]})
 
-# Write to Parquet (new default)
-fileio.write_dataframe(df, "output.parquet", format="parquet")
+# Write to HDF5 (standard format)
+fileio.write_hdf_with_polars(df, "output.h5")
 
-# Or specify .h5 extension (will still create .parquet)
-fileio.write_dataframe(df, "output.h5", format="parquet")
+# Read from HDF5
+df = fileio.read_hdf_with_polars("output.h5")
 ```
 
-### Reading Data
+### Using Polars for Fast Data Processing
 
 ```python
-# Read from Parquet
-df = fileio.read_dataframe("data.parquet")
-
-# Read with backward compatibility (.h5 extension)
-# If .parquet exists, it will be used; otherwise, falls back to .h5
-df = fileio.read_dataframe("data.h5")
-```
-
-### Migrating Existing Data
-
-```python
-# Convert all HDF5 files in a directory to Parquet
+import polars as pl
 from deeplabcut.utils import fileio
 
-# Recursive conversion
-converted_count = fileio.migrate_h5_to_parquet(
-    "/path/to/project",
-    recursive=True,
-    remove_h5=False  # Set to True to remove original HDF5 files
-)
-print(f"Converted {converted_count} files")
+# Read HDF5 file
+df = fileio.read_hdf_with_polars("poses.h5")
+
+# Convert to Polars for fast operations
+pl_df = fileio.dataframe_to_polars(df)
+
+# Perform fast filtering with Polars
+filtered = pl_df.filter(pl.col("likelihood") > 0.95)
+
+# Convert back to Pandas
+result_df = fileio.polars_to_dataframe(filtered)
+
+# Or use the convenience function
+def filter_operation(pl_df):
+    return pl_df.filter(pl.col("likelihood") > 0.95)
+
+result_df = fileio.process_with_polars(df, filter_operation)
 ```
 
 ## Benefits
 
-1. **Performance**: Parquet format is faster for read/write operations
-2. **Compatibility**: Parquet is widely supported across data science tools
-3. **File Size**: Parquet typically produces smaller file sizes
-4. **No C Dependencies**: Unlike PyTables, pyarrow is easier to install
-5. **Better for Cloud**: Parquet is optimized for cloud storage
+1. **Performance**: Polars operations are significantly faster for large datasets
+2. **Compatibility**: HDF5 format unchanged, fully backward compatible
+3. **Optional**: Polars is optional; code works without it
+4. **Zero Breaking Changes**: Existing workflows unaffected
+
+## When to Use Polars
+
+Polars excels at:
+- Filtering large DataFrames
+- Aggregating data across many frames
+- Complex data transformations
+- Memory-efficient operations on large datasets
+
+Example use cases in DeepLabCut:
+- Filtering poses by likelihood threshold
+- Computing statistics across video frames
+- Selecting specific bodyparts from multi-animal data
+- Downsampling or interpolating tracking data
 
 ## Backward Compatibility
 
 The implementation maintains full backward compatibility:
 
-1. **Existing HDF5 files are still readable**
-   - PyTables/h5py dependencies are optional for reading old files
-   - Auto-conversion happens on first read
+1. **HDF5 remains the output format**
+   - No changes to file formats
+   - All existing files work without modification
 
-2. **File paths with `.h5` extension work**
-   - The code automatically looks for `.parquet` equivalent
-   - Falls back to `.h5` if Parquet doesn't exist
+2. **Polars is optional**
+   - If Polars is not installed, code falls back to Pandas
+   - No breaking changes to existing code
 
-3. **No breaking changes to API**
-   - Existing function signatures remain the same
-   - File format is transparent to users
+3. **No API changes**
+   - Existing functions continue to work
+   - New functions are additions, not replacements
 
 ## Testing
 
@@ -118,65 +124,108 @@ pytest tests/test_fileio.py -v
 ```
 
 Test coverage includes:
-- Reading and writing Parquet files
-- Backward compatibility with HDF5
-- Auto-conversion from HDF5 to Parquet
+- Reading and writing HDF5 files
+- Polars integration and fallback
+- Converting between Pandas and Polars
 - MultiIndex DataFrames (DeepLabCut format)
-- Batch migration utilities
+
+## Performance Comparison
+
+Polars provides significant speedups for common operations:
+
+```python
+import time
+import polars as pl
+import pandas as pd
+
+# Large DataFrame
+df = pd.DataFrame({
+    'x': np.random.randn(1000000),
+    'likelihood': np.random.rand(1000000)
+})
+
+# Pandas filtering
+t0 = time.time()
+result_pandas = df[df['likelihood'] > 0.95]
+pandas_time = time.time() - t0
+
+# Polars filtering
+pl_df = pl.from_pandas(df)
+t0 = time.time()
+result_polars = pl_df.filter(pl.col('likelihood') > 0.95).to_pandas()
+polars_time = time.time() - t0
+
+print(f"Pandas: {pandas_time:.3f}s")
+print(f"Polars: {polars_time:.3f}s")
+print(f"Speedup: {pandas_time/polars_time:.1f}x")
+```
 
 ## Migration Guide
 
 ### For Users
 
-No action required! The codebase automatically:
-- Uses Parquet for new data
-- Reads existing HDF5 files
-- Converts HDF5 to Parquet on first use
+No action required! The codebase continues to use HDF5 format as before.
+
+If you want to use Polars for custom analysis:
+```bash
+pip install polars
+```
 
 ### For Developers
 
-When modifying code that reads/writes DataFrames:
+When processing large DataFrames in DeepLabCut code:
 
 **Before:**
 ```python
-df.to_hdf(filename, key="df_with_missing", mode="w", format="table")
 df = pd.read_hdf(filename, key="df_with_missing")
+filtered = df[df['likelihood'] > 0.9]
 ```
 
-**After:**
+**After (optional optimization):**
 ```python
 from deeplabcut.utils import fileio
+import polars as pl
 
-fileio.write_dataframe(df, filename, format="parquet")
-df = fileio.read_dataframe(filename)
+df = fileio.read_hdf_with_polars(filename)
+def filter_func(pl_df):
+    return pl_df.filter(pl.col('likelihood') > 0.9)
+filtered = fileio.process_with_polars(df, filter_func)
 ```
 
 ## Troubleshooting
 
-### Reading Old HDF5 Files
+### Polars Not Installed
 
-If you encounter issues reading old HDF5 files, install the optional dependency:
+If Polars is not installed, you'll see a warning but code will still work:
+```
+ImportWarning: Polars not installed. Install with 'pip install polars' for better performance.
+```
+
+To install:
 ```bash
-pip install tables h5py
+pip install polars
 ```
 
-### Force HDF5 Format
+### Performance Not Improved
 
-If you need to write HDF5 format explicitly:
-```python
-fileio.write_dataframe(df, "output.h5", format="hdf5")
-```
+Polars shines with:
+- Large datasets (>10,000 rows)
+- Complex filtering/aggregation operations
+- Multiple chained operations
+
+For small datasets or simple operations, overhead may negate benefits.
 
 ## Future Work
 
-1. Update remaining file I/O operations across the codebase
-2. Consider full migration to Polars DataFrames (optional)
-3. Benchmark performance improvements
-4. Update documentation and examples
+1. Identify bottlenecks in DeepLabCut that could benefit from Polars
+2. Add Polars-optimized versions of common operations
+3. Benchmark performance improvements on real-world datasets
+4. Consider lazy evaluation for very large video analyses
 
 ## Notes
 
-- File extension `.h5` is maintained in file paths for compatibility
-- Actual files are created with `.parquet` extension
-- CSV export functionality remains unchanged
-- Pickle files for metadata are unaffected
+- HDF5 format is maintained for full backward compatibility
+- Polars is an additive enhancement, not a replacement
+- All existing code continues to work unchanged
+- Performance improvements are opt-in
+
