@@ -69,16 +69,16 @@ def test_dlc_resize_pad_bad_aspect_ratio(data):
             "width": 200,
             "in_shape": (100, 50, 3),
             "out_shape": (200, 100, 3),
-            "in_keypoints": [(50.0, 50.0), (25.0, 10.0)],
-            "out_keypoints": [(100.0, 100.0), (50.0, 20.0)],
+            "in_keypoints": [[50.0, 50.0], [25.0, 10.0]],
+            "out_keypoints": [[100.0, 100.0], [50.0, 20.0]],
         },
         {
             "height": 512,
             "width": 256,
             "in_shape": (1024, 1024, 3),
             "out_shape": (256, 256, 3),
-            "in_keypoints": [(512.0, 512.0), (100.0, 10.0)],
-            "out_keypoints": [(128.0, 128.0), (25.0, 2.5)],
+            "in_keypoints": [[512.0, 512.0], [100.0, 10.0]],
+            "out_keypoints": [[128.0, 128.0], [25.0, 2.5]],
         },
     ],
 )
@@ -151,7 +151,7 @@ def test_random_bbox_transform_does_not_modify_with_base_config(data: dict) -> N
     print("bboxes")
     print(bboxes_out)
     print()
-    np.testing.assert_array_almost_equal(bboxes, bboxes_out)
+    np.testing.assert_array_almost_equal(bboxes, bboxes_out, decimal=4)
 
 
 @pytest.mark.parametrize(

@@ -499,7 +499,7 @@ def _apply_transform(
     """
     transformed = transform(
         image=image,
-        keypoints=keypoints,
+        keypoints=np.array(keypoints),
         class_labels=class_labels,
         bboxes=bboxes,
         bbox_labels=np.arange(len(bboxes)),
