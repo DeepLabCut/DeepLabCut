@@ -4,6 +4,8 @@ einops
 pycocotools<=2.0.8
 timm
 wandb
+omegaconf>=2.3.0
+pydantic>=2.12.3
 
 # existing:
 dlclibrary
