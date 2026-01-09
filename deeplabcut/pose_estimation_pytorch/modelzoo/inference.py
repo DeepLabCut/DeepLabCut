@@ -200,7 +200,8 @@ def _video_inference_superanimal(
 
         if create_labeled_video:
 
-            output_video = dest_folder / f"{output_prefix}_labeled.mp4"
+            output_video = dest_folder / f"{output_prefix}_labeled.mp4" 
+
             if len(output_suffix) > 0:
                 output_video = output_video.with_stem(output_video.stem + output_suffix)
 
