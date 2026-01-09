@@ -79,6 +79,7 @@ setuptools.setup(
         "pyyaml",
         "Pillow>=7.1",
         "tables",
+        "h5py>=3.15.1;sys_platform=='darwin'",
     ],
     extras_require={
         "gui": [
