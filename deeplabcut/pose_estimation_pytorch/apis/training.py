@@ -174,7 +174,7 @@ def train(
     ):
         logging.info(
             "\nNote: According to your model configuration, you're training with batch "
-            "size 1 and/or ``freeze_bn_stats=false``. This is not an optimal setting "
+            "size 1 and/or ``freeze_bn_stats=true``. This is not an optimal setting "
             "if you have powerful GPUs.\n"
             "This is good for small batch sizes (e.g., when training on a CPU), where "
             "you should keep ``freeze_bn_stats=true``.\n"
