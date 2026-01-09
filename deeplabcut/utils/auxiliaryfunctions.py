@@ -973,26 +973,26 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
 
     candidates = [] 
     folder = Path(folder)
-    for p in folder.iterdir():
-        if p.suffix != ".h5":
-            continue
-        
+    for p in folder.glob("*.h5"):
         file = p.name
-        if "skeleton" in file or filtered != ("filtered" in file):
+
+        if "skeleton" in file:
+            continue
+
+        if filtered != ("filtered" in file):
             continue
 
         stem = p.stem.removesuffix("_filtered")
-        starts_by_scorer = stem.startswith(videoname + scorer) or stem.startswith(videoname + scorer_legacy)
-        if not starts_by_scorer:
-            continue 
-        
-        if tracker:
-            matches_tracker = stem.endswith(tracker)
-        else:
-            matches_tracker = not any(stem.endswith(s) for s in TRACK_METHODS.values())
+        if not stem.startswith((videoname+scorer, videoname+scorer_legacy)):
+            continue
 
-        if matches_tracker:
-            candidates.append(file)
+        if tracker:
+            if not stem.endswith(tracker):
+                continue
+        else:
+            if stem.endswith(tuple(TRACK_METHODS.values())):
+                continue
+        candidates.append(file)
     
     if not len(candidates):
         filtered_type = "unfiltered" if not filtered else "filtered"
