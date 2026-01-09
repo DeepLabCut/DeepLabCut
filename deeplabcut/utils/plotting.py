@@ -64,7 +64,6 @@ def PlottingResults(
     if individuals2plot:
         Dataframe = Dataframe.loc(axis=1)[:, individuals2plot]
     animal_bpts = Dataframe.columns.get_level_values("bodyparts")
-    
     # Close previous figures before plotting
     plt.close("all")
 
