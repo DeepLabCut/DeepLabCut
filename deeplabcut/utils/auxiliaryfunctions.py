@@ -36,6 +36,18 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.core.trackingutils import TRACK_METHODS
 from deeplabcut.utils import auxfun_videos, auxfun_multianimal
 
+# Import new file I/O utilities (lazy import to avoid circular dependencies)
+fileio = None
+
+
+def _get_fileio():
+    """Lazy import of fileio module to avoid circular dependencies."""
+    global fileio
+    if fileio is None:
+        from deeplabcut.utils import fileio as _fileio
+        fileio = _fileio
+    return fileio
+
 
 def create_config_template(multianimal=False):
     """
@@ -479,7 +491,8 @@ def save_data(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv
     
     # Save as Parquet format (new default)
     print(f"Saving predictions to {parquet_name}")
-    fileio.write_dataframe(DataMachine, parquet_name, format="parquet")
+    fileio_module = _get_fileio()
+    fileio_module.write_dataframe(DataMachine, parquet_name, format="parquet")
     
     # Save metadata
     with open(base_name + "_meta.pickle", "wb") as f:
