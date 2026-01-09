@@ -508,7 +508,7 @@ def analyze_image_folder(
     image_paths = parse_images_and_image_folders(images, image_suffixes)
     if not image_paths:
         logging.info(
-            f"No images found searching {images}, for extensions {image_suffixes}. "
+            f"No images found searching {images} for extensions {image_suffixes}. "
             "Skipping analysis."
         )
         return {}
