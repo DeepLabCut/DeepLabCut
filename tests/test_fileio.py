@@ -4,9 +4,10 @@
 Tests for deeplabcut.utils.fileio module
 
 This test suite covers:
-1. Reading and writing DataFrames in HDF5 format (standard)
-2. Polars integration for performance improvements
-3. Converting between Pandas and Polars DataFrames
+1. Reading and writing DataFrames in Parquet format (primary)
+2. Optional HDF5 export functionality
+3. Converting between formats
+4. Polars integration
 """
 
 import os
@@ -21,7 +22,7 @@ from deeplabcut.utils import fileio
 
 
 class TestFileIO:
-    """Test suite for file I/O utilities with Polars integration."""
+    """Test suite for file I/O utilities with Parquet as primary format."""
     
     @pytest.fixture
     def temp_dir(self):
@@ -42,69 +43,102 @@ class TestFileIO:
         index = [f"frame_{i}" for i in range(100)]
         return pd.DataFrame(data, index=index)
     
-    def test_write_read_hdf5(self, temp_dir, sample_dataframe):
-        """Test writing and reading HDF5 files (standard format)."""
-        filepath = temp_dir / "test_data.h5"
+    def test_write_read_parquet(self, temp_dir, sample_dataframe):
+        """Test writing and reading Parquet files (primary format)."""
+        filepath = temp_dir / "test_data.parquet"
         
         # Write
-        fileio.write_hdf_with_polars(sample_dataframe, filepath, optimize_with_polars=False)
+        fileio.write_dataframe(sample_dataframe, filepath, format="parquet")
         assert filepath.exists()
         
         # Read
-        df_read = fileio.read_hdf_with_polars(filepath, use_polars=False)
+        df_read = fileio.read_dataframe(filepath, format="parquet")
         pd.testing.assert_frame_equal(sample_dataframe, df_read)
     
-    def test_write_read_hdf5_with_polars(self, temp_dir, sample_dataframe):
-        """Test HDF5 I/O with Polars optimization."""
-        # Skip if polars not available
-        if not fileio.HAS_POLARS:
-            pytest.skip("Polars not installed")
+    def test_auto_format_detection(self, temp_dir, sample_dataframe):
+        """Test automatic format detection."""
+        # Write Parquet
+        parquet_path = temp_dir / "test_auto.parquet"
+        fileio.write_dataframe(sample_dataframe, parquet_path)
         
-        filepath = temp_dir / "test_data_polars.h5"
-        
-        # Write with Polars optimization
-        fileio.write_hdf_with_polars(sample_dataframe, filepath, optimize_with_polars=True)
-        assert filepath.exists()
-        
-        # Read with Polars
-        df_read = fileio.read_hdf_with_polars(filepath, use_polars=True)
+        # Read with auto-detection
+        df_read = fileio.read_dataframe(parquet_path, format="auto")
         pd.testing.assert_frame_equal(sample_dataframe, df_read)
     
-    def test_dataframe_to_polars_conversion(self, sample_dataframe):
-        """Test converting Pandas DataFrame to Polars."""
-        if not fileio.HAS_POLARS:
-            pytest.skip("Polars not installed")
+    def test_optional_hdf5_export(self, temp_dir, sample_dataframe):
+        """Test optional HDF5 export functionality."""
+        # Skip if pytables not available
+        try:
+            import tables
+        except ImportError:
+            pytest.skip("PyTables not installed (optional dependency)")
         
-        # Convert to Polars
-        pl_df = fileio.dataframe_to_polars(sample_dataframe)
+        h5_path = temp_dir / "test_export.h5"
         
-        # Convert back to Pandas
-        df_back = fileio.polars_to_dataframe(pl_df)
+        # Write HDF5 (optional format)
+        fileio.write_dataframe(sample_dataframe, h5_path, format="hdf5")
+        assert h5_path.exists()
         
-        # Should be equal
-        pd.testing.assert_frame_equal(sample_dataframe, df_back)
+        # Read back
+        df_read = fileio.read_dataframe(h5_path, format="hdf5")
+        pd.testing.assert_frame_equal(sample_dataframe, df_read)
     
-    def test_process_with_polars(self, sample_dataframe):
-        """Test processing DataFrame with Polars operations."""
-        if not fileio.HAS_POLARS:
-            pytest.skip("Polars not installed")
+    def test_convert_to_parquet(self, temp_dir, sample_dataframe):
+        """Test converting HDF5 to Parquet."""
+        # Skip if pytables not available
+        try:
+            import tables
+        except ImportError:
+            pytest.skip("PyTables not installed (optional dependency)")
         
-        import polars as pl
+        # Create HDF5 file
+        h5_path = temp_dir / "legacy.h5"
+        sample_dataframe.to_hdf(h5_path, key="df_with_missing", mode="w", format="table")
         
-        # Define a filter operation
-        def filter_high_likelihood(pl_df):
-            return pl_df.filter(pl.col("likelihood") > 0.5)
+        # Convert to Parquet
+        parquet_path = fileio.convert_to_parquet(h5_path)
         
-        # Process with Polars
-        result_df = fileio.process_with_polars(sample_dataframe, filter_high_likelihood)
+        # Verify conversion
+        assert parquet_path.exists()
+        assert parquet_path.suffix == ".parquet"
         
-        # Verify the result
-        assert len(result_df) < len(sample_dataframe)
-        assert all(result_df['likelihood'] > 0.5)
+        # Verify data integrity
+        df_read = fileio.read_dataframe(parquet_path)
+        pd.testing.assert_frame_equal(sample_dataframe, df_read)
+    
+    def test_migrate_directory(self, temp_dir, sample_dataframe):
+        """Test batch migration of HDF5 files to Parquet."""
+        # Skip if pytables not available
+        try:
+            import tables
+        except ImportError:
+            pytest.skip("PyTables not installed (optional dependency)")
+        
+        # Create subdirectories with HDF5 files
+        subdir = temp_dir / "subdir"
+        subdir.mkdir()
+        
+        h5_files = [
+            temp_dir / "test1.h5",
+            subdir / "test2.h5"
+        ]
+        
+        # Create HDF5 files
+        for h5_file in h5_files:
+            sample_dataframe.to_hdf(h5_file, key="df_with_missing", mode="w", format="table")
+        
+        # Migrate
+        converted_count = fileio.migrate_directory_to_parquet(temp_dir, recursive=True)
+        assert converted_count == 2
+        
+        # Verify Parquet files exist
+        for h5_file in h5_files:
+            parquet_file = h5_file.with_suffix(".parquet")
+            assert parquet_file.exists()
     
     def test_multiindex_dataframe(self, temp_dir):
         """Test with MultiIndex DataFrame (DeepLabCut format)."""
-        # Create a MultiIndex DataFrame similar to DeepLabCut format
+        # Create a MultiIndex DataFrame
         scorer = "DLC_resnet50"
         bodyparts = ["nose", "tail"]
         coords = ["x", "y", "likelihood"]
@@ -116,36 +150,48 @@ class TestFileIO:
         index = [f"img_{i:05d}.png" for i in range(50)]
         df = pd.DataFrame(data, columns=columns, index=index)
         
-        # Write and read
-        filepath = temp_dir / "multiindex_test.h5"
-        fileio.write_hdf_with_polars(df, filepath)
-        df_read = fileio.read_hdf_with_polars(filepath)
+        # Write and read Parquet
+        filepath = temp_dir / "multiindex_test.parquet"
+        fileio.write_dataframe(df, filepath, format="parquet")
+        df_read = fileio.read_dataframe(filepath)
         
         pd.testing.assert_frame_equal(df, df_read)
     
-    def test_file_extension_handling(self, temp_dir, sample_dataframe):
-        """Test that .h5 extension is enforced."""
-        # Try to write without extension
-        filepath = temp_dir / "test_data"
+    def test_polars_conversion(self, sample_dataframe):
+        """Test converting between Pandas and Polars."""
+        # Convert to Polars
+        pl_df = fileio.dataframe_to_polars(sample_dataframe)
         
-        with pytest.warns(UserWarning):
-            fileio.write_hdf_with_polars(sample_dataframe, filepath)
+        # Convert back to Pandas
+        df_back = fileio.polars_to_dataframe(pl_df)
         
-        # Should create .h5 file
-        h5_path = temp_dir / "test_data.h5"
-        assert h5_path.exists()
+        # Should be equal
+        pd.testing.assert_frame_equal(sample_dataframe, df_back)
     
-    def test_polars_not_available_fallback(self, temp_dir, sample_dataframe):
-        """Test that operations work even without Polars."""
-        filepath = temp_dir / "test_no_polars.h5"
+    def test_file_extension_handling(self, temp_dir, sample_dataframe):
+        """Test automatic file extension handling."""
+        # Write without extension
+        filepath = temp_dir / "test_data"
+        fileio.write_dataframe(sample_dataframe, filepath, format="parquet")
         
-        # Should work regardless of Polars availability
-        fileio.write_hdf_with_polars(sample_dataframe, filepath, optimize_with_polars=False)
-        df_read = fileio.read_hdf_with_polars(filepath, use_polars=False)
+        # Should create .parquet file
+        parquet_path = temp_dir / "test_data.parquet"
+        assert parquet_path.exists()
+    
+    def test_read_with_alternate_extension(self, temp_dir, sample_dataframe):
+        """Test reading file with alternate extension."""
+        # Write as Parquet
+        parquet_path = temp_dir / "test.parquet"
+        fileio.write_dataframe(sample_dataframe, parquet_path)
+        
+        # Try to read with .h5 extension (should find .parquet)
+        h5_path = temp_dir / "test.h5"
+        df_read = fileio.read_dataframe(h5_path, format="auto")
         
         pd.testing.assert_frame_equal(sample_dataframe, df_read)
 
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
 

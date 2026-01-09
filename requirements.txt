@@ -20,12 +20,12 @@ numpy>=1.18.5,<2.0.0
 pandas>=1.0.1,!=1.5.0
 Pillow>=7.1
 polars>=0.20.0
+pyarrow>=14.0.0
 pyyaml
 scikit-image>=0.17
 scikit-learn>=1.0
 scipy>=1.9
 statsmodels>=0.11
-tables
 torch==2.7.1
 torchvision
 tqdm
