@@ -462,13 +462,27 @@ def get_list_of_videos(
 
 
 def save_data(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv):
-    """Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py"""
+    """Save predicted data as parquet file and metadata as pickle file; created by predict_videos.py"""
     DataMachine = pd.DataFrame(PredicteData, columns=pdindex, index=imagenames)
+    
+    # Determine output path - replace .h5 with .parquet
+    if dataname.endswith(".h5"):
+        parquet_name = dataname.replace(".h5", ".parquet")
+        base_name = dataname.split(".h5")[0]
+    else:
+        parquet_name = dataname + ".parquet"
+        base_name = dataname
+    
     if save_as_csv:
         print("Saving csv poses!")
-        DataMachine.to_csv(dataname.split(".h5")[0] + ".csv")
-    DataMachine.to_hdf(dataname, key="df_with_missing", format="table", mode="w")
-    with open(dataname.split(".h5")[0] + "_meta.pickle", "wb") as f:
+        DataMachine.to_csv(base_name + ".csv")
+    
+    # Save as Parquet format (new default)
+    print(f"Saving predictions to {parquet_name}")
+    fileio.write_dataframe(DataMachine, parquet_name, format="parquet")
+    
+    # Save metadata
+    with open(base_name + "_meta.pickle", "wb") as f:
         # Pickle the 'data' dictionary using the highest protocol available.
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 

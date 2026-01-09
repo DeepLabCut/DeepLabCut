@@ -78,7 +78,8 @@ setuptools.setup(
         "pycocotools",
         "pyyaml",
         "Pillow>=7.1",
-        "tables",
+        "polars>=0.20.0",
+        "pyarrow>=14.0.0",
         "h5py>=3.15.1;sys_platform=='darwin'",
     ],
     extras_require={
