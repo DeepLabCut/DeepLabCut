@@ -27,6 +27,7 @@ from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameter
 from deeplabcut.pose_estimation_pytorch.data.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.data.utils import bbox_from_keypoints
 from deeplabcut.pose_estimation_pytorch.data.utils import read_image_shape_fast
+from deeplabcut.pose_estimation_pytorch.utils import get_or_default
 
 
 class DLCLoader(Loader):
@@ -164,7 +165,7 @@ class DLCLoader(Loader):
         Returns:
             An instance of the PoseDatasetParameters with the parameters set.
         """
-        crop_cfg = self.model_cfg["data"]["train"].get("top_down_crop", {})
+        crop_cfg = get_or_default(self.model_cfg["data"]["train"], "top_down_crop", {})
         crop_w, crop_h = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
         crop_margin = crop_cfg.get("margin", 0)
         crop_with_context = crop_cfg.get("crop_with_context", True)
@@ -173,8 +174,10 @@ class DLCLoader(Loader):
             bodyparts=self.model_cfg["metadata"]["bodyparts"],
             unique_bpts=self.model_cfg["metadata"]["unique_bodyparts"],
             individuals=self.model_cfg["metadata"]["individuals"],
-            with_center_keypoints=self.model_cfg.get("with_center_keypoints", False),
-            color_mode=self.model_cfg.get("color_mode", "RGB"),
+            with_center_keypoints=get_or_default(
+                self.model_cfg, "with_center_keypoints", False
+            ),
+            color_mode=get_or_default(self.model_cfg, "color_mode", "RGB"),
             top_down_crop_size=(crop_w, crop_h),
             top_down_crop_margin=crop_margin,
             top_down_crop_with_context=crop_with_context,
