@@ -340,7 +340,7 @@ def CreateVideoSlow(
     writer = FFMpegWriter(fps=outputframerate, codec="h264")
     with writer.saving(fig, videooutname, dpi=dpi), np.errstate(invalid="ignore"):
         for index in trange(min(nframes, len(Dataframe))):
-            imagename = tmpfolder + "/file" + str(index).zfill(nframes_digits) + ".png"
+            imagename = Path(tmpfolder) / f"file{index:0{nframes_digits}d}.png"
             image = img_as_ubyte(clip.load_frame())
             if index in Index:  # then extract the frame!
                 if cropping and displaycropped:
