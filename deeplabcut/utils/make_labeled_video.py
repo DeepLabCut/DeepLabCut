@@ -912,7 +912,7 @@ def proc_video(
         videooutname = filepath.with_name(f"{filepath.stem}{s}_p{int(100 * pcutoff)}_labeled.mp4")
         if videooutname.is_file() and not overwrite:
             print("Labeled video already created. Skipping...")
-            return None
+            return True
 
         if individuals != "all":
             if isinstance(individuals, str):
