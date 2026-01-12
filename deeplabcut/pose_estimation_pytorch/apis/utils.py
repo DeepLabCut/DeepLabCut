@@ -9,7 +9,6 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 from __future__ import annotations
-from testscript_cli import video
 
 import logging
 import random
