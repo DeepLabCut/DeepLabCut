@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 from __future__ import annotations
+from testscript_cli import video
 
 import logging
 import random
@@ -305,8 +306,8 @@ def get_scorer_name(
 
 
 def list_videos_in_folder(
-    data_path: str | list[str],
-    video_type: str | None,
+    data_path: str | Path | list[str | Path],
+    video_type: str | None = None,
     shuffle: bool = False,
 ) -> list[Path]:
     """
@@ -321,27 +322,22 @@ def list_videos_in_folder(
     """
     if not isinstance(data_path, list):
         data_path = [data_path]
-    video_paths = [Path(p) for p in data_path]
 
+    if not video_type:
+        video_suffixes = {f".{ext}" for ext in auxfun_videos.SUPPORTED_VIDEOS}
+    else:
+        video_suffixes = {f".{video_type.lstrip('.')}"}
+    
     videos = []
-    for path in video_paths:
+    for path in map(Path, data_path):
+        assert path.exists(), f"Could not find: {path}. Check access rights."
         if path.is_dir():
-            if not video_type:
-                video_suffixes = ["." + ext for ext in auxfun_videos.SUPPORTED_VIDEOS]
-            else:
-                video_suffixes = [video_type]
-
-            suffixes = [s if s.startswith(".") else "." + s for s in video_suffixes]
-            videos_in_dir = [file for file in path.iterdir() if file.suffix in suffixes]
-            if shuffle:
-                random.shuffle(videos_in_dir)
-            videos += videos_in_dir
-        else:
-            assert (
-                path.exists()
-            ), f"Could not find the video: {path}. Check access rights."
+            videos.extend(f for f in path.iterdir() if f.suffix in video_suffixes)
+        elif path.is_file() and path.suffix in video_suffixes:
             videos.append(path)
 
+    if shuffle:
+        random.shuffle(videos)
     return videos
 
 
