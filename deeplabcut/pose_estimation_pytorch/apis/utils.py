@@ -488,6 +488,7 @@ def get_inference_runners(
     detector_transform: A.BaseCompose | None = None,
     dynamic: DynamicCropper | None = None,
     inference_cfg:InferenceConfig | dict | None = None,
+    min_bbox_score: float | None = None,
 ) -> tuple[InferenceRunner, InferenceRunner | None]:
     """Builds the runners for pose estimation
 
@@ -516,6 +517,9 @@ def get_inference_runners(
             estimation with batch size 1.
         inference_cfg: Configuration for the InferenceRunner. If None - uses the
             inference config defined in the model_config
+        min_bbox_score: Minimum score threshold for filtering bounding boxes from the
+            detector. Only bounding boxes with scores higher than this threshold are
+            kept. If None, no filtering is applied.
 
     Returns:
         a runner for pose estimation
@@ -606,6 +610,7 @@ def get_inference_runners(
                 ),
                 postprocessor=build_detector_postprocessor(
                     max_individuals=max_individuals,
+                    min_bbox_score=min_bbox_score,
                 ),
                 load_weights_only=model_config["detector"]["runner"].get(
                     "load_weights_only",
@@ -637,6 +642,7 @@ def get_detector_inference_runner(
     max_individuals: int | None = None,
     transform: A.BaseCompose | None = None,
     inference_cfg: InferenceConfig | dict | None = None,
+    min_bbox_score: float | None = None,
 ) -> DetectorInferenceRunner:
     """Builds an inference runner for object detection.
 
@@ -650,6 +656,9 @@ def get_detector_inference_runner(
             defined in the config.
         inference_cfg: Configuration for the InferenceRunner. If None - uses the
             inference config defined in the model_config
+        min_bbox_score: Minimum score threshold for filtering bounding boxes from the
+            detector. Only bounding boxes with scores higher than this threshold are
+            kept. If None, no filtering is applied.
 
     Returns:
         an inference runner for object detection
@@ -673,7 +682,10 @@ def get_detector_inference_runner(
         det_cfg["model"]["pretrained"] = False
 
     preprocessor = build_bottom_up_preprocessor(det_cfg["data"]["colormode"], transform)
-    postprocessor = build_detector_postprocessor(max_individuals=max_individuals)
+    postprocessor = build_detector_postprocessor(
+        max_individuals=max_individuals,
+        min_bbox_score=min_bbox_score,
+    )
     runner = build_inference_runner(
         task=Task.DETECT,
         model=DETECTORS.build(det_cfg["model"]),
@@ -719,6 +731,7 @@ def get_filtered_coco_detector_inference_runner(
     model_config: dict | None = None,
     transform: A.BaseCompose | None = None,
     inference_cfg: InferenceConfig | dict | None = None,
+    min_bbox_score: float | None = None,
 ) -> DetectorInferenceRunner:
     """
     Builds a detector inference runner using a pretrained COCO detector from torchvision.
@@ -752,6 +765,11 @@ def get_filtered_coco_detector_inference_runner(
                                                      If None, uses the model's default transform.
         inference_cfg: Configuration for the InferenceRunner. If None - uses the
             inference config defined in the model_config
+        min_bbox_score (float or None, optional): Minimum score threshold for filtering
+                                                  bounding boxes from the detector. Only
+                                                  bounding boxes with scores higher than
+                                                  this threshold are kept. If None, no
+                                                  filtering is applied.
 
     Returns:
         DetectorInferenceRunner: A configured detector inference runner.
@@ -808,6 +826,7 @@ def get_filtered_coco_detector_inference_runner(
         ),
         postprocessor=build_detector_postprocessor(
             max_individuals=max_individuals,
+            min_bbox_score=min_bbox_score,
         ),
         inference_cfg=inference_cfg,
     )
