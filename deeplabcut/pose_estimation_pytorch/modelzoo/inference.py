@@ -149,6 +149,10 @@ def _video_inference_superanimal(
     if not os.path.exists(dest_folder):
         os.makedirs(dest_folder)
 
+    if create_labeled_video:
+        superanimal_colormaps = get_superanimal_colormaps()
+        colormap = superanimal_colormaps[superanimal_name]
+
     for video_path in video_paths:
         print(f"Processing video {video_path}")
 
@@ -199,14 +203,13 @@ def _video_inference_superanimal(
         with open(output_json, "w") as f:
             json.dump(predictions, f, cls=NumpyEncoder)
 
-        output_video = output_path / f"{output_prefix}_labeled.mp4"
-        if len(output_suffix) > 0:
-            output_video = output_video.with_stem(output_video.stem + output_suffix)
-
-        superanimal_colormaps = get_superanimal_colormaps()
-        colormap = superanimal_colormaps[superanimal_name]
 
         if create_labeled_video:
+
+            output_video = output_path / f"{output_prefix}_labeled.mp4"
+            if len(output_suffix) > 0:
+                output_video = output_video.with_stem(output_video.stem + output_suffix)
+
             create_video(
                 video_path,
                 output_h5,
