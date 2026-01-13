@@ -9,12 +9,49 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Simple helper methods related to configuration files stored in yaml files"""
+
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Callable
+from typing import Callable, TYPE_CHECKING
 
 from ruamel.yaml import YAML
+from omegaconf import OmegaConf, DictConfig
+from pydantic import TypeAdapter
+
+if TYPE_CHECKING:
+    from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
+
+
+def dict_to_pose_config(cfg_dict: dict) -> "PoseConfig":
+    """
+    Args:
+        config_dict: the configuration as a dictionary
+
+    Returns:
+        The configuration file as a DictConfig
+    """
+    from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
+    
+    cfg_dictconf = OmegaConf.create(cfg_dict)
+    # Validate the config
+    TypeAdapter(PoseConfig).validate_python(
+        OmegaConf.to_container(cfg_dictconf, resolve=True),
+        extra="forbid",
+    )
+
+    return cfg_dictconf
+
+
+def read_config_as_pose_config(config_path: str | Path) -> "PoseConfig":
+    """
+    Args:
+        config_path: the path to the configuration file to load
+
+    Returns:
+        The configuration file with pure Python classes
+    """
+    return dict_to_pose_config(read_config_as_dict(config_path))
 
 
 def read_config_as_dict(config_path: str | Path) -> dict:
@@ -31,7 +68,28 @@ def read_config_as_dict(config_path: str | Path) -> dict:
     return cfg
 
 
-def write_config(config_path: str | Path, config: dict, overwrite: bool = True) -> None:
+def load_config(config: "PoseConfig | dict | str | Path") -> "PoseConfig | DictConfig":
+    """
+    Loads the pose configuration from a file path or dictionary.
+    Args:
+        config: The pose configuration as a PoseConfig, dictionary, or path to a file.
+
+    Returns:
+        The pose configuration as a PoseConfig or DictConfig.
+    """
+    from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
+    
+    if isinstance(config, (str, Path)):
+        config = read_config_as_pose_config(config)
+    elif isinstance(config, dict):
+        config = dict_to_pose_config(config)
+    assert isinstance(config, PoseConfig) or isinstance(config, DictConfig)
+    return config
+
+
+def write_config(
+    config_path: str | Path, config: DictConfig, overwrite: bool = True
+) -> None:
     """Writes a pose configuration file to disk
 
     Args:
@@ -47,8 +105,7 @@ def write_config(config_path: str | Path, config: dict, overwrite: bool = True) 
             f"Cannot write to {config_path} - set overwrite=True to force"
         )
 
-    with open(config_path, "w") as file:
-        YAML().dump(config, file)
+    OmegaConf.save(config, config_path)
 
 
 def pretty_print(

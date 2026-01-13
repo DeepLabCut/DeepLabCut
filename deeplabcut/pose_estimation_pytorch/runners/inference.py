@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import warnings
 from abc import ABCMeta, abstractmethod
-from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any, Generic, Iterable
 import threading
@@ -21,12 +20,13 @@ from queue import Queue, Empty, Full
 import numpy as np
 import torch
 import torch.nn as nn
+from omegaconf import OmegaConf
 
 import deeplabcut.pose_estimation_pytorch.post_processing.nms as nms
 import deeplabcut.pose_estimation_pytorch.runners.ctd as ctd
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
+from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
 from deeplabcut.core.inferenceutils import calc_object_keypoint_similarity
-from deeplabcut.pose_estimation_pytorch.config.utils import update_config_by_dotpath
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import Postprocessor
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import LoadImage, Preprocessor
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
@@ -37,133 +37,6 @@ from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (
     TopDownDynamicCropper,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
-
-
-def _merge_defaults(cls, data: dict[str, Any]):
-    """
-    Utility: merge a partial dict with the defaults of a dataclass.
-    Unknown keys are ignored.
-    """
-    defaults = asdict(cls())  # defaults from calling the dataclass constructor
-    for k, v in data.items():
-        if k in defaults and isinstance(defaults[k], dict) and isinstance(v, dict):
-            # merge nested dicts recursively
-            defaults[k].update(v)
-        elif k in defaults:
-            defaults[k] = v
-    return defaults
-
-@dataclass
-class MultithreadingConfig:
-    """
-    Parameters for the multithreaded inference pipeline:
-        enabled: Whether to use async inference with pipeline parallelism
-        queue_length: Number of batches to prefetch in async mode
-        timeout: Timeout for queue operations in async mode
-    """
-    enabled: bool = True
-    queue_length: int = 4
-    timeout: float = 30.0
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "MultithreadingConfig":
-        return cls(**_merge_defaults(cls, data or {}))
-
-    def to_dict(self) -> dict:
-        return asdict(self)
-
-@dataclass
-class CompileConfig:
-    """
-    Parameters for the torch.compile option:
-        enabled: Whether to use torch.compile on the model during InferenceRunner initialization
-        backed: torch.compile backend to use
-    """
-    enabled: bool = False
-    backend: str = "inductor"
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "CompileConfig":
-        return cls(**_merge_defaults(cls, data or {}))
-
-    def to_dict(self) -> dict:
-        return asdict(self)
-
-@dataclass
-class AutocastConfig:
-    """
-    Parameters for the torch.autocast option:
-        enabled: Whether to use torch.autocast when running inference
-    """
-    enabled: bool = False
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "AutocastConfig":
-        return cls(**_merge_defaults(cls, data or {}))
-
-    def to_dict(self) -> dict:
-        return asdict(self)
-
-@dataclass
-class InferenceConfig:
-    """
-    Top-level inference configuration that mirrors the `inference` block
-    in pytorch_config.yaml.
-    """
-    multithreading: MultithreadingConfig = field(default_factory=MultithreadingConfig)
-    compile: CompileConfig = field(default_factory=CompileConfig)
-    autocast: AutocastConfig = field(default_factory=AutocastConfig)
-    conditions: dict | None = None
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any] | None) -> "InferenceConfig":
-        """
-        Build an InferenceConfig from a dict, supporting:
-          - nested dictionaries
-          - dot-notation keys (e.g., {"compile.enabled": True})
-        Raises KeyError if a key does not exist.
-        """
-        instance = cls()
-        data = data or {}
-
-        # Convert instance to dict for easy updates
-        cfg_dict = instance.to_dict()
-
-        # Use utility to apply dot-notation updates
-        updated_dict = update_config_by_dotpath(cfg_dict, data, copy_original=True)
-
-        # Validate keys against the dataclass structure
-        def validate_keys(obj, dct, path=""):
-            for k, v in dct.items():
-                if k == "conditions":
-                    if not (v is None or isinstance(v, dict)):
-                        raise TypeError(f"'conditions' must be a dict or None, got {type(v)}")
-                    continue
-                if not hasattr(obj, k):
-                    raise KeyError(f"Invalid key path: {path + k}")
-                sub_obj = getattr(obj, k)
-                if isinstance(v, dict):
-                    validate_keys(sub_obj, v, path=f"{path + k}.")
-
-        validate_keys(instance, updated_dict)
-
-        # Re-build nested dataclasses
-        instance.multithreading = MultithreadingConfig.from_dict(updated_dict["multithreading"])
-        instance.compile = CompileConfig.from_dict(updated_dict["compile"])
-        instance.autocast = AutocastConfig.from_dict(updated_dict["autocast"])
-        instance.conditions = updated_dict.get("conditions", None)
-
-        return instance
-
-    def to_dict(self) -> dict:
-        d = {
-            "multithreading": self.multithreading.to_dict(),
-            "compile": self.compile.to_dict(),
-            "autocast": self.autocast.to_dict(),
-        }
-        if self.conditions is not None:
-            d["conditions"] = self.conditions
-        return d
 
 
 class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
@@ -208,12 +81,12 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.preprocessor = preprocessor
         self.postprocessor = postprocessor
 
-        if isinstance(inference_cfg, InferenceConfig):
-            self.inference_cfg = inference_cfg
-        elif isinstance(inference_cfg, dict):
-            self.inference_cfg = InferenceConfig.from_dict(inference_cfg)
-        elif inference_cfg is None:
+        if inference_cfg is None:
             self.inference_cfg = InferenceConfig()
+        elif isinstance(inference_cfg, dict):
+            self.inference_cfg = OmegaConf.create(inference_cfg)
+        else:
+            self.inference_cfg: InferenceConfig =  inference_cfg
 
         if self.snapshot_path is not None and self.snapshot_path != "":
             self.load_snapshot(
@@ -246,7 +119,9 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
         # Async-specific attributes
         if self.inference_cfg.multithreading.enabled:
-            self._input_queue = Queue(maxsize=self.inference_cfg.multithreading.queue_length)
+            self._input_queue = Queue(
+                maxsize=self.inference_cfg.multithreading.queue_length
+            )
             self._preprocessing_thread = None
             self._stop_event = threading.Event()
             self._exception = None
@@ -378,7 +253,9 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         finally:
             # Wait for preprocessing thread to finish
             if self._preprocessing_thread is not None:
-                self._preprocessing_thread.join(timeout=self.inference_cfg.multithreading.timeout)
+                self._preprocessing_thread.join(
+                    timeout=self.inference_cfg.multithreading.timeout
+                )
 
             # Check for exceptions in preprocessing thread
             if self._exception is not None:
@@ -517,7 +394,11 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 return item
             except Empty:
                 # check if producer is still running
-                if self._stop_event.is_set() or self._preprocessing_thread is None or not self._preprocessing_thread.is_alive():
+                if (
+                    self._stop_event.is_set()
+                    or self._preprocessing_thread is None
+                    or not self._preprocessing_thread.is_alive()
+                ):
                     return None
                 continue
 
