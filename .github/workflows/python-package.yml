@@ -3,8 +3,10 @@ name: Python package
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_call:
+    # This workflow can be called by other workflows (like intelligent-testing.yml)
+  workflow_dispatch:
+    # Allow manual triggering if needed
 
 jobs:
   build:
