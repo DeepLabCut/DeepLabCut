@@ -324,7 +324,7 @@ def list_videos_in_folder(
     Raises:
         FileNotFoundError: If any path in data_path does not exist.
     """
-    if not isinstance(data_path, list):
+    if isinstance(data_path, (str, Path)):
         data_path = [data_path]
 
     if not video_type:
