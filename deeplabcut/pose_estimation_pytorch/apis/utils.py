@@ -311,28 +311,36 @@ def list_videos_in_folder(
 ) -> list[Path]:
     """
     Args:
-        data_path: Path or list of paths to folders containing videos
-        video_type: The type of video to filter for
-        shuffle: If the paths point to directories, whether to shuffle the order of
-            videos in the directory.
+        data_path: Path or list of paths to folders containing videos, or individual
+            video files. Can be a mix of directories and files.
+        video_type: The type of video to filter for (e.g., "mp4", ".mp4"). If None,
+            all supported video types are included.
+        shuffle: Whether to shuffle the order of videos. If False, videos are returned
+            in sorted order for deterministic behavior.
 
     Returns:
         The paths of videos to analyze.
+
+    Raises:
+        FileNotFoundError: If any path in data_path does not exist.
     """
     if not isinstance(data_path, list):
         data_path = [data_path]
 
     if not video_type:
-        video_suffixes = {f".{ext}" for ext in auxfun_videos.SUPPORTED_VIDEOS}
+        video_suffixes = {f".{ext.lower()}" for ext in auxfun_videos.SUPPORTED_VIDEOS}
     else:
-        video_suffixes = {f".{video_type.lstrip('.')}"}
+        video_suffixes = {f".{video_type.lstrip('.').lower()}"}
     
     videos = []
     for path in map(Path, data_path):
-        assert path.exists(), f"Could not find: {path}. Check access rights."
+        if not path.exists():
+            raise FileNotFoundError(
+                f"Could not find: {path}. Check access rights."
+            )
         if path.is_dir():
-            videos.extend(f for f in path.iterdir() if f.suffix in video_suffixes)
-        elif path.is_file() and path.suffix in video_suffixes:
+            videos.extend(f for f in path.iterdir() if f.is_file() and f.suffix.lower() in video_suffixes)
+        elif path.is_file() and path.suffix.lower() in video_suffixes:
             videos.append(path)
 
     if shuffle:
