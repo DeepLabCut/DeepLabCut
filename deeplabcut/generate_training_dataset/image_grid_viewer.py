@@ -181,9 +181,42 @@ class QtImageGridViewer(QtWidgets.QDialog):
     def load_directory(self, directory):
         """Load all images from the specified directory"""
         self.image_files = []
-        for file in os.listdir(directory):
-            if file.lower().endswith((".png", ".jpg", ".jpeg")):
-                self.image_files.append(os.path.join(directory, file))
+        directory_path = Path(directory)
+        
+        try:
+            if not directory_path.exists():
+                QtWidgets.QMessageBox.warning(
+                    self,
+                    "Directory Not Found",
+                    f"The directory does not exist: {directory}",
+                )
+                return
+            
+            if not directory_path.is_dir():
+                QtWidgets.QMessageBox.warning(
+                    self,
+                    "Invalid Path",
+                    f"The path is not a directory: {directory}",
+                )
+                return
+            
+            for file in directory_path.iterdir():
+                if file.is_file() and file.suffix.lower() in (".png", ".jpg", ".jpeg"):
+                    self.image_files.append(str(file))
+        except PermissionError:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Permission Denied",
+                f"Permission denied when accessing directory: {directory}",
+            )
+            return
+        except OSError as e:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Error Reading Directory",
+                f"Error reading directory {directory}: {str(e)}",
+            )
+            return
 
         # Sort alphabetically by default (instead of random)
         self.image_files.sort()
@@ -312,10 +345,20 @@ class QtImageGridViewer(QtWidgets.QDialog):
                         cell_layout.addWidget(checkbox, 0, QtCore.Qt.AlignLeft)
 
                         # Load and resize image
-                        img = Image.open(self.image_files[img_idx])
-                        img = img.resize((self.fixed_width, self.fixed_height))
-                        qimage = ImageQt.ImageQt(img)
-                        pixmap = QtGui.QPixmap.fromImage(qimage)
+                        try:
+                            img = Image.open(self.image_files[img_idx])
+                            img = img.resize((self.fixed_width, self.fixed_height))
+                            qimage = ImageQt.ImageQt(img)
+                            pixmap = QtGui.QPixmap.fromImage(qimage)
+                        except Exception as img_error:
+                            # Show more specific error message for image loading
+                            error_label = QtWidgets.QLabel(
+                                f"Error loading image:\n{os.path.basename(self.image_files[img_idx])}\n{str(img_error)}"
+                            )
+                            error_label.setStyleSheet("background-color: gray; color: red;")
+                            error_label.setWordWrap(True)
+                            self.grid_layout.addWidget(error_label, row, col)
+                            continue
 
                         # Create image label with border
                         img_frame = QtWidgets.QFrame()
@@ -341,7 +384,7 @@ class QtImageGridViewer(QtWidgets.QDialog):
                         cell_layout.addWidget(img_frame)
 
                         # Add filename label
-                        filename = os.path.basename(self.image_files[img_idx])
+                        filename = Path(self.image_files[img_idx]).name
                         short_name = (
                             filename[:15] + "..." if len(filename) > 15 else filename
                         )
@@ -354,9 +397,12 @@ class QtImageGridViewer(QtWidgets.QDialog):
                         self.grid_layout.addWidget(cell_widget, row, col)
 
                     except Exception as e:
-                        # Error placeholder
-                        error_label = QtWidgets.QLabel(f"Error: {str(e)}")
-                        error_label.setStyleSheet("background-color: gray;")
+                        # Error placeholder for unexpected errors
+                        error_label = QtWidgets.QLabel(
+                            f"Unexpected error:\n{str(e)}"
+                        )
+                        error_label.setStyleSheet("background-color: gray; color: red;")
+                        error_label.setWordWrap(True)
                         self.grid_layout.addWidget(error_label, row, col)
 
     def handle_image_click(self, event, img_idx):
