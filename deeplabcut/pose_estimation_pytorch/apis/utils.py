@@ -344,7 +344,15 @@ def list_videos_in_folder(
             videos.append(path)
 
     # Remove duplicates while preserving order (using resolved paths to handle symlinks)
-    videos = list({v.resolve(): v for v in videos}.values())
+    seen = set()
+    unique_videos: list[Path] = []
+    for v in videos:
+        resolved = v.resolve()
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        unique_videos.append(v)
+    videos = unique_videos
 
     if shuffle:
         random.shuffle(videos)
