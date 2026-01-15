@@ -319,7 +319,7 @@ def list_videos_in_folder(
             in sorted order for deterministic behavior.
 
     Returns:
-        The paths of videos to analyze.
+        The paths of videos to analyze. Duplicate paths are removed.
 
     Raises:
         FileNotFoundError: If any path in data_path does not exist.
@@ -342,6 +342,9 @@ def list_videos_in_folder(
             videos.extend(f for f in path.iterdir() if f.is_file() and f.suffix.lower() in video_suffixes)
         elif path.is_file() and path.suffix.lower() in video_suffixes:
             videos.append(path)
+
+    # Remove duplicates while preserving order (using resolved paths to handle symlinks)
+    videos = list({v.resolve(): v for v in videos}.values())
 
     if shuffle:
         random.shuffle(videos)
