@@ -123,9 +123,9 @@ class LabelFrames(DefaultTab):
 
     def remove_frames(self):
         # Create the ImageGridViewer with the Tkinter root
-        viewr = QtImageGridViewer(parent=self.root, config_path=self.root.config)
-        viewr.setWindowTitle("Remove frames")
-        viewr.exec_()
+        viewer = QtImageGridViewer(parent=self.root, config_path=self.root.config)
+        viewer.setWindowTitle("Remove frames")
+        viewer.exec_()
 
     def log_color_by_option(self, choice):
         self.root.logger.info(f"Labeled images will by colored by {choice.upper()}")
