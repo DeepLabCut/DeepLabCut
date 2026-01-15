@@ -14,6 +14,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any
+import logging
 
 import numpy as np
 
@@ -186,17 +187,21 @@ def build_top_down_postprocessor(
     )
 
 
-def build_detector_postprocessor(max_individuals: int) -> Postprocessor:
+def build_detector_postprocessor(
+    max_individuals: int,
+    min_bbox_score: float | None = None,
+) -> Postprocessor:
     """Creates a postprocessor for top-down pose estimation
 
     Args:
         max_individuals: the maximum number of detections to keep in a single image
+        min_bbox_score: the threshold for filtering bounding boxes. Only bboxes
+            with a value higher than this threshold are kept, the rest is removed.
 
     Returns:
         A default top-down Postprocessor
     """
-    return ComposePostprocessor(
-        components=[
+    components = [
             ConcatenateOutputs(
                 keys_to_concatenate={
                     "bboxes": ("detection", "bboxes"),
@@ -213,9 +218,11 @@ def build_detector_postprocessor(max_individuals: int) -> Postprocessor:
             RescaleAndOffset(
                 keys_to_rescale=["bboxes"],
                 mode=RescaleAndOffset.Mode.BBOX_XYWH,
-            ),
-        ]
-    )
+            )
+    ]
+    if min_bbox_score is not None:
+        components.append(RemoveLowConfidenceBoxes(min_bbox_score))
+    return ComposePostprocessor(components=components)
 
 
 class ComposePostprocessor(Postprocessor):
@@ -434,6 +441,27 @@ class RescaleAndOffset(Postprocessor):
                 updated_predictions[name] = outputs.copy()
 
         return updated_predictions, context
+
+
+class RemoveLowConfidenceBoxes(Postprocessor):
+    """
+    Removes low confidence bounding boxes from detector output before they reach the pose estimator
+    """
+
+    def __init__(self, bbox_score_thresh: float):
+        super().__init__()
+        logging.info("utilizing low confidence bbox filtering")
+        self.bbox_score_thresh = bbox_score_thresh
+
+    def __call__(
+        self, predictions: dict[str, np.ndarray], context: Context
+    ) -> tuple[dict[str, np.ndarray], Context]:
+        above_threshold = predictions["bbox_scores"] >= self.bbox_score_thresh
+        keepers = np.where(above_threshold)
+        if any(~above_threshold):
+            predictions["bboxes"] = predictions["bboxes"][keepers]
+            predictions["bbox_scores"] = predictions["bbox_scores"][keepers]
+        return predictions, context
 
 
 class BboxToCoco(Postprocessor):

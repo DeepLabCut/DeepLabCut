@@ -287,16 +287,6 @@ class ContextMenu(QtWidgets.QMenu):
         self.current_item.setText(1, os.path.split(self.parent.filename)[0])
 
 
-class CustomDelegate(QtWidgets.QItemDelegate):
-    # Hack to make the first column read-only, as we do not want users to touch it.
-    # The cleaner solution would be to use a QTreeView and QAbstractItemModel,
-    # but that is a lot of rework for little benefits.
-    def createEditor(self, parent, option, index):
-        if index.column() != 0:
-            return super(CustomDelegate, self).createEditor(parent, option, index)
-        return None
-
-
 class DictViewer(QtWidgets.QWidget):
     def __init__(self, cfg, filename="", parent=None):
         super(DictViewer, self).__init__(parent)
@@ -304,7 +294,6 @@ class DictViewer(QtWidgets.QWidget):
         self.filename = filename
         self.parent = parent
         self.tree = QtWidgets.QTreeWidget()
-        self.tree.setItemDelegate(CustomDelegate())
         self.tree.setHeaderLabels(["Parameter", "Value"])
         self.tree.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
         self.tree.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)

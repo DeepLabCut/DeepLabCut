@@ -15,6 +15,7 @@ import pytest
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
     PredictKeypointIdentities,
     PrepareBackboneFeatures,
+    RemoveLowConfidenceBoxes,
     RescaleAndOffset,
     TrimOutputs,
 )
@@ -303,3 +304,73 @@ def test_prepare_top_down_backbone_features():
         print(bodypart_features)
         assert bodypart_features.shape == (1, 3, 1)
         assert bodypart_features.reshape(-1).tolist() == expected
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        {
+            "bboxes": [[0, 0, 10, 10], [20, 20, 30, 30], [40, 40, 50, 50]],
+            "bbox_scores": [0.1, 0.5, 0.9],
+            "threshold": 0.3,
+            "expected_bboxes": [[20, 20, 30, 30], [40, 40, 50, 50]],
+            "expected_scores": [0.5, 0.9],
+        },
+        {
+            "bboxes": [[0, 0, 10, 10], [20, 20, 30, 30], [40, 40, 50, 50]],
+            "bbox_scores": [0.1, 0.2, 0.3],
+            "threshold": 0.5,
+            "expected_bboxes": [],
+            "expected_scores": [],
+        },
+        {
+            "bboxes": [[0, 0, 10, 10], [20, 20, 30, 30]],
+            "bbox_scores": [0.3, 0.7],
+            "threshold": 0.3,
+            "expected_bboxes": [[0, 0, 10, 10], [20, 20, 30, 30]],
+            "expected_scores": [0.3, 0.7],
+        },
+        {
+            "bboxes": [],
+            "bbox_scores": [],
+            "threshold": 0.5,
+            "expected_bboxes": [],
+            "expected_scores": [],
+        },
+    ],
+)
+def test_remove_low_confidence_boxes(data):
+    """Tests that RemoveLowConfidenceBoxes filters boxes below threshold"""
+    postprocessor = RemoveLowConfidenceBoxes(bbox_score_thresh=data["threshold"])
+    context = {}
+    
+    # Handle empty input arrays with proper shape
+    if len(data["bboxes"]) == 0:
+        bboxes = np.empty((0, 4))
+    else:
+        bboxes = np.array(data["bboxes"])
+    
+    if len(data["bbox_scores"]) == 0:
+        bbox_scores = np.empty((0,))
+    else:
+        bbox_scores = np.array(data["bbox_scores"])
+    
+    predictions = {
+        "bboxes": bboxes,
+        "bbox_scores": bbox_scores,
+    }
+    predictions, context = postprocessor(predictions, context=context)
+    
+    # Handle empty expected arrays with proper shape
+    if len(data["expected_bboxes"]) == 0:
+        expected_bboxes = np.empty((0, 4))
+    else:
+        expected_bboxes = np.array(data["expected_bboxes"])
+    
+    if len(data["expected_scores"]) == 0:
+        expected_scores = np.empty((0,))
+    else:
+        expected_scores = np.array(data["expected_scores"])
+    
+    np.testing.assert_array_equal(predictions["bboxes"], expected_bboxes)
+    np.testing.assert_array_equal(predictions["bbox_scores"], expected_scores)
