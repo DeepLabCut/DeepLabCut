@@ -20,12 +20,11 @@ from deeplabcut.generate_training_dataset import check_labels
 from deeplabcut.gui.components import DefaultTab
 from deeplabcut.gui.widgets import launch_napari
 from deeplabcut.utils.skeleton import SkeletonBuilder
-from deeplabcut.generate_training_dataset.Image_grid_viewer import QtImageGridViewer
+from deeplabcut.generate_training_dataset.image_grid_viewer import QtImageGridViewer
 
 
 def label_frames(
-    config_path: str | Path | None = None,
-    image_folder: str | None = None
+    config_path: str | Path | None = None, image_folder: str | None = None
 ):
     """Launches the napari-deeplabcut labelling GUI.
 
@@ -121,11 +120,13 @@ class LabelFrames(DefaultTab):
         self.main_layout.addWidget(self.label_frames_btn, alignment=Qt.AlignLeft)
         self.main_layout.addWidget(self.check_labels_btn, alignment=Qt.AlignLeft)
         self.main_layout.addWidget(self.build_skeleton_btn, alignment=Qt.AlignLeft)
+
     def remove_frames(self):
         # Create the ImageGridViewer with the Tkinter root
         viewr = QtImageGridViewer(parent=self.root, config_path=self.root.config)
         viewr.setWindowTitle("Remove frames")
         viewr.exec_()
+
     def log_color_by_option(self, choice):
         self.root.logger.info(f"Labeled images will by colored by {choice.upper()}")
 
@@ -149,7 +150,9 @@ class LabelFrames(DefaultTab):
 
     def check_labels(self):
         check_labels(self.root.config, visualizeindividuals=self.root.is_multianimal)
-        labeled_images = (Path(self.root.config).parent / "labeled-data").rglob("*_labeled/*.png")
+        labeled_images = (Path(self.root.config).parent / "labeled-data").rglob(
+            "*_labeled/*.png"
+        )
         _ = launch_napari(labeled_images, plugin="napari", stack=True)
 
     def build_skeleton(self, *args):

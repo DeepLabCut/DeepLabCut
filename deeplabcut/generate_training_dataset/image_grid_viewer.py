@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from PIL import Image, ImageQt
 
+
 class QtImageGridViewer(QtWidgets.QDialog):
     def __init__(self, parent=None, config_path=None):
         super().__init__(parent)
@@ -92,7 +93,9 @@ class QtImageGridViewer(QtWidgets.QDialog):
         selection_layout.addWidget(self.deselect_all_btn)
 
         # Help label
-        help_label = QtWidgets.QLabel("Shift+Click: Select Range | Ctrl+Click: Add to Selection")
+        help_label = QtWidgets.QLabel(
+            "Shift+Click: Select Range | Ctrl+Click: Add to Selection"
+        )
         help_label.setStyleSheet("color: blue; font-size: 8pt;")
         selection_layout.addWidget(help_label, 1)
 
@@ -152,13 +155,17 @@ class QtImageGridViewer(QtWidgets.QDialog):
                     dialog_layout.addWidget(list_widget)
 
                     buttons = QtWidgets.QDialogButtonBox(
-                        QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+                        QtWidgets.QDialogButtonBox.Ok
+                        | QtWidgets.QDialogButtonBox.Cancel
                     )
                     buttons.accepted.connect(dialog.accept)
                     buttons.rejected.connect(dialog.reject)
                     dialog_layout.addWidget(buttons)
 
-                    if dialog.exec_() == QtWidgets.QDialog.Accepted and list_widget.currentItem():
+                    if (
+                        dialog.exec_() == QtWidgets.QDialog.Accepted
+                        and list_widget.currentItem()
+                    ):
                         dataset_name = list_widget.currentItem().text()
                         self.load_directory(str(labeled_data_dir / dataset_name))
 
@@ -272,12 +279,17 @@ class QtImageGridViewer(QtWidgets.QDialog):
         start_idx = self.current_page * self.images_per_page
 
         # Update page label
-        total_pages = max(1, (len(self.image_files) + self.images_per_page - 1) // self.images_per_page)
+        total_pages = max(
+            1,
+            (len(self.image_files) + self.images_per_page - 1) // self.images_per_page,
+        )
         self.page_label.setText(f"Page: {self.current_page + 1} of {total_pages}")
 
         # Update prev/next buttons
         self.prev_btn.setEnabled(self.current_page > 0)
-        self.next_btn.setEnabled((self.current_page + 1) * self.images_per_page < len(self.image_files))
+        self.next_btn.setEnabled(
+            (self.current_page + 1) * self.images_per_page < len(self.image_files)
+        )
 
         # Create image cells
         for row in range(self.grid_size[0]):
@@ -294,7 +306,9 @@ class QtImageGridViewer(QtWidgets.QDialog):
                         # Create checkbox
                         checkbox = QtWidgets.QCheckBox()
                         checkbox.setChecked(img_idx in self.selected_images)
-                        checkbox.stateChanged.connect(lambda state, idx=img_idx: self.toggle_selection(idx, state))
+                        checkbox.stateChanged.connect(
+                            lambda state, idx=img_idx: self.toggle_selection(idx, state)
+                        )
                         cell_layout.addWidget(checkbox, 0, QtCore.Qt.AlignLeft)
 
                         # Load and resize image
@@ -317,14 +331,20 @@ class QtImageGridViewer(QtWidgets.QDialog):
                         img_label = QtWidgets.QLabel()
                         img_label.setPixmap(pixmap)
                         img_label.setCursor(QtCore.Qt.PointingHandCursor)
-                        img_label.mousePressEvent = lambda event, idx=img_idx: self.handle_image_click(event, idx)
+                        img_label.mousePressEvent = (
+                            lambda event, idx=img_idx: self.handle_image_click(
+                                event, idx
+                            )
+                        )
                         img_layout.addWidget(img_label)
 
                         cell_layout.addWidget(img_frame)
 
                         # Add filename label
                         filename = os.path.basename(self.image_files[img_idx])
-                        short_name = filename[:15] + "..." if len(filename) > 15 else filename
+                        short_name = (
+                            filename[:15] + "..." if len(filename) > 15 else filename
+                        )
                         name_label = QtWidgets.QLabel(short_name)
                         name_label.setAlignment(QtCore.Qt.AlignCenter)
                         name_label.setToolTip(filename)
@@ -351,7 +371,9 @@ class QtImageGridViewer(QtWidgets.QDialog):
 
             # Get all visible indices in range
             start_page_idx = self.current_page * self.images_per_page
-            end_page_idx = min(start_page_idx + self.images_per_page, len(self.image_files))
+            end_page_idx = min(
+                start_page_idx + self.images_per_page, len(self.image_files)
+            )
             visible_indices = list(range(start_page_idx, end_page_idx))
 
             # Select all visible indices in range
@@ -425,7 +447,7 @@ class QtImageGridViewer(QtWidgets.QDialog):
             "Confirm Deletion",
             f"Are you sure you want to delete {len(self.selected_images)} selected images?",
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-            QtWidgets.QMessageBox.No
+            QtWidgets.QMessageBox.No,
         )
 
         if confirm != QtWidgets.QMessageBox.Yes:
@@ -435,7 +457,9 @@ class QtImageGridViewer(QtWidgets.QDialog):
         files_to_delete = [self.image_files[i] for i in self.selected_images]
 
         # Remove from list
-        self.image_files = [f for i, f in enumerate(self.image_files) if i not in self.selected_images]
+        self.image_files = [
+            f for i, f in enumerate(self.image_files) if i not in self.selected_images
+        ]
 
         # Ask about physical deletion
         delete_from_disk = QtWidgets.QMessageBox.question(
@@ -443,7 +467,7 @@ class QtImageGridViewer(QtWidgets.QDialog):
             "Delete from Disk",
             "Do you also want to delete these files from disk? (This cannot be undone)",
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-            QtWidgets.QMessageBox.No
+            QtWidgets.QMessageBox.No,
         )
 
         if delete_from_disk == QtWidgets.QMessageBox.Yes:
@@ -454,7 +478,7 @@ class QtImageGridViewer(QtWidgets.QDialog):
                     QtWidgets.QMessageBox.warning(
                         self,
                         "Deletion Error",
-                        f"Could not delete {os.path.basename(file_path)}: {str(e)}"
+                        f"Could not delete {os.path.basename(file_path)}: {str(e)}",
                     )
 
         # Clear selection and adjust page
@@ -462,7 +486,10 @@ class QtImageGridViewer(QtWidgets.QDialog):
         self.last_selected = None
         self.update_selection_count()
 
-        total_pages = max(1, (len(self.image_files) + self.images_per_page - 1) // self.images_per_page)
+        total_pages = max(
+            1,
+            (len(self.image_files) + self.images_per_page - 1) // self.images_per_page,
+        )
         if self.current_page >= total_pages:
             self.current_page = max(0, total_pages - 1)
 
@@ -473,7 +500,11 @@ class QtImageGridViewer(QtWidgets.QDialog):
             self,
             "Deletion Complete",
             f"{len(files_to_delete)} images removed from the viewer."
-            + (f" Files were also deleted from disk." if delete_from_disk == QtWidgets.QMessageBox.Yes else "")
+            + (
+                f" Files were also deleted from disk."
+                if delete_from_disk == QtWidgets.QMessageBox.Yes
+                else ""
+            ),
         )
 
     def prev_page(self):
@@ -504,8 +535,10 @@ class QtImageGridViewer(QtWidgets.QDialog):
         # Hide any active tooltip
         QtWidgets.QToolTip.hideText()
 
+
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     viewer = QtImageGridViewer()
     viewer.resize(1080, 900)
