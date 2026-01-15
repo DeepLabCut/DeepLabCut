@@ -200,6 +200,7 @@ def extract_outlier_frames(
     destfolder=None,
     modelprefix="",
     track_method="",
+    **kwargs,
 ):
     """Extracts the outlier frames.
 
@@ -271,7 +272,7 @@ def extract_outlier_frames(
         See https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
 
     MAdegree: int, optional, default=1
-        For outlieralgorithm ``'fitting'``: MovingAvarage degree of ARIMA model degree.
+        For outlieralgorithm ``'fitting'``: Moving Average degree of ARIMA model degree.
         (Note we use SARIMAX without exogeneous and seasonal part)
         See https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
 
@@ -319,6 +320,11 @@ def extract_outlier_frames(
          Empty by default (corresponding to a single animal project).
          For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
          be taken from the config.yaml file if none is given.
+
+    kwargs: additional arguments.
+        For torch-based shuffles, can be used to specify:
+            - snapshot_index
+            - detector_snapshot_index
 
     Returns
     -------
@@ -373,6 +379,7 @@ def extract_outlier_frames(
         shuffle,
         trainFraction=cfg["TrainingFraction"][trainingsetindex],
         modelprefix=modelprefix,
+        **kwargs,
     )
 
     Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
@@ -938,7 +945,7 @@ def ExtractFramesbasedonPreselection(
                 df.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
 
         print(
-            "The outlier frames are extracted. They are stored in the subdirectory labeled-data\%s."
+            r"The outlier frames are extracted. They are stored in the subdirectory labeled-data\%s."
             % vname
         )
         print(

@@ -112,7 +112,7 @@ There are docs for this: [convert single to multianimal annotation data](convert
 
 ![Box 1 - Multi Animal Project Configuration File Glossary](images/box1-multi.png)
 
-#### API Docs
+### API Docs
 ````{admonition} Click the button to see API Docs
 :class: dropdown
 ```{eval-rst}
@@ -608,6 +608,32 @@ and test errors are comparable (good generalization). What (numerically) compris
 many factors (including the size of the tracked body parts, the labeling variability, etc.). Note that the test error can
 also be larger than the training error due to human variability (in labeling, see Figure 2 in Mathis et al, Nature Neuroscience 2018).
 
+**Optional parameters:**
+
+- `Shuffles: list, optional` - List of integers specifying the shuffle indices of the training dataset.
+The default is [1]
+
+- `plotting: bool | str, optional` - Plots the predictions on the train and test images. The default is `False`;
+if provided it must be either `True`, `False`, `"bodypart"`, or `"individual"`.
+
+- `show_errors: bool, optional` - Display train and test errors. The default is `True`
+
+- `comparisonbodyparts: list of bodyparts, Default is all` - The average error will be computed for those body parts
+only (Has to be a subset of the body parts).
+
+- `gputouse: int, optional` - Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not
+have a GPU, put None. See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+
+- `pcutoff: float | list[float] | dict[str, float], optional`
+(Only applicable when using the PyTorch engine. For TensorFlow, set `pcutoff` in the `config.yaml` file.)
+Specifies the cutoff value(s) used to compute evaluation metrics.
+  - If `None` (default), the cutoff will be loaded from the project configuration.
+  - To apply a single cutoff value to all bodyparts, provide a `float`.
+  - To specify different cutoffs per bodypart, provide either:
+    - A `list[float]`: one value per bodypart, with an additional value for each unique bodypart if applicable.
+    - A `dict[str, float]`: where keys are bodypart names and values are the corresponding cutoff values.
+If a bodypart is not included in the provided dictionary, a default `pcutoff` of `0.6` will be used for that bodypart.
+
 The plots can be customized by editing the **config.yaml** file (i.e., the colormap, scale, marker size (dotsize), and
 transparency of labels (alpha-value) can be modified). By default each body part is plotted in a different color
 (governed by the colormap) and the plot labels indicate their source. Note that by default the human labels are
@@ -659,7 +685,7 @@ track individuals directly **during video analysis**. If you choose to train any
 with a name that starts with `ctd_`, you'll be able to call `deeplabcut.analyze_videos`
 with `ctd_tracking=True`. To learn more about tracking with CTD, see the [
 `COLAB_BUCTD_and_CTD_tracking`](
-https://github.com/DeepLabCut/DeepLabCut/main/examples/COLAB/COLAB_BUCTD_and_CTD_tracking.ipynb)
+https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/COLAB/COLAB_BUCTD_and_CTD_tracking.ipynb)
 COLAB notebook.
 ````
 
@@ -733,7 +759,7 @@ path to the **folder** or exact video(s) you wish to analyze:
 deeplabcut.analyze_videos(config_path, ['/fullpath/project/videos/'], videotype='.mp4', auto_track=True)
 ```
 
-#### IF auto_track = True:
+### IF auto_track = True:
 
 ```{versionadded} v2.2.0.3
 A new argument `auto_track=True`, was added to `deeplabcut.analyze_videos` chaining pose
@@ -744,7 +770,7 @@ DLC. If `auto_track=False`, one must run `convert_detections2tracklets` and
 the workflow (ideal for advanced users).
 ```
 
-#### IF auto_track = False:
+### IF auto_track = False:
 
 You can validate the tracking parameters. Namely, you can iteratively change the
 parameters, run `convert_detections2tracklets` then load them in the GUI 
@@ -809,7 +835,7 @@ deeplabcut.stitch_tracklets(..., n_tracks=n)
 
 In such cases, file columns will default to dummy animal names (ind1, ind2, ..., up to indn).
 
-#### API Docs
+### API Docs
 
 ````{admonition} Click the button to see API Docs for analyze_videos
 :class: dropdown

@@ -399,7 +399,16 @@ def dlc3predictions_2_annotation_from_video(
     # video_to_frames function by default outputs png or jpg
     image_paths = sorted(glob.glob(os.path.join(image_folder, "*.png")))
 
-    # skipping every 4 frames should speed up and not impact the performance
+    # Ensure predictions and image_paths have the same length before subsampling
+    if len(predictions) != len(image_paths):
+        print(f"Warning: predictions length ({len(predictions)}) != image_paths length ({len(image_paths)})")
+        # Take the minimum length to avoid index errors
+        min_length = min(len(predictions), len(image_paths))
+        predictions = predictions[:min_length]
+        image_paths = image_paths[:min_length]
+        print(f"Truncated both arrays to length {min_length}")
+
+    # skipping every 10 frames should speed up and not impact the performance
     predictions, image_paths = predictions[::10], image_paths[::10]
 
     # Since the inference API does not return the image path, I assume the predictions are provided in the same order as the frames in the video.

@@ -1,4 +1,4 @@
-## DeepLabCut Self-paced Course
+# DeepLabCut Self-paced Course
 
 ::::{warning}
 This course was designed for DLC 2.

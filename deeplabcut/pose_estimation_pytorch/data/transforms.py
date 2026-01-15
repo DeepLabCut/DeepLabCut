@@ -127,7 +127,7 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
             noise = 0.05 * 255
         transforms.append(
             A.GaussNoise(
-                var_limit=(0, noise ** 2),
+                var_limit=(0, noise**2),
                 mean=0,
                 per_channel=True,
                 # Albumentations doesn't support per_channel = 0.5
@@ -142,6 +142,9 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
         transforms.append(
             A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         )
+
+    if augmentations.get("scale_to_unit_range"):
+        transforms.append(ScaleToUnitRange())
 
     return A.Compose(
         transforms,
@@ -472,7 +475,7 @@ class ElasticTransform(A.ElasticTransform):
             p,
         )
         self._neighbor_dist = 3
-        self._neighbor_dist_square = self._neighbor_dist ** 2
+        self._neighbor_dist_square = self._neighbor_dist**2
 
     def apply_to_keypoints(
         self, keypoints: Sequence[float], random_state: int | None = None, **params
@@ -669,3 +672,11 @@ class RandomBBoxTransform(A.DualTransform):
             return low + (delta * np.random.random(size))
 
         raise ValueError(f"Unknown sampling: {self.sampling}")
+
+
+class ScaleToUnitRange(A.ImageOnlyTransform):
+    def __init__(self, always_apply=True, p=1.0):
+        super().__init__(always_apply=always_apply, p=p)
+
+    def apply(self, img, **params):
+        return img.astype(np.float32) / 255.0

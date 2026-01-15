@@ -23,6 +23,7 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     replace_default_values,
     update_config,
 )
+from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
@@ -140,10 +141,6 @@ def make_pytorch_pose_config(
     aug_filename = "aug_default.yaml" if task == Task.BOTTOM_UP else "aug_top_down.yaml"
     aug_cfg = {"data": read_config_as_dict(configs_dir / "base" / aug_filename)}
 
-    # Add conditions for CTD models if specified
-    if task == Task.COND_TOP_DOWN and ctd_conditions is not None:
-        _add_ctd_conditions(aug_cfg, ctd_conditions)
-
     pose_config = update_config(pose_config, aug_cfg)
 
     # add the model to the config
@@ -187,6 +184,11 @@ def make_pytorch_pose_config(
             backbone_output_channels=pose_config["model"]["backbone_output_channels"],
         )
 
+    pose_config["inference"] = InferenceConfig().to_dict()
+    # Add conditions for CTD models if specified
+    if task == Task.COND_TOP_DOWN and ctd_conditions is not None:
+        _add_ctd_conditions(pose_config, ctd_conditions)
+
     # sort first-level keys to make it prettier
     pose_config = dict(sorted(pose_config.items()))
 
@@ -197,11 +199,11 @@ def make_pytorch_pose_config(
 
 
 def _add_ctd_conditions(
-    aug_cfg: dict, ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int]
+    model_cfg: dict, ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int]
 ):
     """
     Args:
-        aug_cfg: dict, data augmentation configuration
+        model_cfg: dict, contents of pytorch_config.yaml
         ctd_conditions: Only for using conditional-top-down (CTD) models. It defines
             the conditions that will be used with the CTD model. It can be:
             * A shuffle number (ctd_conditions: int), which must correspond to a
@@ -242,7 +244,7 @@ def _add_ctd_conditions(
     else:
         raise TypeError("Conditions ctd_conditions is of invalid type.")
 
-    aug_cfg["data"]["conditions"] = conditions
+    model_cfg["inference"]["conditions"] = conditions
 
 
 def make_pytorch_test_config(

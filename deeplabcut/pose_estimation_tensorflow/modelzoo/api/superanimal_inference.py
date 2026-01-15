@@ -452,6 +452,7 @@ def _video_inference_superanimal(
     pcutoff=0.1,
     adapt_iterations=1000,
     pseudo_threshold=0.1,
+    create_labeled_video: bool = True,
 ):
     """
     WARNING: This function is an internal utility function and should not be
@@ -471,7 +472,7 @@ def _video_inference_superanimal(
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
 
     superanimal_name: str
-        The name of the superanimal model. We currently only support "superanimal_quadruped" and "superanimal_topviewmouse"
+        The name of the superanimal model. In TensorFlow, we only support "superanimal_quadruped", "superanimal_topviewmouse". Check out the PyTorch version for active development, better performance and additional models (humans, birds, ...)
     scale_list: list
         A list of int containing the target height of the multi scale test time augmentation. By default it uses the original size. Users are advised to try a wide range of scale list when the super model does not give reasonable results
 
@@ -492,6 +493,9 @@ def _video_inference_superanimal(
 
     pseudo_threshold: float, default 0.1
         Video adaptation only uses predictions that are above pseudo_threshold
+
+    create_labeled_video (bool):
+        Specifies if a labeled video needs to be created, True by default.
 
     Given a list of scales for spatial pyramid, i.e. [600, 700]
 
@@ -526,10 +530,10 @@ def _video_inference_superanimal(
         )
         if not video_adapt:
             adapter.before_adapt_inference(
-                make_video=True, pcutoff=pcutoff, plot_trajectories=plot_trajectories
+                make_video=create_labeled_video, pcutoff=pcutoff, plot_trajectories=plot_trajectories
             )
         else:
-            adapter.before_adapt_inference(make_video=False)
+            adapter.before_adapt_inference(make_video=create_labeled_video)
             adapter.adaptation_training(
                 adapt_iterations=adapt_iterations,
                 pseudo_threshold=pseudo_threshold,
@@ -537,4 +541,5 @@ def _video_inference_superanimal(
             adapter.after_adapt_inference(
                 pcutoff=pcutoff,
                 plot_trajectories=plot_trajectories,
+                create_labeled_video=create_labeled_video,
             )

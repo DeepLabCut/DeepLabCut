@@ -112,13 +112,16 @@ def load_super_animal_config(
     model_config = add_metadata(project_config, model_config, model_cfg_path)
     model_config = update_config(model_config, max_individuals, device)
 
-    if detector_name is None:
+    if detector_name is None and super_animal != "superanimal_humanbody":
         model_config["method"] = "BU"
     else:
-        detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name)
-        detector_cfg = read_config_as_dict(detector_cfg_path)
         model_config["method"] = "TD"
-        model_config["detector"] = detector_cfg
+        if super_animal != "superanimal_humanbody":
+            detector_cfg_path = get_super_animal_model_config_path(
+                model_name=detector_name
+            )
+            detector_cfg = read_config_as_dict(detector_cfg_path)
+            model_config["detector"] = detector_cfg
     return model_config
 
 
@@ -137,9 +140,12 @@ def download_super_animal_snapshot(dataset: str, model_name: str) -> Path:
     """
     snapshot_dir = get_snapshot_folder_path()
     model_name = f"{dataset}_{model_name}"
-    model_path = snapshot_dir / f"{model_name}.pt"
+    model_filename = f"{model_name}.pt"
+    model_path = snapshot_dir / model_filename
 
-    download_huggingface_model(model_name, target_dir=str(snapshot_dir))
+    download_huggingface_model(
+        model_name, target_dir=str(snapshot_dir), rename_mapping=model_filename
+    )
     if not model_path.exists():
         raise RuntimeError(f"Failed to download {model_name} to {model_path}")
 
@@ -197,7 +203,7 @@ def update_config(config: dict, max_individuals: int, device: str):
     config["metadata"]["individuals"] = [f"animal{i}" for i in range(max_individuals)]
 
     config["device"] = device
-    if "detector" in config:
+    if config.get("detector", None) is not None:
         config["detector"]["device"] = device
 
     return config

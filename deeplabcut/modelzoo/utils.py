@@ -63,6 +63,7 @@ def get_super_animal_scorer(
     super_animal: str,
     model_snapshot_path: Path,
     detector_snapshot_path: Path | None,
+    torchvision_detector_name: str | None = None,
 ) -> str:
     """
     Args:
@@ -70,23 +71,35 @@ def get_super_animal_scorer(
         model_snapshot_path: The path for the SuperAnimal pose model snapshot
         detector_snapshot_path: The path for the SuperAnimal detector snapshot, if a
             detector is being used.
+        torchvision_detector_name: The name of a pretrained COCO detector from torchvision,
+            if such a detector is used instead of a snapshot.
 
     Returns:
         The DLC scorer name to use for the given SuperAnimal models.
     """
+    if detector_snapshot_path is not None and torchvision_detector_name is not None:
+        raise ValueError(
+            "Provide only one of `detector_snapshot_path` or `torchvision_detector_name`, not both."
+        )
     super_animal_prefix = super_animal + "_"
-    dlc_scorer = super_animal_prefix
+    # Always use model name first
+    model_name = (
+        model_snapshot_path.stem
+        if hasattr(model_snapshot_path, "stem")
+        else str(model_snapshot_path)
+    )
+    if model_name.startswith(super_animal_prefix):
+        model_name = model_name[len(super_animal_prefix) :]
+    dlc_scorer = f"{super_animal_prefix}{model_name}"
 
+    # Then add detector name if provided
     if detector_snapshot_path is not None:
         detector_name = detector_snapshot_path.stem
         if detector_name.startswith(super_animal_prefix):
             detector_name = detector_name[len(super_animal_prefix) :]
-        dlc_scorer += f"{detector_name}_"
-
-    model_name = model_snapshot_path.stem
-    if model_name.startswith(super_animal_prefix):
-        model_name = model_name[len(super_animal_prefix) :]
-    dlc_scorer += f"{model_name}"
+        dlc_scorer += f"_{detector_name}"
+    elif torchvision_detector_name is not None:
+        dlc_scorer += f"_{torchvision_detector_name}"
 
     return dlc_scorer
 
@@ -363,6 +376,30 @@ def get_superanimal_colormaps():
         )
         / 255
     )
+    superanimal_humanbody_colors = (
+        np.array(
+            [
+                [255, 0, 0],
+                [255, 20, 0],
+                [255, 40, 0],
+                [255, 60, 0],
+                [255, 80, 0],
+                [255, 100, 0],
+                [255, 120, 0],
+                [255, 140, 0],
+                [255, 160, 0],
+                [255, 180, 0],
+                [255, 200, 0],
+                [255, 220, 0],
+                [255, 240, 0],
+                [255, 255, 0],
+                [220, 255, 0],
+                [180, 255, 0],
+                [140, 255, 0],
+            ]
+        )
+        / 255
+    )
 
     superanimal_colormaps = {
         "superanimal_bird": ListedColormap(
@@ -373,6 +410,9 @@ def get_superanimal_colormaps():
         ),
         "superanimal_quadruped": ListedColormap(
             list(superanimal_quadruped_colors), name="superanimal_quadruped"
+        ),
+        "superanimal_humanbody": ListedColormap(
+            list(superanimal_humanbody_colors), name="superanimal_humanbody"
         ),
     }
     return superanimal_colormaps

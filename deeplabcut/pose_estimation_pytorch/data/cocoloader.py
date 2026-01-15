@@ -29,6 +29,7 @@ class COCOLoader(Loader):
     """
     Attributes:
         project_root: root directory path of the COCO project.
+        model_config_path: path to the pytorch_config.yaml file
         train_json_filename: the name of the json file containing the train annotations
         test_json_filename: the name of the json file containing the train annotations.
             None if there is no test set.
@@ -79,7 +80,9 @@ class COCOLoader(Loader):
                 bodyparts=bodyparts,
                 unique_bpts=[],
                 individuals=[f"individual{i}" for i in range(num_individuals)],
-                with_center_keypoints=self.model_cfg.get("with_center_keypoints", False),
+                with_center_keypoints=self.model_cfg.get(
+                    "with_center_keypoints", False
+                ),
                 color_mode=self.model_cfg.get("color_mode", "RGB"),
                 top_down_crop_size=(crop_w, crop_h),
                 top_down_crop_margin=crop_margin,
@@ -240,7 +243,6 @@ class COCOLoader(Loader):
         Returns:
             the train or test data
         """
-        # todo: add validation
         if mode == "train":
             data = self.train_json
         elif mode == "test":
@@ -263,15 +265,15 @@ class COCOLoader(Loader):
             annotations_per_image[image_id] = individual_idx + 1
 
         filter_annotations = []
-        for annotation in data['annotations']:
-            keypoints = annotation['keypoints']
-            bbox = annotation['bbox']
+        for annotation in data["annotations"]:
+            keypoints = annotation["keypoints"]
+            bbox = annotation["bbox"]
             if np.all(keypoints <= 0) or len(bbox) == 0:
                 continue
             filter_annotations.append(annotation)
 
-        data["annotations"] = filter_annotations        
-        
+        data["annotations"] = filter_annotations
+
         # FIXME: why estimating bbox when there are already bbox?
         annotations_with_bbox = self._compute_bboxes(
             data["images"],

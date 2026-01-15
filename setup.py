@@ -47,7 +47,7 @@ def pytorch_config_paths() -> list[str]:
 
 setuptools.setup(
     name="deeplabcut",
-    version="3.0.0rc8",
+    version="3.0.0rc13",
     author="A. & M.W. Mathis Labs",
     author_email="alexander@deeplabcut.org",
     description="Markerless pose-estimation of user-defined features with deep learning",
@@ -58,7 +58,6 @@ setuptools.setup(
         "albumentations<=1.4.3",
         "dlclibrary>=0.0.7",
         "einops",
-        "dlclibrary>=0.0.6",
         "filterpy>=1.4.4",
         "ruamel.yaml>=0.15.0",
         "imgaug>=0.4.0",
@@ -72,7 +71,6 @@ setuptools.setup(
         "scikit-learn>=1.0",
         "scipy>=1.9",
         "statsmodels>=0.11",
-        "tables==3.8.0",
         "timm",
         "torch>=2.0.0",
         "torchvision",
@@ -80,10 +78,12 @@ setuptools.setup(
         "pycocotools",
         "pyyaml",
         "Pillow>=7.1",
+        "tables",
+        "h5py>=3.15.1;sys_platform=='darwin'",
     ],
     extras_require={
         "gui": [
-            "pyside6==6.4.2",
+            "pyside6",
             "qdarkstyle==3.1",
             "napari-deeplabcut>=0.2.1.6",
         ],
@@ -91,12 +91,14 @@ setuptools.setup(
         "docs": ["numpydoc"],
         "tf": [
             "tensorflow>=2.0,<=2.10;platform_system=='Windows'",
-            "tensorflow>=2.0,<=2.12;platform_system!='Windows'",
+            "tensorflow>=2.0;platform_system!='Windows'",
+            "tf-keras;platform_system!='Windows'",
             "tensorpack>=0.11",
             "tf_slim>=1.1.0",
         ],  # Last supported TF version on Windows Native is 2.10
         "apple_mchips": [
-            "tensorflow-macos<2.13.0",
+            "tensorflow-macos",
+            "tf-keras",
             "tensorflow-metal",
             "tensorpack>=0.11",
             "tf_slim>=1.1.0",

@@ -1,7 +1,7 @@
 name: Bug Report
 description: File a bug report to help us improve
 assignees:
-  - maximpavliv
+  - mmathislab #temp
 body:
   - type: markdown
     attributes:
@@ -25,7 +25,7 @@ body:
     attributes:
       label: DeepLabCut version
       description: What version of DLC are you using? Please check with `import deeplabcut`, `deeplabcut.__version__`
-      placeholder: 3.0.0rc8
+      placeholder: 3.0.0rc9
     validations:
       required: true
   - type: dropdown

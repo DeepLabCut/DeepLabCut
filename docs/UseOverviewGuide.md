@@ -71,7 +71,7 @@ Getting Started: [a video tutorial on navigating the documentation!](https://www
 </p>
 
 ### Overview of the workflow:
-This page contains a list of the essential functions of DeepLabCut as well as demos. There are many optional parameters with each described function, which you can find [here](functionDetails.md). For additional assistance, you can use the [help](UseOverviewGuide.md#help) function to better understand what each function does.
+This page contains a list of the essential functions of DeepLabCut as well as demos. There are many optional parameters with each described function. For detailed function documentation, please refer to the main user guides or API documentation. For additional assistance, you can use the [help](UseOverviewGuide.md#help) function to better understand what each function does.
 
 <p align="center">
   <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5cca272524a69435c3251c40/1556752170424/flowfig.jpg?format=1000w" width=95%>
@@ -81,7 +81,7 @@ This page contains a list of the essential functions of DeepLabCut as well as de
   </em>
 </p>
 
-You can have as many projects on your computer as you wish. You can have DeepLabCut installed in an [environment](/conda-environments) and always exit and return to this environment to run the code. You just need to point to the correct ``config.yaml`` file to [jump back in](/docs/UseOverviewGuide.md#tips-for-daily-use)! The documentation below will take you through the individual steps.
+You can have as many projects on your computer as you wish. You can have DeepLabCut installed in an [environment](../conda-environments/README.md) and always exit and return to this environment to run the code. You just need to point to the correct ``config.yaml`` file to [jump back in](/docs/UseOverviewGuide.md#tips-for-daily-use)! The documentation below will take you through the individual steps.
 
 <p align="center">
 <img src=  https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=500w width="60%">
@@ -100,7 +100,7 @@ We recommend first using **DeepLabCut for a single animal scenario** to understa
 
 We highly recommend using it first in the Project Manager GUI ([Option 3](docs/functionDetails.md#deeplabcut-project-manager-gui)). This will allow you to get used to the additional steps by being walked through the process. Then, you can always use all the functions in your favorite IDE, notebooks, etc.
 
-#### *What scenario do you have?*
+### *What scenario do you have?*
 
 - **I have single animal videos:**
    - quick start: when you `create_new_project` (and leave the default flag to False in `multianimal=False`). This is the typical work path for many of you.
@@ -141,7 +141,7 @@ with the terminal interface you get the most versatility and options.
 [VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=DRT-Cq2vdWs)
 
 We provide Jupyter and COLAB notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user's
-own dataset. See all the demo's [here!](/examples) Please note that GUIs are not easily supported in Jupyter in MacOS, as you need a framework build of python. While it's possible to launch them with a few tweaks, we recommend using the Project Manager GUI or terminal, so please follow the instructions below.
+own dataset. See all the demo's [here!](../examples/README.md) Please note that GUIs are not easily supported in Jupyter in MacOS, as you need a framework build of python. While it's possible to launch them with a few tweaks, we recommend using the Project Manager GUI or terminal, so please follow the instructions below.
 
 (using-project-manager-gui)=
 ## Option 2: using the Project Manager GUI:

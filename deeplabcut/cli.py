@@ -383,7 +383,7 @@ def analyze_videos(_, *args, **kwargs):
     "--ma_degree",
     "MAdegree",
     default=1,
-    help="Int value. For outlieralgorithm `fitting`: MovingAvarage degree of Sarimax model degree.\
+    help="Int value. For outlieralgorithm `fitting`: Moving Average degree of Sarimax model degree.\
                See https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html",
 )
 @click.option(

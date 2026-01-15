@@ -1,4 +1,4 @@
-### QUICK GUIDE to single Animal Training:
+# QUICK GUIDE to single Animal Training:
 **The main steps to take you from project creation to analyzed videos:**
 
 Open ipython in the terminal:
