@@ -339,9 +339,12 @@ class QtImageGridViewer(QtWidgets.QDialog):
                         # Create checkbox
                         checkbox = QtWidgets.QCheckBox()
                         checkbox.setChecked(img_idx in self.selected_images)
-                        checkbox.stateChanged.connect(
-                            lambda state, idx=img_idx: self.toggle_selection(idx, state)
-                        )
+                        # Create a closure to avoid lambda closure bug
+                        def make_checkbox_handler(idx):
+                            def checkbox_handler(state):
+                                self.toggle_selection(idx, state)
+                            return checkbox_handler
+                        checkbox.stateChanged.connect(make_checkbox_handler(img_idx))
                         cell_layout.addWidget(checkbox, 0, QtCore.Qt.AlignLeft)
 
                         # Load and resize image
@@ -374,11 +377,12 @@ class QtImageGridViewer(QtWidgets.QDialog):
                         img_label = QtWidgets.QLabel()
                         img_label.setPixmap(pixmap)
                         img_label.setCursor(QtCore.Qt.PointingHandCursor)
-                        img_label.mousePressEvent = (
-                            lambda event, idx=img_idx: self.handle_image_click(
-                                event, idx
-                            )
-                        )
+                        # Create a closure to avoid lambda closure bug
+                        def make_click_handler(idx):
+                            def click_handler(event):
+                                self.handle_image_click(event, idx)
+                            return click_handler
+                        img_label.mousePressEvent = make_click_handler(img_idx)
                         img_layout.addWidget(img_label)
 
                         cell_layout.addWidget(img_frame)
