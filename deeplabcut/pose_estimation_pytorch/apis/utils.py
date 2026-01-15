@@ -331,32 +331,24 @@ def list_videos_in_folder(
         video_suffixes = {f".{ext.lower()}" for ext in auxfun_videos.SUPPORTED_VIDEOS}
     else:
         video_suffixes = {f".{video_type.lstrip('.').lower()}"}
-    
+
     videos = []
     for path in map(Path, data_path):
         if not path.exists():
             raise FileNotFoundError(
                 f"Could not find: {path}. Check access rights."
             )
+
         if path.is_dir():
             videos.extend(f for f in path.iterdir() if f.is_file() and f.suffix.lower() in video_suffixes)
         elif path.is_file() and path.suffix.lower() in video_suffixes:
             videos.append(path)
 
-    # Remove duplicates while preserving order (using resolved paths to handle symlinks)
-    seen = set()
-    unique_videos: list[Path] = []
-    for v in videos:
-        resolved = v.resolve()
-        if resolved in seen:
-            continue
-        seen.add(resolved)
-        unique_videos.append(v)
-    videos = unique_videos
-
+    # Resolve video paths and remove duplicates
+    unique_videos = list(dict.fromkeys(v.resolve() for v in videos))
     if shuffle:
-        random.shuffle(videos)
-    return videos
+        random.shuffle(unique_videos)
+    return unique_videos
 
 
 def ensure_multianimal_df_format(df_predictions: pd.DataFrame) -> pd.DataFrame:
