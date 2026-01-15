@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import pickle
 import re
-from deeplabcut.post_processing import columnwise_spline_interp
+from deeplabcut.post_processing.spline_interpolation import columnwise_spline_interp
 from deeplabcut.utils import auxiliaryfunctions
 from tqdm import trange
 

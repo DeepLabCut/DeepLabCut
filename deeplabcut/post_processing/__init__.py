@@ -20,3 +20,4 @@ Licensed under GNU Lesser General Public License v3.0
 
 from deeplabcut.post_processing.analyze_skeleton import analyzeskeleton
 from deeplabcut.post_processing.filtering import *
+from deeplabcut.post_processing.spline_interpolation import columnwise_spline_interp
