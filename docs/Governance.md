@@ -74,7 +74,7 @@ developer community (including the SC members) fails to reach such a consensus
 in a reasonable timeframe, the SC is the entity that resolves the issue.
 
 Members of the steering council also have the "owner" role within the [DeepLabCut GitHub organization](https://github.com/DeepLabCut/)
-and are ultimately responsible for managing the DeepLabCut GitHub account, the [@DeepLabCut](https://twitter.com/DeepLabCut)
+and are ultimately responsible for managing the DeepLabCut GitHub account, the [@DeepLabCut](https://x.com/DeepLabCut)
 twitter account, the [DeepLabCut website](http://www.DeepLabCut.org), and other similar DeepLabCut owned resources.
 
 The current steering council of DeepLabCut consists of the original developers:
