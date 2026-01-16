@@ -14,6 +14,7 @@ import warnings
 from typing import Any, Iterable, Sequence
 
 import albumentations as A
+import albumentations.augmentations.crops.functional as fcrops
 import cv2
 import numpy as np
 from albumentations.augmentations.geometric import functional as F
@@ -90,7 +91,7 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
                 min_height=crop_sampling["height"],
                 min_width=crop_sampling["width"],
                 border_mode=cv2.BORDER_CONSTANT,
-                always_apply=True,
+                p=1.0 # always apply
             )
         )
         transforms.append(
@@ -127,8 +128,8 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
             noise = 0.05 * 255
         transforms.append(
             A.GaussNoise(
-                var_limit=(0, noise**2),
-                mean=0,
+                std_range=(0, noise / 255.0),
+                mean_range=(0, 0),
                 per_channel=True,
                 # Albumentations doesn't support per_channel = 0.5
                 p=0.5,
@@ -152,6 +153,7 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
             "xy", remove_invisible=False, label_fields=["class_labels"]
         ),
         bbox_params=A.BboxParams(format="coco", label_fields=["bbox_labels"]),
+        strict=True,
     )
 
 
@@ -161,7 +163,7 @@ def build_auto_padding(
     pad_height_divisor: int | None = 1,
     pad_width_divisor: int | None = 1,
     position: str = "random",  # TODO: Which default to set?
-    border_mode: str = "reflect_101",  # TODO: Which default to set?
+    border_mode: str = "constant",  # TODO: Which default to set?
     border_value: float | None = None,
     border_mask_value: float | None = None,
 ) -> A.PadIfNeeded:
@@ -203,8 +205,8 @@ def build_auto_padding(
         pad_width_divisor=pad_width_divisor,
         position=position,
         border_mode=border_modes[border_mode],
-        value=border_value,
-        mask_value=border_mask_value,
+        fill=border_value if border_value is not None else 0,
+        fill_mask=border_mask_value if border_mask_value is not None else 0,
     )
 
 
@@ -219,7 +221,7 @@ def build_resize_transforms(resize_cfg: dict) -> list[A.BasicTransform]:
                 min_height=height,
                 min_width=width,
                 border_mode=cv2.BORDER_CONSTANT,
-                position=A.PadIfNeeded.PositionType.TOP_LEFT,
+                position="top_left",
             )
         )
     else:
@@ -267,7 +269,7 @@ class KeypointAwareCrop(A.RandomCrop):
         max_shift: float = 0.4,
         crop_sampling: str = "hybrid",
     ):
-        super().__init__(height, width, always_apply=True)
+        super().__init__(height, width, p=1.0)  # always apply
         # Clamp to 40% of crop size to ensure that at least
         # the center keypoint remains visible after the offset is applied.
         self.max_shift = max(0.0, min(max_shift, 0.4))
@@ -288,9 +290,9 @@ class KeypointAwareCrop(A.RandomCrop):
     def targets_as_params(self) -> list[str]:
         return ["image", "keypoints"]
 
-    def get_params_dependent_on_targets(self, params: dict[str, Any]) -> dict[str, Any]:
-        img = params["image"]
-        kpts = params["keypoints"]
+    def get_params_dependent_on_data(self, params: dict[str, Any], data: dict[str, Any]) -> dict[str, Any]:
+        img = data["image"]
+        kpts = data["keypoints"]
         shift_factors = np.random.random(2)
         shift = self.max_shift * shift_factors * np.array([self.width, self.height])
         sampling = self.crop_sampling
@@ -321,13 +323,21 @@ class KeypointAwareCrop(A.RandomCrop):
             # and normalize to the original image dimensions.
             center = (center + shift) / [w, h]
             center = np.clip(center, 0, np.nextafter(1, 0))  # Clip to 1 exclusive
-        return {"h_start": center[1], "w_start": center[0]}
+        
+        h_start, w_start = center[1], center[0]
+        crop_coords = fcrops.get_crop_coords(img.shape[:2], (self.height, self.width), h_start, w_start)
+        
+        return {
+            "h_start": h_start,
+            "w_start": w_start,
+            "crop_coords": crop_coords,
+        }
 
     def apply_to_keypoints(
         self,
         keypoints,
         **params,
-    ) -> list[tuple[float]]:
+    ) -> np.ndarray:
         keypoints = super().apply_to_keypoints(keypoints, **params)
         new_keypoints = []
         for kp in keypoints:
@@ -337,7 +347,7 @@ class KeypointAwareCrop(A.RandomCrop):
                 kp[:2] = np.nan, np.nan
                 kp = tuple(kp)
             new_keypoints.append(kp)
-        return new_keypoints
+        return np.array(new_keypoints)
 
     def get_transform_init_args_names(self) -> tuple[str, ...]:
         return "width", "height", "max_shift", "crop_sampling"
@@ -362,31 +372,30 @@ class KeepAspectRatioResize(A.DualTransform):
         mode: str = "pad",
         interpolation: Any = cv2.INTER_LINEAR,
         p: float = 1.0,
-        always_apply: bool = True,
     ) -> None:
-        super().__init__(always_apply=always_apply, p=p)
+        super().__init__(p=p)
         self.height = height
         self.width = width
         self.mode = mode
         self.interpolation = interpolation
 
-    def apply(self, img, scale=0, interpolation=cv2.INTER_LINEAR, **params):
-        return A.scale(img, scale, interpolation)
+    def apply(self, img, scale=1.0, interpolation=cv2.INTER_LINEAR, **params):
+        return F.scale(img, scale, interpolation)
 
-    def apply_to_bbox(self, bbox, **params):
+    def apply_to_bboxes(self, bboxes, **params):
         # Bounding box coordinates are scale invariant
-        return bbox
+        return bboxes
 
-    def apply_to_keypoint(self, keypoint, scale=0, **params):
-        keypoint = A.keypoint_scale(keypoint, scale, scale)
+    def apply_to_keypoints(self, keypoints, scale=1.0, **params):
+        keypoint = F.keypoints_scale(keypoints, scale, scale)
         return keypoint
 
     @property
     def targets_as_params(self) -> list[str]:
         return ["image"]
 
-    def get_params_dependent_on_targets(self, params: dict[str, Any]) -> dict[str, Any]:
-        h, w, _ = params["image"].shape
+    def get_params_dependent_on_data(self, params: dict[str, Any], data: dict[str, Any]) -> dict[str, Any]:
+        h, w, _ = data["image"].shape
         if self.mode == "pad":
             scale = min(self.height / h, self.width / w)
         else:
@@ -417,7 +426,7 @@ class Grayscale(A.ToGray):
             * If a tuple ``(a, b)``, a random value from the range
               ``a <= x <= b`` will be sampled per image.
         """
-        super().__init__(always_apply, p)
+        super().__init__(p=1.0 if always_apply else p)
         if isinstance(alpha, (float, int)):
             self._alpha = self._validate_alpha(alpha)
         elif isinstance(alpha, tuple):
@@ -514,7 +523,7 @@ class ElasticTransform(A.ElasticTransform):
             kp = list(kp)
             kp[:2] = new_coords
             new_keypoints.append(tuple(kp))
-        return new_keypoints
+        return np.array(new_keypoints)
 
 
 class CoarseDropout(A.CoarseDropout):
@@ -532,27 +541,23 @@ class CoarseDropout(A.CoarseDropout):
         p: float = 0.5,
     ):
         super().__init__(
-            max_holes,
-            max_height,
-            max_width,
-            min_holes,
-            min_height,
-            min_width,
-            fill_value,
-            mask_fill_value,
-            always_apply,
-            p,
+            num_holes_range=(min_holes if min_holes is not None else max_holes, max_holes),
+            hole_height_range=(min_height if min_height is not None else max_height, max_height),
+            hole_width_range=(min_width if min_width is not None else max_width, max_width),
+            fill=fill_value,
+            fill_mask=mask_fill_value,
+            p=1.0 if always_apply else p,
         )
 
-    def apply_to_bboxes(self, bboxes: Sequence[float], **params) -> list[float]:
-        return list(bboxes)
+    def apply_to_bboxes(self, bboxes: np.ndarray, **params) -> np.ndarray:
+        return bboxes
 
     def apply_to_keypoints(
         self,
-        keypoints: Sequence[float],
-        holes: Iterable[tuple[int, int, int, int]] = (),
-        **params,
-    ) -> list[float]:
+        keypoints: np.ndarray,
+        holes: np.ndarray,
+        **params: Any,
+    ) -> np.ndarray:
         new_keypoints = []
         for kp in keypoints:
             in_hole = False
@@ -565,7 +570,7 @@ class CoarseDropout(A.CoarseDropout):
                 kp[:2] = np.nan, np.nan
                 kp = tuple(kp)
             new_keypoints.append(kp)
-        return new_keypoints
+        return np.array(new_keypoints)
 
     def _keypoint_in_hole(self, keypoint, hole: tuple[int, int, int, int]) -> bool:
         """Reimplemented from Albumentations as was removed in v1.4.0"""
@@ -650,10 +655,10 @@ class RandomBBoxTransform(A.DualTransform):
         bbox_xyxy[:, 2:] = bbox_cxcy + bbox_half_wh
         bbox_xyxy = np.clip(bbox_xyxy, 0, 1)
 
-        # add the extra information back; tuples for albumentations<=1.4.3
-        bboxes_out = [tuple(bbox) for bbox in bbox_xyxy]
+        # add the extra information back
+        bboxes_out = bbox_xyxy
         if bboxes_extra is not None:
-            bboxes_out = [bbox + extra for bbox, extra in zip(bboxes_out, bboxes_extra)]
+            bboxes_out = np.column_stack([bbox_xyxy] + [np.array(bboxes_extra)])
         return bboxes_out
 
     def get_transform_init_args_names(self):
@@ -676,7 +681,7 @@ class RandomBBoxTransform(A.DualTransform):
 
 class ScaleToUnitRange(A.ImageOnlyTransform):
     def __init__(self, always_apply=True, p=1.0):
-        super().__init__(always_apply=always_apply, p=p)
+        super().__init__(p= 1.0 if always_apply else p)
 
     def apply(self, img, **params):
         return img.astype(np.float32) / 255.0
