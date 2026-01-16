@@ -54,13 +54,18 @@ dependencies = [
     "pyyaml",
     "Pillow>=7.1",
     "tables",
-    "h5py>=3.15.1; sys_platform == 'darwin'",
-    "black>=25.9.0",
+    "h5py>=3.15.1; platform_system == 'Darwin'",
 ]
 
 [project.optional-dependencies]
-gui = ["pyside6", "qdarkstyle==3.1", "napari-deeplabcut>=0.2.1.6"]
-openvino = ["openvino-dev>=2022.1.0"]
+gui = [
+    # Avoid 6.10.1 only on Linux x86_64 (fails for older glib versions)
+    "pyside6<6.10.1; platform_system == 'Linux' and platform_machine == 'x86_64'",
+    "pyside6; platform_system != 'Linux' or platform_machine != 'x86_64'",
+    "qdarkstyle==3.1",
+    "napari-deeplabcut>=0.2.1.6",
+]
+openvino = ["openvino-dev==2022.1.0"]
 docs = [
     "mike",
     "mkdocs",
@@ -73,18 +78,24 @@ docs = [
     "numpydoc",
 ]
 tf = [
-    "tensorflow>=2.0,<=2.10; platform_system=='Windows'",
-    "tensorflow>=2.0; platform_system!='Windows'",
+    # !!! Tensorflow is not supported on Windows with Python >= 3.11 
+    "tensorflow>=2.0,<=2.10; platform_system == 'Windows' and python_version < '3.11'",
+    "tensorflow>=2.0,<2.12; platform_system == 'Linux' and python_version < '3.11'",
+    "tensorflow>=2.12.0; platform_system == 'Linux' and python_version >= '3.11'",
+    "tensorflow-macos>=2.0,<2.12; platform_system == 'Darwin' and python_version < '3.11'",
+    "tensorflow-macos>=2.12.0; platform_system == 'Darwin' and python_version >= '3.11'",
+    "tensorflow-io-gcs-filesystem==0.31.0; platform_system == 'Windows' and python_version<'3.11'",
+    "tensorflow-io-gcs-filesystem>0.31.0; platform_system != 'Windows'",
     "tf-keras; platform_system!='Windows'",
     "tensorpack>=0.11",
     "tf_slim>=1.1.0",
 ]
 apple_mchips = [
-    "tensorflow-macos",
-    "tf-keras",
-    "tensorflow-metal",
-    "tensorpack>=0.11",
-    "tf_slim>=1.1.0",
+    "tensorflow-macos; platform_system == 'Darwin'",
+    "tf-keras; platform_system == 'Darwin'",
+    "tensorflow-metal; platform_system == 'Darwin'",
+    "tensorpack>=0.11; platform_system == 'Darwin'",
+    "tf_slim>=1.1.0; platform_system == 'Darwin'",
 ]
 modelzoo = ["huggingface_hub"]
 wandb = ["wandb"]
@@ -94,7 +105,13 @@ dev = [
     "pytest",
     "coverage",
     "ruff",
+    "black>=25.9.0",
 ]
+
+[[tool.uv.dependency-metadata]]
+name = "openvino-dev"
+version = "2022.1.0"
+requires-dist = []
 
 [tool.uv.pip]
 torch-backend = "auto"
