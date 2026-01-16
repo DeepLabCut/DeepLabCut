@@ -256,6 +256,11 @@ def write_config(configname, cfg):
         if not "skeleton" in cfg.keys():
             cfg_file["skeleton"] = []
             cfg_file["skeleton_color"] = "black"
+        # Use a very large width so long strings (e.g., file paths or keys with spaces)
+        # are kept on a single line instead of being wrapped, which can otherwise cause
+        # them to be emitted as complex keys. See also:
+        # https://stackoverflow.com/questions/31197268/pyyaml-yaml-dump-produces-complex-key-for-string-key-122-chars/31199123#31199123
+        ruamelFile.width = 1_000_000
         ruamelFile.dump(cfg_file, cf)
 
 
