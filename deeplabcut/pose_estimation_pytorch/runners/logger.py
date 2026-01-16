@@ -438,7 +438,7 @@ class CSVLogger(BaseLogger):
     def save(self):
         """Saves the metrics to the file system"""
         logs = self._prepare_logs()
-        with open(self.log_file, "a", newline="") as f:
+        with open(self.log_file, "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerows(logs)
 
