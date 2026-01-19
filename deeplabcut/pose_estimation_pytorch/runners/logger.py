@@ -456,22 +456,26 @@ class CSVLogger(BaseLogger):
 
     def _load_existing_data(self) -> None:
         """Loads existing CSV data if the log file exists"""
+        logging.info(f"Loading existing CSV data from {self.log_file}")
         try:
             with open(self.log_file, "r", newline="") as f:
                 reader = csv.DictReader(f)
 
                 # Update logged metrics from header
                 if "step" not in reader.fieldnames:
-                    return  # Invalid format
+                    raise ValueError("Invalid CSV format: missing 'step' column")
 
                 metric_names = [m for m in reader.fieldnames if m != "step"]
                 self._logged_metrics.update(metric_names)
 
                 # Load data rows
+                steps = []
+                metric_store = []
                 for row in reader:
                     try:
                         step = int(row["step"])
                     except (ValueError, KeyError):
+                        logging.warning(f"Invalid step value in row: {row}")
                         continue
 
                     # Convert metric values: empty strings -> None, numeric strings -> float
@@ -486,14 +490,17 @@ class CSVLogger(BaseLogger):
                             except ValueError:
                                 step_metrics[metric] = value
 
-                    self._steps.append(step)
-                    self._metric_store.append(step_metrics)
+                    steps.append(step)
+                    metric_store.append(step_metrics)
 
         except Exception as e:
             logging.warning(
                 f"Failed to load existing CSV data from {self.log_file}: {e}. "
                 "Starting with empty log."
             )
+            return
+        self._steps.extend(steps)
+        self._metric_store.extend(metric_store)
 
     def _prepare_logs(self) -> list[list]:
         """Prepares the data to log as a list of strings"""
