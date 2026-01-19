@@ -1,0 +1,120 @@
+site_name: DeepLabCut Developer Documentation
+site_description: Developer documentation for DeepLabCut
+site_url: https://deeplabcut.github.io/DeepLabCut/dev
+
+repo_name: DeepLabCut/DeepLabCut
+repo_url: https://github.com/DeepLabCut/DeepLabCut
+
+theme:
+  name: material
+  custom_dir: "docs/theme"
+  logo: assets/logo.png
+  favicon: assets/favicon.ico
+
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  features:
+    - announce.dismiss # allow dismissing announcements
+    - content.code.annotate # enable code annotations
+    - content.code.copy # add copy button to code blocks
+    - content.tabs.link # link content tabs across pages
+    - navigation.indexes # enable navigation index pages
+    - navigation.instant # enable instant navigation
+    - navigation.instant.prefetch # prefetch pages for instant navigation
+    - navigation.instant.preview # show instant previews
+    - navigation.instant.progress # show loading progress
+    - navigation.path # show breadcrumb navigation path
+    - navigation.sections # enable navigation sections
+    - navigation.tabs # enable navigation tabs
+    - navigation.top # add back-to-top button
+    - navigation.tracking # track navigation in URL
+    - search.highlight # highlight search results
+    - search.suggest # show search suggestions
+    - toc.follow # follow active heading in table of contents
+
+plugins:
+  - autorefs # link to a heading or attribute (id) from any other page in the site
+  - mike # for versioning
+  - mkdocs-jupyter # adds support for rendering Jupyter Notebooks
+  - api-autonav: # automatically generates API reference navigation based on the file structure
+      modules: ["../"]
+      module_options: {}
+      exclude: []
+      nav_section_title: "API Reference"
+      api_root_uri: "reference"
+      nav_item_prefix: "<code class='doc-symbol doc-symbol-nav doc-symbol-module'></code>"
+      exclude_private: true
+      show_full_namespace: false
+      on_implicit_namespace_package: "warn"
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            summary: true
+            show_root_heading: true
+            docstring_options:
+              returns_multiple_items: false
+            docstring_section_style: table
+          inventories:
+            - url: https://docs.python.org/3/objects.inv
+              domains: [py, std]
+            - url: https://typing-extensions.readthedocs.io/en/latest/objects.inv
+            - url: https://pytorch.org/docs/stable/objects.inv
+  - search # adds a search bar to the header
+  - social # generates social cards rendering as preview images on social media
+
+markdown_extensions:
+  - attr_list # adds support for setting attributes (ids) on elements
+  - pymdownx.highlight: # adds support for syntax highlighting of code blocks
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.arithmatex # adds support for rendering LaTeX math expressions
+  - pymdownx.inlinehilite # add support for syntax highlighting of inline code blocks
+  - pymdownx.snippets # adds the ability to embed content from arbitrary files into a document
+  - pymdownx.superfences # allows for arbitrary nesting of code and content blocks inside each other
+  - pymdownx.tabbed: # provides a syntax to easily add tabbed Markdown content.
+      alternate_style: true
+  - pymdownx.blocks.details # allows for the creation of collapsible details/summary constructs.
+  - pymdownx.blocks.admonition # allows for the creation of admonitions.
+  - pymdownx.blocks.definition # allows for the creation of definition lists.
+  - pymdownx.blocks.tab # allows for the creation of tab containers.
+  - pymdownx.blocks.html # allows for the arbitrary creation of HTML elements of various types.
+
+extra:
+  version:
+    provider: mike # TODO: use mike to manage versions
+
+copyright: "Copyright © 2026 The DeepLabCut Team"
+
+nav:
+  - Get Started:
+      - Overview: index.md
+      - Installation: installation.md
+      - Quick Start: quickstart.md
+  - Developer Guides:
+      - Overview: devguides.md
+      - Model Architecture: models.md
+      - Configuration Files: configuration.md
+      - Data Preparation: dataprep.md
+      - Training Models: training.md
+      - Inference & Analysis: inference.md
+      - Adding Custom Models: custom_models.md
+      - Multi-animal Tracking: tracking.md
+  - Examples:
+      - Practical Examples: examples.md
+  - API Reference
