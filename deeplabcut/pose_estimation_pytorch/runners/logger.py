@@ -459,21 +459,21 @@ class CSVLogger(BaseLogger):
         try:
             with open(self.log_file, "r", newline="") as f:
                 reader = csv.DictReader(f)
-                
+
                 # Update logged metrics from header
                 if "step" not in reader.fieldnames:
                     return  # Invalid format
-                    
+
                 metric_names = [m for m in reader.fieldnames if m != "step"]
                 self._logged_metrics.update(metric_names)
-                
+
                 # Load data rows
                 for row in reader:
                     try:
                         step = int(row["step"])
                     except (ValueError, KeyError):
                         continue
-                    
+
                     # Convert metric values: empty strings -> None, numeric strings -> float
                     step_metrics = {}
                     for metric in metric_names:
@@ -485,10 +485,10 @@ class CSVLogger(BaseLogger):
                                 step_metrics[metric] = float(value)
                             except ValueError:
                                 step_metrics[metric] = value
-                    
+
                     self._steps.append(step)
                     self._metric_store.append(step_metrics)
-                
+
         except Exception as e:
             logging.warning(
                 f"Failed to load existing CSV data from {self.log_file}: {e}. "

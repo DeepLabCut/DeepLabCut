@@ -79,22 +79,22 @@ def test_prepare_image(keypoints: list[list[float]], denormalize: bool) -> None:
 def test_csv_logger_resume(tmp_path: Path) -> None:
     """Test CSVLogger preserves data when resuming from snapshot"""
     log_file = tmp_path / "learning_stats.csv"
-    
+
     # Initial training: log some metrics
     logger1 = logging.CSVLogger(str(tmp_path), "learning_stats.csv")
     logger1.log({"loss": 0.5, "accuracy": 0.8}, step=1)
     logger1.log({"loss": 0.4, "accuracy": 0.9}, step=2)
-    
+
     assert log_file.exists()
     assert len(logger1._steps) == 2
-    
+
     # Resume training: should load existing data
     logger2 = logging.CSVLogger(str(tmp_path), "learning_stats.csv")
     assert len(logger2._steps) == 2
     assert logger2._steps == [1, 2]
     assert logger2._metric_store[0]["loss"] == 0.5
     assert logger2._metric_store[1]["accuracy"] == 0.9
-    
+
     # Log new data: should append, not overwrite
     logger2.log({"loss": 0.3, "accuracy": 0.95}, step=3)
     assert len(logger2._steps) == 3
