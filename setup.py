@@ -67,6 +67,8 @@ setuptools.setup(
         "networkx>=2.6",
         "numpy>=1.18.5,<2.0.0",
         "pandas>=1.0.1,!=1.5.0",
+        "polars>=0.20.0",
+        "pyarrow>=14.0.0",
         "scikit-image>=0.17",
         "scikit-learn>=1.0",
         "scipy>=1.9",
@@ -78,7 +80,6 @@ setuptools.setup(
         "pycocotools",
         "pyyaml",
         "Pillow>=7.1",
-        "tables",
         "h5py>=3.15.1;sys_platform=='darwin'",
     ],
     extras_require={
