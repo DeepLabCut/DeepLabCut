@@ -33,3 +33,13 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: site
+
+      - name: Build developer docs
+        run: |
+          mkdocs build -v -f deeplabcut/pose_estimation_pytorch/mkdocs.yml  --site-dir ../../_build/html/dev
+
+      - name: GitHub Pages action
+        uses: peaceiris/actions-gh-pages@v3.9.3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_build/html
