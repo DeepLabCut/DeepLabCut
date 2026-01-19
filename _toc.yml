@@ -119,3 +119,8 @@ parts:
       - file: docs/Governance
       - file: CONTRIBUTING
       - file: docs/citation
+
+  - caption: Development
+    chapters:
+    - file: docs/dev
+      title: Developer Documentation
