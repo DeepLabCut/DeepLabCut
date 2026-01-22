@@ -638,7 +638,7 @@ def compute_deviations(
     if storeoutput == "full":
         data.to_hdf(
             dataname.split(".h5")[0] + "filtered.h5",
-            "df_with_missing",
+            key="df_with_missing",
             format="table",
             mode="w",
         )
