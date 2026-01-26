@@ -14,9 +14,11 @@ from pydantic.dataclasses import dataclass
 
 from typing import Any
 
+from deeplabcut.core.config.config_mixin import ConfigMixin
+
 
 @dataclass
-class OptimizerConfig:
+class OptimizerConfig(ConfigMixin):
     """Optimizer configuration.
 
     Attributes:
@@ -29,7 +31,7 @@ class OptimizerConfig:
 
 
 @dataclass
-class SchedulerConfig:
+class SchedulerConfig(ConfigMixin):
     """Learning rate scheduler configuration.
 
     Attributes:
@@ -42,7 +44,7 @@ class SchedulerConfig:
 
 
 @dataclass
-class SnapshotCheckpointConfig:
+class SnapshotCheckpointConfig(ConfigMixin):
     """Snapshot configuration for model checkpoints.
 
     Attributes:
@@ -57,7 +59,7 @@ class SnapshotCheckpointConfig:
 
 
 @dataclass
-class RunnerConfig:
+class RunnerConfig(ConfigMixin):
     """Training runner configuration.
 
     Attributes:
@@ -69,6 +71,8 @@ class RunnerConfig:
         optimizer: Optimizer configuration
         scheduler: Scheduler configuration
         snapshots: Snapshot configuration
+        resume_training_from: Path to resume training from
+        load_weights_only: Value for torch.load() weights_only parameter
     """
 
     type: str = "PoseTrainingRunner"
@@ -80,3 +84,4 @@ class RunnerConfig:
     scheduler: SchedulerConfig | None = None
     snapshots: SnapshotCheckpointConfig | None = None
     resume_training_from: str | None = None
+    load_weights_only: bool | None = None

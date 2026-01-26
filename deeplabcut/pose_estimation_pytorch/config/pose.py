@@ -21,8 +21,14 @@ from deeplabcut.pose_estimation_pytorch.config.data import DataConfig
 from deeplabcut.pose_estimation_pytorch.config.training import TrainSettingsConfig
 from deeplabcut.pose_estimation_pytorch.config.runner import RunnerConfig
 from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
-from deeplabcut.pose_estimation_pytorch.config.model import ModelConfig, DetectorModelConfig
-from deeplabcut.pose_estimation_pytorch.config.logger import CSVLoggerConfig, WandbLoggerConfig
+from deeplabcut.pose_estimation_pytorch.config.model import (
+    ModelConfig,
+    DetectorModelConfig,
+)
+from deeplabcut.pose_estimation_pytorch.config.logger import (
+    CSVLoggerConfig,
+    WandbLoggerConfig,
+)
 
 
 class MethodType(str, Enum):
@@ -84,7 +90,7 @@ class NetType(str, Enum):
 
 
 @dataclass
-class DetectorConfig:
+class DetectorConfig(ConfigMixin):
     model: DetectorModelConfig
     device: str = "auto"
     data: DataConfig | None = None
@@ -94,7 +100,7 @@ class DetectorConfig:
 
 
 @dataclass
-class PoseConfig:
+class PoseConfig(ConfigMixin):
     """Main configuration class for DeepLabCut pose estimation models.
 
     This is the top-level configuration that brings together all the different
@@ -122,7 +128,9 @@ class PoseConfig:
     metadata: ProjectConfig | None = None
     data: DataConfig | None = None
     inference: InferenceConfig = field(default_factory=InferenceConfig)
-    logger: CSVLoggerConfig | WandbLoggerConfig | None = Field(default=None, discriminator="type")
+    logger: CSVLoggerConfig | WandbLoggerConfig | None = Field(
+        default=None, discriminator="type"
+    )
     with_center_keypoints: bool = False
     runner: RunnerConfig | None = None
     train_settings: TrainSettingsConfig | None = None

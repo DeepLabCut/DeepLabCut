@@ -17,6 +17,8 @@ from typing import Any
 from enum import Enum
 from typing import Literal
 
+from deeplabcut.core.config.config_mixin import ConfigMixin
+
 
 class DataLoaderType(str, Enum):
     DLCLoader = "DLCLoader"
@@ -24,7 +26,7 @@ class DataLoaderType(str, Enum):
 
 
 @dataclass
-class DataLoaderConfig:
+class DataLoaderConfig(ConfigMixin):
     """Base class for data loader configuration.
 
     Attributes:
@@ -32,6 +34,7 @@ class DataLoaderConfig:
     """
 
     type: str
+
 
 @dataclass
 class DLCLoaderConfig(DataLoaderConfig):
@@ -44,6 +47,7 @@ class DLCLoaderConfig(DataLoaderConfig):
         shuffle: Index of the shuffle for which to load data
         modelprefix: The modelprefix for the shuffle
     """
+
     type: Literal[DataLoaderType.DLCLoader]
     config: str | dict
     trainset_index: int = 0
@@ -63,6 +67,7 @@ class COCOLoaderConfig(DataLoaderConfig):
         test_json_path: Path of the json file containing the test annotations relative to project_root
         val_json_path: Path of the json file containing the validation annotations relative to project_root
     """
+
     type: Literal[DataLoaderType.COCOLoader]
     project_root: str = ""
     train_json_path: str = "train.json"
@@ -71,13 +76,13 @@ class COCOLoaderConfig(DataLoaderConfig):
 
 
 @dataclass
-class DataTransformationConfig:
+class DataTransformationConfig(ConfigMixin):
     """Data transformation configuration.
 
     Attributes:
         resize: Resize transformation configuration
         longest_max_size: Maximum size for longest edge
-        hflip: Horizontal flip configuration 
+        hflip: Horizontal flip configuration
         affine: Affine transformation configuration
         random_bbox_transform: Random bbox transformation configuration
         crop_sampling: Crop sampling configuration
@@ -112,8 +117,9 @@ class DataTransformationConfig:
     top_down_crop: dict | None = None
     collate: dict | None = None
 
+
 @dataclass(frozen=True)
-class GenSamplingConfig:
+class GenSamplingConfig(ConfigMixin):
     """Configuration for CTD models.
 
     Args:
@@ -150,8 +156,9 @@ class GenSamplingConfig:
             "miss_prob": self.miss_prob,
         }
 
+
 @dataclass
-class DataConfig:
+class DataConfig(ConfigMixin):
     """Complete data configuration.
 
     Attributes:
@@ -168,10 +175,13 @@ class DataConfig:
     gen_sampling: GenSamplingConfig | None = None
     inference: DataTransformationConfig | None = None
     train: DataTransformationConfig | None = None
-    loader: DLCLoaderConfig | COCOLoaderConfig | None = Field(default=None, discriminator="type")
+    loader: DLCLoaderConfig | COCOLoaderConfig | None = Field(
+        default=None, discriminator="type"
+    )
 
-    @field_validator('train', 'inference', mode='before')
+    @field_validator("train", "inference", mode="before")
     @classmethod
     def validate_transforms(cls, v):
         from deeplabcut.pose_estimation_pytorch.data import build_transforms
+
         build_transforms(v)
