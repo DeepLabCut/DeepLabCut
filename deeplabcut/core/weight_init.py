@@ -19,10 +19,10 @@ from pathlib import Path
 import numpy as np
 
 from deeplabcut.core.types import PydanticNDArray
-
+from deeplabcut.core.config import ConfigMixin
 
 @dataclass
-class WeightInitialization:
+class WeightInitialization(ConfigMixin):
     """Configures weights initialization when transfer learning or fine-tuning models
 
     Args:
@@ -128,6 +128,7 @@ class WeightInitialization:
     @staticmethod
     def from_dict_legacy(data: dict) -> "WeightInitialization":
         """Deals with weight initialization that were created before 3.0.0rc5"""
+
         import deeplabcut.pose_estimation_pytorch.modelzoo.utils as utils
 
         conversion_array = data.get("conversion_array")
@@ -189,13 +190,15 @@ class WeightInitialization:
         Returns:
             The built WeightInitialization.
         """
-        from deeplabcut.modelzoo import build_weight_init
+
         deprecation_warning = (
             "The `WeightInitialization.build` is deprecated and will be removed in a "
             "future version of DeepLabCut. Please use `build_weight_init` from "
             "`deeplabcut.modelzoo` instead."
         )
         warnings.warn(deprecation_warning, DeprecationWarning)
+
+        from deeplabcut.modelzoo import build_weight_init
 
         return build_weight_init(
             cfg,

@@ -13,9 +13,11 @@
 from pydantic.dataclasses import dataclass
 from dataclasses import field
 
+from deeplabcut.core.config.config_mixin import ConfigMixin
+
 
 @dataclass
-class ModelConfig:
+class ModelConfig(ConfigMixin):
     """Complete model configuration.
 
     Attributes:
@@ -34,7 +36,7 @@ class ModelConfig:
 
 
 @dataclass
-class DetectorModelConfig:
+class DetectorModelConfig(ConfigMixin):
     """Configuration for detector models
 
     Attributes:
