@@ -14,27 +14,32 @@ from typing import Literal
 from pydantic.dataclasses import dataclass
 from enum import Enum
 
+from deeplabcut.core.config.config_mixin import ConfigMixin
+
+
 class LoggerType(str, Enum):
     WandbLogger = "WandbLogger"
     CSVLogger = "CSVLogger"
 
+
 @dataclass
-class LoggerConfig:
+class LoggerConfig(ConfigMixin):
     """Base configuration for all loggers.
-    
+
     Attributes:
         type: The type of logger to use (WandbLogger or CSVLogger)
     """
+
     type: str
 
 
 @dataclass
-class WandbLoggerConfig(LoggerConfig):
+class WandbLoggerConfig(LoggerConfig): #
     """Configuration for Weights & Biases (wandb) logger.
-    
+
     This logger tracks experiments and logs data to Weights & Biases.
     Refer to: https://docs.wandb.ai/guides for more information.
-    
+
     Attributes:
         type: Logger type (should be 'WandbLogger')
         project_name: The name of the wandb project
@@ -45,6 +50,7 @@ class WandbLoggerConfig(LoggerConfig):
         train_folder: The path of the folder containing training files.
         wandb_kwargs: Additional keyword arguments to pass to wandb.init
     """
+
     type: Literal[LoggerType.WandbLogger]
     project_name: str = "deeplabcut"
     run_name: str = "tmp"
@@ -55,16 +61,17 @@ class WandbLoggerConfig(LoggerConfig):
 
 
 @dataclass
-class CSVLoggerConfig(LoggerConfig):
+class CSVLoggerConfig(LoggerConfig): #
     """Configuration for CSV logger.
-    
+
     This logger saves training stats and metrics to a CSV file.
-    
+
     Attributes:
         type: Logger type (should be 'CSVLogger')
         train_folder: The path of the folder containing training files.
         log_filename: The name of the file in which to store training stats
     """
+
     type: Literal[LoggerType.CSVLogger]
     train_folder: str = ""
     log_filename: str = "learning_stats.csv"

@@ -15,9 +15,11 @@ from pydantic.dataclasses import dataclass
 from dataclasses import field
 from typing import Any
 
+from deeplabcut.core.config.config_mixin import ConfigMixin
+
 
 @dataclass
-class MultithreadingConfig:
+class MultithreadingConfig(ConfigMixin):
     """Multithreading configuration for inference.
 
     Attributes:
@@ -32,7 +34,7 @@ class MultithreadingConfig:
 
 
 @dataclass
-class CompileConfig:
+class CompileConfig(ConfigMixin):
     """Model compilation configuration for inference optimization.
 
     Attributes:
@@ -45,7 +47,7 @@ class CompileConfig:
 
 
 @dataclass
-class AutocastConfig:
+class AutocastConfig(ConfigMixin):
     """Automatic mixed precision configuration.
 
     Attributes:
@@ -55,10 +57,11 @@ class AutocastConfig:
 
     enabled: bool = False
 
+
 @dataclass
-class EvaluationConfig:
+class EvaluationConfig(ConfigMixin):
     """Configuration for evaluation metrics computation.
-    
+
     Attributes:
         pcutoff: Confidence threshold for RMSE computation. Can be:
             - float: Single threshold for all bodyparts
@@ -66,19 +69,21 @@ class EvaluationConfig:
             - dict[str, float]: Mapping bodypart names to thresholds
         comparison_bodyparts: Subset of bodyparts to compute metrics for.
             Can be "all", None (all bodyparts), or a list of bodypart names.
-        per_keypoint_evaluation: Whether to compute train and test RMSE 
+        per_keypoint_evaluation: Whether to compute train and test RMSE
             for each keypoint individually.
-        force_multi_animal: If True, use multi-animal evaluation even if 
+        force_multi_animal: If True, use multi-animal evaluation even if
             loader contains only a single animal.
     """
+
     mode: Literal["train", "test", "all"] = "all"
     pcutoff: float | list[float] | dict[str, float] = 0.6
     comparison_bodyparts: Literal["all"] | list[str] | None = "all"
     per_keypoint_evaluation: bool = False
     force_multi_animal: bool = False
 
+
 @dataclass
-class InferenceConfig:
+class InferenceConfig(ConfigMixin):
     """Complete inference configuration.
 
     Attributes:

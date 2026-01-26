@@ -15,6 +15,8 @@ from typing import Any
 from pydantic.dataclasses import dataclass
 from dataclasses import field
 
+from deeplabcut.core.config.config_mixin import ConfigMixin
+
 
 @dataclass
 class ProjectConfig(ConfigMixin):
