@@ -343,26 +343,40 @@ def get_scorer_name(
 
 
 def list_videos_in_folder(
-    data_path: str | list[str],
-    video_type: str | None,
+    data_path: str | Path | list[str | Path],
+    video_type: str | None = None,
     shuffle: bool = False,
 ) -> list[Path]:
     """
     Args:
-        data_path: Path or list of paths to folders containing videos
-        video_type: The type of video to filter for
-        shuffle: If the paths point to directories, whether to shuffle the order of
-            videos in the directory.
+        data_path: Path or list of paths to folders containing videos, or individual
+            video files. Can be a mix of directories and files.
+        video_type: The type of video to filter for (e.g., "mp4", ".mp4"). If None,
+            all supported video types are included.
+        shuffle: Whether to shuffle the order of videos. If False, videos are returned
+            in sorted order for deterministic behavior.
 
     Returns:
-        The paths of videos to analyze.
+        The paths of videos to analyze. Duplicate paths are removed.
+
+    Raises:
+        FileNotFoundError: If any path in data_path does not exist.
     """
-    if not isinstance(data_path, list):
+    if isinstance(data_path, (str, Path)):
         data_path = [data_path]
-    video_paths = [Path(p) for p in data_path]
+
+    if not video_type:
+        video_suffixes = {f".{ext.lower()}" for ext in auxfun_videos.SUPPORTED_VIDEOS}
+    else:
+        video_suffixes = {f".{video_type.lstrip('.').lower()}"}
 
     videos = []
-    for path in video_paths:
+    for path in map(Path, data_path):
+        if not path.exists():
+            raise FileNotFoundError(
+                f"Could not find: {path}. Check access rights."
+            )
+
         if path.is_dir():
             if not video_type:
                 video_suffixes = ["." + ext for ext in auxfun_videos.SUPPORTED_VIDEOS]
@@ -380,7 +394,11 @@ def list_videos_in_folder(
             )
             videos.append(path)
 
-    return videos
+    # Resolve video paths and remove duplicates
+    unique_videos = list(dict.fromkeys(v.resolve() for v in videos))
+    if shuffle:
+        random.shuffle(unique_videos)
+    return unique_videos
 
 
 def ensure_multianimal_df_format(df_predictions: pd.DataFrame) -> pd.DataFrame:
@@ -531,6 +549,7 @@ def get_inference_runners(
     detector_transform: A.BaseCompose | None = None,
     dynamic: DynamicCropper | None = None,
     inference_cfg: InferenceConfig | dict | None = None,
+    min_bbox_score: float | None = None,
 ) -> tuple[InferenceRunner, InferenceRunner | None]:
     """Builds the runners for pose estimation
 
@@ -559,6 +578,9 @@ def get_inference_runners(
             estimation with batch size 1.
         inference_cfg: Configuration for the InferenceRunner. If None - uses the
             inference config defined in the model_config
+        min_bbox_score: Minimum score threshold for filtering bounding boxes from the
+            detector. Only bounding boxes with scores higher than this threshold are
+            kept. If None, no filtering is applied.
 
     Returns:
         a runner for pose estimation
@@ -649,6 +671,7 @@ def get_inference_runners(
                 ),
                 postprocessor=build_detector_postprocessor(
                     max_individuals=max_individuals,
+                    min_bbox_score=min_bbox_score,
                 ),
                 load_weights_only=model_config["detector"]["runner"].get(
                     "load_weights_only",
@@ -680,6 +703,7 @@ def get_detector_inference_runner(
     max_individuals: int | None = None,
     transform: A.BaseCompose | None = None,
     inference_cfg: InferenceConfig | dict | None = None,
+    min_bbox_score: float | None = None,
 ) -> DetectorInferenceRunner:
     """Builds an inference runner for object detection.
 
@@ -693,6 +717,9 @@ def get_detector_inference_runner(
             defined in the config.
         inference_cfg: Configuration for the InferenceRunner. If None - uses the
             inference config defined in the model_config
+        min_bbox_score: Minimum score threshold for filtering bounding boxes from the
+            detector. Only bounding boxes with scores higher than this threshold are
+            kept. If None, no filtering is applied.
 
     Returns:
         an inference runner for object detection
@@ -716,7 +743,10 @@ def get_detector_inference_runner(
         det_cfg["model"]["pretrained"] = False
 
     preprocessor = build_bottom_up_preprocessor(det_cfg["data"]["colormode"], transform)
-    postprocessor = build_detector_postprocessor(max_individuals=max_individuals)
+    postprocessor = build_detector_postprocessor(
+        max_individuals=max_individuals,
+        min_bbox_score=min_bbox_score,
+    )
     runner = build_inference_runner(
         task=Task.DETECT,
         model=DETECTORS.build(det_cfg["model"]),
@@ -762,6 +792,7 @@ def get_filtered_coco_detector_inference_runner(
     model_config: dict | None = None,
     transform: A.BaseCompose | None = None,
     inference_cfg: InferenceConfig | dict | None = None,
+    min_bbox_score: float | None = None,
 ) -> DetectorInferenceRunner:
     """
     Builds a detector inference runner using a pretrained COCO detector from torchvision.
@@ -795,6 +826,11 @@ def get_filtered_coco_detector_inference_runner(
                                                      If None, uses the model's default transform.
         inference_cfg: Configuration for the InferenceRunner. If None - uses the
             inference config defined in the model_config
+        min_bbox_score (float or None, optional): Minimum score threshold for filtering
+                                                  bounding boxes from the detector. Only
+                                                  bounding boxes with scores higher than
+                                                  this threshold are kept. If None, no
+                                                  filtering is applied.
 
     Returns:
         DetectorInferenceRunner: A configured detector inference runner.
@@ -851,6 +887,7 @@ def get_filtered_coco_detector_inference_runner(
         ),
         postprocessor=build_detector_postprocessor(
             max_individuals=max_individuals,
+            min_bbox_score=min_bbox_score,
         ),
         inference_cfg=inference_cfg,
     )
