@@ -41,7 +41,7 @@ dependencies = [
     "matplotlib>=3.3,<3.9,!=3.7.0,!=3.7.1",
     "networkx>=2.6",
     "numpy>=1.18.5,<2.0.0",
-    "pandas[hdf5,performance]>=1.0.1,!=1.5.0",
+    "pandas[hdf5,performance]>=2.2,<3.0",
     "scikit-image>=0.17",
     "scikit-learn>=1.0",
     "scipy>=1.9",
@@ -78,7 +78,7 @@ docs = [
     "numpydoc",
 ]
 tf = [
-    # !!! Tensorflow is not supported on Windows with Python >= 3.11 
+    # !!! TensorFlow is not supported on Windows with Python >= 3.11 
     "tensorflow>=2.0,<=2.10; platform_system == 'Windows' and python_version < '3.11'",
     "tensorflow>=2.0,<2.12; platform_system == 'Linux' and python_version < '3.11'",
     "tensorflow>=2.12.0; platform_system == 'Linux' and python_version >= '3.11'",
@@ -103,9 +103,9 @@ wandb = ["wandb"]
 [dependency-groups]
 dev = [
     "pytest",
+    "pytest-cov",
     "coverage",
     "ruff",
-    "black>=25.9.0",
 ]
 
 [[tool.uv.dependency-metadata]]
@@ -135,24 +135,13 @@ include-package-data = true
 
 [tool.ruff]
 line-length = 88
-target-version = "py38"
+target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "F"]
+select = ["E", "F", "I"]
 ignore = [
     "E501",  # line-too-long
 ]
-
-[tool.isort]
-multi_line_output = 3
-include_trailing_comma = true
-force_sort_within_sections = false
-lexicographical = true
-single_line_exclusions = ['typing']
-order_by_type = false
-group_by_package = true
-line_length = 88
-skip = ["__init__.py"]
 
 [tool.pytest.ini_options]
 markers = ["require_models: mark test as requiring models to run"]
