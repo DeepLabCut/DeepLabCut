@@ -15,7 +15,8 @@ from dataclasses import field
 from pydantic import Field
 from enum import Enum
 
-from deeplabcut.pose_estimation_pytorch.config.project import ProjectConfig
+from deeplabcut.core.config.config_mixin import ConfigMixin
+from deeplabcut.core.config.project_config import ProjectConfig
 from deeplabcut.pose_estimation_pytorch.config.data import DataConfig
 from deeplabcut.pose_estimation_pytorch.config.training import TrainSettingsConfig
 from deeplabcut.pose_estimation_pytorch.config.runner import RunnerConfig
