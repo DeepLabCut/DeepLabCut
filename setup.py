@@ -66,7 +66,7 @@ setuptools.setup(
         "matplotlib>=3.3,<3.9,!=3.7.0,!=3.7.1",
         "networkx>=2.6",
         "numpy>=1.18.5,<2.0.0",
-        "pandas>=1.0.1,!=1.5.0",
+        "pandas>=1.0.1,!=1.5.0,<3.0",
         "scikit-image>=0.17",
         "scikit-learn>=1.0",
         "scipy>=1.9",
