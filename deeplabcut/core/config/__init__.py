@@ -11,3 +11,4 @@ from deeplabcut.core.config.utils import (
     write_project_config,
 )
 from deeplabcut.core.config.config_mixin import ConfigMixin
+from deeplabcut.core.config.project_config import ProjectConfig
