@@ -180,14 +180,27 @@ def _read_video_specific_cropping_margins(
     config: str | Path | dict,
     video_path: str | Path
 ) -> tuple[int, int]:
-    if isinstance(video_path, (str, Path)):
+    if isinstance(config, (str, Path)):
         config = auxiliaryfunctions.read_config(config)
     output_crop = config["video_sets"].get(str(video_path), {}).get("crop")
-    x1, _, y1, _ = (
-        list(map(int, output_crop.split(", ")))
-        if output_crop is not None
-        else (0, 0, 0, 0)
-    )
+    if output_crop is None:
+        x1, _, y1, _ = (0, 0, 0, 0)
+    else:
+        # Accept comma-separated values with optional spaces, and validate format.
+        parts = [p.strip() for p in str(output_crop).split(",")]
+        if len(parts) != 4:
+            raise ValueError(
+                f"Invalid crop specification {output_crop!r} for video {video_path!r} "
+                "in config: expected exactly 4 comma-separated integers "
+                "in the form 'x1,x2,y1,y2'."
+            )
+        try:
+            x1, _, y1, _ = map(int, parts)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                f"Invalid crop specification {output_crop!r} for video {video_path!r} "
+                "in config: values must be integers in the form 'x1,x2,y1,y2'."
+            ) from exc
     return x1, y1
 
 
@@ -422,7 +435,7 @@ def extract_outlier_frames(
 
             # offset if the data was cropped
             # note: When output video is also cropped, the keypoints should be shifted back.
-            out_x1, out_y1 = _read_video_specific_cropping_margins(config, video)    
+            out_x1, out_y1 = _read_video_specific_cropping_margins(config, video)
             if metadata.get("data", {}).get("cropping"):
                 x1, _, y1, _ = metadata["data"]["cropping_parameters"]
                 df.iloc[:, df.columns.get_level_values(level="coords") == "x"] += x1 - out_x1
