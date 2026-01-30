@@ -184,4 +184,4 @@ class DataConfig(ConfigMixin):
     def validate_transforms(cls, v):
         from deeplabcut.pose_estimation_pytorch.data import build_transforms
 
-        build_transforms(v)
+        return build_transforms(v)
