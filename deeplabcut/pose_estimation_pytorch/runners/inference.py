@@ -537,11 +537,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 return item
             except Empty:
                 # check if producer is still running
-                if (
-                    self._stop_event.is_set()
-                    or self._preprocessing_thread is None
-                    or not self._preprocessing_thread.is_alive()
-                ):
+                if self._stop_event.is_set() or self._preprocessing_thread is None or not self._preprocessing_thread.is_alive():
                     return None
                 continue
 
