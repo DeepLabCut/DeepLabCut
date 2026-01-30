@@ -17,16 +17,19 @@ from pydantic.dataclasses import dataclass
 from dataclasses import field
 
 from deeplabcut.core.config.config_mixin import ConfigMixin
+from deeplabcut.core.config.migration_mixin import MigrationMixin
+from deeplabcut.core.config.versioning import CURRENT_CONFIG_VERSION
 
 
-@dataclass
-class ProjectConfig(ConfigMixin):
+@dataclass(config={'extra': 'forbid'})
+class ProjectConfig(ConfigMixin, MigrationMixin):
     """Complete project configuration.
 
     Mirrors the structure of the project config.yaml (and metadata in pose config).
     Field names match the old dictionary keys for round-trip compatibility.
 
     Attributes:
+        config_version: Configuration version.
         Task: Project task identifier (do not edit).
         scorer: Scorer name (do not edit).
         date: Project date (do not edit).
@@ -69,6 +72,7 @@ class ProjectConfig(ConfigMixin):
         SuperAnimalConversionTables: Conversion tables for SuperAnimal weights.
     """
 
+    config_version: int = CURRENT_CONFIG_VERSION
     # Project definitions (do not edit)
     Task: str = field(default="", metadata={"comment": "Project definitions (do not edit)"})
     scorer: str = ""
