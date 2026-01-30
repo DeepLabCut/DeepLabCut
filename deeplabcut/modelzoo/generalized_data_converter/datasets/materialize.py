@@ -117,7 +117,7 @@ class SingleDLC_config:
 
     def create_cfg(self, proj_root, kwargs):
         self.cfg.update(kwargs)
-        write_project_config(os.path.join(proj_root, "config.yaml"), self.cfg)
+        write_project_config(Path(proj_root) / "config.yaml", self.cfg)
 
 
 class MaDLC_config:
@@ -167,7 +167,7 @@ class MaDLC_config:
 
     def create_cfg(self, proj_root, kwargs):
         self.cfg.update(kwargs)
-        write_project_config(os.path.join(proj_root, "config.yaml"), self.cfg)
+        write_project_config(Path(proj_root) / "config.yaml", self.cfg)
 
 
 def _generic2madlc(
