@@ -19,7 +19,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import scipy.io as sio
+from omegaconf import OmegaConf, DictConfig
 
+from deeplabcut.core.config.project_config import ProjectConfig
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.data.base import Loader
@@ -34,7 +36,7 @@ class DLCLoader(Loader):
 
     def __init__(
         self,
-        config: str | Path | dict,
+        config: ProjectConfig | DictConfig | Path | str,
         trainset_index: int = 0,
         shuffle: int = 0,
         modelprefix: str = "",
@@ -46,12 +48,13 @@ class DLCLoader(Loader):
             shuffle: the index of the shuffle for which to load data
             modelprefix: the modelprefix for the shuffle
         """
-        if isinstance(config, (str, Path)):
-            self._project_root = Path(config).parent
-            self._project_config = af.read_config(str(config))
-        else:
-            self._project_root = Path(config["project_path"])
-            self._project_config = config
+        provided_root_dir = Path(config).parent if isinstance(config, (str, Path)) else None
+        self._project_config: DictConfig = ProjectConfig.from_any(config).to_dictconfig()
+        self._project_root = provided_root_dir or OmegaConf.select(self._project_config, "project_path")
+        if self._project_root is None:
+            raise ValueError(
+                "`config` must contain a `project_path` field."
+            )
 
         self._shuffle = shuffle
         self._trainset_index = trainset_index
@@ -164,7 +167,9 @@ class DLCLoader(Loader):
         Returns:
             An instance of the PoseDatasetParameters with the parameters set.
         """
-        crop_cfg = self.model_cfg["data"]["train"].get("top_down_crop", {})
+        crop_cfg = OmegaConf.select(
+            self.model_cfg, "data.train.top_down_crop", {}
+        )
         crop_w, crop_h = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
         crop_margin = crop_cfg.get("margin", 0)
         crop_with_context = crop_cfg.get("crop_with_context", True)
