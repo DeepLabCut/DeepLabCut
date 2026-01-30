@@ -11,7 +11,6 @@
 """Centralized helpers for reading, writing, and creating configuration files (YAML)."""
 from __future__ import annotations
 
-import os
 import warnings
 from pathlib import Path
 from typing import Callable
@@ -34,7 +33,7 @@ def read_config_as_dict(config_path: str | Path) -> dict:
     Raises:
         FileNotFoundError: if the config file does not exist
     """
-    if not os.path.exists(config_path):
+    if not Path(config_path).exists():
         raise FileNotFoundError(
             f"Config {config_path} is not found. Please make sure that the file exists."
         )
@@ -264,7 +263,7 @@ def read_config(configname: str | Path) -> dict:
     """
     ruamelFile = YAML()
     path = Path(configname)
-    if os.path.exists(path):
+    if path.exists():
         try:
             with open(path, "r") as f:
                 cfg = ruamelFile.load(f)
