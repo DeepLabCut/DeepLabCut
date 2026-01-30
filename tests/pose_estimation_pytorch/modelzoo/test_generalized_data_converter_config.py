@@ -60,7 +60,7 @@ SINGLE_DLC_DEFAULTS = {
     "x2": 640,
     "y1": 277,
     "y2": 624,
-    "corer2move2": [50, 50],
+    "corner2move2": [50, 50],
     "move2corner": True,
     "identity": False,
 }
