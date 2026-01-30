@@ -13,7 +13,6 @@ from __future__ import annotations
 import copy
 import logging
 
-from omegaconf import OmegaConf
 import torch
 import torch.nn as nn
 
@@ -182,7 +181,7 @@ class PoseModel(nn.Module):
             neck = NECKS.build(dict(cfg["neck"]))
 
         heads = {}
-        for name, head_cfg in OmegaConf.to_container(cfg["heads"]).items():
+        for name, head_cfg in cfg["heads"].items():
             head_cfg = copy.deepcopy(head_cfg)
             if "type" in head_cfg["criterion"]:
                 head_cfg["criterion"] = CRITERIONS.build(head_cfg["criterion"])

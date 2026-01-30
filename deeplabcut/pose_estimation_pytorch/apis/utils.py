@@ -67,39 +67,6 @@ from deeplabcut.pose_estimation_pytorch.runners.snapshots import (
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import resolve_device
 from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
-from deeplabcut.pose_estimation_pytorch.config.data import DataLoaderType
-from deeplabcut.pose_estimation_pytorch.data import Loader, DLCLoader, COCOLoader
-from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
-from omegaconf import DictConfig
-
-
-def get_loader_from_config(config: PoseConfig | DictConfig) -> Loader:
-    """
-    Builds the data loader from the configuration.
-    Args:
-        config: The pose configuration.
-
-    Returns:
-        The data loader.
-    """
-    loader_cfg = config.data.loader
-    if loader_cfg["type"] == DataLoaderType.DLCLoader:
-        loader = DLCLoader(
-            config=loader_cfg["config"],
-            trainset_index=loader_cfg.get("trainset_index", 0),
-            shuffle=loader_cfg.get("shuffle", 0),
-            modelprefix=loader_cfg.get("modelprefix", ""),
-        )
-    elif loader_cfg["type"] == DataLoaderType.COCOLoader:
-        loader = COCOLoader(
-            project_root=loader_cfg.get("project_root", ""),
-            train_json_filename=loader_cfg.get("train_json_path", "train.json"),
-            test_json_filename=loader_cfg.get("test_json_path", "test.json"),
-            model_cfg=config,
-        )
-    else:
-        raise ValueError(f"Unknown loader type: {loader_cfg['type']}. Must be one of {[e.value for e in DataLoaderType]}")
-    return loader
 
 
 def parse_snapshot_index_for_analysis(
@@ -233,11 +200,6 @@ def get_model_snapshots(
         snapshots = [best_snapshot]
     elif isinstance(index, str) and index.lower() == "all":
         snapshots = snapshot_manager.snapshots()
-    elif isinstance(index, str):
-        # Find snapshot with given name
-        snapshots = [s for s in snapshot_manager.snapshots() if s.path.stem == index]
-        if not snapshots:
-            raise ValueError(f"No snapshot found with name {index}")
     elif isinstance(index, int):
         all_snapshots = snapshot_manager.snapshots()
         if (

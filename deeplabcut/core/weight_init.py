@@ -43,8 +43,6 @@ class WeightInitialization:
             corresponds to the 8th bodypart in the pretrained model, the 2nd to the 1st
             and the 3rd to the 2nd (as arrays are 0-indexed).
         bodyparts: Optionally, the name of each bodypart entry in the conversion array.
-        pose_threshold: Used for memory-replay. Pseudo-predictions with confidence lower
-            than this threshold are discarded for memory-replay
     """
 
     snapshot_path: Path | None = None
@@ -54,7 +52,6 @@ class WeightInitialization:
     memory_replay: bool = False
     conversion_array: PydanticNDArray | None = None
     bodyparts: list[str] | None = None
-    pose_threshold: float | None = 0.1
 
     def __post_init__(self):
         if self.memory_replay and not self.with_decoder:
@@ -103,9 +100,6 @@ class WeightInitialization:
         if self.bodyparts is not None:
             data["bodyparts"] = self.bodyparts
 
-        if self.pose_threshold is not None:
-            data["pose_threshold"] = self.pose_threshold
-
         return data
 
     @staticmethod
@@ -134,7 +128,7 @@ class WeightInitialization:
     @staticmethod
     def from_dict_legacy(data: dict) -> "WeightInitialization":
         """Deals with weight initialization that were created before 3.0.0rc5"""
-        import dlcengine.modelzoo.utils as utils
+        import deeplabcut.pose_estimation_pytorch.modelzoo.utils as utils
 
         conversion_array = data.get("conversion_array")
         if conversion_array is not None:
@@ -195,8 +189,7 @@ class WeightInitialization:
         Returns:
             The built WeightInitialization.
         """
-        from dlcengine.modelzoo.modelzoo_dlc import build_weight_init
-
+        from deeplabcut.modelzoo import build_weight_init
         deprecation_warning = (
             "The `WeightInitialization.build` is deprecated and will be removed in a "
             "future version of DeepLabCut. Please use `build_weight_init` from "
