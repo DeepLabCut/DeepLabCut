@@ -15,9 +15,7 @@ from pathlib import Path
 
 import albumentations as A
 import numpy as np
-from omegaconf import DictConfig
 
-from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 import deeplabcut.core.config as config_utils
 import deeplabcut.pose_estimation_pytorch.config as config
 from deeplabcut.pose_estimation_pytorch.data.dataset import (
@@ -54,29 +52,12 @@ class Loader(ABC):
         self,
         project_root: str | Path,
         image_root: str | Path,
-        model_config_path: str | Path | None = None,
-        model_cfg: PoseConfig | DictConfig | None = None,
+        model_config_path: str | Path,
     ) -> None:
         self.project_root = Path(project_root)
         self.image_root = Path(image_root)
-        if model_config_path is None and model_cfg is None:
-            raise ValueError("Either model_config_path or model_cfg must be provided")
-        elif model_config_path is not None:
-            self.model_config_path = Path(model_config_path)
-            self.model_cfg: PoseConfig = config_utils.read_config_as_pose_config(
-                str(model_config_path)
-            )
-        else:
-            self.model_cfg = model_cfg
-            model_config_path = model_cfg.get("metadata", {}).get("pose_config_path", "")
-            if not model_config_path:
-                raise ValueError(
-                    "When providing model_cfg, the model configuration path must be specified.",
-                    "metadata.pose_config_path"
-                )
-            self.model_config_path = Path(model_config_path)
-            if self.model_config_path.is_dir():
-                self.model_config_path /= "pytorch_config.yaml"
+        self.model_config_path = Path(model_config_path)
+        self.model_cfg = config_utils.read_config_as_dict(str(model_config_path))
         self.pose_task = Task(self.model_cfg["method"])
         self._loaded_data: dict[str, dict[str, list[dict]]] = {}
 

@@ -20,7 +20,6 @@ from queue import Queue, Empty, Full
 import numpy as np
 import torch
 import torch.nn as nn
-from omegaconf import OmegaConf
 
 import deeplabcut.pose_estimation_pytorch.post_processing.nms as nms
 import deeplabcut.pose_estimation_pytorch.runners.ctd as ctd
@@ -81,12 +80,12 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.preprocessor = preprocessor
         self.postprocessor = postprocessor
 
-        if inference_cfg is None:
-            self.inference_cfg = InferenceConfig()
+        if isinstance(inference_cfg, InferenceConfig):
+            self.inference_cfg = inference_cfg
         elif isinstance(inference_cfg, dict):
-            self.inference_cfg = OmegaConf.create(inference_cfg)
-        else:
-            self.inference_cfg: InferenceConfig =  inference_cfg
+            self.inference_cfg = InferenceConfig.from_dict(inference_cfg)
+        elif inference_cfg is None:
+            self.inference_cfg = InferenceConfig()
 
         if self.snapshot_path is not None and self.snapshot_path != "":
             self.load_snapshot(
@@ -119,9 +118,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
         # Async-specific attributes
         if self.inference_cfg.multithreading.enabled:
-            self._input_queue = Queue(
-                maxsize=self.inference_cfg.multithreading.queue_length
-            )
+            self._input_queue = Queue(maxsize=self.inference_cfg.multithreading.queue_length)
             self._preprocessing_thread = None
             self._stop_event = threading.Event()
             self._exception = None
@@ -253,9 +250,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         finally:
             # Wait for preprocessing thread to finish
             if self._preprocessing_thread is not None:
-                self._preprocessing_thread.join(
-                    timeout=self.inference_cfg.multithreading.timeout
-                )
+                self._preprocessing_thread.join(timeout=self.inference_cfg.multithreading.timeout)
 
             # Check for exceptions in preprocessing thread
             if self._exception is not None:
@@ -394,11 +389,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 return item
             except Empty:
                 # check if producer is still running
-                if (
-                    self._stop_event.is_set()
-                    or self._preprocessing_thread is None
-                    or not self._preprocessing_thread.is_alive()
-                ):
+                if self._stop_event.is_set() or self._preprocessing_thread is None or not self._preprocessing_thread.is_alive():
                     return None
                 continue
 

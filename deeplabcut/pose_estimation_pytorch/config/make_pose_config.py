@@ -14,10 +14,7 @@ from __future__ import annotations
 import copy
 from pathlib import Path
 
-from omegaconf import OmegaConf
-from pydantic import TypeAdapter
-
-from deeplabcut.core.config import read_config_as_dict, write_config, dict_to_pose_config
+from deeplabcut.core.config import read_config_as_dict, write_config
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.config.utils import (
     get_config_folder_path,
@@ -26,10 +23,9 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     replace_default_values,
     update_config,
 )
-from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
+from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
-from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 
 
 def make_pytorch_pose_config(
@@ -188,14 +184,13 @@ def make_pytorch_pose_config(
             backbone_output_channels=pose_config["model"]["backbone_output_channels"],
         )
 
-    pose_config["inference"] = TypeAdapter(InferenceConfig).dump_python(InferenceConfig())
+    pose_config["inference"] = InferenceConfig().to_dict()
     # Add conditions for CTD models if specified
     if task == Task.COND_TOP_DOWN and ctd_conditions is not None:
         _add_ctd_conditions(pose_config, ctd_conditions)
 
     # sort first-level keys to make it prettier
     pose_config = dict(sorted(pose_config.items()))
-    pose_config = dict_to_pose_config(pose_config)
 
     if save:
         write_config(pose_config_path, pose_config, overwrite=True)
@@ -373,8 +368,8 @@ def add_metadata(
     config["metadata"] = {
         "project_path": project_config["project_path"],
         "pose_config_path": str(pose_config_path),
-        "bodyparts": list(auxiliaryfunctions.get_bodyparts(project_config)),
-        "unique_bodyparts": list(auxiliaryfunctions.get_unique_bodyparts(project_config)),
+        "bodyparts": auxiliaryfunctions.get_bodyparts(project_config),
+        "unique_bodyparts": auxiliaryfunctions.get_unique_bodyparts(project_config),
         "individuals": project_config.get("individuals", ["animal"]),
         "with_identity": project_config.get("identity", False),
     }
