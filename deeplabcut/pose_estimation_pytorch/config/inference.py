@@ -28,7 +28,7 @@ class MultithreadingConfig(ConfigMixin):
         timeout: Timeout for processing tasks
     """
 
-    enabled: bool = False
+    enabled: bool = True
     queue_length: int = 4
     timeout: float = 30.0
 

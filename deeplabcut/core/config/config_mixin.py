@@ -38,7 +38,7 @@ class ConfigMixin:
         """
         cfg: DictConfig = OmegaConf.create(cfg_dict)
         resolved: dict = OmegaConf.to_container(cfg, resolve=True)
-        TypeAdapter[cls](cls).validate_python(resolved, extra="forbid")
+        TypeAdapter(cls).validate_python(resolved, extra="forbid")
         return cfg
 
     @classmethod
