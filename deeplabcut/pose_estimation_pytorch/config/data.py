@@ -183,5 +183,11 @@ class DataConfig(ConfigMixin):
     @classmethod
     def validate_transforms(cls, v):
         from deeplabcut.pose_estimation_pytorch.data import build_transforms
-
-        return build_transforms(v)
+        try:
+            build_transforms(v)
+        except Exception as e:
+            raise ValueError(
+                f"Could not build transforms. Please check your config. "
+                f"Config: {v}; Error: {e}"
+            ) from e
+        return v
