@@ -14,6 +14,8 @@ from __future__ import annotations
 import copy
 from pathlib import Path
 
+from omegaconf import DictConfig
+
 from deeplabcut.core.config import read_config_as_dict, write_config
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.config.utils import (
@@ -23,22 +25,23 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     replace_default_values,
     update_config,
 )
-from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
+from deeplabcut.core.config.project_config import ProjectConfig
+from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
+from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig, NetType
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 
-def make_pytorch_pose_config(
-    project_config: dict,
-    pose_config_path: str | Path,
-    net_type: str | None = None,
+
+def _load_pose_config_defaults(
+    project_config: ProjectConfig | DictConfig,
+    net_type: NetType | str | None = None,
     top_down: bool = False,
     detector_type: str | None = None,
-    weight_init: WeightInitialization | None = None,
-    save: bool = False,
     ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
 ) -> dict:
-    """Creates a PyTorch pose configuration file for a DeepLabCut project
+    """
+    Load the model config defaults (from model-specific yaml) for a given project and net_type.
 
     The base/ folder contains default configurations, such as data augmentations or
     heatmap heads (that can be used to predict pose or identity based on visual
@@ -57,8 +60,7 @@ def make_pytorch_pose_config(
     based on the project config file.
 
     Args:
-        project_config: the DeepLabCut project config
-        pose_config_path: the path where the pytorch pose configuration will be saved
+        project_config: the DeepLabCut project config (used to infer individuals, bodyparts and identity tracking)
         net_type: the architecture of the desired pose estimation model
         top_down: when the net_type is a backbone, whether to create a top-down model
             by associating a detector to the pose model. Required for multi-animal
@@ -66,9 +68,6 @@ def make_pytorch_pose_config(
             predict pose for single individuals).
         detector_type: for top-down pose models, the architecture of the desired object
             detection model
-        weight_init: Specify how model weights should be initialized. If None, ImageNet
-            pretrained weights from Timm will be loaded when training.
-        save: Whether to save the model configuration file to the ``pose_config_path``.
         ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] , optional, default = None,
             If using a conditional-top-down (CTD) net_type, this argument needs to be specified.
             It defines the conditions that will be used with the CTD model.
@@ -79,8 +78,10 @@ def make_pytorch_pose_config(
 
 
     Returns:
-        the PyTorch pose configuration file
+        The model configuration defaults as a dictionary.
     """
+    # TODO JR 2026-01-27: Model configs are currently still first loaded as plain dictionaries. 
+    # We probably want to move to using typed config classes / OmegaConf DictConfig in the future.
     multianimal_project = project_config.get("multianimalproject", False)
     individuals = project_config.get("individuals", ["single"])
     with_identity = project_config.get("identity")
@@ -91,9 +92,6 @@ def make_pytorch_pose_config(
         net_type = project_config.get("default_net_type", "resnet_50")
 
     configs_dir = get_config_folder_path()
-    pose_config = load_base_config(configs_dir)
-    pose_config = add_metadata(project_config, pose_config, pose_config_path)
-    pose_config["net_type"] = net_type
 
     backbones = load_backbones(configs_dir)
     if net_type in backbones:
@@ -141,14 +139,7 @@ def make_pytorch_pose_config(
     aug_filename = "aug_default.yaml" if task == Task.BOTTOM_UP else "aug_top_down.yaml"
     aug_cfg = {"data": read_config_as_dict(configs_dir / "base" / aug_filename)}
 
-    pose_config = update_config(pose_config, aug_cfg)
-
-    # add the model to the config
-    pose_config = update_config(pose_config, model_cfg)
-
-    # set the dataset from which to load weights
-    if weight_init is not None:
-        pose_config["train_settings"]["weight_init"] = weight_init.to_dict()
+    model_cfg = update_config(model_cfg, aug_cfg)
 
     # add a unique bodypart head if needed
     if len(unique_bpts) > 0:
@@ -160,11 +151,11 @@ def make_pytorch_pose_config(
                 " animal projects or `dlcrnet_50` for multi-animal projects."
             )
 
-        pose_config = add_unique_bodypart_head(
+        model_cfg = add_unique_bodypart_head(
             configs_dir,
-            pose_config,
+            model_cfg,
             num_unique_bodyparts=len(unique_bpts),
-            backbone_output_channels=pose_config["model"]["backbone_output_channels"],
+            backbone_output_channels=model_cfg["model"]["backbone_output_channels"],
         )
 
     # add an identity head if needed
@@ -177,20 +168,83 @@ def make_pytorch_pose_config(
                 f" to train with identity, or set `identity: false`."
             )
 
-        pose_config = add_identity_head(
+        model_cfg = add_identity_head(
             configs_dir,
-            pose_config,
+            model_cfg,
             num_individuals=len(individuals),
-            backbone_output_channels=pose_config["model"]["backbone_output_channels"],
+            backbone_output_channels=model_cfg["model"]["backbone_output_channels"],
         )
 
-    pose_config["inference"] = InferenceConfig().to_dict()
+    model_cfg["inference"] = InferenceConfig().to_dict()
     # Add conditions for CTD models if specified
     if task == Task.COND_TOP_DOWN and ctd_conditions is not None:
-        _add_ctd_conditions(pose_config, ctd_conditions)
+        _add_ctd_conditions(model_cfg, ctd_conditions)
+    return model_cfg
 
-    # sort first-level keys to make it prettier
-    pose_config = dict(sorted(pose_config.items()))
+
+def make_pytorch_pose_config(
+    project_config: ProjectConfig | DictConfig | dict | Path | str,
+    pose_config_path: str | Path,
+    net_type: NetType | str | None = None,
+    top_down: bool = False,
+    detector_type: str | None = None,
+    weight_init: WeightInitialization | DictConfig | None = None,
+    save: bool = False,
+    ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
+) -> DictConfig:
+    """Creates a PyTorch pose configuration file for a DeepLabCut project
+
+    Args:
+        project_config: the DeepLabCut project config (used to infer individuals, bodyparts and identity tracking)
+        net_type: the architecture of the desired pose estimation model
+        top_down: when the net_type is a backbone, whether to create a top-down model
+            by associating a detector to the pose model. Required for multi-animal
+            projects when net_type is a backbone (as a backbone + heatmap head can only
+            predict pose for single individuals).
+        detector_type: for top-down pose models, the architecture of the desired object
+            detection model
+        weight_init: Specify how model weights should be initialized. If None, ImageNet
+            pretrained weights from Timm will be loaded when training.
+        save: Whether to save the model configuration file to the ``pose_config_path``.
+        ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] , optional, default = None,
+            If using a conditional-top-down (CTD) net_type, this argument needs to be specified.
+            It defines the conditions that will be used with the CTD model.
+            It can be either:
+                * A shuffle number (ctd_conditions: int), which must correspond to a bottom-up (BU) network type.
+                * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5 predictions file.
+                * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
+    Returns:
+        the PyTorch pose configuration file
+    """
+    # Initialize ProjectConfig (convert to DictConfig if needed)
+    project_config: DictConfig = ProjectConfig.from_any(project_config).to_dictconfig()
+    project_config.pose_config_path = pose_config_path
+    
+    # Initialize PoseConfig as DictConfig
+    pose_config = PoseConfig().to_dictconfig()
+    pose_config.metadata = project_config
+    pose_config.net_type = NetType(net_type) if net_type is not None else None
+
+    # Add inference config and weight init configs
+    pose_config.inference = InferenceConfig().to_dictconfig()
+    if weight_init is not None:
+        weight_init = WeightInitialization.from_any(weight_init).to_dictconfig()
+        pose_config.train_settings.weight_init = weight_init
+
+    # Update default values for the specific model architecture and project config.
+    # TODO JR 2026-01-28: using legacy v0 config (dict) for the defaults,
+    # we should move to typed model defaults and use omegaconf merge to update
+    defaults: dict = _load_pose_config_defaults(
+        project_config,
+        net_type,
+        top_down,
+        detector_type,
+        ctd_conditions,
+    )
+    pose_config = update_config(pose_config, defaults) 
+
+    # Validate the config against the PoseConfig pydantic model after updating
+    PoseConfig.validate_dict(pose_config)
 
     if save:
         write_config(pose_config_path, pose_config, overwrite=True)
