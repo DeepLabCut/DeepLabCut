@@ -1,9 +1,10 @@
 from typing import Callable, Self
 from pathlib import Path
-from dataclasses import asdict
+from dataclasses import asdict, fields
 
 from omegaconf import OmegaConf, DictConfig
 from pydantic import TypeAdapter
+from ruamel.yaml.comments import CommentedMap
 
 from deeplabcut.core.config.utils import read_config_as_dict, write_config, pretty_print
 
@@ -79,7 +80,11 @@ class ConfigMixin:
         return cls.from_dict(read_config_as_dict(yaml_path))
 
     def to_yaml(self, yaml_path: str | Path, overwrite: bool = True) -> None:
-        write_config(yaml_path, self.to_dict(), overwrite=overwrite)
+        data = CommentedMap(self.to_dict())
+        for f in fields(self):
+            if (comment := f.metadata.get("comment")):
+                data.yaml_set_comment_before_after_key(f.name, before=comment)
+        write_config(yaml_path, data, overwrite=overwrite)
 
     def to_dict(self) -> dict:
         return asdict(self)
