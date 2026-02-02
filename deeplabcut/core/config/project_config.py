@@ -68,22 +68,28 @@ class ProjectConfig(ConfigMixin):
         SuperAnimalConversionTables: Conversion tables for SuperAnimal weights.
     """
 
-    # Project definitions (do not edit) - from config.yaml template
-    Task: str = ""
+    # Project definitions (do not edit)
+    Task: str = field(default="", metadata={"comment": "Project definitions (do not edit)"})
     scorer: str = ""
     date: str = ""
     multianimalproject: bool = False
     identity: bool | None = None
 
     # Project path
-    project_path: str = ""
-    pose_config_path: str = ""  # used in pose config metadata only
+    project_path: str = field(default="", metadata={"comment": "\nProject path (change when moving around)"})
+    pose_config_path: str = ""
 
     # Engine
-    engine: str = "pytorch"
+    engine: str = field(
+        default="pytorch",
+        metadata={"comment": "\nDefault DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)"},
+    )
 
-    # Annotation data set configuration
-    video_sets: dict[str, Any] = field(default_factory=dict)
+    # Annotation data set configuration (and individual video cropping parameters)
+    video_sets: dict[str, Any] = field(
+        default_factory=dict,
+        metadata={"comment": "\nAnnotation data set configuration (and individual video cropping parameters)"},
+    )
     # VV TODO @deruyter92 2026-01-30: following the old original config.yaml template for now. VV
     # VV We should change this to a list[str] in the future. VV
     bodyparts: list[str] | str = 'MULTI!' 
@@ -96,13 +102,19 @@ class ProjectConfig(ConfigMixin):
         default_factory=list
     )  # metadata key; same as uniquebodyparts
 
-    # Fraction of video to start/stop when extracting frames
-    start: float = 0.0
+    # Fraction of video to start/stop when extracting frames for labeling/refinement
+    start: float = field(
+        default=0.0,
+        metadata={"comment": "\nFraction of video to start/stop when extracting frames for labeling/refinement"},
+    )
     stop: float = 1.0
     numframes2pick: int = 20
 
     # Plotting configuration
-    skeleton: list[list[str]] = field(default_factory=list)
+    skeleton: list[list[str]] = field(
+        default_factory=list,
+        metadata={"comment": "\nPlotting configuration"},
+    )
     skeleton_color: str = "black"
     pcutoff: float = 0.4
     dotsize: int = 12
@@ -110,7 +122,10 @@ class ProjectConfig(ConfigMixin):
     colormap: str = "rainbow"
 
     # Training, evaluation and analysis configuration
-    TrainingFraction: list[float] = field(default_factory=list)
+    TrainingFraction: list[float] = field(
+        default_factory=list,
+        metadata={"comment": "\nTraining,Evaluation and Analysis configuration"},
+    )
     iteration: int | None = None
     default_net_type: str = "resnet_50"
     default_augmenter: str | None = None
@@ -121,15 +136,27 @@ class ProjectConfig(ConfigMixin):
     detector_batch_size: int = 1
 
     # Cropping parameters (for analysis and outlier frame detection)
-    cropping: bool = False
-    x1: int | None = None
+    cropping: bool = field(
+        default=False,
+        metadata={"comment": "\nCropping Parameters (for analysis and outlier frame detection)"},
+    )
+    x1: int | None = field(
+        default=None,
+        metadata={"comment": "if cropping is true for analysis, then set the values here:"},
+    )
     x2: int | None = None
     y1: int | None = None
     y2: int | None = None
 
-    # Refinement configuration
-    corner2move2: list[list[str]] | None = None
+    # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+    corner2move2: list[list[str]] | None = field(
+        default=None,
+        metadata={"comment": "\nRefinement configuration (parameters from annotation dataset configuration also relevant in this stage)"},
+    )
     move2corner: bool | None = None
 
     # Conversion tables to fine-tune SuperAnimal weights
-    SuperAnimalConversionTables: dict[str, Any] | None = None
+    SuperAnimalConversionTables: dict[str, Any] | None = field(
+        default=None,
+        metadata={"comment": "\nConversion tables to fine-tune SuperAnimal weights"},
+    )
