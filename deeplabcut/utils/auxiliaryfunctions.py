@@ -36,18 +36,25 @@ from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS, collect_video_paths
 from deeplabcut.utils.deprecation import deprecated
 
 # NOTE @deruyter92 2026-01-29: Configuration I/O is now centralized in deeplabcut.core.config
-# These functions are exported here for backwards compatibility with existing code. 
+# These functions are exported here for backwards compatibility with existing code.
 create_config_template = core_config.create_config_template
 create_config_template_3d = core_config.create_config_template_3d
 read_config = core_config.read_config
 write_config = core_config.write_project_config
+
+
 def read_plainconfig(configname: str | Path) -> dict:
     """Load a YAML config (alias for read_config_as_dict). See deeplabcut.core.config."""
     return core_config.read_config_as_dict(config_path=configname)
 
-def write_plainconfig(configname: str | Path, cfg: dict, overwrite: bool = True) -> None:
+
+def write_plainconfig(
+    configname: str | Path, cfg: dict, overwrite: bool = True
+) -> None:
     """Write a config dict to YAML (alias for write_config). See deeplabcut.core.config."""
     core_config.write_config(config_path=configname, config=cfg, overwrite=overwrite)
+
+
 edit_config = core_config.edit_config
 write_config_3d = core_config.write_config_3d
 write_config_3d_template = core_config.write_config_3d_template
