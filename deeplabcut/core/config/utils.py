@@ -13,11 +13,16 @@ from __future__ import annotations
 
 import warnings
 from pathlib import Path
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
+
+if TYPE_CHECKING:
+    from deeplabcut.core.config.project_config import ProjectConfig, ProjectConfig3D
 
 import yaml
 import ruamel.yaml.representer
 from ruamel.yaml import YAML
+from omegaconf import DictConfig
+from pydantic import ValidationError
 
 from deeplabcut.core.engine import Engine
 
@@ -97,126 +102,10 @@ def create_config_template(multianimal: bool = False) -> tuple:
     Returns:
         (cfg_file, ruamelFile) for further editing and dumping.
     """
-    if multianimal:
-        yaml_str = """\
-# Project definitions (do not edit)
-Task:
-scorer:
-date:
-multianimalproject:
-identity:
-\n
-# Project path (change when moving around)
-project_path:
-\n
-# Default DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)
-engine: pytorch
-\n
-# Annotation data set configuration (and individual video cropping parameters)
-video_sets:
-individuals:
-uniquebodyparts:
-multianimalbodyparts:
-bodyparts:
-\n
-# Fraction of video to start/stop when extracting frames for labeling/refinement
-start:
-stop:
-numframes2pick:
-\n
-# Plotting configuration
-skeleton:
-skeleton_color:
-pcutoff:
-dotsize:
-alphavalue:
-colormap:
-\n
-# Training,Evaluation and Analysis configuration
-TrainingFraction:
-iteration:
-default_net_type:
-default_augmenter:
-default_track_method:
-snapshotindex:
-detector_snapshotindex:
-batch_size:
-\n
-# Cropping Parameters (for analysis and outlier frame detection)
-cropping:
-#if cropping is true for analysis, then set the values here:
-x1:
-x2:
-y1:
-y2:
-\n
-# Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
-corner2move2:
-move2corner:
-\n
-# Conversion tables to fine-tune SuperAnimal weights
-SuperAnimalConversionTables:
-        """
-    else:
-        yaml_str = """\
-# Project definitions (do not edit)
-Task:
-scorer:
-date:
-multianimalproject:
-identity:
-\n
-# Project path (change when moving around)
-project_path:
-\n
-# Default DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)
-engine: pytorch
-\n
-# Annotation data set configuration (and individual video cropping parameters)
-video_sets:
-bodyparts:
-\n
-# Fraction of video to start/stop when extracting frames for labeling/refinement
-start:
-stop:
-numframes2pick:
-\n
-# Plotting configuration
-skeleton:
-skeleton_color:
-pcutoff:
-dotsize:
-alphavalue:
-colormap:
-\n
-# Training,Evaluation and Analysis configuration
-TrainingFraction:
-iteration:
-default_net_type:
-default_augmenter:
-snapshotindex:
-detector_snapshotindex:
-batch_size:
-detector_batch_size:
-\n
-# Cropping Parameters (for analysis and outlier frame detection)
-cropping:
-#if cropping is true for analysis, then set the values here:
-x1:
-x2:
-y1:
-y2:
-\n
-# Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
-corner2move2:
-move2corner:
-\n
-# Conversion tables to fine-tune SuperAnimal weights
-SuperAnimalConversionTables:
-        """
-
+    warnings.warn("This function is deprecated. Use ProjectConfig instead.")
+    from deeplabcut.core.config.project_config import ProjectConfig
     ruamelFile = YAML()
-    cfg_file = ruamelFile.load(yaml_str)
+    cfg_file = ProjectConfig(multianimalproject=multianimal).to_dict()
     return cfg_file, ruamelFile
 
 
@@ -256,52 +145,40 @@ scorername_3d: # Enter the scorer name for the 3D output
     return cfg_file_3d, ruamelFile_3d
 
 
-def read_config(configname: str | Path) -> dict:
+def read_config(configname: str | Path) -> DictConfig:
     """
     Reads structured config file defining a project.
     Applies default values and repairs (engine, detector_snapshotindex, project_path) and writes back if needed.
     """
-    ruamelFile = YAML()
+    from deeplabcut.core.config.project_config import ProjectConfig
     path = Path(configname)
-    if path.exists():
-        try:
-            with open(path, "r") as f:
-                cfg = ruamelFile.load(f)
-                curr_dir = str(Path(configname).parent.resolve())
-
-                if cfg.get("engine") is None:
-                    cfg["engine"] = Engine.TF.aliases[0]
-                    write_project_config(configname, cfg)
-
-                if cfg.get("detector_snapshotindex") is None:
-                    cfg["detector_snapshotindex"] = -1
-
-                if cfg.get("detector_batch_size") is None:
-                    cfg["detector_batch_size"] = 1
-
-                if cfg["project_path"] != curr_dir:
-                    cfg["project_path"] = curr_dir
-                    write_project_config(configname, cfg)
-        except Exception as err:
-            if len(err.args) > 2:
-                if (
-                    err.args[2]
-                    == "could not determine a constructor for the tag '!!python/tuple'"
-                ):
-                    with open(path, "r") as ymlfile:
-                        cfg = yaml.load(ymlfile, Loader=yaml.SafeLoader)
-                        write_project_config(configname, cfg)
-                else:
-                    raise
-    else:
-        raise FileNotFoundError(
-            f"Config file at {path} not found. Please make sure that the file exists and/or that you passed the path of the config file correctly!"
-        )
-    return cfg
+    project_config = ProjectConfig.from_yaml(path)
+    
+    # NOTE @deruyter92 2026-02-02: copied old behaviour of writing the config back to the file.
+    # We should consider separating the writing and reading instead of having inplace edits during reading.
+    curr_dir = str(Path(configname).parent.resolve())
+    if project_config.project_path != curr_dir:
+        project_config.project_path = curr_dir
+        project_config.to_yaml(configname)
+    return project_config.to_dictconfig()
 
 
-def write_project_config(configname: str | Path, cfg: dict) -> None:
+def write_project_config(
+    configname: str | Path,
+    cfg: dict | ProjectConfig | DictConfig,
+) -> None:
     """Write structured project config file (config.yaml) preserving template order."""
+    from deeplabcut.core.config.project_config import ProjectConfig
+
+    try:
+        project_config: ProjectConfig = ProjectConfig.from_any(cfg)
+        project_config.to_yaml(configname)
+        return
+    except ValidationError as e:
+        warnings.warn(
+            f"Invalid configuration! Validation error in config file {cfg}. Error: {e}"
+            "Reverting to legacy config file writing."
+        )
     with open(configname, "w") as cf:
         cfg_file, ruamelFile = create_config_template(
             cfg.get("multianimalproject", False)
