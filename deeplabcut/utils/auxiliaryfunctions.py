@@ -971,46 +971,44 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
     suffix = "_filtered" if filtered else ""
     tracker = TRACK_METHODS.get(track_method, "")
 
-    candidates = [] 
-    folder = Path(folder)
-    for p in folder.glob("*.h5"):
-        file = p.name
-
-        if "skeleton" in file:
-            continue
-
-        if filtered != ("filtered" in file):
-            continue
-
-        stem = p.stem.removesuffix("_filtered")
-        if not stem.startswith((videoname+scorer, videoname+scorer_legacy)):
-            continue
-
+    candidates = []
+    for file in grab_files_in_folder(folder, "h5"):
+        stem = Path(file).stem.replace("_filtered", "")
+        starts_by_scorer = file.startswith(videoname + scorer) or file.startswith(
+            videoname + scorer_legacy
+        )
         if tracker:
-            if not stem.endswith(tracker):
-                continue
+            matches_tracker = stem.endswith(tracker)
         else:
-            if stem.endswith(tuple(TRACK_METHODS.values())):
-                continue
-        candidates.append(file)
-    
+            matches_tracker = not any(stem.endswith(s) for s in TRACK_METHODS.values())
+        if all(
+            (
+                starts_by_scorer,
+                "skeleton" not in file,
+                matches_tracker,
+                (filtered and "filtered" in file)
+                or (not filtered and "filtered" not in file),
+            )
+        ):
+            candidates.append(file)
+
     if not len(candidates):
-        filtered_type = "unfiltered" if not filtered else "filtered"
-        tracker_info = f" and {track_method} tracker" if track_method else ""
         msg = (
-            f"No {filtered_type} data file found in {folder}"
-            f" for video {videoname} and scorer {scorer}{tracker_info}."
-        ) 
+            f'No {"un" if not filtered else ""}filtered data file found in {folder} '
+            f"for video {videoname} and scorer {scorer}"
+        )
+        if track_method:
+            msg += f" and {track_method} tracker"
+        msg += "."
         raise FileNotFoundError(msg)
 
-    if len(candidates) > 1:
+    n_candidates = len(candidates)
+    if n_candidates > 1:  # This should not be happening anyway...
         print(
-            f"{len(candidates)} possible data files were found: {candidates}.\n"
+            f"{n_candidates} possible data files were found: {candidates}.\n"
             f"Picking the first by default..."
         )
-
-    # Inelegant way to check 'scorer in filepath', but preserves compatibility returning str 
-    filepath = str(folder / candidates[0])
+    filepath = str(Path(folder) / candidates[0])
     scorer = scorer if scorer in filepath else scorer_legacy
     return filepath, scorer, suffix
 

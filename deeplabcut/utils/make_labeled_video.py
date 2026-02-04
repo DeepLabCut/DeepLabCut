@@ -711,7 +711,6 @@ def create_labeled_video(
                 bboxes_pcutoff = 0.6
 
     if init_weights == "":
-        # TODO: cfg breaks if config == ""
         DLCscorer, DLCscorerlegacy = auxiliaryfunctions.get_scorer_name(
             cfg,
             shuffle,
@@ -849,7 +848,7 @@ def proc_video(
     keypoints_only,
     overwrite,
     video,
-    init_weights=None,
+    init_weights="",
     pcutoff: float | None = None,
     confidence_to_alpha: Optional[Callable[[float], float]] = None,
     plot_bboxes: bool = True,
@@ -869,21 +868,22 @@ def proc_video(
     videofolder = Path(video).parent
     if destfolder is None:
         destfolder = videofolder  # where your folder with videos is.
-
-    destfolder = Path(destfolder)
-    destfolder.mkdir(exist_ok=True)
+    else:
+        destfolder = Path(destfolder)
 
     if pcutoff is None:
         pcutoff = cfg["pcutoff"]
 
-     # NOTE: THE VIDEO IS STILL IN THE VIDEO FOLDER
-    print(f"Starting to process video: {video}")
-    vname = Path(video).stem
-    if init_weights is not None:
-        init_weights_name = Path(init_weights).stem
-        DLCscorer = "DLC_" + init_weights_name
-        DLCscorerlegacy = "DLC_" + init_weights_name
-    
+    auxiliaryfunctions.attempt_to_make_folder(destfolder)
+
+    os.chdir(destfolder)  # THE VIDEO IS STILL IN THE VIDEO FOLDER
+    print("Starting to process video: {}".format(video))
+    vname = str(Path(video).stem)
+
+    if init_weights != "":
+        DLCscorer = "DLC_" + Path(init_weights).stem
+        DLCscorerlegacy = "DLC_" + Path(init_weights).stem
+
     if filtered:
         videooutname1 = destfolder / f"{vname}{DLCscorer}filtered_labeled.mp4"
         videooutname2 = destfolder / f"{vname}{DLCscorerlegacy}filtered_labeled.mp4"
@@ -894,147 +894,146 @@ def proc_video(
     if (videooutname1.is_file() or videooutname2.is_file()) and not overwrite:
         print(f"Labeled video {vname} already created.")
         return True
-    
-    print(f"Loading {video} and data.")
-    try:
-        df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
-            destfolder, vname, DLCscorer, filtered, track_method
-        )
-        metadata = auxiliaryfunctions.load_video_metadata(
-            destfolder, vname, DLCscorer
-        )
-        if cfg.get("multianimalproject", False):
-            s = "_id" if color_by == "individual" else "_bp"
-        else:
-            s = ""
-        
-        filepath = Path(filepath) # NOTE: temp until refactor auxiliaryfunctions.load_analyzed_data functions 
-        videooutname = filepath.with_name(f"{filepath.stem}{s}_p{int(100 * pcutoff)}_labeled.mp4")
-        if videooutname.is_file() and not overwrite:
-            print("Labeled video already created. Skipping...")
-            return True
-
-        if individuals != "all":
-            if isinstance(individuals, str):
-                individuals = [individuals]
-
-            if all(individuals) and "individuals" in df.columns.names:
-                mask = df.columns.get_level_values("individuals").isin(individuals)
-                df = df.loc[:, mask]
-
-        cropping = metadata["data"]["cropping"]
-        [x1, x2, y1, y2] = metadata["data"]["cropping_parameters"]
-        labeled_bpts = [
-            bp
-            for bp in df.columns.get_level_values("bodyparts").unique()
-            if bp in bodyparts
-        ]
-
-        # The full data file is not created for single-animal TensorFlow models
+    else:
+        print("Loading {} and data.".format(video))
         try:
-            full_data = auxiliaryfunctions.load_video_full_data(
+            df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
+                destfolder, vname, DLCscorer, filtered, track_method
+            )
+            metadata = auxiliaryfunctions.load_video_metadata(
                 destfolder, vname, DLCscorer
             )
-            frames_dict = {
-                int(key.replace("frame", "")): value
-                for key, value in full_data.items()
-                if key.startswith("frame") and key[5:].isdigit()
-            }
-            bboxes_list = None
-            if "bboxes" in frames_dict.get(min(frames_dict.keys()), {}):
-                bboxes_list = [
-                    frames_dict[key] for key in sorted(frames_dict.keys())
-                ]
-        except FileNotFoundError:
-            bboxes_list = None
+            if cfg.get("multianimalproject", False):
+                s = "_id" if color_by == "individual" else "_bp"
+            else:
+                s = ""
 
-        if keypoints_only:
-            # Mask rather than drop unwanted bodyparts to ensure consistent coloring
-            mask = df.columns.get_level_values("bodyparts").isin(bodyparts)
-            df.loc[:, ~mask] = np.nan
-            inds = None
-            if bodyparts2connect:
-                all_bpts = df.columns.get_level_values("bodyparts")[::3]
-                inds = get_segment_indices(bodyparts2connect, all_bpts)
-            clip = vp(fname=video, fps=outputframerate)
-            create_video_with_keypoints_only(
-                df,
-                videooutname,
-                inds,
-                pcutoff,
-                cfg["dotsize"],
-                cfg["alphavalue"],
-                skeleton_color=skeleton_color,
-                color_by=color_by,
-                colormap=cfg["colormap"],
-                fps=clip.fps(),
+            videooutname = filepath.replace(
+                ".h5", f"{s}_p{int(100 * pcutoff)}_labeled.mp4"
             )
-            clip.close()
-        elif not fastmode:
+            if os.path.isfile(videooutname) and not overwrite:
+                print("Labeled video already created. Skipping...")
+                return
 
-            tmpfolder = videofolder / f"temp-{vname}"
-            if save_frames:
-                tmpfolder.mkdir(exist_ok=True)
+            if individuals != "all":
+                if isinstance(individuals, str):
+                    individuals = [individuals]
 
-            clip = vp(video)
-            CreateVideoSlow(
-                videooutname,
-                clip,
-                df,
-                tmpfolder,
-                cfg["dotsize"],
-                cfg["colormap"],
-                cfg["alphavalue"],
-                pcutoff,
-                trailpoints,
-                cropping,
-                x1,
-                x2,
-                y1,
-                y2,
-                save_frames,
-                labeled_bpts,
-                outputframerate,
-                Frames2plot,
-                bodyparts2connect,
-                skeleton_color,
-                draw_skeleton,
-                displaycropped,
-                color_by,
-                plot_bboxes=plot_bboxes,
-                bboxes_list=bboxes_list,
-                bboxes_pcutoff=bboxes_pcutoff,
-            )
-            clip.close()
-        else:
-            create_video(
-                video,
-                filepath,
-                keypoints2show=labeled_bpts,
-                animals2show=individuals,
-                bbox=(x1, x2, y1, y2),
-                codec=codec,
-                output_path=videooutname,
-                pcutoff=pcutoff,
-                dotsize=cfg["dotsize"],
-                cmap=cfg["colormap"],
-                color_by=color_by,
-                skeleton_edges=bodyparts2connect,
-                skeleton_color=skeleton_color,
-                trailpoints=trailpoints,
-                fps=outputframerate,
-                display_cropped=displaycropped,
-                confidence_to_alpha=confidence_to_alpha,
-                plot_bboxes=plot_bboxes,
-                bboxes_list=bboxes_list,
-                bboxes_pcutoff=bboxes_pcutoff,
-            )
+                if all(individuals) and "individuals" in df.columns.names:
+                    mask = df.columns.get_level_values("individuals").isin(individuals)
+                    df = df.loc[:, mask]
 
-        return True
+            cropping = metadata["data"]["cropping"]
+            [x1, x2, y1, y2] = metadata["data"]["cropping_parameters"]
+            labeled_bpts = [
+                bp
+                for bp in df.columns.get_level_values("bodyparts").unique()
+                if bp in bodyparts
+            ]
 
-    except FileNotFoundError as e:
-        print(e)
-        return False
+            # The full data file is not created for single-animal TensorFlow models
+            try:
+                full_data = auxiliaryfunctions.load_video_full_data(
+                    destfolder, vname, DLCscorer
+                )
+                frames_dict = {
+                    int(key.replace("frame", "")): value
+                    for key, value in full_data.items()
+                    if key.startswith("frame") and key[5:].isdigit()
+                }
+                bboxes_list = None
+                if "bboxes" in frames_dict.get(min(frames_dict.keys()), {}):
+                    bboxes_list = [
+                        frames_dict[key] for key in sorted(frames_dict.keys())
+                    ]
+            except FileNotFoundError:
+                bboxes_list = None
+
+            if keypoints_only:
+                # Mask rather than drop unwanted bodyparts to ensure consistent coloring
+                mask = df.columns.get_level_values("bodyparts").isin(bodyparts)
+                df.loc[:, ~mask] = np.nan
+                inds = None
+                if bodyparts2connect:
+                    all_bpts = df.columns.get_level_values("bodyparts")[::3]
+                    inds = get_segment_indices(bodyparts2connect, all_bpts)
+                clip = vp(fname=video, fps=outputframerate)
+                create_video_with_keypoints_only(
+                    df,
+                    videooutname,
+                    inds,
+                    pcutoff,
+                    cfg["dotsize"],
+                    cfg["alphavalue"],
+                    skeleton_color=skeleton_color,
+                    color_by=color_by,
+                    colormap=cfg["colormap"],
+                    fps=clip.fps(),
+                )
+                clip.close()
+            elif not fastmode:
+                tmpfolder = os.path.join(str(videofolder), "temp-" + vname)
+                if save_frames:
+                    auxiliaryfunctions.attempt_to_make_folder(tmpfolder)
+                clip = vp(video)
+                CreateVideoSlow(
+                    videooutname,
+                    clip,
+                    df,
+                    tmpfolder,
+                    cfg["dotsize"],
+                    cfg["colormap"],
+                    cfg["alphavalue"],
+                    pcutoff,
+                    trailpoints,
+                    cropping,
+                    x1,
+                    x2,
+                    y1,
+                    y2,
+                    save_frames,
+                    labeled_bpts,
+                    outputframerate,
+                    Frames2plot,
+                    bodyparts2connect,
+                    skeleton_color,
+                    draw_skeleton,
+                    displaycropped,
+                    color_by,
+                    plot_bboxes=plot_bboxes,
+                    bboxes_list=bboxes_list,
+                    bboxes_pcutoff=bboxes_pcutoff,
+                )
+                clip.close()
+            else:
+                create_video(
+                    video,
+                    filepath,
+                    keypoints2show=labeled_bpts,
+                    animals2show=individuals,
+                    bbox=(x1, x2, y1, y2),
+                    codec=codec,
+                    output_path=videooutname,
+                    pcutoff=pcutoff,
+                    dotsize=cfg["dotsize"],
+                    cmap=cfg["colormap"],
+                    color_by=color_by,
+                    skeleton_edges=bodyparts2connect,
+                    skeleton_color=skeleton_color,
+                    trailpoints=trailpoints,
+                    fps=outputframerate,
+                    display_cropped=displaycropped,
+                    confidence_to_alpha=confidence_to_alpha,
+                    plot_bboxes=plot_bboxes,
+                    bboxes_list=bboxes_list,
+                    bboxes_pcutoff=bboxes_pcutoff,
+                )
+
+            return True
+
+        except FileNotFoundError as e:
+            print(e)
+            return False
 
 
 def create_video(
@@ -1053,7 +1052,7 @@ def create_video(
     display_cropped=False,
     codec="mp4v",
     fps=None,
-    output_path: str | Path | None = None,
+    output_path="",
     confidence_to_alpha=None,
     plot_bboxes=True,
     bboxes_list=None,
@@ -1063,13 +1062,13 @@ def create_video(
     if color_by not in ("bodypart", "individual"):
         raise ValueError("`color_by` should be either 'bodypart' or 'individual'.")
 
-    if output_path is None:
+    if not output_path:
         s = "_id" if color_by == "individual" else "_bp"
         output_path = h5file.replace(".h5", f"{s}_labeled.mp4")
 
     clip = vp(
         fname=video,
-        sname=str(output_path), # NOTE: inelegant solution for cv2, but probably better at this step
+        sname=str(output_path),
         codec=codec,
         sw=bbox[1] - bbox[0] if display_cropped else "",
         sh=bbox[3] - bbox[2] if display_cropped else "",
