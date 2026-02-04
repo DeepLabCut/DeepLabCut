@@ -49,8 +49,9 @@ jobs:
           
           echo "Using base reference: $BASE_REF"
           
-          # Run test selector and capture output
-          python tools/test_selector.py --output-json --base $BASE_REF > test_selection.json
+          # Run test selector and capture output (atomic write to avoid partial reads)
+          python tools/test_selector.py --output-json --base $BASE_REF > test_selection.json.tmp
+          mv test_selection.json.tmp test_selection.json
           
           # Parse the JSON output and set GitHub outputs
           cat test_selection.json
