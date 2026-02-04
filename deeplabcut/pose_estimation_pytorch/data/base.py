@@ -22,7 +22,7 @@ from deeplabcut.pose_estimation_pytorch.data.dataset import (
     PoseDataset,
     PoseDatasetParameters,
 )
-from deeplabcut.pose_estimation_pytorch.data.generative_sampling import (
+from deeplabcut.pose_estimation_pytorch.config.data import (
     GenSamplingConfig,
 )
 from deeplabcut.pose_estimation_pytorch.data.snapshots import list_snapshots, Snapshot
