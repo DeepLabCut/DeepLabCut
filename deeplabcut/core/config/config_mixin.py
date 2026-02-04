@@ -1,4 +1,5 @@
-from typing import Callable, Self
+from typing import Callable
+from typing_extensions import Self
 from pathlib import Path
 from dataclasses import asdict, fields
 
