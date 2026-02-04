@@ -247,14 +247,15 @@ def test_read_config_updates_project_path_when_different(tmp_path):
     assert cfg["project_path"] == str(tmp_path)
 
 
-def test_read_config_preserves_existing_engine_and_project_path(tmp_path):
+@pytest.mark.parametrize("engine", ["pytorch", "tensorflow"])
+def test_read_config_preserves_existing_engine_and_project_path(tmp_path, engine):
     config_path = tmp_path / "config.yaml"
     write_project_config(
         config_path,
-        {"project_path": str(tmp_path), "engine": "pytorch"},
+        {"project_path": str(tmp_path), "engine": engine},
     )
     cfg = read_config(config_path)
-    assert cfg["engine"] == "pytorch"
+    assert cfg["engine"] == engine
     assert cfg["project_path"] == str(tmp_path)
 
 
