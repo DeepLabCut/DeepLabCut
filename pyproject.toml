@@ -6,7 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "deeplabcut"
 version = "3.0.0rc13"
 authors = [
-    { name = "A. & M.W. Mathis Labs", email = "info@deeplabcut.org" },
+    { name = "M-Lab of Adaptive Intelligence", email = "mackenzie@deeplabcut.org" },
+    { name = "Mathis Group for Computational Neuroscience and AI", email = "alexander@deeplabcut.org" },
 ]
 description = "Markerless pose-estimation of user-defined features with deep learning"
 readme = { file = "README.md", content-type = "text/markdown" }
