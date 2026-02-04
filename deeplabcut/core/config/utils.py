@@ -102,7 +102,7 @@ def create_config_template(multianimal: bool = False) -> tuple:
     Returns:
         (cfg_file, ruamelFile) for further editing and dumping.
     """
-    warnings.warn("This function is deprecated. Use ProjectConfig instead.")
+    warnings.warn("This function is deprecated. Use deeplabcut.core.config.ProjectConfig instead.")
     from deeplabcut.core.config.project_config import ProjectConfig
     ruamelFile = YAML()
     cfg_file = ProjectConfig(multianimalproject=multianimal).to_dict()
