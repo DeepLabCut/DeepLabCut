@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Helper script to parse test selection JSON output for GitHub Actions.
 """
@@ -8,6 +8,7 @@ import sys
 import os
 from pathlib import Path
 
+
 def extract_commands():
     """Extract commands from test selection JSON."""
     try:
@@ -15,11 +16,9 @@ def extract_commands():
             data = json.load(f)
         return data.get('commands', [])
     except FileNotFoundError:
-        print('[]')
         sys.stderr.write('Warning: test_selection.json not found, returning empty commands\n')
         return []
     except Exception as e:
-        print('[]')
         sys.stderr.write(f'Warning: Error parsing test selection: {e}\n')
         return []
 
