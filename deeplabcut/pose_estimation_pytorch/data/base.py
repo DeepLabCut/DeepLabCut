@@ -87,20 +87,20 @@ class Loader(ABC):
                 model_config = model_config_path
             elif model_config is None:
                 raise ValueError(
-                    "`model_config` (or legacy argument `model_config_path`) must be provided."
+                    "`model_config` argument must be provided."
                 )
             return model_config
         model_config = _resolve_legacy_args(model_config, model_config_path)    
-        self.model_cfg: DictConfig = PoseConfig.from_any(model_config)
+        self.model_cfg: DictConfig = PoseConfig.from_any(model_config).to_dictconfig()
 
         def _infer_model_config_path(model_config: PoseConfig | DictConfig | Path | str) -> Path:
             """Resolve the pose config path. Either the input is a path, or it is specified in `metadata.pose_config_path` field."""
             provided_path = Path(model_config) if isinstance(model_config, (Path, str)) else None
             specified_path = OmegaConf.select(self.model_cfg, "metadata.pose_config_path")
-            model_config_path = Path(provided_path or specified_path)
+            model_config_path = provided_path or specified_path
             if model_config_path is None:
                 raise ValueError("`model_config` must contain a `metadata.pose_config_path` field.")
-            return model_config_path
+            return Path(model_config_path)
         self.model_config_path = _infer_model_config_path(model_config)
 
         self.project_root = Path(project_root)
