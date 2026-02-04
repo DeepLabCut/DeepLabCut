@@ -1,12 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Helper script to execute test commands from JSON array for GitHub Actions.
 """
 
 import json
+import shlex
 import subprocess
 import sys
 import os
+
 
 def main():
     """Execute test commands from environment variable."""
@@ -24,9 +26,10 @@ def main():
         for i, cmd in enumerate(commands, 1):
             print(f'[{i}/{len(commands)}] Running: {cmd}')
             try:
-                result = subprocess.run(cmd.split(), check=True)
+                # Use shlex.split() for proper shell command parsing
+                result = subprocess.run(shlex.split(cmd), check=True)
                 print(f'✅ Passed: {cmd}')
-            except subprocess.CalledProcessError as e:
+            except subprocess.CalledProcessError:
                 print(f'❌ Failed: {cmd}')
                 all_passed = False
         
@@ -35,6 +38,7 @@ def main():
     except Exception as e:
         print(f"Error executing test commands: {e}")
         return 1
+
 
 if __name__ == '__main__':
     sys.exit(main())
