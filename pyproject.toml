@@ -53,7 +53,7 @@ dependencies = [
     "pycocotools",
     "pyyaml",
     "Pillow>=7.1",
-    "tables",
+    "tables>3.8.0",
     "h5py>=3.15.1; platform_system == 'Darwin'",
 ]
 
