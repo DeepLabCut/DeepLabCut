@@ -35,6 +35,7 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
     map_id_to_annotations,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
+from deeplabcut.core.types import DEPRECATED_ARGUMENT
 
 
 class Loader(ABC):
@@ -58,7 +59,7 @@ class Loader(ABC):
         project_root: str | Path,
         image_root: str | Path,
         model_config: PoseConfig | DictConfig | Path | str | None = None,
-        model_config_path: Path | str | None = None,
+        model_config_path: Path | str | None = DEPRECATED_ARGUMENT,
     ) -> None:
         """
         Initialize the Loader.
@@ -72,7 +73,7 @@ class Loader(ABC):
         """
         def _resolve_legacy_args(model_config, model_config_path):
             """Support for legacy argument `model_config_path`. returns new model_config arg"""
-            if model_config_path is not None:
+            if model_config_path:
                 warnings.warn(
                     "argument `model_config_path` in Loader.__init__ is deprecated, use `model_config` instead",
                     DeprecationWarning,

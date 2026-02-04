@@ -19,6 +19,7 @@ import numpy as np
 from omegaconf import OmegaConf, DictConfig
 
 from deeplabcut.pose_estimation_pytorch.data.base import Loader
+from deeplabcut.core.types import DEPRECATED_ARGUMENT
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.utils import (
     map_id_to_annotations,
@@ -52,7 +53,7 @@ class COCOLoader(Loader):
         model_config: PoseConfig | DictConfig | Path | str | None = None,
         train_json_filename: str = "train.json",
         test_json_filename: str = "test.json",
-        model_config_path: str | Path | None = None, # <--- deprecated
+        model_config_path: str | Path | None = DEPRECATED_ARGUMENT,
     ):
         """
         Initialize the COCOLoader.
@@ -62,7 +63,7 @@ class COCOLoader(Loader):
             model_config: The pose model configuration. Can be a path to a YAML file, a PoseConfig object, or a dictionary.
             train_json_filename: The name of the JSON file containing the train annotations.
             test_json_filename: The name of the JSON file containing the test annotations.
-            (model_config_path: The path to the pose model configuration. Deprecated, use `model_config` instead.)
+            model_config_path: The path to the pose model configuration. Deprecated, use `model_config` instead.
         """
         image_root = Path(project_root) / "images"
         super().__init__(project_root, image_root, model_config, model_config_path)
