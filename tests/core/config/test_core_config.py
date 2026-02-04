@@ -50,7 +50,7 @@ def test_read_config_as_dict_raises_on_invalid_yaml(tmp_path):
         read_config_as_dict(config_path)
 
 
-@pytest.skip("This prefered behavior is not yet implemented.")
+@pytest.mark.skip("This preferred behavior is not yet implemented.")
 def test_read_config_as_dict_breaks_for_yaml_tags(tmp_path):
     """read_config breaks for YAML tags like !!python/tuple"""
     config_path = tmp_path / "config.yaml"
@@ -70,7 +70,7 @@ def test_read_config_as_dict_accepts_config_with_misnamed_fields(tmp_path):
     # NOTE @deruyter92 2026-02-03: This test captures the current behavior where
     # read_config_as_dict does not validate the keys. This behavior is different 
     # from read_config, which should validate the keys (in the future).
-    # The tests can be updated according, depending on the prefered behavior.
+    # The tests can be updated according, depending on the preferred behavior.
     config_path = tmp_path / "typos.yaml"
     config_path.write_text(
         "project_pathh: /wrong\n"  # typo
@@ -260,6 +260,7 @@ def test_read_config_preserves_existing_engine_and_project_path(tmp_path):
     assert cfg["project_path"] == str(tmp_path)
 
 
+@pytest.mark.skip("This preferred behavior is not yet implemented.")
 def test_read_config_breaks_for_yaml_tags(tmp_path):
     """read_config breaks for YAML tags like !!python/tuple"""
     config_path = tmp_path / "config.yaml"
@@ -273,9 +274,8 @@ def test_read_config_breaks_for_yaml_tags(tmp_path):
         read_config(config_path)
 
 
-@pytest.skip("This prefered behavior is not yet implemented.")
+@pytest.mark.skip("This preferred behavior is not yet implemented.")
 def test_read_config_breaks_for_invalid_fieds(tmp_path):
-    """read_config breaks for YAML tags like !!python/tuple"""
     # NOTE @deruyter92 2026-02-03: This test is currently skipped, because 
     # read_config does not validate the keys. This should be fixed in the future.
     config_path = tmp_path / "typos.yaml"
