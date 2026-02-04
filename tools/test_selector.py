@@ -110,7 +110,7 @@ class TestSelector:
                     capture_output=True,
                     check=False
                 )
-            except:
+            except (subprocess.SubprocessError, OSError):
                 pass  # Ignore fetch errors
             
             # Try multiple approaches to get changed files
@@ -219,19 +219,16 @@ class TestSelector:
         return [f.strip() for f in result.split('\n') if f.strip()]
     
     def _get_all_files_fallback(self) -> List[str]:
-        """Fallback method to get all tracked files when git diff fails."""
-        try:
-            result = subprocess.check_output(
-                ['git', 'ls-files'],
-                cwd=self.repo_root,
-                text=True,
-                stderr=subprocess.DEVNULL
-            )
-            files = [f.strip() for f in result.split('\n') if f.strip()]
-            # Limit to reasonable number of files for testing
-            return files[:50]  # Return first 50 files as "changed"
-        except subprocess.CalledProcessError:
-            return []
+        """Fallback method when git diff fails - triggers full test suite.
+        
+        Note: This returns an empty list intentionally. When no changed files
+        can be determined, the system will run a minimal test suite as defined
+        in the run() method. This is safer than guessing which files changed.
+        """
+        print("Warning: Could not determine changed files from git history.")
+        print("         This may happen in shallow clones or detached HEAD states.")
+        print("         Running minimal test suite as fallback.")
+        return []
     
     def match_patterns(self, file_path: str, patterns: List[str]) -> bool:
         """Check if file path matches any of the given patterns."""
@@ -527,9 +524,10 @@ class TestSelector:
             print(f"\n[{i}/{len(commands)}] Running: {cmd}")
             print("-" * 40)
             
+            import shlex
             try:
                 result = subprocess.run(
-                    cmd.split(),
+                    shlex.split(cmd),
                     cwd=self.repo_root,
                     check=True,
                     capture_output=False
