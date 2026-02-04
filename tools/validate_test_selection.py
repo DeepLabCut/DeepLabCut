@@ -7,6 +7,7 @@ This demonstrates the key functionality and validates that it works as expected.
 
 import subprocess
 import json
+import sys
 from pathlib import Path
 
 
@@ -133,4 +134,4 @@ def main():
 
 
 if __name__ == '__main__':
-    exit(main())
+    sys.exit(main())
