@@ -84,6 +84,7 @@ setuptools.setup(
         "h5py>=3.15.1;sys_platform=='darwin'",
         "omegaconf>=2.3.0",
         "pydantic>=2.12.3",
+        "typing_extensions",
     ],
     extras_require={
         "gui": [

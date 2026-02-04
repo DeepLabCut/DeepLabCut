@@ -29,6 +29,7 @@ statsmodels>=0.11
 tables
 torch==2.7.1
 torchvision
+typing_extensions
 tqdm
 
 # Platform-specific
