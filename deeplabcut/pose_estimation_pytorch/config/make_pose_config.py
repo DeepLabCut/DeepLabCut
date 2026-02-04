@@ -232,7 +232,7 @@ def make_pytorch_pose_config(
         pose_config.train_settings.weight_init = weight_init
 
     # Update default values for the specific model architecture and project config.
-    # TODO JR 2026-01-28: using legacy v0 config (dict) for the defaults,
+    # TODO @deruyter92 2026-02-04: using legacy v0 config (dict) for the defaults,
     # we should move to typed model defaults and use omegaconf merge to update
     defaults: dict = _load_pose_config_defaults(
         project_config,
