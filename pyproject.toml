@@ -129,7 +129,7 @@ dlc = "deeplabcut.__main__:main"
 exclude = ["tests*", "docs*", "examples*"]
 
 [tool.setuptools]
-include-package-data = true
+include-package-data = false
 
 [tool.setuptools.package-data]
 "*" = ["*.yaml", "*.yml", "*.json", "*.qss", "*.png", "*.md"]
