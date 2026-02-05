@@ -1,7 +1,8 @@
-from typing import Callable
+from typing import Callable, Mapping
 from typing_extensions import Self
 from pathlib import Path
 from dataclasses import asdict, fields
+from enum import Enum
 
 from omegaconf import OmegaConf, DictConfig
 from pydantic import TypeAdapter
@@ -77,11 +78,29 @@ class ConfigMixin:
             )
 
     @classmethod
-    def from_yaml(cls, yaml_path: str | Path) -> Self:
-        return cls.from_dict(read_config_as_dict(yaml_path))
+    def from_yaml(cls, yaml_path: str | Path, ignore_empty: bool = True) -> Self:
+        """
+        Load a configuration from a YAML file.
+
+        Args:
+            yaml_path: Path to the YAML configuration file.
+            ignore_empty: If True, empty/None values in the YAML are ignored and
+                dataclass defaults are used instead. Defaults to True.
+
+        Returns:
+            A new instance of the configuration class.
+        """
+        # NOTE @deruyter92 2026-02-05: Default ignore_empty is now set to True to match
+        # the prior behaviour of read_config. We should consider changing this to False
+        # for stricter validation.
+        yaml_dict = read_config_as_dict(yaml_path)
+        if ignore_empty:
+            yaml_dict = {k: v for k, v in yaml_dict.items() if v is not None}
+        return cls.from_dict(yaml_dict)
 
     def to_yaml(self, yaml_path: str | Path, overwrite: bool = True) -> None:
-        data = CommentedMap(self.to_dict())
+        dict_data = self.to_dict_normalized()
+        data = CommentedMap(dict_data)
         for f in fields(self):
             if (comment := f.metadata.get("comment")):
                 data.yaml_set_comment_before_after_key(f.name, before=comment)
@@ -89,6 +108,9 @@ class ConfigMixin:
 
     def to_dict(self) -> dict:
         return asdict(self)
+
+    def to_dict_normalized(self) -> dict:
+        return _normalize_for_serialization(self.to_dict())
 
     def to_dictconfig(self) -> DictConfig:
         return OmegaConf.create(self.to_dict())
@@ -99,3 +121,14 @@ class ConfigMixin:
         print_fn: Callable[[str], None] | None = None,
     ) -> None:
         pretty_print(config=self.to_dict(), indent=indent, print_fn=print_fn)
+
+
+def _normalize_for_serialization(obj):
+    """Recursively normalize Paths to strings and Enums to values."""
+    if isinstance(obj, Path):
+        return str(obj)
+    elif isinstance(obj, Enum):
+        return obj.value
+    elif isinstance(obj, Mapping):
+        return type(obj)({k: _normalize_for_serialization(v) for k, v in obj.items()})
+    return obj

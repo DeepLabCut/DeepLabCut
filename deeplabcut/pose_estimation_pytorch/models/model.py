@@ -12,11 +12,13 @@ from __future__ import annotations
 
 import copy
 import logging
-
+from pathlib import Path
+from omegaconf import DictConfig
 import torch
 import torch.nn as nn
 
 from deeplabcut.core.weight_init import WeightInitialization
+from deeplabcut.pose_estimation_pytorch.config.model import ModelConfig
 from deeplabcut.pose_estimation_pytorch.models.backbones import BACKBONES, BaseBackbone
 from deeplabcut.pose_estimation_pytorch.models.criterions import (
     CRITERIONS,
@@ -39,7 +41,7 @@ class PoseModel(nn.Module):
 
     def __init__(
         self,
-        cfg: dict,
+        cfg: ModelConfig | DictConfig | dict | Path | str,
         backbone: BaseBackbone,
         heads: dict[str, BaseHead],
         neck: BaseNeck | None = None,
@@ -52,7 +54,7 @@ class PoseModel(nn.Module):
             neck: neck network architecture (default is None). Defaults to None.
         """
         super().__init__()
-        self.cfg = cfg
+        self.cfg: DictConfig = ModelConfig.from_any(cfg).to_dictconfig()
         self.backbone = backbone
         self.heads = nn.ModuleDict(heads)
         self.neck = neck
@@ -182,7 +184,11 @@ class PoseModel(nn.Module):
 
         heads = {}
         for name, head_cfg in cfg["heads"].items():
-            head_cfg = copy.deepcopy(head_cfg)
+            # NOTE @deruyter92 2026-02-05: currently modules are added inside the config
+            # dictionary. This seems like a bad practice and is unsupported for typed configs or
+            # OmegaConf DictConfig. The intermediate head_cfg container is now converted to a dictionary
+            # to avoid this issue.
+            head_cfg = dict(copy.deepcopy(head_cfg))
             if "type" in head_cfg["criterion"]:
                 head_cfg["criterion"] = CRITERIONS.build(head_cfg["criterion"])
             else:

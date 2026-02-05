@@ -11,6 +11,7 @@
 """Project configuration classes for DeepLabCut pose estimation models."""
 
 from typing import Any
+from pathlib import Path
 
 from pydantic.dataclasses import dataclass
 from dataclasses import field
@@ -76,8 +77,8 @@ class ProjectConfig(ConfigMixin):
     identity: bool | None = None
 
     # Project path
-    project_path: str = field(default="", metadata={"comment": "\nProject path (change when moving around)"})
-    pose_config_path: str = ""
+    project_path: Path = field(default=Path(), metadata={"comment": "\nProject path (change when moving around)"})
+    pose_config_path: Path = Path()
 
     # Engine
     engine: str = field(
@@ -149,7 +150,7 @@ class ProjectConfig(ConfigMixin):
     y2: int | None = None
 
     # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
-    corner2move2: list[list[str]] | None = field(
+    corner2move2: list[int] | None = field(
         default=None,
         metadata={"comment": "\nRefinement configuration (parameters from annotation dataset configuration also relevant in this stage)"},
     )
