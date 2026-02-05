@@ -168,7 +168,9 @@ class DLCLoader(Loader):
             An instance of the PoseDatasetParameters with the parameters set.
         """
         crop_cfg = OmegaConf.select(
-            self.model_cfg, "data.train.top_down_crop", {}
+            self.model_cfg,
+            "data.train.top_down_crop",
+            default={},
         )
         crop_w, crop_h = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
         crop_margin = crop_cfg.get("margin", 0)
