@@ -14,6 +14,7 @@ from pydantic.dataclasses import dataclass
 from dataclasses import field
 from pydantic import Field
 from enum import Enum
+from pathlib import Path
 
 from deeplabcut.core.config.config_mixin import ConfigMixin
 from deeplabcut.core.config.project_config import ProjectConfig
@@ -89,6 +90,12 @@ class NetType(str, Enum):
     ANIMALTOKENPOSE_BASE = "animaltokenpose_base"
 
 
+class DatasetType(str, Enum):
+    """Enumeration of dataset types."""
+    # TODO @deruyter92 2026-02-05: Add other dataset types as needed.
+    MULTIANIMAL_IMGAUG = "multi-animal-imgaug"
+
+
 @dataclass
 class DetectorConfig(ConfigMixin):
     model: DetectorModelConfig
@@ -135,3 +142,32 @@ class PoseConfig(ConfigMixin):
     runner: RunnerConfig | None = None
     train_settings: TrainSettingsConfig | None = None
     detector: DetectorConfig | None = None
+
+
+@dataclass
+class TestConfig(ConfigMixin):
+    """Configuration class for DeepLabCut test/inference settings.
+
+    This configuration is used for downstream tracking and evaluation, containing
+    the essential metadata about joints and network architecture.
+
+    Attributes:
+        dataset: Path to the project/dataset.
+        dataset_type: Type of dataset (required for downstream tracking).
+        num_joints: Total number of joints (bodyparts + unique bodyparts).
+        all_joints: List of joint indices, each as a single-element list.
+        all_joints_names: List of joint names.
+        net_type: Network architecture type.
+        global_scale: Global scale factor for inference.
+        scoremap_dir: Directory for score maps.
+    """
+    # TODO @deruyter92 2026-02-05: Is this additional configuration really needed?
+    # We could aim for using the PoseConfig class or InferenceConfig class instead.
+    dataset: Path = Path()
+    num_joints: int = 0 
+    all_joints: list[list[int]] = field(default_factory=list)
+    all_joints_names: list[str] = field(default_factory=list)
+    net_type: NetType = NetType.RESNET_50
+    dataset_type: DatasetType = DatasetType.MULTIANIMAL_IMGAUG
+    global_scale: int = 1
+    scoremap_dir: Path = Path()

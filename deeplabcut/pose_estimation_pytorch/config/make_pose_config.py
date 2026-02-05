@@ -16,18 +16,17 @@ from pathlib import Path
 
 from omegaconf import DictConfig
 
-from deeplabcut.core.config import read_config_as_dict, write_config
+from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.config.utils import (
     get_config_folder_path,
     load_backbones,
-    load_base_config,
     replace_default_values,
     update_config,
 )
 from deeplabcut.core.config.project_config import ProjectConfig
 from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
-from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig, NetType
+from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig, TestConfig, NetType
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
@@ -319,7 +318,7 @@ def make_pytorch_test_config(
     unique_bodyparts = model_config["metadata"]["unique_bodyparts"]
     all_joint_names = bodyparts + unique_bodyparts
 
-    test_config = dict(
+    test_config = TestConfig(
         dataset=model_config["metadata"]["project_path"],
         dataset_type="multi-animal-imgaug",  # required for downstream tracking
         num_joints=len(all_joint_names),
@@ -330,9 +329,9 @@ def make_pytorch_test_config(
         scoremap_dir="test",
     )
     if save:
-        write_config(test_config_path, test_config)
+        test_config.to_yaml(test_config_path, overwrite=True)
 
-    return test_config
+    return test_config.to_dict()
 
 
 def make_basic_project_config(
