@@ -77,8 +77,25 @@ class ConfigMixin:
             )
 
     @classmethod
-    def from_yaml(cls, yaml_path: str | Path) -> Self:
-        return cls.from_dict(read_config_as_dict(yaml_path))
+    def from_yaml(cls, yaml_path: str | Path, ignore_empty: bool = True) -> Self:
+        """
+        Load a configuration from a YAML file.
+
+        Args:
+            yaml_path: Path to the YAML configuration file.
+            ignore_empty: If True, empty/None values in the YAML are ignored and
+                dataclass defaults are used instead. Defaults to True.
+
+        Returns:
+            A new instance of the configuration class.
+        """
+        # NOTE @deruyter92 2026-02-05: Default ignore_empty is now set to True to match
+        # the prior behaviour of read_config. We should consider changing this to False
+        # for stricter validation.
+        yaml_dict = read_config_as_dict(yaml_path)
+        if ignore_empty:
+            yaml_dict = {k: v for k, v in yaml_dict.items() if v is not None}
+        return cls.from_dict(yaml_dict)
 
     def to_yaml(self, yaml_path: str | Path, overwrite: bool = True) -> None:
         data = CommentedMap(self.to_dict())
