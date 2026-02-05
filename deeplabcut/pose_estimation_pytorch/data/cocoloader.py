@@ -87,7 +87,9 @@ class COCOLoader(Loader):
             num_individuals, bodyparts = self.get_project_parameters(self.train_json)
 
             crop_cfg = OmegaConf.select(
-                self.model_cfg, "data.train.top_down_crop", default={}
+                self.model_cfg,
+                "data.train.top_down_crop",
+                default={},
             )
             crop_w, crop_h = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
             crop_margin = crop_cfg.get("margin", 0)
