@@ -18,8 +18,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
-from ruamel.yaml import YAML
 
+from deeplabcut.core.config.utils import get_yaml_loader, get_yaml_dumper
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
 
@@ -231,7 +231,7 @@ class TrainingDatasetMetadata:
 
         with open(self.path(self.project_config), "w") as file:
             file.write("\n".join(self.file_header) + "\n")
-            YAML().dump(metadata, file)
+            get_yaml_dumper().dump(metadata, file)
 
     @staticmethod
     def load(
@@ -251,7 +251,7 @@ class TrainingDatasetMetadata:
 
         metadata_path = TrainingDatasetMetadata.path(cfg)
         with open(metadata_path, "r") as file:
-            metadata = YAML(typ="safe", pure=True).load(file)
+            metadata = get_yaml_loader().load(file)
 
         shuffles = []
         for shuffle_name, shuffle_metadata in metadata["shuffles"].items():
