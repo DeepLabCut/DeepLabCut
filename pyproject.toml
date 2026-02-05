@@ -126,6 +126,7 @@ Documentation = "https://deeplabcut.github.io/DeepLabCut/README.html"
 dlc = "deeplabcut.__main__:main"
 
 [tool.setuptools.packages.find]
+include = ["deeplabcut*"]
 exclude = ["tests*", "docs*", "examples*"]
 
 [tool.setuptools]
