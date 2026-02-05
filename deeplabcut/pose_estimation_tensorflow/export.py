@@ -16,9 +16,9 @@ import tarfile
 from pathlib import Path
 
 import numpy as np
-import ruamel.yaml
 import tensorflow as tf
 
+from deeplabcut.core.config.utils import get_yaml_loader
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import predict
@@ -52,7 +52,7 @@ def create_deploy_config_template():
     \n
     """
 
-    ruamelFile = ruamel.yaml.YAML()
+    ruamelFile = get_yaml_loader()
     cfg_file = ruamelFile.load(yaml_str)
     return cfg_file, ruamelFile
 
@@ -66,7 +66,7 @@ def write_deploy_config(configname, cfg):
     """
 
     with open(configname, "w") as cf:
-        ruamelFile = ruamel.yaml.YAML()
+        ruamelFile = get_yaml_loader()
         cfg_file, ruamelFile = create_deploy_config_template()
         for key in cfg.keys():
             cfg_file[key] = cfg[key]
@@ -334,7 +334,7 @@ def export_model(
             sorted_cfg[key] = value
 
     pose_cfg_file = os.path.normpath(full_export_dir + "/pose_cfg.yaml")
-    ruamel_file = ruamel.yaml.YAML()
+    ruamel_file = get_yaml_loader()
     ruamel_file.dump(sorted_cfg, open(pose_cfg_file, "w"))
 
     ### copy checkpoint to export directory
