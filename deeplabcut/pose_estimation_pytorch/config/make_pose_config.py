@@ -247,8 +247,7 @@ def make_pytorch_pose_config(
     PoseConfig.validate_dict(pose_config)
 
     if save:
-        write_config(pose_config_path, pose_config, overwrite=True)
-
+        PoseConfig().from_any(pose_config).to_yaml(pose_config_path, overwrite=True)
     return pose_config
 
 
