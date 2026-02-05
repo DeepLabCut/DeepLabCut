@@ -150,7 +150,7 @@ class ProjectConfig(ConfigMixin):
     y2: int | None = None
 
     # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
-    corner2move2: list[list[str]] | None = field(
+    corner2move2: list[int] | None = field(
         default=None,
         metadata={"comment": "\nRefinement configuration (parameters from annotation dataset configuration also relevant in this stage)"},
     )
