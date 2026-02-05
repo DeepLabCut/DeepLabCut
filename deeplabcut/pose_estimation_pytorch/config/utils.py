@@ -177,7 +177,7 @@ def update_config_by_dotpath(config: dict, updates: dict, copy_original: bool = 
         # Navigate to nested location
         current = config
         for part in parts[:-1]:
-            if part not in current:
+            if part not in current or current[part] is None:
                 current[part] = {}
             current = current[part]
 
