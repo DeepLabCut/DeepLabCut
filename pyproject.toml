@@ -132,7 +132,7 @@ exclude = ["tests*", "docs*", "examples*"]
 include-package-data = false
 
 [tool.setuptools.package-data]
-"*" = ["*.yaml", "*.yml", "*.json", "*.qss", "*.png", "*.md"]
+"*" = ["*.yaml", "*.yml", "*.json", "*.qss", "*.png", "*.md", "*.sh"]
 
 [tool.ruff]
 line-length = 88
