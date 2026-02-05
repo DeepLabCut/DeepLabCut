@@ -145,14 +145,28 @@ scorername_3d: # Enter the scorer name for the 3D output
     return cfg_file_3d, ruamelFile_3d
 
 
-def read_config(configname: str | Path) -> DictConfig:
+def read_config(configname: str | Path, ignore_empty: bool = True) -> DictConfig:
     """
     Reads structured config file defining a project.
-    Applies default values and repairs (engine, detector_snapshotindex, project_path) and writes back if needed.
+
+    Applies default values and repairs (engine, detector_snapshotindex, project_path)
+    and writes back if needed.
+
+    Args:
+        configname: Path to the project configuration file (config.yaml).
+        ignore_empty: If True, empty/None values in the YAML are ignored and
+            dataclass defaults are used instead. If False, empty values represent None.
+            Defaults to True.
+
+    Returns:
+        The project configuration as a DictConfig.
     """
+    # NOTE @deruyter92 2026-02-05: Default ignore_empty is now set to True to match
+    # the prior behaviour of read_config. We should consider changing this to False
+    # for stricter validation.
     from deeplabcut.core.config.project_config import ProjectConfig
     path = Path(configname)
-    project_config = ProjectConfig.from_yaml(path)
+    project_config = ProjectConfig.from_yaml(path, ignore_empty=ignore_empty)
     
     # NOTE @deruyter92 2026-02-02: copied old behaviour of writing the config back to the file.
     # We should consider separating the writing and reading instead of having inplace edits during reading.
