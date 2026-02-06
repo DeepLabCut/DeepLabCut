@@ -517,10 +517,11 @@ class MainWindow(QMainWindow):
         engine_icon.setStyleSheet("background: transparent;")
 
         def _update_icon(engine: str):
-            pixmap = QPixmap(f"deeplabcut/gui/media/dlc-{engine}.png")
-            engine_icon.setPixmap(
-                pixmap.scaled(56, 56, Qt.AspectRatioMode.KeepAspectRatio)
-            )
+            pixmap = QPixmap(os.path.join(BASE_DIR, "media", f"dlc-{engine}.png"))
+            if not pixmap.isNull():
+                engine_icon.setPixmap(
+                    pixmap.scaled(56, 56, Qt.AspectRatioMode.KeepAspectRatio)
+                )
 
         _update_icon("pt" if self.engine == Engine.PYTORCH else "tf")
 
