@@ -16,10 +16,8 @@ import albumentations as A
 import numpy as np
 from torch.utils.data import Dataset
 
-from deeplabcut.pose_estimation_pytorch.data.generative_sampling import (
-    GenerativeSampler,
-    GenSamplingConfig,
-)
+from deeplabcut.pose_estimation_pytorch.data.generative_sampling import GenerativeSampler
+from deeplabcut.pose_estimation_pytorch.config.data import GenSamplingConfig
 from deeplabcut.pose_estimation_pytorch.data.image import load_image, top_down_crop
 from deeplabcut.pose_estimation_pytorch.data.utils import (
     _crop_image_keypoints,

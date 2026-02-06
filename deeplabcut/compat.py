@@ -15,8 +15,8 @@ from pathlib import Path
 from typing import Iterable
 
 import numpy as np
-from ruamel.yaml import YAML
 
+from deeplabcut.core.config import read_config_as_dict
 import deeplabcut.core.visualization as visualization
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
@@ -1962,13 +1962,4 @@ def _gpu_to_use_to_device(gpu_to_use: int | None, device: str | None) -> str | N
 
 
 def _load_config(config: str) -> dict:
-    config_path = Path(config)
-    if not config_path.exists():
-        raise FileNotFoundError(
-            f"Config {config} is not found. Please make sure that the file exists."
-        )
-
-    with open(config, "r") as f:
-        project_config = YAML(typ="safe", pure=True).load(f)
-
-    return project_config
+    return read_config_as_dict(config)

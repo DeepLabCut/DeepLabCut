@@ -28,29 +28,16 @@ import pandas as pd
 from matplotlib.collections import LineCollection
 from matplotlib.path import Path
 from matplotlib.widgets import Button, LassoSelector
-from ruamel.yaml import YAML
 from scipy.spatial import cKDTree as KDTree
 from skimage import io
 
-
-def read_config(configname):
-    if not os.path.exists(configname):
-        raise FileNotFoundError(
-            f"Config {configname} is not found. Please make sure that the file exists."
-        )
-    with open(configname) as file:
-        return YAML().load(file)
-
-
-def write_config(configname, cfg):
-    with open(configname, "w") as file:
-        YAML().dump(cfg, file)
+from deeplabcut.core.config import read_config_as_dict, write_config
 
 
 class SkeletonBuilder:
     def __init__(self, config_path):
         self.config_path = config_path
-        self.cfg = read_config(config_path)
+        self.cfg = read_config_as_dict(config_path)
         # Find uncropped labeled data
         self.df = None
         found = False

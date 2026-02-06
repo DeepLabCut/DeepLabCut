@@ -22,7 +22,7 @@ examples_folder = os.path.join(
 )
 
 # requires videos to be in the examples folder
-@pytest.mark.skip
+@pytest.mark.skip(reason="This behaviour is not implemented yet")
 @pytest.mark.parametrize(
     "video_paths, superanimal_name",
     [

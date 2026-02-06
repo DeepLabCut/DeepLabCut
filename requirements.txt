@@ -4,6 +4,8 @@ einops
 pycocotools<=2.0.8
 timm
 wandb
+omegaconf>=2.3.0
+pydantic>=2.12.3
 
 # existing:
 dlclibrary
@@ -27,6 +29,7 @@ statsmodels>=0.11
 tables
 torch==2.7.1
 torchvision
+typing_extensions
 tqdm
 
 # Platform-specific

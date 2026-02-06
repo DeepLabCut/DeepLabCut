@@ -17,9 +17,7 @@ from typing import Optional, Union
 
 import torch
 from dlclibrary.dlcmodelzoo.modelzoo_download import download_huggingface_model
-from ruamel.yaml import YAML
-
-from deeplabcut.core.config import read_config_as_dict
+from deeplabcut.core.config import read_config_as_dict, write_config
 from deeplabcut.modelzoo.utils import get_super_animal_scorer
 from deeplabcut.pose_estimation_pytorch.modelzoo.train_from_coco import adaptation_train
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
@@ -489,9 +487,7 @@ def video_inference_superanimal(
 
             # the model config's parameters need to be updated for adaptation training
             model_config_path = model_folder / "pytorch_config.yaml"
-            with open(model_config_path, "w") as f:
-                yaml = YAML()
-                yaml.dump(config, f)
+            write_config(model_config_path, config)
 
             # get the current epoch of the pose model
             current_pose_epoch = get_checkpoint_epoch(pose_model_path)
