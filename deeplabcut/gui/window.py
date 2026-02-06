@@ -517,7 +517,17 @@ class MainWindow(QMainWindow):
         engine_icon.setStyleSheet("background: transparent;")
 
         def _update_icon(engine: str):
-            pixmap = QPixmap(os.path.join(BASE_DIR, "media", f"dlc-{engine}.png"))
+            
+from importlib.resources import files
+
+def _update_icon(engine):
+    file = files("deeplabcut.gui.media") / f"dlc-{engine}.png"
+    pixmap = QPixmap(str(file))
+    if not pixmap.isNull():
+        engine_icon.setPixmap(
+            pixmap.scaled(56, 56, Qt.AspectRatioMode.KeepAspectRatio)
+        )
+
             if not pixmap.isNull():
                 engine_icon.setPixmap(
                     pixmap.scaled(56, 56, Qt.AspectRatioMode.KeepAspectRatio)
