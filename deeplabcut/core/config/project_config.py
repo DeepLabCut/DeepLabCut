@@ -168,6 +168,16 @@ class ProjectConfig(ConfigMixin):
         metadata={"comment": "\nConversion tables to fine-tune SuperAnimal weights"},
     )
 
+    # TODO @deruyter92 2026-02-06: These parameters are no longer used in the new pipeline.
+    resnet: int | None = field(
+        default=None,
+        metadata={
+        "comment": "\nThese are very old parameters that are no longer used "
+        "in most cases. They are kept for backwards compatibility."
+        },
+    )
+    croppedtraining: bool | None = None
+
     @classmethod
     def from_yaml(cls, yaml_path: str | Path, *args, **kwargs) -> Self:
         """
