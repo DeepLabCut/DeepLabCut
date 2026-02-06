@@ -96,7 +96,10 @@ class ProjectConfig(ConfigMixin):
     # VV TODO @deruyter92 2026-01-30: following the old original config.yaml template for now. VV
     # VV We should change this to a list[str] in the future. VV
     bodyparts: list[str] | str = 'MULTI!' 
-    individuals: list[str] = field(default_factory=list)
+
+    # TODO @deruyter92 2026-02-06: The current pipeline requires at least one individual defined in the 
+    # default configuration. This will be removed in the future.
+    individuals: list[str] = field(default_factory=lambda: ['individual_1']) 
     uniquebodyparts: list[str] = field(default_factory=list)  # multi-animal project key
     multianimalbodyparts: list[str] = field(
         default_factory=list
