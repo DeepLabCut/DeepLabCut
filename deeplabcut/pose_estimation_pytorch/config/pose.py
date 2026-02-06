@@ -61,6 +61,16 @@ class NetType(str, Enum):
     TOP_DOWN_HRNET_W32 = "top_down_hrnet_w32"
     TOP_DOWN_HRNET_W48 = "top_down_hrnet_w48"
 
+    # CSPNeXt variants (bottom-up)
+    CSPNEXT_S = "cspnext_s"
+    CSPNEXT_M = "cspnext_m"
+    CSPNEXT_X = "cspnext_x"
+
+    # CSPNeXt variants (top-down)
+    TOP_DOWN_CSPNEXT_S = "top_down_cspnext_s"
+    TOP_DOWN_CSPNEXT_M = "top_down_cspnext_m"
+    TOP_DOWN_CSPNEXT_X = "top_down_cspnext_x"
+
     # DEKR variants (bottom-up with HRNet backbone)
     DEKR_W18 = "dekr_w18"
     DEKR_W32 = "dekr_w32"
