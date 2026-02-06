@@ -1,0 +1,50 @@
+# See: https://mystmd.org/guide/frontmatter
+version: 1
+
+project:
+  title: DeepLabCut Live GUI
+  description: PySide6-based GUI for real-time DeepLabCut experiments
+  authors:
+    - name: A. & M. Mathis Labs
+  license: LGPL-3.0
+  github: DeepLabCut/DeepLabCut-live-GUI
+  toc:
+    - file: index.md
+    - title: Quickstart
+      children:
+        - file: quickstart/install
+    - title: User Guide
+      children:
+        - file: user_guide/overview
+      #     - file: quickstart/camera_setup
+      #     - file: quickstart/inference_setup
+      #     - file: quickstart/first_run
+
+      #     - file: user_guide/cameras/index
+      #       children:
+      #         - file: user_guide/cameras/configure_dialog
+      #         - file: user_guide/cameras/supported_backends
+
+      #     - file: user_guide/inference/index
+      #       children:
+      #         - file: user_guide/inference/model_selection
+      #         - file: user_guide/inference/inference_camera
+      #         - file: user_guide/inference/processor_plugins
+
+      #     - file: user_guide/visualization/index
+      #       children:
+      #         - file: user_guide/visualization/preview_and_overlays
+
+      #     - file: user_guide/recording/index
+      #       children:
+      #         - file: user_guide/recording/output_structure
+
+      # - title: Limitations
+      #   children:
+      #     - file: limitations/current_limitations
+
+site:
+  template: book-theme
+  options:
+    logo: _static/images/logo.png
+    style: _static/custom.css

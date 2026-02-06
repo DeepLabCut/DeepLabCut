@@ -107,3 +107,11 @@ parts:
   - caption: Citations for DeepLabCut
     chapters:
       - file: docs/citation
+
+# Placeholder location, please move to desired level
+  - caption: DLC-Live!
+    chapters:
+      - file: docs/gui/dlc-live/dlc-live-gui/index
+        sections:
+          - file: docs/gui/dlc-live/dlc-live-gui/quickstart/install
+          - file: docs/gui/dlc-live/dlc-live-gui/user_guide/overview
