@@ -12,6 +12,8 @@
 
 from typing import Any
 from pathlib import Path
+from typing_extensions import Self
+import warnings
 
 from pydantic.dataclasses import dataclass
 from dataclasses import field
@@ -161,3 +163,23 @@ class ProjectConfig(ConfigMixin):
         default=None,
         metadata={"comment": "\nConversion tables to fine-tune SuperAnimal weights"},
     )
+
+    @classmethod
+    def from_yaml(cls, yaml_path: str | Path, *args, **kwargs) -> Self:
+        """
+            Overrides the from_yaml method to update the project path if the yaml file
+            is not in the same directory as the project path.
+        """
+        # NOTE @deruyter92 2026-02-06: This replicates prior behaviour of adjusting the project path
+        # when reading the config file. Note that we do not write the config file back to the file system.
+        cfg = super().from_yaml(yaml_path, *args, **kwargs)
+        project_path = Path(yaml_path).parent
+        if project_path.resolve() != cfg.project_path.resolve():
+            warnings.warn(
+                f"Project path {yaml_path} is not the in the same directory as the project_path defined "
+                "in the yaml file {cfg.project_path}. This may cause issues with loading the project. "
+                "Updating the project path internally to the parent directory of the yaml file. The file "
+                "itself will not be updated."
+            )
+            cfg.project_path = project_path
+        return cfg
