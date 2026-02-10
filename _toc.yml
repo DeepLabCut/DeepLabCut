@@ -85,7 +85,7 @@ parts:
 
 - caption: DeepLabCut-Live!
   chapters:
-  - file: docs/deeplabcutlive
+  - file: docs/dlc-live/deeplabcutlive
 
 - caption: "🦄 DeepLabCut Model Zoo"
   chapters:
