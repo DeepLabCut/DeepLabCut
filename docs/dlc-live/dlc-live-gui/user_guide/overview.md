@@ -1,6 +1,6 @@
 # Overview
 
-DeepLabCut Live GUI is a **PySide6-based desktop application** for running real-time DeepLabCut pose estimation experiments with **one or multiple cameras**, optional **processor plugins**, and **video recording** (with or without overlays).
+DeepLabCut-Live-GUI (`dlclivegui`) is a **PySide6-based desktop application** for running real-time DeepLabCut pose estimation experiments with **one or multiple cameras**, optional **processor plugins**, and **video recording** (with or without overlays).
 
 This page gives you a **guided tour of the main window**, explains the **core workflow**, and introduces the key concepts used throughout the user guide.
 
@@ -8,11 +8,23 @@ This page gives you a **guided tour of the main window**, explains the **core wo
 
 ## Main window at a glance
 
-When you launch the application (`dlclivegui`), you will see:
+```{important}
+Remember to activate your virtual/conda environment and launch the application with `dlclivegui` (or `uv run dlclivegui`) after installation.
+```
+
+When you first launch the application, you will see the main window with three primary areas:
 
 - A **Controls panel** (left) for configuring cameras, inference, recording, and overlays
 - A **Video panel** (right) showing the live preview (single or tiled multi-camera)
 - A **Stats area** (below the video) summarizing camera, inference, and recorder performance
+
+:::{figure} ../_static/images/main_window_100226.png
+:alt: Screenshot of the main window
+:width: 100%
+:align: center
+
+   The main window on startup, showing the Controls panel (left), Video panel (right), and Stats area (below video).
+:::
 
 ---
 
@@ -24,42 +36,34 @@ as well as pick a model for pose inference.
 To start running an experiment, the typical workflow is:
 
 1. **Configure Cameras**
-   Use **Configure Cameras…** to select one or more cameras and their parameters.
+   - Use **Configure Cameras…** to select one or more cameras and their parameters.
    <!-- TODO for more details see... -->
 
 2. **Start Preview**
-   Click **Start Preview** to begin streaming all selected configured cameras.
+   - Click **Start Preview** to begin streaming all selected configured cameras.
    - If multiple cameras are active, the preview becomes a **tiled view**.
 
-3. *(If ready)* **Start Pose Inference**
-   Choose a **Model file**, optionally a DLC-live **Processor**, select the **Inference Camera**, then click **Start pose inference**.
+3. **Start Pose Inference** *(when ready)*
+   - Choose a **Model file**, optionally a DLC-live **Processor**[^processor-footnote], select the **Inference Camera**, then click **Start pose inference**.
    <!-- - For more details about Processors see... -->
    - Toggle **Display pose predictions** to show or hide pose estimation overlays.
 
-4. *(If ready)* **Start Recording**
-   Choose an **Output directory**, session/run naming options, and encoding settings, then click **Start recording**.
+4. **Start Recording** *(when ready)*
+   - Choose an **Output directory**, session/run naming options, and encoding settings, then click **Start recording**.
    - Recording includes **all active cameras** in multi-camera mode in separate files.
 
 5. **Stop**
-   Use **Stop Preview**, **Stop pose inference**, and/or **Stop recording** as needed.
+   - Use **Stop Preview**, **Stop pose inference**, and/or **Stop recording** as needed.
 
 ```{note}
 Pose inference requires the camera preview to be running.
-If you start pose inference while preview is stopped, the GUI will automatically start the preview first.
+
+If you start pose inference while the preview is stopped, the GUI will automatically start the preview first.
 ```
 
 ---
 
 ## Main control panel
-
-:::{figure} ../_static/images/main_window_100226.png
-:label: fig:main_window_startup
-:alt: Screenshot of the main window
-:width: 100%
-:align: center
-
-   The main window on startup, showing the Controls panel (left), Video panel (right), and Stats area (below video).
-:::
 
 ### Camera settings
 
@@ -92,14 +96,19 @@ even though preview and recording may include multiple cameras.
 
 ### DLCLive settings
 
+```{note}
+`DLCLive` stands for DeepLabCut Live, the real-time pose estimation engine that powers the inference capabilities of this application.
+
+Find more information here if needed: {ref}`deeplabcut-live`.
+```
+
 **Purpose:** Configure and run pose inference on the live stream.
 
 - **Model file**
   Path to an exported DeepLabCut-Live model file (e.g. `.pt`, `.pb`).
 
 - **Processor folder / Processor** *(optional)*
-  Processor plugins extend functionality (for example, experiment logic or external control).
-  This allows for e.g. closed-loop control of devices based on pose estimation results.
+  Processor plugins extend functionality (providing ways to setup experiment logic or external control).[^processor-footnote]
 
 - **Inference Camera**
   Select which active camera is used for pose inference.
@@ -113,8 +122,8 @@ even though preview and recording may include multiple cameras.
 - **Display pose predictions**
   Toggle visualization of predicted keypoints.
 
-- **Auto-record video on processor command** *(optional)*
-  Allows compatible processors to start and stop recording automatically.
+- **Allow processor-based control** *(optional)*
+  Allows compatible processors to have control over several aspects of the experiment, such as starting/stopping recording or triggering external devices.[^processor-footnote]
 
 - **Processor Status**
   Displays processor-specific status information when available.
@@ -123,31 +132,42 @@ even though preview and recording may include multiple cameras.
 
 ### Recording
 
-**Purpose:** Save videos from active cameras !
+**Purpose:** Save videos from active cameras, optionally with pose overlays.
 
-Core settings:
+#### Core settings
+
 - **Output directory**: Base directory for all recordings
-- **Session name**: Logical grouping of runs (e.g. `mouseA_day1`)
+- **Session name**: Grouping of runs (e.g. `mouseA_day1`)
 - **Use timestamp for run folder name**:
   - Enabled → `run_YYYYMMDD_HHMMSS_mmm`
   - Disabled → `run_0001`, `run_0002`, …
 
 A live preview label shows the *approximate* output path, including camera placeholders.
 
-Encoding options:
+```{tip}
+You can hover over the preview path to see the full path, and click to copy it to the clipboard.
+```
+
+#### Encoding options
+
 - **Container** (e.g. `mp4`, `avi`, `mov`)
 - **Codec** (availability depends on OS and hardware)
 - **CRF** (quality/compression tradeoff; lower values = higher quality)
 
-Additional controls:
-- **Record video with overlays**
-  Include pose predictions and/or bounding boxes directly in the recorded video.
-  :::{caution}
-  This **cannot be easily undone** once the recording is saved.<br>
-  Use with caution if you want to preserve raw footage.
-  :::
+#### Controls
+
 - **Start recording / Stop recording**
 - **Open recording folder**
+
+#### Additional options
+
+- **Record video with overlays**
+  Include pose predictions and/or bounding boxes directly in the recorded video.
+  :::{danger}
+  This **cannot be easily undone** once the recording is saved.
+
+  Use with caution if you want to preserve **raw footage** intact.
+  :::
 
 ---
 
@@ -159,6 +179,11 @@ Additional controls:
 - **Coordinates**: `x0`, `y0`, `x1`, `y1`
 
 In multi-camera mode, the bounding box is applied relative to the **inference camera tile**, ensuring correct alignment in tiled previews.
+
+```{tip}
+To adjust the bounding box intuitively, hover over a coordinate field (`x0`, `y0`, `x1`, `y1`)
+and drag horizontally.
+```
 
 ---
 
@@ -175,27 +200,52 @@ In multi-camera mode, the bounding box is applied relative to the **inference ca
 Three continuously updated sections:
 
 - **Camera**: Per-camera measured frame rate
-- **DLC Processor**: Inference throughput, latency, queue depth, and dropped frames
+- **DLCLive Inference**: Inference throughput, latency, queue depth, and dropped frames
 - **Recorder**: Recording status and write performance
 
 ```{tip}
-Stats text can be selected and copied directly, which is useful for debugging or reporting performance issues.
+Stats text can be selected and copied directly !
 ```
 
 ---
 
-## Menus
+## Menu bar actions
 
-### File
-- Load configuration…
-- Save configuration
-- Save configuration as…
-- Open recording folder
-- Close window
+Menu actions are available from the menu bar at the top of the application window.
+
+### File menu
+
+- **Load configuration…**
+  Load an existing JSON configuration file.
+
+- **Save configuration**
+  Save the current application settings.
+
+- **Save configuration as…**
+  Save the current settings under a new file name.
+
+- **Open recording folder**
+  Open the output directory for the current session.
+
+- **Close window**
+  Close the application window.
+
+Configuration files store camera configurations, model paths, recording options, and other application settings.
 
 ### View → Appearance
-- System theme
-- Dark theme
+
+- **System theme**
+  Use the default system appearance.
+
+- **Dark theme**
+  Enable the application’s dark theme.
+
+## Keyboard Shortcuts
+
+- **Ctrl+O**: Load configuration
+- **Ctrl+S**: Save configuration
+- **Ctrl+Shift+S**: Save configuration as
+- **Ctrl+Q**: Quit application
 
 ---
 
@@ -207,15 +257,12 @@ The GUI can restore settings across sessions using:
 - A stored snapshot of the most recent configuration
 - Remembered paths (e.g. last-used model directory)
 
+On startup, the application attempts to restore your last‑used settings,
+but you can manually load and save configurations.
+
 ```{tip}
-For reproducible experiments, prefer saving and versioning JSON configuration files
+For reproducible experiments, prefer saving the configuration files
 rather than relying only on remembered application state.
 ```
 
----
-
-## Next Steps
-
-- **Camera Setup**: Add and validate cameras, start preview
-- **Inference Setup**: Select a model, start pose inference, interpret performance metrics
-- **First Recording**: Understand session/run structure and verify recorded output
+[^processor-footnote]: Processors are optional Python plugins that can be loaded by the application to extend its functionality, provided by [DLC-Live](https://github.com/DeepLabCut/DeepLabCut-live). They can provide custom logic for controlling the experiment, such as starting/stopping recording based on specific conditions, sending triggers to external devices, or implementing closed-loop control based on pose estimation results. You can find **documentation on how to write your own processor in the `dlclivegui.processors` folder**, along with **example processors** that demonstrate some of these features.
