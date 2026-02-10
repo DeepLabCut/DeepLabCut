@@ -86,6 +86,13 @@ parts:
 - caption: DeepLabCut-Live!
   chapters:
   - file: docs/dlc-live/deeplabcutlive
+  # NOTE @C-Achard Please move if needed, but since it is downstream of DLC-live
+  # I think it makes sense to have it here for now.
+  # TODO remove this note before merging
+  - file: docs/dlc-live/dlc-live-gui/index
+    sections:
+      - file: docs/dlc-live/dlc-live-gui/quickstart/install
+      - file: docs/dlc-live/dlc-live-gui/user_guide/overview
 
 - caption: "🦄 DeepLabCut Model Zoo"
   chapters:
@@ -107,11 +114,3 @@ parts:
 - caption: Citations for DeepLabCut
   chapters:
     - file: docs/citation
-
-# Placeholder, please move to desired level
-- caption: DLC-Live!
-  chapters:
-    - file: docs/gui/dlc-live/dlc-live-gui/index
-      sections:
-        - file: docs/gui/dlc-live/dlc-live-gui/quickstart/install
-        - file: docs/gui/dlc-live/dlc-live-gui/user_guide/overview

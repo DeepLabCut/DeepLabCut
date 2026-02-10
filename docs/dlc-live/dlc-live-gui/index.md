@@ -6,12 +6,14 @@ This GUI is designed for **scientists and experimenters** who want to preview, r
 
 ## Table of Contents
 
-:::{toc}
-:::
+- {doc}`Installation <./quickstart/install>`
+- {doc}`Overview <./user_guide/overview>`
 
 ---
 
-## What this software does
+## Description
+
+### What this software does
 
 - **Live camera preview** from one or multiple cameras
 - **Real-time pose inference** using DeepLabCut Live models
@@ -21,10 +23,9 @@ This GUI is designed for **scientists and experimenters** who want to preview, r
 - **Optional processor plugins** to extend behavior (e.g. remote control, triggers)
 
 The application is built with **PySide6 (Qt)** and is intended for interactive experimental use rather than offline batch processing.
+<!-- TODO mention and link to DLC live standalone -->
 
----
-
-## Typical workflow
+### Typical workflow
 
 1. **Install** the application and required camera backends
 2. **Configure cameras** (single or multi-camera)
@@ -32,54 +33,36 @@ The application is built with **PySide6 (Qt)** and is intended for interactive e
 4. **Start preview** and verify frame rate
 5. **Run pose inference** on a selected camera
 6. **Record video** (optionally with overlays)
-7. **Organize results** by session and run
+   - With **organized results** by session and run
 
-Each of these steps is covered in the *Quickstart* and *User Guide* sections of this documentation.
+Each of these steps is covered in the *{doc}`Quickstart <quickstart/install>`*
+and *{doc}`User Guide <user_guide/overview>`* sections of this documentation.
 
----
-
-## Who this is for
+### Who this is for
 
 - Neuroscience and behavior labs
 - Experimentalists running real-time tracking
-- Users who want a **GUI-first** workflow for DeepLabCut Live
-
-You do **not** need to be a software developer to use this tool.
+- Anyone who wants a **GUI-first** workflow for DeepLabCut Live
 
 ---
 
-## What this documentation covers
-
-- Installation and first-run setup
-- Camera configuration and supported backends
-- Pose inference settings and visualization
-- Recording options and file organization
-- Known limitations of the current release
-
-This documentation intentionally focuses on **end-user operation**.
-Developer-oriented material (APIs, internals, extension points) is out of scope for now.
-
----
-
-## Current limitations (high-level)
+## Current limitations
 
 Before getting started, be aware of the following constraints:
 
 - Pose inference runs on **one selected camera at a time** (even in multi-camera mode)
 - Camera synchronization depends on backend capabilities and hardware
 - DeepLabCut Live models must be **exported and compatible** with the selected backend
+  - Some SuperAnimal models from {ref}`file:model-zoo` may not work out of the box.<br>This is currently the case for:
+    - SuperHuman model (missing detector)
 - Performance depends on camera resolution, frame rate, GPU availability, and codec choice
 
-A detailed and up-to-date list is maintained in the **Limitations** section.
-
-
 ---
 
-## About DeepLabCut Live
-
-DeepLabCut Live enables low-latency, real-time pose estimation using models trained with DeepLabCut.
-This GUI provides an accessible interface on top of that ecosystem for interactive experiments.
-
----
+## About
 
 *This project is under active development. Feedback from real experimental use is highly valued.*
+
+Please report issues, suggest features, or contribute to the codebase on GitHub:
+
+- [DLC-Live! GUI](https://github.com/DeepLabCut/DeepLabCut-live-GUI)

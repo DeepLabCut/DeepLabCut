@@ -6,35 +6,39 @@ This page gives you a **guided tour of the main window**, explains the **core wo
 
 ---
 
-## Main Window at a Glance
+## Main window at a glance
 
 When you launch the application (`dlclivegui`), you will see:
 
 - A **Controls panel** (left) for configuring cameras, inference, recording, and overlays
 - A **Video panel** (right) showing the live preview (single or tiled multi-camera)
 - A **Stats area** (below the video) summarizing camera, inference, and recorder performance
-- A **Status bar** (bottom) for short messages and warnings
 
 ---
 
-## Typical Workflow (Recommended)
+## Intended workflow
 
-Most users will follow this sequence:
+On startup, the GUI is idle and waiting for you to configure cameras and settings,
+as well as pick a model for pose inference.
+
+To start running an experiment, the typical workflow is:
 
 1. **Configure Cameras**
    Use **Configure Cameras…** to select one or more cameras and their parameters.
+   <!-- TODO for more details see... -->
 
 2. **Start Preview**
-   Click **Start Preview** to begin streaming.
+   Click **Start Preview** to begin streaming all selected configured cameras.
    - If multiple cameras are active, the preview becomes a **tiled view**.
 
 3. *(If ready)* **Start Pose Inference**
-   Choose a **Model file**, optional **Processor**, select the **Inference Camera**, then click **Start pose inference**.
-   - Toggle **Display pose predictions** to show or hide overlays.
+   Choose a **Model file**, optionally a DLC-live **Processor**, select the **Inference Camera**, then click **Start pose inference**.
+   <!-- - For more details about Processors see... -->
+   - Toggle **Display pose predictions** to show or hide pose estimation overlays.
 
 4. *(If ready)* **Start Recording**
    Choose an **Output directory**, session/run naming options, and encoding settings, then click **Start recording**.
-   - Recording supports **all active cameras** in multi-camera mode.
+   - Recording includes **all active cameras** in multi-camera mode in separate files.
 
 5. **Stop**
    Use **Stop Preview**, **Stop pose inference**, and/or **Stop recording** as needed.
@@ -48,7 +52,7 @@ If you start pose inference while preview is stopped, the GUI will automatically
 
 ## Main control panel
 
-:::{figure} ../_static/images/main_window/main_window_startup.png
+:::{figure} ../_static/images/main_window_100226.png
 :label: fig:main_window_startup
 :alt: Screenshot of the main window
 :width: 100%
@@ -56,7 +60,6 @@ If you start pose inference while preview is stopped, the GUI will automatically
 
    The main window on startup, showing the Controls panel (left), Video panel (right), and Stats area (below video).
 :::
-
 
 ### Camera settings
 
@@ -68,6 +71,12 @@ If you start pose inference while preview is stopped, the GUI will automatically
   - Select backend and index
   - Adjust camera-specific properties
   - Switch between single- and multi-camera setups
+
+```{important}
+Depending on the system, backend and camera model,
+settings may vary widely between proper support, partial support, or no support at all.
+This is especially true for the generalist OpenCV backend, which may work well with some cameras but not others.
+```
 
 - **Active**
   Displays a summary of configured cameras:
