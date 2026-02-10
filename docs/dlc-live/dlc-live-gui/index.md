@@ -8,6 +8,7 @@ This GUI is designed for **scientists and experimenters** who want to preview, r
 
 - {doc}`Installation <./quickstart/install>`
 - {doc}`Overview <./user_guide/overview>`
+- {doc}`Camera setup and backends <./cameras_backends/camera_support>`
 
 ---
 

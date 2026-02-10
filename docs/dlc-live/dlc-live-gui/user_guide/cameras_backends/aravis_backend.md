@@ -2,6 +2,11 @@
 
 The Aravis backend provides support for GenICam-compatible cameras using the [Aravis](https://github.com/AravisProject/aravis) library.
 
+```{important}
+Support for Aravis is currently experimental.
+Please report any issues or feedback to help us improve this backend.
+```
+
 ## Features
 
 - Support for GenICam/GigE Vision cameras

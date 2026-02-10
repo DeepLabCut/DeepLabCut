@@ -26,19 +26,22 @@ You can select the backend in the GUI from the "Backend" dropdown, or in your co
 ### Platform-Specific Recommendations
 
 #### Windows
+
 - **OpenCV compatible cameras**: Best for webcams and simple USB cameras. OpenCV is installed with DeepLabCut-live-GUI.
 - **GenTL backend**: Recommended for industrial cameras (The Imaging Source, Basler, etc.) via vendor-provided CTI files.
 - **Basler cameras**: Can use either GenTL or pypylon backend.
 
 #### Linux
+
 - **OpenCV compatible cameras**: Good for webcams via Video4Linux drivers. Installed with DeepLabCut-live-GUI.
 - **Aravis backend**: **Recommended** for GenICam/GigE Vision industrial cameras (The Imaging Source, Basler, Point Grey, etc.)
   - Easy installation via system package manager
   - Better Linux support than GenTL
-  - See [Aravis Backend Documentation](aravis_backend.md)
+  - See {doc}`Aravis Backend Documentation <aravis_backend.md>`
 - **GenTL backend**: Alternative for industrial cameras if vendor provides Linux CTI files.
 
 #### macOS
+
 - **OpenCV compatible cameras**: For webcams and compatible USB cameras.
 - **Aravis backend**: For GenICam/GigE Vision cameras (requires Homebrew installation).
 
@@ -71,6 +74,6 @@ Install vendor-provided camera drivers and SDK. CTI files are typically in:
 
 ### Detailed Backend Documentation
 
+- OpenCV Backend - "Universal" webcam support - Expect some limitations in camera control and performance
 - [Aravis Backend](aravis_backend.md) - GenICam/GigE cameras on Linux/macOS
-- GenTL Backend - Industrial cameras via vendor CTI files
-- OpenCV Backend - Universal webcam support
+- **To be added** GenTL Backend - Industrial cameras via vendor CTI files
