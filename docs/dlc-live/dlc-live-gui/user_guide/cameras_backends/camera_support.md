@@ -1,3 +1,4 @@
+(file:dlclivegui-camera-support)=
 # Camera Support
 
 DeepLabCut-live-GUI supports multiple camera backends for different platforms and camera types:

@@ -1,4 +1,4 @@
-# DeepLabCut Live GUI
+# DeepLabCut-live-GUI
 
 A graphical application for **real-time pose estimation with DeepLabCut** using one or more cameras.
 

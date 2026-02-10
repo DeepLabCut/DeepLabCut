@@ -1,6 +1,6 @@
 # Installation
 
-This page explains how to install **DeepLabCut Live GUI** for interactive, real‑time pose estimation.
+This page explains how to install **DeepLabCut-live-GUI** for interactive, real‑time pose estimation.
 
 We **recommend `uv`** for most users because it is fast, reliable, and handles optional dependencies cleanly.
 **Conda is also supported**, especially if you already use it for DeepLabCut or GPU workflows.
@@ -10,7 +10,7 @@ We **recommend `uv`** for most users because it is fast, reliable, and handles o
 ## System requirements
 
 - **Python ≥ 3.10**
-- A working camera backend (see *{doc}`User Guide → Cameras<docs/dlc-live/dlc-live-gui/user_guide/cameras>`*)
+- A working camera backend (see *{ref}`file:dlclivegui-camera-support`*)
 - Optional but recommended:
   - **GPU with CUDA** (for real‑time inference)
   - NVIDIA drivers compatible with your PyTorch/TensorFlow version
@@ -33,7 +33,7 @@ but also support installation with `pip` or `conda` (see next section).
 :::{tab-item} Linux / macOS
 ```bash
 uv venv create dlclivegui
-source uv venv activate dlclivegui
+source dlclivegui/bin/activate
 ```
 :::
 
@@ -52,7 +52,7 @@ uv venv create dlclivegui
 :::
 ::::
 
-### Install DeepLabCut-Live-GUI
+### Install DeepLabCut-live-GUI
 
 ```{danger}
 This pre-release version of the package is not currently on PyPI.
@@ -104,11 +104,11 @@ For detailed installation instructions, please refer to the [official TensorFlow
 If you prefer using `conda` or `mamba`, you can create a new environment and install the package with:
 
 ```bash
-conda create -n dlclivegui python=3.12
+conda create -n dlclivegui python=3.12 # pick your desired Python version
 conda activate dlclivegui
 ```
 
-### Install DeepLabCut-Live-GUI
+### Install DeepLabCut-live-GUI
 
 Then, install the package with the desired backend:
 
@@ -137,7 +137,7 @@ For detailed installation instructions, please refer to the [official TensorFlow
 
 ## Run the application
 
-After installation, you can start the DeepLabCut Live GUI application with:
+After installation, you can start the DeepLabCut-live-GUI application with:
 
 ```bash
 dlclivegui # OR uv run dlclivegui
