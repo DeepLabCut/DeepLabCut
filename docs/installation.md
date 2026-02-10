@@ -300,8 +300,6 @@ Here are some additional resources users have found helpful (posted without endo
 
 - https://developer.nvidia.com/cuda-toolkit-archive
 
-- http://www.python36.com/install-tensorflow-gpu-windows/
-
 
 FFMPEG:
 
