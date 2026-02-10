@@ -60,6 +60,7 @@ setuptools.setup(
         "einops",
         "filterpy>=1.4.4",
         "huggingface_hub>=0.23",
+        "filelock>=3.12,<3.16",
         "ruamel.yaml>=0.15.0",
         "imgaug>=0.4.0",
         "imageio-ffmpeg",
