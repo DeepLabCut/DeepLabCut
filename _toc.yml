@@ -96,6 +96,7 @@ parts:
       - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/camera_support
         sections:
           - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/aravis_backend
+      - file: docs/dlc-live/dlc-live-gui/user_guide/misc/timestamp_format
 
 - caption: "🦄 DeepLabCut Model Zoo"
   chapters:

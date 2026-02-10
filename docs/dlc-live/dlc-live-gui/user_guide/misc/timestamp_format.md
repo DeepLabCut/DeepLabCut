@@ -1,6 +1,6 @@
-# Video Frame Timestamp Format
+# Video Timestamp Format
 
-When recording video, the application automatically saves frame timestamps to a JSON file alongside the video file.
+When recording videos, the application automatically saves frame timestamps to a JSON file alongside the video file.
 
 ## File Naming
 
