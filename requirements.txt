@@ -32,5 +32,4 @@ tqdm
 # Platform-specific
 h5py>=3.15.1; sys_platform == "darwin" # Fixes https://github.com/h5py/h5py/issues/2726
 
-filelock
-huggingface_hub
+huggingface_hub>=0.23
