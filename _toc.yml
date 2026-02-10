@@ -93,7 +93,9 @@ parts:
     sections:
       - file: docs/dlc-live/dlc-live-gui/quickstart/install
       - file: docs/dlc-live/dlc-live-gui/user_guide/overview
-      - file: docs/dlc-live/dlc-live-gui/cameras_backends/camera_support
+      - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/camera_support
+        sections:
+          - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/aravis_backend
 
 - caption: "🦄 DeepLabCut Model Zoo"
   chapters:

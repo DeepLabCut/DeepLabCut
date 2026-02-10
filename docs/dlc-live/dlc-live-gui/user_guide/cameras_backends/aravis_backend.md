@@ -98,7 +98,9 @@ When exposure or gain are set to non-zero values, the backend automatically disa
 ## Camera Selection
 
 ### By Index
+
 The default method is to select cameras by index (0, 1, 2, etc.):
+
 ```json
 {
   "camera": {
@@ -109,7 +111,9 @@ The default method is to select cameras by index (0, 1, 2, etc.):
 ```
 
 ### By Camera ID
+
 You can also select a specific camera by its ID:
+
 ```json
 {
   "camera": {
@@ -135,6 +139,7 @@ The backend automatically converts different pixel formats to BGR format for con
 
 ### Buffer Count
 Increase `n_buffers` for high-speed cameras or systems with variable latency:
+
 ```json
 {
   "properties": {
@@ -145,6 +150,7 @@ Increase `n_buffers` for high-speed cameras or systems with variable latency:
 
 ### Timeout
 Adjust timeout for slower cameras or network cameras:
+
 ```json
 {
   "properties": {
@@ -157,17 +163,20 @@ Adjust timeout for slower cameras or network cameras:
 ## Troubleshooting
 
 ### No cameras detected
+
 1. Verify Aravis installation: `arv-tool-0.8 -l`
 2. Check camera is powered and connected
 3. Ensure proper network configuration for GigE cameras
 4. Check user permissions for USB cameras
 
 ### Timeout errors
+
 - Increase the `timeout` property
 - Check network bandwidth for GigE cameras
 - Verify camera is properly configured and streaming
 
 ### Pixel format errors
+
 - Check camera's supported pixel formats: `arv-tool-0.8 -n <camera-name> features`
 - Try alternative formats: Mono8, RGB8, etc.
 
@@ -175,7 +184,7 @@ Adjust timeout for slower cameras or network cameras:
 
 | Feature | Aravis | GenTL |
 |---------|--------|-------|
-| Platform | Linux (best), macOS | Windows (best), Linux |
+| Platform | Linux (best), macOS (experimental) | Windows (best), Linux |
 | Camera Support | GenICam/GigE | GenTL producers |
 | Installation | System packages | Vendor CTI files |
 | Performance | Excellent | Excellent |
