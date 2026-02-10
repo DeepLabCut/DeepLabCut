@@ -8,7 +8,7 @@ This GUI is designed for **scientists and experimenters** who want to preview, r
 
 - {doc}`Installation <./quickstart/install>`
 - {doc}`Overview <./user_guide/overview>`
-- {doc}`Camera setup and backends <./cameras_backends/camera_support>`
+- {doc}`Camera setup and backends <./user_guide/cameras_backends/camera_support>`
 
 ---
 
@@ -53,6 +53,8 @@ Before getting started, be aware of the following constraints:
 
 - Pose inference runs on **one selected camera at a time** (even in multi-camera mode)
 - Camera synchronization depends on backend capabilities and hardware
+  - OpenCV controls for resolution and FPS are "best effort" and may not work with all cameras.
+    Expect inconsistencies when setting certain frame rates or resolutions as resolution depends on the device driver.
 - DeepLabCut Live models must be **exported and compatible** with the selected backend
   - Some SuperAnimal models from {ref}`file:model-zoo` may not work out of the box.<br>This is currently the case for:
     - SuperHuman model (missing detector)
