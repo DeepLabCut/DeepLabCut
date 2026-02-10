@@ -27,7 +27,7 @@ We recommend installing with [`uv`](https://github.com/astral-sh/uv),
 but also support installation with `pip` or `conda` (see next section).
 
 
-### Create and activate a new environment
+### Create and activate a new virtual environment
 
 ::::{tab-set}
 :::{tab-item} Linux / macOS
@@ -86,7 +86,7 @@ For detailed installation instructions, please refer to the [official PyTorch in
 
 ::::{tab-item} TensorFlow
 :::{caution}
-Please note TensorFlow is no longer available on Windows for Python > 3.10.
+Please note TensorFlow is **no longer available** on **Windows** for **Python > 3.10**.
 :::
 ```bash
 uv pip install -e .[live-latest-tensorflow]
@@ -97,12 +97,50 @@ For detailed installation instructions, please refer to the [official TensorFlow
 ::::
 :::::
 
-### Run the application
+## Alternative: Install with `conda`
+
+### Create and activate a new conda environment
+
+If you prefer using `conda` or `mamba`, you can create a new environment and install the package with:
+
+```bash
+conda create -n dlclivegui python=3.12
+conda activate dlclivegui
+```
+
+### Install DeepLabCut-Live-GUI
+
+Then, install the package with the desired backend:
+
+:::::{tab-set}
+::::{tab-item} PyTorch
+```bash
+pip install -e .[live-latest-pytorch]
+```
+:::{note}
+For detailed installation instructions, please refer to the [official PyTorch installation guide](https://pytorch.org/get-started/locally/).
+:::
+::::
+
+::::{tab-item} TensorFlow
+:::{caution}
+Please note TensorFlow is **no longer available** on **Windows** for **Python > 3.10**.
+:::
+```bash
+pip install -e .[live-latest-tensorflow]
+```
+:::{note}
+For detailed installation instructions, please refer to the [official TensorFlow installation guide](https://www.tensorflow.org/install/pip).
+:::
+::::
+:::::
+
+## Run the application
 
 After installation, you can start the DeepLabCut Live GUI application with:
 
 ```bash
-uv run dlclivegui
+dlclivegui # OR uv run dlclivegui
 ```
 
 ```{important}
