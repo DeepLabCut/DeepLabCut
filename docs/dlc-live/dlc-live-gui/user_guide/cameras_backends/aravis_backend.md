@@ -1,48 +1,60 @@
 (file:dlclivegui-camera-aravis-backend)=
 # Aravis Backend
 
-The Aravis backend provides support for GenICam-compatible cameras using the [Aravis](https://github.com/AravisProject/aravis) library.
+The Aravis backend provides support for GenICam-compatible cameras using the
+[Aravis](https://github.com/AravisProject/aravis) library.
 
 ```{important}
-Support for Aravis in our GUI is currently experimental.
-Please report any issues or feedback to help us improve this backend.
+Support for Aravis in the GUI is currently experimental.
+Please report issues or feedback to help improve this backend.
 ```
+
+---
 
 ## Features
 
-- Support for GenICam/GigE Vision cameras
-- Automatic device detection with `get_device_count()`
-- Configurable exposure time and gain
-- Support for various pixel formats (Mono8, Mono12, Mono16, RGB8, BGR8)
+- Support for GenICam / GigE Vision cameras via Aravis 0.8
+- Automatic device discovery without opening cameras
+- Configurable exposure, gain, frame rate, and resolution
+- Support for common mono and color pixel formats
 - Efficient streaming with configurable buffer count
-- Timeout handling for robust operation
 
 ## Installation
 
-### Linux (Ubuntu/Debian)
+### Linux (Ubuntu / Debian)
+
 ```bash
 sudo apt-get install gir1.2-aravis-0.8 python3-gi
 ```
 
 ### Linux (Fedora)
+
 ```bash
 sudo dnf install aravis python3-gobject
 ```
 
 ### Windows
-Aravis support on Windows requires building from source or using WSL. For native Windows support, consider using the GenTL backend instead.
+
+Aravis support on Windows requires building from source or using WSL.
+For native Windows usage, consider the GenTL backend instead.
 
 ### macOS
+
 ```bash
 brew install aravis
 pip install pygobject
 ```
 
-## Configuration
+```{note}
+On macOS, installing `pygobject` may require additional system
+dependencies such as `gobject-introspection` and `cairo`.
+```
 
-### Basic Configuration
+---
 
-Select "aravis" as the backend in the GUI or in your configuration file:
+## Basic configuration
+
+Select the Aravis backend either in the GUI or via configuration:
 
 ```json
 {
@@ -56,53 +68,11 @@ Select "aravis" as the backend in the GUI or in your configuration file:
 }
 ```
 
-### Advanced Properties
+---
 
-You can configure additional Aravis-specific properties via the `properties` dictionary:
+## Camera selection
 
-```json
-{
-  "camera": {
-    "backend": "aravis",
-    "index": 0,
-    "fps": 30.0,
-    "exposure": 10000,
-    "gain": 5.0,
-    "properties": {
-      "aravis": {
-        "camera_id": "MyCamera-12345",
-        "pixel_format": "Mono8",
-        "timeout": 2000000,
-        "n_buffers": 10
-      }
-    }
-  }
-}
-```
-
-#### Available Properties
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `device_id` | string | None | Specific camera ID to open (overrides index) |
-| `pixel_format` | string | "Mono8" | Pixel format: Mono8, Mono12, Mono16, RGB8, BGR8 |
-| `timeout` | int | 2000000 | Frame timeout in microseconds (2 seconds) |
-| `n_buffers` | int | 10 | Number of buffers in the acquisition stream |
-
-### Exposure and Gain
-
-The Aravis backend supports exposure time (in microseconds) and gain control:
-
-- **Exposure**: Set via the GUI exposure field or `settings.exposure` (0 = auto, >0 = manual in μs)
-- **Gain**: Set via the GUI gain field or `settings.gain` (0.0 = auto, >0.0 = manual value)
-
-When exposure or gain are set to non-zero values, the backend automatically disables auto-exposure and auto-gain.
-
-## Camera Selection
-
-### By Index
-
-The default method is to select cameras by index (0, 1, 2, etc.):
+### By index (default)
 
 ```json
 {
@@ -113,9 +83,7 @@ The default method is to select cameras by index (0, 1, 2, etc.):
 }
 ```
 
-### By Camera ID
-
-You can also select a specific camera by its ID:
+### By device ID (recommended for stability)
 
 ```json
 {
@@ -130,72 +98,216 @@ You can also select a specific camera by its ID:
 }
 ```
 
-## Supported Pixel Formats
+```{note}
+The backend may automatically populate additional read-only identity fields
+(vendor, model, serial, etc.) after a successful open. These are primarily
+used internally and by the GUI.
+```
 
-The backend automatically converts different pixel formats to BGR format for consistency:
+---
 
-- **Mono8**: 8-bit grayscale → BGR
-- **Mono12**: 12-bit grayscale → scaled to 8-bit → BGR
-- **Mono16**: 16-bit grayscale → scaled to 8-bit → BGR
-- **RGB8**: 8-bit RGB → BGR (color conversion)
-- **BGR8**: 8-bit BGR (no conversion needed)
+## Full properties and configuration
 
-## Performance Tuning
+Aravis-specific options live under the `properties.aravis` namespace in
+the settings used by the GUI and configuration files.
 
-### Buffer Count
-Increase `n_buffers` for high-speed cameras or systems with variable latency:
+### Related camera settings
+
+```{tip}
+These values are accessible directly in the GUI and are shared for all backends.
+```
+
+| Property | Type | Description |
+|--------|------|-------------|
+| `width` | int | Requested image width (optional) |
+| `height` | int | Requested image height (optional) |
+| `fps` | float | Target acquisition frame rate |
+| `exposure` | float | Exposure time in microseconds |
+| `gain` | float | Camera gain value |
+
+### Common Aravis properties
+
+```{note}
+These properties are specific to the Aravis backend and must be set manually in the configuration file.
+```
+
+| Property | Type | Default | Description |
+|--------|------|---------|-------------|
+| `device_id` | string | — | Explicit Aravis device ID (overrides index) |
+| `pixel_format` | string | `Mono8` | Requested pixel format |
+| `timeout` | int | `2000000` | Frame timeout in microseconds |
+| `n_buffers` | int | `10` | Number of streaming buffers |
+
+### Pixel format
+
+Supported values:
+
+- `Mono8`
+- `Mono12`
+- `Mono16`
+- `RGB8`
+- `BGR8`
+
+Internally, all frames are converted to **BGR (8-bit)** for consistency.
+
+**Mono12 / Mono16 scaling behavior**:
+- 12-bit and 16-bit images are dynamically scaled **per frame** to 8-bit
+- Scaling is based on the maximum pixel value present in each frame
+- This improves visibility but may cause frame-to-frame brightness variation
+
+### Exposure and gain
+
+- **Exposure** is specified in microseconds
+- **Gain** is a unitless camera-specific value
 
 ```json
 {
-  "properties": {
-    "n_buffers": 20
+  "camera": {
+    "exposure": 8000,
+    "gain": 10.0
+  }
+}
+```
+
+Behavior:
+
+- Exposure or gain values `<= 0` leave the camera in auto mode
+- Positive values disable auto-exposure / auto-gain automatically
+- Actual values are read back and may differ slightly due to camera constraints
+
+
+### Frame rate (FPS)
+
+```json
+{
+  "camera": {
+    "fps": 60.0
+  }
+}
+```
+
+- FPS is only applied when a positive value is provided
+- The backend attempts to set `AcquisitionFrameRate`
+- The **actual FPS** reported by the camera is stored and may differ slightly
+- Mismatches are logged but do not fail camera startup
+
+
+### Resolution handling
+
+Resolution is **only changed when explicitly requested**.
+If no resolution is specified, the camera's default configuration is preserved.
+
+Supported ways to request resolution:
+
+```json
+{
+  "camera": {
+    "width": 1920,
+    "height": 1080
+  }
+}
+```
+
+Notes:
+- The camera may clamp or adjust the requested resolution
+- The backend records and exposes the **actual resolution** after opening
+- A warning is logged if the requested and actual resolutions differ
+
+### Auto-populated Aravis metadata
+
+```{caution}
+These fields may appear in saved configurations but are managed
+automatically by the backend and GUI.
+It is not recommended to set these manually.
+```
+
+- `device_physical_id`
+- `device_vendor`
+- `device_model`
+- `device_serial_nbr`
+- `device_protocol`
+- `device_address`
+- `device_name`
+- `device_path`
+
+## Streaming and performance tuning
+
+### Buffer Count
+
+Increase buffers for high-throughput or high-latency systems:
+
+```json
+{
+  "camera": {
+    "properties": {
+      "aravis": {
+        "n_buffers": 20
+      }
+    }
   }
 }
 ```
 
 ### Timeout
-Adjust timeout for slower cameras or network cameras:
+
+Adjust frame timeout for slower cameras or congested networks:
 
 ```json
 {
-  "properties": {
-    "timeout": 5000000
+  "camera": {
+    "properties": {
+      "aravis": {
+        "timeout": 5000000
+      }
+    }
   }
 }
 ```
+
 (5 seconds = 5,000,000 microseconds)
+
+---
 
 ## Troubleshooting
 
 ### No cameras detected
 
-1. Verify Aravis installation: `arv-tool-0.8 -l`
-2. Check camera is powered and connected
-3. Ensure proper network configuration for GigE cameras
-4. Check user permissions for USB cameras
+1. Verify Aravis installation:
+   ```bash
+   arv-tool-0.8 -l
+   ```
+2. Check power, cabling, and network configuration
+3. Ensure sufficient permissions for USB or network devices
 
 ### Timeout errors
 
-- Increase the `timeout` property
-- Check network bandwidth for GigE cameras
-- Verify camera is properly configured and streaming
+- Increase the `timeout` value
+- Increase `n_buffers`
+- Check GigE bandwidth and packet size configuration
 
 ### Pixel format errors
 
-- Check camera's supported pixel formats: `arv-tool-0.8 -n <camera-name> features`
-- Try alternative formats: Mono8, RGB8, etc.
+- Inspect supported formats:
+  ```bash
+  arv-tool-0.8 -n <camera-name> features
+  ```
+- Try a simpler format such as `Mono8`
 
-## Comparison with GenTL Backend
+---
+
+## Comparison with GenTL backend
 
 | Feature | Aravis | GenTL |
-|---------|--------|-------|
-| Platform | Linux (best), macOS (experimental) | Windows (best), Linux |
-| Camera Support | GenICam/GigE | GenTL producers |
+|-------|--------|-------|
+| Best Platform | Linux | Windows |
+| Camera Support | GenICam / GigE | Vendor GenTL |
 | Installation | System packages | Vendor CTI files |
-| Performance | Excellent | Excellent |
 | Auto-detection | Yes | Yes |
+| Performance | Excellent | Excellent |
 
-## Example: The Imaging Source Camera
+---
+
+## Example configuration
 
 ```json
 {
@@ -206,13 +318,17 @@ Adjust timeout for slower cameras or network cameras:
     "exposure": 8000,
     "gain": 10.0,
     "properties": {
-      "pixel_format": "Mono8",
-      "n_buffers": 15,
-      "timeout": 3000000
+      "aravis": {
+        "pixel_format": "Mono8",
+        "n_buffers": 15,
+        "timeout": 3000000
+      }
     }
   }
 }
 ```
+
+---
 
 ## Resources
 
