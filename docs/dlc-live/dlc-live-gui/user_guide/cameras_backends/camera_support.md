@@ -40,7 +40,7 @@ You can select the backend in the GUI from the "Backend" dropdown, or in your co
 - **Aravis backend**: **Recommended** for GenICam/GigE Vision industrial cameras (The Imaging Source, Basler, Point Grey, etc.)
   - Easy installation via system package manager
   - Better Linux support than GenTL
-  - See {doc}`Aravis Backend Documentation <aravis_backend>`
+  - See {ref}`file:dlclivegui-camera-aravis-backend` for details and troubleshooting.
 - **GenTL backend**: Alternative for industrial cameras if vendor provides Linux CTI files.
 
 ### macOS

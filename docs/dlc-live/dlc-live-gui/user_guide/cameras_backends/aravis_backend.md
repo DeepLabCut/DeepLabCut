@@ -1,9 +1,10 @@
+(file:dlclivegui-camera-aravis-backend)=
 # Aravis Backend
 
 The Aravis backend provides support for GenICam-compatible cameras using the [Aravis](https://github.com/AravisProject/aravis) library.
 
 ```{important}
-Support for Aravis is currently experimental.
+Support for Aravis in our GUI is currently experimental.
 Please report any issues or feedback to help us improve this backend.
 ```
 
@@ -68,10 +69,12 @@ You can configure additional Aravis-specific properties via the `properties` dic
     "exposure": 10000,
     "gain": 5.0,
     "properties": {
-      "camera_id": "MyCamera-12345",
-      "pixel_format": "Mono8",
-      "timeout": 2000000,
-      "n_buffers": 10
+      "aravis": {
+        "camera_id": "MyCamera-12345",
+        "pixel_format": "Mono8",
+        "timeout": 2000000,
+        "n_buffers": 10
+      }
     }
   }
 }
@@ -81,7 +84,7 @@ You can configure additional Aravis-specific properties via the `properties` dic
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `camera_id` | string | None | Specific camera ID to open (overrides index) |
+| `device_id` | string | None | Specific camera ID to open (overrides index) |
 | `pixel_format` | string | "Mono8" | Pixel format: Mono8, Mono12, Mono16, RGB8, BGR8 |
 | `timeout` | int | 2000000 | Frame timeout in microseconds (2 seconds) |
 | `n_buffers` | int | 10 | Number of buffers in the acquisition stream |
@@ -119,7 +122,9 @@ You can also select a specific camera by its ID:
   "camera": {
     "backend": "aravis",
     "properties": {
-      "camera_id": "TheImagingSource-12345678"
+      "aravis": {
+        "device_id": "TheImagingSource-12345678"
+      }
     }
   }
 }
