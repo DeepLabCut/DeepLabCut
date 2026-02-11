@@ -50,7 +50,6 @@ You can select the backend in the GUI from the "Backend" dropdown, or in your co
 - **Aravis backend**: Experimental support for GenICam/GigE Vision cameras.
   Requires Homebrew and PyGObject; functionality depends heavily on camera model and setup.
 
-
 ## Quick installation guide
 
 `````{tab-set}
