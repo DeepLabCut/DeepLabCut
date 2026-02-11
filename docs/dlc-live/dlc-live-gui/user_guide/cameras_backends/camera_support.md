@@ -3,15 +3,16 @@
 
 DeepLabCut-live-GUI supports multiple camera backends for different platforms and camera types:
 
-## Supported Backends
+## Supported backends
 
 1. **OpenCV** - "Universal" webcam and USB camera support *(all platforms)*
    - Expect some limitations in camera control and performance
 2. **GenTL** - Industrial cameras via GenTL producers *(Windows, Linux)*
 3. **Aravis** - GenICam/GigE Vision cameras *(Linux, experimental on macOS)*
+   - See {ref}`file:dlclivegui-camera-aravis-backend`
 4. **Basler** - Basler cameras via pypylon *(all platforms)*
 
-## Backend Selection
+## Backend selection
 
 You can select the backend in the GUI from the "Backend" dropdown, or in your configuration file:
 
@@ -26,7 +27,7 @@ You can select the backend in the GUI from the "Backend" dropdown, or in your co
 }
 ```
 
-## Platform-Specific Recommendations
+## Platform-specific recommendations
 
 ### Windows
 
@@ -50,24 +51,30 @@ You can select the backend in the GUI from the "Backend" dropdown, or in your co
   Requires Homebrew and PyGObject; functionality depends heavily on camera model and setup.
 
 
-## Quick Installation Guide
+## Quick installation guide
 
-### Aravis (Linux/Ubuntu)
+`````{tab-set}
+````{tab-item} Aravis (Linux/Ubuntu)
 ```bash
 sudo apt-get install gir1.2-aravis-0.8 python3-gi
 ```
+````
 
-### Aravis (macOS)
+````{tab-item} Aravis (macOS)
 ```bash
 brew install aravis
 pip install pygobject
 ```
+```
+````
 
-### GenTL (Windows)
+````{tab-item} GenTL (Windows)
 Install vendor-provided camera drivers and SDK. CTI files are typically in:
 - `C:\Program Files\The Imaging Source Europe GmbH\IC4 GenTL Driver\bin\`
+````
+`````
 
-## Backend Comparison
+## Backend comparison
 
 | Feature | OpenCV | GenTL | Aravis | Basler (pypylon) |
 |---------|--------|-------|--------|------------------|
@@ -77,9 +84,9 @@ Install vendor-provided camera drivers and SDK. CTI files are typically in:
 | Linux | ✅ | ✅ | ✅ | ✅ |
 | macOS | ✅ | ❌ | ⚠️ | ✅ |
 
-## Detailed Backend Documentation
+### Links to backend documentation
 
-- OpenCV - *"Universal" webcam support - Expect some limitations in camera control and performance*
+- **To be added** OpenCV - *"Universal" webcam support - Expect some limitations in camera control and performance*
 - {doc}`Aravis <aravis_backend>` - *GenICam/GigE cameras on Linux/macOS*
 - **To be added** GenTL - *Industrial cameras via vendor CTI files*
 - **To be added** Basler - *Basler cameras via pypylon (cross-platform)*
