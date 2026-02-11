@@ -1,11 +1,11 @@
 /* custom.css */
 
 html[data-theme="light"] {
-  --sidebar-bg-color: #fefefe; /* #d2efff; */
+  --sidebar-bg-color: #ac64e67f; /* #d2efff; */
   --sidebar-text-color: #000000;
-  --sidebar-highlight-color: #95489c;
-  --sidebar-hover-text-color: #de6be8; /* #0044bd; */
-  --header-bg-color: #ffffff;
+  --sidebar-highlight-color: #73439a;
+  --sidebar-hover-text-color: #39214d; /* #0044bd; */
+  --header-bg-color: rgba(115, 67, 154, 0.75); /* #053346; */
   --logo-filter: none;
   --button-color: #fff;
   --footer-text-color: #000000;
@@ -14,10 +14,10 @@ html[data-theme="light"] {
 html[data-theme="dark"] {
   --sidebar-bg-color: #455364; /* #053346; */
   --sidebar-text-color: #ffffff;
-  --sidebar-highlight-color: #95489c;
-  --sidebar-hover-text-color: #de6be8; /* #00aeef; */
-  --header-bg-color: #414141;
-  --logo-filter: grayscale(100%) brightness(20);
+  --sidebar-highlight-color: #de6be8;
+  --sidebar-hover-text-color: #ea57f8; /* #00aeef; */
+  --header-bg-color: rgba(115, 67, 154, 0.45); /* #053346; */
+  /* --logo-filter: grayscale(100%) brightness(20); */
   --button-color: #fff;
   --footer-text-color: #b9b9b9;
 }
@@ -47,7 +47,7 @@ html[data-theme="dark"] {
 
 /* Sidebar footer */
 .sidebar-primary-items__end::after {
-  content: "DeepLabCut";
+  content: "The DeepLabCut Community";
   display: block;
   text-align: center;
   font-size: 12px;
@@ -70,8 +70,7 @@ html[data-theme="dark"] {
 /* Header */
 .bd-header-article {
   /* position: fixed; */
-  /* background-color: var(--header-bg-color); */
-  background-color: rgba(0, 0, 0, 0);
+  background-color: var(--header-bg-color);
   backdrop-filter: blur(2px);
   z-index: 1000;
 }
