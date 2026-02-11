@@ -64,7 +64,7 @@ html[data-theme="dark"] {
 
 /* Logo (top of sidebar) */
 .navbar-brand img {
-  filter: var(--logo-filter);
+  filter: var(--logo-filter, none);
 }
 
 /* Header */
@@ -102,11 +102,3 @@ html[data-theme="dark"] {
   z-index: 1;
 }
 
-.article-header-buttons .btn:hover {
-  opacity: 0.8;
-  -index: 1;
-}
-
-.article-header-buttons .btn:hover {
-  opacity: 0.8;
-}
