@@ -69,8 +69,8 @@ gui = [
 ]
 openvino = ["openvino-dev==2022.1.0"]
 docs = [
-    "jupyter-book==1.0.4.post1"
-    "sphinxcontrib-mermaid"
+    "jupyter-book==1.0.4.post1",
+    "sphinxcontrib-mermaid",
 ]
 tf = [
     # !!! TensorFlow is not supported on Windows with Python >= 3.11 
