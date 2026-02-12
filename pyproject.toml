@@ -69,15 +69,8 @@ gui = [
 ]
 openvino = ["openvino-dev==2022.1.0"]
 docs = [
-    "mike",
-    "mkdocs",
-    "mkdocs-gen-files",
-    "mkdocs-jupyter",
-    "mkdocs-literate-nav",
-    "mkdocs-material",
-    "mkdocs-section-index",
-    "mkdocstrings[python]",
-    "numpydoc",
+    "jupyter-book==1.0.4.post1"
+    "sphinxcontrib-mermaid"
 ]
 tf = [
     # !!! TensorFlow is not supported on Windows with Python >= 3.11 
