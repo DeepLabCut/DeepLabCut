@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 import yaml
 import ruamel.yaml.representer
 from ruamel.yaml import YAML
-from omegaconf import DictConfig
+from omegaconf import DictConfig, ListConfig
 from pydantic import ValidationError
 
 from deeplabcut.core.engine import Engine
@@ -46,6 +46,15 @@ def get_yaml_dumper() -> YAML:
     yaml.representer.add_multi_representer(
         Enum,
         lambda r, e: r.represent_str(e.value)
+    )
+    # OmegaConf containers -> plain dict/list so ruamel can serialize them
+    yaml.representer.add_representer(
+        DictConfig,
+        lambda r, d: r.represent_dict(dict(d))
+    )
+    yaml.representer.add_representer(
+        ListConfig,
+        lambda r, l: r.represent_list(list(l))
     )
     return yaml
 
