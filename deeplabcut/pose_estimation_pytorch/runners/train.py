@@ -19,6 +19,7 @@ from typing import Any, Generic
 import numpy as np
 import torch
 import torch.nn as nn
+from omegaconf import DictConfig
 from torch.nn.parallel import DataParallel
 from torch.utils.data import DataLoader
 
@@ -95,9 +96,11 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         super().__init__(
             model=model, device=device, gpus=gpus, snapshot_path=snapshot_path
         )
-        if isinstance(optimizer, dict):
+        # TODO @deruyter92: decide on typed / plain dict
+        if isinstance(optimizer, (dict, DictConfig)):
             optimizer = build_optimizer(model, optimizer)
-        if isinstance(scheduler, dict):
+        # TODO @deruyter92: decide on typed / plain dict
+        if isinstance(scheduler, (dict, DictConfig)):
             scheduler = schedulers.build_scheduler(scheduler, optimizer)
 
         self.eval_interval = eval_interval
