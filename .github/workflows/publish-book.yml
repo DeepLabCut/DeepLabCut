@@ -26,6 +26,10 @@ jobs:
       run: |
         jupyter-book build .
 
+    - name: Build developer docs
+      run: |
+        mkdocs build -v -f deeplabcut/pose_estimation_pytorch/mkdocs.yml  --site-dir ../../_build/html/dev
+
     - name: GitHub Pages action
       uses: peaceiris/actions-gh-pages@v3.9.3
       with:
