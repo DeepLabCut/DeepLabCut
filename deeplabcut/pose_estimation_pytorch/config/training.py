@@ -36,4 +36,6 @@ class TrainSettingsConfig(ConfigMixin):
     display_iters: int = 500
     epochs: int = 200
     seed: int = 42
-    weight_init: WeightInitialization = field(default_factory=WeightInitialization)
+    # @TODO @deruyter92 2026-02-13: V0 pipeline uses None for default initialization 
+    # (with ImageNet weights). We should update this to explicit WeightInitialization.
+    weight_init: WeightInitialization | None = None 
