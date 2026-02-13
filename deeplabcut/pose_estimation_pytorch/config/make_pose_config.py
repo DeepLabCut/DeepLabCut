@@ -21,11 +21,14 @@ from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.config.utils import (
     get_config_folder_path,
     load_backbones,
+    load_base_config,
     replace_default_values,
     update_config,
 )
 from deeplabcut.core.config.project_config import ProjectConfig
 from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
+from deeplabcut.pose_estimation_pytorch.config.training import TrainSettingsConfig
+from deeplabcut.pose_estimation_pytorch.config.runner import RunnerConfig
 from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig, TestConfig, NetType
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
@@ -91,7 +94,7 @@ def _load_pose_config_defaults(
         net_type = project_config.get("default_net_type", "resnet_50")
 
     configs_dir = get_config_folder_path()
-
+    base_cfg = load_base_config(configs_dir)
     backbones = load_backbones(configs_dir)
     if net_type in backbones:
         if not top_down and multianimal_project:
@@ -139,6 +142,7 @@ def _load_pose_config_defaults(
     aug_cfg = {"data": read_config_as_dict(configs_dir / "base" / aug_filename)}
 
     model_cfg = update_config(model_cfg, aug_cfg)
+    model_cfg = update_config(base_cfg, model_cfg)
 
     # add a unique bodypart head if needed
     if len(unique_bpts) > 0:
@@ -216,25 +220,29 @@ def make_pytorch_pose_config(
         the PyTorch pose configuration file
     """
     # Initialize ProjectConfig (convert to DictConfig if needed)
-    project_config: DictConfig = ProjectConfig.from_any(project_config).to_dictconfig()
+    project_config = ProjectConfig.from_any(project_config)
     project_config.pose_config_path = pose_config_path
+
+    # @TODO @deruyter92 2026-02-13: This is a temporary fix to allow backwards compatibility. 
+    # This should be resolved by migrating to V1 project config.
+    project_config.with_identity = project_config.identity
     
     # Initialize PoseConfig as DictConfig
-    pose_config = PoseConfig().to_dictconfig()
-    pose_config.metadata = project_config
-    pose_config.net_type = NetType(net_type) if net_type is not None else None
-
-    # Add inference config and weight init configs
-    pose_config.inference = InferenceConfig().to_dictconfig()
     if weight_init is not None:
-        weight_init = WeightInitialization.from_any(weight_init).to_dictconfig()
-        pose_config.train_settings.weight_init = weight_init
+        weight_init = WeightInitialization.from_any(weight_init)
+
+    pose_config = PoseConfig(
+        net_type=NetType(net_type) if net_type is not None else None,
+        metadata=project_config,
+        train_settings=TrainSettingsConfig(weight_init=weight_init),
+        # runner=RunnerConfig(),
+    ).to_dictconfig()
 
     # Update default values for the specific model architecture and project config.
     # TODO @deruyter92 2026-02-04: using legacy v0 config (dict) for the defaults,
     # we should move to typed model defaults and use omegaconf merge to update
     defaults: dict = _load_pose_config_defaults(
-        project_config,
+        project_config.to_dict(),
         net_type,
         top_down,
         detector_type,
