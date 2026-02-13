@@ -14,6 +14,7 @@ from abc import ABC, abstractmethod
 
 import torch
 import torch.nn as nn
+from omegaconf import DictConfig
 
 from deeplabcut.pose_estimation_pytorch.models.criterions import (
     BaseCriterion,
@@ -79,7 +80,8 @@ class BaseHead(ABC, nn.Module):
         elif weight_init is not None:
             raise ValueError(f"Could not parse ``weight_init`` parameter: {weight_init}.")
 
-        if isinstance(criterion, dict):
+        # TODO @deruyter92: decide on typed / plain dict
+        if isinstance(criterion, (dict, DictConfig)):
             if aggregator is None:
                 raise ValueError("When multiple criterions are defined, a loss aggregator must also be given")
         else:

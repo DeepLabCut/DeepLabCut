@@ -22,6 +22,7 @@ import albumentations as A
 import numpy as np
 import pandas as pd
 import torch
+from omegaconf import DictConfig
 from tqdm import tqdm
 
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils
@@ -496,7 +497,8 @@ def analyze_videos(
                 condition_cfg=loader.model_cfg["inference"]["conditions"],
                 config=config,
             )
-        elif isinstance(ctd_conditions, dict):
+        # TODO @deruyter92: decide on typed / plain dict
+        elif isinstance(ctd_conditions, (dict, DictConfig)):
             cond_provider = get_condition_provider(
                 condition_cfg=ctd_conditions,
                 config=config,
@@ -504,7 +506,8 @@ def analyze_videos(
         else:
             cond_provider = ctd_conditions
 
-    if isinstance(ctd_tracking, dict):
+    # TODO @deruyter92: decide on typed / plain dict
+    if isinstance(ctd_tracking, (dict, DictConfig)):
         # FIXME(niels) - add video FPS setting
         ctd_tracking = CTDTrackingConfig.build(ctd_tracking)
 

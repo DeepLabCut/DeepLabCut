@@ -24,6 +24,7 @@ from typing import Any, Generic
 import numpy as np
 import torch
 import torch.nn as nn
+from omegaconf import DictConfig
 
 import deeplabcut.pose_estimation_pytorch.post_processing.nms as nms
 import deeplabcut.pose_estimation_pytorch.runners.ctd as ctd
