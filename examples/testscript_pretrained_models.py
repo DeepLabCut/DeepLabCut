@@ -91,7 +91,7 @@ dataFrame.to_hdf(
         videoname,
         "CollectedData_" + cfg["scorer"] + ".h5",
     ),
-    "df_with_missing",
+    key="df_with_missing",
     format="table",
     mode="w",
 )
@@ -167,7 +167,7 @@ dataFrame.to_hdf(
         videoname,
         "CollectedData_" + cfg["scorer"] + ".h5",
     ),
-    "df_with_missing",
+    key="df_with_missing",
     format="table",
     mode="w",
 )
