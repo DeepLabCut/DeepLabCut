@@ -83,8 +83,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
         if isinstance(inference_cfg, InferenceConfig):
             self.inference_cfg = inference_cfg
-        # TODO @deruyter92: decide on typed / plain dict
-        elif isinstance(inference_cfg, (dict, DictConfig)):
+        elif isinstance(inference_cfg, dict):
             self.inference_cfg = InferenceConfig.from_dict(inference_cfg)
         elif inference_cfg is None:
             self.inference_cfg = InferenceConfig()
