@@ -17,6 +17,8 @@ from typing import TYPE_CHECKING, Callable
 from pathlib import PurePath
 from enum import Enum
 
+from omegaconf import DictConfig
+
 if TYPE_CHECKING:
     from deeplabcut.core.config.project_config import ProjectConfig, ProjectConfig3D
 
@@ -116,7 +118,7 @@ def pretty_print(
         print_fn = print
 
     for k, v in config.items():
-        if isinstance(v, dict):
+        if isinstance(v, (dict, DictConfig)):
             print_fn(f"{indent * ' '}{k}:")
             pretty_print(v, indent + 2, print_fn=print_fn)
         else:
