@@ -17,6 +17,8 @@ latest by applying all intermediate migrations in sequence. Downgrade migrations
 can be registered for specific version pairs when backward compatibility is needed.
 """
 
+import copy
+import logging
 from typing import Any, Callable, Dict, Self
 from dataclasses import fields
 from functools import wraps
@@ -24,6 +26,7 @@ from functools import wraps
 from pydantic import model_validator
 from pydantic_core import ArgsKwargs
 
+logger = logging.getLogger(__name__)
 
 # Current configuration schema version
 # Increment this when making breaking changes to the config structure
@@ -32,6 +35,64 @@ CURRENT_CONFIG_VERSION = 0
 
 # Version registry: maps (from_version, to_version) -> migration function
 _MIGRATIONS: Dict[tuple[int, int], Callable[[dict], dict]] = {}
+
+
+def _diff_dicts(
+    before: dict,
+    after: dict,
+    path: str = "",
+    ignore_keys: set[str] | None = None,
+) -> list[str]:
+    """Recursively diff two dicts and return human-readable change descriptions.
+
+    Args:
+        before: The dict before the migration step.
+        after: The dict after the migration step.
+        path: Dot-separated key path for nested context (used in recursion).
+        ignore_keys: Top-level keys to skip (only applied at the root level).
+
+    Returns:
+        A list of strings, each describing a single added/removed/updated field.
+    """
+    ignore = ignore_keys or set()
+    before_keys = set(before.keys()) - ignore
+    after_keys = set(after.keys()) - ignore
+
+    changes: list[str] = []
+
+    for key in sorted(before_keys - after_keys):
+        full = f"{path}.{key}" if path else str(key)
+        changes.append(f"Removed field '{full}' (was: {before[key]!r})")
+
+    for key in sorted(after_keys - before_keys):
+        full = f"{path}.{key}" if path else str(key)
+        changes.append(f"Added field '{full}' = {after[key]!r}")
+
+    for key in sorted(before_keys & after_keys):
+        old_val, new_val = before[key], after[key]
+        if old_val == new_val:
+            continue
+        full = f"{path}.{key}" if path else str(key)
+        if isinstance(old_val, dict) and isinstance(new_val, dict):
+            changes.extend(_diff_dicts(old_val, new_val, path=full))
+        else:
+            changes.append(f"Updated field '{full}': {old_val!r} -> {new_val!r}")
+
+    return changes
+
+
+def _log_field_changes(
+    before: dict, after: dict, from_v: int, to_v: int
+) -> None:
+    """Log which fields were added, removed, or changed during a migration step."""
+    step = f"v{from_v} -> v{to_v}"
+    changes = _diff_dicts(before, after, ignore_keys={"config_version"})
+
+    if changes:
+        for change in changes:
+            logger.debug("  [%s] %s", step, change)
+    else:
+        logger.debug("  [%s] No field changes", step)
 
 
 def register_migration(from_version: int, to_version: int):
@@ -71,8 +132,13 @@ def register_migration(from_version: int, to_version: int):
 
         @wraps(func)
         def wrapper(config: dict) -> dict:
+            verbose = logger.isEnabledFor(logging.DEBUG)
+            if verbose:
+                before = copy.deepcopy(config)
             result = func(config.copy())  # Don't mutate caller's dict
             result["config_version"] = to_version
+            if verbose:
+                _log_field_changes(before, result, from_version, to_version)
             return result
 
         _MIGRATIONS[key] = wrapper
@@ -111,6 +177,9 @@ def migrate_config(config: dict, target_version: int = CURRENT_CONFIG_VERSION) -
     current_version = get_config_version(config)
     
     if current_version == target_version:
+        logger.debug(
+            "Config already at version %d, no migration needed", current_version
+        )
         return config
     
     if target_version > CURRENT_CONFIG_VERSION:
@@ -118,6 +187,12 @@ def migrate_config(config: dict, target_version: int = CURRENT_CONFIG_VERSION) -
             f"Target version {target_version} exceeds current version {CURRENT_CONFIG_VERSION}"
         )
     
+    direction = "upgrade" if target_version > current_version else "downgrade"
+    logger.info(
+        "Migrating config from version %d to %d (%s)",
+        current_version, target_version, direction,
+    )
+
     # Chain migrations one step at a time (e.g. 0→1→2 or 3→2→1).
     migrated = config
     step = 1 if target_version > current_version else -1
@@ -129,6 +204,10 @@ def migrate_config(config: dict, target_version: int = CURRENT_CONFIG_VERSION) -
                 f"Missing migration from version {v} to {next_v}. "
                 f"Available migrations: {list(_MIGRATIONS.keys())}"
             )
+        logger.debug(
+            "Applying migration v%d -> v%d (%s)",
+            v, next_v, _MIGRATIONS[key].__wrapped__.__qualname__,
+        )
         try:
             migrated = _MIGRATIONS[key](migrated)
         except Exception as exc:
@@ -137,6 +216,7 @@ def migrate_config(config: dict, target_version: int = CURRENT_CONFIG_VERSION) -
                 f"({_MIGRATIONS[key].__wrapped__.__qualname__}): {exc}"
             ) from exc
 
+    logger.info("Migration complete: config is now at version %d", target_version)
     return migrated
 
 
