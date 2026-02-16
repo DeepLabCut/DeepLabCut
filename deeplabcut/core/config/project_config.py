@@ -170,6 +170,7 @@ class ProjectConfig(ConfigMixin):
 
     # @TODO @deruyter92 2026-02-13: These aliases are used in parallel. One of them should be removed.
     with_identity: bool | None = field(default=False, metadata={"comment": "Alias for 'identity'. Kept for backwards compatibility."})
+    unique_bodyparts: list[str] = field(default_factory=list, metadata={"comment": "Alias for 'uniquebodyparts'. Kept for backwards compatibility."})
 
     # TODO @deruyter92 2026-02-06: These parameters are no longer used in the new pipeline.
     resnet: int | None = field(
