@@ -14,6 +14,7 @@ import warnings
 from pathlib import Path
 from unittest.mock import Mock, patch
 import pytest
+from collections.abc import Mapping
 
 import deeplabcut.create_project.new as new_module
 from deeplabcut.utils.auxfun_videos import VideoReader
@@ -244,10 +245,10 @@ def test_config_file_video_sets_format(
     cfg = auxiliaryfunctions.read_config(config_path)
     
     assert "video_sets" in cfg
-    assert isinstance(cfg["video_sets"], dict)
+    assert isinstance(cfg["video_sets"], Mapping)
     
     # Check format of video_sets entries
     for video_path, video_info in cfg["video_sets"].items():
-        assert isinstance(video_info, dict)
+        assert isinstance(video_info, Mapping)
         assert "crop" in video_info
         assert isinstance(video_info["crop"], str)
