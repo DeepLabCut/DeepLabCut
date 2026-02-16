@@ -324,9 +324,11 @@ def extract_maps(
         bpt_names = metadata["bodyparts"] + metadata["unique_bodyparts"]
         paf_graph = []
         bpt_head_cfg = loader.model_cfg["model"]["heads"]["bodypart"]
+        # TODO @deruyter92: This pattern should be refactored throughout the codebase
+        # it is reading a config value that is supposed to be missing / None.
         if bpt_head_cfg["type"] == "DLCRNetHead":
-            paf_graph = bpt_head_cfg.get("predictor", {}).get("graph")
-            paf_indices = bpt_head_cfg.get("predictor", {}).get("edges_to_keep")
+            paf_graph = (bpt_head_cfg.get("predictor") or {}).get("graph")
+            paf_indices = (bpt_head_cfg.get("predictor") or {}).get("edges_to_keep")
             if paf_indices is not None:
                 paf_graph = [paf_graph[i] for i in paf_indices]
 

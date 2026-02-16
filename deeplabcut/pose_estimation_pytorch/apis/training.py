@@ -167,9 +167,11 @@ def train(
     )
     valid_dataloader = DataLoader(valid_dataset, batch_size=1, shuffle=False)
 
+    # TODO @deruyter92: This pattern should be refactored throughout the codebase
+    # it is reading a config value that is supposed to be missing / None.
     if (
         loader.model_cfg["model"].get("freeze_bn_stats", False)
-        or loader.model_cfg["model"].get("backbone", {}).get("freeze_bn_stats", False)
+        or (loader.model_cfg["model"].get("backbone") or {}).get("freeze_bn_stats", False)
         or batch_size == 1
     ):
         logging.info(

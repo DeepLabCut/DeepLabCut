@@ -631,7 +631,10 @@ def _load_pickle_dataset(
         keypoints = np.zeros((params.max_num_animals, params.num_joints, 2))
         keypoints.fill(np.nan)
         keypoints_unique = None
-        for idv_idx, idv_bodyparts in image_data.get("joints", {}).items():
+
+        # TODO @deruyter92: This pattern should be refactored throughout the codebase
+        # it is reading a config value that is supposed to be missing / None.
+        for idv_idx, idv_bodyparts in (image_data.get("joints") or {}).items():
             if idv_idx < params.max_num_animals:
                 for joint_id, x, y in idv_bodyparts:
                     bodypart = int(joint_id)

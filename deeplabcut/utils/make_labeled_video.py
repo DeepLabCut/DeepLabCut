@@ -1314,7 +1314,9 @@ def create_video_with_all_detections(
             x1, y1 = 0, 0
             if cropping is not None:
                 x1, _, y1, _ = cropping
-            elif metadata.get("data", {}).get("cropping"):
+            # TODO @deruyter92: This pattern should be refactored throughout the codebase
+            # it is reading a config value that is supposed to be missing / None.
+            elif (metadata.get("data") or {}).get("cropping"):
                 x1, _, y1, _ = metadata["data"]["cropping_parameters"]
 
             header = data.pop("metadata")

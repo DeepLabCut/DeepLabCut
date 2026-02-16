@@ -229,7 +229,10 @@ class ImageLoggerMixin(ABC):
         images_to_log = [(i, p) for i, p in enumerate(paths) if p in self._logged]
         for idx, path in images_to_log:
             base = self._logged[path]["name"]
-            keypoints = inputs.get("annotations", {}).get("keypoints")
+
+            # TODO @deruyter92: This pattern should be refactored throughout the codebase
+            # it is reading a config value that is supposed to be missing / None.
+            keypoints = (inputs.get("annotations") or {}).get("keypoints")
             if keypoints is not None:
                 keypoints = keypoints[idx]
             image_logs[f"{base}.input"] = self._prepare_image(

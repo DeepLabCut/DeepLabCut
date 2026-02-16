@@ -126,7 +126,9 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 self.model,
                 weights_only=load_weights_only,
             )
-            self.starting_epoch = snapshot.get("metadata", {}).get("epoch", 0)
+            # TODO @deruyter92: This pattern should be refactored throughout the codebase
+            # it is reading a config value that is supposed to be missing / None.
+            self.starting_epoch = (snapshot.get("metadata") or {}).get("epoch", 0)
 
             if "optimizer" in snapshot:
                 self.optimizer.load_state_dict(snapshot["optimizer"])

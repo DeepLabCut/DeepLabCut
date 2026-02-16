@@ -200,7 +200,7 @@ class Loader(ABC):
             individuals = parameters.individuals
             num_bodyparts = parameters.num_joints
 
-        if "weight_init" in self.model_cfg["train_settings"]:
+        if self.model_cfg["train_settings"].get("weight_init") is not None:
             weight_init_cfg = self.model_cfg["train_settings"]["weight_init"]
             if weight_init_cfg["memory_replay"]:
                 conversion_array = weight_init_cfg["conversion_array"]

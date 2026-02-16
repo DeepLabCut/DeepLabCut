@@ -436,7 +436,9 @@ def extract_outlier_frames(
             # offset if the data was cropped
             # note: When output video is also cropped, the keypoints should be shifted back.
             out_x1, out_y1 = _read_video_specific_cropping_margins(config, video)
-            if metadata.get("data", {}).get("cropping"):
+            # TODO @deruyter92: This pattern should be refactored throughout the codebase
+            # it is reading a config value that is supposed to be missing / None.
+            if (metadata.get("data") or {}).get("cropping"):
                 x1, _, y1, _ = metadata["data"]["cropping_parameters"]
                 df.iloc[:, df.columns.get_level_values(level="coords") == "x"] += x1 - out_x1
                 df.iloc[:, df.columns.get_level_values(level="coords") == "y"] += y1 - out_y1
@@ -771,7 +773,7 @@ def ExtractFramesbasedonPreselection(
         duration = clip.duration
 
     if cfg["cropping"]:  # one might want to adjust
-        coords = cfg["video_sets"].get(video, {}).get("crop")
+        coords = (cfg["video_sets"].get(video) or {}).get("crop")
         if coords is not None:
             coords = list(map(int, coords.split(", ")))
     else:
