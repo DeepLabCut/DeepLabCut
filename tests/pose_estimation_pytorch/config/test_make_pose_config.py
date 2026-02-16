@@ -437,6 +437,23 @@ def test_update_config(data: dict):
                 "detector": {"batch_size": 8, "epochs": 10, "save_epochs": 1},
             },
         },
+        {
+            "config": {"a": 1, "detector": None},
+            "updates": {
+                "a": 2,
+                "detector.train_settings.epochs": 10,
+                "detector.runner.snapshots.max_snapshots": 5,
+            },
+            "expected_result": {"a": 2, "detector": None},
+        },
+        {
+            "config": {"a": 1},
+            "updates": {
+                "a": 2,
+                "nonexistent.nested.key": 42,
+            },
+            "expected_result": {"a": 2},
+        },
     ],
 )
 def test_update_config_by_dotpath(data: dict):
