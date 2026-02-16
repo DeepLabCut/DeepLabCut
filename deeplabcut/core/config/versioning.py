@@ -129,7 +129,13 @@ def migrate_config(config: dict, target_version: int = CURRENT_CONFIG_VERSION) -
                 f"Missing migration from version {v} to {next_v}. "
                 f"Available migrations: {list(_MIGRATIONS.keys())}"
             )
-        migrated = _MIGRATIONS[key](migrated)
+        try:
+            migrated = _MIGRATIONS[key](migrated)
+        except Exception as exc:
+            raise type(exc)(
+                f"Migration from version {v} to {next_v} failed "
+                f"({_MIGRATIONS[key].__wrapped__.__qualname__}): {exc}"
+            ) from exc
 
     return migrated
 
