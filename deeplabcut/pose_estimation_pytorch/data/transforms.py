@@ -14,7 +14,6 @@ import warnings
 from typing import Any, Iterable, Sequence
 
 import albumentations as A
-from omegaconf import DictConfig
 import cv2
 import numpy as np
 from albumentations.augmentations.geometric import functional as F
@@ -38,7 +37,7 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
         if isinstance(hflip_cfg, float):
             hflip_proba = hflip_cfg
         # TODO @deruyter92: decide on typed / plain dict
-        elif isinstance(hflip_cfg, (dict, DictConfig)):
+        elif isinstance(hflip_cfg, dict):
             if "p" in hflip_cfg:
                 hflip_proba = float(hflip_cfg["p"])
 

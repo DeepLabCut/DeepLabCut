@@ -14,8 +14,6 @@ from __future__ import annotations
 import copy
 from pathlib import Path
 
-from omegaconf import DictConfig
-
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.config.utils import (
@@ -36,7 +34,7 @@ from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 
 def _load_pose_config_defaults(
-    project_config: ProjectConfig | DictConfig,
+    project_config: ProjectConfig | dict,
     net_type: NetType | str | None = None,
     top_down: bool = False,
     detector_type: str | None = None,
@@ -186,19 +184,20 @@ def _load_pose_config_defaults(
 
 
 def make_pytorch_pose_config(
-    project_config: ProjectConfig | DictConfig | dict | Path | str,
+    project_config: ProjectConfig | dict | Path | str,
     pose_config_path: str | Path,
     net_type: NetType | str | None = None,
     top_down: bool = False,
     detector_type: str | None = None,
-    weight_init: WeightInitialization | DictConfig | None = None,
+    weight_init: WeightInitialization | None = None,
     save: bool = False,
     ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
-) -> DictConfig:
+) -> PoseConfig:
     """Creates a PyTorch pose configuration file for a DeepLabCut project
 
     Args:
         project_config: the DeepLabCut project config (used to infer individuals, bodyparts and identity tracking)
+        pose_config_path: the path where the pose config should be saved
         net_type: the architecture of the desired pose estimation model
         top_down: when the net_type is a backbone, whether to create a top-down model
             by associating a detector to the pose model. Required for multi-animal
@@ -217,9 +216,9 @@ def make_pytorch_pose_config(
                 * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5 predictions file.
                 * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
     Returns:
-        the PyTorch pose configuration file
+        the PyTorch pose configuration as a typed PoseConfig
     """
-    # Initialize ProjectConfig (convert to DictConfig if needed)
+    # Initialize ProjectConfig
     project_config = ProjectConfig.from_any(project_config)
     project_config.pose_config_path = pose_config_path
 
@@ -230,20 +229,18 @@ def make_pytorch_pose_config(
         project_config.bodyparts = project_config.multianimalbodyparts
     project_config.unique_bodyparts = project_config.uniquebodyparts
     
-    # Initialize PoseConfig as DictConfig
     if weight_init is not None:
         weight_init = WeightInitialization.from_any(weight_init)
 
-    pose_config = PoseConfig(
+    # Build initial config as a plain dict for the merge phase
+    # (update_config only deep-merges plain dicts, not typed configs)
+    pose_config_dict = PoseConfig(
         net_type=NetType(net_type) if net_type is not None else None,
         metadata=project_config,
         train_settings=TrainSettingsConfig(weight_init=weight_init),
-        # runner=RunnerConfig(),
-    ).to_dictconfig()
+    ).to_dict()
 
     # Update default values for the specific model architecture and project config.
-    # TODO @deruyter92 2026-02-04: using legacy v0 config (dict) for the defaults,
-    # we should move to typed model defaults and use omegaconf merge to update
     defaults: dict = _load_pose_config_defaults(
         project_config.to_dict(),
         net_type,
@@ -251,13 +248,13 @@ def make_pytorch_pose_config(
         detector_type,
         ctd_conditions,
     )
-    pose_config = update_config(pose_config, defaults) 
+    pose_config_dict = update_config(pose_config_dict, defaults)
 
-    # Validate the config against the PoseConfig pydantic model after updating
-    PoseConfig.validate_dict(pose_config)
+    # Validate and convert back to typed PoseConfig
+    pose_config = PoseConfig.validate_dict(pose_config_dict)
 
     if save:
-        PoseConfig().from_any(pose_config).to_yaml(pose_config_path, overwrite=True)
+        pose_config.to_yaml(pose_config_path, overwrite=True)
     return pose_config
 
 
@@ -311,10 +308,10 @@ def _add_ctd_conditions(
 
 
 def make_pytorch_test_config(
-    model_config: dict,
+    model_config: PoseConfig | dict,
     test_config_path: str | Path,
     save: bool = False,
-) -> dict:
+) -> TestConfig:
     """Creates the test configuration for a model
 
     Args:
@@ -323,7 +320,7 @@ def make_pytorch_test_config(
         save: Whether to save the test config to ``test_config_path``.
 
     Returns:
-        The test configuration file.
+        The test configuration as a typed TestConfig.
     """
     bodyparts = model_config["metadata"]["bodyparts"]
     unique_bodyparts = model_config["metadata"]["unique_bodyparts"]
@@ -342,7 +339,7 @@ def make_pytorch_test_config(
     if save:
         test_config.to_yaml(test_config_path, overwrite=True)
 
-    return test_config.to_dict()
+    return test_config
 
 
 def make_basic_project_config(

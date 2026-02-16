@@ -12,7 +12,6 @@
 from pathlib import Path
 
 import numpy as np
-from omegaconf import DictConfig
 
 import deeplabcut.pose_estimation_pytorch.data as data
 from deeplabcut.pose_estimation_pytorch.data.ctd import (
@@ -50,7 +49,7 @@ def get_condition_provider(
         ) + error_message
         raise ValueError(error_message)
     # TODO @deruyter92: decide on typed / plain dict
-    elif not isinstance(condition_cfg, (dict, DictConfig)):
+    elif not isinstance(condition_cfg, dict):
         raise ValueError(error_message)
 
     if config is not None:
@@ -120,7 +119,7 @@ def load_conditions_for_evaluation(
         condition_filepath = Path(condition_cfg)
         cond_provider = CondFromFile(filepath=condition_filepath)
     # TODO @deruyter92: decide on typed / plain dict
-    elif isinstance(condition_cfg, (dict, DictConfig)):
+    elif isinstance(condition_cfg, dict):
         if isinstance(loader, data.DLCLoader) and "config" not in condition_cfg:
             condition_cfg["config"] = loader.project_root / "config.yaml"
 

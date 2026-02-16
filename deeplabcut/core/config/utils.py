@@ -17,15 +17,12 @@ from typing import TYPE_CHECKING, Callable
 from pathlib import PurePath
 from enum import Enum
 
-from omegaconf import DictConfig
-
 if TYPE_CHECKING:
     from deeplabcut.core.config.project_config import ProjectConfig, ProjectConfig3D
 
 import yaml
 import ruamel.yaml.representer
 from ruamel.yaml import YAML
-from omegaconf import DictConfig, ListConfig
 from pydantic import ValidationError
 
 from deeplabcut.core.engine import Engine
@@ -56,15 +53,6 @@ def get_yaml_dumper() -> YAML:
     yaml.representer.add_multi_representer(
         Enum,
         lambda r, e: r.represent_str(e.value)
-    )
-    # OmegaConf containers -> plain dict/list so ruamel can serialize them
-    yaml.representer.add_representer(
-        DictConfig,
-        lambda r, d: r.represent_dict(dict(d))
-    )
-    yaml.representer.add_representer(
-        ListConfig,
-        lambda r, l: r.represent_list(list(l))
     )
     return yaml
 
@@ -126,7 +114,7 @@ def pretty_print(
         print_fn = print
 
     for k, v in config.items():
-        if isinstance(v, (dict, DictConfig)):
+        if isinstance(v, dict):
             print_fn(f"{indent * ' '}{k}:")
             pretty_print(v, indent + 2, print_fn=print_fn)
         else:
@@ -187,7 +175,7 @@ scorername_3d: # Enter the scorer name for the 3D output
     return cfg_file_3d, ruamelFile_3d
 
 
-def read_config(configname: str | Path, ignore_empty: bool = True) -> DictConfig:
+def read_config(configname: str | Path, ignore_empty: bool = True) -> "ProjectConfig":
     """
     Reads structured config file defining a project.
 
@@ -201,7 +189,7 @@ def read_config(configname: str | Path, ignore_empty: bool = True) -> DictConfig
             Defaults to True.
 
     Returns:
-        The project configuration as a DictConfig.
+        The project configuration as a ProjectConfig instance (supports dict-like access).
     """
     # NOTE @deruyter92 2026-02-05: Default ignore_empty is now set to True to match
     # the prior behaviour of read_config. We should consider changing this to False
@@ -216,12 +204,12 @@ def read_config(configname: str | Path, ignore_empty: bool = True) -> DictConfig
     if project_config.project_path != curr_dir:
         project_config.project_path = curr_dir
         project_config.to_yaml(configname)
-    return project_config.to_dictconfig()
+    return project_config
 
 
 def write_project_config(
     configname: str | Path,
-    cfg: dict | ProjectConfig | DictConfig,
+    cfg: "dict | ProjectConfig",
 ) -> None:
     """Write structured project config file (config.yaml) preserving template order."""
     from deeplabcut.core.config.project_config import ProjectConfig

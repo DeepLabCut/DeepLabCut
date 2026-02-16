@@ -14,7 +14,6 @@ from abc import ABC, abstractmethod
 
 import torch
 import torch.nn as nn
-from omegaconf import DictConfig
 
 from deeplabcut.pose_estimation_pytorch.models.criterions import (
     BaseCriterion,
@@ -83,7 +82,7 @@ class BaseHead(ABC, nn.Module):
             )
 
         # TODO @deruyter92: decide on typed / plain dict
-        if isinstance(criterion, (dict, DictConfig)):
+        if isinstance(criterion, dict):
             if aggregator is None:
                 raise ValueError(
                     f"When multiple criterions are defined, a loss aggregator must "

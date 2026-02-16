@@ -20,7 +20,6 @@ from queue import Queue, Empty, Full
 import numpy as np
 import torch
 import torch.nn as nn
-from omegaconf import DictConfig
 
 import deeplabcut.pose_estimation_pytorch.post_processing.nms as nms
 import deeplabcut.pose_estimation_pytorch.runners.ctd as ctd
@@ -81,7 +80,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.preprocessor = preprocessor
         self.postprocessor = postprocessor
 
-        if isinstance(inference_cfg, (InferenceConfig, DictConfig)):
+        if isinstance(inference_cfg, InferenceConfig):
             self.inference_cfg = inference_cfg
         elif isinstance(inference_cfg, dict):
             self.inference_cfg = InferenceConfig.from_dict(inference_cfg)

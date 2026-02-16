@@ -18,7 +18,6 @@ from typing import Any, TypeVar, Callable
 import albumentations as A
 import numpy as np
 import torch
-from omegaconf import ListConfig
 
 from deeplabcut.pose_estimation_pytorch.data.image import load_image, top_down_crop
 from deeplabcut.pose_estimation_pytorch.data.utils import bbox_from_keypoints
@@ -257,7 +256,7 @@ class AugmentImage(Preprocessor):
         scales = context.get("scales", (1, 1))
         if isinstance(offsets, tuple):
             # TODO @deruyter92: decide on typed / plain list
-            if isinstance(new_offsets, (list, ListConfig)):
+            if isinstance(new_offsets, list):
                 updated_offsets = [
                     AugmentImage.update_offset(offsets, scales, new_offset)
                     for new_offset in new_offsets
@@ -276,7 +275,7 @@ class AugmentImage(Preprocessor):
                 updated_scales = AugmentImage.update_scale(scales, new_scales)
         else:
             # TODO @deruyter92: decide on typed / plain list
-            if isinstance(new_offsets, (list, ListConfig)):
+            if isinstance(new_offsets, list):
                 if not len(offsets) == len(new_offsets):
                     raise ValueError("Cannot rescale lists when not same length")
 

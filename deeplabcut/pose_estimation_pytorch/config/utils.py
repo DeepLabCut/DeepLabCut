@@ -14,8 +14,6 @@ from __future__ import annotations
 import copy
 from pathlib import Path
 
-from omegaconf import DictConfig, ListConfig
-
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.utils import auxiliaryfunctions
 
@@ -98,15 +96,15 @@ def replace_default_values(
     }
 
     config = copy.deepcopy(config)
-    if isinstance(config, (dict, DictConfig)):
+    if isinstance(config, dict):
         keys_to_update = list(config.keys())
-    elif isinstance(config, (list, ListConfig)):
+    elif isinstance(config, list):
         keys_to_update = range(len(config))
     else:
         raise ValueError(f"Config to update must be dict or list, found {type(config)}")
 
     for k in keys_to_update:
-        if isinstance(config[k], (list, ListConfig, dict, DictConfig)):
+        if isinstance(config[k], (list, dict)):
             config[k] = replace_default_values(
                 config[k],
                 num_bodyparts,
@@ -142,7 +140,7 @@ def update_config(config: dict, updates: dict, copy_original: bool = True) -> di
         config = copy.deepcopy(config)
 
     for k, v in updates.items():
-        if k in config and isinstance(config[k], (dict, DictConfig)) and isinstance(v, (dict, DictConfig)):
+        if k in config and isinstance(config[k], dict) and isinstance(v, dict):
             if k in ("optimizer", "scheduler") and config["type"] != v["type"]:
                 # if changing the optimizer or scheduler type, update all values
                 config[k] = v

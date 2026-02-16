@@ -18,7 +18,6 @@ import albumentations as A
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from omegaconf import DictConfig, ListConfig
 from tqdm import tqdm
 
 import deeplabcut.core.metrics as metrics
@@ -558,7 +557,7 @@ def evaluate_snapshot(
     if pcutoff is None:
         pcutoff = cfg.get("pcutoff", 0.6)
     # TODO @deruyter92: decide on typed / plain dict
-    elif isinstance(pcutoff, (dict, DictConfig)):
+    elif isinstance(pcutoff, dict):
         pcutoff = [
             pcutoff.get(bpt, 0.6)
             for bpt in eval_parameters.bodyparts + eval_parameters.unique_bpts
@@ -578,7 +577,7 @@ def evaluate_snapshot(
         "pcutoff": (
             ", ".join([str(v) for v in pcutoff])
             # TODO @deruyter92: decide on typed / plain list
-            if isinstance(pcutoff, (list, ListConfig))
+            if isinstance(pcutoff, list)
             else pcutoff
         ),
     }

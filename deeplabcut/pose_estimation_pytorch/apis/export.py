@@ -13,7 +13,8 @@ import copy
 from pathlib import Path
 
 import torch
-from omegaconf import DictConfig, OmegaConf
+
+from deeplabcut.core.config.config_mixin import ConfigMixin
 
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.data as dlc3_data
@@ -135,10 +136,10 @@ def export_model(
             if wipe_paths:
                 wipe_paths_from_model_config(model_cfg)
 
-            # Convert DictConfig to plain dict so torch.save doesn't pickle
-            # omegaconf types (which require weights_only=False to load)
-            if isinstance(model_cfg, DictConfig):
-                model_cfg = OmegaConf.to_container(model_cfg, resolve=True)
+            # Convert typed config to plain dict so torch.save doesn't pickle
+            # custom types (which require weights_only=False to load)
+            if isinstance(model_cfg, ConfigMixin):
+                model_cfg = model_cfg.to_dict()
 
             pose_weights = torch.load(snapshot.path, **load_kwargs)["model"]
             export_dict = dict(config=model_cfg, pose=pose_weights)

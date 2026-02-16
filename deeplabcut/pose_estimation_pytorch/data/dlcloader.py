@@ -19,8 +19,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import scipy.io as sio
-from omegaconf import OmegaConf, DictConfig
-
 from deeplabcut.core.config.project_config import ProjectConfig
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.core.engine import Engine
@@ -36,7 +34,7 @@ class DLCLoader(Loader):
 
     def __init__(
         self,
-        config: ProjectConfig | DictConfig | Path | str,
+        config: ProjectConfig | dict | Path | str,
         trainset_index: int = 0,
         shuffle: int = 0,
         modelprefix: str = "",
@@ -49,8 +47,8 @@ class DLCLoader(Loader):
             modelprefix: the modelprefix for the shuffle
         """
         provided_root_dir = Path(config).parent if isinstance(config, (str, Path)) else None
-        self._project_config: DictConfig = ProjectConfig.from_any(config).to_dictconfig()
-        self._project_root = provided_root_dir or OmegaConf.select(self._project_config, "project_path")
+        self._project_config: ProjectConfig = ProjectConfig.from_any(config)
+        self._project_root = provided_root_dir or self._project_config.project_path
         if self._project_root is None:
             raise ValueError(
                 "`config` must contain a `project_path` field."
@@ -87,7 +85,7 @@ class DLCLoader(Loader):
         self._resolutions = set()
 
     @property
-    def project_cfg(self) -> dict:
+    def project_cfg(self) -> ProjectConfig:
         """Returns: the configuration for the DeepLabCut project"""
         return self._project_config
 
@@ -167,7 +165,7 @@ class DLCLoader(Loader):
         Returns:
             An instance of the PoseDatasetParameters with the parameters set.
         """
-        crop_cfg = OmegaConf.select(self.model_cfg, "data.train.top_down_crop") or {}
+        crop_cfg = self.model_cfg.select("data.train.top_down_crop") or {}
         crop_w, crop_h = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
         crop_margin = crop_cfg.get("margin", 0)
         crop_with_context = crop_cfg.get("crop_with_context", True)

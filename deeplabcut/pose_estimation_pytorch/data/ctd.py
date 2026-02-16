@@ -17,7 +17,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from omegaconf import DictConfig, ListConfig
 
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
 from deeplabcut.pose_estimation_pytorch.data.snapshots import Snapshot
@@ -356,7 +355,7 @@ class CondFromFile(CondProvider):
         # Parse list and return
         if images is None:
             # TODO @deruyter92: decide on typed / plain list
-            if not isinstance(conditions, (list, ListConfig)):
+            if not isinstance(conditions, list):
                 raise ValueError(
                     f"Conditions are expected to be of type list when `images=None`, "
                     f"got {type(conditions)}."
@@ -371,7 +370,7 @@ class CondFromFile(CondProvider):
             return parsed
 
         # TODO @deruyter92: decide on typed / plain dict
-        if not isinstance(conditions, (dict, DictConfig)):
+        if not isinstance(conditions, dict):
             raise ValueError(
                 f"Conditions are expected to be of type dict, got {type(conditions)}. "
                 "They should be in the format 'labeled-data/video-0/img0000.png' -> "

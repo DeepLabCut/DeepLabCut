@@ -16,7 +16,6 @@ import warnings
 
 import albumentations as A
 import numpy as np
-from omegaconf import DictConfig, OmegaConf
 
 from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 import deeplabcut.core.config as config_utils
@@ -58,7 +57,7 @@ class Loader(ABC):
         self,
         project_root: str | Path,
         image_root: str | Path,
-        model_config: PoseConfig | DictConfig | Path | str | None = None,
+        model_config: PoseConfig | dict | Path | str | None = None,
         model_config_path: Path | str | None = DEPRECATED_ARGUMENT,
     ) -> None:
         """
@@ -67,7 +66,7 @@ class Loader(ABC):
         Args:
             project_root: The root directory of the project.
             image_root: The root directory of the images.
-            model_config (Path | str | PoseConfig | DictConfig): 
+            model_config (Path | str | PoseConfig | dict): 
                 The pose model configuration. Can be a path to a YAML file, a PoseConfig object, or a dictionary.
             (model_config_path: The path to the pose model configuration. Deprecated, use `model_config` instead.)
         """
@@ -92,12 +91,12 @@ class Loader(ABC):
                 )
             return model_config
         model_config = _resolve_legacy_args(model_config, model_config_path)    
-        self.model_cfg: DictConfig = PoseConfig.from_any(model_config).to_dictconfig()
+        self.model_cfg: PoseConfig = PoseConfig.from_any(model_config)
 
-        def _infer_model_config_path(model_config: PoseConfig | DictConfig | Path | str) -> Path:
+        def _infer_model_config_path(model_config: PoseConfig | dict | Path | str) -> Path:
             """Resolve the pose config path. Either the input is a path, or it is specified in `metadata.pose_config_path` field."""
             provided_path = Path(model_config) if isinstance(model_config, (Path, str)) else None
-            specified_path = OmegaConf.select(self.model_cfg, "metadata.pose_config_path")
+            specified_path = self.model_cfg.select("metadata.pose_config_path")
             model_config_path = provided_path or specified_path
             if model_config_path is None:
                 raise ValueError("`model_config` must contain a `metadata.pose_config_path` field.")
@@ -144,8 +143,9 @@ class Loader(ABC):
         Args:
             updates: the items to update in the model configuration
         """
-        self.model_cfg = config.update_config_by_dotpath(self.model_cfg, updates)
-        config_utils.write_config(self.model_config_path, self.model_cfg)
+        cfg_dict = config.update_config_by_dotpath(self.model_cfg.to_dict(), updates)
+        self.model_cfg = PoseConfig.from_dict(cfg_dict)
+        self.model_cfg.to_yaml(self.model_config_path)
 
     @abstractmethod
     def load_data(self, mode: str = "train") -> dict[str, list[dict]]:
