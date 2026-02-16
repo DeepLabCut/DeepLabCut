@@ -1,143 +1,146 @@
 [build-system]
-requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+requires = [ "setuptools>=61" ]
 
 [project]
 name = "deeplabcut"
 version = "3.0.0rc13"
-authors = [
-    { name = "M-Lab of Adaptive Intelligence", email = "mackenzie@deeplabcut.org" },
-    { name = "Mathis Group for Computational Neuroscience and AI", email = "alexander@deeplabcut.org" },
-]
 description = "Markerless pose-estimation of user-defined features with deep learning"
 readme = { file = "README.md", content-type = "text/markdown" }
-requires-python = ">=3.10"
-license = { text = "LGPL-3.0-or-later" }
 keywords = [
-    "animal behavior",
-    "markerless tracking",
-    "neuroscience",
-    "pose estimation",
+  "animal behavior",
+  "markerless tracking",
+  "neuroscience",
+  "pose estimation",
 ]
+license = { text = "LGPL-3.0-or-later" }
+requires-python = ">=3.10"
 classifiers = [
-    "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
-    "Natural Language :: English",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Topic :: Scientific/Engineering :: Image Processing",
-    "Topic :: Scientific/Engineering",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Scientific/Engineering :: Image Processing",
 ]
-
 dependencies = [
-    "albumentations<=1.4.3",
-    "dlclibrary>=0.0.7",
-    "einops",
-    "filterpy>=1.4.4",
-    "ruamel.yaml>=0.15.0",
-    "imgaug>=0.4.0",
-    "imageio-ffmpeg",
-    "numba>=0.54",
-    "matplotlib>=3.3,<3.9,!=3.7.0,!=3.7.1",
-    "networkx>=2.6",
-    "numpy>=1.18.5,<2.0.0",
-    "pandas[hdf5,performance]>=2.2,<3.0",
-    "scikit-image>=0.17",
-    "scikit-learn>=1.0",
-    "scipy>=1.9",
-    "statsmodels>=0.11",
-    "huggingface_hub>=0.23",
-    "timm",
-    "torch>=2.0.0",
-    "torchvision",
-    "tqdm",
-    "pycocotools",
-    "pyyaml",
-    "Pillow>=7.1",
-    "tables>3.8.0",
-    "h5py>=3.15.1; platform_system == 'Darwin'",
+  "albumentations<=1.4.3",
+  "dlclibrary>=0.0.7",
+  "einops",
+  "filterpy>=1.4.4",
+  "h5py>=3.15.1; platform_system=='Darwin'",
+  "huggingface-hub>=0.23",
+  "imageio-ffmpeg",
+  "imgaug>=0.4",
+  "matplotlib>=3.3,<3.9,!=3.7,!=3.7.1",
+  "networkx>=2.6",
+  "numba>=0.54",
+  "numpy>=1.18.5,<2",
+  "pandas[hdf5,performance]>=2.2,<3",
+  "pillow>=7.1",
+  "pycocotools",
+  "pyyaml",
+  "ruamel-yaml>=0.15",
+  "scikit-image>=0.17",
+  "scikit-learn>=1",
+  "scipy>=1.9",
+  "statsmodels>=0.11",
+  "tables>3.8",
+  "timm",
+  "torch>=2",
+  "torchvision",
+  "tqdm",
 ]
-
+[[project.authors]]
+name = "M-Lab of Adaptive Intelligence"
+email = "mackenzie@deeplabcut.org"
+[[project.authors]]
+name = "Mathis Group for Computational Neuroscience and AI"
+email = "alexander@deeplabcut.org"
 [project.optional-dependencies]
 gui = [
-    # Avoid 6.10.0 only on Linux x86_64 (fails for older glib versions)
-    "pyside6<6.10.0; platform_system == 'Linux' and platform_machine == 'x86_64'",
-    "pyside6; platform_system != 'Linux' or platform_machine != 'x86_64'",
-    "qdarkstyle==3.1",
-    "napari-deeplabcut>=0.2.1.6",
+  "napari-deeplabcut>=0.2.1.6",
+  "pyside6; platform_system!='Linux' or platform_machine!='x86_64'",
+  # Avoid 6.10.0 only on Linux x86_64 (fails for older glib versions)
+  "pyside6<6.10; platform_system=='Linux' and platform_machine=='x86_64'",
+  "qdarkstyle==3.1",
 ]
-openvino = ["openvino-dev==2022.1.0"]
+openvino = [ "openvino-dev==2022.1" ]
 docs = [
-    "jupyter-book==1.0.4.post1",
-    "sphinxcontrib-mermaid",
+  "jupyter-book==1.0.4.post1",
+  "sphinxcontrib-mermaid",
 ]
 tf = [
-    # !!! TensorFlow is not supported on Windows with Python >= 3.11 
-    "tensorflow>=2.0,<=2.10; platform_system == 'Windows' and python_version < '3.11'",
-    "tensorflow>=2.0,<2.12; platform_system == 'Linux' and python_version < '3.11'",
-    "tensorflow>=2.12.0; platform_system == 'Linux' and python_version >= '3.11'",
-    "tensorflow-macos>=2.0,<2.12; platform_system == 'Darwin' and python_version < '3.11'",
-    "tensorflow-macos>=2.12.0; platform_system == 'Darwin' and python_version >= '3.11'",
-    "tensorflow-io-gcs-filesystem==0.31.0; platform_system == 'Windows' and python_version<'3.11'",
-    "tensorflow-io-gcs-filesystem>0.31.0; platform_system != 'Windows'",
-    "tf-keras; platform_system!='Windows'",
-    "tensorpack>=0.11",
-    "tf_slim>=1.1.0",
+  # !!! TensorFlow is not supported on Windows with Python >= 3.11
+  "tensorflow>=2,<=2.10; platform_system=='Windows' and python_version<'3.11'",
+  "tensorflow>=2,<2.12; platform_system=='Linux' and python_version<'3.11'",
+  "tensorflow>=2.12; platform_system=='Linux' and python_version>='3.11'",
+  "tensorflow-io-gcs-filesystem==0.31; platform_system=='Windows' and python_version<'3.11'",
+  "tensorflow-io-gcs-filesystem>0.31; platform_system!='Windows'",
+  "tensorflow-macos>=2,<2.12; platform_system=='Darwin' and python_version<'3.11'",
+  "tensorflow-macos>=2.12; platform_system=='Darwin' and python_version>='3.11'",
+  "tensorpack>=0.11",
+  "tf-keras; platform_system!='Windows'",
+  "tf-slim>=1.1",
 ]
 apple_mchips = [
-    "tensorflow-macos; platform_system == 'Darwin'",
-    "tf-keras; platform_system == 'Darwin'",
-    "tensorflow-metal; platform_system == 'Darwin'",
-    "tensorpack>=0.11; platform_system == 'Darwin'",
-    "tf_slim>=1.1.0; platform_system == 'Darwin'",
+  "tensorflow-macos; platform_system=='Darwin'",
+  "tensorflow-metal; platform_system=='Darwin'",
+  "tensorpack>=0.11; platform_system=='Darwin'",
+  "tf-keras; platform_system=='Darwin'",
+  "tf-slim>=1.1; platform_system=='Darwin'",
 ]
-modelzoo = ["huggingface_hub"]
-wandb = ["wandb"]
-
-[dependency-groups]
-dev = [
-    "pytest",
-    "pytest-cov",
-    "coverage",
-    "ruff",
-]
-
-[[tool.uv.dependency-metadata]]
-name = "openvino-dev"
-version = "2022.1.0"
-requires-dist = []
-
-[tool.uv.pip]
-torch-backend = "auto"
-
+modelzoo = [ "huggingface-hub" ]
+wandb = [ "wandb" ]
+[project.scripts]
+dlc = "deeplabcut.__main__:main"
 [project.urls]
 Homepage = "https://www.deeplabcut.org"
 Repository = "https://github.com/DeepLabCut/DeepLabCut"
 Documentation = "https://deeplabcut.github.io/DeepLabCut/README.html"
 
-[project.scripts]
-dlc = "deeplabcut.__main__:main"
-
-[tool.setuptools.packages.find]
-include = ["deeplabcut*"]
-exclude = ["tests*", "docs*", "examples*"]
+[dependency-groups]
+dev = [
+  "coverage",
+  "pytest",
+  "pytest-cov",
+  "ruff",
+]
 
 [tool.setuptools]
 include-package-data = false
-
 [tool.setuptools.package-data]
-"*" = ["*.yaml", "*.yml", "*.json", "*.qss", "*.png", "*.md", "*.sh"]
+"*" = [ "*.yaml", "*.yml", "*.json", "*.qss", "*.png", "*.md", "*.sh" ]
+[tool.setuptools.packages.find]
+include = [ "deeplabcut*" ]
+exclude = [ "tests*", "docs*", "examples*" ]
+
+[[tool.uv.dependency-metadata]]
+name = "openvino-dev"
+version = "2022.1.0"
+requires-dist = []
+[tool.uv.pip]
+torch-backend = "auto"
 
 [tool.ruff]
-line-length = 88
 target-version = "py310"
-
+line-length = 88
 [tool.ruff.lint]
-select = ["E", "F", "I"]
+select = [ "E", "F", "I" ]
 ignore = [
-    "E501",  # line-too-long
+  "E501", # line-too-long
 ]
 
+[tool.pyproject-fmt]
+max_supported_python = "3.12"
+generate_python_version_classifiers = true
+# Avoid collapsing tables to field.key = value format (less readable)
+table_format = "long"
+
 [tool.pytest.ini_options]
-markers = ["require_models: mark test as requiring models to run"]
+markers = [ "require_models: mark test as requiring models to run" ]
