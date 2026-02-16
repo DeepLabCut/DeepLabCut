@@ -25,7 +25,7 @@ from deeplabcut.core.config.versioning import CURRENT_CONFIG_VERSION
 
 
 @dataclass(config=ConfigDict(extra="forbid"))
-class ProjectConfig(ConfigMixin):
+class ProjectConfig(MigrationMixin, ConfigMixin):
     """Complete project configuration.
 
     Mirrors the structure of the project config.yaml (and metadata in pose config).
