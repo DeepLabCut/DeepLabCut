@@ -32,11 +32,14 @@ _MIGRATIONS: Dict[tuple[int, int], Callable[[dict], dict]] = {}
 
 def register_migration(from_version: int, to_version: int):
     """Decorator to register a migration function.
-    
     Args:
-        from_version: The source version number
-        to_version: The target version number (must be from_version + 1)
-    
+        from_version: The source version number.
+        to_version: The target version number (from_version ± 1 by convention).
+
+    Raises:
+        ValueError: If a migration for the same (from, to) pair is already
+            registered.
+
     Example:
         @register_migration(1, 2)
         def migrate_v1_to_v2(config: dict) -> dict:
@@ -44,13 +47,21 @@ def register_migration(from_version: int, to_version: int):
             return config
     """
     def decorator(func: Callable[[dict], dict]) -> Callable[[dict], dict]:
+        key = (from_version, to_version)
+        if key in _MIGRATIONS:
+            raise ValueError(
+                f"Duplicate migration registered for {key}. "
+                f"Existing: {_MIGRATIONS[key].__wrapped__.__qualname__}, "
+                f"new: {func.__qualname__}"
+            )
+
         @wraps(func)
         def wrapper(config: dict) -> dict:
-            result = func(config.copy())  # Don't mutate input
+            result = func(config.copy())  # Don't mutate caller's dict
             result["config_version"] = to_version
             return result
-        
-        _MIGRATIONS[(from_version, to_version)] = wrapper
+
+        _MIGRATIONS[key] = wrapper
         return wrapper
     return decorator
 
@@ -93,8 +104,8 @@ def migrate_config(config: dict, target_version: int = CURRENT_CONFIG_VERSION) -
             f"Target version {target_version} exceeds current version {CURRENT_CONFIG_VERSION}"
         )
     
-    # Chain migrations one step at a time (e.g. 0→1→2 or 3→2→1)
-    migrated = config.copy()
+    # Chain migrations one step at a time (e.g. 0→1→2 or 3→2→1).
+    migrated = config
     step = 1 if target_version > current_version else -1
     for v in range(current_version, target_version, step):
         next_v = v + step
@@ -115,25 +126,17 @@ def migrate_config(config: dict, target_version: int = CURRENT_CONFIG_VERSION) -
 
 @register_migration(0, 1)
 def migrate_v0_to_v1(config: dict) -> dict:
-    """Migrate from unversioned/legacy config (v0) to v1.
-    """
-    normalized = config.copy()
-    
+    """Migrate from unversioned/legacy config (v0) to v1."""
     # TODO @deruyter92 2026-01-30: Migration logic goes here.
     # e.g. for normalizing field bodyparts from str "MULTI!" to list[str]
-    
-    return normalized
+    return config
 
 
 @register_migration(1, 0)
 def migrate_v1_to_v0(config: dict) -> dict:
-    """Migrate from v1 to v0 (legacy format).
-    """
-    normalized = config.copy()
-
+    """Migrate from v1 to v0 (legacy format)."""
     # TODO @deruyter92 2026-01-30: Migration logic goes here.
-
-    return normalized
+    return config
 
 
 # ============================================================================
@@ -146,6 +149,6 @@ def migrate_v1_to_v0(config: dict) -> dict:
 #     
 #     Describe what changes in this version.
 #     """
-#     normalized = config.copy()
+#     # The wrapper passes a copy, so mutate config directly.
 #     # Apply transformations...
-#     return normalized
+#     return config

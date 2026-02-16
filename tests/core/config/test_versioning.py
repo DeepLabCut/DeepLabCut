@@ -21,7 +21,6 @@ from deeplabcut.core.config.versioning import (
     register_migration,
 )
 from deeplabcut.core.config.migration_mixin import MigrationMixin
-import deeplabcut.core.config.migration_mixin as migration_mixin_module
 
 
 # -----------------------------------------------------------------------------
@@ -186,7 +185,6 @@ def test_config_with_legacy_field_raises_without_migration(monkeypatch, ToyConfi
     """Initializing ProjectConfig with the legacy (wrong) field raises validation error.
     """
     monkeypatch.setattr(versioning, "CURRENT_CONFIG_VERSION", _TOY_VERSION_OLD)
-    monkeypatch.setattr(migration_mixin_module, "CURRENT_CONFIG_VERSION", _TOY_VERSION_OLD)
     config_with_legacy_field = {
         "config_version": _TOY_VERSION_OLD,
         "this_fieldname_is_not_in_project_config": "some_value",
@@ -198,19 +196,21 @@ def test_config_after_migration_accepts_renamed_field(monkeypatch, ToyConfigWith
     """Registering a migration renames the wrong field so ProjectConfig accepts the config.
     """
     monkeypatch.setattr(versioning, "CURRENT_CONFIG_VERSION", _TOY_VERSION_NEW)
-    monkeypatch.setattr(migration_mixin_module, "CURRENT_CONFIG_VERSION", _TOY_VERSION_NEW)
     config_with_legacy_field = {
         "config_version": _TOY_VERSION_OLD,
         "this_fieldname_is_not_in_project_config": "some_value",
     }
 
+    # Replace the existing toy (98→99) migration with one that renames
+    # the unknown field to a field the dataclass actually declares.
+    del versioning._MIGRATIONS[(_TOY_VERSION_OLD, _TOY_VERSION_NEW)]
+
     @register_migration(_TOY_VERSION_OLD, _TOY_VERSION_NEW)
     def _toy_migrate_legacy_to_valid_field(config: dict) -> dict:
         """Test-only: rename legacy field -> valid_project_config_field."""
-        out = config.copy()
-        if "this_fieldname_is_not_in_project_config" in out:
-            out["valid_project_config_field"] = out.pop("this_fieldname_is_not_in_project_config")
-        return out
+        if "this_fieldname_is_not_in_project_config" in config:
+            config["valid_project_config_field"] = config.pop("this_fieldname_is_not_in_project_config")
+        return config
 
     cfg = ToyConfigWithValidField(**config_with_legacy_field)
     assert cfg.valid_project_config_field == "some_value"
