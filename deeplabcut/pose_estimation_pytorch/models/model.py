@@ -13,7 +13,6 @@ from __future__ import annotations
 import copy
 import logging
 from pathlib import Path
-from omegaconf import DictConfig
 import torch
 import torch.nn as nn
 
@@ -41,7 +40,7 @@ class PoseModel(nn.Module):
 
     def __init__(
         self,
-        cfg: ModelConfig | DictConfig | dict | Path | str,
+        cfg: ModelConfig | dict | Path | str,
         backbone: BaseBackbone,
         heads: dict[str, BaseHead],
         neck: BaseNeck | None = None,
@@ -54,7 +53,7 @@ class PoseModel(nn.Module):
             neck: neck network architecture (default is None). Defaults to None.
         """
         super().__init__()
-        self.cfg: DictConfig = ModelConfig.from_any(cfg).to_dictconfig()
+        self.cfg: ModelConfig = ModelConfig.from_any(cfg)
         self.backbone = backbone
         self.heads = nn.ModuleDict(heads)
         self.neck = neck

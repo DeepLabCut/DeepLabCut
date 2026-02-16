@@ -81,7 +81,7 @@ class BaseHead(ABC, nn.Module):
             raise ValueError(f"Could not parse ``weight_init`` parameter: {weight_init}.")
 
         # TODO @deruyter92: decide on typed / plain dict
-        if isinstance(criterion, (dict, DictConfig)):
+        if isinstance(criterion, dict):
             if aggregator is None:
                 raise ValueError("When multiple criterions are defined, a loss aggregator must also be given")
         else:
