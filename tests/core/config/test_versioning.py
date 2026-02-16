@@ -95,8 +95,9 @@ def test_migrate_config_target_exceeds_current_raises(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
-def _allow_migrate_to_toy_new(monkeypatch):
-    """Allow target_version=99 for tests that use the toy v98<->v99 migrations."""
+def _isolated_toy_migration(monkeypatch):
+    """Isolate each test from global migration registry changes."""
+    monkeypatch.setattr(versioning, "_MIGRATIONS", versioning._MIGRATIONS.copy())
     monkeypatch.setattr(versioning, "CURRENT_CONFIG_VERSION", _TOY_VERSION_NEW)
 
 
