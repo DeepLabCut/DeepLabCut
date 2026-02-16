@@ -106,10 +106,10 @@ Documentation = "https://deeplabcut.github.io/DeepLabCut/README.html"
 
 [dependency-groups]
 dev = [
+  "black",
   "coverage",
   "pytest",
   "pytest-cov",
-  "ruff",
 ]
 
 [tool.setuptools]
