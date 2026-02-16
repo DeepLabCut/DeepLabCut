@@ -44,14 +44,13 @@ def register_migration(from_version: int, to_version: int):
             return config
     """
     def decorator(func: Callable[[dict], dict]) -> Callable[[dict], dict]:
-        _MIGRATIONS[(from_version, to_version)] = func
-        
         @wraps(func)
         def wrapper(config: dict) -> dict:
             result = func(config.copy())  # Don't mutate input
             result["config_version"] = to_version
             return result
         
+        _MIGRATIONS[(from_version, to_version)] = wrapper
         return wrapper
     return decorator
 
@@ -94,18 +93,19 @@ def migrate_config(config: dict, target_version: int = CURRENT_CONFIG_VERSION) -
             f"Target version {target_version} exceeds current version {CURRENT_CONFIG_VERSION}"
         )
     
-    # Apply migrations sequentially
+    # Chain migrations one step at a time (e.g. 0→1→2 or 3→2→1)
     migrated = config.copy()
-    migration_key = (current_version, target_version)
-    if migration_key not in _MIGRATIONS:
-        raise ValueError(
-            f"Missing migration from version {current_version} to {target_version}. "
-            f"Available migrations: {list(_MIGRATIONS.keys())}"
-        )
-    
-    migration_func = _MIGRATIONS[migration_key]
-    migrated = migration_func(migrated)
-    
+    step = 1 if target_version > current_version else -1
+    for v in range(current_version, target_version, step):
+        next_v = v + step
+        key = (v, next_v)
+        if key not in _MIGRATIONS:
+            raise ValueError(
+                f"Missing migration from version {v} to {next_v}. "
+                f"Available migrations: {list(_MIGRATIONS.keys())}"
+            )
+        migrated = _MIGRATIONS[key](migrated)
+
     return migrated
 
 
