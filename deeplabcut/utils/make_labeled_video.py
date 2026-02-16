@@ -340,7 +340,7 @@ def CreateVideoSlow(
     writer = FFMpegWriter(fps=outputframerate, codec="h264")
     with writer.saving(fig, videooutname, dpi=dpi), np.errstate(invalid="ignore"):
         for index in trange(min(nframes, len(Dataframe))):
-            imagename = tmpfolder + "/file" + str(index).zfill(nframes_digits) + ".png"
+            imagename = Path(tmpfolder) / f"file{index:0{nframes_digits}d}.png"
             image = img_as_ubyte(clip.load_frame())
             if index in Index:  # then extract the frame!
                 if cropping and displaycropped:
@@ -868,6 +868,8 @@ def proc_video(
     videofolder = Path(video).parent
     if destfolder is None:
         destfolder = videofolder  # where your folder with videos is.
+    else:
+        destfolder = Path(destfolder)
 
     if pcutoff is None:
         pcutoff = cfg["pcutoff"]
@@ -883,16 +885,14 @@ def proc_video(
         DLCscorerlegacy = "DLC_" + Path(init_weights).stem
 
     if filtered:
-        videooutname1 = os.path.join(vname + DLCscorer + "filtered_labeled.mp4")
-        videooutname2 = os.path.join(vname + DLCscorerlegacy + "filtered_labeled.mp4")
+        videooutname1 = destfolder / f"{vname}{DLCscorer}filtered_labeled.mp4"
+        videooutname2 = destfolder / f"{vname}{DLCscorerlegacy}filtered_labeled.mp4"
     else:
-        videooutname1 = os.path.join(vname + DLCscorer + "_labeled.mp4")
-        videooutname2 = os.path.join(vname + DLCscorerlegacy + "_labeled.mp4")
+        videooutname1 = destfolder / f"{vname}{DLCscorer}_labeled.mp4"
+        videooutname2 = destfolder / f"{vname}{DLCscorerlegacy}_labeled.mp4"
 
-    if (
-        os.path.isfile(videooutname1) or os.path.isfile(videooutname2)
-    ) and not overwrite:
-        print("Labeled video {} already created.".format(vname))
+    if (videooutname1.is_file() or videooutname2.is_file()) and not overwrite:
+        print(f"Labeled video {vname} already created.")
         return True
     else:
         print("Loading {} and data.".format(video))
@@ -1068,7 +1068,7 @@ def create_video(
 
     clip = vp(
         fname=video,
-        sname=output_path,
+        sname=str(output_path),
         codec=codec,
         sw=bbox[1] - bbox[0] if display_cropped else "",
         sh=bbox[3] - bbox[2] if display_cropped else "",

@@ -40,6 +40,14 @@ def get_yaml_loader() -> YAML:
 def get_yaml_dumper() -> YAML:
     """Get a ruamel.yaml YAML handler with representers for Enum and Path objects."""
     yaml = YAML(typ="rt", pure=True)
+
+    # Use a very large width so long strings (e.g., file paths or keys with spaces)
+    # are kept on a single line instead of being wrapped, which can otherwise cause
+    # them to be emitted as complex keys. See also:
+    # https://stackoverflow.com/questions/31197268/pyyaml-yaml-dump-produces-complex-key-for-string-key-122-chars/31199123#31199123
+    # See PR https://github.com/DeepLabCut/DeepLabCut/pull/3140 for more details.
+    yaml.width = 1_000_000
+
     # Auto-serialize Path objects as strings
     yaml.representer.add_multi_representer(
         PurePath,

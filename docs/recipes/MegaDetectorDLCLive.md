@@ -102,7 +102,7 @@ We encourage you to try out and experiment on your camera trap or other animal i
 
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661854010041-5RQGQTRSTKUDYU9KSTIE/foxGeneva.png?format=750ww" width="400" title="DLC" alt="DLC" align="center" vspace = "15">
 
-Or these lil' cuties 🐶🐶🙀🐶 outside a restaurant, from the [Twitter meme](https://twitter.com/standardpuppies/status/1563188163962515457?s=21&t=f2kM2HoUygyLmmAH7Ho-HQ).
+Or these lil' cuties 🐶🐶🙀🐶 outside a restaurant.
 
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661853654276-WEA4UUD7I1VEGHXSMIXE/pupscat.png?format=300w" width="400" title="DLC" alt="DLC" align="center" vspace = "15">
 
