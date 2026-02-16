@@ -183,12 +183,18 @@ def update_config_by_dotpath(
             config[key] = copy.deepcopy(value)
             continue
 
-        # Navigate to nested location
+        # Navigate to nested location, skipping updates where a parent is None
+        # (None means the section doesn't exist and shouldn't be implicitly created)
         current = config
+        skip = False
         for part in parts[:-1]:
             if part not in current or current[part] is None:
-                current[part] = {}
+                skip = True
+                break
             current = current[part]
+
+        if skip:
+            continue
 
         # Set the value at final location
         current[parts[-1]] = copy.deepcopy(value)
