@@ -653,11 +653,12 @@ def evaluate_snapshot(
 
         df_ground_truth = ensure_multianimal_df_format(loader.df)
 
+        # TODO @deruyter92: This pattern should be refactored throughout the codebase
+        # it is reading a config value that is supposed to be missing / None.
         bboxes_cutoff = (
-            loader.model_cfg.get("detector", {})
-            .get("model", {})
-            .get("box_score_thresh", 0.6)
-        )
+            (loader.model_cfg.get("detector") or {})
+            .get("model") or {}
+        ).get("box_score_thresh", 0.6)
 
         for mode in ["train", "test"]:
             df_combined = predictions[mode].merge(

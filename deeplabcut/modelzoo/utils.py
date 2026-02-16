@@ -161,8 +161,10 @@ def get_conversion_table(cfg: dict | str | Path, super_animal: str) -> Conversio
     if isinstance(cfg, (str, Path)):
         cfg = read_config(str(cfg))
 
-    conversion_tables = cfg.get("SuperAnimalConversionTables", {})
-    if conversion_tables is None or super_animal not in conversion_tables:
+    # TODO @deruyter92: This pattern should be refactored throughout the codebase
+    # it is reading a config value that is supposed to be missing / None.
+    conversion_tables = cfg.get("SuperAnimalConversionTables") or {}
+    if not conversion_tables or super_animal not in conversion_tables:
         raise ValueError(
             f"No conversion table defined in the project config for {super_animal}."
             "Call deeplabcut.modelzoo.create_conversion_table to create one."

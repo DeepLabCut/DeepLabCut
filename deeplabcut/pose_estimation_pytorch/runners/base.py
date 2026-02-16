@@ -202,7 +202,10 @@ def fix_snapshot_metadata(path: str | Path) -> None:
         path: The path of the snapshot to fix.
     """
     snapshot = torch.load(path, map_location="cpu", weights_only=False)
-    metrics = snapshot.get("metadata", {}).get("metrics")
+
+    # TODO @deruyter92: This pattern should be refactored throughout the codebase
+    # it is reading a config value that is supposed to be missing / None.
+    metrics = (snapshot.get("metadata") or {}).get("metrics")
     if metrics is not None:
         snapshot["metadata"]["metrics"] = {k: float(v) for k, v in metrics.items()}
 

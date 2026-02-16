@@ -284,8 +284,10 @@ class MAImgaugPoseDataset(BasePoseDataset):
                 opt = {}
             return opt
 
-        cfg_cnt = cfg.get("contrast", {})
-        cfg_cnv = cfg.get("convolution", {})
+        # TODO @deruyter92: This pattern should be refactored throughout the codebase
+        # it is reading a config value that is supposed to be missing / None.
+        cfg_cnt = cfg.get("contrast") or {}
+        cfg_cnv = cfg.get("convolution") or {}
 
         contrast_aug = ["histeq", "clahe", "gamma", "sigmoid", "log", "linear"]
         for aug in contrast_aug:

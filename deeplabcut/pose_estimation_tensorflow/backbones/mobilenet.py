@@ -172,8 +172,10 @@ def mobilenet_base(  # pylint: disable=invalid-name
         raise ValueError("multiplier is not greater than zero.")
 
     # Set conv defs defaults and overrides.
-    conv_defs_defaults = conv_defs.get("defaults", {})
-    conv_defs_overrides = conv_defs.get("overrides", {})
+    # TODO @deruyter92: This pattern should be refactored throughout the codebase
+    # it is reading a config value that is supposed to be missing / None.
+    conv_defs_defaults = conv_defs.get("defaults") or {}
+    conv_defs_overrides = conv_defs.get("overrides") or {}
     if use_explicit_padding:
         conv_defs_overrides = copy.deepcopy(conv_defs_overrides)
         conv_defs_overrides[(slim.conv2d, slim.separable_conv2d)] = {"padding": "VALID"}
