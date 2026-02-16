@@ -18,8 +18,7 @@ from enum import Enum
 from pathlib import Path
 
 from deeplabcut.core.config.config_mixin import ConfigMixin
-from deeplabcut.core.config.migration_mixin import MigrationMixin
-from deeplabcut.core.config.versioning import CURRENT_CONFIG_VERSION
+from deeplabcut.core.config.versioning import CURRENT_CONFIG_VERSION, MigrationMixin
 from deeplabcut.core.config.project_config import ProjectConfig
 from deeplabcut.pose_estimation_pytorch.config.data import DataConfig
 from deeplabcut.pose_estimation_pytorch.config.training import TrainSettingsConfig

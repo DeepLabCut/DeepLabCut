@@ -17,8 +17,12 @@ latest by applying all intermediate migrations in sequence. Downgrade migrations
 can be registered for specific version pairs when backward compatibility is needed.
 """
 
-from typing import Callable, Dict
+from typing import Any, Callable, Dict, Self
+from dataclasses import fields
 from functools import wraps
+
+from pydantic import model_validator
+from pydantic_core import ArgsKwargs
 
 
 # Current configuration schema version
@@ -147,6 +151,43 @@ def migrate_v1_to_v0(config: dict) -> dict:
     """Migrate from v1 to v0 (legacy format)."""
     # TODO @deruyter92 2026-01-30: Migration logic goes here.
     return config
+
+
+# ============================================================================
+# MigrationMixin
+# ============================================================================
+
+
+class MigrationMixin:
+    """Migration mixin for configuration classes.
+
+    This mixin provides a method to migrate the configuration to the current version
+    before validation.
+    """
+    @model_validator(mode="wrap")
+    @classmethod
+    def migrate_then_validate(cls, data: Any, handler: Any) -> Self:
+        """Run migration before Pydantic's standard model validation.
+
+        Wraps the default validator: migrates raw dict/ArgsKwargs to current
+        config version, then delegates to handler for normal validation.
+        """
+        # If data is already an instance or not a dict, pass through
+        if isinstance(data, cls):
+            return data
+
+        # Convert to dictionary if ArgsKwargs is passed
+        if isinstance(data, ArgsKwargs):
+            names = [f.name for f in fields(cls)]
+            data = dict(
+                zip(names, data.args or []),
+                **(data.kwargs or {}),
+            )
+        if isinstance(data, dict):
+            data = migrate_config(
+                data, target_version=CURRENT_CONFIG_VERSION
+            )
+        return handler(data)
 
 
 # ============================================================================

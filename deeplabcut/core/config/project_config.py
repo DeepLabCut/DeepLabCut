@@ -20,8 +20,7 @@ from pydantic.dataclasses import dataclass
 from dataclasses import field
 
 from deeplabcut.core.config.config_mixin import ConfigMixin
-from deeplabcut.core.config.migration_mixin import MigrationMixin
-from deeplabcut.core.config.versioning import CURRENT_CONFIG_VERSION
+from deeplabcut.core.config.versioning import CURRENT_CONFIG_VERSION, MigrationMixin
 
 
 @dataclass(config=ConfigDict(extra="forbid"))
