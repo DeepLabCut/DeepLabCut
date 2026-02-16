@@ -2,15 +2,14 @@
 
 This page explains how to install **DeepLabCut-live-GUI** for interactive, real‑time pose estimation.
 
-We support various installation methods to fit different user preferences and workflows, including `uv` and `mamba`/`conda`.
+We support various installation methods, including `uv` and `mamba`/`conda`.
 
 ---
 
 ## System requirements
 
-## Supported OSes
+### OS support
 
-``````{toggle}
 `````{tab-set}
 ```{tab-item} Windows
 - PyTorch supported
@@ -26,17 +25,16 @@ We support various installation methods to fit different user preferences and wo
 - TensorFlow CPU-only
 ```
 `````
-``````
 
 ### Hardware requirements
 
-- Any compatible camera:
-  - USB webcam, OBS virtual camera -< OpenCV-compatible camera backends are supported by default
+- Any **compatible camera** (see *{ref}`file:dlclivegui-camera-support`*):
+  - USB webcam, OBS virtual camera → OpenCV-compatible cameras are supported by default
   - Basler
   - Gentl
   - Aravis
 - Optional but recommended:
-  - **GPU with CUDA** (for real‑time inference)
+  - **CUDA-capable GPU** (for real‑time inference)
   - NVIDIA drivers compatible with your PyTorch/TensorFlow version
 
 ```{note}
