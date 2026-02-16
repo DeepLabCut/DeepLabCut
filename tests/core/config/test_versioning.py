@@ -20,7 +20,7 @@ from deeplabcut.core.config.versioning import (
     migrate_config,
     register_migration,
 )
-from deeplabcut.core.config.migration_mixin import MigrationMixin
+from deeplabcut.core.config.versioning import MigrationMixin
 
 
 # -----------------------------------------------------------------------------
