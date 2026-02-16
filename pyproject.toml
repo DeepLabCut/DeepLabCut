@@ -32,6 +32,7 @@ dependencies = [
   "albumentations<=1.4.3",
   "dlclibrary>=0.0.7",
   "einops",
+  "filelock>=3.12,<3.16",
   "filterpy>=1.4.4",
   "h5py>=3.15.1; platform_system=='Darwin'",
   "huggingface-hub>=0.23",
