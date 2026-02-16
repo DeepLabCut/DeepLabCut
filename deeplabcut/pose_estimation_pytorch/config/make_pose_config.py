@@ -226,6 +226,9 @@ def make_pytorch_pose_config(
     # @TODO @deruyter92 2026-02-13: This is a temporary fix to allow backwards compatibility. 
     # This should be resolved by migrating to V1 project config.
     project_config.with_identity = project_config.identity
+    if project_config.bodyparts == "MULTI!":
+        project_config.bodyparts = project_config.multianimalbodyparts
+    project_config.unique_bodyparts = project_config.uniquebodyparts
     
     # Initialize PoseConfig as DictConfig
     if weight_init is not None:
