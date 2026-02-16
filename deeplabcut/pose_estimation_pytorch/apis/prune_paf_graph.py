@@ -288,7 +288,7 @@ def get_n_best_paf_graphs(
     order = order[np.isin(order, root_edges, invert=True)]
     best_edges = [root_edges]
     for length in lengths:
-        best_edges.append(root_edges + list(order[:length]))
+        best_edges.append(root_edges + order[:length].tolist())
 
     model.heads.bodypart.predictor.return_preds = return_preds
     return best_edges, dict(zip(existing_edges, scores))
