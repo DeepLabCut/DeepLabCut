@@ -81,12 +81,14 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self.preprocessor = preprocessor
         self.postprocessor = postprocessor
 
-        if isinstance(inference_cfg, InferenceConfig):
+        if isinstance(inference_cfg, (InferenceConfig, DictConfig)):
             self.inference_cfg = inference_cfg
         elif isinstance(inference_cfg, dict):
             self.inference_cfg = InferenceConfig.from_dict(inference_cfg)
         elif inference_cfg is None:
             self.inference_cfg = InferenceConfig()
+        else: 
+            raise ValueError(f"Invalid inference config: {inference_cfg}")
 
         if self.snapshot_path is not None and self.snapshot_path != "":
             self.load_snapshot(

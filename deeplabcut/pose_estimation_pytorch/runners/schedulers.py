@@ -13,7 +13,7 @@ from __future__ import annotations
 from typing import Any
 
 import torch
-from omegaconf import DictConfig, ListConfig
+from omegaconf import DictConfig, ListConfig, OmegaConf
 from torch.optim.lr_scheduler import _LRScheduler
 
 
@@ -82,8 +82,15 @@ def build_scheduler(
 
     parsed_params = {}
     for param_name, param in scheduler_cfg["params"].items():
-        # TODO @deruyter92: decide on typed / plain list
-        if isinstance(param, (list, ListConfig)):
+        # Convert omegaconf containers to plain Python types so that the
+        # scheduler state_dict (saved via torch.save) does not contain
+        # unpicklable omegaconf objects with _parent references.
+        # TODO @deruyter92: decide on typed / plain list / dict in upstream code
+        # Then this check can be removed.
+        if isinstance(param, (ListConfig, DictConfig)):
+            param = OmegaConf.to_container(param, resolve=True)
+
+        if isinstance(param, list):
             param = [_parse_scheduler_param(p, optimizer) for p in param]
         else:
             param = _parse_scheduler_param(param, optimizer)
