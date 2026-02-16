@@ -16,7 +16,6 @@ import warnings
 from pathlib import Path
 
 import numpy as np
-from omegaconf import OmegaConf, DictConfig
 
 from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.core.types import DEPRECATED_ARGUMENT
@@ -50,7 +49,7 @@ class COCOLoader(Loader):
     def __init__(
         self,
         project_root: str | Path,
-        model_config: PoseConfig | DictConfig | Path | str | None = None,
+        model_config: PoseConfig | dict | Path | str | None = None,
         train_json_filename: str = "train.json",
         test_json_filename: str = "test.json",
         model_config_path: str | Path | None = DEPRECATED_ARGUMENT,
@@ -86,7 +85,7 @@ class COCOLoader(Loader):
         if self._dataset_parameters is None:
             num_individuals, bodyparts = self.get_project_parameters(self.train_json)
 
-            crop_cfg = OmegaConf.select(self.model_cfg, "data.train.top_down_crop") or {}
+            crop_cfg = self.model_cfg.select("data.train.top_down_crop") or {}
             crop_w, crop_h = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
             crop_margin = crop_cfg.get("margin", 0)
             crop_with_context = crop_cfg.get("crop_with_context", True)
