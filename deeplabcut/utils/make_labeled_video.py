@@ -692,18 +692,20 @@ def create_labeled_video(
         )
         if model_config_path.exists():
             model_config = auxiliaryfunctions.read_plainconfig(str(model_config_path))
+            # TODO @deruyter92: This pattern should be refactored throughout the codebase
+            # it is reading a config value that is supposed to be missing / None.
             if (
-                model_config["train_settings"]
-                .get("weight_init", {})
+                (model_config["train_settings"].get("weight_init") or {})
                 .get("memory_replay", False)
             ):
                 superanimal_name = model_config["train_settings"]["weight_init"][
                     "dataset"
                 ]
             if bboxes_pcutoff is None:
+                # TODO @deruyter92: This pattern should be refactored throughout the codebase
+                # it is reading a config value that is supposed to be missing / None.
                 bboxes_pcutoff = (
-                    model_config.get("detector", {})
-                    .get("model", {})
+                    ((model_config.get("detector") or {}).get("model") or {})
                     .get("box_score_thresh", 0.6)
                 )
         else:
@@ -1342,12 +1344,15 @@ def create_video_with_all_detections(
             clip = vp(fname=video, sname=outputname, codec="mp4v")
             ny, nx = clip.height(), clip.width()
 
+            # TODO @deruyter92: This pattern should be refactored throughout the codebase
+            # it is reading a config value that is supposed to be missing / None.
             bboxes_pcutoff = (
-                metadata.get("data", {})
-                .get("pytorch-config", {})
-                .get("detector", {})
-                .get("model", {})
-                .get("box_score_thresh", 0.6)
+                (
+                    (
+                        ((metadata.get("data") or {}).get("pytorch-config") or {})
+                        .get("detector") or {}
+                    ).get("model") or {}
+                ).get("box_score_thresh", 0.6)
             )
             bboxes_color = (255, 0, 0)
 

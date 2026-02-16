@@ -70,7 +70,9 @@ class PropertyMeta(type):
     def __new__(cls, name, bases, attrs):
         if "properties" not in attrs:
             raise AttributeError(f"{name} must define a 'properties' dictionary.")
-        properties = attrs.get("properties", {})
+        # TODO @deruyter92: This pattern should be refactored throughout the codebase
+        # it is reading a config value that is supposed to be missing / None.
+        properties = attrs.get("properties") or {}
         for prop_name, (func, arg_func) in properties.items():
             attrs[prop_name] = class_property(func, arg_func)(lambda self: None)
         return super().__new__(cls, name, bases, attrs)

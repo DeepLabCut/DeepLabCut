@@ -169,8 +169,10 @@ def resize_and_random_crop(
     targets["scales"] = sx * scale_x, sy * scale_y
 
     # update annotations and context
-    anns = targets.get("annotations", {})
-    context = targets.get("context", {})
+    # TODO @deruyter92: This pattern should be refactored throughout the codebase
+    # it is reading a config value that is supposed to be missing / None.
+    anns = targets.get("annotations") or {}
+    context = targets.get("context") or {}
 
     kpt_scale = np.array([scale_x, scale_y])
     kpt_offset = np.array([offset_x, offset_y])

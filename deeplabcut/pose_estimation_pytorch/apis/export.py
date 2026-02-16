@@ -196,5 +196,7 @@ def wipe_paths_from_model_config(model_cfg: dict) -> None:
         model_cfg["train_settings"]["weight_init"] = None
     if "resume_training_from" in model_cfg:
         model_cfg["resume_training_from"] = None
-    if "resume_training_from" in model_cfg.get("detector", {}):
+    # TODO @deruyter92: This pattern should be refactored throughout the codebase
+    # it is reading a config value that is supposed to be missing / None.
+    if "resume_training_from" in (model_cfg.get("detector") or {}):
         model_cfg["detector"]["resume_training_from"] = None
