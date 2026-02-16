@@ -32,13 +32,14 @@ _MIGRATIONS: Dict[tuple[int, int], Callable[[dict], dict]] = {}
 
 def register_migration(from_version: int, to_version: int):
     """Decorator to register a migration function.
+
     Args:
-        from_version: The source version number.
-        to_version: The target version number (from_version ± 1 by convention).
+        from_version: The source version number (>= 0).
+        to_version: The target version number (>= 0, from_version ± 1 by convention).
 
     Raises:
-        ValueError: If a migration for the same (from, to) pair is already
-            registered.
+        ValueError: If version numbers are invalid or a migration for the same
+            (from, to) pair is already registered.
 
     Example:
         @register_migration(1, 2)
@@ -46,6 +47,15 @@ def register_migration(from_version: int, to_version: int):
             # Transform config from version 1 to version 2
             return config
     """
+    if from_version < 0 or to_version < 0:
+        raise ValueError(
+            f"Version numbers must be non-negative, got ({from_version}, {to_version})"
+        )
+    if from_version == to_version:
+        raise ValueError(
+            f"from_version and to_version must differ, got ({from_version}, {to_version})"
+        )
+
     def decorator(func: Callable[[dict], dict]) -> Callable[[dict], dict]:
         key = (from_version, to_version)
         if key in _MIGRATIONS:
