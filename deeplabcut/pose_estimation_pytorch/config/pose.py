@@ -120,7 +120,7 @@ class DetectorConfig(ConfigMixin):
 
 
 @dataclass(config=ConfigDict(extra="forbid"))
-class PoseConfig(ConfigMixin):
+class PoseConfig(MigrationMixin, ConfigMixin):
     """Main configuration class for DeepLabCut pose estimation models.
 
     This is the top-level configuration that brings together all the different
