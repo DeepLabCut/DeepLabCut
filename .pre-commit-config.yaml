@@ -4,9 +4,18 @@ repos:
     hooks:
       - id: check-added-large-files
       - id: check-yaml
+      - id: check-toml
       - id: end-of-file-fixer
       - id: name-tests-test
       - id: trailing-whitespace
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: v2.15.2
+    hooks:
+      - id: pyproject-fmt
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: v0.25
+    hooks:
+      - id: validate-pyproject
   - repo: https://github.com/PyCQA/isort
     rev: 5.12.0
     hooks:
