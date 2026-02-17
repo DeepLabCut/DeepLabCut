@@ -24,6 +24,7 @@ from omegaconf import OmegaConf, DictConfig
 from deeplabcut.core.config.project_config import ProjectConfig
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.core.engine import Engine
+from deeplabcut.pose_estimation_pytorch.config.pose import MethodType
 from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.snapshots import Snapshot
@@ -175,13 +176,16 @@ class DLCLoader(Loader):
         crop_w, crop_h = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
         crop_margin = crop_cfg.get("margin", 0)
         crop_with_context = crop_cfg.get("crop_with_context", True)
-
+        ctd_bbox_margin = None
+        if self.model_cfg["method"] == MethodType.CONDITIONAL_TOP_DOWN:
+            ctd_bbox_margin = self.model_cfg["data"].get("bbox_margin", 20)
         return PoseDatasetParameters(
             bodyparts=self.model_cfg["metadata"]["bodyparts"],
             unique_bpts=self.model_cfg["metadata"]["unique_bodyparts"],
             individuals=self.model_cfg["metadata"]["individuals"],
             with_center_keypoints=self.model_cfg.get("with_center_keypoints", False),
             color_mode=self.model_cfg.get("color_mode", "RGB"),
+            ctd_bbox_margin=ctd_bbox_margin,
             top_down_crop_size=(crop_w, crop_h),
             top_down_crop_margin=crop_margin,
             top_down_crop_with_context=crop_with_context,
