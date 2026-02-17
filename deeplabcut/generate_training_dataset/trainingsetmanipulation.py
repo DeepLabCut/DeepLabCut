@@ -572,6 +572,11 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
     AnnotationData = AnnotationData.reindex(
         bodyparts, axis=1, level=AnnotationData.columns.names.index("bodyparts")
     )
+    if AnnotationData.empty:
+        logging.warning(
+            "The annotated dataframe is empty after reindexing using config. "
+            "Hint: are bodyparts correctly listed in the configuration?"
+        )
     filename = os.path.join(trainingsetfolder_full, f'CollectedData_{cfg["scorer"]}')
     AnnotationData.to_hdf(filename + ".h5", key="df_with_missing", mode="w")
     AnnotationData.to_csv(filename + ".csv")  # human readable.
@@ -981,13 +986,9 @@ def create_training_dataset(
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 
     if superanimal_name != "":
-        # FIXME(niels): this is deprecated
-        supermodels = parse_available_supermodels()
-        posecfg_template = os.path.join(
-            dlc_root_path,
-            "pose_estimation_tensorflow",
-            "superanimal_configs",
-            supermodels[superanimal_name],
+        raise ValueError(
+            "Invalid argument superanimal_name. This functionality has been "
+            "removed. Please use modelzoo.build_weight_init() instead."
         )
 
     if posecfg_template:
@@ -1262,6 +1263,11 @@ def create_training_dataset(
                     )
                 )
                 if engine == Engine.TF:
+                    if weight_init is not None:
+                        raise ValueError(
+                            "Weight initialization is not supported for TensorFlow engine. "
+                            "Pretrained weights are automatically downloaded."
+                        )
                     items2change = {
                         "dataset": datafilename,
                         "engine": engine.aliases[0],
