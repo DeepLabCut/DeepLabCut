@@ -19,7 +19,8 @@ can be registered for specific version pairs when backward compatibility is need
 
 import copy
 import logging
-from typing import Any, Callable, Dict, Self
+from typing import Any, Callable, Dict
+from typing_extensions import Self
 from dataclasses import fields
 from functools import wraps
 
