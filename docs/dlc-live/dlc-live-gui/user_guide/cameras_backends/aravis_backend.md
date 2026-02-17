@@ -6,7 +6,7 @@ The Aravis backend provides support for GenICam-compatible cameras using the
 
 ```{important}
 Support for Aravis in the GUI is currently experimental.
-Please report issues or feedback to help improve this backend.
+Please report issues on GitHub to help improve this backend.
 ```
 
 ---
