@@ -3,8 +3,9 @@ from typing_extensions import Self
 from pathlib import Path
 from dataclasses import asdict, fields
 from enum import Enum
+from functools import wraps
 
-from omegaconf import OmegaConf, DictConfig
+from omegaconf import OmegaConf, DictConfig, ListConfig
 from pydantic import TypeAdapter
 from ruamel.yaml.comments import CommentedMap
 
@@ -121,6 +122,43 @@ class ConfigMixin:
         print_fn: Callable[[str], None] | None = None,
     ) -> None:
         pretty_print(config=self.to_dict(), indent=indent, print_fn=print_fn)
+
+
+def _to_plain(value):
+    """Convert a ConfigMixin, DictConfig, or ListConfig to a plain Python object."""
+    if isinstance(value, ConfigMixin):
+        return value.to_dict()
+    if isinstance(value, (DictConfig, ListConfig)):
+        return OmegaConf.to_container(value, resolve=True)
+    return value
+
+
+def ensure_plain_config(fn: Callable) -> Callable:
+    """Decorator that converts config arguments to plain Python dicts.
+
+    Any positional or keyword argument that is a :class:`ConfigMixin`,
+    :class:`~omegaconf.DictConfig`, or :class:`~omegaconf.ListConfig` is
+    automatically converted to a plain ``dict`` / ``list`` before the
+    decorated function is called.
+
+    Example::
+
+        @ensure_plain_config
+        def train(model_cfg: dict, lr: float = 1e-3):
+            ...
+
+        train(my_pose_config)  # PoseConfig → dict
+        train(omega_dict)      # DictConfig → dict
+        train(plain_dict)      # dict passed through unchanged
+    """
+
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        args = tuple(_to_plain(a) for a in args)
+        kwargs = {k: _to_plain(v) for k, v in kwargs.items()}
+        return fn(*args, **kwargs)
+
+    return wrapper
 
 
 def _normalize_for_serialization(obj):

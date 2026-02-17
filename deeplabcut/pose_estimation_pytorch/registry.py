@@ -11,8 +11,13 @@
 import inspect
 from functools import partial
 from typing import Any, Dict, Optional
+from deeplabcut.core.config.config_mixin import ensure_plain_config
 
 
+# NOTE @deruyter92 2026-02-17: The configuration is currently converted to a 
+# plain dictionary, using this decorator, since fully typed configs are not
+# supported for all modules in the registry.
+@ensure_plain_config
 def build_from_cfg(
     cfg: Dict, registry: "Registry", default_args: Optional[Dict] = None
 ) -> Any:
