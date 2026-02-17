@@ -6,7 +6,7 @@ When recording videos, the application automatically saves frame timestamps to a
 ## File naming
 
 ```{note}
-If you would like more information on the ouput path structure and settings,
+If you would like more information on the output path structure and settings,
 please refer to the {ref}`sec:dlclivegui-recording-paths-info` section.
 ```
 
