@@ -1,11 +1,12 @@
 # OpenCV Backend
 
 The OpenCV backend provides camera support via `cv2.VideoCapture`.
+This backend is intended for UVC/webcams and other devices supported by your system’s native multimedia stack.
 
 ```{important}
-The OpenCV backend is intended for UVC/webcams and other devices supported by your system’s native multimedia stack.
 Exposure and gain control are not standardized across OpenCV backends and are treated as unsupported in this GUI.
-Other settings may not always behave as expected due to driver and backend limitations.
+
+**Other settings may not always behave as expected due to driver and backend limitations.**
 ```
 
 ---

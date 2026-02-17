@@ -1,4 +1,4 @@
-# GUI Overview
+# GUI overview
 
 DeepLabCut-live-GUI (`dlclivegui`) is a **PySide6-based desktop application** for running real-time DeepLabCut pose estimation experiments with **one or multiple cameras**, optional **processor plugins**, and **video recording** (with or without overlays).
 
@@ -112,6 +112,7 @@ Find more information here if needed: {ref}`deeplabcut-live`.
 
 - **Model file**
   Path to an exported DeepLabCut-Live model file (e.g. `.pt`, `.pb`).
+  We provide some pre-trained models, see {ref}`file:dlclivegui-pretrained-models` for details.
 
 - **Processor folder / Processor** *(optional)*
   Processor plugins extend functionality (providing ways to setup experiment logic or external control).[^processor-footnote]

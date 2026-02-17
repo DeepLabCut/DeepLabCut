@@ -1,5 +1,5 @@
 (file:dlclivegui-camera-aravis-backend)=
-# Aravis Backend
+# Aravis backend
 
 The Aravis backend provides support for GenICam-compatible cameras using the
 [Aravis](https://github.com/AravisProject/aravis) library.
