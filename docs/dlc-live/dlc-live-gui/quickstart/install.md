@@ -10,28 +10,18 @@ We support various installation methods, including `uv` and `mamba`/`conda`.
 
 ### OS support
 
-`````{tab-set}
-```{tab-item} Windows
-- PyTorch supported
-- TensorFlow not available for Python > 3.10
-```
-
-```{tab-item} Linux
-- Full support for both PyTorch and TensorFlow
-```
-
-```{tab-item} macOS
-- PyTorch MPS support is limited
-- TensorFlow CPU-only
-```
-`````
+| OS | PyTorch | TensorFlow | Notes & recommendations |
+| -- | ------- | ---------- | ----- |
+| Windows | ✅ | ❌ | Limited TensorFlow support due to lack of official Windows builds for Python 3.11+ onwards |
+| Linux | ✅ | ✅ | Full support for both backends |
+| macOS | ✅ | ⚠️ | PyTorch MPS support is improving but still has limitations; TensorFlow only supports CPU on macOS |
 
 ### Hardware requirements
 
 - Any **compatible camera** (see *{ref}`file:dlclivegui-camera-support`*):
   - USB webcam, OBS virtual camera → OpenCV-compatible cameras are supported by default
   - Basler
-  - Gentl
+  - GenTL
   - Aravis
 - Optional but recommended:
   - **CUDA-capable GPU** (for real‑time inference)
