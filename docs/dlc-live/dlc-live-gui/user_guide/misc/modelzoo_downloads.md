@@ -1,7 +1,7 @@
 (file:dlclivegui-pretrained-models)=
 # Pre-trained models
 
-This page explains how to programmatically download and export **pre-trained, GUI-compatible** models from the DeepLabCut Model Zoo using the `dlclive.modelzoo` API, and convert them for use in DLC-ive and by extension, the GUI.
+This page explains how to programmatically download and export **pre-trained, GUI-compatible** models from the DeepLabCut Model Zoo using the `dlclive.modelzoo` API, and convert them for use in DLC-live and by extension, the GUI.
 
 For a reference of available models and their capabilities, see {ref}`file:model-zoo` page.
 
@@ -15,17 +15,17 @@ The core idea is:
 - Package it together with the corresponding config into a single export artifact (e.g. `exported_superanimal_quadruped_resnet_50.pt`).
 - Point the GUI (or your config) to that exported model checkpoint.
 
-```{caution}
+```{note}
 The example below targets the PyTorch engine.
 If you are using **TensorFlow models**, you will typically point the GUI to a DLC model directory instead.
 ```
 
 ---
 
-## Quick start (PyTorch)
+## Quick start
 
 ```{note}
-This example assumes you have already installed the GUI and its dependencies, including PyTorch.
+This example assumes you have already installed the GUI and its dependencies, with PyTorch.
 ```
 
 ### Example constants
