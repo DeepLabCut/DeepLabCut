@@ -11,9 +11,7 @@ sphinx:
       - ".venv/**"
       - "venv/**"
       - "**/site-packages/**"
-      - "_build/**"
       - "**/_build/**"
-
   extra_extensions:
     - numpydoc
     - sphinxcontrib.mermaid
