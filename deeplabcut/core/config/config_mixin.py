@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import warnings
 from typing import Any, Callable, Iterator, Mapping
 from typing_extensions import Self
@@ -32,16 +33,72 @@ class ConfigMixin:
     """
 
     # ------------------------------------------------------------------
-    # Dict-like access protocol
+    # Alias resolution
     # ------------------------------------------------------------------
 
+    @classmethod
+    @functools.cache
+    def _alias_map(cls) -> dict[str, str]:
+        """Build ``{alias: canonical_name}`` from field metadata.
+
+        Each field may declare ``metadata={"aliases": ["old_name", ...]}``.
+        The mapping is computed once per class and cached.
+
+        Raises:
+            ValueError: if two fields declare the same alias.
+        """
+        mapping: dict[str, str] = {}
+        for f in fields(cls):
+            for alias in f.metadata.get("aliases", []):
+                if alias in mapping:
+                    raise ValueError(
+                        f"Duplicate alias '{alias}' for fields "
+                        f"'{mapping[alias]}' and '{f.name}'"
+                    )
+                mapping[alias] = f.name
+        return mapping
+
+    def _resolve_alias(self, name: str) -> str | None:
+        """Return the canonical field name if *name* is a known alias, else ``None``."""
+        return type(self)._alias_map().get(name)
+
+    def _warn_alias(self, alias: str, canonical: str, stacklevel: int = 3) -> None:
+        """Emit a deprecation warning for alias usage."""
+        warnings.warn(
+            f"'{alias}' is deprecated, use '{canonical}' instead.",
+            DeprecationWarning,
+            stacklevel=stacklevel,
+        )
+
+    # ------------------------------------------------------------------
+    # Dict-like access protocol (with alias support)
+    # ------------------------------------------------------------------
+
+    def __getattr__(self, name: str) -> Any:
+        # Only called when normal attribute lookup fails (i.e. for aliases).
+        canonical = self._resolve_alias(name)
+        if canonical is not None:
+            self._warn_alias(name, canonical, stacklevel=2)
+            return getattr(self, canonical)
+        raise AttributeError(
+            f"'{type(self).__name__}' has no attribute '{name}'"
+        )
+
     def __getitem__(self, key: str) -> Any:
+        canonical = self._resolve_alias(key)
+        if canonical is not None:
+            self._warn_alias(key, canonical)
+            return getattr(self, canonical)
         try:
             return getattr(self, key)
         except AttributeError:
             raise KeyError(key)
 
     def __setitem__(self, key: str, value: Any) -> None:
+        canonical = self._resolve_alias(key)
+        if canonical is not None:
+            self._warn_alias(key, canonical)
+            key = canonical
         if key not in self._field_names():
             raise KeyError(
                 f"'{type(self).__name__}' has no field '{key}'"
@@ -49,7 +106,11 @@ class ConfigMixin:
         object.__setattr__(self, key, value)
 
     def __contains__(self, key: object) -> bool:
-        return isinstance(key, str) and key in self._field_names()
+        if not isinstance(key, str):
+            return False
+        if key in self._field_names():
+            return True
+        return self._resolve_alias(key) is not None
 
     def __iter__(self) -> Iterator[str]:
         return iter(self._field_names())
@@ -106,6 +167,32 @@ class ConfigMixin:
     # ------------------------------------------------------------------
 
     @classmethod
+    def _resolve_aliases_in_dict(cls, cfg_dict: dict) -> dict:
+        """Rename alias keys to their canonical names in a config dict.
+
+        This is called before passing the dict to the Pydantic constructor,
+        so that old YAML files / dicts with deprecated key names load
+        correctly (and a :class:`DeprecationWarning` is emitted for each
+        alias key found).
+        """
+        alias_map = cls._alias_map()
+        if not alias_map:
+            return cfg_dict
+
+        resolved = {}
+        for k, v in cfg_dict.items():
+            canonical = alias_map.get(k)
+            if canonical is not None:
+                warnings.warn(
+                    f"Config key '{k}' is deprecated, use '{canonical}' instead.",
+                    DeprecationWarning,
+                    stacklevel=3,
+                )
+                k = canonical
+            resolved[k] = v
+        return resolved
+
+    @classmethod
     def validate_dict(cls, cfg_dict: dict | DictConfig) -> Self:
         """Validate a dictionary against this config's pydantic model.
 
@@ -118,6 +205,7 @@ class ConfigMixin:
         """
         if isinstance(cfg_dict, DictConfig):
             cfg_dict = OmegaConf.to_container(cfg_dict, resolve=True)
+        cfg_dict = cls._resolve_aliases_in_dict(cfg_dict)
         TypeAdapter(cls).validate_python(cfg_dict)
         return cls(**cfg_dict)
 
@@ -127,6 +215,7 @@ class ConfigMixin:
 
     @classmethod
     def from_dict(cls, cfg_dict: dict) -> Self:
+        cfg_dict = cls._resolve_aliases_in_dict(cfg_dict)
         return cls(**cfg_dict)
 
     @classmethod
