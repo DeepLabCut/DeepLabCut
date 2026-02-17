@@ -9,6 +9,11 @@ sphinx:
     mermaid_output_format: raw
     html_static_path: ["docs/_static"]
     html_css_files: ["custom.css"]
+    exclude_patterns:
+      - ".venv/**"
+      - "venv/**"
+      - "**/site-packages/**"
+      - "**/_build/**"
   extra_extensions:
     - numpydoc
     - sphinxcontrib.mermaid
