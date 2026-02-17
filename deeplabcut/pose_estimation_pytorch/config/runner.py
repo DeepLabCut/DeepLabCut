@@ -76,7 +76,11 @@ class RunnerConfig(ConfigMixin):
     """
 
     type: str = "PoseTrainingRunner"
+    # TODO @deruyter92: Currently different configs for device are used in 
+    # parallel. We should probably move to only 'PoseConfig.device'. This is 
+    # kept here for backwards compatibility.
     gpus: Any | None = None
+    device: str = "auto" # <- unused, but present in test scripts. 
     key_metric: str = "test.mAP"
     key_metric_asc: bool = True
     eval_interval: int = 10
