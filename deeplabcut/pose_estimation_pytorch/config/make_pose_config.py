@@ -26,6 +26,7 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     update_config,
 )
 from deeplabcut.core.config.project_config import ProjectConfig
+from deeplabcut.core.config.config_mixin import ensure_plain_config
 from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.config.training import TrainSettingsConfig
 from deeplabcut.pose_estimation_pytorch.config.runner import RunnerConfig
@@ -34,9 +35,9 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 
-
+@ensure_plain_config
 def _load_pose_config_defaults(
-    project_config: ProjectConfig | DictConfig,
+    project_config: dict,
     net_type: NetType | str | None = None,
     top_down: bool = False,
     detector_type: str | None = None,
@@ -239,7 +240,7 @@ def make_pytorch_pose_config(
         metadata=project_config,
         train_settings=TrainSettingsConfig(weight_init=weight_init),
         # runner=RunnerConfig(),
-    ).to_dictconfig()
+    ).to_dict()
 
     # Update default values for the specific model architecture and project config.
     # TODO @deruyter92 2026-02-04: using legacy v0 config (dict) for the defaults,
@@ -251,16 +252,17 @@ def make_pytorch_pose_config(
         detector_type,
         ctd_conditions,
     )
-    pose_config = update_config(pose_config, defaults) 
+    pose_config: dict = update_config(pose_config, defaults) 
 
     # Validate the config against the PoseConfig pydantic model after updating
-    PoseConfig.validate_dict(pose_config)
+    pose_config = PoseConfig.from_any(pose_config)
 
     if save:
-        PoseConfig().from_any(pose_config).to_yaml(pose_config_path, overwrite=True)
-    return pose_config
+        pose_config.to_yaml(pose_config_path, overwrite=True)
+    return pose_config.to_dictconfig()
 
 
+@ensure_plain_config
 def _add_ctd_conditions(
     model_cfg: dict, ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int]
 ):
@@ -325,6 +327,9 @@ def make_pytorch_test_config(
     Returns:
         The test configuration file.
     """
+    # Validate the model config against the PoseConfig pydantic model
+    model_config = PoseConfig.from_any(model_config).to_dictconfig()
+
     bodyparts = model_config["metadata"]["bodyparts"]
     unique_bodyparts = model_config["metadata"]["unique_bodyparts"]
     all_joint_names = bodyparts + unique_bodyparts
@@ -414,6 +419,7 @@ def make_basic_project_config(
     )
 
 
+@ensure_plain_config
 def add_metadata(
     project_config: dict, config: dict, pose_config_path: str | Path
 ) -> dict:
