@@ -396,6 +396,8 @@ def video_inference_superanimal(
             superanimal_name, pose_model_path, detector_path, torchvision_detector_name
         )
 
+        # TODO @deruyter92: This is currently not validated against the PoseConfig schema.
+        # We should create the validated config (with override arguments) in an early stage.
         config = update_config(config, max_individuals, device)
 
         output_suffix = "_before_adapt"

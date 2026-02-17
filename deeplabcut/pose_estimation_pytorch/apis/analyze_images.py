@@ -195,6 +195,8 @@ def superanimal_analyze_images(
     else:
         config = copy.deepcopy(customized_model_config)
 
+    # TODO @deruyter92: This is currently not validated against the pydantic schema.
+    # We should add this functionality (and do updates in an early stage).
     config = update_config(config, max_individuals, device)
     config["metadata"]["individuals"] = [f"animal{i}" for i in range(max_individuals)]
     if config.get("detector") is not None:

@@ -107,6 +107,8 @@ def load_super_animal_config(
     project_cfg_path = get_super_animal_project_config_path(super_animal=super_animal)
     project_config = read_config_as_dict(project_cfg_path)
 
+    # TODO @deruyter92: This is currently not validated against the PoseConfig pydantic model.
+    # We should add this functionality for super animal configs.
     model_cfg_path = get_super_animal_model_config_path(model_name=model_name)
     model_config = read_config_as_dict(model_cfg_path)
     model_config = add_metadata(project_config, model_config, model_cfg_path)
@@ -184,7 +186,8 @@ def raise_warning_if_called_directly():
             UserWarning,
         )
 
-
+# TODO @deruyter92: This logic is currently completely separated from 
+# the PoseConfig logic elsewhere. We should put this in line with the rest of the codebase.
 def update_config(config: dict, max_individuals: int, device: str):
     """Loads the model configuration file for a model, detector and SuperAnimal
 

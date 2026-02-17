@@ -144,7 +144,15 @@ class Loader(ABC):
         Args:
             updates: the items to update in the model configuration
         """
-        self.model_cfg = config.update_config_by_dotpath(self.model_cfg, updates)
+        # TODO @deruyter92: updating the config after initialization is 
+        # not ideal. We should move away from this strategy and update all 
+        # override arguments during config creation.
+        updated_cfg: dict = config.update_config_by_dotpath(self.model_cfg, updates)
+
+        # Validate the updated config against the PoseConfig pydantic model
+        PoseConfig.validate_dict(updated_cfg)
+        self.model_cfg = PoseConfig.from_any(updated_cfg).to_dictconfig()
+
         config_utils.write_config(self.model_config_path, self.model_cfg)
 
     @abstractmethod
