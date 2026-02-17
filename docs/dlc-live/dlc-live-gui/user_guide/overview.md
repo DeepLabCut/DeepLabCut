@@ -134,6 +134,11 @@ Find more information here if needed: {ref}`deeplabcut-live`.
 
 **Purpose:** Save videos from active cameras, optionally with pose overlays.
 
+```{note}
+Timestamps are additionally saved in a JSON file alongside the video, providing precise timing information for when each frame was processed.
+See {ref}`file:dlclivegui-tinmestamp-format` for details.
+```
+
 #### Core settings
 
 - **Output directory**: Base directory for all recordings
@@ -171,10 +176,12 @@ You can hover over the preview path to see the full path, and click to copy it t
 
 ---
 
-### Bounding Box Visualization
+### Visualization settings
 
-**Purpose:** Show a bounding box around the detected subject.
+**Purpose:** Configure the keypoint colormap, bounding box, and other overlay options.
 
+- **Keypoint colormap**: Choose a predefined colormap for keypoint visualization
+- **Display pose predictions**: Toggle keypoint overlay on the video preview, but not in recordings (unless "Record video with overlays" is enabled)
 - **Show bounding box**: Enable or disable overlay
 - **Coordinates**: `x0`, `y0`, `x1`, `y1`
 

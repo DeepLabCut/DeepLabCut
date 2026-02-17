@@ -1,3 +1,4 @@
+(file:dlclivegui-tinmestamp-format)=
 # Video timestamp format
 
 When recording videos, the application automatically saves frame timestamps to a JSON file alongside the video file.
