@@ -43,7 +43,7 @@ If you use an OpenCV-compatible camera (e.g. USB webcam, OBS virtual camera), yo
 
 ### Software requirements
 
-- **Python ≥ 3.10**
+- **Python 3.10, 3.11 or 3.12**
 - A machine learning framework for inference (instructions below for both):
   - **PyTorch** (recommended for best performance and compatibility)
   - **TensorFlow** (for backwards compatibility with existing models)
