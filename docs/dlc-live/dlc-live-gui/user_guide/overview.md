@@ -65,6 +65,12 @@ If you start pose inference while the preview is stopped, the GUI will automatic
 
 ## Main control panel
 
+The main control panel on the left is where you configure all the settings for cameras, pose inference, recording, and visualization.
+
+```{tip}
+You can "undock" the control panel by dragging it by the title bar, allowing you to move it to a second monitor or give more space to the video preview if needed.
+```
+
 ### Camera settings
 
 **Purpose:** Define which cameras are available and active.
@@ -139,7 +145,8 @@ Timestamps are additionally saved in a JSON file alongside the video, providing 
 See {ref}`file:dlclivegui-tinmestamp-format` for details.
 ```
 
-#### Core settings
+(sec:dlclivegui-recording-paths-info)=
+#### Recording output options
 
 - **Output directory**: Base directory for all recordings
 - **Session name**: Grouping of runs (e.g. `mouseA_day1`)
@@ -161,8 +168,8 @@ You can hover over the preview path to see the full path, and click to copy it t
 
 #### Controls
 
-- **Start recording / Stop recording**
-- **Open recording folder**
+- **Start recording / Stop recording** Controls the recording state.
+- **Open recording folder** Shows the current session's output directory in the system file explorer.
 
 #### Additional options
 

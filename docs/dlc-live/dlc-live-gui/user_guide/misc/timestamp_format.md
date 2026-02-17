@@ -5,7 +5,13 @@ When recording videos, the application automatically saves frame timestamps to a
 
 ## File naming
 
+```{note}
+If you would like more information on the ouput path structure and settings,
+please refer to the {ref}`file:dlclivegui-recording-paths-info` section.
+```
+
 For a video file named `recording_2025-10-23_143052.mp4`, the timestamp file will be:
+
 
 ```
 recording_2025-10-23_143052.mp4_timestamps.json
