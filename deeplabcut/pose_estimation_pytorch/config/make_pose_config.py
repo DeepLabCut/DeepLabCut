@@ -218,6 +218,10 @@ def make_pytorch_pose_config(
     # Initialize ProjectConfig (convert to DictConfig if needed)
     project_config: DictConfig = ProjectConfig.from_any(project_config).to_dictconfig()
     project_config.pose_config_path = pose_config_path
+
+    # @TODO @deruyter92 2026-02-13: This is a temporary fix to allow backwards compatibility. 
+    # This should be resolved by migrating to V1 project config.
+    project_config.with_identity = project_config.identity
     
     # Initialize PoseConfig as DictConfig
     pose_config = PoseConfig().to_dictconfig()
