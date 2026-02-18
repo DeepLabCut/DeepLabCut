@@ -13,13 +13,14 @@
 from typing import Any
 from pathlib import Path
 
+from pydantic import ConfigDict
 from pydantic.dataclasses import dataclass
 from dataclasses import field
 
 from deeplabcut.core.config.config_mixin import ConfigMixin
 
 
-@dataclass
+@dataclass(config=ConfigDict(extra="forbid"))
 class ProjectConfig(ConfigMixin):
     """Complete project configuration.
 
