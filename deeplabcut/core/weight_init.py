@@ -104,6 +104,10 @@ class WeightInitialization:
         if "snapshot_path" not in data:
             return WeightInitialization.from_dict_legacy(data)
 
+        snapshot_path = data['snapshot_path']
+        if data['snapshot_path'] is not None:
+            snapshot_path = Path(snapshot_path)
+
         detector_snapshot_path = data.get("detector_snapshot_path")
         if detector_snapshot_path is not None:
             detector_snapshot_path = Path(detector_snapshot_path)
@@ -113,7 +117,7 @@ class WeightInitialization:
             conversion_array = np.array(conversion_array, dtype=int)
 
         return WeightInitialization(
-            snapshot_path=Path(data["snapshot_path"]),
+            snapshot_path=snapshot_path,
             detector_snapshot_path=detector_snapshot_path,
             dataset=data.get("dataset"),
             with_decoder=data["with_decoder"],
