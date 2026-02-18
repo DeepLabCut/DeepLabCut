@@ -1,12 +1,10 @@
 format: jb-book
 root: README
-
 parts:
 - caption: Getting Started
   chapters:
   - file: docs/UseOverviewGuide
   - file: docs/course
-
 - caption: Installation
   chapters:
   - file: docs/installation
@@ -19,52 +17,50 @@ parts:
   - file: docs/maDLC_UserGuide
   - file: docs/Overviewof3D
   - file: docs/HelperFunctions
-
+  
 - caption: Graphical User Interfaces (GUIs)
   chapters:
   - file: docs/gui/PROJECT_GUI
   - file: docs/gui/napari_GUI
-
 - caption: DLC3 PyTorch Specific Docs
   chapters:
   - file: docs/pytorch/user_guide.md
   - file: docs/pytorch/pytorch_config.md
   - file: docs/pytorch/architectures.md
-
 - caption: Quick Start Tutorials
   chapters:
   - file: docs/quick-start/single_animal_quick_guide
   - file: docs/quick-start/tutorial_maDLC
-
-- caption: "🚀 Beginner's Guide to DeepLabCut"
+- caption: 🚀 Beginner's Guide to DeepLabCut
   chapters:
   - file: docs/beginner-guides/beginners-guide
   - file: docs/beginner-guides/manage-project
   - file: docs/beginner-guides/labeling
   - file: docs/beginner-guides/Training-Evaluation
   - file: docs/beginner-guides/video-analysis
-
-- caption: "🚀 Main Demo Notebooks"
+- caption: 🚀 Main Demo Notebooks
   chapters:
   - file: examples/COLAB/COLAB_DEMO_SuperAnimal
   - file: examples/COLAB/COLAB_DEMO_mouse_openfield
   - file: examples/COLAB/COLAB_3miceDemo
   - file: examples/COLAB/COLAB_HumanPose_with_RTMPose
 
-- caption: "🚀 Notebooks For Your Data"
+
+  
+- caption: 🚀 Notebooks For Your Data
   chapters:
   - file: examples/COLAB/COLAB_YOURDATA_SuperAnimal
   - file: examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis
   - file: examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis
 
-- caption: "🚀 Special Feature Demos"
+- caption: 🚀 Special Feature Demos
   chapters:
   - file: examples/COLAB/COLAB_transformer_reID
   - file: examples/COLAB/COLAB_BUCTD_and_CTD_tracking
   - file: examples/JUPYTER/Demo_3D_DeepLabCut
   - file: examples/COLAB/COLAB_DLC_ModelZoo
 
-- caption: "🧑‍🍳 Cookbook (detailed helper guides)"
+- caption: 🧑‍🍳 Cookbook (detailed helper guides)
   chapters:
   - file: docs/convert_maDLC
   - file: docs/recipes/OtherData
@@ -82,12 +78,10 @@ parts:
 - caption: Hardware Tips
   chapters:
   - file: docs/recipes/TechHardware
-
 - caption: DeepLabCut-Live!
   chapters:
   - file: docs/deeplabcutlive
-
-- caption: "🦄 DeepLabCut Model Zoo"
+- caption: 🦄 DeepLabCut Model Zoo
   chapters:
   - file: docs/ModelZoo
   - file: docs/recipes/UsingModelZooPupil
@@ -97,7 +91,7 @@ parts:
   - file: docs/benchmark
   - file: docs/pytorch/Benchmarking_shuffle_guide
 
-- caption: "Mission & Contribute"
+- caption: Mission & Contribute
   chapters:
   - file: docs/MISSION_AND_VALUES
   - file: docs/roadmap
