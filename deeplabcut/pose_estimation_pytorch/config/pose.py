@@ -12,7 +12,7 @@
 
 from pydantic.dataclasses import dataclass
 from dataclasses import field
-from pydantic import Field
+from pydantic import Field, ConfigDict
 from enum import Enum
 
 from deeplabcut.core.config.config_mixin import ConfigMixin
@@ -99,7 +99,7 @@ class DetectorConfig(ConfigMixin):
     inference: InferenceConfig = field(default_factory=InferenceConfig)
 
 
-@dataclass
+@dataclass(config=ConfigDict(extra="forbid"))
 class PoseConfig(ConfigMixin):
     """Main configuration class for DeepLabCut pose estimation models.
 
