@@ -146,16 +146,15 @@ def create_new_project(
         print('Created "{}"'.format(p))
 
     # Add all videos in the folder. Multiple folders can be passed in a list, similar to the video files. Folders and video files can also be passed!
-    vids = []
-    for i in videos:
+    collected_videos = []
+    paths = [Path(p) for p in videos]
+    for i in paths:
         # Check if it is a folder
-        if os.path.isdir(i):
+        if i.is_dir():
             vids_in_dir = [
-                os.path.join(i, vp)
-                for vp in os.listdir(i)
-                if vp.lower().endswith(videotype)
+                p for p in i.iterdir()
+                if str(p).lower().endswith(videotype)
             ]
-            vids = vids + vids_in_dir
             if len(vids_in_dir) == 0:
                 print("No videos found in", i)
                 print(
@@ -163,7 +162,7 @@ def create_new_project(
                     videotype,
                 )
             else:
-                videos = vids
+                collected_videos += vids_in_dir
                 print(
                     len(vids_in_dir),
                     " videos from the directory",
@@ -171,12 +170,11 @@ def create_new_project(
                     "were added to the project.",
                 )
         else:
-            if os.path.isfile(i):
-                vids = vids + [i]
-            videos = vids
+            if i.is_file():
+                collected_videos.append(i)
 
-    videos = [Path(vp) for vp in videos]
-    dirs = [data_path / Path(i.stem) for i in videos]
+    videos = collected_videos
+    dirs = [data_path / i.stem for i in videos]
     for p in dirs:
         """
         Creates directory under data

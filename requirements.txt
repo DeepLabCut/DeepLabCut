@@ -17,7 +17,7 @@ numba>=0.54.0
 matplotlib>=3.3, <3.8.4
 networkx>=2.6
 numpy>=1.18.5,<2.0.0
-pandas>=1.0.1,!=1.5.0
+pandas>=1.0.1,!=1.5.0,<3.0
 Pillow>=7.1
 pyyaml
 scikit-image>=0.17
@@ -31,3 +31,6 @@ tqdm
 
 # Platform-specific
 h5py>=3.15.1; sys_platform == "darwin" # Fixes https://github.com/h5py/h5py/issues/2726
+
+huggingface_hub>=0.23
+filelock>=3.12,<3.16
