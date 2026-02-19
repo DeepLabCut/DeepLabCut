@@ -182,22 +182,19 @@ class ProjectConfig(ConfigMixin):
     )
     croppedtraining: bool | None = None
 
-    @classmethod
-    def from_yaml(cls, yaml_path: str | Path, *args, **kwargs) -> Self:
+    def _post_yaml_load_updates(self, *, yaml_path: Path) -> None:
         """
-            Overrides the from_yaml method to update the project path if the yaml file
-            is not in the same directory as the project path.
+        Override method for post-yaml load updates. Called automatically by from_yaml().
+        These are logged but not written to disk -- call to_yaml() explicitly if needed.
         """
-        # NOTE @deruyter92 2026-02-06: This replicates prior behaviour of adjusting the project path
-        # when reading the config file. Note that we do not write the config file back to the file system.
-        cfg = super().from_yaml(yaml_path, *args, **kwargs)
-        project_path = Path(yaml_path).parent
-        if project_path.resolve() != cfg.project_path.resolve():
-            warnings.warn(
-                f"Project path {yaml_path} is not the in the same directory as the project_path defined "
-                "in the yaml file {cfg.project_path}. This may cause issues with loading the project. "
-                "Updating the project path internally to the parent directory of the yaml file. The file "
-                "itself will not be updated."
+        updates = super()._post_yaml_load_updates(yaml_path=yaml_path)
+
+        project_path = yaml_path.parent
+        if project_path.resolve() != self.project_path.resolve():
+            old = self.project_path
+            self.project_path = project_path
+            updates.append(
+                f"project_path updated: {old} -> {project_path} "
+                f"(resolved from YAML location)"
             )
-            cfg.project_path = project_path
-        return cfg
+        return updates
