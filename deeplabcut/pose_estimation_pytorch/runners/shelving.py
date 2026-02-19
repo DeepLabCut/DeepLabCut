@@ -149,9 +149,12 @@ class ShelfWriter(ShelfManager):
         self._frame_index += 1
 
     def close(self) -> None:
-        """Opens the shelf"""
+        """Closes the shelf and writes the updated metadata"""
         if self._open and self._frame_index > 0:
-            self._db["metadata"]["nframes"] = self._frame_index
+            # Write updated metadata to shelf (top-level indexing required for shelve)
+            metadata = self._db["metadata"]
+            metadata["nframes"] = self._frame_index
+            self._db["metadata"] = metadata
 
         super().close()
 
