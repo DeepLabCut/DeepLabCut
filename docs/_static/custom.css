@@ -1,0 +1,104 @@
+/* custom.css */
+
+html[data-theme="light"] {
+  --sidebar-bg-color: #ac64e67f; /* #d2efff; */
+  --sidebar-text-color: #000000;
+  --sidebar-highlight-color: #73439a;
+  --sidebar-hover-text-color: #39214d; /* #0044bd; */
+  --header-bg-color: rgba(115, 67, 154, 0.75); /* #053346; */
+  --logo-filter: none;
+  --button-color: #fff;
+  --footer-text-color: #000000;
+}
+
+html[data-theme="dark"] {
+  --sidebar-bg-color: #455364; /* #053346; */
+  --sidebar-text-color: #ffffff;
+  --sidebar-highlight-color: #de6be8;
+  --sidebar-hover-text-color: #ea57f8; /* #00aeef; */
+  --header-bg-color: rgba(115, 67, 154, 0.45); /* #053346; */
+  /* --logo-filter: grayscale(100%) brightness(20); */
+  --button-color: #fff;
+  --footer-text-color: #b9b9b9;
+}
+
+/* Sidebar */
+.bd-sidebar-primary.bd-sidebar {
+  background-color: var(--sidebar-bg-color);
+  color: var(--sidebar-text-color);
+}
+
+.bd-sidebar-primary.bd-sidebar a {
+  color: var(--sidebar-text-color);
+}
+
+.bd-sidebar-primary.bd-sidebar a:hover {
+  color: var(--sidebar-hover-text-color);
+}
+
+/* Sidebar ToC */
+.toctree-l1.current.active {
+  color: var(--sidebar-highlight-color);
+}
+
+.toctree-l1.current.active * {
+  color: inherit;
+}
+
+/* Sidebar footer */
+.sidebar-primary-items__end::after {
+  content: "The DeepLabCut Community";
+  display: block;
+  text-align: center;
+  font-size: 12px;
+  color: var(--footer-text-color);
+  /* If you want an image at the footer */
+  /* background-image: url("images/logo_background.png"); */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  padding-top: 150px;
+  height: 100px;
+  z-index: 1;
+}
+
+/* Logo (top of sidebar) */
+.navbar-brand img {
+  filter: var(--logo-filter, none);
+}
+
+/* Header */
+.bd-header-article {
+  /* position: fixed; */
+  background-color: var(--header-bg-color);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+}
+
+/* Header background image */
+.bd-header-article::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* background-image: url("images/header.jpg"); */
+  /* background-size: cover; */
+  /* background-repeat: no-repeat; */
+  /* background-position: center; */
+  opacity: 0.75;
+  z-index: -1;
+}
+
+/* Header buttons */
+.article-header-buttons .btn {
+  color: var(--button-color);
+  z-index: 1;
+}
+
+.article-header-buttons .btn:hover {
+  opacity: 0.8;
+  z-index: 1;
+}
+
