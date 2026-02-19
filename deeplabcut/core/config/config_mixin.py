@@ -100,7 +100,10 @@ class ConfigMixin:
         yaml_dict = read_config_as_dict(yaml_path)
         if ignore_empty:
             yaml_dict = {k: v for k, v in yaml_dict.items() if v is not None}
-        return cls.from_dict(yaml_dict)
+        cfg = cls.from_dict(yaml_dict)
+        updates = cfg._post_yaml_load_updates(yaml_path=Path(yaml_path))
+        cfg._log_updates(updates)
+        return cfg
 
     def to_yaml(self, yaml_path: str | Path, overwrite: bool = True) -> None:
         dict_data = self.to_dict_normalized()
@@ -125,6 +128,23 @@ class ConfigMixin:
         print_fn: Callable[[str], None] | None = None,
     ) -> None:
         pretty_print(config=self.to_dict(), indent=indent, print_fn=print_fn)
+
+    def _post_yaml_load_updates(self, *, yaml_path: Path) -> list[str]:
+        """Override to apply context-dependent fixups after loading from YAML.
+
+        Called automatically by from_yaml(). Return a list of human-readable
+        descriptions of each change made (empty list = no changes).
+        These are logged but never written to disk -- call to_yaml() explicitly
+        if persistence is needed.
+        """
+        return []
+
+    def _log_updates(self, updates: list[str]) -> None:
+        """Log the updates to the configuration."""
+        if updates:
+            logger.info(f"The following updates were made to {self.__class__.__name__}:")
+            for update in updates:
+                logger.info(update)
 
 
 def ensure_plain_config(fn: Callable) -> Callable:
