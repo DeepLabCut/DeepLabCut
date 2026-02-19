@@ -107,6 +107,7 @@ setuptools.setup(
         ],
         "modelzoo": ["huggingface_hub"],
         "wandb": ["wandb"],
+        "fmpose3d": ["fmpose3d"],	
     },
     scripts=["deeplabcut/pose_estimation_tensorflow/models/pretrained/download.sh"],
     packages=setuptools.find_packages(),
