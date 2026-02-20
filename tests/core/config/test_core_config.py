@@ -217,7 +217,7 @@ def test_read_config_sets_missing_engine_and_writes_back(tmp_path):
     config_path.write_text("project_path: /other/path\n")
     cfg = read_config(config_path)
     assert cfg["engine"] == "pytorch"
-    assert cfg["project_path"] == str(tmp_path)
+    assert cfg["project_path"] == tmp_path
     # File should have been updated
     cfg_again = read_config_as_dict(config_path)
     assert cfg_again["engine"] == "pytorch"
@@ -244,7 +244,7 @@ def test_read_config_updates_project_path_when_different(tmp_path):
         {"project_path": "/old/path", "engine": "pytorch"},
     )
     cfg = read_config(config_path)
-    assert cfg["project_path"] == str(tmp_path)
+    assert cfg["project_path"] == tmp_path
 
 
 @pytest.mark.parametrize("engine", ["pytorch", "tensorflow"])
@@ -256,7 +256,7 @@ def test_read_config_preserves_existing_engine_and_project_path(tmp_path, engine
     )
     cfg = read_config(config_path)
     assert cfg["engine"] == engine
-    assert cfg["project_path"] == str(tmp_path)
+    assert cfg["project_path"] == tmp_path
 
 
 @pytest.mark.skip("This preferred behavior is not yet implemented.")
