@@ -118,11 +118,12 @@ You can install either or both, but you must** choose at least one** to run the 
 `````{tab-set}
 
 ````{tab-item} PyTorch
+```{important}
+To **enable GPU support** and obtain detailed installation instructions, 
+please refer to the [official PyTorch installation guide](https://pytorch.org/get-started/locally/).
+```
 ```bash
 uv pip install -e ".[pytorch]"
-```
-```{note}
-For detailed installation instructions, please refer to the [official PyTorch installation guide](https://pytorch.org/get-started/locally/).
 ```
 ````
 
@@ -156,15 +157,15 @@ conda activate dlclivegui
 We offer two distinct inference backends: **PyTorch** and **TensorFlow**.
 You can install either or both, but you must** choose at least one** to run the pose estimation models.
 
-Install the package with the desired backend:
-
 `````{tab-set}
+
 ````{tab-item} PyTorch
-```bash
-pip install -e ".[pytorch]"
+```{important}
+To **enable GPU support** and obtain detailed installation instructions, 
+please refer to the [official PyTorch installation guide](https://pytorch.org/get-started/locally/).
 ```
-```{note}
-For detailed installation instructions, please refer to the [official PyTorch installation guide](https://pytorch.org/get-started/locally/).
+```bash
+uv pip install -e ".[pytorch]"
 ```
 ````
 
@@ -172,8 +173,9 @@ For detailed installation instructions, please refer to the [official PyTorch in
 ```{caution}
 Please note TensorFlow is **no longer available** on **Windows** for **Python > 3.10**.
 ```
+
 ```bash
-pip install -e ".[tf]"
+uv pip install -e ".[tf]"
 ```
 ```{note}
 For detailed installation instructions, please refer to the [official TensorFlow installation guide](https://www.tensorflow.org/install/pip).
