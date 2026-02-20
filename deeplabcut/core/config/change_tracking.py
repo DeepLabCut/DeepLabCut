@@ -43,6 +43,10 @@ class ChangeTrackingMixin:
             original_setattr = cls.__setattr__
 
             def __setattr__(self, name: str, value: Any) -> None:
+                if name in ("_dirty_fields", "_change_notes"):
+                    # Bypass pydantic validation for ChangeTrackingMixin fields.
+                    object.__setattr__(self, name, value)
+                    return
                 field_names = [f.name for f in fields(self)]
                 dirty_fields = getattr(self, "_dirty_fields", None)
                 if dirty_fields is not None and name in field_names:
