@@ -82,6 +82,8 @@ def build_scheduler(
 
     parsed_params = {}
     for param_name, param in scheduler_cfg["params"].items():
+        # Ensure plain Python types for scheduler state_dict serialization
+
         # Convert omegaconf containers to plain Python types so that the
         # scheduler state_dict (saved via torch.save) does not contain
         # unpicklable omegaconf objects with _parent references.
@@ -102,8 +104,7 @@ def build_scheduler(
 
 def _parse_scheduler_param(param: Any, optimizer: torch.optim.Optimizer) -> Any:
     """Parses parameters so they're built as schedulers if they're configured as one"""
-    # TODO @deruyter92: decide on typed / plain dict
-    if isinstance(param, (dict, DictConfig)) and "type" in param:
+    if isinstance(param, dict) and "type" in param:
         param = build_scheduler(param, optimizer)
 
     return param

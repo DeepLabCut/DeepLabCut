@@ -187,7 +187,7 @@ scorername_3d: # Enter the scorer name for the 3D output
     return cfg_file_3d, ruamelFile_3d
 
 
-def read_config(configname: str | Path, ignore_empty: bool = True) -> DictConfig:
+def read_config(configname: str | Path, ignore_empty: bool = True) -> "ProjectConfig":
     """
     Reads structured config file defining a project.
 
@@ -201,27 +201,25 @@ def read_config(configname: str | Path, ignore_empty: bool = True) -> DictConfig
             Defaults to True.
 
     Returns:
-        The project configuration as a DictConfig.
+        The project configuration as a ProjectConfig instance (supports dict-like access).
     """
-    # NOTE @deruyter92 2026-02-05: Default ignore_empty is now set to True to match
-    # the prior behaviour of read_config. We should consider changing this to False
-    # for stricter validation.
     from deeplabcut.core.config.project_config import ProjectConfig
     path = Path(configname)
     project_config = ProjectConfig.from_yaml(path, ignore_empty=ignore_empty)
-    
-    # NOTE @deruyter92 2026-02-02: copied old behaviour of writing the config back to the file.
-    # We should consider separating the writing and reading instead of having inplace edits during reading.
-    curr_dir = str(Path(configname).parent.resolve())
-    if project_config.project_path != curr_dir:
-        project_config.project_path = curr_dir
-        project_config.to_yaml(configname)
-    return project_config.to_dictconfig()
+
+    # If necessary, ProjectConfig automatically updates its project path via _post_yaml_load_updates.
+    # if that is the case (marked as dirty), we write the config back to the file.
+    if  "project_path" in project_config.dirty_fields:
+        # NOTE @deruyter92 2026-02-02: copied old behaviour of writing the config 
+        # immediately back to the file after reading it. We should consider separating 
+        # the writing and reading instead of having inplace edits during reading.
+        project_config.to_yaml(configname, log_changes=True, mark_clean=True)
+    return project_config
 
 
 def write_project_config(
     configname: str | Path,
-    cfg: dict | ProjectConfig | DictConfig,
+    cfg: "dict | ProjectConfig",
 ) -> None:
     """Write structured project config file (config.yaml) preserving template order."""
     from deeplabcut.core.config.project_config import ProjectConfig

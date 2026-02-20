@@ -257,7 +257,7 @@ class AugmentImage(Preprocessor):
         scales = context.get("scales", (1, 1))
         if isinstance(offsets, tuple):
             # TODO @deruyter92: decide on typed / plain list
-            if isinstance(new_offsets, (list, ListConfig)):
+            if isinstance(new_offsets, list):
                 updated_offsets = [
                     AugmentImage.update_offset(offsets, scales, new_offset)
                     for new_offset in new_offsets
@@ -276,7 +276,7 @@ class AugmentImage(Preprocessor):
                 updated_scales = AugmentImage.update_scale(scales, new_scales)
         else:
             # TODO @deruyter92: decide on typed / plain list
-            if isinstance(new_offsets, (list, ListConfig)):
+            if isinstance(new_offsets, list):
                 if not len(offsets) == len(new_offsets):
                     raise ValueError("Cannot rescale lists when not same length")
 

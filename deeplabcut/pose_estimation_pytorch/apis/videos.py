@@ -496,7 +496,7 @@ def analyze_videos(
                 config=config,
             )
         # TODO @deruyter92: decide on typed / plain dict
-        elif isinstance(ctd_conditions, (dict, DictConfig)):
+        elif isinstance(ctd_conditions, dict):
             cond_provider = get_condition_provider(
                 condition_cfg=ctd_conditions,
                 config=config,
@@ -505,7 +505,7 @@ def analyze_videos(
             cond_provider = ctd_conditions
 
     # TODO @deruyter92: decide on typed / plain dict
-    if isinstance(ctd_tracking, (dict, DictConfig)):
+    if isinstance(ctd_tracking, dict):
         # FIXME(niels) - add video FPS setting
         ctd_tracking = CTDTrackingConfig.build(ctd_tracking)
 
