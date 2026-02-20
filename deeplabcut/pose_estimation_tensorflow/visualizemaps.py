@@ -108,7 +108,7 @@ def extract_maps(
 
     # Make folder for evaluation
     auxiliaryfunctions.attempt_to_make_folder(
-        str(cfg["project_path"] + "/evaluation-results/")
+        str(Path(cfg["project_path"]) / "evaluation-results")
     )
 
     Maps = {}

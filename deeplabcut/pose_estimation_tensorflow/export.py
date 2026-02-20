@@ -298,7 +298,7 @@ def export_model(
 
     ### set up export directory
 
-    export_dir = os.path.normpath(cfg["project_path"] + "/" + "exported-models")
+    export_dir = os.path.normpath(os.path.join(str(cfg["project_path"]), "exported-models"))
     if not os.path.isdir(export_dir):
         os.mkdir(export_dir)
 
@@ -308,7 +308,7 @@ def export_model(
         cfg["iteration"],
         shuffle,
     )
-    full_export_dir = os.path.normpath(export_dir + "/" + sub_dir_name)
+    full_export_dir = os.path.normpath(os.path.join(export_dir, sub_dir_name))
 
     if os.path.isdir(full_export_dir):
         if not overwrite:

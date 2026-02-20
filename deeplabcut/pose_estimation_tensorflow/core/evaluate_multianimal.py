@@ -156,7 +156,7 @@ def evaluate_multianimal_full(
     colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
     # Make folder for evaluation
     auxiliaryfunctions.attempt_to_make_folder(
-        str(cfg["project_path"] + "/evaluation-results/")
+        str(Path(cfg["project_path"]) / "evaluation-results")
     )
     for shuffle in Shuffles:
         for trainFraction in TrainingFractions:
