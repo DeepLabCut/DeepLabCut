@@ -19,12 +19,13 @@ from pydantic import ConfigDict
 from pydantic.dataclasses import dataclass
 from dataclasses import field
 
+from deeplabcut.core.config.change_tracking import ChangeTrackingMixin
 from deeplabcut.core.config.config_mixin import ConfigMixin
 from deeplabcut.core.config.versioning import CURRENT_CONFIG_VERSION, MigrationMixin
 
 
 @dataclass(config=ConfigDict(extra="forbid", validate_assignment=True))
-class ProjectConfig(MigrationMixin, ConfigMixin):
+class ProjectConfig(ChangeTrackingMixin, MigrationMixin, ConfigMixin):
     """Complete project configuration.
 
     Mirrors the structure of the project config.yaml (and metadata in pose config).
@@ -190,14 +191,14 @@ class ProjectConfig(MigrationMixin, ConfigMixin):
         Override method for post-yaml load updates. Called automatically by from_yaml().
         These are logged but not written to disk -- call to_yaml() explicitly if needed.
         """
-        updates = super()._post_yaml_load_updates(yaml_path=yaml_path)
+        super()._post_yaml_load_updates(yaml_path=yaml_path)
 
         project_path = yaml_path.parent
         if project_path.resolve() != self.project_path.resolve():
             old = self.project_path
             self.project_path = project_path
-            updates.append(
+            self.record_change_note(
+                "project_path",
                 f"project_path updated: {old} -> {project_path} "
-                f"(resolved from YAML location)"
+                f"(resolved from YAML location when reading config.yaml)",
             )
-        return updates
