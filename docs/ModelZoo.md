@@ -1,4 +1,5 @@
-# The DeepLabCut Model Zoo! 
+(file:model-zoo)=
+# The DeepLabCut Model Zoo!
 
 ![image](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/8957c690-4f27-4430-8581-4161fd58d052/68747470733a2f2f696d616765732e73717561726573706163652d63646e2e636f6d2f636f6e74656e742f76312f3537663664353163396637343536366635356563663237312f313631363439323337333730302d50474f41433732494f4236415545343756544a582f6b6531375a77644742546f646449.png?format=450w)
 
@@ -11,7 +12,7 @@ first proper [SuperAnimal Foundation Models](#about-the-superanimal-models) publ
 
 - (1) a collection of models that are trained on diverse data across (typically) large datasets, which means you do not need to train models yourself, rather you can use them in your research applications.
 - (2) a contribution website for community crowd sourcing of expertly labeled keypoints to improve models! You can get involved here: [contrib.deeplabcut.org](https://contrib.deeplabcut.org/).
-- (3) a no-install DeepLabCut that you can use on ♾[Google Colab](https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/COLAB/COLAB_DEMO_SuperAnimal.ipynb), 
+- (3) a no-install DeepLabCut that you can use on ♾[Google Colab](https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/COLAB/COLAB_DEMO_SuperAnimal.ipynb),
 test our models in 🕸[the browser](https://contrib.deeplabcut.org/), or on our 🤗[HuggingFace](https://huggingface.co/spaces/DeepLabCut/DeepLabCutModelZoo-SuperAnimals) app!
 - (4) new methods to make SuperAnimal Foundation Models that combine data across different labs/datasets, keypoints, animals/species, and use on your data!
 
@@ -22,7 +23,7 @@ pip install deeplabcut[gui,modelzoo]
 
 ## About the SuperAnimal Models
 
-Animal pose estimation is critical in applications ranging from neuroscience to veterinary medicine. However, reliable inference of animal poses currently requires domain knowledge and labeling effort. To ease access to high-performance animal pose estimation models across diverse environments and species, we present a new paradigm for pre-training and fine-tuning that provides excellent zero-shot (no training required) performance on two major classes of animal pose data: quadrupeds and lab mice. 
+Animal pose estimation is critical in applications ranging from neuroscience to veterinary medicine. However, reliable inference of animal poses currently requires domain knowledge and labeling effort. To ease access to high-performance animal pose estimation models across diverse environments and species, we present a new paradigm for pre-training and fine-tuning that provides excellent zero-shot (no training required) performance on two major classes of animal pose data: quadrupeds and lab mice.
 
 To provide the community with easy access to such high performance models across diverse environments and species, we present a new paradigm for building pre-trained animal pose models -- which we call SuperAnimal models -- and the ability to use them for transfer learning (e.g., fine-tune them if needed).
 
@@ -31,7 +32,7 @@ To provide the community with easy access to such high performance models across
 
 
 
-### SuperAnimal-Quadruped: 
+### SuperAnimal-Quadruped:
 
 
 - `superanimal_quadruped_x` models aim to work across a large range of quadruped animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is orthogonal to the animal ("side view"), and most of the data includes the animals face (thus the front and side of the animal). You will note we have several variants that differ in speed vs. performance, so please do test them out on your data to see which is best suited for your application. Also note we have a "video adaptation" feature, which lets you adapt your data to the model in a self-supervised way. No labeling needed!
@@ -63,7 +64,7 @@ To provide the community with easy access to such high performance models across
         - `superanimal_topviewmouse_dlcrnet` is a bottom-up model that predicts all keypoints then groups them into individuals. This can be faster, but more error prone.
     - `superanimal_topviewmouse` -> This is the same as `superanimal_topviewmouse_dlcrnet`, this was the old naming and being depreciated.
     - For all models, they are automatically downloaded to modelzoo/checkpoints when used.
-    
+
 -  Here are example images of what the model is trained on:
 ![SA-TVM](https://user-images.githubusercontent.com/28102185/209957260-c0db72e0-4fdf-434c-8579-34bc5f27f907.png)
 
@@ -76,9 +77,9 @@ To provide the community with easy access to such high performance models across
 
 ### Practical example: Using SuperAnimal models for inference without training.
 
-You can simply call the model and run video inference. 
+You can simply call the model and run video inference.
 
-To note, a good step is typically to use our self-supervised video adaptation method to reduce jitter. In the `deeplabcut.video_inference_superanimal` simply function set the `video_adapt` option to __True__. Be aware, that enabling this option will (minimally) extend the processing time. 
+To note, a good step is typically to use our self-supervised video adaptation method to reduce jitter. In the `deeplabcut.video_inference_superanimal` simply function set the `video_adapt` option to __True__. Be aware, that enabling this option will (minimally) extend the processing time.
 
 ```python
 import deeplabcut
@@ -114,7 +115,7 @@ deeplabcut.video_inference_superanimal([video_path],
 ```
 
 ### Practical example: Using transfer learning with superanimal weights.
-In the `deeplabcut.train_network` function, the `superanimal_transfer_learning` option plays a pivotal role. If it's set to __True__, it uses a new decoding layer and allows you to use superanimal weights in any project, no matter the number of keypoints. However, if it's set to __False__, you are doing fine-tuning. So, make sure your dataset has the right number of keypoints.  
+In the `deeplabcut.train_network` function, the `superanimal_transfer_learning` option plays a pivotal role. If it's set to __True__, it uses a new decoding layer and allows you to use superanimal weights in any project, no matter the number of keypoints. However, if it's set to __False__, you are doing fine-tuning. So, make sure your dataset has the right number of keypoints.
 
 Specifically:
     * `superanimal_quadruped_x` uses 39 keypoints

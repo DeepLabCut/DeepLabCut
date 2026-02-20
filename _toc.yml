@@ -86,7 +86,24 @@ parts:
 
 - caption: DeepLabCut-Live!
   chapters:
-  - file: docs/deeplabcutlive
+  - file: docs/dlc-live/deeplabcutlive
+  # NOTE @C-Achard Please move if needed, but since it is downstream of DLC-live
+  # I think it makes sense to have it here for now.
+  # TODO remove this note before merging
+  - file: docs/dlc-live/dlc-live-gui/index
+    sections:
+      - file: docs/dlc-live/dlc-live-gui/quickstart/install
+      - file: docs/dlc-live/dlc-live-gui/user_guide/overview
+      - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/camera_support
+        sections:
+          - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/opencv_backend
+          - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/basler_backend
+          - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/aravis_backend
+          - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend
+      - file: docs/dlc-live/dlc-live-gui/user_guide/misc/misc_landing
+        sections:
+          - file: docs/dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads
+          - file: docs/dlc-live/dlc-live-gui/user_guide/misc/timestamp_format
 
 - caption: "🦄 DeepLabCut Model Zoo"
   chapters:
@@ -107,4 +124,4 @@ parts:
 
 - caption: Citations for DeepLabCut
   chapters:
-  - file: docs/citation
+    - file: docs/citation
