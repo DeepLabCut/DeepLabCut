@@ -10,6 +10,7 @@
 #
 """Main pose configuration class for DeepLabCut pose estimation models."""
 
+
 from pydantic.dataclasses import dataclass
 from dataclasses import field
 from pydantic import Field, ConfigDict
@@ -17,6 +18,7 @@ from enum import Enum
 from pathlib import Path
 
 from deeplabcut.core.config.config_mixin import ConfigMixin
+from deeplabcut.core.config.versioning import CURRENT_CONFIG_VERSION, MigrationMixin
 from deeplabcut.core.config.project_config import ProjectConfig
 from deeplabcut.pose_estimation_pytorch.config.data import DataConfig
 from deeplabcut.pose_estimation_pytorch.config.training import TrainSettingsConfig
@@ -116,14 +118,15 @@ class DetectorConfig(ConfigMixin):
     inference: InferenceConfig = field(default_factory=InferenceConfig)
 
 
-@dataclass(config=ConfigDict(extra="forbid"))
-class PoseConfig(ConfigMixin):
+@dataclass(config=ConfigDict(extra="forbid", validate_assignment=True))
+class PoseConfig(MigrationMixin, ConfigMixin):
     """Main configuration class for DeepLabCut pose estimation models.
 
     This is the top-level configuration that brings together all the different
     configuration domains (project, model, data, training, etc.).
 
     Attributes:
+        config_version: Configuration version.
         net_type: Network architecture type (e.g., resnet_50, hrnet_w32, dlcrnet_stride16_ms5)
         method: Method type (bu=Bottom-Up, td=Top-Down, ctd=Conditional Top-Down)
         device: Device configuration (auto, cpu, cuda)
@@ -136,8 +139,7 @@ class PoseConfig(ConfigMixin):
         logger: Logger configuration (e.g., WandB or CSV logger)
         with_center_keypoints: Whether to include center keypoints (for DEKR models)
     """
-
-    version: str = "1.0"
+    config_version: int = CURRENT_CONFIG_VERSION
     model: ModelConfig = field(default_factory=ModelConfig)
     net_type: NetType = NetType.RESNET_50
     method: MethodType = MethodType.BOTTOM_UP
@@ -154,7 +156,7 @@ class PoseConfig(ConfigMixin):
     detector: DetectorConfig | None = None
 
 
-@dataclass(config=ConfigDict(extra="forbid"))
+@dataclass(config=ConfigDict(extra="forbid", validate_assignment=True))
 class TestConfig(ConfigMixin):
     """Configuration class for DeepLabCut test/inference settings.
 
