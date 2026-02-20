@@ -20,7 +20,6 @@ can be registered for specific version pairs when backward compatibility is need
 import copy
 import logging
 from typing import Any, Callable, Dict
-from typing_extensions import Self
 from dataclasses import fields
 from functools import wraps
 
@@ -248,22 +247,19 @@ def migrate_v1_to_v0(config: dict) -> dict:
 class MigrationMixin:
     """Migration mixin for configuration classes.
 
-    This mixin provides a method to migrate the configuration to the current version
-    before validation.
+    Applies :func:`migrate_config` on raw input data **before** pydantic
+    field validation.  Uses ``mode="before"`` so the validator only runs
+    during construction and does not interfere with ``validate_assignment``.
     """
-    @model_validator(mode="wrap")
+    @model_validator(mode="before")
     @classmethod
-    def migrate_then_validate(cls, data: Any, handler: Any) -> Self:
-        """Run migration before Pydantic's standard model validation.
+    def migrate_before_validate(cls, data: Any) -> Any:
+        """Migrate raw input data to the current config version.
 
-        Wraps the default validator: migrates raw dict/ArgsKwargs to current
-        config version, then delegates to handler for normal validation.
+        Converts ``ArgsKwargs`` (positional / keyword constructor args) to a
+        plain dict, then runs the migration chain.  Already-constructed
+        instances and non-dict data are returned unchanged.
         """
-        # If data is already an instance or not a dict, pass through
-        if isinstance(data, cls):
-            return data
-
-        # Convert to dictionary if ArgsKwargs is passed
         if isinstance(data, ArgsKwargs):
             names = [f.name for f in fields(cls)]
             data = dict(
@@ -274,7 +270,7 @@ class MigrationMixin:
             data = migrate_config(
                 data, target_version=CURRENT_CONFIG_VERSION
             )
-        return handler(data)
+        return data
 
 
 # ============================================================================
