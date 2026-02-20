@@ -44,7 +44,8 @@ class PoseDatasetParameters:
         individuals: the names of individuals
         with_center_keypoints: whether to compute center keypoints for individuals
         color_mode: {"RGB", "BGR"} the mode to load images in
-        ctd_config: for CTD models, the configuration for bbox calculation and error sampling
+        ctd_bbox_margin: the margin (in pixels) to add around keypoints when generating
+            bounding boxes from pose
         top_down_crop_size: for top-down models, the (width, height) to crop bboxes to
         top_down_crop_margin: for top-down models, the margin to add around bboxes
     """
@@ -54,7 +55,7 @@ class PoseDatasetParameters:
     individuals: list[str]
     with_center_keypoints: bool = False
     color_mode: str = "RGB"
-    ctd_config: GenSamplingConfig | None = None
+    ctd_bbox_margin: int | None = None
     top_down_crop_size: tuple[int, int] | None = None
     top_down_crop_margin: int | None = None
     top_down_crop_with_context: bool = True
@@ -236,7 +237,7 @@ class PoseDataset(Dataset):
                         synthesized_keypoints,
                         original_size[0],
                         original_size[1],
-                        self.ctd_config.bbox_margin,
+                        self.parameters.ctd_bbox_margin,
                     )
 
             if bboxes[0, 2] == 0 or bboxes[0, 3] == 0:

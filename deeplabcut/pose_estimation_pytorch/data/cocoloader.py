@@ -25,7 +25,7 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
     map_id_to_annotations,
     map_image_path_to_id,
 )
-from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
+from deeplabcut.pose_estimation_pytorch.config.pose import MethodType, PoseConfig
 
 
 class COCOLoader(Loader):
@@ -86,14 +86,14 @@ class COCOLoader(Loader):
         if self._dataset_parameters is None:
             num_individuals, bodyparts = self.get_project_parameters(self.train_json)
 
-            crop_cfg = OmegaConf.select(
-                self.model_cfg,
-                "data.train.top_down_crop",
-                default={},
-            )
+            crop_cfg = OmegaConf.select(self.model_cfg, "data.train.top_down_crop") or {}
             crop_w, crop_h = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
             crop_margin = crop_cfg.get("margin", 0)
             crop_with_context = crop_cfg.get("crop_with_context", True)
+
+            ctd_bbox_margin = None
+            if self.model_cfg["method"] == MethodType.CONDITIONAL_TOP_DOWN:
+                ctd_bbox_margin = self.model_cfg["data"].get("bbox_margin", 20)
 
             self._dataset_parameters = PoseDatasetParameters(
                 bodyparts=bodyparts,
@@ -103,6 +103,7 @@ class COCOLoader(Loader):
                     "with_center_keypoints", False
                 ),
                 color_mode=self.model_cfg.get("color_mode", "RGB"),
+                ctd_bbox_margin=ctd_bbox_margin,
                 top_down_crop_size=(crop_w, crop_h),
                 top_down_crop_margin=crop_margin,
                 top_down_crop_with_context=crop_with_context,

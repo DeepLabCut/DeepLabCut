@@ -151,7 +151,7 @@ def evaluate_multianimal_full(
         )
     )
     all_bpts = np.asarray(
-        len(cfg["individuals"]) * cfg["multianimalbodyparts"] + cfg["uniquebodyparts"]
+        len(cfg["individuals"]) * list(cfg["multianimalbodyparts"]) + list(cfg["uniquebodyparts"])
     )
     colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
     # Make folder for evaluation

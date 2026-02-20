@@ -411,8 +411,8 @@ class PartAffinityFieldPredictor(BasePredictor):
         # Build an index dict of slices for group lookup by (batch, limb)
         batch_groups = defaultdict(list)  # (batch)->list of (limb, start, end)
         for st, en in zip(group_starts, group_ends):
-            b = batch_inds[st]
-            k = edge_idx[st]
+            b = batch_inds[st].item()
+            k = edge_idx[st].item()
             batch_groups[b].append((k, st, en))
 
         paf_limb_inds = set(paf_limb_inds.tolist())

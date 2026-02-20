@@ -19,6 +19,7 @@ from typing import Any, Generic
 import numpy as np
 import torch
 import torch.nn as nn
+from omegaconf import DictConfig
 from torch.nn.parallel import DataParallel
 from torch.utils.data import DataLoader
 
@@ -95,9 +96,11 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         super().__init__(
             model=model, device=device, gpus=gpus, snapshot_path=snapshot_path
         )
-        if isinstance(optimizer, dict):
+        # TODO @deruyter92: decide on typed / plain dict
+        if isinstance(optimizer, (dict, DictConfig)):
             optimizer = build_optimizer(model, optimizer)
-        if isinstance(scheduler, dict):
+        # TODO @deruyter92: decide on typed / plain dict
+        if isinstance(scheduler, (dict, DictConfig)):
             scheduler = schedulers.build_scheduler(scheduler, optimizer)
 
         self.eval_interval = eval_interval
@@ -123,7 +126,9 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 self.model,
                 weights_only=load_weights_only,
             )
-            self.starting_epoch = snapshot.get("metadata", {}).get("epoch", 0)
+            # TODO @deruyter92: This pattern should be refactored throughout the codebase
+            # it is reading a config value that is supposed to be missing / None.
+            self.starting_epoch = (snapshot.get("metadata") or {}).get("epoch", 0)
 
             if "optimizer" in snapshot:
                 self.optimizer.load_state_dict(snapshot["optimizer"])
@@ -516,8 +521,10 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         offsets: torch.Tensor,
     ) -> None:
         """Updates the stored predictions with a new batch"""
-        epoch_gt_metric = self._epoch_ground_truth.get(name, {})
-        epoch_metric = self._epoch_predictions.get(name, {})
+        # TODO @deruyter92: This pattern should be refactored throughout the codebase
+        # it is reading a config value that is supposed to be missing / None.
+        epoch_gt_metric = self._epoch_ground_truth.get(name) or {}
+        epoch_metric = self._epoch_predictions.get(name) or {}
         assert len(gt_keypoints) == len(pred_keypoints)
         assert len(offsets) == len(scales)
         scales = scales.detach().cpu().numpy()

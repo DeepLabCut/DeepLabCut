@@ -18,6 +18,7 @@ import albumentations as A
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from omegaconf import DictConfig, ListConfig
 from tqdm import tqdm
 
 import deeplabcut.core.metrics as metrics
@@ -556,7 +557,8 @@ def evaluate_snapshot(
 
     if pcutoff is None:
         pcutoff = cfg.get("pcutoff", 0.6)
-    elif isinstance(pcutoff, dict):
+    # TODO @deruyter92: decide on typed / plain dict
+    elif isinstance(pcutoff, (dict, DictConfig)):
         pcutoff = [
             pcutoff.get(bpt, 0.6)
             for bpt in eval_parameters.bodyparts + eval_parameters.unique_bpts
@@ -575,7 +577,8 @@ def evaluate_snapshot(
         ),
         "pcutoff": (
             ", ".join([str(v) for v in pcutoff])
-            if isinstance(pcutoff, list)
+            # TODO @deruyter92: decide on typed / plain list
+            if isinstance(pcutoff, (list, ListConfig))
             else pcutoff
         ),
     }
@@ -650,11 +653,12 @@ def evaluate_snapshot(
 
         df_ground_truth = ensure_multianimal_df_format(loader.df)
 
+        # TODO @deruyter92: This pattern should be refactored throughout the codebase
+        # it is reading a config value that is supposed to be missing / None.
         bboxes_cutoff = (
-            loader.model_cfg.get("detector", {})
-            .get("model", {})
-            .get("box_score_thresh", 0.6)
-        )
+            (loader.model_cfg.get("detector") or {})
+            .get("model") or {}
+        ).get("box_score_thresh", 0.6)
 
         for mode in ["train", "test"]:
             df_combined = predictions[mode].merge(

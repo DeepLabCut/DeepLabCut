@@ -13,8 +13,8 @@ from __future__ import annotations
 import pickle
 
 import pytest
-from ruamel.yaml import YAML
 
+from deeplabcut.core.config.utils import get_yaml_loader, get_yaml_dumper
 import deeplabcut.generate_training_dataset.metadata as metadata
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
@@ -68,7 +68,7 @@ def test_load_metadata(tmpdir, data: dict, load_splits: bool):
     # write data to tmp file
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
     with open(meta_path, "w") as f:
-        YAML().dump(data, f)
+        get_yaml_dumper().dump(data, f)
 
     print(cfg_path)
     print(meta_path)
@@ -181,7 +181,7 @@ def test_save_metadata_simple(tmpdir, data):
 
     trainset_meta.save()
     with open(meta_path, "r") as f:
-        meta = YAML().load(f)
+        meta = get_yaml_loader().load(f)
     print(data)
     print(meta)
     assert data["expected"] == meta
@@ -383,7 +383,7 @@ def _create_project_with_config(
 
     cfg_path = project_dir.join("config.yaml")
     with open(cfg_path, "w") as file:
-        YAML().dump(cfg, file)
+        get_yaml_dumper().dump(cfg, file)
 
     it = f"iteration-{iteration}"
     dir_name = "UnaugmentedDataSet_" + task + date

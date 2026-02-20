@@ -14,6 +14,10 @@ from __future__ import annotations
 import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable
+from pathlib import PurePath
+from enum import Enum
+
+from omegaconf import DictConfig
 
 if TYPE_CHECKING:
     from deeplabcut.core.config.project_config import ProjectConfig, ProjectConfig3D
@@ -21,10 +25,48 @@ if TYPE_CHECKING:
 import yaml
 import ruamel.yaml.representer
 from ruamel.yaml import YAML
-from omegaconf import DictConfig
+from omegaconf import DictConfig, ListConfig
 from pydantic import ValidationError
 
 from deeplabcut.core.engine import Engine
+
+
+def get_yaml_loader() -> YAML:
+    """Get a ruamel.yaml YAML handler with safe mode."""
+    yaml = YAML(typ="safe", pure=True)
+    return yaml
+
+
+def get_yaml_dumper() -> YAML:
+    """Get a ruamel.yaml YAML handler with representers for Enum and Path objects."""
+    yaml = YAML(typ="rt", pure=True)
+
+    # Use a very large width so long strings (e.g., file paths or keys with spaces)
+    # are kept on a single line instead of being wrapped, which can otherwise cause
+    # them to be emitted as complex keys. See also:
+    # https://stackoverflow.com/questions/31197268/pyyaml-yaml-dump-produces-complex-key-for-string-key-122-chars/31199123#31199123
+    # See PR https://github.com/DeepLabCut/DeepLabCut/pull/3140 for more details.
+    yaml.width = 1_000_000
+
+    # Auto-serialize Path objects as strings
+    yaml.representer.add_multi_representer(
+        PurePath,
+        lambda r, p: r.represent_str(str(p))
+    )
+    yaml.representer.add_multi_representer(
+        Enum,
+        lambda r, e: r.represent_str(e.value)
+    )
+    # OmegaConf containers -> plain dict/list so ruamel can serialize them
+    yaml.representer.add_representer(
+        DictConfig,
+        lambda r, d: r.represent_dict(dict(d))
+    )
+    yaml.representer.add_representer(
+        ListConfig,
+        lambda r, l: r.represent_list(list(l))
+    )
+    return yaml
 
 
 def read_config_as_dict(config_path: str | Path) -> dict:
@@ -43,7 +85,7 @@ def read_config_as_dict(config_path: str | Path) -> dict:
             f"Config {config_path} is not found. Please make sure that the file exists."
         )
     with open(config_path, "r") as f:
-        cfg = YAML(typ="safe", pure=True).load(f)
+        cfg = get_yaml_loader().load(f)
 
     return cfg
 
@@ -65,7 +107,7 @@ def write_config(config_path: str | Path, config: dict, overwrite: bool = True) 
         )
 
     with open(config_path, "w") as file:
-        YAML().dump(config, file)
+        get_yaml_dumper().dump(config, file)
 
 
 def pretty_print(
@@ -84,7 +126,7 @@ def pretty_print(
         print_fn = print
 
     for k, v in config.items():
-        if isinstance(v, dict):
+        if isinstance(v, (dict, DictConfig)):
             print_fn(f"{indent * ' '}{k}:")
             pretty_print(v, indent + 2, print_fn=print_fn)
         else:
@@ -104,7 +146,7 @@ def create_config_template(multianimal: bool = False) -> tuple:
     """
     warnings.warn("This function is deprecated. Use deeplabcut.core.config.ProjectConfig instead.")
     from deeplabcut.core.config.project_config import ProjectConfig
-    ruamelFile = YAML()
+    ruamelFile = get_yaml_dumper()
     cfg_file = ProjectConfig(multianimalproject=multianimal).to_dict()
     return cfg_file, ruamelFile
 
@@ -140,7 +182,7 @@ num_cameras:
 camera_names:
 scorername_3d: # Enter the scorer name for the 3D output
     """
-    ruamelFile_3d = YAML()
+    ruamelFile_3d = get_yaml_dumper()
     cfg_file_3d = ruamelFile_3d.load(yaml_str)
     return cfg_file_3d, ruamelFile_3d
 

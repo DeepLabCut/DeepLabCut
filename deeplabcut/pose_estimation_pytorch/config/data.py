@@ -123,7 +123,6 @@ class GenSamplingConfig(ConfigMixin):
     """Configuration for CTD models.
 
     Args:
-        bbox_margin: The margin added around conditional keypoints
         keypoint_sigmas: The sigma for each keypoint.
         keypoints_symmetry: Indices of symmetric keypoints (e.g. left/right eye)
         jitter_prob: The probability of applying jitter. Jitter error is defined as
@@ -138,7 +137,6 @@ class GenSamplingConfig(ConfigMixin):
             large displacement from the GT keypoint position.
     """
 
-    bbox_margin: int
     keypoint_sigmas: float | list[float] = 0.1
     keypoints_symmetry: list[tuple[int, int]] | None = None
     jitter_prob: float = 0.16

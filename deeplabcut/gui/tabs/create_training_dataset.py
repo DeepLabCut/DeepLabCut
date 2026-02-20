@@ -81,8 +81,10 @@ class CreateTrainingDataset(DefaultTab):
         self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
 
     def set_edit_table_visibility(self) -> None:
+        # TODO @deruyter92: This pattern should be refactored throughout the codebase
+        # it is reading a config value that is supposed to be missing / None.
         has_conversion_tables = bool(
-            self.root.cfg.get("SuperAnimalConversionTables", {})
+            self.root.cfg.get("SuperAnimalConversionTables") or {}
         )
         is_pytorch_engine = self.root.engine == Engine.PYTORCH
         is_finetuning = self.weight_init_selector.with_decoder

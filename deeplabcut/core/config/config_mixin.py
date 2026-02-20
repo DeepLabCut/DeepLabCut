@@ -1,14 +1,18 @@
+import logging
 from typing import Callable, Mapping
 from typing_extensions import Self
 from pathlib import Path
 from dataclasses import asdict, fields
 from enum import Enum
+from functools import wraps
 
-from omegaconf import OmegaConf, DictConfig
+from omegaconf import OmegaConf, DictConfig, ListConfig
 from pydantic import TypeAdapter
 from ruamel.yaml.comments import CommentedMap
 
 from deeplabcut.core.config.utils import read_config_as_dict, write_config, pretty_print
+
+logger = logging.getLogger(__name__)
 
 
 class ConfigMixin:
@@ -96,7 +100,10 @@ class ConfigMixin:
         yaml_dict = read_config_as_dict(yaml_path)
         if ignore_empty:
             yaml_dict = {k: v for k, v in yaml_dict.items() if v is not None}
-        return cls.from_dict(yaml_dict)
+        cfg = cls.from_dict(yaml_dict)
+        updates = cfg._post_yaml_load_updates(yaml_path=Path(yaml_path))
+        cfg._log_updates(updates)
+        return cfg
 
     def to_yaml(self, yaml_path: str | Path, overwrite: bool = True) -> None:
         dict_data = self.to_dict_normalized()
@@ -121,6 +128,78 @@ class ConfigMixin:
         print_fn: Callable[[str], None] | None = None,
     ) -> None:
         pretty_print(config=self.to_dict(), indent=indent, print_fn=print_fn)
+
+    def _post_yaml_load_updates(self, *, yaml_path: Path) -> list[str]:
+        """Override to apply context-dependent fixups after loading from YAML.
+
+        Called automatically by from_yaml(). Return a list of human-readable
+        descriptions of each change made (empty list = no changes).
+        These are logged but never written to disk -- call to_yaml() explicitly
+        if persistence is needed.
+        """
+        return []
+
+    def _log_updates(self, updates: list[str]) -> None:
+        """Log the updates to the configuration."""
+        if updates:
+            logger.info(f"The following updates were made to {self.__class__.__name__}:")
+            for update in updates:
+                logger.info(update)
+
+
+def ensure_plain_config(fn: Callable) -> Callable:
+    """Decorator that converts config arguments to plain Python dicts.
+
+    Any positional or keyword argument that is a :class:`ConfigMixin`,
+    :class:`~omegaconf.DictConfig`, or :class:`~omegaconf.ListConfig` is
+    automatically converted to a plain ``dict`` / ``list`` before the
+    decorated function is called.
+
+    Example::
+
+        @ensure_plain_config
+        def train(model_cfg: dict, lr: float = 1e-3):
+            ...
+
+        train(my_pose_config)  # PoseConfig → dict
+        train(omega_dict)      # DictConfig → dict
+        train(plain_dict)      # dict passed through unchanged
+    """
+
+    def _to_plain(value, fn_name: str = "<unknown>", var_name: str = "<unknown>"):
+        """Convert a ConfigMixin, DictConfig, or ListConfig to a plain Python object."""
+        if isinstance(value, ConfigMixin):
+            logger.debug(
+                "converting %s (%s) to native dict in %s.",
+                var_name,
+                type(value).__name__,
+                fn_name,
+            )
+            return value.to_dict()
+        if isinstance(value, DictConfig):
+            logger.debug(
+                "converting %s (OmegaConf DictConfig) to plain dict in %s.",
+                var_name,
+                fn_name,
+            )
+            return OmegaConf.to_container(value, resolve=True)
+        if isinstance(value, ListConfig):
+            logger.debug(
+                "converting %s (OmegaConf ListConfig) to plain list in %s.",
+                var_name,
+                fn_name,
+            )
+            return OmegaConf.to_container(value, resolve=True)
+        return value
+
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        fn_name = fn.__qualname__
+        args = tuple(_to_plain(a, fn_name) for a in args)
+        kwargs = {k: _to_plain(v, fn_name=fn_name, var_name=k) for k, v in kwargs.items()}
+        return fn(*args, **kwargs)
+
+    return wrapper
 
 
 def _normalize_for_serialization(obj):

@@ -14,10 +14,12 @@ from __future__ import annotations
 import copy
 from pathlib import Path
 
+from deeplabcut.core.config.config_mixin import ensure_plain_config
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.utils import auxiliaryfunctions
 
 
+@ensure_plain_config
 def replace_default_values(
     config: dict | list,
     num_bodyparts: int | None = None,
@@ -121,6 +123,7 @@ def replace_default_values(
     return config
 
 
+@ensure_plain_config
 def update_config(config: dict, updates: dict, copy_original: bool = True) -> dict:
     """Updates items in the configuration file
 
@@ -151,6 +154,11 @@ def update_config(config: dict, updates: dict, copy_original: bool = True) -> di
     return config
 
 
+# TODO @deruyter92 2026-02-17: This function is currently still used to update 
+# the config in a late stage (after the config is initially created and validated).
+# We should move away from this strategy and update all override arguments during 
+# config creation.   
+@ensure_plain_config
 def update_config_by_dotpath(
     config: dict, updates: dict, copy_original: bool = True
 ) -> dict:

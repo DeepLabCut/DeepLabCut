@@ -144,7 +144,15 @@ class Loader(ABC):
         Args:
             updates: the items to update in the model configuration
         """
-        self.model_cfg = config.update_config_by_dotpath(self.model_cfg, updates)
+        # TODO @deruyter92: updating the config after initialization is 
+        # not ideal. We should move away from this strategy and update all 
+        # override arguments during config creation.
+        updated_cfg: dict = config.update_config_by_dotpath(self.model_cfg, updates)
+
+        # Validate the updated config against the PoseConfig pydantic model
+        PoseConfig.validate_dict(updated_cfg)
+        self.model_cfg = PoseConfig.from_any(updated_cfg).to_dictconfig()
+
         config_utils.write_config(self.model_config_path, self.model_cfg)
 
     @abstractmethod
@@ -200,7 +208,7 @@ class Loader(ABC):
             individuals = parameters.individuals
             num_bodyparts = parameters.num_joints
 
-        if "weight_init" in self.model_cfg["train_settings"]:
+        if self.model_cfg["train_settings"].get("weight_init") is not None:
             weight_init_cfg = self.model_cfg["train_settings"]["weight_init"]
             if weight_init_cfg["memory_replay"]:
                 conversion_array = weight_init_cfg["conversion_array"]
@@ -299,10 +307,8 @@ class Loader(ABC):
         data["annotations"] = self.filter_annotations(data["annotations"], task)
         ctd_config = None
         if self.pose_task == Task.COND_TOP_DOWN:
-            ctd_config = GenSamplingConfig(
-                bbox_margin=self.model_cfg["data"].get("bbox_margin", 20),
-                **self.model_cfg["data"].get("gen_sampling", {}),
-            )
+            # TODO @deruyter92: when moving to typed configs, this conversion becomes unnecessary
+            ctd_config = GenSamplingConfig.from_any(self.model_cfg.data.gen_sampling)
 
         dataset = PoseDataset(
             images=data["images"],

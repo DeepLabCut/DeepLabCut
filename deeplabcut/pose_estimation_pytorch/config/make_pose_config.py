@@ -16,7 +16,7 @@ from pathlib import Path
 
 from omegaconf import DictConfig
 
-from deeplabcut.core.config import read_config_as_dict, write_config
+from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.config.utils import (
     get_config_folder_path,
@@ -26,15 +26,18 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     update_config,
 )
 from deeplabcut.core.config.project_config import ProjectConfig
+from deeplabcut.core.config.config_mixin import ensure_plain_config
 from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
-from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig, NetType
+from deeplabcut.pose_estimation_pytorch.config.training import TrainSettingsConfig
+from deeplabcut.pose_estimation_pytorch.config.runner import RunnerConfig
+from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig, TestConfig, NetType
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
 
 
-
+@ensure_plain_config
 def _load_pose_config_defaults(
-    project_config: ProjectConfig | DictConfig,
+    project_config: dict,
     net_type: NetType | str | None = None,
     top_down: bool = False,
     detector_type: str | None = None,
@@ -92,7 +95,7 @@ def _load_pose_config_defaults(
         net_type = project_config.get("default_net_type", "resnet_50")
 
     configs_dir = get_config_folder_path()
-
+    base_cfg = load_base_config(configs_dir)
     backbones = load_backbones(configs_dir)
     if net_type in backbones:
         if not top_down and multianimal_project:
@@ -140,6 +143,7 @@ def _load_pose_config_defaults(
     aug_cfg = {"data": read_config_as_dict(configs_dir / "base" / aug_filename)}
 
     model_cfg = update_config(model_cfg, aug_cfg)
+    model_cfg = update_config(base_cfg, model_cfg)
 
     # add a unique bodypart head if needed
     if len(unique_bpts) > 0:
@@ -217,40 +221,48 @@ def make_pytorch_pose_config(
         the PyTorch pose configuration file
     """
     # Initialize ProjectConfig (convert to DictConfig if needed)
-    project_config: DictConfig = ProjectConfig.from_any(project_config).to_dictconfig()
+    project_config = ProjectConfig.from_any(project_config)
     project_config.pose_config_path = pose_config_path
+
+    # @TODO @deruyter92 2026-02-13: This is a temporary fix to allow backwards compatibility. 
+    # This should be resolved by migrating to V1 project config.
+    project_config.with_identity = project_config.identity
+    if project_config.bodyparts == "MULTI!":
+        project_config.bodyparts = project_config.multianimalbodyparts
+    project_config.unique_bodyparts = project_config.uniquebodyparts
     
     # Initialize PoseConfig as DictConfig
-    pose_config = PoseConfig().to_dictconfig()
-    pose_config.metadata = project_config
-    pose_config.net_type = NetType(net_type) if net_type is not None else None
-
-    # Add inference config and weight init configs
-    pose_config.inference = InferenceConfig().to_dictconfig()
     if weight_init is not None:
-        weight_init = WeightInitialization.from_any(weight_init).to_dictconfig()
-        pose_config.train_settings.weight_init = weight_init
+        weight_init = WeightInitialization.from_any(weight_init)
+
+    pose_config = PoseConfig(
+        net_type=NetType(net_type) if net_type is not None else None,
+        metadata=project_config,
+        train_settings=TrainSettingsConfig(weight_init=weight_init),
+        # runner=RunnerConfig(),
+    ).to_dict()
 
     # Update default values for the specific model architecture and project config.
     # TODO @deruyter92 2026-02-04: using legacy v0 config (dict) for the defaults,
     # we should move to typed model defaults and use omegaconf merge to update
     defaults: dict = _load_pose_config_defaults(
-        project_config,
+        project_config.to_dict(),
         net_type,
         top_down,
         detector_type,
         ctd_conditions,
     )
-    pose_config = update_config(pose_config, defaults) 
+    pose_config: dict = update_config(pose_config, defaults) 
 
     # Validate the config against the PoseConfig pydantic model after updating
-    PoseConfig.validate_dict(pose_config)
+    pose_config = PoseConfig.from_any(pose_config)
 
     if save:
-        PoseConfig().from_any(pose_config).to_yaml(pose_config_path, overwrite=True)
-    return pose_config
+        pose_config.to_yaml(pose_config_path, overwrite=True)
+    return pose_config.to_dictconfig()
 
 
+@ensure_plain_config
 def _add_ctd_conditions(
     model_cfg: dict, ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int]
 ):
@@ -315,11 +327,14 @@ def make_pytorch_test_config(
     Returns:
         The test configuration file.
     """
+    # Validate the model config against the PoseConfig pydantic model
+    model_config = PoseConfig.from_any(model_config).to_dictconfig()
+
     bodyparts = model_config["metadata"]["bodyparts"]
     unique_bodyparts = model_config["metadata"]["unique_bodyparts"]
     all_joint_names = bodyparts + unique_bodyparts
 
-    test_config = dict(
+    test_config = TestConfig(
         dataset=model_config["metadata"]["project_path"],
         dataset_type="multi-animal-imgaug",  # required for downstream tracking
         num_joints=len(all_joint_names),
@@ -330,9 +345,9 @@ def make_pytorch_test_config(
         scoremap_dir="test",
     )
     if save:
-        write_config(test_config_path, test_config)
+        test_config.to_yaml(test_config_path, overwrite=True)
 
-    return test_config
+    return test_config.to_dict()
 
 
 def make_basic_project_config(
@@ -404,6 +419,7 @@ def make_basic_project_config(
     )
 
 
+@ensure_plain_config
 def add_metadata(
     project_config: dict, config: dict, pose_config_path: str | Path
 ) -> dict:

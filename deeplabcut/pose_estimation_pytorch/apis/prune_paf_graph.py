@@ -146,6 +146,9 @@ def benchmark_paf_graphs(
             print(f"|   edges: {best_edges}")
             print()
 
+        # TODO @deruyter92: Mid-way updates of the config are not ideal.
+        # We should validate this against the pydantic schema.
+        
         # update the edges to keep in the PyTorch configuration file
         loader.update_model_cfg(
             {"model.heads.bodypart.predictor.edges_to_keep": best_edges}
@@ -288,7 +291,7 @@ def get_n_best_paf_graphs(
     order = order[np.isin(order, root_edges, invert=True)]
     best_edges = [root_edges]
     for length in lengths:
-        best_edges.append(root_edges + list(order[:length]))
+        best_edges.append(root_edges + order[:length].tolist())
 
     model.heads.bodypart.predictor.return_preds = return_preds
     return best_edges, dict(zip(existing_edges, scores))
