@@ -17,7 +17,7 @@ The core idea is:
 
 ```{note}
 The example below targets the PyTorch engine.
-If you are using **TensorFlow models**, you will typically point the GUI to a DLC model directory instead.
+If you are using **TensorFlow models**, you will typically point the GUI to a DLC model *directory* instead of a model *.pth file*.
 ```
 
 ---
@@ -76,7 +76,7 @@ What this does:
 Behavior:
 
 - If `export_path` already exists, the function **skips** exporting (and emits a warning).
-- If `detector_name` is provided, it downloads and exports the detector weights as well.
+- If `detector_name` is provided, it downloads and exports a top-down model with the detector weights as well.
 
 ---
 

@@ -37,7 +37,7 @@ To start running an experiment, the typical workflow is:
 
 1. **Configure Cameras**
    - Use **Configure Cameras…** to select one or more cameras and their parameters.
-   <!-- TODO for more details see... -->
+     See {ref}`file:dlclivegui-camera-support` for details on supported camera backends and troubleshooting.
 
 2. **Start Preview**
    - Click **Start Preview** to begin streaming all selected configured cameras.

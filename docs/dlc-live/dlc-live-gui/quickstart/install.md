@@ -8,6 +8,12 @@ We support various installation methods, including `uv` and `mamba`/`conda`.
 
 ## System requirements
 
+### Key takeaways
+
+- **On Windows**: If you want TensorFlow, use Python 3.10
+- **On macOS**: TensorFlow is only supported on CPU
+- **On Linux**: Full support for both PyTorch and TensorFlow
+
 ### OS support
 
 | OS | PyTorch | TensorFlow | Notes & recommendations |
@@ -41,47 +47,26 @@ If you use an OpenCV-compatible camera (e.g. USB webcam, OBS virtual camera), yo
 
 ---
 
+## Quickstart (recommended defaults)
+
+```bash
+git clone https://github.com/DeepLabCut/DeepLabCut-live-GUI.git
+cd DeepLabCut-live-GUI
+uv venv
+source .venv/bin/activate   # Windows: see tabs below
+uv pip install -e ".[pytorch]"
+dlclivegui
+```
+
 ## Choose your installation method
 
-We support several installation methods to fit different user preferences and workflows.
-
-Below we document installation with `uv` and `mamba`/`conda`, but you can also install with other package managers like `pdm` if you prefer.
+Below instructions cover installation with `uv` and `mamba`/`conda`, but you can also install with other package managers like `pdm` if you prefer.
 
 ```{note}
 The entire DeepLabCut package and its GUI are not required to use this software, as it is designed to be a lightweight interface for real‑time pose estimation.
 ```
 
-### Install with `uv`
-
-We recommend installing with [`uv`](https://github.com/astral-sh/uv),
-but also support installation with `pip` or `conda` (see next section).
-
-#### Create and activate a new virtual environment
-
-`````{tab-set}
-````{tab-item} Linux / macOS
-```bash
-uv venv dlclivegui
-source dlclivegui/bin/activate
-```
-````
-
-````{tab-item} Windows (Command Prompt)
-```cmd
-uv venv dlclivegui
-.\dlclivegui\Scripts\activate.bat
-```
-````
-
-````{tab-item} Windows (PowerShell)
-```powershell
-uv venv dlclivegui
-.\dlclivegui\Scripts\Activate.ps1
-```
-````
-`````
-
-#### Install DeepLabCut-live-GUI
+### Install DeepLabCut-live-GUI
 
 ```{danger}
 This pre-release version of the package is not currently on PyPI.
@@ -95,16 +80,46 @@ git clone https://github.com/DeepLabCut/DeepLabCut-live-GUI.git
 cd DeepLabCut-live-GUI
 ```
 
-#### Choose inference backend
+#### Install with `uv`
+
+We recommend installing with [`uv`](https://github.com/astral-sh/uv),
+but also support installation with `pip` or `conda` (see next section).
+
+##### Create and activate a new virtual environment
+
+`````{tab-set}
+````{tab-item} Linux / macOS
+```bash
+uv venv -p 3.12 # or desired Python version
+source .venv/bin/activate
+```
+````
+
+````{tab-item} Windows (Command Prompt)
+```cmd
+uv venv -p 3.12 # or desired Python version
+.\.venv\Scripts\activate.bat
+```
+````
+
+````{tab-item} Windows (PowerShell)
+```powershell
+uv venv -p 3.12 # or desired Python version
+.\.venv\Scripts\Activate.ps1
+```
+````
+`````
+
+##### Choose inference backend
 
 We offer two distinct inference backends: **PyTorch** and **TensorFlow**.
-You can install either or both, but you must choose at least one to run the pose estimation models.
+You can install either or both, but you must** choose at least one** to run the pose estimation models.
 
 `````{tab-set}
 
 ````{tab-item} PyTorch
 ```bash
-uv pip install -e .[pytorch]
+uv pip install -e ".[pytorch]"
 ```
 ```{note}
 For detailed installation instructions, please refer to the [official PyTorch installation guide](https://pytorch.org/get-started/locally/).
@@ -117,7 +132,7 @@ Please note TensorFlow is **no longer available** on **Windows** for **Python > 
 ```
 
 ```bash
-uv pip install -e .[tf]
+uv pip install -e ".[tf]"
 ```
 ```{note}
 For detailed installation instructions, please refer to the [official TensorFlow installation guide](https://www.tensorflow.org/install/pip).
@@ -125,9 +140,9 @@ For detailed installation instructions, please refer to the [official TensorFlow
 ````
 `````
 
-### Install with `mamba` or `conda`
+#### Install with `mamba` or `conda`
 
-#### Create and activate a new conda environment
+##### Create and activate a new conda environment
 
 If you prefer using `mamba` or `conda`, you can create a new environment and install the package with:
 
@@ -136,21 +151,17 @@ conda create -n dlclivegui python=3.12 # pick your desired Python version
 conda activate dlclivegui
 ```
 
-#### Clone the repository
+##### Choose inference backend
 
-```bash
-git clone https://github.com/DeepLabCut/DeepLabCut-live-GUI.git
-cd DeepLabCut-live-GUI
-```
+We offer two distinct inference backends: **PyTorch** and **TensorFlow**.
+You can install either or both, but you must** choose at least one** to run the pose estimation models.
 
-#### Install DeepLabCut-live-GUI
-
-Then, install the package with the desired backend:
+Install the package with the desired backend:
 
 `````{tab-set}
 ````{tab-item} PyTorch
 ```bash
-pip install -e .[pytorch]
+pip install -e ".[pytorch]"
 ```
 ```{note}
 For detailed installation instructions, please refer to the [official PyTorch installation guide](https://pytorch.org/get-started/locally/).
@@ -162,13 +173,21 @@ For detailed installation instructions, please refer to the [official PyTorch in
 Please note TensorFlow is **no longer available** on **Windows** for **Python > 3.10**.
 ```
 ```bash
-pip install -e .[tf]
+pip install -e ".[tf]"
 ```
 ```{note}
 For detailed installation instructions, please refer to the [official TensorFlow installation guide](https://www.tensorflow.org/install/pip).
 ```
 ````
 `````
+
+## Verify installation
+
+After installation, you can verify that the package is installed correctly with:
+
+```bash
+dlclivegui --help
+```
 
 ## Run the application
 
