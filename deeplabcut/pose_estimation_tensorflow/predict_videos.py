@@ -331,9 +331,11 @@ def analyze_videos(
     batchsize: int or None, optional, default=None
         Change batch size for inference; if given overwrites value in ``pose_cfg.yaml``.
 
-    cropping: list or None, optional, default=None
-        List of cropping coordinates as [x1, x2, y1, y2].
-        Note that the same cropping parameters will then be used for all videos.
+    cropping: None, list or 'from_config', default='from_config'.
+        - Value None is interpreted as no cropping.
+        - List of cropping coordinates as [x1, x2, y1, y2].
+        - Value 'from_config' is interpreted as read cropping params from config.yaml.
+        Note: when cropping, the same parameters will be used for all videos.
         If different video crops are desired, run ``analyze_videos`` on individual
         videos with the corresponding cropping coordinates.
 
@@ -484,11 +486,32 @@ def analyze_videos(
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     iteration = cfg["iteration"]
 
-    if cropping is not None:
+    if cropping is not None and cropping != 'from_config':
+        # FIXME: (Jaap) writing cropping parameters directly to config.yaml
+        # can lead to unexpected behavior.
         cfg["cropping"] = True
         cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"] = cropping
         print("Overwriting cropping parameters:", cropping)
         print("These are used for all videos, but won't be save to the cfg file.")
+    else:
+        if cropping is None:
+            print(
+                "Warning: cropping=None is not supported for tensorflow models. "
+                f"Defaulting to cropping='from_config'."
+            )
+        try:
+            enable_cropping = cfg['cropping']
+            cropping_coords = [cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]]
+        except KeyError as e:
+            missing_keys = [k for k in ("x1", "x2", "y1", "y2") if k not in cfg]
+            raise KeyError(
+                "Cropping was set to 'from_config', but the following cropping keys are "
+                f"missing from the project configuration: {missing_keys}"
+            ) from e
+        print(
+            f"Using crop settings from config.yaml (cropping={enable_cropping}, "
+            f"with coordinates {cropping_coords})"
+        )
 
     modelfolder = os.path.join(
         cfg["project_path"],

@@ -15,7 +15,7 @@ import logging
 import pickle
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import albumentations as A
 import numpy as np
@@ -55,6 +55,13 @@ class VideoIterator(VideoReader):
         context: list[dict[str, Any]] | None = None,
         cropping: list[int] | None = None,
     ) -> None:
+        """
+        Args:
+            video_path: The path to the video to iterate over.
+            context: A list of dictionaries containing context for each frame.
+            cropping: A list of 4 integers specifying the cropping coordinates 
+                as [x1, x2, y1, y2]. Value None is interpreted as no cropping.
+        """
         super().__init__(str(video_path))
         self._context = context
         self._index = 0
@@ -141,6 +148,7 @@ def video_inference(
         cropping: Optionally, video inference can be run on a cropped version of the
             video. To do so, pass a list containing 4 elements to specify which area
             of the video should be analyzed: ``[xmin, xmax, ymin, ymax]``.
+            A value of None is interpreted as no cropping.
         shelf_writer: By default, data are dumped in a pickle file at the end of the
             video analysis. Passing a shelf manager writes data to disk on-the-fly
             using a "shelf" (a pickle-based, persistent, database-like object by
@@ -270,7 +278,7 @@ def analyze_videos(
     calibrate: bool = False,
     identity_only: bool | None = False,
     overwrite: bool = False,
-    cropping: list[int] | None = None,
+    cropping: list[int] | None | Literal["from_config"] = "from_config",
     save_as_df: bool = False,
     show_gpu_memory: bool = False,
     inference_cfg: InferenceConfig | dict | None = None,
@@ -394,10 +402,14 @@ def analyze_videos(
         identity_only: sub-call for auto_track. If ``True`` and animal identity was
             learned by the model, assembly and tracking rely exclusively on identity
             prediction.
-        cropping: List of cropping coordinates as [x1, x2, y1, y2]. Note that the same
-            cropping parameters will then be used for all videos. If different video
-            crops are desired, run ``analyze_videos`` on individual videos with the
-            corresponding cropping coordinates.
+        cropping: 
+            Cropping parameters to use for the video analysis. Can be either:
+            - Value None which is interpreted as no cropping.
+            - List of cropping coordinates as [x1, x2, y1, y2]. 
+            - String "from_config" to use cropping parameters from config.yaml.
+            Note that for cropping the same parameters will then be used for all videos. 
+            If different video crops are desired, run ``analyze_videos`` on 
+            individual videos with the corresponding cropping coordinates. 
         save_as_df: Cannot be used when `use_shelve` is True. Saves the video
             predictions (before tracking results) to an H5 file containing a pandas
             DataFrame. If ``save_as_csv==True`` than the full predictions will also be
@@ -432,12 +444,20 @@ def analyze_videos(
         detector_snapshot_index,
     )
 
-    if cropping is None and loader.project_cfg.get("cropping", False):
-        cropping = (
-            loader.project_cfg["x1"],
-            loader.project_cfg["x2"],
-            loader.project_cfg["y1"],
-            loader.project_cfg["y2"],
+    # Read the cropping parameters in the configuration file (only used when cropping=='from_config')
+    cropping_config = (
+        [loader.project_cfg[k] for k in ["x1", "x2", "y1", "y2"]]
+        if loader.project_cfg.get("cropping", False) else None
+    )
+
+    if cropping == "from_config":
+        cropping = cropping_config
+        logging.info(f"Using cropping parameters from config.yaml: cropping={cropping_config}")
+    elif cropping is None and cropping_config:
+        logging.warning(
+            "Found cropping configured in config.yaml, but analyze_videos received cropping=None. "
+            "To enable cropping, run analyze_videos with cropping=[x1, x2, y1, y2] or "
+            "cropping='from_config'. Continuing analysis without cropping..."
         )
 
     # Get general project parameters

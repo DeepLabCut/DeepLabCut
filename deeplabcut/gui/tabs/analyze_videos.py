@@ -275,15 +275,13 @@ class AnalyzeVideos(DefaultTab):
             num_animals_in_videos = None
             assemble_with_ID_only = False
 
+        # Read cropping parameters from config
         cropping = None
-
-        if self.root.cfg["cropping"] == "True":
-            cropping = (
-                self.root.cfg["x1"],
-                self.root.cfg["x2"],
-                self.root.cfg["y1"],
-                self.root.cfg["y2"],
-            )
+        if self.root.cfg.get("cropping", False):
+            cropping = [
+                self.root.cfg[k]
+                for k in ["x1", "x2", "y1", "y2"]
+            ]
 
         dynamic_cropping_params = (False, 0.5, 10)
         try:

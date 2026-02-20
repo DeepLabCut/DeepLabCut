@@ -12,7 +12,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Literal
 
 import numpy as np
 from ruamel.yaml import YAML
@@ -666,7 +666,7 @@ def analyze_videos(
     in_random_order: bool = True,
     destfolder: str | None = None,
     batchsize: int = None,
-    cropping: list[int] | None = None,
+    cropping: list[int] | None | Literal['from_config'] = 'from_config',
     TFGPUinference: bool = True,
     dynamic: tuple[bool, float, int] = (False, 0.5, 10),
     modelprefix: str = "",
@@ -740,9 +740,11 @@ def analyze_videos(
         Currently not supported by the PyTorch engine.
         Change batch size for inference; if given overwrites value in ``pose_cfg.yaml``.
 
-    cropping: list or None, optional, default=None
-        List of cropping coordinates as [x1, x2, y1, y2].
-        Note that the same cropping parameters will then be used for all videos.
+    cropping: None, list or 'from_config', default='from_config'.
+        - Value None is interpreted as no cropping.
+        - List of cropping coordinates as [x1, x2, y1, y2].
+        - Value 'from_config' is interpreted as read cropping params from config.yaml.
+        Note: when cropping, the same parameters will be used for all videos.
         If different video crops are desired, run ``analyze_videos`` on individual
         videos with the corresponding cropping coordinates.
 
