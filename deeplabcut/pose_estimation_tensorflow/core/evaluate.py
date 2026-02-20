@@ -714,7 +714,7 @@ def evaluate_network(
         )
         # Make folder for evaluation
         auxiliaryfunctions.attempt_to_make_folder(
-            str(cfg["project_path"] + "/evaluation-results/")
+            str(Path(cfg["project_path"]) / "evaluation-results")
         )
         for shuffle in Shuffles:
             for trainFraction in TrainingFractions:
