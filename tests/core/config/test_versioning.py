@@ -13,7 +13,7 @@ import logging
 
 import pytest
 
-from pydantic import ValidationError
+from pydantic import ConfigDict, ValidationError
 from pydantic.dataclasses import dataclass
 
 from deeplabcut.core.config import versioning
@@ -742,3 +742,38 @@ class TestMigrationLogging:
         with caplog.at_level(logging.DEBUG, logger=_LOGGER_NAME):
             migrate_config(cfg, target_version=_V51)
         assert "Updated field 'a.b.c': 'old' -> 'new'" in caplog.text
+
+
+# -----------------------------------------------------------------------------
+# MigrationMixin compatibility with validate_assignment
+# -----------------------------------------------------------------------------
+
+
+@dataclass(config=ConfigDict(validate_assignment=True))
+class ValidatedMigratingConfig(MigrationMixin):
+    name: str = "default"
+    count: int = 0
+
+
+class TestMigrationMixinWithValidateAssignment:
+    """MigrationMixin must not interfere with validate_assignment (regression)."""
+
+    @pytest.fixture(autouse=True)
+    def _default_version(self, monkeypatch):
+        monkeypatch.setattr(versioning, "CURRENT_CONFIG_VERSION", 0)
+
+    def test_valid_assignment_takes_effect(self):
+        cfg = ValidatedMigratingConfig()
+        cfg.count = 42
+        assert cfg.count == 42
+
+    def test_invalid_assignment_raises(self):
+        cfg = ValidatedMigratingConfig()
+        with pytest.raises(ValidationError):
+            cfg.count = "not-an-int"
+        assert cfg.count == 0
+
+    def test_coercion_applied_on_assignment(self):
+        cfg = ValidatedMigratingConfig()
+        cfg.count = True  # coerced to 1
+        assert cfg.count == 1

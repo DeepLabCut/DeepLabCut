@@ -23,7 +23,7 @@ from deeplabcut.core.config.config_mixin import ConfigMixin
 from deeplabcut.core.config.versioning import CURRENT_CONFIG_VERSION, MigrationMixin
 
 
-@dataclass(config=ConfigDict(extra="forbid"))
+@dataclass(config=ConfigDict(extra="forbid", validate_assignment=True))
 class ProjectConfig(MigrationMixin, ConfigMixin):
     """Complete project configuration.
 
