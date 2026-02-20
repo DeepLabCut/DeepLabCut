@@ -37,8 +37,9 @@ def _build_detector(
     Returns:
         the built detector
     """
-    cfg["pretrained"] = pretrained
-    detector: BaseDetector = build_from_cfg(cfg, **kwargs)
+    detector: BaseDetector = build_from_cfg(
+        cfg, **kwargs, default_args={"pretrained": pretrained},
+    )
 
     if weight_init is not None and weight_init.detector_snapshot_path is not None:
         logging.info(

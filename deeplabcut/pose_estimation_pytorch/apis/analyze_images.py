@@ -20,6 +20,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from omegaconf import DictConfig
 from tqdm import tqdm
 
 import deeplabcut.core.config as config_utils
@@ -195,6 +196,8 @@ def superanimal_analyze_images(
     else:
         config = copy.deepcopy(customized_model_config)
 
+    # TODO @deruyter92: This is currently not validated against the pydantic schema.
+    # We should add this functionality (and do updates in an early stage).
     config = update_config(config, max_individuals, device)
     config["metadata"]["individuals"] = [f"animal{i}" for i in range(max_individuals)]
     if config.get("detector") is not None:
@@ -331,6 +334,7 @@ def analyze_images(
                 condition_cfg=model_cfg["inference"]["conditions"],
                 config=config,
             )
+        # TODO @deruyter92: decide on typed / plain dict
         elif isinstance(ctd_conditions, dict):
             cond_provider = get_condition_provider(
                 condition_cfg=ctd_conditions,
@@ -467,6 +471,7 @@ def analyze_image_folder(
     Raises:
         ValueError: if the pose model is a top-down model but no detector path is given
     """
+    # TODO @deruyter92: decide on typed / plain dict
     if not isinstance(model_cfg, dict):
         model_cfg = config_utils.read_config_as_dict(model_cfg)
 

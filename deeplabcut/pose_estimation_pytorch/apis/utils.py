@@ -566,7 +566,9 @@ def get_inference_runners(
             with_identity=with_identity,
         )
     else:
-        crop_cfg = model_config["data"]["inference"].get("top_down_crop", {})
+        # TODO @deruyter92: This pattern should be refactored throughout the codebase
+        # it is reading a config value that is supposed to be missing / None.
+        crop_cfg = model_config["data"]["inference"].get("top_down_crop") or {}
         width, height = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
         margin = crop_cfg.get("margin", 0)
         if pose_task == Task.COND_TOP_DOWN:
@@ -914,7 +916,9 @@ def get_pose_inference_runner(
             with_identity=with_identity,
         )
     else:
-        crop_cfg = model_config["data"]["inference"].get("top_down_crop", {})
+        # TODO @deruyter92: This pattern should be refactored throughout the codebase
+        # it is reading a config value that is supposed to be missing / None.
+        crop_cfg = model_config["data"]["inference"].get("top_down_crop") or {}
         width, height = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
         margin = crop_cfg.get("margin", 0)
 

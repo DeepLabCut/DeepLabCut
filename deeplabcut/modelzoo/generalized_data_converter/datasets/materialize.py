@@ -17,9 +17,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import scipy.io as sio
-import yaml
 
 import deeplabcut.compat as compat
+from deeplabcut.core.config import write_project_config
 from deeplabcut.generate_training_dataset.multiple_individuals_trainingsetmanipulation import (
     create_multianimaltraining_dataset,
     format_multianimal_training_data,
@@ -108,7 +108,7 @@ class SingleDLC_config:
         x2 = 640
         y1 = 277
         y2 = 624
-        corer2move2 = [50, 50]
+        corner2move2 = [50, 50]
         move2corner = True
         identity = False
         self.cfg = {
@@ -117,8 +117,7 @@ class SingleDLC_config:
 
     def create_cfg(self, proj_root, kwargs):
         self.cfg.update(kwargs)
-        with open(os.path.join(proj_root, "config.yaml"), "w") as f:
-            yaml.dump(self.cfg, f)
+        write_project_config(Path(proj_root) / "config.yaml", self.cfg)
 
 
 class MaDLC_config:
@@ -159,7 +158,7 @@ class MaDLC_config:
         x2 = 640
         y1 = 277
         y2 = 624
-        corer2move2 = [50, 50]
+        corner2move2 = [50, 50]
         move2corner = True
         identity = False
         self.cfg = {
@@ -168,8 +167,7 @@ class MaDLC_config:
 
     def create_cfg(self, proj_root, kwargs):
         self.cfg.update(kwargs)
-        with open(os.path.join(proj_root, "config.yaml"), "w") as f:
-            yaml.dump(self.cfg, f)
+        write_project_config(Path(proj_root) / "config.yaml", self.cfg)
 
 
 def _generic2madlc(

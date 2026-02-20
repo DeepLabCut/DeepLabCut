@@ -14,8 +14,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from ruamel.yaml import YAML
-
+from deeplabcut.core.config.utils import get_yaml_loader
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.core.config import (
@@ -187,5 +186,5 @@ def write_pytorch_config_for_memory_replay(config_path, shuffle, pytorch_config)
     os.makedirs(model_folder / "train", exist_ok=True)
     out_path = model_folder / "train" / "pytorch_config.yaml"
     with open(str(out_path), "w") as f:
-        yaml = YAML()
+        yaml = get_yaml_loader()
         yaml.dump(pytorch_config, f)

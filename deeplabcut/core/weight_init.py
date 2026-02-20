@@ -9,17 +9,20 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Classes to configure how to initialize model weights"""
+
 from __future__ import annotations
 
 import warnings
-from dataclasses import dataclass
+from pydantic.dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
 
+from deeplabcut.core.types import PydanticNDArray
+from deeplabcut.core.config import ConfigMixin
 
 @dataclass
-class WeightInitialization:
+class WeightInitialization(ConfigMixin):
     """Configures weights initialization when transfer learning or fine-tuning models
 
     Args:
@@ -42,12 +45,12 @@ class WeightInitialization:
         bodyparts: Optionally, the name of each bodypart entry in the conversion array.
     """
 
-    snapshot_path: Path
+    snapshot_path: Path | None = None
     detector_snapshot_path: Path | None = None
     dataset: str | None = None
     with_decoder: bool = False
     memory_replay: bool = False
-    conversion_array: np.ndarray | None = None
+    conversion_array: PydanticNDArray | None = None
     bodyparts: list[str] | None = None
 
     def __post_init__(self):
@@ -104,6 +107,10 @@ class WeightInitialization:
         if "snapshot_path" not in data:
             return WeightInitialization.from_dict_legacy(data)
 
+        snapshot_path = data['snapshot_path']
+        if data['snapshot_path'] is not None:
+            snapshot_path = Path(snapshot_path)
+
         detector_snapshot_path = data.get("detector_snapshot_path")
         if detector_snapshot_path is not None:
             detector_snapshot_path = Path(detector_snapshot_path)
@@ -113,7 +120,7 @@ class WeightInitialization:
             conversion_array = np.array(conversion_array, dtype=int)
 
         return WeightInitialization(
-            snapshot_path=Path(data["snapshot_path"]),
+            snapshot_path=snapshot_path,
             detector_snapshot_path=detector_snapshot_path,
             dataset=data.get("dataset"),
             with_decoder=data["with_decoder"],
@@ -125,6 +132,7 @@ class WeightInitialization:
     @staticmethod
     def from_dict_legacy(data: dict) -> "WeightInitialization":
         """Deals with weight initialization that were created before 3.0.0rc5"""
+
         import deeplabcut.pose_estimation_pytorch.modelzoo.utils as utils
 
         conversion_array = data.get("conversion_array")
@@ -186,13 +194,15 @@ class WeightInitialization:
         Returns:
             The built WeightInitialization.
         """
-        from deeplabcut.modelzoo import build_weight_init
+
         deprecation_warning = (
             "The `WeightInitialization.build` is deprecated and will be removed in a "
             "future version of DeepLabCut. Please use `build_weight_init` from "
             "`deeplabcut.modelzoo` instead."
         )
         warnings.warn(deprecation_warning, DeprecationWarning)
+
+        from deeplabcut.modelzoo import build_weight_init
 
         return build_weight_init(
             cfg,

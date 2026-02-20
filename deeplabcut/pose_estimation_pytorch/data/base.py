@@ -12,17 +12,19 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
+import warnings
 
 import albumentations as A
 import numpy as np
 
+from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 import deeplabcut.core.config as config_utils
 import deeplabcut.pose_estimation_pytorch.config as config
 from deeplabcut.pose_estimation_pytorch.data.dataset import (
     PoseDataset,
     PoseDatasetParameters,
 )
-from deeplabcut.pose_estimation_pytorch.data.generative_sampling import (
+from deeplabcut.pose_estimation_pytorch.config.data import (
     GenSamplingConfig,
 )
 from deeplabcut.pose_estimation_pytorch.data.snapshots import list_snapshots, Snapshot
@@ -32,6 +34,7 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
     map_id_to_annotations,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
+from deeplabcut.core.types import DEPRECATED_ARGUMENT
 
 
 class Loader(ABC):
@@ -54,12 +57,54 @@ class Loader(ABC):
         self,
         project_root: str | Path,
         image_root: str | Path,
-        model_config_path: str | Path,
+        model_config: PoseConfig | dict | Path | str | None = None,
+        model_config_path: Path | str | None = DEPRECATED_ARGUMENT,
     ) -> None:
+        """
+        Initialize the Loader.
+
+        Args:
+            project_root: The root directory of the project.
+            image_root: The root directory of the images.
+            model_config (Path | str | PoseConfig | dict): 
+                The pose model configuration. Can be a path to a YAML file, a PoseConfig object, or a dictionary.
+            (model_config_path: The path to the pose model configuration. Deprecated, use `model_config` instead.)
+        """
+        def _resolve_legacy_args(model_config, model_config_path):
+            """Support for legacy argument `model_config_path`. returns new model_config arg"""
+            if model_config_path:
+                warnings.warn(
+                    "argument `model_config_path` in Loader.__init__ is deprecated, use `model_config` instead",
+                    DeprecationWarning,
+                )
+                if model_config is not None: 
+                    raise ValueError(
+                        "`model_config_path` and `model_config` arguments cannot be provided together! "
+                        "Please provide only `model_config`."
+                    )
+                if Path(model_config_path).is_dir():
+                    model_config_path = Path(model_config_path) / "pytorch_config.yaml"
+                model_config = model_config_path
+            elif model_config is None:
+                raise ValueError(
+                    "`model_config` argument must be provided."
+                )
+            return model_config
+        model_config = _resolve_legacy_args(model_config, model_config_path)    
+        self.model_cfg: PoseConfig = PoseConfig.from_any(model_config)
+
+        def _infer_model_config_path(model_config: PoseConfig | dict | Path | str) -> Path:
+            """Resolve the pose config path. Either the input is a path, or it is specified in `metadata.pose_config_path` field."""
+            provided_path = Path(model_config) if isinstance(model_config, (Path, str)) else None
+            specified_path = self.model_cfg.select("metadata.pose_config_path")
+            model_config_path = provided_path or specified_path
+            if model_config_path is None:
+                raise ValueError("`model_config` must contain a `metadata.pose_config_path` field.")
+            return Path(model_config_path)
+        self.model_config_path = _infer_model_config_path(model_config)
+
         self.project_root = Path(project_root)
         self.image_root = Path(image_root)
-        self.model_config_path = Path(model_config_path)
-        self.model_cfg = config_utils.read_config_as_dict(str(model_config_path))
         self.pose_task = Task(self.model_cfg["method"])
         self._loaded_data: dict[str, dict[str, list[dict]]] = {}
 
@@ -98,8 +143,9 @@ class Loader(ABC):
         Args:
             updates: the items to update in the model configuration
         """
-        self.model_cfg = config.update_config_by_dotpath(self.model_cfg, updates)
-        config_utils.write_config(self.model_config_path, self.model_cfg)
+        cfg_dict = config.update_config_by_dotpath(self.model_cfg.to_dict(), updates)
+        self.model_cfg = PoseConfig.from_dict(cfg_dict)
+        self.model_cfg.to_yaml(self.model_config_path)
 
     @abstractmethod
     def load_data(self, mode: str = "train") -> dict[str, list[dict]]:
@@ -154,7 +200,7 @@ class Loader(ABC):
             individuals = parameters.individuals
             num_bodyparts = parameters.num_joints
 
-        if "weight_init" in self.model_cfg["train_settings"]:
+        if self.model_cfg["train_settings"].get("weight_init") is not None:
             weight_init_cfg = self.model_cfg["train_settings"]["weight_init"]
             if weight_init_cfg["memory_replay"]:
                 conversion_array = weight_init_cfg["conversion_array"]
@@ -253,10 +299,8 @@ class Loader(ABC):
         data["annotations"] = self.filter_annotations(data["annotations"], task)
         ctd_config = None
         if self.pose_task == Task.COND_TOP_DOWN:
-            ctd_config = GenSamplingConfig(
-                bbox_margin=self.model_cfg["data"].get("bbox_margin", 20),
-                **self.model_cfg["data"].get("gen_sampling", {}),
-            )
+            # TODO @deruyter92: when moving to typed configs, this conversion becomes unnecessary
+            ctd_config = GenSamplingConfig.from_any(self.model_cfg.data.gen_sampling)
 
         dataset = PoseDataset(
             images=data["images"],

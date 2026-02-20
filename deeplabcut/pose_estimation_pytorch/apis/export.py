@@ -13,6 +13,9 @@ import copy
 from pathlib import Path
 
 import torch
+from omegaconf import DictConfig, OmegaConf
+
+from deeplabcut.core.config.config_mixin import ConfigMixin
 
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.data as dlc3_data
@@ -134,6 +137,11 @@ def export_model(
             if wipe_paths:
                 wipe_paths_from_model_config(model_cfg)
 
+            # Convert typed config to plain dict so torch.save doesn't pickle
+            # custom types (which require weights_only=False to load)
+            if isinstance(model_cfg, ConfigMixin):
+                model_cfg = model_cfg.to_dict()
+
             pose_weights = torch.load(snapshot.path, **load_kwargs)["model"]
             export_dict = dict(config=model_cfg, pose=pose_weights)
             if detector_weights is not None:
@@ -190,5 +198,7 @@ def wipe_paths_from_model_config(model_cfg: dict) -> None:
         model_cfg["train_settings"]["weight_init"] = None
     if "resume_training_from" in model_cfg:
         model_cfg["resume_training_from"] = None
-    if "resume_training_from" in model_cfg.get("detector", {}):
+    # TODO @deruyter92: This pattern should be refactored throughout the codebase
+    # it is reading a config value that is supposed to be missing / None.
+    if "resume_training_from" in (model_cfg.get("detector") or {}):
         model_cfg["detector"]["resume_training_from"] = None
