@@ -108,3 +108,8 @@ parts:
 - caption: Citations for DeepLabCut
   chapters:
   - file: docs/citation
+
+- caption: Development
+  chapters:
+  - file: docs/dev
+    title: Developer Documentation
