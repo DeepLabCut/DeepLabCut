@@ -32,6 +32,9 @@ class ConfigMixin:
     - Converting configurations to dictionaries
     - Dict-like access (cfg["key"], cfg.get("key"), "key" in cfg, etc.)
     - Pretty printing configuration data
+
+    For opt-in change tracking, also inherit
+    :class:`~deeplabcut.core.config.change_tracking.ChangeTrackingMixin`.
     """
 
     # ------------------------------------------------------------------
@@ -49,7 +52,7 @@ class ConfigMixin:
             raise KeyError(
                 f"'{type(self).__name__}' has no field '{key}'"
             )
-        object.__setattr__(self, key, value)
+        setattr(self, key, value)
 
     def __contains__(self, key: object) -> bool:
         return isinstance(key, str) and key in self._field_names()
@@ -188,20 +191,29 @@ class ConfigMixin:
         if ignore_empty:
             yaml_dict = {k: v for k, v in yaml_dict.items() if v is not None}
         cfg = cls.from_dict(yaml_dict)
-        updates = cfg._post_yaml_load_updates(yaml_path=Path(yaml_path))
-        cfg._log_updates(updates)
+        cfg._post_yaml_load_updates(yaml_path=Path(yaml_path))
         return cfg
 
     # ------------------------------------------------------------------
     # Serialization
     # ------------------------------------------------------------------
 
-    def to_yaml(self, yaml_path: str | Path, overwrite: bool = True) -> None:
+    def to_yaml(
+        self,
+        yaml_path: str | Path,
+        overwrite: bool = True,
+        log_changes: bool = True,
+        mark_clean: bool = True,
+    ) -> None:
         dict_data = self.to_dict_normalized()
         data = CommentedMap(dict_data)
         for f in fields(self):
             if (comment := f.metadata.get("comment")):
                 data.yaml_set_comment_before_after_key(f.name, before=comment)
+        if hasattr(self, "log_changes") and log_changes:
+            self.log_changes()
+        if hasattr(self, "mark_clean") and mark_clean:
+            self.mark_clean()
         write_config(yaml_path, data, overwrite=overwrite)
 
     def to_dict(self) -> dict:
@@ -233,22 +245,18 @@ class ConfigMixin:
     ) -> None:
         pretty_print(config=self.to_dict(), indent=indent, print_fn=print_fn)
 
-    def _post_yaml_load_updates(self, *, yaml_path: Path) -> list[str]:
+    def _post_yaml_load_updates(self, *, yaml_path: Path) -> None:
         """Override to apply context-dependent fixups after loading from YAML.
 
-        Called automatically by from_yaml(). Return a list of human-readable
-        descriptions of each change made (empty list = no changes).
-        These are logged but never written to disk -- call to_yaml() explicitly
-        if persistence is needed.
-        """
-        return []
+        Called automatically by from_yaml(). Implementations should mutate
+        ``self`` directly and, when :class:`ChangeTrackingMixin` is present,
+        call :meth:`record_change_note` for each change worth surfacing
+        to the user.
 
-    def _log_updates(self, updates: list[str]) -> None:
-        """Log the updates to the configuration."""
-        if updates:
-            logger.info(f"The following updates were made to {self.__class__.__name__}:")
-            for update in updates:
-                logger.info(update)
+        Changes are logged but never written to disk -- call to_yaml()
+        explicitly if persistence is needed.
+        """
+        pass
 
 
 def ensure_plain_config(fn: Callable) -> Callable:
