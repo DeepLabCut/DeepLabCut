@@ -9,6 +9,7 @@ This GUI is designed for **scientists and experimenters** who want to preview, r
 - {doc}`Installation <./quickstart/install>`
 - {doc}`Overview <./user_guide/overview>`
 - {doc}`Camera setup and backends <./user_guide/cameras_backends/camera_support>`
+- {doc}`Timestamp format and synchronization <./user_guide/misc/timestamp_format>`
 
 ---
 
@@ -66,6 +67,4 @@ Before getting started, be aware of the following constraints:
 
 *This project is under active development. Feedback from real experimental use is highly valued.*
 
-Please report issues, suggest features, or contribute to the codebase on GitHub:
-
-- [DLC-Live! GUI](https://github.com/DeepLabCut/DeepLabCut-live-GUI)
+[Please report issues, suggest features, or contribute to the codebase on GitHub !](https://github.com/DeepLabCut/DeepLabCut-live-GUI)
