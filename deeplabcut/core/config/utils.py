@@ -206,13 +206,14 @@ def read_config(configname: str | Path, ignore_empty: bool = True) -> "ProjectCo
     from deeplabcut.core.config.project_config import ProjectConfig
     path = Path(configname)
     project_config = ProjectConfig.from_yaml(path, ignore_empty=ignore_empty)
-    
-    # NOTE @deruyter92 2026-02-02: copied old behaviour of writing the config back to the file.
-    # We should consider separating the writing and reading instead of having inplace edits during reading.
-    curr_dir = str(Path(configname).parent.resolve())
-    if project_config.project_path != curr_dir:
-        project_config.project_path = curr_dir
-        project_config.to_yaml(configname)
+
+    # If necessary, ProjectConfig automatically updates its project path via _post_yaml_load_updates.
+    # if that is the case (marked as dirty), we write the config back to the file.
+    if  "project_path" in project_config.dirty_fields:
+        # NOTE @deruyter92 2026-02-02: copied old behaviour of writing the config 
+        # immediately back to the file after reading it. We should consider separating 
+        # the writing and reading instead of having inplace edits during reading.
+        project_config.to_yaml(configname, log_changes=True, mark_clean=True)
     return project_config
 
 
