@@ -118,7 +118,7 @@ class DetectorConfig(ConfigMixin):
     inference: InferenceConfig = field(default_factory=InferenceConfig)
 
 
-@dataclass(config=ConfigDict(extra="forbid"))
+@dataclass(config=ConfigDict(extra="forbid", validate_assignment=True))
 class PoseConfig(MigrationMixin, ConfigMixin):
     """Main configuration class for DeepLabCut pose estimation models.
 
@@ -156,7 +156,7 @@ class PoseConfig(MigrationMixin, ConfigMixin):
     detector: DetectorConfig | None = None
 
 
-@dataclass(config=ConfigDict(extra="forbid"))
+@dataclass(config=ConfigDict(extra="forbid", validate_assignment=True))
 class TestConfig(ConfigMixin):
     """Configuration class for DeepLabCut test/inference settings.
 
