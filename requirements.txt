@@ -1,5 +1,5 @@
 # novel for pytorch DLC:
-albumentations<=1.4.3
+albumentations>=2
 einops
 pycocotools<=2.0.8
 timm
