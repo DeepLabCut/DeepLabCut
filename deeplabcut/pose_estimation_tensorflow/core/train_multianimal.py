@@ -53,9 +53,7 @@ def train(
 
     start_path = os.getcwd()
     if modelfolder == "":
-        os.chdir(
-            str(Path(config_yaml).parents[0])
-        )  # switch to folder of config_yaml (for logging)
+        os.chdir(str(Path(config_yaml).parents[0]))  # switch to folder of config_yaml (for logging)
     else:
         os.chdir(modelfolder)
 
@@ -136,16 +134,11 @@ def train(
         if "resnet" in net_type:
             variables_to_restore = slim.get_variables_to_restore(include=["resnet_v1"])
         elif "mobilenet" in net_type:
-            variables_to_restore = slim.get_variables_to_restore(
-                include=["MobilenetV2"]
-            )
+            variables_to_restore = slim.get_variables_to_restore(include=["MobilenetV2"])
         elif "efficientnet" in net_type:
-            variables_to_restore = slim.get_variables_to_restore(
-                include=["efficientnet"]
-            )
+            variables_to_restore = slim.get_variables_to_restore(include=["efficientnet"])
             variables_to_restore = {
-                var.op.name.replace("efficientnet/", "")
-                + "/ExponentialMovingAverage": var
+                var.op.name.replace("efficientnet/", "") + "/ExponentialMovingAverage": var
                 for var in variables_to_restore
             }
         else:

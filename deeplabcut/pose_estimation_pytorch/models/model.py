@@ -58,10 +58,7 @@ class PoseModel(nn.Module):
         self.neck = neck
         self.output_features = False
 
-        self._strides = {
-            name: _model_stride(self.backbone.stride, head.stride)
-            for name, head in heads.items()
-        }
+        self._strides = {name: _model_stride(self.backbone.stride, head.stride) for name, head in heads.items()}
 
     def forward(self, x: torch.Tensor, **backbone_kwargs) -> dict[str, dict[str, torch.Tensor]]:
         """
@@ -120,8 +117,7 @@ class PoseModel(nn.Module):
             targets: dict of the targets for each model head group
         """
         return {
-            name: head.target_generator(self._strides[name], outputs[name], labels)
-            for name, head in self.heads.items()
+            name: head.target_generator(self._strides[name], outputs[name], labels) for name, head in self.heads.items()
         }
 
     def get_predictions(self, outputs: dict[str, dict[str, torch.Tensor]]) -> dict:
@@ -133,10 +129,7 @@ class PoseModel(nn.Module):
         Returns:
             A dictionary containing the predictions of each head group
         """
-        predictions = {
-            name: head.predictor(self._strides[name], outputs[name])
-            for name, head in self.heads.items()
-        }
+        predictions = {name: head.predictor(self._strides[name], outputs[name]) for name, head in self.heads.items()}
         if self.output_features:
             predictions["backbone"] = outputs["backbone"]
 
@@ -190,18 +183,14 @@ class PoseModel(nn.Module):
                 criterions = {}
                 for loss_name, criterion_cfg in head_cfg["criterion"].items():
                     weights[loss_name] = criterion_cfg.get("weight", 1.0)
-                    criterion_cfg = {
-                        k: v for k, v in criterion_cfg.items() if k != "weight"
-                    }
+                    criterion_cfg = {k: v for k, v in criterion_cfg.items() if k != "weight"}
                     criterions[loss_name] = CRITERIONS.build(criterion_cfg)
 
                 aggregator_cfg = {"type": "WeightedLossAggregator", "weights": weights}
                 head_cfg["aggregator"] = LOSS_AGGREGATORS.build(aggregator_cfg)
                 head_cfg["criterion"] = criterions
 
-            head_cfg["target_generator"] = TARGET_GENERATORS.build(
-                head_cfg["target_generator"]
-            )
+            head_cfg["target_generator"] = TARGET_GENERATORS.build(head_cfg["target_generator"])
             head_cfg["predictor"] = PREDICTORS.build(head_cfg["predictor"])
             heads[name] = HEADS.build(head_cfg)
 

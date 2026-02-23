@@ -77,9 +77,7 @@ def test_net(visualise, cache_scoremaps):
 
             out_fn = os.path.join(out_dir, raw_name + "_locreg" + ".mat")
             if cfg["location_refinement"]:
-                scipy.io.savemat(
-                    out_fn, mdict={"locreg_pred": locref.astype("float32")}
-                )
+                scipy.io.savemat(out_fn, mdict={"locreg_pred": locref.astype("float32")})
 
     scipy.io.savemat("predictions.mat", mdict={"joints": predictions})
 

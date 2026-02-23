@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Defines conversion tables mapping DeepLabCut project bodyparts to SA bodyparts"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

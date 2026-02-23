@@ -40,6 +40,7 @@ In BUCTD and their adaptation to the maDLC fish dataset, they set:
         kps_symmetry = []
         kps_sigmas = np.array([1.] * num_kpts)/10.0
 """
+
 from __future__ import annotations
 
 import math
@@ -68,6 +69,7 @@ class GenSamplingConfig:
         miss_prob: The probability of applying a miss error. Miss error represents a
             large displacement from the GT keypoint position.
     """
+
     bbox_margin: int
     keypoint_sigmas: float | list[float] = 0.1
     keypoints_symmetry: list[tuple[int, int]] | None = None
@@ -171,7 +173,6 @@ class GenerativeSampler:
 
         N = 500  # TODO: do not know how this is set
         for j in range(self.num_keypoints):
-
             # source keypoint position candidates to generate error on that (gt, swap, inv, swap+inv)
             coord_list = []
             # on top of gt
@@ -207,9 +208,7 @@ class GenerativeSampler:
                 coord_list.append(np.empty([0, 2]))
 
             if pair_idx is not None:
-                swap_inv_coord = near_keypoints[
-                    near_keypoints[:, pair_idx, 2] > 0, pair_idx, :2
-                ]
+                swap_inv_coord = near_keypoints[near_keypoints[:, pair_idx, 2] > 0, pair_idx, :2]
                 coord_list.append(swap_inv_coord)
             else:
                 coord_list.append(np.empty([0, 2]))
@@ -234,11 +233,7 @@ class GenerativeSampler:
                     continue
                 dist_mask = np.logical_and(
                     dist_mask,
-                    np.sqrt(
-                        (tot_coord_list[i][0] - x) ** 2
-                        + (tot_coord_list[i][1] - y) ** 2
-                    )
-                    > r,
+                    np.sqrt((tot_coord_list[i][0] - x) ** 2 + (tot_coord_list[i][1] - y) ** 2) > r,
                 )
 
             x = x[dist_mask].reshape(-1)
@@ -265,11 +260,7 @@ class GenerativeSampler:
                         continue
                     dist_mask = np.logical_and(
                         dist_mask,
-                        np.sqrt(
-                            (tot_coord_list[i][0] - x) ** 2
-                            + (tot_coord_list[i][1] - y) ** 2
-                        )
-                        > ks_50_dist[j],
+                        np.sqrt((tot_coord_list[i][0] - x) ** 2 + (tot_coord_list[i][1] - y) ** 2) > ks_50_dist[j],
                     )
                 x = x[dist_mask].reshape(-1)
                 y = y[dist_mask].reshape(-1)
@@ -305,11 +296,7 @@ class GenerativeSampler:
                         continue
                     dist_mask = np.logical_and(
                         dist_mask,
-                        np.sqrt(
-                            (tot_coord_list[i][0] - x) ** 2
-                            + (tot_coord_list[i][1] - y) ** 2
-                        )
-                        > r,
+                        np.sqrt((tot_coord_list[i][0] - x) ** 2 + (tot_coord_list[i][1] - y) ** 2) > r,
                     )
                 x = x[dist_mask].reshape(-1)
                 y = y[dist_mask].reshape(-1)
@@ -327,9 +314,7 @@ class GenerativeSampler:
             if swap_exist:
                 swap_pt_list = []
                 for swap_idx in range(len(tot_coord_list)):
-                    if swap_idx == 0 or swap_idx == len(coord_list[0]) + len(
-                        coord_list[1]
-                    ):
+                    if swap_idx == 0 or swap_idx == len(coord_list[0]) + len(coord_list[1]):
                         continue
                     angle = np.random.uniform(0, 2 * math.pi, [N])
                     r = np.random.uniform(0, ks_50_dist[j], [N])
@@ -340,11 +325,7 @@ class GenerativeSampler:
                         if i == 0 or i == len(coord_list[0]) + len(coord_list[1]):
                             dist_mask = np.logical_and(
                                 dist_mask,
-                                np.sqrt(
-                                    (tot_coord_list[i][0] - x) ** 2
-                                    + (tot_coord_list[i][1] - y) ** 2
-                                )
-                                > r,
+                                np.sqrt((tot_coord_list[i][0] - x) ** 2 + (tot_coord_list[i][1] - y) ** 2) > r,
                             )
                     x = x[dist_mask].reshape(-1)
                     y = y[dist_mask].reshape(-1)
@@ -374,11 +355,7 @@ class GenerativeSampler:
                     continue
                 dist_mask = np.logical_and(
                     dist_mask,
-                    np.sqrt(
-                        (tot_coord_list[i][0] - x) ** 2
-                        + (tot_coord_list[i][1] - y) ** 2
-                    )
-                    > r,
+                    np.sqrt((tot_coord_list[i][0] - x) ** 2 + (tot_coord_list[i][1] - y) ** 2) > r,
                 )
 
             x = x[dist_mask].reshape(-1)

@@ -256,9 +256,7 @@ def train_network(_, *args, **kwargs):
     default=[1],
     help="Shuffle index of the training dataset. Default is set to 1.",
 )
-@click.option(
-    "-p", "--plot", "plotting", is_flag=True, help="Make plots. Default is False."
-)
+@click.option("-p", "--plot", "plotting", is_flag=True, help="Make plots. Default is False.")
 @click.pass_context
 def evaluate_network(_, config, **kwargs):
     """Evaluates a trained Feature detector model.\n

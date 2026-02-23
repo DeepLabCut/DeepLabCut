@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Modules used to read/write shelve data during video analysis in DeepLabCut 3.0"""
+
 import pickle
 import shelve
 from abc import ABC
@@ -87,9 +88,7 @@ class ShelfWriter(ShelfManager):
         filepath: The path to the shelf.
     """
 
-    def __init__(
-        self, pose_cfg: dict, filepath: str | Path, num_frames: int | None = None
-    ):
+    def __init__(self, pose_cfg: dict, filepath: str | Path, num_frames: int | None = None):
         super().__init__(filepath, flag="c")
         self._pose_cfg = pose_cfg
         self._num_frames = num_frames
@@ -141,9 +140,7 @@ class ShelfWriter(ShelfManager):
                 # needed for create_video_with_all_detections to display unique bpts
                 num_unique = unique_bodyparts.shape[1]
                 num_assem, num_ind = id_scores.shape[1:]
-                output["identity"] += [
-                    -1 * np.ones((num_assem, num_ind)) for i in range(num_unique)
-                ]
+                output["identity"] += [-1 * np.ones((num_assem, num_ind)) for i in range(num_unique)]
 
         self._db[key] = output
         self._frame_index += 1
@@ -173,9 +170,7 @@ class ShelfWriter(ShelfManager):
             "PAFgraph": paf_graph,
             "PAFinds": self._pose_cfg.get("paf_best", np.arange(len(paf_graph))),
             "all_joints": [[i] for i in range(len(all_joints))],
-            "all_joints_names": [
-                self._pose_cfg["all_joints_names"][i] for i in range(len(all_joints))
-            ],
+            "all_joints_names": [self._pose_cfg["all_joints_names"][i] for i in range(len(all_joints))],
             "nframes": self._num_frames,
             "key_str_width": self._str_width,
         }
@@ -195,9 +190,7 @@ class FeatureShelfWriter(ShelfWriter):
         filepath: The path to the shelf.
     """
 
-    def __init__(
-        self, pose_cfg: dict, filepath: str | Path, num_frames: int | None = None
-    ):
+    def __init__(self, pose_cfg: dict, filepath: str | Path, num_frames: int | None = None):
         super().__init__(pose_cfg, filepath, num_frames)
 
     def add_prediction(
@@ -220,9 +213,7 @@ class FeatureShelfWriter(ShelfWriter):
         # bodyparts to shape (num_assemblies, num_bpts, xy)
         coordinates = bodyparts[:, :, :2]
         if features is None:
-            raise ValueError(
-                "Backbone features must be given to the FeatureShelfWriter"
-            )
+            raise ValueError("Backbone features must be given to the FeatureShelfWriter")
 
         self._db[key] = dict(coordinates=coordinates, features=features)
         self._frame_index += 1

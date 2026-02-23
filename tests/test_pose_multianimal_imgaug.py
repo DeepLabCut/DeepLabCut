@@ -67,16 +67,8 @@ def test_get_batch(ma_dataset):
     for batch_size in 1, 4, 8, 16:
         ma_dataset.batch_size = batch_size
         batch_images, joint_ids, batch_joints, data_items = ma_dataset.get_batch()
-        assert (
-            len(batch_images)
-            == len(joint_ids)
-            == len(batch_joints)
-            == len(data_items)
-            == batch_size
-        )
-        for data_item, joint_id, batch_joint in zip(
-            data_items, joint_ids, batch_joints
-        ):
+        assert len(batch_images) == len(joint_ids) == len(batch_joints) == len(data_items) == batch_size
+        for data_item, joint_id, batch_joint in zip(data_items, joint_ids, batch_joints):
             assert len(data_item.joints) == len(joint_id)
             assert len(batch_joint) == len(np.concatenate(joint_id))
             start = 0
@@ -102,19 +94,11 @@ def test_get_targetmaps(ma_dataset, num_idchannel):
     scale = np.mean(target_size / ma_dataset.default_size)
     maps = ma_dataset.get_targetmaps_update(*batch, sm_size, scale)
     assert all(len(map_) == ma_dataset.batch_size for map_ in maps.values())
-    assert (
-        maps[Batch.part_score_targets][0].shape
-        == maps[Batch.part_score_weights][0].shape
-    )
-    assert (
-        maps[Batch.part_score_targets][0].shape[2]
-        == ma_dataset.cfg["num_joints"] + num_idchannel
-    )
+    assert maps[Batch.part_score_targets][0].shape == maps[Batch.part_score_weights][0].shape
+    assert maps[Batch.part_score_targets][0].shape[2] == ma_dataset.cfg["num_joints"] + num_idchannel
     assert maps[Batch.locref_targets][0].shape == maps[Batch.locref_mask][0].shape
     assert maps[Batch.locref_targets][0].shape[2] == 2 * ma_dataset.cfg["num_joints"]
-    assert (
-        maps[Batch.pairwise_targets][0].shape == maps[Batch.pairwise_targets][0].shape
-    )
+    assert maps[Batch.pairwise_targets][0].shape == maps[Batch.pairwise_targets][0].shape
     assert maps[Batch.pairwise_targets][0].shape[2] == 2 * ma_dataset.cfg["num_limbs"]
 
 

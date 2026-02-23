@@ -14,9 +14,7 @@ import random
 try:
     import torch
 except ModuleNotFoundError:
-    raise ModuleNotFoundError(
-        "Unsupervised identity learning requires PyTorch. Please run `pip install torch`."
-    )
+    raise ModuleNotFoundError("Unsupervised identity learning requires PyTorch. Please run `pip install torch`.")
 import numpy as np
 import os
 import glob

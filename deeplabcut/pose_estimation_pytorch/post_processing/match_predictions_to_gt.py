@@ -17,9 +17,7 @@ from deeplabcut.core.inferenceutils import (
 )
 
 
-def rmse_match_prediction_to_gt(
-    pred_kpts: np.ndarray, gt_kpts: np.ndarray
-) -> np.ndarray:
+def rmse_match_prediction_to_gt(pred_kpts: np.ndarray, gt_kpts: np.ndarray) -> np.ndarray:
     """
     Hungarian algorithm predicted individuals to ground truth ones, using root mean
     squared error (rmse). The function provides a way to match predicted individuals to
@@ -96,9 +94,7 @@ def rmse_match_prediction_to_gt(
     return np.array(col_ind)
 
 
-def oks_match_prediction_to_gt(
-    pred_kpts: np.array, gt_kpts: np.array, individual_names: list
-) -> np.array:
+def oks_match_prediction_to_gt(pred_kpts: np.array, gt_kpts: np.array, individual_names: list) -> np.array:
     """Summary:
     Hungarian algorithm predicted individuals to ground truth ones, using object keypoint similarity (oks).
     Oks measures the accuracy of predicted keypoints compared to ground truth keypoints.
@@ -141,9 +137,7 @@ def oks_match_prediction_to_gt(
             num_animals_gt -= 1
 
     oks_matrix = np.zeros((num_animals_gt, num_animals))
-    gt_kpts_without_ctr[
-        gt_kpts_without_ctr < 0
-    ] = np.nan  # non visible keypoints should be nan to use calc_oks
+    gt_kpts_without_ctr[gt_kpts_without_ctr < 0] = np.nan  # non visible keypoints should be nan to use calc_oks
     idx_gt = -1
     for g in range(num_animals):
         if np.isnan(gt_kpts_without_ctr[g]).all():

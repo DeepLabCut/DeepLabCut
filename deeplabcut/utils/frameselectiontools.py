@@ -18,7 +18,6 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-
 import math
 
 import cv2
@@ -89,9 +88,7 @@ def UniformFramescv2(cap, numframes2pick, start, stop, Index=None):
 
     if Index is None:
         if start == 0:
-            frames2pick = np.random.choice(
-                math.ceil(nframes * stop), size=numframes2pick, replace=False
-            )
+            frames2pick = np.random.choice(math.ceil(nframes * stop), size=numframes2pick, replace=False)
         else:
             frames2pick = np.random.choice(
                 range(math.floor(nframes * start), math.ceil(nframes * stop)),
@@ -165,25 +162,17 @@ def KmeansbasedFrameselection(
         if color and ncolors > 1:
             DATA = np.zeros((nframes, nx * 3, ny))
             for counter, index in tqdm(enumerate(Index)):
-                image = img_as_ubyte(
-                    clipresized.get_frame(index * 1.0 / clipresized.fps)
-                )
-                DATA[counter, :, :] = np.vstack(
-                    [image[:, :, 0], image[:, :, 1], image[:, :, 2]]
-                )
+                image = img_as_ubyte(clipresized.get_frame(index * 1.0 / clipresized.fps))
+                DATA[counter, :, :] = np.vstack([image[:, :, 0], image[:, :, 1], image[:, :, 2]])
         else:
             DATA = np.zeros((nframes, nx, ny))
             for counter, index in tqdm(enumerate(Index)):
                 if ncolors == 1:
-                    DATA[counter, :, :] = img_as_ubyte(
-                        clipresized.get_frame(index * 1.0 / clipresized.fps)
-                    )
+                    DATA[counter, :, :] = img_as_ubyte(clipresized.get_frame(index * 1.0 / clipresized.fps))
                 else:  # attention: averages over color channels to keep size small / perhaps you want to use color information?
                     DATA[counter, :, :] = img_as_ubyte(
                         np.array(
-                            np.mean(
-                                clipresized.get_frame(index * 1.0 / clipresized.fps), 2
-                            ),
+                            np.mean(clipresized.get_frame(index * 1.0 / clipresized.fps), 2),
                             dtype=np.uint8,
                         )
                     )
@@ -192,9 +181,7 @@ def KmeansbasedFrameselection(
         data = DATA - DATA.mean(axis=0)
         data = data.reshape(nframes, -1)  # stacking
 
-        kmeans = MiniBatchKMeans(
-            n_clusters=numframes2pick, tol=1e-3, batch_size=batchsize, max_iter=max_iter
-        )
+        kmeans = MiniBatchKMeans(n_clusters=numframes2pick, tol=1e-3, batch_size=batchsize, max_iter=max_iter)
         kmeans.fit(data)
         frames2pick = []
         for clusterid in range(numframes2pick):  # pick one frame per cluster
@@ -202,9 +189,7 @@ def KmeansbasedFrameselection(
 
             numimagesofcluster = len(clusterids)
             if numimagesofcluster > 0:
-                frames2pick.append(
-                    Index[clusterids[np.random.randint(numimagesofcluster)]]
-                )
+                frames2pick.append(Index[clusterids[np.random.randint(numimagesofcluster)]])
 
         clipresized.close()
         del clipresized
@@ -284,9 +269,7 @@ def KmeansbasedFrameselectioncv2(
                                 interpolation=cv2.INTER_NEAREST,
                             )
                         )  # color trafo not necessary; lack thereof improves speed.
-                        DATA[counter, :, :] = np.hstack(
-                            [image[:, :, 0], image[:, :, 1], image[:, :, 2]]
-                        )
+                        DATA[counter, :, :] = np.hstack([image[:, :, 0], image[:, :, 1], image[:, :, 2]])
             else:
                 for counter, index in tqdm(enumerate(Index)):
                     cap.set_to_frame(index)  # extract a particular frame
@@ -317,9 +300,7 @@ def KmeansbasedFrameselectioncv2(
                                 interpolation=cv2.INTER_NEAREST,
                             )
                         )  # color trafo not necessary; lack thereof improves speed.
-                        DATA[counter, :, :] = np.hstack(
-                            [image[:, :, 0], image[:, :, 1], image[:, :, 2]]
-                        )
+                        DATA[counter, :, :] = np.hstack([image[:, :, 0], image[:, :, 1], image[:, :, 2]])
             else:
                 for counter, index in tqdm(enumerate(Index)):
                     frame = cap.read_frame(crop=True)
@@ -339,9 +320,7 @@ def KmeansbasedFrameselectioncv2(
         data = DATA - DATA.mean(axis=0)
         data = data.reshape(nframes, -1)  # stacking
 
-        kmeans = MiniBatchKMeans(
-            n_clusters=numframes2pick, tol=1e-3, batch_size=batchsize, max_iter=max_iter
-        )
+        kmeans = MiniBatchKMeans(n_clusters=numframes2pick, tol=1e-3, batch_size=batchsize, max_iter=max_iter)
         kmeans.fit(data)
         frames2pick = []
         for clusterid in range(numframes2pick):  # pick one frame per cluster
@@ -349,9 +328,7 @@ def KmeansbasedFrameselectioncv2(
 
             numimagesofcluster = len(clusterids)
             if numimagesofcluster > 0:
-                frames2pick.append(
-                    Index[clusterids[np.random.randint(numimagesofcluster)]]
-                )
+                frames2pick.append(Index[clusterids[np.random.randint(numimagesofcluster)]])
         # cap.release() >> still used in frame_extraction!
         return list(np.array(frames2pick))
     else:

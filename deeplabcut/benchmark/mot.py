@@ -53,12 +53,11 @@ def convert_bboxes_to_xywh(bboxes: NDArray, inplace: bool = False) -> NDArray:
     bboxes[:, 2] = w
     bboxes[:, 3] = h
 
+
 _convert_bboxes_to_xywh = convert_bboxes_to_xywh
 
 
-def reconstruct_bboxes_from_bodyparts(
-    data: pd.DataFrame, margin: float, to_xywh: bool = False
-) -> NDArray:
+def reconstruct_bboxes_from_bodyparts(data: pd.DataFrame, margin: float, to_xywh: bool = False) -> NDArray:
     """
     Reconstructs bounding boxes from body part coordinates and likelihoods.
 
@@ -103,9 +102,7 @@ def reconstruct_bboxes_from_bodyparts(
     return bboxes
 
 
-def reconstruct_all_bboxes(
-    data: pd.DataFrame, margin: float, to_xywh: bool = False
-) -> NDArray:
+def reconstruct_all_bboxes(data: pd.DataFrame, margin: float, to_xywh: bool = False) -> NDArray:
     """
     Reconstructs bounding boxes for multiple individuals from body part data.
 
@@ -144,9 +141,7 @@ def reconstruct_all_bboxes(
         pass
     bboxes = np.full((len(animals), data.shape[0], 5), np.nan)
     for n, animal in enumerate(animals):
-        bboxes[n] = reconstruct_bboxes_from_bodyparts(
-            data.xs(animal, axis=1, level="individuals"), margin, to_xywh
-        )
+        bboxes[n] = reconstruct_bboxes_from_bodyparts(data.xs(animal, axis=1, level="individuals"), margin, to_xywh)
     return bboxes
 
 
@@ -168,7 +163,9 @@ def compute_mot_metrics(
     trackers_gt = func(df_gt, **kwargs)
     trackers = func(df, **kwargs)
     return _compute_mot_metrics(
-        trackers_gt, trackers, tracker_type,
+        trackers_gt,
+        trackers,
+        tracker_type,
     )
 
 
@@ -178,9 +175,7 @@ def _compute_mot_metrics(
     tracker_type: str = "bbox",
 ) -> mm.MOTAccumulator:
     if trackers_ground_truth.shape != trackers.shape:
-        raise ValueError(
-            "Dimensions mismatch. There must be as many `trackers_ground_truth` as there are `trackers`."
-        )
+        raise ValueError("Dimensions mismatch. There must be as many `trackers_ground_truth` as there are `trackers`.")
 
     if tracker_type == "bbox":
         sl = slice(0, 4)
@@ -214,20 +209,14 @@ def _compute_mot_metrics(
     return acc
 
 
-def print_all_metrics(
-    accumulators: list[mm.MOTAccumulator], all_params: list[str] | None = None
-):
+def print_all_metrics(accumulators: list[mm.MOTAccumulator], all_params: list[str] | None = None):
     if not all_params:
         names = [f"iter{i + 1}" for i in range(len(accumulators))]
     else:
         s = "_".join("{}" for _ in range(len(all_params[0])))
         names = [s.format(*params.values()) for params in all_params]
     mh = mm.metrics.create()
-    summary = mh.compute_many(
-        accumulators, metrics=mm.metrics.motchallenge_metrics, names=names
-    )
-    strsummary = mm.io.render_summary(
-        summary, formatters=mh.formatters, namemap=mm.io.motchallenge_metric_names
-    )
+    summary = mh.compute_many(accumulators, metrics=mm.metrics.motchallenge_metrics, names=names)
+    strsummary = mm.io.render_summary(summary, formatters=mh.formatters, namemap=mm.io.motchallenge_metric_names)
     print(strsummary)
     return summary

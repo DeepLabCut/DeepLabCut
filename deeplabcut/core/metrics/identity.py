@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Implementations of methods to compute identity prediction accuracy"""
+
 from __future__ import annotations
 
 import numpy as np
@@ -77,9 +78,7 @@ def compute_identity_scores(
             found = neighbors != -1
             indices = np.flatnonzero(all_bpts == bpt)
             # Get the predicted identity of each bodypart by taking the argmax
-            ids[i, indices[indices_gt[found]], 1] = np.argmax(
-                bpt_id_scores[neighbors[found]], axis=1
-            )
+            ids[i, indices[indices_gt[found]], 1] = np.argmax(bpt_id_scores[neighbors[found]], axis=1)
 
     ids = ids.reshape((len(predictions), len(individuals), len(bodyparts), 2))
     results = {}

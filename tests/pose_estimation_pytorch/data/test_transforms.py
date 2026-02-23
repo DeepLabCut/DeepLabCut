@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Tests the custom transforms"""
+
 import random
 
 import albumentations as A
@@ -141,7 +142,9 @@ def test_random_bbox_transform_does_not_modify_with_base_config(data: dict) -> N
         bbox_params=A.BboxParams(format="coco", label_fields=["bbox_labels"]),
     )
     output = t(
-        image=np.zeros((h, w, c)), bboxes=bboxes, bbox_labels=np.zeros(len(bboxes)),
+        image=np.zeros((h, w, c)),
+        bboxes=bboxes,
+        bbox_labels=np.zeros(len(bboxes)),
     )
     print("Output bounding boxes")
     for out_bbox in output["bboxes"]:
@@ -207,7 +210,9 @@ def test_random_bbox_transform_scale(data: dict) -> None:
         bbox_params=A.BboxParams(format="coco", label_fields=["bbox_labels"]),
     )
     output = t(
-        image=np.zeros((h, w, c)), bboxes=bboxes, bbox_labels=np.zeros(len(bboxes)),
+        image=np.zeros((h, w, c)),
+        bboxes=bboxes,
+        bbox_labels=np.zeros(len(bboxes)),
     )
     print("Output bounding boxes")
     for out_bbox in output["bboxes"]:
@@ -253,7 +258,9 @@ def test_random_bbox_transform_shift(data: dict) -> None:
         bbox_params=A.BboxParams(format="coco", label_fields=["bbox_labels"]),
     )
     output = t(
-        image=np.zeros((h, w, c)), bboxes=bboxes, bbox_labels=np.zeros(len(bboxes)),
+        image=np.zeros((h, w, c)),
+        bboxes=bboxes,
+        bbox_labels=np.zeros(len(bboxes)),
     )
     print("Output bounding boxes")
     for out_bbox in output["bboxes"]:
@@ -277,7 +284,10 @@ def _set_random_seed():
 
 
 def _gen_random_bboxes(
-    gen: np.random.Generator, num_bboxes: int, w: int, h: int,
+    gen: np.random.Generator,
+    num_bboxes: int,
+    w: int,
+    h: int,
 ) -> np.ndarray:
     image_wh = np.array([w, h])
     bboxes = np.zeros((num_bboxes, 4))

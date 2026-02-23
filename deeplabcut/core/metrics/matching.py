@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Algorithms to match predictions to ground truth labels"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -69,10 +70,7 @@ class PotentialMatch:
         assert len(pose.shape) == 2  # Must be pose for a single individual
         scores = pose[:, 2]
         if np.all(np.isnan(scores)):
-            raise ValueError(
-                "Cannot create a Match from a pose prediction where all scores are nan "
-                f"(pose={pose})"
-            )
+            raise ValueError(f"Cannot create a Match from a pose prediction where all scores are nan (pose={pose})")
 
         return PotentialMatch(pose=pose, score=np.nanmean(scores).item())
 

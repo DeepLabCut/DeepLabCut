@@ -76,8 +76,7 @@ class Runner(ABC, Generic[ModelType]):
         if len(gpus) == 1:
             if device != "cuda":
                 raise ValueError(
-                    "When specifying a GPU index to train on, the device must be set "
-                    f"to 'cuda'. Found {device}"
+                    f"When specifying a GPU index to train on, the device must be set to 'cuda'. Found {device}"
                 )
             device = f"cuda:{gpus[0]}"
 

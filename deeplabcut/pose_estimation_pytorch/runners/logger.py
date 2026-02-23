@@ -131,9 +131,7 @@ class ImageLoggerMixin(ABC):
         self._logged = {}
         self._denormalize = transforms.Compose(
             [
-                transforms.Normalize(
-                    mean=[0, 0, 0], std=[1 / 0.229, 1 / 0.224, 1 / 0.225]
-                ),
+                transforms.Normalize(mean=[0, 0, 0], std=[1 / 0.229, 1 / 0.224, 1 / 0.225]),
                 transforms.Normalize(mean=[-0.485, -0.456, -0.406], std=[1, 1, 1]),
             ]
         )
@@ -203,9 +201,7 @@ class ImageLoggerMixin(ABC):
             # pytorch.org/vision/0.18/generated/torchvision.utils.draw_keypoints.html
             # pytorch.org/vision/0.17/generated/torchvision.utils.draw_keypoints.html
             keypoints[torch.any(torch.isnan(keypoints), dim=-1)] = -1
-            image = draw_keypoints(
-                image, keypoints=keypoints[..., :2], colors="red", radius=5
-            )
+            image = draw_keypoints(image, keypoints=keypoints[..., :2], colors="red", radius=5)
 
         if bboxes is not None and len(bboxes) > 0:
             assert len(bboxes.shape) == 2
@@ -494,10 +490,7 @@ class CSVLogger(BaseLogger):
                     metric_store.append(step_metrics)
 
         except Exception as e:
-            logging.warning(
-                f"Failed to load existing CSV data from {self.log_file}: {e}. "
-                "Starting with empty log."
-            )
+            logging.warning(f"Failed to load existing CSV data from {self.log_file}: {e}. Starting with empty log.")
             return
         self._steps.extend(steps)
         self._metric_store.extend(metric_store)
@@ -511,10 +504,7 @@ class CSVLogger(BaseLogger):
         logs = [["step"] + metrics]
         for step, step_metrics in zip(self._steps, self._metric_store):
             # Convert None values to empty strings for proper CSV formatting
-            row = [step] + [
-                "" if step_metrics.get(m) is None else step_metrics.get(m)
-                for m in metrics
-            ]
+            row = [step] + ["" if step_metrics.get(m) is None else step_metrics.get(m) for m in metrics]
             logs.append(row)
 
         return logs

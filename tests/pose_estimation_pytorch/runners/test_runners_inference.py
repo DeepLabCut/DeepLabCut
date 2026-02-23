@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Tests inference runners"""
+
 from unittest.mock import Mock, patch
 
 import numpy as np
@@ -37,9 +38,7 @@ def test_load_weights_only_with_build_training_runner(task: Task, weights_only: 
         )
         if weights_only is None:
             weights_only = get_load_weights_only()
-        load.assert_called_once_with(
-            snapshot, map_location="cpu", weights_only=weights_only
-        )
+        load.assert_called_once_with(snapshot, map_location="cpu", weights_only=weights_only)
 
 
 class MockInferenceRunner(inference.InferenceRunner):
@@ -114,10 +113,7 @@ def test_mock_top_down(batch_size, detections_per_image):
             detections = np.zeros((0, 3, 1, 1))  # random shape when no detections
         else:
             detections = np.concatenate(
-                [
-                    (1_000_000 * (index + 1) + i) * np.ones((1, 3, h, w))
-                    for i in range(num_detections)
-                ],
+                [(1_000_000 * (index + 1) + i) * np.ones((1, 3, h, w)) for i in range(num_detections)],
                 axis=0,
             )
 
@@ -181,7 +177,8 @@ def test_dynamic_pose_inference_calls_dynamic():
 
     assert len(updated_pose) == 1
     np.testing.assert_allclose(
-        updated_pose[0]["bodypart"]["poses"], pose_batch_updated[0].cpu().numpy(),
+        updated_pose[0]["bodypart"]["poses"],
+        pose_batch_updated[0].cpu().numpy(),
     )
 
 

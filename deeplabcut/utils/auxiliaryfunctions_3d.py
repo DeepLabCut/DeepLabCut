@@ -36,9 +36,7 @@ def Foldernames3Dproject(cfg_3d):
     path_corners = os.path.join(cfg_3d["project_path"], "corners")
     path_camera_matrix = os.path.join(cfg_3d["project_path"], "camera_matrix")
     path_undistort = os.path.join(cfg_3d["project_path"], "undistortion")
-    path_removed_images = os.path.join(
-        cfg_3d["project_path"], "removed_calibration_images"
-    )
+    path_removed_images = os.path.join(cfg_3d["project_path"], "removed_calibration_images")
 
     return (
         img_path,
@@ -128,10 +126,7 @@ def get_camerawise_videos(path, cam_names, videotype):
     vid = []
 
     # Find videos only specific to the cam names
-    videos = [
-        glob.glob(os.path.join(path, str("*" + cam_names[i] + "*" + videotype)))
-        for i in range(len(cam_names))
-    ]
+    videos = [glob.glob(os.path.join(path, str("*" + cam_names[i] + "*" + videotype))) for i in range(len(cam_names))]
     videos = [y for x in videos for y in x]
 
     # Exclude the labeled video files
@@ -143,10 +138,7 @@ def get_camerawise_videos(path, cam_names, videotype):
     video_list = []
     cam = cam_names[0]  # camera1
     vid.append(
-        [
-            name
-            for name in glob.glob(os.path.join(path, str("*" + cam + "*" + videotype)))
-        ]
+        [name for name in glob.glob(os.path.join(path, str("*" + cam + "*" + videotype)))]
     )  # all videos with cam
     # print("here is what I found",vid)
     for k in range(len(vid[0])):
@@ -163,21 +155,15 @@ def get_camerawise_videos(path, cam_names, videotype):
                 if suf == "":
                     putativecam2name = os.path.join(path, pref + cam_names[1] + ending)
                 else:
-                    putativecam2name = os.path.join(
-                        path, pref + cam_names[1] + suf + ending
-                    )
+                    putativecam2name = os.path.join(path, pref + cam_names[1] + suf + ending)
             # print([os.path.join(path,pref+cam+suf+ending),putativecam2name])
             if os.path.isfile(putativecam2name):
                 # found a pair!!!
-                video_list.append(
-                    [os.path.join(path, pref + cam + suf + ending), putativecam2name]
-                )
+                video_list.append([os.path.join(path, pref + cam + suf + ending), putativecam2name])
     return video_list
 
 
-def Get_list_of_triangulated_and_videoFiles(
-    filepath, videotype, scorer_3d, cam_names, videofolder
-):
+def Get_list_of_triangulated_and_videoFiles(filepath, videotype, scorer_3d, cam_names, videofolder):
     """
     Returns the list of triangulated h5 and the corresponding video files.
     """
@@ -196,19 +182,13 @@ def Get_list_of_triangulated_and_videoFiles(
         videofolder = filepath[0]
         cwd = os.getcwd()
         os.chdir(videofolder)
-        triangulated_file_list = [
-            fn for fn in os.listdir(os.curdir) if (string_to_search in fn)
-        ]
+        triangulated_file_list = [fn for fn in os.listdir(os.curdir) if (string_to_search in fn)]
         video_list = get_camerawise_videos(videofolder, cam_names, videotype)
         os.chdir(cwd)
         triangulated_folder = videofolder
     else:
-        triangulated_file_list = [
-            str(Path(fn).name) for fn in filepath if (string_to_search in fn)
-        ]
-        triangulated_folder = [
-            str(Path(fn).parents[0]) for fn in filepath if (string_to_search in fn)
-        ]
+        triangulated_file_list = [str(Path(fn).name) for fn in filepath if (string_to_search in fn)]
+        triangulated_folder = [str(Path(fn).parents[0]) for fn in filepath if (string_to_search in fn)]
         triangulated_folder = triangulated_folder[0]
 
         if videofolder is None:
@@ -258,9 +238,7 @@ def Get_list_of_triangulated_and_videoFiles(
                     )
                 )
                 vfiles = get_camerawise_videos(videofolder, cam_names, videotype)
-                vfiles = [
-                    z for z in vfiles if prefix[j][0] in z[0] and suffix[j][0] in z[1]
-                ][0]
+                vfiles = [z for z in vfiles if prefix[j][0] in z[0] and suffix[j][0] in z[1]][0]
                 file_list.append(triangulated_file + vfiles)
 
     return file_list

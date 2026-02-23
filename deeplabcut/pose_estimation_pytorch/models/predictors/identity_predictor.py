@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Predictor to generate identity maps from head outputs"""
+
 import torch
 import torch.nn as nn
 import torchvision.transforms.functional as F
@@ -36,9 +37,7 @@ class IdentityPredictor(BasePredictor):
         self.apply_sigmoid = apply_sigmoid
         self.sigmoid = nn.Sigmoid()
 
-    def forward(
-        self, stride: float, outputs: dict[str, torch.Tensor]
-    ) -> dict[str, torch.Tensor]:
+    def forward(self, stride: float, outputs: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
         """
         Swaps the dimensions so the heatmap are (batch_size, h, w, num_individuals),
         optionally applies a sigmoid to the heatmaps, and rescales it to be the size

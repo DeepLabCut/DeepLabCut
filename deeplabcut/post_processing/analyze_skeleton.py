@@ -116,17 +116,10 @@ def calc_angle_between_vectors_of_points_2d(v1, v2):
     """
 
     # Check data format
-    if (
-        v1 is None
-        or v2 is None
-        or not isinstance(v1, np.ndarray)
-        or not isinstance(v2, np.ndarray)
-    ):
+    if v1 is None or v2 is None or not isinstance(v1, np.ndarray) or not isinstance(v2, np.ndarray):
         raise ValueError("Invalid format for input arguments")
     if len(v1) != len(v2):
-        raise ValueError(
-            "Input arrays should have the same length, instead: ", len(v1), len(v2)
-        )
+        raise ValueError("Input arrays should have the same length, instead: ", len(v1), len(v2))
     if not v1.shape[0] == 2 or not v2.shape[0] == 2:
         raise ValueError("Invalid shape for input arrays: ", v1.shape, v2.shape)
 
@@ -160,9 +153,7 @@ def analyzebone(bp1, bp2):
     likelihood = np.min(likelihoods, 1)
 
     # Create dataframe and return
-    df = pd.DataFrame.from_dict(
-        dict(length=bone_length, orientation=bone_orientation, likelihood=likelihood)
-    )
+    df = pd.DataFrame.from_dict(dict(length=bone_length, orientation=bone_orientation, likelihood=likelihood))
     # df.index.name=name
 
     return df

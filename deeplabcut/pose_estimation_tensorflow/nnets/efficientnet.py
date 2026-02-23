@@ -49,7 +49,5 @@ class PoseEfficientNet(BasePoseNet):
         return self.prediction_layers(net)
 
     def test(self, inputs):
-        heads = self.get_net(
-            inputs, self.cfg["use_batch_norm"], self.cfg["use_drop_out"]
-        )
+        heads = self.get_net(inputs, self.cfg["use_batch_norm"], self.cfg["use_drop_out"])
         return self.add_inference_layers(heads)

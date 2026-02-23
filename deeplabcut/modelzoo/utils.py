@@ -78,9 +78,7 @@ def get_super_animal_scorer(
         The DLC scorer name to use for the given SuperAnimal models.
     """
     if detector_snapshot_path is not None and torchvision_detector_name is not None:
-        raise ValueError(
-            "Provide only one of `detector_snapshot_path` or `torchvision_detector_name`, not both."
-        )
+        raise ValueError("Provide only one of `detector_snapshot_path` or `torchvision_detector_name`, not both.")
     super_animal_prefix = super_animal + "_"
     # Always use model name first
     model_name = Path(model_snapshot_path).stem
@@ -218,25 +216,14 @@ def parse_project_model_name(superanimal_name: str) -> tuple[str, str]:
     dlc_root_path = get_deeplabcut_path()
     modelzoo_path = os.path.join(dlc_root_path, "modelzoo")
 
-    available_model_configs = glob(
-        os.path.join(modelzoo_path, "model_configs", "*.yaml")
-    )
-    available_models = [
-        os.path.splitext(os.path.basename(path))[0] for path in available_model_configs
-    ]
+    available_model_configs = glob(os.path.join(modelzoo_path, "model_configs", "*.yaml"))
+    available_models = [os.path.splitext(os.path.basename(path))[0] for path in available_model_configs]
 
     if model_name not in available_models:
-        raise ValueError(
-            f"Model {model_name} not found. Available models are: {available_models}"
-        )
+        raise ValueError(f"Model {model_name} not found. Available models are: {available_models}")
 
-    available_project_configs = glob(
-        os.path.join(modelzoo_path, "project_configs", "*.yaml")
-    )
-    available_projects = [
-        os.path.splitext(os.path.basename(path))[0]
-        for path in available_project_configs
-    ]
+    available_project_configs = glob(os.path.join(modelzoo_path, "project_configs", "*.yaml"))
+    available_projects = [os.path.splitext(os.path.basename(path))[0] for path in available_project_configs]
 
     return project_name, model_name
 
@@ -398,17 +385,11 @@ def get_superanimal_colormaps():
     )
 
     superanimal_colormaps = {
-        "superanimal_bird": ListedColormap(
-            list(superanimal_bird_colors), name="superanimal_bird"
-        ),
+        "superanimal_bird": ListedColormap(list(superanimal_bird_colors), name="superanimal_bird"),
         "superanimal_topviewmouse": ListedColormap(
             list(superanimal_topviewmouse_colors), name="superanimal_topviewmouse"
         ),
-        "superanimal_quadruped": ListedColormap(
-            list(superanimal_quadruped_colors), name="superanimal_quadruped"
-        ),
-        "superanimal_humanbody": ListedColormap(
-            list(superanimal_humanbody_colors), name="superanimal_humanbody"
-        ),
+        "superanimal_quadruped": ListedColormap(list(superanimal_quadruped_colors), name="superanimal_quadruped"),
+        "superanimal_humanbody": ListedColormap(list(superanimal_humanbody_colors), name="superanimal_humanbody"),
     }
     return superanimal_colormaps

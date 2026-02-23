@@ -46,9 +46,7 @@ def columnwise_spline_interp(data, max_gap=0):
     x = np.arange(nrows)
     for i in range(ncols):
         mask = valid[:, i]
-        if (
-            np.sum(mask) > 3
-        ):  # Make sure there are enough points to fit the cubic spline
+        if np.sum(mask) > 3:  # Make sure there are enough points to fit the cubic spline
             spl = CubicSpline(x[mask], temp[mask, i])
             y = spl(x)
             if max_gap > 0:
@@ -233,9 +231,7 @@ def filterpredictions(
         vname = Path(video).stem
 
         try:
-            df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
-                destfolder, vname, DLCscorer, True, track_method
-            )
+            df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(destfolder, vname, DLCscorer, True, track_method)
             print(f"Data from {vname} were already filtered. Skipping...")
             video_to_filtered_df[video] = df
             # Data has been filtered so continue to the next video
@@ -259,12 +255,8 @@ def filterpredictions(
             placeholder = np.empty_like(temp)
             for i in range(temp.shape[1]):
                 x, y, p = temp[:, i].T
-                meanx, _ = FitSARIMAXModel(
-                    x, p, p_bound, alpha, ARdegree, MAdegree, False
-                )
-                meany, _ = FitSARIMAXModel(
-                    y, p, p_bound, alpha, ARdegree, MAdegree, False
-                )
+                meanx, _ = FitSARIMAXModel(x, p, p_bound, alpha, ARdegree, MAdegree, False)
+                meany, _ = FitSARIMAXModel(y, p, p_bound, alpha, ARdegree, MAdegree, False)
                 meanx[0] = x[0]
                 meany[0] = y[0]
                 placeholder[:, i] = np.c_[meanx, meany, p]
@@ -276,9 +268,7 @@ def filterpredictions(
         elif filtertype == "median":
             data = df.copy()
             mask = data.columns.get_level_values("coords") != "likelihood"
-            data.loc[:, mask] = df.loc[:, mask].apply(
-                signal.medfilt, args=(windowlength,), axis=0
-            )
+            data.loc[:, mask] = df.loc[:, mask].apply(signal.medfilt, args=(windowlength,), axis=0)
         elif filtertype == "spline":
             data = df.copy()
             mask_data = data.columns.get_level_values("coords").isin(("x", "y"))

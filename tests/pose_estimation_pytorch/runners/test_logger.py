@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Tests loggers"""
+
 from pathlib import Path
 from typing import Any
 

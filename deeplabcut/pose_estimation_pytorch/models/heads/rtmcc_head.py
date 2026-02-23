@@ -13,6 +13,7 @@
 Based on the official ``mmpose`` RTMCC head implementation. For more information, see
 <https://github.com/open-mmlab/mmpose>.
 """
+
 from __future__ import annotations
 
 import torch

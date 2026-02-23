@@ -122,9 +122,7 @@ class RefineTracklets(DefaultTab):
         layout.addWidget(self.num_animals_in_videos)
 
     def _generate_layout_refinement(self, layout):
-        section_title = _create_label_widget(
-            "Refinement Settings", "font:bold", (0, 50, 0, 0)
-        )
+        section_title = _create_label_widget("Refinement Settings", "font:bold", (0, 50, 0, 0))
 
         # Min swap length
         swap_length_label = QtWidgets.QLabel("Min swap length to highlight")

@@ -50,11 +50,7 @@ import numpy as np
 print("Imported DLC!")
 basepath = os.path.dirname(os.path.abspath("testscript.py"))
 videoname = "reachingvideo1"
-video = [
-    os.path.join(
-        basepath, "Reaching-Mackenzie-2018-08-30", "videos", videoname + ".avi"
-    )
-]
+video = [os.path.join(basepath, "Reaching-Mackenzie-2018-08-30", "videos", videoname + ".avi")]
 
 # to test destination folder:
 # dfolder=basepath

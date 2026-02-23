@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Tests method to create the tracking dataset in PyTorch"""
+
 from pathlib import Path
 
 import torch
@@ -71,6 +72,3 @@ def test_build_feature_extraction_runner(tmp_path_factory):
         device="cpu",
         batch_size=1,
     )
-
-
-

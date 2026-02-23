@@ -35,21 +35,14 @@ requires_network = pytest.mark.skipif(
 
 _REPO_ROOT = pathlib.Path(__file__).resolve().parents[3]
 _EXAMPLE_IMAGE = (
-    _REPO_ROOT
-    / "examples"
-    / "Reaching-Mackenzie-2018-08-30"
-    / "labeled-data"
-    / "reachingvideo1"
-    / "img005.png"
+    _REPO_ROOT / "examples" / "Reaching-Mackenzie-2018-08-30" / "labeled-data" / "reachingvideo1" / "img005.png"
 )
 
 
 # ---------------------------------------------------------------------------
 # Lightweight: verifies the API object is constructed correctly
 # ---------------------------------------------------------------------------
-@pytest.mark.parametrize(
-    "model_type", ["fmpose3d_humans", "fmpose3d_animals"]
-)
+@pytest.mark.parametrize("model_type", ["fmpose3d_humans", "fmpose3d_animals"])
 def test_api_init(model_type):
     api = get_fmpose3d_inference_api(model_type, device="cpu")
     assert api is not None

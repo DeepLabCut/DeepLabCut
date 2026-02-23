@@ -9,4 +9,5 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Backwards compatibility"""
+
 from deeplabcut.core.trackingutils import *

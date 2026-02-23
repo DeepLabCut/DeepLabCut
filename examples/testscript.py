@@ -22,6 +22,7 @@ It should take about 1:30 minutes on a GPU (incl. downloading the ResNet weights
 
 It produces nothing of interest scientifically.
 """
+
 import os
 import platform
 import random
@@ -36,6 +37,7 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
 
 import matplotlib
+
 matplotlib.use("Agg")  # Non-interactive backend, for CI/CD on Windows
 
 USE_SHELVE = random.choice([True, False])
@@ -50,11 +52,7 @@ if __name__ == "__main__":
     print("Imported DLC!")
     basepath = os.path.dirname(os.path.realpath(__file__))
     videoname = "reachingvideo1"
-    video = [
-        os.path.join(
-            basepath, "Reaching-Mackenzie-2018-08-30", "videos", videoname + ".avi"
-        )
-    ]
+    video = [os.path.join(basepath, "Reaching-Mackenzie-2018-08-30", "videos", videoname + ".avi")]
 
     # For testing a color video:
     # videoname='baby4hin2min'
@@ -78,9 +76,7 @@ if __name__ == "__main__":
     SAVE_ITER = 3
 
     print("CREATING PROJECT")
-    path_config_file = deeplabcut.create_new_project(
-        task, scorer, video, copy_videos=True
-    )
+    path_config_file = deeplabcut.create_new_project(task, scorer, video, copy_videos=True)
 
     cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
     cfg["numframes2pick"] = 5
@@ -138,7 +134,10 @@ if __name__ == "__main__":
 
     print("CREATING TRAININGSET")
     deeplabcut.create_training_dataset(
-        path_config_file, net_type=NET, augmenter_type=augmenter_type, engine=engine,
+        path_config_file,
+        net_type=NET,
+        augmenter_type=augmenter_type,
+        engine=engine,
     )
 
     # Check the training image paths are correctly stored as arrays of strings
@@ -230,14 +229,10 @@ if __name__ == "__main__":
     )
 
     print("analyze again...")
-    deeplabcut.analyze_videos(
-        path_config_file, [newvideo], save_as_csv=True, destfolder=DESTFOLDER
-    )
+    deeplabcut.analyze_videos(path_config_file, [newvideo], save_as_csv=True, destfolder=DESTFOLDER)
 
     print("CREATE VIDEO")
-    successful = deeplabcut.create_labeled_video(
-        path_config_file, [newvideo], destfolder=DESTFOLDER, save_frames=True
-    )
+    successful = deeplabcut.create_labeled_video(path_config_file, [newvideo], destfolder=DESTFOLDER, save_frames=True)
     assert all(successful), f"Failed to create a labeled video!"
 
     print("Making plots")
@@ -295,9 +290,7 @@ if __name__ == "__main__":
     deeplabcut.merge_datasets(path_config_file)  # iteration + 1
 
     print("CREATING TRAININGSET")
-    deeplabcut.create_training_dataset(
-        path_config_file, net_type=NET, augmenter_type=augmenter_type2, engine=engine
-    )
+    deeplabcut.create_training_dataset(path_config_file, net_type=NET, augmenter_type=augmenter_type2, engine=engine)
 
     cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
     posefile = os.path.join(
@@ -334,9 +327,7 @@ if __name__ == "__main__":
         )
 
     except:  # if ffmpeg is broken
-        newvideo2 = os.path.join(
-            cfg["project_path"], "videos", videoname + "short2.mp4"
-        )
+        newvideo2 = os.path.join(cfg["project_path"], "videos", videoname + "short2.mp4")
         from moviepy.editor import VideoClip, VideoFileClip
 
         clip = VideoFileClip(video[0])
@@ -362,9 +353,7 @@ if __name__ == "__main__":
     )
 
     print("Extracting skeleton distances, filter and plot filtered output")
-    deeplabcut.analyzeskeleton(
-        path_config_file, [newvideo2], save_as_csv=True, destfolder=DESTFOLDER
-    )
+    deeplabcut.analyzeskeleton(path_config_file, [newvideo2], save_as_csv=True, destfolder=DESTFOLDER)
     deeplabcut.filterpredictions(path_config_file, [newvideo2])
 
     successful = deeplabcut.create_labeled_video(
@@ -382,9 +371,7 @@ if __name__ == "__main__":
     )
     assert all(successful), f"Failed to create a labeled video!"
 
-    deeplabcut.plot_trajectories(
-        path_config_file, [newvideo2], destfolder=DESTFOLDER, filtered=True
-    )
+    deeplabcut.plot_trajectories(path_config_file, [newvideo2], destfolder=DESTFOLDER, filtered=True)
 
     print("ALL DONE!!! - default cases without Tensorpack loader are functional.")
 
@@ -422,9 +409,7 @@ if __name__ == "__main__":
     deeplabcut.auxiliaryfunctions.write_plainconfig(posefile, DLC_config)
 
     print("TRAINING shuffle 2, with smaller allocated memory")
-    deeplabcut.train_network(
-        path_config_file, shuffle=2, allow_growth=True, maxiters=updated_max_iters
-    )
+    deeplabcut.train_network(path_config_file, shuffle=2, allow_growth=True, maxiters=updated_max_iters)
 
     print("ANALYZING some individual frames")
     deeplabcut.analyze_time_lapse_frames(
@@ -436,9 +421,7 @@ if __name__ == "__main__":
     deeplabcut.export_model(path_config_file, shuffle=2, make_tar=False)
 
     print("Merging datasets...")
-    trainIndices, testIndices = deeplabcut.mergeandsplit(
-        path_config_file, trainindex=0, uniform=True
-    )
+    trainIndices, testIndices = deeplabcut.mergeandsplit(path_config_file, trainindex=0, uniform=True)
 
     print("Creating two identical splits...")
     deeplabcut.create_training_dataset(

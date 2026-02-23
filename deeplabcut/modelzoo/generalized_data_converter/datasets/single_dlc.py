@@ -29,9 +29,7 @@ class SingleDLCPoseDataset(BaseDLCPoseDataset):
     """
 
     def __init__(self, proj_root, dataset_name, shuffle=1, modelprefix=""):
-        super(SingleDLCPoseDataset, self).__init__(
-            proj_root, dataset_name, shuffle=shuffle, modelprefix=modelprefix
-        )
+        super(SingleDLCPoseDataset, self).__init__(proj_root, dataset_name, shuffle=shuffle, modelprefix=modelprefix)
 
         # overriding max_individuals
         self.meta["max_individuals"] = 1
@@ -107,7 +105,6 @@ class SingleDLCPoseDataset(BaseDLCPoseDataset):
                 "iscrowd": 0,
             }
             if np.sum(keypoints) != 0:
-
                 coco_annotations.append(annotation)
 
             # I think width and height are important

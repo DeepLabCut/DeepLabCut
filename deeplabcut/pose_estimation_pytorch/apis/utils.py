@@ -180,9 +180,7 @@ def get_model_snapshots(
         ValueError: If the index given is not valid
         ValueError: If index=="best" but there is no saved best model
     """
-    snapshot_manager = TorchSnapshotManager(
-        model_folder=model_folder, snapshot_prefix=task.snapshot_prefix
-    )
+    snapshot_manager = TorchSnapshotManager(model_folder=model_folder, snapshot_prefix=task.snapshot_prefix)
     if snapshot_filter is not None:
         all_snapshots = snapshot_manager.snapshots()
         snapshots = [s for s in all_snapshots if s.path.stem in snapshot_filter]
@@ -202,11 +200,7 @@ def get_model_snapshots(
         snapshots = snapshot_manager.snapshots()
     elif isinstance(index, int):
         all_snapshots = snapshot_manager.snapshots()
-        if (
-            len(all_snapshots) == 0
-            or len(all_snapshots) <= index
-            or (index < 0 and len(all_snapshots) < -index)
-        ):
+        if len(all_snapshots) == 0 or len(all_snapshots) <= index or (index < 0 and len(all_snapshots) < -index):
             names = [s.path.name for s in all_snapshots]
             raise ValueError(
                 f"Found {len(all_snapshots)} snapshots in {model_folder} (with names "
@@ -279,9 +273,7 @@ def get_scorer_name(
 
     if snapshot_uid is None:
         if snapshot_index is None:
-            snapshot_index = auxiliaryfunctions.get_snapshot_index_for_scorer(
-                "snapshotindex", cfg["snapshotindex"]
-            )
+            snapshot_index = auxiliaryfunctions.get_snapshot_index_for_scorer("snapshotindex", cfg["snapshotindex"])
         if detector_index is None:
             detector_index = auxiliaryfunctions.get_snapshot_index_for_scorer(
                 "detector_snapshotindex", cfg["detector_snapshotindex"]
@@ -291,9 +283,7 @@ def get_scorer_name(
         detector_snapshot = None
         if detector_index is not None and pose_task == Task.TOP_DOWN:
             try:
-                detector_snapshot = get_model_snapshots(
-                    detector_index, train_dir, Task.DETECT
-                )[0]
+                detector_snapshot = get_model_snapshots(detector_index, train_dir, Task.DETECT)[0]
             except ValueError:
                 detector_snapshot = None
 
@@ -335,9 +325,7 @@ def list_videos_in_folder(
     videos = []
     for path in map(Path, data_path):
         if not path.exists():
-            raise FileNotFoundError(
-                f"Could not find: {path}. Check access rights."
-            )
+            raise FileNotFoundError(f"Could not find: {path}. Check access rights.")
 
         if path.is_dir():
             videos.extend(f for f in path.iterdir() if f.is_file() and f.suffix.lower() in video_suffixes)
@@ -388,9 +376,7 @@ def _image_names_to_df_index(
     """
 
     if image_name_to_index is not None:
-        return pd.MultiIndex.from_tuples(
-            [image_name_to_index(image_name) for image_name in image_names]
-        )
+        return pd.MultiIndex.from_tuples([image_name_to_index(image_name) for image_name in image_names])
     else:
         return image_names
 
@@ -430,9 +416,7 @@ def build_predictions_dataframe(
     for image_name, image_predictions in predictions.items():
         image_data = image_predictions["bodyparts"][..., :3].reshape(-1)
         if "unique_bodyparts" in image_predictions:
-            image_data = np.concatenate(
-                [image_data, image_predictions["unique_bodyparts"][..., :3].reshape(-1)]
-            )
+            image_data = np.concatenate([image_data, image_predictions["unique_bodyparts"][..., :3].reshape(-1)])
         image_names.append(image_name)
         prediction_data.append(image_data)
 
@@ -475,9 +459,7 @@ def build_bboxes_dict_for_dataframe(
     for image_name, image_predictions in predictions.items():
         image_names.append(image_name)
         if "bboxes" in image_predictions and "bbox_scores" in image_predictions:
-            bboxes_data.append(
-                (image_predictions["bboxes"], image_predictions["bbox_scores"])
-            )
+            bboxes_data.append((image_predictions["bboxes"], image_predictions["bbox_scores"]))
 
     index = _image_names_to_df_index(image_names, image_name_to_index)
 
@@ -498,7 +480,7 @@ def get_inference_runners(
     detector_path: str | Path | None = None,
     detector_transform: A.BaseCompose | None = None,
     dynamic: DynamicCropper | None = None,
-    inference_cfg:InferenceConfig | dict | None = None,
+    inference_cfg: InferenceConfig | dict | None = None,
     min_bbox_score: float | None = None,
 ) -> tuple[InferenceRunner, InferenceRunner | None]:
     """Builds the runners for pose estimation
@@ -601,9 +583,7 @@ def get_inference_runners(
         if detector_path is not None:
             detector_path = str(detector_path)
             if detector_transform is None:
-                detector_transform = build_transforms(
-                    model_config["detector"]["data"]["inference"]
-                )
+                detector_transform = build_transforms(model_config["detector"]["data"]["inference"])
 
             detector_config = model_config["detector"]["model"]
             if "pretrained" in detector_config:
@@ -807,9 +787,7 @@ def get_filtered_coco_detector_inference_runner(
         if color_mode is None:
             missing.append("color_mode")
         if missing:
-            raise ValueError(
-                f"If `model_config` is not provided, you must explicitly specify: {', '.join(missing)}."
-            )
+            raise ValueError(f"If `model_config` is not provided, you must explicitly specify: {', '.join(missing)}.")
     if device == "mps":
         device = "cpu"
 

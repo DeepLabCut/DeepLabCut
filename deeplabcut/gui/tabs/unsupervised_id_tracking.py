@@ -128,9 +128,7 @@ class UnsupervizedIdTracking(DefaultTab):
             track_method=track_method,
         )
         self.worker, self.thread = move_to_separate_thread(func)
-        self.worker.finished.connect(
-            lambda: self.run_transformer_button.setEnabled(True)
-        )
+        self.worker.finished.connect(lambda: self.run_transformer_button.setEnabled(True))
         self.worker.finished.connect(lambda: self.root._progress_bar.hide())
         self.thread.start()
         self.run_transformer_button.setEnabled(False)

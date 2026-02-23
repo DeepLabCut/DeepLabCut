@@ -39,7 +39,6 @@ class MultiSourceDataset:
 
         names = []
         for dataset in datasets:
-
             # Must project datasets to same keypoint space before merging
             if table_path != None:
                 dataset.project_with_conversion_table(table_path)
@@ -70,12 +69,8 @@ class MultiSourceDataset:
         print(f"Summary of dataset {self.dataset_name}")
         print("Decomposition of multi source datasets:")
         for dataset_name, dataset in self.name2genericdataset.items():
-            n_images = len(dataset.generic_train_images) + len(
-                dataset.generic_test_images
-            )
-            n_annotations = len(dataset.generic_train_annotations) + len(
-                dataset.generic_test_annotations
-            )
+            n_images = len(dataset.generic_train_images) + len(dataset.generic_test_images)
+            n_annotations = len(dataset.generic_train_annotations) + len(dataset.generic_test_annotations)
             print(f"{dataset_name} has {n_images} images, {n_annotations} annotations")
 
         print(f"total train images : {len(self.train_images)}")
@@ -144,30 +139,20 @@ class MultiSourceDataset:
         total_number_images = 0
         total_number_annotations = 0
         for dataset in all_datasets:
-            total_number_images += len(dataset.generic_train_images) + len(
-                dataset.generic_test_images
-            )
-            total_number_annotations += len(dataset.generic_train_annotations) + len(
-                dataset.generic_test_annotations
-            )
+            total_number_images += len(dataset.generic_train_images) + len(dataset.generic_test_images)
+            total_number_annotations += len(dataset.generic_train_annotations) + len(dataset.generic_test_annotations)
 
         global_image_id_pool = set(range(total_number_images))
         global_annotation_id_pool = set(range(total_number_annotations))
 
         for dataset_name, dataset in self.name2genericdataset.items():
-
             local_image_id_map = defaultdict(int)
             local_anno_id_map = defaultdict(int)
 
-            traintest_images = (
-                dataset.generic_train_images + dataset.generic_test_images
-            )
-            traintest_annotations = (
-                dataset.generic_train_annotations + dataset.generic_test_annotations
-            )
+            traintest_images = dataset.generic_train_images + dataset.generic_test_images
+            traintest_annotations = dataset.generic_train_annotations + dataset.generic_test_annotations
 
             for img in traintest_images:
-
                 new_image_id = global_image_id_pool.pop()
                 local_image_id_map[img["id"]] = new_image_id
                 img["id"] = new_image_id
@@ -204,7 +189,6 @@ class MultiSourceDataset:
         merged_test_annotations = []
 
         for dataset_name, dataset in name2dataset.items():
-
             train_images = dataset.generic_train_images
             test_images = dataset.generic_test_images
             train_annotations = dataset.generic_train_annotations
@@ -218,13 +202,9 @@ class MultiSourceDataset:
         print("Checking merged dataset")
 
         merged_traintest_images = merged_train_images + merged_test_images
-        merged_traintest_annotations = (
-            merged_train_annotations + merged_test_annotations
-        )
+        merged_traintest_annotations = merged_train_annotations + merged_test_annotations
 
-        self.whether_anno_image_match(
-            merged_traintest_images, merged_traintest_annotations
-        )
+        self.whether_anno_image_match(merged_traintest_images, merged_traintest_annotations)
 
         return (
             merged_train_images,
@@ -236,22 +216,17 @@ class MultiSourceDataset:
     def __eq__(self, other_dataset):
 
         if isinstance(other_dataset, BasePoseDataset):
-
             train_images1 = set(map(raw_2_imagename_with_id, self.train_images))
-            train_images2 = set(
-                map(raw_2_imagename, other_dataset.generic_train_images)
-            )
+            train_images2 = set(map(raw_2_imagename, other_dataset.generic_train_images))
 
             test_images1 = set(map(raw_2_imagename_with_id, self.test_images))
             test_images2 = set(map(raw_2_imagename, other_dataset.generic_test_images))
             if train_images1 == train_images2 and test_images1 == test_images2:
-                print(
-                    f'dataset {self.meta["dataset_name"]} and {other_dataset.meta["dataset_name"]} are equivalent'
-                )
+                print(f"dataset {self.meta['dataset_name']} and {other_dataset.meta['dataset_name']} are equivalent")
                 return True
             else:
                 print(
-                    f'dataset {self.meta["dataset_name"]} and {other_dataset.meta["dataset_name"]} are NOT equivalent'
+                    f"dataset {self.meta['dataset_name']} and {other_dataset.meta['dataset_name']} are NOT equivalent"
                 )
                 return False
 

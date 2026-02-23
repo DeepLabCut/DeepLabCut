@@ -57,9 +57,7 @@ def optimal_match(gts_list, preds_list):
 
     for i in range(num_gts):
         for j in range(num_preds):
-            cost_matrix[i, j] = distance.euclidean(
-                gts_list[i][..., :2].flatten(), preds_list[j][..., :2].flatten()
-            )
+            cost_matrix[i, j] = distance.euclidean(gts_list[i][..., :2].flatten(), preds_list[j][..., :2].flatten())
     row_ind, col_ind = linear_sum_assignment(cost_matrix)
 
     return col_ind
@@ -125,9 +123,7 @@ def video_to_frames(input_video, output_folder, cropping: list[int] | None = Non
     # cv2.destroyAllWindows()
 
 
-def plot_cost_matrix(
-    matrix, gt_keypoint_names, pred_keypoint_names, conversion_plot_out_path
-):
+def plot_cost_matrix(matrix, gt_keypoint_names, pred_keypoint_names, conversion_plot_out_path):
 
     matrix /= np.max(matrix)
     fig, ax = plt.subplots()
@@ -185,9 +181,7 @@ def keypoint_matching(
         max_individuals = 1
 
     memory_replay_folder = dlc_proj_root / "memory_replay"
-    temp_dataset.materialize(
-        str(memory_replay_folder), framework="coco", deepcopy=copy_images
-    )
+    temp_dataset.materialize(str(memory_replay_folder), framework="coco", deepcopy=copy_images)
 
     # run inference on the train set
     config = modelzoo.load_super_animal_config(
@@ -200,10 +194,12 @@ def keypoint_matching(
 
     # get the SuperAnimal detector and pose model snapshot paths
     pose_model_path = modelzoo.get_super_animal_snapshot_path(
-        dataset=superanimal_name, model_name=model_name,
+        dataset=superanimal_name,
+        model_name=model_name,
     )
     detector_path = modelzoo.get_super_animal_snapshot_path(
-        dataset=superanimal_name, model_name=detector_name,
+        dataset=superanimal_name,
+        model_name=detector_name,
     )
 
     config = update_config(config, max_individuals, device)
@@ -254,9 +250,7 @@ def keypoint_matching(
     image_extensions = ["*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif", "*.tiff"]
     images_in_folder = []
     for ext in image_extensions:
-        images_in_folder.extend(
-            glob.glob(os.path.join(memory_replay_folder, "images", ext))
-        )
+        images_in_folder.extend(glob.glob(os.path.join(memory_replay_folder, "images", ext)))
 
     corresponded_images = []
     for image in images_in_folder:
@@ -266,10 +260,7 @@ def keypoint_matching(
             corresponded_images.append(image_path)
 
     images = corresponded_images
-    bbox_gts = [
-        {"bboxes": np.array(image_name_to_bbox[image.split(os.sep)[-1]])}
-        for image in images
-    ]
+    bbox_gts = [{"bboxes": np.array(image_name_to_bbox[image.split(os.sep)[-1]])} for image in images]
 
     pose_inputs = list(zip(images, bbox_gts))
 
@@ -322,13 +313,9 @@ def keypoint_matching(
     row_ind, column_ind = linear_sum_assignment(match_matrix * -1)
     keypoint_mapping_list = []
 
-    conversion_matrix_out_path = os.path.join(
-        memory_replay_folder, "confusion_matrix.png"
-    )
+    conversion_matrix_out_path = os.path.join(memory_replay_folder, "confusion_matrix.png")
 
-    plot_cost_matrix(
-        match_matrix, gt_keypoint_names, pred_keypoint_names, conversion_matrix_out_path
-    )
+    plot_cost_matrix(match_matrix, gt_keypoint_names, pred_keypoint_names, conversion_matrix_out_path)
 
     for row, column in zip(row_ind, column_ind):
         pred_kpt_name = pred_keypoint_names[row]
@@ -336,18 +323,14 @@ def keypoint_matching(
         count = match_dict[pred_kpt_name][anno_kpt_name]
         keypoint_mapping_list.append((pred_kpt_name, anno_kpt_name, count))
 
-    keypoint_mapping_list = sorted(
-        keypoint_mapping_list, key=lambda x: x[2], reverse=True
-    )
+    keypoint_mapping_list = sorted(keypoint_mapping_list, key=lambda x: x[2], reverse=True)
 
     names = [e[:2] for e in keypoint_mapping_list]
     conversion_table = {}
     for pred, anno in names:
         conversion_table[pred] = anno
 
-    conversion_table_out_path = os.path.join(
-        memory_replay_folder, "conversion_table.csv"
-    )
+    conversion_table_out_path = os.path.join(memory_replay_folder, "conversion_table.csv")
     with open(conversion_table_out_path, "w") as f:
         out = "gt, MasterName\n"
         for name in pred_keypoint_names:
@@ -412,9 +395,9 @@ def dlc3predictions_2_annotation_from_video(
     predictions, image_paths = predictions[::10], image_paths[::10]
 
     # Since the inference API does not return the image path, I assume the predictions are provided in the same order as the frames in the video.
-    assert len(image_paths) == len(
-        predictions
-    ), f"number of images must be equal to number of predictions. image_paths: {len(image_paths)} , predictions: {len(predictions)}"
+    assert len(image_paths) == len(predictions), (
+        f"number of images must be equal to number of predictions. image_paths: {len(image_paths)} , predictions: {len(predictions)}"
+    )
     new_predictions = []
 
     num_kpts = len(bodyparts)
@@ -422,7 +405,7 @@ def dlc3predictions_2_annotation_from_video(
     if not superanimal_name.startswith("superanimal_"):
         raise ValueError("not supporting non superanimal model video adaptation yet")
 
-    category_name = superanimal_name[len("superanimal_"):]
+    category_name = superanimal_name[len("superanimal_") :]
     categories = [
         {
             "name": category_name,
@@ -447,19 +430,9 @@ def dlc3predictions_2_annotation_from_video(
 
         # iterate through individuals if there are many
 
-        assert (
-            len(prediction["bodyparts"])
-            == len(prediction["bboxes"])
-            == len(prediction["bbox_scores"])
-        )
-        for pose, bbox, bbox_score in zip(
-            prediction["bodyparts"], prediction["bboxes"], prediction["bbox_scores"]
-        ):
-            if (
-                np.all(np.array(pose) <= 0)
-                or len(bbox) == 0
-                or bbox_score < bbox_threshold
-            ):
+        assert len(prediction["bodyparts"]) == len(prediction["bboxes"]) == len(prediction["bbox_scores"])
+        for pose, bbox, bbox_score in zip(prediction["bodyparts"], prediction["bboxes"], prediction["bbox_scores"]):
+            if np.all(np.array(pose) <= 0) or len(bbox) == 0 or bbox_score < bbox_threshold:
                 continue
             imageid2annotations[image_id].append(pose)
             pose = np.array(pose)

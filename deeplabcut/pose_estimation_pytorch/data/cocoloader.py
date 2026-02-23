@@ -80,9 +80,7 @@ class COCOLoader(Loader):
                 bodyparts=bodyparts,
                 unique_bpts=[],
                 individuals=[f"individual{i}" for i in range(num_individuals)],
-                with_center_keypoints=self.model_cfg.get(
-                    "with_center_keypoints", False
-                ),
+                with_center_keypoints=self.model_cfg.get("with_center_keypoints", False),
                 color_mode=self.model_cfg.get("color_mode", "RGB"),
                 top_down_crop_size=(crop_w, crop_h),
                 top_down_crop_margin=crop_margin,
@@ -202,10 +200,7 @@ class COCOLoader(Loader):
                 image_ids.add(image["id"])
 
         if len(missing_images) > 0:
-            warnings.warn(
-                f"There are {len(missing_images)} images that cannot be found (here"
-                " are some):"
-            )
+            warnings.warn(f"There are {len(missing_images)} images that cannot be found (here are some):")
             for img_id, file_name in missing_images.items():
                 print(f"  * {img_id}: {file_name}")
 
@@ -226,8 +221,7 @@ class COCOLoader(Loader):
 
         if len(coco_json["annotations"]) < len(validated_annotations):
             warnings.warn(
-                f"Found some annotations for which the image ID was not in the images."
-                f" Removing them from the dataset."
+                f"Found some annotations for which the image ID was not in the images. Removing them from the dataset."
             )
             print(f"  All annotations: {len(coco_json['annotations'])}")
             print(f"  Annotations with correct image IDs: {len(validated_annotations)}")
@@ -305,9 +299,7 @@ class COCOLoader(Loader):
         elif len(img_to_annotations) == 1:
             num_individuals = len(list(img_to_annotations.values())[0])
         else:
-            num_individuals = max(
-                *[len(a_ids) for a_ids in img_to_annotations.values()]
-            )
+            num_individuals = max(*[len(a_ids) for a_ids in img_to_annotations.values()])
 
         return num_individuals, bodyparts
 
@@ -349,9 +341,7 @@ class COCOLoader(Loader):
                     if "bboxes" in pred:
                         coco_pred["bbox"] = pred["bboxes"][idx].reshape(-1).tolist()
                     if "bbox_scores" in pred:
-                        coco_pred["bbox_scores"] = (
-                            pred["bbox_scores"][idx].reshape(-1).tolist()
-                        )
+                        coco_pred["bbox_scores"] = pred["bbox_scores"][idx].reshape(-1).tolist()
 
                     coco_predictions.append(coco_pred)
 

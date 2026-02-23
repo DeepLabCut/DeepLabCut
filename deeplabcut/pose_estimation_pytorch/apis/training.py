@@ -102,9 +102,7 @@ def train(
 
     logger = None
     if logger_config is not None:
-        logger = LOGGER.build(
-            {**logger_config, "model": model, "train_folder": loader.model_folder}
-        )
+        logger = LOGGER.build({**logger_config, "model": model, "train_folder": loader.model_folder})
         logger.log_config(run_config)
 
     if device is None:
@@ -145,9 +143,7 @@ def train(
     logging.info(f"  Validation: {inference_transform}")
 
     train_dataset = loader.create_dataset(transform=transform, mode="train", task=task)
-    valid_dataset = loader.create_dataset(
-        transform=inference_transform, mode="test", task=task
-    )
+    valid_dataset = loader.create_dataset(transform=inference_transform, mode="test", task=task)
 
     collate_fn = None
     if collate_fn_cfg := run_config["data"]["train"].get("collate"):
@@ -187,9 +183,7 @@ def train(
             "scale the learning rate by sqrt(batch_size) times).\n"
         )
 
-    logging.info(
-        f"Using {len(train_dataset)} images and {len(valid_dataset)} for testing"
-    )
+    logging.info(f"Using {len(train_dataset)} images and {len(valid_dataset)} for testing")
     if task == task.DETECT:
         logging.info("\nStarting object detector training...\n" + (50 * "-"))
     else:
@@ -346,10 +340,7 @@ def train_network(
 
     # get the pose task
     pose_task = Task(loader.model_cfg.get("method", "bu"))
-    if (
-        pose_task == Task.TOP_DOWN
-        and loader.model_cfg["detector"]["train_settings"]["epochs"] > 0
-    ):
+    if pose_task == Task.TOP_DOWN and loader.model_cfg["detector"]["train_settings"]["epochs"] > 0:
         logger_config = None
         if loader.model_cfg.get("logger"):
             logger_config = copy.deepcopy(loader.model_cfg["logger"])
@@ -357,9 +348,7 @@ def train_network(
 
         detector_run_config = loader.model_cfg["detector"]
         detector_run_config["device"] = loader.model_cfg["device"]
-        detector_run_config["train_settings"]["weight_init"] = loader.model_cfg[
-            "train_settings"
-        ].get("weight_init")
+        detector_run_config["train_settings"]["weight_init"] = loader.model_cfg["train_settings"].get("weight_init")
         train(
             loader=loader,
             run_config=detector_run_config,

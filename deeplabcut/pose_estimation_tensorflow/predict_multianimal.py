@@ -101,9 +101,7 @@ def extract_bpt_feature_from_video(
                 extra_dict,
             )
         else:
-            raise NotImplementedError(
-                "Not implemented yet, please raise an GitHub issue if you need this."
-            )
+            raise NotImplementedError("Not implemented yet, please raise an GitHub issue if you need this.")
 
 
 def AnalyzeMultiAnimalVideo(
@@ -222,9 +220,7 @@ def AnalyzeMultiAnimalVideo(
             with open(metadata_path, "wb") as f:
                 pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
         else:
-            _ = auxfun_multianimal.SaveFullMultiAnimalData(
-                PredicteData, metadata, dataname
-            )
+            _ = auxfun_multianimal.SaveFullMultiAnimalData(PredicteData, metadata, dataname)
 
 
 def _get_features_dict(raw_coords, features, stride):
@@ -233,18 +229,14 @@ def _get_features_dict(raw_coords, features, stride):
         convert_coord_from_img_space_to_feature_space,
     )
 
-    coords_img_space = np.array(
-        [coord[:, :2] for coord in raw_coords]
-    )  # only first two columns are useful
+    coords_img_space = np.array([coord[:, :2] for coord in raw_coords])  # only first two columns are useful
 
     coords_feature_space = convert_coord_from_img_space_to_feature_space(
         coords_img_space,
         stride,
     )
 
-    bpt_features = load_features_from_coord(
-        features.astype(np.float16), coords_feature_space
-    )
+    bpt_features = load_features_from_coord(features.astype(np.float16), coords_feature_space)
     return {"features": bpt_features, "coordinates": coords_img_space}
 
 
@@ -269,9 +261,7 @@ def GetPoseandCostsF_from_assemblies(
         cap.set_bbox(cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"])
     nx, ny = cap.dimensions
 
-    frames = np.empty(
-        (batchsize, ny, nx, 3), dtype="ubyte"
-    )  # this keeps all frames in a batch
+    frames = np.empty((batchsize, ny, nx, 3), dtype="ubyte")  # this keeps all frames in a batch
     pbar = tqdm(total=nframes)
     counter = 0
     inds = []
@@ -350,13 +340,9 @@ def GetPoseandCostsF_from_assemblies(
         "minimal confidence": dlc_cfg["minconfidence"],
         "sigma": dlc_cfg.get("sigma", 1),
         "PAFgraph": dlc_cfg["partaffinityfield_graph"],
-        "PAFinds": dlc_cfg.get(
-            "paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))
-        ),
+        "PAFinds": dlc_cfg.get("paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))),
         "all_joints": [[i] for i in range(len(dlc_cfg["all_joints"]))],
-        "all_joints_names": [
-            dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
-        ],
+        "all_joints_names": [dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))],
         "nframes": nframes,
     }
     return PredicteData, nframes
@@ -381,9 +367,7 @@ def GetPoseandCostsF(
         cap.set_bbox(cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"])
     nx, ny = cap.dimensions
 
-    frames = np.empty(
-        (batchsize, ny, nx, 3), dtype="ubyte"
-    )  # this keeps all frames in a batch
+    frames = np.empty((batchsize, ny, nx, 3), dtype="ubyte")  # this keeps all frames in a batch
     pbar = tqdm(total=nframes)
     counter = 0
     inds = []
@@ -400,13 +384,9 @@ def GetPoseandCostsF(
         "minimal confidence": dlc_cfg["minconfidence"],
         "sigma": dlc_cfg.get("sigma", 1),
         "PAFgraph": dlc_cfg["partaffinityfield_graph"],
-        "PAFinds": dlc_cfg.get(
-            "paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))
-        ),
+        "PAFinds": dlc_cfg.get("paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))),
         "all_joints": [[i] for i in range(len(dlc_cfg["all_joints"]))],
-        "all_joints_names": [
-            dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
-        ],
+        "all_joints_names": [dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))],
         "nframes": nframes,
     }
     while cap.video.isOpened():
@@ -480,13 +460,9 @@ def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, shelf_pa
         "minimal confidence": dlc_cfg["minconfidence"],
         "sigma": dlc_cfg.get("sigma", 1),
         "PAFgraph": dlc_cfg["partaffinityfield_graph"],
-        "PAFinds": dlc_cfg.get(
-            "paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))
-        ),
+        "PAFinds": dlc_cfg.get("paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))),
         "all_joints": [[i] for i in range(len(dlc_cfg["all_joints"]))],
-        "all_joints_names": [
-            dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
-        ],
+        "all_joints_names": [dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))],
         "nframes": nframes,
     }
     pbar = tqdm(total=nframes)

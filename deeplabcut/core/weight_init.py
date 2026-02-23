@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Classes to configure how to initialize model weights"""
+
 from __future__ import annotations
 
 import warnings
@@ -61,8 +62,7 @@ class WeightInitialization:
 
         if self.with_decoder and self.conversion_array is None:
             raise ValueError(
-                f"You must specify a conversion_array to initialize decoder weights "
-                f"(``with_decoder=True``)."
+                f"You must specify a conversion_array to initialize decoder weights (``with_decoder=True``)."
             )
 
         if self.bodyparts is not None and self.conversion_array is None:
@@ -187,6 +187,7 @@ class WeightInitialization:
             The built WeightInitialization.
         """
         from deeplabcut.modelzoo import build_weight_init
+
         deprecation_warning = (
             "The `WeightInitialization.build` is deprecated and will be removed in a "
             "future version of DeepLabCut. Please use `build_weight_init` from "

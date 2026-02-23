@@ -120,9 +120,7 @@ def find_outliers_in_raw_data(
     )
 
 
-def find_outliers_in_raw_detections(
-    pickled_data, algo="uncertain", threshold=0.1, kept_keypoints=None
-):
+def find_outliers_in_raw_detections(pickled_data, algo="uncertain", threshold=0.1, kept_keypoints=None):
     """
     Find outlier frames from the raw detections of multiple animals.
 
@@ -176,10 +174,7 @@ def find_outliers_in_raw_detections(
     return candidates, data
 
 
-def _read_video_specific_cropping_margins(
-    config: str | Path | dict,
-    video_path: str | Path
-) -> tuple[int, int]:
+def _read_video_specific_cropping_margins(config: str | Path | dict, video_path: str | Path) -> tuple[int, int]:
     if isinstance(config, (str, Path)):
         config = auxiliaryfunctions.read_config(config)
     output_crop = config["video_sets"].get(str(video_path), {}).get("crop")
@@ -394,9 +389,7 @@ def extract_outlier_frames(
     """
 
     cfg = auxiliaryfunctions.read_config(config)
-    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-        cfg, comparisonbodyparts
-    )
+    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts)
     if not len(bodyparts):
         raise ValueError("No valid bodyparts were selected.")
 
@@ -425,9 +418,7 @@ def extract_outlier_frames(
             df, dataname, _, _ = auxiliaryfunctions.load_analyzed_data(
                 videofolder, vname, DLCscorer, track_method=track_method
             )
-            metadata = auxiliaryfunctions.load_video_metadata(
-                videofolder, vname, DLCscorer
-            )
+            metadata = auxiliaryfunctions.load_video_metadata(videofolder, vname, DLCscorer)
             nframes = len(df)
             startindex = max([int(np.floor(nframes * cfg["start"])), 0])
             stopindex = min([int(np.ceil(nframes * cfg["stop"])), nframes])
@@ -456,16 +447,11 @@ def extract_outlier_frames(
                 ind = df_temp.index[(sum_ > epsilon**2).any(axis=1)].tolist()
                 Indices.extend(ind)
             elif outlieralgorithm == "fitting":
-                d, o = compute_deviations(
-                    df_temp, dataname, p_bound, alpha, ARdegree, MAdegree
-                )
+                d, o = compute_deviations(df_temp, dataname, p_bound, alpha, ARdegree, MAdegree)
                 # Some heuristics for extracting frames based on distance:
-                ind = np.flatnonzero(
-                    d > epsilon
-                )  # time points with at least average difference of epsilon
+                ind = np.flatnonzero(d > epsilon)  # time points with at least average difference of epsilon
                 if (
-                    len(ind) < cfg["numframes2pick"] * 2
-                    and len(d) > cfg["numframes2pick"] * 2
+                    len(ind) < cfg["numframes2pick"] * 2 and len(d) > cfg["numframes2pick"] * 2
                 ):  # if too few points qualify, extract the most distant ones.
                     ind = np.argsort(d)[::-1][: cfg["numframes2pick"] * 2]
                 Indices.extend(ind)
@@ -479,9 +465,7 @@ def extract_outlier_frames(
                     coords=None,
                 )
                 if added_video:
-                    project_video_path = (
-                        Path(cfg["project_path"]) / "videos" / Path(video).name
-                    )
+                    project_video_path = Path(cfg["project_path"]) / "videos" / Path(video).name
                     _ = launch_napari([project_video_path, dataname])
                 return
 
@@ -496,9 +480,7 @@ def extract_outlier_frames(
                         raise
                     Indices.extend(frames2use)
                 else:
-                    raise ValueError(
-                        'Expected list of frames2use for outlieralgorithm "list"!'
-                    )
+                    raise ValueError('Expected list of frames2use for outlieralgorithm "list"!')
             else:
                 raise ValueError(f"outlieralgorithm {outlieralgorithm} not recognized!")
 
@@ -534,12 +516,7 @@ def extract_outlier_frames(
                 else:
                     askuser = "Ja"
 
-                if (
-                    askuser == "y"
-                    or askuser == "yes"
-                    or askuser == "Ja"
-                    or askuser == "ha"
-                ):  # multilanguage support :)
+                if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":  # multilanguage support :)
                     # Now extract from those Indices!
                     ExtractFramesbasedonPreselection(
                         Indices,
@@ -555,9 +532,7 @@ def extract_outlier_frames(
                         copy_videos=copy_videos,
                     )
                 else:
-                    print(
-                        "Nothing extracted, please change the parameters and start again..."
-                    )
+                    print("Nothing extracted, please change the parameters and start again...")
         except FileNotFoundError as e:
             print(e)
             print(
@@ -597,9 +572,7 @@ def FitSARIMAXModel(x, p, pcutoff, alpha, ARdegree, MAdegree, nforecast=0, disp=
         # mod = sm.tsa.ARIMA(Y, order=(ARdegree,0,MAdegree)) #order=(ARdegree,0,MAdegree)
         try:
             res = mod.fit(disp=disp)
-        except (
-            ValueError
-        ):  # https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk (let's update to statsmodels 0.10.0 soon...)
+        except ValueError:  # https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk (let's update to statsmodels 0.10.0 soon...)
             startvalues = np.array([convertparms2start(pn) for pn in mod.param_names])
             res = mod.fit(start_params=startvalues, disp=disp)
         except np.linalg.LinAlgError:
@@ -622,9 +595,7 @@ def FitSARIMAXModel(x, p, pcutoff, alpha, ARdegree, MAdegree, nforecast=0, disp=
         return np.nan * np.zeros(len(Y)), np.nan * np.zeros((len(Y), 2))
 
 
-def compute_deviations(
-    Dataframe, dataname, p_bound, alpha, ARdegree, MAdegree, storeoutput=None
-):
+def compute_deviations(Dataframe, dataname, p_bound, alpha, ARdegree, MAdegree, storeoutput=None):
     """Fits Seasonal AutoRegressive Integrated Moving Average with eXogenous regressors model to data and computes confidence interval
     as well as mean fit."""
 
@@ -638,9 +609,7 @@ def compute_deviations(
         meanx, CIx = FitSARIMAXModel(x, p, p_bound, alpha, ARdegree, MAdegree)
         meany, CIy = FitSARIMAXModel(y, p, p_bound, alpha, ARdegree, MAdegree)
         distance = np.sqrt((x - meanx) ** 2 + (y - meany) ** 2)
-        significant = (
-            (x < CIx[:, 0]) + (x > CIx[:, 1]) + (y < CIy[:, 0]) + (y > CIy[:, 1])
-        )
+        significant = (x < CIx[:, 0]) + (x > CIx[:, 1]) + (y < CIy[:, 0]) + (y > CIy[:, 1])
         preds.append(np.c_[distance, significant, meanx, meany, CIx, CIy])
 
     columns = Dataframe.columns
@@ -745,9 +714,7 @@ def ExtractFramesbasedonPreselection(
     start = cfg["start"]
     stop = cfg["stop"]
     numframes2extract = cfg["numframes2pick"]
-    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-        cfg, "all"
-    )
+    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, "all")
 
     videofolder = str(Path(video).parents[0])
     vname = str(Path(video).stem)
@@ -784,9 +751,7 @@ def ExtractFramesbasedonPreselection(
         if opencv:
             if coords is not None:
                 vid.set_bbox(*coords)
-            frames2pick = frameselectiontools.UniformFramescv2(
-                vid, numframes2extract, start, stop, Index
-            )
+            frames2pick = frameselectiontools.UniformFramescv2(vid, numframes2extract, start, stop, Index)
         else:
             if coords is not None:
                 clip = clip.crop(
@@ -795,9 +760,7 @@ def ExtractFramesbasedonPreselection(
                     x1=coords[0],
                     x2=coords[1],
                 )
-            frames2pick = frameselectiontools.UniformFrames(
-                clip, numframes2extract, start, stop, Index
-            )
+            frames2pick = frameselectiontools.UniformFrames(clip, numframes2extract, start, stop, Index)
     elif extractionalgorithm == "kmeans":
         if opencv:
             if coords is not None:
@@ -830,9 +793,7 @@ def ExtractFramesbasedonPreselection(
             )
 
     else:
-        print(
-            "Please implement this method yourself! Currently the options are 'kmeans', 'jump', 'uniform'."
-        )
+        print("Please implement this method yourself! Currently the options are 'kmeans', 'jump', 'uniform'.")
         frames2pick = []
 
     # Extract frames + frames with plotted labels and store them in folder (with name derived from video name) nder labeled-data
@@ -889,9 +850,7 @@ def ExtractFramesbasedonPreselection(
             pass
 
         if with_annotations:
-            machinefile = os.path.join(
-                tmpfolder, "machinelabels-iter" + str(cfg["iteration"]) + ".h5"
-            )
+            machinefile = os.path.join(tmpfolder, "machinelabels-iter" + str(cfg["iteration"]) + ".h5")
             if isinstance(data, pd.DataFrame):
                 df = data.loc[frames2pick]
                 df.index = pd.MultiIndex.from_tuples(
@@ -915,9 +874,7 @@ def ExtractFramesbasedonPreselection(
                         for index in frames2pick
                     ]
                 )
-                filename = os.path.join(
-                    str(tmpfolder), f"CollectedData_{cfg['scorer']}.h5"
-                )
+                filename = os.path.join(str(tmpfolder), f"CollectedData_{cfg['scorer']}.h5")
                 try:
                     df_temp = pd.read_hdf(filename, "df_with_missing")
                     columns = df_temp.columns
@@ -962,9 +919,7 @@ def ExtractFramesbasedonPreselection(
                 conversioncode.guarantee_multiindex_rows(Data)
                 DataCombined = pd.concat([Data, df])
                 # drop duplicate labels:
-                DataCombined = DataCombined[
-                    ~DataCombined.index.duplicated(keep="first")
-                ]
+                DataCombined = DataCombined[~DataCombined.index.duplicated(keep="first")]
 
                 DataCombined.to_hdf(machinefile, key="df_with_missing", mode="w")
                 DataCombined.to_csv(
@@ -974,13 +929,8 @@ def ExtractFramesbasedonPreselection(
                 df.to_hdf(machinefile, key="df_with_missing", mode="w")
                 df.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
 
-        print(
-            r"The outlier frames are extracted. They are stored in the subdirectory labeled-data\%s."
-            % vname
-        )
-        print(
-            "Once you extracted frames for all videos, use 'refine_labels' to manually correct the labels."
-        )
+        print(r"The outlier frames are extracted. They are stored in the subdirectory labeled-data\%s." % vname)
+        print("Once you extracted frames for all videos, use 'refine_labels' to manually correct the labels.")
     else:
         print("No frames were extracted.")
 
@@ -1002,13 +952,9 @@ def PlottingSingleFrame(
     from skimage import io
 
     imagename1 = os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + ".png")
-    imagename2 = os.path.join(
-        tmpfolder, "img" + str(index).zfill(strwidth) + "labeled.png"
-    )
+    imagename2 = os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + "labeled.png")
 
-    if not os.path.isfile(
-        os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + ".png")
-    ):
+    if not os.path.isfile(os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + ".png")):
         plt.axis("off")
         image = img_as_ubyte(clip.get_frame(index * 1.0 / clip.fps))
         io.imsave(imagename1, image)
@@ -1021,9 +967,7 @@ def PlottingSingleFrame(
 
             bpts = Dataframe.columns.get_level_values("bodyparts")
             all_bpts = bpts.values[::3]
-            df_x, df_y, df_likelihood = Dataframe.values.reshape(
-                (Dataframe.shape[0], -1, 3)
-            ).T
+            df_x, df_y, df_likelihood = Dataframe.values.reshape((Dataframe.shape[0], -1, 3)).T
             bplist = bpts.unique().to_list()
             if Dataframe.columns.nlevels == 3:
                 map2bp = list(range(len(all_bpts)))
@@ -1069,13 +1013,9 @@ def PlottingSingleFramecv2(
     from skimage import io
 
     imagename1 = os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + ".png")
-    imagename2 = os.path.join(
-        tmpfolder, "img" + str(index).zfill(strwidth) + "labeled.png"
-    )
+    imagename2 = os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + "labeled.png")
 
-    if not os.path.isfile(
-        os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + ".png")
-    ):
+    if not os.path.isfile(os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + ".png")):
         plt.axis("off")
         cap.set_to_frame(index)
         frame = cap.read_frame(crop=True)
@@ -1093,9 +1033,7 @@ def PlottingSingleFramecv2(
 
             bpts = Dataframe.columns.get_level_values("bodyparts")
             all_bpts = bpts.values[::3]
-            df_x, df_y, df_likelihood = Dataframe.values.reshape(
-                (Dataframe.shape[0], -1, 3)
-            ).T
+            df_x, df_y, df_likelihood = Dataframe.values.reshape((Dataframe.shape[0], -1, 3)).T
             bplist = bpts.unique().to_list()
             if Dataframe.columns.nlevels == 3:
                 map2bp = list(range(len(all_bpts)))
@@ -1153,15 +1091,11 @@ def merge_datasets(config, forceiterate=None):
 
     bf = Path(str(config_path / "labeled-data"))
     allfolders = [
-        os.path.join(bf, fn)
-        for fn in os.listdir(bf)
-        if "_labeled" not in fn and not fn.startswith(".")
+        os.path.join(bf, fn) for fn in os.listdir(bf) if "_labeled" not in fn and not fn.startswith(".")
     ]  # exclude labeled data folders and temporary files
     flagged = False
     for findex, folder in enumerate(allfolders):
-        if os.path.isfile(
-            os.path.join(folder, "MachineLabelsRefine.h5")
-        ):  # Folder that was manually refine...
+        if os.path.isfile(os.path.join(folder, "MachineLabelsRefine.h5")):  # Folder that was manually refine...
             pass
         elif os.path.isfile(
             os.path.join(folder, "CollectedData_" + cfg["scorer"] + ".h5")
@@ -1182,14 +1116,8 @@ def merge_datasets(config, forceiterate=None):
 
         auxiliaryfunctions.write_config(config, cfg)
 
-        print(
-            "Merged data sets and updated refinement iteration to "
-            + str(cfg["iteration"])
-            + "."
-        )
-        print(
-            "Now you can create a new training set for the expanded annotated images (use create_training_dataset)."
-        )
+        print("Merged data sets and updated refinement iteration to " + str(cfg["iteration"]) + ".")
+        print("Now you can create a new training set for the expanded annotated images (use create_training_dataset).")
     else:
         print("Please label, or remove the un-corrected folders.")
 

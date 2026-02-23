@@ -49,22 +49,13 @@ class Scheduler:
         if initialize:
             for i, group in enumerate(self.optimizer.param_groups):
                 if param_group_field not in group:
-                    raise KeyError(
-                        f"{param_group_field} missing from param_groups[{i}]"
-                    )
-                group.setdefault(
-                    self._initial_param_group_field, group[param_group_field]
-                )
+                    raise KeyError(f"{param_group_field} missing from param_groups[{i}]")
+                group.setdefault(self._initial_param_group_field, group[param_group_field])
         else:
             for i, group in enumerate(self.optimizer.param_groups):
                 if self._initial_param_group_field not in group:
-                    raise KeyError(
-                        f"{self._initial_param_group_field} missing from param_groups[{i}]"
-                    )
-        self.base_values = [
-            group[self._initial_param_group_field]
-            for group in self.optimizer.param_groups
-        ]
+                    raise KeyError(f"{self._initial_param_group_field} missing from param_groups[{i}]")
+        self.base_values = [group[self._initial_param_group_field] for group in self.optimizer.param_groups]
         self.metric = None  # any point to having this for all?
         self.noise_range_t = noise_range_t
         self.noise_pct = noise_pct
@@ -74,9 +65,7 @@ class Scheduler:
         self.update_groups(self.base_values)
 
     def state_dict(self) -> Dict[str, Any]:
-        return {
-            key: value for key, value in self.__dict__.items() if key != "optimizer"
-        }
+        return {key: value for key, value in self.__dict__.items() if key != "optimizer"}
 
     def load_state_dict(self, state_dict: Dict[str, Any]) -> None:
         self.__dict__.update(state_dict)
@@ -123,8 +112,6 @@ class Scheduler:
                         if abs(noise) < self.noise_pct:
                             break
                 else:
-                    noise = (
-                        2 * (torch.rand(1, generator=g).item() - 0.5) * self.noise_pct
-                    )
+                    noise = 2 * (torch.rand(1, generator=g).item() - 0.5) * self.noise_pct
                 lrs = [v + v * noise for v in lrs]
         return lrs

@@ -25,7 +25,5 @@ class WeightedLossAggregator(BaseLossAggregator):
         self.weights = weights
 
     def forward(self, losses: dict[str, torch.Tensor]) -> torch.Tensor:
-        weighted_losses = [
-            weight * losses[loss_name] for loss_name, weight in self.weights.items()
-        ]
+        weighted_losses = [weight * losses[loss_name] for loss_name, weight in self.weights.items()]
         return torch.mean(torch.stack(weighted_losses))

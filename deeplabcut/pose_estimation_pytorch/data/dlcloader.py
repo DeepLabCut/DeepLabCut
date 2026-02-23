@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Class implementing the Loader for DeepLabCut projects"""
+
 from __future__ import annotations
 
 import logging
@@ -70,12 +71,7 @@ class DLCLoader(Loader):
             engine=Engine.PYTORCH,
             modelprefix=modelprefix,
         )
-        model_config_path = (
-            self._project_root
-            / self._model_folder
-            / "train"
-            / Engine.PYTORCH.pose_cfg_name
-        )
+        model_config_path = self._project_root / self._model_folder / "train" / Engine.PYTORCH.pose_cfg_name
         super().__init__(self._project_root, self._project_root, model_config_path)
 
         # lazy-load split and DataFrames
@@ -130,9 +126,7 @@ class DLCLoader(Loader):
     @property
     def split(self) -> dict[str, list[int]]:
         if self._split is None:
-            self._split = self.load_split(
-                self._project_config, self._trainset_index, self.shuffle
-            )
+            self._split = self.load_split(self._project_config, self._trainset_index, self.shuffle)
 
         return self._split
 
@@ -259,10 +253,7 @@ class DLCLoader(Loader):
         # load the full dataset file
         df = pd.read_hdf(trainset_dir / dataset_path)
         if not isinstance(df, pd.DataFrame):
-            raise ValueError(
-                f"The ground truth data in {trainset_dir} must contain a DataFrame! "
-                f"Found {df}"
-            )
+            raise ValueError(f"The ground truth data in {trainset_dir} must contain a DataFrame! Found {df}")
 
         # load the data splits, check that there's nothing suspect
         dfs = self.split_data(df, self.split)
@@ -306,21 +297,14 @@ class DLCLoader(Loader):
         parameters: PoseDatasetParameters,
     ) -> pd.DataFrame:
         if bu_predictions is None:
-            pred_path = Path(
-                str(bu_snapshot).replace("dlc-models", "evaluation-results")
-            ).parent.parent
+            pred_path = Path(str(bu_snapshot).replace("dlc-models", "evaluation-results")).parent.parent
             cfg = af.read_config(pred_path.parent.parent.parent / "config.yaml")
             scorer = af.get_scorer_name(
                 cfg=cfg,
                 shuffle=int(re.search(r"shuffle(\d+)", str(bu_snapshot)).group(1)),
-                trainFraction=int(
-                    re.search(r"trainset(\d+)", str(bu_snapshot)).group(1)
-                )
-                / 100,
+                trainFraction=int(re.search(r"trainset(\d+)", str(bu_snapshot)).group(1)) / 100,
                 engine=Engine.PYTORCH,
-                trainingsiterations=re.search(
-                    r"snapshot-(.+)\.pth", str(bu_snapshot)
-                ).group(1),
+                trainingsiterations=re.search(r"snapshot-(.+)\.pth", str(bu_snapshot)).group(1),
                 modelprefix="",
             )
 
@@ -341,9 +325,7 @@ class DLCLoader(Loader):
             else:
                 img_path = pred_path.parent.parent / Path(idx)
 
-            keypoints = dlc_preds.loc[idx].values.reshape(
-                -1, len(parameters.bodyparts), 3
-            )[..., :2]
+            keypoints = dlc_preds.loc[idx].values.reshape(-1, len(parameters.bodyparts), 3)[..., :2]
             keypoints = keypoints[~np.isnan(keypoints).all(axis=-1).all(axis=-1)]
             cond_keypoints = np.zeros((*keypoints.shape[:-1], 3))
             cond_keypoints[..., :2] = keypoints
@@ -394,9 +376,7 @@ class DLCLoader(Loader):
             the coco format data
         """
         with_individuals = "individuals" in df.columns.names
-        if not with_individuals and (
-            len(parameters.individuals) > 1 or len(parameters.unique_bpts) > 0
-        ):
+        if not with_individuals and (len(parameters.individuals) > 1 or len(parameters.unique_bpts) > 0):
             raise ValueError(
                 "The DataFrame contains single-animal annotations (for a single, "
                 "individual), but the parameters suggest this is a multi-animal project"
@@ -491,15 +471,9 @@ class DLCLoader(Loader):
     def _add_bbox_annotations(coco_dict: dict) -> dict:
         for annotation in coco_dict.get("annotations", []):
             if "bbox" not in annotation:
-                image = [
-                    img
-                    for img in coco_dict.get("images")
-                    if img.get("id") == annotation.get("image_id")
-                ][0]
+                image = [img for img in coco_dict.get("images") if img.get("id") == annotation.get("image_id")][0]
                 bbox = bbox_from_keypoints(
-                    keypoints=np.array(
-                        annotation["keypoints"]
-                    ),  # (..., num_keypoints, xy)
+                    keypoints=np.array(annotation["keypoints"]),  # (..., num_keypoints, xy)
                     image_h=image.get("height"),
                     image_w=image.get("width"),
                     margin=20,
@@ -545,9 +519,7 @@ def _load_mat_dataset(
         dlc_dataset: the dataset in a DLC-format DataFrame
     """
     if not params.max_num_animals == 1:
-        raise RuntimeError(
-            f"Cannot load a multi-animal pose dataset from a `.mat` file ({file})"
-        )
+        raise RuntimeError(f"Cannot load a multi-animal pose dataset from a `.mat` file ({file})")
 
     raw_data = sio.loadmat(str(file))
     dataset = raw_data["dataset"]
@@ -635,11 +607,7 @@ def _load_pickle_dataset(
                     keypoints[idv_idx, bodypart, 0] = x
                     keypoints[idv_idx, bodypart, 1] = y
 
-            elif (
-                idv_idx == params.max_num_animals
-                and data_unique is not None
-                and keypoints_unique is None
-            ):
+            elif idv_idx == params.max_num_animals and data_unique is not None and keypoints_unique is None:
                 keypoints_unique = np.zeros((params.num_unique_bpts, 2))
                 keypoints_unique.fill(np.nan)
                 for joint_id, x, y in idv_bodyparts:
@@ -708,14 +676,10 @@ def _validate_dataframes(
     extra_images = hdf_train_images - pickle_train_images
     if len(missing_images) > 0:
         error = True
-        logging.debug(
-            f"Found images in the dataset file which were not in H5: {missing_images}"
-        )
+        logging.debug(f"Found images in the dataset file which were not in H5: {missing_images}")
     if len(extra_images) > 0:
         error = True
-        logging.debug(
-            f"Found images in the H5 file which were not in the dataset: {extra_images}"
-        )
+        logging.debug(f"Found images in the H5 file which were not in the dataset: {extra_images}")
 
     # checks that the data is close for the similar images
     train_index = list(hdf_train_images.intersection(pickle_train_images))

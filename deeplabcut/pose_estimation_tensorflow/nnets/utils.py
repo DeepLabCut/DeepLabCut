@@ -52,9 +52,7 @@ def get_batch_spec(cfg):
         batch_spec[Batch.locref_mask] = [batch_size, None, None, num_joints * 2]
     if cfg["pairwise_predict"]:
         print("Getting specs", cfg["dataset_type"], num_limbs, num_joints)
-        if (
-            "multi-animal" not in cfg["dataset_type"]
-        ):  # this can be used for pairwise conditional
+        if "multi-animal" not in cfg["dataset_type"]:  # this can be used for pairwise conditional
             batch_spec[Batch.pairwise_targets] = [
                 batch_size,
                 None,
@@ -105,16 +103,10 @@ def build_learning_rate(
     if lr_decay_type == "exponential":
         assert steps_per_epoch is not None
         decay_steps = steps_per_epoch * decay_epochs
-        lr = tf.compat.v1.train.exponential_decay(
-            initial_lr, global_step, decay_steps, decay_factor, staircase=True
-        )
+        lr = tf.compat.v1.train.exponential_decay(initial_lr, global_step, decay_steps, decay_factor, staircase=True)
     elif lr_decay_type == "cosine":
         assert total_steps is not None
-        lr = (
-            0.5
-            * initial_lr
-            * (1 + tf.cos(np.pi * tf.cast(global_step, tf.float32) / total_steps))
-        )
+        lr = 0.5 * initial_lr * (1 + tf.cos(np.pi * tf.cast(global_step, tf.float32) / total_steps))
     elif lr_decay_type == "constant":
         lr = initial_lr
     else:
@@ -123,11 +115,7 @@ def build_learning_rate(
     if warmup_epochs:
         tf.compat.v1.logging.info("Learning rate warmup_epochs: %d" % warmup_epochs)
         warmup_steps = int(warmup_epochs * steps_per_epoch)
-        warmup_lr = (
-            initial_lr
-            * tf.cast(global_step, tf.float32)
-            / tf.cast(warmup_steps, tf.float32)
-        )
+        warmup_lr = initial_lr * tf.cast(global_step, tf.float32) / tf.cast(warmup_steps, tf.float32)
         lr = tf.cond(
             pred=global_step < warmup_steps,
             true_fn=lambda: warmup_lr,
@@ -137,25 +125,17 @@ def build_learning_rate(
     return lr
 
 
-def build_optimizer(
-    learning_rate, optimizer_name="rmsprop", decay=0.9, epsilon=0.001, momentum=0.9
-):
+def build_optimizer(learning_rate, optimizer_name="rmsprop", decay=0.9, epsilon=0.001, momentum=0.9):
     """Build optimizer."""
     if optimizer_name == "sgd":
         tf.compat.v1.logging.info("Using SGD optimizer")
-        optimizer = tf.compat.v1.train.GradientDescentOptimizer(
-            learning_rate=learning_rate
-        )
+        optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate=learning_rate)
     elif optimizer_name == "momentum":
         tf.compat.v1.logging.info("Using Momentum optimizer")
-        optimizer = tf.compat.v1.train.MomentumOptimizer(
-            learning_rate=learning_rate, momentum=momentum
-        )
+        optimizer = tf.compat.v1.train.MomentumOptimizer(learning_rate=learning_rate, momentum=momentum)
     elif optimizer_name == "rmsprop":
         tf.compat.v1.logging.info("Using RMSProp optimizer")
-        optimizer = tf.compat.v1.train.RMSPropOptimizer(
-            learning_rate, decay, momentum, epsilon
-        )
+        optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate, decay, momentum, epsilon)
     else:
         tf.compat.v1.logging.fatal("Unknown optimizer:", optimizer_name)
     return optimizer
@@ -177,17 +157,13 @@ class TpuBatchNormalization(tf.compat.v1.layers.BatchNormalization):
         if num_shards_per_group > 1:
             if num_shards % num_shards_per_group != 0:
                 raise ValueError(
-                    "num_shards: %d mod shards_per_group: %d, should be 0"
-                    % (num_shards, num_shards_per_group)
+                    "num_shards: %d mod shards_per_group: %d, should be 0" % (num_shards, num_shards_per_group)
                 )
             num_groups = num_shards // num_shards_per_group
             group_assignment = [
-                [x for x in range(num_shards) if x // num_shards_per_group == y]
-                for y in range(num_groups)
+                [x for x in range(num_shards) if x // num_shards_per_group == y] for y in range(num_groups)
             ]
-        return tpu_ops.cross_replica_sum(t, group_assignment) / tf.cast(
-            num_shards_per_group, t.dtype
-        )
+        return tpu_ops.cross_replica_sum(t, group_assignment) / tf.cast(num_shards_per_group, t.dtype)
 
     def _moments(self, inputs, reduction_axes, keep_dims):
         """Compute the mean and variance: it overrides the original _moments."""
@@ -200,17 +176,13 @@ class TpuBatchNormalization(tf.compat.v1.layers.BatchNormalization):
             num_shards_per_group = 1
         else:
             num_shards_per_group = max(8, num_shards // 8)
-        tf.compat.v1.logging.info(
-            "TpuBatchNormalization with num_shards_per_group %s", num_shards_per_group
-        )
+        tf.compat.v1.logging.info("TpuBatchNormalization with num_shards_per_group %s", num_shards_per_group)
         if num_shards_per_group > 1:
             # Compute variance using: Var[X]= E[X^2] - E[X]^2.
             shard_square_of_mean = tf.math.square(shard_mean)
             shard_mean_of_square = shard_variance + shard_square_of_mean
             group_mean = self._cross_replica_average(shard_mean, num_shards_per_group)
-            group_mean_of_square = self._cross_replica_average(
-                shard_mean_of_square, num_shards_per_group
-            )
+            group_mean_of_square = self._cross_replica_average(shard_mean_of_square, num_shards_per_group)
             group_variance = group_mean_of_square - tf.math.square(group_mean)
             return group_mean, group_variance
         return shard_mean, shard_variance

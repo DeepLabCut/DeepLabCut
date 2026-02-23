@@ -43,11 +43,7 @@ def calc_iou(bbox1, bbox2):
     w = max(0, x2 - x1)
     h = max(0, y2 - y1)
     wh = w * h
-    return wh / (
-        (bbox1[2] - bbox1[0]) * (bbox1[3] - bbox1[1])
-        + (bbox2[2] - bbox2[0]) * (bbox2[3] - bbox2[1])
-        - wh
-    )
+    return wh / ((bbox1[2] - bbox1[0]) * (bbox1[3] - bbox1[1]) + (bbox2[2] - bbox2[0]) * (bbox2[3] - bbox2[1]) - wh)
 
 
 class BaseTracker:
@@ -110,12 +106,8 @@ class Ellipse:
         return max(self.width, self.height) / min(self.width, self.height)
 
     def calc_similarity_with(self, other_ellipse):
-        max_dist = max(
-            self.height, self.width, other_ellipse.height, other_ellipse.width
-        )
-        dist = math.sqrt(
-            (self.x - other_ellipse.x) ** 2 + (self.y - other_ellipse.y) ** 2
-        )
+        max_dist = max(self.height, self.width, other_ellipse.height, other_ellipse.width)
+        dist = math.sqrt((self.x - other_ellipse.x) ** 2 + (self.y - other_ellipse.y) ** 2)
 
         if max_dist == 0:
             max_dist = 1
@@ -152,9 +144,7 @@ class Ellipse:
         if show_axes:
             major = Line2D([-self.width / 2, self.width / 2], [0, 0], lw=3, zorder=3)
             minor = Line2D([0, 0], [-self.height / 2, self.height / 2], lw=3, zorder=3)
-            trans = (
-                Affine2D().rotate(self.theta).translate(self.x, self.y) + ax.transData
-            )
+            trans = Affine2D().rotate(self.theta).translate(self.x, self.y) + ax.transData
             major.set_transform(trans)
             minor.set_transform(trans)
             ax.add_artist(major)
@@ -378,13 +368,9 @@ class BoxTracker(BaseTracker):
         w = np.sqrt(x[2] * x[3])
         h = x[2] / w
         if score is None:
-            return np.array(
-                [x[0] - w / 2.0, x[1] - h / 2.0, x[0] + w / 2.0, x[1] + h / 2.0]
-            ).reshape((1, 4))
+            return np.array([x[0] - w / 2.0, x[1] - h / 2.0, x[0] + w / 2.0, x[1] + h / 2.0]).reshape((1, 4))
         else:
-            return np.array(
-                [x[0] - w / 2.0, x[1] - h / 2.0, x[0] + w / 2.0, x[1] + h / 2.0, score]
-            ).reshape((1, 5))
+            return np.array([x[0] - w / 2.0, x[1] - h / 2.0, x[0] + w / 2.0, x[1] + h / 2.0, score]).reshape((1, 5))
 
     @staticmethod
     def convert_bbox_to_z(bbox):
@@ -455,12 +441,8 @@ class SORTEllipse(SORTBase):
                         cost *= match
                     cost_matrix[i, j] = cost
             row_indices, col_indices = linear_sum_assignment(cost_matrix, maximize=True)
-            unmatched_detections = [
-                i for i, _ in enumerate(ellipses) if i not in row_indices
-            ]
-            unmatched_trackers = [
-                j for j, _ in enumerate(trackers) if j not in col_indices
-            ]
+            unmatched_detections = [i for i, _ in enumerate(ellipses) if i not in row_indices]
+            unmatched_trackers = [j for j, _ in enumerate(trackers) if j not in col_indices]
             matches = []
             for row, col in zip(row_indices, col_indices):
                 val = cost_matrix[row, col]
@@ -503,13 +485,9 @@ class SORTEllipse(SORTBase):
         ret = []
         for trk in reversed(self.trackers):
             d = trk.state
-            if (trk.time_since_update < 1) and (
-                trk.hit_streak >= self.min_hits or self.n_frames <= self.min_hits
-            ):
+            if (trk.time_since_update < 1) and (trk.hit_streak >= self.min_hits or self.n_frames <= self.min_hits):
                 ret.append(
-                    np.concatenate((d, [trk.id, int(animalindex[i - 1])])).reshape(
-                        1, -1
-                    )
+                    np.concatenate((d, [trk.id, int(animalindex[i - 1])])).reshape(1, -1)
                 )  # for DLC we also return the original animalid
                 # +1 as MOT benchmark requires positive >> this is removed for DLC!
             i -= 1
@@ -558,9 +536,7 @@ class SORTSkeleton(SORTBase):
         xx = x[mask]
         yy = y[mask]
         dist = np.linalg.norm(xx - yy, axis=1)
-        scale = np.sqrt(
-            np.product(np.ptp(yy, axis=0))
-        )  # square root of bounding box area
+        scale = np.sqrt(np.product(np.ptp(yy, axis=0)))  # square root of bounding box area
         oks = np.exp(-0.5 * (dist / (0.05 * scale)) ** 2)
         return np.mean(oks)
 
@@ -597,9 +573,7 @@ class SORTSkeleton(SORTBase):
         row_indices, col_indices = linear_sum_assignment(mat, maximize=False)
 
         unmatched_poses = [p for p, _ in enumerate(poses) if p not in row_indices]
-        unmatched_trackers = [
-            t for t, _ in enumerate(poses_ref) if t not in col_indices
-        ]
+        unmatched_trackers = [t for t, _ in enumerate(poses_ref) if t not in col_indices]
         # Remove matched detections with low OKS
         # matches = []
         # for row, col in zip(row_indices, col_indices):
@@ -662,9 +636,7 @@ class SORTBox(SORTBase):
         for ind in np.flatnonzero(empty)[::-1]:
             self.trackers.pop(ind)
 
-        matched, unmatched_dets, unmatched_trks = self.match_detections_to_trackers(
-            dets, trackers, self.iou_threshold
-        )
+        matched, unmatched_dets, unmatched_trks = self.match_detections_to_trackers(dets, trackers, self.iou_threshold)
 
         # update matched trackers with assigned detections
         animalindex = []
@@ -686,13 +658,9 @@ class SORTBox(SORTBase):
         ret = []
         for trk in reversed(self.trackers):
             d = trk.state
-            if (trk.time_since_update < 1) and (
-                trk.hit_streak >= self.min_hits or self.n_frames <= self.min_hits
-            ):
+            if (trk.time_since_update < 1) and (trk.hit_streak >= self.min_hits or self.n_frames <= self.min_hits):
                 ret.append(
-                    np.concatenate((d, [trk.id, int(animalindex[i - 1])])).reshape(
-                        1, -1
-                    )
+                    np.concatenate((d, [trk.id, int(animalindex[i - 1])])).reshape(1, -1)
                 )  # for DLC we also return the original animalid
                 # +1 as MOT benchmark requires positive >> this is removed for DLC!
             i -= 1
@@ -826,9 +794,7 @@ def reconstruct_all_ellipses(data, sd):
     return ellipses
 
 
-def _track_individuals(
-    individuals, min_hits=1, max_age=5, similarity_threshold=0.6, track_method="ellipse"
-):
+def _track_individuals(individuals, min_hits=1, max_age=5, similarity_threshold=0.6, track_method="ellipse"):
     if track_method not in TRACK_METHODS:
         raise ValueError(f"Unknown {track_method} tracker.")
 

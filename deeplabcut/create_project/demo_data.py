@@ -69,8 +69,6 @@ def transform_data(config):
         print("This is not an official demo dataset.")
 
     if "WILL BE AUTOMATICALLY UPDATED BY DEMO CODE" in cfg["video_sets"].keys():
-        cfg["video_sets"][str(video_file)] = cfg["video_sets"].pop(
-            "WILL BE AUTOMATICALLY UPDATED BY DEMO CODE"
-        )
+        cfg["video_sets"][str(video_file)] = cfg["video_sets"].pop("WILL BE AUTOMATICALLY UPDATED BY DEMO CODE")
 
     auxiliaryfunctions.write_config(config, cfg)

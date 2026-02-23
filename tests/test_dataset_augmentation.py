@@ -101,9 +101,7 @@ def test_keypoint_horizontal_flip(
     keypoints_aug = aug(
         images=[sample_image],
         keypoints=[sample_keypoints],
-    )[
-        1
-    ][0]
+    )[1][0]
     temp = keypoints_aug.reshape((3, 12, 2))
     for pair in pairs:
         temp[:, pair] = temp[:, pair[::-1]]
@@ -127,9 +125,7 @@ def test_keypoint_horizontal_flip_with_nans(
     keypoints_aug = aug(
         images=[sample_image],
         keypoints=[sample_keypoints],
-    )[
-        1
-    ][0]
+    )[1][0]
     temp = keypoints_aug.reshape((3, 12, 2))
     for pair in pairs:
         temp[:, pair] = temp[:, pair[::-1]]

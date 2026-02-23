@@ -18,6 +18,7 @@
   EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks.
   ICML'19, https://arxiv.org/abs/1905.11946
 """
+
 import collections
 import math
 import numpy as np
@@ -117,9 +118,7 @@ def round_filters(filters, global_params):
     # Make sure that round down does not go down by more than 10%.
     if new_filters < 0.9 * filters:
         new_filters += divisor
-    tf.compat.v1.logging.info(
-        "round_filter input={} output={}".format(orig_f, new_filters)
-    )
+    tf.compat.v1.logging.info("round_filter input={} output={}".format(orig_f, new_filters))
     return int(new_filters)
 
 
@@ -158,9 +157,7 @@ class MBConvBlock(tf.keras.layers.Layer):
 
         self._relu_fn = global_params.relu_fn or tf.nn.swish
         self._has_se = (
-            global_params.use_se
-            and self._block_args.se_ratio is not None
-            and 0 < self._block_args.se_ratio <= 1
+            global_params.use_se and self._block_args.se_ratio is not None and 0 < self._block_args.se_ratio <= 1
         )
 
         self.endpoints = None
@@ -208,9 +205,7 @@ class MBConvBlock(tf.keras.layers.Layer):
         )
 
         if self._has_se:
-            num_reduced_filters = max(
-                1, int(self._block_args.input_filters * self._block_args.se_ratio)
-            )
+            num_reduced_filters = max(1, int(self._block_args.input_filters * self._block_args.se_ratio))
             # Squeeze and Excitation layer.
             self._se_reduce = tf.compat.v1.layers.Conv2D(
                 num_reduced_filters,
@@ -255,18 +250,12 @@ class MBConvBlock(tf.keras.layers.Layer):
         Returns:
           A output tensor, which should have the same shape as input.
         """
-        se_tensor = tf.reduce_mean(
-            input_tensor=input_tensor, axis=self._spatial_dims, keepdims=True
-        )
+        se_tensor = tf.reduce_mean(input_tensor=input_tensor, axis=self._spatial_dims, keepdims=True)
         se_tensor = self._se_expand(self._relu_fn(self._se_reduce(se_tensor)))
-        tf.compat.v1.logging.info(
-            "Built Squeeze and Excitation with tensor shape: %s" % (se_tensor.shape)
-        )
+        tf.compat.v1.logging.info("Built Squeeze and Excitation with tensor shape: %s" % (se_tensor.shape))
         return tf.sigmoid(se_tensor) * input_tensor
 
-    def call(
-        self, inputs, use_batch_norm=False, drop_out=False, drop_connect_rate=None
-    ):
+    def call(self, inputs, use_batch_norm=False, drop_out=False, drop_connect_rate=None):
         """Implementation of call().
         Args:
           inputs: the inputs tensor.
@@ -275,13 +264,9 @@ class MBConvBlock(tf.keras.layers.Layer):
         Returns:
           A output tensor.
         """
-        tf.compat.v1.logging.info(
-            "Block input: %s shape: %s" % (inputs.name, inputs.shape)
-        )
+        tf.compat.v1.logging.info("Block input: %s shape: %s" % (inputs.name, inputs.shape))
         if self._block_args.expand_ratio != 1:
-            x = self._relu_fn(
-                self._bn0(self._expand_conv(inputs), training=use_batch_norm)
-            )
+            x = self._relu_fn(self._bn0(self._expand_conv(inputs), training=use_batch_norm))
         else:
             x = inputs
         tf.compat.v1.logging.info("Expand: %s shape: %s" % (x.name, x.shape))
@@ -347,9 +332,7 @@ class MBConvBlockWithoutDepthwise(MBConvBlock):
             epsilon=self._batch_norm_epsilon,
         )
 
-    def call(
-        self, inputs, use_batch_norm=False, drop_out=False, drop_connect_rate=None
-    ):
+    def call(self, inputs, use_batch_norm=False, drop_out=False, drop_connect_rate=None):
         """Implementation of call().
         Args:
           inputs: the inputs tensor.
@@ -358,13 +341,9 @@ class MBConvBlockWithoutDepthwise(MBConvBlock):
         Returns:
           A output tensor.
         """
-        tf.compat.v1.logging.info(
-            "Block input: %s shape: %s" % (inputs.name, inputs.shape)
-        )
+        tf.compat.v1.logging.info("Block input: %s shape: %s" % (inputs.name, inputs.shape))
         if self._block_args.expand_ratio != 1:
-            x = self._relu_fn(
-                self._bn0(self._expand_conv(inputs), training=use_batch_norm)
-            )
+            x = self._relu_fn(self._bn0(self._expand_conv(inputs), training=use_batch_norm))
         else:
             x = inputs
         tf.compat.v1.logging.info("Expand: %s shape: %s" % (x.name, x.shape))
@@ -422,12 +401,8 @@ class Model(tf.keras.Model):
             assert block_args.num_repeat > 0
             # Update block input and output filters based on depth multiplier.
             block_args = block_args._replace(
-                input_filters=round_filters(
-                    block_args.input_filters, self._global_params
-                ),
-                output_filters=round_filters(
-                    block_args.output_filters, self._global_params
-                ),
+                input_filters=round_filters(block_args.input_filters, self._global_params),
+                output_filters=round_filters(block_args.output_filters, self._global_params),
                 num_repeat=round_repeats(block_args.num_repeat, self._global_params),
             )
 
@@ -436,9 +411,7 @@ class Model(tf.keras.Model):
             self._blocks.append(conv_block(block_args, self._global_params))
             if block_args.num_repeat > 1:
                 # pylint: disable=protected-access
-                block_args = block_args._replace(
-                    input_filters=block_args.output_filters, strides=[1, 1]
-                )
+                block_args = block_args._replace(input_filters=block_args.output_filters, strides=[1, 1])
                 # pylint: enable=protected-access
             for _ in range(block_args.num_repeat - 1):
                 self._blocks.append(conv_block(block_args, self._global_params))
@@ -460,9 +433,7 @@ class Model(tf.keras.Model):
             data_format=self._global_params.data_format,
             use_bias=False,
         )
-        self._bn0 = self._batch_norm(
-            axis=channel_axis, momentum=batch_norm_momentum, epsilon=batch_norm_epsilon
-        )
+        self._bn0 = self._batch_norm(axis=channel_axis, momentum=batch_norm_momentum, epsilon=batch_norm_epsilon)
 
         # Head part.
         self._conv_head = tf.compat.v1.layers.Conv2D(
@@ -473,13 +444,9 @@ class Model(tf.keras.Model):
             padding="same",
             use_bias=False,
         )
-        self._bn1 = self._batch_norm(
-            axis=channel_axis, momentum=batch_norm_momentum, epsilon=batch_norm_epsilon
-        )
+        self._bn1 = self._batch_norm(axis=channel_axis, momentum=batch_norm_momentum, epsilon=batch_norm_epsilon)
 
-        self._avg_pooling = tf.keras.layers.GlobalAveragePooling2D(
-            data_format=self._global_params.data_format
-        )
+        self._avg_pooling = tf.keras.layers.GlobalAveragePooling2D(data_format=self._global_params.data_format)
         if self._global_params.num_classes:
             self._fc = tf.compat.v1.layers.Dense(
                 self._global_params.num_classes,
@@ -506,21 +473,15 @@ class Model(tf.keras.Model):
         self.endpoints = {}
         # Calls Stem layers
         with tf.compat.v1.variable_scope("stem"):
-            outputs = self._relu_fn(
-                self._bn0(self._conv_stem(inputs), training=use_batch_norm)
-            )
-        tf.compat.v1.logging.info(
-            "Built stem layers with output shape: %s" % outputs.shape
-        )
+            outputs = self._relu_fn(self._bn0(self._conv_stem(inputs), training=use_batch_norm))
+        tf.compat.v1.logging.info("Built stem layers with output shape: %s" % outputs.shape)
         self.endpoints["stem"] = outputs
 
         # Calls blocks.
         reduction_idx = 0
         for idx, block in enumerate(self._blocks):
             is_reduction = False
-            if (idx == len(self._blocks) - 1) or self._blocks[
-                idx + 1
-            ].block_args().strides[0] > 1:
+            if (idx == len(self._blocks) - 1) or self._blocks[idx + 1].block_args().strides[0] > 1:
                 is_reduction = True
                 reduction_idx += 1
 
@@ -528,9 +489,7 @@ class Model(tf.keras.Model):
                 drop_rate = self._global_params.drop_connect_rate
                 if drop_rate:
                     drop_rate *= float(idx) / len(self._blocks)
-                    tf.compat.v1.logging.info(
-                        "block_%s drop_connect_rate: %s" % (idx, drop_rate)
-                    )
+                    tf.compat.v1.logging.info("block_%s drop_connect_rate: %s" % (idx, drop_rate))
                 outputs = block.call(
                     outputs,
                     use_batch_norm=use_batch_norm,
@@ -550,9 +509,7 @@ class Model(tf.keras.Model):
         if not features_only:
             # Calls final layers and returns logits.
             with tf.compat.v1.variable_scope("head"):
-                outputs = self._relu_fn(
-                    self._bn1(self._conv_head(outputs), training=use_batch_norm)
-                )
+                outputs = self._relu_fn(self._bn1(self._conv_head(outputs), training=use_batch_norm))
                 outputs = self._avg_pooling(outputs)
                 if self._dropout:
                     outputs = self._dropout(outputs, training=drop_out)

@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Types of tasks that can be run by DeepLabCut pose estimation models"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

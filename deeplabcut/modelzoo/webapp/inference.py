@@ -103,14 +103,8 @@ class SuperanimalPyTorchInference:
         bbox_predictions = self.models.detector_runner.inference(images=input_images)
         input_images = list(zip(input_images, bbox_predictions))
         predictions = self.models.pose_runner.inference(images=input_images)
-        predictions = [
-            {("markers" if k == "bodyparts" else k): v for k, v in d.items()}
-            for d in predictions
-        ]
-        predictions = [
-            {**item[1], "image_path": item[0]}
-            for item in zip(frames.keys(), predictions)
-        ]
+        predictions = [{("markers" if k == "bodyparts" else k): v for k, v in d.items()} for d in predictions]
+        predictions = [{**item[1], "image_path": item[0]} for item in zip(frames.keys(), predictions)]
         responses = {
             "joint_names": self.config["bodyparts"],
             "predictions": predictions,

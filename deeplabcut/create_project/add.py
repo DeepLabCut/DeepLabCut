@@ -10,9 +10,7 @@
 #
 
 
-def add_new_videos(
-    config, videos, copy_videos=False, coords=None, extract_frames=False
-):
+def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frames=False):
     """
     Add new videos to the config file at any stage of the project.
 
@@ -101,10 +99,7 @@ def add_new_videos(
 
                     subprocess.check_call("mklink %s %s" % (dst, src), shell=True)
                 except (OSError, subprocess.CalledProcessError):
-                    print(
-                        "Symlink creation impossible (exFat architecture?): "
-                        "copying the video instead."
-                    )
+                    print("Symlink creation impossible (exFat architecture?): copying the video instead.")
                     shutil.copy(os.fspath(src), os.fspath(dst))
                     print("{} copied to {}".format(src, dst))
             videos = destinations
@@ -133,13 +128,7 @@ def add_new_videos(
     videos_str = [str(video) for video in videos]
     auxiliaryfunctions.write_config(config, cfg)
     if extract_frames:
-        frame_extraction.extract_frames(
-            config, userfeedback=False, videos_list=videos_str
-        )
-        print(
-            "New videos were added to the project and frames have been extracted for labeling!"
-        )
+        frame_extraction.extract_frames(config, userfeedback=False, videos_list=videos_str)
+        print("New videos were added to the project and frames have been extracted for labeling!")
     else:
-        print(
-            "New videos were added to the project! Use the function 'extract_frames' to select frames for labeling."
-        )
+        print("New videos were added to the project! Use the function 'extract_frames' to select frames for labeling.")
