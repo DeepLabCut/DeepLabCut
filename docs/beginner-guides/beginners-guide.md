@@ -50,11 +50,7 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 
 **(2) Install DeepLabCut** 
 
-Alright! Next, we will install `Tables` (also called pytables), which is a package to read the HDF5 files that make up the backbone of data management in DeepLabCut, then we will install all the `deeplabcut` source code 🔥. Please decide which version you want (stable or alpha), then type: 
-
-```
-conda install -c conda-forge pytables==3.8.0
-```
+Alright! Next, we will install all the `deeplabcut` source code 🔥. Please decide which version you want (stable or alpha), then type:
 
 - **Alpha release:**
 ```
