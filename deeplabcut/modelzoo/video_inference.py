@@ -367,7 +367,7 @@ def video_inference_superanimal(
                     stacklevel=2,
                 )
 
-            from deeplabcut.pose_estimation_pytorch.modelzoo.inference import (
+            from deeplabcut.pose_estimation_pytorch.modelzoo.fmpose_3d.inference import (
                 _video_inference_fmpose3d,
             )
 
