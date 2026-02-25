@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import json
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -22,10 +23,9 @@ from deeplabcut.pose_estimation_pytorch.apis.videos import (
     VideoIterator,
     create_df_from_prediction,
 )
-from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
-    raise_warning_if_called_directly,
-)
 from deeplabcut.utils.make_labeled_video import create_video
+
+logger = logging.getLogger(__name__)
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -70,14 +70,16 @@ def _video_inference_fmpose3d(
     pcutoff: float = 0.1,
     batch_size: int = 1,
     dest_folder: str | Path | None = None,
-    device: str | None = "auto",
+    device: str | None = None,
     create_labeled_video: bool = True,
     cropping: list[int] | None = None,
 ) -> dict:
     """Perform FMPose3D video inference with a lightweight DLC loop."""
-    raise_warning_if_called_directly()
-
     from tqdm import tqdm
+    import torch
+
+    if device is None or device == 'auto':
+        device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
     if isinstance(video_paths, (str, Path)):
         video_paths = [video_paths]
@@ -124,11 +126,16 @@ def _video_inference_fmpose3d(
                     num_bodyparts=num_bodyparts,
                 )
             )
-            pose_3d = api.pose_3d(
-                keypoints_2d=pose_2d.keypoints,
-                image_size=pose_2d.image_size,
-            )
-            all_poses_3d.extend(np.asarray(pose_3d.poses_3d))
+            try:
+                pose_3d = api.pose_3d(
+                    keypoints_2d=pose_2d.keypoints,
+                    image_size=pose_2d.image_size,
+                )
+                all_poses_3d.extend(np.asarray(pose_3d.poses_3d))
+            except ValueError as e:
+                logger.info("Skipping 3D lifting for batch due to invalid 2D result: %s", e)
+                all_poses_3d.extend([np.zeros((0, num_bodyparts, 3)) for _ in frames])
+
 
         batch: list[np.ndarray] = []
         for frame in tqdm(video, desc="FMPose3D inference"):
