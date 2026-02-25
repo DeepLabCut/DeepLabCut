@@ -3,5 +3,7 @@
     "hrnet_w32": "pytorch",
     "resnet_50": "pytorch",
     "rtmpose_s": "pytorch",
-    "rtmpose_x": "pytorch"
+    "rtmpose_x": "pytorch",
+    "fmpose3d_humans": "pytorch",
+    "fmpose3d_animals": "pytorch"
 }
