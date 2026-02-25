@@ -76,8 +76,8 @@ def test_prepare_2d_and_pose_3d():
         keypoints_2d=result_2d.keypoints,
         image_size=result_2d.image_size,
     )
-    assert isinstance(keypoints_3d, np.ndarray)
-    assert keypoints_3d.shape[-1] == 3
+    assert isinstance(keypoints_3d.poses_3d, np.ndarray)
+    assert keypoints_3d.poses_3d.shape[-1] == 3
 
 
 @requires_network
@@ -86,5 +86,5 @@ def test_predict_end_to_end():
     api = get_fmpose3d_inference_api("fmpose3d_animals", device="cpu")
     predictions_3d = api.predict(source=str(_EXAMPLE_IMAGE))
 
-    assert isinstance(predictions_3d, np.ndarray)
-    assert predictions_3d.shape[-1] == 3
+    assert isinstance(predictions_3d.poses_3d, np.ndarray)
+    assert predictions_3d.poses_3d.shape[-1] == 3
