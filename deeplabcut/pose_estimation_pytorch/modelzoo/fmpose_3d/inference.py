@@ -73,6 +73,7 @@ def _video_inference_fmpose3d(
     device: str | None = None,
     create_labeled_video: bool = True,
     cropping: list[int] | None = None,
+    include_3d_in_return: bool = False,
 ) -> dict:
     """Perform FMPose3D video inference with a lightweight DLC loop."""
     from tqdm import tqdm
@@ -158,7 +159,13 @@ def _video_inference_fmpose3d(
             output_path=dest_folder,
             output_prefix=output_prefix,
         )
-        results[video_path] = df
+        if include_3d_in_return:
+            results[video_path] = {
+                "df_2d": df,
+                "poses_3d": all_poses_3d,
+            }
+        else:
+            results[video_path] = df
 
         output_json = dest_folder / f"{output_prefix}.json"
         with open(output_json, "w") as f:
