@@ -303,7 +303,7 @@ def analyzeskeleton(
 
         skeleton = pd.concat(bones, axis=1)
         video_to_skeleton_df[video] = skeleton
-        skeleton.to_hdf(output_name, "df_with_missing", format="table", mode="w")
+        skeleton.to_hdf(output_name, key="df_with_missing", format="table", mode="w")
         if save_as_csv:
             skeleton.to_csv(output_name.replace(".h5", ".csv"))
 

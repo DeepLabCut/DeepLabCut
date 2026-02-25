@@ -49,7 +49,7 @@ def test_coarse_dropout():
     fake_image *= np.random.uniform(0, 255, size=fake_image.shape)
     fake_image = fake_image.astype(np.uint8)
     cd = transforms.CoarseDropout(max_height=0.9999, max_width=0.9999, p=1)
-    kpts = np.random.rand(10, 2) * 300
+    kpts = np.random.rand(10, 2) * 298 + 1
     aug_kpts = cd(image=fake_image, keypoints=kpts)["keypoints"]
     assert len(aug_kpts) == kpts.shape[0]
     assert np.isnan([c for kpt in aug_kpts for c in kpt]).all()

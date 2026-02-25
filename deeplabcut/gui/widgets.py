@@ -38,10 +38,10 @@ def launch_napari(files=None, plugin="napari-deeplabcut", stack=False):
     viewer = napari.Viewer()
     if plugin == "napari-deeplabcut":
         # Automatically activate the napari-deeplabcut plugin
-        for action in viewer.window.plugins_menu.actions():
-            if "deeplabcut" in action.text():
-                action.trigger()
-                break
+        _, _ = viewer.window.add_plugin_dock_widget(
+            "napari-deeplabcut",
+            "Keypoint controls",
+        )
     if files is not None:
         viewer.open(files, plugin=plugin, stack=stack)
     return viewer

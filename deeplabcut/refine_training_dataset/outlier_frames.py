@@ -176,6 +176,34 @@ def find_outliers_in_raw_detections(
     return candidates, data
 
 
+def _read_video_specific_cropping_margins(
+    config: str | Path | dict,
+    video_path: str | Path
+) -> tuple[int, int]:
+    if isinstance(config, (str, Path)):
+        config = auxiliaryfunctions.read_config(config)
+    output_crop = config["video_sets"].get(str(video_path), {}).get("crop")
+    if output_crop is None:
+        x1, _, y1, _ = (0, 0, 0, 0)
+    else:
+        # Accept comma-separated values with optional spaces, and validate format.
+        parts = [p.strip() for p in str(output_crop).split(",")]
+        if len(parts) != 4:
+            raise ValueError(
+                f"Invalid crop specification {output_crop!r} for video {video_path!r} "
+                "in config: expected exactly 4 comma-separated integers "
+                "in the form 'x1,x2,y1,y2'."
+            )
+        try:
+            x1, _, y1, _ = map(int, parts)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                f"Invalid crop specification {output_crop!r} for video {video_path!r} "
+                "in config: values must be integers in the form 'x1,x2,y1,y2'."
+            ) from exc
+    return x1, y1
+
+
 def extract_outlier_frames(
     config,
     videos,
@@ -406,10 +434,12 @@ def extract_outlier_frames(
             Index = np.arange(stopindex - startindex) + startindex
 
             # offset if the data was cropped
+            # note: When output video is also cropped, the keypoints should be shifted back.
+            out_x1, out_y1 = _read_video_specific_cropping_margins(config, video)
             if metadata.get("data", {}).get("cropping"):
                 x1, _, y1, _ = metadata["data"]["cropping_parameters"]
-                df.iloc[:, df.columns.get_level_values(level="coords") == "x"] += x1
-                df.iloc[:, df.columns.get_level_values(level="coords") == "y"] += y1
+                df.iloc[:, df.columns.get_level_values(level="coords") == "x"] += x1 - out_x1
+                df.iloc[:, df.columns.get_level_values(level="coords") == "y"] += y1 - out_y1
 
             df = df.iloc[Index]
             mask = df.columns.get_level_values("bodyparts").isin(bodyparts)
@@ -638,7 +668,7 @@ def compute_deviations(
     if storeoutput == "full":
         data.to_hdf(
             dataname.split(".h5")[0] + "filtered.h5",
-            "df_with_missing",
+            key="df_with_missing",
             format="table",
             mode="w",
         )

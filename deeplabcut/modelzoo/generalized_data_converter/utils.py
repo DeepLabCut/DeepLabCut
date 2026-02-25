@@ -236,7 +236,7 @@ def create_video_h5_from_pickle(proj_root, cfg, reference_pickle, videopath):
     with open(metadata_path, "wb") as f:
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
-    df.to_hdf(dataname, "df_with_missing", format="table", mode="w")
+    df.to_hdf(dataname, key="df_with_missing", format="table", mode="w")
 
 
 def add_skeleton(config_path, pretrain_model_name):

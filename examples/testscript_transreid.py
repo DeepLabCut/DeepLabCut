@@ -105,7 +105,7 @@ if __name__ == "__main__":
     output_path = os.path.join(image_folder, f"CollectedData_{SCORER}.csv")
     df.to_csv(output_path)
     df.to_hdf(
-        output_path.replace("csv", "h5"), "df_with_missing", format="table", mode="w"
+        output_path.replace("csv", "h5"), key="df_with_missing", format="table", mode="w"
     )
     print("Artificial data created.")
 
@@ -303,7 +303,7 @@ if __name__ == "__main__":
             vname,
             "CollectedData_" + scorer + ".h5",
         ),
-        "df_with_missing",
+        key="df_with_missing",
         format="table",
         mode="w",
     )

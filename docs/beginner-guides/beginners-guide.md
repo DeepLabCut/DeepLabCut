@@ -134,4 +134,4 @@ When you first launch the GUI, you'll find three primary main options:
 
 ![DeepLabCut Create Project GIF](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779616437-30U5RFYV0OY6ACGDG7F4/create-project.gif?format=500w)
 
-## Next, head over the beginner guide for [Setting up what keypoints to track](https://deeplabcut.github.io/DeepLabCut/docs/manage-project)
+## Next, head over to the beginner guide for [Setting up what keypoints to track](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/manage-project.html)

@@ -36,7 +36,7 @@ Your contributions and suggestions are welcomed, so test the
 [PR](https://github.com/DeepLabCut/napari-deeplabcut/pull/38) and give us feedback!
 
 This #cookbook recipe aims to show a usecase of **clustering in napari** and is contributed by 2022 DLC AI Resident
-[Sabrina Benas](https://twitter.com/Sabrineiitor) 💜.
+[Sabrina Benas](https://x.com/Sabrineiitor) 💜.
 
 
 ## Detect Outliers to Refine Labels

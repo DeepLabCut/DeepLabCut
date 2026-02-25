@@ -305,44 +305,50 @@ def get_scorer_name(
 
 
 def list_videos_in_folder(
-    data_path: str | list[str],
-    video_type: str | None,
+    data_path: str | Path | list[str | Path],
+    video_type: str | None = None,
     shuffle: bool = False,
 ) -> list[Path]:
     """
     Args:
-        data_path: Path or list of paths to folders containing videos
-        video_type: The type of video to filter for
-        shuffle: If the paths point to directories, whether to shuffle the order of
-            videos in the directory.
+        data_path: Path or list of paths to folders containing videos, or individual
+            video files. Can be a mix of directories and files.
+        video_type: The type of video to filter for (e.g., "mp4", ".mp4"). If None,
+            all supported video types are included.
+        shuffle: Whether to shuffle the order of videos. If False, videos are returned
+            in sorted order for deterministic behavior.
 
     Returns:
-        The paths of videos to analyze.
+        The paths of videos to analyze. Duplicate paths are removed.
+
+    Raises:
+        FileNotFoundError: If any path in data_path does not exist.
     """
-    if not isinstance(data_path, list):
+    if isinstance(data_path, (str, Path)):
         data_path = [data_path]
-    video_paths = [Path(p) for p in data_path]
+
+    if not video_type:
+        video_suffixes = {f".{ext.lower()}" for ext in auxfun_videos.SUPPORTED_VIDEOS}
+    else:
+        video_suffixes = {f".{video_type.lstrip('.').lower()}"}
 
     videos = []
-    for path in video_paths:
-        if path.is_dir():
-            if not video_type:
-                video_suffixes = ["." + ext for ext in auxfun_videos.SUPPORTED_VIDEOS]
-            else:
-                video_suffixes = [video_type]
+    for path in map(Path, data_path):
+        if not path.exists():
+            raise FileNotFoundError(
+                f"Could not find: {path}. Check access rights."
+            )
 
-            suffixes = [s if s.startswith(".") else "." + s for s in video_suffixes]
-            videos_in_dir = [file for file in path.iterdir() if file.suffix in suffixes]
-            if shuffle:
-                random.shuffle(videos_in_dir)
-            videos += videos_in_dir
-        else:
-            assert (
-                path.exists()
-            ), f"Could not find the video: {path}. Check access rights."
+        if path.is_dir():
+            videos.extend(f for f in path.iterdir() if f.is_file() and f.suffix.lower() in video_suffixes)
+        elif path.is_file() and path.suffix.lower() in video_suffixes:
             videos.append(path)
 
-    return videos
+    # Resolve video paths and remove duplicates
+    unique_videos = list(dict.fromkeys(v.resolve() for v in videos))
+    if shuffle:
+        random.shuffle(unique_videos)
+    return unique_videos
 
 
 def ensure_multianimal_df_format(df_predictions: pd.DataFrame) -> pd.DataFrame:

@@ -382,4 +382,4 @@ class TrackletManager:
         df = self.format_data()
         if not output_name:
             output_name = self.filename.replace("pickle", "h5")
-        df.to_hdf(output_name, "df_with_missing", format="table", mode="w")
+        df.to_hdf(output_name, key="df_with_missing", format="table", mode="w")

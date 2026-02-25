@@ -144,7 +144,9 @@ def download_super_animal_snapshot(dataset: str, model_name: str) -> Path:
     model_path = snapshot_dir / model_filename
 
     download_huggingface_model(
-        model_name, target_dir=str(snapshot_dir), rename_mapping=model_filename
+        model_name,
+        target_dir=str(snapshot_dir),
+        rename_mapping={model_filename: model_filename},
     )
     if not model_path.exists():
         raise RuntimeError(f"Failed to download {model_name} to {model_path}")
