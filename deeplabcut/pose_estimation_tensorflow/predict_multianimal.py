@@ -20,7 +20,7 @@ from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal as predict
-from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+from deeplabcut.utils import auxfun_multianimal
 from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
@@ -209,7 +209,9 @@ def AnalyzeMultiAnimalVideo(
         with open(f"{dataname}_meta.pickle", "wb") as f:
             pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
     else:
-        auxfun_multianimal.SaveFullMultiAnimalData(PredicteData, metadata, str(dataname))
+        auxfun_multianimal.SaveFullMultiAnimalData(
+            PredicteData, metadata, str(dataname)
+        )
 
 
 def _get_features_dict(raw_coords, features, stride):
