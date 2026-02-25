@@ -9,7 +9,6 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-import os
 import pickle
 import shelve
 import time
@@ -21,9 +20,8 @@ from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal as predict
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter
-import pickle
 
 
 def extract_bpt_feature_from_video(
@@ -40,24 +38,20 @@ def extract_bpt_feature_from_video(
     robust_nframes=False,
 ):
     print("Starting to analyze % ", video)
-    vname = Path(video).stem
-    videofolder = str(Path(video).parents[0])
-    if destfolder is None:
-        destfolder = videofolder
-    auxiliaryfunctions.attempt_to_make_folder(destfolder)
-    dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
-
-    assemble_filename = dataname.split(".h5")[0] + "_assemblies.pickle"
+    video = Path(video)
+    destfolder = video.parent if destfolder is None else Path(destfolder)
+    destfolder.mkdir(exist_ok=True, parents=True)
+    dataname = destfolder / f"{video.stem}{DLCscorer}"
 
     feature_dict = shelve.open(
-        dataname.split(".h5")[0] + "_bpt_features.pickle",
+        f"{dataname}_bpt_features.pickle",
         protocol=pickle.DEFAULT_PROTOCOL,
     )
 
-    with open(assemble_filename, "rb") as f:
+    with open(f"{dataname}_assemblies.pickle", "rb") as f:
         assemblies = pickle.load(f)
         print("Loading ", video)
-        vid = VideoWriter(video)
+        vid = VideoWriter(str(video))
         if robust_nframes:
             nframes = vid.get_n_frames(robust=True)
             duration = vid.calc_duration(robust=True)
@@ -67,7 +61,6 @@ def extract_bpt_feature_from_video(
             duration = vid.calc_duration(robust=False)
             fps = vid.fps
 
-        nx, ny = vid.dimensions
         print(
             "Duration of video [s]: ",
             round(duration, 2),
@@ -79,10 +72,8 @@ def extract_bpt_feature_from_video(
             "Overall # of frames: ",
             nframes,
             " found with (before cropping) frame dimensions: ",
-            nx,
-            ny,
+            vid.dimensions,
         )
-        start = time.time()
 
         print("Starting to extract posture")
         if int(dlc_cfg["batch_size"]) > 1:
@@ -122,115 +113,109 @@ def AnalyzeMultiAnimalVideo(
     """Helper function for analyzing a video with multiple individuals"""
 
     print("Starting to analyze % ", video)
-    vname = Path(video).stem
-    videofolder = str(Path(video).parents[0])
-    if destfolder is None:
-        destfolder = videofolder
-    auxiliaryfunctions.attempt_to_make_folder(destfolder)
-    dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
+    video = Path(video)
+    destfolder = video.parent if destfolder is None else Path(destfolder)
+    destfolder.mkdir(exist_ok=True, parents=True)
+    dataname = destfolder / f"{video.stem}{DLCscorer}"
+    full_pickle = Path(f"{dataname}_full.pickle")
 
-    if os.path.isfile(dataname.split(".h5")[0] + "_full.pickle"):
+    if full_pickle.is_file():
         print("Video already analyzed!", dataname)
+        return None
+
+    print("Loading ", video)
+    vid = VideoWriter(str(video))
+    if robust_nframes:
+        nframes = vid.get_n_frames(robust=True)
+        duration = vid.calc_duration(robust=True)
+        fps = nframes / duration
     else:
-        print("Loading ", video)
-        vid = VideoWriter(video)
-        if robust_nframes:
-            nframes = vid.get_n_frames(robust=True)
-            duration = vid.calc_duration(robust=True)
-            fps = nframes / duration
-        else:
-            nframes = len(vid)
-            duration = vid.calc_duration(robust=False)
-            fps = vid.fps
+        nframes = len(vid)
+        duration = vid.calc_duration(robust=False)
+        fps = vid.fps
 
-        nx, ny = vid.dimensions
-        print(
-            "Duration of video [s]: ",
-            round(duration, 2),
-            ", recorded with ",
-            round(fps, 2),
-            "fps!",
-        )
-        print(
-            "Overall # of frames: ",
+    print(
+        "Duration of video [s]: ",
+        round(duration, 2),
+        ", recorded with ",
+        round(fps, 2),
+        "fps!",
+    )
+    print(
+        "Overall # of frames: ",
+        nframes,
+        " found with (before cropping) frame dimensions: ",
+        vid.dimensions,
+    )
+    start = time.time()
+
+    print(
+        "Starting to extract posture from the video(s) with batchsize:",
+        dlc_cfg["batch_size"],
+    )
+
+    shelf_path = str(full_pickle) if use_shelve else ""
+    if int(dlc_cfg["batch_size"]) > 1:
+        PredicteData, nframes = GetPoseandCostsF(
+            cfg,
+            dlc_cfg,
+            sess,
+            inputs,
+            outputs,
+            vid,
             nframes,
-            " found with (before cropping) frame dimensions: ",
-            nx,
-            ny,
+            int(dlc_cfg["batch_size"]),
+            shelf_path,
         )
-        start = time.time()
-
-        print(
-            "Starting to extract posture from the video(s) with batchsize:",
-            dlc_cfg["batch_size"],
+    else:
+        PredicteData, nframes = GetPoseandCostsS(
+            cfg,
+            dlc_cfg,
+            sess,
+            inputs,
+            outputs,
+            vid,
+            nframes,
+            shelf_path,
         )
-        if use_shelve:
-            shelf_path = dataname.split(".h5")[0] + "_full.pickle"
-        else:
-            shelf_path = ""
-        if int(dlc_cfg["batch_size"]) > 1:
-            PredicteData, nframes = GetPoseandCostsF(
-                cfg,
-                dlc_cfg,
-                sess,
-                inputs,
-                outputs,
-                vid,
-                nframes,
-                int(dlc_cfg["batch_size"]),
-                shelf_path,
-            )
-        else:
-            PredicteData, nframes = GetPoseandCostsS(
-                cfg,
-                dlc_cfg,
-                sess,
-                inputs,
-                outputs,
-                vid,
-                nframes,
-                shelf_path,
-            )
 
-        stop = time.time()
+    stop = time.time()
 
-        if cfg["cropping"] == True:
-            coords = [cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]]
-        else:
-            coords = [0, nx, 0, ny]
+    nx, ny = vid.dimensions
+    if cfg["cropping"]:
+        coords = [cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]]
+    else:
+        coords = [0, nx, 0, ny]
 
-        dictionary = {
-            "start": start,
-            "stop": stop,
-            "run_duration": stop - start,
-            "Scorer": DLCscorer,
-            "DLC-model-config file": dlc_cfg,
-            "fps": fps,
-            "batch_size": dlc_cfg["batch_size"],
-            "frame_dimensions": (ny, nx),
-            "nframes": nframes,
-            "iteration (active-learning)": cfg["iteration"],
-            "training set fraction": trainFraction,
-            "cropping": cfg["cropping"],
-            "cropping_parameters": coords,
-        }
-        metadata = {"data": dictionary}
-        print("Video Analyzed. Saving results in %s..." % (destfolder))
+    dictionary = {
+        "start": start,
+        "stop": stop,
+        "run_duration": stop - start,
+        "Scorer": DLCscorer,
+        "DLC-model-config file": dlc_cfg,
+        "fps": fps,
+        "batch_size": dlc_cfg["batch_size"],
+        "frame_dimensions": (ny, nx),
+        "nframes": nframes,
+        "iteration (active-learning)": cfg["iteration"],
+        "training set fraction": trainFraction,
+        "cropping": cfg["cropping"],
+        "cropping_parameters": coords,
+    }
+    metadata = {"data": dictionary}
+    print(f"Video Analyzed. Saving results in {destfolder}")
 
-        if use_shelve:
-            metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
-            with open(metadata_path, "wb") as f:
-                pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
-        else:
-            _ = auxfun_multianimal.SaveFullMultiAnimalData(
-                PredicteData, metadata, dataname
-            )
+    if use_shelve:
+        with open(f"{dataname}_meta.pickle", "wb") as f:
+            pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
+    else:
+        auxfun_multianimal.SaveFullMultiAnimalData(PredicteData, metadata, str(dataname))
 
 
 def _get_features_dict(raw_coords, features, stride):
     from deeplabcut.pose_tracking_pytorch import (
-        load_features_from_coord,
         convert_coord_from_img_space_to_feature_space,
+        load_features_from_coord,
     )
 
     coords_img_space = np.array(
