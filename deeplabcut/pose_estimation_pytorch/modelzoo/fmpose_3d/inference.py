@@ -23,6 +23,7 @@ from deeplabcut.pose_estimation_pytorch.apis.videos import (
     VideoIterator,
     create_df_from_prediction,
 )
+from deeplabcut.utils import auxiliaryfunctions_3d
 from deeplabcut.utils.make_labeled_video import create_video
 
 logger = logging.getLogger(__name__)
@@ -61,6 +62,33 @@ def _pose2d_to_dlc_predictions(
         bodyparts_array[:n_det, :, 2] = all_scores[:n_det, frame_idx, :num_bodyparts]
         per_frame.append({"bodyparts": bodyparts_array})
     return per_frame
+
+
+def _poses3d_to_dataframe(poses_3d: list[np.ndarray], df_2d, scorer_3d: str):
+    """Create and fill a 3D dataframe using the shared auxiliary helper."""
+    df_3d, scorer_3d, bodyparts = auxiliaryfunctions_3d.create_empty_df(
+        df_2d, scorer_3d, "3d"
+    )
+    n_frames = len(poses_3d)
+    n_bodyparts = len(bodyparts)
+    arr = np.full((n_frames, n_bodyparts, 3), np.nan, dtype=float)
+
+    for frame_idx, pose in enumerate(poses_3d):
+        pose_np = np.asarray(pose)
+        if pose_np.ndim == 3:
+            if pose_np.shape[0] == 0:
+                continue
+            pose_np = pose_np[0]
+        if pose_np.ndim != 2 or pose_np.shape[-1] != 3:
+            continue
+
+        n = min(n_bodyparts, pose_np.shape[0])
+        arr[frame_idx, :n] = pose_np[:n]
+
+    xyz_cols = [(scorer_3d, bp, coord) for bp in bodyparts for coord in ("x", "y", "z")]
+    df_3d.loc[:, xyz_cols] = arr.reshape(n_frames, -1)
+
+    return df_3d
 
 
 def _video_inference_fmpose3d(
@@ -177,10 +205,16 @@ def _video_inference_fmpose3d(
             output_path=dest_folder,
             output_prefix=output_prefix,
         )
+        scorer_3d = f"{dlc_scorer}_3d"
+        df_3d = _poses3d_to_dataframe(all_poses_3d, df, scorer_3d)
+        output_3d_h5 = dest_folder / f"{output_prefix}_3d.h5"
+        df_3d.to_hdf(output_3d_h5, key="df_with_missing", mode="w", format="table")
+        print(f"3D dataframe saved to {output_3d_h5}")
+
         if include_3d_in_return:
             results[video_path] = {
                 "df_2d": df,
-                "poses_3d": all_poses_3d,
+                "df_3d": df_3d,
             }
         else:
             results[video_path] = df
