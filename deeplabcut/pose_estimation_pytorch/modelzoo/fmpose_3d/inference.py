@@ -66,7 +66,7 @@ def _pose2d_to_dlc_predictions(
 def _video_inference_fmpose3d(
     video_paths: str | Path | list[str | Path],
     model_name: str,
-    max_individuals: int = 10,
+    max_individuals: int = 1,
     pcutoff: float = 0.1,
     batch_size: int = 1,
     dest_folder: str | Path | None = None,
@@ -78,6 +78,14 @@ def _video_inference_fmpose3d(
     """Perform FMPose3D video inference with a lightweight DLC loop."""
     from tqdm import tqdm
     import torch
+
+    if max_individuals != 1:
+        logger.warning(
+            "FMPose3D 3D lifting currently supports only one individual. "
+            "Clamping max_individuals=%s to 1 for this pipeline.",
+            max_individuals,
+        )
+    max_individuals = 1
 
     if device is None or device == 'auto':
         device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -117,9 +125,19 @@ def _video_inference_fmpose3d(
 
         predictions_2d: list[dict[str, np.ndarray]] = []
         all_poses_3d: list[np.ndarray] = []
+        warned_multi_person_2d = False
 
         def _process_batch(frames: list[np.ndarray]) -> None:
+            nonlocal warned_multi_person_2d
             pose_2d = api.prepare_2d(source=np.stack(frames))
+            num_detected = int(np.asarray(pose_2d.keypoints).shape[0])
+            if num_detected > 1 and not warned_multi_person_2d:
+                logger.warning(
+                    "Multiple 2D detections (%s) were found, but FMPose3D 3D lifting "
+                    "uses only the first individual.",
+                    num_detected,
+                )
+                warned_multi_person_2d = True
             predictions_2d.extend(
                 _pose2d_to_dlc_predictions(
                     pose_2d,
