@@ -1,3 +1,4 @@
+(file:dlclivegui-basler-backend)=
 # Basler backend
 
 The Basler backend provides support for Basler cameras using the official **pylon SDK** through the **pypylon** Python bindings.

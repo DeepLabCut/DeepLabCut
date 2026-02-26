@@ -5,12 +5,12 @@ DeepLabCut-live-GUI supports multiple camera backends for different platforms an
 
 ## Supported backends
 
-1. **OpenCV** - "Universal" webcam and USB camera support *(all platforms)*
+1. {ref}`OpenCV <file:dlclivegui-opencv-backend>` - "Universal" webcam and USB camera support *(all platforms)*
    - Expect some limitations in camera control and performance
-2. **GenTL** - Industrial cameras via GenTL producers *(Windows, Linux)*
-3. **Aravis** - GenICam/GigE Vision cameras *(Linux, experimental on macOS)*
-   - See {ref}`file:dlclivegui-camera-aravis-backend`
-4. **Basler** - Basler cameras via pypylon *(all platforms)*
+2. {ref}`GenTL <file:dlclivegui-gentl-backend>` - Industrial cameras via GenTL producers *(Windows, Linux)*
+    - Requires vendor-provided CTI files
+3. {ref}`Aravis <file:dlclivegui-camera-aravis-backend>` - GenICam/GigE Vision cameras *(Linux, experimental on macOS)*
+4. {ref}`Basler <file:dlclivegui-basler-backend>` - Basler cameras via pypylon *(all platforms)*
 
 ## Backend selection
 
@@ -83,9 +83,4 @@ Install vendor-provided camera drivers and SDK. CTI files are typically in:
 | Linux | ✅ | ✅ | ✅ | ✅ |
 | macOS | ✅ | ❌ | ⚠️ | ✅ |
 
-### Links to backend documentation
 
-- **To be added** OpenCV - *"Universal" webcam support - Expect some limitations in camera control and performance*
-- {doc}`Aravis <aravis_backend>` - *GenICam/GigE cameras on Linux/macOS*
-- **To be added** GenTL - *Industrial cameras via vendor CTI files*
-- **To be added** Basler - *Basler cameras via pypylon (cross-platform)*

@@ -1,3 +1,4 @@
+(file:dlclivegui-opencv-backend)=
 # OpenCV backend
 
 The OpenCV backend provides camera support via `cv2.VideoCapture`.
