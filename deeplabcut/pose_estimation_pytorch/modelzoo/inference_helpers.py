@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 import torch
@@ -23,6 +24,7 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     update_config,
 )
 from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
+from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 def create_superanimal_inference_runners(
@@ -36,7 +38,7 @@ def create_superanimal_inference_runners(
     customized_model_config: str | Path | dict | None = None,
     customized_pose_checkpoint: str | Path | None = None,
     customized_detector_checkpoint: str | Path | None = None,
-) -> tuple[InferenceRunner, InferenceRunner, dict]:
+) -> tuple[InferenceRunner, InferenceRunner | None, dict]:
     """Create SuperAnimal inference runners for in-memory batched inference.
 
     This helper is intended for Model Zoo inference pipelines that run directly on
@@ -48,7 +50,7 @@ def create_superanimal_inference_runners(
             ``"superanimal_quadruped"``.
         model_name: Pose model architecture name, e.g. ``"hrnet_w32"``.
         detector_name: Detector architecture name for top-down inference, e.g.
-            ``"fasterrcnn_resnet50_fpn_v2"``.
+            ``"fasterrcnn_resnet50_fpn_v2"``. Can be ``None`` for bottom-up models.
         max_individuals: Maximum number of individuals to keep per frame.
         batch_size: Batch size for pose inference.
         detector_batch_size: Batch size for detector inference.
@@ -62,7 +64,8 @@ def create_superanimal_inference_runners(
     Returns:
         tuple: ``(pose_runner, detector_runner, model_cfg)`` where:
             - ``pose_runner`` is the pose inference runner
-            - ``detector_runner`` is the detector inference runner
+            - ``detector_runner`` is the detector inference runner or ``None`` if no
+              detector is configured
             - ``model_cfg`` is the resolved model configuration dict
 
     Example:
@@ -105,11 +108,6 @@ def create_superanimal_inference_runners(
             "it relies on modelzoo.build_weight_init, which does not support this dataset."
         )
 
-    if detector_name is None:
-        raise ValueError(
-            "Please provide `detector_name` for SuperAnimal top-down inference setup."
-        )
-
     if device in (None, "auto"):
         device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
@@ -123,6 +121,19 @@ def create_superanimal_inference_runners(
             super_animal=superanimal_name,
             model_name=model_name,
             detector_name=detector_name,
+        )
+
+    # Top-down models typically need a detector for bbox generation. If no detector
+    # is configured, the returned detector_runner will be None and callers should
+    # provide bboxes in the pose input context.
+    if (
+        Task(model_cfg["method"]) == Task.TOP_DOWN
+        and detector_name is None
+        and customized_detector_checkpoint is None
+    ):
+        logging.warning(
+            "Top-down model configured without a detector. "
+            "Returning detector_runner=None; pass bboxes in pose input context."
         )
 
     model_cfg = update_config(model_cfg, max_individuals=max_individuals, device=device)
