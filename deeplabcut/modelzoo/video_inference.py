@@ -367,11 +367,19 @@ def video_inference_superanimal(
         if model_name.startswith("fmpose3d"):
             logger.info("Running video inference on %s using %s", videos, model_name)
 
-            if superanimal_name:
+            recommended_superanimal_name = {
+                "fmpose3d_animals": "superanimal_quadruped",
+                "fmpose3d_humans": "superanimal_humanbody",
+            }.get(model_name)
+
+            provided_superanimal_name = superanimal_name or "<not provided>"
+            if superanimal_name != recommended_superanimal_name:
                 warnings.warn(
-                    "For FMPose3D models, 'superanimal_name' is ignored for pipeline "
-                    f"selection (selected model_name={model_name!r}, "
-                    f"superanimal_name={superanimal_name!r}).",
+                    "For FMPose3D models, model selection is driven by 'model_name'. But for API "
+                    "consistency, it is recommended to set 'superanimal_name' to the corresponding value."
+                    f"Provided superanimal_name={provided_superanimal_name!r} differs from the "
+                    f"recommended value for {model_name!r}: "
+                    f"{recommended_superanimal_name!r}.",
                     stacklevel=2,
                 )
 
