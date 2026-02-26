@@ -11,6 +11,10 @@ This GUI is designed for **scientists and experimenters** who want to preview, r
 - {doc}`Camera setup and backends <./user_guide/cameras_backends/camera_support>`
 - {doc}`Timestamp format and synchronization <./user_guide/misc/timestamp_format>`
 
+```{caution}
+Please be aware of the {ref}`sec:dlclivegui-index-limitations`
+```
+
 ---
 
 ## Description
@@ -47,24 +51,25 @@ and *{doc}`User Guide <user_guide/overview>`* sections of this documentation.
 - Anyone who wants a **GUI-first** workflow for DeepLabCut Live
 
 ---
-
+(sec:dlclivegui-index-limitations)=
 ## Current limitations
 
 Before getting started, be aware of the following constraints:
 
 - Pose inference runs on **one selected camera at a time** (even in multi-camera mode)
-- Camera synchronization depends on backend capabilities and hardware
+- Camera synchronization depends on **backend capabilities and hardware**
   - OpenCV controls for resolution and FPS are "best effort" and may not work with all cameras.
     Expect inconsistencies when setting certain frame rates or resolutions as resolution depends on the device driver.
 - DeepLabCut Live models must be **exported and compatible** with the selected backend
-  - Some SuperAnimal models from {ref}`file:model-zoo` may not work out of the box.<br>This is currently the case for:
+  - Some SuperAnimal models from {ref}`file:model-zoo` may not work out of the box.<br>This is currently a known issue for:
     - SuperHuman model (missing detector)
-- Performance depends on camera resolution, frame rate, GPU availability, and codec choice
+- **Performance** depends on camera resolution, frame rate, GPU availability, and codec choice
+  - Expect bottlenecks with heavy models, multiple high-resolution cameras, or CPU-only inference.
 
 ---
 
-## About
+## Feedback, issues, and contributions
 
-*This project is under active development. Feedback from real experimental use is highly valued.*
-
-[Please report issues, suggest features, or contribute to the codebase on GitHub !](https://github.com/DeepLabCut/DeepLabCut-live-GUI)
+> *This project is under active development. Feedback from real experimental use is highly valued.*
+> 
+> [Please report issues, suggest features, or contribute to the codebase on GitHub !](https://github.com/DeepLabCut/DeepLabCut-live-GUI)

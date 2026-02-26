@@ -86,9 +86,6 @@ parts:
 - caption: DeepLabCut-Live!
   chapters:
   - file: docs/dlc-live/deeplabcutlive
-  # NOTE @C-Achard Please move if needed, but since it is downstream of DLC-live
-  # I think it makes sense to have it here for now.
-  # TODO remove this note before merging
   - file: docs/dlc-live/dlc-live-gui/index
     sections:
       - file: docs/dlc-live/dlc-live-gui/quickstart/install

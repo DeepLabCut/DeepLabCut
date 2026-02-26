@@ -4,6 +4,10 @@ This page explains how to install **DeepLabCut-live-GUI** for interactive, real�
 
 We support various installation methods, including `uv` and `mamba`/`conda`.
 
+```{tip}
+If you feel confident you meet the requirements and you just want to get started quickly, see the {ref}`sec:dlclivegui-install-quickstart` section below.
+```
+
 ---
 
 ## System requirements
@@ -25,10 +29,10 @@ We support various installation methods, including `uv` and `mamba`/`conda`.
 ### Hardware requirements
 
 - Any **compatible camera** (see *{ref}`file:dlclivegui-camera-support`*):
-  - USB webcam, OBS virtual camera → OpenCV-compatible cameras are supported by default
-  - Basler
-  - GenTL
-  - Aravis
+  - **USB webcam, OBS virtual camera** → OpenCV-recognized cameras are accessible by default
+  - **Basler**
+  - *GenTL [^exp]*
+  - *Aravis [^exp]*
 - Optional but recommended:
   - **CUDA-capable GPU** (for real‑time inference)
   - NVIDIA drivers compatible with your PyTorch/TensorFlow version
@@ -46,7 +50,7 @@ If you use an OpenCV-compatible camera (e.g. USB webcam, OBS virtual camera), yo
 - A working camera backend (see *{ref}`file:dlclivegui-camera-support`*)
 
 ---
-
+(sec:dlclivegui-install-quickstart)=
 ## Quickstart (recommended defaults)
 
 ```bash
@@ -54,16 +58,17 @@ git clone https://github.com/DeepLabCut/DeepLabCut-live-GUI.git
 cd DeepLabCut-live-GUI
 uv venv
 source .venv/bin/activate   # Windows: see tabs below
+uv pip install torch torchvision --index-url https://download.pytorch.org/whl/cu<your-cuda-version> # e.g. cu128 for CUDA 12.8, or skip for CPU-only
 uv pip install -e ".[pytorch]"
 dlclivegui
 ```
 
 ## Choose your installation method
 
-Below instructions cover installation with `uv` and `mamba`/`conda`, but you can also install with other package managers like `pdm` if you prefer.
+Below instructions cover installation with `uv` and `mamba`/`conda`, but you may also install with other package managers like `pdm` if preferred.
 
 ```{note}
-The entire DeepLabCut package and its GUI are not required to use this software, as it is designed to be a lightweight interface for real‑time pose estimation.
+The main DeepLabCut package and its GUI are not required to use this software, as it is designed to be a lightweight interface for real‑time pose estimation.
 ```
 
 ### Install DeepLabCut-live-GUI
@@ -113,7 +118,7 @@ uv venv -p 3.12 # or desired Python version
 ##### Choose inference backend
 
 We offer two distinct inference backends: **PyTorch** and **TensorFlow**.
-You can install either or both, but you must** choose at least one** to run the pose estimation models.
+You may install either or both, but you must **choose at least one** to run the pose estimation models.
 
 `````{tab-set}
 
@@ -155,7 +160,7 @@ conda activate dlclivegui
 ##### Choose inference backend
 
 We offer two distinct inference backends: **PyTorch** and **TensorFlow**.
-You can install either or both, but you must** choose at least one** to run the pose estimation models.
+You may install either or both, but you must **choose at least one** to run the pose estimation models.
 
 `````{tab-set}
 
@@ -165,7 +170,7 @@ To **enable GPU support** and obtain detailed installation instructions,
 please refer to the [official PyTorch installation guide](https://pytorch.org/get-started/locally/).
 ```
 ```bash
-uv pip install -e ".[pytorch]"
+pip install -e ".[pytorch]"
 ```
 ````
 
@@ -175,7 +180,7 @@ Please note TensorFlow is **no longer available** on **Windows** for **Python > 
 ```
 
 ```bash
-uv pip install -e ".[tf]"
+pip install -e ".[tf]"
 ```
 ```{note}
 For detailed installation instructions, please refer to the [official TensorFlow installation guide](https://www.tensorflow.org/install/pip).
@@ -202,3 +207,5 @@ dlclivegui # OR uv run dlclivegui
 ```{important}
 Make sure your venv or conda environment is activated before running the application, so it can access the installed dependencies.
 ```
+
+[^exp]: Support for this backend is currently experimental and may not work out of the box. Please refer to the backend-specific documentation for details and troubleshooting tips, and report any issues you encounter on GitHub to help us improve support for these backends.
