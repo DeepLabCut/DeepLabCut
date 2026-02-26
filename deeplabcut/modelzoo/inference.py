@@ -23,6 +23,7 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     load_super_animal_config,
     update_config,
 )
+from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
 
 
 def create_superanimal_inference_runners(
@@ -36,17 +37,65 @@ def create_superanimal_inference_runners(
     customized_model_config: str | Path | dict | None = None,
     customized_pose_checkpoint: str | Path | None = None,
     customized_detector_checkpoint: str | Path | None = None,
-):
+) -> tuple[InferenceRunner, InferenceRunner, dict]:
     """Create SuperAnimal inference runners for in-memory batched inference.
 
     This helper is intended for Model Zoo inference pipelines that run directly on
     arrays. It prepares pose/detector runners and returns them with the resolved
     model config.
+
+    Args:
+        superanimal_name: Name of the SuperAnimal dataset, e.g.
+            ``"superanimal_quadruped"``.
+        model_name: Pose model architecture name, e.g. ``"hrnet_w32"``.
+        detector_name: Detector architecture name for top-down inference, e.g.
+            ``"fasterrcnn_resnet50_fpn_v2"``.
+        max_individuals: Maximum number of individuals to keep per frame.
+        batch_size: Batch size for pose inference.
+        detector_batch_size: Batch size for detector inference.
+        device: Device for inference. If ``"auto"`` or ``None``, resolves to CUDA
+            when available, else CPU.
+        customized_model_config: Optional path or dict for a custom model config.
+            If not provided, uses the default SuperAnimal config.
+        customized_pose_checkpoint: Optional custom pose checkpoint path.
+        customized_detector_checkpoint: Optional custom detector checkpoint path.
+
+    Returns:
+        tuple: ``(pose_runner, detector_runner, model_cfg)`` where:
+            - ``pose_runner`` is the pose inference runner
+            - ``detector_runner`` is the detector inference runner
+            - ``model_cfg`` is the resolved model configuration dict
+
+    Example:
+        >>> from pathlib import Path
+        >>> import numpy as np
+        >>> from PIL import Image
+        >>> from deeplabcut.modelzoo.inference import create_superanimal_inference_runners
+        >>>
+        >>> img_paths = [
+        ...     "/path/to/images/frame_0000.png",
+        ...     "/path/to/images/frame_0001.png",
+        ...     "/path/to/images/frame_0002.png",
+        ... ]
+        >>> images = [np.asarray(Image.open(Path(p)).convert("RGB")) for p in img_paths]
+        >>>
+        >>> pose_runner, det_runner, model_cfg = create_superanimal_inference_runners(
+        ...     superanimal_name="superanimal_quadruped",
+        ...     model_name="hrnet_w32",
+        ...     detector_name="fasterrcnn_resnet50_fpn_v2",
+        ...     max_individuals=10,
+        ...     batch_size=1,
+        ...     detector_batch_size=1,
+        ... )
+        >>>
+        >>> det_preds = det_runner.inference(images)
+        >>> pose_inputs = list(zip(images, det_preds))
+        >>> pose_preds = pose_runner.inference(pose_inputs)
+        >>> print(len(det_preds), len(pose_preds))
+
     """
     if model_name.startswith("fmpose3d"):
-        raise NotImplementedError(
-            "FMPose3D is not supported in this helper. Use the FMPose3D inference API."
-        )
+        raise NotImplementedError("FMPose3D is not supported in this helper. Use the FMPose3D inference API.")
 
     if superanimal_name == "superanimal_humanbody":
         raise NotImplementedError(
@@ -55,9 +104,7 @@ def create_superanimal_inference_runners(
         )
 
     if detector_name is None:
-        raise ValueError(
-            "Please provide `detector_name` for SuperAnimal top-down inference setup."
-        )
+        raise ValueError("Please provide `detector_name` for SuperAnimal top-down inference setup.")
 
     if device in (None, "auto"):
         device = "cuda:0" if torch.cuda.is_available() else "cpu"
