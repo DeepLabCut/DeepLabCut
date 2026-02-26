@@ -64,6 +64,8 @@ def _pose2d_to_dlc_predictions(
     return per_frame
 
 
+# NOTE:  i_o; pandas; kpt_refactor;  this function may need to change in the future, to improve dataframe
+#  i/o migration to validated keypoint schemas (parquet)
 def _poses3d_to_dataframe(poses_3d: list[np.ndarray], df_2d, scorer_3d: str):
     """Create and fill a 3D dataframe using the shared auxiliary helper."""
     df_3d, scorer_3d, bodyparts = auxiliaryfunctions_3d.create_empty_df(
