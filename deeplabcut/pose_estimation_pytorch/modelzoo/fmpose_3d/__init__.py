@@ -7,7 +7,7 @@ https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-# NOTE: this module may contain items that need refactoring during 
+# NOTE: this module may contain items that need refactoring during
 # the keypoint migration.
 
 # kpt_refactor - Needs attention when refactoring keypoints
