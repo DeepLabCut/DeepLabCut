@@ -57,7 +57,9 @@ def create_superanimal_inference_runners(
         device: Device for inference. If ``"auto"`` or ``None``, resolves to CUDA
             when available, else CPU.
         customized_model_config: Optional path or dict for a custom model config.
-            If not provided, uses the default SuperAnimal config.
+            If not provided, uses the default SuperAnimal config. Note that this config
+            determines whether the model is top-down or bottom-up; for bottom-up models,
+            ``detector_runner`` will be ``None`` even if ``detector_name`` is set.
         customized_pose_checkpoint: Optional custom pose checkpoint path.
         customized_detector_checkpoint: Optional custom detector checkpoint path.
 
@@ -92,10 +94,10 @@ def create_superanimal_inference_runners(
         ...     detector_batch_size=1,
         ... )
         >>>
-        >>> det_preds = det_runner.inference(images)
-        >>> pose_inputs = list(zip(images, det_preds))
+        >>> det_preds = det_runner.inference(images) if det_runner is not None else None
+        >>> pose_inputs = list(zip(images, det_preds)) if det_preds is not None else images
         >>> pose_preds = pose_runner.inference(pose_inputs)
-        >>> print(len(det_preds), len(pose_preds))
+        >>> print(len(pose_preds))
     """
     if model_name.lower().startswith("fmpose3d"):
         raise NotImplementedError(
