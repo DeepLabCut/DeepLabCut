@@ -100,7 +100,7 @@ accepted for API compatibility but ignored for model selection.
 
 Like the 2D superanimal models, this inference branch writes
 intermediate 2D predictions to `<video>_DLC_fmpose3d_*.h5` and `<video>_DLC_fmpose3d_*.json`. In addition, 3D predictions are saved to
-`<video>_DLC_fmpose3d_*_3d.h5` and `<video>_DLC_fmpose3d_*_3d.json`. Set `fmpose_return_3d=True` to also return
+`<video>_DLC_fmpose3d_*_3d.h5` and `<video>_DLC_fmpose3d_*_3d.json`. Set `fmpose_return_3d_keypoints=True` to also return
 the in-memory 3D dataframe (`df_3d`) in the function output.
 
 ```python
@@ -112,7 +112,7 @@ result = deeplabcut.video_inference_superanimal(
     superanimal_name="",  # ignored for fmpose3d models
     model_name="fmpose3d_animals",
     batch_size=8,
-    fmpose_return_3d=True,  # include 3D dataframe in returned payload
+    fmpose_return_3d_keypoints=True,  # include 3D dataframe in returned payload
 )
 df_3d = result[video_path]["df_3d"]
 ```
