@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+import copy
 import logging
 from pathlib import Path
 
@@ -166,7 +167,7 @@ def create_superanimal_inference_runners(
         if isinstance(customized_model_config, (str, Path)):
             model_cfg = read_config_as_dict(customized_model_config)
         else:
-            model_cfg = customized_model_config.copy()
+            model_cfg = copy.deepcopy(customized_model_config)
     else:
         model_cfg = load_super_animal_config(
             super_animal=superanimal_name,
