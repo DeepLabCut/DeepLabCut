@@ -5,14 +5,14 @@ The OpenCV backend provides camera support via `cv2.VideoCapture`.
 This backend is intended for UVC/webcams and other devices supported by your system’s native multimedia stack.
 
 ```{important}
-Exposure and gain control are not standardized across OpenCV backends and are treated as unsupported in this GUI.
+Due to lack of standardization across OpenCV backends, exposure and gain controls are treated as unsupported in this GUI.
 
 **Other settings may not always behave as expected due to driver and backend limitations.**
 ```
 
 ---
 
-## Features
+## Features & design
 
 - Cross-platform capture using OpenCV (`cv2.VideoCapture`).
 - Platform-optimized default backend selection:
@@ -20,7 +20,7 @@ Exposure and gain control are not standardized across OpenCV backends and are tr
   - macOS: prefer AVFoundation (`CAP_AVFOUNDATION`), fall back to ANY.
   - Linux: prefer V4L2 (`CAP_V4L2`), fall back to ANY.
 - Device discovery with stable identity (when enumeration is available):
-  - Uses an external enumerator (`opencv2-enumerate-cameras`) via helper utilities.
+  - Uses an external enumerator (`opencv2-enumerate-cameras`)
   - Persists `device_id` / VID / PID / name into configuration when available.
 - Best-effort format negotiation:
   - Resolution and FPS are applied with tolerance-based verification.
@@ -29,12 +29,10 @@ Exposure and gain control are not standardized across OpenCV backends and are tr
 
 ---
 
-## Installation
+## Dependencies information
 
-### Python dependency
-
-OpenCV must be available in the same Python environment as the GUI, but is installed
-as part of the core DeepLabCut-live-GUI package, so no additional installation is needed for OpenCV support.
+OpenCV must be available in the same Python environment as the GUI, but is **installed by default**
+as part of the core DeepLabCut-Live-GUI package, so **no additional installation is needed** to obtain OpenCV support.
 
 `cv2-enumerate-cameras` is also installed by default to provide camera enumeration support for this backend and make device selection more robust.
 
@@ -110,11 +108,13 @@ Selection priority in `open()`:
 
 ---
 
-## Full properties and configuration
+## Advanced configuration
+
+### Full properties and configuration
 
 OpenCV-specific options live under `properties.opencv`.
 
-### Related camera settings (shared across backends)
+#### Related camera settings (shared across backends)
 
 - `width` (int): requested image width; `0` means keep device default
 - `height` (int): requested image height; `0` means keep device default
@@ -124,7 +124,7 @@ OpenCV-specific options live under `properties.opencv`.
 `exposure` and `gain` fields may be present but are currently treated as unsupported in this backend due to lack of standardization across OpenCV drivers.
 ```
 
-### OpenCV namespace options (`properties.opencv`)
+#### OpenCV namespace options (`properties.opencv`)
 
 Device selection:
 
@@ -139,7 +139,7 @@ Backend/open behavior:
   - Common values: `DSHOW`, `MSMF`, `V4L2`, `AVFOUNDATION`, `ANY`.
 - `fast_start` (bool, default: false):
   - Skips heavy negotiation; applies resolution in best-effort mode.
-  - Useful for faster startup when probing devices, no effect on opening a known device.
+  - Useful for faster startup when probing devices, no effect when opening the feed for a known device.
 
 Format negotiation policy:
 
@@ -162,9 +162,9 @@ Codec policy:
 
 ---
 
-## Resolution and FPS behavior
+### Resolution and FPS behavior
 
-### Resolution
+#### Resolution
 
 - If `width` and `height` are both `> 0`:
   - In normal mode, the backend uses a verified negotiation path and records the actual applied resolution.
@@ -173,16 +173,16 @@ Codec policy:
   - The backend does not attempt to set resolution.
   - It reads the current device defaults.
 
-### FPS
+#### FPS
 
 - If `fps > 0`, the backend attempts to set `CAP_PROP_FPS` best-effort.
 - Many drivers return `0.0` for FPS even when streaming successfully; this is normal for some OpenCV backends.
 
 ---
 
-## Device discovery and rebind
+### Device discovery and rebind
 
-### Discovery
+#### Discovery
 
 If camera enumeration is available, `discover_devices()` returns a list of `DetectedCamera` with:
 
@@ -195,7 +195,7 @@ If camera enumeration is available, `discover_devices()` returns a list of `Dete
 
 If enumeration is not available, `discover_devices()` returns `None` so the factory can fall back to probing.
 
-### Rebinding
+#### Rebinding
 
 If `properties.opencv.device_id` (or VID/PID/name) exists, `rebind_settings()` attempts to map the saved identity to the current index and refresh stored fields.
 
@@ -298,6 +298,6 @@ On Windows, MJPG can reduce USB bandwidth and improve FPS for some webcams.
 
 ## Notes and limitations
 
+- Some OpenCV backends **do not report FPS reliably**.
 - Exposure and gain controls are marked unsupported in this backend (they are highly backend- and camera-specific in OpenCV).
-- Some OpenCV backends do not report FPS reliably.
 - For stable multi-camera setups, prefer saving and using `properties.opencv.device_id` (stable identity) when enumeration is available.
