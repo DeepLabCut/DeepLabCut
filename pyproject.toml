@@ -16,5 +16,8 @@
  ] 
 [tool.pytest.ini_options]
 markers = [
-    "require_models: mark test as requiring models to run"
+    "require_models: mark test as requiring models to run",
+    "fmpose3d: tests for fmpose3d integration",
+    "unittest: fast unit-level tests",
+    "functional: functional/integration-style tests",
 ]

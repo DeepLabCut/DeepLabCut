@@ -17,6 +17,7 @@ import pandas as pd
 import pytest
 
 fmpose3d = pytest.importorskip("fmpose3d", reason="fmpose3d not installed")
+pytestmark = pytest.mark.fmpose3d
 
 from deeplabcut.pose_estimation_pytorch.modelzoo.fmpose_3d.fmpose3d import (
     get_fmpose3d_inference_api,
@@ -55,6 +56,7 @@ _EXAMPLE_IMAGE = (
 @pytest.mark.parametrize(
     "model_type", ["fmpose3d_humans", "fmpose3d_animals"]
 )
+@pytest.mark.unittest
 def test_api_init(model_type):
     api = get_fmpose3d_inference_api(model_type, device="cpu")
     assert api is not None
@@ -67,6 +69,7 @@ def test_api_init(model_type):
 # Integration: downloads weights and runs inference (needs network)
 # ---------------------------------------------------------------------------
 @requires_network
+@pytest.mark.functional
 def test_prepare_2d_and_pose_3d():
     """2D detection followed by 3D lifting on a real image."""
     api = get_fmpose3d_inference_api("fmpose3d_animals", device="cpu")
@@ -84,6 +87,7 @@ def test_prepare_2d_and_pose_3d():
 
 
 @requires_network
+@pytest.mark.functional
 def test_predict_end_to_end():
     """Full pipeline (2D -> 3D) in a single call."""
     api = get_fmpose3d_inference_api("fmpose3d_animals", device="cpu")
@@ -93,6 +97,7 @@ def test_predict_end_to_end():
     assert predictions_3d.poses_3d.shape[-1] == 3
 
 
+@pytest.mark.unittest
 def test_pose2d_to_dlc_predictions_shapes():
     pose_2d = SimpleNamespace(
         keypoints=np.random.rand(2, 3, 4, 2).astype(np.float32),
@@ -109,6 +114,7 @@ def test_pose2d_to_dlc_predictions_shapes():
     np.testing.assert_allclose(preds[0]["bodyparts"][0, :, :2], pose_2d.keypoints[0, 0])
 
 
+@pytest.mark.unittest
 def test_poses3d_to_dataframe_layout():
     scorer = "DLC_test"
     bodyparts = ["bp1", "bp2", "bp3"]
@@ -130,6 +136,7 @@ def test_poses3d_to_dataframe_layout():
     assert df_3d.loc[1, (f"{scorer}_3d", "bp3", "z")] == 18.0
 
 
+@pytest.mark.functional
 def test_video_inference_fmpose3d_include_3d_return(tmp_path, monkeypatch):
     frames = [np.zeros((8, 8, 3), dtype=np.uint8) for _ in range(2)]
 
