@@ -84,7 +84,7 @@ def video_inference_superanimal(
     customized_model_config: Optional[str] = None,
     plot_bboxes: bool = True,
     create_labeled_video: bool = True,
-    fmpose_return_3d_keypoints: bool = False,
+    fmpose_return_3d: bool = False,
 ):
     """
     This function performs inference on videos using a pretrained SuperAnimal model.
@@ -182,10 +182,10 @@ def video_inference_superanimal(
     create_labeled_video (bool):
         Specifies if a labeled video needs to be created, True by default.
 
-    fmpose_return_3d_keypoints (bool):
+    fmpose_return_3d (bool):
         Only used when ``model_name`` starts with ``"fmpose3d"``.
         If True, include in-memory 3D poses in the return payload
-        (per video: ``{"df_2d": ..., "poses_3d": ...}``).
+        (per video: ``{"df_2d": ..., "df_3d": ...}``).
         If False (default), keep the legacy return payload with only
         the 2D DataFrame per video.
 
@@ -389,7 +389,7 @@ def video_inference_superanimal(
                 device=device,
                 create_labeled_video=create_labeled_video,
                 cropping=cropping,
-                include_3d_in_return=fmpose_return_3d_keypoints,
+                include_3d_in_return=fmpose_return_3d,
             )
 
         torchvision_detector_name = None
