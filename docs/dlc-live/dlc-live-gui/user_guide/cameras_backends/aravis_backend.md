@@ -21,25 +21,29 @@ Please report issues on GitHub to help improve this backend.
 
 ## Installation
 
-### Linux (Ubuntu / Debian)
-
+`````{tab-set}
+````{tab-item} Linux (Ubuntu / Debian
 ```bash
 sudo apt-get install gir1.2-aravis-0.8 python3-gi
 ```
+````
 
-### Linux (Fedora)
-
+````{tab-item} Linux (Fedora)
 ```bash
 sudo dnf install aravis python3-gobject
 ```
+````
 
-### Windows
 
+````{tab-item} Windows
+```{caution}
 Aravis support on Windows requires building from source or using WSL.
+
 For native Windows usage, consider the GenTL backend instead.
+```
+````
 
-### macOS
-
+````{tab-item} macOS
 ```bash
 brew install aravis
 pip install pygobject
@@ -49,6 +53,8 @@ pip install pygobject
 On macOS, installing `pygobject` may require additional system
 dependencies such as `gobject-introspection` and `cairo`.
 ```
+````
+`````
 
 ---
 
@@ -101,12 +107,12 @@ Select the Aravis backend either in the GUI or via configuration:
 ```{note}
 The backend may automatically populate additional read-only identity fields
 (vendor, model, serial, etc.) after a successful open. These are primarily
-used internally and by the GUI.
+used internally and set by the GUI.
 ```
 
 ---
 
-## Full properties and configuration
+## Full properties and advanced configuration
 
 Aravis-specific options live under the `properties.aravis` namespace in
 the settings used by the GUI and configuration files.
@@ -151,6 +157,7 @@ Supported values:
 Internally, all frames are converted to **BGR (8-bit)** for consistency.
 
 **Mono12 / Mono16 scaling behavior**:
+
 - 12-bit and 16-bit images are dynamically scaled **per frame** to 8-bit
 - Scaling is based on the maximum pixel value present in each frame
 - This improves visibility but may cause frame-to-frame brightness variation
@@ -175,7 +182,6 @@ Behavior:
 - Positive values disable auto-exposure / auto-gain automatically
 - Actual values are read back and may differ slightly due to camera constraints
 
-
 ### Frame rate (FPS)
 
 ```json
@@ -190,7 +196,6 @@ Behavior:
 - The backend attempts to set `AcquisitionFrameRate`
 - The **actual FPS** reported by the camera is stored and may differ slightly
 - Mismatches are logged but do not fail camera startup
-
 
 ### Resolution handling
 
@@ -209,6 +214,7 @@ Supported ways to request resolution:
 ```
 
 Notes:
+
 - The camera may clamp or adjust the requested resolution
 - The backend records and exposes the **actual resolution** after opening
 - A warning is logged if the requested and actual resolutions differ
@@ -230,9 +236,9 @@ It is not recommended to set these manually.
 - `device_name`
 - `device_path`
 
-## Streaming and performance tuning
+### Streaming and performance tuning
 
-### Buffer Count
+#### Buffer Count
 
 Increase buffers for high-throughput or high-latency systems:
 
@@ -248,7 +254,7 @@ Increase buffers for high-throughput or high-latency systems:
 }
 ```
 
-### Timeout
+#### Timeout
 
 Adjust frame timeout for slower cameras or congested networks:
 
@@ -298,7 +304,7 @@ Adjust frame timeout for slower cameras or congested networks:
 ## Comparison with GenTL backend
 
 | Feature | Aravis | GenTL |
-|-------|--------|-------|
+| ------- | ------ | ----- |
 | Best Platform | Linux | Windows |
 | Camera Support | GenICam / GigE | Vendor GenTL |
 | Installation | System packages | Vendor CTI files |
