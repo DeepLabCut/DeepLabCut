@@ -41,14 +41,14 @@ def extract_bpt_feature_from_video(
     video = Path(video)
     destfolder = video.parent if destfolder is None else Path(destfolder)
     destfolder.mkdir(exist_ok=True, parents=True)
-    dataname = destfolder / f"{video.stem}{DLCscorer}"
+    basename = f"{video.stem}{DLCscorer}"
 
     feature_dict = shelve.open(
-        f"{dataname}_bpt_features.pickle",
+        str(destfolder / f"{basename}_bpt_features.pickle"),
         protocol=pickle.DEFAULT_PROTOCOL,
     )
 
-    with open(f"{dataname}_assemblies.pickle", "rb") as f:
+    with open(destfolder / f"{basename}_assemblies.pickle", "rb") as f:
         assemblies = pickle.load(f)
         print("Loading ", video)
         vid = VideoWriter(str(video))
@@ -116,11 +116,11 @@ def AnalyzeMultiAnimalVideo(
     video = Path(video)
     destfolder = video.parent if destfolder is None else Path(destfolder)
     destfolder.mkdir(exist_ok=True, parents=True)
-    dataname = destfolder / f"{video.stem}{DLCscorer}"
-    full_pickle = Path(f"{dataname}_full.pickle")
+    basename = f"{video.stem}{DLCscorer}"
+    full_pickle = destfolder / f"{basename}_full.pickle"
 
     if full_pickle.is_file():
-        print("Video already analyzed!", dataname)
+        print("Video already analyzed!", full_pickle)
         return None
 
     print("Loading ", video)
@@ -206,11 +206,11 @@ def AnalyzeMultiAnimalVideo(
     print(f"Video Analyzed. Saving results in {destfolder}")
 
     if use_shelve:
-        with open(f"{dataname}_meta.pickle", "wb") as f:
+        with open(destfolder / f"{basename}_meta.pickle", "wb") as f:
             pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
     else:
         auxfun_multianimal.SaveFullMultiAnimalData(
-            PredicteData, metadata, str(dataname)
+            PredicteData, metadata, str(destfolder / f"{basename}.h5")
         )
 
 
