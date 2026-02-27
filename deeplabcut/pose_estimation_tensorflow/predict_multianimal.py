@@ -50,51 +50,51 @@ def extract_bpt_feature_from_video(
 
     with open(destfolder / f"{basename}_assemblies.pickle", "rb") as f:
         assemblies = pickle.load(f)
-        print("Loading ", video)
-        vid = VideoWriter(str(video))
-        if robust_nframes:
-            nframes = vid.get_n_frames(robust=True)
-            duration = vid.calc_duration(robust=True)
-            fps = nframes / duration
-        else:
-            nframes = len(vid)
-            duration = vid.calc_duration(robust=False)
-            fps = vid.fps
 
-        print(
-            "Duration of video [s]: ",
-            round(duration, 2),
-            ", recorded with ",
-            round(fps, 2),
-            "fps!",
-        )
-        print(
-            "Overall # of frames: ",
-            nframes,
-            " found with (before cropping) frame dimensions: ",
-            vid.dimensions,
-        )
+    print("Loading ", video)
+    vid = VideoWriter(str(video))
+    if robust_nframes:
+        nframes = vid.get_n_frames(robust=True)
+        duration = vid.calc_duration(robust=True)
+        fps = nframes / duration
+    else:
+        nframes = len(vid)
+        duration = vid.calc_duration(robust=False)
+        fps = vid.fps
 
-        print("Starting to extract posture")
-        if int(dlc_cfg["batch_size"]) > 1:
-            # for multi animal, seems only this is used
-            predicted_data, nframes = GetPoseandCostsF_from_assemblies(
-                cfg,
-                dlc_cfg,
-                sess,
-                inputs,
-                outputs,
-                vid,
-                nframes,
-                int(dlc_cfg["batch_size"]),
-                assemblies,
-                feature_dict,
-                extra_dict,
-            )
-        else:
-            raise NotImplementedError(
-                "Not implemented yet, please raise an GitHub issue if you need this."
-            )
+    print(
+        "Duration of video [s]: ",
+        round(duration, 2),
+        ", recorded with ",
+        round(fps, 2),
+        "fps!",
+    )
+    print(
+        "Overall # of frames: ",
+        nframes,
+        " found with (before cropping) frame dimensions: ",
+        vid.dimensions,
+    )
+
+    print("Starting to extract posture")
+    if int(dlc_cfg["batch_size"]) <= 1:
+        raise NotImplementedError(
+            "Not implemented yet, please raise an GitHub issue if you need this."
+        )
+    # for multi animal, seems only 'dlc_cfg["batch_size"]) > 1' is used
+    predicted_data, nframes = GetPoseandCostsF_from_assemblies(
+        cfg,
+        dlc_cfg,
+        sess,
+        inputs,
+        outputs,
+        vid,
+        nframes,
+        int(dlc_cfg["batch_size"]),
+        assemblies,
+        feature_dict,
+        extra_dict,
+    )
 
 
 def AnalyzeMultiAnimalVideo(
