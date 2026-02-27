@@ -78,7 +78,7 @@ def extract_bpt_feature_from_video(
         print("Starting to extract posture")
         if int(dlc_cfg["batch_size"]) > 1:
             # for multi animal, seems only this is used
-            PredicteData, nframes = GetPoseandCostsF_from_assemblies(
+            predicted_data, nframes = GetPoseandCostsF_from_assemblies(
                 cfg,
                 dlc_cfg,
                 sess,
@@ -156,7 +156,7 @@ def AnalyzeMultiAnimalVideo(
 
     shelf_path = str(full_pickle) if use_shelve else ""
     if int(dlc_cfg["batch_size"]) > 1:
-        PredicteData, nframes = GetPoseandCostsF(
+        predicted_data, nframes = GetPoseandCostsF(
             cfg,
             dlc_cfg,
             sess,
@@ -168,7 +168,7 @@ def AnalyzeMultiAnimalVideo(
             shelf_path,
         )
     else:
-        PredicteData, nframes = GetPoseandCostsS(
+        predicted_data, nframes = GetPoseandCostsS(
             cfg,
             dlc_cfg,
             sess,
@@ -210,7 +210,7 @@ def AnalyzeMultiAnimalVideo(
             pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
     else:
         auxfun_multianimal.SaveFullMultiAnimalData(
-            PredicteData, metadata, str(destfolder / f"{basename}.h5")
+            predicted_data, metadata, str(destfolder / f"{basename}.h5")
         )
 
 
@@ -263,7 +263,7 @@ def GetPoseandCostsF_from_assemblies(
     counter = 0
     inds = []
 
-    PredicteData = {}
+    predicted_data = {}
 
     while cap.video.isOpened():
         frame = cap.read_frame(crop=cfg["cropping"])
@@ -288,7 +288,7 @@ def GetPoseandCostsF_from_assemblies(
 
                 D, features = preds
                 for i, (ind, data) in enumerate(zip(inds, D)):
-                    PredicteData["frame" + str(ind).zfill(strwidth)] = data
+                    predicted_data["frame" + str(ind).zfill(strwidth)] = data
                     raw_coords = assemblies.get(ind)
                     if raw_coords is None:
                         continue
@@ -314,7 +314,7 @@ def GetPoseandCostsF_from_assemblies(
 
                 D, features = preds
                 for i, (ind, data) in enumerate(zip(inds, D)):
-                    PredicteData["frame" + str(ind).zfill(strwidth)] = data
+                    predicted_data["frame" + str(ind).zfill(strwidth)] = data
                     raw_coords = assemblies.get(ind)
                     if raw_coords is None:
                         continue
@@ -332,7 +332,7 @@ def GetPoseandCostsF_from_assemblies(
     cap.close()
     pbar.close()
     feature_dict.close()
-    PredicteData["metadata"] = {
+    predicted_data["metadata"] = {
         "nms radius": dlc_cfg["nmsradius"],
         "minimal confidence": dlc_cfg["minconfidence"],
         "sigma": dlc_cfg.get("sigma", 1),
@@ -346,7 +346,7 @@ def GetPoseandCostsF_from_assemblies(
         ],
         "nframes": nframes,
     }
-    return PredicteData, nframes
+    return predicted_data, nframes
 
 
 def GetPoseandCostsF(
