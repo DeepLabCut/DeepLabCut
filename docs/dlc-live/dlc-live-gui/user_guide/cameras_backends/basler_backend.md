@@ -11,7 +11,7 @@ This backend requires the optional `pypylon` dependency. If `pypylon` is not ins
 
 ---
 
-## Features
+## Features & design 
 
 - Native Basler camera support via **pypylon** (Pylon SDK bindings).
 - Best-effort device discovery without opening cameras (enumerates `DeviceInfo` entries).
@@ -33,26 +33,31 @@ and the [Basler pylon software installation guide](https://docs.baslerweb.com/ca
 
 Basler recommends installing **pylon** first (strongly recommended even if you install `pypylon` via pip).
 
-#### Linux
-
+````{tab-set}
+```{tab-item} Linux
 Basler provides pylon for Linux as **Debian packages** and **.tar.gz archives** (x86_64 and ARM variants).
 
 - Download the matching pylon installer from Basler and follow the included `INSTALL` instructions.
+```
 
-#### Windows
+```{tab-item} Windows
 
 - Install the Basler pylon Camera Software Suite (includes drivers and tooling).
 
-#### macOS
+```
+
+```{tab-item} macOS
 
 - Install the Basler pylon package for macOS (Intel/ARM supported, depending on Basler release). Basler lists macOS as a supported system for pypylon usage.
+```
+````
 
 ### 2) Install `pypylon`
 
 Install into the same Python environment as your GUI:
 
 ```bash
-pip install pypylon
+pip install pypylon # OR uv pip install pypylon
 ```
 
 `pypylon` is the official Python wrapper for the Basler pylon Camera Software Suite
@@ -115,7 +120,7 @@ How selection works:
 
 ---
 
-## Full properties and configuration
+## Full properties and advanced configuration
 
 Basler-specific options live under the `properties.basler` namespace.
 
@@ -151,7 +156,7 @@ These fields are managed automatically and are not required to configure the bac
 
 ---
 
-## Exposure and gain
+### Exposure and gain
 
 Behavior:
 
@@ -173,7 +178,7 @@ Example:
 
 ---
 
-## Frame rate (FPS)
+### Frame rate (FPS)
 
 - FPS is only applied when `fps > 0`.
 - The backend attempts to enable `AcquisitionFrameRateEnable` when available, then sets `AcquisitionFrameRate`.
@@ -181,7 +186,7 @@ Example:
 
 ---
 
-## Resolution handling
+### Resolution handling
 
 Resolution is only changed when explicitly requested.
 
@@ -200,7 +205,7 @@ Increment and range constraints:
 
 ---
 
-## Pixel format and color conversion
+### Pixel format and color conversion
 
 To provide a consistent frame format across backends, the Basler backend converts frames to:
 
@@ -210,7 +215,7 @@ Internally, it uses a pypylon `ImageFormatConverter` configured for `PixelType_B
 
 ---
 
-## Device discovery
+### Device discovery
 
 The backend can enumerate devices without opening them and returns (best-effort):
 
