@@ -50,7 +50,8 @@ from dlclive.modelzoo.pytorch_model_zoo_export import export_modelzoo_model
 export_modelzoo_model(
     export_path=TORCH_CONFIG["checkpoint"],
     super_animal=TORCH_CONFIG["super_animal"],
-    model_name=TORCH_MODEL,
+    model_name=TORCH_MODEL, # or e.g. "hrnet_w32"
+    detector_name="fasterrcnn_resnet50_fpn_v2"
 )
 
 assert TORCH_CONFIG["checkpoint"].exists(), "Export failed"
