@@ -1,4 +1,3 @@
-(file:dlclivegui-gentl-backend)=
 # GenTL backend
 
 The GenTL backend provides support for **GenICam / GenTL** compatible cameras using the **Harvesters** Python library (a GenTL consumer).
@@ -14,18 +13,25 @@ Please report issues on GitHub to help improve this backend.
 
 ---
 
-## Features
+## Features & design
 
 - Image acquisition via **Harvesters** (GenTL consumer for GenICam-compliant devices).
-- Works with vendor GenTL Producers (`.cti` files) for USB3 Vision / GigE Vision / frame grabbers (depending on producer).
-- Device discovery (rich) and stable identity via:
-  - `device_id = "serial:<SERIAL>"` when a serial number is available
+- Loads **multiple GenTL Producers** (`.cti` files) to support mixed transports/vendors (USB3 Vision, GigE Vision, frame grabbers—depending on producer).
+- **CTI persistence + diagnostics**:
+  - `properties.gentl.cti_files`: all resolved CTI candidates (after resolution)
+  - `properties.gentl.cti_files_loaded`: CTIs successfully loaded into Harvesters
+  - `properties.gentl.cti_files_failed`: list of `{cti, error}` entries for producers that failed to load
+  - `properties.gentl.cti_file`: convenience “first CTI” (for backward compatibility / display)
+- **Stable identity** via `properties.gentl.device_id`:
+  - `device_id = "serial:<SERIAL>"` when a serial number is available (**preferred**)
   - `device_id = "fp:<fingerprint...>"` as a best-effort fallback when serials are missing/ambiguous
-- Configurable exposure, gain, frame rate, and resolution through the device GenApi node map (best-effort).
-- Pixel-format handling with conversion to **BGR (8-bit)** for consistency:
-  - Mono formats are converted to BGR
-  - `RGB8` is converted to BGR
-  - Non-8-bit frames are scaled down to 8-bit
+- **Automated rebinding** (`rebind_settings`) maps stored `device_id` → the correct current index.
+- Best-effort configuration through the device GenApi node map:
+  - exposure, gain, frame rate, resolution, pixel format
+- Pixel-format normalization to **BGR (8-bit)** for consistency:
+  - Mono formats → BGR
+  - `RGB8` → BGR
+  - Non-8-bit frames → scaled down to 8-bit (per-frame scaling)
 
 ---
 
@@ -39,9 +45,7 @@ Install Harvesters into the same Python environment as your GUI:
 pip install harvesters
 ```
 
-Harvesters is a Python library that performs image acquisition through GenTL Producers.
-
-### 2) Install a GenTL Producer (`.cti`)
+### 2) Install a GenTL Producer file (`.cti`)
 
 A GenTL Producer is a vendor-provided library that exposes cameras to GenTL consumer applications.
 It is typically distributed as part of the camera vendor SDK or framegrabber SDK.
@@ -50,16 +54,12 @@ It is typically distributed as part of the camera vendor SDK or framegrabber SDK
 GenTL Producers are identified by files ending in `.cti`.
 ```
 
-After installing the vendor SDK, locate the `.cti` file (for example, your vendor may install it under a program files directory on Windows or under `/opt/...` on Linux).
-
 ### 3) Make producers discoverable (environment variables)
 
-Most GenTL consumers (including many third-party tools) locate producers via the standard environment variables:
+Most GenTL consumers locate producers via the standard environment variables:
 
 - `GENICAM_GENTL64_PATH` (64-bit producers)
 - `GENICAM_GENTL32_PATH` (32-bit producers)
-
-The `.cti` file must be located in a directory referenced by these variables, or the application must be configured with a full path to the `.cti` file.
 
 If you have multiple producers installed, separate entries with:
 
@@ -67,7 +67,7 @@ If you have multiple producers installed, separate entries with:
 - `:` on Linux/macOS (UNIX-like)
 
 ```{tip}
-Many vendor installers set GENICAM_GENTL64_PATH automatically. If your camera is not discovered, explicitly set the variable (or provide `cti_file` / `cti_files` in the backend configuration as described below).
+Many vendor installers set `GENICAM_GENTL64_PATH` automatically. If your camera is not discovered, explicitly set the variable (or provide `cti_file` / `cti_files` in configuration as described below).
 ```
 
 ---
@@ -98,42 +98,48 @@ Select the GenTL backend in the GUI or via configuration:
 
 ## CTI / producer configuration
 
-### Default behavior: load all available producers
+### Default behavior: discover and load all producers
 
-By default, the backend will **try to load all available** GenTL Producers (`.cti`) it can find.
-This is intentional: many systems have multiple producers installed (different transports/vendors).
+By default, the backend will **discover** and **try to load all available** GenTL Producers (`.cti`) it can find.
 
 - If a producer fails to load, the backend continues and attempts to load the others.
-- The backend persists load diagnostics to help troubleshooting:
-  - `cti_files`: all resolved candidate CTIs
-  - `cti_files_loaded`: CTIs successfully added to Harvesters
-  - `cti_files_failed`: list of `{cti, error}` entries for producers that failed to load
+- Startup fails only when:
+  - **no CTI files can be found**, or
+  - **no CTI files can be loaded**, or
+  - **no devices are detected** after loading producers.
 
-Startup fails only when:
+### CTI resolution precedence (advanced)
 
-- **No CTI files** can be found, or
-- **No CTI files** can be loaded successfully, or
-- No devices are detected after loading producers.
+CTI locations are resolved in this order:
 
-### How CTIs are resolved (precedence)
+1. **Namespace explicit CTIs** (`properties.gentl`):
+   - `properties.gentl.cti_files`
+   - `properties.gentl.cti_file`
 
-The backend resolves CTI locations in this order:
+   Behavior depends on the persisted source marker `properties.gentl.cti_files_source`:
 
-1. `properties.gentl.cti_files` (explicit list of CTI paths)
-2. `properties.gentl.cti_file` (explicit single CTI path)
-3. `properties.cti_files` (legacy explicit list)
-4. `properties.cti_file` (legacy explicit single path)
-5. Discovery using:
-   - `GENICAM_GENTL64_PATH` / `GENICAM_GENTL32_PATH`
-   - `properties.gentl.cti_search_paths` (glob patterns)
-   - `properties.gentl.cti_dirs` (extra directories to scan for `*.cti`)
-   - built-in fallback patterns for some common Windows installations
+   - If `cti_files_source == "user"` (or missing/unknown):
+     - Treated as a **user override**
+     - **strict**: missing paths cause `open()` to raise
+
+   - If `cti_files_source == "auto"`:
+     - Treated as an **auto-discovered cache**
+     - If cached paths are stale/missing, `open()` will **fall back to discovery** automatically
+
+2. **Discovery** (auto):
+   - environment: `GENICAM_GENTL64_PATH` / `GENICAM_GENTL32_PATH`
+   - optional: `properties.gentl.cti_search_paths` (glob patterns)
+   - optional: `properties.gentl.cti_dirs` (extra directories; non-recursive)
+   - plus built-in Windows fallback patterns for some common installations
 
 ```{note}
-If you experience issues with a specific vendor producer, you can pin a known-good producer by setting `properties.gentl.cti_file` (or `cti_files`).
+You typically do **not** need to set `cti_files_source` yourself.
+It is persisted by the backend so it can distinguish between a user-pinned CTI and an auto-discovered cache.
 ```
 
-### Provide an explicit CTI file path
+### Pin a known-good CTI (strict)
+
+Use this when a specific vendor producer is known to work reliably (or when other installed CTIs are incompatible).
 
 ```json
 {
@@ -148,9 +154,7 @@ If you experience issues with a specific vendor producer, you can pin a known-go
 }
 ```
 
-### Provide an explicit list of CTI producers
-
-Use this when you want to control exactly which producers are loaded:
+### Provide an explicit list of CTIs (strict)
 
 ```json
 {
@@ -168,7 +172,7 @@ Use this when you want to control exactly which producers are loaded:
 }
 ```
 
-### Provide CTI search patterns
+### Provide CTI search patterns (auto)
 
 ```json
 {
@@ -186,7 +190,7 @@ Use this when you want to control exactly which producers are loaded:
 }
 ```
 
-### Provide extra CTI directories
+### Provide extra CTI directories (auto)
 
 ```json
 {
@@ -204,13 +208,20 @@ Use this when you want to control exactly which producers are loaded:
 }
 ```
 
-Notes:
+### CTI diagnostics persisted by `open()`
 
-- The backend includes built-in fallback patterns for some common Windows installations (e.g. The Imaging Source). If those do not apply to your setup, setting `cti_file` / `cti_files` explicitly is the most reliable option.
+After `open()` (success or failure), the backend writes:
+
+- `properties.gentl.cti_files`: all resolved candidates
+- `properties.gentl.cti_files_loaded`: successfully loaded into Harvesters
+- `properties.gentl.cti_files_failed`: `{cti, error}` for failures
+- `properties.gentl.cti_file`: first loaded CTI (or first candidate)
+
+These fields are intended for UI troubleshooting and do not normally need manual edits.
 
 ---
 
-## Camera selection
+## Camera selection and stable identity
 
 ### By index (default)
 
@@ -225,16 +236,15 @@ Notes:
 
 ### By stable identity (recommended)
 
-The backend supports `properties.gentl.device_id`:
+Prefer `properties.gentl.device_id`, which is persisted automatically after a successful `open()`.
 
 - `serial:<SERIAL>` when a serial number is available
-- `fp:<...>` when serial numbers are missing; rebinding uses discovery to map the fingerprint back to a current index
+- `fp:<...>` fingerprint when serial numbers are missing
 
 ```json
 {
   "camera": {
     "backend": "gentl",
-    "index": 0,
     "properties": {
       "gentl": {
         "device_id": "serial:40312345"
@@ -244,52 +254,81 @@ The backend supports `properties.gentl.device_id`:
 }
 ```
 
-Selection order in `open()`:
+### Selection order in `open()`
 
-1. Exact match of `device_id` against discovered devices
-2. If `device_id` starts with `serial:`, match by serial number
-3. Legacy serial keys (`serial_number` / `serial`) if present
+The backend selects a device in this order:
+
+1. Exact match of `device_id` against computed IDs for discovered devices
+2. If `device_id` starts with `serial:`, match by exact serial number, then (if needed) substring
+3. Legacy serial keys (`serial_number` / `serial`) if present (exact then substring)
 4. Fallback to `index`
 
-If a serial substring matches multiple cameras, the backend raises an “ambiguous” error.
+If a serial substring matches **multiple** cameras, an “ambiguous” error is raised.
+
+```{tip}
+The backend updates `settings.index` to the selected device’s current index to improve UI stability.
+```
 
 ---
 
-## Full properties and configuration
+### Automated rebind (index changes, reconnects)
 
-GenTL backend options live under `properties.gentl`.
+When the UI restarts (or devices re-enumerate), the backend can **rebind settings**:
 
-### Related camera settings (shared across backends)
+- If `properties.gentl.device_id` exists, `rebind_settings()` tries to map it to the current device list.
+- It prefers the persisted CTIs when available:
+  - if `cti_files_source == "auto"` and cached CTIs are stale, it falls back to discovery automatically.
+  - if CTIs were user-pinned and no longer exist, it does **not** attempt to override them silently.
 
-- `width` (int): requested image width; `0` means keep device default
-- `height` (int): requested image height; `0` means keep device default
-- `fps` (float): requested frame rate; `0.0` means do not set
-- `exposure` (float): exposure time; `<= 0` means leave as-is / auto
-- `gain` (float): gain value; `<= 0` means leave as-is / auto
+Matching strategy:
+
+1. Exact match on computed `device_id`
+2. Fallback: treat stored value as a serial-like substring and match the first serial containing it
+
+---
+
+## Camera settings
+
+These settings are shared across backends and configurable in the GUI:
+
+- `width` (int): requested image width; **applied only if both width and height > 0**
+- `height` (int): requested image height; **applied only if both width and height > 0**
+- `fps` (float): requested frame rate; if unset/0, the backend does not set FPS
+- `exposure` (float): exposure time; `<= 0` means do not set
+- `gain` (float): gain value; `<= 0` means do not set
+
+---
+
+## Full properties and advanced configuration
+
+GenTL backend options live under `properties.gentl` of the camera settings object.
 
 ### GenTL namespace options (`properties.gentl`)
 
-Core:
+Core / CTI resolution:
 
 - `cti_file` (string): full path to a GenTL Producer `.cti` file
 - `cti_files` (list[string]): explicit list of producer `.cti` files to load
 - `cti_search_paths` (list[string] or string): glob patterns used to locate `.cti` files
-- `cti_dirs` (list[string] or string): extra directories to scan for `*.cti`
+- `cti_dirs` (list[string] or string): extra directories to scan for `*.cti` (non-recursive)
+- `cti_files_source` (string): `"auto"` (cache) or `"user"` (strict override)
+  - typically written by the backend; rarely set manually
 
 Selection / identity:
 
 - `device_id` (string): stable identifier (`serial:...` or `fp:...`)
-- `serial_number` / `serial` (string): legacy selection helpers
+- `serial_number` / `serial` (string): legacy selection helpers (still honored)
 
 Acquisition:
 
 - `pixel_format` (string, default: `Mono8`): requested `PixelFormat` symbolic
-- `timeout` (float, default: `2.0`): acquisition timeout in seconds (used by `fetch(timeout=...)`)
+- `timeout` (float, default: `2.0`): acquisition timeout in seconds (`fetch(timeout=...)`)
 
 Transforms:
 
 - `rotate` (int, default: `0`): rotate output by 0/90/180/270
 - `crop` ([top, bottom, left, right]): crop rectangle
+  - if bottom/right are `<= 0`, they default to full frame extent
 
 Probe / telemetry:
 
@@ -299,14 +338,13 @@ Probe / telemetry:
 
 ---
 
-## Pixel format
+### Pixel format
 
-- The backend attempts to set `node_map.PixelFormat` to the configured `pixel_format` if it is present in `PixelFormat.symbolics`.
+- The backend attempts to set `node_map.PixelFormat` to the configured `pixel_format`
+  if it appears in `PixelFormat.symbolics`.
 - If the requested format is not available, it logs a warning and continues.
 
-Supported values depend on the camera and producer.
-
-Internally, frames are normalized to **BGR (8-bit)**:
+Frames are normalized to **BGR (8-bit)**:
 
 - Mono images become BGR via grayscale-to-BGR conversion
 - `RGB8` is converted to BGR
@@ -314,93 +352,105 @@ Internally, frames are normalized to **BGR (8-bit)**:
 
 ---
 
-## Exposure and gain
+### Exposure and gain
 
-Best-effort behavior (depends on the GenTL producer + camera GenApi implementation):
+Best-effort behavior (depends on producer + camera GenApi implementation):
 
-- If exposure is set (value > 0):
-  - Attempts to disable `ExposureAuto` by setting it to `Off`
-  - Tries `ExposureTime` (preferred) then `Exposure`
-- If gain is set (value > 0):
-  - Attempts to disable `GainAuto` by setting it to `Off`
-  - Tries `Gain`
+- If exposure is set (> 0):
+  - attempts to disable `ExposureAuto` by setting it to `Off`
+  - tries `ExposureTime` then `Exposure`
+- If gain is set (> 0):
+  - attempts to disable `GainAuto` by setting it to `Off`
+  - tries `Gain`
 
-If the relevant nodes are missing or read-only, the backend logs a warning and continues.
+If nodes are missing or read-only, the backend logs a warning and continues.
 
 ---
 
-## Frame rate (FPS)
+### Frame rate (FPS)
 
-If `fps > 0`:
+If `fps` is set to a non-zero value:
 
-- The backend attempts to enable frame-rate control via `AcquisitionFrameRateEnable` (or similar).
-- Then it tries to set one of these nodes (first that works):
+- attempts to enable frame rate control via:
+  - `AcquisitionFrameRateEnable` or `AcquisitionFrameRateControlEnable`
+- tries to set one of these nodes (first that works):
   - `AcquisitionFrameRate`
   - `ResultingFrameRate`
   - `AcquisitionFrameRateAbs`
 
-The backend also tries to read back `ResultingFrameRate` as the “actual fps” for GUI telemetry.
+The backend also tries to read back `ResultingFrameRate` for GUI telemetry (`actual_fps`).
 
 ---
 
-## Resolution handling
+### Resolution handling
 
-Resolution is only applied when explicitly requested.
+Resolution is applied **only when explicitly requested** (either `width+height`, or legacy `properties.resolution`).
 
-- If `width` and `height` are both > 0, the backend attempts to set `node_map.Width` and `node_map.Height`.
-- It clamps to node min/max and snaps down to the nearest valid increment (`inc`) when available.
-- A warning is logged if the applied values differ from the requested values.
+- Attempts to set `node_map.Width` and `node_map.Height`
+- Clamps to node min/max and snaps down to the nearest valid increment (`inc`) when available
+- Logs a warning if the applied values differ from the requested values
 
-If no resolution is specified, the camera’s current/default configuration is preserved.
+If no resolution is specified, the device’s current/default configuration is preserved.
 
 ---
 
-## Streaming and probe mode
+### Streaming and probe mode
 
-### Normal capture
+#### Normal capture
 
 - On successful `open()`, acquisition is started with `self._acquirer.start()`.
 
-### Fast-start probe mode
+#### Fast-start probe mode (`fast_start`)
 
 If `properties.gentl.fast_start` is `true`:
 
-- The backend configures the device and persists identity fields, but does **not** start streaming.
-- This is intended for capability probing and faster startup of probe workers.
+- the backend configures the device and persists identity/metadata,
+- but does **not** start streaming.
+
+This is intended for capability probing and faster startup of probe workers.
 
 ---
 
 ## Troubleshooting
 
-### No .cti found / cameras not detected
+### No `.cti` found
 
 Common causes:
 
 - Vendor GenTL producer not installed
-- Environment variable `GENICAM_GENTL64_PATH` not set (or not including the producer directory)
+- `GENICAM_GENTL64_PATH` / `GENICAM_GENTL32_PATH` not set (or missing the producer directory)
 - Wrong producer bitness (32-bit vs 64-bit)
 
-GenTL producers must be discoverable via `GENICAM_GENTL64_PATH` / `GENICAM_GENTL32_PATH`, or you must provide an explicit CTI file path.
+Fix options:
 
-### Producer load failures
+- Set `camera.properties.gentl.cti_file` (pin a CTI), or
+- set `GENICAM_GENTL64_PATH` / `GENICAM_GENTL32_PATH`, or
+- set `camera.properties.gentl.cti_search_paths` / `cti_dirs`
 
-If you have multiple producers installed, some may be incompatible or broken on your system.
+### Producer load failures with multiple CTIs installed
 
-- Check `properties.gentl.cti_files_failed` after a failed open
+Some installed producers may be incompatible or broken on a given system.
+
+- Check `properties.gentl.cti_files_failed`
 - Pin a known-good producer:
-  - set `properties.gentl.cti_file`, or
-  - set `properties.gentl.cti_files` to a curated list
+  - `properties.gentl.cti_file`, or
+  - `properties.gentl.cti_files`
+
+### Cached CTIs went stale (auto re-discovery)
+
+If `properties.gentl.cti_files_source == "auto"`, stale cached CTI paths will trigger fallback to discovery automatically.
+If you pinned CTIs as a user override and paths no longer exist, `open()` will fail (by design).
 
 ### Timeouts
 
 - Increase `properties.gentl.timeout` (seconds)
 - Reduce frame rate or resolution
-- Check transport bandwidth (GigE: MTU/jumbo frames, direct NIC connection, etc.)
+- Check transport bandwidth (GigE: MTU/jumbo frames, NIC direct connection, etc.)
 
 ### Pixel format errors
 
-- Inspect available formats via your vendor tools or by checking `PixelFormat.symbolics`.
-- Try a simpler format such as `Mono8`.
+- Inspect available formats via vendor tools or by checking `PixelFormat.symbolics`
+- Try a simpler format such as `Mono8`
 
 ---
 
@@ -410,7 +460,6 @@ If you have multiple producers installed, some may be incompatible or broken on 
 {
   "camera": {
     "backend": "gentl",
-    "index": 0,
     "fps": 60.0,
     "exposure": 8000,
     "gain": 10.0,
@@ -418,7 +467,6 @@ If you have multiple producers installed, some may be incompatible or broken on 
     "height": 1080,
     "properties": {
       "gentl": {
-        "cti_file": "C:/Path/To/Your/Producer.cti",
         "device_id": "serial:40312345",
         "pixel_format": "Mono8",
         "timeout": 3.0,
