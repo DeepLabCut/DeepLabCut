@@ -93,23 +93,3 @@ for frame_idx, timestamp in enumerate(data['timestamps']):
 The encoded video is written with a fixed input frame rate configured when recording starts.
 
 The timestamps reflect capture/enqueue timing and may not perfectly match the encoded frame pacing, especially if frames are dropped or capture timing varies.
-
-### About frame size mismatches
-
-
-```{warning}
-Frame size must remain constant for a recording session. If the recorder is configured with an expected `frame_size` and a frame with a different size is written, the recorder enters an error state to prevent encoder corruption:
-
-- The mismatched frame is rejected (`write(...)` returns `False`)
-- Subsequent `write(...)` calls will raise an exception indicating encoding failed
-- Stop the recorder and start a new recording after fixing the frame size
-```
-
-
-```{note}
-Frames are converted automatically for encoding:
-
-- Non-`uint8` frames are scaled/clipped into the `uint8` range.
-- Grayscale frames (`H x W`) are expanded to 3 channels (`H x W x 3`).
-- Frames are made contiguous in memory before being passed to the encoder.
-```

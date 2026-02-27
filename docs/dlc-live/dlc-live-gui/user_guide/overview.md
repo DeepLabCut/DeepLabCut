@@ -85,6 +85,7 @@ You can "undock" the control panel by dragging it by the title bar, allowing you
 ```{important}
 Depending on the system, backend and camera model,
 settings may vary widely between proper support, partial support, or no support at all.
+
 This is especially true for the generalist OpenCV backend, which may work well with some cameras but not others.
 ```
 
@@ -125,9 +126,6 @@ Find more information here if needed: {ref}`deeplabcut-live`.
   The button indicates inference state:
   - *Initializing DLCLive!* → Model loading
   - *DLCLive running!* → Inference active
-
-- **Display pose predictions**
-  Toggle visualization of predicted keypoints.
 
 - **Allow processor-based control** *(optional)*
   Allows compatible processors to have control over several aspects of the experiment, such as starting/stopping recording or triggering external devices.[^processor-footnote]
@@ -182,6 +180,25 @@ You can hover over the preview path to see the full path, and click to copy it t
   Use with caution if you want to preserve **raw footage** intact.
   :::
 
+### About frame size mismatches
+
+```{warning}
+Frame size must remain constant for a recording session. If the recorder is configured with an expected `frame_size` and a frame with a different size is written, the recorder enters an error state to prevent encoder corruption:
+
+- The mismatched frame is rejected (`write(...)` returns `False`)
+- Subsequent `write(...)` calls will raise an exception indicating encoding failed
+- Stop the recorder and start a new recording after fixing the frame size
+```
+
+
+```{note}
+Frames are converted automatically for encoding:
+
+- Non-`uint8` frames are scaled/clipped into the `uint8` range.
+- Grayscale frames (`H x W`) are expanded to 3 channels (`H x W x 3`).
+- Frames are made contiguous in memory before being passed to the encoder.
+```
+
 ---
 
 ### Visualization settings
@@ -207,7 +224,7 @@ and drag horizontally.
 ### Video preview
 
 - Displays a logo screen when idle
-- Shows live video when preview is running
+- Shows the live video feed when preview is running
 - Uses a tiled layout automatically when multiple cameras are active
 
 ### Stats panel
@@ -249,6 +266,9 @@ Configuration files store camera configurations, model paths, recording options,
 
 ### View → Appearance
 
+- **Show controls**
+  Toggle visibility of the left-side control panel.
+
 - **System theme**
   Use the default system appearance.
 
@@ -259,7 +279,7 @@ Configuration files store camera configurations, model paths, recording options,
 
 - **Ctrl+O**: Load configuration
 - **Ctrl+S**: Save configuration
-- **Ctrl+Shift+S**: Save configuration as
+- **Ctrl+Shift+S**: Save configuration as...
 - **Ctrl+Q**: Quit application
 
 ---
@@ -269,15 +289,17 @@ Configuration files store camera configurations, model paths, recording options,
 The GUI can restore settings across sessions using:
 
 - Explicitly saved **JSON configuration files**
-- A stored snapshot of the most recent configuration
+  - Load manually from the File menu or with **Ctrl+O**.
+- A stored snapshot of the most recent configuration (if saved)
+  - The last-saved configuration is automatically loaded on startup if available
 - Remembered paths (e.g. last-used model directory)
 
-On startup, the application attempts to restore your last‑used settings,
-but you can manually load and save configurations.
+On startup, the application attempts to **restore your last‑used settings** if saved,
+but you can always manually load and save configurations.
 
 ```{tip}
 For reproducible experiments, prefer saving the configuration files
-rather than relying only on remembered application state.
+rather than relying on the remembered application state snapshot.
 ```
 
 [^processor-footnote]: Processors are optional Python plugins that can be loaded by the application to extend its functionality, provided by [DLC-Live](https://github.com/DeepLabCut/DeepLabCut-live). They can provide custom logic for controlling the experiment, such as starting/stopping recording based on specific conditions, sending triggers to external devices, or implementing closed-loop control based on pose estimation results. You can find **documentation on how to write your own processor in the `dlclivegui.processors` folder**, along with **example processors** that demonstrate some of these features.
