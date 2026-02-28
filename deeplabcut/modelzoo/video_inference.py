@@ -368,8 +368,8 @@ def video_inference_superanimal(
             logger.info("Running video inference on %s using %s", videos, model_name)
 
             recommended_superanimal_name = {
-                "fmpose3d_animals": "superanimal_quadruped",
-                "fmpose3d_humans": "superanimal_humanbody",
+                "fmpose3d_animals": "quadruped",
+                "fmpose3d_humans": "human",
             }.get(model_name)
 
             provided_superanimal_name = superanimal_name or "<not provided>"
