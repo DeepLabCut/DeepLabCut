@@ -3,7 +3,7 @@
 
 This page explains how to programmatically download and export **pre-trained, GUI-compatible** models from the DeepLabCut Model Zoo using the `dlclive.modelzoo` API, and convert them for use in DLC-live and by extension, the GUI.
 
-For a reference of available models and their capabilities, see {ref}`file:model-zoo` page.
+For a reference of available models, detectors and their capabilities, see {ref}`file:model-zoo` page.
 
 ```{important}
 The `superhuman` model is currently not available in the model zoo due to a missing detector export. We are working on adding it back as soon as possible.
@@ -107,6 +107,7 @@ export_modelzoo_model(
     export_path=export_path,
     super_animal=super_animal,
     model_name=model_name,
+    detector_name="fasterrcnn_resnet50_fpn_v2"
 )
 
 print(f"Exported model zoo checkpoint to: {export_path}")
