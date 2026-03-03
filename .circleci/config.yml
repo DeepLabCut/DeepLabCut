@@ -11,14 +11,12 @@ jobs:
     steps:
       - checkout
 
-      # 1) Restore uv cache (prefer an exact lockfile match)
+      # 1) Restore uv cache
       - restore_cache:
           name: Restore uv cache
           keys:
-            - v1-uv-{{ checksum "uv.lock" }}
             - v1-uv-{{ checksum "pyproject.toml" }}
             - v1-uv-
-
       # 2) Install deps with uv via the Python orb (simple)
       - python/install-packages:
           pkg-manager: uv
