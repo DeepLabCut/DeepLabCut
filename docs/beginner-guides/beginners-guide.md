@@ -52,15 +52,16 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 
 Alright! Next, we will install all the `deeplabcut` source code 🔥. Please decide which version you want (stable or alpha), then type:
 
-- **Alpha release:**
-```
-pip install "git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=deeplabcut[gui,modelzoo,wandb]"
-```
-- OR run for the **Stable release:**
+- For the **Stable release:**
 ```
 pip install "deeplabcut[gui,modelzoo,wandb]"
 ```
 - This gives you DeepLabCut, the DLC GUI (gui), our latest neural networks (modelzoo) and a cool data logger (wandb) if you choose to use it later on!
+
+- OR for the **Alpha release (from GitHub bleeding edge of the code):**
+```
+pip install "git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=deeplabcut[gui,modelzoo,wandb]"
+```
 
 ## Starting DeepLabCut
 
