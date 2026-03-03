@@ -1,3 +1,31 @@
+/* Dark mode support:
+ * if <html> (e.g. Furo theme) or <body> (e.g. PyData theme) has `data-theme` set, respect it.
+ * else default to the system color scheme
+ */
+@media (prefers-color-scheme: dark) {
+	:root {
+		--light: ;
+		--dark: initial;
+	}
+}
+
+@media (prefers-color-scheme: light) {
+	:root {
+		--dark: ;
+		--light: initial;
+	}
+}
+
+:is(html, body)[data-theme="dark"] {
+	--light: ;
+	--dark: initial;
+}
+
+:is(html, body)[data-theme="light"] {
+	--dark: ;
+	--light: initial;
+}
+
 /* Variables */
 :root {
   /*
@@ -21,37 +49,23 @@
   --mystnb-danger-palette-900: #680010;
 
   /* MyST-NB specific variables; colors should be logically picked from palettes */
-  --mystnb-source-bg-color: var(--mystnb-neutral-palette-100);
-  --mystnb-stdout-bg-color: var(--mystnb-neutral-palette-50);
-  --mystnb-stderr-bg-color: var(--mystnb-danger-palette-50);
-  --mystnb-traceback-bg-color: var(--mystnb-neutral-palette-50);
-  --mystnb-source-border-color: var(--mystnb-neutral-palette-400);
+  --mystnb-source-bg-color: var(--light, var(--mystnb-neutral-palette-100)) var(--dark, var(--mystnb-neutral-palette-800));
+  --mystnb-stdout-bg-color: var(--light, var(--mystnb-neutral-palette-50)) var(--dark, var(--mystnb-neutral-palette-900));
+  --mystnb-stderr-bg-color: var(--light, var(--mystnb-danger-palette-50)) var(--dark, var(--mystnb-danger-palette-900));
+  --mystnb-traceback-bg-color: var(--light, var(--mystnb-neutral-palette-50)) var(--dark, var(--mystnb-neutral-palette-900));
+  --mystnb-source-border-color: var(--light, var(--mystnb-neutral-palette-400)) var(--dark, var(--mystnb-neutral-palette-500));
   --mystnb-source-margin-color: green;
-  --mystnb-stdout-border-color: var(--mystnb-neutral-palette-100);
-  --mystnb-stderr-border-color: var(--mystnb-neutral-palette-100);
-  --mystnb-traceback-border-color: var(--mystnb-danger-palette-100);
+  --mystnb-stdout-border-color: var(--light, var(--mystnb-neutral-palette-100)) var(--dark, var(--mystnb-neutral-palette-800));
+  --mystnb-stderr-border-color: var(--light, var(--mystnb-neutral-palette-100)) var(--dark, var(--mystnb-neutral-palette-800));
+  --mystnb-traceback-border-color: var(--light, var(--mystnb-danger-palette-100)) var(--dark, var(--mystnb-danger-palette-800));
   --mystnb-hide-prompt-opacity: 70%;
   --mystnb-source-border-radius: .4em;
   --mystnb-source-border-width: 1px;
   --mystnb-scrollbar-width: 0.3rem;
   --mystnb-scrollbar-height: 0.3rem;
-  --mystnb-scrollbar-thumb-color: var(--mystnb-neutral-palette-400);
-  --mystnb-scrollbar-thumb-hover-color: var(--mystnb-neutral-palette-500);
+  --mystnb-scrollbar-thumb-color: var(--light, var(--mystnb-neutral-palette-400)) var(--dark, var(--mystnb-neutral-palette-500));
+  --mystnb-scrollbar-thumb-hover-color: var(--light, var(--mystnb-neutral-palette-500)) var(--dark, var(--mystnb-neutral-palette-400));
   --mystnb-scrollbar-thumb-border-radius: 0.25rem;
-}
-
-/* Override colors in dark theme */
-html[data-theme="dark"] {
-  --mystnb-source-bg-color: var(--mystnb-neutral-palette-800);
-  --mystnb-stdout-bg-color: var(--mystnb-neutral-palette-900);
-  --mystnb-stderr-bg-color: var(--mystnb-danger-palette-900);
-  --mystnb-traceback-bg-color: var(--mystnb-neutral-palette-900);
-  --mystnb-source-border-color: var(--mystnb-neutral-palette-500);
-  --mystnb-stdout-border-color: var(--mystnb-neutral-palette-800);
-  --mystnb-stderr-border-color: var(--mystnb-neutral-palette-800);
-  --mystnb-traceback-border-color: var(--mystnb-danger-palette-800);
-  --mystnb-scrollbar-thumb-color: var(--mystnb-neutral-palette-500);
-  --mystnb-scrollbar-thumb-hover-color: var(--mystnb-neutral-palette-400);
 }
 
 
@@ -215,45 +229,6 @@ div.cell details.admonition summary::before {
 /* Math align to the left */
 .cell_output .MathJax_Display {
   text-align: left !important;
-}
-
-/* Pandas tables. Pulled from the Jupyter / nbsphinx CSS */
-div.cell_output table {
-  border: none;
-  border-collapse: collapse;
-  border-spacing: 0;
-  color: black;
-  font-size: 1em;
-  table-layout: fixed;
-}
-
-div.cell_output thead {
-  border-bottom: 1px solid black;
-  vertical-align: bottom;
-}
-
-div.cell_output tr,
-div.cell_output th,
-div.cell_output td {
-  text-align: right;
-  vertical-align: middle;
-  padding: 0.5em 0.5em;
-  line-height: normal;
-  white-space: normal;
-  max-width: none;
-  border: none;
-}
-
-div.cell_output th {
-  font-weight: bold;
-}
-
-div.cell_output tbody tr:nth-child(odd) {
-  background: #f5f5f5;
-}
-
-div.cell_output tbody tr:hover {
-  background: rgba(66, 165, 245, 0.2);
 }
 
 /** source code line numbers **/

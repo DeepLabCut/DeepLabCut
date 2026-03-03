@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -564,25 +564,20 @@ document.write(`
 </pre></div>
 </div>
 <p><strong>(2) Install DeepLabCut</strong></p>
-<p>Alright! Next, we will install <code class="docutils literal notranslate"><span class="pre">Tables</span></code> (also called pytables), which is a package to read the HDF5 files that make up the backbone of data management in DeepLabCut, then we will install all the <code class="docutils literal notranslate"><span class="pre">deeplabcut</span></code> source code 🔥. Please decide which version you want (stable or alpha), then type:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">pytables</span><span class="o">==</span><span class="mf">3.8.0</span>
-</pre></div>
-</div>
+<p>Alright! Next, we will install all the <code class="docutils literal notranslate"><span class="pre">deeplabcut</span></code> source code 🔥. Please decide which version you want (stable or alpha), then type:</p>
 <ul class="simple">
-<li><p><strong>Alpha release:</strong></p></li>
-</ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=deeplabcut[gui,modelzoo,wandb]&quot;</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p>OR run for the <strong>Stable release:</strong></p></li>
+<li><p>For the <strong>Stable release:</strong></p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;deeplabcut[gui,modelzoo,wandb]&quot;</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li><p>This gives you DeepLabCut, the DLC GUI (gui), our latest neural networks (modelzoo) and a cool data logger (wandb) if you choose to use it later on!</p></li>
+<li><p>OR for the <strong>Alpha release (from GitHub bleeding edge of the code):</strong></p></li>
 </ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=deeplabcut[gui,modelzoo,wandb]&quot;</span>
+</pre></div>
+</div>
 </section>
 <section id="starting-deeplabcut">
 <h2>Starting DeepLabCut<a class="headerlink" href="#starting-deeplabcut" title="Link to this heading">#</a></h2>

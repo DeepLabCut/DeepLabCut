@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -556,7 +556,6 @@ environment. If you have an NVIDIA GPU, install PyTorch according to <a class="r
 need your GPU drivers installed.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>DEEPLABCUT<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.12
 conda<span class="w"> </span>activate<span class="w"> </span>DEEPLABCUT
-conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span><span class="nv">pytables</span><span class="o">==</span><span class="m">3</span>.8.0
 
 <span class="c1"># install PyTorch with your desired CUDA version (or for CPU only) - check [their</span>
 <span class="o">](</span>https://pytorch.org/get-started/locally/<span class="o">)</span><span class="w"> </span>website:
@@ -576,9 +575,6 @@ python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;i
 </div>
 </div>
 <ul class="simple">
-<li><p>Why do we install <a class="reference external" href="https://www.pytables.org/usersguide/installation.html">pytables</a> with
-<code class="docutils literal notranslate"><span class="pre">conda</span></code> and not <code class="docutils literal notranslate"><span class="pre">pip</span></code>? Because it requires some libraries that not all users will have
-installed, and conda will ensure that they are installed as well.</p></li>
 <li><p>If you’re familiar with the command line and want TensorFlow support, look <a class="reference internal" href="#deeplabcut-with-tf-install"><span class="std std-ref">below</span></a> for a fresh installation that has worked for us (on Linux)
 and makes it possible to use the GPU with both PyTorch and TensorFlow.</p></li>
 </ul>
