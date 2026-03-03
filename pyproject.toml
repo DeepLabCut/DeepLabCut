@@ -76,6 +76,7 @@ docs = [
   "jupyter-book==1.0.4.post1",
   "sphinxcontrib-mermaid",
 ]
+fmpose3d = ["fmpose3d"]	
 tf = [
   # !!! TensorFlow is not supported on Windows with Python >= 3.11
   "tensorflow>=2,<=2.10; platform_system=='Windows' and python_version<'3.11'",
