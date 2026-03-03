@@ -87,7 +87,8 @@ jobs:
       - name: Run functional tests
         shell: bash -el {0}  # Important: activates the conda environment
         run: |
-          pip install --no-cache-dir git+https://github.com/${{ github.repository }}.git@${{ github.sha }}
+          pip install -c "$GITHUB_WORKSPACE/.github/versioning/tf-ci-constraints.txt"
+          pip install --no-cache-dir -c "$GITHUB_WORKSPACE/.github/versioning/tf-ci-constraints.txt" -e .
           python examples/testscript.py
           python examples/testscript_multianimal.py
           python examples/testscript_pytorch_single_animal.py
