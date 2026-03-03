@@ -196,6 +196,15 @@ After installation, you can verify that the package is installed correctly with:
 dlclivegui --help
 ```
 
+## Download and export a model from the model zoo
+
+See the {ref}`file:dlclivegui-pretrained-models` page for instructions on how to programmatically download and export pre-trained models from the DeepLabCut Model Zoo for use in the GUI.
+
+```{important}
+We may in the future add more direct, built-in support for browsing and downloading compatible models.
+For now, you can use the `dlclive.modelzoo` API to fetch and export models as described in the linked documentation.
+```
+
 ## Run the application
 
 After installation, you can start the DeepLabCut-live-GUI application with:
