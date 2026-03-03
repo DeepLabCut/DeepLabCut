@@ -7,11 +7,35 @@ jobs:
   build-and-test:
     executor:
       name: python/default
-      tag: '3.10'
+      tag: '3.10' # or '3.12'
     steps:
       - checkout
+
+      # 1) Restore uv cache (prefer an exact lockfile match)
+      - restore_cache:
+          name: Restore uv cache
+          keys:
+            - v1-uv-{{ checksum "uv.lock" }}
+            - v1-uv-{{ checksum "pyproject.toml" }}
+            - v1-uv-
+
+      # 2) Install deps with uv via the Python orb (simple)
       - python/install-packages:
           pkg-manager: uv
+          # args: "--locked"   # enable this if you commit uv.lock for strict CI installs
+
+      # 3) (Optional) Trim the cache for CI so uploads stay small and fast
+      - run:
+          name: Prune uv cache for CI
+          command: uv cache prune --ci || true
+
+      # 4) Save the cache for next runs
+      - save_cache:
+          name: Save uv cache
+          key: v1-uv-{{ checksum "uv.lock" }}
+          paths:
+            - ~/.cache/uv
+
       - run:
           name: TestDLC
           # uv handles the installation of the dependencies
