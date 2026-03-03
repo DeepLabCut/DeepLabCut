@@ -16,8 +16,8 @@ The core idea is:
 - Point the GUI (or your config) to that exported model checkpoint.
 
 ```{note}
-The example below targets the PyTorch engine.
-If you are using **TensorFlow models**, you will typically point the GUI to a DLC model *directory* instead of a model *.pth file*.
+The example below is intended for the PyTorch engine.
+If you are using **TensorFlow models**, you will typically point the GUI to a DLC model *.pb file* instead of a model *.pth/.pt file*.
 ```
 
 ---
@@ -88,7 +88,6 @@ The `.pt` file created by `export_modelzoo_model` is a `torch.save(...)` diction
 - `config`: model configuration loaded via `load_super_animal_config(...)`
 - `pose`: a PyTorch `state_dict` (OrderedDict) for the pose model
 - `detector`: a PyTorch `state_dict` for the detector (or `None` if not used)
-
 
 ## Example full script
 
