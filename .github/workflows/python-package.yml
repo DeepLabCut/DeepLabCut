@@ -88,6 +88,7 @@ jobs:
         shell: bash -el {0}  # Important: activates the conda environment
         run: |
           pip install --no-cache-dir git+https://github.com/${{ github.repository }}.git@${{ github.sha }}
+          pip install --upgrade --force-reinstall "protobuf<5"
           python examples/testscript.py
           python examples/testscript_multianimal.py
           python examples/testscript_pytorch_single_animal.py
