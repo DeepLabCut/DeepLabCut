@@ -1,24 +1,21 @@
 version: 2.1
 
 orbs:
-  python: circleci/python@0.2.1
+  python: circleci/python@4.0.0
 
 jobs:
   build-and-test:
-    working_directory: ~/circleci-demo-python-django
-    docker:
-      - image: circleci/python:3.10  # primary container for the build job
-        auth:
-          username: mydockerhub-user
-          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
+    executor:
+      name: python/default
+      tag: '3.10'
     steps:
       - checkout
-      - python/load-cache
-      - python/install-deps
-      - python/save-cache
+      - python/install-packages:
+          pkg-manager: uv
       - run:
-          command: python testscript_cli.py
           name: TestDLC
+          # uv handles the installation of the dependencies
+          command: uv run python testscript_cli.py
 
 workflows:
   main:
