@@ -72,11 +72,7 @@ Or as an example for GPU support (please check pytorch docs to get the perfect v
 ```bash
 conda install pytorch cudatoolkit=11.3 -c pytorch
 ```
-- [2] Then, [install `pytables`](https://www.pytables.org/usersguide/installation.html):
-```bash
-conda install -c conda-forge pytables==3.8.0
-```
-- [3] Finally, install `DeepLabCut` (with all functions + the GUI):
+- [2] Then, install `DeepLabCut` (with all functions + the GUI):
 
 ```bash
 pip install --pre  "deeplabcut[gui]"
