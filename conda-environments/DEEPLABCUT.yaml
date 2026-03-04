@@ -28,11 +28,9 @@ dependencies:
   - pip
   - ipython
   - jupyter
-  - nb_conda
-  - notebook<7.0.0
   - ffmpeg
-  - pytables==3.8.0
   - pip:
     - torch
     - torchvision
-    - deeplabcut[gui,modelzoo,wandb]==3.0.0rc9
+    - --pre
+    - deeplabcut[gui,modelzoo,wandb]
