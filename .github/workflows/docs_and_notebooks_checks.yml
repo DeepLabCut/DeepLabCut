@@ -33,14 +33,19 @@ jobs:
 
       - name: Run staleness report (read-only)
         run: |
-          python .github/tools/docs_and_notebooks_check.py report \
-          --config .github/tools/docs_and_notebooks_report_config.yml --out-dir tmp/docs_nb_checks
+          python .github/tools/docs_and_notebooks_check.py \
+          --config .github/tools/docs_and_notebooks_report_config.yml \
+          --out-dir tmp/docs_nb_checks \
+          report
+
 
       # Optional: run check mode (will fail only once you populate allowlists in config)
       - name: Run staleness policy check (optional gate)
         run: |
-          python .github/tools/docs_and_notebooks_check.py check \
-          --config .github/tools/docs_and_notebooks_report_config.yml --out-dir tmp/docs_nb_checks
+          python .github/tools/docs_and_notebooks_check.py \
+          --config .github/tools/docs_and_notebooks_report_config.yml \
+          --out-dir tmp/docs_nb_checks \
+          check
 
       - name: Upload staleness artifacts
         uses: actions/upload-artifact@v4
