@@ -6,117 +6,104 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
 jobs:
   intelligent-test-selection:
+    name: Select test plan
     runs-on: ubuntu-latest
     outputs:
-      test-commands: ${{ steps.test-selector.outputs.commands }}
-      run-full-tests: ${{ steps.test-selector.outputs.run-full-tests }}
-      test-matrix: ${{ steps.test-selector.outputs.test-matrix }}
-    
+      plan: ${{ steps.selector.outputs.plan }}
+      pytest_paths: ${{ steps.selector.outputs.pytest_paths }}
+      functional_scripts: ${{ steps.selector.outputs.functional_scripts }}
+      reasons: ${{ steps.selector.outputs.reasons }}
+      changed_files: ${{ steps.selector.outputs.changed_files }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
-          fetch-depth: 0  # Fetch full history for diff comparison
-      
+          fetch-depth: 0  # needed for merge-base/diff to be reliable
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.10"
-      
-      - name: Run intelligent test selector
-        id: test-selector
-        shell: bash
+          python-version: "3.12"
+
+      - name: Run deterministic test selector
+        id: selector
         run: |
-          # Install minimal dependencies for test selector
-          python -m pip install --upgrade pip setuptools wheel
-          pip install pytest numpy pandas
-          
-          # Determine the base reference to use
-          BASE_REF="origin/main"
-          if ! git rev-parse --verify $BASE_REF >/dev/null 2>&1; then
-            echo "Warning: $BASE_REF not found, trying alternative references..."
-            if git rev-parse --verify origin/main >/dev/null 2>&1; then
-              BASE_REF="origin/main"
-            elif git rev-parse --verify main >/dev/null 2>&1; then
-              BASE_REF="main"
-            else
-              # Fallback to recent commits
-              BASE_REF="HEAD~4"
-            fi
-          fi
-          
-          echo "Using base reference: $BASE_REF"
-          
-          # Run test selector and capture output (atomic write to avoid partial reads)
-          python tools/test_selector.py --output-json --base $BASE_REF > test_selection.json.tmp
-          mv test_selection.json.tmp test_selection.json
-          
-          # Parse the JSON output and set GitHub outputs
-          cat test_selection.json
-          
-          # Use external scripts to parse JSON safely
-          commands=$(python tools/parse_test_selection.py commands)
-          run_full=$(python tools/parse_test_selection.py full-tests)
-          matrix=$(python tools/parse_test_selection.py matrix)
-          
-          echo "commands=$commands" >> $GITHUB_OUTPUT
-          echo "run-full-tests=$run_full" >> $GITHUB_OUTPUT
-          echo "test-matrix=$matrix" >> $GITHUB_OUTPUT
-          
-          # Validate the test selection system
-          echo "Running validation..."
-          python tools/validate_test_selection.py
+          python -m pip install --upgrade pip
+          pip install pydantic
+          python tools/intelligent_test_selector.py --write-github-output --json
+
+  docs-only:
+    name: Docs-only checks
+    needs: intelligent-test-selection
+    if: needs.intelligent-test-selection.outputs.plan == 'docs_only'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install docs build deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[docs]"
+
+      - name: Build docs
+        run: |
+          python tools/test_docs_build.py
 
   fast-tests:
+    name: Fast lane (targeted pytest + selected functional)
     needs: intelligent-test-selection
-    if: needs.intelligent-test-selection.outputs.run-full-tests == 'false'
-    runs-on: ${{ matrix.os }}
-    
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.10"]
-        test-config: ${{ fromJson(needs.intelligent-test-selection.outputs.test-matrix) }}
-
+    if: needs.intelligent-test-selection.outputs.plan == 'fast'
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: conda-incubator/setup-miniconda@v3
+      - uses: actions/setup-python@v6
         with:
-          channels: conda-forge,defaults
-          channel-priority: strict
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.12"
 
-      - name: Install dependencies (minimal)
-        shell: bash -el {0}
+      - name: Install minimal test deps
         run: |
-          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install --upgrade pip
           pip install pytest
-          # Only install minimal dependencies for fast tests
-          pip install numpy pandas matplotlib scikit-learn
-
-      - name: Install DeepLabCut (minimal)
-        shell: bash -el {0}
-        run: |
           pip install -e . --no-deps
 
-      - name: Run selected tests
-        shell: bash -el {0}
+      - name: Run targeted pytest (paths selected by selector)
         env:
-          TEST_COMMANDS: ${{ toJson(matrix.test-config.commands) }}
+          PYTEST_PATHS: ${{ needs.intelligent-test-selection.outputs.pytest_paths }}
         run: |
-          echo "Running test configuration: ${{ matrix.test-config.name }}"
-          echo "Commands to run: $TEST_COMMANDS"
-          
-          # Use external script to execute commands safely
-          python tools/execute_test_commands.py
+          python - << 'PY'
+          import json, os, subprocess, sys
+          paths = json.loads(os.environ.get("PYTEST_PATHS", "[]"))
+          cmd = ["python", "-m", "pytest"] + paths
+          print("Running:", " ".join(cmd))
+          sys.exit(subprocess.call(cmd))
+          PY
+
+      - name: Run selected functional scripts
+        env:
+          FUN_SCRIPTS: ${{ needs.intelligent-test-selection.outputs.functional_scripts }}
+        run: |
+          python - << 'PY'
+          import json, os, subprocess, sys
+          scripts = json.loads(os.environ.get("FUN_SCRIPTS", "[]"))
+          for s in scripts:
+              print("Running:", s)
+              rc = subprocess.call(["python", s])
+              if rc != 0:
+                  sys.exit(rc)
+          PY
 
   full-tests:
+    name: Full matrix tests
     needs: intelligent-test-selection
-    if: needs.intelligent-test-selection.outputs.run-full-tests == 'true'
+    if: needs.intelligent-test-selection.outputs.plan == 'full'
     uses: ./.github/workflows/python-package.yml
