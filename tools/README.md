@@ -1,78 +1,153 @@
 # Developer tools useful for maintaining the repository
 
-As developer you'll need:
+This document summarizes the developer tooling and workflows used in this repo.
+
+> **Quick start (recommended)**
+>
+> ```bash
+> python -m pip install -U pip
+> pip install -U pytest coverage pre-commit
+> ```
+>
+> If you prefer faster dependency installs, you can use `uv` (optional):
+>
+> ```bash
+> # Install uv (see https://docs.astral.sh/uv/ for platform-specific installers)
+> uv --version
+> ```
+
+---
+
+## 1) Pre-commit (recommended)
+
+Enable the repository hooks locally:
 
 ```bash
-pip install coverage pytest fnmatch black
+pre-commit install
 ```
 
-## Code headers
+Run on all files:
 
-The code headers can be standardized by running
+```bash
+pre-commit run --all-files
+```
 
-``` bash
+---
+
+## 2) License headers
+
+Code headers can be standardized by running:
+
+```bash
 python tools/update_license_headers.py
 ```
 
-from the repository root.
+Run from the repository root. Update `NOTICE.yml` to change header content.
 
-You can edit the `NOTICE.yml` to update the header.
+---
 
+## 3) Running tests locally
 
-## Workflow for contributing/checking your code
-
-```bash
-black .
-```
-
-## Running the tests (locally)
-
-We use the pytest framework. You can just run:
+### Run the full test suite
 
 ```bash
 pytest
 ```
 
-For coverage run:
+### Run a specific test module or folder
 
+```bash
+pytest tests/test_auxiliaryfunctions.py
+pytest tests/core/
 ```
+
+### Coverage
+
+```bash
 coverage run -m pytest
 coverage report
 ```
 
-## Intelligent Test Selection
+---
 
-The repository includes an intelligent test selection system that reduces CI runtime by running only relevant tests based on the changes in a pull request.
+## 4) Intelligent test selection (local + CI)
 
-### Usage
+The repository includes a deterministic test selection tool to reduce CI runtime by running only relevant tests based on changed files.
+
+### What it outputs
+
+The selector produces a single, unambiguous **plan** plus structured lists:
+
+- `plan`: `docs_only` | `fast` | `full`
+- `pytest_paths`: list of pytest path args (JSON)
+- `functional_scripts`: list of scripts to run (JSON)
+
+It also emits audit metadata:
+
+- `reasons`: why the decision was taken
+- `changed_files`: files considered for the decision
+
+### Run locally (no CI env required)
+
+Print decision as JSON:
 
 ```bash
-# Analyze current changes and show what tests would run
-python tools/test_selector.py --dry-run
-
-# Run the selected tests
-python tools/test_selector.py
-
-# Get JSON output for CI integration
-python tools/test_selector.py --output-json
-
-# Validate the test selection system
-python tools/validate_test_selection.py
-
-# Test documentation build
-python tools/test_docs_build.py
+python tools/test_selector.py --json
 ```
 
-### Test Categories
+Write a report (JSON + Markdown) under `tmp/test-selection/`:
 
-- **Documentation-only**: Runs lightweight docs build (~1-2 minutes)
-- **SuperAnimal changes**: Runs SuperAnimal-specific tests (~3-4 minutes)
-- **Core component changes**: Runs focused component tests (~2-3 minutes)
-- **Complex/mixed changes**: Falls back to full test suite (~5+ minutes)
+```bash
+python tools/test_selector.py --report-dir tmp/test-selection --json
+```
 
-### Expected Benefits
+> In GitHub Actions, the workflow typically adds `--write-github-output` and `--write-summary`.
 
-- 60-80% reduction in CI time for focused changes
-- Faster feedback for developers
-- More efficient use of CI resources
-- Maintains test coverage while reducing runtime
+### Notes
+
+- The selector is **fail-safe**: if changes cannot be determined or are ambiguous, it selects `plan=full`.
+- Rules are intentionally location-based and centralized in the selector script:
+  - Conservative “full-suite triggers”
+  - Small category mapping rules
+
+---
+
+## 5) Docs: Jupyter Book build (local)
+
+If the repo uses Jupyter Book for docs:
+
+```bash
+python -m pip install -U pip
+python -m pip install .[docs]
+jupyter-book build .
+```
+
+`.github/workflows/build-book.yml` is the canonical CI implementation.
+
+---
+
+## 6) Docs & notebooks staleness / metadata tooling (optional)
+
+If the repo includes a docs/notebooks check tool under `.github/tools/`:
+
+```bash
+python .github/tools/docs_and_notebooks_check.py report
+python .github/tools/docs_and_notebooks_check.py check
+```
+
+To update metadata (write mode):
+
+```bash
+python .github/tools/docs_and_notebooks_check.py update --write --only-git-date
+```
+
+---
+
+## 7) Troubleshooting tips
+
+- If a workflow run is unexpectedly selecting `full`, check the selector report:
+  - `tmp/test-selection/decision.md`
+  - `tmp/test-selection/selection.json`
+- If targeted tests fail due to missing dependencies, either:
+  - broaden the fast-lane install (e.g., install extras), or
+  - adjust selection rules to only include tests that run in the minimal environment.
