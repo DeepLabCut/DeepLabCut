@@ -14,5 +14,5 @@ jobs:
     with:
       publish: true
       python-version: "3.10"
-      publish_dir: "./_build/html"
+      build_dir: "./_build/html"
     secrets: inherit
