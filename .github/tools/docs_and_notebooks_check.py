@@ -509,7 +509,7 @@ def to_markdown(report: Report, cfg: ToolConfig) -> str:
     t = report.totals
     lines: List[str] = []
 
-    lines.append("# DeepLabCut staleness report\n")
+    lines.append("# 🌡️ DeepLabCut freshness report\n")
     lines.append(f"Generated: {report.generated_at.isoformat()}\n")
     lines.append(f"Schema: v{report.schema_version}\n\n")
 
