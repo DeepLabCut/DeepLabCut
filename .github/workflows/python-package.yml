@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  tests:
     runs-on: ${{ matrix.os }}
 
     # Cancel outdated jobs for the same PR + same matrix combo
