@@ -10,6 +10,14 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
 
+    # Cancel outdated jobs for the same PR + same matrix combo
+    concurrency:
+      group: >-
+        tests-${{ github.workflow }}-
+        ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}-
+        ${{ matrix.os }}-${{ matrix.python-version }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
     strategy:
       fail-fast: false
       matrix:
