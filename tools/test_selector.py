@@ -1,600 +1,436 @@
 #!/usr/bin/env python3
-"""
-Intelligent test selection system for DeepLabCut.
+"""Deterministic, strictly validated test selector for DeepLabCut.
 
-This script analyzes git diff to determine which tests should be run based on the
-files that have been changed in a pull request. It aims to reduce CI runtime to
-approximately 5 minutes by running only relevant tests.
+Outputs a single, unambiguous *plan* enum plus structured lists:
 
-Categories:
-1. Documentation-only changes -> run doc build tests only
-2. SuperAnimal model changes -> run SuperAnimal tests only  
-3. Python script changes -> run pytest for those specific scripts
-4. Complex changes -> run full test suite
+  - plan: one of {docs_only, fast, full}
+  - pytest_paths: JSON list of pytest path arguments
+  - functional_scripts: JSON list of python script paths
+
+Safety principles
+-----------------
+- Fail-safe: if changes cannot be determined or are ambiguous, plan=full.
+- Deterministic: derives diff range from GitHub Actions event payload when available.
+  * pull_request: uses merge-base(base.sha, head.sha) .. head.sha
+  * push: uses before .. after
+  * fallback: attempts HEAD~1 .. HEAD
+- Secure: never emits shell command strings; only structured data.
+- Strict: Pydantic schema validation (extra=forbid), SHA validation, path sanitization.
+
+Intended usage in GitHub Actions
+-------------------------------
+- Checkout with sufficient history for merge-base/diff (typically fetch-depth: 0).
+- Run:
+    python tools/intelligent_test_selector.py --write-github-output --json
+
+This will write the following keys to $GITHUB_OUTPUT:
+  plan, pytest_paths, functional_scripts, reasons, changed_files
+
+Notes
+-----
+- This script intentionally keeps the routing rules simple and location-based.
+- Extend CATEGORY_RULES and FULL_SUITE_TRIGGERS as needed, keeping rules auditable.
 """
+
+from __future__ import annotations
 
 import argparse
+import json
 import os
+import re
 import subprocess
-import sys
+from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Callable
+
+from pydantic import BaseModel, Field, ConfigDict, ValidationError
 
 
-class TestSelector:
-    """Intelligent test selector based on git diff analysis."""
-    
-    def __init__(self, repo_root: str = None):
-        self.repo_root = Path(repo_root) if repo_root else Path.cwd()
-        
-        # Define file patterns and their corresponding test categories
-        self.test_mappings = {
-            'docs': {
-                'patterns': ['docs/', '*.md', '*.rst', '_config.yml', '_toc.yml'],
-                'tests': ['docs'],
-                'commands': ['python tools/test_docs_build.py']  # Build documentation
-            },
-            'superanimal': {
-                'patterns': [
-                    'deeplabcut/pose_estimation_tensorflow/modelzoo/api/superanimal',
-                    'deeplabcut/pose_estimation_pytorch/modelzoo',
-                    'deeplabcut/modelzoo',
-                    'deeplabcut/create_project/modelzoo.py',
-                    'deeplabcut/gui/tabs/modelzoo.py',
-                    'deeplabcut/*superanimal*',
-                    'deeplabcut/*modelzoo*'
-                ],
-                'tests': [
-                    'tests/test_predict_supermodel.py',
-                    'tests/pose_estimation_pytorch/modelzoo/',
-                    'tests/pose_estimation_pytorch/other/test_modelzoo.py'
-                ],
-                'commands': []
-            },
-            'core': {
-                'patterns': [
-                    'deeplabcut/core/',
-                    'deeplabcut/pose_estimation_tensorflow/',
-                    'deeplabcut/pose_estimation_pytorch/',
-                    'deeplabcut/utils/',
-                    'deeplabcut/auxiliaryfunctions.py'
-                ],
-                'tests': [
-                    'tests/test_auxiliaryfunctions.py',
-                    'tests/core/',
-                    'tests/pose_estimation_pytorch/',
-                    'tests/utils/'
-                ],
-                'commands': []
-            },
-            'multianimal': {
-                'patterns': [
-                    'deeplabcut/*multianimal*',
-                    'deeplabcut/pose_estimation_tensorflow/*multi*',
-                    'deeplabcut/pose_estimation_pytorch/*multi*'
-                ],
-                'tests': [
-                    'tests/test_auxfun_multianimal.py',
-                    'tests/test_pose_multianimal_imgaug.py',
-                    'tests/test_predict_multianimal.py',
-                    'examples/testscript_multianimal.py'
-                ],
-                'commands': []
-            },
-            'video': {
-                'patterns': [
-                    'deeplabcut/*video*',
-                    'deeplabcut/pose_estimation_tensorflow/nnet/predict.py',
-                    'deeplabcut/pose_estimation_pytorch/apis/videos.py'
-                ],
-                'tests': [
-                    'tests/test_video.py'
-                ],
-                'commands': []
-            },
-            'tools': {
-                'patterns': ['tools/', '.github/workflows/', '.github/'],
-                'tests': [],
-                'commands': ['python tools/validate_test_selection.py']
-            }
-        }
-        
-    def get_changed_files(self, base_ref: str = 'origin/main') -> List[str]:
-        """Get list of files changed compared to base reference."""
-        try:
-            # First fetch the base ref to ensure it exists
-            try:
-                subprocess.run(
-                    ['git', 'fetch', 'origin', base_ref.replace('origin/', '')],
-                    cwd=self.repo_root,
-                    capture_output=True,
-                    check=False
-                )
-            except (subprocess.SubprocessError, OSError):
-                pass  # Ignore fetch errors
-            
-            # Try multiple approaches to get changed files
-            # Start with more reliable approaches for CI environments
-            approaches = [
-                # Try with HEAD~n if base_ref looks like origin/main but doesn't exist
-                lambda: self._get_files_with_fallback_refs(base_ref),
-                # Compare with merge base
-                lambda: self._get_files_from_merge_base(base_ref),
-                # Compare directly with base ref
-                lambda: self._get_files_direct_diff(base_ref),
-                # Get staged changes
-                lambda: self._get_staged_files(),
-                # Get working directory changes
-                lambda: self._get_working_dir_files(),
-                # Fallback: get all files in repo (for CI when git history is limited)
-                lambda: self._get_all_files_fallback()
-            ]
-            
-            for approach in approaches:
-                try:
-                    changed_files = approach()
-                    if changed_files:
-                        return changed_files
-                except subprocess.CalledProcessError:
-                    continue
-                    
-            return []
-            
-        except Exception as e:
-            print(f"Warning: Could not get changed files: {e}")
-            return []
-    
-    def _get_files_with_fallback_refs(self, base_ref: str) -> List[str]:
-        """Try multiple reference approaches for getting changed files."""
-        # List of fallback references to try
-        fallback_refs = [
-            base_ref,
-            'HEAD~1',
-            'HEAD~2', 
-            'HEAD~3',
-            'HEAD~4',
-            'HEAD~5'
-        ]
-        
-        for ref in fallback_refs:
-            try:
-                result = subprocess.check_output(
-                    ['git', 'diff', '--name-only', ref, 'HEAD'],
-                    cwd=self.repo_root,
-                    text=True,
-                    stderr=subprocess.DEVNULL
-                )
-                files = [f.strip() for f in result.split('\n') if f.strip()]
-                if files:
-                    return files
-            except subprocess.CalledProcessError:
-                continue
-        
-        return []
-    
-    def _get_files_from_merge_base(self, base_ref: str) -> List[str]:
-        """Get files changed since merge base."""
-        merge_base = subprocess.check_output(
-            ['git', 'merge-base', 'HEAD', base_ref],
-            cwd=self.repo_root,
-            text=True
-        ).strip()
-        
-        result = subprocess.check_output(
-            ['git', 'diff', '--name-only', merge_base, 'HEAD'],
-            cwd=self.repo_root,
-            text=True
-        )
-        
-        return [f.strip() for f in result.split('\n') if f.strip()]
-    
-    def _get_files_direct_diff(self, base_ref: str) -> List[str]:
-        """Get files changed directly compared to base ref."""
-        result = subprocess.check_output(
-            ['git', 'diff', '--name-only', base_ref, 'HEAD'],
-            cwd=self.repo_root,
-            text=True
-        )
-        
-        return [f.strip() for f in result.split('\n') if f.strip()]
-    
-    def _get_staged_files(self) -> List[str]:
-        """Get staged files."""
-        result = subprocess.check_output(
-            ['git', 'diff', '--name-only', '--cached'],
-            cwd=self.repo_root,
-            text=True
-        )
-        
-        return [f.strip() for f in result.split('\n') if f.strip()]
-    
-    def _get_working_dir_files(self) -> List[str]:
-        """Get working directory changes."""
-        result = subprocess.check_output(
-            ['git', 'diff', '--name-only'],
-            cwd=self.repo_root,
-            text=True
-        )
-        
-        return [f.strip() for f in result.split('\n') if f.strip()]
-    
-    def _get_all_files_fallback(self) -> List[str]:
-        """Fallback method when git diff fails - triggers full test suite.
-        
-        Note: This returns an empty list intentionally. When no changed files
-        can be determined, the system will run a minimal test suite as defined
-        in the run() method. This is safer than guessing which files changed.
-        """
-        print("Warning: Could not determine changed files from git history.")
-        print("         This may happen in shallow clones or detached HEAD states.")
-        print("         Running minimal test suite as fallback.")
-        return []
-    
-    def match_patterns(self, file_path: str, patterns: List[str]) -> bool:
-        """Check if file path matches any of the given patterns."""
-        import fnmatch
-        
-        for pattern in patterns:
-            # Direct path matching
-            if pattern in file_path:
-                return True
-            # Glob pattern matching (handle wildcards)
-            if fnmatch.fnmatch(file_path, pattern):
-                return True
-            # Directory matching
-            if pattern.endswith('/') and file_path.startswith(pattern):
-                return True
-            # Handle wildcards in path components
-            if '*' in pattern:
-                pattern_parts = pattern.split('/')
-                file_parts = file_path.split('/')
-                if self._match_path_components(file_parts, pattern_parts):
-                    return True
-                
-        return False
-    
-    def _match_path_components(self, file_parts: List[str], pattern_parts: List[str]) -> bool:
-        """Match file path components against pattern components with wildcards."""
-        import fnmatch
-        
-        # Simple case: direct fnmatch
-        if len(pattern_parts) == len(file_parts):
-            return all(fnmatch.fnmatch(f, p) for f, p in zip(file_parts, pattern_parts))
-        
-        # Handle wildcards in any part of the path
-        for i, pattern_part in enumerate(pattern_parts):
-            if '*' in pattern_part:
-                for j, file_part in enumerate(file_parts):
-                    if fnmatch.fnmatch(file_part, pattern_part):
-                        return True
-        
-        return False
-    
-    def categorize_changes(self, changed_files: List[str]) -> Dict[str, List[str]]:
-        """Categorize changed files into test categories."""
-        categories = {}
-        uncategorized = []
-        
-        # Priority order for categorization (higher priority first)
-        priority_order = ['superanimal', 'multianimal', 'core', 'video', 'docs', 'tools']
-        
-        for file_path in changed_files:
-            matched = False
-            # Check categories in priority order
-            for category in priority_order:
-                if category in self.test_mappings:
-                    config = self.test_mappings[category]
-                    if self.match_patterns(file_path, config['patterns']):
-                        if category not in categories:
-                            categories[category] = []
-                        categories[category].append(file_path)
-                        matched = True
-                        break  # Take first match in priority order
-            
-            if not matched:
-                uncategorized.append(file_path)
-        
-        if uncategorized:
-            categories['uncategorized'] = uncategorized
-            
-        return categories
-    
-    def get_tests_to_run(self, categories: Dict[str, List[str]]) -> Tuple[List[str], List[str]]:
-        """Determine which tests and commands to run based on categorized changes."""
-        tests_to_run = set()
-        commands_to_run = set()
-        
-        # If only documentation changes, just build docs
-        if len(categories) == 1 and 'docs' in categories:
-            commands_to_run.update(self.test_mappings['docs']['commands'])
-            return list(tests_to_run), list(commands_to_run)
-        
-        # If only tools changes (including CI workflows), run tools validation
-        if len(categories) == 1 and 'tools' in categories:
-            commands_to_run.update(self.test_mappings['tools']['commands'])
-            return list(tests_to_run), list(commands_to_run)
-        
-        # If only docs + tools changes, run both
-        if len(categories) == 2 and 'docs' in categories and 'tools' in categories:
-            commands_to_run.update(self.test_mappings['docs']['commands'])
-            commands_to_run.update(self.test_mappings['tools']['commands'])
-            return list(tests_to_run), list(commands_to_run)
-        
-        # If SuperAnimal changes and limited other changes, focus on SuperAnimal
-        if 'superanimal' in categories:
-            superanimal_files = len(categories.get('superanimal', []))
-            total_files = sum(len(files) for files in categories.values())
-            
-            # If SuperAnimal changes dominate or are the main focus
-            if superanimal_files >= total_files // 2 or len(categories) <= 2:
-                config = self.test_mappings['superanimal']
-                tests_to_run.update(config['tests'])
-                commands_to_run.update(config['commands'])
-                
-                # Add docs tests if docs also changed
-                if 'docs' in categories:
-                    commands_to_run.update(self.test_mappings['docs']['commands'])
-                
-                return list(tests_to_run), list(commands_to_run)
-        
-        # If uncategorized files or too many mixed categories, run full test suite
-        if 'uncategorized' in categories or len(categories) > 3:
-            return ['pytest'], ['python examples/testscript.py']
-        
-        # For other focused changes, run specific tests
-        focused_categories = ['multianimal', 'core', 'video']
-        for category in focused_categories:
-            if category in categories and len(categories) <= 2:
-                config = self.test_mappings[category]
-                tests_to_run.update(config['tests'])
-                commands_to_run.update(config['commands'])
-                
-                # Add docs tests if docs also changed
-                if 'docs' in categories:
-                    commands_to_run.update(self.test_mappings['docs']['commands'])
-                
-                return list(tests_to_run), list(commands_to_run)
-        
-        # Default: add tests for each category but be selective
-        for category in categories:
-            if category in self.test_mappings:
-                config = self.test_mappings[category]
-                tests_to_run.update(config['tests'])
-                commands_to_run.update(config['commands'])
-        
-        return list(tests_to_run), list(commands_to_run)
-    
-    def filter_existing_paths(self, paths: List[str]) -> List[str]:
-        """Filter out non-existent test paths."""
-        existing_paths = []
-        for path in paths:
-            full_path = self.repo_root / path
-            if full_path.exists():
-                existing_paths.append(path)
-            elif path == 'pytest':  # Special case for pytest command
-                existing_paths.append(path)
-            else:
-                print(f"Warning: Test path does not exist: {path}")
-        return existing_paths
-    
-    def generate_test_commands(self, tests: List[str], commands: List[str]) -> List[str]:
-        """Generate the actual commands to run tests."""
-        all_commands = []
-        
-        # Add custom commands first
-        all_commands.extend(commands)
-        
-        # Group pytest commands
-        pytest_paths = [t for t in tests if t != 'pytest' and not t.startswith('examples/')]
-        functional_tests = [t for t in tests if t.startswith('examples/')]
-        
-        if 'pytest' in tests:
-            # Run full pytest suite
-            all_commands.append('python -m pytest')
-        elif pytest_paths:
-            # Run specific pytest paths
-            existing_paths = self.filter_existing_paths(pytest_paths)
-            if existing_paths:
-                all_commands.append(f'python -m pytest {" ".join(existing_paths)}')
-        
-        # Add functional test commands
-        for test in functional_tests:
-            if self.repo_root.joinpath(test).exists():
-                all_commands.append(f'python {test}')
-        
-        return all_commands
-    
-    def run(self, base_ref: str = 'origin/main', dry_run: bool = False, json_output: bool = False) -> Dict:
-        """Main execution method."""
-        if not json_output:
-            print("🔍 DeepLabCut Intelligent Test Selector")
-            print("=" * 50)
-        
-        # Get changed files
-        changed_files = self.get_changed_files(base_ref)
-        if not json_output:
-            print(f"📁 Found {len(changed_files)} changed files:")
-            for file in changed_files[:10]:  # Show first 10
-                print(f"   - {file}")
-            if len(changed_files) > 10:
-                print(f"   ... and {len(changed_files) - 10} more files")
-            print()
-        
-        if not changed_files:
-            if not json_output:
-                print("⚠️  No changed files detected. Running minimal test suite.")
-            return {
-                'changed_files': [],
-                'categories': {},
-                'tests': ['tests/test_auxiliaryfunctions.py'],
-                'commands': ['python -m pytest tests/test_auxiliaryfunctions.py'],
-                'estimated_time': '2 minutes'
-            }
-        
-        # Categorize changes
-        categories = self.categorize_changes(changed_files)
-        if not json_output:
-            print("📂 Change categories:")
-            for category, files in categories.items():
-                print(f"   - {category}: {len(files)} files")
-            print()
-        
-        # Determine tests to run
-        tests, commands = self.get_tests_to_run(categories)
-        test_commands = self.generate_test_commands(tests, commands)
-        
-        # Estimate runtime
-        estimated_time = self.estimate_runtime(categories, len(test_commands))
-        
-        if not json_output:
-            print("🧪 Tests to run:")
-            for cmd in test_commands:
-                print(f"   - {cmd}")
-            print(f"\n⏱️  Estimated runtime: {estimated_time}")
-        
-        result = {
-            'changed_files': changed_files,
-            'categories': categories,
-            'tests': tests,
-            'commands': test_commands,
-            'estimated_time': estimated_time
-        }
-        
-        if not dry_run and not json_output:
-            print("\n🚀 Executing tests...")
-            self.execute_tests(test_commands)
-        
-        return result
-    
-    def estimate_runtime(self, categories: Dict[str, List[str]], num_commands: int) -> str:
-        """Estimate test runtime based on categories and number of commands."""
-        if 'docs' in categories and len(categories) == 1:
-            return "1-2 minutes"
-        elif 'superanimal' in categories and len(categories) <= 2:
-            return "3-4 minutes" 
-        elif len(categories) <= 2 and 'uncategorized' not in categories:
-            return "2-3 minutes"
-        elif num_commands == 1 and 'pytest' not in str(categories):
-            return "1-2 minutes"
-        else:
-            return "5+ minutes (full test suite)"
-    
-    def check_dependencies(self, commands: List[str]) -> Tuple[bool, List[str]]:
-        """Check if dependencies are available for running tests."""
-        missing_deps = []
-        
-        # Check for common dependencies
-        deps_to_check = {
-            'pytest': 'python -c "import pytest"',
-            'numpy': 'python -c "import numpy"',
-            'examples/testscript.py': None  # File existence check
-        }
-        
-        for cmd in commands:
-            if 'pytest' in cmd:
-                try:
-                    subprocess.run(['python', '-c', 'import pytest'], 
-                                 capture_output=True, check=True)
-                except subprocess.CalledProcessError:
-                    missing_deps.append('pytest')
-            
-            if 'examples/testscript.py' in cmd:
-                try:
-                    subprocess.run(['python', '-c', 'import numpy'], 
-                                 capture_output=True, check=True)
-                except subprocess.CalledProcessError:
-                    missing_deps.append('numpy')
-        
-        return len(missing_deps) == 0, missing_deps
+SHA_RE = re.compile(r"^[0-9a-f]{7,40}$", re.IGNORECASE)
 
-    def execute_tests(self, commands: List[str]) -> bool:
-        """Execute the test commands."""
-        # Check dependencies first
-        deps_ok, missing_deps = self.check_dependencies(commands)
-        
-        if not deps_ok:
-            print(f"\n⚠️  Missing dependencies: {', '.join(missing_deps)}")
-            print("   Tests will be skipped in this environment.")
-            print("   In CI, dependencies will be installed before running tests.")
-            return True  # Don't fail for missing deps in development environment
-        
-        all_passed = True
-        
-        for i, cmd in enumerate(commands, 1):
-            print(f"\n[{i}/{len(commands)}] Running: {cmd}")
-            print("-" * 40)
-            
-            import shlex
-            try:
-                result = subprocess.run(
-                    shlex.split(cmd),
-                    cwd=self.repo_root,
-                    check=True,
-                    capture_output=False
-                )
-                print(f"✅ Command passed: {cmd}")
-            except subprocess.CalledProcessError as e:
-                print(f"❌ Command failed: {cmd}")
-                print(f"   Exit code: {e.returncode}")
-                all_passed = False
-        
-        return all_passed
+DLC_NAMESPACE = "deeplabcut"
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description="Intelligent test selection for DeepLabCut",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  python tools/test_selector.py                    # Run tests for current changes
-  python tools/test_selector.py --dry-run          # Show what tests would run
-  python tools/test_selector.py --base main        # Compare against main branch
-  python tools/test_selector.py --output-json      # Output results as JSON
-        """
+class Plan(str, Enum):
+    """Unambiguous test plan."""
+
+    DOCS_ONLY = "docs_only"   # Docs build only
+    FAST = "fast"             # Targeted pytest + optional functional scripts (single-lane)
+    FULL = "full"             # Delegate to full test workflow/matrix
+
+
+class SelectorResult(BaseModel):
+    """Strict output schema."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: int = 1
+    plan: Plan
+
+    pytest_paths: List[str] = Field(default_factory=list)
+    functional_scripts: List[str] = Field(default_factory=list)
+
+    # Audit fields
+    reasons: List[str] = Field(default_factory=list)
+    changed_files: List[str] = Field(default_factory=list)
+
+
+# -----------------------------
+# Configuration (simple, auditable)
+# -----------------------------
+
+MINIMAL_PYTEST = ["tests/test_auxiliaryfunctions.py"]
+
+
+# Conservative full-suite triggers: if any changed file matches, plan=FULL.
+FULL_SUITE_TRIGGERS: List[Callable[[str], bool]] = [
+    lambda p: p.startswith("tests/"),
+    lambda p: p == "pyproject.toml",
+    lambda p: p.endswith(".lock"),
+    lambda p: p.endswith("requirements.txt"),
+    lambda p: p.endswith("environment.yml"),
+]
+
+
+# Category rules are location-based. If multiple categories match, we treat it as mixed.
+# For prototype simplicity:
+#   - docs-only if *all* files are docs-like
+#   - if >2 categories match -> FULL
+#   - else -> FAST with merged selections
+CATEGORY_RULES = [
+    {
+        "name": "docs",
+        "match_any": [
+            lambda p: p.startswith("docs/"),
+            lambda p: p.endswith(".md"),
+            lambda p: p.endswith(".rst"),
+            lambda p: p in {"_config.yml", "_toc.yml"},
+        ],
+        "pytest_paths": [],
+        "functional_scripts": [],
+    },
+    {
+        "name": "notebooks_examples",
+        "match_any": [
+            lambda p: p.startswith("examples/JUPYTER/"),
+            lambda p: p.startswith("examples/COLAB/"),
+            lambda p: p.endswith(".ipynb"),
+        ],
+        "pytest_paths": MINIMAL_PYTEST,
+        "functional_scripts": [],
+    },
+    {
+        "name": "superanimal_modelzoo",
+        "match_any": [
+            lambda p: p.startswith("deeplabcut/modelzoo/"),
+            lambda p: "superanimal" in p.lower(),
+            lambda p: "modelzoo" in p.lower(),
+        ],
+        "pytest_paths": [
+            "tests/test_predict_supermodel.py",
+            "tests/pose_estimation_pytorch/modelzoo/",
+            "tests/pose_estimation_pytorch/other/test_modelzoo.py",
+        ],
+        "functional_scripts": [],
+    },
+    {
+        "name": "multianimal",
+        "match_any": [
+            lambda p: "multianimal" in p.lower(),
+            lambda p: p.startswith("deeplabcut/pose_estimation_tensorflow/") and "multi" in p.lower(),
+            lambda p: p.startswith("deeplabcut/pose_estimation_pytorch/") and "multi" in p.lower(),
+        ],
+        "pytest_paths": [
+            "tests/test_auxfun_multianimal.py",
+            "tests/test_pose_multianimal_imgaug.py",
+            "tests/test_predict_multianimal.py",
+        ],
+        "functional_scripts": [
+            "examples/testscript_multianimal.py",
+        ],
+    },
+    {
+        "name": "core",
+        "match_any": [
+            lambda p: p.startswith("deeplabcut/core/"),
+            lambda p: p.startswith("deeplabcut/utils/"),
+            lambda p: p.startswith("deeplabcut/pose_estimation_tensorflow/"),
+            lambda p: p.startswith("deeplabcut/pose_estimation_pytorch/"),
+            lambda p: p == "deeplabcut/auxiliaryfunctions.py",
+        ],
+        "pytest_paths": [
+            "tests/test_auxiliaryfunctions.py",
+            "tests/core/",
+            "tests/utils/",
+            "tests/pose_estimation_pytorch/",
+        ],
+        "functional_scripts": [],
+    },
+    {
+        "name": "ci_tools",
+        "match_any": [
+            lambda p: p.startswith(".github/"),
+            lambda p: p.startswith("tools/"),
+        ],
+        "pytest_paths": MINIMAL_PYTEST,
+        "functional_scripts": [],
+    },
+]
+
+
+# -----------------------------
+# Git helpers
+# -----------------------------
+
+def _run_git(args: Sequence[str], cwd: Path) -> str:
+    proc = subprocess.run(
+        ["git", *args],
+        cwd=str(cwd),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
     )
-    
-    parser.add_argument(
-        '--base', 
-        default='origin/main',
-        help='Base reference for git diff (default: origin/main)'
-    )
-    parser.add_argument(
-        '--dry-run',
-        action='store_true', 
-        help='Show what tests would run without executing them'
-    )
-    parser.add_argument(
-        '--output-json',
-        action='store_true',
-        help='Output results in JSON format'
-    )
-    parser.add_argument(
-        '--repo-root',
-        help='Repository root directory (default: current directory)'
-    )
-    
-    args = parser.parse_args()
-    
+    if proc.returncode != 0:
+        raise RuntimeError(f"git {' '.join(args)} failed: {proc.stderr.strip()}")
+    return proc.stdout.strip()
+
+
+def find_repo_root() -> Path:
+    out = _run_git(["rev-parse", "--show-toplevel"], Path.cwd())
+    return Path(out).resolve()
+
+
+def _validate_sha(label: str, sha: str) -> str:
+    if not sha or not SHA_RE.match(sha):
+        raise ValueError(f"Invalid {label} SHA: {sha!r}")
+    return sha
+
+
+def _ensure_commit_exists(sha: str, cwd: Path) -> None:
+    _run_git(["cat-file", "-e", f"{sha}^{{commit}}"], cwd)
+
+
+def _load_github_event() -> Dict[str, Any]:
+    path = os.environ.get("GITHUB_EVENT_PATH")
+    if not path:
+        return {}
     try:
-        selector = TestSelector(args.repo_root)
-        result = selector.run(args.base, args.dry_run, args.output_json)
-        
-        if args.output_json:
-            import json
-            print(json.dumps(result, indent=2))
-        
-        # Exit with appropriate code
-        if args.dry_run or result['commands']:
-            sys.exit(0)
-        else:
-            sys.exit(1)
-            
-    except Exception as e:
-        if not args.output_json:
-            print(f"❌ Error: {e}")
-        sys.exit(1)
+        return json.loads(Path(path).read_text(encoding="utf-8"))
+    except Exception:
+        return {}
 
 
-if __name__ == '__main__':
-    main()
+def _normalize_relpath(p: str) -> str:
+    """Normalize and validate a repo-relative path from git output."""
+    if "\x00" in p:
+        raise ValueError("NUL byte in path")
+    p = p.strip().replace("\\", "/")
+    if not p:
+        raise ValueError("Empty path")
+    if p.startswith("/") or re.match(r"^[A-Za-z]:/", p):
+        raise ValueError(f"Absolute path not allowed: {p}")
+    parts = [x for x in p.split("/") if x not in ("", ".")]
+    if any(x == ".." for x in parts):
+        raise ValueError(f"Path traversal not allowed: {p}")
+    return "/".join(parts)
+
+
+def determine_diff_range(repo: Path, override_base: Optional[str], override_head: Optional[str]) -> Tuple[str, str, str]:
+    """Return (base_commit, head_commit, mode)."""
+    event_name = os.environ.get("GITHUB_EVENT_NAME", "")
+    event = _load_github_event()
+
+    if override_base and override_head:
+        base = _validate_sha("base", override_base)
+        head = _validate_sha("head", override_head)
+        _ensure_commit_exists(base, repo)
+        _ensure_commit_exists(head, repo)
+        merge_base = _run_git(["merge-base", head, base], repo)
+        merge_base = _validate_sha("merge-base", merge_base)
+        _ensure_commit_exists(merge_base, repo)
+        return merge_base, head, "manual"
+
+    if event_name == "pull_request" and "pull_request" in event:
+        base_sha = _validate_sha("base", event["pull_request"]["base"]["sha"])
+        head_sha = _validate_sha("head", event["pull_request"]["head"]["sha"])
+        _ensure_commit_exists(base_sha, repo)
+        _ensure_commit_exists(head_sha, repo)
+        # Use merge-base to approximate the PR triple-dot diff base deterministically.
+        merge_base = _run_git(["merge-base", head_sha, base_sha], repo)
+        merge_base = _validate_sha("merge-base", merge_base)
+        _ensure_commit_exists(merge_base, repo)
+        return merge_base, head_sha, "pr"
+
+    if event_name == "push" and "before" in event and "after" in event:
+        before = _validate_sha("before", event["before"])
+        after = _validate_sha("after", event["after"])
+        _ensure_commit_exists(before, repo)
+        _ensure_commit_exists(after, repo)
+        return before, after, "push"
+
+    # Fallback: HEAD~1..HEAD
+    try:
+        head = _validate_sha("HEAD", _run_git(["rev-parse", "HEAD"], repo))
+        prev = _validate_sha("HEAD~1", _run_git(["rev-parse", "HEAD~1"], repo))
+        _ensure_commit_exists(prev, repo)
+        _ensure_commit_exists(head, repo)
+        return prev, head, "fallback"
+    except Exception:
+        return "", "", "fallback"
+
+
+def changed_files(repo: Path, base: str, head: str) -> List[str]:
+    if not base or not head:
+        return []
+    out = _run_git(["diff", "--name-only", "--diff-filter=ACMRT", base, head], repo)
+    files = [_normalize_relpath(line) for line in out.splitlines() if line.strip()]
+    return sorted(set(files))
+
+
+# -----------------------------
+# Decision logic
+# -----------------------------
+
+def _matches_any(path: str, preds: Sequence[Callable[[str], bool]]) -> bool:
+    for pred in preds:
+        try:
+            if pred(path):
+                return True
+        except Exception:
+            continue
+    return False
+
+
+def decide(files: List[str]) -> SelectorResult:
+    reasons: List[str] = []
+
+    if not files:
+        # Fail-safe
+        return SelectorResult(
+            plan=Plan.FULL,
+            pytest_paths=[],
+            functional_scripts=[],
+            reasons=["no_changed_files_or_diff_unavailable"],
+            changed_files=[],
+        )
+
+    # Full-suite triggers
+    if any(_matches_any(f, FULL_SUITE_TRIGGERS) for f in files):
+        reasons.append("full_suite_trigger")
+        return SelectorResult(
+            plan=Plan.FULL,
+            pytest_paths=[],
+            functional_scripts=[],
+            reasons=reasons,
+            changed_files=files,
+        )
+
+    # docs-only if ALL files match docs category
+    docs_rule = next((r for r in CATEGORY_RULES if r["name"] == "docs"), None)
+    if docs_rule and all(_matches_any(f, docs_rule["match_any"]) for f in files):
+        return SelectorResult(
+            plan=Plan.DOCS_ONLY,
+            pytest_paths=[],
+            functional_scripts=[],
+            reasons=["docs_only"],
+            changed_files=files,
+        )
+
+    # Find matching categories
+    matched = []
+    for rule in CATEGORY_RULES:
+        if any(_matches_any(f, rule["match_any"]) for f in files):
+            matched.append(rule)
+
+    if not matched:
+        return SelectorResult(
+            plan=Plan.FULL,
+            pytest_paths=[],
+            functional_scripts=[],
+            reasons=["no_category_matched"],
+            changed_files=files,
+        )
+
+    if len(matched) > 2:
+        return SelectorResult(
+            plan=Plan.FULL,
+            pytest_paths=[],
+            functional_scripts=[],
+            reasons=[f"too_many_categories:{len(matched)}"],
+            changed_files=files,
+        )
+
+    pytest_paths_set: Set[str] = set()
+    functional_set: Set[str] = set()
+    for rule in matched:
+        reasons.append(f"category:{rule['name']}")
+        pytest_paths_set.update(rule.get("pytest_paths", []))
+        functional_set.update(rule.get("functional_scripts", []))
+
+    # Ensure at least minimal pytest
+    if not pytest_paths_set and not functional_set:
+        pytest_paths_set.update(MINIMAL_PYTEST)
+        reasons.append("fallback_minimal_pytest")
+
+    return SelectorResult(
+        plan=Plan.FAST,
+        pytest_paths=sorted(pytest_paths_set),
+        functional_scripts=sorted(functional_set),
+        reasons=reasons,
+        changed_files=files,
+    )
+
+
+# -----------------------------
+# Outputs
+# -----------------------------
+
+def write_github_output(res: SelectorResult) -> None:
+    out_path = os.environ.get("GITHUB_OUTPUT")
+    if not out_path:
+        raise RuntimeError("GITHUB_OUTPUT is not set")
+
+    def j(v) -> str:
+        return json.dumps(v, separators=(",", ":"), ensure_ascii=False)
+
+    with open(out_path, "a", encoding="utf-8") as f:
+        f.write(f"plan={res.plan.value}\n")
+        f.write(f"pytest_paths={j(res.pytest_paths)}\n")
+        f.write(f"functional_scripts={j(res.functional_scripts)}\n")
+        f.write(f"reasons={j(res.reasons)}\n")
+        f.write(f"changed_files={j(res.changed_files)}\n")
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    ap = argparse.ArgumentParser(description="Deterministic DeepLabCut test selector")
+    ap.add_argument("--json", action="store_true", help="Print JSON result to stdout")
+    ap.add_argument("--write-github-output", action="store_true", help="Write outputs to $GITHUB_OUTPUT")
+    ap.add_argument("--base-sha", default=None, help="Override base SHA (advanced)")
+    ap.add_argument("--head-sha", default=None, help="Override head SHA (advanced)")
+    args = ap.parse_args(list(argv) if argv is not None else None)
+
+    repo = find_repo_root()
+
+    base, head, mode = determine_diff_range(repo, args.base_sha, args.head_sha)
+    files = changed_files(repo, base, head)
+
+    res = decide(files)
+
+    # Strict validation
+    try:
+        res = SelectorResult.model_validate(res.model_dump())
+    except ValidationError as e:
+        raise RuntimeError(f"Output validation failed: {e}") from e
+
+    if args.json:
+        print(res.model_dump_json(indent=2))
+
+    if args.write_github_output:
+        write_github_output(res)
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
