@@ -50,8 +50,12 @@ Notes for CI
 ------------
 - Ensure actions/checkout uses fetch-depth: 0 (or sufficiently deep),
   otherwise git log may not see history.
-- Requires pydantic and PyYAML to be installed in the environment. 
-  Recommended : install in CI job directly (pip install pydantic pyyaml) rather than adding to requirements, since these are only needed for this tool.
+- Requires:
+  - pydantic
+  - PyYAML 
+  - nbformat
+  to be installed in the environment. 
+  Recommended : install in CI job directly (pip install pydantic pyyaml nbformat) rather than adding to requirements, since these are only needed for this tool.
 """
 # .github/tools/docs_and_notebooks_check.py
 from __future__ import annotations
@@ -75,6 +79,11 @@ try:
     from pydantic import BaseModel, Field, ValidationError, ConfigDict
 except Exception:  # pragma: no cover
     raise RuntimeError("Pydantic is required to run this script")
+try:
+    import nbformat
+    from nbformat.validator import NotebookValidationError
+except Exception:
+    raise RuntimeError("nbformat is required to read/write .ipynb files")
 
 SCHEMA_VERSION = 1
 DLC_NAMESPACE = "deeplabcut"
@@ -110,6 +119,8 @@ class PolicyConfig(BaseModel):
     # Allowlists for strict checks (start empty; ratchet later)
     require_metadata: List[str] = Field(default_factory=list)
     require_recent_verification: List[str] = Field(default_factory=list)
+    
+    require_notebook_normalized: List[str] = Field(default_factory=list)
 
 
 class ToolConfig(BaseModel):
@@ -247,19 +258,37 @@ def dump_md_frontmatter(frontmatter: dict, body: str) -> str:
     return "---\n" + fm_text + "---\n" + body.lstrip("\n")
 
 
-def read_ipynb_meta(path: Path) -> Tuple[dict, dict]:
-    nb = json.loads(path.read_text(encoding="utf-8"))
-    meta = nb.get("metadata", {}) if isinstance(nb, dict) else {}
-    dlc_meta = meta.get(DLC_NAMESPACE, {}) if isinstance(meta, dict) else {}
+def read_ipynb_meta(path: Path) -> tuple[Any, dict]:
+    """
+    Read a notebook using nbformat. Returns (notebook_node, deeplabcut_meta_dict).
+    """
+    nb = nbformat.read(str(path), as_version=4)
+
+    meta = getattr(nb, "metadata", {}) or {}
+    dlc_meta = meta.get(DLC_NAMESPACE, {})
     if not isinstance(dlc_meta, dict):
         dlc_meta = {}
     return nb, dlc_meta
 
+def notebook_is_normalized(path: Path, nb: Any) -> bool:
+    original = path.read_text(encoding="utf-8")
+    normalized = nbformat.writes(nb, version=4, indent=2, ensure_ascii=False) + "\n"
+    return original == normalized
 
-def write_ipynb_meta(path: Path, nb: dict) -> None:
-    # Only rewriting the file in update mode. No cell/output manipulation.
-    path.write_text(json.dumps(nb, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+def write_ipynb_meta(path: Path, nb: Any) -> None:
+    """
+    Write a notebook using nbformat.
 
+    Note: nbformat writes JSON in a canonical form; it *will* rewrite the file,
+    so expect diffs if the notebook wasn't previously normalized to the same style.
+    """
+    # Validate before writing (optional but recommended)
+    nbformat.validate(nb)
+
+    # Use a stable indentation to reduce churn (choose 2 if your repo tends that way)
+    text = nbformat.writes(nb, version=4, indent=2, ensure_ascii=False)
+
+    path.write_text(text + "\n", encoding="utf-8")
 
 def parse_dlc_meta(raw: Any) -> Optional[DLCMeta]:
     if raw is None:
@@ -328,7 +357,19 @@ def scan_files(repo_root: Path, cfg: ToolConfig) -> List[FileRecord]:
 
         try:
             if kind == "ipynb":
-                _nb, raw_meta = read_ipynb_meta(p)
+                nb, raw_meta = read_ipynb_meta(p)
+                try:
+                    nbformat.validate(nb)
+                except NotebookValidationError as e:
+                    rec.errors.append(f"nbformat_invalid: {e}")
+                
+                try:
+                    if not notebook_is_normalized(p, nb):
+                        rec.warnings.append("notebook_not_normalized")
+                except Exception as e:
+                    # Don't crash scan if a file has encoding/IO oddities
+                    rec.errors.append(f"notebook_normalization_check_failed: {e}")
+
                 rec.meta = parse_dlc_meta(raw_meta)
             elif kind == "md":
                 text = p.read_text(encoding="utf-8")
@@ -556,6 +597,10 @@ def enforce(cfg: ToolConfig, records: List[FileRecord]) -> List[str]:
                 if days > pol.warn_if_verified_older_than_days:
                     violations.append(f"{r.path}: last_verified is {days}d old "
                                       f"(> {pol.warn_if_verified_older_than_days}d)")
+
+        if r.kind == "ipynb" and match_allowlist(r.path, pol.require_notebook_normalized):
+            if "notebook_not_normalized" in (r.warnings or []):
+                violations.append(f"{r.path}: notebook is not normalized (run update/format)")
 
     return violations
 

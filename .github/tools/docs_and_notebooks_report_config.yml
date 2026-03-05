@@ -23,3 +23,4 @@ policy:
   # or requiring verification for more recent versions.
   require_metadata: []
   require_recent_verification: []
+  require_notebook_normalized: []
