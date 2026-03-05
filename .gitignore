@@ -138,3 +138,6 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# Automated docs checks
+**/tmp/docs_notebooks_status/
