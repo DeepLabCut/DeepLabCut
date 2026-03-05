@@ -37,26 +37,17 @@ jobs:
           pip install pydantic
           python tools/intelligent_test_selector.py --write-github-output --json
 
+          
   docs-only:
-    name: Docs-only checks
     needs: intelligent-test-selection
     if: needs.intelligent-test-selection.outputs.plan == 'docs_only'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-
-      - name: Install docs build deps
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[docs]"
-
-      - name: Build docs
-        run: |
-          python tools/test_docs_build.py
+    uses: ./.github/workflows/build-book.yml
+    with:
+      publish: false
+      python-version: "3.10"
+      publish_dir: "./_build/html"
+    secrets: inherit
+         
 
   fast-tests:
     name: Fast lane (targeted pytest + selected functional)

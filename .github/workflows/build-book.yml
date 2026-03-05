@@ -1,0 +1,49 @@
+name: Build (and optionally deploy) Jupyter Book
+
+on:
+  workflow_call:
+    inputs:
+      publish:
+        description: "If true, deploy the built site to GitHub Pages (gh-pages branch)."
+        required: false
+        default: false
+        type: boolean
+      python-version:
+        description: "Python version used to build the docs."
+        required: false
+        default: "3.10"
+        type: string
+      publish_dir:
+        description: "Directory to publish (relative to repo root)."
+        required: false
+        default: "./_build/html"
+        type: string
+
+jobs:
+  build-book:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install docs dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install .[docs]
+          # Keep pins here to avoid drift between workflows
+          pip install jupyter-book==1.0.4.post1 sphinxcontrib-mermaid
+
+      - name: Build the book
+        run: |
+          jupyter-book build .
+
+      - name: Deploy to GitHub Pages
+        if: ${{ inputs.publish }}
+        uses: peaceiris/actions-gh-pages@v3.9.3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ inputs.publish_dir }}
