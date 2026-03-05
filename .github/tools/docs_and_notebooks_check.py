@@ -255,7 +255,10 @@ def dump_md_frontmatter(frontmatter: dict, body: str) -> str:
     if yaml is None:
         raise RuntimeError("PyYAML is required to write Markdown frontmatter")
     fm_text = yaml.safe_dump(frontmatter, sort_keys=False, allow_unicode=True)
-    return "---\n" + fm_text + "---\n" + body.lstrip("\n")
+    body_to_write = body
+    if body_to_write.startswith("\n"):
+        body_to_write = body_to_write[1:]
+    return "---\n" + fm_text + "---\n" + body_to_write
 
 
 def read_ipynb_meta(path: Path) -> tuple[Any, dict]:
@@ -272,8 +275,10 @@ def read_ipynb_meta(path: Path) -> tuple[Any, dict]:
 
 def notebook_is_normalized(path: Path, nb: Any) -> bool:
     original = path.read_text(encoding="utf-8")
+    # Normalize newline style so CRLF vs LF differences do not cause false mismatches
+    original_normalized = original.replace("\r\n", "\n").replace("\r", "\n")
     normalized = nbformat.writes(nb, version=4, indent=2, ensure_ascii=False) + "\n"
-    return original == normalized
+    return original_normalized == normalized
 
 def write_ipynb_meta(path: Path, nb: Any) -> None:
     """
@@ -425,7 +430,7 @@ def update_files(
     set_verified_for: Optional[str],
 ) -> List[FileRecord]:
     today = _iso_today()
-    records = scan_files(repo_root, cfg)
+    records = scan_files(repo_root, cfg, targets=targets)
     target_set = set(t.replace(os.sep, "/") for t in targets) if targets else None
 
     for rec in records:
@@ -697,8 +702,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 print(f"- {v}")
             return 2
 
-    # Non-zero if metadata parsing errors occurred (except in 'report' mode)  
-    if args.cmd != "report" and any(r.errors for r in records):  
+    # Non-zero if metadata parsing errors occurred for non-report/check commands
+    if args.cmd not in {"report", "check"} and any(r.errors for r in records):
         return 1
     return 0
 

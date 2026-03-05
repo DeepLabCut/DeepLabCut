@@ -75,7 +75,7 @@ Writes (by default):
 
 ### Check (read-only, may fail)
 
-Check only fails based on allowlists in tools/staleness_config.yml:
+Check only fails based on allowlists in `.github/tools/docs_and_notebooks_report_config.yml`:
 
 ```
 python .github/tools/docs_and_notebooks_check.py check
