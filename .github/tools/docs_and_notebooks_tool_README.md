@@ -10,7 +10,7 @@ pydantic schemas.
 
 ## Files scanned
 
-Default patterns (see `tools/staleness_config.yml`):
+Default patterns (see `.github/tools/docs_and_notebooks_report_config.yml`):
 
 - `examples/COLAB/**/*.ipynb`
 - `examples/JUPYTER/**/*.ipynb`
@@ -68,19 +68,17 @@ If a doc page has no frontmatter, the tool can still report potential staleness 
 python .github/tools/docs_and_notebooks_check.py report
 ```
 
-Writes:
+Writes (by default):  
 
-- `tools/staleness_out/staleness.json`
-- `tools/staleness_out/staleness.md`
+- `tmp/docs_nb_checks/docs_nb_checks.json`  
+- `tmp/docs_nb_checks/docs_nb_checks.md`
 
 ### Check (read-only, may fail)
 
 Check only fails based on allowlists in tools/staleness_config.yml:
 
 ```
-python .github/tools/docs_and_notebooks_check.py check \
-require_metadata \
-require_recent_verification
+python .github/tools/docs_and_notebooks_check.py check
 ```
 
 By default these are empty, so CI will not fail.
@@ -92,12 +90,12 @@ By default these are empty, so CI will not fail.
 
 
 Update only last_git_updated for all scanned files:
-`python tools/staleness.py update --write --only-git-date`
+`python .github/tools/docs_and_notebooks_check.py update --write --only-git-date`
 
 Set verification metadata for specific target files:
 
 ```
-python tools/staleness.py update --write --targets examples/JUPYTER/foo.ipynb \
+python .github/tools/docs_and_notebooks_check.py update --write --targets examples/JUPYTER/foo.ipynb \
   --set-last-verified today --set-verified-for 3.0.0rc13
 ```
 
