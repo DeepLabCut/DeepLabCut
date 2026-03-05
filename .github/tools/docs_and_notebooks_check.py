@@ -78,7 +78,7 @@ except Exception:  # pragma: no cover
 
 SCHEMA_VERSION = 1
 DLC_NAMESPACE = "deeplabcut"
-OUTPUT_FILENAME = "nb_docs_status"
+OUTPUT_FILENAME = "docs_nb_checks"
 DEFAULT_CFG = "docs_and_notebooks_report_config.yml"
 
 # -----------------------------
@@ -569,7 +569,7 @@ def parse_date_token(token: str) -> date:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="DeepLabCut checks tool (docs + notebooks)")
     parser.add_argument("--config", default=DEFAULT_CFG, help="Path to YAML config file")
-    parser.add_argument("--out-dir", default="tmp/docs_notebooks_status", help="Directory to write outputs")
+    parser.add_argument("--out-dir", default=f"tmp/{OUTPUT_FILENAME}", help="Directory to write outputs")
 
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("report", help="Generate staleness report (read-only)")

@@ -140,4 +140,4 @@ ENV/
 .mypy_cache/
 
 # Automated docs checks
-**/tmp/docs_notebooks_status/
+**/tmp/docs_nb_checks/

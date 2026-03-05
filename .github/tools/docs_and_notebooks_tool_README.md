@@ -75,11 +75,13 @@ Writes:
 
 ### Check (read-only, may fail)
 
-`python .github/tools/docs_and_notebooks_check.py check`
-check only fails based on allowlists in tools/staleness_config.yml:
+Check only fails based on allowlists in tools/staleness_config.yml:
 
-require_metadata
+```
+python .github/tools/docs_and_notebooks_check.py check \
+require_metadata \
 require_recent_verification
+```
 
 By default these are empty, so CI will not fail.
 
