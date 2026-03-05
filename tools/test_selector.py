@@ -21,7 +21,7 @@ Intended usage in GitHub Actions
 -------------------------------
 - Checkout with sufficient history for merge-base/diff (typically fetch-depth: 0).
 - Run:
-    python tools/intelligent_test_selector.py --write-github-output --json
+    python tools/test_selector.py --write-github-output --json
 
 This will write the following keys to $GITHUB_OUTPUT:
   plan, pytest_paths, functional_scripts, reasons, changed_files
@@ -79,7 +79,6 @@ SelectorResult.model_rebuild()  # Ensure model is fully built at import time for
 # -----------------------------
 # Configuration (simple, auditable)
 # -----------------------------
-
 MINIMAL_PYTEST = ["tests/test_auxiliaryfunctions.py"]
 
 
@@ -184,8 +183,6 @@ CATEGORY_RULES = [
 # -----------------------------
 # Git helpers
 # -----------------------------
-
-
 def _run_git(args: Sequence[str], cwd: Path) -> str:
     proc = subprocess.run(
         ["git", *args],
@@ -392,6 +389,56 @@ def decide(files: List[str]) -> SelectorResult:
 # -----------------------------
 # Outputs
 # -----------------------------
+def _render_decision_markdown(res: SelectorResult, limit: int = 40) -> str:
+    def bullet(items: List[str], limit_: int = limit) -> str:
+        if not items:
+            return "_(none)_"
+        shown = items[:limit_]
+        s = "\n".join(f"- `{x}`" for x in shown)
+        if len(items) > limit_:
+            s += f"\n- … and {len(items) - limit_} more"
+        return s
+
+    badge = {
+        Plan.DOCS_ONLY: "📚 **docs_only**",
+        Plan.FAST: "⚡ **fast**",
+        Plan.FULL: "🧪 **full**",
+    }.get(res.plan, f"❓ **{res.plan}**")
+
+    md: List[str] = []
+    md.append("# Intelligent test selection\n")
+    md.append(f"**Decision (plan):** {badge}\n")
+    md.append("## Reasons\n")
+    md.append(bullet(res.reasons))
+    md.append("\n## Changed files\n")
+    md.append(bullet(res.changed_files))
+    md.append("\n## Selected pytest paths\n")
+    md.append(bullet(res.pytest_paths))
+    md.append("\n## Selected functional scripts\n")
+    md.append(bullet(res.functional_scripts))
+    md.append("")
+    return "\n".join(md)
+
+
+def write_report_files(res: SelectorResult, out_dir: Path) -> Tuple[Path, Path]:
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    json_path = out_dir / "selection.json"
+    md_path = out_dir / "decision.md"
+
+    json_path.write_text(res.model_dump_json(indent=2), encoding="utf-8")
+    md_path.write_text(_render_decision_markdown(res), encoding="utf-8")
+    return json_path, md_path
+
+
+def append_job_summary(md_path: Path) -> None:
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not summary_path:
+        return
+    # Append markdown to the GitHub Actions Job Summary
+    with open(summary_path, "a", encoding="utf-8") as f:
+        f.write(md_path.read_text(encoding="utf-8"))
+        f.write("\n")
 
 
 def write_github_output(res: SelectorResult) -> None:
@@ -420,6 +467,19 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     )
     ap.add_argument("--base-sha", default=None, help="Override base SHA (advanced)")
     ap.add_argument("--head-sha", default=None, help="Override head SHA (advanced)")
+
+    # NEW:
+    ap.add_argument(
+        "--report-dir",
+        default="tmp/test-selection",
+        help="Directory to write decision report files (selection.json, decision.md)",
+    )
+    ap.add_argument(
+        "--write-summary",
+        action="store_true",
+        help="Append decision.md to GitHub Actions Job Summary if available",
+    )
+
     args = ap.parse_args(list(argv) if argv is not None else None)
 
     repo = find_repo_root()
@@ -435,11 +495,19 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     except ValidationError as e:
         raise RuntimeError(f"Output validation failed: {e}") from e
 
+    # NEW: Always write report files for transparency
+    report_dir = Path(args.report_dir)
+    json_path, md_path = write_report_files(res, report_dir)
+
     if args.json:
         print(res.model_dump_json(indent=2))
 
     if args.write_github_output:
         write_github_output(res)
+
+    # NEW: Write Job Summary (GitHub renders markdown from $GITHUB_STEP_SUMMARY)
+    if args.write_summary:
+        append_job_summary(md_path)
 
     return 0
 

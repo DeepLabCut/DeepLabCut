@@ -30,14 +30,29 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Run deterministic test selector
+      - name: Run selector + generate report
         id: selector
         run: |
           python -m pip install --upgrade pip
           pip install pydantic
-          python tools/intelligent_test_selector.py --write-github-output --json
+          python tools/test_selector.py \
+            --write-github-output \
+            --write-summary \
+            --report-dir tmp/test-selection \
+            --json
 
-          
+      - name: Upload selector report
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-selection-report
+          path: |
+            tmp/test-selection/selection.json
+            tmp/test-selection/decision.md
+          retention-days: 7
+          if-no-files-found: error
+
+
+
   docs-only:
     needs: intelligent-test-selection
     if: needs.intelligent-test-selection.outputs.plan == 'docs_only'
@@ -45,9 +60,9 @@ jobs:
     with:
       publish: false
       python-version: "3.10"
-      publish_dir: "./_build/html"
+      build_dir: "./_build/html"
     secrets: inherit
-         
+
 
   fast-tests:
     name: Fast lane (targeted pytest + selected functional)
