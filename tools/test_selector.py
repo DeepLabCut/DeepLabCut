@@ -41,10 +41,9 @@ import re
 import subprocess
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Callable
+from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple
 
-from pydantic import BaseModel, Field, ConfigDict, ValidationError
-
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 SHA_RE = re.compile(r"^[0-9a-f]{7,40}$", re.IGNORECASE)
 
@@ -54,9 +53,9 @@ DLC_NAMESPACE = "deeplabcut"
 class Plan(str, Enum):
     """Unambiguous test plan."""
 
-    DOCS_ONLY = "docs_only"   # Docs build only
-    FAST = "fast"             # Targeted pytest + optional functional scripts (single-lane)
-    FULL = "full"             # Delegate to full test workflow/matrix
+    DOCS_ONLY = "docs_only"  # Docs build only
+    FAST = "fast"  # Targeted pytest + optional functional scripts (single-lane)
+    FULL = "full"  # Delegate to full test workflow/matrix
 
 
 class SelectorResult(BaseModel):
@@ -74,6 +73,8 @@ class SelectorResult(BaseModel):
     reasons: List[str] = Field(default_factory=list)
     changed_files: List[str] = Field(default_factory=list)
 
+
+SelectorResult.model_rebuild()  # Ensure model is fully built at import time for validation in main()
 
 # -----------------------------
 # Configuration (simple, auditable)
@@ -137,8 +138,10 @@ CATEGORY_RULES = [
         "name": "multianimal",
         "match_any": [
             lambda p: "multianimal" in p.lower(),
-            lambda p: p.startswith("deeplabcut/pose_estimation_tensorflow/") and "multi" in p.lower(),
-            lambda p: p.startswith("deeplabcut/pose_estimation_pytorch/") and "multi" in p.lower(),
+            lambda p: p.startswith("deeplabcut/pose_estimation_tensorflow/")
+            and "multi" in p.lower(),
+            lambda p: p.startswith("deeplabcut/pose_estimation_pytorch/")
+            and "multi" in p.lower(),
         ],
         "pytest_paths": [
             "tests/test_auxfun_multianimal.py",
@@ -181,6 +184,7 @@ CATEGORY_RULES = [
 # -----------------------------
 # Git helpers
 # -----------------------------
+
 
 def _run_git(args: Sequence[str], cwd: Path) -> str:
     proc = subprocess.run(
@@ -236,7 +240,9 @@ def _normalize_relpath(p: str) -> str:
     return "/".join(parts)
 
 
-def determine_diff_range(repo: Path, override_base: Optional[str], override_head: Optional[str]) -> Tuple[str, str, str]:
+def determine_diff_range(
+    repo: Path, override_base: Optional[str], override_head: Optional[str]
+) -> Tuple[str, str, str]:
     """Return (base_commit, head_commit, mode)."""
     event_name = os.environ.get("GITHUB_EVENT_NAME", "")
     event = _load_github_event()
@@ -291,6 +297,7 @@ def changed_files(repo: Path, base: str, head: str) -> List[str]:
 # -----------------------------
 # Decision logic
 # -----------------------------
+
 
 def _matches_any(path: str, preds: Sequence[Callable[[str], bool]]) -> bool:
     for pred in preds:
@@ -386,6 +393,7 @@ def decide(files: List[str]) -> SelectorResult:
 # Outputs
 # -----------------------------
 
+
 def write_github_output(res: SelectorResult) -> None:
     out_path = os.environ.get("GITHUB_OUTPUT")
     if not out_path:
@@ -405,7 +413,11 @@ def write_github_output(res: SelectorResult) -> None:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     ap = argparse.ArgumentParser(description="Deterministic DeepLabCut test selector")
     ap.add_argument("--json", action="store_true", help="Print JSON result to stdout")
-    ap.add_argument("--write-github-output", action="store_true", help="Write outputs to $GITHUB_OUTPUT")
+    ap.add_argument(
+        "--write-github-output",
+        action="store_true",
+        help="Write outputs to $GITHUB_OUTPUT",
+    )
     ap.add_argument("--base-sha", default=None, help="Override base SHA (advanced)")
     ap.add_argument("--head-sha", default=None, help="Override head SHA (advanced)")
     args = ap.parse_args(list(argv) if argv is not None else None)
