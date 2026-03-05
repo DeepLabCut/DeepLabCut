@@ -275,11 +275,16 @@ def parse_dlc_meta(raw: Any) -> Optional[DLCMeta]:
 
 
 def meta_to_jsonable(meta: DLCMeta) -> dict:
-    # Exclude None fields; do NOT set tier by default.
+    """
+    Return JSON-serializable metadata (dates become ISO strings).
+    This prevents json.dumps() from failing when writing .ipynb files.
+    """
     try:
-        return meta.model_dump(exclude_none=True)  # pydantic v2
+        # Pydantic v2: mode='json' converts date/datetime into ISO strings
+        return meta.model_dump(mode="json", exclude_none=True)
     except AttributeError:
-        return meta.dict(exclude_none=True)        # pydantic v1
+        # Pydantic v1: meta.json() encodes dates; parse back into dict
+        return json.loads(meta.json(exclude_none=True))
 
 
 def compute_days_since(d: Optional[date], today: date) -> Optional[int]:
