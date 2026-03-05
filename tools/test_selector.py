@@ -291,6 +291,43 @@ def changed_files(repo: Path, base: str, head: str) -> List[str]:
     return sorted(set(files))
 
 
+def _is_safe_relpath(p: str) -> bool:
+    """Safety check for a git-relative path: no absolute, no traversal, no NUL."""
+    return (
+        p
+        and "\x00" not in p
+        and not p.startswith("/")
+        and not re.match(r"^[A-Za-z]:/", p)
+        and ".." not in Path(p).parts
+    )
+
+
+def validate_selected_paths(res: SelectorResult, repo: Path) -> SelectorResult:
+    missing = []
+
+    # validate pytest paths (files/dirs)
+    for p in res.pytest_paths:
+        if not _is_safe_relpath(p) or not (repo / p).exists():
+            missing.append(f"pytest:{p}")
+
+    # validate functional scripts (files)
+    for s in res.functional_scripts:
+        if not _is_safe_relpath(s) or not (repo / s).exists():
+            missing.append(f"script:{s}")
+
+    if missing:
+        # Fail-safe escalation to FULL
+        return SelectorResult(
+            plan=Plan.FULL,
+            pytest_paths=[],
+            functional_scripts=[],
+            reasons=res.reasons + ["missing_selected_paths"] + missing,
+            changed_files=res.changed_files,
+        )
+
+    return res
+
+
 # -----------------------------
 # Decision logic
 # -----------------------------
@@ -488,6 +525,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     files = changed_files(repo, base, head)
 
     res = decide(files)
+    res = validate_selected_paths(res, repo)
 
     # Strict validation
     try:
