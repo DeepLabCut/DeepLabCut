@@ -39,12 +39,12 @@ Update verification fields for selected targets (write mode):
 
 Configuration
 -------------
-Uses .github/tools/staleness_config.yml by default.
+Uses .github/tools/docs_and_notebooks_report_config.yml by default.  
 
-Outputs
--------
-- nb_docs_status.json: machine-readable report
-- nb_docs_status.md: human-readable summary
+Outputs  
+-------  
+- docs_nb_checks.json: machine-readable report  
+- docs_nb_checks.md: human-readable summary
 
 Notes for CI
 ------------
@@ -88,8 +88,8 @@ except Exception:
 SCHEMA_VERSION = 1
 DLC_NAMESPACE = "deeplabcut"
 OUTPUT_FILENAME = "docs_nb_checks"
-DEFAULT_CFG = "docs_and_notebooks_report_config.yml"
-
+SCRIPT_DIR = Path(__file__).resolve().parent
+DEFAULT_CFG = (SCRIPT_DIR / "docs_and_notebooks_report_config.yml")
 # -----------------------------
 # Pydantic schemas
 # -----------------------------
@@ -339,16 +339,21 @@ def load_config(config_path: Path) -> ToolConfig:
         return ToolConfig.parse_obj(raw)       # pydantic v1
 
 
-def scan_files(repo_root: Path, cfg: ToolConfig) -> List[FileRecord]:
+def scan_files(repo_root: Path, cfg: ToolConfig, targets: Optional[List[str]] = None) -> List[FileRecord]:
     today = _iso_today()
     paths = glob_paths(repo_root, cfg.scan.include)
     records: List[FileRecord] = []
+    target_set = None
+    if targets:
+        target_set = set(t.replace(os.sep, "/") for t in targets)
+
 
     for p in paths:
         rel = str(p.resolve().relative_to(repo_root)).replace(os.sep, "/")
         if is_excluded(rel, cfg.scan.exclude):
             continue
-
+        if target_set is not None and rel not in target_set:
+            continue
         kind = file_kind(p)
         rec = FileRecord(path=rel, kind=kind)
 
@@ -618,12 +623,23 @@ def parse_date_token(token: str) -> date:
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="DeepLabCut checks tool (docs + notebooks)")
-    parser.add_argument("--config", default=DEFAULT_CFG, help="Path to YAML config file")
+    parser.add_argument("--config", default=str(DEFAULT_CFG), help="Path to YAML config file")
     parser.add_argument("--out-dir", default=f"tmp/{OUTPUT_FILENAME}", help="Directory to write outputs")
 
     sub = parser.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("report", help="Generate staleness report (read-only)")
-    sub.add_parser("check", help="Run policy checks (read-only; may exit non-zero)")
+    rep = sub.add_parser("report", help="Generate staleness report (read-only)")
+    rep.add_argument(
+        "--targets",
+        nargs="*",
+        help="Optional list of relative file paths to scan (limits scan to these files)",
+    )
+
+    chk = sub.add_parser("check", help="Run policy checks (read-only; may exit non-zero)")
+    chk.add_argument(
+        "--targets",
+        nargs="*",
+        help="Optional list of relative file paths to scan (limits scan to these files)",
+    )
 
     up = sub.add_parser("update", help="Update metadata/frontmatter (write mode requires --write)")
     up.add_argument("--write", action="store_true", help="Actually write changes (otherwise dry-run)")
@@ -640,7 +656,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     out_dir = Path(args.out_dir)
 
     if args.cmd in {"report", "check"}:
-        records = scan_files(repo_root, cfg)
+        records = scan_files(repo_root, cfg, targets=getattr(args, "targets", None))
     else:
         lv = parse_date_token(args.set_last_verified) if args.set_last_verified else None
         records = update_files(
@@ -681,8 +697,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 print(f"- {v}")
             return 2
 
-    # Non-zero if metadata parsing errors occurred
-    if any(r.errors for r in records):
+    # Non-zero if metadata parsing errors occurred (except in 'report' mode)  
+    if args.cmd != "report" and any(r.errors for r in records):  
         return 1
     return 0
 
