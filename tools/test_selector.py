@@ -92,6 +92,13 @@ FULL_SUITE_TRIGGERS = [
     ("DEEPLABCUT.yaml changed", lambda p: p.endswith("DEEPLABCUT.yaml")),
 ]
 
+# Files that should be enforced by dedicated lint workflows, not by test selection
+LINT_ONLY_FILES = {
+    ".pre-commit-config.yaml",
+    # add later if you use them:
+    # ".pre-commit-hooks.yaml",
+}
+
 
 # Category rules are location-based. If multiple categories match, we treat it as mixed.
 # For prototype simplicity:
@@ -474,6 +481,7 @@ def explain_changed_files(files: List[str]) -> Dict[str, Any]:
     per_file: Dict[str, Dict[str, Any]] = {}
     by_category: Dict[str, List[str]] = defaultdict(list)
     full_trigger_files: Dict[str, List[str]] = defaultdict(list)
+    lint_only_files: List[str] = []
     uncategorized: List[str] = []
 
     # Prep category predicates
@@ -494,8 +502,13 @@ def explain_changed_files(files: List[str]) -> Dict[str, Any]:
         for cat_name, preds in categories:
             if _matches_any(f, preds):
                 cats.append(cat_name)
+        is_lint_only = f in LINT_ONLY_FILES
 
-        per_file[f] = {"full_triggers": ft, "categories": cats}
+        per_file[f] = {
+            "full_triggers": ft,
+            "categories": cats,
+            "lint_only": is_lint_only,
+        }
 
         if ft:
             for t in ft:
@@ -504,6 +517,9 @@ def explain_changed_files(files: List[str]) -> Dict[str, Any]:
         if cats:
             for c in cats:
                 by_category[c].append(f)
+
+        if is_lint_only:
+            lint_only_files.append(f)
         else:
             # Only uncategorized if it matched no categories AND no full-suite triggers
             if not ft:
@@ -519,6 +535,7 @@ def explain_changed_files(files: List[str]) -> Dict[str, Any]:
         "per_file": per_file,
         "full_trigger_files": dict(full_trigger_files),
         "by_category": dict(by_category),
+        "lint_only": sorted(set(lint_only_files)),
         "uncategorized": sorted(set(uncategorized)),
     }
 
@@ -534,6 +551,8 @@ def _render_file_line(f: str, info: Dict[str, Any]) -> str:
         tags.append("🚨 " + ", ".join(info["full_triggers"]))
     if info.get("categories"):
         tags.append("🏷️ " + ", ".join(info["categories"]))
+    if info.get("lint_only"):
+        tags.append("🧹 lint-only (checked in dedicated lint workflow)")
 
     tag_str = (" — " + " | ".join(tags)) if tags else ""
     return f"- {icon} `{f}`{tag_str}"
@@ -636,6 +655,13 @@ def _render_decision_markdown(res: SelectorResult, limit: int = 40) -> str:
             md.append("\n</details>\n")
     else:
         md.append("_(none)_\n")
+
+    if exp.get("lint_only"):
+        md.append("### 🧹 Lint-only files (checked by dedicated lint workflow)\n")
+        md.append("> These changes do **not** influence test selection.\n")
+        for f in exp["lint_only"]:
+            md.append(_render_file_line(f, exp["per_file"][f]))
+        md.append("")
 
     if exp["uncategorized"]:
         md.append("### ❓ Uncategorized files (matched no category)\n")
