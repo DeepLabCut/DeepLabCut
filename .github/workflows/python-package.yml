@@ -85,7 +85,7 @@ jobs:
       - name: Run pytest tests
         shell: bash -el {0}  # Important: activates the conda environment
         run: |
-          pip install --no-cache-dir -e --group dev
+          pip install --no-cache-dir -e . --group dev
           python -m pytest
 
       - name: Run functional tests
