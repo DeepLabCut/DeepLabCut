@@ -240,7 +240,7 @@ def _normalize_relpath(p: str) -> str:
 
 def _empty_tree(repo: Path) -> str:
     # Avoid hardcoding; derive the empty tree hash deterministically.
-    empty = _run_git(["hash-object", "-t", "tree", "/dev/null"], repo)
+    empty = _run_git(["hash-object", "-t", "tree", os.devnull], repo)
     return _validate_sha("empty-tree", empty)
 
 
@@ -301,7 +301,7 @@ def determine_diff_range(
 def changed_files(repo: Path, base: str, head: str) -> List[str]:
     if not base or not head:
         return []
-    out = _run_git(["diff", "--name-only", "--diff-filter=ACMRT", base, head], repo)
+    out = _run_git(["diff", "--name-only", "--diff-filter=ACMRTD", base, head], repo)
     files = [_normalize_relpath(line) for line in out.splitlines() if line.strip()]
     return sorted(set(files))
 
