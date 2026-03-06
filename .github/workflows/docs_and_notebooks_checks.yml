@@ -46,6 +46,7 @@ jobs:
           python tools/docs_and_notebooks_check.py \
           --config tools/docs_and_notebooks_report_config.yml \
           --out-dir tmp/docs_nb_checks \
+          --no-step-summary \
           check
 
       - name: Upload staleness artifacts
