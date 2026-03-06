@@ -8,7 +8,7 @@ on:
     branches: [ main ]
 
 concurrency:
-  group: intelligent-${{ github.event.pull_request.number || github.ref }}
+  group: intelligent-${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
   cancel-in-progress: true
 
 permissions:
@@ -121,4 +121,4 @@ jobs:
     if: needs.intelligent-test-selection.outputs.plan == 'full'
     uses: ./.github/workflows/python-package.yml
     with:
-      concurrency_key: ${{ format('pr-{0}', github.event.pull_request.number) }}
+      concurrency_key: ${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || '' }}
