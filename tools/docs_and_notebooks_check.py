@@ -10,8 +10,9 @@ Goals
 
 Terminology
 -----------
-last_git_updated
-    Computed from git history (last commit touching the file).
+last_content_updated
+    Computed from git history, excluding metadata-only commits.
+    (Metadata commits must include META_COMMIT_MARKER in the commit message.)
 
 last_verified
     Human-controlled date indicating the file was verified to work/be accurate.
@@ -30,12 +31,16 @@ Report (read-only):
 Check (read-only; may fail based on config allowlists):
     python tools/docs_and_notebooks_check.py check
 
-Update git-updated fields (write mode; requires --write):
-    python tools/docs_and_notebooks_check.py update --write --only-git-date
+Update content-date field from git (write mode; requires --write):
+    python tools/docs_and_notebooks_check.py update --write --set-content-date-from-git
 
 Update verification fields for selected targets (write mode):
     python tools/docs_and_notebooks_check.py update --write --targets docs/page.md \
         --set-last-verified today --set-verified-for 3.0.0rc13
+
+Normalize notebooks deterministically (explicit churn; write mode):
+    python tools/docs_and_notebooks_check.py normalize --write --targets docs/notebook.ipynb
+
 
 Configuration
 -------------
@@ -90,6 +95,19 @@ DLC_NAMESPACE = "deeplabcut"
 OUTPUT_FILENAME = "docs_nb_checks"
 SCRIPT_DIR = Path(__file__).resolve().parent
 DEFAULT_CFG = (SCRIPT_DIR / "docs_and_notebooks_report_config.yml")
+
+
+# -----------------------------
+# Metadata commit marker / guidance
+# -----------------------------
+# IMPORTANT:
+#   Metadata-only updates and notebook normalization rewrite files and will change
+#   "git last touched" timestamps. To preserve meaningful "content age", all such
+#   commits must include this marker in the commit message.
+META_COMMIT_MARKER = "chore(metadata)"
+SUGGESTED_META_COMMIT_MESSAGE = f"{META_COMMIT_MARKER}: update docs/notebooks metadata"
+
+
 # -----------------------------
 # Pydantic schemas
 # -----------------------------
@@ -98,9 +116,17 @@ class DLCMeta(BaseModel):
     """Metadata embedded in files under the `deeplabcut` namespace."""
     model_config = ConfigDict(extra="allow")
 
-    last_git_updated: Optional[date] = None
+
+    # Tool-managed: last meaningful content update date (excluding metadata commits)
+    last_content_updated: Optional[date] = None
+
+    # Optional tool-managed: last time metadata/normalization was performed
+    last_metadata_updated: Optional[date] = None
+    # Optional human-managed verification fields
     last_verified: Optional[date] = None
+    # Version or other string indicating what this file was verified for (e.g. "3.0.0rc13")
     verified_for: Optional[str] = None
+    # Extra metadata fields for later usage (e.g. allowlist tier classification), but not currently used by the tool
     tier: Optional[str] = None
     ignore: bool = False
     notes: Optional[str] = None
@@ -112,7 +138,7 @@ class ScanConfig(BaseModel):
 
 
 class PolicyConfig(BaseModel):
-    warn_if_git_older_than_days: int = 365
+    warn_if_content_older_than_days: int = 365
     warn_if_verified_older_than_days: int = 365
     missing_last_verified_is_warning: bool = True
 
@@ -133,14 +159,16 @@ class FileRecord(BaseModel):
     path: str
     kind: str  # ipynb | md | other
 
-    # Computed from git
-    last_git_updated: Optional[date] = None
+    # Computed from git (excluding metadata-only commits)
+    last_content_updated: Optional[date] = None
+    # Debug-only: raw git last touched (may be metadata commit)
+    last_git_touched: Optional[date] = None
 
     # Read from file metadata/frontmatter
     meta: Optional[DLCMeta] = None
 
     # Derived
-    days_since_git_update: Optional[int] = None
+    days_since_content_update: Optional[int] = None
     days_since_verified: Optional[int] = None
 
     warnings: List[str] = Field(default_factory=list)
@@ -213,14 +241,48 @@ def file_kind(path: Path) -> str:
     return "other"
 
 
-def git_last_updated(repo_root: Path, rel_path: str) -> Optional[date]:
-    code, out, _err = _run_git(["log", "-1", "--format=%cI", "--", rel_path], cwd=repo_root)
-    if code != 0 or not out:
+def _parse_git_iso_date(out: str) -> Optional[date]:
+    out = (out or "").strip()
+    if not out:
         return None
     try:
         return datetime.fromisoformat(out).date()
     except Exception:
         return None
+
+
+def git_last_touched(repo_root: Path, rel_path: str) -> Optional[date]:
+    code, out, _err = _run_git(["log", "-1", "--format=%cI", "--", rel_path], cwd=repo_root)
+    if code != 0:
+        return None
+    return _parse_git_iso_date(out)
+
+
+def git_last_content_updated(repo_root: Path, rel_path: str) -> Tuple[Optional[date], bool]:
+    """
+    Return (date, used_fallback).
+
+    Compute last meaningful content update by skipping commits containing META_COMMIT_MARKER.
+    This requires metadata-only commits to include the marker.
+
+    If all commits touching the file contain the marker (or history is shallow),
+    fall back to raw git_last_touched() and return used_fallback=True.
+    """
+    args = [
+        "log",
+        "-1",
+        "--format=%cI",
+        "--invert-grep",
+        "--grep",
+        META_COMMIT_MARKER,
+        "--",
+        rel_path,
+    ]
+    code, out, _err = _run_git(args, cwd=repo_root)
+    d = _parse_git_iso_date(out) if code == 0 else None
+    if d is not None:
+        return d, False
+    return git_last_touched(repo_root, rel_path), True
 
 
 FRONTMATTER_RE = re.compile(r"^---\s*$")
@@ -362,8 +424,11 @@ def scan_files(repo_root: Path, cfg: ToolConfig, targets: Optional[List[str]] = 
         kind = file_kind(p)
         rec = FileRecord(path=rel, kind=kind)
 
-        rec.last_git_updated = git_last_updated(repo_root, rel)
-        rec.days_since_git_update = compute_days_since(rec.last_git_updated, today)
+        rec.last_git_touched = git_last_touched(repo_root, rel)
+        rec.last_content_updated, used_fallback = git_last_content_updated(repo_root, rel)
+        rec.days_since_content_update = compute_days_since(rec.last_content_updated, today)
+        if used_fallback:
+            rec.warnings.append("content_date_fallback_to_git_touched")
 
         try:
             if kind == "ipynb":
@@ -400,8 +465,8 @@ def scan_files(repo_root: Path, cfg: ToolConfig, targets: Optional[List[str]] = 
 
         pol = cfg.policy
 
-        if rec.days_since_git_update is not None and rec.days_since_git_update > pol.warn_if_git_older_than_days:
-            rec.warnings.append(f"git_stale>{pol.warn_if_git_older_than_days}d")
+        if rec.days_since_content_update is not None and rec.days_since_content_update > pol.warn_if_content_older_than_days:
+            rec.warnings.append(f"content_stale>{pol.warn_if_content_older_than_days}d")
 
         if last_verified is None and pol.missing_last_verified_is_warning:
             rec.warnings.append("missing_last_verified")
@@ -419,15 +484,30 @@ def scan_files(repo_root: Path, cfg: ToolConfig, targets: Optional[List[str]] = 
 # -----------------------------
 # Update mode
 # -----------------------------
+def _require_meta_marker_ack(write: bool, ack_marker: bool) -> None:
+    """
+    Guardrail: writing metadata/normalization without the marker convention will
+    destroy the meaning of content freshness signals. Require an explicit ack.
+    """
+    if not write:
+        return
+    if ack_marker:
+        return
+    raise SystemExit(
+        "Refusing to write without acknowledging metadata-commit convention.\n"
+        "Re-run with --ack-meta-commit-marker and commit with:\n"
+        f"  {SUGGESTED_META_COMMIT_MESSAGE}\n"
+    )
 
 def update_files(
     repo_root: Path,
     cfg: ToolConfig,
     targets: Optional[List[str]],
     write: bool,
-    only_git_date: bool,
+    set_content_date_from_git: bool,
     set_last_verified: Optional[date],
     set_verified_for: Optional[str],
+    ack_meta_commit_marker: bool,
 ) -> List[FileRecord]:
     today = _iso_today()
     records = scan_files(repo_root, cfg, targets=targets)
@@ -443,15 +523,19 @@ def update_files(
 
         meta = rec.meta or DLCMeta()
 
-        # Always update last_git_updated to computed value (if available)
-        if rec.last_git_updated is not None:
-            meta.last_git_updated = rec.last_git_updated
+        # Tool-managed: optionally set last_content_updated from computed git value
+        if set_content_date_from_git and rec.last_content_updated is not None:
+            meta.last_content_updated = rec.last_content_updated
 
-        if not only_git_date:
-            if set_last_verified is not None:
-                meta.last_verified = set_last_verified
-            if set_verified_for is not None:
-                meta.verified_for = set_verified_for
+        # Optional: mark maintenance time if we actually write
+        if write:
+            meta.last_metadata_updated = today
+
+        # Human-controlled verification fields
+        if set_last_verified is not None:
+            meta.last_verified = set_last_verified
+        if set_verified_for is not None:
+            meta.verified_for = set_verified_for
 
         desired = meta_to_jsonable(meta)
         abs_path = repo_root / rec.path
@@ -469,6 +553,7 @@ def update_files(
                 nb_meta[DLC_NAMESPACE] = merged
                 changed = True
                 if write:
+                    _require_meta_marker_ack(write=True, ack_marker=ack_meta_commit_marker)
                     write_ipynb_meta(abs_path, nb)
 
         elif rec.kind == "md":
@@ -484,6 +569,7 @@ def update_files(
                 fm[DLC_NAMESPACE] = merged
                 changed = True
                 if write:
+                    _require_meta_marker_ack(write=True, ack_marker=ack_meta_commit_marker)
                     abs_path.write_text(dump_md_frontmatter(fm, body), encoding="utf-8")
 
         rec.would_change = changed
@@ -492,6 +578,61 @@ def update_files(
 
     return records
 
+# -----------------------------
+# Notebook formatting
+# -----------------------------
+def normalize_notebooks(
+    repo_root: Path,
+    cfg: ToolConfig,
+    targets: Optional[List[str]],
+    write: bool,
+    ack_meta_commit_marker: bool,
+) -> List[FileRecord]:
+    """
+    Normalize notebooks deterministically (canonical nbformat JSON).
+    This is intentionally separated from update() because it causes churn.
+    """
+    _require_meta_marker_ack(write=write, ack_marker=ack_meta_commit_marker)
+    records = scan_files(repo_root, cfg, targets=targets)
+    today = _iso_today()
+
+    for rec in records:
+        if rec.kind != "ipynb":
+            continue
+        if rec.meta and rec.meta.ignore:
+            continue
+
+        abs_path = repo_root / rec.path
+        try:
+            nb, _raw = read_ipynb_meta(abs_path)
+            nbformat.validate(nb)
+
+            if not notebook_is_normalized(abs_path, nb):
+                rec.would_change = True
+                if write:
+                    # Rewrite notebook in canonical form
+                    write_ipynb_meta(abs_path, nb)
+
+                    # Update embedded maintenance timestamp
+                    meta = rec.meta or DLCMeta()
+                    meta.last_metadata_updated = today
+
+                    nb_meta = nb.setdefault("metadata", {})
+                    prev = nb_meta.get(DLC_NAMESPACE, {})
+                    if not isinstance(prev, dict):
+                        prev = {}
+                    merged = dict(prev)
+                    merged.update(meta_to_jsonable(meta))
+                    nb_meta[DLC_NAMESPACE] = merged
+
+                    # Write again to persist metadata update (still canonical)
+                    write_ipynb_meta(abs_path, nb)
+                    rec.meta = meta
+
+        except Exception as e:
+            rec.errors.append(f"normalize_failed: {e}")
+
+    return records
 
 # -----------------------------
 # Output formatting
@@ -524,22 +665,28 @@ def to_markdown(report: Report, cfg: ToolConfig) -> str:
     lines.append(f"- Files with errors: **{t['errors']}**\n")
     lines.append(f"- Missing metadata: **{t['missing_metadata']}**\n")
     lines.append(f"- Missing last_verified: **{t['missing_last_verified']}**\n")
-    lines.append(f"- Git-stale (> {pol.warn_if_git_older_than_days}d): **{t['git_stale']}**\n")
+    lines.append(f"- Git-stale (> {pol.warn_if_content_older_than_days}d): **{t['git_stale']}**\n")
     lines.append(f"- Verification-stale (> {pol.warn_if_verified_older_than_days}d): **{t['verified_stale']}**\n\n")
 
     def fmt_date(d: Optional[date]) -> str:
         return d.isoformat() if d else "-"
 
     warn_recs = [r for r in report.records if r.warnings and not (r.meta and r.meta.ignore)]
-    warn_recs.sort(key=lambda r: (-(r.days_since_verified or -1), -(r.days_since_git_update or -1), r.path))
+    warn_recs.sort(key=lambda r: (-(r.days_since_verified or -1), -(r.days_since_content_update or -1), r.path))
 
     if warn_recs:
         lines.append("## Warnings\n")
         for r in warn_recs:
             meta = r.meta
             lines.append(f"- **{r.path}** ({r.kind})\n")
-            lines.append(f"  - last_git_updated: {fmt_date(r.last_git_updated)} "
-                        f"(days: {r.days_since_git_update if r.days_since_git_update is not None else '-'})\n")
+            lines.append(
+                f"  - last_content_updated: {fmt_date(r.last_content_updated)} "
+                f"(days: {r.days_since_content_update if r.days_since_content_update is not None else '-'})\n"
+            )
+            if r.last_git_touched:
+                lines.append(f"  - last_git_touched: {fmt_date(r.last_git_touched)}\n")
+            if meta and meta.last_metadata_updated:
+                lines.append(f"  - last_metadata_updated: {fmt_date(meta.last_metadata_updated)}\n")
             lv = meta.last_verified if meta else None
             lines.append(f"  - last_verified: {fmt_date(lv)} "
                         f"(days: {r.days_since_verified if r.days_since_verified is not None else '-'})\n")
@@ -648,10 +795,28 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     up = sub.add_parser("update", help="Update metadata/frontmatter (write mode requires --write)")
     up.add_argument("--write", action="store_true", help="Actually write changes (otherwise dry-run)")
-    up.add_argument("--only-git-date", action="store_true", help="Only update last_git_updated")
+    up.add_argument(
+        "--set-content-date-from-git",
+        action="store_true",
+        help="Set embedded last_content_updated from computed git content date",
+    )
     up.add_argument("--targets", nargs="*", help="Optional list of relative file paths to update")
     up.add_argument("--set-last-verified", default=None, help="YYYY-MM-DD or 'today'")
     up.add_argument("--set-verified-for", default=None, help="String like 3.0.0rc13")
+    up.add_argument(
+        "--ack-meta-commit-marker",
+        action="store_true",
+        help=f"Acknowledge that you will commit changes using marker: {META_COMMIT_MARKER}",
+    )
+    
+    norm = sub.add_parser("normalize", help="Normalize notebooks deterministically (write mode requires --write)")
+    norm.add_argument("--write", action="store_true", help="Actually write changes (otherwise dry-run)")
+    norm.add_argument("--targets", nargs="*", help="Optional list of relative notebook paths to normalize")
+    norm.add_argument(
+        "--ack-meta-commit-marker",
+        action="store_true",
+        help=f"Acknowledge that you will commit changes using marker: {META_COMMIT_MARKER}",
+    )
 
     args = parser.parse_args(list(argv) if argv is not None else None)
 
@@ -662,17 +827,32 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     if args.cmd in {"report", "check"}:
         records = scan_files(repo_root, cfg, targets=getattr(args, "targets", None))
-    else:
+
+    elif args.cmd == "update":
         lv = parse_date_token(args.set_last_verified) if args.set_last_verified else None
         records = update_files(
             repo_root,
             cfg,
             targets=args.targets,
             write=bool(args.write),
-            only_git_date=bool(args.only_git_date),
+            set_content_date_from_git=bool(args.set_content_date_from_git),
             set_last_verified=lv,
             set_verified_for=args.set_verified_for,
+            ack_meta_commit_marker=bool(args.ack_meta_commit_marker),
         )
+        if args.write:
+            print(f"\nSuggested commit message:\n  {SUGGESTED_META_COMMIT_MESSAGE}\n")
+
+    else:  # normalize
+        records = normalize_notebooks(
+            repo_root,
+            cfg,
+            targets=args.targets,
+            write=bool(args.write),
+            ack_meta_commit_marker=bool(args.ack_meta_commit_marker),
+        )
+        if args.write:
+            print(f"\nSuggested commit message:\n  {SUGGESTED_META_COMMIT_MESSAGE}\n")
 
     report = Report(
         generated_at=datetime.now(timezone.utc),
