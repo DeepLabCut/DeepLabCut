@@ -126,7 +126,7 @@ jupyter-book build .
 
 ---
 
-s## 6) Troubleshooting tips
+## 6) Troubleshooting tips
 
 - If a workflow run is unexpectedly selecting `full`, check the selector report:
   - `tmp/test-selection/decision.md`
