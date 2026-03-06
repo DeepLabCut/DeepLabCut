@@ -46,6 +46,7 @@ dependencies = [
   "pillow>=7.1",
   "pycocotools",
   "pyyaml",
+  "pydantic>2",
   "ruamel-yaml>=0.15",
   "scikit-image>=0.17",
   "scikit-learn>=1",
@@ -109,7 +110,8 @@ Documentation = "https://deeplabcut.github.io/DeepLabCut/README.html"
 
 [dependency-groups]
 dev = [
-  "black",
+  "pydantic>2",
+  "nbformat>5",
   "coverage",
   "pytest",
   "pytest-cov",
