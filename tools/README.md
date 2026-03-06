@@ -114,7 +114,7 @@ python tools/test_selector.py --report-dir tmp/test-selection --json
 
 ## 5) Docs: Jupyter Book build (local)
 
-If the repo uses Jupyter Book for docs:
+The repo uses Jupyter Book for docs:
 
 ```bash
 python -m pip install -U pip
@@ -126,24 +126,7 @@ jupyter-book build .
 
 ---
 
-## 6) Docs & notebooks staleness / metadata tooling (optional)
-
-If the repo includes a docs/notebooks check tool under `.github/tools/`:
-
-```bash
-python .github/tools/docs_and_notebooks_check.py report
-python .github/tools/docs_and_notebooks_check.py check
-```
-
-To update metadata (write mode):
-
-```bash
-python .github/tools/docs_and_notebooks_check.py update --write --only-git-date
-```
-
----
-
-## 7) Troubleshooting tips
+s## 6) Troubleshooting tips
 
 - If a workflow run is unexpectedly selecting `full`, check the selector report:
   - `tmp/test-selection/decision.md`
