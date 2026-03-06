@@ -87,7 +87,7 @@ FULL_SUITE_TRIGGERS: List[Callable[[str], bool]] = [
     lambda p: p.startswith("tests/"),
     lambda p: p == "pyproject.toml",
     lambda p: p.endswith(".lock"),
-    lambda p: p.endswith("requirements.txt"),
+    # lambda p: p.endswith("requirements.txt"), # outdated
     lambda p: p.endswith("environment.yml"),
 ]
 
@@ -97,6 +97,7 @@ FULL_SUITE_TRIGGERS: List[Callable[[str], bool]] = [
 #   - docs-only if *all* files are docs-like
 #   - if >2 categories match -> FULL
 #   - else -> FAST with merged selections
+# TODO @C-Achard Refine selection and rules
 CATEGORY_RULES = [
     {
         "name": "docs",

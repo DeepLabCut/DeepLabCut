@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+import pydantic
 
 
 def test_selector_result_forbids_extra_fields(selector):
@@ -13,5 +14,5 @@ def test_selector_result_forbids_extra_fields(selector):
         "changed_files": [],
         "unexpected": "nope",
     }
-    with pytest.raises(Exception):
+    with pytest.raises(pydantic.ValidationError):
         selector.SelectorResult.model_validate(data)
