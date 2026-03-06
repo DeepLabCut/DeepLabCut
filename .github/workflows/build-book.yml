@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       publish:
-        description: "If true, deploy the built site to GitHub Pages."
+        description: "If true, deploy the built site to GitHub Pages via gh-pages branch."
         required: false
         default: false
         type: boolean
@@ -26,14 +26,10 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
-
-      - name: Configure Pages
-        if: ${{ inputs.publish }}
-        uses: actions/configure-pages@v5
+      - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ inputs.python-version }}
 
@@ -41,29 +37,36 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install .[docs]
+
       - name: Build the book
         run: |
           jupyter-book build .
 
-      - name: Upload Pages artifact
+      - name: Upload built site as artifact (for deploy job)
         if: ${{ inputs.publish }}
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-artifact@v4
         with:
+          name: built-book
           path: ${{ inputs.build_dir }}
+          if-no-files-found: error
+          retention-days: 1
 
   deploy:
-    name: Deploy to GitHub Pages
+    name: Deploy to GitHub Pages (gh-pages branch)
     needs: build
     if: ${{ inputs.publish }}
     runs-on: ubuntu-latest
     permissions:
-      pages: write       
-      id-token: write    
-      contents: read
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      contents: write
     steps:
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Download built site artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: built-book
+          path: site
+
+      - name: Deploy via gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: site
