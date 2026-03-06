@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import pytest
 import pydantic
+import pytest
 
 
 def test_selector_result_forbids_extra_fields(selector):
