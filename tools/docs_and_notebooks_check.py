@@ -328,17 +328,21 @@ def dump_md_frontmatter(frontmatter: dict, body: str) -> str:
     return "---\n" + fm_text + "---\n" + body_to_write
 
 
-def read_ipynb_meta(path: Path) -> tuple[Any, dict]:
+def read_ipynb_meta(path: Path) -> tuple[Any, dict, bool]:
     """
-    Read a notebook using nbformat. Returns (notebook_node, deeplabcut_meta_dict).
+    Read a notebook using nbformat.
+    Returns (notebook_node, deeplabcut_meta_dict, has_dlc_namespace).
     """
     nb = nbformat.read(str(path), as_version=4)
 
     meta = getattr(nb, "metadata", {}) or {}
+    has_dlc = DLC_NAMESPACE in meta
+
     dlc_meta = meta.get(DLC_NAMESPACE, {})
     if not isinstance(dlc_meta, dict):
         dlc_meta = {}
-    return nb, dlc_meta
+
+    return nb, dlc_meta, has_dlc
 
 def notebook_is_normalized(path: Path, nb: Any) -> bool:
     original = path.read_text(encoding="utf-8")
@@ -362,17 +366,14 @@ def write_ipynb_meta(path: Path, nb: Any) -> None:
 
     path.write_text(text + "\n", encoding="utf-8")
 
-def parse_dlc_meta(raw: Any) -> Optional[DLCMeta]:
-    if raw is None:
-        return None
-    if isinstance(raw, dict):
-        try:
-            return DLCMeta.model_validate(raw)  # pydantic v2
-        except AttributeError:
-            return DLCMeta.parse_obj(raw)       # pydantic v1
-        except ValidationError:
-            return None
-    return None
+def parse_dlc_meta(raw: Any) -> tuple[Optional[DLCMeta], bool]:
+    # returns (meta, valid)
+    if raw is None or not isinstance(raw, dict):
+        return None, False
+    try:
+        return DLCMeta.model_validate(raw), True
+    except ValidationError:
+        return None, False
 
 
 def meta_to_jsonable(meta: DLCMeta) -> dict:
@@ -437,27 +438,48 @@ def scan_files(repo_root: Path, cfg: ToolConfig, targets: Optional[List[str]] = 
 
         try:
             if kind == "ipynb":
-                nb, raw_meta = read_ipynb_meta(p)
+                nb, raw_meta, has_dlc = read_ipynb_meta(p)
+
                 try:
                     nbformat.validate(nb)
                 except NotebookValidationError as e:
                     rec.errors.append(f"nbformat_invalid: {e}")
-                
+
                 try:
                     if not notebook_is_normalized(p, nb):
                         rec.warnings.append("notebook_not_normalized")
                 except Exception as e:
-                    # Don't crash scan if a file has encoding/IO oddities
                     rec.errors.append(f"notebook_normalization_check_failed: {e}")
 
-                rec.meta = parse_dlc_meta(raw_meta)
+                if not has_dlc:
+                    rec.meta = None
+                    rec.warnings.append("missing_metadata")
+                else:
+                    rec.meta, valid = parse_dlc_meta(raw_meta)
+                    if not valid:
+                        rec.meta = None
+                        rec.warnings.append("invalid_metadata")
+
             elif kind == "md":
                 text = p.read_text(encoding="utf-8")
                 fm, _body = read_md_frontmatter(text)
-                raw = (fm or {}).get(DLC_NAMESPACE)
-                rec.meta = parse_dlc_meta(raw)
+                fm = fm or {}
+
+                has_dlc = DLC_NAMESPACE in fm
+                raw = fm.get(DLC_NAMESPACE)
+
+                if not has_dlc:
+                    rec.meta = None
+                    rec.warnings.append("missing_metadata")
+                else:
+                    rec.meta, valid = parse_dlc_meta(raw)
+                    if not valid:
+                        rec.meta = None
+                        rec.warnings.append("invalid_metadata")
+
             else:
                 rec.meta = None
+
         except Exception as e:
             rec.errors.append(f"metadata_read_failed: {e}")
 
@@ -477,9 +499,6 @@ def scan_files(repo_root: Path, cfg: ToolConfig, targets: Optional[List[str]] = 
             rec.warnings.append("missing_last_verified")
         elif rec.days_since_verified is not None and rec.days_since_verified > pol.warn_if_verified_older_than_days:
             rec.warnings.append(f"verified_stale>{pol.warn_if_verified_older_than_days}d")
-
-        if kind in {"ipynb", "md"} and rec.meta is None:
-            rec.warnings.append("missing_metadata")
 
         records.append(rec)
 
@@ -547,7 +566,7 @@ def update_files(
         changed = False
 
         if rec.kind == "ipynb":
-            nb, _raw = read_ipynb_meta(abs_path)
+            nb, _raw, _has_dlc = read_ipynb_meta(abs_path)
             nb_meta = nb.setdefault("metadata", {})
             prev = nb_meta.get(DLC_NAMESPACE, {})
             if not isinstance(prev, dict):
@@ -609,7 +628,7 @@ def normalize_notebooks(
 
         abs_path = repo_root / rec.path
         try:
-            nb, _raw = read_ipynb_meta(abs_path)
+            nb, _raw, _has_dlc = read_ipynb_meta(abs_path)
             nbformat.validate(nb)
 
             if not notebook_is_normalized(abs_path, nb):
