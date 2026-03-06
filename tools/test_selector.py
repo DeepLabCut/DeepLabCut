@@ -505,8 +505,9 @@ def explain_changed_files(files: List[str]) -> Dict[str, Any]:
             for c in cats:
                 by_category[c].append(f)
         else:
-            # Only call it uncategorized if it didn't match any category
-            uncategorized.append(f)
+            # Only uncategorized if it matched no categories AND no full-suite triggers
+            if not ft:
+                uncategorized.append(f)
 
     # Deterministic ordering
     for t in full_trigger_files:
@@ -525,8 +526,8 @@ def explain_changed_files(files: List[str]) -> Dict[str, Any]:
 def _render_file_line(f: str, info: Dict[str, Any]) -> str:
     # Visual priority:
     # - FULL triggers: 🔴
-    # - otherwise: 🟢 (normal)
-    icon = "🔴" if info.get("full_triggers") else "🟢"
+    # - otherwise: "" (normal)
+    icon = "⚠️" if info.get("full_triggers") else ""
 
     tags = []
     if info.get("full_triggers"):
@@ -743,7 +744,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     res = decide(files)
     res = validate_selected_paths(res, repo)
-    res.reasons.insert(0, f"diff_mode:{mode}")
+    # res.reasons.insert(0, f"diff_mode:{mode}")
 
     # Strict validation
     try:
