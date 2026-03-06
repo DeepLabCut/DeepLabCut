@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Methods to help with visualization of model outputs"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -121,11 +122,7 @@ def create_labeled_images(
             xy = xy[mask]
             ax.scatter(xy[:, 0], xy[:, 1], **kwargs)
             if len(bones) > 0:
-                ax.add_collection(
-                    collections.LineCollection(
-                        bones, colors=skeleton_color, alpha=alpha_value
-                    )
-                )
+                ax.add_collection(collections.LineCollection(bones, colors=skeleton_color, alpha=alpha_value))
 
         # plot unique bodyparts
         if unique_pred is not None:
@@ -154,9 +151,7 @@ def create_labeled_images(
                     continue
 
                 xmin, ymin, w, h = bbox
-                rect = plt.Rectangle(
-                    (xmin, ymin), w, h, fill=False, edgecolor="green", linewidth=2
-                )
+                rect = plt.Rectangle((xmin, ymin), w, h, fill=False, edgecolor="green", linewidth=2)
                 ax.add_patch(rect)
 
         # save predictions
@@ -237,9 +232,7 @@ def extract_model_outputs(
             head: {name: output.cpu().numpy() for name, output in head_outputs.items()}
             for head, head_outputs in output.items()
         }
-        model_data.append(
-            dict(inputs=inputs.cpu().numpy(), context=context, outputs=output)
-        )
+        model_data.append(dict(inputs=inputs.cpu().numpy(), context=context, outputs=output))
 
     return model_data
 
@@ -337,9 +330,7 @@ def extract_maps(
 
         if snapshot_index is None:
             snapshot_index = -1
-        snapshots = utils.get_model_snapshots(
-            snapshot_index, loader.model_folder, loader.pose_task
-        )
+        snapshots = utils.get_model_snapshots(snapshot_index, loader.model_folder, loader.pose_task)
 
         image_paths = loader.df.index
         if indices is not None:
@@ -347,9 +338,7 @@ def extract_maps(
         if len(image_paths) > 0 and isinstance(image_paths[0], tuple):
             image_paths = [Path(*img_path) for img_path in image_paths]
 
-        image_paths = [
-            (loader.project_path / img_path).resolve() for img_path in image_paths
-        ]
+        image_paths = [(loader.project_path / img_path).resolve() for img_path in image_paths]
 
         context = _get_context(image_paths, loader, detector_snapshot_index, device)
         train_idx = set(loader.split["train"])
@@ -373,17 +362,12 @@ def extract_maps(
                     image_idx = indices[idx]
 
                 # key can be just image_idx, or (image_idx, bbox_idx) for TD models
-                keys, images, outputs = _collect_model_outputs(
-                    loader.pose_task, result, image_idx
-                )
+                keys, images, outputs = _collect_model_outputs(loader.pose_task, result, image_idx)
                 for key, image, output in zip(keys, images, outputs):
                     parsed = _parse_model_outputs(
                         image,
                         output,
-                        strides={
-                            k: runner.model.get_stride(k)
-                            for k in runner.model.heads.keys()
-                        },
+                        strides={k: runner.model.get_stride(k) for k in runner.model.heads.keys()},
                         denormalize_image=True,
                     )
                     img_name = image_paths[idx].stem
@@ -471,9 +455,7 @@ def extract_save_all_maps(
         detector_snapshot_index=detector_snapshot_index,
         modelprefix=modelprefix,
     )
-    bpts_to_plot = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-        cfg, comparison_bodyparts
-    )
+    bpts_to_plot = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, comparison_bodyparts)
 
     print("Saving plots...")
     for frac, values in maps.items():
@@ -535,9 +517,7 @@ def _get_context(
 
     det_snapshots = []
     if detector_snapshot_index is not None:
-        det_snapshots = utils.get_model_snapshots(
-            detector_snapshot_index, loader.model_folder, Task.DETECT
-        )
+        det_snapshots = utils.get_model_snapshots(detector_snapshot_index, loader.model_folder, Task.DETECT)
 
     if detector_snapshot_index is None or len(det_snapshots) == 0:
         if detector_snapshot_index is None:
@@ -549,9 +529,7 @@ def _get_context(
         bboxes_train = loader.ground_truth_bboxes(mode="train")
         bboxes_test = loader.ground_truth_bboxes(mode="test")
         bboxes = {**bboxes_train, **bboxes_test}
-        return [
-            dict(bboxes=bboxes[str(img_path)]["bboxes"]) for img_path in image_paths
-        ]
+        return [dict(bboxes=bboxes[str(img_path)]["bboxes"]) for img_path in image_paths]
 
     detector_runner = utils.get_detector_inference_runner(
         model_config=loader.model_cfg,
@@ -599,12 +577,7 @@ def _collect_model_outputs(
     return (
         [image_idx],
         [result["inputs"][0]],
-        [
-            {
-                head: {k: v[0] for k, v in head_outputs.items()}
-                for head, head_outputs in result["outputs"].items()
-            }
-        ],
+        [{head: {k: v[0] for k, v in head_outputs.items()} for head, head_outputs in result["outputs"].items()}],
     )
 
 
@@ -640,17 +613,12 @@ def _parse_model_outputs(
 
     if "unique_bodypart" in outputs:
         heatmaps += [h for h in outputs["unique_bodypart"].get("heatmap", [])]
-        locrefs += [
-            strides["unique_bodypart"] * m
-            for m in outputs["unique_bodypart"].get("locref", [])
-        ]
+        locrefs += [strides["unique_bodypart"] * m for m in outputs["unique_bodypart"].get("locref", [])]
 
     return image, heatmaps, locrefs, paf
 
 
-def _prepare_maps_for_plotting(
-    maps: list[np.ndarray], image_size: tuple[int, int]
-) -> np.ndarray | None:
+def _prepare_maps_for_plotting(maps: list[np.ndarray], image_size: tuple[int, int]) -> np.ndarray | None:
     """Resizes all maps to the image size and concatenates them into a single array.
 
     Args:
@@ -665,10 +633,7 @@ def _prepare_maps_for_plotting(
 
     img_w, img_h = image_size
     return np.stack(
-        [
-            cv2.resize(map_, (img_w, img_h), interpolation=cv2.INTER_LINEAR)
-            for map_ in maps
-        ],
+        [cv2.resize(map_, (img_w, img_h), interpolation=cv2.INTER_LINEAR) for map_ in maps],
         axis=-1,
     )
 

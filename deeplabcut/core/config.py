@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Simple helper methods related to configuration files stored in yaml files"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -43,9 +44,7 @@ def write_config(config_path: str | Path, config: dict, overwrite: bool = True) 
         FileExistsError if overwrite=True and the file already exists
     """
     if not overwrite and Path(config_path).exists():
-        raise FileExistsError(
-            f"Cannot write to {config_path} - set overwrite=True to force"
-        )
+        raise FileExistsError(f"Cannot write to {config_path} - set overwrite=True to force")
 
     with open(config_path, "w") as file:
         YAML().dump(config, file)

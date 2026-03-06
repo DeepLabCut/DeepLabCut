@@ -20,6 +20,7 @@ Licensed under GNU Lesser General Public License v3.0
 This script tests various functionalities in an automatic way.
 It produces nothing of interest scientifically.
 """
+
 import os, deeplabcut
 import zipfile, urllib.request, shutil
 from datetime import datetime as dt
@@ -121,9 +122,7 @@ if __name__ == "__main__":
         cfg["skeleton"] = [["bodypart1", "bodypart2"], ["objectA", "bodypart3"]]
         deeplabcut.auxiliaryfunctions.write_config_3d(path_config_file, cfg)
     except:
-        raise (
-            "Please delete the project and re-try."
-        )  # otherwise the cfg is an empty array!
+        raise ("Please delete the project and re-try.")  # otherwise the cfg is an empty array!
 
     """
     # Creating the name of the project
@@ -138,7 +137,7 @@ if __name__ == "__main__":
 
     os.chdir(os.path.join(project_name, "calibration_images"))
 
-    file_name = os.path.join(basepath,"stereo_example.zip")
+    file_name = os.path.join(basepath, "stereo_example.zip")
     with zipfile.ZipFile(file_name) as zf:
         zf.extractall()
 
@@ -176,9 +175,7 @@ if __name__ == "__main__":
 
     print("TRIANGULATING")
     video_dir = os.path.join(os.path.dirname(basepath), folder)
-    deeplabcut.auxiliaryfunctions.edit_config(
-        path_config_file, edits={"pcutoff": 0.1}
-    )  # otherwise get all-nan slices
+    deeplabcut.auxiliaryfunctions.edit_config(path_config_file, edits={"pcutoff": 0.1})  # otherwise get all-nan slices
     deeplabcut.triangulate(path_config_file, video_dir, save_as_csv=True)
 
     print("CREATING LABELED VIDEO 3-D")

@@ -72,15 +72,11 @@ class TrackletManager:
         header = tracklets.pop("header")
         self.scorer = header.get_level_values("scorer").unique().to_list()
         bodyparts = header.get_level_values("bodyparts")
-        bodyparts_multi = [
-            bp for bp in self.cfg["multianimalbodyparts"] if bp in bodyparts
-        ]
+        bodyparts_multi = [bp for bp in self.cfg["multianimalbodyparts"] if bp in bodyparts]
         bodyparts_single = self.cfg["uniquebodyparts"]
         mask_multi = bodyparts.isin(bodyparts_multi)
         mask_single = bodyparts.isin(bodyparts_single)
-        self.bodyparts = list(bodyparts[mask_multi]) * self.nindividuals + list(
-            bodyparts[mask_single]
-        )
+        self.bodyparts = list(bodyparts[mask_multi]) * self.nindividuals + list(bodyparts[mask_single])
 
         # Sort tracklets by length to prioritize greater continuity
         temp = sorted(tracklets.values(), key=len)
@@ -105,9 +101,7 @@ class TrackletManager:
                 np.nan,
                 np.float16,
             )
-            tracklets_single = np.full(
-                (self.nframes, len(bodyparts_single) * 3), np.nan, np.float16
-            )
+            tracklets_single = np.full((self.nframes, len(bodyparts_single) * 3), np.nan, np.float16)
             for _ in trange(len(tracklets_sorted)):
                 tracklet = tracklets_sorted.pop()
                 inds, temp = zip(*[(get_frame_ind(k), v) for k, v in tracklet.items()])
@@ -126,15 +120,11 @@ class TrackletManager:
                     overwrite = has_data & ~is_free
                     if overwrite.any():
                         rows, cols = np.nonzero(overwrite)
-                        more_confident = (
-                            data_single[overwrite] > tracklets_single[inds[rows], cols]
-                        )[2::3]
+                        more_confident = (data_single[overwrite] > tracklets_single[inds[rows], cols])[2::3]
                         idx = np.flatnonzero(more_confident)
                         for i in idx:
                             sl = slice(i * 3, i * 3 + 3)
-                            tracklets_single[inds[rows[sl]], cols[sl]] = data_single[
-                                rows[sl], cols[sl]
-                            ]
+                            tracklets_single[inds[rows[sl]], cols[sl]] = data_single[rows[sl], cols[sl]]
                 else:
                     is_free = np.isnan(tracklets_multi[:, inds])
                     data_multi = data[:, mask_multi]
@@ -149,21 +139,15 @@ class TrackletManager:
                             current_mask = mask[ind]
                             rows, cols = np.nonzero(current_mask)
                             if rows.size:
-                                tracklets_multi[ind, inds[rows], cols] = data_multi[
-                                    current_mask
-                                ]
+                                tracklets_multi[ind, inds[rows], cols] = data_multi[current_mask]
                                 is_free[ind, current_mask] = False
                                 has_data[current_mask] = False
                         if has_data.any():
                             # For the remaining data, overwrite where we are least confident
                             remaining = data_multi[has_data].reshape((-1, 3))
-                            mask3d = np.broadcast_to(
-                                has_data, (self.nindividuals,) + has_data.shape
-                            )
+                            mask3d = np.broadcast_to(has_data, (self.nindividuals,) + has_data.shape)
                             dims, rows, cols = np.nonzero(mask3d)
-                            temp = tracklets_multi[dims, inds[rows], cols].reshape(
-                                (self.nindividuals, -1, 3)
-                            )
+                            temp = tracklets_multi[dims, inds[rows], cols].reshape((self.nindividuals, -1, 3))
                             diff = remaining - temp
                             # Find keypoints closest to the remaining data
                             # Use Manhattan distance to avoid overflow
@@ -176,9 +160,7 @@ class TrackletManager:
                             rows, cols = np.nonzero(has_data)
                             for i, j in zip(idx, better):
                                 sl = slice(j * 3, j * 3 + 3)
-                                tracklets_multi[i, inds[rows[sl]], cols[sl]] = (
-                                    remaining.flat[sl]
-                                )
+                                tracklets_multi[i, inds[rows[sl]], cols[sl]] = remaining.flat[sl]
                     else:
                         rows, cols = np.nonzero(has_data)
                         n = np.argmin(overwrite_risk)
@@ -207,12 +189,10 @@ class TrackletManager:
             self.prob = self.data[:, :, 2]
 
             # Map a tracklet # to the animal ID it belongs to or the bodypart # it corresponds to.
-            self.individuals = self.cfg["individuals"] + (
-                ["single"] if len(self.cfg["uniquebodyparts"]) else []
-            )
-            self.tracklet2id = [
-                i for i in range(0, self.nindividuals) for _ in bodyparts_multi
-            ] + [self.nindividuals] * len(bodyparts_single)
+            self.individuals = self.cfg["individuals"] + (["single"] if len(self.cfg["uniquebodyparts"]) else [])
+            self.tracklet2id = [i for i in range(0, self.nindividuals) for _ in bodyparts_multi] + [
+                self.nindividuals
+            ] * len(bodyparts_single)
             bps = bodyparts_multi + bodyparts_single
             map_ = dict(zip(bps, range(len(bps))))
             self.tracklet2bp = [map_[bp] for bp in self.bodyparts[::3]]
@@ -227,11 +207,7 @@ class TrackletManager:
                 for frame, data in tracklet.items():
                     i = get_frame_ind(frame)
                     tracklets_raw[n, i] = data
-            self.data = (
-                tracklets_raw.swapaxes(0, 1)
-                .reshape((self.nframes, -1, 3))
-                .swapaxes(0, 1)
-            )
+            self.data = tracklets_raw.swapaxes(0, 1).reshape((self.nframes, -1, 3)).swapaxes(0, 1)
             self.xy = self.data[:, :, :2]
             self.prob = self.data[:, :, 2]
             self.tracklet2id = self.tracklet2bp = [0] * self.data.shape[0]
@@ -276,13 +252,9 @@ class TrackletManager:
         self.prob = self.data[:, :, 2]
         individuals = idx.get_level_values("individuals")
         self.individuals = individuals.unique().to_list()
-        self.tracklet2id = individuals.map(
-            dict(zip(self.individuals, range(len(self.individuals))))
-        ).tolist()[::3]
+        self.tracklet2id = individuals.map(dict(zip(self.individuals, range(len(self.individuals))))).tolist()[::3]
         bodyparts = self.bodyparts.unique()
-        self.tracklet2bp = self.bodyparts.map(
-            dict(zip(bodyparts, range(len(bodyparts))))
-        ).tolist()[::3]
+        self.tracklet2bp = self.bodyparts.map(dict(zip(bodyparts, range(len(bodyparts))))).tolist()[::3]
         self._label_pairs = list(idx.droplevel(["scorer", "coords"]).unique())
         self._xy = self.xy.copy()
 
@@ -305,12 +277,8 @@ class TrackletManager:
         return data[mask], mask, np.flatnonzero(mask)
 
     def swap_tracklets(self, track1, track2, inds):
-        self.xy[np.ix_([track1, track2], inds)] = self.xy[
-            np.ix_([track2, track1], inds)
-        ]
-        self.prob[np.ix_([track1, track2], inds)] = self.prob[
-            np.ix_([track2, track1], inds)
-        ]
+        self.xy[np.ix_([track1, track2], inds)] = self.xy[np.ix_([track2, track1], inds)]
+        self.prob[np.ix_([track1, track2], inds)] = self.prob[np.ix_([track2, track1], inds)]
         self.tracklet2bp[track1], self.tracklet2bp[track2] = (
             self.tracklet2bp[track2],
             self.tracklet2bp[track1],
@@ -318,12 +286,8 @@ class TrackletManager:
 
     def find_swapping_bodypart_pairs(self, force_find=False):
         if not self.swapping_pairs or force_find:
-            sub = (
-                self.xy[:, np.newaxis] - self.xy
-            )  # Broadcasting for efficient subtraction of X and Y coordinates
-            with np.errstate(
-                invalid="ignore"
-            ):  # Get rid of annoying warnings when comparing with NaNs
+            sub = self.xy[:, np.newaxis] - self.xy  # Broadcasting for efficient subtraction of X and Y coordinates
+            with np.errstate(invalid="ignore"):  # Get rid of annoying warnings when comparing with NaNs
                 pos = sub > 0
                 neg = sub <= 0
                 down = neg[:, :, 1:] & pos[:, :, :-1]

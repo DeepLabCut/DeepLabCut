@@ -58,9 +58,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
         working_directory = "."
 
     wd = Path(working_directory).resolve()
-    project_name = "{pn}-{exp}-{date}-{triangulate}".format(
-        pn=project, exp=experimenter, date=date, triangulate="3d"
-    )
+    project_name = "{pn}-{exp}-{date}-{triangulate}".format(pn=project, exp=experimenter, date=date, triangulate="3d")
     project_path = wd / project_name
     # Create project and sub-directories
     if not DEBUG and project_path.exists():
@@ -98,9 +96,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
     cfg_file_3d["markerColor"] = "r"
     cfg_file_3d["pcutoff"] = 0.4
     cfg_file_3d["num_cameras"] = num_cameras
-    cfg_file_3d["camera_names"] = [
-        str("camera-" + str(i)) for i in range(1, num_cameras + 1)
-    ]
+    cfg_file_3d["camera_names"] = [str("camera-" + str(i)) for i in range(1, num_cameras + 1)]
     cfg_file_3d["scorername_3d"] = "DLC_3D"
 
     cfg_file_3d["skeleton"] = [
@@ -113,19 +109,13 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
 
     for i in range(num_cameras):
         path = str(
-            "/home/mackenzie/DEEPLABCUT/DeepLabCut/2DprojectCam"
-            + str(i + 1)
-            + "-Mackenzie-2019-06-05/config.yaml"
+            "/home/mackenzie/DEEPLABCUT/DeepLabCut/2DprojectCam" + str(i + 1) + "-Mackenzie-2019-06-05/config.yaml"
         )
-        cfg_file_3d.insert(
-            len(cfg_file_3d), str("config_file_camera-" + str(i + 1)), path
-        )
+        cfg_file_3d.insert(len(cfg_file_3d), str("config_file_camera-" + str(i + 1)), path)
 
     for i in range(num_cameras):
         cfg_file_3d.insert(len(cfg_file_3d), str("shuffle_camera-" + str(i + 1)), 1)
-        cfg_file_3d.insert(
-            len(cfg_file_3d), str("trainingsetindex_camera-" + str(i + 1)), 0
-        )
+        cfg_file_3d.insert(len(cfg_file_3d), str("trainingsetindex_camera-" + str(i + 1)), 0)
 
     projconfigfile = os.path.join(str(project_path), "config.yaml")
     auxiliaryfunctions.write_config_3d(projconfigfile, cfg_file_3d)

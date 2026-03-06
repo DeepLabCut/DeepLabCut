@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """The code is based on DEKR: https://github.com/HRNet/DEKR/tree/main"""
+
 import logging
 from typing import List
 
@@ -46,9 +47,7 @@ class HighResolutionModule(nn.Module):
         multi_scale_output: bool = True,
     ):
         super(HighResolutionModule, self).__init__()
-        self._check_branches(
-            num_branches, block, num_blocks, num_inchannels, num_channels
-        )
+        self._check_branches(num_branches, block, num_blocks, num_inchannels, num_channels)
 
         self.num_inchannels = num_inchannels
         self.fuse_method = fuse_method
@@ -56,9 +55,7 @@ class HighResolutionModule(nn.Module):
 
         self.multi_scale_output = multi_scale_output
 
-        self.branches = self._make_branches(
-            num_branches, block, num_blocks, num_channels
-        )
+        self.branches = self._make_branches(num_branches, block, num_blocks, num_channels)
         self.fuse_layers = self._make_fuse_layers()
         self.relu = nn.ReLU(True)
 
@@ -71,23 +68,17 @@ class HighResolutionModule(nn.Module):
         num_channels: int,
     ):
         if num_branches != len(num_blocks):
-            error_msg = "NUM_BRANCHES({}) <> NUM_BLOCKS({})".format(
-                num_branches, len(num_blocks)
-            )
+            error_msg = "NUM_BRANCHES({}) <> NUM_BLOCKS({})".format(num_branches, len(num_blocks))
             logger.error(error_msg)
             raise ValueError(error_msg)
 
         if num_branches != len(num_channels):
-            error_msg = "NUM_BRANCHES({}) <> NUM_CHANNELS({})".format(
-                num_branches, len(num_channels)
-            )
+            error_msg = "NUM_BRANCHES({}) <> NUM_CHANNELS({})".format(num_branches, len(num_channels))
             logger.error(error_msg)
             raise ValueError(error_msg)
 
         if num_branches != len(num_inchannels):
-            error_msg = "NUM_BRANCHES({}) <> NUM_INCHANNELS({})".format(
-                num_branches, len(num_inchannels)
-            )
+            error_msg = "NUM_BRANCHES({}) <> NUM_INCHANNELS({})".format(num_branches, len(num_inchannels))
             logger.error(error_msg)
             raise ValueError(error_msg)
 
@@ -100,11 +91,7 @@ class HighResolutionModule(nn.Module):
         stride: int = 1,
     ) -> nn.Sequential:
         downsample = None
-        if (
-            stride != 1
-            or self.num_inchannels[branch_index]
-            != num_channels[branch_index] * block.expansion
-        ):
+        if stride != 1 or self.num_inchannels[branch_index] != num_channels[branch_index] * block.expansion:
             downsample = nn.Sequential(
                 nn.Conv2d(
                     self.num_inchannels[branch_index],
@@ -113,9 +100,7 @@ class HighResolutionModule(nn.Module):
                     stride=stride,
                     bias=False,
                 ),
-                nn.BatchNorm2d(
-                    num_channels[branch_index] * block.expansion, momentum=BN_MOMENTUM
-                ),
+                nn.BatchNorm2d(num_channels[branch_index] * block.expansion, momentum=BN_MOMENTUM),
             )
 
         layers = []
@@ -129,15 +114,11 @@ class HighResolutionModule(nn.Module):
         )
         self.num_inchannels[branch_index] = num_channels[branch_index] * block.expansion
         for i in range(1, num_blocks[branch_index]):
-            layers.append(
-                block(self.num_inchannels[branch_index], num_channels[branch_index])
-            )
+            layers.append(block(self.num_inchannels[branch_index], num_channels[branch_index]))
 
         return nn.Sequential(*layers)
 
-    def _make_branches(
-        self, num_branches: int, block: BasicBlock, num_blocks: int, num_channels: int
-    ) -> nn.ModuleList:
+    def _make_branches(self, num_branches: int, block: BasicBlock, num_blocks: int, num_channels: int) -> nn.ModuleList:
         branches = []
 
         for i in range(num_branches):

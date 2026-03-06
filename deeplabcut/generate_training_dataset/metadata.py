@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """File containing methods to load and parse shuffle metadata"""
+
 from __future__ import annotations
 
 import logging
@@ -27,6 +28,7 @@ from deeplabcut.utils import auxiliaryfunctions
 @dataclass(frozen=True)
 class DataSplit:
     """Class representing the metadata for a shuffle"""
+
     train_indices: tuple[int, ...]
     test_indices: tuple[int, ...]
 
@@ -39,14 +41,14 @@ class DataSplit:
             idx = np.array(indices)
             if not np.all(idx[:-1] < idx[1:]):
                 raise RuntimeError(
-                    f"The training and test indices in a data split must be sorted in "
-                    f"strictly ascending order."
+                    f"The training and test indices in a data split must be sorted in strictly ascending order."
                 )
 
 
 @dataclass(frozen=True)
 class ShuffleMetadata:
     """Class representing the metadata for a shuffle"""
+
     name: str
     train_fraction: float
     index: int
@@ -83,7 +85,7 @@ class ShuffleMetadata:
             split=DataSplit(
                 train_indices=tuple(sorted([int(idx) for idx in train_idx])),
                 test_indices=tuple(sorted([int(idx) for idx in test_idx])),
-            )
+            ),
         )
 
 
@@ -120,6 +122,7 @@ class TrainingDatasetMetadata:
         trainset_metadata = trainset_metadata.add(new_shuffle)
         trainset_metadata.save()  # saves to disk
     """
+
     project_config: dict
     shuffles: tuple[ShuffleMetadata, ...]
     file_header: tuple[str] = (
@@ -161,9 +164,7 @@ class TrainingDatasetMetadata:
             ValueError: if overwrite=False and there is already a shuffle with the given
                 index in the metadata file.
         """
-        existing_indices = [
-            s.index for s in self.shuffles if s.train_fraction == shuffle.train_fraction
-        ]
+        existing_indices = [s.index for s in self.shuffles if s.train_fraction == shuffle.train_fraction]
         if shuffle.index in existing_indices:
             if not overwrite:
                 raise RuntimeError(
@@ -173,9 +174,7 @@ class TrainingDatasetMetadata:
                 )
 
         existing_shuffles = [
-            s
-            for s in self.shuffles
-            if (s.index != shuffle.index or s.train_fraction != shuffle.train_fraction)
+            s for s in self.shuffles if (s.index != shuffle.index or s.train_fraction != shuffle.train_fraction)
         ]
         shuffles = existing_shuffles + [shuffle]
         return TrainingDatasetMetadata(
@@ -197,16 +196,10 @@ class TrainingDatasetMetadata:
         """
         train_fraction = self.project_config["TrainingFraction"][trainset_index]
         for shuffle in self.shuffles:
-            if (
-                shuffle.train_fraction == train_fraction
-                and shuffle.index == index
-            ):
+            if shuffle.train_fraction == train_fraction and shuffle.index == index:
                 return shuffle
 
-        raise ValueError(
-            f"Could not find a shuffle with trainingset fraction {train_fraction} and "
-            f"index {index}"
-        )
+        raise ValueError(f"Could not find a shuffle with trainingset fraction {train_fraction} and index {index}")
 
     def save(self) -> None:
         """Saves the training dataset metadata to disk"""
@@ -292,9 +285,7 @@ class TrainingDatasetMetadata:
         trainset_path = TrainingDatasetMetadata.path(cfg).parent
         if trainset_path.exists():
             shuffle_docs = [
-                f
-                for f in trainset_path.iterdir()
-                if re.match(r"Documentation_data-.+shuffle[0-9]+\.pickle", f.name)
+                f for f in trainset_path.iterdir() if re.match(r"Documentation_data-.+shuffle[0-9]+\.pickle", f.name)
             ]
         else:
             trainset_path.mkdir(parents=True)
@@ -380,7 +371,7 @@ def update_metadata(
         split=DataSplit(
             train_indices=tuple(sorted([int(i) for i in train_indices])),
             test_indices=tuple(sorted([int(i) for i in test_indices])),
-        )
+        ),
     )
     metadata = metadata.add(shuffle=new_shuffle, overwrite=overwrite)
     metadata.save()
@@ -414,9 +405,7 @@ def get_shuffle_engine(
     shuffle_metadata = metadata.get(trainingsetindex, shuffle)
     if modelprefix:
         # try to get the engine by checking which models folder exists
-        engines = find_engines_from_model_folders(
-            cfg, trainingsetindex, shuffle, modelprefix
-        )
+        engines = find_engines_from_model_folders(cfg, trainingsetindex, shuffle, modelprefix)
         if len(engines) == 0:
             raise ValueError(
                 f"Couldn't find any shuffles with trainingsetindex={trainingsetindex}, "

@@ -1,13 +1,15 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
       - id: check-yaml
       - id: check-toml
       - id: end-of-file-fixer
       - id: name-tests-test
+        args: [--pytest-test-first]
       - id: trailing-whitespace
+      - id: check-merge-conflict
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: v2.15.2
     hooks:
@@ -16,12 +18,11 @@ repos:
     rev: v0.25
     hooks:
       - id: validate-pyproject
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.0
     hooks:
-      - id: isort
-  - repo: https://github.com/psf/black
-    rev: 22.3.0
-    hooks:
-      - id: black
-        language_version: python3
+      # Run the formatter.
+      - id: ruff-format
+      # Run the linter.
+      - id: ruff-check
+        args: [--fix,--unsafe-fixes]

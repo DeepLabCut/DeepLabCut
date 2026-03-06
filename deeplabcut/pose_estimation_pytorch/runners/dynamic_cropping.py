@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Modules to dynamically crop individuals out of videos to improve video analysis"""
+
 import math
 from dataclasses import dataclass, field
 from typing import Optional
@@ -55,6 +56,7 @@ class DynamicCropper:
         >>>     predictions.append(pose)
         >>>
     """
+
     threshold: float
     margin: int
     _crop: tuple[int, int, int, int] | None = field(default=None, repr=False)
@@ -76,10 +78,7 @@ class DynamicCropper:
                 height.
         """
         if len(image) != 1:
-            raise RuntimeError(
-                "DynamicCropper can only be used with batch size 1 (found image "
-                f"shape: {image.shape})"
-            )
+            raise RuntimeError(f"DynamicCropper can only be used with batch size 1 (found image shape: {image.shape})")
 
         if self._shape is None:
             self._shape = image.shape[3], image.shape[2]
@@ -153,9 +152,7 @@ class DynamicCropper:
         self._crop = None
 
     @staticmethod
-    def build(
-        dynamic: bool, threshold: float, margin: int
-    ) -> Optional["DynamicCropper"]:
+    def build(dynamic: bool, threshold: float, margin: int) -> Optional["DynamicCropper"]:
         """Builds the DynamicCropper based on the given parameters
 
         Args:
@@ -301,10 +298,7 @@ class TopDownDynamicCropper(DynamicCropper):
                 `crop` was previously called with an image of a different W or H.
         """
         if len(image) != 1:
-            raise RuntimeError(
-                "DynamicCropper can only be used with batch size 1 (found image "
-                f"shape: {image.shape})"
-            )
+            raise RuntimeError(f"DynamicCropper can only be used with batch size 1 (found image shape: {image.shape})")
 
         if self._shape is None:
             self._shape = image.shape[3], image.shape[2]
@@ -402,9 +396,7 @@ class TopDownDynamicCropper(DynamicCropper):
         """Returns: the total number of patches created for an image."""
         return self._patch_counts[0] * self._patch_counts[1]
 
-    def _prepare_bounding_box(
-        self, x1: int, y1: int, x2: int, y2: int
-    ) -> tuple[int, int, int, int]:
+    def _prepare_bounding_box(self, x1: int, y1: int, x2: int, y2: int) -> tuple[int, int, int, int]:
         """Prepares the bounding box for cropping.
 
         Adds a margin around the bounding box, then transforms it into the target aspect
@@ -428,16 +420,18 @@ class TopDownDynamicCropper(DynamicCropper):
 
         input_ratio = w / h
         if input_ratio > self._td_ratio:  # h/w < h0/w0 => h' = w * h0/w0
-            h = w /  self._td_ratio
+            h = w / self._td_ratio
         elif input_ratio < self._td_ratio:  # w/h < w0/h0 => w' = h * w0/h0
-            w = h *  self._td_ratio
+            w = h * self._td_ratio
 
         x1, y1 = int(round(cx - (w / 2))), int(round(cy - (h / 2)))
         w, h = max(int(w), self.min_bbox_size[0]), max(int(h), self.min_bbox_size[1])
         return x1, y1, w, h
 
     def _crop_bounding_box(
-        self, image: torch.Tensor, bbox: tuple[int, int, int, int],
+        self,
+        image: torch.Tensor,
+        bbox: tuple[int, int, int, int],
     ) -> torch.Tensor:
         """Applies a top-down crop to an image given a bounding box.
 
@@ -491,7 +485,7 @@ class TopDownDynamicCropper(DynamicCropper):
         # set the crop to the one used for the best patch
         self._crop = self._patches[best_patch]
 
-        return pose[best_patch:best_patch + 1]
+        return pose[best_patch : best_patch + 1]
 
     def generate_patches(self) -> list[tuple[int, int, int, int]]:
         """Generates patch coordinates for splitting an image.
@@ -499,12 +493,8 @@ class TopDownDynamicCropper(DynamicCropper):
         Returns:
             A list of patch coordinates as tuples (x0, y0, x1, y1).
         """
-        patch_xs = self.split_array(
-            self._shape[0], self._patch_counts[0], self._patch_overlap
-        )
-        patch_ys = self.split_array(
-            self._shape[1], self._patch_counts[1], self._patch_overlap
-        )
+        patch_xs = self.split_array(self._shape[0], self._patch_counts[0], self._patch_overlap)
+        patch_ys = self.split_array(self._shape[1], self._patch_counts[1], self._patch_overlap)
 
         patches = []
         for y0, y1 in patch_ys:

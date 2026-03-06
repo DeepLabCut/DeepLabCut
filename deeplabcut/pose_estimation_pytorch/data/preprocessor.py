@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Helpers to run preprocess data before running inference"""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -54,9 +55,7 @@ class Preprocessor(ABC):
         pass
 
 
-def build_bottom_up_preprocessor(
-    color_mode: str, transform: A.BaseCompose
-) -> Preprocessor:
+def build_bottom_up_preprocessor(color_mode: str, transform: A.BaseCompose) -> Preprocessor:
     """Creates a preprocessor for bottom-up pose estimation (or object detection)
 
     Creates a preprocessor that loads an image, runs some transform on it (such as
@@ -239,9 +238,7 @@ class AugmentImage(Preprocessor):
         )
 
     @staticmethod
-    def update_scale(
-        scale: tuple[float, float], new_scale: tuple[float, float]
-    ) -> tuple[float, float]:
+    def update_scale(scale: tuple[float, float], new_scale: tuple[float, float]) -> tuple[float, float]:
         return scale[0] * new_scale[0], scale[1] * new_scale[1]
 
     @staticmethod
@@ -257,20 +254,14 @@ class AugmentImage(Preprocessor):
         if isinstance(offsets, tuple):
             if isinstance(new_offsets, list):
                 updated_offsets = [
-                    AugmentImage.update_offset(offsets, scales, new_offset)
-                    for new_offset in new_offsets
+                    AugmentImage.update_offset(offsets, scales, new_offset) for new_offset in new_offsets
                 ]
-                updated_scales = [
-                    AugmentImage.update_scale(scales, new_scale)
-                    for new_scale in new_scales
-                ]
+                updated_scales = [AugmentImage.update_scale(scales, new_scale) for new_scale in new_scales]
             else:
                 if not len(offsets) == len(new_offsets):
                     raise ValueError("Cannot rescale lists when not same length")
 
-                updated_offsets = AugmentImage.update_offset(
-                    offsets, scales, new_offsets
-                )
+                updated_offsets = AugmentImage.update_offset(offsets, scales, new_offsets)
                 updated_scales = AugmentImage.update_scale(scales, new_scales)
         else:
             if isinstance(new_offsets, list):
@@ -282,17 +273,13 @@ class AugmentImage(Preprocessor):
                     for offset, scale, new_offset in zip(offsets, scales, new_offsets)
                 ]
                 updated_scales = [
-                    AugmentImage.update_scale(scale, new_scale)
-                    for scale, new_scale in zip(scales, new_scales)
+                    AugmentImage.update_scale(scale, new_scale) for scale, new_scale in zip(scales, new_scales)
                 ]
             else:
                 updated_offsets = [
-                    AugmentImage.update_offset(offset, scale, new_offsets)
-                    for offset, scale in zip(offsets, scales)
+                    AugmentImage.update_offset(offset, scale, new_offsets) for offset, scale in zip(offsets, scales)
                 ]
-                updated_scales = [
-                    AugmentImage.update_scale(scale, new_scales) for scale in scales
-                ]
+                updated_scales = [AugmentImage.update_scale(scale, new_scales) for scale in scales]
         return updated_offsets, updated_scales
 
     def __call__(self, image: Image, context: Context) -> tuple[np.ndarray, Context]:
@@ -375,9 +362,7 @@ class FilterLowConfidencePoses(Preprocessor):
         self.confidence_threshold = confidence_threshold
         self.aggregate_func = aggregate_func
 
-    def __call__(
-        self, image: np.ndarray, context: Context
-    ) -> tuple[np.ndarray, Context]:
+    def __call__(self, image: np.ndarray, context: Context) -> tuple[np.ndarray, Context]:
         if "cond_kpts" not in context:
             raise ValueError(f"Must include cond_kpts, found {context}")
 
@@ -401,9 +386,7 @@ class FilterInvalidBoundingBoxes(Preprocessor):
     def __init__(self, min_area: int = 1) -> None:
         self.min_area = min_area
 
-    def __call__(
-        self, image: np.ndarray, context: Context
-    ) -> tuple[np.ndarray, Context]:
+    def __call__(self, image: np.ndarray, context: Context) -> tuple[np.ndarray, Context]:
         bboxes = context.get("bboxes", [])
         keypoints = context.get("cond_kpts", [])
 
@@ -444,9 +427,7 @@ class TopDownCrop(Preprocessor):
         self.margin = margin
         self.with_context = with_context
 
-    def __call__(
-        self, image: np.ndarray, context: Context
-    ) -> tuple[np.ndarray, Context]:
+    def __call__(self, image: np.ndarray, context: Context) -> tuple[np.ndarray, Context]:
         """TODO: numpy implementation"""
         if "bboxes" not in context:
             raise ValueError(f"Must include bboxes to CropDetections, found {context}")
@@ -491,37 +472,29 @@ class ComputeBoundingBoxesFromCondKeypoints(Preprocessor):
         self.cond_kpt_key = cond_kpt_key
         self.bbox_margin = bbox_margin
 
-    def __call__(
-        self, image: np.ndarray, context: Context
-    ) -> tuple[np.ndarray, Context]:
+    def __call__(self, image: np.ndarray, context: Context) -> tuple[np.ndarray, Context]:
         """TODO: numpy implementation"""
         if "cond_kpts" not in context:
-            raise ValueError(
-                f"Must include cond kpts to ComputeBBoxes, found {context}"
-            )
+            raise ValueError(f"Must include cond kpts to ComputeBBoxes, found {context}")
 
         h, w = image.shape[:2]
         context["bboxes"] = [
-            bbox_from_keypoints(cond_kpts, h, w, self.bbox_margin)
-            for cond_kpts in context[self.cond_kpt_key]
+            bbox_from_keypoints(cond_kpts, h, w, self.bbox_margin) for cond_kpts in context[self.cond_kpt_key]
         ]
         return image, context
 
 
 class ConditionalKeypointsToModelInputs(Preprocessor):
-
     def __init__(self, cond_kpt_key: str = "cond_kpts") -> None:
         self.cond_kpt_key = cond_kpt_key
 
-    def __call__(
-        self, image: np.ndarray, context: Context
-    ) -> tuple[np.ndarray, Context]:
+    def __call__(self, image: np.ndarray, context: Context) -> tuple[np.ndarray, Context]:
         cond_keypoints = context[self.cond_kpt_key]
 
         rescaled = cond_keypoints.copy()
         if rescaled.size > 0:  # only rescale if non-empty
-            rescaled[..., :2] = (
-                rescaled[..., :2] - np.array(context["offsets"])[:, None]
-            ) / np.array(context["scales"])[:, None]
+            rescaled[..., :2] = (rescaled[..., :2] - np.array(context["offsets"])[:, None]) / np.array(
+                context["scales"]
+            )[:, None]
         context["model_kwargs"] = {"cond_kpts": np.expand_dims(rescaled, axis=1)}
         return image, context

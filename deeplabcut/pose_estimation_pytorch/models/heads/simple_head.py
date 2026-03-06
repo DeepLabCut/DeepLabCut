@@ -159,9 +159,7 @@ class DeconvModule(nn.Module):
         head_stride = 1
         self.deconv_layers = nn.Identity()
         if len(kernel_size) > 0:
-            self.deconv_layers = nn.Sequential(
-                *self._make_layers(in_channels, channels[1:], kernel_size, strides)
-            )
+            self.deconv_layers = nn.Sequential(*self._make_layers(in_channels, channels[1:], kernel_size, strides))
             for s in strides:
                 head_stride *= s
 
@@ -196,9 +194,7 @@ class DeconvModule(nn.Module):
         """
         layers = []
         for out_channels, k, s in zip(out_channels, kernel_sizes, strides):
-            layers.append(
-                nn.ConvTranspose2d(in_channels, out_channels, kernel_size=k, stride=s)
-            )
+            layers.append(nn.ConvTranspose2d(in_channels, out_channels, kernel_size=k, stride=s))
             layers.append(nn.ReLU())
             in_channels = out_channels
         return layers[:-1]

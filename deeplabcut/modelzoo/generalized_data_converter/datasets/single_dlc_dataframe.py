@@ -38,9 +38,7 @@ def merge_annotateddatasets(cfg):
     videos = cfg["video_sets"].keys()
     video_filenames = parse_video_filenames(videos)
     for filename in video_filenames:
-        file_path = os.path.join(
-            data_path / filename, f'CollectedData_{cfg["scorer"]}.h5'
-        )
+        file_path = os.path.join(data_path / filename, f"CollectedData_{cfg['scorer']}.h5")
         try:
             data = pd.read_hdf(file_path)
             conversioncode.guarantee_multiindex_rows(data)
@@ -75,15 +73,12 @@ def merge_annotateddatasets(cfg):
         bodyparts = multianimalbodyparts + uniquebodyparts
     else:
         bodyparts = cfg["bodyparts"]
-    AnnotationData = AnnotationData.reindex(
-        bodyparts, axis=1, level=AnnotationData.columns.names.index("bodyparts")
-    )
+    AnnotationData = AnnotationData.reindex(bodyparts, axis=1, level=AnnotationData.columns.names.index("bodyparts"))
 
     return AnnotationData
 
 
 class SingleDLCDataFrame(BasePoseDataset):
-
     def __init__(self, proj_root, dataset_name):
         super(SingleDLCDataFrame, self).__init__()
         self.meta["max_individuals"] = 1
@@ -134,15 +129,11 @@ class SingleDLCDataFrame(BasePoseDataset):
 
         print(f"Before checking trainset {self.meta['dataset_name']}")
 
-        self.whether_anno_image_match(
-            self.generic_train_images, self.generic_train_annotations
-        )
+        self.whether_anno_image_match(self.generic_train_images, self.generic_train_annotations)
 
         print(f"Before checking testset {self.meta['dataset_name']}")
 
-        self.whether_anno_image_match(
-            self.generic_test_images, self.generic_test_annotations
-        )
+        self.whether_anno_image_match(self.generic_test_images, self.generic_test_annotations)
 
     def _df2generic(self, df, image_id_offset=0):
 
@@ -215,7 +206,6 @@ class SingleDLCDataFrame(BasePoseDataset):
                 "iscrowd": 0,
             }
             if np.sum(keypoints) != 0:
-
                 coco_annotations.append(annotation)
 
             # I think width and height are important

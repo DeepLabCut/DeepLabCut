@@ -30,9 +30,7 @@ class DLCTrans:
 
         ckpt_dict = torch.load(self.checkpoint)
 
-        self.model = build_dlc_transformer(
-            cfg, ckpt_dict["feature_dim"], ckpt_dict["num_kpts"], inference_factory
-        )
+        self.model = build_dlc_transformer(cfg, ckpt_dict["feature_dim"], ckpt_dict["num_kpts"], inference_factory)
 
         self.cos = nn.CosineSimilarity(dim=1, eps=1e-6)
 

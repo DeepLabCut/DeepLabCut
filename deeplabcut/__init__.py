@@ -26,9 +26,7 @@ try:
     )
     from deeplabcut.gui.widgets import SkeletonBuilder
 except (ModuleNotFoundError, ImportError):
-    print(
-        "DLC loaded in light mode; you cannot use any GUI (labeling, relabeling and standalone GUI)"
-    )
+    print("DLC loaded in light mode; you cannot use any GUI (labeling, relabeling and standalone GUI)")
 
 from deeplabcut.core.engine import Engine
 from deeplabcut.create_project import (

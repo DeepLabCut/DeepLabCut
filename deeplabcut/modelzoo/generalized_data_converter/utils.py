@@ -72,9 +72,7 @@ def create_dummy_config_file_from_h5(
 
     labeled_folders = [f.split("/")[-1] for f in pattern]
 
-    video_sets = {
-        f"{folder}.mp4": {"crop": "0, 400, 0, 400"} for folder in labeled_folders
-    }
+    video_sets = {f"{folder}.mp4": {"crop": "0, 400, 0, 400"} for folder in labeled_folders}
 
     # bodyparts = df[scorer]['bodyparts']
 
@@ -109,7 +107,6 @@ def create_dummy_config_file_from_pickle(
     cfg_template = SingleDLC_config()
 
     with open(reference_pickle, "rb") as f:
-
         pickle_obj = pickle.load(f)
 
     # bodyparts  = pickle_obj['keypoint_names']
@@ -145,7 +142,6 @@ def create_dummy_config_file_from_pickle(
 def create_video_h5_from_pickle(proj_root, cfg, reference_pickle, videopath):
 
     with open(reference_pickle, "rb") as f:
-
         pickle_obj = pickle.load(f)
 
     # bodyparts  = pickle_obj['keypoint_names']
@@ -189,9 +185,7 @@ def create_video_h5_from_pickle(proj_root, cfg, reference_pickle, videopath):
     df = pd.DataFrame(data, columns=columnindex, index=imagenames)
 
     for imagename, kpts in zip(imagenames, detections):
-
         for kpt_id, kpt_name in enumerate(keypoint_names):
-
             df.loc[imagename][scorer, kpt_name, "x"] = kpts[kpt_id, 0]
             df.loc[imagename][scorer, kpt_name, "y"] = kpts[kpt_id, 1]
             df.loc[imagename][scorer, kpt_name, "likelihood"] = kpts[kpt_id, 2]
@@ -294,7 +288,6 @@ def customized_colormap(config_path):
 
     visited = set()
     for kpt_id in range(len(bodyparts)):
-
         bodypart = bodyparts[kpt_id]
         if "left" in bodypart:
             ref_color = colors[kpt_id]
@@ -320,5 +313,4 @@ def create_modelprefix(modelprefix):
 
 
 if __name__ == "__main__":
-
     customized_colormap("hei")

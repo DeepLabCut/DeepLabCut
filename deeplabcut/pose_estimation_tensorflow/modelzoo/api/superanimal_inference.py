@@ -152,10 +152,7 @@ def _video_inference(
 
             if multi_scale_batched_frames is None:
                 multi_scale_batched_frames = [
-                    np.empty(
-                        (batchsize, frame.shape[0], frame.shape[1], 3), dtype="ubyte"
-                    )
-                    for frame in frames
+                    np.empty((batchsize, frame.shape[0], frame.shape[1], 3), dtype="ubyte") for frame in frames
                 ]
 
             for scale_id, frame in enumerate(frames):
@@ -165,9 +162,7 @@ def _video_inference(
                 preds = []
                 for scale_id, batched_frames in enumerate(multi_scale_batched_frames):
                     # batch full, start true inferencing
-                    D = predict.predict_batched_peaks_and_costs(
-                        test_cfg, batched_frames, sess, inputs, outputs
-                    )
+                    D = predict.predict_batched_peaks_and_costs(test_cfg, batched_frames, sess, inputs, outputs)
                     preds.append(D)
                     # only do this when animal is detected
                 ind_start = inds[0]
@@ -181,9 +176,7 @@ def _video_inference(
                         else:
                             pred = preds[scale_id][i]
                         if pred != []:
-                            pred = _project_pred_to_original_size(
-                                pred, old_shape, frame_shapes[scale_id]
-                            )
+                            pred = _project_pred_to_original_size(pred, old_shape, frame_shapes[scale_id])
 
                         PredicteData["frame" + str(ind).zfill(strwidth)].append(pred)
 
@@ -218,9 +211,7 @@ def _video_inference(
                         else:
                             pred = preds[scale_id][i]
                         if pred != []:
-                            pred = _project_pred_to_original_size(
-                                pred, old_shape, frame_shapes[scale_id]
-                            )
+                            pred = _project_pred_to_original_size(pred, old_shape, frame_shapes[scale_id])
                         PredicteData["frame" + str(ind).zfill(strwidth)].append(pred)
 
             break
@@ -240,13 +231,9 @@ def _video_inference(
         "minimal confidence": test_cfg.get("minconfidence", None),
         "sigma": test_cfg.get("sigma", 1),
         "PAFgraph": test_cfg.get("partaffinityfield_graph", None),
-        "PAFinds": test_cfg.get(
-            "paf_best", np.arange(len(test_cfg["partaffinityfield_graph"]))
-        ),
+        "PAFinds": test_cfg.get("paf_best", np.arange(len(test_cfg["partaffinityfield_graph"]))),
         "all_joints": [[i] for i in range(len(test_cfg["all_joints"]))],
-        "all_joints_names": [
-            test_cfg["all_joints_names"][i] for i in range(len(test_cfg["all_joints"]))
-        ],
+        "all_joints_names": [test_cfg["all_joints_names"][i] for i in range(len(test_cfg["all_joints"]))],
         "nframes": nframes,
     }
 
@@ -296,12 +283,7 @@ def video_inference(
         test_cfg = customized_test_config
 
     # add a temp folder for checkpoint
-    weight_folder = str(
-        Path(dlc_root_path)
-        / "modelzoo"
-        / "checkpoints"
-        / f"{project_name}_{model_name}"
-    )
+    weight_folder = str(Path(dlc_root_path) / "modelzoo" / "checkpoints" / f"{project_name}_{model_name}")
     snapshots = glob.glob(os.path.join(weight_folder, "snapshot-*.index"))
     test_cfg["partaffinityfield_graph"] = []
     test_cfg["partaffinityfield_predict"] = False
@@ -310,9 +292,7 @@ def video_inference(
         test_cfg["init_weights"] = init_weights
     else:
         if len(snapshots) == 0:
-            raise FileNotFoundError(
-                f"Did not find any super animal snapshots in {weight_folder}"
-            )
+            raise FileNotFoundError(f"Did not find any super animal snapshots in {weight_folder}")
 
         init_weights = os.path.abspath(snapshots[0]).replace(".index", "")
         test_cfg["init_weights"] = init_weights
@@ -320,9 +300,7 @@ def video_inference(
     test_cfg["num_outputs"] = 1
     test_cfg["batch_size"] = batchsize
 
-    sess, inputs, outputs = single_predict.setup_pose_prediction(
-        test_cfg, allow_growth=allow_growth
-    )
+    sess, inputs, outputs = single_predict.setup_pose_prediction(test_cfg, allow_growth=allow_growth)
     DLCscorer = "DLC_" + Path(test_cfg["init_weights"]).stem
     videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
 

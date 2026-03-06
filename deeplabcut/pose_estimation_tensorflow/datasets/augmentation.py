@@ -82,8 +82,7 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
         self.max_shift = max(0.0, min(max_shift, 0.4))
         if crop_sampling not in ("uniform", "keypoints", "density", "hybrid"):
             raise ValueError(
-                f"Invalid sampling {crop_sampling}. Must be "
-                f"either 'uniform', 'keypoints', 'density', or 'hybrid."
+                f"Invalid sampling {crop_sampling}. Must be either 'uniform', 'keypoints', 'density', or 'hybrid."
             )
         self.crop_sampling = crop_sampling
 

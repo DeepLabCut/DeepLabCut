@@ -183,12 +183,8 @@ def efficientnet(
 def get_model_params(model_name, override_params):
     """Get the block args and global params for a given model."""
     if model_name.startswith("efficientnet"):
-        width_coefficient, depth_coefficient, _, dropout_rate = efficientnet_params(
-            model_name
-        )
-        blocks_args, global_params = efficientnet(
-            width_coefficient, depth_coefficient, dropout_rate
-        )
+        width_coefficient, depth_coefficient, _, dropout_rate = efficientnet_params(model_name)
+        blocks_args, global_params = efficientnet(width_coefficient, depth_coefficient, dropout_rate)
     else:
         raise NotImplementedError("model name is not pre-defined: %s" % model_name)
 
@@ -254,9 +250,7 @@ def build_model(
     return outputs, model.endpoints
 
 
-def build_model_base(
-    images, model_name, use_batch_norm=False, drop_out=False, override_params=None
-):
+def build_model_base(images, model_name, use_batch_norm=False, drop_out=False, override_params=None):
     """A helper function to create a base model and return global_pool.
     Args:
       images: input images tensor.
@@ -276,9 +270,7 @@ def build_model_base(
 
     with tf.compat.v1.variable_scope(model_name):
         model = efficientnet_model.Model(blocks_args, global_params)
-        features = model(
-            images, use_batch_norm=use_batch_norm, drop_out=drop_out, features_only=True
-        )
+        features = model(images, use_batch_norm=use_batch_norm, drop_out=drop_out, features_only=True)
 
     features = tf.identity(features, "features")
     return features, model.endpoints

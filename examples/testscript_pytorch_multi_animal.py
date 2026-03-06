@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Testscript for single animal PyTorch projects"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -132,8 +133,7 @@ if __name__ == "__main__":
         max_snapshots_to_keep=2,
         device="cpu",  # "cpu", "cuda:0", "mps"
         logger=None,
-        conditions_shuffle=net_types.index("resnet_50")
-        + 1,  # shuffles start at index 1
+        conditions_shuffle=net_types.index("resnet_50") + 1,  # shuffles start at index 1
         create_labeled_videos=True,
         delete_after_test_run=True,
     )

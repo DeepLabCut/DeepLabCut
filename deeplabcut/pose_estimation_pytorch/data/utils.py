@@ -78,9 +78,7 @@ def bbox_from_keypoints(
     return bboxes
 
 
-def merge_list_of_dicts(
-    list_of_dicts: list[dict], keys_to_include: list[str]
-) -> dict[str, list]:
+def merge_list_of_dicts(list_of_dicts: list[dict], keys_to_include: list[str]) -> dict[str, list]:
     """
     Flattens a list of dictionaries into a dictionary with the lists concatenated.
 
@@ -99,11 +97,7 @@ def merge_list_of_dicts(
             {"id": [0, 1], "num": [1, 10]}
     """
     return reduce(
-        lambda acc, d: {
-            key: acc.get(key, []) + [value]
-            for key, value in d.items()
-            if key in keys_to_include
-        },
+        lambda acc, d: {key: acc.get(key, []) + [value] for key, value in d.items() if key in keys_to_include},
         list_of_dicts,
         defaultdict(list),
     )
@@ -196,9 +190,7 @@ def _crop_and_pad_image(
     return pad_image, (pad_h, pad_w)
 
 
-def _crop_and_pad_keypoints(
-    keypoints: np.ndarray, coords: tuple[int, int], pad_size: tuple[int, int]
-):
+def _crop_and_pad_keypoints(keypoints: np.ndarray, coords: tuple[int, int], pad_size: tuple[int, int]):
     """
     Adjust the keypoints after cropping and padding.
 
@@ -242,9 +234,7 @@ def _crop_image_keypoints(
     """
 
     cropped_image, pad_size = _crop_and_pad_image(image, coords, output_size)
-    cropped_keypoints = _crop_and_pad_keypoints(
-        keypoints, (coords[0][0], coords[1][0]), pad_size
-    )
+    cropped_keypoints = _crop_and_pad_keypoints(keypoints, (coords[0][0], coords[1][0]), pad_size)
 
     offsets = (coords[0][0], coords[1][0])
     scales = [
@@ -253,9 +243,7 @@ def _crop_image_keypoints(
     ]
 
     # TODO: Fix resizing, use OpenCV
-    cropped_resized_image = np.resize(
-        cropped_image, (*output_size, cropped_image.shape[2])
-    )
+    cropped_resized_image = np.resize(cropped_image, (*output_size, cropped_image.shape[2]))
 
     cropped_resized_keypoints = np.array(cropped_keypoints) * np.array(scales + [1])
 
@@ -443,9 +431,7 @@ def apply_transform(
 
     if transform:
         oob_mask = out_of_bounds_keypoints(keypoints, image.shape)
-        transformed = _apply_transform(
-            transform, image, keypoints, bboxes, class_labels
-        )
+        transformed = _apply_transform(transform, image, keypoints, bboxes, class_labels)
 
         transformed["keypoints"] = np.array(transformed["keypoints"])
 

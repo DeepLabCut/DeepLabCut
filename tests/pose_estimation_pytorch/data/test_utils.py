@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Tests data utils"""
+
 import numpy as np
 import pytest
 

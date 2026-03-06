@@ -19,7 +19,6 @@ A Neural Net Training Interface on TensorFlow, with focus on speed + flexibility
 https://github.com/tensorpack/tensorpack
 """
 
-
 import multiprocessing
 import os
 
@@ -211,9 +210,7 @@ class TensorpackPoseDataset(BasePoseDataset):
         # Randomly applies gaussian blur to an image with a random window size
         # within the range [0, 2 * blur_max_window_size + 1] to augment training data
         cfg["blur_max_window_size"] = cfg.get("blur_max_window_size", 10)
-        cfg["blurratio"] = cfg.get(
-            "blurratio", 0.2
-        )  # what is the fraction of training samples with blur augmentation?
+        cfg["blurratio"] = cfg.get("blurratio", 0.2)  # what is the fraction of training samples with blur augmentation?
 
         # Whether image is RGB  or RBG. If None, contrast augmentation uses the mean per-channel.
         cfg["is_rgb"] = cfg.get("is_rgb", True)
@@ -261,9 +258,7 @@ class TensorpackPoseDataset(BasePoseDataset):
             rgb=self.cfg["is_rgb"],
             clip=self.cfg["to_clip"],
         )
-        self.saturation = Saturation(
-            self.cfg["saturation_max_dif"], rgb=self.cfg["is_rgb"]
-        )
+        self.saturation = Saturation(self.cfg["saturation_max_dif"], rgb=self.cfg["is_rgb"])
         self.gaussian_noise = GaussianNoise(sigma=self.cfg["noise_sigma"])
         self.gaussian_blur = GaussianBlur(max_size=self.cfg["blur_max_window_size"])
         self.augmentors = [
@@ -305,9 +300,7 @@ class TensorpackPoseDataset(BasePoseDataset):
         aug_img = img
         aug_coords = coords
         size = [aug_img.shape[0], aug_img.shape[1]]
-        aug_coords = [
-            aug_coords.reshape(int(len(aug_coords[~np.isnan(aug_coords)]) / 2), 2)
-        ]
+        aug_coords = [aug_coords.reshape(int(len(aug_coords[~np.isnan(aug_coords)]) / 2), 2)]
         joint_id = data.joint_id
 
         return [joint_id, aug_img, aug_coords, data, size, scale]
@@ -322,13 +315,9 @@ class TensorpackPoseDataset(BasePoseDataset):
         if num_processes <= 1:
             num_processes = 2  # recommended to use more than one process for training
         if os.name == "nt":
-            df2 = MultiProcessRunner(
-                df, num_proc=num_processes, num_prefetch=self.cfg["num_prefetch"]
-            )
+            df2 = MultiProcessRunner(df, num_proc=num_processes, num_prefetch=self.cfg["num_prefetch"])
         else:
-            df2 = MultiProcessRunnerZMQ(
-                df, num_proc=num_processes, hwm=self.cfg["num_prefetch"]
-            )
+            df2 = MultiProcessRunnerZMQ(df, num_proc=num_processes, hwm=self.cfg["num_prefetch"])
         return df2
 
     def compute_target_part_scoremap(self, components):
@@ -418,10 +407,7 @@ class TensorpackPoseDataset(BasePoseDataset):
         if "min_input_size" in self.cfg and "max_input_size" in self.cfg:
             input_width = image_size[2] * scale
             input_height = image_size[1] * scale
-            if (
-                input_height < self.cfg["min_input_size"]
-                or input_width < self.cfg["min_input_size"]
-            ):
+            if input_height < self.cfg["min_input_size"] or input_width < self.cfg["min_input_size"]:
                 return False
             if input_height * input_width > self.cfg["max_input_size"] ** 2:
                 return False

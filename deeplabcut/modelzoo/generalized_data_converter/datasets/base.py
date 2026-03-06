@@ -73,9 +73,7 @@ class BasePoseDataset:
     def _build_maps(self):
         self.datasetname2imageids[self.meta["dataset_name"]] = set()
 
-        total_annotations = (
-            self.generic_train_annotations + self.generic_test_annotations
-        )
+        total_annotations = self.generic_train_annotations + self.generic_test_annotations
         for anno in total_annotations:
             image_id = anno["image_id"]
             if image_id not in self.imageid2anno:
@@ -107,7 +105,6 @@ class BasePoseDataset:
         for img in self.generic_train_images + self.generic_test_images:
             print(img["file_name"])
             if pattern in img["file_name"]:
-
                 image_id = img["id"]
                 keep_ids.append(image_id)
 
@@ -139,9 +136,9 @@ class BasePoseDataset:
         self.generic_test_annotations = keep_test_annotations
 
     def summary(self):
-        print(f'Summary of dataset {self.meta["dataset_name"]}')
+        print(f"Summary of dataset {self.meta['dataset_name']}")
         print("-------------")
-        print(f'max num individuals  is {self.meta["max_individuals"]}')
+        print(f"max num individuals  is {self.meta['max_individuals']}")
         print(f"total keypoints : {len(self.meta['categories']['keypoints'])}")
         print(f"total train images : {len(self.generic_train_images)}")
         print(f"total test images : {len(self.generic_test_images)}")
@@ -235,9 +232,7 @@ class BasePoseDataset:
 
                 src_kpt_name = master2src[master_kpt_name]
                 src_kpt_id = kpt2index[src_kpt_name]
-                new_kpts[master_kpt_id * 3 : master_kpt_id * 3 + 3] = kpts[
-                    src_kpt_id * 3 : src_kpt_id * 3 + 3
-                ]
+                new_kpts[master_kpt_id * 3 : master_kpt_id * 3 + 3] = kpts[src_kpt_id * 3 : src_kpt_id * 3 + 3]
 
             # skipping empty frames after conversion
             new_anno = copy.deepcopy(anno)
@@ -255,9 +250,7 @@ class BasePoseDataset:
         """
         from .utils import calc_bboxes_from_keypoints
 
-        for annotation in (
-            self.generic_train_annotations + self.generic_test_annotations
-        ):
+        for annotation in self.generic_train_annotations + self.generic_test_annotations:
             keypoints = annotation["keypoints"]
             bbox_margin = 20
 
@@ -292,21 +285,15 @@ class BasePoseDataset:
         Replace the generic annotations with those that are in superset keypoint space
 
         """
-        print(f'Converting {self.meta["dataset_name"]}')
+        print(f"Converting {self.meta['dataset_name']}")
 
         keypoints = self.get_keypoints()
 
-        self.conversion_table = get_conversion_table(
-            keypoints=keypoints, table_path=table_path, table_dict=table_dict
-        )
+        self.conversion_table = get_conversion_table(keypoints=keypoints, table_path=table_path, table_dict=table_dict)
 
-        self.generic_train_annotations = self._proj(
-            self.generic_train_annotations, self.conversion_table
-        )
+        self.generic_train_annotations = self._proj(self.generic_train_annotations, self.conversion_table)
 
-        self.generic_test_annotations = self._proj(
-            self.generic_test_annotations, self.conversion_table
-        )
+        self.generic_test_annotations = self._proj(self.generic_test_annotations, self.conversion_table)
 
         # all category id fixed to 1. So that it does not conflict with the background
         # category id

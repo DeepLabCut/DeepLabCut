@@ -185,9 +185,7 @@ class TrainNetwork(DefaultTab):
                     spin_box.setMinimum(attribute.min)
                     spin_box.setMaximum(attribute.max)
                     spin_box.setValue(attribute.default)
-                    spin_box.valueChanged.connect(
-                        lambda new_val: self.log_attribute_change(attribute, new_val)
-                    )
+                    spin_box.valueChanged.connect(lambda new_val: self.log_attribute_change(attribute, new_val))
                     self._attribute_kwargs[engine][attribute.fn_key] = spin_box
 
                     # Pad below to create spacing with other rows
@@ -201,9 +199,7 @@ class TrainNetwork(DefaultTab):
                     param_layout.addWidget(spin_box, row_index, 2 * j + 1)
 
                 if row.show_when_cfg is not None:
-                    self._rows_with_requirements.append(
-                        (row.show_when_cfg, row_elements)
-                    )
+                    self._rows_with_requirements.append((row.show_when_cfg, row_elements))
 
                 row_index += 1
 
@@ -230,14 +226,10 @@ class TrainNetwork(DefaultTab):
         for k, spin_box in self._attribute_kwargs[self.root.engine].items():
             kwargs[k] = int(spin_box.value())
         if self.root.engine == Engine.PYTORCH:
-            snapshot_to_start_training_from = (
-                self.snapshot_selection_widget.selected_snapshot
-            )
+            snapshot_to_start_training_from = self.snapshot_selection_widget.selected_snapshot
             if snapshot_to_start_training_from is not None:
                 kwargs["snapshot_path"] = snapshot_to_start_training_from
-            detector_to_start_training_from = (
-                self.detector_snapshot_selection_widget.selected_snapshot
-            )
+            detector_to_start_training_from = self.detector_snapshot_selection_widget.selected_snapshot
             if detector_to_start_training_from is not None:
                 kwargs["detector_path"] = detector_to_start_training_from
 
@@ -245,9 +237,7 @@ class TrainNetwork(DefaultTab):
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setText("The network is now trained and ready to evaluate.")
-        msg.setInformativeText(
-            "Use the function 'evaluate_network' to evaluate the network."
-        )
+        msg.setInformativeText("Use the function 'evaluate_network' to evaluate the network.")
 
         msg.setWindowTitle("Info")
         msg.setMinimumWidth(900)

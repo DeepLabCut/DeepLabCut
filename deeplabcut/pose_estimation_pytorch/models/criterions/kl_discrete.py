@@ -13,6 +13,7 @@
 Can be used for SimCC-type heads. Modified from the `mmpose` implementation. For more
 details, see <https://github.com/open-mmlab/mmpose>.
 """
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

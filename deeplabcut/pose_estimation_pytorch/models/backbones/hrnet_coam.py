@@ -80,11 +80,9 @@ class HRNetCoAM(HRNet):
             (int(img_size[0] / 32), int(img_size[1] / 32)),
         ]
 
-        assert not (
-            set(coam_modules) & set(selfatt_coam_modules)
-            if selfatt_coam_modules
-            else set()
-        ), "CoAM and Self-Attention-CoAM cannot be used at the same time"
+        assert not (set(coam_modules) & set(selfatt_coam_modules) if selfatt_coam_modules else set()), (
+            "CoAM and Self-Attention-CoAM cannot be used at the same time"
+        )
 
         all_output_channels = [
             self.model.stage2_cfg["num_channels"],
@@ -116,10 +114,8 @@ class HRNetCoAM(HRNet):
                 else:
                     spat_dims_ = spat_dims[: selfatt_coam_pos + 1]
                     channels = all_output_channels[coam_pos - 1]
-                self.selfatt_coam_stages[selfatt_coam_pos - 1] = (
-                    SelfAttentionModule_CoAM(
-                        spat_dims=spat_dims_, channel_list=channels
-                    )
+                self.selfatt_coam_stages[selfatt_coam_pos - 1] = SelfAttentionModule_CoAM(
+                    spat_dims=spat_dims_, channel_list=channels
                 )
 
     def stages(self, x, cond_hm) -> list[torch.Tensor]:
@@ -134,10 +130,7 @@ class HRNetCoAM(HRNet):
 
         yl = self.model.stage2(xl)
 
-        xl = [
-            t(yl[-1]) if not isinstance(t, nn.Identity) else yl[i]
-            for i, t in enumerate(self.model.transition2)
-        ]
+        xl = [t(yl[-1]) if not isinstance(t, nn.Identity) else yl[i] for i, t in enumerate(self.model.transition2)]
 
         if self.coam_stages[1]:
             xl = self.coam_stages[1](xl, cond_hm)
@@ -146,10 +139,7 @@ class HRNetCoAM(HRNet):
 
         yl = self.model.stage3(xl)
 
-        xl = [
-            t(yl[-1]) if not isinstance(t, nn.Identity) else yl[i]
-            for i, t in enumerate(self.model.transition3)
-        ]
+        xl = [t(yl[-1]) if not isinstance(t, nn.Identity) else yl[i] for i, t in enumerate(self.model.transition3)]
 
         if self.coam_stages[2]:
             xl = self.coam_stages[2](xl, cond_hm)
@@ -195,9 +185,7 @@ class HRNetCoAM(HRNet):
         y = self.stages(x, cond_hm)
 
         if self.model.incre_modules is not None:
-            raise NotImplementedError(
-                "Incremental HRNet modules not supported for HRNetCoAM"
-            )
+            raise NotImplementedError("Incremental HRNet modules not supported for HRNetCoAM")
             x = [incre(f) for f, incre in zip(x, self.model.incre_modules)]
 
         return self.prepare_output(y)

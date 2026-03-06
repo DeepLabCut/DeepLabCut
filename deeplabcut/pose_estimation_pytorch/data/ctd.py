@@ -81,18 +81,11 @@ class CondProvider(ABC):
 
             snapshots = loader.snapshots()
             if len(snapshots) == 0:
-                raise ValueError(
-                    f"No snapshots found for shuffle={shuffle} in {loader.model_folder}"
-                )
+                raise ValueError(f"No snapshots found for shuffle={shuffle} in {loader.model_folder}")
 
             if snapshot_index > len(snapshots):
-                snapshot_str = "\n".join(
-                    [f"  {i}: {s.path.name}" for i, s in enumerate(snapshots)]
-                )
-                raise ValueError(
-                    f"Snapshot index {snapshot_index} is out of range. Existing "
-                    f"snapshots: {snapshot_str}"
-                )
+                snapshot_str = "\n".join([f"  {i}: {s.path.name}" for i, s in enumerate(snapshots)])
+                raise ValueError(f"Snapshot index {snapshot_index} is out of range. Existing snapshots: {snapshot_str}")
 
             bu_snapshot = snapshots[snapshot_index]
 
@@ -129,10 +122,7 @@ class CondFromFile(CondProvider):
                 )
 
         if not filepath.exists():
-            raise ValueError(
-                "Conditions file {conditions_filepath} does not exist. Please check "
-                f"the given path."
-            )
+            raise ValueError(f"Conditions file {{conditions_filepath}} does not exist. Please check the given path.")
 
         self.filepath = filepath
 
@@ -170,8 +160,7 @@ class CondFromFile(CondProvider):
             return self.load_conditions_pickle(self.filepath)
 
         raise ValueError(
-            f"Unknown file suffix {suffix}. Can only read conditions from HDF5 or JSON "
-            f"files. Received {self.filepath}."
+            f"Unknown file suffix {suffix}. Can only read conditions from HDF5 or JSON files. Received {self.filepath}."
         )
 
     @staticmethod
@@ -278,8 +267,7 @@ class CondFromFile(CondProvider):
         missing = image_set.difference(set(conditions.keys()))
         if len(missing) > 0:
             print(
-                f"Warning: did not find conditions for {len(missing)} of the {len(images)} "
-                f"images. Missing conditions:"
+                f"Warning: did not find conditions for {len(missing)} of the {len(images)} images. Missing conditions:"
             )
             for img_path in missing:
                 print(f"  - {img_path}")
@@ -356,8 +344,7 @@ class CondFromFile(CondProvider):
         if images is None:
             if not isinstance(conditions, list):
                 raise ValueError(
-                    f"Conditions are expected to be of type list when `images=None`, "
-                    f"got {type(conditions)}."
+                    f"Conditions are expected to be of type list when `images=None`, got {type(conditions)}."
                 )
 
             parsed = []
@@ -378,9 +365,7 @@ class CondFromFile(CondProvider):
 
         path_with_prefix_to_key = {}
         if path_prefix is not None:
-            path_with_prefix_to_key = {
-                str(Path(path_prefix) / k): k for k in conditions.keys()
-            }
+            path_with_prefix_to_key = {str(Path(path_prefix) / k): k for k in conditions.keys()}
 
         parsed = {}
         missing = []
@@ -400,8 +385,7 @@ class CondFromFile(CondProvider):
 
         if len(missing) > 0:
             print(
-                f"Warning: did not find conditions for {len(missing)} of the "
-                f"{len(images)} images. Missing conditions:"
+                f"Warning: did not find conditions for {len(missing)} of the {len(images)} images. Missing conditions:"
             )
             for img_path in missing:
                 print(f"  - {img_path}")

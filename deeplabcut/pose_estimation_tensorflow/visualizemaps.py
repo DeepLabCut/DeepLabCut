@@ -107,9 +107,7 @@ def extract_maps(
     )
 
     # Make folder for evaluation
-    auxiliaryfunctions.attempt_to_make_folder(
-        str(cfg["project_path"] + "/evaluation-results/")
-    )
+    auxiliaryfunctions.attempt_to_make_folder(str(cfg["project_path"] + "/evaluation-results/"))
 
     Maps = {}
     for trainFraction in TrainingFractions:
@@ -123,11 +121,7 @@ def extract_maps(
 
         modelfolder = os.path.join(
             cfg["project_path"],
-            str(
-                auxiliaryfunctions.get_model_folder(
-                    trainFraction, shuffle, cfg, modelprefix=modelprefix
-                )
-            ),
+            str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
         )
         path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
         # Load meta data
@@ -136,15 +130,12 @@ def extract_maps(
             trainIndices,
             testIndices,
             trainFraction,
-        ) = auxiliaryfunctions.load_metadata(
-            os.path.join(cfg["project_path"], metadatafn)
-        )
+        ) = auxiliaryfunctions.load_metadata(os.path.join(cfg["project_path"], metadatafn))
         try:
             dlc_cfg = load_config(str(path_test_config))
         except FileNotFoundError:
             raise FileNotFoundError(
-                "It seems the model for shuffle %s and trainFraction %s does not exist."
-                % (shuffle, trainFraction)
+                "It seems the model for shuffle %s and trainFraction %s does not exist." % (shuffle, trainFraction)
             )
 
         # change batch size, if it was edited during analysis!
@@ -153,11 +144,7 @@ def extract_maps(
         # Create folder structure to store results.
         evaluationfolder = os.path.join(
             cfg["project_path"],
-            str(
-                auxiliaryfunctions.get_evaluation_folder(
-                    trainFraction, shuffle, cfg, modelprefix=modelprefix
-                )
-            ),
+            str(auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
         )
         auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
 
@@ -172,25 +159,19 @@ def extract_maps(
         elif cfg["snapshotindex"] < len(Snapshots):
             snapindices = [cfg["snapshotindex"]]
         else:
-            print(
-                "Invalid choice, only -1 (last), any integer up to last, or all (as string)!"
-            )
+            print("Invalid choice, only -1 (last), any integer up to last, or all (as string)!")
 
         ########################### RESCALING (to global scale)
         scale = dlc_cfg["global_scale"] if rescale else 1
         Data *= scale
 
-        bptnames = [
-            dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
-        ]
+        bptnames = [dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))]
 
         for snapindex in snapindices:
             dlc_cfg["init_weights"] = os.path.join(
                 str(modelfolder), "train", Snapshots[snapindex]
             )  # setting weights to corresponding snapshot.
-            trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split(
-                "-"
-            )[
+            trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[
                 -1
             ]  # read how many training siterations that corresponds to.
 
@@ -213,9 +194,7 @@ def extract_maps(
 
             DATA = {}
             for imageindex, imagename in tqdm(Indices):
-                image = imread(
-                    os.path.join(cfg["project_path"], *imagename), mode="skimage"
-                )
+                image = imread(os.path.join(cfg["project_path"], *imagename), mode="skimage")
 
                 if scale != 1:
                     image = imresize(image, scale)
@@ -226,9 +205,7 @@ def extract_maps(
                 outputs_np = sess.run(outputs, feed_dict={inputs: image_batch})
 
                 if cfg.get("multianimalproject", False):
-                    scmap, locref, paf = predictma.extract_cnn_output(
-                        outputs_np, dlc_cfg
-                    )
+                    scmap, locref, paf = predictma.extract_cnn_output(outputs_np, dlc_cfg)
                     pagraph = dlc_cfg["partaffinityfield_graph"]
                 else:
                     scmap, locref = predict.extract_cnn_output(outputs_np, dlc_cfg)
@@ -273,9 +250,7 @@ def resize_all_maps(image, scmap, locref, paf):
 
 def _save_individual_subplots(fig, axes, labels, output_path):
     for ax, label in zip(axes, labels):
-        extent = ax.get_tightbbox(fig.canvas.renderer).transformed(
-            fig.dpi_scale_trans.inverted()
-        )
+        extent = ax.get_tightbbox(fig.canvas.renderer).transformed(fig.dpi_scale_trans.inverted())
         fig.savefig(output_path.format(bp=label), bbox_inches=extent)
 
 
@@ -340,13 +315,9 @@ def extract_save_all_maps(
     from tqdm import tqdm
 
     cfg = read_config(config)
-    data = extract_maps(
-        config, shuffle, trainingsetindex, gputouse, rescale, Indices, modelprefix
-    )
+    data = extract_maps(config, shuffle, trainingsetindex, gputouse, rescale, Indices, modelprefix)
 
-    comparisonbodyparts = intersection_of_body_parts_and_ones_given_by_user(
-        cfg, comparisonbodyparts
-    )
+    comparisonbodyparts = intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts)
 
     print("Saving plots...")
     for frac, values in data.items():
@@ -376,18 +347,12 @@ def extract_save_all_maps(
                     paf = None
                 label = "train" if trainingframe else "test"
                 imname = impath[-1]
-                scmap, (locref_x, locref_y), paf = resize_all_maps(
-                    image, scmap, locref, paf
-                )
-                to_plot = [
-                    i for i, bpt in enumerate(bptnames) if bpt in comparisonbodyparts
-                ]
+                scmap, (locref_x, locref_y), paf = resize_all_maps(image, scmap, locref, paf)
+                to_plot = [i for i, bpt in enumerate(bptnames) if bpt in comparisonbodyparts]
                 list_of_inds = []
                 for n, edge in enumerate(pafgraph):
                     if any(ind in to_plot for ind in edge):
-                        list_of_inds.append(
-                            [(2 * n, 2 * n + 1), (bptnames[edge[0]], bptnames[edge[1]])]
-                        )
+                        list_of_inds.append([(2 * n, 2 * n + 1), (bptnames[edge[0]], bptnames[edge[1]])])
                 if len(to_plot) > 1:
                     map_ = scmap[:, :, to_plot].sum(axis=2)
                     locref_x_ = locref_x[:, :, to_plot].sum(axis=2)
@@ -428,7 +393,7 @@ def extract_save_all_maps(
                             fig3, _ = visualize_paf(image, paf[:, :, [inds]])
                             temp = dest_path.format(
                                 imname=imname,
-                                map=f'paf_{"_".join(names)}',
+                                map=f"paf_{'_'.join(names)}",
                                 label=label,
                                 shuffle=shuffle,
                                 frac=frac,

@@ -169,12 +169,8 @@ def create_labeled_video_3d(
             pickle_file = triangulate_file.replace(string_to_remove, "_meta.pickle")
             metadata_ = auxiliaryfunctions_3d.LoadMetadata3d(pickle_file)
 
-            base_filename_cam1 = str(Path(file[1]).stem).split(videotype)[
-                0
-            ]  # required for searching the filtered file
-            base_filename_cam2 = str(Path(file[2]).stem).split(videotype)[
-                0
-            ]  # required for searching the filtered file
+            base_filename_cam1 = str(Path(file[1]).stem).split(videotype)[0]  # required for searching the filtered file
+            base_filename_cam2 = str(Path(file[2]).stem).split(videotype)[0]  # required for searching the filtered file
             cam1_view_video = file[1]
             cam2_view_video = file[2]
             cam1_scorer = metadata_["scorer_name"][cam_names[0]]
@@ -199,9 +195,7 @@ def create_labeled_video_3d(
                     glob.glob(
                         os.path.join(
                             path_h5_file,
-                            str(
-                                "*" + base_filename_cam1 + cam1_scorer + "*filtered.h5"
-                            ),
+                            str("*" + base_filename_cam1 + cam1_scorer + "*filtered.h5"),
                         )
                     )[0]
                 )
@@ -209,9 +203,7 @@ def create_labeled_video_3d(
                     glob.glob(
                         os.path.join(
                             path_h5_file,
-                            str(
-                                "*" + base_filename_cam2 + cam2_scorer + "*filtered.h5"
-                            ),
+                            str("*" + base_filename_cam2 + cam2_scorer + "*filtered.h5"),
                         )
                     )[0]
                 )
@@ -228,29 +220,17 @@ def create_labeled_video_3d(
                     ),
                 )
             except IndexError:
-                print(
-                    "No filtered predictions found, the unfiltered predictions will be used instead."
-                )
+                print("No filtered predictions found, the unfiltered predictions will be used instead.")
                 df_cam1 = pd.read_hdf(
-                    glob.glob(
-                        os.path.join(
-                            path_h5_file, str(base_filename_cam1 + cam1_scorer + "*.h5")
-                        )
-                    )[0]
+                    glob.glob(os.path.join(path_h5_file, str(base_filename_cam1 + cam1_scorer + "*.h5")))[0]
                 )
                 df_cam2 = pd.read_hdf(
-                    glob.glob(
-                        os.path.join(
-                            path_h5_file, str(base_filename_cam2 + cam2_scorer + "*.h5")
-                        )
-                    )[0]
+                    glob.glob(os.path.join(path_h5_file, str(base_filename_cam2 + cam2_scorer + "*.h5")))[0]
                 )
 
             df_3d = pd.read_hdf(triangulate_file)
             try:
-                num_animals = (
-                    df_3d.columns.get_level_values("individuals").unique().size
-                )
+                num_animals = df_3d.columns.get_level_values("individuals").unique().size
             except KeyError:
                 num_animals = 1
 
@@ -263,26 +243,14 @@ def create_labeled_video_3d(
             output_folder.mkdir(parents=True, exist_ok=True)
 
             # Flatten the list of bodyparts to connect
-            bodyparts2plot = list(
-                np.unique([val for sublist in bodyparts2connect for val in sublist])
-            )
+            bodyparts2plot = list(np.unique([val for sublist in bodyparts2connect for val in sublist]))
 
             # Format data
             mask2d = df_cam1.columns.get_level_values("bodyparts").isin(bodyparts2plot)
-            xy1 = (
-                df_cam1.iloc[: len(df_3d)]
-                .loc[:, mask2d]
-                .to_numpy()
-                .reshape((len(df_3d), -1, 3))
-            )
+            xy1 = df_cam1.iloc[: len(df_3d)].loc[:, mask2d].to_numpy().reshape((len(df_3d), -1, 3))
             visible1 = xy1[..., 2] >= pcutoff
             xy1[~visible1] = np.nan
-            xy2 = (
-                df_cam2.iloc[: len(df_3d)]
-                .loc[:, mask2d]
-                .to_numpy()
-                .reshape((len(df_3d), -1, 3))
-            )
+            xy2 = df_cam2.iloc[: len(df_3d)].loc[:, mask2d].to_numpy().reshape((len(df_3d), -1, 3))
             visible2 = xy2[..., 2] >= pcutoff
             xy2[~visible2] = np.nan
             mask = df_3d.columns.get_level_values("bodyparts").isin(bodyparts2plot)

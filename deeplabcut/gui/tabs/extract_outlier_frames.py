@@ -47,9 +47,7 @@ class ExtractOutlierFrames(DefaultTab):
         self._generate_multianimal_options(self.layout_attributes)
         self.main_layout.addLayout(self.layout_attributes)
 
-        self.main_layout.addWidget(
-            _create_label_widget("Frame extraction options", "font:bold")
-        )
+        self.main_layout.addWidget(_create_label_widget("Frame extraction options", "font:bold"))
         self.layout_extraction_options = _create_horizontal_layout()
         self._generate_layout_extraction_options(self.layout_extraction_options)
         self.main_layout.addLayout(self.layout_extraction_options)
@@ -67,9 +65,7 @@ class ExtractOutlierFrames(DefaultTab):
         self.merge_data_button.clicked.connect(self.merge_dataset)
         self.merge_data_button.setMinimumWidth(150)
 
-        self.main_layout.addWidget(
-            self.extract_outlierframes_button, alignment=Qt.AlignRight
-        )
+        self.main_layout.addWidget(self.extract_outlierframes_button, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.label_outliers_button, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.merge_data_button, alignment=Qt.AlignRight)
 
@@ -115,9 +111,7 @@ class ExtractOutlierFrames(DefaultTab):
         self.outlier_algorithm_widget = QtWidgets.QComboBox()
         self.outlier_algorithm_widget.addItems(DLCParams.OUTLIER_EXTRACTION_ALGORITHMS)
         self.outlier_algorithm_widget.setMinimumWidth(200)
-        self.outlier_algorithm_widget.currentTextChanged.connect(
-            self.update_outlier_algorithm
-        )
+        self.outlier_algorithm_widget.currentTextChanged.connect(self.update_outlier_algorithm)
 
         layout.addWidget(opt_text)
         layout.addWidget(self.outlier_algorithm_widget)
@@ -126,9 +120,7 @@ class ExtractOutlierFrames(DefaultTab):
         self.root.logger.info(f"Using {method.upper()} tracker")
 
     def update_outlier_algorithm(self, algorithm):
-        self.root.logger.info(
-            f"Using {algorithm.upper()} algorithm for frame extraction"
-        )
+        self.root.logger.info(f"Using {algorithm.upper()} algorithm for frame extraction")
 
     def extract_outlier_frames(self):
         config = self.root.config

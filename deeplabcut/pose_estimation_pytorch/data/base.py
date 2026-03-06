@@ -124,9 +124,7 @@ class Loader(ABC):
         data = self._loaded_data[mode]
         return [image["file_name"] for image in data["images"]]
 
-    def ground_truth_keypoints(
-        self, mode: str = "train", unique_bodypart: bool = False
-    ) -> dict[str, np.ndarray]:
+    def ground_truth_keypoints(self, mode: str = "train", unique_bodypart: bool = False) -> dict[str, np.ndarray]:
         """
         Creates a dictionary containing the ground truth data
 
@@ -171,8 +169,7 @@ class Loader(ABC):
         for image in data["images"]:
             image_path = image["file_name"]
             individual_keypoints = {
-                annotations[i]["individual"]: annotations[i]["keypoints"]
-                for i in img_to_ann_map[image["id"]]
+                annotations[i]["individual"]: annotations[i]["keypoints"] for i in img_to_ann_map[image["id"]]
             }
             gt_array = np.zeros((len(individuals), num_bodyparts, 3))
             # Keep the shape of the ground truth
@@ -296,9 +293,7 @@ class Loader(ABC):
         filtered_annotations = []
         for annotation in annotations:
             keypoints = annotation["keypoints"].reshape(-1, 3)
-            if task in (Task.DETECT, Task.TOP_DOWN) and (
-                annotation["bbox"][2] <= 0 or annotation["bbox"][3] <= 0
-            ):
+            if task in (Task.DETECT, Task.TOP_DOWN) and (annotation["bbox"][2] <= 0 or annotation["bbox"][3] <= 0):
                 continue
             elif task != Task.DETECT and np.all(keypoints[:, :2] <= 0):
                 continue

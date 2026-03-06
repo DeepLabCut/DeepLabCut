@@ -26,9 +26,7 @@ class BaseCriterion(ABC, nn.Module):
         super().__init__()
 
     @abstractmethod
-    def forward(
-        self, output: torch.Tensor, target: torch.Tensor, **kwargs
-    ) -> torch.Tensor:
+    def forward(self, output: torch.Tensor, target: torch.Tensor, **kwargs) -> torch.Tensor:
         """
         Args:
             output: the output from which to compute the loss

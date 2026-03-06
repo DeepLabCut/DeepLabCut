@@ -85,9 +85,7 @@ class EvaluateNetwork(DefaultTab):
         self.edit_inferencecfg_btn.clicked.connect(self.open_inferencecfg_editor)
 
         if self.root.is_multianimal:
-            self.main_layout.addWidget(
-                self.edit_inferencecfg_btn, alignment=Qt.AlignRight
-            )
+            self.main_layout.addWidget(self.edit_inferencecfg_btn, alignment=Qt.AlignRight)
 
         self.main_layout.addWidget(self.ev_nw_button, alignment=Qt.AlignRight)
         self.main_layout.addWidget(self.opt_button, alignment=Qt.AlignRight)
@@ -133,27 +131,17 @@ class EvaluateNetwork(DefaultTab):
         # Display all images
         dest_folder = os.path.join(
             self.root.project_folder,
-            str(
-                auxiliaryfunctions.get_evaluation_folder(
-                    self.root.cfg["TrainingFraction"][0], shuffle, self.root.cfg
-                )
-            ),
+            str(auxiliaryfunctions.get_evaluation_folder(self.root.cfg["TrainingFraction"][0], shuffle, self.root.cfg)),
             "maps",
         )
-        image_paths = [
-            os.path.join(dest_folder, file)
-            for file in os.listdir(dest_folder)
-            if file.endswith(".png")
-        ]
+        image_paths = [os.path.join(dest_folder, file) for file in os.listdir(dest_folder) if file.endswith(".png")]
         canvas = GridCanvas(image_paths, parent=self)
         canvas.show()
 
     def _generate_additional_attributes(self, layout):
         tmp_layout = _create_horizontal_layout(margins=(0, 0, 0, 0))
 
-        self.plot_predictions = QtWidgets.QCheckBox(
-            "Plot predictions (as in standard DLC projects)"
-        )
+        self.plot_predictions = QtWidgets.QCheckBox("Plot predictions (as in standard DLC projects)")
         self.plot_predictions.stateChanged.connect(self.update_plot_predictions)
 
         tmp_layout.addWidget(self.plot_predictions)
@@ -188,9 +176,7 @@ class EvaluateNetwork(DefaultTab):
         else:
             self.bodyparts_list_widget.setEnabled(True)
             self.bodyparts_list_widget.show()
-            self.root.logger.info(
-                f"Use selected bodyparts only: {self.bodyparts_list_widget.selected_bodyparts}"
-            )
+            self.root.logger.info(f"Use selected bodyparts only: {self.bodyparts_list_widget.selected_bodyparts}")
 
     def evaluate_network(self):
         config = self.root.config
@@ -199,8 +185,7 @@ class EvaluateNetwork(DefaultTab):
 
         bodyparts_to_use = "all"
         if (
-            len(self.root.all_bodyparts)
-            != len(self.bodyparts_list_widget.selected_bodyparts)
+            len(self.root.all_bodyparts) != len(self.bodyparts_list_widget.selected_bodyparts)
         ) and not self.use_all_bodyparts.isChecked():
             bodyparts_to_use = self.bodyparts_list_widget.selected_bodyparts
 
@@ -225,11 +210,7 @@ class EvaluateNetwork(DefaultTab):
                 trainFraction=project_cfg["TrainingFraction"][0],
             )
 
-            image_dir = (
-                Path(self.root.project_folder)
-                / eval_folder
-                / f"LabeledImages_{scorer}"
-            )
+            image_dir = Path(self.root.project_folder) / eval_folder / f"LabeledImages_{scorer}"
             labeled_images = [str(p) for p in image_dir.rglob("*.png")]
             if len(labeled_images) > 0:
                 _ = launch_napari(image_dir)

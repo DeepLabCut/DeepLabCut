@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Visualization methods for """
+"""Visualization methods for"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -171,12 +172,11 @@ def generate_model_output_plots(
         paf_colormap: The colormap to use for the PAF maps.
         output_suffix: The filename suffix for the maps to output.
     """
+
     def _filename(map_name) -> str:
         return f"{image_name}_{map_name}_{output_suffix}.png"
 
-    to_plot = [
-        i for i, bpt in enumerate(bodypart_names) if bpt in bodyparts_to_plot
-    ]
+    to_plot = [i for i, bpt in enumerate(bodypart_names) if bpt in bodyparts_to_plot]
     if len(to_plot) > 1:
         map_ = scmap[:, :, to_plot].sum(axis=2)
     elif len(to_plot) == 1 and len(bodypart_names) > 1:
@@ -217,9 +217,7 @@ def generate_model_output_plots(
         for n, edge in enumerate(paf_graph):
             if any(ind in to_plot for ind in edge):
                 e0, e1 = edge
-                edge_list.append(
-                    [(2 * n, 2 * n + 1), (bodypart_names[e0], bodypart_names[e1])]
-                )
+                edge_list.append([(2 * n, 2 * n + 1), (bodypart_names[e0], bodypart_names[e1])])
 
         if paf_all_in_one:
             inds = [elem[0] for elem in edge_list]

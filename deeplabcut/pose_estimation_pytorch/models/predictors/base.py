@@ -47,9 +47,7 @@ class BasePredictor(ABC, nn.Module):
         self.num_animals = None
 
     @abstractmethod
-    def forward(
-        self, stride: float, outputs: dict[str, torch.Tensor]
-    ) -> dict[str, torch.Tensor]:
+    def forward(self, stride: float, outputs: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
         """Abstract method for the forward pass of the Predictor.
 
         Args:

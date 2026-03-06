@@ -55,9 +55,7 @@ def format_multianimal_training_data(
     n_individuals = individuals.unique().size
     mask_single = individuals.str.contains("single")
     n_animals = n_individuals - 1 if np.any(mask_single) else n_individuals
-    array = np.full(
-        (nrows, n_individuals, n_bodyparts, 3), fill_value=np.nan, dtype=np.float32
-    )
+    array = np.full((nrows, n_individuals, n_bodyparts, 3), fill_value=np.nan, dtype=np.float32)
     array[..., 0] = np.arange(n_bodyparts)
     temp = df.to_numpy()
     temp_multi = temp[:, ~mask_single].reshape((nrows, n_animals, -1, 2))
@@ -284,8 +282,7 @@ def create_multianimaltraining_dataset(
 
     if crop_sampling not in ("uniform", "keypoints", "density", "hybrid"):
         raise ValueError(
-            f"Invalid sampling {crop_sampling}. Must be "
-            f"either 'uniform', 'keypoints', 'density', or 'hybrid."
+            f"Invalid sampling {crop_sampling}. Must be either 'uniform', 'keypoints', 'density', or 'hybrid."
         )
 
     # Loading metadata from config file:
@@ -314,10 +311,7 @@ def create_multianimaltraining_dataset(
     if engine is None:
         engine = compat.get_project_engine(cfg)
 
-    if not (
-        any(net in net_type for net in ("resnet", "eff", "dlc", "mob"))
-        or engine == Engine.PYTORCH
-    ):
+    if not (any(net in net_type for net in ("resnet", "eff", "dlc", "mob")) or engine == Engine.PYTORCH):
         raise ValueError(f"Unsupported network {net_type} for engine {engine}.")
 
     multi_stage = False
@@ -339,9 +333,7 @@ def create_multianimaltraining_dataset(
 
     if paf_graph is None:  # Automatically form a complete PAF graph
         n_bpts = len(multianimalbodyparts)
-        partaffinityfield_graph = [
-            list(edge) for edge in combinations(range(n_bpts), 2)
-        ]
+        partaffinityfield_graph = [list(edge) for edge in combinations(range(n_bpts), 2)]
         n_edges_orig = len(partaffinityfield_graph)
         # If the graph is unnecessarily large (with 15+ keypoints by default),
         # we randomly prune it to a size guaranteeing an average node degree of 6;
@@ -356,21 +348,14 @@ def create_multianimaltraining_dataset(
             # Use the skeleton defined in the config file
             skeleton = cfg["skeleton"]
             paf_graph = [
-                sorted(
-                    (multianimalbodyparts.index(bpt1), multianimalbodyparts.index(bpt2))
-                )
-                for bpt1, bpt2 in skeleton
+                sorted((multianimalbodyparts.index(bpt1), multianimalbodyparts.index(bpt2))) for bpt1, bpt2 in skeleton
             ]
-            print(
-                "Using `skeleton` from the config file as a paf_graph. Data-driven skeleton will not be computed."
-            )
+            print("Using `skeleton` from the config file as a paf_graph. Data-driven skeleton will not be computed.")
 
         # Ignore possible connections between 'multi' and 'unique' body parts;
         # one can never be too careful...
         to_ignore = auxfun_multianimal.filter_unwanted_paf_connections(cfg, paf_graph)
-        partaffinityfield_graph = [
-            edge for i, edge in enumerate(paf_graph) if i not in to_ignore
-        ]
+        partaffinityfield_graph = [edge for i, edge in enumerate(paf_graph) if i not in to_ignore]
         auxfun_multianimal.validate_paf_graph(cfg, partaffinityfield_graph)
 
     print("Utilizing the following graph:", partaffinityfield_graph)
@@ -397,19 +382,11 @@ def create_multianimaltraining_dataset(
                 splits.append((train_frac, shuffle, (train_inds, test_inds)))
     else:
         if len(trainIndices) != len(testIndices) != len(Shuffles):
-            raise ValueError(
-                "Number of Shuffles and train and test indexes should be equal."
-            )
+            raise ValueError("Number of Shuffles and train and test indexes should be equal.")
         splits = []
-        for shuffle, (train_inds, test_inds) in enumerate(
-            zip(trainIndices, testIndices)
-        ):
-            trainFraction = round(
-                len(train_inds) * 1.0 / (len(train_inds) + len(test_inds)), 2
-            )
-            print(
-                f"You passed a split with the following fraction: {int(100 * trainFraction)}%"
-            )
+        for shuffle, (train_inds, test_inds) in enumerate(zip(trainIndices, testIndices)):
+            trainFraction = round(len(train_inds) * 1.0 / (len(train_inds) + len(test_inds)), 2)
+            print(f"You passed a split with the following fraction: {int(100 * trainFraction)}%")
             # Now that the training fraction is guaranteed to be correct,
             # the values added to pad the indices are removed.
             train_inds = np.asarray(train_inds)
@@ -446,9 +423,7 @@ def create_multianimaltraining_dataset(
             (
                 datafilename,
                 metadatafilename,
-            ) = auxiliaryfunctions.get_data_and_metadata_filenames(
-                trainingsetfolder, trainFraction, shuffle, cfg
-            )
+            ) = auxiliaryfunctions.get_data_and_metadata_filenames(trainingsetfolder, trainFraction, shuffle, cfg)
             ################################################################################
             # Saving metadata and data file (Pickle file)
             ################################################################################
@@ -487,15 +462,9 @@ def create_multianimaltraining_dataset(
                 cfg,
                 engine=engine,
             )
-            auxiliaryfunctions.attempt_to_make_folder(
-                Path(config).parents[0] / modelfoldername, recursive=True
-            )
-            auxiliaryfunctions.attempt_to_make_folder(
-                str(Path(config).parents[0] / modelfoldername / "train")
-            )
-            auxiliaryfunctions.attempt_to_make_folder(
-                str(Path(config).parents[0] / modelfoldername / "test")
-            )
+            auxiliaryfunctions.attempt_to_make_folder(Path(config).parents[0] / modelfoldername, recursive=True)
+            auxiliaryfunctions.attempt_to_make_folder(str(Path(config).parents[0] / modelfoldername / "train"))
+            auxiliaryfunctions.attempt_to_make_folder(str(Path(config).parents[0] / modelfoldername / "test"))
 
             path_train_config = str(
                 os.path.join(
@@ -529,11 +498,9 @@ def create_multianimaltraining_dataset(
                     "dataset": datafilename,
                     "engine": engine.aliases[0],
                     "metadataset": metadatafilename,
-                    "num_joints": len(multianimalbodyparts)
-                    + len(uniquebodyparts),  # cfg["uniquebodyparts"]),
+                    "num_joints": len(multianimalbodyparts) + len(uniquebodyparts),  # cfg["uniquebodyparts"]),
                     "all_joints": [
-                        [i]
-                        for i in range(len(multianimalbodyparts) + len(uniquebodyparts))
+                        [i] for i in range(len(multianimalbodyparts) + len(uniquebodyparts))
                     ],  # cfg["uniquebodyparts"]))],
                     "all_joints_names": jointnames,
                     "init_weights": str(model_path),
@@ -552,9 +519,7 @@ def create_multianimaltraining_dataset(
                     "multi_step": [[1e-4, 7500], [5 * 1e-5, 12000], [1e-5, 200000]],
                     "save_iters": 10000,
                     "display_iters": 500,
-                    "num_idchannel": (
-                        len(cfg["individuals"]) if cfg.get("identity", False) else 0
-                    ),
+                    "num_idchannel": (len(cfg["individuals"]) if cfg.get("identity", False) else 0),
                     "crop_size": list(crop_size),
                     "crop_sampling": crop_sampling,
                 }
@@ -664,10 +629,7 @@ def convert_cropped_to_standard_dataset(
     videos_orig = cfg.pop("video_sets_original")
     is_cropped = cfg.pop("croppedtraining")
     if videos_orig is None or not is_cropped:
-        print(
-            "Labeled data do not appear to be cropped. "
-            "Project will remain unchanged..."
-        )
+        print("Labeled data do not appear to be cropped. Project will remain unchanged...")
         return
 
     project_path = cfg["project_path"]
@@ -705,9 +667,7 @@ def convert_cropped_to_standard_dataset(
         file = file.split("c")[0]
         return os.path.join(head, file + "." + ext)
 
-    img_names_old = np.asarray(
-        [strip_cropped_image_name(img) for img in df_old.index.to_list()]
-    )
+    img_names_old = np.asarray([strip_cropped_image_name(img) for img in df_old.index.to_list()])
     df = merge_annotateddatasets(cfg, datasets_folder)
     img_names = df.index.to_numpy()
     train_idx = []
@@ -720,15 +680,9 @@ def convert_cropped_to_standard_dataset(
             if filename.startswith("Docu"):
                 with open(pickle_file, "rb") as f:
                     _, train_inds, test_inds, train_frac = pickle.load(f)
-                    train_inds_temp = np.flatnonzero(
-                        np.isin(img_names, img_names_old[train_inds])
-                    )
-                    test_inds_temp = np.flatnonzero(
-                        np.isin(img_names, img_names_old[test_inds])
-                    )
-                    train_inds, test_inds = pad_train_test_indices(
-                        train_inds_temp, test_inds_temp, train_frac
-                    )
+                    train_inds_temp = np.flatnonzero(np.isin(img_names, img_names_old[train_inds]))
+                    test_inds_temp = np.flatnonzero(np.isin(img_names, img_names_old[test_inds]))
+                    train_inds, test_inds = pad_train_test_indices(train_inds_temp, test_inds_temp, train_frac)
                     train_idx.append(train_inds)
                     test_idx.append(test_inds)
 
