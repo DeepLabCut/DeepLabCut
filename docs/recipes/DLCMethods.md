@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2025-02-28'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+---
 # How to write a DLC Methods Section
 
 **Pose estimation using DeepLabCut**
