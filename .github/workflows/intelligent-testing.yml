@@ -7,6 +7,10 @@ on:
     types: [opened, synchronize, reopened]
     branches: [ main ]
 
+concurrency:
+  group: intelligent-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -116,3 +120,5 @@ jobs:
     needs: intelligent-test-selection
     if: needs.intelligent-test-selection.outputs.plan == 'full'
     uses: ./.github/workflows/python-package.yml
+    with:
+      concurrency_key: ${{ format('pr-{0}', github.event.pull_request.number) }}
