@@ -12,7 +12,7 @@ scan:
     - "**/build/**"
 
 policy:
-  warn_if_git_older_than_days: 365
+  warn_if_content_older_than_days: 365
   warn_if_verified_older_than_days: 365
   missing_last_verified_is_warning: true
 
