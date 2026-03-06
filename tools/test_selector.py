@@ -39,6 +39,7 @@ import json
 import os
 import re
 import subprocess
+from collections import defaultdict
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple
@@ -83,12 +84,12 @@ MINIMAL_PYTEST = ["tests/test_auxiliaryfunctions.py"]
 
 
 # Conservative full-suite triggers: if any changed file matches, plan=FULL.
-FULL_SUITE_TRIGGERS: List[Callable[[str], bool]] = [
-    lambda p: p.startswith("tests/"),
-    lambda p: p == "pyproject.toml",
-    lambda p: p.endswith(".lock"),
-    # lambda p: p.endswith("requirements.txt"), # outdated
-    lambda p: p.endswith("environment.yml"),
+# Replace FULL_SUITE_TRIGGERS with a labeled list
+FULL_SUITE_TRIGGERS = [
+    ("tests/ changed", lambda p: p.startswith("tests/")),
+    ("pyproject.toml changed", lambda p: p == "pyproject.toml"),
+    ("lockfile changed", lambda p: p.endswith(".lock")),
+    ("DEEPLABCUT.yaml changed", lambda p: p.endswith("DEEPLABCUT.yaml")),
 ]
 
 
@@ -372,8 +373,16 @@ def decide(files: List[str]) -> SelectorResult:
         )
 
     # Full-suite triggers
-    if any(_matches_any(f, FULL_SUITE_TRIGGERS) for f in files):
+    triggered = []
+    for f in files:
+        for name, pred in FULL_SUITE_TRIGGERS:
+            if _matches_any(f, [pred]):
+                triggered.append((f, name))
+
+    if triggered:
         reasons.append("full_suite_trigger")
+        # Optional: add a compact reason count (still machine-readable)
+        reasons.append(f"full_suite_trigger_count:{len(triggered)}")
         return SelectorResult(
             plan=Plan.FULL,
             pytest_paths=[],
@@ -419,17 +428,30 @@ def decide(files: List[str]) -> SelectorResult:
 
     pytest_paths_set: Set[str] = set()
     functional_set: Set[str] = set()
-    for rule in matched:
-        reasons.append(f"category:{rule['name']}")
-        pytest_paths_set.update(rule.get("pytest_paths", []))
-        functional_set.update(rule.get("functional_scripts", []))
 
-    # Ensure at least minimal pytest
+    # NEW: provenance maps
+    pytest_sources: Dict[str, Set[str]] = defaultdict(set)
+    script_sources: Dict[str, Set[str]] = defaultdict(set)
+
+    for rule in matched:
+        cat = rule["name"]
+        reasons.append(f"category:{cat}")
+
+        for p in rule.get("pytest_paths", []):
+            pytest_paths_set.add(p)
+            pytest_sources[p].add(cat)
+
+        for s in rule.get("functional_scripts", []):
+            functional_set.add(s)
+            script_sources[s].add(cat)
+
     if not pytest_paths_set and not functional_set:
-        pytest_paths_set.update(MINIMAL_PYTEST)
+        for p in MINIMAL_PYTEST:
+            pytest_paths_set.add(p)
+            pytest_sources[p].add("fallback_minimal_pytest")
         reasons.append("fallback_minimal_pytest")
 
-    return SelectorResult(
+    res = SelectorResult(
         plan=Plan.FAST,
         pytest_paths=sorted(pytest_paths_set),
         functional_scripts=sorted(functional_set),
@@ -437,10 +459,126 @@ def decide(files: List[str]) -> SelectorResult:
         changed_files=files,
     )
 
+    return res
+
 
 # -----------------------------
 # Outputs
 # -----------------------------
+def explain_changed_files(files: List[str]) -> Dict[str, Any]:
+    """
+    Build an explanation structure for reporting:
+      - per-file: full_trigger_matches, category_matches
+      - grouped: full_triggers, by_category, uncategorized
+    """
+    per_file: Dict[str, Dict[str, Any]] = {}
+    by_category: Dict[str, List[str]] = defaultdict(list)
+    full_trigger_files: Dict[str, List[str]] = defaultdict(list)
+    uncategorized: List[str] = []
+
+    # Prep category predicates
+    categories = [(r["name"], r["match_any"]) for r in CATEGORY_RULES]
+
+    for f in files:
+        # Which full-suite triggers does this file match?
+        ft = []
+        for trig_name, pred in FULL_SUITE_TRIGGERS:
+            try:
+                if pred(f):
+                    ft.append(trig_name)
+            except Exception:
+                continue
+
+        # Which categories does it match?
+        cats = []
+        for cat_name, preds in categories:
+            if _matches_any(f, preds):
+                cats.append(cat_name)
+
+        per_file[f] = {"full_triggers": ft, "categories": cats}
+
+        if ft:
+            for t in ft:
+                full_trigger_files[t].append(f)
+
+        if cats:
+            for c in cats:
+                by_category[c].append(f)
+        else:
+            # Only call it uncategorized if it didn't match any category
+            uncategorized.append(f)
+
+    # Deterministic ordering
+    for t in full_trigger_files:
+        full_trigger_files[t] = sorted(set(full_trigger_files[t]))
+    for c in by_category:
+        by_category[c] = sorted(set(by_category[c]))
+
+    return {
+        "per_file": per_file,
+        "full_trigger_files": dict(full_trigger_files),
+        "by_category": dict(by_category),
+        "uncategorized": sorted(set(uncategorized)),
+    }
+
+
+def _render_file_line(f: str, info: Dict[str, Any]) -> str:
+    # Visual priority:
+    # - FULL triggers: 🔴
+    # - otherwise: 🟢 (normal)
+    icon = "🔴" if info.get("full_triggers") else "🟢"
+
+    tags = []
+    if info.get("full_triggers"):
+        tags.append("🚨 " + ", ".join(info["full_triggers"]))
+    if info.get("categories"):
+        tags.append("🏷️ " + ", ".join(info["categories"]))
+
+    tag_str = (" — " + " | ".join(tags)) if tags else ""
+    return f"- {icon} `{f}`{tag_str}"
+
+
+def _compute_selection_provenance(
+    res: SelectorResult,
+) -> Dict[str, Dict[str, List[str]]]:
+    """
+    Infer which categories contributed which selected pytest/script paths.
+    Returns:
+      { "pytest": {path: [sources...]}, "scripts": {path: [sources...]} }
+    """
+    pytest_sources: Dict[str, Set[str]] = defaultdict(set)
+    script_sources: Dict[str, Set[str]] = defaultdict(set)
+
+    # Which categories are active for the current changed files?
+    files = res.changed_files
+    matched_rules = []
+    for rule in CATEGORY_RULES:
+        if any(_matches_any(f, rule["match_any"]) for f in files):
+            matched_rules.append(rule)
+
+    # Attribute sources based on matched rules
+    for rule in matched_rules:
+        cat = rule["name"]
+        for p in rule.get("pytest_paths", []):
+            if p in res.pytest_paths:
+                pytest_sources[p].add(cat)
+        for s in rule.get("functional_scripts", []):
+            if s in res.functional_scripts:
+                script_sources[s].add(cat)
+
+    # If minimal fallback happened, it will show in reasons
+    if any(r == "fallback_minimal_pytest" for r in res.reasons):
+        for p in res.pytest_paths:
+            if p in MINIMAL_PYTEST:
+                pytest_sources[p].add("fallback_minimal_pytest")
+
+    # Deterministic output
+    return {
+        "pytest": {k: sorted(v) for k, v in sorted(pytest_sources.items())},
+        "scripts": {k: sorted(v) for k, v in sorted(script_sources.items())},
+    }
+
+
 def _render_decision_markdown(res: SelectorResult, limit: int = 40) -> str:
     def bullet(items: List[str], limit_: int = limit) -> str:
         if not items:
@@ -460,14 +598,78 @@ def _render_decision_markdown(res: SelectorResult, limit: int = 40) -> str:
     md: List[str] = []
     md.append("# Intelligent test selection\n")
     md.append(f"**Decision (plan):** {badge}\n")
+
     md.append("## Reasons\n")
     md.append(bullet(res.reasons))
-    md.append("\n## Changed files\n")
+
+    md.append(
+        f"**Diff mode:** `{next((r for r in res.reasons if r.startswith('diff_mode:')), 'diff_mode:unknown')}`\n"
+    )
+
+    md.append(
+        "**Legend:** 🔴 full-suite trigger • 🏷️ category match • ❓ uncategorized\n"
+    )
+    md.append("\n## Changed files (explained)\n")
+    exp = explain_changed_files(res.changed_files)
+
+    if exp["full_trigger_files"]:
+        md.append("### 🚨 Files that match full-suite triggers\n")
+        md.append(
+            "> **⚠️ Note:** Files below match *full-suite triggers*; selection escalates to **FULL**.\n"
+        )
+        for trig_name in sorted(exp["full_trigger_files"].keys()):
+            md.append(f"**{trig_name}**")
+            for f in exp["full_trigger_files"][trig_name]:
+                md.append(_render_file_line(f, exp["per_file"][f]))
+            md.append("")
+
+    md.append("### 🧩 Files grouped by category\n")
+    if exp["by_category"]:
+        for cat in sorted(exp["by_category"].keys()):
+            md.append(
+                f"<details><summary><strong>{cat}</strong> ({len(exp['by_category'][cat])})</summary>\n"
+            )
+            md.append("")
+            for f in exp["by_category"][cat]:
+                md.append(_render_file_line(f, exp["per_file"][f]))
+            md.append("\n</details>\n")
+    else:
+        md.append("_(none)_\n")
+
+    if exp["uncategorized"]:
+        md.append("### ❓ Uncategorized files (matched no category)\n")
+        for f in exp["uncategorized"]:
+            md.append(_render_file_line(f, exp["per_file"][f]))
+        md.append("")
+
+    # Keep the plain list too (optional)
+    md.append("\n## Changed files (raw)\n")
     md.append(bullet(res.changed_files))
+
     md.append("\n## Selected pytest paths\n")
     md.append(bullet(res.pytest_paths))
+
     md.append("\n## Selected functional scripts\n")
     md.append(bullet(res.functional_scripts))
+
+    # NEW: provenance section
+    md.append("\n## Why these tests were selected\n")
+    prov = _compute_selection_provenance(res)
+
+    if prov["pytest"]:
+        md.append("### Pytest path provenance\n")
+        for p, srcs in prov["pytest"].items():
+            md.append(f"- `{p}` ← {', '.join(f'`{s}`' for s in srcs)}")
+    else:
+        md.append("### Pytest path provenance\n_(none)_")
+
+    if prov["scripts"]:
+        md.append("\n### Functional script provenance\n")
+        for s, srcs in prov["scripts"].items():
+            md.append(f"- `{s}` ← {', '.join(f'`{x}`' for x in srcs)}")
+    else:
+        md.append("\n### Functional script provenance\n_(none)_")
+
     md.append("")
     return "\n".join(md)
 
@@ -541,7 +743,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     res = decide(files)
     res = validate_selected_paths(res, repo)
-    res.reasons.append(f"diff_mode:{mode}")
+    res.reasons.insert(0, f"diff_mode:{mode}")
 
     # Strict validation
     try:
