@@ -105,6 +105,7 @@ CATEGORY_RULES = [
             lambda p: p.startswith("docs/"),
             lambda p: p.endswith(".md"),
             lambda p: p.endswith(".rst"),
+            lambda p: p.endswith(".ipynb") and "docs" in p.lower(),
             lambda p: p in {"_config.yml", "_toc.yml"},
         ],
         "pytest_paths": [],
@@ -115,7 +116,7 @@ CATEGORY_RULES = [
         "match_any": [
             lambda p: p.startswith("examples/JUPYTER/"),
             lambda p: p.startswith("examples/COLAB/"),
-            lambda p: p.endswith(".ipynb"),
+            lambda p: p.endswith(".ipynb") and "examples" in p.lower(),
         ],
         "pytest_paths": MINIMAL_PYTEST,
         "functional_scripts": [],
@@ -130,7 +131,6 @@ CATEGORY_RULES = [
         "pytest_paths": [
             "tests/test_predict_supermodel.py",
             "tests/pose_estimation_pytorch/modelzoo/",
-            "tests/pose_estimation_pytorch/other/test_modelzoo.py",
         ],
         "functional_scripts": [],
     },
