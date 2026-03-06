@@ -629,7 +629,7 @@ def _render_decision_markdown(res: SelectorResult, limit: int = 40) -> str:
     )
 
     md.append(
-        "**Legend:** 🔴 full-suite trigger • 🏷️ category match • ❓ uncategorized\n"
+        "**Legend:** ⚠️ full-suite trigger • 🏷️ category match • ❓ uncategorized\n"
     )
     md.append("\n## Changed files (explained)\n")
     exp = explain_changed_files(res.changed_files)
@@ -645,7 +645,7 @@ def _render_decision_markdown(res: SelectorResult, limit: int = 40) -> str:
                 md.append(_render_file_line(f, exp["per_file"][f]))
             md.append("")
 
-    md.append("### 🧩 Files grouped by category\n")
+    md.append("### 📋Files grouped by category\n")
     if exp["by_category"]:
         for cat in sorted(exp["by_category"].keys()):
             md.append(
