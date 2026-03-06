@@ -1,4 +1,4 @@
-name: Staleness report (docs + notebooks)
+name: Docs & notebooks freshness and formatting checks
 
 on:
   pull_request:
@@ -33,8 +33,8 @@ jobs:
 
       - name: Run staleness report (read-only)
         run: |
-          python .github/tools/docs_and_notebooks_check.py \
-          --config .github/tools/docs_and_notebooks_report_config.yml \
+          python tools/docs_and_notebooks_check.py \
+          --config tools/docs_and_notebooks_report_config.yml \
           --out-dir tmp/docs_nb_checks \
           report
 
@@ -42,8 +42,8 @@ jobs:
       # Optional: run check mode (will fail only once you populate allowlists in config)
       - name: Run staleness policy check (optional gate)
         run: |
-          python .github/tools/docs_and_notebooks_check.py \
-          --config .github/tools/docs_and_notebooks_report_config.yml \
+          python tools/docs_and_notebooks_check.py \
+          --config tools/docs_and_notebooks_report_config.yml \
           --out-dir tmp/docs_nb_checks \
           check
 

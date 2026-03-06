@@ -25,21 +25,21 @@ tier
 Usage modes
 -----------
 Report (read-only):
-    python .github/tools/docs_and_notebooks_check.py report
+    python tools/docs_and_notebooks_check.py report
 
 Check (read-only; may fail based on config allowlists):
-    python .github/tools/docs_and_notebooks_check.py check
+    python tools/docs_and_notebooks_check.py check
 
 Update git-updated fields (write mode; requires --write):
-    python .github/tools/docs_and_notebooks_check.py update --write --only-git-date
+    python tools/docs_and_notebooks_check.py update --write --only-git-date
 
 Update verification fields for selected targets (write mode):
-    python .github/tools/docs_and_notebooks_check.py update --write --targets docs/page.md \
+    python tools/docs_and_notebooks_check.py update --write --targets docs/page.md \
         --set-last-verified today --set-verified-for 3.0.0rc13
 
 Configuration
 -------------
-Uses .github/tools/docs_and_notebooks_report_config.yml by default.  
+Uses tools/docs_and_notebooks_report_config.yml by default.  
 
 Outputs  
 -------  
@@ -57,7 +57,7 @@ Notes for CI
   to be installed in the environment. 
   Recommended : install in CI job directly (pip install pydantic pyyaml nbformat) rather than adding to requirements, since these are only needed for this tool.
 """
-# .github/tools/docs_and_notebooks_check.py
+# tools/docs_and_notebooks_check.py
 from __future__ import annotations
 
 import argparse

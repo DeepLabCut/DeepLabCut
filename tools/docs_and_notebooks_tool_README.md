@@ -10,7 +10,7 @@ pydantic schemas.
 
 ## Files scanned
 
-Default patterns (see `.github/tools/docs_and_notebooks_report_config.yml`):
+Default patterns (see `tools/docs_and_notebooks_report_config.yml`):
 
 - `examples/COLAB/**/*.ipynb`
 - `examples/JUPYTER/**/*.ipynb`
@@ -65,7 +65,7 @@ If a doc page has no frontmatter, the tool can still report potential staleness 
 ### Report (read-only)
 
 ```
-python .github/tools/docs_and_notebooks_check.py report
+python tools/docs_and_notebooks_check.py report
 ```
 
 Writes (by default):  
@@ -75,10 +75,10 @@ Writes (by default):
 
 ### Check (read-only, may fail)
 
-Check only fails based on allowlists in `.github/tools/docs_and_notebooks_report_config.yml`:
+Check only fails based on allowlists in `tools/docs_and_notebooks_report_config.yml`:
 
 ```
-python .github/tools/docs_and_notebooks_check.py check
+python tools/docs_and_notebooks_check.py check
 ```
 
 By default these are empty, so CI will not fail.
@@ -90,19 +90,19 @@ By default these are empty, so CI will not fail.
 
 
 Update only last_git_updated for all scanned files:
-`python .github/tools/docs_and_notebooks_check.py update --write --only-git-date`
+`python tools/docs_and_notebooks_check.py update --write --only-git-date`
 
 Set verification metadata for specific target files:
 
 ```
-python .github/tools/docs_and_notebooks_check.py update --write --targets examples/JUPYTER/foo.ipynb \
+python tools/docs_and_notebooks_check.py update --write --targets examples/JUPYTER/foo.ipynb \
   --set-last-verified today --set-verified-for 3.0.0rc13
 ```
 
 ### CI integration
 
 Add a CI step that runs:
-`python .github/tools/docs_and_notebooks_check.py report` 
+`python tools/docs_and_notebooks_check.py report` 
 and uploads the outputs as artifacts.
 Optionally run check once allowlists are populated.
 

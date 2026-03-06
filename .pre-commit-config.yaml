@@ -29,7 +29,7 @@ repos:
     hooks:
       - id: dlc-docs-notebooks-check
         name: DLC docs+notebooks staleness/check + nbformat validate + normalization
-        entry: python .github/tools/docs_and_notebooks_check.py check --config .github/tools/docs_and_notebooks_report_config.yml --targets
+        entry: python tools/docs_and_notebooks_check.py check --config tools/docs_and_notebooks_report_config.yml --targets
         language: python
         pass_filenames: true
         types_or: [jupyter, markdown]
