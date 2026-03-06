@@ -34,7 +34,7 @@ jobs:
         id: selector
         run: |
           python -m pip install --upgrade pip
-          pip install pydantic
+          pip install pydantic>=2,<3
           python tools/test_selector.py \
             --write-github-output \
             --write-summary \
@@ -78,11 +78,11 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install minimal test deps
+      - name: Install test deps
         run: |
           python -m pip install --upgrade pip
           pip install pytest
-          pip install -e . --no-deps
+          pip install -e .
 
       - name: Run targeted pytest (paths selected by selector)
         env:
