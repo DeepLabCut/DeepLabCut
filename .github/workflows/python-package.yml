@@ -19,7 +19,8 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-
+    # Cancel outdated runs on the same OS and Python version when new commits are pushed
+    # Only cancels on PRs, main branch pushes will have unique run IDs and do not cancel each other
     concurrency:
       group: tests-${{ github.workflow }}-${{ inputs.concurrency_key || format('run-{0}', github.run_id) }}-${{ matrix.os }}-${{ matrix.python-version }}
       cancel-in-progress: true
