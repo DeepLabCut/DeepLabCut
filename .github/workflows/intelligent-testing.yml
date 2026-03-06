@@ -59,9 +59,9 @@ jobs:
     if: needs.intelligent-test-selection.outputs.plan == 'docs_only'
     uses: ./.github/workflows/build-book.yml
     with:
-      publish: false
       python-version: "3.10"
       build_dir: "./_build/html"
+      upload_artifact: false
     secrets: inherit
 
 

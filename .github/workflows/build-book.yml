@@ -3,25 +3,25 @@ name: Build (and optionally deploy) Jupyter Book
 on:
   workflow_call:
     inputs:
-      publish:
-        description: "If true, deploy the built site to GitHub Pages via gh-pages branch."
-        required: false
-        default: false
-        type: boolean
       python-version:
         description: "Python version used to build the docs."
         required: false
         default: "3.10"
         type: string
       build_dir:
-        description: "Directory containing the built static site."
         required: false
         default: "./_build/html"
         type: string
+      upload_artifact:
+        description: "If true, upload the built site as an artifact."
+        required: false
+        default: false
+        type: boolean
+
+
 
 jobs:
   build:
-    name: Build book
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -39,34 +39,13 @@ jobs:
           python -m pip install .[docs]
 
       - name: Build the book
-        run: |
-          jupyter-book build .
+        run: jupyter-book build .
 
-      - name: Upload built site as artifact (for deploy job)
-        if: ${{ inputs.publish }}
+      - name: Upload built site artifact
+        if: ${{ inputs.upload_artifact }}
         uses: actions/upload-artifact@v4
         with:
           name: built-book
           path: ${{ inputs.build_dir }}
           if-no-files-found: error
           retention-days: 1
-
-  deploy:
-    name: Deploy to GitHub Pages (gh-pages branch)
-    needs: build
-    if: ${{ inputs.publish }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Download built site artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: built-book
-          path: site
-
-      - name: Deploy via gh-pages branch
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: site
