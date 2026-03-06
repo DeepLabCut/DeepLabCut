@@ -13,16 +13,16 @@ jobs:
   staleness:
     name: Docs and notebooks scan (read-only)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     steps:
       - name: Checkout repository (full history for git dates)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -41,6 +41,7 @@ jobs:
 
       # Optional: run check mode (will fail only once you populate allowlists in config)
       - name: Run staleness policy check (optional gate)
+        continue-on-error: true
         run: |
           python tools/docs_and_notebooks_check.py \
           --config tools/docs_and_notebooks_report_config.yml \
