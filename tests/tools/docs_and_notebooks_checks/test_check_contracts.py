@@ -361,3 +361,71 @@ def test_write_outputs_contract(tool, tmp_path: Path):
     assert payload["schema_version"] == tool.SCHEMA_VERSION
     assert "records" in payload and isinstance(payload["records"], list)
     assert md_path.read_text(encoding="utf-8").startswith("#")
+
+
+def test_notebook_missing_dlc_namespace_warns_missing_metadata(tool, tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git_init(repo)
+
+    rel = "docs/nbs/nb.ipynb"
+    # Valid minimal notebook, but no "deeplabcut" namespace under metadata
+    nb = (
+        '{\n'
+        '  "cells": [],\n'
+        '  "metadata": {},\n'
+        '  "nbformat": 4,\n'
+        '  "nbformat_minor": 5\n'
+        '}\n'
+    )
+    _write(repo, rel, nb)
+    _git_commit(repo, "docs: add notebook", "2020-01-01T12:00:00+00:00")
+
+    cfg = tool.ToolConfig(
+        version=1,
+        scan=tool.ScanConfig(include=[rel], exclude=[]),
+        policy=tool.PolicyConfig(),
+    )
+
+    records = tool.scan_files(repo, cfg, targets=[rel])
+    assert len(records) == 1
+    r = records[0]
+    assert r.kind == "ipynb"
+    assert "missing_metadata" in r.warnings
+    assert r.meta is None
+
+
+def test_notebook_invalid_dlc_namespace_warns_invalid_metadata(tool, tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git_init(repo)
+
+    rel = "docs/nbs/nb.ipynb"
+    # deeplabcut namespace exists but is invalid: last_verified must be a date
+    nb = (
+        '{\n'
+        '  "cells": [],\n'
+        '  "metadata": {\n'
+        '    "deeplabcut": {\n'
+        '      "last_verified": "not-a-date"\n'
+        '    }\n'
+        '  },\n'
+        '  "nbformat": 4,\n'
+        '  "nbformat_minor": 5\n'
+        '}\n'
+    )
+    _write(repo, rel, nb)
+    _git_commit(repo, "docs: add notebook with bad meta", "2020-01-01T12:00:00+00:00")
+
+    cfg = tool.ToolConfig(
+        version=1,
+        scan=tool.ScanConfig(include=[rel], exclude=[]),
+        policy=tool.PolicyConfig(),
+    )
+
+    records = tool.scan_files(repo, cfg, targets=[rel])
+    assert len(records) == 1
+    r = records[0]
+    assert r.kind == "ipynb"
+    assert "invalid_metadata" in r.warnings
+    assert r.meta is None
