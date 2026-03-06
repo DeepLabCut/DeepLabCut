@@ -102,7 +102,7 @@ python tools/docs_and_notebooks_check.py update --write --targets examples/JUPYT
 ### CI integration
 
 Add a CI step that runs:
-`python tools/docs_and_notebooks_check.py report` 
+`python tools/docs_and_notebooks_check.py report`
 and uploads the outputs as artifacts.
 Optionally run check once allowlists are populated.
 
