@@ -2,17 +2,34 @@ name: publish-book
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  deploy-book:
+  build:
     uses: ./.github/workflows/build-book.yml
     with:
-      publish: true
       python-version: "3.10"
       build_dir: "./_build/html"
+      upload_artifact: true
     secrets: inherit
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download built site artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: built-book
+          path: site
+
+      - name: Deploy via gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: site
