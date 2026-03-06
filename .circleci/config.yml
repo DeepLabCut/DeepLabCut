@@ -1,24 +1,43 @@
 version: 2.1
 
 orbs:
-  python: circleci/python@0.2.1
+  python: circleci/python@4.0.0
 
 jobs:
   build-and-test:
-    working_directory: ~/circleci-demo-python-django
-    docker:
-      - image: circleci/python:3.10  # primary container for the build job
-        auth:
-          username: mydockerhub-user
-          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
+    executor:
+      name: python/default
+      tag: '3.10' # or '3.12'
     steps:
       - checkout
-      - python/load-cache
-      - python/install-deps
-      - python/save-cache
+
+      # 1) Restore uv cache
+      - restore_cache:
+          name: Restore uv cache
+          keys:
+            - v1-uv-{{ checksum "pyproject.toml" }}
+            - v1-uv-
+      # 2) Install deps with uv via the Python orb (simple)
+      - python/install-packages:
+          pkg-manager: uv
+          # args: "--locked"   # enable this if you commit uv.lock for strict CI installs
+
+      # 3) (Optional) Trim the cache for CI so uploads stay small and fast
       - run:
-          command: python testscript_cli.py
+          name: Prune uv cache for CI
+          command: uv cache prune --ci || true
+
+      # 4) Save the cache for next runs
+      - save_cache:
+          name: Save uv cache
+          key: v1-uv-{{ checksum "pyproject.toml" }}
+          paths:
+            - ~/.cache/uv
+
+      - run:
           name: TestDLC
+          # uv handles the installation of the dependencies
+          command: uv run python testscript_cli.py
 
 workflows:
   main:
