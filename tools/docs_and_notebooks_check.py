@@ -154,7 +154,6 @@ class ToolConfig(BaseModel):
     scan: ScanConfig
     policy: PolicyConfig
 
-
 class FileRecord(BaseModel):
     path: str
     kind: str  # ipynb | md | other
@@ -187,7 +186,13 @@ class Report(BaseModel):
     totals: Dict[str, int]
     records: List[FileRecord]
 
-
+# Rebuild models due to __future__ annotations
+DLCMeta.model_rebuild()
+ScanConfig.model_rebuild()
+PolicyConfig.model_rebuild()
+ToolConfig.model_rebuild()
+FileRecord.model_rebuild()
+Report.model_rebuild()
 # -----------------------------
 # Helpers
 # -----------------------------
