@@ -8,7 +8,7 @@ import pytest
 
 
 def _repo_root() -> Path:
-    # tests/intelligent_selector/conftest.py -> repo root is 3 levels up
+    # tests/tools/conftest.py -> repo root is 2 levels up
     return Path(__file__).resolve().parents[2]
 
 
