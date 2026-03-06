@@ -46,6 +46,7 @@ dependencies = [
   "pillow>=7.1",
   "pycocotools",
   "pyyaml",
+  "pydantic>2",
   "ruamel-yaml>=0.15",
   "scikit-image>=0.17",
   "scikit-learn>=1",
