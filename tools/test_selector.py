@@ -238,6 +238,12 @@ def _normalize_relpath(p: str) -> str:
     return "/".join(parts)
 
 
+def _empty_tree(repo: Path) -> str:
+    # Avoid hardcoding; derive the empty tree hash deterministically.
+    empty = _run_git(["hash-object", "-t", "tree", "/dev/null"], repo)
+    return _validate_sha("empty-tree", empty)
+
+
 def determine_diff_range(
     repo: Path, override_base: Optional[str], override_head: Optional[str]
 ) -> Tuple[str, str, str]:
@@ -273,15 +279,23 @@ def determine_diff_range(
         _ensure_commit_exists(after, repo)
         return before, after, "push"
 
-    # Fallback: HEAD~1..HEAD
+    # Fallback: try parent..HEAD; if no parent (initial commit), diff empty-tree..HEAD
     try:
         head = _validate_sha("HEAD", _run_git(["rev-parse", "HEAD"], repo))
-        prev = _validate_sha("HEAD~1", _run_git(["rev-parse", "HEAD~1"], repo))
-        _ensure_commit_exists(prev, repo)
         _ensure_commit_exists(head, repo)
-        return prev, head, "fallback"
+
+        try:
+            prev = _validate_sha(
+                "HEAD^", _run_git(["rev-parse", "--verify", "HEAD^"], repo)
+            )
+            _ensure_commit_exists(prev, repo)
+            return prev, head, "fallback"
+        except Exception:
+            # Initial commit (no parent): treat as "everything added"
+            empty = _empty_tree(repo)
+            return empty, head, "initial"
     except Exception:
-        return "", "", "fallback"
+        return "", "", "fallback_no_head"
 
 
 def changed_files(repo: Path, base: str, head: str) -> List[str]:
@@ -527,6 +541,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     res = decide(files)
     res = validate_selected_paths(res, repo)
+    res.reasons.append(f"diff_mode:{mode}")
 
     # Strict validation
     try:
