@@ -620,7 +620,9 @@ def _render_decision_markdown(res: SelectorResult, limit: int = 40) -> str:
     md.append(f"**Decision (plan):** {badge}\n")
 
     md.append("## Reasons\n")
-    md.append(bullet(res.reasons))
+    for r in res.reasons:
+        if not r.startswith("diff_mode:"):
+            md.append(f"- `{r}`")
 
     md.append(
         f"**Diff mode:** `{next((r for r in res.reasons if r.startswith('diff_mode:')), 'diff_mode:unknown')}`\n"
@@ -770,7 +772,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     res = decide(files)
     res = validate_selected_paths(res, repo)
-    # res.reasons.insert(0, f"diff_mode:{mode}")
+    res.reasons.insert(0, f"diff_mode:{mode}")
 
     # Strict validation
     try:
