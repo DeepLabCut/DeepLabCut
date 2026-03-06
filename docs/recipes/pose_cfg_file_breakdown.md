@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2025-02-28'
+  ignore: false
+---
 # The `pose_cfg.yaml` Guideline Handbook
 
 ::::{warning}

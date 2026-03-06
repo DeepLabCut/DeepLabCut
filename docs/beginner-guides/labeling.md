@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2025-06-30'
+  ignore: false
+---
 (labeling)=
 # Labeling GUI
 

@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2022-04-11'
+  ignore: false
+---
 # Input/output manipulations with DeepLabCut
 
 ## Analyzing very large videos in chunks

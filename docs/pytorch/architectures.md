@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2025-06-30'
+  ignore: false
+---
 (dlc3-architectures)=
 # DeepLabCut 3.0 - PyTorch Model Architectures
 

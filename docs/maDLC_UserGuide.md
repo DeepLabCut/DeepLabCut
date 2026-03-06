@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2026-02-10'
+  ignore: false
+---
 (multi-animal-userguide)=
 # DeepLabCut for Multi-Animal Projects
 

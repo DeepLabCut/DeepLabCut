@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2026-02-23'
+  ignore: false
+---
 (how-to-install)=
 # How To Install DeepLabCut
 

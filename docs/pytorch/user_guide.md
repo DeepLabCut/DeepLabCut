@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2025-07-01'
+  ignore: false
+---
 (dlc3-user-guide)=
 # DeepLabCut 3.0 - PyTorch User Guide
 

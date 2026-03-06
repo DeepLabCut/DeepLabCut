@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2025-02-28'
+  ignore: false
+---
 # How to write a DLC Methods Section
 
 **Pose estimation using DeepLabCut**

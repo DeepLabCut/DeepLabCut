@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2025-02-28'
+  ignore: false
+---
 (deeplabcut-live)=
 # DeepLabCut-Live!
 

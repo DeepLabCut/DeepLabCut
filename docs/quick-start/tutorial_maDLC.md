@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2025-02-28'
+  ignore: false
+---
 # Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial
 
 ## GUI:

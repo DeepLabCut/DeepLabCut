@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2026-02-10'
+  ignore: false
+---
 # Technical (Hardware) Considerations
 
 ## Quick summary:

@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2025-02-28'
+  ignore: false
+---
 # How to use data labeled outside of DeepLabCut
 - and/or if you merge projects across scorers (see below):
 

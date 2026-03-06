@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2025-06-30'
+  ignore: false
+---
 # QUICK GUIDE to single Animal Training:
 **The main steps to take you from project creation to analyzed videos:**
 

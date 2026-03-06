@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2026-02-10'
+  ignore: false
+---
 # 💚 MegaDetector+DeepLabCut 💜
 
 [DeepLabCut-Live](https://github.com/DeepLabCut/DeepLabCut-live) is an open source and free real-time package from DeepLabCut that allows for real-time, low-latency pose estimation.  [The DeepLabCut-ModelZoo](http://modelzoo.deeplabcut.org/) is our growing collection of pretrained animal models for rapid deployment; no training is typically required to use these models. MegaDetector is a free open software trained to detect animals, people, and vehicles from camera trap images. Check [here](https://github.com/microsoft/CameraTraps/blob/main/megadetector.md) for further information.

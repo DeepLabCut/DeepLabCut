@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2025-02-28'
+  ignore: false
+---
 # DeepLabCut benchmark
 
 For further information and the leaderboard, see [the official homepage](https://benchmark.deeplabcut.org/).

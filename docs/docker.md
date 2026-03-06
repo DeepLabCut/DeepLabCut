@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2025-04-15'
+  ignore: false
+---
 (docker-containers)=
 # DeepLabCut Docker containers
 

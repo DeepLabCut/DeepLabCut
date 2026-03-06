@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2025-10-02'
+  ignore: false
+---
 (dlc3-pytorch-config)=
 # The PyTorch Configuration file
 

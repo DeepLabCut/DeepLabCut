@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2025-10-14'
+  ignore: false
+---
 (3D-overview)=
 # 3D DeepLabCut
 

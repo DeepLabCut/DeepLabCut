@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_git_updated: '2025-02-28'
+  ignore: false
+---
 (convert-maDLC)=
 # How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later
 
