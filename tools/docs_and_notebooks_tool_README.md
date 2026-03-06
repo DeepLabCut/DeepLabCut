@@ -1,30 +1,45 @@
 # Docs & Notebooks Checks Tool
 
-This tool scans DeepLabCut notebooks and documentation pages and reports two independent signals:
+This tool scans DeepLabCut documentation pages and notebooks and produces **two independent signals**:
 
-- **last_git_updated**: last commit date touching a file (computed from git history)
-- **last_verified**: a human-controlled date indicating the content was verified to work/be accurate
+- **`last_content_updated`**: computed from git history as the last *meaningful content* update **excluding metadata-only commits**.
+- **`last_verified`**: a human-controlled date indicating the content was verified to work/be accurate.
 
-It is designed to be **safe by default** (read-only in CI), and **future-proof** via versioned
-pydantic schemas.
+In addition, the tool can optionally track:
 
-## Files scanned
+- **`last_metadata_updated`**: when the tool last performed a metadata/normalization write (helps explain “file changed” without implying content changed).
+- **`verified_for`**: a human-controlled string indicating what the content was verified against (e.g. `3.0.0rc13`).
 
-Default patterns (see `tools/docs_and_notebooks_report_config.yml`):
+The tool is designed to be:
+
+- **Safe by default**: CI should run **read-only** modes (`report` / `check`).
+- **Deterministic**: stable outputs and normalized notebook formatting when explicitly requested.
+- **Future-proof**: versioned Pydantic schemas (`schema_version`).
+
+---
+
+## What gets scanned
+
+Default include patterns are defined in `tools/docs_and_notebooks_report_config.yml`.
+Typical patterns include:
 
 - `examples/COLAB/**/*.ipynb`
 - `examples/JUPYTER/**/*.ipynb`
 - `docs/**/*.md`
-- `docs/**/*.ipynb` (if notebooks get added to docs; Jupyter Book supports this)
+- `docs/**/*.ipynb` (if notebooks are added under docs)
 
-## Metadata locations
+You can further restrict the scan via `--targets`.
+
+---
+
+## Metadata storage locations
 
 ### Notebooks (`.ipynb`)
 
-The tool only touches the notebook **top-level JSON metadata** under the `deeplabcut` namespace.
+The tool **only** reads/writes **top-level notebook metadata** under the `deeplabcut` namespace.
 
 > [!IMPORTANT]
-> It never edits cells, outputs, or execution counts.
+> It never edits notebook cells, outputs, or execution counts.
 
 Example (excerpt):
 
@@ -32,7 +47,8 @@ Example (excerpt):
 {
   "metadata": {
     "deeplabcut": {
-      "last_git_updated": "2026-03-05",
+      "last_content_updated": "2020-01-01",
+      "last_metadata_updated": "2026-03-05",
       "last_verified": "2026-02-20",
       "verified_for": "3.0.0rc13",
       "ignore": false
@@ -41,70 +57,130 @@ Example (excerpt):
 }
 ```
 
-
 > [!NOTE]
-> **Tier** is intentionally optional and is not auto-populated.
+> `tier` is intentionally optional and is not auto-populated.
 
-### Markdown files (`.md`)
+### Markdown (`.md`)
 
-The tool reads/writes YAML frontmatter at the top of the file:
+The tool reads/writes YAML frontmatter at the top of the file (if present):
 
-```
+```yaml
 ---
 deeplabcut:
-  last_git_updated: 2026-03-05
+  last_content_updated: 2020-01-01
+  last_metadata_updated: 2026-03-05
   last_verified: 2026-02-20
   verified_for: 3.0.0rc13
   ignore: false
 ---
 ```
-If a doc page has no frontmatter, the tool can still report potential staleness (read-only).
 
-## Usage
+If a doc page has **no** frontmatter, the tool can still report staleness (read-only), and `update` can add/modify metadata when explicitly requested.
 
-### Report (read-only)
+---
 
-```
+## The metadata-commit marker (critical)
+
+Because metadata updates and notebook normalization can rewrite files, they would normally make git think the file was “updated now”.
+
+To preserve a meaningful **`last_content_updated`**, **all metadata-only / normalization commits must include the marker**:
+
+- **Marker**: `META_COMMIT_MARKER` (see `tools/docs_and_notebooks_check.py`)
+- **Suggested commit message**: `SUGGESTED_META_COMMIT_MESSAGE`
+
+When you run `update --write` or `normalize --write`, the tool will:
+
+- require `--ack-meta-commit-marker` (guardrail)
+- print a suggested commit message
+
+---
+
+## Commands
+
+### 1) Report (read-only)
+
+Generate a report (does not modify files):
+
+```bash
 python tools/docs_and_notebooks_check.py report
 ```
 
-Writes (by default):  
+Writes (by default):
 
-- `tmp/docs_nb_checks/docs_nb_checks.json`  
+- `tmp/docs_nb_checks/docs_nb_checks.json`
 - `tmp/docs_nb_checks/docs_nb_checks.md`
 
-### Check (read-only, may fail)
+### 2) Check (read-only; may fail)
 
-Check only fails based on allowlists in `tools/docs_and_notebooks_report_config.yml`:
+Run policy checks. By default, CI will not fail unless allowlists are configured.
 
-```
+```bash
 python tools/docs_and_notebooks_check.py check
 ```
 
-By default these are empty, so CI will not fail.
+The allowlists live in `tools/docs_and_notebooks_report_config.yml` (start empty; ratchet later).
 
-### Update (write mode)
+### 3) Update metadata (write mode; explicit intent)
 
 > [!WARNING]
-> This mode updates files in-place and should be used with caution. It is intended to be run manually by maintainers, not in CI.
+> `update --write` modifies tracked files. Intended for maintainers (manual), not CI.
 
+#### 3a) Set `last_content_updated` from git (excluding meta commits)
 
-Update only last_git_updated for all scanned files:
-`python tools/docs_and_notebooks_check.py update --write --only-git-date`
-
-Set verification metadata for specific target files:
-
-```
-python tools/docs_and_notebooks_check.py update --write --targets examples/JUPYTER/foo.ipynb \
-  --set-last-verified today --set-verified-for 3.0.0rc13
+```bash
+python tools/docs_and_notebooks_check.py update   --write   --set-content-date-from-git   --ack-meta-commit-marker
 ```
 
-### CI integration
+#### 3b) Set verification fields (human-controlled)
 
-Add a CI step that runs:
-`python tools/docs_and_notebooks_check.py report` 
-and uploads the outputs as artifacts.
-Optionally run check once allowlists are populated.
+```bash
+python tools/docs_and_notebooks_check.py update   --write   --targets docs/page.md examples/JUPYTER/foo.ipynb   --set-last-verified today   --set-verified-for 3.0.0rc13   --ack-meta-commit-marker
+```
 
-Important: Ensure actions/checkout uses a non-shallow clone (fetch-depth: 0) so git log
-can compute last_git_updated reliably.
+> Tip: omit `--targets` to operate on all scanned files.
+
+### 4) Normalize notebooks (explicit churn)
+
+> [!WARNING]
+> Notebook normalization rewrites the notebook JSON into a canonical form.
+> This is why it is a separate command.
+
+Dry-run (shows which files *would* change):
+
+```bash
+python tools/docs_and_notebooks_check.py normalize --targets docs/notebook.ipynb
+```
+
+Write:
+
+```bash
+python tools/docs_and_notebooks_check.py normalize   --write   --targets docs/notebook.ipynb   --ack-meta-commit-marker
+```
+
+---
+
+## CI integration
+
+Recommended CI usage:
+
+- Run `report` on PRs and upload the outputs as artifacts.
+- Run `check` once allowlists are populated (start empty to avoid failures).
+
+> [!IMPORTANT]
+> Use `actions/checkout` with `fetch-depth: 0` (or sufficiently deep) so `git log` sees history; shallow clones can cause missing or fallback timestamps.
+
+Dependencies required for this tool (install in the CI job):
+
+```bash
+pip install pydantic pyyaml nbformat
+```
+
+---
+
+## Troubleshooting
+
+- If you see `content_date_fallback_to_git_touched`, it usually means one of:
+  - the checkout history is too shallow, or
+  - *all* commits touching the file are metadata commits with the marker.
+
+- If Pydantic raises `class-not-fully-defined` errors, ensure the tool calls `.model_rebuild()` for its models (this is already done in the tool).
