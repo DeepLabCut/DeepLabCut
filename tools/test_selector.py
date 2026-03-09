@@ -216,15 +216,15 @@ CATEGORY_RULES = [
         ],
         "functional_scripts": [],
     },
-    # {
-    #     "name": "ci_tools",
-    #     "match_any": [
-    #         lambda p: p.startswith(".github/"),
-    #         lambda p: p.startswith("tools/"),
-    #     ],
-    #     "pytest_paths": MINIMAL_PYTEST,
-    #     "functional_scripts": [],
-    # },
+    {
+        "name": "ci_tools",
+        "match_any": [
+            lambda p: p.startswith(".github/"),
+            lambda p: p.startswith("tools/"),
+        ],
+        "pytest_paths": MINIMAL_PYTEST,
+        "functional_scripts": [],
+    },
 ]
 CATEGORY_RULE_BY_NAME: Dict[str, Dict[str, Any]] = {
     r["name"]: r for r in CATEGORY_RULES
@@ -611,6 +611,7 @@ def _render_file_line(
     emoji: bool = False,
     add_tag: bool = True,
     add_marker: bool = False,
+    category_only: bool = True,
 ) -> str:
     # Optional, single marker only
     marker = ""
@@ -624,13 +625,13 @@ def _render_file_line(
 
     tags = []
     if add_tag:
-        if info.get("full_triggers"):
-            header = "🚨 " if emoji else "Full triggers"
-            tags.append(f"{header} " + ", ".join(info["full_triggers"]))
         if info.get("categories"):
             header = "🏷️ " if emoji else "Category match :"
             tags.append(f"{header} " + ", ".join(info["categories"]))
-        if info.get("lint_only"):
+        if info.get("full_triggers") and not category_only:
+            header = "🚨 " if emoji else "Full triggers"
+            tags.append(f"{header} " + ", ".join(info["full_triggers"]))
+        if info.get("lint_only") and not category_only:
             header = "🧹 " if emoji else "Lint-only :"
             tags.append(f"{header}")
 
