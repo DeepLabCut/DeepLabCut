@@ -54,12 +54,12 @@ If you use an OpenCV-compatible camera (e.g. USB webcam, OBS virtual camera), yo
 ## Quickstart (recommended defaults)
 
 ```bash
-git clone https://github.com/DeepLabCut/DeepLabCut-live-GUI.git
+mkdir -p ~/dlclivegui
 cd DeepLabCut-live-GUI
-uv venv
+uv venv -p 3.12 # or desired Python version
 source .venv/bin/activate   # Windows: see tabs below
 uv pip install torch torchvision --index-url https://download.pytorch.org/whl/cu<your-cuda-version> # e.g. cu128 for CUDA 12.8, or skip for CPU-only
-uv pip install -e ".[pytorch]"
+uv pip install "dlclivegui[pytorch] @ git+https://github.com/DeepLabCut/DeepLabCut-live-GUI.git"
 dlclivegui
 ```
 
@@ -74,7 +74,7 @@ The main DeepLabCut package and its GUI are not required to use this software, a
 ### Install DeepLabCut-live-GUI
 
 ```{danger}
-This pre-release version of the package is not currently on PyPI.
+This beta version of the package is not currently on PyPI.
 For this reason, the install process requires cloning the repository and installing from source.
 ```
 
@@ -124,8 +124,8 @@ You may install either or both, but you must **choose at least one** to run the 
 
 ````{tab-item} PyTorch
 ```{important}
-To **enable GPU support** and obtain detailed installation instructions, 
-please refer to the [official PyTorch installation guide](https://pytorch.org/get-started/locally/).
+To **enable GPU support** and obtain detailed installation instructions,
+please refer to the [official PyTorch installation guide](https://pytorch.org/get-started/locally/) and install PyTorch **before** installing the GUI package.
 ```
 ```bash
 uv pip install -e ".[pytorch]"
@@ -166,8 +166,8 @@ You may install either or both, but you must **choose at least one** to run the 
 
 ````{tab-item} PyTorch
 ```{important}
-To **enable GPU support** and obtain detailed installation instructions, 
-please refer to the [official PyTorch installation guide](https://pytorch.org/get-started/locally/).
+To **enable GPU support** and obtain detailed installation instructions,
+please refer to the [official PyTorch installation guide](https://pytorch.org/get-started/locally/) and install PyTorch **before** installing the GUI package.
 ```
 ```bash
 pip install -e ".[pytorch]"
