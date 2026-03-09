@@ -48,7 +48,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 SHA_RE = re.compile(r"^[0-9a-f]{7,40}$", re.IGNORECASE)
 
-DLC_NAMESPACE = "deeplabcut"
+# DLC_NAMESPACE = "deeplabcut"
 
 
 class DiffMode(str, Enum):
@@ -127,7 +127,7 @@ LINT_ONLY_FILES = {
 # Category rules are location-based. If multiple categories match, we treat it as mixed.
 # For prototype simplicity:
 #   - docs-only if *all* files are docs-like
-#   - if >2 categories match -> FULL
+#   - if >2 categories match -> FULL - FIXME: this is too blunt, find better heuristics or simply refine rules/full triggers
 #   - else -> FAST with merged selections
 # TODO @C-Achard Refine selection and rules
 #####
@@ -296,8 +296,9 @@ def _empty_tree(repo: Path) -> str:
 
 def determine_diff_range(
     repo: Path, override_base: Optional[str], override_head: Optional[str]
-) -> Tuple[str, str, str]:
+) -> Tuple[str, str, DiffMode]:
     """Return (base_commit, head_commit, mode)."""
+    zero_sha = "0" * 40
     event_name = os.environ.get("GITHUB_EVENT_NAME", "")
     event = _load_github_event()
 
@@ -325,9 +326,17 @@ def determine_diff_range(
     if event_name == "push" and "before" in event and "after" in event:
         before = _validate_sha("before", event["before"])
         after = _validate_sha("after", event["after"])
-        _ensure_commit_exists(before, repo)
         _ensure_commit_exists(after, repo)
-        return before, after, DiffMode.PUSH
+
+        if before == zero_sha:
+            empty = _empty_tree(repo)
+            return empty, after, DiffMode.INITIAL
+        try:
+            _ensure_commit_exists(before, repo)
+            return before, after, DiffMode.PUSH
+        except Exception:
+            empty = _empty_tree(repo)
+            return before, after, DiffMode.INITIAL
 
     # Fallback: try parent..HEAD; if no parent (initial commit), diff empty-tree..HEAD
     try:
@@ -492,7 +501,7 @@ def decide(files: List[str]) -> SelectorResult:
     pytest_paths_set: Set[str] = set()
     functional_set: Set[str] = set()
 
-    # NEW: provenance maps
+    # Provenance maps
     pytest_sources: Dict[str, Set[str]] = defaultdict(set)
     script_sources: Dict[str, Set[str]] = defaultdict(set)
 
@@ -849,12 +858,13 @@ def write_report_files(
     return json_path, md_path
 
 
-def append_job_summary(md_path: Path) -> None:
+def create_job_summary(md_path: Path, overwrite: bool = True) -> None:
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
     if not summary_path:
         return
     # Append markdown to the GitHub Actions Job Summary
-    with open(summary_path, "a", encoding="utf-8") as f:
+    mode = "w" if overwrite else "a"
+    with open(summary_path, mode, encoding="utf-8") as f:
         f.write(md_path.read_text(encoding="utf-8"))
         f.write("\n")
 
@@ -927,7 +937,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     except ValidationError as e:
         raise RuntimeError(f"Output validation failed: {e}") from e
 
-    # NEW: Always write report files for transparency
+    # F Always write report files for transparency
     report_dir = Path(args.report_dir)
     json_path, md_path = write_report_files(
         res, report_dir, report_style=args.report_style, no_emoji=args.no_emoji
@@ -939,9 +949,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if args.write_github_output:
         write_github_output(res)
 
-    # NEW: Write Job Summary (GitHub renders markdown from $GITHUB_STEP_SUMMARY)
+    # Write Job Summary (GitHub renders markdown from $GITHUB_STEP_SUMMARY)
     if args.write_summary:
-        append_job_summary(md_path)
+        create_job_summary(md_path)
 
     return 0
 
