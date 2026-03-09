@@ -1,0 +1,1285 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>GenTL backend &#8212; DeepLabCut</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../../../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../../../_static/togglebutton.js?v=1ae7504c"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../../../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend';</script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link rel="next" title="Additional resources" href="../misc/misc_landing.html" />
+    <link rel="prev" title="Aravis backend" href="aravis_backend.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../../README.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../../_static/logo.png" class="logo__image only-light" alt="DeepLabCut - Home"/>
+    <script>document.write(`<img src="../../../../../_static/logo.png" class="logo__image only-dark" alt="DeepLabCut - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../../../../README.html">
+                    Welcome! 👋
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../../UseOverviewGuide.html">🥳 Get started with DeepLabCut: our key recommendations</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../../../course.html">DeepLabCut Self-paced Course</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">How To Install DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../recipes/installTips.html">Installation Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../docker.html">DeepLabCut Docker containers</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main User Guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../../standardDeepLabCut_UserGuide.html">DeepLabCut User Guide (for single animal projects)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../maDLC_UserGuide.html">DeepLabCut for Multi-Animal Projects</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../../../../Overviewof3D.html">3D DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Graphical User Interfaces (GUIs)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../../gui/PROJECT_GUI.html">Interactive Project Manager GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../gui/napari_GUI.html">napari labeling GUI</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../../pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Quick Start Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../../quick-start/single_animal_quick_guide.html">QUICK GUIDE to single Animal Training:</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quick-start/tutorial_maDLC.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Beginner's Guide to DeepLabCut</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../../beginner-guides/beginners-guide.html">Using DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../beginner-guides/manage-project.html">Setting up what keypoints to track</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../beginner-guides/labeling.html">Labeling GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../beginner-guides/Training-Evaluation.html">Neural Network training and evaluation in the GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../beginner-guides/video-analysis.html">Video Analysis with DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Main Demo Notebooks</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/COLAB/COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/COLAB/COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/COLAB/COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/COLAB/COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Notebooks For Your Data</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/COLAB/COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Special Feature Demos</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/COLAB/COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/COLAB/COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/COLAB/COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../../../recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../../../recipes/fmpose3d.html">3D Pose Estimation with FMPose3D</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../../recipes/TechHardware.html">Technical (Hardware) Considerations</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut-Live!</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../deeplabcutlive.html">Running DeepLabCut models in real-time</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../../index.html">DeepLabCut-live-GUI</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../quickstart/install.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../overview.html">GUI overview</a></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="camera_support.html">Camera support</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="opencv_backend.html">OpenCV backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basler_backend.html">Basler backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="aravis_backend.html">Aravis backend</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">GenTL backend</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/modelzoo_downloads.html">Pre-trained models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/timestamp_format.html">Video timestamp format</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🦄 DeepLabCut Model Zoo</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmarking</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../../benchmark.html">DeepLabCut benchmark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pytorch/Benchmarking_shuffle_guide.html">DeepLabCut Benchmarking - User Guide</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mission &amp; Contribute</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../../MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../roadmap.html">A development roadmap for DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../Governance.html">Governance Model of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../CONTRIBUTING.html">How to Contribute to DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Citations for DeepLabCut</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../../citation.html">How to Cite DeepLabCut</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../../../../_sources/docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>GenTL backend</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#features-design">Features &amp; design</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-harvesters">1) Install Harvesters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-a-gentl-producer-file-cti">2) Install a GenTL Producer file (<code class="docutils literal notranslate"><span class="pre">.cti</span></code>)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#make-producers-discoverable-environment-variables">3) Make producers discoverable (environment variables)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-configuration">Basic configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cti-producer-configuration">CTI / producer configuration</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#default-behavior-discover-and-load-all-producers">Default behavior: discover and load all producers</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cti-resolution-precedence-advanced">CTI resolution precedence (advanced)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pin-a-known-good-cti-strict">Pin a known-good CTI (strict)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#provide-an-explicit-list-of-ctis-strict">Provide an explicit list of CTIs (strict)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#provide-cti-search-patterns-auto">Provide CTI search patterns (auto)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#provide-extra-cti-directories-auto">Provide extra CTI directories (auto)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cti-diagnostics-persisted-by-open">CTI diagnostics persisted by <code class="docutils literal notranslate"><span class="pre">open()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#camera-selection-and-stable-identity">Camera selection and stable identity</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#by-index-default">By index (default)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#by-stable-identity-recommended">By stable identity (recommended)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#selection-order-in-open">Selection order in <code class="docutils literal notranslate"><span class="pre">open()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#automated-rebind-index-changes-reconnects">Automated rebind (index changes, reconnects)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#camera-settings">Camera settings</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full-properties-and-advanced-configuration">Full properties and advanced configuration</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gentl-namespace-options-properties-gentl">GenTL namespace options (<code class="docutils literal notranslate"><span class="pre">properties.gentl</span></code>)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pixel-format">Pixel format</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#exposure-and-gain">Exposure and gain</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#frame-rate-fps">Frame rate (FPS)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resolution-handling">Resolution handling</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#streaming-and-probe-mode">Streaming and probe mode</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#normal-capture">Normal capture</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#fast-start-probe-mode-fast-start">Fast-start probe mode (<code class="docutils literal notranslate"><span class="pre">fast_start</span></code>)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#no-cti-found">No <code class="docutils literal notranslate"><span class="pre">.cti</span></code> found</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#producer-load-failures-with-multiple-ctis-installed">Producer load failures with multiple CTIs installed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cached-ctis-went-stale-auto-re-discovery">Cached CTIs went stale (auto re-discovery)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#timeouts">Timeouts</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pixel-format-errors">Pixel format errors</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-configuration">Example configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resources">Resources</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="gentl-backend">
+<h1>GenTL backend<a class="headerlink" href="#gentl-backend" title="Link to this heading">#</a></h1>
+<p>The GenTL backend provides support for <strong>GenICam / GenTL</strong> compatible cameras using the <strong>Harvesters</strong> Python library (a GenTL consumer).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This backend requires the optional <code class="docutils literal notranslate"><span class="pre">harvesters</span></code> dependency and at least one vendor <strong>GenTL Producer</strong> (<code class="docutils literal notranslate"><span class="pre">.cti</span></code>) installed on the system.</p>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Support for GenTL in the GUI is currently experimental.
+Please report issues on GitHub to help improve this backend.</p>
+</div>
+<hr class="docutils" />
+<section id="features-design">
+<h2>Features &amp; design<a class="headerlink" href="#features-design" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Image acquisition via <strong>Harvesters</strong> (GenTL consumer for GenICam-compliant devices).</p></li>
+<li><p>Loads <strong>multiple GenTL Producers</strong> (<code class="docutils literal notranslate"><span class="pre">.cti</span></code> files) to support mixed transports/vendors (USB3 Vision, GigE Vision, frame grabbers—depending on producer).</p></li>
+<li><p><strong>CTI persistence + diagnostics</strong>:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">properties.gentl.cti_files</span></code>: all resolved CTI candidates (after resolution)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">properties.gentl.cti_files_loaded</span></code>: CTIs successfully loaded into Harvesters</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">properties.gentl.cti_files_failed</span></code>: list of <code class="docutils literal notranslate"><span class="pre">{cti,</span> <span class="pre">error}</span></code> entries for producers that failed to load</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">properties.gentl.cti_file</span></code>: convenience “first CTI” (for backward compatibility / display)</p></li>
+</ul>
+</li>
+<li><p><strong>Stable identity</strong> via <code class="docutils literal notranslate"><span class="pre">properties.gentl.device_id</span></code>:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">device_id</span> <span class="pre">=</span> <span class="pre">&quot;serial:&lt;SERIAL&gt;&quot;</span></code> when a serial number is available (<strong>preferred</strong>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">device_id</span> <span class="pre">=</span> <span class="pre">&quot;fp:&lt;fingerprint...&gt;&quot;</span></code> as a best-effort fallback when serials are missing/ambiguous</p></li>
+</ul>
+</li>
+<li><p><strong>Automated rebinding</strong> (<code class="docutils literal notranslate"><span class="pre">rebind_settings</span></code>) maps stored <code class="docutils literal notranslate"><span class="pre">device_id</span></code> → the correct current index.</p></li>
+<li><p>Best-effort configuration through the device GenApi node map:</p>
+<ul>
+<li><p>exposure, gain, frame rate, resolution, pixel format</p></li>
+</ul>
+</li>
+<li><p>Pixel-format normalization to <strong>BGR (8-bit)</strong> for consistency:</p>
+<ul>
+<li><p>Mono formats → BGR</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RGB8</span></code> → BGR</p></li>
+<li><p>Non-8-bit frames → scaled down to 8-bit (per-frame scaling)</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
+<section id="install-harvesters">
+<h3>1) Install Harvesters<a class="headerlink" href="#install-harvesters" title="Link to this heading">#</a></h3>
+<p>Install Harvesters into the same Python environment as your GUI:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>harvesters
+</pre></div>
+</div>
+</section>
+<section id="install-a-gentl-producer-file-cti">
+<h3>2) Install a GenTL Producer file (<code class="docutils literal notranslate"><span class="pre">.cti</span></code>)<a class="headerlink" href="#install-a-gentl-producer-file-cti" title="Link to this heading">#</a></h3>
+<p>A GenTL Producer is a vendor-provided library that exposes cameras to GenTL consumer applications.
+It is typically distributed as part of the camera vendor SDK or framegrabber SDK.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>GenTL Producers are identified by files ending in <code class="docutils literal notranslate"><span class="pre">.cti</span></code>.</p>
+</div>
+</section>
+<section id="make-producers-discoverable-environment-variables">
+<h3>3) Make producers discoverable (environment variables)<a class="headerlink" href="#make-producers-discoverable-environment-variables" title="Link to this heading">#</a></h3>
+<p>Most GenTL consumers locate producers via the standard environment variables:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">GENICAM_GENTL64_PATH</span></code> (64-bit producers)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GENICAM_GENTL32_PATH</span></code> (32-bit producers)</p></li>
+</ul>
+<p>If you have multiple producers installed, separate entries with:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">;</span></code> on Windows</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">:</span></code> on Linux/macOS (UNIX-like)</p></li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Many vendor installers set <code class="docutils literal notranslate"><span class="pre">GENICAM_GENTL64_PATH</span></code> automatically. If your camera is not discovered, explicitly set the variable (or provide <code class="docutils literal notranslate"><span class="pre">cti_file</span></code> / <code class="docutils literal notranslate"><span class="pre">cti_files</span></code> in configuration as described below).</p>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="basic-configuration">
+<h2>Basic configuration<a class="headerlink" href="#basic-configuration" title="Link to this heading">#</a></h2>
+<p>Select the GenTL backend in the GUI or via configuration:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;camera&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;backend&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gentl&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;index&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;fps&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">30.0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;exposure&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">8000</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;gain&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;gentl&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;pixel_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Mono8&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2.0</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="cti-producer-configuration">
+<h2>CTI / producer configuration<a class="headerlink" href="#cti-producer-configuration" title="Link to this heading">#</a></h2>
+<section id="default-behavior-discover-and-load-all-producers">
+<h3>Default behavior: discover and load all producers<a class="headerlink" href="#default-behavior-discover-and-load-all-producers" title="Link to this heading">#</a></h3>
+<p>By default, the backend will <strong>discover</strong> and <strong>try to load all available</strong> GenTL Producers (<code class="docutils literal notranslate"><span class="pre">.cti</span></code>) it can find.</p>
+<ul class="simple">
+<li><p>If a producer fails to load, the backend continues and attempts to load the others.</p></li>
+<li><p>Startup fails only when:</p>
+<ul>
+<li><p><strong>no CTI files can be found</strong>, or</p></li>
+<li><p><strong>no CTI files can be loaded</strong>, or</p></li>
+<li><p><strong>no devices are detected</strong> after loading producers.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="cti-resolution-precedence-advanced">
+<h3>CTI resolution precedence (advanced)<a class="headerlink" href="#cti-resolution-precedence-advanced" title="Link to this heading">#</a></h3>
+<p>CTI locations are resolved in this order:</p>
+<ol class="arabic">
+<li><p><strong>Namespace explicit CTIs</strong> (<code class="docutils literal notranslate"><span class="pre">properties.gentl</span></code>):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">properties.gentl.cti_files</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">properties.gentl.cti_file</span></code></p></li>
+</ul>
+<p>Behavior depends on the persisted source marker <code class="docutils literal notranslate"><span class="pre">properties.gentl.cti_files_source</span></code>:</p>
+<ul class="simple">
+<li><p>If <code class="docutils literal notranslate"><span class="pre">cti_files_source</span> <span class="pre">==</span> <span class="pre">&quot;user&quot;</span></code> (or missing/unknown):</p>
+<ul>
+<li><p>Treated as a <strong>user override</strong></p></li>
+<li><p><strong>strict</strong>: missing paths cause <code class="docutils literal notranslate"><span class="pre">open()</span></code> to raise</p></li>
+</ul>
+</li>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">cti_files_source</span> <span class="pre">==</span> <span class="pre">&quot;auto&quot;</span></code>:</p>
+<ul>
+<li><p>Treated as an <strong>auto-discovered cache</strong></p></li>
+<li><p>If cached paths are stale/missing, <code class="docutils literal notranslate"><span class="pre">open()</span></code> will <strong>fall back to discovery</strong> automatically</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Discovery</strong> (auto):</p>
+<ul class="simple">
+<li><p>environment: <code class="docutils literal notranslate"><span class="pre">GENICAM_GENTL64_PATH</span></code> / <code class="docutils literal notranslate"><span class="pre">GENICAM_GENTL32_PATH</span></code></p></li>
+<li><p>optional: <code class="docutils literal notranslate"><span class="pre">properties.gentl.cti_search_paths</span></code> (glob patterns)</p></li>
+<li><p>optional: <code class="docutils literal notranslate"><span class="pre">properties.gentl.cti_dirs</span></code> (extra directories; non-recursive)</p></li>
+<li><p>plus built-in Windows fallback patterns for some common installations</p></li>
+</ul>
+</li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You typically do <strong>not</strong> need to set <code class="docutils literal notranslate"><span class="pre">cti_files_source</span></code> yourself.
+It is persisted by the backend so it can distinguish between a user-pinned CTI and an auto-discovered cache.</p>
+</div>
+</section>
+<section id="pin-a-known-good-cti-strict">
+<h3>Pin a known-good CTI (strict)<a class="headerlink" href="#pin-a-known-good-cti-strict" title="Link to this heading">#</a></h3>
+<p>Use this when a specific vendor producer is known to work reliably (or when other installed CTIs are incompatible).</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;camera&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;backend&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gentl&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;gentl&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;cti_file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;C:/Path/To/Your/Producer.cti&quot;</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="provide-an-explicit-list-of-ctis-strict">
+<h3>Provide an explicit list of CTIs (strict)<a class="headerlink" href="#provide-an-explicit-list-of-ctis-strict" title="Link to this heading">#</a></h3>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;camera&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;backend&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gentl&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;gentl&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;cti_files&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="s2">&quot;C:/Path/To/ProducerA.cti&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;C:/Path/To/ProducerB.cti&quot;</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="provide-cti-search-patterns-auto">
+<h3>Provide CTI search patterns (auto)<a class="headerlink" href="#provide-cti-search-patterns-auto" title="Link to this heading">#</a></h3>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;camera&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;backend&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gentl&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;gentl&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;cti_search_paths&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="s2">&quot;C:/Program Files/YourVendor/**/bin/*.cti&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;/opt/yourvendor/lib/gentlproducer/*.cti&quot;</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="provide-extra-cti-directories-auto">
+<h3>Provide extra CTI directories (auto)<a class="headerlink" href="#provide-extra-cti-directories-auto" title="Link to this heading">#</a></h3>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;camera&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;backend&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gentl&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;gentl&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;cti_dirs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="s2">&quot;C:/Program Files/YourVendor/bin&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="s2">&quot;/opt/yourvendor/lib/gentlproducer&quot;</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="cti-diagnostics-persisted-by-open">
+<h3>CTI diagnostics persisted by <code class="docutils literal notranslate"><span class="pre">open()</span></code><a class="headerlink" href="#cti-diagnostics-persisted-by-open" title="Link to this heading">#</a></h3>
+<p>After <code class="docutils literal notranslate"><span class="pre">open()</span></code> (success or failure), the backend writes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">properties.gentl.cti_files</span></code>: all resolved candidates</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">properties.gentl.cti_files_loaded</span></code>: successfully loaded into Harvesters</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">properties.gentl.cti_files_failed</span></code>: <code class="docutils literal notranslate"><span class="pre">{cti,</span> <span class="pre">error}</span></code> for failures</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">properties.gentl.cti_file</span></code>: first loaded CTI (or first candidate)</p></li>
+</ul>
+<p>These fields are intended for UI troubleshooting and do not normally need manual edits.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="camera-selection-and-stable-identity">
+<h2>Camera selection and stable identity<a class="headerlink" href="#camera-selection-and-stable-identity" title="Link to this heading">#</a></h2>
+<section id="by-index-default">
+<h3>By index (default)<a class="headerlink" href="#by-index-default" title="Link to this heading">#</a></h3>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;camera&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;backend&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gentl&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;index&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="by-stable-identity-recommended">
+<h3>By stable identity (recommended)<a class="headerlink" href="#by-stable-identity-recommended" title="Link to this heading">#</a></h3>
+<p>Prefer <code class="docutils literal notranslate"><span class="pre">properties.gentl.device_id</span></code>, which is persisted automatically after a successful <code class="docutils literal notranslate"><span class="pre">open()</span></code>.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">serial:&lt;SERIAL&gt;</span></code> when a serial number is available</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fp:&lt;...&gt;</span></code> fingerprint when serial numbers are missing</p></li>
+</ul>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;camera&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;backend&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gentl&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;gentl&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;device_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;serial:40312345&quot;</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="selection-order-in-open">
+<h3>Selection order in <code class="docutils literal notranslate"><span class="pre">open()</span></code><a class="headerlink" href="#selection-order-in-open" title="Link to this heading">#</a></h3>
+<p>The backend selects a device in this order:</p>
+<ol class="arabic simple">
+<li><p>Exact match of <code class="docutils literal notranslate"><span class="pre">device_id</span></code> against computed IDs for discovered devices</p></li>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">device_id</span></code> starts with <code class="docutils literal notranslate"><span class="pre">serial:</span></code>, match by exact serial number, then (if needed) substring</p></li>
+<li><p>Legacy serial keys (<code class="docutils literal notranslate"><span class="pre">serial_number</span></code> / <code class="docutils literal notranslate"><span class="pre">serial</span></code>) if present (exact then substring)</p></li>
+<li><p>Fallback to <code class="docutils literal notranslate"><span class="pre">index</span></code></p></li>
+</ol>
+<p>If a serial substring matches <strong>multiple</strong> cameras, an “ambiguous” error is raised.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The backend updates <code class="docutils literal notranslate"><span class="pre">settings.index</span></code> to the selected device’s current index to improve UI stability.</p>
+</div>
+</section>
+<hr class="docutils" />
+<section id="automated-rebind-index-changes-reconnects">
+<h3>Automated rebind (index changes, reconnects)<a class="headerlink" href="#automated-rebind-index-changes-reconnects" title="Link to this heading">#</a></h3>
+<p>When the UI restarts (or devices re-enumerate), the backend can <strong>rebind settings</strong>:</p>
+<ul class="simple">
+<li><p>If <code class="docutils literal notranslate"><span class="pre">properties.gentl.device_id</span></code> exists, <code class="docutils literal notranslate"><span class="pre">rebind_settings()</span></code> tries to map it to the current device list.</p></li>
+<li><p>It prefers the persisted CTIs when available:</p>
+<ul>
+<li><p>if <code class="docutils literal notranslate"><span class="pre">cti_files_source</span> <span class="pre">==</span> <span class="pre">&quot;auto&quot;</span></code> and cached CTIs are stale, it falls back to discovery automatically.</p></li>
+<li><p>if CTIs were user-pinned and no longer exist, it does <strong>not</strong> attempt to override them silently.</p></li>
+</ul>
+</li>
+</ul>
+<p>Matching strategy:</p>
+<ol class="arabic simple">
+<li><p>Exact match on computed <code class="docutils literal notranslate"><span class="pre">device_id</span></code></p></li>
+<li><p>Fallback: treat stored value as a serial-like substring and match the first serial containing it</p></li>
+</ol>
+</section>
+</section>
+<hr class="docutils" />
+<section id="camera-settings">
+<h2>Camera settings<a class="headerlink" href="#camera-settings" title="Link to this heading">#</a></h2>
+<p>These settings are shared across backends and configurable in the GUI:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">width</span></code> (int): requested image width; <strong>applied only if both width and height &gt; 0</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">height</span></code> (int): requested image height; <strong>applied only if both width and height &gt; 0</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fps</span></code> (float): requested frame rate; if unset/0, the backend does not set FPS</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">exposure</span></code> (float): exposure time; <code class="docutils literal notranslate"><span class="pre">&lt;=</span> <span class="pre">0</span></code> means do not set</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gain</span></code> (float): gain value; <code class="docutils literal notranslate"><span class="pre">&lt;=</span> <span class="pre">0</span></code> means do not set</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="full-properties-and-advanced-configuration">
+<h2>Full properties and advanced configuration<a class="headerlink" href="#full-properties-and-advanced-configuration" title="Link to this heading">#</a></h2>
+<p>GenTL backend options live under <code class="docutils literal notranslate"><span class="pre">properties.gentl</span></code> of the camera settings object.</p>
+<section id="gentl-namespace-options-properties-gentl">
+<h3>GenTL namespace options (<code class="docutils literal notranslate"><span class="pre">properties.gentl</span></code>)<a class="headerlink" href="#gentl-namespace-options-properties-gentl" title="Link to this heading">#</a></h3>
+<p>Core / CTI resolution:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cti_file</span></code> (string): full path to a GenTL Producer <code class="docutils literal notranslate"><span class="pre">.cti</span></code> file</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cti_files</span></code> (list[string]): explicit list of producer <code class="docutils literal notranslate"><span class="pre">.cti</span></code> files to load</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cti_search_paths</span></code> (list[string] or string): glob patterns used to locate <code class="docutils literal notranslate"><span class="pre">.cti</span></code> files</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cti_dirs</span></code> (list[string] or string): extra directories to scan for <code class="docutils literal notranslate"><span class="pre">*.cti</span></code> (non-recursive)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cti_files_source</span></code> (string): <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> (cache) or <code class="docutils literal notranslate"><span class="pre">&quot;user&quot;</span></code> (strict override)</p>
+<ul>
+<li><p>typically written by the backend; rarely set manually</p></li>
+</ul>
+</li>
+</ul>
+<p>Selection / identity:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">device_id</span></code> (string): stable identifier (<code class="docutils literal notranslate"><span class="pre">serial:...</span></code> or <code class="docutils literal notranslate"><span class="pre">fp:...</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">serial_number</span></code> / <code class="docutils literal notranslate"><span class="pre">serial</span></code> (string): legacy selection helpers (still honored)</p></li>
+</ul>
+<p>Acquisition:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pixel_format</span></code> (string, default: <code class="docutils literal notranslate"><span class="pre">Mono8</span></code>): requested <code class="docutils literal notranslate"><span class="pre">PixelFormat</span></code> symbolic</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code> (float, default: <code class="docutils literal notranslate"><span class="pre">2.0</span></code>): acquisition timeout in seconds (<code class="docutils literal notranslate"><span class="pre">fetch(timeout=...)</span></code>)</p></li>
+</ul>
+<p>Transforms:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">rotate</span></code> (int, default: <code class="docutils literal notranslate"><span class="pre">0</span></code>): rotate output by 0/90/180/270</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">crop</span></code> ([top, bottom, left, right]): crop rectangle</p>
+<ul>
+<li><p>if bottom/right are <code class="docutils literal notranslate"><span class="pre">&lt;=</span> <span class="pre">0</span></code>, they default to full frame extent</p></li>
+</ul>
+</li>
+</ul>
+<p>Probe / telemetry:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">fast_start</span></code> (bool, default: false): probe-mode hint; when true, <code class="docutils literal notranslate"><span class="pre">open()</span></code> does not start acquisition</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cti_files_loaded</span></code> (list[string]): populated automatically after open</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cti_files_failed</span></code> (list[object]): populated automatically after open; each entry has <code class="docutils literal notranslate"><span class="pre">cti</span></code> and <code class="docutils literal notranslate"><span class="pre">error</span></code></p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="pixel-format">
+<h3>Pixel format<a class="headerlink" href="#pixel-format" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>The backend attempts to set <code class="docutils literal notranslate"><span class="pre">node_map.PixelFormat</span></code> to the configured <code class="docutils literal notranslate"><span class="pre">pixel_format</span></code>
+if it appears in <code class="docutils literal notranslate"><span class="pre">PixelFormat.symbolics</span></code>.</p></li>
+<li><p>If the requested format is not available, it logs a warning and continues.</p></li>
+</ul>
+<p>Frames are normalized to <strong>BGR (8-bit)</strong>:</p>
+<ul class="simple">
+<li><p>Mono images become BGR via grayscale-to-BGR conversion</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RGB8</span></code> is converted to BGR</p></li>
+<li><p>Higher bit-depth images are scaled to 8-bit based on the frame’s max value (per frame)</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="exposure-and-gain">
+<h3>Exposure and gain<a class="headerlink" href="#exposure-and-gain" title="Link to this heading">#</a></h3>
+<p>Best-effort behavior (depends on producer + camera GenApi implementation):</p>
+<ul class="simple">
+<li><p>If exposure is set (&gt; 0):</p>
+<ul>
+<li><p>attempts to disable <code class="docutils literal notranslate"><span class="pre">ExposureAuto</span></code> by setting it to <code class="docutils literal notranslate"><span class="pre">Off</span></code></p></li>
+<li><p>tries <code class="docutils literal notranslate"><span class="pre">ExposureTime</span></code> then <code class="docutils literal notranslate"><span class="pre">Exposure</span></code></p></li>
+</ul>
+</li>
+<li><p>If gain is set (&gt; 0):</p>
+<ul>
+<li><p>attempts to disable <code class="docutils literal notranslate"><span class="pre">GainAuto</span></code> by setting it to <code class="docutils literal notranslate"><span class="pre">Off</span></code></p></li>
+<li><p>tries <code class="docutils literal notranslate"><span class="pre">Gain</span></code></p></li>
+</ul>
+</li>
+</ul>
+<p>If nodes are missing or read-only, the backend logs a warning and continues.</p>
+</section>
+<hr class="docutils" />
+<section id="frame-rate-fps">
+<h3>Frame rate (FPS)<a class="headerlink" href="#frame-rate-fps" title="Link to this heading">#</a></h3>
+<p>If <code class="docutils literal notranslate"><span class="pre">fps</span></code> is set to a non-zero value:</p>
+<ul class="simple">
+<li><p>attempts to enable frame rate control via:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">AcquisitionFrameRateEnable</span></code> or <code class="docutils literal notranslate"><span class="pre">AcquisitionFrameRateControlEnable</span></code></p></li>
+</ul>
+</li>
+<li><p>tries to set one of these nodes (first that works):</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">AcquisitionFrameRate</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ResultingFrameRate</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">AcquisitionFrameRateAbs</span></code></p></li>
+</ul>
+</li>
+</ul>
+<p>The backend also tries to read back <code class="docutils literal notranslate"><span class="pre">ResultingFrameRate</span></code> for GUI telemetry (<code class="docutils literal notranslate"><span class="pre">actual_fps</span></code>).</p>
+</section>
+<hr class="docutils" />
+<section id="resolution-handling">
+<h3>Resolution handling<a class="headerlink" href="#resolution-handling" title="Link to this heading">#</a></h3>
+<p>Resolution is applied <strong>only when explicitly requested</strong> (either <code class="docutils literal notranslate"><span class="pre">width+height</span></code>, or legacy <code class="docutils literal notranslate"><span class="pre">properties.resolution</span></code>).</p>
+<ul class="simple">
+<li><p>Attempts to set <code class="docutils literal notranslate"><span class="pre">node_map.Width</span></code> and <code class="docutils literal notranslate"><span class="pre">node_map.Height</span></code></p></li>
+<li><p>Clamps to node min/max and snaps down to the nearest valid increment (<code class="docutils literal notranslate"><span class="pre">inc</span></code>) when available</p></li>
+<li><p>Logs a warning if the applied values differ from the requested values</p></li>
+</ul>
+<p>If no resolution is specified, the device’s current/default configuration is preserved.</p>
+</section>
+<hr class="docutils" />
+<section id="streaming-and-probe-mode">
+<h3>Streaming and probe mode<a class="headerlink" href="#streaming-and-probe-mode" title="Link to this heading">#</a></h3>
+<section id="normal-capture">
+<h4>Normal capture<a class="headerlink" href="#normal-capture" title="Link to this heading">#</a></h4>
+<ul class="simple">
+<li><p>On successful <code class="docutils literal notranslate"><span class="pre">open()</span></code>, acquisition is started with <code class="docutils literal notranslate"><span class="pre">self._acquirer.start()</span></code>.</p></li>
+</ul>
+</section>
+<section id="fast-start-probe-mode-fast-start">
+<h4>Fast-start probe mode (<code class="docutils literal notranslate"><span class="pre">fast_start</span></code>)<a class="headerlink" href="#fast-start-probe-mode-fast-start" title="Link to this heading">#</a></h4>
+<p>If <code class="docutils literal notranslate"><span class="pre">properties.gentl.fast_start</span></code> is <code class="docutils literal notranslate"><span class="pre">true</span></code>:</p>
+<ul class="simple">
+<li><p>the backend configures the device and persists identity/metadata,</p></li>
+<li><p>but does <strong>not</strong> start streaming.</p></li>
+</ul>
+<p>This is intended for capability probing and faster startup of probe workers.</p>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">#</a></h2>
+<section id="no-cti-found">
+<h3>No <code class="docutils literal notranslate"><span class="pre">.cti</span></code> found<a class="headerlink" href="#no-cti-found" title="Link to this heading">#</a></h3>
+<p>Common causes:</p>
+<ul class="simple">
+<li><p>Vendor GenTL producer not installed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GENICAM_GENTL64_PATH</span></code> / <code class="docutils literal notranslate"><span class="pre">GENICAM_GENTL32_PATH</span></code> not set (or missing the producer directory)</p></li>
+<li><p>Wrong producer bitness (32-bit vs 64-bit)</p></li>
+</ul>
+<p>Fix options:</p>
+<ul class="simple">
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">camera.properties.gentl.cti_file</span></code> (pin a CTI), or</p></li>
+<li><p>set <code class="docutils literal notranslate"><span class="pre">GENICAM_GENTL64_PATH</span></code> / <code class="docutils literal notranslate"><span class="pre">GENICAM_GENTL32_PATH</span></code>, or</p></li>
+<li><p>set <code class="docutils literal notranslate"><span class="pre">camera.properties.gentl.cti_search_paths</span></code> / <code class="docutils literal notranslate"><span class="pre">cti_dirs</span></code></p></li>
+</ul>
+</section>
+<section id="producer-load-failures-with-multiple-ctis-installed">
+<h3>Producer load failures with multiple CTIs installed<a class="headerlink" href="#producer-load-failures-with-multiple-ctis-installed" title="Link to this heading">#</a></h3>
+<p>Some installed producers may be incompatible or broken on a given system.</p>
+<ul class="simple">
+<li><p>Check <code class="docutils literal notranslate"><span class="pre">properties.gentl.cti_files_failed</span></code></p></li>
+<li><p>Pin a known-good producer:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">properties.gentl.cti_file</span></code>, or</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">properties.gentl.cti_files</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="cached-ctis-went-stale-auto-re-discovery">
+<h3>Cached CTIs went stale (auto re-discovery)<a class="headerlink" href="#cached-ctis-went-stale-auto-re-discovery" title="Link to this heading">#</a></h3>
+<p>If <code class="docutils literal notranslate"><span class="pre">properties.gentl.cti_files_source</span> <span class="pre">==</span> <span class="pre">&quot;auto&quot;</span></code>, stale cached CTI paths will trigger fallback to discovery automatically.
+If you pinned CTIs as a user override and paths no longer exist, <code class="docutils literal notranslate"><span class="pre">open()</span></code> will fail (by design).</p>
+</section>
+<section id="timeouts">
+<h3>Timeouts<a class="headerlink" href="#timeouts" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Increase <code class="docutils literal notranslate"><span class="pre">properties.gentl.timeout</span></code> (seconds)</p></li>
+<li><p>Reduce frame rate or resolution</p></li>
+<li><p>Check transport bandwidth (GigE: MTU/jumbo frames, NIC direct connection, etc.)</p></li>
+</ul>
+</section>
+<section id="pixel-format-errors">
+<h3>Pixel format errors<a class="headerlink" href="#pixel-format-errors" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Inspect available formats via vendor tools or by checking <code class="docutils literal notranslate"><span class="pre">PixelFormat.symbolics</span></code></p></li>
+<li><p>Try a simpler format such as <code class="docutils literal notranslate"><span class="pre">Mono8</span></code></p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="example-configuration">
+<h2>Example configuration<a class="headerlink" href="#example-configuration" title="Link to this heading">#</a></h2>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;camera&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;backend&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gentl&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;fps&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">60.0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;exposure&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">8000</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;gain&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">10.0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1920</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1080</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;gentl&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;device_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;serial:40312345&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;pixel_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Mono8&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">3.0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;rotate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;crop&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">]</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="resources">
+<h2>Resources<a class="headerlink" href="#resources" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://harvesters.readthedocs.io/en/latest/INSTALL.html">Harvesters installation documentation</a></p></li>
+<li><p><a class="reference external" href="https://www.mvtec.com/products/interfaces/documentation/view/1307-standard-13-mvtecdoc-genicamtl">GenTL producer discovery variables</a> (<code class="docutils literal notranslate"><span class="pre">GENICAM_GENTL32_PATH</span></code> / <code class="docutils literal notranslate"><span class="pre">GENICAM_GENTL64_PATH</span></code>) and usage notes</p></li>
+<li><p><a class="reference external" href="https://softwareservices.flir.com/Spinnaker/latest/_gen_i_cam_gen_t_l.html">GenTL producer path separators and CTI overview</a> (example vendor documentation)</p></li>
+</ul>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./docs/dlc-live/dlc-live-gui/user_guide/cameras_backends"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="aravis_backend.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Aravis backend</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../misc/misc_landing.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Additional resources</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#features-design">Features &amp; design</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-harvesters">1) Install Harvesters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-a-gentl-producer-file-cti">2) Install a GenTL Producer file (<code class="docutils literal notranslate"><span class="pre">.cti</span></code>)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#make-producers-discoverable-environment-variables">3) Make producers discoverable (environment variables)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-configuration">Basic configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cti-producer-configuration">CTI / producer configuration</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#default-behavior-discover-and-load-all-producers">Default behavior: discover and load all producers</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cti-resolution-precedence-advanced">CTI resolution precedence (advanced)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pin-a-known-good-cti-strict">Pin a known-good CTI (strict)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#provide-an-explicit-list-of-ctis-strict">Provide an explicit list of CTIs (strict)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#provide-cti-search-patterns-auto">Provide CTI search patterns (auto)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#provide-extra-cti-directories-auto">Provide extra CTI directories (auto)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cti-diagnostics-persisted-by-open">CTI diagnostics persisted by <code class="docutils literal notranslate"><span class="pre">open()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#camera-selection-and-stable-identity">Camera selection and stable identity</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#by-index-default">By index (default)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#by-stable-identity-recommended">By stable identity (recommended)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#selection-order-in-open">Selection order in <code class="docutils literal notranslate"><span class="pre">open()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#automated-rebind-index-changes-reconnects">Automated rebind (index changes, reconnects)</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#camera-settings">Camera settings</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full-properties-and-advanced-configuration">Full properties and advanced configuration</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gentl-namespace-options-properties-gentl">GenTL namespace options (<code class="docutils literal notranslate"><span class="pre">properties.gentl</span></code>)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pixel-format">Pixel format</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#exposure-and-gain">Exposure and gain</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#frame-rate-fps">Frame rate (FPS)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resolution-handling">Resolution handling</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#streaming-and-probe-mode">Streaming and probe mode</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#normal-capture">Normal capture</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#fast-start-probe-mode-fast-start">Fast-start probe mode (<code class="docutils literal notranslate"><span class="pre">fast_start</span></code>)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#no-cti-found">No <code class="docutils literal notranslate"><span class="pre">.cti</span></code> found</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#producer-load-failures-with-multiple-ctis-installed">Producer load failures with multiple CTIs installed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cached-ctis-went-stale-auto-re-discovery">Cached CTIs went stale (auto re-discovery)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#timeouts">Timeouts</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pixel-format-errors">Pixel format errors</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-configuration">Example configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resources">Resources</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The DeepLabCut Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
