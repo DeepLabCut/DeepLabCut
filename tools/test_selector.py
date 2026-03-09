@@ -112,6 +112,8 @@ FULL_SUITE_TRIGGERS = [
     ("pyproject.toml changed", lambda p: p == "pyproject.toml"),
     ("lockfile changed", lambda p: p.endswith(".lock")),
     ("DEEPLABCUT.yaml changed", lambda p: p.endswith("DEEPLABCUT.yaml")),
+    ("CI workflows changed", lambda p: p.startswith(".github/workflows/")),
+    ("CI tools changed", lambda p: p.startswith("tools/")),
 ]
 
 # Files that should be enforced by dedicated lint workflows, not by test selection
@@ -206,15 +208,15 @@ CATEGORY_RULES = [
         ],
         "functional_scripts": [],
     },
-    {
-        "name": "ci_tools",
-        "match_any": [
-            lambda p: p.startswith(".github/"),
-            lambda p: p.startswith("tools/"),
-        ],
-        "pytest_paths": MINIMAL_PYTEST,
-        "functional_scripts": [],
-    },
+    # {
+    #     "name": "ci_tools",
+    #     "match_any": [
+    #         lambda p: p.startswith(".github/"),
+    #         lambda p: p.startswith("tools/"),
+    #     ],
+    #     "pytest_paths": MINIMAL_PYTEST,
+    #     "functional_scripts": [],
+    # },
 ]
 CATEGORY_RULE_BY_NAME: Dict[str, Dict[str, Any]] = {
     r["name"]: r for r in CATEGORY_RULES
@@ -572,25 +574,34 @@ def explain_changed_files(files: List[str]) -> Dict[str, Any]:
     }
 
 
-def _render_file_line(f: str, info: Dict[str, Any], emoji: bool = False) -> str:
+def _render_file_line(
+    f: str,
+    info: Dict[str, Any],
+    emoji: bool = False,
+    add_tag: bool = True,
+    add_marker: bool = False,
+) -> str:
     # Optional, single marker only
     marker = ""
-    if info.get("full_triggers"):
-        marker = "⚠️ " if emoji else ""
-    elif info.get("lint_only"):
-        marker = "🧹 " if emoji else ""
-    elif not info.get("categories"):
-        marker = "❓ " if emoji else ""
+    if add_marker:
+        if info.get("full_triggers"):
+            marker = "⚠️ " if emoji else ""
+        elif info.get("lint_only"):
+            marker = "🧹 " if emoji else ""
+        elif not info.get("categories"):
+            marker = "❓ " if emoji else ""
 
     tags = []
-    if info.get("full_triggers"):
-        header = "🚨 " if emoji else "Full triggers"
-        tags.append(f"{header}: " + ", ".join(info["full_triggers"]))
-    if info.get("categories"):
-        header = "🏷️ " if emoji else "Category match :"
-        tags.append(f"{header}: " + ", ".join(info["categories"]))
-    if info.get("lint_only"):
-        tags.append(f"lint-only")
+    if add_tag:
+        if info.get("full_triggers"):
+            header = "🚨 " if emoji else "Full triggers"
+            tags.append(f"{header} " + ", ".join(info["full_triggers"]))
+        if info.get("categories"):
+            header = "🏷️ " if emoji else "Category match :"
+            tags.append(f"{header} " + ", ".join(info["categories"]))
+        if info.get("lint_only"):
+            header = "🧹 " if emoji else "Lint-only :"
+            tags.append(f"{header} " + ", ".join(info["lint_only"]))
 
     tag_str = (" — " + " | ".join(tags)) if tags else ""
     return f"- {marker}`{f}`{tag_str}"
@@ -671,11 +682,12 @@ def _render_decision_markdown(
             Plan.FULL: "🧪 Full suite",
         }.get(res.plan, res.plan.value)
 
-    diff_mode = f"Diff mode: {MODE_LABELS.get(res.diff_mode, res.diff_mode.value)}"
+    diff_mode = f"{MODE_LABELS.get(res.diff_mode, res.diff_mode.value)}"
 
     md: List[str] = []
     md.append("# Test selection\n")
-    md.append(f"**Plan:** `{plan_label}` : \n**{diff_mode}**\n")
+    md.append(f"**Plan:** `{plan_label}`\n")
+    md.append(f"**Diff mode:** `{diff_mode}`\n")
 
     # Reasons (compacted)
     md.append("## Why\n")
@@ -683,49 +695,82 @@ def _render_decision_markdown(
         md.append(f"- `{r}`")
     md.append("")
 
-    # Explain changed files (grouped)
+    # Explain changed files
     exp = explain_changed_files(res.changed_files)
 
-    md.append("## Changed files (grouped)\n")
+    md.append("## Changed files (explained)\n")
 
-    # If plan is FULL, show triggers prominently (but not noisy)
+    # 1) Collapsible: Files that match full-suite triggers
+    # (Always collapsible if present; otherwise omit section.)
     if exp["full_trigger_files"]:
-        md.append("### Full-suite triggers\n")
+        total_triggered = sum(len(v) for v in exp["full_trigger_files"].values())
+        md.append(
+            f"<details><summary><strong>Files that match full-suite triggers</strong> ({total_triggered})</summary>\n"
+        )
+        md.append("")
         for trig_name in sorted(exp["full_trigger_files"].keys()):
-            md.append(f"**{trig_name}** ({len(exp['full_trigger_files'][trig_name])})")
-            for f in exp["full_trigger_files"][trig_name][:limit]:
+            files_for_trigger = exp["full_trigger_files"][trig_name]
+            md.append(f"**{trig_name}** ({len(files_for_trigger)})")
+            for f in files_for_trigger[:limit]:
                 md.append(_render_file_line(f, exp["per_file"][f], emoji=emoji))
-            if len(exp["full_trigger_files"][trig_name]) > limit:
-                md.append(
-                    f"- … and {len(exp['full_trigger_files'][trig_name]) - limit} more"
-                )
+            if len(files_for_trigger) > limit:
+                md.append(f"- … and {len(files_for_trigger) - limit} more")
             md.append("")
+        md.append("</details>\n")
 
-    # Categories in collapsible blocks
+    # 2) Files grouped by category (includes uncategorized and lint-only as collapsible lists)
+    md.append("### Files grouped by category\n")
+
     if exp["by_category"]:
         for cat in sorted(exp["by_category"].keys()):
             files = exp["by_category"][cat]
+
+            # Determine if this category has any explicit selection rules attached
+            rule = CATEGORY_RULE_BY_NAME.get(cat, {})
+            has_rules = bool(rule.get("pytest_paths") or rule.get("functional_scripts"))
+            note = "" if has_rules else " — no specific testing rules attached"
+
             md.append(
-                f"<details><summary><strong>{cat}</strong> ({len(files)})</summary>\n"
+                f"<details><summary><strong>{cat}</strong> ({len(files)}){note}</summary>\n"
             )
             md.append("")
             for f in files[:limit]:
-                # In grouped view, tags can be minimal
+                # Already grouped by category; keep lines clean
                 md.append(f"- `{f}`")
             if len(files) > limit:
                 md.append(f"- … and {len(files) - limit} more")
             md.append("\n</details>\n")
     else:
-        md.append("_(no category matches)_\n")
+        md.append("_(none)_\n")
 
+    # Lint-only as collapsible
     if exp.get("lint_only"):
-        md.append("### Lint-only\n")
-        md.append(bullet(exp["lint_only"]))
+        lint_files = exp["lint_only"]
+        md.append(
+            f"<details><summary><strong>Lint-only</strong> ({len(lint_files)}) — ignored for test selection</summary>\n"
+        )
         md.append("")
+        for f in lint_files[:limit]:
+            md.append(f"- `{f}`")
+        if len(lint_files) > limit:
+            md.append(f"- … and {len(lint_files) - limit} more")
+        md.append("\n</details>\n")
+
+    # Uncategorized as collapsible — and clarify what it means
+    # IMPORTANT: explain_changed_files() already ensures that files that match ANY category
+    # never land here. This section is only for truly unmatched files.
     if exp["uncategorized"]:
-        md.append("### Uncategorized\n")
-        md.append(bullet(exp["uncategorized"]))
+        unc_files = exp["uncategorized"]
+        md.append(
+            f"<details><summary><strong>Uncategorized</strong> ({len(unc_files)}) — no matching category (no specific testing rules attached)</summary>\n"
+        )
         md.append("")
+        for f in unc_files[:limit]:
+            md.append(_render_file_line(f, exp["per_file"][f], emoji=emoji))
+        if len(unc_files) > limit:
+            md.append(f"- … and {len(unc_files) - limit} more")
+        md.append("\n</details>\n")
+
     if style == "detailed":
         md.append("## Changed files (raw)\n")
         md.append(bullet(res.changed_files))
@@ -739,26 +784,27 @@ def _render_decision_markdown(
     md.append(bullet(res.functional_scripts))
     md.append("")
 
-    # Provenance collapsed by default
-    prov = _compute_selection_provenance(res)
-    md.append("## Provenance\n")
-    md.append("<details><summary><strong>Why these tests</strong></summary>\n")
-    md.append("")
-    if prov["pytest"]:
-        md.append("### Pytest\n")
-        for p, srcs in prov["pytest"].items():
-            md.append(f"- `{p}` ← {', '.join(f'`{s}`' for s in srcs)}")
-    else:
-        md.append("### Pytest\n_(none)_")
+    # Provenance collapsed by default, only if detailed
+    if style == "detailed":
+        prov = _compute_selection_provenance(res)
+        md.append("## Provenance\n")
+        md.append("<details><summary><strong>Why these tests</strong></summary>\n")
+        md.append("")
+        if prov["pytest"]:
+            md.append("### Pytest\n")
+            for p, srcs in prov["pytest"].items():
+                md.append(f"- `{p}` ← {', '.join(f'`{s}`' for s in srcs)}")
+        else:
+            md.append("### Pytest\n_(none)_")
 
-    if prov["scripts"]:
-        md.append("\n### Scripts\n")
-        for s, srcs in prov["scripts"].items():
-            md.append(f"- `{s}` ← {', '.join(f'`{x}`' for x in srcs)}")
-    else:
-        md.append("\n### Scripts\n_(none)_")
+        if prov["scripts"]:
+            md.append("\n### Scripts\n")
+            for s, srcs in prov["scripts"].items():
+                md.append(f"- `{s}` ← {', '.join(f'`{x}`' for x in srcs)}")
+        else:
+            md.append("\n### Scripts\n_(none)_")
 
-    md.append("\n</details>\n")
+        md.append("\n</details>\n")
     return "\n".join(md)
 
 
