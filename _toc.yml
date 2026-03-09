@@ -77,6 +77,7 @@ parts:
   - file: docs/recipes/OpenVINO
   - file: docs/recipes/flip_and_rotate
   - file: docs/recipes/pose_cfg_file_breakdown
+  - file: docs/recipes/fmpose3d
   - file: docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook
 
 - caption: Hardware Tips

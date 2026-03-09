@@ -6,7 +6,3 @@ Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
-from setuptools import setup
-
-# All configuration is now in pyproject.toml. This file is kept for backward compatibility
-setup()
