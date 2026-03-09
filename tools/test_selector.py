@@ -778,11 +778,12 @@ def _render_decision_markdown(
 
     # Selected tests
     md.append("## Selected tests\n")
-    md.append("### Pytest paths\n")
+    md.append("<details><summary><strong>Pytest paths</strong></summary>\n")
     md.append(bullet(res.pytest_paths))
-    md.append("\n### Functional scripts\n")
+    md.append("\n</details>\n")
+    md.append("<details><summary><strong>Functional scripts</strong></summary>\n")
     md.append(bullet(res.functional_scripts))
-    md.append("")
+    md.append("\n</details>\n")
 
     # Provenance collapsed by default, only if detailed
     if style == "detailed":
