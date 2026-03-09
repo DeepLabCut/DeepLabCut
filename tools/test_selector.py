@@ -147,8 +147,16 @@ CATEGORY_RULES = [
             lambda p: p.endswith(".ipynb") and "docs" in p.lower(),
             lambda p: p in {"_config.yml", "_toc.yml"},
         ],
-        "pytest_paths": [],
-        "functional_scripts": [],
+        "pytest_paths": [
+            # NOTE: if you add tests here, the DOCS_ONLY plan will be ignored and escalated to FAST
+            # Be aware of this behavior when attaching rules to the "docs" category, and prefer editing the docs workflow directly
+            # in .github/workflows/build-book.yml
+        ],
+        "functional_scripts": [
+            # NOTE: if you add scripts here, the DOCS_ONLY plan will be ignored and escalated to FAST
+            # Be aware of this behavior when attaching rules to the "docs" category, and prefer editing the docs workflow directly
+            # in .github/workflows/build-book.yml
+        ],
     },
     {
         "name": "notebooks_examples",
@@ -435,6 +443,20 @@ def decide(files: List[str]) -> SelectorResult:
     # docs-only if ALL files match docs category
     docs_rule = next((r for r in CATEGORY_RULES if r["name"] == "docs"), None)
     if docs_rule and all(_matches_any(f, docs_rule["match_any"]) for f in files):
+        docs_pytests = list(docs_rule.get("pytest_paths", []) or [])
+        docs_scripts = list(docs_rule.get("functional_scripts", []) or [])
+
+        # If docs category has explicit test/script rules attached, run FAST lane.
+        if docs_pytests or docs_scripts:
+            return SelectorResult(
+                plan=Plan.FAST,
+                pytest_paths=sorted(set(docs_pytests)),
+                functional_scripts=sorted(set(docs_scripts)),
+                reasons=["docs_only_but_rules_attached", "category:docs"],
+                changed_files=files,
+            )
+
+        # Otherwise, true docs-only (no tests)
         return SelectorResult(
             plan=Plan.DOCS_ONLY,
             pytest_paths=[],
@@ -601,7 +623,7 @@ def _render_file_line(
             tags.append(f"{header} " + ", ".join(info["categories"]))
         if info.get("lint_only"):
             header = "🧹 " if emoji else "Lint-only :"
-            tags.append(f"{header} " + ", ".join(info["lint_only"]))
+            tags.append(f"{header}")
 
     tag_str = (" — " + " | ".join(tags)) if tags else ""
     return f"- {marker}`{f}`{tag_str}"
