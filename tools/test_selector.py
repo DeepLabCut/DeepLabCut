@@ -112,8 +112,6 @@ FULL_SUITE_TRIGGERS = [
     ("pyproject.toml changed", lambda p: p == "pyproject.toml"),
     ("lockfile changed", lambda p: p.endswith(".lock")),
     ("DEEPLABCUT.yaml changed", lambda p: p.endswith("DEEPLABCUT.yaml")),
-    ("CI workflows changed", lambda p: p.startswith(".github/workflows/")),
-    ("CI tools changed", lambda p: p.startswith("tools/")),
 ]
 
 # Files that should be enforced by dedicated lint workflows, not by test selection
@@ -217,12 +215,20 @@ CATEGORY_RULES = [
         "functional_scripts": [],
     },
     {
-        "name": "ci_tools",
+        "name": "ci_workflows",
         "match_any": [
             lambda p: p.startswith(".github/"),
-            lambda p: p.startswith("tools/"),
+            # lambda p: p.startswith("tools/"),
         ],
         "pytest_paths": MINIMAL_PYTEST,
+        "functional_scripts": [],
+    },
+    {
+        "name": "ci_tools",
+        "match_any": [
+            lambda p: p.startswith("tools/"),
+        ],
+        "pytest_paths": ["tests/tools/"],
         "functional_scripts": [],
     },
 ]
@@ -336,7 +342,7 @@ def determine_diff_range(
             return before, after, DiffMode.PUSH
         except Exception:
             empty = _empty_tree(repo)
-            return before, after, DiffMode.INITIAL
+            return empty, after, DiffMode.INITIAL
 
     # Fallback: try parent..HEAD; if no parent (initial commit), diff empty-tree..HEAD
     try:
@@ -587,7 +593,7 @@ def explain_changed_files(files: List[str]) -> Dict[str, Any]:
             lint_only_files.append(f)
         else:
             # Only uncategorized if it matched no categories AND no full-suite triggers
-            if not ft:
+            if not ft and not cats:
                 uncategorized.append(f)
 
     # Deterministic ordering
@@ -938,7 +944,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     except ValidationError as e:
         raise RuntimeError(f"Output validation failed: {e}") from e
 
-    # F Always write report files for transparency
+    # Always write report files for transparency
     report_dir = Path(args.report_dir)
     json_path, md_path = write_report_files(
         res, report_dir, report_style=args.report_style, no_emoji=args.no_emoji
