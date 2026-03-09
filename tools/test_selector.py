@@ -51,6 +51,27 @@ SHA_RE = re.compile(r"^[0-9a-f]{7,40}$", re.IGNORECASE)
 DLC_NAMESPACE = "deeplabcut"
 
 
+class DiffMode(str, Enum):
+    """How the diff was determined, for auditing and reporting."""
+
+    PR = "pr"  # merge-base(base, head) .. head
+    PUSH = "push"  # before .. after
+    MANUAL = "manual"  # CLI override
+    FALLBACK = "fallback"  # HEAD^ .. HEAD
+    INITIAL = "initial"  # empty tree .. HEAD
+    FALLBACK_NO_HEAD = "fallback_no_head"  # couldn't resolve HEAD
+
+
+MODE_LABELS = {
+    DiffMode.PR: "Pull request (merge-base..HEAD)",
+    DiffMode.PUSH: "Push (before..after)",
+    DiffMode.MANUAL: "Manual override",
+    DiffMode.FALLBACK: "Fallback (HEAD^..HEAD)",
+    DiffMode.INITIAL: "Initial commit (empty tree..HEAD)",
+    DiffMode.FALLBACK_NO_HEAD: "Fallback (couldn't resolve HEAD)",
+}
+
+
 class Plan(str, Enum):
     """Unambiguous test plan."""
 
@@ -66,6 +87,7 @@ class SelectorResult(BaseModel):
 
     schema_version: int = 1
     plan: Plan
+    diff_mode: DiffMode = DiffMode.FALLBACK_NO_HEAD
 
     pytest_paths: List[str] = Field(default_factory=list)
     functional_scripts: List[str] = Field(default_factory=list)
@@ -106,6 +128,13 @@ LINT_ONLY_FILES = {
 #   - if >2 categories match -> FULL
 #   - else -> FAST with merged selections
 # TODO @C-Achard Refine selection and rules
+#####
+# Purpose and usage:
+#   - Each category has a set of matchers (predicates on file paths)
+#   - If any file matches a category, that category is active
+#   - Each category contributes pytest paths and/or functional scripts
+# If any FULL_SUITE_TRIGGERS match, we skip categories and go straight to FULL, below rules do not apply.
+# If the fast lane is selected, we take the union of all pytest paths and scripts from active categories.
 CATEGORY_RULES = [
     {
         "name": "docs",
@@ -187,6 +216,9 @@ CATEGORY_RULES = [
         "functional_scripts": [],
     },
 ]
+CATEGORY_RULE_BY_NAME: Dict[str, Dict[str, Any]] = {
+    r["name"]: r for r in CATEGORY_RULES
+}
 
 
 # -----------------------------
@@ -267,7 +299,7 @@ def determine_diff_range(
         merge_base = _run_git(["merge-base", head, base], repo)
         merge_base = _validate_sha("merge-base", merge_base)
         _ensure_commit_exists(merge_base, repo)
-        return merge_base, head, "manual"
+        return merge_base, head, DiffMode.MANUAL
 
     if event_name == "pull_request" and "pull_request" in event:
         base_sha = _validate_sha("base", event["pull_request"]["base"]["sha"])
@@ -278,14 +310,14 @@ def determine_diff_range(
         merge_base = _run_git(["merge-base", head_sha, base_sha], repo)
         merge_base = _validate_sha("merge-base", merge_base)
         _ensure_commit_exists(merge_base, repo)
-        return merge_base, head_sha, "pr"
+        return merge_base, head_sha, DiffMode.PR
 
     if event_name == "push" and "before" in event and "after" in event:
         before = _validate_sha("before", event["before"])
         after = _validate_sha("after", event["after"])
         _ensure_commit_exists(before, repo)
         _ensure_commit_exists(after, repo)
-        return before, after, "push"
+        return before, after, DiffMode.PUSH
 
     # Fallback: try parent..HEAD; if no parent (initial commit), diff empty-tree..HEAD
     try:
@@ -297,13 +329,13 @@ def determine_diff_range(
                 "HEAD^", _run_git(["rev-parse", "--verify", "HEAD^"], repo)
             )
             _ensure_commit_exists(prev, repo)
-            return prev, head, "fallback"
+            return prev, head, DiffMode.FALLBACK
         except Exception:
             # Initial commit (no parent): treat as "everything added"
             empty = _empty_tree(repo)
-            return empty, head, "initial"
+            return empty, head, DiffMode.INITIAL
     except Exception:
-        return "", "", "fallback_no_head"
+        return "", "", DiffMode.FALLBACK_NO_HEAD
 
 
 def changed_files(repo: Path, base: str, head: str) -> List[str]:
@@ -540,22 +572,28 @@ def explain_changed_files(files: List[str]) -> Dict[str, Any]:
     }
 
 
-def _render_file_line(f: str, info: Dict[str, Any]) -> str:
-    # Visual priority:
-    # - FULL triggers: 🔴
-    # - otherwise: "" (normal)
-    icon = "⚠️" if info.get("full_triggers") else ""
+def _render_file_line(f: str, info: Dict[str, Any], emoji: bool = False) -> str:
+    # Optional, single marker only
+    marker = ""
+    if info.get("full_triggers"):
+        marker = "⚠️ " if emoji else ""
+    elif info.get("lint_only"):
+        marker = "🧹 " if emoji else ""
+    elif not info.get("categories"):
+        marker = "❓ " if emoji else ""
 
     tags = []
     if info.get("full_triggers"):
-        tags.append("🚨 " + ", ".join(info["full_triggers"]))
+        header = "🚨 " if emoji else "Full triggers"
+        tags.append(f"{header}: " + ", ".join(info["full_triggers"]))
     if info.get("categories"):
-        tags.append("🏷️ " + ", ".join(info["categories"]))
+        header = "🏷️ " if emoji else "Category match :"
+        tags.append(f"{header}: " + ", ".join(info["categories"]))
     if info.get("lint_only"):
-        tags.append("🧹 lint-only (checked in dedicated lint workflow)")
+        tags.append(f"lint-only")
 
     tag_str = (" — " + " | ".join(tags)) if tags else ""
-    return f"- {icon} `{f}`{tag_str}"
+    return f"- {marker}`{f}`{tag_str}"
 
 
 def _compute_selection_provenance(
@@ -599,7 +637,22 @@ def _compute_selection_provenance(
     }
 
 
-def _render_decision_markdown(res: SelectorResult, limit: int = 40) -> str:
+def _compact_reasons(reasons: List[str]) -> List[str]:
+    cats = sorted({r.split(":", 1)[1] for r in reasons if r.startswith("category:")})
+    other = [r for r in reasons if not r.startswith("category:")]
+    out = []
+    if cats:
+        out.append("categories: " + ", ".join(cats))
+    out.extend(other)
+    return out
+
+
+def _render_decision_markdown(
+    res: SelectorResult,
+    limit: int = 40,
+    style: str = "minimal",
+    emoji: bool = False,
+) -> str:
     def bullet(items: List[str], limit_: int = limit) -> str:
         if not items:
             return "_(none)_"
@@ -609,108 +662,121 @@ def _render_decision_markdown(res: SelectorResult, limit: int = 40) -> str:
             s += f"\n- … and {len(items) - limit_} more"
         return s
 
-    badge = {
-        Plan.DOCS_ONLY: "📚 **docs_only**",
-        Plan.FAST: "⚡ **fast**",
-        Plan.FULL: "🧪 **full**",
-    }.get(res.plan, f"❓ **{res.plan}**")
+    # Plan line (minimal, no emoji by default)
+    plan_label = res.plan.value
+    if emoji:
+        plan_label = {
+            Plan.DOCS_ONLY: "📚 Documentation checks",
+            Plan.FAST: "⚡ Fast, targeted tests",
+            Plan.FULL: "🧪 Full suite",
+        }.get(res.plan, res.plan.value)
+
+    diff_mode = f"Diff mode: {MODE_LABELS.get(res.diff_mode, res.diff_mode.value)}"
 
     md: List[str] = []
-    md.append("# Intelligent test selection\n")
-    md.append(f"**Decision (plan):** {badge}\n")
+    md.append("# Test selection\n")
+    md.append(f"**Plan:** `{plan_label}` : \n**{diff_mode}**\n")
 
-    md.append("## Reasons\n")
-    for r in res.reasons:
-        if not r.startswith("diff_mode:"):
-            md.append(f"- `{r}`")
+    # Reasons (compacted)
+    md.append("## Why\n")
+    for r in _compact_reasons(res.reasons):
+        md.append(f"- `{r}`")
+    md.append("")
 
-    md.append(
-        f"**Diff mode:** `{next((r for r in res.reasons if r.startswith('diff_mode:')), 'diff_mode:unknown')}`\n"
-    )
-
-    md.append(
-        "**Legend:** ⚠️ full-suite trigger • 🏷️ category match • ❓ uncategorized\n"
-    )
-    md.append("\n## Changed files (explained)\n")
+    # Explain changed files (grouped)
     exp = explain_changed_files(res.changed_files)
 
+    md.append("## Changed files (grouped)\n")
+
+    # If plan is FULL, show triggers prominently (but not noisy)
     if exp["full_trigger_files"]:
-        md.append("### 🚨 Files that match full-suite triggers\n")
-        md.append(
-            "> **⚠️ Note:** Files below match *full-suite triggers*; selection escalates to **FULL**.\n"
-        )
+        md.append("### Full-suite triggers\n")
         for trig_name in sorted(exp["full_trigger_files"].keys()):
-            md.append(f"**{trig_name}**")
-            for f in exp["full_trigger_files"][trig_name]:
-                md.append(_render_file_line(f, exp["per_file"][f]))
+            md.append(f"**{trig_name}** ({len(exp['full_trigger_files'][trig_name])})")
+            for f in exp["full_trigger_files"][trig_name][:limit]:
+                md.append(_render_file_line(f, exp["per_file"][f], emoji=emoji))
+            if len(exp["full_trigger_files"][trig_name]) > limit:
+                md.append(
+                    f"- … and {len(exp['full_trigger_files'][trig_name]) - limit} more"
+                )
             md.append("")
 
-    md.append("### 📋Files grouped by category\n")
+    # Categories in collapsible blocks
     if exp["by_category"]:
         for cat in sorted(exp["by_category"].keys()):
+            files = exp["by_category"][cat]
             md.append(
-                f"<details><summary><strong>{cat}</strong> ({len(exp['by_category'][cat])})</summary>\n"
+                f"<details><summary><strong>{cat}</strong> ({len(files)})</summary>\n"
             )
             md.append("")
-            for f in exp["by_category"][cat]:
-                md.append(_render_file_line(f, exp["per_file"][f]))
+            for f in files[:limit]:
+                # In grouped view, tags can be minimal
+                md.append(f"- `{f}`")
+            if len(files) > limit:
+                md.append(f"- … and {len(files) - limit} more")
             md.append("\n</details>\n")
     else:
-        md.append("_(none)_\n")
+        md.append("_(no category matches)_\n")
 
     if exp.get("lint_only"):
-        md.append("### 🧹 Lint-only files (checked by dedicated lint workflow)\n")
-        md.append("> These changes do **not** influence test selection.\n")
-        for f in exp["lint_only"]:
-            md.append(_render_file_line(f, exp["per_file"][f]))
+        md.append("### Lint-only\n")
+        md.append(bullet(exp["lint_only"]))
         md.append("")
-
     if exp["uncategorized"]:
-        md.append("### ❓ Uncategorized files (matched no category)\n")
-        for f in exp["uncategorized"]:
-            md.append(_render_file_line(f, exp["per_file"][f]))
+        md.append("### Uncategorized\n")
+        md.append(bullet(exp["uncategorized"]))
+        md.append("")
+    if style == "detailed":
+        md.append("## Changed files (raw)\n")
+        md.append(bullet(res.changed_files))
         md.append("")
 
-    # Keep the plain list too (optional)
-    md.append("\n## Changed files (raw)\n")
-    md.append(bullet(res.changed_files))
-
-    md.append("\n## Selected pytest paths\n")
+    # Selected tests
+    md.append("## Selected tests\n")
+    md.append("### Pytest paths\n")
     md.append(bullet(res.pytest_paths))
-
-    md.append("\n## Selected functional scripts\n")
+    md.append("\n### Functional scripts\n")
     md.append(bullet(res.functional_scripts))
+    md.append("")
 
-    # NEW: provenance section
-    md.append("\n## Why these tests were selected\n")
+    # Provenance collapsed by default
     prov = _compute_selection_provenance(res)
-
+    md.append("## Provenance\n")
+    md.append("<details><summary><strong>Why these tests</strong></summary>\n")
+    md.append("")
     if prov["pytest"]:
-        md.append("### Pytest path provenance\n")
+        md.append("### Pytest\n")
         for p, srcs in prov["pytest"].items():
             md.append(f"- `{p}` ← {', '.join(f'`{s}`' for s in srcs)}")
     else:
-        md.append("### Pytest path provenance\n_(none)_")
+        md.append("### Pytest\n_(none)_")
 
     if prov["scripts"]:
-        md.append("\n### Functional script provenance\n")
+        md.append("\n### Scripts\n")
         for s, srcs in prov["scripts"].items():
             md.append(f"- `{s}` ← {', '.join(f'`{x}`' for x in srcs)}")
     else:
-        md.append("\n### Functional script provenance\n_(none)_")
+        md.append("\n### Scripts\n_(none)_")
 
-    md.append("")
+    md.append("\n</details>\n")
     return "\n".join(md)
 
 
-def write_report_files(res: SelectorResult, out_dir: Path) -> Tuple[Path, Path]:
+def write_report_files(
+    res: SelectorResult,
+    out_dir: Path,
+    report_style: str = "minimal",
+    no_emoji: bool = False,
+) -> Tuple[Path, Path]:
     out_dir.mkdir(parents=True, exist_ok=True)
-
     json_path = out_dir / "selection.json"
     md_path = out_dir / "decision.md"
 
     json_path.write_text(res.model_dump_json(indent=2), encoding="utf-8")
-    md_path.write_text(_render_decision_markdown(res), encoding="utf-8")
+    md_path.write_text(
+        _render_decision_markdown(res, style=report_style, emoji=not no_emoji),
+        encoding="utf-8",
+    )
     return json_path, md_path
 
 
@@ -734,6 +800,7 @@ def write_github_output(res: SelectorResult) -> None:
 
     with open(out_path, "a", encoding="utf-8") as f:
         f.write(f"plan={res.plan.value}\n")
+        f.write(f"diff_mode={res.diff_mode.value}\n")
         f.write(f"pytest_paths={j(res.pytest_paths)}\n")
         f.write(f"functional_scripts={j(res.functional_scripts)}\n")
         f.write(f"reasons={j(res.reasons)}\n")
@@ -751,7 +818,6 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap.add_argument("--base-sha", default=None, help="Override base SHA (advanced)")
     ap.add_argument("--head-sha", default=None, help="Override head SHA (advanced)")
 
-    # NEW:
     ap.add_argument(
         "--report-dir",
         default="tmp/test-selection",
@@ -762,17 +828,29 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         action="store_true",
         help="Append decision.md to GitHub Actions Job Summary if available",
     )
+    ap.add_argument(
+        "--report-style",
+        choices=["minimal", "detailed"],
+        default="minimal",
+        help="Decision markdown verbosity: minimal (default) or detailed",
+    )
+    ap.add_argument(
+        "--no-emoji",
+        action="store_true",
+        help="Disable emojis in markdown report (default: off)",
+    )
 
     args = ap.parse_args(list(argv) if argv is not None else None)
 
     repo = find_repo_root()
 
-    base, head, mode = determine_diff_range(repo, args.base_sha, args.head_sha)
+    base, head, diff_mode = determine_diff_range(repo, args.base_sha, args.head_sha)
     files = changed_files(repo, base, head)
 
     res = decide(files)
+    res.diff_mode = diff_mode
+    res.changed_files = files
     res = validate_selected_paths(res, repo)
-    res.reasons.insert(0, f"diff_mode:{mode}")
 
     # Strict validation
     try:
@@ -782,7 +860,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     # NEW: Always write report files for transparency
     report_dir = Path(args.report_dir)
-    json_path, md_path = write_report_files(res, report_dir)
+    json_path, md_path = write_report_files(
+        res, report_dir, report_style=args.report_style, no_emoji=args.no_emoji
+    )
 
     if args.json:
         print(res.model_dump_json(indent=2))
