@@ -138,3 +138,8 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+
+
+# Automatic test selection report
+**/tmp/test-selection/
