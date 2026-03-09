@@ -54,12 +54,12 @@ If you use an OpenCV-compatible camera (e.g. USB webcam, OBS virtual camera), yo
 ## Quickstart (recommended defaults)
 
 ```bash
-mkdir -p ~/dlclivegui
-cd DeepLabCut-live-GUI
+mkdir -p dlclivegui
+cd dlclivegui
 uv venv -p 3.12 # or desired Python version
 source .venv/bin/activate   # Windows: see tabs below
 uv pip install torch torchvision --index-url https://download.pytorch.org/whl/cu<your-cuda-version> # e.g. cu128 for CUDA 12.8, or skip for CPU-only
-uv pip install "dlclivegui[pytorch] @ git+https://github.com/DeepLabCut/DeepLabCut-live-GUI.git"
+uv pip install "deeplabcut-live-gui[pytorch] @ git+https://github.com/DeepLabCut/DeepLabCut-live-GUI.git"
 dlclivegui
 ```
 
