@@ -12,6 +12,7 @@ import os
 import logging
 import subprocess
 import sys
+import threading
 from functools import cached_property
 from pathlib import Path
 from typing import List
@@ -410,7 +411,9 @@ class MainWindow(QMainWindow):
         widget.setLayout(self.layout)
         self.setCentralWidget(widget)
 
-        QTimer.singleShot(1000, lambda: _check_for_updates(silent=True))
+        QTimer.singleShot(1000, lambda: threading.Thread(
+            target=_check_for_updates, kwargs={"silent": True}, daemon=True
+        ).start())
 
     def default_set(self):
         self.name_default = ""
