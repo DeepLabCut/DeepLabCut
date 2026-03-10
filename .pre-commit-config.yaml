@@ -7,6 +7,7 @@ repos:
       - id: check-toml
       - id: end-of-file-fixer
       - id: name-tests-test
+        args: [--pytest-test-first]
       - id: trailing-whitespace
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: v2.15.2
@@ -25,3 +26,15 @@ repos:
     hooks:
       - id: black
         language_version: python3
+  - repo: local
+    hooks:
+      - id: dlc-docs-notebooks-check
+        name: DLC docs+notebooks staleness/check + nbformat validate + normalization
+        entry: python tools/docs_and_notebooks_check.py check --config tools/docs_and_notebooks_report_config.yml --targets
+        language: python
+        pass_filenames: true
+        types_or: [jupyter, markdown]
+        additional_dependencies:
+          - "pydantic>=2,<3"
+          - "pyyaml"
+          - "nbformat>=5"

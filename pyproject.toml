@@ -45,6 +45,7 @@ dependencies = [
   "pandas[hdf5,performance]>=2.2,<3",
   "pillow>=7.1",
   "pycocotools",
+  "pydantic>=2,<3",
   "pyyaml",
   "ruamel-yaml>=0.15",
   "scikit-image>=0.17",
@@ -109,8 +110,9 @@ Documentation = "https://deeplabcut.github.io/DeepLabCut/README.html"
 
 [dependency-groups]
 dev = [
-  "black",
   "coverage",
+  "nbformat>5",
+  "pydantic>2",
   "pytest",
   "pytest-cov",
 ]
