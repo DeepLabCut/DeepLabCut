@@ -8,10 +8,20 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import json
+import re
+import socket
+import urllib.request
 from typing import Callable, Tuple
+from urllib.error import URLError
 
 from PySide6 import QtCore
-import re
+
+try:
+    from packaging.version import InvalidVersion, Version
+except Exception:  # packaging should usually be available, but keep fallback safe
+    Version = None
+    InvalidVersion = Exception
 
 
 class Worker(QtCore.QObject):
@@ -68,12 +78,74 @@ def parse_version(version: str) -> Tuple[int, int, int]:
         raise ValueError(f"Invalid version format: {version}")
 
 
-def is_latest_deeplabcut_version():
-    import json
-    import urllib.request
-    from deeplabcut import VERSION
+def check_pypi_version(package_name: str, installed_version: str, timeout: float = 5.0):
+    """
+    Return (is_latest, latest_version) for a package on PyPI.
 
-    url = "https://pypi.org/pypi/deeplabcut/json"
-    contents = urllib.request.urlopen(url).read()
+    - Uses a real network timeout via urllib.
+    - Treats locally newer/dev versions as up-to-date when packaging is available.
+    """
+    url = f"https://pypi.org/pypi/{package_name}/json"
+
+    with urllib.request.urlopen(url, timeout=timeout) as response:
+        contents = response.read()
+
     latest_version = json.loads(contents)["info"]["version"]
-    return parse_version(VERSION) >= parse_version(latest_version), latest_version
+
+    if Version is not None:
+        try:
+            is_latest = Version(installed_version) >= Version(latest_version)
+        except InvalidVersion:
+            is_latest = installed_version == latest_version
+    else:
+        is_latest = installed_version == latest_version
+
+    return is_latest, latest_version
+
+
+def is_latest_deeplabcut_version(timeout: float = 5.0):
+    from deeplabcut import __version__
+
+    return check_pypi_version("deeplabcut", __version__, timeout=timeout)
+
+
+def is_latest_plugin_version(timeout: float = 5.0):
+    from napari_deeplabcut import __version__
+
+    return check_pypi_version("napari-deeplabcut", __version__, timeout=timeout)
+
+
+class UpdateCheckWorker(QtCore.QObject):
+    finished = QtCore.Signal(object)  # emits a dict
+
+    def __init__(self, timeout=5.0, parent=None):
+        super().__init__(parent)
+        self.timeout = timeout
+
+    @QtCore.Slot()
+    def run(self):
+        result = {
+            "is_latest": True,
+            "latest_version": None,
+            "is_latest_plugin": True,
+            "latest_plugin_version": None,
+            "error": None,
+        }
+
+        try:
+            (
+                result["is_latest"],
+                result["latest_version"],
+            ) = is_latest_deeplabcut_version(timeout=self.timeout)
+            (
+                result["is_latest_plugin"],
+                result["latest_plugin_version"],
+            ) = is_latest_plugin_version(timeout=self.timeout)
+        except (URLError, socket.timeout, TimeoutError, OSError) as e:
+            # Connectivity issues should stay non-fatal / silent
+            result["error"] = e
+        except Exception as e:
+            # Unexpected failures also go back to the GUI thread for logging if desired
+            result["error"] = e
+
+        self.finished.emit(result)
