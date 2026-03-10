@@ -71,7 +71,6 @@ import json
 import os
 import re
 import subprocess
-from curses import meta
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -678,9 +677,6 @@ def normalize_notebooks(
             if not notebook_is_normalized(abs_path, nb):
                 rec.would_change = True
                 if write:
-                    # Rewrite notebook in canonical form
-                    write_ipynb_meta(abs_path, nb)
-
                     # Update embedded maintenance timestamp
                     meta = rec.meta or DLCMeta()
                     meta.last_metadata_updated = today
@@ -693,7 +689,7 @@ def normalize_notebooks(
                     merged.update(meta_to_jsonable(meta))
                     nb_meta[DLC_NAMESPACE] = merged
 
-                    # Write again to persist metadata update (still canonical)
+                    # Write to persist metadata update (still canonical)
                     write_ipynb_meta(abs_path, nb)
                     rec.meta = meta
 
