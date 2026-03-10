@@ -262,7 +262,7 @@ def _parse_git_iso_date(out: str) -> Optional[date]:
 
 def git_last_touched(repo_root: Path, rel_path: str) -> Optional[date]:
     code, out, _err = _run_git(
-        ["log", "-1", "--format=%cI", "--", rel_path], cwd=repo_root
+        ["log", "-1", "--format=%cI", "HEAD", "--", rel_path], cwd=repo_root
     )
     if code != 0:
         return None
@@ -285,9 +285,11 @@ def git_last_content_updated(
         "log",
         "-1",
         "--format=%cI",
+        "--fixed-strings",
         "--invert-grep",
         "--grep",
         META_COMMIT_MARKER,
+        "HEAD",
         "--",
         rel_path,
     ]
