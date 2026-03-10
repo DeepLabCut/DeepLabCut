@@ -287,7 +287,7 @@ class MainWindow(QMainWindow):
 
         self._update_check_silent = silent
 
-        self._update_thread = QtCore.QThread(self)
+        self._update_thread = QtCore.QThread()
         self._update_worker = UpdateCheckWorker(timeout=5.0)
         self._update_worker.moveToThread(self._update_thread)
 
@@ -883,9 +883,10 @@ class MainWindow(QMainWindow):
         if answer == QtWidgets.QMessageBox.Yes:
             self.receiver.terminate()
 
+            if self._update_worker is not None:
+                self._update_worker.cancel()
             if self._update_thread is not None and self._update_thread.isRunning():
                 self._update_thread.quit()
-                self._update_thread.wait(4000)
 
             if (
                 self._update_process is not None
