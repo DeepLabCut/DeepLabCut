@@ -109,7 +109,7 @@ MINIMAL_PYTEST = ["tests/test_auxiliaryfunctions.py"]
 # Conservative full-suite triggers: if any changed file matches, plan=FULL.
 # Replace FULL_SUITE_TRIGGERS with a labeled list
 FULL_SUITE_TRIGGERS = [
-    ("tests/ changed", lambda p: p.startswith("tests/")),
+    ("tests changed", lambda p: p.startswith("tests/")),
     ("pyproject.toml changed", lambda p: p == "pyproject.toml"),
     ("lockfile changed", lambda p: p.endswith(".lock")),
     ("DEEPLABCUT.yaml changed", lambda p: p.endswith("DEEPLABCUT.yaml")),
