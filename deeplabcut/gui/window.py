@@ -297,7 +297,7 @@ class MainWindow(QMainWindow):
         # Cleanup
         self._update_worker.finished.connect(self._update_thread.quit)
         self._update_worker.finished.connect(self._update_worker.deleteLater)
-        self._update_thread.finished.connect(self._update_thread.deleteLater)
+        #self._update_thread.finished.connect(self._update_thread.deleteLater)
         self._update_thread.finished.connect(
             lambda: setattr(self, "_update_thread", None)
         )
