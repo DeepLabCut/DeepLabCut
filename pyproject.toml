@@ -47,6 +47,7 @@ dependencies = [
   "pycocotools",
   "pydantic>=2,<3",
   "pyyaml",
+  "pydantic>2",
   "ruamel-yaml>=0.15",
   "scikit-image>=0.17",
   "scikit-learn>=1",

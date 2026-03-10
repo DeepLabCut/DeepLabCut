@@ -1,4 +1,9 @@
-
+---
+deeplabcut:
+  last_content_updated: '2025-09-16'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+---
 # Automate training and video analysis: Batch Processing
 
 ## Tips for working with DLC networks:
