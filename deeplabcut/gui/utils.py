@@ -120,7 +120,11 @@ class UpdateCheckWorker(QtCore.QObject):
 
     def __init__(self, timeout=2.0, parent=None):
         super().__init__(parent)
+        self._cancelled = False
         self.timeout = timeout
+
+    def cancel(self):
+        self._cancelled = True
 
     @QtCore.Slot()
     def run(self):
@@ -151,4 +155,5 @@ class UpdateCheckWorker(QtCore.QObject):
             # Unexpected failures also go back to the GUI thread for logging if desired
             result["error"] = e
 
-        self.finished.emit(result)
+        if not self._cancelled:
+            self.finished.emit(result)
