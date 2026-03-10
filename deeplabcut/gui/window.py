@@ -78,6 +78,7 @@ class MainWindow(QMainWindow):
         self._update_worker = None
         self._update_process = None
         self._update_check_silent = True
+        self._update_process_output = []
 
         self.default_set()
 
@@ -319,6 +320,7 @@ class MainWindow(QMainWindow):
         self._progress_bar.show()
         self.status_bar.showMessage("Installing updates...")
 
+        self._update_process_output = []
         self._update_process = QtCore.QProcess(self)
         self._update_process.setProgram(sys.executable)
         self._update_process.setArguments(["-m", "pip", "install", "-U", *packages])
@@ -327,14 +329,29 @@ class MainWindow(QMainWindow):
         self._update_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
         self._update_process.start()
 
+    def _drain_update_process_output(self):
+        if self._update_process is None:
+            return
+
+        data = bytes(self._update_process.readAll())
+        if not data:
+            return
+
+        text = data.decode(errors="replace")
+        self._update_process_output.append(text)
+
+        # Optional: surface some live feedback
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
+        if lines:
+            latest_line = lines[-1]
+            self.status_bar.showMessage(latest_line)
+            self.logger.info(latest_line)
+
     def _on_update_process_finished(self, exit_code, exit_status):
         self._progress_bar.hide()
+        self._drain_update_process_output()
 
-        output = ""
-        if self._update_process is not None:
-            output = (
-                bytes(self._update_process.readAll()).decode(errors="replace").strip()
-            )
+        output = "".join(self._update_process_output).strip()
 
         if exit_status == QtCore.QProcess.NormalExit and exit_code == 0:
             QtWidgets.QMessageBox.information(
@@ -358,7 +375,9 @@ class MainWindow(QMainWindow):
         if self._update_process is not None:
             self._update_process.deleteLater()
             self._update_process = None
-        self.status_bar.showMessage("")
+
+        self._update_process_output = []
+        self.status_bar.showMessage("www.deeplabcut.org")
 
     def _on_update_check_finished(self, result):
         error = result.get("error")
