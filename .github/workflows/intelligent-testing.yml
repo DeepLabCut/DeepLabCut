@@ -58,6 +58,17 @@ jobs:
 
 
 
+  skip:
+    name: Skipped (lint config change)
+    needs: intelligent-test-selection
+    if: needs.intelligent-test-selection.outputs.plan == 'skip'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Only lint config files changed; skipping docs/tests."
+          echo "Pre-commit workflow is responsible for lint config validation."
+
+
   docs-only:
     needs: intelligent-test-selection
     if: needs.intelligent-test-selection.outputs.plan == 'docs_only'

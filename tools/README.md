@@ -78,7 +78,7 @@ The repository includes a deterministic test selection tool to reduce CI runtime
 
 The selector produces a single, unambiguous **plan** plus structured lists:
 
-- `plan`: `docs_only` | `fast` | `full`
+- `plan`: `docs_only` | `fast` | `full` | `skip`
 - `pytest_paths`: list of pytest path args (JSON)
 - `functional_scripts`: list of scripts to run (JSON)
 
@@ -90,6 +90,9 @@ It also emits audit metadata:
 ### Run locally (no CI env required)
 
 Print decision as JSON:
+
+> [!IMPORTANT]
+> Requires `pydantic>=2,<3`
 
 ```bash
 python tools/test_selector.py --json

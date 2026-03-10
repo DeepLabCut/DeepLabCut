@@ -3,7 +3,7 @@
 
 Outputs a single, unambiguous *plan* enum plus structured lists:
 
-  - plan: one of {docs_only, fast, full}
+  - plan: one of {skip, docs_only, fast, full}
   - pytest_paths: JSON list of pytest path arguments
   - functional_scripts: JSON list of python script paths
 
@@ -78,6 +78,7 @@ class Plan(str, Enum):
     DOCS_ONLY = "docs_only"  # Docs build only
     FAST = "fast"  # Targeted pytest + optional functional scripts (single-lane)
     FULL = "full"  # Delegate to full test workflow/matrix
+    SKIP = "skip"  # Skip all on e.g. lint config changes only
 
 
 class SelectorResult(BaseModel):
@@ -115,6 +116,7 @@ FULL_SUITE_TRIGGERS = [
 ]
 
 # Files that should be enforced by dedicated lint workflows, not by test selection
+# If these changes only are present, we skip checks and rely on the linting CI job
 LINT_ONLY_FILES = {
     ".pre-commit-config.yaml",
     # add later if you use them:
@@ -436,9 +438,26 @@ def decide(files: List[str]) -> SelectorResult:
             changed_files=[],
         )
 
+    # Lint-only filtering (routing should ignore these files)
+    lint_only = [f for f in files if f in LINT_ONLY_FILES]
+    routed_files = [f for f in files if f not in LINT_ONLY_FILES]
+
+    if lint_only:
+        reasons.append(f"lint_only_count:{len(lint_only)}")
+
+    # If *only* lint-only files changed, skip tests (do not fail-safe to FULL)
+    if not routed_files:
+        return SelectorResult(
+            plan=Plan.SKIP,
+            pytest_paths=[],
+            functional_scripts=[],
+            reasons=reasons + ["lint_only"],
+            changed_files=files,
+        )
+
     # Full-suite triggers
     triggered = []
-    for f in files:
+    for f in routed_files:
         for name, pred in FULL_SUITE_TRIGGERS:
             if _matches_any(f, [pred]):
                 triggered.append((f, name))
@@ -457,7 +476,7 @@ def decide(files: List[str]) -> SelectorResult:
 
     # docs-only if ALL files match docs category
     docs_rule = next((r for r in CATEGORY_RULES if r["name"] == "docs"), None)
-    if docs_rule and all(_matches_any(f, docs_rule["match_any"]) for f in files):
+    if docs_rule and all(_matches_any(f, docs_rule["match_any"]) for f in routed_files):
         docs_pytests = list(docs_rule.get("pytest_paths", []) or [])
         docs_scripts = list(docs_rule.get("functional_scripts", []) or [])
 
@@ -476,14 +495,14 @@ def decide(files: List[str]) -> SelectorResult:
             plan=Plan.DOCS_ONLY,
             pytest_paths=[],
             functional_scripts=[],
-            reasons=["docs_only"],
+            reasons=reasons + ["docs_only"],
             changed_files=files,
         )
 
     # Find matching categories
     matched = []
     for rule in CATEGORY_RULES:
-        if any(_matches_any(f, rule["match_any"]) for f in files):
+        if any(_matches_any(f, rule["match_any"]) for f in routed_files):
             matched.append(rule)
 
     if not matched:
@@ -491,7 +510,7 @@ def decide(files: List[str]) -> SelectorResult:
             plan=Plan.FULL,
             pytest_paths=[],
             functional_scripts=[],
-            reasons=["no_category_matched"],
+            reasons=reasons + ["no_category_matched"],
             changed_files=files,
         )
 
@@ -715,6 +734,7 @@ def _render_decision_markdown(
     plan_label = res.plan.value
     if emoji:
         plan_label = {
+            Plan.SKIP: "⏩ Skip tests",
             Plan.DOCS_ONLY: "📚 Documentation checks",
             Plan.FAST: "⚡ Fast, targeted tests",
             Plan.FULL: "🧪 Full suite",
