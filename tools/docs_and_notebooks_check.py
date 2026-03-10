@@ -574,17 +574,16 @@ def update_files(
 
         meta = rec.meta or DLCMeta()
 
-        # Tool-managed: optionally set last_content_updated from computed git value
+        # Build the desired metadata WITHOUT touching last_metadata_updated.
         if set_content_date_from_git and rec.last_content_updated is not None:
             meta.last_content_updated = rec.last_content_updated
 
-        # Human-controlled verification fields
         if set_last_verified is not None:
             meta.last_verified = set_last_verified
         if set_verified_for is not None:
             meta.verified_for = set_verified_for
 
-        desired = meta_to_jsonable(meta)
+        desired_base = meta_to_jsonable(meta)
         abs_path = repo_root / rec.path
         changed = False
 
@@ -594,56 +593,54 @@ def update_files(
             prev = nb_meta.get(DLC_NAMESPACE, {})
             if not isinstance(prev, dict):
                 prev = {}
-            merged = dict(prev)
-            merged.update(desired)
-            if merged != prev:
-                nb_meta[DLC_NAMESPACE] = merged
+
+            merged_base = dict(prev)
+            merged_base.update(desired_base)
+
+            if merged_base != prev:
                 changed = True
                 if write:
-                    # Only stamp metadata update time if an actual write is needed
-                    meta.last_metadata_updated = today
-                    desired_with_stamp = meta_to_jsonable(meta)
-                    merged = dict(prev)
-                    merged.update(desired_with_stamp)
-                    nb_meta[DLC_NAMESPACE] = merged
                     _require_meta_marker_ack(
                         write=True, ack_marker=ack_meta_commit_marker
                     )
+
+                    meta.last_metadata_updated = today
+                    desired_final = meta_to_jsonable(meta)
+
+                    merged_final = dict(prev)
+                    merged_final.update(desired_final)
+                    nb_meta[DLC_NAMESPACE] = merged_final
                     write_ipynb_meta(abs_path, nb)
-                else:
-                    rec.meta = meta  # Update meta in report for accurate warnings even without writing
 
         elif rec.kind == "md":
             text = abs_path.read_text(encoding="utf-8")
             fm, body = read_md_frontmatter(text)
             fm = fm or {}
+
             prev = fm.get(DLC_NAMESPACE, {})
             if not isinstance(prev, dict):
                 prev = {}
-            merged = dict(prev)
-            merged.update(desired)
-            if merged != prev:
-                fm[DLC_NAMESPACE] = merged
+
+            merged_base = dict(prev)
+            merged_base.update(desired_base)
+
+            if merged_base != prev:
                 changed = True
                 if write:
-                    # Only stamp metadata update time if an actual write is needed
-                    meta.last_metadata_updated = today
-                    desired_with_stamp = meta_to_jsonable(meta)
-                    merged = dict(prev)
-                    merged.update(desired_with_stamp)
-                    fm[DLC_NAMESPACE] = merged
-
                     _require_meta_marker_ack(
                         write=True, ack_marker=ack_meta_commit_marker
                     )
+
+                    meta.last_metadata_updated = today
+                    desired_final = meta_to_jsonable(meta)
+
+                    merged_final = dict(prev)
+                    merged_final.update(desired_final)
+                    fm[DLC_NAMESPACE] = merged_final
                     abs_path.write_text(dump_md_frontmatter(fm, body), encoding="utf-8")
-                else:
-                    rec.meta = meta  # Update meta in report for accurate warnings even without writing
 
         rec.would_change = changed
         rec.meta = meta
-        if write and changed:
-            rec.meta = meta
         rec.days_since_verified = compute_days_since(meta.last_verified, today)
 
     return records
