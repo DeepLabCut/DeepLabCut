@@ -71,6 +71,7 @@ import json
 import os
 import re
 import subprocess
+from curses import meta
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -577,10 +578,6 @@ def update_files(
         if set_content_date_from_git and rec.last_content_updated is not None:
             meta.last_content_updated = rec.last_content_updated
 
-        # Optional: mark maintenance time if we actually write
-        if write:
-            meta.last_metadata_updated = today
-
         # Human-controlled verification fields
         if set_last_verified is not None:
             meta.last_verified = set_last_verified
@@ -603,10 +600,18 @@ def update_files(
                 nb_meta[DLC_NAMESPACE] = merged
                 changed = True
                 if write:
+                    # Only stamp metadata update time if an actual write is needed
+                    meta.last_metadata_updated = today
+                    desired_with_stamp = meta_to_jsonable(meta)
+                    merged = dict(prev)
+                    merged.update(desired_with_stamp)
+                    nb_meta[DLC_NAMESPACE] = merged
                     _require_meta_marker_ack(
                         write=True, ack_marker=ack_meta_commit_marker
                     )
                     write_ipynb_meta(abs_path, nb)
+                else:
+                    rec.meta = meta  # Update meta in report for accurate warnings even without writing
 
         elif rec.kind == "md":
             text = abs_path.read_text(encoding="utf-8")
@@ -621,13 +626,24 @@ def update_files(
                 fm[DLC_NAMESPACE] = merged
                 changed = True
                 if write:
+                    # Only stamp metadata update time if an actual write is needed
+                    meta.last_metadata_updated = today
+                    desired_with_stamp = meta_to_jsonable(meta)
+                    merged = dict(prev)
+                    merged.update(desired_with_stamp)
+                    fm[DLC_NAMESPACE] = merged
+
                     _require_meta_marker_ack(
                         write=True, ack_marker=ack_meta_commit_marker
                     )
                     abs_path.write_text(dump_md_frontmatter(fm, body), encoding="utf-8")
+                else:
+                    rec.meta = meta  # Update meta in report for accurate warnings even without writing
 
         rec.would_change = changed
         rec.meta = meta
+        if write and changed:
+            rec.meta = meta
         rec.days_since_verified = compute_days_since(meta.last_verified, today)
 
     return records
@@ -704,8 +720,8 @@ def summarize(records: List[FileRecord]) -> Dict[str, int]:
         "missing_last_verified": sum(
             1 for r in records if "missing_last_verified" in r.warnings
         ),
-        "git_stale": sum(
-            1 for r in records if any(w.startswith("git_stale") for w in r.warnings)
+        "content_stale": sum(
+            1 for r in records if any(w.startswith("content_stale") for w in r.warnings)
         ),
         "verified_stale": sum(
             1
@@ -731,7 +747,7 @@ def to_markdown(report: Report, cfg: ToolConfig) -> str:
     lines.append(f"- Missing metadata: **{t['missing_metadata']}**\n")
     lines.append(f"- Missing last_verified: **{t['missing_last_verified']}**\n")
     lines.append(
-        f"- Git-stale (> {pol.warn_if_content_older_than_days}d): **{t['git_stale']}**\n"
+        f"- Content-stale (> {pol.warn_if_content_older_than_days}d): **{t['content_stale']}**\n"
     )
     lines.append(
         f"- Verification-stale (> {pol.warn_if_verified_older_than_days}d): **{t['verified_stale']}**\n\n"
@@ -792,7 +808,7 @@ def to_markdown(report: Report, cfg: ToolConfig) -> str:
         "- 'Out of date' does not necessarily mean 'broken'. Use this as a triage signal.\n"
     )
     lines.append(
-        "- last_git_updated is computed from git history. last_verified is human-controlled.\n\n"
+        "- last_git_touched / last_content_updated are computed from git history. last_verified is human-controlled.\n\n"
     )
     return "".join(lines)
 
