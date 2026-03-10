@@ -137,6 +137,9 @@ class UpdateCheckWorker(QtCore.QObject):
                 result["is_latest"],
                 result["latest_version"],
             ) = is_latest_deeplabcut_version(timeout=self.timeout)
+            # NOTE: @C-Achard 2026-03-10 If we ever make the plugin optional,
+            # this will need to be adapted.
+            # For now since it is a hard dep of the GUI, we keep it in this try block
             (
                 result["is_latest_plugin"],
                 result["latest_plugin_version"],
