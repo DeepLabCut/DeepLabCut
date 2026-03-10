@@ -326,6 +326,7 @@ class MainWindow(QMainWindow):
         self._update_process.setArguments(["-m", "pip", "install", "-U", *packages])
 
         self._update_process.finished.connect(self._on_update_process_finished)
+        self._update_process.errorOccurred.connect(self._on_update_process_error)
         self._update_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
         self._update_process.start()
 
@@ -346,6 +347,23 @@ class MainWindow(QMainWindow):
             latest_line = lines[-1]
             self.status_bar.showMessage(latest_line)
             self.logger.info(latest_line)
+
+    def _on_update_process_error(self, error):
+        self._progress_bar.hide()
+        error_strings = {
+            QtCore.QProcess.FailedToStart: "Process failed to start. Check that pip is available and you have sufficient permissions.",
+            QtCore.QProcess.Crashed: "Update process crashed unexpectedly.",
+            QtCore.QProcess.Timedout: "Update process timed out.",
+            QtCore.QProcess.WriteError: "Could not write to update process.",
+            QtCore.QProcess.ReadError: "Could not read from update process.",
+            QtCore.QProcess.UnknownError: "An unknown error occurred.",
+        }
+        message = error_strings.get(error, "An unknown error occurred.")
+        QtWidgets.QMessageBox.warning(self, "Update failed", message)
+        if self._update_process is not None:
+            self._update_process.deleteLater()
+            self._update_process = None
+        self.status_bar.showMessage("www.deeplabcut.org")
 
     def _on_update_process_finished(self, exit_code, exit_status):
         self._progress_bar.hide()
