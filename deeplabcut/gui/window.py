@@ -8,85 +8,42 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
 import logging
-import subprocess
+import os
 import sys
-import threading
+import warnings
 from functools import cached_property
+from importlib.resources import files
 from pathlib import Path
 from typing import List
-from urllib.error import URLError
-import warnings
-import qdarkstyle
-from importlib.resources import files
 
-import deeplabcut
-from deeplabcut import auxiliaryfunctions, VERSION, compat
-from deeplabcut.core.engine import Engine
-from deeplabcut.gui import BASE_DIR, components, utils
-from deeplabcut.gui.tabs import *
-from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
-from deeplabcut.utils.multiprocessing import call_with_timeout
-from napari_deeplabcut import misc
+import qdarkstyle
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QAction, QIcon, QPixmap
 from PySide6.QtWidgets import (
-    QMessageBox,
-    QMenu,
-    QWidget,
-    QMainWindow,
     QComboBox,
     QLabel,
+    QMainWindow,
+    QMenu,
+    QMessageBox,
     QSizePolicy,
+    QWidget,
 )
-from PySide6 import QtCore
-from PySide6.QtGui import QIcon, QAction, QPixmap
-from PySide6 import QtWidgets, QtGui
-from PySide6.QtCore import Qt, QTimer
+
+import deeplabcut
+from deeplabcut import auxiliaryfunctions, compat, VERSION
+from deeplabcut.core.engine import Engine
+from deeplabcut.gui import BASE_DIR, components
+from deeplabcut.gui.tabs import *
+from deeplabcut.gui.utils import UpdateCheckWorker
+from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
 
 warnings.filterwarnings(
     "ignore",
     message=r".*shibokensupport/signature/parser.py:269: RuntimeWarning: pyside_type_init:_resolve_value.*",
-    category=RuntimeWarning
+    category=RuntimeWarning,
 )
-
-def _check_for_updates(silent=True):
-    try:
-        is_latest, latest_version = call_with_timeout(
-            utils.is_latest_deeplabcut_version, 5
-        )
-        is_latest_plugin, latest_plugin_version = call_with_timeout(
-            misc.is_latest_version, 5
-        )
-    except (URLError, TimeoutError):  # Handle internet connectivity issues
-        is_latest = is_latest_plugin = True
-
-    if is_latest and is_latest_plugin:
-        if not silent:
-            msg = QtWidgets.QMessageBox(
-                text=f"DeepLabCut is up-to-date",
-            )
-            msg.exec_()
-    else:
-        if not is_latest and is_latest_plugin:
-            text = f"DeepLabCut {latest_version} available"
-            command = "pip", "install", "-U", "deeplabcut"
-        elif not is_latest_plugin and is_latest:
-            text = f"DeepLabCut labeling plugin {latest_plugin_version} available"
-            command = "pip", "install", "-U", "napari-deeplabcut"
-        else:
-            text = f"DeepLabCut {latest_version}\nand labeling plugin {latest_plugin_version} available"
-            command = "pip", "install", "-U", "deeplabcut", "napari-deeplabcut"
-
-        msg = QtWidgets.QMessageBox(
-            text=text,
-        )
-        msg.setIcon(QtWidgets.QMessageBox.Information)
-        update_btn = msg.addButton("Update", QtWidgets.QMessageBox.AcceptRole)
-        msg.setDefaultButton(update_btn)
-        _ = msg.addButton("Skip", QtWidgets.QMessageBox.RejectRole)
-        msg.exec_()
-        if msg.clickedButton() is update_btn:
-            subprocess.check_call([sys.executable, "-m", *command])
 
 
 class MainWindow(QMainWindow):
@@ -115,6 +72,12 @@ class MainWindow(QMainWindow):
         self.files = set()
 
         self._engine = Engine.PYTORCH
+
+        # Update checks
+        self._update_thread = None
+        self._update_worker = None
+        self._update_process = None
+        self._update_check_silent = True
 
         self.default_set()
 
@@ -310,15 +273,156 @@ class MainWindow(QMainWindow):
     def video_files(self):
         return self.files
 
+    def schedule_update_check(self, silent=True, delay_ms=1000):
+        QtCore.QTimer.singleShot(
+            delay_ms, lambda: self._start_update_check(silent=silent)
+        )
+
+    def _start_update_check(self, silent=True):
+        if self._update_thread is not None and self._update_thread.isRunning():
+            if not silent:  # make existing check non-silent if requested
+                self._update_check_silent = False
+            return  # avoid duplicate checks
+
+        self._update_check_silent = silent
+
+        self._update_thread = QtCore.QThread(self)
+        self._update_worker = UpdateCheckWorker(timeout=5.0)
+        self._update_worker.moveToThread(self._update_thread)
+
+        self._update_thread.started.connect(self._update_worker.run)
+        self._update_worker.finished.connect(self._on_update_check_finished)
+
+        # Cleanup
+        self._update_worker.finished.connect(self._update_thread.quit)
+        self._update_worker.finished.connect(self._update_worker.deleteLater)
+        self._update_thread.finished.connect(self._update_thread.deleteLater)
+        self._update_thread.finished.connect(
+            lambda: setattr(self, "_update_thread", None)
+        )
+        self._update_thread.finished.connect(
+            lambda: setattr(self, "_update_worker", None)
+        )
+
+        self._update_thread.start()
+
+    def _run_update_command(self, packages):
+        if not packages:
+            return
+
+        if (
+            self._update_process is not None
+            and self._update_process.state() != QtCore.QProcess.NotRunning
+        ):
+            return
+
+        self._progress_bar.show()
+        self.status_bar.showMessage("Installing updates...")
+
+        self._update_process = QtCore.QProcess(self)
+        self._update_process.setProgram(sys.executable)
+        self._update_process.setArguments(["-m", "pip", "install", "-U", *packages])
+
+        self._update_process.finished.connect(self._on_update_process_finished)
+        self._update_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
+        self._update_process.start()
+
+    def _on_update_process_finished(self, exit_code, exit_status):
+        self._progress_bar.hide()
+
+        output = ""
+        if self._update_process is not None:
+            output = (
+                bytes(self._update_process.readAll()).decode(errors="replace").strip()
+            )
+
+        if exit_status == QtCore.QProcess.NormalExit and exit_code == 0:
+            QtWidgets.QMessageBox.information(
+                self,
+                "Update complete",
+                "The update completed successfully.\n\n"
+                "Please restart DeepLabCut to use the updated packages.",
+            )
+            if output:
+                self.logger.info(output)
+        else:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Update failed",
+                "The update command did not complete successfully.\n\n"
+                f"{output or 'No additional output was captured.'}",
+            )
+            if output:
+                self.logger.error(output)
+
+        if self._update_process is not None:
+            self._update_process.deleteLater()
+            self._update_process = None
+        self.status_bar.showMessage("")
+
+    def _on_update_check_finished(self, result):
+        error = result.get("error")
+        if error is not None:
+            self.logger.debug(f"Update check failed with error: {error!r}")
+            if not self._update_check_silent:
+                QtWidgets.QMessageBox.warning(
+                    self,
+                    "Update check failed",
+                    f"Could not check for updates.\n\n{error}",
+                )
+            return
+
+        is_latest = result["is_latest"]
+        latest_version = result["latest_version"]
+        is_latest_plugin = result["is_latest_plugin"]
+        latest_plugin_version = result["latest_plugin_version"]
+
+        if is_latest and is_latest_plugin:
+            if not self._update_check_silent:
+                QtWidgets.QMessageBox.information(
+                    self,
+                    "Up to date",
+                    "You are using the latest version of DeepLabCut and the labeling plugin.",
+                )
+            return
+
+        parts = []
+        packages = []
+
+        if not is_latest:
+            parts.append(f"DeepLabCut {latest_version} available")
+            packages.append("deeplabcut")
+
+        if not is_latest_plugin:
+            parts.append(
+                f"DeepLabCut labeling plugin {latest_plugin_version} available"
+            )
+            packages.append("napari-deeplabcut")
+
+        msg = QtWidgets.QMessageBox(self)
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setText("\n".join(parts))
+
+        update_btn = msg.addButton("Update", QtWidgets.QMessageBox.AcceptRole)
+        msg.addButton("Skip", QtWidgets.QMessageBox.RejectRole)
+        msg.setDefaultButton(update_btn)
+
+        msg.exec()
+
+        if msg.clickedButton() is update_btn:
+            self._run_update_command(packages)
+
     def add_video_files(self, new_video_files):
         """
         Add new video files to the existing set of files. This method ensures no duplicates are added.
         Emits a signal to notify about the updated set of files.
         """
         new_video_files = set(new_video_files)
-        self.files.update(new_video_files) # Add new items to the existing set
-        self.video_files_.emit(self.files) # Emit the updated set of files
-        self.logger.info(f"Videos added to analyze:\n{new_video_files}\nCurrent video files:\n{self.files}")
+        self.files.update(new_video_files)  # Add new items to the existing set
+        self.video_files_.emit(self.files)  # Emit the updated set of files
+        self.logger.info(
+            f"Videos added to analyze:\n{new_video_files}\nCurrent video files:\n{self.files}"
+        )
 
     def clear_video_files(self):
         """
@@ -329,9 +433,9 @@ class MainWindow(QMainWindow):
         self.logger.info("All video files have been cleared.")
 
     def window_set(self):
-        WINDOW_RESIZE_FACTOR=.8
+        WINDOW_RESIZE_FACTOR = 0.8
         DEFAULT_MINIMUM_WIDTH, DEFAULT_MINIMUM_HEIGHT = 800, 600
-        
+
         self.setWindowTitle("DeepLabCut")
 
         palette = QtGui.QPalette()
@@ -342,7 +446,10 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QIcon(icon))
 
         # Set default window size and allow resizing
-        self.resize(int(self.screen_width * WINDOW_RESIZE_FACTOR), int(self.screen_height * WINDOW_RESIZE_FACTOR))
+        self.resize(
+            int(self.screen_width * WINDOW_RESIZE_FACTOR),
+            int(self.screen_height * WINDOW_RESIZE_FACTOR),
+        )
         self.setMinimumSize(DEFAULT_MINIMUM_WIDTH, DEFAULT_MINIMUM_HEIGHT)
         self.setMaximumSize(self.screen_width, self.screen_height)
         self.setWindowFlag(Qt.WindowMaximizeButtonHint, True)
@@ -410,10 +517,7 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(self.layout)
         self.setCentralWidget(widget)
-
-        QTimer.singleShot(1000, lambda: threading.Thread(
-            target=_check_for_updates, kwargs={"silent": True}, daemon=True
-        ).start())
+        self.schedule_update_check(silent=True, delay_ms=2000)
 
     def default_set(self):
         self.name_default = ""
@@ -462,7 +566,9 @@ class MainWindow(QMainWindow):
         self.aboutAction.triggered.connect(self._learn_dlc)
 
         self.check_updates = QAction("&Check for Updates...", self)
-        self.check_updates.triggered.connect(lambda: _check_for_updates(silent=False))
+        self.check_updates.triggered.connect(
+            lambda: self._start_update_check(silent=False)
+        )
 
     def create_menu_bar(self):
         menu_bar = self.menuBar()
@@ -757,6 +863,18 @@ class MainWindow(QMainWindow):
         )
         if answer == QtWidgets.QMessageBox.Yes:
             self.receiver.terminate()
+
+            if self._update_thread is not None and self._update_thread.isRunning():
+                self._update_thread.quit()
+                self._update_thread.wait(1000)
+
+            if (
+                self._update_process is not None
+                and self._update_process.state() != QtCore.QProcess.NotRunning
+            ):
+                self._update_process.kill()
+                self._update_process.waitForFinished(1000)
+
             event.accept()
             self.save_settings()
         else:

@@ -29,6 +29,7 @@ def _wrapper(func, queue, *args, **kwargs):
         queue.put(e)  # Pass any exception back via the queue
 
 
+# NOTE: @C-Achard 2026-03-10 deprecated, as this is not used for the update check anymore
 def call_with_timeout(func, timeout, *args, **kwargs):
     queue = multiprocessing.Queue()
     process = multiprocessing.Process(target=_wrapper, args=(func, queue, *args), kwargs=kwargs)
