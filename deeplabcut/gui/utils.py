@@ -118,7 +118,7 @@ def is_latest_plugin_version(timeout: float = 5.0):
 class UpdateCheckWorker(QtCore.QObject):
     finished = QtCore.Signal(object)  # emits a dict
 
-    def __init__(self, timeout=5.0, parent=None):
+    def __init__(self, timeout=2.0, parent=None):
         super().__init__(parent)
         self.timeout = timeout
 

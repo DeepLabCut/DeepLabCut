@@ -885,7 +885,7 @@ class MainWindow(QMainWindow):
 
             if self._update_thread is not None and self._update_thread.isRunning():
                 self._update_thread.quit()
-                self._update_thread.wait(1000)
+                self._update_thread.wait(4000)
 
             if (
                 self._update_process is not None
