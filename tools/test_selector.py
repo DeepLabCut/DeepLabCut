@@ -399,13 +399,10 @@ def validate_selected_paths(res: SelectorResult, repo: Path) -> SelectorResult:
 
     if missing:
         # Fail-safe escalation to FULL
-        return SelectorResult(
-            plan=Plan.FULL,
-            pytest_paths=[],
-            functional_scripts=[],
-            reasons=res.reasons + ["missing_selected_paths"] + missing,
-            changed_files=res.changed_files,
-        )
+        res.plan = Plan.FULL
+        res.pytest_paths = []
+        res.functional_scripts = []
+        res.reasons = res.reasons + ["missing_selected_paths"] + missing
 
     return res
 
@@ -519,7 +516,7 @@ def decide(files: List[str]) -> SelectorResult:
             plan=Plan.FULL,
             pytest_paths=[],
             functional_scripts=[],
-            reasons=[f"too_many_categories:{len(matched)}"],
+            reasons=reasons + [f"too_many_categories:{len(matched)}"],
             changed_files=files,
         )
 

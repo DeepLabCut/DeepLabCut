@@ -55,7 +55,7 @@ def test_fast_ci_tools(selector):
     files = [".github/workflows/ci.yml"]
     res = selector.decide(files)
     assert res.plan == selector.Plan.FAST
-    # should fall back to minimal pytest path via ci_tools rule
+    # should fall back to minimal pytest path via ci_workflows rule
     assert selector.MINIMAL_PYTEST[0] in res.pytest_paths
 
 
