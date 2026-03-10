@@ -254,47 +254,55 @@ def _parse_git_iso_date(out: str) -> Optional[date]:
     out = (out or "").strip()
     if not out:
         return None
+
     try:
+        return date.fromisoformat(out)
+    except Exception:
+        pass
+
+    try:
+        if out.endswith("Z"):
+            out = out[:-1] + "+00:00"
         return datetime.fromisoformat(out).date()
     except Exception:
         return None
 
 
-def git_last_touched(repo_root: Path, rel_path: str) -> Optional[date]:
-    code, out, _err = _run_git(
-        ["log", "-1", "--format=%cI", "HEAD", "--", rel_path], cwd=repo_root
-    )
+def _git_log_date(
+    repo_root: Path, rel_path: str, extra_args: Sequence[str] = ()
+) -> Optional[date]:
+    args = [
+        "log",
+        "-1",
+        "--date=short",
+        "--format=%cd",
+        *extra_args,
+        "--",
+        rel_path,
+    ]
+    code, out, _err = _run_git(args, cwd=repo_root)
     if code != 0:
         return None
     return _parse_git_iso_date(out)
 
 
+def git_last_touched(repo_root: Path, rel_path: str) -> Optional[date]:
+    return _git_log_date(repo_root, rel_path)
+
+
 def git_last_content_updated(
     repo_root: Path, rel_path: str
 ) -> Tuple[Optional[date], bool]:
-    """
-    Return (date, used_fallback).
-
-    Compute last meaningful content update by skipping commits containing META_COMMIT_MARKER.
-    This requires metadata-only commits to include the marker.
-
-    If all commits touching the file contain the marker (or history is shallow),
-    fall back to raw git_last_touched() and return used_fallback=True.
-    """
-    args = [
-        "log",
-        "-1",
-        "--format=%cI",
-        "--fixed-strings",
-        "--invert-grep",
-        "--grep",
-        META_COMMIT_MARKER,
-        "HEAD",
-        "--",
+    d = _git_log_date(
+        repo_root,
         rel_path,
-    ]
-    code, out, _err = _run_git(args, cwd=repo_root)
-    d = _parse_git_iso_date(out) if code == 0 else None
+        extra_args=[
+            "--fixed-strings",
+            "--invert-grep",
+            "--grep",
+            META_COMMIT_MARKER,
+        ],
+    )
     if d is not None:
         return d, False
     return git_last_touched(repo_root, rel_path), True
