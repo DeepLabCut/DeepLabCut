@@ -128,9 +128,12 @@ class UpdateChecker(QtCore.QObject):
         )
 
     def _on_reply_finished(self, key: str, reply: QtNetwork.QNetworkReply):
+        if not self._running:
+            return
+
         try:
             if reply.error() != QtNetwork.QNetworkReply.NetworkError.NoError:
-                # keep the first network-ish error but remain non-fatal overall
+                # record first error encountered
                 if self._result["error"] is None:
                     self._result["error"] = reply.errorString()
                 return
@@ -168,9 +171,14 @@ class UpdateChecker(QtCore.QObject):
 
     def _abort_all(self):
         for reply in list(self._replies.values()):
-            if reply is not None and reply.isRunning():
-                reply.abort()
-            reply.deleteLater()
+            if reply is not None:
+                try:
+                    reply.finished.disconnect()
+                except (RuntimeError, TypeError):
+                    pass
+                if reply.isRunning():
+                    reply.abort()
+                reply.deleteLater()
         self._replies.clear()
 
     def _finish(self):
@@ -179,7 +187,7 @@ class UpdateChecker(QtCore.QObject):
         self._timer.stop()
         self._running = False
         self._result["silent"] = self._silent
-        self.finished.emit(self._result)
+        self.finished.emit(dict(self._result))
 
     @staticmethod
     def _is_up_to_date(installed: str, latest: str) -> bool:
