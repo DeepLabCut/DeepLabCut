@@ -13,6 +13,7 @@ Safety principles
 - Deterministic: derives diff range from GitHub Actions event payload when available.
   * pull_request: uses merge-base(base.sha, head.sha) .. head.sha
   * push: uses before .. after
+  * manual override: uses exactly --base-sha .. -head-sha
   * fallback: attempts HEAD~1 .. HEAD
 - Secure: never emits shell command strings; only structured data.
 - Strict: Pydantic schema validation (extra=forbid), SHA validation, path sanitization.
@@ -56,7 +57,7 @@ class DiffMode(str, Enum):
 
     PR = "pr"  # merge-base(base, head) .. head
     PUSH = "push"  # before .. after
-    MANUAL = "manual"  # CLI override
+    MANUAL = "manual"  # explicit base...head from CLI args
     FALLBACK = "fallback"  # HEAD^ .. HEAD
     INITIAL = "initial"  # empty tree .. HEAD
     FALLBACK_NO_HEAD = "fallback_no_head"  # couldn't resolve HEAD
@@ -315,10 +316,7 @@ def determine_diff_range(
         head = _validate_sha("head", override_head)
         _ensure_commit_exists(base, repo)
         _ensure_commit_exists(head, repo)
-        merge_base = _run_git(["merge-base", head, base], repo)
-        merge_base = _validate_sha("merge-base", merge_base)
-        _ensure_commit_exists(merge_base, repo)
-        return merge_base, head, DiffMode.MANUAL
+        return base, head, DiffMode.MANUAL
 
     if event_name == "pull_request" and "pull_request" in event:
         base_sha = _validate_sha("base", event["pull_request"]["base"]["sha"])
@@ -918,8 +916,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         action="store_true",
         help="Write outputs to $GITHUB_OUTPUT",
     )
-    ap.add_argument("--base-sha", default=None, help="Override base SHA (advanced)")
-    ap.add_argument("--head-sha", default=None, help="Override head SHA (advanced)")
+    ap.add_argument(
+        "--base-sha",
+        default=None,
+        help="Override base commit SHA for manual diff selection (must be used with --head-sha)",
+    )
+    ap.add_argument(
+        "--head-sha",
+        default=None,
+        help="Override head commit SHA for manual diff selection (must be used with --base-sha)",
+    )
 
     ap.add_argument(
         "--report-dir",
@@ -944,6 +950,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     )
 
     args = ap.parse_args(list(argv) if argv is not None else None)
+    if bool(args.base_sha) != bool(args.head_sha):
+        ap.error("Both --base-sha and --head-sha must be provided together")
 
     repo = find_repo_root()
 
