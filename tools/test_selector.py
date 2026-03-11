@@ -46,9 +46,17 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from test_selector_config import (
+    CATEGORY_RULES,
+    FULL_SUITE_TRIGGERS,
+    LINT_ONLY_FILES,
+    MINIMAL_PYTEST,
+)
 
 SHA_RE = re.compile(r"^[0-9a-f]{7,40}$", re.IGNORECASE)
-
+CATEGORY_RULE_BY_NAME: Dict[str, Dict[str, Any]] = {
+    r["name"]: r for r in CATEGORY_RULES
+}
 # DLC_NAMESPACE = "deeplabcut"
 
 
@@ -100,145 +108,6 @@ class SelectorResult(BaseModel):
 
 
 SelectorResult.model_rebuild()  # Ensure model is fully built at import time for validation in main()
-
-# -----------------------------
-# Configuration (simple, auditable)
-# -----------------------------
-MINIMAL_PYTEST = ["tests/test_auxiliaryfunctions.py"]
-
-
-# Conservative full-suite triggers: if any changed file matches, plan=FULL.
-# Replace FULL_SUITE_TRIGGERS with a labeled list
-FULL_SUITE_TRIGGERS = [
-    ("tests changed", lambda p: p.startswith("tests/")),
-    ("pyproject.toml changed", lambda p: p == "pyproject.toml"),
-    ("lockfile changed", lambda p: p.endswith(".lock")),
-    ("DEEPLABCUT.yaml changed", lambda p: p.endswith("DEEPLABCUT.yaml")),
-]
-
-# Files that should be enforced by dedicated lint workflows, not by test selection
-# If these changes only are present, we skip checks and rely on the linting CI job
-LINT_ONLY_FILES = {
-    ".pre-commit-config.yaml",
-    # add later if you use them:
-    # ".pre-commit-hooks.yaml",
-}
-
-
-# Category rules are location-based. If multiple categories match, we treat it as mixed.
-# For prototype simplicity:
-#   - docs-only if *all* files are docs-like
-#   - if >2 categories match -> FULL - FIXME: this is too blunt, find better heuristics or simply refine rules/full triggers
-#   - else -> FAST with merged selections
-# TODO @C-Achard Refine selection and rules
-#####
-# Purpose and usage:
-#   - Each category has a set of matchers (predicates on file paths)
-#   - If any file matches a category, that category is active
-#   - Each category contributes pytest paths and/or functional scripts
-# If any FULL_SUITE_TRIGGERS match, we skip categories and go straight to FULL, below rules do not apply.
-# If the fast lane is selected, we take the union of all pytest paths and scripts from active categories.
-CATEGORY_RULES = [
-    {
-        "name": "docs",
-        "match_any": [
-            lambda p: p.startswith("docs/"),
-            lambda p: p.endswith(".md"),
-            lambda p: p.endswith(".rst"),
-            lambda p: p.endswith(".ipynb") and "docs" in p.lower(),
-            lambda p: p in {"_config.yml", "_toc.yml"},
-        ],
-        "pytest_paths": [
-            # NOTE: if you add tests here, the DOCS_ONLY plan will be ignored and escalated to FAST
-            # Be aware of this behavior when attaching rules to the "docs" category, and prefer editing the docs workflow directly
-            # in .github/workflows/build-book.yml
-        ],
-        "functional_scripts": [
-            # NOTE: if you add scripts here, the DOCS_ONLY plan will be ignored and escalated to FAST
-            # Be aware of this behavior when attaching rules to the "docs" category, and prefer editing the docs workflow directly
-            # in .github/workflows/build-book.yml
-        ],
-    },
-    {
-        "name": "notebooks_examples",
-        "match_any": [
-            lambda p: p.startswith("examples/JUPYTER/"),
-            lambda p: p.startswith("examples/COLAB/"),
-            lambda p: p.endswith(".ipynb") and "examples" in p.lower(),
-        ],
-        "pytest_paths": MINIMAL_PYTEST,
-        "functional_scripts": [],
-    },
-    {
-        "name": "superanimal_modelzoo",
-        "match_any": [
-            lambda p: p.startswith("deeplabcut/modelzoo/"),
-            lambda p: "superanimal" in p.lower(),
-            lambda p: "modelzoo" in p.lower(),
-        ],
-        "pytest_paths": [
-            "tests/test_predict_supermodel.py",
-            "tests/pose_estimation_pytorch/modelzoo/",
-        ],
-        "functional_scripts": [],
-    },
-    {
-        "name": "multianimal",
-        "match_any": [
-            lambda p: "multianimal" in p.lower(),
-            lambda p: p.startswith("deeplabcut/pose_estimation_tensorflow/")
-            and "multi" in p.lower(),
-            lambda p: p.startswith("deeplabcut/pose_estimation_pytorch/")
-            and "multi" in p.lower(),
-        ],
-        "pytest_paths": [
-            "tests/test_auxfun_multianimal.py",
-            "tests/test_pose_multianimal_imgaug.py",
-            "tests/test_predict_multianimal.py",
-        ],
-        "functional_scripts": [
-            "examples/testscript_multianimal.py",
-        ],
-    },
-    {
-        "name": "core",
-        "match_any": [
-            lambda p: p.startswith("deeplabcut/core/"),
-            lambda p: p.startswith("deeplabcut/utils/"),
-            lambda p: p.startswith("deeplabcut/pose_estimation_tensorflow/"),
-            lambda p: p.startswith("deeplabcut/pose_estimation_pytorch/"),
-            lambda p: p == "deeplabcut/auxiliaryfunctions.py",
-        ],
-        "pytest_paths": [
-            "tests/test_auxiliaryfunctions.py",
-            "tests/core/",
-            "tests/utils/",
-            "tests/pose_estimation_pytorch/",
-        ],
-        "functional_scripts": [],
-    },
-    {
-        "name": "ci_workflows",
-        "match_any": [
-            lambda p: p.startswith(".github/"),
-            # lambda p: p.startswith("tools/"),
-        ],
-        "pytest_paths": MINIMAL_PYTEST,
-        "functional_scripts": [],
-    },
-    {
-        "name": "ci_tools",
-        "match_any": [
-            lambda p: p.startswith("tools/"),
-        ],
-        "pytest_paths": ["tests/tools/"],
-        "functional_scripts": [],
-    },
-]
-CATEGORY_RULE_BY_NAME: Dict[str, Dict[str, Any]] = {
-    r["name"]: r for r in CATEGORY_RULES
-}
-
 
 # -----------------------------
 # Git helpers
