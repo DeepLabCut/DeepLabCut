@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import List
 
 import qdarkstyle
+from napari_deeplabcut import __version__ as NAPARI_DLC_VERSION
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon, QPixmap
@@ -32,11 +33,12 @@ from PySide6.QtWidgets import (
 )
 
 import deeplabcut
-from deeplabcut import auxiliaryfunctions, compat, VERSION
+from deeplabcut import __version__ as DLC_VERSION
+from deeplabcut import auxiliaryfunctions, compat
 from deeplabcut.core.engine import Engine
 from deeplabcut.gui import BASE_DIR, components
 from deeplabcut.gui.tabs import *
-from deeplabcut.gui.utils import UpdateCheckWorker
+from deeplabcut.gui.utils import UpdateChecker
 from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
 
 warnings.filterwarnings(
@@ -60,6 +62,7 @@ class MainWindow(QMainWindow):
         screen_size = app.screens()[0].size()
         self.screen_width = screen_size.width()
         self.screen_height = screen_size.height()
+        self._closing = False
 
         self.logger = logging.getLogger("GUI")
 
@@ -74,11 +77,15 @@ class MainWindow(QMainWindow):
         self._engine = Engine.PYTORCH
 
         # Update checks
-        self._update_thread = None
-        self._update_worker = None
         self._update_process = None
-        self._update_check_silent = True
         self._update_process_output = []
+        self._updater = UpdateChecker(
+            dlc_version=DLC_VERSION,
+            plugin_version=NAPARI_DLC_VERSION,
+            timeout_ms=5000,
+            parent=self,
+        )
+        self._updater.finished.connect(self._on_update_check_finished)
 
         self.default_set()
 
@@ -275,37 +282,10 @@ class MainWindow(QMainWindow):
         return self.files
 
     def schedule_update_check(self, silent=True, delay_ms=1000):
-        QtCore.QTimer.singleShot(
-            delay_ms, lambda: self._start_update_check(silent=silent)
-        )
+        QtCore.QTimer.singleShot(delay_ms, lambda: self._updater.check(silent=silent))
 
     def _start_update_check(self, silent=True):
-        if self._update_thread is not None and self._update_thread.isRunning():
-            if not silent:  # make existing check non-silent if requested
-                self._update_check_silent = False
-            return  # avoid duplicate checks
-
-        self._update_check_silent = silent
-
-        self._update_thread = QtCore.QThread()
-        self._update_worker = UpdateCheckWorker(timeout=5.0)
-        self._update_worker.moveToThread(self._update_thread)
-
-        self._update_thread.started.connect(self._update_worker.run)
-        self._update_worker.finished.connect(self._on_update_check_finished)
-
-        # Cleanup
-        self._update_worker.finished.connect(self._update_thread.quit)
-        self._update_worker.finished.connect(self._update_worker.deleteLater)
-        #self._update_thread.finished.connect(self._update_thread.deleteLater)
-        self._update_thread.finished.connect(
-            lambda: setattr(self, "_update_thread", None)
-        )
-        self._update_thread.finished.connect(
-            lambda: setattr(self, "_update_worker", None)
-        )
-
-        self._update_thread.start()
+        self._updater.check(silent=silent)
 
     def _run_update_command(self, packages):
         if not packages:
@@ -327,6 +307,7 @@ class MainWindow(QMainWindow):
 
         self._update_process.finished.connect(self._on_update_process_finished)
         self._update_process.errorOccurred.connect(self._on_update_process_error)
+        self._update_process.readyRead.connect(self._drain_update_process_output)
         self._update_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
         self._update_process.start()
 
@@ -349,6 +330,13 @@ class MainWindow(QMainWindow):
             self.logger.info(latest_line)
 
     def _on_update_process_error(self, error):
+        if self._closing:
+            if self._update_process is not None:
+                self._update_process.deleteLater()
+                self._update_process = None
+            self._update_process_output = []
+            return
+
         self._progress_bar.hide()
         error_strings = {
             QtCore.QProcess.FailedToStart: "Process failed to start. Check that pip is available and you have sufficient permissions.",
@@ -366,6 +354,13 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage("www.deeplabcut.org")
 
     def _on_update_process_finished(self, exit_code, exit_status):
+        if self._closing:
+            if self._update_process is not None:
+                self._update_process.deleteLater()
+                self._update_process = None
+            self._update_process_output = []
+            return
+
         self._progress_bar.hide()
         self._drain_update_process_output()
 
@@ -398,10 +393,15 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage("www.deeplabcut.org")
 
     def _on_update_check_finished(self, result):
+        if self._closing:
+            return
+
+        silent = result.get("silent", True)
         error = result.get("error")
+
         if error is not None:
             self.logger.debug(f"Update check failed with error: {error!r}")
-            if not self._update_check_silent:
+            if not silent:
                 QtWidgets.QMessageBox.warning(
                     self,
                     "Update check failed",
@@ -415,7 +415,7 @@ class MainWindow(QMainWindow):
         latest_plugin_version = result["latest_plugin_version"]
 
         if is_latest and is_latest_plugin:
-            if not self._update_check_silent:
+            if not silent:
                 QtWidgets.QMessageBox.information(
                     self,
                     "Up to date",
@@ -443,7 +443,6 @@ class MainWindow(QMainWindow):
         update_btn = msg.addButton("Update", QtWidgets.QMessageBox.AcceptRole)
         msg.addButton("Skip", QtWidgets.QMessageBox.RejectRole)
         msg.setDefaultButton(update_btn)
-
         msg.exec()
 
         if msg.clickedButton() is update_btn:
@@ -503,7 +502,7 @@ class MainWindow(QMainWindow):
         self.layout.setSpacing(30)
 
         title = components._create_label_widget(
-            f"Welcome to the DeepLabCut Project Manager GUI {VERSION}!",
+            f"Welcome to the DeepLabCut Project Manager GUI {DLC_VERSION}!",
             "font:bold; font-size:18px;",
             margins=(0, 30, 0, 0),
         )
@@ -899,12 +898,11 @@ class MainWindow(QMainWindow):
             QtWidgets.QMessageBox.Cancel,
         )
         if answer == QtWidgets.QMessageBox.Yes:
+            self._closing = True
             self.receiver.terminate()
 
-            if self._update_worker is not None:
-                self._update_worker.cancel()
-            if self._update_thread is not None and self._update_thread.isRunning():
-                self._update_thread.quit()
+            if self._updater is not None:
+                self._updater.cancel()
 
             if (
                 self._update_process is not None
@@ -913,8 +911,8 @@ class MainWindow(QMainWindow):
                 self._update_process.kill()
                 self._update_process.waitForFinished(1000)
 
-            event.accept()
             self.save_settings()
+            event.accept()
         else:
             event.ignore()
             print("")
