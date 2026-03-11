@@ -10,21 +10,30 @@ on:
         required: false
         type: string
   workflow_dispatch:
-    # Allow manual triggering if needed
+    inputs:
+      concurrency_key:
+        description: "Optional stable key to dedupe manual runs (for example: pr-123)"
+        required: false
+        type: string
+
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     # Cancel outdated runs on the same OS and Python version when new commits are pushed
-    # Only cancels on PRs, main branch pushes will have unique run IDs and do not cancel each other
+    # Only cancels on PRs.
+    # Use a stable concurrency key only when one is explicitly provided
+    # (e.g. PR/workflow_call/manual dedupe). Otherwise fall back to github.run_id
+    # so pushes to main never cancel each other.
     concurrency:
       group: >-
         tests-${{ github.workflow }}-
         ${{ github.event_name == 'workflow_call' && inputs.concurrency_key
-            || github.event_name == 'workflow_dispatch' && github.event.inputs.concurrency_key
-            || github.ref_name }}-
+            || github.event_name == 'workflow_dispatch' && inputs.concurrency_key
+            || github.run_id }}-
         ${{ matrix.os }}-${{ matrix.python-version }}
       cancel-in-progress: true
+
 
     strategy:
       fail-fast: false
