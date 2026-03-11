@@ -11,13 +11,8 @@
 import json
 from typing import Callable
 
+from packaging.version import InvalidVersion, Version
 from PySide6 import QtCore, QtNetwork
-
-try:
-    from packaging.version import InvalidVersion, Version
-except Exception:  # packaging should usually be available, but keep fallback safe
-    Version = None
-    InvalidVersion = Exception
 
 
 class Worker(QtCore.QObject):
@@ -188,9 +183,7 @@ class UpdateChecker(QtCore.QObject):
 
     @staticmethod
     def _is_up_to_date(installed: str, latest: str) -> bool:
-        if Version is not None:
-            try:
-                return Version(installed) >= Version(latest)
-            except InvalidVersion:
-                return installed == latest
-        return installed == latest
+        try:
+            return Version(installed) >= Version(latest)
+        except InvalidVersion:
+            return installed == latest
