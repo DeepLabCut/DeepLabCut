@@ -79,6 +79,11 @@ class MainWindow(QMainWindow):
         # Update checks
         self._update_process = None
         self._update_process_output = []
+
+        self._scheduled_update_check_silent = True
+        self._update_check_timer = QtCore.QTimer(self)
+        self._update_check_timer.setSingleShot(True)
+        self._update_check_timer.timeout.connect(self._trigger_scheduled_update_check)
         self._updater = UpdateChecker(
             dlc_version=DLC_VERSION,
             plugin_version=NAPARI_DLC_VERSION,
@@ -281,11 +286,26 @@ class MainWindow(QMainWindow):
     def video_files(self):
         return self.files
 
-    def schedule_update_check(self, silent=True, delay_ms=1000):
-        QtCore.QTimer.singleShot(delay_ms, lambda: self._updater.check(silent=silent))
+    def check_for_updates(self, *, silent=True, delay_ms=0):
+        """Start an update check immediately or schedule it after a delay."""
+        if self._closing:
+            return
 
-    def _start_update_check(self, silent=True):
+        # supersede old requests
+        if self._update_check_timer.isActive():
+            self._update_check_timer.stop()
+
+        if delay_ms > 0:
+            self._scheduled_update_check_silent = silent
+            self._update_check_timer.start(delay_ms)
+            return
+
         self._updater.check(silent=silent)
+
+    def _trigger_scheduled_update_check(self):
+        if self._closing:
+            return
+        self._updater.check(silent=self._scheduled_update_check_silent)
 
     def _run_update_command(self, packages):
         if not packages:
@@ -553,7 +573,7 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(self.layout)
         self.setCentralWidget(widget)
-        self.schedule_update_check(silent=True, delay_ms=2000)
+        self.check_for_updates(silent=True, delay_ms=2000)
 
     def default_set(self):
         self.name_default = ""
@@ -603,7 +623,7 @@ class MainWindow(QMainWindow):
 
         self.check_updates = QAction("&Check for Updates...", self)
         self.check_updates.triggered.connect(
-            lambda: self._start_update_check(silent=False)
+            lambda: self.check_for_updates(silent=False)
         )
 
     def create_menu_bar(self):
@@ -900,6 +920,9 @@ class MainWindow(QMainWindow):
         if answer == QtWidgets.QMessageBox.Yes:
             self._closing = True
             self.receiver.terminate()
+
+            if self._update_check_timer.isActive():
+                self._update_check_timer.stop()
 
             if self._updater is not None:
                 self._updater.cancel()
