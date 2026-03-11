@@ -15,7 +15,7 @@ import urllib.request
 from typing import Callable, Tuple
 from urllib.error import URLError
 
-from PySide6 import QtCore
+from PySide6 import QtCore, QtNetwork
 
 try:
     from packaging.version import InvalidVersion, Version
@@ -115,20 +115,44 @@ def is_latest_plugin_version(timeout: float = 5.0):
     return check_pypi_version("napari-deeplabcut", __version__, timeout=timeout)
 
 
-class UpdateCheckWorker(QtCore.QObject):
-    finished = QtCore.Signal(object)  # emits a dict
+class UpdateChecker(QtCore.QObject):
+    finished = QtCore.Signal(object)  # emits result dict
 
-    def __init__(self, timeout=2.0, parent=None):
+    DLC_URL = "https://pypi.org/pypi/deeplabcut/json"
+    NAPARI_DLC_URL = "https://pypi.org/pypi/napari-deeplabcut/json"
+
+    def __init__(
+        self, dlc_version: str, plugin_version: str, timeout_ms: int = 5000, parent=None
+    ):
         super().__init__(parent)
-        self._cancelled = False
-        self.timeout = timeout
+        self._dlc_version = dlc_version
+        self._plugin_version = plugin_version
+        self._timeout_ms = timeout_ms
 
-    def cancel(self):
-        self._cancelled = True
+        self._manager = QtNetwork.QNetworkAccessManager(self)
+        self._timer = QtCore.QTimer(self)
+        self._timer.setSingleShot(True)
+        self._timer.timeout.connect(self._on_timeout)
 
-    @QtCore.Slot()
-    def run(self):
-        result = {
+        self._running = False
+        self._silent = True
+        self._replies = {}
+        self._result = {}
+
+    def is_running(self) -> bool:
+        return self._running
+
+    def check(self, silent: bool = True):
+        if self._running:
+            # if a manual check happens while a silent one is running,
+            # keep the in-flight request but upgrade the result visibility
+            self._silent = self._silent and silent
+            return
+
+        self._running = True
+        self._silent = silent
+        self._result = {
+            "silent": silent,
             "is_latest": True,
             "latest_version": None,
             "is_latest_plugin": True,
@@ -136,24 +160,89 @@ class UpdateCheckWorker(QtCore.QObject):
             "error": None,
         }
 
-        try:
-            (
-                result["is_latest"],
-                result["latest_version"],
-            ) = is_latest_deeplabcut_version(timeout=self.timeout)
-            # NOTE: @C-Achard 2026-03-10 If we ever make the plugin optional,
-            # this will need to be adapted.
-            # For now since it is a hard dep of the GUI, we keep it in this try block
-            (
-                result["is_latest_plugin"],
-                result["latest_plugin_version"],
-            ) = is_latest_plugin_version(timeout=self.timeout)
-        except (URLError, socket.timeout, TimeoutError, OSError) as e:
-            # Connectivity issues should stay non-fatal / silent
-            result["error"] = e
-        except Exception as e:
-            # Unexpected failures also go back to the GUI thread for logging if desired
-            result["error"] = e
+        self._start_request("dlc", self.DLC_URL)
+        self._start_request("napari-dlc", self.NAPARI_DLC_URL)
+        self._timer.start(self._timeout_ms)
 
-        if not self._cancelled:
-            self.finished.emit(result)
+    def cancel(self):
+        if not self._running:
+            return
+        self._silent = True
+        self._abort_all()
+        self._finish()
+
+    def _start_request(self, key: str, url: str):
+        req = QtNetwork.QNetworkRequest(QtCore.QUrl(url))
+        req.setHeader(
+            QtNetwork.QNetworkRequest.KnownHeaders.UserAgentHeader,
+            "DeepLabCut GUI UpdateChecker",
+        )
+
+        reply = self._manager.get(req)
+        self._replies[key] = reply
+        reply.finished.connect(
+            lambda key=key, reply=reply: self._on_reply_finished(key, reply)
+        )
+
+    def _on_reply_finished(self, key: str, reply: QtNetwork.QNetworkReply):
+        try:
+            if reply.error() != QtNetwork.QNetworkReply.NetworkError.NoError:
+                # keep the first network-ish error but remain non-fatal overall
+                if self._result["error"] is None:
+                    self._result["error"] = reply.errorString()
+                return
+
+            payload = bytes(reply.readAll())
+            latest_version = json.loads(payload.decode("utf-8"))["info"]["version"]
+
+            if key == "dlc":
+                self._result["latest_version"] = latest_version
+                self._result["is_latest"] = self._is_up_to_date(
+                    self._dlc_version, latest_version
+                )
+            else:
+                self._result["latest_plugin_version"] = latest_version
+                self._result["is_latest_plugin"] = self._is_up_to_date(
+                    self._plugin_version, latest_version
+                )
+        except Exception as e:
+            if self._result["error"] is None:
+                self._result["error"] = str(e)
+        finally:
+            reply.deleteLater()
+            self._replies.pop(key, None)
+
+            if self._running and not self._replies:
+                self._finish()
+
+    def _on_timeout(self):
+        if not self._running:
+            return
+        if self._result["error"] is None:
+            self._result["error"] = "Update check timed out."
+        self._abort_all()
+        self._finish()
+
+    def _abort_all(self):
+        for reply in list(self._replies.values()):
+            if reply is not None and reply.isRunning():
+                reply.abort()
+            reply.deleteLater()
+        self._replies.clear()
+
+    def _finish(self):
+        if not self._running:
+            return
+        self._timer.stop()
+        self._running = False
+        self._result["silent"] = self._silent
+        self.finished.emit(self._result)
+
+    @staticmethod
+    def _is_up_to_date(installed: str, latest: str) -> bool:
+        if Version is not None:
+            try:
+                return Version(installed) >= Version(latest)
+            except InvalidVersion:
+                return installed == latest
+        return installed == latest
