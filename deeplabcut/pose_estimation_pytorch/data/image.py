@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Classes and functions to manipulate images"""
+
 from __future__ import annotations
 
 import copy
@@ -118,10 +119,9 @@ def resize_and_random_crop(
                 h = max_long_side
 
         return h, w
-    
+
     def scale_kpts(
-        keypoints: np.ndarray, kpt_scale: np.ndarray, kpt_offset: np.ndarray,
-        tgt_h: int, tgt_w: int
+        keypoints: np.ndarray, kpt_scale: np.ndarray, kpt_offset: np.ndarray, tgt_h: int, tgt_w: int
     ) -> np.ndarray:
         scaled_kpts = keypoints.copy()
         scaled_kpts[..., :2] = (scaled_kpts[..., :2] / kpt_scale) - kpt_offset
@@ -135,9 +135,7 @@ def resize_and_random_crop(
         h, w = get_resize_hw((oh, ow), tgt_short_side=size, max_long_side=max_size)
         tgt_h, tgt_w = size, size
     else:
-        h, w = get_resize_preserve_ratio(
-            oh, ow, size[0], size[1], max_long_side=max_size
-            )
+        h, w = get_resize_preserve_ratio(oh, ow, size[0], size[1], max_long_side=max_size)
         tgt_h, tgt_w = size
 
     scale_x, scale_y = ow / w, oh / h
@@ -181,7 +179,7 @@ def resize_and_random_crop(
     cond_keypoints = context.get("cond_keypoints")
     if cond_keypoints is not None and len(cond_keypoints) > 0:
         context["cond_keypoints"] = scale_kpts(cond_keypoints, kpt_scale, kpt_offset, tgt_h, tgt_w)
-        
+
     bbox_scale = np.array([scale_x, scale_y, scale_x, scale_y])
     bbox_offset = np.array([offset_x, offset_y, 0, 0])
     for bbox_key in ["boxes"]:
@@ -189,7 +187,9 @@ def resize_and_random_crop(
         if boxes is not None and len(boxes) > 0:
             scaled_boxes = (boxes / bbox_scale) - bbox_offset
             scaled_boxes = _compute_crop_bounds(
-                scaled_boxes, (tgt_h, tgt_w, 3), remove_empty=False,
+                scaled_boxes,
+                (tgt_h, tgt_w, 3),
+                remove_empty=False,
             )
             anns[bbox_key] = scaled_boxes
 
@@ -292,7 +292,7 @@ def top_down_crop(
 
     # crop the pixels we care about
     image_crop = np.zeros((h + pad_y, w + pad_x, c), dtype=image.dtype)
-    image_crop[pad_top:pad_top + h, pad_left:pad_left + w] = image[y1:y2, x1:x2]
+    image_crop[pad_top : pad_top + h, pad_left : pad_left + w] = image[y1:y2, x1:x2]
 
     # resize the cropped image
     image = cv2.resize(image_crop, (out_w, out_h), interpolation=cv2.INTER_LINEAR)

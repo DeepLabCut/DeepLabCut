@@ -173,27 +173,17 @@ class AnalyzeVideos(DefaultTab):
 
         self.calibrate_assembly_checkbox = QtWidgets.QCheckBox("Calibrate assembly")
         self.calibrate_assembly_checkbox.setCheckState(Qt.Unchecked)
-        self.calibrate_assembly_checkbox.stateChanged.connect(
-            self.update_calibrate_assembly
-        )
+        self.calibrate_assembly_checkbox.stateChanged.connect(self.update_calibrate_assembly)
         tmp_layout.addWidget(self.calibrate_assembly_checkbox, 0, 2)
 
-        self.assemble_with_ID_only_checkbox = QtWidgets.QCheckBox(
-            "Assemble with ID only"
-        )
+        self.assemble_with_ID_only_checkbox = QtWidgets.QCheckBox("Assemble with ID only")
         self.assemble_with_ID_only_checkbox.setCheckState(Qt.Unchecked)
-        self.assemble_with_ID_only_checkbox.stateChanged.connect(
-            self.update_assemble_with_ID_only
-        )
+        self.assemble_with_ID_only_checkbox.stateChanged.connect(self.update_assemble_with_ID_only)
         tmp_layout.addWidget(self.assemble_with_ID_only_checkbox, 0, 3)
 
-        self.create_detections_video_checkbox = QtWidgets.QCheckBox(
-            "Create video with all detections"
-        )
+        self.create_detections_video_checkbox = QtWidgets.QCheckBox("Create video with all detections")
         self.create_detections_video_checkbox.setCheckState(Qt.Unchecked)
-        self.create_detections_video_checkbox.stateChanged.connect(
-            self.update_create_video_detections
-        )
+        self.create_detections_video_checkbox.stateChanged.connect(self.update_create_video_detections)
         tmp_layout.addWidget(self.create_detections_video_checkbox, 0, 4)
 
         layout.addLayout(tmp_layout)
@@ -324,9 +314,7 @@ class AnalyzeVideos(DefaultTab):
         filter_data = self.filter_predictions.isChecked()
         videotype = self.video_selection_widget.videotype_widget.currentText()
         try:
-            create_video_all_detections = (
-                self.create_detections_video_checkbox.isChecked()
-            )
+            create_video_all_detections = self.create_detections_video_checkbox.isChecked()
         except AttributeError:
             create_video_all_detections = False
         if create_video_all_detections:
@@ -352,9 +340,7 @@ class AnalyzeVideos(DefaultTab):
 
         if self.plot_trajectories.isChecked():
             bdpts = self.bodyparts_list_widget.selected_bodyparts
-            self.root.logger.debug(
-                f"Selected body parts for plot_trajectories: {bdpts}"
-            )
+            self.root.logger.debug(f"Selected body parts for plot_trajectories: {bdpts}")
             deeplabcut.plot_trajectories(
                 config,
                 videos=videos,

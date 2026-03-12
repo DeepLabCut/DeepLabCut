@@ -195,9 +195,7 @@ def do_dlc_train(
     plot_dict["test_acc"] = test_acc_list
     plot_dict["epochs"] = epoch_list
 
-    with open(
-        os.path.join(ckpt_folder, "dlc_transreid_results.pickle"), "wb"
-    ) as handle:
+    with open(os.path.join(ckpt_folder, "dlc_transreid_results.pickle"), "wb") as handle:
         pickle.dump(plot_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
@@ -255,8 +253,8 @@ def do_dlc_inference(cfg, model, triplet_loss, val_loader, num_query):
         np.save(f, features_list)
     with open("labels.npy", "wb") as f:
         np.save(f, labels_list)
-    print(f"validation loss {val_loss/len(val_loader)}")
-    print(f" acc {total_correct/total_n}")
+    print(f"validation loss {val_loss / len(val_loader)}")
+    print(f" acc {total_correct / total_n}")
     logger.info("Validation Results ")
 
 
@@ -293,5 +291,5 @@ def do_dlc_pair_inference(cfg, model, val_loader, num_query):
             total_n += vec1_feat.shape[0]
             total_correct += calc_cos_correct(vec1_feat, gt1, vec2_feat, gt2)
 
-    print(f" acc {total_correct/total_n}")
+    print(f" acc {total_correct / total_n}")
     logger.info("Validation Results ")

@@ -48,10 +48,7 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
         if symmetries is not None:
             transforms.append(HFlip(symmetries=symmetries, p=hflip_proba))
         else:
-            warnings.warn(
-                "Be careful! Do not train pose models with horizontal flips if you have"
-                " symmetric keypoints!"
-            )
+            warnings.warn("Be careful! Do not train pose models with horizontal flips if you have symmetric keypoints!")
             transforms.append(A.HorizontalFlip(p=hflip_proba))
 
     if (affine := augmentations.get("affine")) is not None:
@@ -139,18 +136,14 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
         transforms.append(build_auto_padding(**augmentations["auto_padding"]))
 
     if augmentations.get("normalize_images"):
-        transforms.append(
-            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        )
+        transforms.append(A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
 
     if augmentations.get("scale_to_unit_range"):
         transforms.append(ScaleToUnitRange())
 
     return A.Compose(
         transforms,
-        keypoint_params=A.KeypointParams(
-            "xy", remove_invisible=False, label_fields=["class_labels"]
-        ),
+        keypoint_params=A.KeypointParams("xy", remove_invisible=False, label_fields=["class_labels"]),
         bbox_params=A.BboxParams(format="coco", label_fields=["bbox_labels"]),
     )
 
@@ -192,8 +185,7 @@ def build_auto_padding(
     }
     if border_mode not in border_modes:
         raise ValueError(
-            f"Unknown border mode for auto_padding: {border_mode} "
-            f"(valid values are: {border_modes.keys()})"
+            f"Unknown border mode for auto_padding: {border_mode} (valid values are: {border_modes.keys()})"
         )
 
     return A.PadIfNeeded(
@@ -238,10 +230,7 @@ class HFlip(A.HorizontalFlip):
             self._symmetries[j] = i
 
     def apply_to_keypoints(self, keypoints, **params):
-        swapped_keypoints = [
-            keypoints[self._symmetries.get(kpt_idx, kpt_idx)]
-            for kpt_idx in range(len(keypoints))
-        ]
+        swapped_keypoints = [keypoints[self._symmetries.get(kpt_idx, kpt_idx)] for kpt_idx in range(len(keypoints))]
         return super().apply_to_keypoints(swapped_keypoints, **params)
 
 
@@ -273,8 +262,7 @@ class KeypointAwareCrop(A.RandomCrop):
         self.max_shift = max(0.0, min(max_shift, 0.4))
         if crop_sampling not in ("uniform", "keypoints", "density", "hybrid"):
             raise ValueError(
-                f"Invalid sampling {crop_sampling}. Must be "
-                f"either 'uniform', 'keypoints', 'density', or 'hybrid."
+                f"Invalid sampling {crop_sampling}. Must be either 'uniform', 'keypoints', 'density', or 'hybrid."
             )
         self.crop_sampling = crop_sampling
 
@@ -477,12 +465,8 @@ class ElasticTransform(A.ElasticTransform):
         self._neighbor_dist = 3
         self._neighbor_dist_square = self._neighbor_dist**2
 
-    def apply_to_keypoints(
-        self, keypoints: Sequence[float], random_state: int | None = None, **params
-    ) -> list[float]:
-        heatmaps = np.zeros(
-            (params["rows"], params["cols"], len(keypoints)), dtype=np.float32
-        )
+    def apply_to_keypoints(self, keypoints: Sequence[float], random_state: int | None = None, **params) -> list[float]:
+        heatmaps = np.zeros((params["rows"], params["cols"], len(keypoints)), dtype=np.float32)
         grid = np.mgrid[: params["rows"], : params["cols"]].transpose((1, 2, 0))
         kpts = np.array([(k[1], k[0]) for k in keypoints])
         valid_kpts = np.all(kpts > 0.0, axis=1)

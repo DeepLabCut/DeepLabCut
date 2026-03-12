@@ -11,6 +11,7 @@
 """
 Test script for super animal adaptation
 """
+
 import deeplabcut
 import os
 
@@ -18,9 +19,7 @@ import os
 if __name__ == "__main__":
     basepath = os.path.dirname(os.path.realpath(__file__))
     videoname = "m3v1mp4"
-    video = os.path.join(
-        basepath, "openfield-Pranav-2018-10-30", "videos", videoname + ".mp4"
-    )
+    video = os.path.join(basepath, "openfield-Pranav-2018-10-30", "videos", videoname + ".mp4")
     video = deeplabcut.ShortenVideo(
         video,
         start="00:00:00",

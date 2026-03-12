@@ -67,16 +67,14 @@ def test_build_transforms(transform_dict, size_image, num_keypoints, num_animals
         with pytest.raises(Exception):
             transformed = transform_bbox_aug(image=test_image)
             transformed = transform_bbox_aug(image=test_image, bboxes=bboxes.copy())
-            transformed = transform_bbox_aug(
-                image=test_image, keypoints=keypoints.copy(), bboxes=bboxes.copy()
-            )
+            transformed = transform_bbox_aug(image=test_image, keypoints=keypoints.copy(), bboxes=bboxes.copy())
 
         transformed_with_bbox = transform_bbox_aug(
             image=test_image,
             keypoints=keypoints.copy(),
             bboxes=bboxes.copy(),
             bbox_labels=np.arange(num_animals),
-            class_labels=[0 for _ in range(len(keypoints))]
+            class_labels=[0 for _ in range(len(keypoints))],
         )
 
         if "resize" in transform_dict.keys():

@@ -60,10 +60,7 @@ def get_batch_spec(cfg):
 
 
 def setup_preloading(batch_spec):
-    placeholders = {
-        name: tf.compat.v1.placeholder(tf.float32, shape=spec)
-        for (name, spec) in batch_spec.items()
-    }
+    placeholders = {name: tf.compat.v1.placeholder(tf.float32, shape=spec) for (name, spec) in batch_spec.items()}
     names = placeholders.keys()
     placeholders_list = list(placeholders.values())
 
@@ -101,16 +98,12 @@ def get_optimizer(loss_op, cfg):
     if "efficientnet" in cfg["net_type"]:
         print("Switching to cosine decay schedule with adam!")
         cfg["optimizer"] = "adam"
-        learning_rate = tf.compat.v1.train.cosine_decay(
-            cfg["lr_init"], tstep, cfg["decay_steps"], alpha=cfg["alpha_r"]
-        )
+        learning_rate = tf.compat.v1.train.cosine_decay(cfg["lr_init"], tstep, cfg["decay_steps"], alpha=cfg["alpha_r"])
     else:
         learning_rate = tf.compat.v1.placeholder(tf.float32, shape=[])
 
     if cfg["optimizer"] == "sgd":
-        optimizer = tf.compat.v1.train.MomentumOptimizer(
-            learning_rate=learning_rate, momentum=0.9
-        )
+        optimizer = tf.compat.v1.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
     elif cfg["optimizer"] == "adam":
         optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate)
     else:
@@ -124,22 +117,16 @@ def get_optimizer_with_freeze(loss_op, cfg):
     learning_rate = tf.compat.v1.placeholder(tf.float32, shape=[])
 
     if cfg["optimizer"] == "sgd":
-        optimizer = tf.compat.v1.train.MomentumOptimizer(
-            learning_rate=learning_rate, momentum=0.9
-        )
+        optimizer = tf.compat.v1.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
     elif cfg["optimizer"] == "adam":
         optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate)
     else:
         raise ValueError("unknown optimizer {}".format(cfg["optimizer"]))
 
     train_unfrozen_op = slim.learning.create_train_op(loss_op, optimizer)
-    variables_unfrozen = tf.compat.v1.get_collection(
-        tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES, "pose"
-    )
+    variables_unfrozen = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES, "pose")
 
-    train_frozen_op = slim.learning.create_train_op(
-        loss_op, optimizer, variables_to_train=variables_unfrozen
-    )
+    train_frozen_op = slim.learning.create_train_op(loss_op, optimizer, variables_to_train=variables_unfrozen)
 
     return learning_rate, train_unfrozen_op, train_frozen_op
 
@@ -154,9 +141,7 @@ def train(
     allow_growth=True,
 ):
     start_path = os.getcwd()
-    os.chdir(
-        str(Path(config_yaml).parents[0])
-    )  # switch to folder of config_yaml (for logging)
+    os.chdir(str(Path(config_yaml).parents[0]))  # switch to folder of config_yaml (for logging)
     setup_logging()
 
     cfg = load_config(config_yaml)
@@ -189,16 +174,11 @@ def train(
         if "resnet" in net_type:
             variables_to_restore = slim.get_variables_to_restore(include=["resnet_v1"])
         elif "mobilenet" in net_type:
-            variables_to_restore = slim.get_variables_to_restore(
-                include=["MobilenetV2"]
-            )
+            variables_to_restore = slim.get_variables_to_restore(include=["MobilenetV2"])
         elif "efficientnet" in net_type:
-            variables_to_restore = slim.get_variables_to_restore(
-                include=["efficientnet"]
-            )
+            variables_to_restore = slim.get_variables_to_restore(include=["efficientnet"])
             variables_to_restore = {
-                var.op.name.replace("efficientnet/", "")
-                + "/ExponentialMovingAverage": var
+                var.op.name.replace("efficientnet/", "") + "/ExponentialMovingAverage": var
                 for var in variables_to_restore
             }
         else:
@@ -284,20 +264,14 @@ def train(
             current_lr = lr_gen.get_lr(it - start_iter)
             lr_dict = {learning_rate: current_lr}
 
-        [_, loss_val, summary] = sess.run(
-            [train_op, total_loss, merged_summaries], feed_dict=lr_dict
-        )
+        [_, loss_val, summary] = sess.run([train_op, total_loss, merged_summaries], feed_dict=lr_dict)
         cum_loss += loss_val
         train_writer.add_summary(summary, it)
 
         if it % display_iters == 0 and it > start_iter:
             average_loss = cum_loss / display_iters
             cum_loss = 0.0
-            logging.info(
-                "iteration: {} loss: {} lr: {}".format(
-                    it, "{0:.4f}".format(average_loss), current_lr
-                )
-            )
+            logging.info("iteration: {} loss: {} lr: {}".format(it, "{0:.4f}".format(average_loss), current_lr))
             lrf.write("{}, {:.5f}, {}\n".format(it, average_loss, current_lr))
             lrf.flush()
 

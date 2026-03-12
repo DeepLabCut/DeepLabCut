@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Functions to build weight initialization parameters for SuperAnimal models"""
+
 from pathlib import Path
 
 import deeplabcut.modelzoo.utils as utils

@@ -94,9 +94,7 @@ def convert_detections2tracklets(
         )
 
     if inference_cfg is None:
-        inference_cfg = auxfun_multianimal.read_inferencecfg(
-            model_dir / "test" / "inference_cfg.yaml", cfg
-        )
+        inference_cfg = auxfun_multianimal.read_inferencecfg(model_dir / "test" / "inference_cfg.yaml", cfg)
     auxfun_multianimal.check_inferencecfg_sanity(cfg, inference_cfg)
 
     if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
@@ -159,9 +157,7 @@ def convert_detections2tracklets(
             print(f"Tracklets already computed at {track_filename}")
             print("Set overwrite = True to overwrite.")
         else:
-            assemblies_path = data_filename.with_stem(
-                data_filename.stem + "_assemblies"
-            ).with_suffix(".pickle")
+            assemblies_path = data_filename.with_stem(data_filename.stem + "_assemblies").with_suffix(".pickle")
             if not assemblies_path.exists():
                 raise FileNotFoundError(
                     f"Could not find the assembles file {assemblies_path}. You're "
@@ -278,9 +274,7 @@ def build_tracklets(
                     unique_ids, idx = np.unique(animal_pose[:, 3], return_inverse=True)
                     total_scores = np.bincount(idx, weights=animal_pose[:, 2])
                     softmax_id_scores = softmax(total_scores)
-                    for pred_id, softmax_score in zip(
-                        unique_ids.astype(int), softmax_id_scores
-                    ):
+                    for pred_id, softmax_score in zip(unique_ids.astype(int), softmax_id_scores):
                         mat[row, pred_id] = softmax_score
 
                 inds = linear_sum_assignment(mat, maximize=True)

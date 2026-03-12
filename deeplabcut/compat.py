@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Compatibility file for methods available with either PyTorch or Tensorflow"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -526,13 +527,9 @@ def evaluate_network(
                 )
             )
         if len(engines) == 0:
-            raise ValueError(
-                f"You must pass at least one shuffle to evaluate (had {list(Shuffles)})"
-            )
+            raise ValueError(f"You must pass at least one shuffle to evaluate (had {list(Shuffles)})")
         elif len(engines) > 1:
-            raise ValueError(
-                f"All shuffles must have the same engine (found {list(engines)})"
-            )
+            raise ValueError(f"All shuffles must have the same engine (found {list(engines)})")
         engine = engines.pop()
 
     if engine == Engine.TF:
@@ -1536,8 +1533,7 @@ def convert_detections2tracklets(
 
         if greedy or calibrate or window_size:
             raise NotImplementedError(
-                f"The 'greedy', 'calibrate' and 'window_size' option are not yet "
-                f"implemented with {engine}"
+                f"The 'greedy', 'calibrate' and 'window_size' option are not yet implemented with {engine}"
             )
 
         return convert_detections2tracklets(
@@ -1686,9 +1682,7 @@ def visualize_locrefs(
     Returns:
         The figure and axis on which the image scoremap and locref field were plot.
     """
-    return visualization.visualize_locrefs(
-        image, scmap, locref_x, locref_y, step=step, zoom_width=zoom_width
-    )
+    return visualization.visualize_locrefs(image, scmap, locref_x, locref_y, step=step, zoom_width=zoom_width)
 
 
 def visualize_paf(
@@ -1964,9 +1958,7 @@ def _gpu_to_use_to_device(gpu_to_use: int | None, device: str | None) -> str | N
 def _load_config(config: str) -> dict:
     config_path = Path(config)
     if not config_path.exists():
-        raise FileNotFoundError(
-            f"Config {config} is not found. Please make sure that the file exists."
-        )
+        raise FileNotFoundError(f"Config {config} is not found. Please make sure that the file exists.")
 
     with open(config, "r") as f:
         project_config = YAML(typ="safe", pure=True).load(f)

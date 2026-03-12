@@ -92,9 +92,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         log_filename: str = "learning_stats.csv",
         load_weights_only: bool | None = None,
     ):
-        super().__init__(
-            model=model, device=device, gpus=gpus, snapshot_path=snapshot_path
-        )
+        super().__init__(model=model, device=device, gpus=gpus, snapshot_path=snapshot_path)
         if isinstance(optimizer, dict):
             optimizer = build_optimizer(model, optimizer)
         if isinstance(scheduler, dict):
@@ -151,9 +149,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         return state_dict_
 
     @abstractmethod
-    def step(
-        self, batch: dict[str, Any], mode: str = "train"
-    ) -> dict[str, torch.Tensor]:
+    def step(self, batch: dict[str, Any], mode: str = "train") -> dict[str, torch.Tensor]:
         """Perform a single epoch gradient update or validation step
 
         Args:
@@ -218,9 +214,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         for e in range(self.starting_epoch + 1, epochs + 1):
             self.current_epoch = e
             self._metadata["epoch"] = e
-            train_loss = self._epoch(
-                train_loader, mode="train", display_iters=display_iters
-            )
+            train_loss = self._epoch(train_loader, mode="train", display_iters=display_iters)
             if self.scheduler:
                 self.scheduler.step()
 
@@ -229,9 +223,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             if e % self.eval_interval == 0:
                 with torch.no_grad():
                     logging.info(f"Training for epoch {e} done, starting evaluation")
-                    valid_loss = self._epoch(
-                        valid_loader, mode="eval", display_iters=display_iters
-                    )
+                    valid_loss = self._epoch(valid_loader, mode="eval", display_iters=display_iters)
                     if self._print_valid_loss:
                         msg += f", valid loss {float(valid_loss):.5f}"
             msg += self._gpu_usage_str()
@@ -240,11 +232,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             logging.info(msg)
 
             epoch_metrics = self._metadata.get("metrics")
-            if (
-                e % self.eval_interval == 0
-                and epoch_metrics is not None
-                and len(epoch_metrics) > 0
-            ):
+            if e % self.eval_interval == 0 and epoch_metrics is not None and len(epoch_metrics) > 0:
                 logging.info(f"Model performance:")
                 line_length = max([len(name) for name in epoch_metrics.keys()]) + 2
                 for name, score in epoch_metrics.items():
@@ -346,9 +334,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 )
 
         if not loaded_state_dict and self.starting_epoch > 0:
-            logging.info(
-                f"Setting the scheduler starting epoch to {self.starting_epoch}"
-            )
+            logging.info(f"Setting the scheduler starting epoch to {self.starting_epoch}")
             self.scheduler.last_epoch = self.starting_epoch
 
 
@@ -406,17 +392,13 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         else:
             backbone_prefix = "backbone."
             backbone_weights = {
-                k[len(backbone_prefix) :]: v
-                for k, v in snapshot["model"].items()
-                if k.startswith(backbone_prefix)
+                k[len(backbone_prefix) :]: v for k, v in snapshot["model"].items() if k.startswith(backbone_prefix)
             }
             model.backbone.load_state_dict(backbone_weights)
 
         return snapshot
 
-    def step(
-        self, batch: dict[str, Any], mode: str = "train"
-    ) -> dict[str, torch.Tensor]:
+    def step(self, batch: dict[str, Any], mode: str = "train") -> dict[str, torch.Tensor]:
         """Perform a single epoch gradient update or validation step.
 
         Args:
@@ -434,9 +416,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             }
         """
         if mode not in ["train", "eval"]:
-            raise ValueError(
-                f"BottomUpSolver must be in train or eval mode, but {mode} was found."
-            )
+            raise ValueError(f"BottomUpSolver must be in train or eval mode, but {mode} was found.")
 
         if mode == "train":
             self.optimizer.zero_grad()
@@ -563,9 +543,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
         self._pycoco_warning_displayed = False
         self._print_valid_loss = False
 
-    def step(
-        self, batch: dict[str, Any], mode: str = "train"
-    ) -> dict[str, torch.Tensor]:
+    def step(self, batch: dict[str, Any], mode: str = "train") -> dict[str, torch.Tensor]:
         """Perform a single epoch gradient update or validation step.
 
         Args:
@@ -583,9 +561,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
             }
         """
         if mode not in ["train", "eval"]:
-            raise ValueError(
-                f"DetectorSolver must be in train or eval mode, but {mode} was found."
-            )
+            raise ValueError(f"DetectorSolver must be in train or eval mode, but {mode} was found.")
 
         if mode == "train":
             self.optimizer.zero_grad()
@@ -634,9 +610,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
         try:
             return {
                 f"metrics/test.{k}": v
-                for k, v in metrics.compute_bbox_metrics(
-                    self._epoch_ground_truth, self._epoch_predictions
-                ).items()
+                for k, v in metrics.compute_bbox_metrics(self._epoch_ground_truth, self._epoch_predictions).items()
             }
         except ModuleNotFoundError:
             if not self._pycoco_warning_displayed:

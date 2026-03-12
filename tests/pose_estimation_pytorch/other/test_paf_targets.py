@@ -18,13 +18,9 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators import pafs_tar
     "batch_size, num_keypoints, image_size",
     [(2, 2, (64, 64)), (1, 5, (48, 64)), (8, 50, (64, 48))],
 )
-def test_paf_target_generation(
-    batch_size: int, num_keypoints: int, image_size: tuple, num_animals=2
-):
+def test_paf_target_generation(batch_size: int, num_keypoints: int, image_size: tuple, num_animals=2):
     labels = {
-        "keypoints": torch.randint(
-            1, min(image_size), (batch_size, num_animals, num_keypoints, 2)
-        )
+        "keypoints": torch.randint(1, min(image_size), (batch_size, num_animals, num_keypoints, 2))
     }  # 2 for x,y coords
     graph = [(i, j) for i in range(num_keypoints) for j in range(i + 1, num_keypoints)]
     prediction = {

@@ -61,9 +61,7 @@ class Link:
         self._length = sqrt((j1.pos[0] - j2.pos[0]) ** 2 + (j1.pos[1] - j2.pos[1]) ** 2)
 
     def __repr__(self):
-        return (
-            f"Link {self.idx}, affinity={self.affinity:.2f}, length={self.length:.2f}"
-        )
+        return f"Link {self.idx}, affinity={self.affinity:.2f}, length={self.length:.2f}"
 
     @property
     def confidence(self):
@@ -261,9 +259,7 @@ class Assembler:
         self.max_overlap = max_overlap
         self._has_identity = "identity" in self[0]
         if identity_only and not self._has_identity:
-            warnings.warn(
-                "The network was not trained with identity; setting `identity_only` to False."
-            )
+            warnings.warn("The network was not trained with identity; setting `identity_only` to False.")
         self.identity_only = identity_only & self._has_identity
         self.nan_policy = nan_policy
         self.force_fusion = force_fusion
@@ -367,13 +363,9 @@ class Assembler:
             self.safe_edge = True
         except np.linalg.LinAlgError:
             # Covariance matrix estimation fails due to numerical singularities
-            warnings.warn(
-                "The assembler could not be robustly calibrated. Continuing without it..."
-            )
+            warnings.warn("The assembler could not be robustly calibrated. Continuing without it...")
 
-    def calc_assembly_mahalanobis_dist(
-        self, assembly, return_proba=False, nan_policy="little"
-    ):
+    def calc_assembly_mahalanobis_dist(self, assembly, return_proba=False, nan_policy="little"):
         if self._kde is None:
             raise ValueError("Assembler should be calibrated first with training data.")
 
@@ -452,9 +444,7 @@ class Assembler:
             aff[np.isnan(aff)] = 0
 
             if trees:
-                vecs = np.vstack(
-                    [[*det_s.pos, *det_t.pos] for det_s in dets_s for det_t in dets_t]
-                )
+                vecs = np.vstack([[*det_s.pos, *det_t.pos] for det_s in dets_s for det_t in dets_t])
                 dists = []
                 for n, tree in enumerate(trees, start=1):
                     d, _ = tree.query(vecs)
@@ -463,15 +453,8 @@ class Assembler:
                 aff *= w.reshape(aff.shape)
 
             if self.greedy:
-                conf = np.asarray(
-                    [
-                        [det_s.confidence * det_t.confidence for det_t in dets_t]
-                        for det_s in dets_s
-                    ]
-                )
-                rows, cols = np.where(
-                    (conf >= self.pcutoff * self.pcutoff) & (aff >= self.min_affinity)
-                )
+                conf = np.asarray([[det_s.confidence * det_t.confidence for det_t in dets_t] for det_s in dets_s])
+                rows, cols = np.where((conf >= self.pcutoff * self.pcutoff) & (aff >= self.min_affinity))
                 candidates = sorted(
                     zip(rows, cols, aff[rows, cols], lengths[rows, cols]),
                     key=lambda x: x[2],
@@ -487,18 +470,14 @@ class Assembler:
                         if len(i_seen) == self.max_n_individuals:
                             break
             else:  # Optimal keypoint pairing
-                inds_s = sorted(
-                    range(len(dets_s)), key=lambda x: dets_s[x].confidence, reverse=True
-                )[: self.max_n_individuals]
-                inds_t = sorted(
-                    range(len(dets_t)), key=lambda x: dets_t[x].confidence, reverse=True
-                )[: self.max_n_individuals]
-                keep_s = [
-                    ind for ind in inds_s if dets_s[ind].confidence >= self.pcutoff
+                inds_s = sorted(range(len(dets_s)), key=lambda x: dets_s[x].confidence, reverse=True)[
+                    : self.max_n_individuals
                 ]
-                keep_t = [
-                    ind for ind in inds_t if dets_t[ind].confidence >= self.pcutoff
+                inds_t = sorted(range(len(dets_t)), key=lambda x: dets_t[x].confidence, reverse=True)[
+                    : self.max_n_individuals
                 ]
+                keep_s = [ind for ind in inds_s if dets_s[ind].confidence >= self.pcutoff]
+                keep_t = [ind for ind in inds_t if dets_t[ind].confidence >= self.pcutoff]
                 aff = aff[np.ix_(keep_s, keep_t)]
                 rows, cols = linear_sum_assignment(aff, maximize=True)
                 for row, col in zip(rows, cols):
@@ -537,9 +516,7 @@ class Assembler:
             if new_ind in assembled:
                 continue
             if safe_edge:
-                d_old = self.calc_assembly_mahalanobis_dist(
-                    assembly, nan_policy=nan_policy
-                )
+                d_old = self.calc_assembly_mahalanobis_dist(assembly, nan_policy=nan_policy)
                 success = assembly.add_link(best, store_dict=True)
                 if not success:
                     assembly._dict = dict()
@@ -594,9 +571,7 @@ class Assembler:
                 continue
             assembly = Assembly(self.n_multibodyparts)
             assembly.add_link(link)
-            self._fill_assembly(
-                assembly, lookup, assembled, self.safe_edge, self.nan_policy
-            )
+            self._fill_assembly(assembly, lookup, assembled, self.safe_edge, self.nan_policy)
             for link in assembly._links:
                 i, j = link.idx
                 lookup[i].pop(j)
@@ -608,10 +583,7 @@ class Assembler:
         n_extra = len(assemblies) - self.max_n_individuals
         if n_extra > 0:
             if self.safe_edge:
-                ds_old = [
-                    self.calc_assembly_mahalanobis_dist(assembly)
-                    for assembly in assemblies
-                ]
+                ds_old = [self.calc_assembly_mahalanobis_dist(assembly) for assembly in assemblies]
                 while len(assemblies) > self.max_n_individuals:
                     ds = []
                     for i, j in itertools.combinations(range(len(assemblies)), 2):
@@ -741,10 +713,7 @@ class Assembler:
             for _, group in groups:
                 ass = Assembly(self.n_multibodyparts)
                 for joint in sorted(group, key=lambda x: x.confidence, reverse=True):
-                    if (
-                        joint.confidence >= self.pcutoff
-                        and joint.label < self.n_multibodyparts
-                    ):
+                    if joint.confidence >= self.pcutoff and joint.label < self.n_multibodyparts:
                         ass.add_joint(joint)
                 if len(ass):
                     assemblies.append(ass)
@@ -773,11 +742,7 @@ class Assembler:
             assembled.update(assembled_)
 
         # Remove invalid assemblies
-        discarded = set(
-            joint
-            for joint in joints
-            if joint.idx not in assembled and np.isfinite(joint.confidence)
-        )
+        discarded = set(joint for joint in joints if joint.idx not in assembled and np.isfinite(joint.confidence))
         for assembly in assemblies[::-1]:
             if 0 < assembly.n_links < self.min_n_links or not len(assembly):
                 for link in assembly._links:
@@ -785,9 +750,7 @@ class Assembler:
                 assemblies.remove(assembly)
         if 0 < self.max_overlap < 1:  # Non-maximum pose suppression
             if self._kde is not None:
-                scores = [
-                    -self.calc_assembly_mahalanobis_dist(ass) for ass in assemblies
-                ]
+                scores = [-self.calc_assembly_mahalanobis_dist(ass) for ass in assemblies]
             else:
                 scores = [ass._affinity for ass in assemblies]
             lst = list(zip(scores, assemblies))
@@ -841,7 +804,6 @@ class Assembler:
         # work nicely with the GUI or interactive sessions.
         # In that case, we fall back to the serial assembly.
         if chunk_size == 0 or multiprocessing.get_start_method() == "spawn":
-
             for i, data_dict in enumerate(tqdm(self)):
                 assemblies, unique = self._assemble(data_dict, i)
                 if assemblies:
@@ -857,9 +819,7 @@ class Assembler:
             n_frames = len(self.metadata["imnames"])
             with multiprocessing.Pool(n_processes) as p:
                 with tqdm(total=n_frames) as pbar:
-                    for i, (assemblies, unique) in p.imap_unordered(
-                        wrapped, range(n_frames), chunksize=chunk_size
-                    ):
+                    for i, (assemblies, unique) in p.imap_unordered(wrapped, range(n_frames), chunksize=chunk_size):
                         if assemblies:
                             self.assemblies[i] = assemblies
                         if unique is not None:
@@ -878,9 +838,7 @@ class Assembler:
         params["joint_names"] = data["metadata"]["all_joints_names"]
         params["num_joints"] = len(params["joint_names"])
         params["paf_graph"] = data["metadata"]["PAFgraph"]
-        params["paf"] = data["metadata"].get(
-            "PAFinds", np.arange(len(params["joint_names"]))
-        )
+        params["paf"] = data["metadata"].get("PAFinds", np.arange(len(params["joint_names"])))
         params["bpts"] = params["ibpts"] = range(params["num_joints"])
         params["imnames"] = [fn for fn in list(data) if fn != "metadata"]
         return params
@@ -973,11 +931,7 @@ def calc_object_keypoint_similarity(
     else:
         oks = []
         xy_preds = [xy_pred]
-        combos = (
-            pair
-            for l in range(len(symmetric_kpts))
-            for pair in itertools.combinations(symmetric_kpts, l + 1)
-        )
+        combos = (pair for l in range(len(symmetric_kpts)) for pair in itertools.combinations(symmetric_kpts, l + 1))
         for pairs in combos:
             # Swap corresponding keypoints
             tmp = xy_pred.copy()
@@ -1014,9 +968,7 @@ def match_assemblies(
     num_ground_truth = len(ground_truth)
 
     # Sort predictions by score
-    inds_pred = np.argsort(
-        [ins.affinity if ins.n_links else ins.confidence for ins in predictions]
-    )[::-1]
+    inds_pred = np.argsort([ins.affinity if ins.n_links else ins.confidence for ins in predictions])[::-1]
     predictions = np.asarray(predictions)[inds_pred]
 
     # indices of unmatched ground truth assemblies
@@ -1122,9 +1074,7 @@ def find_outlier_assemblies(dict_of_assemblies, criterion="area", qs=(5, 95)):
         raise ValueError(f"Invalid criterion {criterion}.")
 
     if len(qs) != 2:
-        raise ValueError(
-            "Two percentiles (for lower and upper bounds) should be given."
-        )
+        raise ValueError("Two percentiles (for lower and upper bounds) should be given.")
 
     tuples = []
     for frame_ind, assemblies in dict_of_assemblies.items():
@@ -1228,9 +1178,7 @@ def evaluate_assembly_greedy(
         oks = np.asarray([match.oks for match in all_matched])[sorted_pred_indices]
 
         # Compute prediction and recall
-        p, r = _compute_precision_and_recall(
-            total_gt_assemblies, oks, oks_t, recall_thresholds
-        )
+        p, r = _compute_precision_and_recall(total_gt_assemblies, oks, oks_t, recall_thresholds)
         precisions.append(p)
         recalls.append(r)
 
@@ -1301,9 +1249,7 @@ def evaluate_assembly(
     precisions = []
     recalls = []
     for t in oks_thresholds:
-        p, r = _compute_precision_and_recall(
-            total_gt_assemblies, oks, t, recall_thresholds
-        )
+        p, r = _compute_precision_and_recall(total_gt_assemblies, oks, t, recall_thresholds)
         precisions.append(p)
         recalls.append(r)
 

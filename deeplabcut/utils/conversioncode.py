@@ -17,6 +17,7 @@ Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
+
 import os
 import pandas as pd
 from deeplabcut.utils import auxiliaryfunctions
@@ -68,9 +69,7 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
                 askuser = "yes"
 
             if askuser in ("y", "yes", "Ja", "ha", "oui"):  # multilanguage support :)
-                fn = os.path.join(
-                    str(folder), "CollectedData_" + cfg["scorer"] + ".csv"
-                )
+                fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv")
                 # Determine whether the data are single- or multi-animal without loading into memory
                 # simply by checking whether 'individuals' is in the second line of the CSV.
                 with open(fn) as datafile:
@@ -92,9 +91,7 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
             print("Attention:", folder, "does not appear to have labeled data!")
 
 
-def adapt_labeled_data_to_new_project(
-    config_path, remove_old_bodyparts=False, other_scorer=False, userfeedback=False
-):
+def adapt_labeled_data_to_new_project(config_path, remove_old_bodyparts=False, other_scorer=False, userfeedback=False):
     """Given the config.yaml file, this function will convert the labels of an ancient project to a new project.
         For this, the labeled data must be in the project folder, under the labeled-data folder and with the same configuration as all deeplabcut projects.
 
@@ -240,20 +237,12 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
     if listofvideos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos
         if len(videos) > 0:
-            h5_files = list(
-                auxiliaryfunctions.grab_files_in_folder(
-                    Path(videos[0]).parent, "h5", relative=False
-                )
-            )
+            h5_files = list(auxiliaryfunctions.grab_files_in_folder(Path(videos[0]).parent, "h5", relative=False))
         else:
             h5_files = []
     else:
-        h5_files = list(
-            auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False)
-        )
-        videos = auxiliaryfunctions.grab_files_in_folder(
-            video_folder, videotype, relative=False
-        )
+        h5_files = list(auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False))
+        videos = auxiliaryfunctions.grab_files_in_folder(video_folder, videotype, relative=False)
 
     _convert_h5_files_to("csv", None, h5_files, videos)
 
@@ -288,20 +277,12 @@ def analyze_videos_converth5_to_nwb(
     if listofvideos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos
         if len(videos) > 0:
-            h5_files = list(
-                auxiliaryfunctions.grab_files_in_folder(
-                    Path(videos[0]).parent, "h5", relative=False
-                )
-            )
+            h5_files = list(auxiliaryfunctions.grab_files_in_folder(Path(videos[0]).parent, "h5", relative=False))
         else:
             h5_files = []
     else:
-        h5_files = list(
-            auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False)
-        )
-        videos = auxiliaryfunctions.grab_files_in_folder(
-            video_folder, videotype, relative=False
-        )
+        h5_files = list(auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False))
+        videos = auxiliaryfunctions.grab_files_in_folder(video_folder, videotype, relative=False)
 
     _convert_h5_files_to("nwb", config, h5_files, videos)
 
@@ -318,9 +299,7 @@ def _convert_h5_files_to(filetype, config, h5_files, videos):
         try:
             from dlc2nwb.utils import convert_h5_to_nwb
         except ImportError:
-            raise ImportError(
-                "The package `dlc2nwb` is missing. Please run `pip install dlc2nwb`."
-            )
+            raise ImportError("The package `dlc2nwb` is missing. Please run `pip install dlc2nwb`.")
 
     for video in videos:
         if "_labeled" in video:

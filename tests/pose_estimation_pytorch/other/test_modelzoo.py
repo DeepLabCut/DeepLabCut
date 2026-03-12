@@ -21,6 +21,7 @@ examples_folder = os.path.join(
     "examples",
 )
 
+
 # requires videos to be in the examples folder
 @pytest.mark.skip
 @pytest.mark.parametrize(

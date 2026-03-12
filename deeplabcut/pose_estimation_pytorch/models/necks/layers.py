@@ -157,12 +157,10 @@ class Attention(torch.nn.Module):
         """
         super().__init__()
         self.heads = heads
-        self.scale = (dim // heads) ** -0.5 if scale_with_head else dim ** -0.5
+        self.scale = (dim // heads) ** -0.5 if scale_with_head else dim**-0.5
 
         self.to_qkv = torch.nn.Linear(dim, dim * 3, bias=False)
-        self.to_out = torch.nn.Sequential(
-            torch.nn.Linear(dim, dim), torch.nn.Dropout(dropout)
-        )
+        self.to_out = torch.nn.Sequential(torch.nn.Linear(dim, dim), torch.nn.Dropout(dropout))
         self.num_keypoints = num_keypoints
 
     def forward(self, x: torch.Tensor, mask: torch.Tensor = None):
@@ -259,16 +257,12 @@ class TransformerLayer(torch.nn.Module):
                                 ),
                             )
                         ),
-                        Residual(
-                            PreNorm(dim, FeedForward(dim, mlp_dim, dropout=dropout))
-                        ),
+                        Residual(PreNorm(dim, FeedForward(dim, mlp_dim, dropout=dropout))),
                     ]
                 )
             )
 
-    def forward(
-        self, x: torch.Tensor, mask: torch.Tensor = None, pos: torch.Tensor = None
-    ):
+    def forward(self, x: torch.Tensor, mask: torch.Tensor = None, pos: torch.Tensor = None):
         """Forward pass through the TransformerLayer block.
 
         Args:

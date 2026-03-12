@@ -20,9 +20,7 @@ from .openvino.session import OpenVINOSession
 
 def setup_pose_prediction(cfg, allow_growth=False, collect_extra=False):
     tf.compat.v1.reset_default_graph()
-    inputs = tf.compat.v1.placeholder(
-        tf.float32, shape=[cfg["batch_size"], None, None, 3]
-    )
+    inputs = tf.compat.v1.placeholder(tf.float32, shape=[cfg["batch_size"], None, None, 3])
     net_heads = PoseNetFactory.create(cfg).test(inputs)
     extra_dict = {}
     outputs = [net_heads["part_prob"]]
@@ -78,9 +76,7 @@ def argmax_pose_predict(scmap, offmat, stride):
     num_joints = scmap.shape[2]
     pose = []
     for joint_idx in range(num_joints):
-        maxloc = np.unravel_index(
-            np.argmax(scmap[:, :, joint_idx]), scmap[:, :, joint_idx].shape
-        )
+        maxloc = np.unravel_index(np.argmax(scmap[:, :, joint_idx]), scmap[:, :, joint_idx].shape)
         offset = np.array(offmat[maxloc][joint_idx])[::-1]
         pos_f8 = np.array(maxloc).astype("float") * stride + 0.5 * stride + offset
         pose.append(np.hstack((pos_f8[::-1], [scmap[maxloc][joint_idx]])))
@@ -190,9 +186,7 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
     Ys = Y.swapaxes(0, 2).swapaxes(0, 1)
     Ps = P.swapaxes(0, 2).swapaxes(0, 1)
 
-    pose = np.empty(
-        (cfg["batch_size"], num_outputs * cfg["num_joints"] * 3), dtype=X.dtype
-    )
+    pose = np.empty((cfg["batch_size"], num_outputs * cfg["num_joints"] * 3), dtype=X.dtype)
     pose[:, 0::3] = Xs.reshape(batchsize, -1)
     pose[:, 1::3] = Ys.reshape(batchsize, -1)
     pose[:, 2::3] = Ps.reshape(batchsize, -1)
@@ -206,9 +200,7 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
 ### Code for TF inference on GPU
 def setup_GPUpose_prediction(cfg, allow_growth=False):
     tf.compat.v1.reset_default_graph()
-    inputs = tf.compat.v1.placeholder(
-        tf.float32, shape=[cfg["batch_size"], None, None, 3]
-    )
+    inputs = tf.compat.v1.placeholder(tf.float32, shape=[cfg["batch_size"], None, None, 3])
     net_heads = PoseNetFactory.create(cfg).inference(inputs)
     outputs = [net_heads["pose"]]
 

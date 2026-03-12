@@ -26,9 +26,7 @@ from deeplabcut.utils import auxiliaryfunctions_3d
 matplotlib_axes_logger.setLevel("ERROR")
 
 
-def calibrate_cameras(
-    config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, search_window_size=(11, 11)
-):
+def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, search_window_size=(11, 11)):
     """This function extracts the corners points from the calibration images, calibrates the camera and stores the calibration files in the project folder (defined in the config file).
 
     Make sure you have around 20-60 pairs of calibration images. The function should be used iteratively to select the right set of calibration images.
@@ -94,13 +92,9 @@ def calibrate_cameras(
     # update the variable snapshot* in config file according to the name of the cameras
     try:
         for i in range(len(cam_names)):
-            cfg_3d[str("config_file_" + cam_names[i])] = cfg_3d.pop(
-                str("config_file_camera-" + str(i + 1))
-            )
+            cfg_3d[str("config_file_" + cam_names[i])] = cfg_3d.pop(str("config_file_camera-" + str(i + 1)))
         for i in range(len(cam_names)):
-            cfg_3d[str("shuffle_" + cam_names[i])] = cfg_3d.pop(
-                str("shuffle_camera-" + str(i + 1))
-            )
+            cfg_3d[str("shuffle_" + cam_names[i])] = cfg_3d.pop(str("shuffle_camera-" + str(i + 1)))
     except:
         pass
 
@@ -143,15 +137,11 @@ def calibrate_cameras(
                 if ret == True:
                     img_shape[cam] = gray.shape[::-1]
                     objpoints[cam].append(objp)
-                    corners = cv2.cornerSubPix(
-                        gray, corners, search_window_size, (-1, -1), criteria
-                    )
+                    corners = cv2.cornerSubPix(gray, corners, search_window_size, (-1, -1), criteria)
                     imgpoints[cam].append(corners)
                     # Draw the corners and store the images
                     img = cv2.drawChessboardCorners(img, (cbcol, cbrow), corners, ret)
-                    cv2.imwrite(
-                        os.path.join(str(path_corners), filename + "_corner.jpg"), img
-                    )
+                    cv2.imwrite(os.path.join(str(path_corners), filename + "_corner.jpg"), img)
                 else:
                     print("Corners not found for the image %s" % Path(fname).name)
                     for new_cam in cam_names:
@@ -200,17 +190,10 @@ def calibrate_cameras(
             # Compute mean re-projection errors for individual cameras
             mean_error = 0
             for i in range(len(objpoints[cam])):
-                imgpoints_proj, _ = cv2.projectPoints(
-                    objpoints[cam][i], rvecs[i], tvecs[i], mtx, dist
-                )
-                error = cv2.norm(imgpoints[cam][i], imgpoints_proj, cv2.NORM_L2) / len(
-                    imgpoints_proj
-                )
+                imgpoints_proj, _ = cv2.projectPoints(objpoints[cam][i], rvecs[i], tvecs[i], mtx, dist)
+                error = cv2.norm(imgpoints[cam][i], imgpoints_proj, cv2.NORM_L2) / len(imgpoints_proj)
                 mean_error += error
-            print(
-                "Mean re-projection error for %s images: %.3f pixels "
-                % (cam, mean_error / len(objpoints[cam]))
-            )
+            print("Mean re-projection error for %s images: %.3f pixels " % (cam, mean_error / len(objpoints[cam])))
 
         # Compute stereo calibration for each pair of cameras
         camera_pair = [[cam_names[0], cam_names[1]]]
@@ -275,12 +258,8 @@ def calibrate_cameras(
             % str(os.path.join(path_camera_matrix))
         )
 
-        auxiliaryfunctions.write_pickle(
-            os.path.join(path_camera_matrix, "stereo_params.pickle"), stereo_params
-        )
-        print(
-            "Camera calibration done! Use the function ``check_undistortion`` to check the check the calibration"
-        )
+        auxiliaryfunctions.write_pickle(os.path.join(path_camera_matrix, "stereo_params.pickle"), stereo_params)
+        print("Camera calibration done! Use the function ``check_undistortion`` to check the check the calibration")
     else:
         print(
             "Corners extracted! You may check for the extracted corners in the directory %s and remove the pair of images where the corners are incorrectly detected. If all the corners are detected correctly with right order, then re-run the same function and use the flag ``calibrate=True``, to calbrate the camera."
@@ -346,9 +325,7 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
                 gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     """
     camera_pair = [[cam_names[0], cam_names[1]]]
-    stereo_params = auxiliaryfunctions.read_pickle(
-        os.path.join(path_camera_matrix, "stereo_params.pickle")
-    )
+    stereo_params = auxiliaryfunctions.read_pickle(os.path.join(path_camera_matrix, "stereo_params.pickle"))
 
     for pair in camera_pair:
         map1_x, map1_y = cv2.initUndistortRectifyMap(
@@ -377,17 +354,13 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
                 gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
                 h, w = img1.shape[:2]
                 _, corners1 = cv2.findChessboardCorners(gray1, (cbcol, cbrow), None)
-                corners_origin1 = cv2.cornerSubPix(
-                    gray1, corners1, (11, 11), (-1, -1), criteria
-                )
+                corners_origin1 = cv2.cornerSubPix(gray1, corners1, (11, 11), (-1, -1), criteria)
 
                 # Remapping dataFrame_camera1_undistort
                 im_remapped1 = cv2.remap(img1, map1_x, map1_y, cv2.INTER_LANCZOS4)
                 imgpoints_proj_undistort = cv2.undistortPoints(
                     src=corners_origin1,
-                    cameraMatrix=stereo_params[pair[0] + "-" + pair[1]][
-                        "cameraMatrix1"
-                    ],
+                    cameraMatrix=stereo_params[pair[0] + "-" + pair[1]]["cameraMatrix1"],
                     distCoeffs=stereo_params[pair[0] + "-" + pair[1]]["distCoeffs1"],
                     P=stereo_params[pair[0] + "-" + pair[1]]["P1"],
                     R=stereo_params[pair[0] + "-" + pair[1]]["R1"],
@@ -405,17 +378,13 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
                 gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
                 h, w = img2.shape[:2]
                 _, corners2 = cv2.findChessboardCorners(gray2, (cbcol, cbrow), None)
-                corners_origin2 = cv2.cornerSubPix(
-                    gray2, corners2, (11, 11), (-1, -1), criteria
-                )
+                corners_origin2 = cv2.cornerSubPix(gray2, corners2, (11, 11), (-1, -1), criteria)
 
                 # Remapping
                 im_remapped2 = cv2.remap(img2, map2_x, map2_y, cv2.INTER_LANCZOS4)
                 imgpoints_proj_undistort2 = cv2.undistortPoints(
                     src=corners_origin2,
-                    cameraMatrix=stereo_params[pair[0] + "-" + pair[1]][
-                        "cameraMatrix2"
-                    ],
+                    cameraMatrix=stereo_params[pair[0] + "-" + pair[1]]["cameraMatrix2"],
                     distCoeffs=stereo_params[pair[0] + "-" + pair[1]]["distCoeffs2"],
                     P=stereo_params[pair[0] + "-" + pair[1]]["P2"],
                     R=stereo_params[pair[0] + "-" + pair[1]]["R2"],
@@ -430,9 +399,7 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
         cam1_undistort = np.array(cam1_undistort)
         cam2_undistort = np.array(cam2_undistort)
         print("All images are undistorted and stored in %s" % str(path_undistort))
-        print(
-            "Use the function ``triangulate`` to undistort the dataframes and compute the triangulation"
-        )
+        print("Use the function ``triangulate`` to undistort the dataframes and compute the triangulation")
 
         if plot == True:
             f1, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
@@ -450,9 +417,7 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
 
             # Plot the undistorted corner points
             f2, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
-            f2.suptitle(
-                "Undistorted corner points on camera-1 and camera-2", fontsize=25
-            )
+            f2.suptitle("Undistorted corner points on camera-1 and camera-2", fontsize=25)
             ax1.imshow(cv2.cvtColor(im_remapped1, cv2.COLOR_BGR2RGB))
             ax2.imshow(cv2.cvtColor(im_remapped2, cv2.COLOR_BGR2RGB))
             for i in range(0, cam1_undistort.shape[1]):
@@ -475,14 +440,12 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
             plt.savefig(os.path.join(str(path_undistort), "undistorted_points.png"))
 
             # Triangulate
-            triangulate = (
-                auxiliaryfunctions_3d.compute_triangulation_calibration_images(
-                    stereo_params[pair[0] + "-" + pair[1]],
-                    cam1_undistort,
-                    cam2_undistort,
-                    path_undistort,
-                    cfg_3d,
-                    plot=True,
-                )
+            triangulate = auxiliaryfunctions_3d.compute_triangulation_calibration_images(
+                stereo_params[pair[0] + "-" + pair[1]],
+                cam1_undistort,
+                cam2_undistort,
+                path_undistort,
+                cfg_3d,
+                plot=True,
             )
             auxiliaryfunctions.write_pickle("triangulate.pickle", triangulate)

@@ -77,21 +77,14 @@ class BaseHead(ABC, nn.Module):
         elif isinstance(weight_init, (str, dict)):
             self.weight_init = WEIGHT_INIT.build(weight_init)
         elif weight_init is not None:
-            raise ValueError(
-                f"Could not parse ``weight_init`` parameter: {weight_init}."
-            )
+            raise ValueError(f"Could not parse ``weight_init`` parameter: {weight_init}.")
 
         if isinstance(criterion, dict):
             if aggregator is None:
-                raise ValueError(
-                    f"When multiple criterions are defined, a loss aggregator must "
-                    "also be given"
-                )
+                raise ValueError(f"When multiple criterions are defined, a loss aggregator must also be given")
         else:
             if aggregator is not None:
-                raise ValueError(
-                    f"Cannot use a loss aggregator with a single criterion"
-                )
+                raise ValueError(f"Cannot use a loss aggregator with a single criterion")
 
     @abstractmethod
     def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
@@ -128,10 +121,7 @@ class BaseHead(ABC, nn.Module):
             key = [k for k in outputs.keys()][0]
             return {"total_loss": self.criterion(outputs[key], **targets[key])}
 
-        losses = {
-            name: criterion(outputs[name], **targets[name])
-            for name, criterion in self.criterion.items()
-        }
+        losses = {name: criterion(outputs[name], **targets[name]) for name, criterion in self.criterion.items()}
         losses["total_loss"] = self.aggregator(losses)
         return losses
 

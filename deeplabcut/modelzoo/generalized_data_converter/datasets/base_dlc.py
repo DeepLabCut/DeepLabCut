@@ -19,7 +19,6 @@ from deeplabcut.utils import auxiliaryfunctions
 
 
 class BaseDLCPoseDataset(BasePoseDataset):
-
     def __init__(self, proj_root, dataset_name, shuffle=1, modelprefix=""):
         super(BaseDLCPoseDataset, self).__init__()
 
@@ -104,12 +103,8 @@ class BaseDLCPoseDataset(BasePoseDataset):
 
         print(f"Before checking trainset {self.meta['dataset_name']}")
 
-        self.whether_anno_image_match(
-            self.generic_train_images, self.generic_train_annotations
-        )
+        self.whether_anno_image_match(self.generic_train_images, self.generic_train_annotations)
 
         print(f"Before checking testset {self.meta['dataset_name']}")
 
-        self.whether_anno_image_match(
-            self.generic_test_images, self.generic_test_annotations
-        )
+        self.whether_anno_image_match(self.generic_test_images, self.generic_test_annotations)

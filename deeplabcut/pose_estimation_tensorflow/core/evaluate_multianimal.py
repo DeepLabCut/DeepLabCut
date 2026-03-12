@@ -145,19 +145,11 @@ def evaluate_multianimal_full(
     conversioncode.guarantee_multiindex_rows(Data)
 
     # Get list of body parts to evaluate network for
-    comparisonbodyparts = (
-        auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-            cfg, comparisonbodyparts
-        )
-    )
-    all_bpts = np.asarray(
-        len(cfg["individuals"]) * cfg["multianimalbodyparts"] + cfg["uniquebodyparts"]
-    )
+    comparisonbodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts)
+    all_bpts = np.asarray(len(cfg["individuals"]) * cfg["multianimalbodyparts"] + cfg["uniquebodyparts"])
     colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
     # Make folder for evaluation
-    auxiliaryfunctions.attempt_to_make_folder(
-        str(cfg["project_path"] + "/evaluation-results/")
-    )
+    auxiliaryfunctions.attempt_to_make_folder(str(cfg["project_path"] + "/evaluation-results/"))
     for shuffle in Shuffles:
         for trainFraction in TrainingFractions:
             ##################################################
@@ -212,11 +204,7 @@ def evaluate_multianimal_full(
             # Create folder structure to store results.
             evaluationfolder = os.path.join(
                 cfg["project_path"],
-                str(
-                    auxiliaryfunctions.get_evaluation_folder(
-                        trainFraction, shuffle, cfg, modelprefix=modelprefix
-                    )
-                ),
+                str(auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
             )
             auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
 
@@ -241,8 +229,7 @@ def evaluate_multianimal_full(
                     )
                 except IndexError as err:
                     print(
-                        "Failed to get snapshot_names for trainFraction="
-                        f"{trainFraction} and shuffle={shuffle}. Error:"
+                        f"Failed to get snapshot_names for trainFraction={trainFraction} and shuffle={shuffle}. Error:"
                     )
                     print(err)
                     snapshot_names = []
@@ -318,26 +305,18 @@ def evaluate_multianimal_full(
                         # Pass the image and the keypoints through the resizer;
                         # this has no effect if no augmenters were added to it.
                         keypoints = [GT.to_numpy().reshape((-1, 2)).astype(float)]
-                        frame_, keypoints = pipeline(
-                            images=[frame], keypoints=keypoints
-                        )
+                        frame_, keypoints = pipeline(images=[frame], keypoints=keypoints)
                         frame = frame_[0]
                         GT[:] = keypoints[0].flatten()
 
                         df = GT.unstack("coords").reindex(joints, level="bodyparts")
 
                         # FIXME Is having an empty array vs nan really that necessary?!
-                        groundtruthidentity = list(
-                            df.index.get_level_values("individuals")
-                            .to_numpy()
-                            .reshape((-1, 1))
-                        )
+                        groundtruthidentity = list(df.index.get_level_values("individuals").to_numpy().reshape((-1, 1)))
                         groundtruthcoordinates = list(df.values[:, np.newaxis])
                         for i, coords in enumerate(groundtruthcoordinates):
                             if np.isnan(coords).any():
-                                groundtruthcoordinates[i] = np.empty(
-                                    (0, 2), dtype=float
-                                )
+                                groundtruthcoordinates[i] = np.empty((0, 2), dtype=float)
                                 groundtruthidentity[i] = np.array([], dtype=str)
 
                         # Form 2D array of shape (n_rows, 4) where the last dim is
@@ -353,9 +332,7 @@ def evaluate_multianimal_full(
                             )
 
                         temp["sample"] = 0
-                        peaks_gt = temp.loc[
-                            :, ["sample", "y", "x", "bodyparts"]
-                        ].to_numpy()
+                        peaks_gt = temp.loc[:, ["sample", "y", "x", "bodyparts"]].to_numpy()
                         peaks_gt[:, 1:3] = (peaks_gt[:, 1:3] - stride // 2) / stride
 
                         pred = predictma.predict_batched_peaks_and_costs(
@@ -391,9 +368,7 @@ def evaluate_multianimal_full(
                                 # Pick the predictions closest to ground truth,
                                 # rather than the ones the model has most confident in
                                 xy_gt_values = xy_gt.iloc[inds_gt].values
-                                neighbors = find_closest_neighbors(
-                                    xy_gt_values, xy, k=3
-                                )
+                                neighbors = find_closest_neighbors(xy_gt_values, xy, k=3)
                                 found = neighbors != -1
                                 min_dists = np.linalg.norm(
                                     xy_gt_values[found] - xy[neighbors[found]],
@@ -403,15 +378,11 @@ def evaluate_multianimal_full(
                                 sl = imageindex, inds[inds_gt[found]]
                                 dist[sl] = min_dists
                                 predicted_poses[sl] = xy[neighbors[found]]
-                                conf[sl] = probs_pred[n_joint][
-                                    neighbors[found]
-                                ].squeeze()
+                                conf[sl] = probs_pred[n_joint][neighbors[found]].squeeze()
 
                         if plotting == "bodypart":
                             temp_xy = GT.unstack("bodyparts")[joints].values
-                            gt = temp_xy.reshape((-1, 2, temp_xy.shape[1])).T.swapaxes(
-                                1, 2
-                            )
+                            gt = temp_xy.reshape((-1, 2, temp_xy.shape[1])).T.swapaxes(1, 2)
                             h, w, _ = np.shape(frame)
                             fig.set_size_inches(w / 100, h / 100)
                             ax.set_xlim(0, w)
@@ -450,18 +421,10 @@ def evaluate_multianimal_full(
                         names=df.index.names + ["coordinates"],
                     )
 
-                    predicted_poses = np.concatenate(
-                        (predicted_poses, np.expand_dims(conf, axis=-1)), axis=-1
-                    )
-                    predicted_poses = predicted_poses.reshape(
-                        predicted_poses.shape[0], -1
-                    )
-                    df_predicted_poses = pd.DataFrame(
-                        predicted_poses, columns=poses_multi_index
-                    )
-                    write_poses_path = os.path.join(
-                        evaluationfolder, f"predicted_poses_{training_iterations}.h5"
-                    )
+                    predicted_poses = np.concatenate((predicted_poses, np.expand_dims(conf, axis=-1)), axis=-1)
+                    predicted_poses = predicted_poses.reshape(predicted_poses.shape[0], -1)
+                    df_predicted_poses = pd.DataFrame(predicted_poses, columns=poses_multi_index)
+                    write_poses_path = os.path.join(evaluationfolder, f"predicted_poses_{training_iterations}.h5")
                     df_predicted_poses.to_hdf(write_poses_path, key="df_with_missing")
 
                     # Compute all distance statistics
@@ -473,25 +436,19 @@ def evaluate_multianimal_full(
                         names=["metrics"],
                         axis=1,
                     )
-                    df_joint = df_joint.reorder_levels(
-                        list(np.roll(df_joint.columns.names, -1)), axis=1
-                    )
+                    df_joint = df_joint.reorder_levels(list(np.roll(df_joint.columns.names, -1)), axis=1)
                     df_joint.sort_index(
                         axis=1,
                         level=["individuals", "bodyparts"],
                         ascending=[True, True],
                         inplace=True,
                     )
-                    write_path = os.path.join(
-                        evaluationfolder, f"dist_{training_iterations}.csv"
-                    )
+                    write_path = os.path.join(evaluationfolder, f"dist_{training_iterations}.csv")
                     df_joint.to_csv(write_path)
 
                     # Calculate overall prediction error
                     error = df_joint.xs("rmse", level="metrics", axis=1)
-                    mask = (
-                        df_joint.xs("conf", level="metrics", axis=1) >= cfg["pcutoff"]
-                    )
+                    mask = df_joint.xs("conf", level="metrics", axis=1) >= cfg["pcutoff"]
                     error_masked = error[mask]
                     error_train = np.nanmean(error.iloc[trainIndices])
                     error_train_cut = np.nanmean(error_masked.iloc[trainIndices])
@@ -529,41 +486,20 @@ def evaluate_multianimal_full(
                         print(string.format(*results))
 
                         print("##########################################")
-                        print(
-                            "Average Euclidean distance to GT per individual (in pixels; test-only)"
-                        )
-                        print(
-                            error_masked.iloc[testIndices]
-                            .groupby("individuals", axis=1)
-                            .mean()
-                            .mean()
-                            .to_string()
-                        )
-                        print(
-                            "Average Euclidean distance to GT per bodypart (in pixels; test-only)"
-                        )
-                        print(
-                            error_masked.iloc[testIndices]
-                            .groupby("bodyparts", axis=1)
-                            .mean()
-                            .mean()
-                            .to_string()
-                        )
+                        print("Average Euclidean distance to GT per individual (in pixels; test-only)")
+                        print(error_masked.iloc[testIndices].groupby("individuals", axis=1).mean().mean().to_string())
+                        print("Average Euclidean distance to GT per bodypart (in pixels; test-only)")
+                        print(error_masked.iloc[testIndices].groupby("bodyparts", axis=1).mean().mean().to_string())
 
                     PredicteData["metadata"] = {
                         "nms radius": test_pose_cfg["nmsradius"],
                         "minimal confidence": test_pose_cfg["minconfidence"],
                         "sigma": test_pose_cfg.get("sigma", 1),
                         "PAFgraph": test_pose_cfg["partaffinityfield_graph"],
-                        "PAFinds": np.arange(
-                            len(test_pose_cfg["partaffinityfield_graph"])
-                        ),
-                        "all_joints": [
-                            [i] for i in range(len(test_pose_cfg["all_joints"]))
-                        ],
+                        "PAFinds": np.arange(len(test_pose_cfg["partaffinityfield_graph"])),
+                        "all_joints": [[i] for i in range(len(test_pose_cfg["all_joints"]))],
                         "all_joints_names": [
-                            test_pose_cfg["all_joints_names"][i]
-                            for i in range(len(test_pose_cfg["all_joints"]))
+                            test_pose_cfg["all_joints_names"][i] for i in range(len(test_pose_cfg["all_joints"]))
                         ],
                         "stride": test_pose_cfg.get("stride", 8),
                     }
@@ -580,9 +516,7 @@ def evaluate_multianimal_full(
                         "trainFraction": trainFraction,
                     }
                     metadata = {"data": dictionary}
-                    _ = auxfun_multianimal.SaveFullMultiAnimalData(
-                        PredicteData, metadata, resultsfilename
-                    )
+                    _ = auxfun_multianimal.SaveFullMultiAnimalData(PredicteData, metadata, resultsfilename)
 
                     tf.compat.v1.reset_default_graph()
 
@@ -634,10 +568,7 @@ def evaluate_multianimal_full(
                         ax.set_ylim(0, h)
                         ax.invert_yaxis()
 
-                        gt = [
-                            s.to_numpy().reshape((-1, 2))
-                            for _, s in Data.loc[imname].groupby("individuals")
-                        ]
+                        gt = [s.to_numpy().reshape((-1, 2)) for _, s in Data.loc[imname].groupby("individuals")]
                         coords_pred = []
                         coords_pred += [ass.xy for ass in v]
                         probs_pred = []
@@ -670,12 +601,8 @@ def evaluate_multianimal_full(
                         visualization.erase_artists(ax)
 
                 df = results[1].copy()
-                df.loc(axis=0)[("mAP_train", "mean")] = [
-                    d[0]["mAP"] for d in results[2]
-                ]
-                df.loc(axis=0)[("mAR_train", "mean")] = [
-                    d[0]["mAR"] for d in results[2]
-                ]
+                df.loc(axis=0)[("mAP_train", "mean")] = [d[0]["mAP"] for d in results[2]]
+                df.loc(axis=0)[("mAR_train", "mean")] = [d[0]["mAR"] for d in results[2]]
                 df.loc(axis=0)[("mAP_test", "mean")] = [d[1]["mAP"] for d in results[2]]
                 df.loc(axis=0)[("mAR_test", "mean")] = [d[1]["mAR"] for d in results[2]]
                 with open(data_path.replace("_full.", "_map."), "wb") as file:

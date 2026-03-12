@@ -51,11 +51,7 @@ def comparevideolistsanddatafolders(config):
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
     video_names = [Path(i).stem for i in videos]
-    alldatafolders = [
-        fn
-        for fn in os.listdir(Path(config).parent / "labeled-data")
-        if "_labeled" not in fn
-    ]
+    alldatafolders = [fn for fn in os.listdir(Path(config).parent / "labeled-data") if "_labeled" not in fn]
 
     print("Config file contains:", len(video_names))
     print("Labeled-data contains:", len(alldatafolders))
@@ -92,9 +88,7 @@ def adddatasetstovideolistandviceversa(config):
     video_names = [Path(i).stem for i in videos]
 
     alldatafolders = [
-        fn
-        for fn in os.listdir(Path(config).parent / "labeled-data")
-        if "_labeled" not in fn and not fn.startswith(".")
+        fn for fn in os.listdir(Path(config).parent / "labeled-data") if "_labeled" not in fn and not fn.startswith(".")
     ]
 
     print("Config file contains:", len(video_names))
@@ -125,9 +119,7 @@ def adddatasetstovideolistandviceversa(config):
             if found:
                 video_path = os.path.join(cfg["project_path"], "videos", file)
                 clip = VideoReader(video_path)
-                videos.update(
-                    {video_path: {"crop": ", ".join(map(str, clip.get_bbox()))}}
-                )
+                videos.update({video_path: {"crop": ", ".join(map(str, clip.get_bbox()))}})
 
     auxiliaryfunctions.write_config(config, cfg)
 
@@ -157,9 +149,7 @@ def dropduplicatesinannotatinfiles(config):
             if len(DC.index) < numimages:
                 print("Dropped", numimages - len(DC.index))
                 DC.to_hdf(fn, key="df_with_missing", mode="w")
-                DC.to_csv(
-                    os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv")
-                )
+                DC.to_csv(os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv"))
 
         except FileNotFoundError:
             print("Attention:", folder, "does not appear to have labeled data!")
@@ -198,9 +188,7 @@ def dropannotationfileentriesduetodeletedimages(config):
                 dropped = True
         if dropped == True:
             DC.to_hdf(fn, key="df_with_missing", mode="w")
-            DC.to_csv(
-                os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv")
-            )
+            DC.to_csv(os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv"))
 
 
 def dropimagesduetolackofannotation(config):
@@ -233,9 +221,7 @@ def dropimagesduetolackofannotation(config):
             if imagename in annotatedimages:
                 pass
             else:
-                fullpath = os.path.join(
-                    cfg["project_path"], "labeled-data", folder, imagename
-                )
+                fullpath = os.path.join(cfg["project_path"], "labeled-data", folder, imagename)
                 if os.path.isfile(fullpath):
                     print("Deleting", fullpath)
                     os.remove(fullpath)
@@ -281,9 +267,7 @@ def dropunlabeledframes(config):
         dropped = before_len - after_len
         if dropped:
             DC.to_hdf(h5file, key="df_with_missing", mode="w")
-            DC.to_csv(
-                os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv")
-            )
+            DC.to_csv(os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv"))
 
             print("Dropped ", dropped, "entries in ", folder)
 
@@ -346,16 +330,11 @@ def check_labels(
     videos = cfg["video_sets"].keys()
     video_names = [_robust_path_split(video)[1] for video in videos]
 
-    folders = [
-        os.path.join(cfg["project_path"], "labeled-data", str(Path(i)))
-        for i in video_names
-    ]
+    folders = [os.path.join(cfg["project_path"], "labeled-data", str(Path(i))) for i in video_names]
     print("Creating images with labels by %s." % cfg["scorer"])
     for folder in folders:
         try:
-            DataCombined = pd.read_hdf(
-                os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
-            )
+            DataCombined = pd.read_hdf(os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5"))
             conversioncode.guarantee_multiindex_rows(DataCombined)
             if cfg.get("multianimalproject", False):
                 color_by = "individual" if visualizeindividuals else "bodypart"
@@ -375,9 +354,7 @@ def check_labels(
         except FileNotFoundError:
             print("Attention:", folder, "does not appear to have labeled data!")
 
-    print(
-        "If all the labels are ok, then use the function 'create_training_dataset' to create the training dataset!"
-    )
+    print("If all the labels are ok, then use the function 'create_training_dataset' to create the training dataset!")
 
 
 def boxitintoacell(joints):
@@ -532,9 +509,7 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
     videos = cfg["video_sets"].keys()
     video_filenames = parse_video_filenames(videos)
     for filename in video_filenames:
-        file_path = os.path.join(
-            data_path / filename, f'CollectedData_{cfg["scorer"]}.h5'
-        )
+        file_path = os.path.join(data_path / filename, f"CollectedData_{cfg['scorer']}.h5")
         try:
             data = pd.read_hdf(file_path)
             conversioncode.guarantee_multiindex_rows(data)
@@ -569,15 +544,13 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
         bodyparts = multianimalbodyparts + uniquebodyparts
     else:
         bodyparts = cfg["bodyparts"]
-    AnnotationData = AnnotationData.reindex(
-        bodyparts, axis=1, level=AnnotationData.columns.names.index("bodyparts")
-    )
+    AnnotationData = AnnotationData.reindex(bodyparts, axis=1, level=AnnotationData.columns.names.index("bodyparts"))
     if AnnotationData.empty:
         logging.warning(
             "The annotated dataframe is empty after reindexing using config. "
             "Hint: are bodyparts correctly listed in the configuration?"
         )
-    filename = os.path.join(trainingsetfolder_full, f'CollectedData_{cfg["scorer"]}')
+    filename = os.path.join(trainingsetfolder_full, f"CollectedData_{cfg['scorer']}")
     AnnotationData.to_hdf(filename + ".h5", key="df_with_missing", mode="w")
     AnnotationData.to_csv(filename + ".csv")  # human readable.
     return AnnotationData
@@ -688,12 +661,8 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     scorer = cfg["scorer"]
     project_path = cfg["project_path"]
     # Create path for training sets & store data there
-    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
-        cfg
-    )  # Path concatenation OS platform independent
-    auxiliaryfunctions.attempt_to_make_folder(
-        Path(os.path.join(project_path, str(trainingsetfolder))), recursive=True
-    )
+    trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)  # Path concatenation OS platform independent
+    auxiliaryfunctions.attempt_to_make_folder(Path(os.path.join(project_path, str(trainingsetfolder))), recursive=True)
     fn = os.path.join(project_path, trainingsetfolder, "CollectedData_" + cfg["scorer"])
 
     try:
@@ -775,9 +744,7 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
                     to_matlab_cell(data["joints"]),
                 )
             )
-    matlab_data = np.asarray(
-        matlab_data, dtype=[("image", "O"), ("size", "O"), ("joints", "O")]
-    )
+    matlab_data = np.asarray(matlab_data, dtype=[("image", "O"), ("size", "O"), ("joints", "O")])
     return train_data, matlab_data
 
 
@@ -997,9 +964,7 @@ def create_training_dataset(
             and not posecfg_template.endswith("superquadruped.yaml")
             and not posecfg_template.endswith("supertopview.yaml")
         ):
-            raise ValueError(
-                "posecfg_template argument must contain path to a pose_cfg.yaml file"
-            )
+            raise ValueError("posecfg_template argument must contain path to a pose_cfg.yaml file")
         else:
             print("Reloading pose_cfg parameters from " + posecfg_template + "\n")
             from deeplabcut.utils.auxiliaryfunctions import read_plainconfig
@@ -1056,12 +1021,7 @@ def create_training_dataset(
         elif engine == Engine.PYTORCH:
             pass
         else:
-            if (
-                "resnet" in net_type
-                or "mobilenet" in net_type
-                or "efficientnet" in net_type
-                or "dlcrnet" in net_type
-            ):
+            if "resnet" in net_type or "mobilenet" in net_type or "efficientnet" in net_type or "dlcrnet" in net_type:
                 pass
             else:
                 raise ValueError("Invalid network type:", net_type)
@@ -1080,9 +1040,7 @@ def create_training_dataset(
             if augmenter_type is None:  # this could be in config.yaml for old projects!
                 # updating variable if null/None! #backwardscompatability
                 augmenter_type = default_augmenter
-                auxiliaryfunctions.edit_config(
-                    config, {"default_augmenter": augmenter_type}
-                )
+                auxiliaryfunctions.edit_config(config, {"default_augmenter": augmenter_type})
             elif augmenter_type not in augmenters:
                 # as the default augmenter might not be available for the given engine
                 augmenter_type = default_augmenter
@@ -1094,8 +1052,7 @@ def create_training_dataset(
         if augmenter_type not in augmenters:
             if engine != Engine.PYTORCH:
                 raise ValueError(
-                    f"Invalid augmenter type: {augmenter_type} (available: for "
-                    f"engine={engine}: {augmenters})"
+                    f"Invalid augmenter type: {augmenter_type} (available: for engine={engine}: {augmenters})"
                 )
 
             logging.info(f"Switching augmentation to {default_augmenter} for PyTorch")
@@ -1137,28 +1094,18 @@ def create_training_dataset(
             ]
         else:
             if len(trainIndices) != len(testIndices) != len(Shuffles):
-                raise ValueError(
-                    "Number of Shuffles and train and test indexes should be equal."
-                )
+                raise ValueError("Number of Shuffles and train and test indexes should be equal.")
             splits = []
-            for shuffle, (train_inds, test_inds) in enumerate(
-                zip(trainIndices, testIndices)
-            ):
-                trainFraction = round(
-                    len(train_inds) * 1.0 / (len(train_inds) + len(test_inds)), 2
-                )
-                print(
-                    f"You passed a split with the following fraction: {int(100 * trainFraction)}%"
-                )
+            for shuffle, (train_inds, test_inds) in enumerate(zip(trainIndices, testIndices)):
+                trainFraction = round(len(train_inds) * 1.0 / (len(train_inds) + len(test_inds)), 2)
+                print(f"You passed a split with the following fraction: {int(100 * trainFraction)}%")
                 # Now that the training fraction is guaranteed to be correct,
                 # the values added to pad the indices are removed.
                 train_inds = np.asarray(train_inds)
                 train_inds = train_inds[train_inds != -1]
                 test_inds = np.asarray(test_inds)
                 test_inds = test_inds[test_inds != -1]
-                splits.append(
-                    (trainFraction, Shuffles[shuffle], (train_inds, test_inds))
-                )
+                splits.append((trainFraction, Shuffles[shuffle], (train_inds, test_inds)))
 
         bodyparts = auxiliaryfunctions.get_bodyparts(cfg)
         nbodyparts = len(bodyparts)
@@ -1175,12 +1122,7 @@ def create_training_dataset(
                         askuser = input(
                             "The model folder is already present. If you continue, it will overwrite the existing model (split). Do you want to continue?(yes/no): "
                         )
-                        if (
-                            askuser == "no"
-                            or askuser == "No"
-                            or askuser == "N"
-                            or askuser == "No"
-                        ):
+                        if askuser == "no" or askuser == "No" or askuser == "N" or askuser == "No":
                             raise Exception(
                                 "Use the Shuffles argument as a list to specify a different shuffle index. Check out the help for more details."
                             )
@@ -1192,19 +1134,13 @@ def create_training_dataset(
                 (
                     datafilename,
                     metadatafilename,
-                ) = auxiliaryfunctions.get_data_and_metadata_filenames(
-                    trainingsetfolder, trainFraction, shuffle, cfg
-                )
+                ) = auxiliaryfunctions.get_data_and_metadata_filenames(trainingsetfolder, trainFraction, shuffle, cfg)
 
                 ################################################################################
                 # Saving data file (convert to training file for deeper cut (*.mat))
                 ################################################################################
-                data, MatlabData = format_training_data(
-                    Data, trainIndices, nbodyparts, project_path
-                )
-                sio.savemat(
-                    os.path.join(project_path, datafilename), {"dataset": MatlabData}
-                )
+                data, MatlabData = format_training_data(Data, trainIndices, nbodyparts, project_path)
+                sio.savemat(os.path.join(project_path, datafilename), {"dataset": MatlabData})
 
                 ################################################################################
                 # Saving metadata (Pickle file)
@@ -1236,15 +1172,9 @@ def create_training_dataset(
                     cfg,
                     engine=engine,
                 )
-                auxiliaryfunctions.attempt_to_make_folder(
-                    Path(config).parents[0] / modelfoldername, recursive=True
-                )
-                auxiliaryfunctions.attempt_to_make_folder(
-                    str(Path(config).parents[0] / modelfoldername) + "/train"
-                )
-                auxiliaryfunctions.attempt_to_make_folder(
-                    str(Path(config).parents[0] / modelfoldername) + "/test"
-                )
+                auxiliaryfunctions.attempt_to_make_folder(Path(config).parents[0] / modelfoldername, recursive=True)
+                auxiliaryfunctions.attempt_to_make_folder(str(Path(config).parents[0] / modelfoldername) + "/train")
+                auxiliaryfunctions.attempt_to_make_folder(str(Path(config).parents[0] / modelfoldername) + "/test")
 
                 path_train_config = str(
                     os.path.join(
@@ -1409,17 +1339,11 @@ def get_existing_shuffle_indices(
     shuffle_indices = [
         int(p.stem.split("shuffle")[-1])
         for p in trainset_folder.iterdir()
-        if (
-            p.stem.startswith("Documentation_data")
-            and p.suffix == ".pickle"
-            and is_valid_data_stem(p.stem)
-        )
+        if (p.stem.startswith("Documentation_data") and p.suffix == ".pickle" and is_valid_data_stem(p.stem))
     ]
     if engine is not None:
         if train_fraction is None:
-            raise ValueError(
-                f"Must select {train_fraction} to filter shuffles by engine"
-            )
+            raise ValueError(f"Must select {train_fraction} to filter shuffles by engine")
 
         shuffle_indices = [
             idx
@@ -1592,9 +1516,7 @@ def create_training_model_comparison(
 
     shuffle_list = []
     for shuffle in range(num_shuffles):
-        trainIndices, testIndices = mergeandsplit(
-            config, trainindex=trainindex, uniform=True
-        )
+        trainIndices, testIndices = mergeandsplit(config, trainindex=trainindex, uniform=True)
         for idx_net, net in enumerate(net_types):
             for idx_aug, aug in enumerate(augmenter_types):
                 get_max_shuffle_idx = (
@@ -1808,10 +1730,7 @@ def _compute_padding(
         the number of padding indices to add to the test indices
     """
     if train_fraction <= 0 or train_fraction >= 1:
-        raise ValueError(
-            f"The training fraction must satisfy 0 < TrainingFraction < 1, but "
-            f"{train_fraction} was found"
-        )
+        raise ValueError(f"The training fraction must satisfy 0 < TrainingFraction < 1, but {train_fraction} was found")
 
     base_images = 100
     train_step = int(round(round(train_fraction, 2) * base_images))

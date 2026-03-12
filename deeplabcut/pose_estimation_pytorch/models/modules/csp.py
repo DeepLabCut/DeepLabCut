@@ -13,6 +13,7 @@
 Based on the building blocks used for the ``mmdetection`` CSPNeXt implementation. For
 more information, see <https://github.com/open-mmlab/mmdetection>.
 """
+
 import torch
 import torch.nn as nn
 
@@ -23,9 +24,7 @@ def build_activation(activation_fn: str, *args, **kwargs) -> nn.Module:
     elif activation_fn == "ReLU":
         return nn.ReLU(*args, **kwargs)
 
-    raise NotImplementedError(
-        f"Unknown `CSPNeXT` activation: {activation_fn}. Must be one of 'SiLU', 'ReLU'"
-    )
+    raise NotImplementedError(f"Unknown `CSPNeXT` activation: {activation_fn}. Must be one of 'SiLU', 'ReLU'")
 
 
 def build_norm(norm: str, *args, **kwargs) -> nn.Module:
@@ -34,9 +33,7 @@ def build_norm(norm: str, *args, **kwargs) -> nn.Module:
     elif norm == "BN":
         return nn.BatchNorm2d(*args, **kwargs)
 
-    raise NotImplementedError(
-        f"Unknown `CSPNeXT` norm_layer: {norm}. Must be one of 'SyncBN', 'BN'"
-    )
+    raise NotImplementedError(f"Unknown `CSPNeXT` norm_layer: {norm}. Must be one of 'SyncBN', 'BN'")
 
 
 class SPPBottleneck(nn.Module):
@@ -69,12 +66,7 @@ class SPPBottleneck(nn.Module):
             activation_fn=activation_fn,
         )
 
-        self.poolings = nn.ModuleList(
-            [
-                nn.MaxPool2d(kernel_size=ks, stride=1, padding=ks // 2)
-                for ks in kernel_sizes
-            ]
-        )
+        self.poolings = nn.ModuleList([nn.MaxPool2d(kernel_size=ks, stride=1, padding=ks // 2) for ks in kernel_sizes])
         conv2_channels = mid_channels * (len(kernel_sizes) + 1)
         self.conv2 = CSPConvModule(
             conv2_channels,

@@ -41,9 +41,7 @@ def _build_detector(
     detector: BaseDetector = build_from_cfg(cfg, **kwargs)
 
     if weight_init is not None and weight_init.detector_snapshot_path is not None:
-        logging.info(
-            f"Loading detector checkpoint from {weight_init.detector_snapshot_path}"
-        )
+        logging.info(f"Loading detector checkpoint from {weight_init.detector_snapshot_path}")
         snapshot = torch.load(weight_init.detector_snapshot_path, map_location="cpu")
         detector.load_state_dict(snapshot["model"])
 

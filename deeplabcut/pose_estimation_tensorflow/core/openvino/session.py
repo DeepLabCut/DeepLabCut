@@ -69,9 +69,7 @@ class OpenVINOSession:
                 },
             )
         if "GPU" in self.device:
-            self.core.set_property(
-                "GPU", {"GPU_THROUGHPUT_STREAMS": "GPU_THROUGHPUT_AUTO"}
-            )
+            self.core.set_property("GPU", {"GPU_THROUGHPUT_STREAMS": "GPU_THROUGHPUT_AUTO"})
 
         compiled_model = self.core.compile_model(self.net, self.device)
         num_requests = compiled_model.get_property("OPTIMAL_NUMBER_OF_INFER_REQUESTS")
@@ -85,9 +83,7 @@ class OpenVINOSession:
             self._init_model(inp.shape[1], inp.shape[2])
 
         batch_size = inp.shape[0]
-        batch_output = np.zeros(
-            [batch_size] + self.net.outputs[out_name].shape, dtype=np.float32
-        )
+        batch_output = np.zeros([batch_size] + self.net.outputs[out_name].shape, dtype=np.float32)
 
         def completion_callback(request, inp_id):
             output = next(iter(request.results.values()))
@@ -137,9 +133,7 @@ def GetPoseF_OV(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
         if cfg["cropping"]:
             frame = frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
 
-        sess.infer_queue.start_async(
-            {sess.input_name: np.expand_dims(frame, axis=0)}, counter
-        )
+        sess.infer_queue.start_async({sess.input_name: np.expand_dims(frame, axis=0)}, counter)
 
         counter += 1
 

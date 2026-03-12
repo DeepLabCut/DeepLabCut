@@ -12,6 +12,7 @@
 Testscript human network
 
 """
+
 import os, subprocess, deeplabcut
 from pathlib import Path
 import pandas as pd
@@ -23,11 +24,7 @@ MODEL_NAME = "horse_sideview"  # full_human"
 
 basepath = os.path.dirname(os.path.abspath("testscript.py"))
 videoname = "reachingvideo1"
-video = [
-    os.path.join(
-        basepath, "Reaching-Mackenzie-2018-08-30", "videos", videoname + ".avi"
-    )
-]
+video = [os.path.join(basepath, "Reaching-Mackenzie-2018-08-30", "videos", videoname + ".avi")]
 
 # legacy mode:
 """

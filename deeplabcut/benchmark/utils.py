@@ -10,8 +10,9 @@
 #
 
 """Helper functions in this file are not affected by the main repositories
-license. They are independent from the remainder of the benchmarking code. 
+license. They are independent from the remainder of the benchmarking code.
 """
+
 import importlib
 import os
 import pkgutil

@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Tests the pre-processors"""
+
 import albumentations as A
 import numpy as np
 import pytest
@@ -83,15 +84,9 @@ ctd_preprocessor = build_conditional_top_down_preprocessor(
         # two well-defined individuals
         {
             "image_shape": (100, 100, 3),
-            "context": {
-                "cond_kpts": np.array(
-                    [[[10, 10, 0.8], [20, 20, 0.8]], [[60, 60, 0.8], [70, 70, 0.8]]]
-                )
-            },
+            "context": {"cond_kpts": np.array([[[10, 10, 0.8], [20, 20, 0.8]], [[60, 60, 0.8], [70, 70, 0.8]]])},
             "output_context": {
-                "cond_kpts": np.array(
-                    [[[10, 10, 0.8], [20, 20, 0.8]], [[60, 60, 0.8], [70, 70, 0.8]]]
-                ),
+                "cond_kpts": np.array([[[10, 10, 0.8], [20, 20, 0.8]], [[60, 60, 0.8], [70, 70, 0.8]]]),
                 "bboxes": [np.array([10, 10, 10, 10]), np.array([60, 60, 10, 10])],
                 "offsets": [(10, 10), (60, 60)],
                 "scales": [(0.1, 0.1), (0.1, 0.1)],
@@ -100,11 +95,7 @@ ctd_preprocessor = build_conditional_top_down_preprocessor(
         # one individual has 0 keypoints
         {
             "image_shape": (100, 100, 3),
-            "context": {
-                "cond_kpts": np.array(
-                    [[[10, 10, 0.8], [20, 20, 0.8]], [[60, 60, 0.0], [70, 70, 0.0]]]
-                )
-            },
+            "context": {"cond_kpts": np.array([[[10, 10, 0.8], [20, 20, 0.8]], [[60, 60, 0.0], [70, 70, 0.0]]])},
             "output_context": {
                 "cond_kpts": np.array(
                     [
@@ -119,11 +110,7 @@ ctd_preprocessor = build_conditional_top_down_preprocessor(
         # one individual has only 1 keypoints
         {
             "image_shape": (100, 100, 3),
-            "context": {
-                "cond_kpts": np.array(
-                    [[[10, 10, 0.8], [20, 20, 0.8]], [[60, 60, 0.0], [70, 70, 0.9]]]
-                )
-            },
+            "context": {"cond_kpts": np.array([[[10, 10, 0.8], [20, 20, 0.8]], [[60, 60, 0.0], [70, 70, 0.9]]])},
             "output_context": {
                 "cond_kpts": np.array(
                     [
@@ -138,11 +125,7 @@ ctd_preprocessor = build_conditional_top_down_preprocessor(
         # two individuals but one is low confidence
         {
             "image_shape": (100, 100, 3),
-            "context": {
-                "cond_kpts": np.array(
-                    [[[10, 10, 0.8], [20, 20, 0.8]], [[60, 60, 0.01], [70, 70, 0.01]]]
-                )
-            },
+            "context": {"cond_kpts": np.array([[[10, 10, 0.8], [20, 20, 0.8]], [[60, 60, 0.01], [70, 70, 0.01]]])},
             "output_context": {
                 "cond_kpts": np.array(
                     [
@@ -162,9 +145,7 @@ def test_conditional_top_down_preprocessor(data):
     output_img, output_context = ctd_preprocessor(input_img, context=data["context"])
 
     for context_key in ["cond_kpts", "bboxes", "offsets", "scales"]:
-        assert deep_equal(
-            output_context[context_key], data["output_context"][context_key]
-        )
+        assert deep_equal(output_context[context_key], data["output_context"][context_key])
 
 
 def deep_equal(a, b):

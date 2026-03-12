@@ -22,6 +22,7 @@ It should take about 4:15 minutes to run this in a CPU. (incl. downloading the R
 
 It produces nothing of interest scientifically.
 """
+
 import os
 
 os.environ["DLClight"] = "True"
@@ -31,9 +32,7 @@ import pandas as pd
 import numpy as np
 
 
-def Cuttrainingschedule(
-    path_config_file, shuffle, trainingsetindex=0, initweights="imagenet", lastvalue=10
-):
+def Cuttrainingschedule(path_config_file, shuffle, trainingsetindex=0, initweights="imagenet", lastvalue=10):
     cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
     posefile = os.path.join(
         cfg["project_path"],
@@ -82,11 +81,7 @@ if __name__ == "__main__":
     print("Imported DLC!")
     basepath = os.path.dirname(os.path.realpath(__file__))
     videoname = "reachingvideo1"
-    video = [
-        os.path.join(
-            basepath, "Reaching-Mackenzie-2018-08-30", "videos", videoname + ".avi"
-        )
-    ]
+    video = [os.path.join(basepath, "Reaching-Mackenzie-2018-08-30", "videos", videoname + ".avi")]
 
     # to test destination folder:
     dfolder = os.path.join(basepath, "OUT")
@@ -96,9 +91,7 @@ if __name__ == "__main__":
     augmenter_type = "tensorpack"  # imgaug'
 
     print("CREATING PROJECT")
-    path_config_file = deeplabcut.create_new_project(
-        task, scorer, video, copy_videos=True
-    )
+    path_config_file = deeplabcut.create_new_project(task, scorer, video, copy_videos=True)
 
     cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
     cfg["numframes2pick"] = 5
@@ -153,9 +146,7 @@ if __name__ == "__main__":
 
     print("Plot labels...")
     deeplabcut.check_labels(path_config_file)
-    for shuffle, net_type in enumerate(
-        ["mobilenet_v2_0.35", "resnet_50"]
-    ):  #'mobilenet_v2_1.0']): # 'resnet_50']):
+    for shuffle, net_type in enumerate(["mobilenet_v2_0.35", "resnet_50"]):  #'mobilenet_v2_1.0']): # 'resnet_50']):
         """
         if shuffle==0:
             keepdeconvweights=True
@@ -164,9 +155,7 @@ if __name__ == "__main__":
         """
         print("CREATING TRAININGSET", net_type)
         if "resnet_50" == net_type:  # this tests the default condition...
-            deeplabcut.create_training_dataset(
-                path_config_file, Shuffles=[shuffle], augmenter_type=augmenter_type
-            )
+            deeplabcut.create_training_dataset(path_config_file, Shuffles=[shuffle], augmenter_type=augmenter_type)
         else:
             deeplabcut.create_training_dataset(
                 path_config_file,
@@ -242,9 +231,7 @@ if __name__ == "__main__":
         print("RELABELING")
         DF = pd.read_hdf(file, "df_with_missing")
         DLCscorer = np.unique(DF.columns.get_level_values(0))[0]
-        DF.columns.set_levels(
-            [scorer.replace(DLCscorer, scorer)], level=0, inplace=True
-        )
+        DF.columns.set_levels([scorer.replace(DLCscorer, scorer)], level=0, inplace=True)
         DF = DF.drop("likelihood", axis=1, level=2)
         DF.to_csv(
             os.path.join(
@@ -270,17 +257,11 @@ if __name__ == "__main__":
         deeplabcut.merge_datasets(path_config_file)
 
         print("CREATING TRAININGSET")
-        deeplabcut.create_training_dataset(
-            path_config_file, Shuffles=[shuffle], net_type=net_type
-        )
-        Cuttrainingschedule(
-            path_config_file, shuffle, lastvalue=stoptrain, initweights="previteration"
-        )
+        deeplabcut.create_training_dataset(path_config_file, Shuffles=[shuffle], net_type=net_type)
+        Cuttrainingschedule(path_config_file, shuffle, lastvalue=stoptrain, initweights="previteration")
 
         print("TRAINING from previous snapshot!!!!!")
-        deeplabcut.train_network(
-            path_config_file, shuffle=shuffle, keepdeconvweights=keepdeconvweights
-        )
+        deeplabcut.train_network(path_config_file, shuffle=shuffle, keepdeconvweights=keepdeconvweights)
 
         print("ANALYZING some individual frames")
         deeplabcut.analyze_time_lapse_frames(

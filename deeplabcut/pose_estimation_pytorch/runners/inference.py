@@ -53,6 +53,7 @@ def _merge_defaults(cls, data: dict[str, Any]):
             defaults[k] = v
     return defaults
 
+
 @dataclass
 class MultithreadingConfig:
     """
@@ -61,6 +62,7 @@ class MultithreadingConfig:
         queue_length: Number of batches to prefetch in async mode
         timeout: Timeout for queue operations in async mode
     """
+
     enabled: bool = True
     queue_length: int = 4
     timeout: float = 30.0
@@ -72,6 +74,7 @@ class MultithreadingConfig:
     def to_dict(self) -> dict:
         return asdict(self)
 
+
 @dataclass
 class CompileConfig:
     """
@@ -79,6 +82,7 @@ class CompileConfig:
         enabled: Whether to use torch.compile on the model during InferenceRunner initialization
         backed: torch.compile backend to use
     """
+
     enabled: bool = False
     backend: str = "inductor"
 
@@ -89,12 +93,14 @@ class CompileConfig:
     def to_dict(self) -> dict:
         return asdict(self)
 
+
 @dataclass
 class AutocastConfig:
     """
     Parameters for the torch.autocast option:
         enabled: Whether to use torch.autocast when running inference
     """
+
     enabled: bool = False
 
     @classmethod
@@ -104,12 +110,14 @@ class AutocastConfig:
     def to_dict(self) -> dict:
         return asdict(self)
 
+
 @dataclass
 class InferenceConfig:
     """
     Top-level inference configuration that mirrors the `inference` block
     in pytorch_config.yaml.
     """
+
     multithreading: MultithreadingConfig = field(default_factory=MultithreadingConfig)
     compile: CompileConfig = field(default_factory=CompileConfig)
     autocast: AutocastConfig = field(default_factory=AutocastConfig)
@@ -228,9 +236,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
         if self.inference_cfg.compile.enabled:
             try:
-                self.model = torch.compile(
-                    self.model, backend=self.inference_cfg.compile.backend
-                )
+                self.model = torch.compile(self.model, backend=self.inference_cfg.compile.backend)
             except Exception as e:
                 warnings.warn(
                     f"torch.compile failed with backend='{self.inference_cfg.compile.backend}', "
@@ -252,9 +258,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             self._exception = None
 
     @abstractmethod
-    def predict(
-        self, inputs: torch.Tensor, **kwargs
-    ) -> list[dict[str, dict[str, np.ndarray]]]:
+    def predict(self, inputs: torch.Tensor, **kwargs) -> list[dict[str, dict[str, np.ndarray]]]:
         """Makes predictions from a model input and output
 
         Args:
@@ -267,10 +271,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
     @torch.inference_mode()
     def inference(
         self,
-        images: (
-            Iterable[str | Path | np.ndarray]
-            | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]
-        ),
+        images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
         shelf_writer: shelving.ShelfWriter | None = None,
     ) -> list[dict[str, np.ndarray]]:
         """Run model inference on the given dataset
@@ -302,10 +303,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
     def _sequential_inference(
         self,
-        images: (
-            Iterable[str | Path | np.ndarray]
-            | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]
-        ),
+        images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
         shelf_writer: shelving.ShelfWriter | None = None,
     ) -> list[dict[str, np.ndarray]]:
         """Original sequential inference implementation"""
@@ -324,10 +322,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
     def _async_inference(
         self,
-        images: (
-            Iterable[str | Path | np.ndarray]
-            | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]
-        ),
+        images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
         shelf_writer: shelving.ShelfWriter | None = None,
     ) -> list[dict[str, np.ndarray]]:
         """Async inference with pipeline parallelism"""
@@ -341,9 +336,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self._predictions = []
 
         # Start preprocessing thread
-        self._preprocessing_thread = threading.Thread(
-            target=self._preprocessing_worker, args=(images,)
-        )
+        self._preprocessing_thread = threading.Thread(target=self._preprocessing_worker, args=(images,))
         self._preprocessing_thread.start()
 
         results = []
@@ -416,10 +409,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             elif isinstance(curr_v, torch.Tensor):
                 curr_v = torch.cat([curr_v, v], dim=0)
             else:
-                raise ValueError(
-                    f"model_kwargs {k} must be a numpy array or torch tensor - "
-                    f"found '{type(v)}'."
-                )
+                raise ValueError(f"model_kwargs {k} must be a numpy array or torch tensor - found '{type(v)}'.")
             self._model_kwargs[k] = curr_v
 
         self._contexts.append(context)
@@ -440,10 +430,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
     def _extract_results(self, shelf_writer: shelving.ShelfWriter) -> list:
         """Obtains results that were obtained from processing a batch."""
         results = []
-        while (
-            len(self._image_batch_sizes) > 0
-            and len(self._predictions) >= self._image_batch_sizes[0]
-        ):
+        while len(self._image_batch_sizes) > 0 and len(self._predictions) >= self._image_batch_sizes[0]:
             num_predictions = self._image_batch_sizes[0]
             image_predictions = self._predictions[:num_predictions]
             context = self._contexts[0]
@@ -474,9 +461,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         called, otherwise this method will raise an error.
         """
         batch = torch.stack(self._batch_list[: self.batch_size], dim=0)
-        model_kwargs = {
-            mk: v[: self.batch_size] for mk, v in self._model_kwargs.items()
-        }
+        model_kwargs = {mk: v[: self.batch_size] for mk, v in self._model_kwargs.items()}
 
         self._predictions += self.predict(batch, **model_kwargs)
 
@@ -486,9 +471,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             self._model_kwargs = {}
         else:
             self._batch_list = self._batch_list[self.batch_size :]
-            self._model_kwargs = {
-                mk: v[self.batch_size :] for mk, v in self._model_kwargs.items()
-            }
+            self._model_kwargs = {mk: v[self.batch_size :] for mk, v in self._model_kwargs.items()}
 
     def _inputs_waiting_for_processing(self) -> bool:
         """Returns: Whether there are inputs which have not yet been processed"""
@@ -517,7 +500,11 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 return item
             except Empty:
                 # check if producer is still running
-                if self._stop_event.is_set() or self._preprocessing_thread is None or not self._preprocessing_thread.is_alive():
+                if (
+                    self._stop_event.is_set()
+                    or self._preprocessing_thread is None
+                    or not self._preprocessing_thread.is_alive()
+                ):
                     return None
                 continue
 
@@ -534,9 +521,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 # Process full batches and put them in the queue
                 while len(self._batch_list) >= self.batch_size:
                     batch = torch.stack(self._batch_list[: self.batch_size], dim=0)
-                    model_kwargs = {
-                        mk: v[: self.batch_size] for mk, v in self._model_kwargs.items()
-                    }
+                    model_kwargs = {mk: v[: self.batch_size] for mk, v in self._model_kwargs.items()}
 
                     self._safe_put((batch, model_kwargs))
 
@@ -545,10 +530,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                         self._batch_list, self._model_kwargs = [], {}
                     else:
                         self._batch_list = self._batch_list[self.batch_size :]
-                        self._model_kwargs = {
-                            mk: v[self.batch_size :]
-                            for mk, v in self._model_kwargs.items()
-                        }
+                        self._model_kwargs = {mk: v[self.batch_size :] for mk, v in self._model_kwargs.items()}
 
             # Process any remaining inputs
             if len(self._batch_list) > 0:
@@ -566,10 +548,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         """Cleanup method to ensure threads are stopped"""
         if hasattr(self, "_stop_event"):
             self._stop_event.set()
-        if (
-            hasattr(self, "_preprocessing_thread")
-            and self._preprocessing_thread is not None
-        ):
+        if hasattr(self, "_preprocessing_thread") and self._preprocessing_thread is not None:
             self._preprocessing_thread.join(timeout=1.0)
 
 
@@ -585,14 +564,9 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
         super().__init__(model, **kwargs)
         self.dynamic = dynamic
         if dynamic is not None and self.batch_size != 1:
-            raise ValueError(
-                "Dynamic cropping can only be used with batch size 1. Please set "
-                "your batch size to 1."
-            )
+            raise ValueError("Dynamic cropping can only be used with batch size 1. Please set your batch size to 1.")
 
-    def predict(
-        self, inputs: torch.Tensor, **kwargs
-    ) -> list[dict[str, dict[str, np.ndarray]]]:
+    def predict(self, inputs: torch.Tensor, **kwargs) -> list[dict[str, dict[str, np.ndarray]]]:
         """Makes predictions from a model input and output
 
         Args:
@@ -620,16 +594,11 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
             raw_predictions = self.model.get_predictions(outputs)
 
         if self.dynamic is not None:
-            raw_predictions["bodypart"]["poses"] = self.dynamic.update(
-                raw_predictions["bodypart"]["poses"]
-            )
+            raw_predictions["bodypart"]["poses"] = self.dynamic.update(raw_predictions["bodypart"]["poses"])
 
         predictions = [
             {
-                head: {
-                    pred_name: pred[b].cpu().numpy()
-                    for pred_name, pred in head_outputs.items()
-                }
+                head: {pred_name: pred[b].cpu().numpy() for pred_name, pred in head_outputs.items()}
                 for head, head_outputs in raw_predictions.items()
             }
             for b in range(batch_size)
@@ -682,10 +651,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
     @torch.inference_mode()
     def inference(
         self,
-        images: (
-            Iterable[str | Path | np.ndarray]
-            | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]
-        ),
+        images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
         shelf_writer: shelving.ShelfWriter | None = None,
     ) -> list[dict[str, np.ndarray]]:
         """Run CTD model inference on the given dataset
@@ -724,9 +690,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
 
         return results
 
-    def predict(
-        self, inputs: torch.Tensor, **kwargs
-    ) -> list[dict[str, dict[str, np.ndarray]]]:
+    def predict(self, inputs: torch.Tensor, **kwargs) -> list[dict[str, dict[str, np.ndarray]]]:
         """Makes predictions from a model input and output
 
         Args:
@@ -757,10 +721,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
 
         predictions = [
             {
-                head: {
-                    pred_name: pred[b].cpu().numpy()
-                    for pred_name, pred in head_outputs.items()
-                }
+                head: {pred_name: pred[b].cpu().numpy() for pred_name, pred in head_outputs.items()}
                 for head, head_outputs in raw_predictions.items()
             }
             for b in range(len(inputs))
@@ -807,10 +768,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
 
     def _ctd_tracking_inference(
         self,
-        images: (
-            Iterable[str | Path | np.ndarray]
-            | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]
-        ),
+        images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
         shelf_writer: shelving.ShelfWriter | None = None,
     ) -> list[dict[str, np.ndarray]]:
         results = []
@@ -846,15 +804,8 @@ class CTDInferenceRunner(PoseInferenceRunner):
         self._bu_age += 1
         if (
             self._prev_pose is None
-            or (
-                self._missing_idvs
-                and self.tracking.bu_on_lost_idv
-                and self._bu_age >= self.tracking.bu_max_frequency
-            )
-            or (
-                self.tracking.bu_min_frequency is not None
-                and self._bu_age >= self.tracking.bu_min_frequency
-            )
+            or (self._missing_idvs and self.tracking.bu_on_lost_idv and self._bu_age >= self.tracking.bu_max_frequency)
+            or (self.tracking.bu_min_frequency is not None and self._bu_age >= self.tracking.bu_min_frequency)
         ):
             self._bu_age = 0
             inputs, context = self.add_conditions(data)
@@ -996,9 +947,7 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
         """
         super().__init__(model, **kwargs)
 
-    def predict(
-        self, inputs: torch.Tensor, **kwargs
-    ) -> list[dict[str, dict[str, np.ndarray]]]:
+    def predict(self, inputs: torch.Tensor, **kwargs) -> list[dict[str, dict[str, np.ndarray]]]:
         """Makes predictions from a model input and output
 
         Args:

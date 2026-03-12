@@ -131,25 +131,19 @@ class ExtractFrames(DefaultTab):
         self.extraction_method_widget = QtWidgets.QComboBox()
         options = ["automatic", "manual"]
         self.extraction_method_widget.addItems(options)
-        self.extraction_method_widget.currentTextChanged.connect(
-            self.log_extraction_method
-        )
+        self.extraction_method_widget.currentTextChanged.connect(self.log_extraction_method)
 
         # Frame extraction algorithm
         ext_algo_label = QtWidgets.QLabel("Extraction algorithm")
         self.extraction_algorithm_widget = QtWidgets.QComboBox()
         self.extraction_algorithm_widget.addItems(DLCParams.FRAME_EXTRACTION_ALGORITHMS)
-        self.extraction_algorithm_widget.currentTextChanged.connect(
-            self.log_extraction_algorithm
-        )
+        self.extraction_algorithm_widget.currentTextChanged.connect(self.log_extraction_algorithm)
 
         # Frame cropping
         frame_crop_label = QtWidgets.QLabel("Frame cropping")
         self.frame_cropping_widget = QtWidgets.QComboBox()
         self.frame_cropping_widget.addItems(["disabled", "read from config", "GUI"])
-        self.frame_cropping_widget.currentTextChanged.connect(
-            self.log_frame_cropping_choice
-        )
+        self.frame_cropping_widget.currentTextChanged.connect(self.log_frame_cropping_choice)
 
         # Cluster step
         cluster_step_label = QtWidgets.QLabel("Cluster step")
@@ -208,9 +202,7 @@ class ExtractFrames(DefaultTab):
                 return
             first_video = videos[0]
             if len(videos) > 1:
-                self.root.writer.write(
-                    f"Only the first video ({first_video}) will be opened."
-                )
+                self.root.writer.write(f"Only the first video ({first_video}) will be opened.")
             video_path_in_folder = self._check_symlink(first_video)
             _ = launch_napari(str(video_path_in_folder))
             return
@@ -258,19 +250,14 @@ class ExtractFrames(DefaultTab):
                 return
 
             if len(failed) == 0:
-                message = (
-                    "Frame extraction failed. Please check your terminal output "
-                    "for more information."
-                )
+                message = "Frame extraction failed. Please check your terminal output for more information."
             elif all(failed):
                 message = "Frame extraction failed. Video files must be corrupted."
             elif any(failed):
                 message = "Although most frames were extracted, some were invalid."
                 root_message = "failed to extract (some) frames"
             else:
-                message = (
-                    "Frames were successfully extracted, for the videos of interest."
-                )
+                message = "Frames were successfully extracted, for the videos of interest."
                 root_message = "successfully extracted frames"
 
         msg = QtWidgets.QMessageBox()

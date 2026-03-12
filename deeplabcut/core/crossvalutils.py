@@ -37,9 +37,7 @@ def _set_up_evaluation(data):
     params["num_joints"] = len(params["joint_names"])
     partaffinityfield_graph = data["metadata"]["PAFgraph"]
     params["paf"] = np.arange(len(partaffinityfield_graph))
-    params["paf_graph"] = params["paf_links"] = [
-        partaffinityfield_graph[l] for l in params["paf"]
-    ]
+    params["paf_graph"] = params["paf_links"] = [partaffinityfield_graph[l] for l in params["paf"]]
     params["bpts"] = params["ibpts"] = range(params["num_joints"])
     params["imnames"] = [fn for fn in list(data) if fn != "metadata"]
     return params
@@ -56,9 +54,7 @@ def _unsorted_unique(array):
     return np.asarray(array)[np.sort(inds)]
 
 
-def find_closest_neighbors(
-    query: np.ndarray, ref: np.ndarray, k: int = 3
-) -> np.ndarray:
+def find_closest_neighbors(query: np.ndarray, ref: np.ndarray, k: int = 3) -> np.ndarray:
     """Greedy matching of predicted keypoints to ground truth keypoints
 
     Args:
@@ -87,9 +83,7 @@ def find_closest_neighbors(
     return neighbors
 
 
-def _calc_separability(
-    vals_left, vals_right, n_bins=101, metric="jeffries", max_sensitivity=False
-):
+def _calc_separability(vals_left, vals_right, n_bins=101, metric="jeffries", max_sensitivity=False):
     if metric not in ("jeffries", "auc"):
         raise ValueError("`metric` should be either 'jeffries' or 'auc'.")
 
@@ -100,9 +94,7 @@ def _calc_separability(
     hist_right = hist_right / hist_right.sum()
     tpr = np.cumsum(hist_right)
     if metric == "jeffries":
-        sep = np.sqrt(
-            2 * (1 - np.sum(np.sqrt(hist_left * hist_right)))
-        )  # Jeffries-Matusita distance
+        sep = np.sqrt(2 * (1 - np.sum(np.sqrt(hist_left * hist_right))))  # Jeffries-Matusita distance
     else:
         sep = np.trapz(np.cumsum(hist_left), tpr)
     if max_sensitivity:
@@ -224,12 +216,7 @@ def _benchmark_paf_graphs(
     params = ass.metadata
     image_paths = params["imnames"]
     bodyparts = params["joint_names"]
-    idx = (
-        data[image_paths[0]]["groundtruth"][2]
-        .unstack("coords")
-        .reindex(bodyparts, level="bodyparts")
-        .index
-    )
+    idx = data[image_paths[0]]["groundtruth"][2].unstack("coords").reindex(bodyparts, level="bodyparts").index
     mask_multi = idx.get_level_values("individuals") != "single"
     if not mask_multi.all():
         idx = idx.drop("single", level="individuals")
@@ -267,12 +254,8 @@ def _benchmark_paf_graphs(
             # get the indices of the images in the training set
             dataset_idx = [data[image_name]["index"] for image_name in image_paths]
             for inds in split_inds:
-                ass_gt = {
-                    k: v for k, v in ass_true_dict.items() if dataset_idx[k] in inds
-                }
-                ass_pred = {
-                    k: v for k, v in ass.assemblies.items() if dataset_idx[k] in inds
-                }
+                ass_gt = {k: v for k, v in ass_true_dict.items() if dataset_idx[k] in inds}
+                ass_pred = {k: v for k, v in ass.assemblies.items() if dataset_idx[k] in inds}
 
                 oks.append(
                     evaluate_assembly(
@@ -308,10 +291,7 @@ def _benchmark_paf_graphs(
                 if n_dets:
                     scores[i, 0] = 1
             else:
-                animals = [
-                    np.c_[animal.data, np.ones(animal.data.shape[0]) * n]
-                    for n, animal in enumerate(animals)
-                ]
+                animals = [np.c_[animal.data, np.ones(animal.data.shape[0]) * n] for n, animal in enumerate(animals)]
                 hyp = np.concatenate(animals)
                 hyp = hyp[~np.isnan(hyp).any(axis=1)]
                 scores[i, 0] = max(0, (n_dets - hyp.shape[0]) / n_dets)
@@ -362,12 +342,7 @@ def _get_n_best_paf_graphs(
         # Only 1 animal, let us return the full graph indices only
         return ([existing_edges], dict(zip(existing_edges, [0] * len(existing_edges))))
 
-    scores, _ = zip(
-        *[
-            _calc_separability(between_train[n], within_train[n], metric=metric)
-            for n in existing_edges
-        ]
-    )
+    scores, _ = zip(*[_calc_separability(between_train[n], within_train[n], metric=metric) for n in existing_edges])
 
     # Find minimal skeleton
     G = nx.Graph()
@@ -424,9 +399,7 @@ def cross_validate_paf_graphs(
         metadata = pickle.load(file)
 
     params = _set_up_evaluation(data)
-    to_ignore = auxfun_multianimal.filter_unwanted_paf_connections(
-        cfg, params["paf_graph"]
-    )
+    to_ignore = auxfun_multianimal.filter_unwanted_paf_connections(cfg, params["paf_graph"])
     best_graphs = _get_n_best_paf_graphs(
         data,
         metadata,
@@ -471,9 +444,7 @@ def cross_validate_paf_graphs(
     if not overwrite_config:
         shutil.copy(pose_config, pose_config.replace(".yaml", "_old.yaml"))
     inds = list(paf_inds[size_opt])
-    auxiliaryfunctions.edit_config(
-        pose_config, {"paf_best": [int(ind) for ind in inds]}
-    )
+    auxiliaryfunctions.edit_config(pose_config, {"paf_best": [int(ind) for ind in inds]})
     if output_name:
         with open(output_name, "wb") as file:
             pickle.dump([results], file)

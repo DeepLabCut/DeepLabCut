@@ -121,11 +121,7 @@ class HuggingFaceWeightsMixin:
 
         logging.info(f"Downloading the pre-trained backbone to {model_path}")
         self.backbone_weight_folder.mkdir(exist_ok=True, parents=False)
-        output_path = Path(
-            hf_hub_download(
-                self.repo_id, filename, cache_dir=self.backbone_weight_folder
-            )
-        )
+        output_path = Path(hf_hub_download(self.repo_id, filename, cache_dir=self.backbone_weight_folder))
 
         # resolve gets the actual path if the output path is a symlink
         output_path = output_path.resolve()

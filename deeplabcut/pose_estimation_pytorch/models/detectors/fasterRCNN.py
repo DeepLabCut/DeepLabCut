@@ -69,6 +69,4 @@ class FasterRCNN(TorchvisionDetectorAdaptor):
         # Modify the base predictor to output the correct number of classes
         num_classes = 2
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
-        self.model.roi_heads.box_predictor = detection.faster_rcnn.FastRCNNPredictor(
-            in_features, num_classes
-        )
+        self.model.roi_heads.box_predictor = detection.faster_rcnn.FastRCNNPredictor(in_features, num_classes)

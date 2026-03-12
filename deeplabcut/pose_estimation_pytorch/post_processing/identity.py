@@ -9,15 +9,14 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Functions to assign identity to predictions from an identity head"""
+
 from __future__ import annotations
 
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 
-def assign_identity(
-    predictions: np.ndarray, identity_scores: np.ndarray
-) -> np.ndarray:
+def assign_identity(predictions: np.ndarray, identity_scores: np.ndarray) -> np.ndarray:
     """
     Args:
         predictions: Pose predictions for an image, with shape (num_individuals,

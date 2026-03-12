@@ -44,10 +44,8 @@ def modify_train_test_cfg(config_path, shuffle=1, modelprefix=""):
     # use dlcr net
     # use gradient masking
     # set batch size as 8
-    trainposeconfigfile, testposeconfigfile, snapshotfolder = (
-        compat.return_train_network_path(
-            config_path, shuffle=shuffle, modelprefix=modelprefix, trainingsetindex=0
-        )
+    trainposeconfigfile, testposeconfigfile, snapshotfolder = compat.return_train_network_path(
+        config_path, shuffle=shuffle, modelprefix=modelprefix, trainingsetindex=0
     )
 
     train_cfg = auxiliaryfunctions.read_plainconfig(trainposeconfigfile)
@@ -111,9 +109,7 @@ class SingleDLC_config:
         corer2move2 = [50, 50]
         move2corner = True
         identity = False
-        self.cfg = {
-            k: v for k, v in vars().items() if "__" not in k and "self" not in k
-        }
+        self.cfg = {k: v for k, v in vars().items() if "__" not in k and "self" not in k}
 
     def create_cfg(self, proj_root, kwargs):
         self.cfg.update(kwargs)
@@ -162,9 +158,7 @@ class MaDLC_config:
         corer2move2 = [50, 50]
         move2corner = True
         identity = False
-        self.cfg = {
-            k: v for k, v in vars().items() if "__" not in k and "self" not in k
-        }
+        self.cfg = {k: v for k, v in vars().items() if "__" not in k and "self" not in k}
 
     def create_cfg(self, proj_root, kwargs):
         self.cfg.update(kwargs)
@@ -203,17 +197,12 @@ def _generic2madlc(
 
     scorer = "maDLC_scorer"
     # this line is taken from dlc's multi animal dataset creation function
-    train_fraction = round(
-        len(train_images) * 1.0 / (len(train_images) + len(test_images)), 2
-    )
+    train_fraction = round(len(train_images) * 1.0 / (len(train_images) + len(test_images)), 2)
 
     # need to fake a video path
     # let's use individual dataset names as fake video name
     # merged_dataset_name = '_'.join(meta['mat_datasets'])
-    video_sets = {
-        f"{dataset_name}.mp4": {"crop": "0, 400, 0, 400"}
-        for dataset_name in meta["mat_datasets"]
-    }
+    video_sets = {f"{dataset_name}.mp4": {"crop": "0, 400, 0, 400"} for dataset_name in meta["mat_datasets"]}
 
     modify_dict = dict(
         Task=meta["dataset_name"],
@@ -236,9 +225,7 @@ def _generic2madlc(
     imageid2datasetname = meta["imageid2datasetname"]
 
     for dataset_name in meta["mat_datasets"]:
-        os.makedirs(
-            os.path.join(proj_root, "labeled-data", dataset_name), exist_ok=True
-        )
+        os.makedirs(os.path.join(proj_root, "labeled-data", dataset_name), exist_ok=True)
 
     # also, to make sure the split is right, we will have to pass the right indices
 
@@ -283,13 +270,8 @@ def _generic2madlc(
 
     temp_count = 0
     for dataset_name, dataset in meta["mat_datasets"].items():
-
-        dataset_total_images = (
-            dataset.generic_train_images + dataset.generic_test_images
-        )
-        dataset_total_annotations = (
-            dataset.generic_train_annotations + dataset.generic_test_annotations
-        )
+        dataset_total_images = dataset.generic_train_images + dataset.generic_test_images
+        dataset_total_annotations = dataset.generic_train_annotations + dataset.generic_test_annotations
 
         dataset_index = []
 
@@ -321,30 +303,18 @@ def _generic2madlc(
                 # need to be careful here to assign right keypoints to right people
                 if coord[0] > 0 and coord[1] > 0:
                     # leave them to NaN if values are 0
-                    df.loc[file_name][
-                        scorer, f"individual{individual_id}", kpt_name, "x"
-                    ] = coord[0]
-                    df.loc[file_name][
-                        scorer, f"individual{individual_id}", kpt_name, "y"
-                    ] = coord[1]
+                    df.loc[file_name][scorer, f"individual{individual_id}", kpt_name, "x"] = coord[0]
+                    df.loc[file_name][scorer, f"individual{individual_id}", kpt_name, "y"] = coord[1]
                 elif coord[2] == -1:
-                    df.loc[file_name][
-                        scorer, f"individual{individual_id}", kpt_name, "x"
-                    ] = -1
-                    df.loc[file_name][
-                        scorer, f"individual{individual_id}", kpt_name, "y"
-                    ] = -1
+                    df.loc[file_name][scorer, f"individual{individual_id}", kpt_name, "x"] = -1
+                    df.loc[file_name][scorer, f"individual{individual_id}", kpt_name, "y"] = -1
         df.to_hdf(
-            os.path.join(
-                proj_root, "labeled-data", dataset_name, f"CollectedData_{scorer}.h5"
-            ),
+            os.path.join(proj_root, "labeled-data", dataset_name, f"CollectedData_{scorer}.h5"),
             key="df_with_missing",
             mode="w",
         )
     # paf_graph default as None. But I am not sure how to do better
-    create_multianimaltraining_dataset(
-        os.path.join(proj_root, "config.yaml"), paf_graph=None
-    )
+    create_multianimaltraining_dataset(os.path.join(proj_root, "config.yaml"), paf_graph=None)
 
     # dlc's merge_annotation messes up my indices, so I will need to overwrite the documentation file
     # I could have done it in a more elegant way if I could modify part of DLC source code, but for backward compatibility reasons, overriding documentation is smarter
@@ -355,9 +325,7 @@ def _generic2madlc(
 
     train_folder = os.path.join(proj_root, auxiliaryfunctions.GetTrainingSetFolder(cfg))
 
-    datafilename, metafilename = auxiliaryfunctions.GetDataandMetaDataFilenames(
-        train_folder, train_fraction, 1, cfg
-    )
+    datafilename, metafilename = auxiliaryfunctions.GetDataandMetaDataFilenames(train_folder, train_fraction, 1, cfg)
 
     modify_train_test_cfg(config_path)
 
@@ -387,14 +355,10 @@ def _generic2madlc(
         pickle.dump(parent_trace, f)
 
     trainIndices = [
-        idx
-        for idx, image in enumerate(dlc_df.index)
-        if get_filename(image).split(os.sep)[-1] in _filter_train_images
+        idx for idx, image in enumerate(dlc_df.index) if get_filename(image).split(os.sep)[-1] in _filter_train_images
     ]
     testIndices = [
-        idx
-        for idx, image in enumerate(dlc_df.index)
-        if get_filename(image).split(os.sep)[-1] in _filter_test_images
+        idx for idx, image in enumerate(dlc_df.index) if get_filename(image).split(os.sep)[-1] in _filter_test_images
     ]
 
     with open(metafilename, "rb") as f:
@@ -422,7 +386,6 @@ def _generic2madlc(
     print(f"overwriting data file {datafilename}")
 
     with open(os.path.join(proj_root, datafilename), "wb") as f:
-
         pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -447,17 +410,12 @@ def _generic2sdlc(
     bodyparts = meta["categories"]["keypoints"]
     scorer = "singleDLC_scorer"
 
-    train_fraction = round(
-        len(train_images) * 1.0 / (len(train_images) + len(test_images)), 2
-    )
+    train_fraction = round(len(train_images) * 1.0 / (len(train_images) + len(test_images)), 2)
 
     # need to fake a video path
     # let's use individual dataset names as fake video name
 
-    video_sets = {
-        f"{dataset_name}.mp4": {"crop": "0, 400, 0, 400"}
-        for dataset_name in meta["mat_datasets"].keys()
-    }
+    video_sets = {f"{dataset_name}.mp4": {"crop": "0, 400, 0, 400"} for dataset_name in meta["mat_datasets"].keys()}
 
     modify_dict = dict(
         Task=meta["dataset_name"],
@@ -474,13 +432,9 @@ def _generic2sdlc(
     imageid2datasetname = meta["imageid2datasetname"]
 
     for dataset_name in meta["mat_datasets"]:
-        os.makedirs(
-            os.path.join(proj_root, "labeled-data", dataset_name), exist_ok=True
-        )
+        os.makedirs(os.path.join(proj_root, "labeled-data", dataset_name), exist_ok=True)
 
-    columnindex = pd.MultiIndex.from_product(
-        [[scorer], bodyparts, ["x", "y"]], names=["scorer", "bodyparts", "coords"]
-    )
+    columnindex = pd.MultiIndex.from_product([[scorer], bodyparts, ["x", "y"]], names=["scorer", "bodyparts", "coords"])
 
     total_images = train_images + test_images
     total_annotations = train_annotations + test_annotations
@@ -527,13 +481,8 @@ def _generic2sdlc(
     # so we know where to put the next annotation if there are multiple individuals in that image
 
     for dataset_name, dataset in meta["mat_datasets"].items():
-
-        dataset_total_images = (
-            dataset.generic_train_images + dataset.generic_test_images
-        )
-        dataset_total_annotations = (
-            dataset.generic_train_annotations + dataset.generic_test_annotations
-        )
+        dataset_total_images = dataset.generic_train_images + dataset.generic_test_images
+        dataset_total_annotations = dataset.generic_train_annotations + dataset.generic_test_annotations
 
         dataset_index = []
         freq = {}
@@ -563,7 +512,6 @@ def _generic2sdlc(
                 # need to be careful here to assign right keypoints to right people
 
                 if coord[0] > 0 and coord[1] > 0:
-
                     df.loc[file_name][scorer, kpt_name, "x"] = coord[0]
                     df.loc[file_name][scorer, kpt_name, "y"] = coord[1]
                 elif coord[2] == -1:
@@ -573,9 +521,7 @@ def _generic2sdlc(
 
         df = df.dropna(how="all")
         df.to_hdf(
-            os.path.join(
-                proj_root, "labeled-data", dataset_name, f"CollectedData_{scorer}.h5"
-            ),
+            os.path.join(proj_root, "labeled-data", dataset_name, f"CollectedData_{scorer}.h5"),
             key="df_with_missing",
             mode="w",
         )
@@ -591,9 +537,7 @@ def _generic2sdlc(
 
     train_folder = os.path.join(proj_root, auxiliaryfunctions.GetTrainingSetFolder(cfg))
 
-    datafilename, metafilename = auxiliaryfunctions.GetDataandMetaDataFilenames(
-        train_folder, train_fraction, 1, cfg
-    )
+    datafilename, metafilename = auxiliaryfunctions.GetDataandMetaDataFilenames(train_folder, train_fraction, 1, cfg)
 
     modify_train_test_cfg(config_path)
 
@@ -623,14 +567,10 @@ def _generic2sdlc(
         pickle.dump(parent_trace, f)
 
     trainIndices = [
-        idx
-        for idx, image in enumerate(dlc_df.index)
-        if get_filename(image).split(os.sep)[-1] in _filter_train_images
+        idx for idx, image in enumerate(dlc_df.index) if get_filename(image).split(os.sep)[-1] in _filter_train_images
     ]
     testIndices = [
-        idx
-        for idx, image in enumerate(dlc_df.index)
-        if get_filename(image).split(os.sep)[-1] in _filter_test_images
+        idx for idx, image in enumerate(dlc_df.index) if get_filename(image).split(os.sep)[-1] in _filter_test_images
     ]
 
     with open(metafilename, "rb") as f:
@@ -645,9 +585,7 @@ def _generic2sdlc(
     # need to overwrite the true data file too
     nbodyparts = len(bodyparts)
 
-    data, MatlabData = format_single_training_data(
-        dlc_df, trainIndices, nbodyparts, cfg["project_path"]
-    )
+    data, MatlabData = format_single_training_data(dlc_df, trainIndices, nbodyparts, cfg["project_path"])
 
     print(f"overwriting data file {datafilename}")
 
@@ -748,19 +686,10 @@ def _generic2coco(
         image["file_name"] = file_name
         lookuptable[dest] = src
 
-    train_annotations = [
-        train_anno
-        for train_anno in train_annotations
-        if train_anno["image_id"] not in broken_links
-    ]
-    test_annotations = [
-        test_anno
-        for test_anno in test_annotations
-        if test_anno["image_id"] not in broken_links
-    ]
+    train_annotations = [train_anno for train_anno in train_annotations if train_anno["image_id"] not in broken_links]
+    test_annotations = [test_anno for test_anno in test_annotations if test_anno["image_id"] not in broken_links]
 
     with open(os.path.join(proj_root, "annotations", "train.json"), "w") as f:
-
         train_json_obj = dict(
             images=train_images,
             annotations=train_annotations,

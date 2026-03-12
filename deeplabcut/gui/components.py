@@ -182,9 +182,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         self.root.video_files_.connect(self._update_video_selection)
 
         # Number of selected videos text
-        self.selected_videos_text = QtWidgets.QLabel(
-            ""
-        )  # updated when videos are selected
+        self.selected_videos_text = QtWidgets.QLabel("")  # updated when videos are selected
 
         # Clear video selection
         self.clear_videos = QtWidgets.QPushButton("Clear selection")
@@ -264,9 +262,7 @@ class SnapshotSelectionWidget(QtWidgets.QWidget):
         self.select_snapshot_button.clicked.connect(self.select_snapshot)
 
         # Selected snapshot text
-        self.selected_snapshot_text = QtWidgets.QLabel(
-            ""
-        )  # updated when snapshot is selected
+        self.selected_snapshot_text = QtWidgets.QLabel("")  # updated when snapshot is selected
 
         # Clear snapshot selection
         self.clear_snapshot_button = QtWidgets.QPushButton("Clear selection")
@@ -284,9 +280,7 @@ class SnapshotSelectionWidget(QtWidgets.QWidget):
             self.selected_snapshot_text.setText("")
             self.clear_snapshot_button.hide()
         else:
-            self.selected_snapshot_text.setText(
-                f"{os.path.basename(self.selected_snapshot)}"
-            )
+            self.selected_snapshot_text.setText(f"{os.path.basename(self.selected_snapshot)}")
             self.clear_snapshot_button.show()
 
     def select_snapshot(self):
@@ -334,9 +328,7 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
         self.select_conditions_button.clicked.connect(self.select_conditions)
 
         # Selected conditions text
-        self.selected_conditions_text = QtWidgets.QLabel(
-            ""
-        )  # updated when conditions are selected
+        self.selected_conditions_text = QtWidgets.QLabel("")  # updated when conditions are selected
 
         layout.addWidget(self.select_conditions_button)
         layout.addWidget(self.selected_conditions_text)
@@ -350,9 +342,7 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
             return "..." + path[-(max_length - 3) :]
 
         self.selected_conditions_text.setText(
-            ""
-            if self.selected_conditions is None
-            else f"{_shorten_path(self.selected_conditions)}"
+            "" if self.selected_conditions is None else f"{_shorten_path(self.selected_conditions)}"
         )
 
     def select_conditions(self):
@@ -397,9 +387,7 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
                 selected_conditions = None
 
         # When Canceling a file selection, Qt returns an empty string as selected file
-        self.selected_conditions = (
-            str(os.path.abspath(selected_conditions)) if selected_conditions else None
-        )
+        self.selected_conditions = str(os.path.abspath(selected_conditions)) if selected_conditions else None
 
         self._update_selected_conditions_display()
 
@@ -456,9 +444,7 @@ class DefaultTab(QtWidgets.QWidget):
 
     def _init_default_layout(self):
         # Add tab header
-        self.main_layout.addWidget(
-            _create_label_widget(self.h1_description, "font:bold;", (10, 10, 0, 10))
-        )
+        self.main_layout.addWidget(_create_label_widget(self.h1_description, "font:bold;", (10, 10, 0, 10)))
 
         # Add separating line
         self.separator = QtWidgets.QFrame()
@@ -474,9 +460,7 @@ class DefaultTab(QtWidgets.QWidget):
 
 
 class EditYamlButton(QtWidgets.QPushButton):
-    def __init__(
-        self, button_label: str, filepath: str, parent: QtWidgets.QWidget = None
-    ):
+    def __init__(self, button_label: str, filepath: str, parent: QtWidgets.QWidget = None):
         super().__init__(parent)
         self.filepath = filepath
         self.parent = parent

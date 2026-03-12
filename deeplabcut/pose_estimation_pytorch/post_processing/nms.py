@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Methods for non-maximum suppression of detected poses."""
+
 import numpy as np
 
 from deeplabcut.core.inferenceutils import calc_object_keypoint_similarity

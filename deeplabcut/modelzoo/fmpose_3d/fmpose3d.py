@@ -19,10 +19,10 @@ def get_fmpose3d_inference_api(
     snapshot_path: str | None = None,
     device: str | None = None,
     config_kwargs: dict = {},
-    ) -> FMPose3DInference:
+) -> FMPose3DInference:
     """
     Get a FMPose3DInference API for a given model type and snapshot path.
-    
+
     Args:
         model_type: one of the supported model types: "fmpose3d_humans", "fmpose3d_animals",
         snapshot_path: The path to the snapshot file. If None, FMPose3D will download the default snapshot.
@@ -30,7 +30,7 @@ def get_fmpose3d_inference_api(
         config_kwargs: Additional keyword arguments to pass to the FMPose3DConfig.
     Returns:
         FMPose3DInference: An FMPose3DInference API runner.
-    
+
     Example Usages
     ```python
     # Initialize the API (downloads the default weights automatically from huggingface)
@@ -47,10 +47,6 @@ def get_fmpose3d_inference_api(
     predictions_3d = fmpose.pose_3d(keypoints_2d=keypoints_2d)
     ```
     """
-    model_config = FMPose3DConfig(model_type=model_type, **config_kwargs)   
-    fmpose3d_api = FMPose3DInference(
-        model_config,
-        model_weights_path=snapshot_path,
-        device=device
-    )
+    model_config = FMPose3DConfig(model_type=model_type, **config_kwargs)
+    fmpose3d_api = FMPose3DInference(model_config, model_weights_path=snapshot_path, device=device)
     return fmpose3d_api

@@ -147,9 +147,7 @@ def benchmark_paf_graphs(
             print()
 
         # update the edges to keep in the PyTorch configuration file
-        loader.update_model_cfg(
-            {"model.heads.bodypart.predictor.edges_to_keep": best_edges}
-        )
+        loader.update_model_cfg({"model.heads.bodypart.predictor.edges_to_keep": best_edges})
 
         # update the edges indices
         test_config = loader.model_folder.parent / "test" / "pose_cfg.yaml"
@@ -175,9 +173,7 @@ def _calc_separability(
     hist_right = hist_right / hist_right.sum()
     tpr = np.cumsum(hist_right)
     if metric == "jeffries":
-        sep = np.sqrt(
-            2 * (1 - np.sum(np.sqrt(hist_left * hist_right)))
-        )  # Jeffries-Matusita distance
+        sep = np.sqrt(2 * (1 - np.sum(np.sqrt(hist_left * hist_right))))  # Jeffries-Matusita distance
     else:
         sep = np.trapz(np.cumsum(hist_left), tpr)
     if max_sensitivity:
@@ -221,9 +217,7 @@ def compute_within_between_paf_costs(
             inds = np.flatnonzero(np.all(~np.isnan(coord_pred), axis=1))
             inds_gt = np.flatnonzero(np.all(~np.isnan(coord_gt), axis=1))
             if inds.size and inds_gt.size:
-                neighbors = find_closest_neighbors(
-                    coord_gt[inds_gt], coord_pred[inds], k=3
-                )
+                neighbors = find_closest_neighbors(coord_gt[inds_gt], coord_pred[inds], k=3)
                 found = neighbors != -1
                 lookup[i] = dict(zip(inds_gt[found], inds[neighbors[found]]))
 
@@ -259,17 +253,10 @@ def get_n_best_paf_graphs(
     return_preds = model.heads.bodypart.predictor.return_preds
     model.heads.bodypart.predictor.return_preds = True
 
-    within_train, between_train = compute_within_between_paf_costs(
-        model, ground_truth, preprocessor, device
-    )
+    within_train, between_train = compute_within_between_paf_costs(model, ground_truth, preprocessor, device)
     existing_edges = list(set(k for k, v in within_train.items() if v))
 
-    scores, _ = zip(
-        *[
-            _calc_separability(between_train[n], within_train[n], metric=metric)
-            for n in existing_edges
-        ]
-    )
+    scores, _ = zip(*[_calc_separability(between_train[n], within_train[n], metric=metric) for n in existing_edges])
 
     # Find minimal skeleton
     G = nx.Graph()

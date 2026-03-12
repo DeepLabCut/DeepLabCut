@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 """Convolution blocks for mobilenet."""
+
 import contextlib
 import functools
 
@@ -80,9 +81,10 @@ def _split_divisible(num, num_ways, divisible_by=8):
 @contextlib.contextmanager
 def _v1_compatible_scope_naming(scope):
     if scope is None:  # Create uniqified separable blocks.
-        with tf.compat.v1.variable_scope(
-            None, default_name="separable"
-        ) as s, tf.compat.v1.name_scope(s.original_name_scope):
+        with (
+            tf.compat.v1.variable_scope(None, default_name="separable") as s,
+            tf.compat.v1.name_scope(s.original_name_scope),
+        ):
             yield ""
     else:
         # We use scope_depthwise, scope_pointwise for compatibility with V1 ckpts.
@@ -238,19 +240,16 @@ def expanded_conv(
     Raises:
       TypeError: on inval
     """
-    with tf.compat.v1.variable_scope(
-        scope, default_name="expanded_conv"
-    ) as s, tf.compat.v1.name_scope(s.original_name_scope):
+    with (
+        tf.compat.v1.variable_scope(scope, default_name="expanded_conv") as s,
+        tf.compat.v1.name_scope(s.original_name_scope),
+    ):
         prev_depth = input_tensor.get_shape().as_list()[3]
         if depthwise_location not in [None, "input", "output", "expansion"]:
-            raise TypeError(
-                "%r is unknown value for depthwise_location" % depthwise_location
-            )
+            raise TypeError("%r is unknown value for depthwise_location" % depthwise_location)
         if use_explicit_padding:
             if padding != "SAME":
-                raise TypeError(
-                    "`use_explicit_padding` should only be used with " '"SAME" padding.'
-                )
+                raise TypeError('`use_explicit_padding` should only be used with "SAME" padding.')
             padding = "VALID"
         depthwise_func = functools.partial(
             slim.separable_conv2d,

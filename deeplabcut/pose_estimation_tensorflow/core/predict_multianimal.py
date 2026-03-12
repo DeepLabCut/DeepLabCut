@@ -259,9 +259,7 @@ def predict_batched_peaks_and_costs(
 
 
 def find_local_maxima(scmap, radius, threshold):
-    peak_idx = peak_local_max(
-        scmap, min_distance=radius, threshold_abs=threshold, exclude_border=False
-    )
+    peak_idx = peak_local_max(scmap, min_distance=radius, threshold_abs=threshold, exclude_border=False)
     grid = np.zeros_like(scmap, dtype=bool)
     grid[tuple(peak_idx.T)] = True
     labels = measurements.label(grid)[0]

@@ -81,14 +81,10 @@ class CreateTrainingDataset(DefaultTab):
         self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
 
     def set_edit_table_visibility(self) -> None:
-        has_conversion_tables = bool(
-            self.root.cfg.get("SuperAnimalConversionTables", {})
-        )
+        has_conversion_tables = bool(self.root.cfg.get("SuperAnimalConversionTables", {}))
         is_pytorch_engine = self.root.engine == Engine.PYTORCH
         is_finetuning = self.weight_init_selector.with_decoder
-        self.mapping_button.setVisible(
-            has_conversion_tables & is_pytorch_engine & is_finetuning
-        )
+        self.mapping_button.setVisible(has_conversion_tables & is_pytorch_engine & is_finetuning)
 
     def show_help_dialog(self):
         dialog = QtWidgets.QDialog(self)
@@ -136,9 +132,7 @@ class CreateTrainingDataset(DefaultTab):
         self.net_choice.currentTextChanged.connect(self.log_net_choice)
 
         # Update Net types when selected weight init changes
-        self.weight_init_selector.weight_init_choice.currentTextChanged.connect(
-            lambda _: self.update_nets(None)
-        )
+        self.weight_init_selector.weight_init_choice.currentTextChanged.connect(lambda _: self.update_nets(None))
         self.weight_init_selector.weight_init_choice.currentTextChanged.connect(
             lambda _: self.set_edit_table_visibility()
         )
@@ -148,26 +142,18 @@ class CreateTrainingDataset(DefaultTab):
         self.detector_choice = QtWidgets.QComboBox()
         self.detector_choice.setMinimumWidth(200)
         self.update_detectors(engine=self.root.engine)
-        self.root.engine_change.connect(
-            lambda engine: self.update_detectors(engine=engine)
-        )
+        self.root.engine_change.connect(lambda engine: self.update_detectors(engine=engine))
         self.net_choice.currentTextChanged.connect(
             lambda new_net_choice: self.update_detectors(net_choice=new_net_choice)
         )
 
         # Conditions selection for CTD models
         self.conditions_label = QtWidgets.QLabel("Conditions")
-        self.conditions_selection_widget = ConditionsSelectionWidget(
-            root=self.root, parent=self
-        )
+        self.conditions_selection_widget = ConditionsSelectionWidget(root=self.root, parent=self)
         self.update_conditions(engine=self.root.engine)
-        self.root.engine_change.connect(
-            lambda engine: self.update_conditions(engine=engine)
-        )
+        self.root.engine_change.connect(lambda engine: self.update_conditions(engine=engine))
         self.net_choice.currentTextChanged.connect(
-            lambda new_net_choice: self.update_conditions(
-                engine=self.root.engine, net_choice=new_net_choice
-            )
+            lambda new_net_choice: self.update_conditions(engine=self.root.engine, net_choice=new_net_choice)
         )
 
         # Overwrite selection
@@ -178,9 +164,7 @@ class CreateTrainingDataset(DefaultTab):
             "will overwrite the existing index. Be careful with this option as you "
             "might lose data."
         )
-        self.overwrite.stateChanged.connect(
-            lambda s: self.root.logger.info(f"Overwrite: {s}")
-        )
+        self.overwrite.stateChanged.connect(lambda s: self.root.logger.info(f"Overwrite: {s}"))
 
         # Use same data split as another shuffle
         self.data_split_selection = DataSplitSelector(self.root, self)
@@ -274,11 +258,9 @@ class CreateTrainingDataset(DefaultTab):
                         )
 
                 try:
-                    weight_init = (
-                        self.weight_init_selector.get_super_animal_weight_init(
-                            net_type,
-                            detector_type,
-                        )
+                    weight_init = self.weight_init_selector.get_super_animal_weight_init(
+                        net_type,
+                        detector_type,
                     )
                 except ValueError as err:
                     print(f"The training dataset could not be created: {err}.")
@@ -341,9 +323,7 @@ class CreateTrainingDataset(DefaultTab):
                     "    Apple Silicon:\n"
                     "      pip install 'deeplabcut[apple_mchips]'"
                 )
-                msg = _create_message_box(
-                    f"The training dataset could not be created.", info_text
-                )
+                msg = _create_message_box(f"The training dataset could not be created.", info_text)
                 msg.exec_()
                 return
 
@@ -359,10 +339,7 @@ class CreateTrainingDataset(DefaultTab):
             )
             if self.root.is_multianimal:
                 filenames[0] = filenames[0].replace("mat", "pickle")
-            if all(
-                os.path.exists(os.path.join(self.root.project_folder, file))
-                for file in filenames
-            ):
+            if all(os.path.exists(os.path.join(self.root.project_folder, file)) for file in filenames):
                 self.root.shuffle_created.emit(self.shuffle.value())
                 msg = _create_message_box(
                     "The training dataset is successfully created.",
@@ -390,9 +367,7 @@ class CreateTrainingDataset(DefaultTab):
             whether the user confirmed overwriting the shuffle
         """
         try:
-            engine = get_shuffle_engine(
-                self.root.cfg, self.root.trainingset_index, shuffle
-            )
+            engine = get_shuffle_engine(self.root.cfg, self.root.trainingset_index, shuffle)
             engine_str = f" (with engine '{engine.aliases[0]}')"
         except ValueError:
             engine_str = ""
@@ -400,18 +375,14 @@ class CreateTrainingDataset(DefaultTab):
         conf = _create_confirmation_box(
             title=f"Are you sure you want to overwrite shuffle {shuffle}?",
             description=(
-                f"As shuffle {shuffle} already exists{engine_str}, "
-                f"the training-dataset files would be overwritten."
+                f"As shuffle {shuffle} already exists{engine_str}, the training-dataset files would be overwritten."
             ),
         )
         result = conf.exec()
         if result != QtWidgets.QMessageBox.Yes:
             msg = _create_message_box(
                 text="The training dataset was not be created.",
-                info_text=(
-                    "You can create a shuffle with another index. Existing indices "
-                    f"are {existing_indices}"
-                ),
+                info_text=(f"You can create a shuffle with another index. Existing indices are {existing_indices}"),
             )
             msg.exec_()
             self.root.writer.write("Training dataset creation interrupted.")
@@ -419,9 +390,7 @@ class CreateTrainingDataset(DefaultTab):
 
         return True
 
-    def _build_ctd_conditions(
-        self, conditions_path: str | Path
-    ) -> Path | tuple[int, str]:
+    def _build_ctd_conditions(self, conditions_path: str | Path) -> Path | tuple[int, str]:
         """
         Builds CTD conditions in appropriate format from path to conditions.
         Args:
@@ -471,13 +440,7 @@ class CreateTrainingDataset(DefaultTab):
                 nets = [
                     n
                     for n in nets
-                    if (
-                        n in net_filter
-                        or (
-                            n.startswith(td_prefix)
-                            and n[len(td_prefix) :] in net_filter
-                        )
-                    )
+                    if (n in net_filter or (n.startswith(td_prefix) and n[len(td_prefix) :] in net_filter))
                 ]
 
         if default_net is None:

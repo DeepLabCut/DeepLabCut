@@ -284,13 +284,9 @@ def extract_frames(
 
         # Check for variable correctness
         if start > 1 or stop > 1 or start < 0 or stop < 0 or start >= stop:
-            raise Exception(
-                "Erroneous start or stop values. Please correct it in the config file."
-            )
+            raise Exception("Erroneous start or stop values. Please correct it in the config file.")
         if numframes2pick < 1 and not int(numframes2pick):
-            raise Exception(
-                "Perhaps consider extracting more, or a natural number of frames."
-            )
+            raise Exception("Perhaps consider extracting more, or a natural number of frames.")
 
         if opencv:
             from deeplabcut.utils.auxfun_videos import VideoWriter
@@ -340,12 +336,7 @@ def extract_frames(
                             askuser = input(
                                 "The directory already contains some frames. Do you want to add to it?(yes/no): "
                             )
-                        if not (
-                            askuser == "y"
-                            or askuser == "yes"
-                            or askuser == "Y"
-                            or askuser == "Yes"
-                        ):
+                        if not (askuser == "y" or askuser == "yes" or askuser == "Y" or askuser == "Yes"):
                             sys.exit("Delete the frames and try again later!")
 
                 if crop == "GUI":
@@ -371,13 +362,9 @@ def extract_frames(
                 print("Extracting frames based on %s ..." % algo)
                 if algo == "uniform":
                     if opencv:
-                        frames2pick = frameselectiontools.UniformFramescv2(
-                            cap, numframes2pick, start, stop
-                        )
+                        frames2pick = frameselectiontools.UniformFramescv2(cap, numframes2pick, start, stop)
                     else:
-                        frames2pick = frameselectiontools.UniformFrames(
-                            clip, numframes2pick, start, stop
-                        )
+                        frames2pick = frameselectiontools.UniformFrames(clip, numframes2pick, start, stop)
                 elif algo == "kmeans":
                     if opencv:
                         frames2pick = frameselectiontools.KmeansbasedFrameselectioncv2(
@@ -401,18 +388,16 @@ def extract_frames(
                         )
                 else:
                     print(
-                         "Please implement this method yourself and send us a pull "
-                         "request! Otherwise, choose 'uniform' or 'kmeans'."
-                     )
+                        "Please implement this method yourself and send us a pull "
+                        "request! Otherwise, choose 'uniform' or 'kmeans'."
+                    )
                     frames2pick = []
 
                 if not len(frames2pick):
                     print("Frame selection failed...")
                     return []
 
-                output_path = (
-                    Path(config).parents[0] / "labeled-data" / Path(video).stem
-                )
+                output_path = Path(config).parents[0] / "labeled-data" / Path(video).stem
                 output_path.mkdir(parents=True, exist_ok=True)
                 is_valid = []
                 if opencv:
@@ -421,12 +406,7 @@ def extract_frames(
                         frame = cap.read_frame(crop=True)
                         if frame is not None:
                             image = img_as_ubyte(frame)
-                            img_name = (
-                                str(output_path)
-                                + "/img"
-                                + str(index).zfill(indexlength)
-                                + ".png"
-                            )
+                            img_name = str(output_path) + "/img" + str(index).zfill(indexlength) + ".png"
                             io.imsave(img_name, image)
                             is_valid.append(True)
                         else:
@@ -437,12 +417,7 @@ def extract_frames(
                     for index in frames2pick:
                         try:
                             image = img_as_ubyte(clip.get_frame(index * 1.0 / clip.fps))
-                            img_name = (
-                                str(output_path)
-                                + "/img"
-                                + str(index).zfill(indexlength)
-                                + ".png"
-                            )
+                            img_name = str(output_path) + "/img" + str(index).zfill(indexlength) + ".png"
                             io.imsave(img_name, image)
                             if np.var(image) == 0:  # constant image
                                 print(
@@ -469,9 +444,7 @@ def extract_frames(
         elif any(has_failed):
             print("Although most frames were extracted, some were invalid.")
         else:
-            print(
-                "Frames were successfully extracted, for the videos listed in the config.yaml file."
-            )
+            print("Frames were successfully extracted, for the videos listed in the config.yaml file.")
         print(
             "\nYou can now label the frames using the function 'label_frames' "
             "(Note, you should label frames extracted from diverse videos (and many videos; we do not recommend training on single videos!))."
@@ -499,9 +472,7 @@ def extract_frames(
         cams = cfg_3d["camera_names"]
         extCam_name = cams[extracted_cam]
         del cams[extracted_cam]
-        label_dirs = sorted(
-            glob.glob(os.path.join(labels_path, "*" + extCam_name + "*"))
-        )
+        label_dirs = sorted(glob.glob(os.path.join(labels_path, "*" + extCam_name + "*")))
 
         # select crop method
         crop_list = []
@@ -565,9 +536,7 @@ def extract_frames(
                             )
                         else:
                             io.imsave(img_name, image)
-        print(
-            "\n Done extracting matched frames. You can now begin labeling frames using the function label_frames\n"
-        )
+        print("\n Done extracting matched frames. You can now begin labeling frames using the function label_frames\n")
 
     else:
         print(

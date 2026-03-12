@@ -62,10 +62,7 @@ class Benchmark(abc.ABC):
         keys = ["code", "name", "keypoints", "ground_truth", "metadata"]
         for key in keys:
             if not hasattr(self, key):
-                raise NotImplementedError(
-                    f"Subclass of abstract Benchmark class need "
-                    f"to define the {key} property."
-                )
+                raise NotImplementedError(f"Subclass of abstract Benchmark class need to define the {key} property.")
 
     def compute_pose_rmse(self, results_objects):
         return deeplabcut.benchmark.metrics.calc_rmse_from_obj(
@@ -81,9 +78,7 @@ class Benchmark(abc.ABC):
         """Evaluate this benchmark with all registered methods."""
 
         if name not in self.names():
-            raise ValueError(
-                f"{name} is not registered. Valid names are {self.names()}"
-            )
+            raise ValueError(f"{name} is not registered. Valid names are {self.names()}")
         if on_error not in ("ignore", "return", "raise"):
             raise ValueError(f"on_error got an undefined value: {on_error}")
         mean_avg_precision = float("nan")
@@ -104,9 +99,7 @@ class Benchmark(abc.ABC):
                 pass
             elif on_error == "raise":
                 # raise the error and stop evaluation
-                raise BenchmarkEvaluationError(
-                    f"Error during benchmark evaluation for model {name}"
-                ) from exception
+                raise BenchmarkEvaluationError(f"Error during benchmark evaluation for model {name}") from exception
             else:
                 raise NotImplementedError() from exception
         return Result(
@@ -122,9 +115,7 @@ class Benchmark(abc.ABC):
         Checks that there is a prediction for each test image, and raises a warning if
         that is not the case. Returns only predictions made for test images.
         """
-        test_images = deeplabcut.benchmark.metrics.load_test_images(
-            self.ground_truth, self.metadata
-        )
+        test_images = deeplabcut.benchmark.metrics.load_test_images(self.ground_truth, self.metadata)
         missing_images = set(test_images) - set(predictions.keys())
         if len(missing_images) > 0:
             warnings.warn(
@@ -196,9 +187,9 @@ class ResultCollection:
 
     def toframe(self) -> pd.DataFrame:
         """Convert results to pandas dataframe"""
-        return pd.DataFrame(
-            [result.todict() for result in self.results.values()]
-        ).set_index(list(self.primary_key_names))
+        return pd.DataFrame([result.todict() for result in self.results.values()]).set_index(
+            list(self.primary_key_names)
+        )
 
     def add(self, result: Result):
         """Add a result to the collection."""
@@ -225,10 +216,7 @@ class ResultCollection:
 
     def __contains__(self, other: Result):
         if not isinstance(other, Result):
-            raise ValueError(
-                f"{type(self)} can only store objects of type Result, "
-                f"but got {type(other)}."
-            )
+            raise ValueError(f"{type(self)} can only store objects of type Result, but got {type(other)}.")
         return other.primary_key in self.results
 
     def __eq__(self, other):

@@ -60,9 +60,7 @@ def get_pose_predictions(
         The predictions made by the SuperAnimal model on each image in the images list.
     """
     model_name = detector_snapshot_path.stem + "-" + model_snapshot_path.stem
-    predictions_folder = (
-        loader.project_path / "memory_replay" / superanimal_name / model_name
-    )
+    predictions_folder = loader.project_path / "memory_replay" / superanimal_name / model_name
     predictions_folder.mkdir(exist_ok=True, parents=True)
     predictions_file = predictions_folder / "pseudo-labels.json"
 
@@ -102,11 +100,7 @@ def get_pose_predictions(
     #  boxes and predicted bounding boxes - keep the larger of the two
     # bbox_predictions = detector_runner.inference(images=images_to_process)
     pose_inputs = [
-        (
-            str(loader.project_path / Path(image)),
-            {"bboxes": np.array(bboxes[image])}
-        )
-        for image in images_to_process
+        (str(loader.project_path / Path(image)), {"bboxes": np.array(bboxes[image])}) for image in images_to_process
     ]
     predictions = pose_runner.inference(pose_inputs)
 
@@ -202,9 +196,7 @@ def prepare_memory_replay_dataset(
 
         for i in range(num_gts):
             for j in range(num_preds):
-                cost_matrix[i, j] = distance.euclidean(
-                    gts_list[i][..., :2].flatten(), preds_list[j][..., :2].flatten()
-                )
+                cost_matrix[i, j] = distance.euclidean(gts_list[i][..., :2].flatten(), preds_list[j][..., :2].flatten())
         row_ind, col_ind = linear_sum_assignment(cost_matrix)
 
         return col_ind
@@ -248,9 +240,7 @@ def prepare_memory_replay_dataset(
                 gts[idx]["keypoints"] = list(matched_gt.flatten())
 
     # memory replay path
-    memory_replay_train_file_path = os.path.join(
-        source_dataset_folder, "annotations", "memory_replay_train.json"
-    )
+    memory_replay_train_file_path = os.path.join(source_dataset_folder, "annotations", "memory_replay_train.json")
 
     # parse the GT to put the image paths back into OS-specific format
     for image in project_gt["images"]:
@@ -294,18 +284,12 @@ def prepare_memory_replay(
         pose_threshold: The minimum score for a prediction to be used as a pseudo-label.
     """
     cfg = af.read_config(config)
-    super_animal_cfg = af.read_plainconfig(
-        get_super_animal_project_config_path(super_animal=superanimal_name)
-    )
+    super_animal_cfg = af.read_plainconfig(get_super_animal_project_config_path(super_animal=superanimal_name))
 
     if "individuals" in cfg:
-        temp_dataset = MaDLCPoseDataset(
-            str(loader.project_path), "temp_dataset", shuffle=loader.shuffle
-        )
+        temp_dataset = MaDLCPoseDataset(str(loader.project_path), "temp_dataset", shuffle=loader.shuffle)
     else:
-        temp_dataset = SingleDLCPoseDataset(
-            str(loader.project_path), "temp_dataset", shuffle=loader.shuffle
-        )
+        temp_dataset = SingleDLCPoseDataset(str(loader.project_path), "temp_dataset", shuffle=loader.shuffle)
 
     memory_replay_folder = loader.model_folder / "memory_replay"
     temp_dataset.materialize(
@@ -352,7 +336,10 @@ def prepare_memory_replay(
     )
 
     dataset.materialize(
-        memory_replay_folder, framework="coco", deepcopy=False, no_image_copy=True,
+        memory_replay_folder,
+        framework="coco",
+        deepcopy=False,
+        no_image_copy=True,
     )
 
     # then in this function, we do pseudo label to match prediction and gts to create
