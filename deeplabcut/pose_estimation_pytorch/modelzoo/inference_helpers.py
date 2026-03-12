@@ -25,6 +25,7 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_pose_inference_runner,
 )
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
+    COCO_PERSON_CATEGORY_ID,
     get_super_animal_snapshot_path,
     load_super_animal_config,
     update_config,
@@ -63,10 +64,9 @@ def _build_humanbody_inference_runners(
             download=True,
         )
 
-    COCO_PERSON = 1
     detector_runner = get_filtered_coco_detector_inference_runner(
         model_name=torchvision_detector_name,
-        category_id=COCO_PERSON,
+        category_id=COCO_PERSON_CATEGORY_ID,
         batch_size=detector_batch_size,
         max_individuals=max_individuals,
         model_config=model_cfg,
