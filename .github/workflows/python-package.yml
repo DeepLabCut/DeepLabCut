@@ -3,12 +3,37 @@ name: Python package
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_call:
+    # This workflow can be called by other workflows (like intelligent-testing.yml)
+    inputs:
+      concurrency_key:
+        required: false
+        type: string
+  workflow_dispatch:
+    inputs:
+      concurrency_key:
+        description: "Optional stable key to dedupe manual runs (for example: pr-123)"
+        required: false
+        type: string
+
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    # Cancel outdated runs on the same OS and Python version when new commits are pushed
+    # Only cancels on PRs.
+    # Use a stable concurrency key only when one is explicitly provided
+    # (e.g. PR/workflow_call/manual dedupe). Otherwise fall back to github.run_id
+    # so pushes to main never cancel each other.
+    concurrency:
+      group: >-
+        tests-${{ github.workflow }}-
+        ${{ github.event_name == 'workflow_call' && inputs.concurrency_key
+            || github.event_name == 'workflow_dispatch' && inputs.concurrency_key
+            || github.run_id }}-
+        ${{ matrix.os }}-${{ matrix.python-version }}
+      cancel-in-progress: true
+
 
     strategy:
       fail-fast: false
@@ -25,7 +50,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: Free up disk space
         if: runner.os == 'Linux'
@@ -81,7 +106,7 @@ jobs:
       - name: Run pytest tests
         shell: bash -el {0}  # Important: activates the conda environment
         run: |
-          pip install --no-cache-dir pytest
+          pip install --no-cache-dir -e . --group dev
           python -m pytest
 
       - name: Run functional tests
@@ -90,7 +115,7 @@ jobs:
           pip install -c "$GITHUB_WORKSPACE/.github/versioning/tf-ci-constraints.txt" \
           tensorflow tensorpack==0.11 tf_slim==1.1.0 tf-keras
           pip install --no-cache-dir -c "$GITHUB_WORKSPACE/.github/versioning/tf-ci-constraints.txt" -e .
-          python examples/testscript.py
-          python examples/testscript_multianimal.py
+          python examples/testscript_tensorflow_single_animal.py
+          python examples/testscript_tensorflow_multi_animal.py
           python examples/testscript_pytorch_single_animal.py
           python examples/testscript_pytorch_multi_animal.py

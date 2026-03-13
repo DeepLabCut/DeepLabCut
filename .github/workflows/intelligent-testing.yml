@@ -1,0 +1,142 @@
+name: "Intelligent Python Testing"
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [ main ]
+
+concurrency:
+  group: intelligent-${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  intelligent-test-selection:
+    name: Select test plan
+    runs-on: ubuntu-latest
+    outputs:
+      run_skip: ${{ steps.selector.outputs.run_skip }}
+      run_docs: ${{ steps.selector.outputs.run_docs }}
+      run_fast: ${{ steps.selector.outputs.run_fast }}
+      run_full: ${{ steps.selector.outputs.run_full }}
+      selected_workflows: ${{ steps.selector.outputs.selected_workflows }}
+      lane_reasons: ${{ steps.selector.outputs.lane_reasons }}
+      pytest_paths: ${{ steps.selector.outputs.pytest_paths }}
+      functional_scripts: ${{ steps.selector.outputs.functional_scripts }}
+      reasons: ${{ steps.selector.outputs.reasons }}
+      changed_files: ${{ steps.selector.outputs.changed_files }}
+      provenance: ${{ steps.selector.outputs.provenance }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # needed for merge-base/diff to be reliable
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Run selector + generate report
+        id: selector
+        run: |
+          python -m pip install --upgrade pip
+          pip install "pydantic>=2,<3"
+          python tools/test_selector.py \
+            --write-github-output \
+            --write-summary \
+            --report-dir tmp/test-selection \
+            --json
+
+      - name: Upload selector report
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-selection-report
+          path: |
+            tmp/test-selection/selection.json
+            tmp/test-selection/decision.md
+          retention-days: 7
+          if-no-files-found: error
+
+
+
+  skip:
+    name: Skipped (lint config change)
+    needs: intelligent-test-selection
+    if: needs.intelligent-test-selection.outputs.run_skip == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Only lint config files changed; skipping docs/tests."
+          echo "Pre-commit workflow is responsible for lint config validation."
+
+
+  docs:
+    name: Docs build
+    needs: intelligent-test-selection
+    if: needs.intelligent-test-selection.outputs.run_docs == 'true'
+    uses: ./.github/workflows/build-book.yml
+    with:
+      python-version: "3.10"
+      build_dir: "./_build/html"
+      upload_artifact: false
+    secrets: inherit
+
+
+  fast-tests:
+    name: Fast lane (targeted pytest + selected functional)
+    needs: intelligent-test-selection
+    if: needs.intelligent-test-selection.outputs.run_fast == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install test deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          pip install -e . --group dev
+
+      - name: Run targeted pytest (paths selected by selector)
+        env:
+          PYTEST_PATHS: ${{ needs.intelligent-test-selection.outputs.pytest_paths }}
+        run: |
+          python - << 'PY'
+          import json, os, subprocess, sys
+          paths = json.loads(os.environ.get("PYTEST_PATHS", "[]"))
+          cmd = ["python", "-m", "pytest"] + paths
+          print("Running:", " ".join(cmd))
+          sys.exit(subprocess.call(cmd))
+          PY
+
+      - name: Run selected functional scripts
+        env:
+          FUN_SCRIPTS: ${{ needs.intelligent-test-selection.outputs.functional_scripts }}
+        run: |
+          python - << 'PY'
+          import json, os, subprocess, sys
+          scripts = json.loads(os.environ.get("FUN_SCRIPTS", "[]"))
+          for s in scripts:
+              print("Running:", s)
+              rc = subprocess.call(["python", s])
+              if rc != 0:
+                  sys.exit(rc)
+          PY
+
+  full-tests:
+    name: Full matrix tests
+    needs: intelligent-test-selection
+    if: needs.intelligent-test-selection.outputs.run_full == 'true'
+    uses: ./.github/workflows/python-package.yml
+    with:
+      concurrency_key: ${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || '' }}

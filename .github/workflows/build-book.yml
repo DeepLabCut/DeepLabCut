@@ -1,0 +1,51 @@
+name: Build (and optionally deploy) Jupyter Book
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: "Python version used to build the docs."
+        required: false
+        default: "3.10"
+        type: string
+      build_dir:
+        required: false
+        default: "./_build/html"
+        type: string
+      upload_artifact:
+        description: "If true, upload the built site as an artifact."
+        required: false
+        default: false
+        type: boolean
+
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install docs dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install .[docs]
+
+      - name: Build the book
+        run: jupyter-book build .
+
+      - name: Upload built site artifact
+        if: ${{ inputs.upload_artifact }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-book
+          path: ${{ inputs.build_dir }}
+          if-no-files-found: error
+          retention-days: 1
