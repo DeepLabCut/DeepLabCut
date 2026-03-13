@@ -44,7 +44,7 @@ POSE_PT = "deeplabcut/pose_estimation_pytorch/"
 
 # Conservative full-suite triggers: if any changed file matches, plan=FULL.
 FULL_SUITE_TRIGGERS = [
-    ("tests/ changed", prefix("tests/")),
+    ("Tests files changed", prefix("tests/")),
     ("pyproject.toml changed", equals("pyproject.toml")),
     ("lockfile changed", suffix(".lock")),
     ("DEEPLABCUT.yaml changed", suffix("DEEPLABCUT.yaml")),
