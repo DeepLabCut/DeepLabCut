@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-import importlib.util
+import importlib
+import sys
 from pathlib import Path
 from types import ModuleType
 
@@ -14,18 +15,25 @@ def _repo_root() -> Path:
 
 def load_selector_module() -> ModuleType:
     root = _repo_root()
-    selector_path = root / "tools" / "test_selector.py"
+    tools_dir = root / "tools"
+    init_file = tools_dir / "__init__.py"
+    selector_path = tools_dir / "test_selector.py"
+
     if not selector_path.exists():
         raise FileNotFoundError(f"Selector script not found: {selector_path}")
 
-    spec = importlib.util.spec_from_file_location("test_selector", selector_path)
-    assert spec and spec.loader, "Failed to create import spec for selector"
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)  # type: ignore[attr-defined]
-    return module
+    if not init_file.exists():
+        raise FileNotFoundError(f"tools package marker not found: {init_file}")
+
+    # Ensure repo root is importable so `tools.test_selector` resolves as a package import.
+    root_str = str(root)
+    if root_str not in sys.path:
+        sys.path.insert(0, root_str)
+
+    return importlib.import_module("tools.test_selector")
 
 
 @pytest.fixture(scope="session")
 def selector():
-    """Imported selector module (tools/test_selector.py)."""
+    """Imported selector module (tools.test_selector)."""
     return load_selector_module()

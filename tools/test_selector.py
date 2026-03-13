@@ -13,7 +13,7 @@ Safety principles
 - Deterministic: derives diff range from GitHub Actions event payload when available.
   * pull_request: uses merge-base(base.sha, head.sha) .. head.sha
   * push: uses before .. after
-  * manual override: uses exactly --base-sha .. -head-sha
+  * manual override: uses exactly --base-sha .. --head-sha
   * fallback: attempts HEAD~1 .. HEAD
 - Secure: never emits shell command strings; only structured data.
 - Strict: Pydantic schema validation (extra=forbid), SHA validation, path sanitization.
@@ -46,12 +46,24 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
-from test_selector_config import (
-    CATEGORY_RULES,
-    FULL_SUITE_TRIGGERS,
-    LINT_ONLY_FILES,
-    MINIMAL_PYTEST,
-)
+
+try:
+    from .test_selector_config import (
+        CATEGORY_RULES,
+        FULL_SUITE_TRIGGERS,
+        LINT_ONLY_FILES,
+        MINIMAL_PYTEST,
+    )
+# Allows to run as "python tools/test_selector.py" without installing as a package,
+# but still import the config from the same location.
+except ImportError:  # pragma: no cover
+    from test_selector_config import (
+        CATEGORY_RULES,
+        FULL_SUITE_TRIGGERS,
+        LINT_ONLY_FILES,
+        MINIMAL_PYTEST,
+    )
+
 
 SHA_RE = re.compile(r"^[0-9a-f]{7,40}$", re.IGNORECASE)
 CATEGORY_RULE_BY_NAME: Dict[str, Dict[str, Any]] = {
