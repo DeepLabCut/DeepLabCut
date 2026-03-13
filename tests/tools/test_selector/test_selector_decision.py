@@ -91,10 +91,10 @@ def test_fast_multianimal_includes_functional(selector):
     assert res.lanes.skip is False
 
     assert "tests/test_predict_multianimal.py" in res.pytest_paths
-    assert "examples/testscript_multianimal.py" in res.functional_scripts
+    assert "examples/testscript_tensorflow_multi_animal.py" in res.functional_scripts
 
     assert res.provenance.pytest["tests/test_predict_multianimal.py"] == ["multianimal"]
-    assert res.provenance.scripts["examples/testscript_multianimal.py"] == [
+    assert res.provenance.scripts["examples/testscript_tensorflow_multi_animal.py"] == [
         "multianimal"
     ]
 

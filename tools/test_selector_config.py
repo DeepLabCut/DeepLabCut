@@ -66,6 +66,7 @@ LINT_ONLY_FILES = {
 #  - a list of functional test scripts to select if the rule is triggered (can be empty)
 CATEGORY_RULES = [
     {
+        # DOCS & NOTEBOOKS #
         "name": "docs",
         "match_any": [
             prefix("docs/"),
@@ -96,6 +97,7 @@ CATEGORY_RULES = [
         "pytest_paths": MINIMAL_PYTEST,
         "functional_scripts": [],
     },
+    # CORE FUNCTIONALITY #
     {
         "name": "superanimal_modelzoo",
         "match_any": [
@@ -122,7 +124,8 @@ CATEGORY_RULES = [
             "tests/test_predict_multianimal.py",
         ],
         "functional_scripts": [
-            "examples/testscript_multianimal.py",
+            "examples/testscript_tensorflow_multi_animal.py",
+            "examples/testscript_pytorch_multi_animal.py",
         ],
     },
     {
@@ -140,10 +143,55 @@ CATEGORY_RULES = [
             "tests/test_auxiliaryfunctions.py",
             "tests/core/",
             "tests/utils/",
-            "tests/pose_estimation_pytorch/",
         ],
         "functional_scripts": [],
     },
+    {
+        "name": "pose_estimation_tensorflow",
+        "match_any": [
+            prefix(POSE_TF),
+        ],
+        "pytest_paths": [],
+        "functional_scripts": [
+            "examples/testscript_tensorflow_multi_animal.py",
+            "examples/testscript_tensorflow_single_animal.py",
+        ],
+    },
+    {
+        "name": "pose_estimation_pytorch",
+        "match_any": [
+            prefix(POSE_PT),
+        ],
+        "pytest_paths": [
+            "tests/test_pose_estimation_pytorch/",
+        ],
+        "functional_scripts": [
+            "examples/testscript_pytorch_single_animal.py",
+            "examples/testscript_pytorch_multi_animal.py",
+        ],
+    },
+    {
+        "name": "3d_pose_estimation",
+        "match_any": [
+            prefix("deeplabcut/pose_estimation_3d/"),
+        ],
+        "pytest_paths": [
+            "tests/test_triangulation.py",
+        ],
+        "functional_scripts": [
+            "examples/testscript_3d.py",
+        ],
+    },
+    {
+        "name": "generate_training_dataset",
+        "match_any": [
+            prefix("deeplabcut/generate_training_dataset/"),
+        ],
+        "pytest_paths": [
+            "tests/generate_training_dataset/",
+        ],
+    },
+    # CI & TOOLING #
     {
         "name": "ci_workflows",
         "match_any": [
