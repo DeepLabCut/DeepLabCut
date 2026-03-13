@@ -925,8 +925,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap.add_argument(
         "--report-style",
         choices=["minimal", "detailed"],
-        default="minimal",
-        help="Decision markdown verbosity: minimal (default) or detailed",
+        default="detailed",
+        help="Decision markdown verbosity: minimal or detailed (default: detailed)",
     )
     ap.add_argument(
         "--no-emoji",
