@@ -109,10 +109,10 @@ Documentation = "https://deeplabcut.github.io/DeepLabCut/README.html"
 
 [dependency-groups]
 dev = [
-  "black",
   "coverage",
   "pytest",
   "pytest-cov",
+  "ruff",
 ]
 
 [tool.setuptools]
@@ -131,13 +131,14 @@ requires-dist = []
 torch-backend = "auto"
 
 [tool.ruff]
+lint.select = ["E", "F", "B", "I", "UP"]
+lint.ignore = ["E741"]
 target-version = "py310"
-line-length = 88
-[tool.ruff.lint]
-select = [ "E", "F", "I" ]
-ignore = [
-  "E501", # line-too-long
-]
+fix = true
+line-length = 120
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.isort]
 multi_line_output = 3
