@@ -66,7 +66,7 @@ If you change packaged resources or otherwise need to refresh the local installa
 ```
 
 > [!NOTE]
-> This script automatically uninstalls the package, builds a new wheel using `build`, and installs that wheel. It is not a simple `pip install -e .` because some resources are copied during installation and need to be refreshed.
+> This script automatically uninstalls the package, builds a new wheel using `setup.py`, and installs that wheel. It is not a simple `pip install -e .` because some resources are copied during installation and need to be refreshed.
 
 ## Code style and pre-commit
 
