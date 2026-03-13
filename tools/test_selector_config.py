@@ -63,19 +63,22 @@ CATEGORY_RULES = [
         "name": "docs",
         "match_any": [
             prefix("docs/"),
-            suffix(".md", ".rst"),
+            all_of(suffix(".md", ".rst"), case_insensitive_match("docs")),
             all_of(suffix(".ipynb"), case_insensitive_match("docs")),
             equals("_config.yml", "_toc.yml"),
+            equals(".github/workflows/build-book.yml"),
         ],
         "pytest_paths": [
-            # NOTE: if you add tests here, the DOCS_ONLY plan will be ignored and escalated to FAST
-            # Be aware of this behavior when attaching rules to the "docs" category, and prefer editing the docs workflow directly
-            # in .github/workflows/build-book.yml
+            # NOTE:
+            # Optional docs-targeted tests may be attached here.
+            # If present, docs changes will still enable the docs lane, and may also
+            # contribute selections to the fast lane.
         ],
         "functional_scripts": [
-            # NOTE: if you add scripts here, the DOCS_ONLY plan will be ignored and escalated to FAST
-            # Be aware of this behavior when attaching rules to the "docs" category, and prefer editing the docs workflow directly
-            # in .github/workflows/build-book.yml
+            # NOTE:
+            # Optional docs-targeted functional tests may be attached here.
+            # If present, docs changes will still enable the docs lane, and may also
+            # contribute selections to the fast lane.
         ],
     },
     {
@@ -92,7 +95,7 @@ CATEGORY_RULES = [
         "match_any": [
             prefix("deeplabcut/modelzoo/"),
             case_insensitive_match("superanimal"),
-            case_insensitive_match("modelzoo"),
+            # case_insensitive_match("modelzoo"), # too broad ?
         ],
         "pytest_paths": [
             "tests/test_predict_supermodel.py",
@@ -138,8 +141,7 @@ CATEGORY_RULES = [
     {
         "name": "ci_workflows",
         "match_any": [
-            prefix(".github/"),
-            # prefix("tools/"),
+            prefix(".github/workflows/"),
         ],
         "pytest_paths": MINIMAL_PYTEST,
         "functional_scripts": [],
