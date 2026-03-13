@@ -3,7 +3,7 @@
 As developer you'll need:
 
 ```bash
-pip install coverage pytest fnmatch black
+pip install -e . --group dev
 ```
 
 ## Code headers
@@ -16,14 +16,12 @@ python tools/update_license_headers.py
 
 from the repository root.
 
-You can edit the `NOTICE.yml` to update the header.
+Steering committee members may edit the `NOTICE.yml` to update the header.
 
 
 ## Workflow for contributing/checking your code
 
-```bash
-black .
-```
+Please follow the instructions in `CONTRIBUTING.md` for contributing to the codebase, including running tests and pre-commit checks before opening a pull request.
 
 ## Running the tests (locally)
 
@@ -35,7 +33,7 @@ pytest
 
 For coverage run:
 
-```
+```bash
 coverage run -m pytest
 coverage report
 ```

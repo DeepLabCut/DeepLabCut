@@ -111,6 +111,7 @@ Documentation = "https://deeplabcut.github.io/DeepLabCut/README.html"
 dev = [
   "black",
   "coverage",
+  "pre-commit",
   "pytest",
   "pytest-cov",
 ]
