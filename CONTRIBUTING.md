@@ -80,17 +80,19 @@ pre-commit install
 
 Whenever you commit, `pre-commit` will run the configured checks.
 
-Please run `pre-commit` before opening a pull request. This helps catch formatting, import ordering, whitespace, YAML, and other common issues early and help code review greatly.
+Please run `pre-commit` before opening a pull request. This helps catch formatting, import ordering, whitespace, YAML, and other common issues early and accelerates code review greatly.
 
 ## Tests
 
-Pull requests are validated in CI, and contributors are encourage to run tests locally using:
+Pull requests are validated in CI, and contributors are encouraged to run tests locally using:
 
 ```bash
 pytest tests
 ```
 in the project root before opening a pull request.
-Heavier tests are also run automatically on GitHub, so this is not a strict requirement, but it can help catch issues early and speed up the review process.
+
+> [!IMPORTANT]
+> Heavier tests are also run automatically on GitHub, so this is not a strict requirement, > but it can help catch issues early and speed up the review process.
 
 ## Pull request guidelines
 
@@ -99,7 +101,7 @@ When submitting a pull request, please:
 - Clearly describe what changed and why
 - Link any related issue(s)
 - Update docstrings and documentation when behavior changes
-  Add or update tests when appropriate
+- Add or update tests when appropriate
 - Include a small usage example when it helps reviewers understand and/or test the change
 
 Smaller, focused pull requests are usually much easier to review than very large ones.
