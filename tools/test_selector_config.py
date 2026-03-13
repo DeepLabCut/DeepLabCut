@@ -58,6 +58,12 @@ LINT_ONLY_FILES = {
 }
 
 
+#  The per-file/folder rules that determine test selection logic. Each rule has:
+#  - a name (for auditing/debugging purposes)
+#  - a set of path predicates (match_any) that trigger the rule if any predicate
+#    matches any changed file
+#  - a list of pytest paths to select if the rule is triggered (can be empty)
+#  - a list of functional test scripts to select if the rule is triggered (can be empty)
 CATEGORY_RULES = [
     {
         "name": "docs",

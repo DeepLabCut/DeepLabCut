@@ -435,22 +435,6 @@ def decide(files: List[str]) -> SelectorResult:
     for rule in matched_non_docs:
         reasons.append(f"category:{rule['name']}")
 
-    # Too many non-doc categories => escalate to full, but preserve docs lane.
-    if len(matched_non_docs) > 2:
-        lanes.full = True
-        full_reasons = [f"too_many_categories:{len(matched_non_docs)}"]
-        reasons.extend(full_reasons)
-        lane_reasons["full"] = full_reasons
-        return SelectorResult(
-            lanes=lanes,
-            pytest_paths=[],
-            functional_scripts=[],
-            provenance=SelectionProvenance(),
-            reasons=reasons,
-            changed_files=files,
-            lane_reasons=lane_reasons,
-        )
-
     pytest_paths_set: Set[str] = set()
     functional_set: Set[str] = set()
     pytest_sources: Dict[str, Set[str]] = defaultdict(set)
