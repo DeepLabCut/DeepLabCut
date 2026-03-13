@@ -6,6 +6,7 @@ Outputs a single, unambiguous *plan* enum plus structured lists:
   - plan: one of {skip, docs_only, fast, full}
   - pytest_paths: JSON list of pytest path arguments
   - functional_scripts: JSON list of python script paths
+  - provenance: JSON mapping each selected test/script to the category rules that selected it
 
 Safety principles
 -----------------
@@ -102,6 +103,15 @@ class Plan(str, Enum):
     SKIP = "skip"  # Skip all on e.g. lint config changes only
 
 
+class SelectionProvenance(BaseModel):
+    """Why each selected test/script path was included."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    pytest: Dict[str, List[str]] = Field(default_factory=dict)
+    scripts: Dict[str, List[str]] = Field(default_factory=dict)
+
+
 class SelectorResult(BaseModel):
     """Strict output schema."""
 
@@ -113,6 +123,7 @@ class SelectorResult(BaseModel):
 
     pytest_paths: List[str] = Field(default_factory=list)
     functional_scripts: List[str] = Field(default_factory=list)
+    provenance: SelectionProvenance = Field(default_factory=SelectionProvenance)
 
     # Audit fields
     reasons: List[str] = Field(default_factory=list)
@@ -281,6 +292,7 @@ def validate_selected_paths(res: SelectorResult, repo: Path) -> SelectorResult:
         res.plan = Plan.FULL
         res.pytest_paths = []
         res.functional_scripts = []
+        res.provenance = SelectionProvenance()
         res.reasons = res.reasons + ["missing_selected_paths"] + missing
 
     return res
@@ -358,10 +370,17 @@ def decide(files: List[str]) -> SelectorResult:
 
         # If docs category has explicit test/script rules attached, run FAST lane.
         if docs_pytests or docs_scripts:
+            docs_pytests_sorted = sorted(set(docs_pytests))
+            docs_scripts_sorted = sorted(set(docs_scripts))
+
             return SelectorResult(
                 plan=Plan.FAST,
-                pytest_paths=sorted(set(docs_pytests)),
-                functional_scripts=sorted(set(docs_scripts)),
+                pytest_paths=docs_pytests_sorted,
+                functional_scripts=docs_scripts_sorted,
+                provenance=SelectionProvenance(
+                    pytest={p: ["docs"] for p in docs_pytests_sorted},
+                    scripts={s: ["docs"] for s in docs_scripts_sorted},
+                ),
                 reasons=["docs_only_but_rules_attached", "category:docs"],
                 changed_files=files,
             )
@@ -402,7 +421,6 @@ def decide(files: List[str]) -> SelectorResult:
     pytest_paths_set: Set[str] = set()
     functional_set: Set[str] = set()
 
-    # Provenance maps
     pytest_sources: Dict[str, Set[str]] = defaultdict(set)
     script_sources: Dict[str, Set[str]] = defaultdict(set)
 
@@ -428,6 +446,10 @@ def decide(files: List[str]) -> SelectorResult:
         plan=Plan.FAST,
         pytest_paths=sorted(pytest_paths_set),
         functional_scripts=sorted(functional_set),
+        provenance=SelectionProvenance(
+            pytest={k: sorted(v) for k, v in sorted(pytest_sources.items())},
+            scripts={k: sorted(v) for k, v in sorted(script_sources.items())},
+        ),
         reasons=reasons,
         changed_files=files,
     )
@@ -538,47 +560,6 @@ def _render_file_line(
 
     tag_str = (" — " + " | ".join(tags)) if tags else ""
     return f"- {marker}`{f}`{tag_str}"
-
-
-def _compute_selection_provenance(
-    res: SelectorResult,
-) -> Dict[str, Dict[str, List[str]]]:
-    """
-    Infer which categories contributed which selected pytest/script paths.
-    Returns:
-      { "pytest": {path: [sources...]}, "scripts": {path: [sources...]} }
-    """
-    pytest_sources: Dict[str, Set[str]] = defaultdict(set)
-    script_sources: Dict[str, Set[str]] = defaultdict(set)
-
-    # Which categories are active for the current changed files?
-    files = res.changed_files
-    matched_rules = []
-    for rule in CATEGORY_RULES:
-        if any(_matches_any(f, rule["match_any"]) for f in files):
-            matched_rules.append(rule)
-
-    # Attribute sources based on matched rules
-    for rule in matched_rules:
-        cat = rule["name"]
-        for p in rule.get("pytest_paths", []):
-            if p in res.pytest_paths:
-                pytest_sources[p].add(cat)
-        for s in rule.get("functional_scripts", []):
-            if s in res.functional_scripts:
-                script_sources[s].add(cat)
-
-    # If minimal fallback happened, it will show in reasons
-    if any(r == "fallback_minimal_pytest" for r in res.reasons):
-        for p in res.pytest_paths:
-            if p in MINIMAL_PYTEST:
-                pytest_sources[p].add("fallback_minimal_pytest")
-
-    # Deterministic output
-    return {
-        "pytest": {k: sorted(v) for k, v in sorted(pytest_sources.items())},
-        "scripts": {k: sorted(v) for k, v in sorted(script_sources.items())},
-    }
 
 
 def _compact_reasons(reasons: List[str]) -> List[str]:
@@ -721,25 +702,28 @@ def _render_decision_markdown(
 
     # Provenance collapsed by default, only if detailed
     if style == "detailed":
-        prov = _compute_selection_provenance(res)
         md.append("## Provenance\n")
-        md.append("<details><summary><strong>Why these tests</strong></summary>\n")
+        md.append(
+            "&lt;details&gt;&lt;summary&gt;&lt;strong&gt;Why these tests&lt;/strong&gt;&lt;/summary&gt;\n"
+        )
         md.append("")
-        if prov["pytest"]:
+
+        if res.provenance.pytest:
             md.append("### Pytest\n")
-            for p, srcs in prov["pytest"].items():
+            for p, srcs in res.provenance.pytest.items():
                 md.append(f"- `{p}` ← {', '.join(f'`{s}`' for s in srcs)}")
         else:
             md.append("### Pytest\n_(none)_")
 
-        if prov["scripts"]:
+        if res.provenance.scripts:
             md.append("\n### Scripts\n")
-            for s, srcs in prov["scripts"].items():
+            for s, srcs in res.provenance.scripts.items():
                 md.append(f"- `{s}` ← {', '.join(f'`{x}`' for x in srcs)}")
         else:
             md.append("\n### Scripts\n_(none)_")
 
-        md.append("\n</details>\n")
+        md.append("\n&lt;/details&gt;\n")
+
     return "\n".join(md)
 
 
@@ -787,6 +771,7 @@ def write_github_output(res: SelectorResult) -> None:
         f.write(f"functional_scripts={j(res.functional_scripts)}\n")
         f.write(f"reasons={j(res.reasons)}\n")
         f.write(f"changed_files={j(res.changed_files)}\n")
+        f.write(f"provenance={j(res.provenance.model_dump())}\n")
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
