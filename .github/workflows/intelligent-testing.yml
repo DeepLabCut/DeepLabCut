@@ -19,11 +19,17 @@ jobs:
     name: Select test plan
     runs-on: ubuntu-latest
     outputs:
-      plan: ${{ steps.selector.outputs.plan }}
+      run_skip: ${{ steps.selector.outputs.run_skip }}
+      run_docs: ${{ steps.selector.outputs.run_docs }}
+      run_fast: ${{ steps.selector.outputs.run_fast }}
+      run_full: ${{ steps.selector.outputs.run_full }}
+      selected_workflows: ${{ steps.selector.outputs.selected_workflows }}
+      lane_reasons: ${{ steps.selector.outputs.lane_reasons }}
       pytest_paths: ${{ steps.selector.outputs.pytest_paths }}
       functional_scripts: ${{ steps.selector.outputs.functional_scripts }}
       reasons: ${{ steps.selector.outputs.reasons }}
       changed_files: ${{ steps.selector.outputs.changed_files }}
+      provenance: ${{ steps.selector.outputs.provenance }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -61,7 +67,7 @@ jobs:
   skip:
     name: Skipped (lint config change)
     needs: intelligent-test-selection
-    if: needs.intelligent-test-selection.outputs.plan == 'skip'
+    if: needs.intelligent-test-selection.outputs.run_skip == 'true'
     runs-on: ubuntu-latest
     steps:
       - run: |
@@ -69,9 +75,10 @@ jobs:
           echo "Pre-commit workflow is responsible for lint config validation."
 
 
-  docs-only:
+  docs:
+    name: Docs build
     needs: intelligent-test-selection
-    if: needs.intelligent-test-selection.outputs.plan == 'docs_only'
+    if: needs.intelligent-test-selection.outputs.run_docs == 'true'
     uses: ./.github/workflows/build-book.yml
     with:
       python-version: "3.10"
@@ -83,7 +90,7 @@ jobs:
   fast-tests:
     name: Fast lane (targeted pytest + selected functional)
     needs: intelligent-test-selection
-    if: needs.intelligent-test-selection.outputs.plan == 'fast'
+    if: needs.intelligent-test-selection.outputs.run_fast == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -129,7 +136,7 @@ jobs:
   full-tests:
     name: Full matrix tests
     needs: intelligent-test-selection
-    if: needs.intelligent-test-selection.outputs.plan == 'full'
+    if: needs.intelligent-test-selection.outputs.run_full == 'true'
     uses: ./.github/workflows/python-package.yml
     with:
       concurrency_key: ${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || '' }}

@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """Deterministic, strictly validated test selector for DeepLabCut.
 
-Outputs a single, unambiguous *plan* enum plus structured lists:
+Outputs orthogonal workflow lane selections plus structured test selections:
 
-  - plan: one of {skip, docs_only, fast, full}
+  - lanes: which workflow lanes should run (skip, docs, fast, full)
   - pytest_paths: JSON list of pytest path arguments
   - functional_scripts: JSON list of python script paths
   - provenance: JSON mapping each selected test/script to the category rules that selected it
 
 Safety principles
 -----------------
-- Fail-safe: if changes cannot be determined or are ambiguous, plan=full.
+- Fail-safe: if changes cannot be determined or are ambiguous, the "full" lane is always selected.
 - Deterministic: derives diff range from GitHub Actions event payload when available.
   * pull_request: uses merge-base(base.sha, head.sha) .. head.sha
   * push: uses before .. after
@@ -26,7 +26,18 @@ Intended usage in GitHub Actions
     python tools/test_selector.py --write-github-output --json
 
 This will write the following keys to $GITHUB_OUTPUT:
-  plan, pytest_paths, functional_scripts, reasons, changed_files
+    - run_skip (bool): whether to run the skip lane
+    - run_docs (bool): whether to run the docs lane
+    - run_fast (bool): whether to run the fast lane
+    - run_full (bool): whether to run the full lane
+    - selected_workflows (list): list of selected workflow lanes
+    - lane_reasons (dict): reasons for selecting each workflow lane
+    - diff_mode (str): how the diff was determined
+    - pytest_paths (list): list of pytest path arguments
+    - functional_scripts (list): list of python script paths
+    - reasons (list): aggregate machine-readable reasons for the selection
+    - changed_files (list): list of changed files
+    - provenance (dict): mapping each selected test/script to the category rules that selected it
 
 Notes
 -----
@@ -94,13 +105,17 @@ MODE_LABELS = {
 }
 
 
-class Plan(str, Enum):
-    """Unambiguous test plan."""
+class LaneSelection(BaseModel):
+    """Which workflow lanes should run."""
 
-    DOCS_ONLY = "docs_only"  # Docs build only
-    FAST = "fast"  # Targeted pytest + optional functional scripts (single-lane)
-    FULL = "full"  # Delegate to full test workflow/matrix
-    SKIP = "skip"  # Skip all on e.g. lint config changes only
+    model_config = ConfigDict(extra="forbid")
+
+    skip: bool = False  # Skip all tests (e.g. lint-only changes only)
+    docs: bool = False  # Run docs build checks
+    fast: bool = (
+        False  # Run targeted pytest + optional functional scripts (single-lane)
+    )
+    full: bool = False  # Delegate to full test workflow/matrix
 
 
 class SelectionProvenance(BaseModel):
@@ -117,17 +132,18 @@ class SelectorResult(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    schema_version: int = 1
-    plan: Plan
+    schema_version: int = 2
     diff_mode: DiffMode = DiffMode.FALLBACK_NO_HEAD
+
+    lanes: LaneSelection = Field(default_factory=LaneSelection)
 
     pytest_paths: List[str] = Field(default_factory=list)
     functional_scripts: List[str] = Field(default_factory=list)
     provenance: SelectionProvenance = Field(default_factory=SelectionProvenance)
 
-    # Audit fields
     reasons: List[str] = Field(default_factory=list)
     changed_files: List[str] = Field(default_factory=list)
+    lane_reasons: Dict[str, List[str]] = Field(default_factory=dict)
 
 
 SelectorResult.model_rebuild()  # Ensure model is fully built at import time for validation in main()
@@ -275,7 +291,7 @@ def _is_safe_relpath(p: str) -> bool:
 
 
 def validate_selected_paths(res: SelectorResult, repo: Path) -> SelectorResult:
-    missing = []
+    missing: List[str] = []
 
     # validate pytest paths (files/dirs)
     for p in res.pytest_paths:
@@ -288,12 +304,21 @@ def validate_selected_paths(res: SelectorResult, repo: Path) -> SelectorResult:
             missing.append(f"script:{s}")
 
     if missing:
-        # Fail-safe escalation to FULL
-        res.plan = Plan.FULL
+        # Fail-safe escalation: disable fast lane selection, enable full lane.
+        # Preserve docs lane if it was independently selected.
+        res.lanes.fast = False
+        res.lanes.full = True
         res.pytest_paths = []
         res.functional_scripts = []
         res.provenance = SelectionProvenance()
         res.reasons = res.reasons + ["missing_selected_paths"] + missing
+
+        lane_reasons = dict(res.lane_reasons)
+        lane_reasons.pop("fast", None)
+        full_reasons = list(lane_reasons.get("full", []))
+        full_reasons.extend(["missing_selected_paths", *missing])
+        lane_reasons["full"] = full_reasons
+        res.lane_reasons = lane_reasons
 
     return res
 
@@ -315,15 +340,20 @@ def _matches_any(path: str, preds: Sequence[Callable[[str], bool]]) -> bool:
 
 def decide(files: List[str]) -> SelectorResult:
     reasons: List[str] = []
+    lane_reasons: Dict[str, List[str]] = {}
+    lanes = LaneSelection()
 
     if not files:
-        # Fail-safe
+        lanes.full = True
+        full_reasons = ["no_changed_files_or_diff_unavailable"]
         return SelectorResult(
-            plan=Plan.FULL,
+            lanes=lanes,
             pytest_paths=[],
             functional_scripts=[],
-            reasons=["no_changed_files_or_diff_unavailable"],
+            provenance=SelectionProvenance(),
+            reasons=full_reasons,
             changed_files=[],
+            lane_reasons={"full": full_reasons},
         )
 
     # Lint-only filtering (routing should ignore these files)
@@ -333,117 +363,170 @@ def decide(files: List[str]) -> SelectorResult:
     if lint_only:
         reasons.append(f"lint_only_count:{len(lint_only)}")
 
-    # If *only* lint-only files changed, skip tests (do not fail-safe to FULL)
+    # If *only* lint-only files changed, skip all lanes
     if not routed_files:
+        lanes.skip = True
+        skip_reasons = [*reasons, "lint_only"]
         return SelectorResult(
-            plan=Plan.SKIP,
+            lanes=lanes,
             pytest_paths=[],
             functional_scripts=[],
-            reasons=reasons + ["lint_only"],
+            provenance=SelectionProvenance(),
+            reasons=skip_reasons,
             changed_files=files,
+            lane_reasons={"skip": skip_reasons},
         )
 
-    # Full-suite triggers
-    triggered = []
+    # Docs lane is orthogonal: if any routed file matches docs, enable docs lane.
+    docs_rule = next((r for r in CATEGORY_RULES if r["name"] == "docs"), None)
+    docs_touched = bool(
+        docs_rule and any(_matches_any(f, docs_rule["match_any"]) for f in routed_files)
+    )
+    docs_matched_files = {
+        f for f in routed_files if docs_rule and _matches_any(f, docs_rule["match_any"])
+    }
+    non_docs_routed_files = [f for f in routed_files if f not in docs_matched_files]
+
+    docs_pytests_sorted: List[str] = []
+    docs_scripts_sorted: List[str] = []
+
+    if docs_touched:
+        lanes.docs = True
+        reasons.append("category:docs")
+        lane_reasons["docs"] = ["category:docs"]
+        docs_pytests_sorted = sorted(set(docs_rule.get("pytest_paths", []) or []))
+        docs_scripts_sorted = sorted(set(docs_rule.get("functional_scripts", []) or []))
+
+    # Full-suite triggers always win over fast, but docs lane can still remain enabled.
+    triggered: List[Tuple[str, str]] = []
     for f in routed_files:
         for name, pred in FULL_SUITE_TRIGGERS:
             if _matches_any(f, [pred]):
                 triggered.append((f, name))
 
     if triggered:
-        reasons.append("full_suite_trigger")
-        # Optional: add a compact reason count (still machine-readable)
-        reasons.append(f"full_suite_trigger_count:{len(triggered)}")
+        lanes.full = True
+        full_reasons = [
+            "full_suite_trigger",
+            f"full_suite_trigger_count:{len(triggered)}",
+        ]
+        reasons.extend(full_reasons)
+        lane_reasons["full"] = full_reasons
         return SelectorResult(
-            plan=Plan.FULL,
+            lanes=lanes,
             pytest_paths=[],
             functional_scripts=[],
+            provenance=SelectionProvenance(),
             reasons=reasons,
             changed_files=files,
+            lane_reasons=lane_reasons,
         )
 
-    # docs-only if ALL files match docs category
-    docs_rule = next((r for r in CATEGORY_RULES if r["name"] == "docs"), None)
-    if docs_rule and all(_matches_any(f, docs_rule["match_any"]) for f in routed_files):
-        docs_pytests = list(docs_rule.get("pytest_paths", []) or [])
-        docs_scripts = list(docs_rule.get("functional_scripts", []) or [])
-
-        # If docs category has explicit test/script rules attached, run FAST lane.
-        if docs_pytests or docs_scripts:
-            docs_pytests_sorted = sorted(set(docs_pytests))
-            docs_scripts_sorted = sorted(set(docs_scripts))
-
-            return SelectorResult(
-                plan=Plan.FAST,
-                pytest_paths=docs_pytests_sorted,
-                functional_scripts=docs_scripts_sorted,
-                provenance=SelectionProvenance(
-                    pytest={p: ["docs"] for p in docs_pytests_sorted},
-                    scripts={s: ["docs"] for s in docs_scripts_sorted},
-                ),
-                reasons=["docs_only_but_rules_attached", "category:docs"],
-                changed_files=files,
-            )
-
-        # Otherwise, true docs-only (no tests)
-        return SelectorResult(
-            plan=Plan.DOCS_ONLY,
-            pytest_paths=[],
-            functional_scripts=[],
-            reasons=reasons + ["docs_only"],
-            changed_files=files,
-        )
-
-    # Find matching categories
-    matched = []
+    # Match NON-doc categories only for test-routing / escalation logic.
+    matched_non_docs = []
     for rule in CATEGORY_RULES:
+        if rule["name"] == "docs":
+            continue
         if any(_matches_any(f, rule["match_any"]) for f in routed_files):
-            matched.append(rule)
+            matched_non_docs.append(rule)
 
-    if not matched:
+    matched_non_docs = sorted(matched_non_docs, key=lambda r: r["name"])
+
+    for rule in matched_non_docs:
+        reasons.append(f"category:{rule['name']}")
+
+    # Too many non-doc categories => escalate to full, but preserve docs lane.
+    if len(matched_non_docs) > 2:
+        lanes.full = True
+        full_reasons = [f"too_many_categories:{len(matched_non_docs)}"]
+        reasons.extend(full_reasons)
+        lane_reasons["full"] = full_reasons
         return SelectorResult(
-            plan=Plan.FULL,
+            lanes=lanes,
             pytest_paths=[],
             functional_scripts=[],
-            reasons=reasons + ["no_category_matched"],
+            provenance=SelectionProvenance(),
+            reasons=reasons,
             changed_files=files,
-        )
-
-    if len(matched) > 2:
-        return SelectorResult(
-            plan=Plan.FULL,
-            pytest_paths=[],
-            functional_scripts=[],
-            reasons=reasons + [f"too_many_categories:{len(matched)}"],
-            changed_files=files,
+            lane_reasons=lane_reasons,
         )
 
     pytest_paths_set: Set[str] = set()
     functional_set: Set[str] = set()
-
     pytest_sources: Dict[str, Set[str]] = defaultdict(set)
     script_sources: Dict[str, Set[str]] = defaultdict(set)
 
-    for rule in matched:
-        cat = rule["name"]
-        reasons.append(f"category:{cat}")
+    # Docs rules may contribute tests/scripts to the fast lane.
+    if docs_touched:
+        for p in docs_pytests_sorted:
+            pytest_paths_set.add(p)
+            pytest_sources[p].add("docs")
+        for s in docs_scripts_sorted:
+            functional_set.add(s)
+            script_sources[s].add("docs")
 
-        for p in rule.get("pytest_paths", []):
+    # Non-doc matched categories contribute to fast lane.
+    for rule in matched_non_docs:
+        cat = rule["name"]
+        for p in rule.get("pytest_paths", []) or []:
             pytest_paths_set.add(p)
             pytest_sources[p].add(cat)
-
-        for s in rule.get("functional_scripts", []):
+        for s in rule.get("functional_scripts", []) or []:
             functional_set.add(s)
             script_sources[s].add(cat)
 
-    if not pytest_paths_set and not functional_set:
+    # If we matched non-doc categories but none provided explicit tests/scripts,
+    # fall back to the minimal pytest lane.
+    fallback_used = False
+    if not pytest_paths_set and not functional_set and matched_non_docs:
         for p in MINIMAL_PYTEST:
             pytest_paths_set.add(p)
             pytest_sources[p].add("fallback_minimal_pytest")
         reasons.append("fallback_minimal_pytest")
+        fallback_used = True
 
-    res = SelectorResult(
-        plan=Plan.FAST,
+    # If the routed changes are truly docs-only (no non-doc files remain) and no
+    # tests were selected, return docs lane only.
+    if not pytest_paths_set and not functional_set:
+        if lanes.docs and not non_docs_routed_files:
+            return SelectorResult(
+                lanes=lanes,
+                pytest_paths=[],
+                functional_scripts=[],
+                provenance=SelectionProvenance(),
+                reasons=reasons,
+                changed_files=files,
+                lane_reasons=lane_reasons,
+            )
+
+        # Otherwise fail-safe to full when nothing matched at all.
+        lanes.full = True
+        full_reasons = ["no_category_matched"]
+        reasons.extend(full_reasons)
+        lane_reasons["full"] = full_reasons
+        return SelectorResult(
+            lanes=lanes,
+            pytest_paths=[],
+            functional_scripts=[],
+            provenance=SelectionProvenance(),
+            reasons=reasons,
+            changed_files=files,
+            lane_reasons=lane_reasons,
+        )
+
+    # Fast lane selected
+    lanes.fast = True
+
+    fast_reasons: List[str] = []
+    if docs_touched and (docs_pytests_sorted or docs_scripts_sorted):
+        fast_reasons.append("category:docs")
+    fast_reasons.extend(f"category:{rule['name']}" for rule in matched_non_docs)
+    if fallback_used:
+        fast_reasons.append("fallback_minimal_pytest")
+    lane_reasons["fast"] = fast_reasons
+
+    return SelectorResult(
+        lanes=lanes,
         pytest_paths=sorted(pytest_paths_set),
         functional_scripts=sorted(functional_set),
         provenance=SelectionProvenance(
@@ -452,9 +535,8 @@ def decide(files: List[str]) -> SelectorResult:
         ),
         reasons=reasons,
         changed_files=files,
+        lane_reasons=lane_reasons,
     )
-
-    return res
 
 
 # -----------------------------
@@ -562,6 +644,22 @@ def _render_file_line(
     return f"- {marker}`{f}`{tag_str}"
 
 
+def _enabled_lane_names(res: SelectorResult) -> List[str]:
+    order = ("skip", "docs", "fast", "full")
+    return [name for name in order if getattr(res.lanes, name)]
+
+
+def _lane_label(name: str, emoji: bool = False) -> str:
+    if not emoji:
+        return name
+    return {
+        "skip": "⏩ skip",
+        "docs": "📚 docs",
+        "fast": "⚡ fast",
+        "full": "🧪 full",
+    }.get(name, name)
+
+
 def _compact_reasons(reasons: List[str]) -> List[str]:
     cats = sorted({r.split(":", 1)[1] for r in reasons if r.startswith("category:")})
     other = [r for r in reasons if not r.startswith("category:")]
@@ -587,21 +685,23 @@ def _render_decision_markdown(
             s += f"\n- … and {len(items) - limit_} more"
         return s
 
-    # Plan line (minimal, no emoji by default)
-    plan_label = res.plan.value
+    # Selection line (minimal, no emoji by default)
+    selected_lanes = _enabled_lane_names(res)
     if emoji:
-        plan_label = {
-            Plan.SKIP: "⏩ Skip tests",
-            Plan.DOCS_ONLY: "📚 Documentation checks",
-            Plan.FAST: "⚡ Fast, targeted tests",
-            Plan.FULL: "🧪 Full suite",
-        }.get(res.plan, res.plan.value)
+        selected_lanes_label = ", ".join(
+            _lane_label(name, emoji=True) for name in selected_lanes
+        )
+    else:
+        selected_lanes_label = ", ".join(f"`{name}`" for name in selected_lanes)
+
+    if not selected_lanes_label:
+        selected_lanes_label = "_(none)_"
 
     diff_mode = f"{MODE_LABELS.get(res.diff_mode, res.diff_mode.value)}"
 
     md: List[str] = []
     md.append("# Test selection\n")
-    md.append(f"**Plan:** `{plan_label}`\n")
+    md.append(f"**Selected workflows:** {selected_lanes_label}\n")
     md.append(f"**Diff mode:** `{diff_mode}`\n")
 
     # Reasons (compacted)
@@ -609,6 +709,18 @@ def _render_decision_markdown(
     for r in _compact_reasons(res.reasons):
         md.append(f"- `{r}`")
     md.append("")
+
+    if style == "detailed" and res.lane_reasons:
+        md.append("## Workflow lanes\n")
+        for lane in _enabled_lane_names(res):
+            lane_rs = res.lane_reasons.get(lane, [])
+            md.append(f"### `{lane}`")
+            if lane_rs:
+                for r in lane_rs:
+                    md.append(f"- `{r}`")
+            else:
+                md.append("_(none)_")
+            md.append("")
 
     # Explain changed files
     exp = explain_changed_files(res.changed_files)
@@ -764,8 +876,15 @@ def write_github_output(res: SelectorResult) -> None:
     def j(v) -> str:
         return json.dumps(v, separators=(",", ":"), ensure_ascii=False)
 
+    selected_workflows = _enabled_lane_names(res)
+
     with open(out_path, "a", encoding="utf-8") as f:
-        f.write(f"plan={res.plan.value}\n")
+        f.write(f"run_skip={str(res.lanes.skip).lower()}\n")
+        f.write(f"run_docs={str(res.lanes.docs).lower()}\n")
+        f.write(f"run_fast={str(res.lanes.fast).lower()}\n")
+        f.write(f"run_full={str(res.lanes.full).lower()}\n")
+        f.write(f"selected_workflows={j(selected_workflows)}\n")
+        f.write(f"lane_reasons={j(res.lane_reasons)}\n")
         f.write(f"diff_mode={res.diff_mode.value}\n")
         f.write(f"pytest_paths={j(res.pytest_paths)}\n")
         f.write(f"functional_scripts={j(res.functional_scripts)}\n")
