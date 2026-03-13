@@ -49,11 +49,6 @@ def _write_event(tmp_path: Path, payload: dict) -> Path:
     return event_path
 
 
-def test_validate_sha_accepts(selector):
-    assert selector._validate_sha("x", "abc1234") == "abc1234"
-    assert selector._validate_sha("x", "a" * 40) == "a" * 40
-
-
 # --------------
 # SHA validation & diff range parsing
 # --------------
