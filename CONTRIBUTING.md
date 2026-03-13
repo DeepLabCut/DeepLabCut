@@ -142,4 +142,4 @@ DeepLabCut is an open-source project and has benefited from many contributors ov
 - Listed [code contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors)
 - And many others over the years.
 
-We look forward to your contributions !
+We look forward to your contributions!
