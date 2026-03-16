@@ -61,6 +61,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 try:
     from .test_selector_config import (
+        CATEGORY_RULE_BY_NAME,
         CATEGORY_RULES,
         FULL_SUITE_TRIGGERS,
         LINT_ONLY_FILES,
@@ -70,6 +71,7 @@ try:
 # but still import the config from the same location.
 except ImportError:  # pragma: no cover
     from test_selector_config import (
+        CATEGORY_RULE_BY_NAME,
         CATEGORY_RULES,
         FULL_SUITE_TRIGGERS,
         LINT_ONLY_FILES,
@@ -78,9 +80,6 @@ except ImportError:  # pragma: no cover
 
 
 SHA_RE = re.compile(r"^[0-9a-f]{7,40}$", re.IGNORECASE)
-CATEGORY_RULE_BY_NAME: Dict[str, Dict[str, Any]] = {
-    r["name"]: r for r in CATEGORY_RULES
-}
 # DLC_NAMESPACE = "deeplabcut"
 
 
@@ -378,12 +377,12 @@ def decide(files: List[str]) -> SelectorResult:
         )
 
     # Docs lane is orthogonal: if any routed file matches docs, enable docs lane.
-    docs_rule = next((r for r in CATEGORY_RULES if r["name"] == "docs"), None)
+    docs_rule = CATEGORY_RULE_BY_NAME.get("docs")
     docs_touched = bool(
-        docs_rule and any(_matches_any(f, docs_rule["match_any"]) for f in routed_files)
+        docs_rule and any(_matches_any(f, docs_rule.match_any) for f in routed_files)
     )
     docs_matched_files = {
-        f for f in routed_files if docs_rule and _matches_any(f, docs_rule["match_any"])
+        f for f in routed_files if docs_rule and _matches_any(f, docs_rule.match_any)
     }
     non_docs_routed_files = [f for f in routed_files if f not in docs_matched_files]
 
@@ -394,8 +393,10 @@ def decide(files: List[str]) -> SelectorResult:
         lanes.docs = True
         reasons.append("category:docs")
         lane_reasons["docs"] = ["category:docs"]
-        docs_pytests_sorted = sorted(set(docs_rule.get("pytest_paths", []) or []))
-        docs_scripts_sorted = sorted(set(docs_rule.get("functional_scripts", []) or []))
+        docs_pytests_sorted = sorted(set(docs_rule.pytest_paths)) if docs_rule else []
+        docs_scripts_sorted = (
+            sorted(set(docs_rule.functional_scripts)) if docs_rule else []
+        )
 
     # Full-suite triggers always win over fast, but docs lane can still remain enabled.
     triggered: List[Tuple[str, str]] = []
@@ -425,15 +426,15 @@ def decide(files: List[str]) -> SelectorResult:
     # Match NON-doc categories only for test-routing / escalation logic.
     matched_non_docs = []
     for rule in CATEGORY_RULES:
-        if rule["name"] == "docs":
+        if rule.name == "docs":
             continue
-        if any(_matches_any(f, rule["match_any"]) for f in routed_files):
+        if any(_matches_any(f, rule.match_any) for f in routed_files):
             matched_non_docs.append(rule)
 
-    matched_non_docs = sorted(matched_non_docs, key=lambda r: r["name"])
+    matched_non_docs = sorted(matched_non_docs, key=lambda r: r.name)
 
     for rule in matched_non_docs:
-        reasons.append(f"category:{rule['name']}")
+        reasons.append(f"category:{rule.name}")
 
     pytest_paths_set: Set[str] = set()
     functional_set: Set[str] = set()
@@ -451,11 +452,11 @@ def decide(files: List[str]) -> SelectorResult:
 
     # Non-doc matched categories contribute to fast lane.
     for rule in matched_non_docs:
-        cat = rule["name"]
-        for p in rule.get("pytest_paths", []) or []:
+        cat = rule.name
+        for p in rule.pytest_paths or []:
             pytest_paths_set.add(p)
             pytest_sources[p].add(cat)
-        for s in rule.get("functional_scripts", []) or []:
+        for s in rule.functional_scripts or []:
             functional_set.add(s)
             script_sources[s].add(cat)
 
@@ -504,7 +505,7 @@ def decide(files: List[str]) -> SelectorResult:
     fast_reasons: List[str] = []
     if docs_touched and (docs_pytests_sorted or docs_scripts_sorted):
         fast_reasons.append("category:docs")
-    fast_reasons.extend(f"category:{rule['name']}" for rule in matched_non_docs)
+    fast_reasons.extend(f"category:{rule.name}" for rule in matched_non_docs)
     if fallback_used:
         fast_reasons.append("fallback_minimal_pytest")
     lane_reasons["fast"] = fast_reasons
@@ -539,7 +540,7 @@ def explain_changed_files(files: List[str]) -> Dict[str, Any]:
     uncategorized: List[str] = []
 
     # Prep category predicates
-    categories = [(r["name"], r["match_any"]) for r in CATEGORY_RULES]
+    categories = [(r.name, r.match_any) for r in CATEGORY_RULES]
 
     for f in files:
         # Which full-suite triggers does this file match?
@@ -737,8 +738,8 @@ def _render_decision_markdown(
             files = exp["by_category"][cat]
 
             # Determine if this category has any explicit selection rules attached
-            rule = CATEGORY_RULE_BY_NAME.get(cat, {})
-            has_rules = bool(rule.get("pytest_paths") or rule.get("functional_scripts"))
+            rule = CATEGORY_RULE_BY_NAME.get(cat)
+            has_rules = bool(rule and (rule.pytest_paths or rule.functional_scripts))
             note = "" if has_rules else " — no specific testing rules attached"
 
             md.append(
