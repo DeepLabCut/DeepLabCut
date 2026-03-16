@@ -276,7 +276,7 @@ CATEGORY_RULES = validate_category_rules(
                 prefix(POSE_PT),
             ],
             pytest_paths=[
-                "tests/test_pose_estimation_pytorch/",
+                "tests/pose_estimation_pytorch/",
             ],
             functional_scripts=[
                 "examples/testscript_pytorch_single_animal.py",
