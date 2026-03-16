@@ -18,6 +18,7 @@ from pathlib import Path
 
 import torch
 
+import deeplabcut.modelzoo.weight_initialization as weight_initialization
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_filtered_coco_detector_inference_runner,
@@ -201,10 +202,7 @@ def create_superanimal_inference_runners(
         )
 
     model_cfg = update_config(model_cfg, max_individuals=max_individuals, device=device)
-    # Local import avoids import-time circular dependency with modelzoo package init.
-    from deeplabcut.modelzoo.weight_initialization import build_weight_init
-
-    weight_init = build_weight_init(
+    weight_init = weight_initialization.build_weight_init(
         cfg=model_cfg,
         super_animal=superanimal_name,
         model_name=model_name,
