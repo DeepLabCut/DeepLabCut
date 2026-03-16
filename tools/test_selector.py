@@ -655,6 +655,17 @@ def _compact_reasons(reasons: List[str]) -> List[str]:
     return out
 
 
+def _details_open(summary: str, add_blank: bool = True) -> str:
+    s = f"<details><summary><strong>{summary}</strong></summary>\n"
+    if add_blank:
+        s += "\n"
+    return s
+
+
+def _details_close() -> str:
+    return "\n</details>\n"
+
+
 def _render_decision_markdown(
     res: SelectorResult,
     limit: int = 40,
@@ -717,9 +728,8 @@ def _render_decision_markdown(
     if exp["full_trigger_files"]:
         total_triggered = sum(len(v) for v in exp["full_trigger_files"].values())
         md.append(
-            f"<details><summary><strong>Files that match full-suite triggers</strong> ({total_triggered})</summary>\n"
+            _details_open(f"Files that match full-suite triggers ({total_triggered})")
         )
-        md.append("")
         for trig_name in sorted(exp["full_trigger_files"].keys()):
             files_for_trigger = exp["full_trigger_files"][trig_name]
             md.append(f"**{trig_name}** ({len(files_for_trigger)})")
@@ -728,7 +738,7 @@ def _render_decision_markdown(
             if len(files_for_trigger) > limit:
                 md.append(f"- … and {len(files_for_trigger) - limit} more")
             md.append("")
-        md.append("</details>\n")
+        md.append(_details_close())
 
     # 2) Files grouped by category (includes uncategorized and lint-only as collapsible lists)
     md.append("### Files grouped by category\n")
@@ -742,16 +752,13 @@ def _render_decision_markdown(
             has_rules = bool(rule and (rule.pytest_paths or rule.functional_scripts))
             note = "" if has_rules else " — no specific testing rules attached"
 
-            md.append(
-                f"<details><summary><strong>{cat}</strong> ({len(files)}){note}</summary>\n"
-            )
-            md.append("")
+            md.append(_details_open(f"{cat} ({len(files)}){note}"))
             for f in files[:limit]:
                 # Already grouped by category; keep lines clean
                 md.append(f"- `{f}`")
             if len(files) > limit:
                 md.append(f"- … and {len(files) - limit} more")
-            md.append("\n</details>\n")
+            md.append(_details_close())
     else:
         md.append("_(none)_\n")
 
@@ -759,14 +766,14 @@ def _render_decision_markdown(
     if exp.get("lint_only"):
         lint_files = exp["lint_only"]
         md.append(
-            f"<details><summary><strong>Lint-only</strong> ({len(lint_files)}) — ignored for test selection</summary>\n"
+            _details_open(f"Lint-only ({len(lint_files)}) — ignored for test selection")
         )
         md.append("")
         for f in lint_files[:limit]:
             md.append(f"- `{f}`")
         if len(lint_files) > limit:
             md.append(f"- … and {len(lint_files) - limit} more")
-        md.append("\n</details>\n")
+        md.append(_details_close())
 
     # Uncategorized as collapsible — and clarify what it means
     # IMPORTANT: explain_changed_files() already ensures that files that match ANY category
@@ -774,14 +781,16 @@ def _render_decision_markdown(
     if exp["uncategorized"]:
         unc_files = exp["uncategorized"]
         md.append(
-            f"<details><summary><strong>Uncategorized</strong> ({len(unc_files)}) — no matching category (no specific testing rules attached)</summary>\n"
+            _details_open(
+                f"Uncategorized ({len(unc_files)}) — no matching category (no specific testing rules attached)"
+            )
         )
         md.append("")
         for f in unc_files[:limit]:
             md.append(_render_file_line(f, exp["per_file"][f], emoji=emoji))
         if len(unc_files) > limit:
             md.append(f"- … and {len(unc_files) - limit} more")
-        md.append("\n</details>\n")
+        md.append(_details_close())
 
     if style == "detailed":
         md.append("## Changed files (raw)\n")
@@ -790,17 +799,17 @@ def _render_decision_markdown(
 
     # Selected tests
     md.append("## Selected tests\n")
-    md.append("<details><summary><strong>Pytest paths</strong></summary>\n")
+    md.append(_details_open("Pytest paths"))
     md.append(bullet(res.pytest_paths))
-    md.append("\n</details>\n")
-    md.append("<details><summary><strong>Functional scripts</strong></summary>\n")
+    md.append(_details_close())
+    md.append(_details_open("Functional scripts"))
     md.append(bullet(res.functional_scripts))
-    md.append("\n</details>\n")
+    md.append(_details_close())
 
     # Provenance collapsed by default, only if detailed
     if style == "detailed":
         md.append("## Provenance\n")
-        md.append("<details><summary><strong>Why these tests</strong></summary>\n")
+        md.append(_details_open("Why these tests"))
         md.append("")
 
         if res.provenance.pytest:
@@ -817,7 +826,7 @@ def _render_decision_markdown(
         else:
             md.append("\n### Scripts\n_(none)_")
 
-        md.append("\n</details>\n")
+        md.append(_details_close())
 
     return "\n".join(md)
 
