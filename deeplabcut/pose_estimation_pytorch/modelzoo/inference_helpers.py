@@ -217,8 +217,6 @@ def create_superanimal_inference_runners(
         model_config=model_cfg,
         snapshot_path=weight_init.snapshot_path,
         max_individuals=max_individuals,
-        num_bodyparts=len(model_cfg["metadata"]["bodyparts"]),
-        num_unique_bodyparts=len(model_cfg["metadata"]["unique_bodyparts"]),
         batch_size=batch_size,
         detector_batch_size=detector_batch_size,
         detector_path=weight_init.detector_snapshot_path,
