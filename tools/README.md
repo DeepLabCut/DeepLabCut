@@ -96,16 +96,6 @@ It also emits audit metadata:
 - `changed_files`: files considered for the decision
 - `schema_version`: output schema version
 
-### Design principles
-
-- **Fail-safe**: if changes cannot be determined, selected paths are missing, or routing is ambiguous, the selector escalates to the `full` lane.
-- **Deterministic**: diff selection is derived from GitHub event payloads when available.
-- **Strictly validated**:
-  - output is validated with Pydantic
-  - config rules are validated through the `CategoryRule` schema
-  - SHAs and paths are sanitized before use
-- **Auditable**: category rules and full-suite triggers are centralized in `tools/test_selector_config.py`.
-
 ### Rule configuration
 
 Routing rules are defined in `tools/test_selector_config.py`.
