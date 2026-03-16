@@ -1,8 +1,6 @@
 name: Python package
 
 on:
-  push:
-    branches: [ main ]
   workflow_call:
     # This workflow can be called by other workflows (like intelligent-testing.yml)
     inputs:
