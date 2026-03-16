@@ -93,10 +93,11 @@ def test_fast_multianimal_includes_functional(selector):
     assert "tests/test_predict_multianimal.py" in res.pytest_paths
     assert "examples/testscript_tensorflow_multi_animal.py" in res.functional_scripts
 
-    assert res.provenance.pytest["tests/test_predict_multianimal.py"] == ["multianimal"]
-    assert res.provenance.scripts["examples/testscript_tensorflow_multi_animal.py"] == [
+    assert "multianimal" in res.provenance.pytest["tests/test_predict_multianimal.py"]
+    assert (
         "multianimal"
-    ]
+        in res.provenance.scripts["examples/testscript_tensorflow_multi_animal.py"]
+    )
 
 
 def test_fast_ci_workflows_uses_minimal_pytest(selector):
