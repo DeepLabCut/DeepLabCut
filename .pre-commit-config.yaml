@@ -11,15 +11,20 @@ repos:
       - id: trailing-whitespace
       - id: check-merge-conflict
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.15.2
+    rev: v2.18.1
     hooks:
       - id: pyproject-fmt
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.25
     hooks:
       - id: validate-pyproject
+  - repo: https://github.com/PyCQA/docformatter
+    rev: v1.7.7
+    hooks:
+      - id: docformatter
+        args: ["--wrap-summaries=88", "--wrap-descriptions=88", "--in-place", "--black"]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.0
+    rev: v0.15.6
     hooks:
       # Run the formatter.
       - id: ruff-format
