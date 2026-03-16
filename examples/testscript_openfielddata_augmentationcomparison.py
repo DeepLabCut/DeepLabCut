@@ -12,7 +12,7 @@
 #
 """
 
-This is a test script to compare the loaders and models. 
+This is a test script to compare the loaders and models.
 
 This script creates one identical splits for the openfield test dataset and trains it with imgaug (default), scalecrop
 and the tensorpack loader. We also compare 3 backbones (mobilenet, resnet, efficientnet)
@@ -55,7 +55,6 @@ the network performs much better on the testvideo (see Neuron Primer: https://ww
 
 """
 
-
 import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = str(0)
@@ -82,9 +81,7 @@ Shuffles = deeplabcut.create_training_model_comparison(
 )
 
 for idx, shuffle in enumerate(Shuffles):
-    posefile, _, _ = deeplabcut.return_train_network_path(
-        path_config_file, shuffle=shuffle
-    )
+    posefile, _, _ = deeplabcut.return_train_network_path(path_config_file, shuffle=shuffle)
 
     # Setting specific parameters for training
     if idx % 3 == 0:  # imgaug
@@ -115,9 +112,7 @@ for shuffle in Shuffles:
 
     print("Analyze Video")
 
-    videofile_path = os.path.join(
-        os.getcwd(), "openfield-Pranav-2018-10-30", "videos", "m3v1mp4.mp4"
-    )
+    videofile_path = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30", "videos", "m3v1mp4.mp4")
 
     deeplabcut.analyze_videos(path_config_file, [videofile_path], shuffle=shuffle)
 

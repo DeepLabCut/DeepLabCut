@@ -13,9 +13,7 @@ from __future__ import annotations
 import torch
 
 
-def count_nonzero_elems(
-    losses: torch.Tensor, weights: float | torch.Tensor, per_batch: bool = False
-):
+def count_nonzero_elems(losses: torch.Tensor, weights: float | torch.Tensor, per_batch: bool = False):
     """
     Compute the number of elements in the loss function induced by `weights`.
     This is a torch implementation of https://github.com/tensorflow/tensorflow/blob/4dacf3f368eb7965e9b5c3bbdd5193986081c3b2/tensorflow/python/ops/losses/losses_impl.py#L89
@@ -37,9 +35,7 @@ def count_nonzero_elems(
     weights = torch.as_tensor(weights, dtype=torch.float32)
 
     # Check for non-zero weights and broadcast to match losses
-    present = torch.where(
-        weights == 0.0, torch.zeros_like(weights), torch.ones_like(weights)
-    )
+    present = torch.where(weights == 0.0, torch.zeros_like(weights), torch.ones_like(weights))
     present = present.expand_as(losses)
 
     # Reduce sum across the desired dimensions

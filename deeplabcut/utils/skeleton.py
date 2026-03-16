@@ -35,9 +35,7 @@ from skimage import io
 
 def read_config(configname):
     if not os.path.exists(configname):
-        raise FileNotFoundError(
-            f"Config {configname} is not found. Please make sure that the file exists."
-        )
+        raise FileNotFoundError(f"Config {configname} is not found. Please make sure that the file exists.")
     with open(configname) as file:
         return YAML().load(file)
 
@@ -57,12 +55,8 @@ class SkeletonBuilder:
         root = os.path.join(self.cfg["project_path"], "labeled-data")
         for dir_ in os.listdir(root):
             folder = os.path.join(root, dir_)
-            if os.path.isdir(folder) and not any(
-                folder.endswith(s) for s in ("cropped", "labeled")
-            ):
-                self.df = pd.read_hdf(
-                    os.path.join(folder, f'CollectedData_{self.cfg["scorer"]}.h5')
-                )
+            if os.path.isdir(folder) and not any(folder.endswith(s) for s in ("cropped", "labeled")):
+                self.df = pd.read_hdf(os.path.join(folder, f"CollectedData_{self.cfg['scorer']}.h5"))
                 row, col = self.pick_labeled_frame()
                 if "individuals" in self.df.columns.names:
                     self.df = self.df.xs(col, axis=1, level="individuals")
@@ -97,9 +91,7 @@ class SkeletonBuilder:
                 pair_sorted = tuple(sorted(pair))
                 self.inds.add(pair_sorted)
                 self.segs.add(tuple(map(tuple, self.xy[pair_sorted, :])))
-        self.lines = LineCollection(
-            self.segs, colors=mcolors.to_rgba(self.cfg["skeleton_color"])
-        )
+        self.lines = LineCollection(self.segs, colors=mcolors.to_rgba(self.cfg["skeleton_color"]))
         self.lines.set_picker(True)
         self.show()
 

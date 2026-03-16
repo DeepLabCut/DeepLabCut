@@ -32,9 +32,7 @@ class VideoProcessor(object):
     sh and sw are the output height and width respectively.
     """
 
-    def __init__(
-        self, fname="", sname="", nframes=-1, fps=None, codec="X264", sh="", sw=""
-    ):
+    def __init__(self, fname="", sname="", nframes=-1, fps=None, codec="X264", sh="", sw=""):
         self.fname = fname
         self.sname = sname
         self.nframes = nframes

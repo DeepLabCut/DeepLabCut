@@ -21,9 +21,7 @@ class ConversionTableFromDict:
 
     def convert(self, kpt):
         if kpt not in self.table_dict:
-            warnings.warn(
-                f"{kpt} is defined in src space but not appeared in the conversion table"
-            )
+            warnings.warn(f"{kpt} is defined in src space but not appeared in the conversion table")
             return None
         else:
             return self.table_dict[kpt]
@@ -78,7 +76,6 @@ class ConversionTableFromCSV:
         self.table = {}
         for src_kpt in src_keypoints:
             for target_kpt in target_keypoints:
-
                 src_kpt_id = self._search(src_kpt)
                 target_kpt_id = self._search(target_kpt)
 
@@ -122,9 +119,7 @@ class ConversionTableFromCSV:
 
     def convert(self, kpt):
         if kpt not in self.table:
-            warnings.warn(
-                f"{kpt} is defined in src space but not appeared in the conversion table"
-            )
+            warnings.warn(f"{kpt} is defined in src space but not appeared in the conversion table")
             return None
         else:
             return self.table[kpt]

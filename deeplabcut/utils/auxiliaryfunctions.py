@@ -17,6 +17,7 @@ Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
+
 from __future__ import annotations
 
 import os
@@ -224,10 +225,7 @@ def read_config(configname):
                     write_config(configname, cfg)
         except Exception as err:
             if len(err.args) > 2:
-                if (
-                    err.args[2]
-                    == "could not determine a constructor for the tag '!!python/tuple'"
-                ):
+                if err.args[2] == "could not determine a constructor for the tag '!!python/tuple'":
                     with open(path, "r") as ymlfile:
                         cfg = yaml.load(ymlfile, Loader=yaml.SafeLoader)
                         write_config(configname, cfg)
@@ -246,9 +244,7 @@ def write_config(configname, cfg):
     Write structured config file.
     """
     with open(configname, "w") as cf:
-        cfg_file, ruamelFile = create_config_template(
-            cfg.get("multianimalproject", False)
-        )
+        cfg_file, ruamelFile = create_config_template(cfg.get("multianimalproject", False))
         for key in cfg.keys():
             cfg_file[key] = cfg[key]
 
@@ -296,10 +292,7 @@ def edit_config(configname, edits, output_name=""):
     try:
         write_plainconfig(output_name, cfg)
     except ruamel.yaml.representer.RepresenterError:
-        warnings.warn(
-            "Some edits could not be written. "
-            "The configuration file will be left unchanged."
-        )
+        warnings.warn("Some edits could not be written. The configuration file will be left unchanged.")
         for key in edits:
             cfg.pop(key)
         write_plainconfig(output_name, cfg)
@@ -360,9 +353,7 @@ def write_config_3d_template(projconfigfile, cfg_file_3d, ruamelFile_3d):
 
 def read_plainconfig(configname):
     if not os.path.exists(configname):
-        raise FileNotFoundError(
-            f"Config {configname} is not found. Please make sure that the file exists."
-        )
+        raise FileNotFoundError(f"Config {configname} is not found. Please make sure that the file exists.")
     with open(configname) as file:
         return YAML().load(file)
 
@@ -377,9 +368,7 @@ def attempt_to_make_folder(foldername, recursive=False):
     try:
         os.path.isdir(foldername)
     except TypeError:  # https://www.python.org/dev/peps/pep-0519/
-        foldername = os.fspath(
-            foldername
-        )  # https://github.com/DeepLabCut/DeepLabCut/issues/105 (windows)
+        foldername = os.fspath(foldername)  # https://github.com/DeepLabCut/DeepLabCut/issues/105 (windows)
 
     if os.path.isdir(foldername):
         pass
@@ -443,9 +432,7 @@ def get_list_of_videos(
         if in_random_order:
             from random import shuffle
 
-            shuffle(
-                videos
-            )  # this is useful so multiple nets can be used to analyze simultaneously
+            shuffle(videos)  # this is useful so multiple nets can be used to analyze simultaneously
         else:
             videos.sort()
 
@@ -481,9 +468,7 @@ def save_data(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv
 def save_metadata(metadatafilename, data, trainIndices, testIndices, trainFraction):
     with open(metadatafilename, "wb") as f:
         # Pickle the 'labeled-data' dictionary using the highest protocol available.
-        pickle.dump(
-            [data, trainIndices, testIndices, trainFraction], f, pickle.HIGHEST_PROTOCOL
-        )
+        pickle.dump([data, trainIndices, testIndices, trainFraction], f, pickle.HIGHEST_PROTOCOL)
 
 
 def load_metadata(metadatafile):
@@ -499,9 +484,7 @@ def load_metadata(metadatafile):
 
 def get_immediate_subdirectories(a_dir):
     """Get list of immediate subdirectories"""
-    return [
-        name for name in os.listdir(a_dir) if os.path.isdir(os.path.join(a_dir, name))
-    ]
+    return [name for name in os.listdir(a_dir) if os.path.isdir(os.path.join(a_dir, name))]
 
 
 def grab_files_in_folder(folder, ext="", relative=True):
@@ -544,14 +527,8 @@ def filter_files_by_patterns(
         file
         for file in folder.iterdir()
         if file.is_file()
-        and (
-            not start_patterns
-            or any(file.name.startswith(start) for start in start_patterns)
-        )
-        and (
-            not contain_patterns
-            or any(contain in file.name for contain in contain_patterns)
-        )
+        and (not start_patterns or any(file.name.startswith(start) for start in start_patterns))
+        and (not contain_patterns or any(contain in file.name for contain in contain_patterns))
         and (not end_patterns or any(file.name.endswith(end) for end in end_patterns))
     ]
 
@@ -578,9 +555,7 @@ def get_training_set_folder(cfg: dict) -> Path:
     Task = cfg["Task"]
     date = cfg["date"]
     iterate = "iteration-" + str(cfg["iteration"])
-    return Path(
-        os.path.join("training-datasets", iterate, "UnaugmentedDataSet_" + Task + date)
-    )
+    return Path(os.path.join("training-datasets", iterate, "UnaugmentedDataSet_" + Task + date))
 
 
 def get_data_and_metadata_filenames(trainingsetfolder, trainFraction, shuffle, cfg):
@@ -597,13 +572,7 @@ def get_data_and_metadata_filenames(trainingsetfolder, trainFraction, shuffle, c
     )
     datafn = os.path.join(
         str(trainingsetfolder),
-        cfg["Task"]
-        + "_"
-        + cfg["scorer"]
-        + str(int(100 * trainFraction))
-        + "shuffle"
-        + str(shuffle)
-        + ".mat",
+        cfg["Task"] + "_" + cfg["scorer"] + str(int(100 * trainFraction)) + "shuffle" + str(shuffle) + ".mat",
     )
 
     return datafn, metadatafn
@@ -682,12 +651,7 @@ def get_evaluation_folder(
         modelprefix,
         eval_prefix,
         iterate,
-        Task
-        + date
-        + "-trainset"
-        + str(int(trainFraction * 100))
-        + "shuffle"
-        + str(shuffle),
+        Task + date + "-trainset" + str(int(trainFraction * 100)) + "shuffle" + str(shuffle),
     )
 
 
@@ -699,9 +663,7 @@ def get_snapshots_from_folder(train_folder: Path) -> List[str]:
     Raises:
         FileNotFoundError: if no snapshot_names are found in the train_folder.
     """
-    snapshot_names = [
-        file.stem for file in train_folder.iterdir() if "index" in file.name
-    ]
+    snapshot_names = [file.stem for file in train_folder.iterdir() if "index" in file.name]
 
     if len(snapshot_names) == 0:
         raise FileNotFoundError(
@@ -798,12 +760,8 @@ def get_scorer_name(
     date = cfg["date"]
 
     if trainingsiterations == "unknown":
-        snapshotindex = get_snapshot_index_for_scorer(
-            "snapshotindex", cfg["snapshotindex"]
-        )
-        model_folder = get_model_folder(
-            trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix
-        )
+        snapshotindex = get_snapshot_index_for_scorer("snapshotindex", cfg["snapshotindex"])
+        model_folder = get_model_folder(trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix)
         train_folder = Path(cfg["project_path"]) / model_folder / "train"
         snapshot_names = get_snapshots_from_folder(train_folder)
         snapshot_name = snapshot_names[snapshotindex]
@@ -812,11 +770,7 @@ def get_scorer_name(
     dlc_cfg = read_plainconfig(
         os.path.join(
             cfg["project_path"],
-            str(
-                get_model_folder(
-                    trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix
-                )
-            ),
+            str(get_model_folder(trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix)),
             "train",
             engine.pose_cfg_name,
         )
@@ -834,26 +788,14 @@ def get_scorer_name(
     else:
         raise ValueError(f"Failed to abbreviate network name: {dlc_cfg['net_type']}")
 
-    scorer = (
-        "DLC_"
-        + netname
-        + "_"
-        + Task
-        + str(date)
-        + "shuffle"
-        + str(shuffle)
-        + "_"
-        + str(trainingsiterations)
-    )
+    scorer = "DLC_" + netname + "_" + Task + str(date) + "shuffle" + str(shuffle) + "_" + str(trainingsiterations)
     # legacy scorername until DLC 2.1. (cfg['resnet'] is deprecated / which is why we get the resnet_xyz name from dlc_cfg!
     # scorer_legacy = 'DeepCut' + "_resnet" + str(cfg['resnet']) + "_" + Task + str(date) + 'shuffle' + str(shuffle) + '_' + str(trainingsiterations)
     scorer_legacy = scorer.replace("DLC", "DeepCut")
     return scorer, scorer_legacy
 
 
-def check_if_post_processing(
-    folder, vname, DLCscorer, DLCscorerlegacy, suffix="filtered"
-):
+def check_if_post_processing(folder, vname, DLCscorer, DLCscorerlegacy, suffix="filtered"):
     """Checks if filtered/bone lengths were already calculated. If not, figures
     out if data was already analyzed (either with legacy scorer name or new one!)"""
     outdataname = os.path.join(folder, vname + DLCscorer + suffix + ".h5")
@@ -936,16 +878,13 @@ def find_video_full_data(folder, videoname, scorer):
         end_patterns={"pickle"},
     )
     if not full_files:
-        raise FileNotFoundError(
-            f"No full data found in {folder} "
-            f"for video {videoname} and scorer {scorer}."
-        )
+        raise FileNotFoundError(f"No full data found in {folder} for video {videoname} and scorer {scorer}.")
     return full_files[0]
 
 
 def find_video_metadata(folder, videoname: str, scorer: str):
     """For backward compatibility, let us search the substring 'meta'"""
-    
+
     scorer_legacy = scorer.replace("DLC", "DeepCut")
     meta_files = filter_files_by_patterns(
         folder=folder,
@@ -954,10 +893,7 @@ def find_video_metadata(folder, videoname: str, scorer: str):
         end_patterns={"pickle"},
     )
     if not meta_files:
-        raise FileNotFoundError(
-            f"No metadata found in {folder} "
-            f"for video {videoname} and scorer {scorer}."
-        )
+        raise FileNotFoundError(f"No metadata found in {folder} for video {videoname} and scorer {scorer}.")
     return meta_files[0]
 
 
@@ -971,7 +907,7 @@ def load_video_full_data(folder, videoname, scorer):
 
 def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, track_method=""):
     """Find potential data files from the hints given to the function."""
-    
+
     scorer_legacy = scorer.replace("DLC", "DeepCut")
     suffix = "_filtered" if filtered else ""
     tracker = TRACK_METHODS.get(track_method, "")
@@ -979,9 +915,7 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
     candidates = []
     for file in grab_files_in_folder(folder, "h5"):
         stem = Path(file).stem.replace("_filtered", "")
-        starts_by_scorer = file.startswith(videoname + scorer) or file.startswith(
-            videoname + scorer_legacy
-        )
+        starts_by_scorer = file.startswith(videoname + scorer) or file.startswith(videoname + scorer_legacy)
         if tracker:
             matches_tracker = stem.endswith(tracker)
         else:
@@ -991,15 +925,14 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
                 starts_by_scorer,
                 "skeleton" not in file,
                 matches_tracker,
-                (filtered and "filtered" in file)
-                or (not filtered and "filtered" not in file),
+                (filtered and "filtered" in file) or (not filtered and "filtered" not in file),
             )
         ):
             candidates.append(file)
 
     if not len(candidates):
         msg = (
-            f'No {"un" if not filtered else ""}filtered data file found in {folder} '
+            f"No {'un' if not filtered else ''}filtered data file found in {folder} "
             f"for video {videoname} and scorer {scorer}"
         )
         if track_method:
@@ -1009,19 +942,14 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
 
     n_candidates = len(candidates)
     if n_candidates > 1:  # This should not be happening anyway...
-        print(
-            f"{n_candidates} possible data files were found: {candidates}.\n"
-            f"Picking the first by default..."
-        )
+        print(f"{n_candidates} possible data files were found: {candidates}.\nPicking the first by default...")
     filepath = str(Path(folder) / candidates[0])
     scorer = scorer if scorer in filepath else scorer_legacy
     return filepath, scorer, suffix
 
 
 def load_analyzed_data(folder, videoname, scorer, filtered=False, track_method=""):
-    filepath, scorer, suffix = find_analyzed_data(
-        folder, videoname, scorer, filtered, track_method
-    )
+    filepath, scorer, suffix = find_analyzed_data(folder, videoname, scorer, filtered, track_method)
     df = pd.read_hdf(filepath)
     return df, filepath, scorer, suffix
 
@@ -1041,8 +969,7 @@ def load_detection_data(video, scorer, track_method):
     filepath = os.path.splitext(video)[0] + scorer + f"_{tracker}.pickle"
     if not os.path.isfile(filepath):
         raise FileNotFoundError(
-            f"No detection data found in {folder} for video {videoname}, "
-            f"scorer {scorer}, and tracker {track_method}"
+            f"No detection data found in {folder} for video {videoname}, scorer {scorer}, and tracker {track_method}"
         )
     return read_pickle(filepath)
 
@@ -1091,9 +1018,7 @@ LoadMetadata = load_metadata
 GetVideoList = get_video_list
 GetTrainingSetFolder = get_training_set_folder
 GetDataandMetaDataFilenames = get_data_and_metadata_filenames
-IntersectionofBodyPartsandOnesGivenbyUser = (
-    intersection_of_body_parts_and_ones_given_by_user
-)
+IntersectionofBodyPartsandOnesGivenbyUser = intersection_of_body_parts_and_ones_given_by_user
 GetScorerName = get_scorer_name
 CheckifPostProcessing = check_if_post_processing
 CheckifNotAnalyzed = check_if_not_analyzed

@@ -28,24 +28,18 @@ def pairwisedistances(DataCombined, scorer1, scorer2, pcutoff=-1, bodyparts=None
     if bodyparts is None:
         Pointwisesquareddistance = (DataCombined[scorer1] - DataCombined[scorer2]) ** 2
         RMSE = np.sqrt(
-            Pointwisesquareddistance.xs("x", level=1, axis=1)
-            + Pointwisesquareddistance.xs("y", level=1, axis=1)
+            Pointwisesquareddistance.xs("x", level=1, axis=1) + Pointwisesquareddistance.xs("y", level=1, axis=1)
         )  # Euclidean distance (proportional to RMSE)
         return RMSE, RMSE[mask]
     else:
-        Pointwisesquareddistance = (
-            DataCombined[scorer1][bodyparts] - DataCombined[scorer2][bodyparts]
-        ) ** 2
+        Pointwisesquareddistance = (DataCombined[scorer1][bodyparts] - DataCombined[scorer2][bodyparts]) ** 2
         RMSE = np.sqrt(
-            Pointwisesquareddistance.xs("x", level=1, axis=1)
-            + Pointwisesquareddistance.xs("y", level=1, axis=1)
+            Pointwisesquareddistance.xs("x", level=1, axis=1) + Pointwisesquareddistance.xs("y", level=1, axis=1)
         )  # Euclidean distance (proportional to RMSE)
         return RMSE, RMSE[mask]
 
 
-def calculatepafdistancebounds(
-    config, shuffle=0, trainingsetindex=0, modelprefix="", numdigits=0, onlytrain=False
-):
+def calculatepafdistancebounds(config, shuffle=0, trainingsetindex=0, modelprefix="", numdigits=0, onlytrain=False):
     """
     Returns distances along paf edges in train/test data
 
@@ -82,11 +76,7 @@ def calculatepafdistancebounds(
         trainFraction = cfg["TrainingFraction"][trainingsetindex]
         modelfolder = os.path.join(
             cfg["project_path"],
-            str(
-                auxiliaryfunctions.get_model_folder(
-                    trainFraction, shuffle, cfg, modelprefix=modelprefix
-                )
-            ),
+            str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
         )
 
         # Load meta data & annotations
@@ -113,13 +103,8 @@ def calculatepafdistancebounds(
 
         # get the graph!
         partaffinityfield_graph = test_pose_cfg["partaffinityfield_graph"]
-        jointnames = [
-            test_pose_cfg["all_joints_names"][i]
-            for i in range(len(test_pose_cfg["all_joints"]))
-        ]
-        path_inferencebounds_config = (
-            Path(modelfolder) / "test" / "inferencebounds.yaml"
-        )
+        jointnames = [test_pose_cfg["all_joints_names"][i] for i in range(len(test_pose_cfg["all_joints"]))]
+        path_inferencebounds_config = Path(modelfolder) / "test" / "inferencebounds.yaml"
         inferenceboundscfg = {}
         for pi, edge in enumerate(partaffinityfield_graph):
             j1, j2 = jointnames[edge[0]], jointnames[edge[1]]
@@ -154,12 +139,8 @@ def calculatepafdistancebounds(
             edgeencoding = str(edge[0]) + "_" + str(edge[1])
             inferenceboundscfg[edgeencoding] = {}
             if len(ds_within) > 0:
-                inferenceboundscfg[edgeencoding]["intra_max"] = str(
-                    round(np.nanmax(ds_within), numdigits)
-                )
-                inferenceboundscfg[edgeencoding]["intra_min"] = str(
-                    round(np.nanmin(ds_within), numdigits)
-                )
+                inferenceboundscfg[edgeencoding]["intra_max"] = str(round(np.nanmax(ds_within), numdigits))
+                inferenceboundscfg[edgeencoding]["intra_min"] = str(round(np.nanmin(ds_within), numdigits))
             else:
                 inferenceboundscfg[edgeencoding]["intra_max"] = str(
                     1e5
@@ -168,30 +149,22 @@ def calculatepafdistancebounds(
 
             # NOTE: the inter-animal distances are currently not used, but are interesting to compare to intra_*
             if len(ds_across) > 0:
-                inferenceboundscfg[edgeencoding]["inter_max"] = str(
-                    round(np.nanmax(ds_across), numdigits)
-                )
-                inferenceboundscfg[edgeencoding]["inter_min"] = str(
-                    round(np.nanmin(ds_across), numdigits)
-                )
+                inferenceboundscfg[edgeencoding]["inter_max"] = str(round(np.nanmax(ds_across), numdigits))
+                inferenceboundscfg[edgeencoding]["inter_min"] = str(round(np.nanmin(ds_across), numdigits))
             else:
                 inferenceboundscfg[edgeencoding]["inter_max"] = str(
                     1e5
                 )  # large number (larger than image diameters in typical experiments)
                 inferenceboundscfg[edgeencoding]["inter_min"] = str(0)
 
-        auxiliaryfunctions.write_plainconfig(
-            str(path_inferencebounds_config), dict(inferenceboundscfg)
-        )
+        auxiliaryfunctions.write_plainconfig(str(path_inferencebounds_config), dict(inferenceboundscfg))
         return inferenceboundscfg
     else:
         print("You might as well bring owls to Athens.")
         return {}
 
 
-def Plotting(
-    cfg, comparisonbodyparts, DLCscorer, trainIndices, DataCombined, foldername
-):
+def Plotting(cfg, comparisonbodyparts, DLCscorer, trainIndices, DataCombined, foldername):
     """Function used for plotting GT and predictions"""
     from deeplabcut.utils import visualization
 
@@ -276,22 +249,14 @@ def return_evaluate_network_data(
     # Data=pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
 
     # Get list of body parts to evaluate network for
-    comparisonbodyparts = (
-        auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-            cfg, comparisonbodyparts
-        )
-    )
+    comparisonbodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts)
     ##################################################
     # Load data...
     ##################################################
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     modelfolder = os.path.join(
         cfg["project_path"],
-        str(
-            auxiliaryfunctions.get_model_folder(
-                trainFraction, shuffle, cfg, modelprefix=modelprefix
-            )
-        ),
+        str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
     )
     path_train_config, path_test_config, _ = return_train_network_path(
         config=config,
@@ -304,8 +269,7 @@ def return_evaluate_network_data(
         test_pose_cfg = load_config(str(path_test_config))
     except FileNotFoundError:
         raise FileNotFoundError(
-            "It seems the model for shuffle %s and trainFraction %s does not exist."
-            % (shuffle, trainFraction)
+            "It seems the model for shuffle %s and trainFraction %s does not exist." % (shuffle, trainFraction)
         )
 
     train_pose_cfg = load_config(str(path_train_config))
@@ -340,11 +304,7 @@ def return_evaluate_network_data(
 
     evaluationfolder = os.path.join(
         cfg["project_path"],
-        str(
-            auxiliaryfunctions.get_evaluation_folder(
-                trainFraction, shuffle, cfg, modelprefix=modelprefix
-            )
-        ),
+        str(auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
     )
 
     Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
@@ -366,9 +326,7 @@ def return_evaluate_network_data(
         test_pose_cfg["init_weights"] = os.path.join(
             str(modelfolder), "train", snapshot_name
         )  # setting weights to corresponding snapshot.
-        trainingsiterations = (test_pose_cfg["init_weights"].split(os.sep)[-1]).split(
-            "-"
-        )[
+        trainingsiterations = (test_pose_cfg["init_weights"].split(os.sep)[-1]).split("-")[
             -1
         ]  # read how many training siterations that corresponds to.
 
@@ -388,9 +346,7 @@ def return_evaluate_network_data(
             notanalyzed,
             resultsfilename,
             DLCscorer,
-        ) = auxiliaryfunctions.check_if_not_evaluated(
-            str(evaluationfolder), DLCscorer, DLCscorerlegacy, snapshot_name
-        )
+        ) = auxiliaryfunctions.check_if_not_evaluated(str(evaluationfolder), DLCscorer, DLCscorerlegacy, snapshot_name)
         # resultsfilename=os.path.join(str(evaluationfolder),DLCscorer + '-' + str(Snapshots[snapindex])+  '.h5') # + '-' + str(snapshot)+  ' #'-' + Snapshots[snapindex]+  '.h5')
         print(resultsfilename)
         resultsfns.append(resultsfilename)
@@ -408,12 +364,8 @@ def return_evaluate_network_data(
 
                 testerror = np.nanmean(RMSE.iloc[testIndices].values.flatten())
                 trainerror = np.nanmean(RMSE.iloc[trainIndices].values.flatten())
-                testerrorpcutoff = np.nanmean(
-                    RMSEpcutoff.iloc[testIndices].values.flatten()
-                )
-                trainerrorpcutoff = np.nanmean(
-                    RMSEpcutoff.iloc[trainIndices].values.flatten()
-                )
+                testerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[testIndices].values.flatten())
+                trainerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[trainIndices].values.flatten())
                 if show_errors == True:
                     print(
                         "Results for",
@@ -669,9 +621,7 @@ def evaluate_network(
         plotting = bool(plotting)
 
         if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
-            del os.environ[
-                "TF_CUDNN_USE_AUTOTUNE"
-            ]  # was potentially set during training
+            del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
 
         tf.compat.v1.reset_default_graph()
         os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  #
@@ -707,15 +657,11 @@ def evaluate_network(
         )
 
         # Get list of body parts to evaluate network for
-        comparisonbodyparts = (
-            auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-                cfg, comparisonbodyparts
-            )
+        comparisonbodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+            cfg, comparisonbodyparts
         )
         # Make folder for evaluation
-        auxiliaryfunctions.attempt_to_make_folder(
-            str(cfg["project_path"] + "/evaluation-results/")
-        )
+        auxiliaryfunctions.attempt_to_make_folder(str(cfg["project_path"] + "/evaluation-results/"))
         for shuffle in Shuffles:
             for trainFraction in TrainingFractions:
                 ##################################################
@@ -760,15 +706,9 @@ def evaluate_network(
                 # Create folder structure to store results.
                 evaluationfolder = os.path.join(
                     cfg["project_path"],
-                    str(
-                        auxiliaryfunctions.get_evaluation_folder(
-                            trainFraction, shuffle, cfg, modelprefix=modelprefix
-                        )
-                    ),
+                    str(auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
                 )
-                auxiliaryfunctions.attempt_to_make_folder(
-                    evaluationfolder, recursive=True
-                )
+                auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
 
                 Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
                     train_folder=Path(modelfolder) / "train",
@@ -839,13 +779,9 @@ def evaluate_network(
                     )
                     if notanalyzed:
                         # Specifying state of model (snapshot / training state)
-                        sess, inputs, outputs = predict.setup_pose_prediction(
-                            test_pose_cfg
-                        )
+                        sess, inputs, outputs = predict.setup_pose_prediction(test_pose_cfg)
                         Numimages = len(Data.index)
-                        PredicteData = np.zeros(
-                            (Numimages, 3 * len(test_pose_cfg["all_joints_names"]))
-                        )
+                        PredicteData = np.zeros((Numimages, 3 * len(test_pose_cfg["all_joints_names"])))
                         print("Running evaluation ...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image = imread(
@@ -857,17 +793,11 @@ def evaluate_network(
 
                             image_batch = data_to_input(image)
                             # Compute prediction with the CNN
-                            outputs_np = sess.run(
-                                outputs, feed_dict={inputs: image_batch}
-                            )
-                            scmap, locref = predict.extract_cnn_output(
-                                outputs_np, test_pose_cfg
-                            )
+                            outputs_np = sess.run(outputs, feed_dict={inputs: image_batch})
+                            scmap, locref = predict.extract_cnn_output(outputs_np, test_pose_cfg)
 
                             # Extract maximum scoring location from the heatmap, assume 1 person
-                            pose = predict.argmax_pose_predict(
-                                scmap, locref, test_pose_cfg["stride"]
-                            )
+                            pose = predict.argmax_pose_predict(scmap, locref, test_pose_cfg["stride"])
                             PredicteData[imageindex, :] = (
                                 pose.flatten()
                             )  # NOTE: thereby     cfg_test['all_joints_names'] should be same order as bodyparts!
@@ -884,18 +814,14 @@ def evaluate_network(
                         )
 
                         # Saving results
-                        DataMachine = pd.DataFrame(
-                            PredicteData, columns=index, index=Data.index
-                        )
+                        DataMachine = pd.DataFrame(PredicteData, columns=index, index=Data.index)
                         DataMachine.to_hdf(resultsfilename, key="df_with_missing")
 
                         print(
                             "Analysis is done and the results are stored (see evaluation-results) for snapshot: ",
                             snapshot_name,
                         )
-                        DataCombined = pd.concat(
-                            [Data.T, DataMachine.T], axis=0, sort=False
-                        ).T
+                        DataCombined = pd.concat([Data.T, DataMachine.T], axis=0, sort=False).T
 
                         RMSE, RMSEpcutoff = pairwisedistances(
                             DataCombined,
@@ -905,15 +831,9 @@ def evaluate_network(
                             comparisonbodyparts,
                         )
                         testerror = np.nanmean(RMSE.iloc[testIndices].values.flatten())
-                        trainerror = np.nanmean(
-                            RMSE.iloc[trainIndices].values.flatten()
-                        )
-                        testerrorpcutoff = np.nanmean(
-                            RMSEpcutoff.iloc[testIndices].values.flatten()
-                        )
-                        trainerrorpcutoff = np.nanmean(
-                            RMSEpcutoff.iloc[trainIndices].values.flatten()
-                        )
+                        trainerror = np.nanmean(RMSE.iloc[trainIndices].values.flatten())
+                        testerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[testIndices].values.flatten())
+                        trainerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[trainIndices].values.flatten())
                         results = [
                             training_iterations,
                             int(100 * trainFraction),
@@ -927,13 +847,9 @@ def evaluate_network(
                         final_result.append(results)
 
                         if per_keypoint_evaluation:
-                            df_keypoint_error = keypoint_error(
-                                RMSE, RMSEpcutoff, trainIndices, testIndices
-                            )
+                            df_keypoint_error = keypoint_error(RMSE, RMSEpcutoff, trainIndices, testIndices)
                             kpt_filename = DLCscorer + "-keypoint-results.csv"
-                            df_keypoint_error.to_csv(
-                                Path(evaluationfolder) / kpt_filename
-                            )
+                            df_keypoint_error.to_csv(Path(evaluationfolder) / kpt_filename)
 
                         if show_errors:
                             print(
@@ -988,9 +904,7 @@ def evaluate_network(
                         DataMachine = pd.read_hdf(resultsfilename)
                         conversioncode.guarantee_multiindex_rows(DataMachine)
                         if plotting:
-                            DataCombined = pd.concat(
-                                [Data.T, DataMachine.T], axis=0, sort=False
-                            ).T
+                            DataCombined = pd.concat([Data.T, DataMachine.T], axis=0, sort=False).T
                             foldername = os.path.join(
                                 str(evaluationfolder),
                                 "LabeledImages_" + DLCscorer + "_" + snapshot_name,
@@ -1009,9 +923,7 @@ def evaluate_network(
                                     foldername,
                                 )
                             else:
-                                print(
-                                    "Plots already exist for this snapshot... Skipping to the next one."
-                                )
+                                print("Plots already exist for this snapshot... Skipping to the next one.")
 
                 if len(final_result) > 0:  # Only append if results were calculated
                     make_results_file(final_result, evaluationfolder, DLCscorer)
@@ -1056,9 +968,7 @@ def make_results_file(final_result, evaluationfolder, DLCscorer):
     ## Also storing one "large" table with results:
     # note: evaluationfolder.parents[0] to get common folder above all shuffle evaluations.
     df = pd.DataFrame(final_result, columns=col_names)
-    output_path = os.path.join(
-        str(Path(evaluationfolder).parents[0]), "CombinedEvaluation-results.csv"
-    )
+    output_path = os.path.join(str(Path(evaluationfolder).parents[0]), "CombinedEvaluation-results.csv")
     if os.path.exists(output_path):
         temp = pd.read_csv(output_path, index_col=0)
         df = pd.concat((temp, df)).reset_index(drop=True)
@@ -1084,14 +994,9 @@ def get_available_requested_snapshots(
             missing_snapshots.append(snap)
 
     if len(snapshot_names) == 0:
-        raise ValueError(
-            f"None of the requested snapshots were found: \n{missing_snapshots}"
-        )
+        raise ValueError(f"None of the requested snapshots were found: \n{missing_snapshots}")
     elif len(missing_snapshots) > 0:
-        print(
-            f"The following requested snapshots were not found and will be skipped:\n"
-            f"{missing_snapshots}"
-        )
+        print(f"The following requested snapshots were not found and will be skipped:\n{missing_snapshots}")
 
     return snapshot_names
 
@@ -1103,9 +1008,7 @@ def get_snapshots_by_index(
     """
     Assume available_snapshots is ordered in ascending order. Returns snapshot names.
     """
-    if isinstance(idx, int) and -len(available_snapshots) <= idx < len(
-        available_snapshots
-    ):
+    if isinstance(idx, int) and -len(available_snapshots) <= idx < len(available_snapshots):
         return [available_snapshots[idx]]
     elif idx == "all":
         return available_snapshots

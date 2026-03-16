@@ -35,17 +35,9 @@ def return_train_network_path(config, shuffle=1, trainingsetindex=0, modelprefix
     modelfoldername = auxiliaryfunctions.get_model_folder(
         cfg["TrainingFraction"][trainingsetindex], shuffle, cfg, modelprefix=modelprefix
     )
-    trainposeconfigfile = Path(
-        os.path.join(
-            cfg["project_path"], str(modelfoldername), "train", "pose_cfg.yaml"
-        )
-    )
-    testposeconfigfile = Path(
-        os.path.join(cfg["project_path"], str(modelfoldername), "test", "pose_cfg.yaml")
-    )
-    snapshotfolder = Path(
-        os.path.join(cfg["project_path"], str(modelfoldername), "train")
-    )
+    trainposeconfigfile = Path(os.path.join(cfg["project_path"], str(modelfoldername), "train", "pose_cfg.yaml"))
+    testposeconfigfile = Path(os.path.join(cfg["project_path"], str(modelfoldername), "test", "pose_cfg.yaml"))
+    snapshotfolder = Path(os.path.join(cfg["project_path"], str(modelfoldername), "train"))
 
     return trainposeconfigfile, testposeconfigfile, snapshotfolder
 
@@ -176,24 +168,16 @@ def train_network(
     modelfoldername = auxiliaryfunctions.get_model_folder(
         cfg["TrainingFraction"][trainingsetindex], shuffle, cfg, modelprefix=modelprefix
     )
-    poseconfigfile = Path(
-        os.path.join(
-            cfg["project_path"], str(modelfoldername), "train", "pose_cfg.yaml"
-        )
-    )
+    poseconfigfile = Path(os.path.join(cfg["project_path"], str(modelfoldername), "train", "pose_cfg.yaml"))
     if not poseconfigfile.is_file():
         print("The training datafile ", poseconfigfile, " is not present.")
-        print(
-            "Probably, the training dataset for this specific shuffle index was not created."
-        )
+        print("Probably, the training dataset for this specific shuffle index was not created.")
         print(
             "Try with a different shuffle/trainingsetfraction or use function 'create_training_dataset' to create a new trainingdataset with this shuffle index."
         )
     else:
         # Set environment variables
-        if (
-            autotune is not False
-        ):  # see: https://github.com/tensorflow/tensorflow/issues/13317
+        if autotune is not False:  # see: https://github.com/tensorflow/tensorflow/issues/13317
             os.environ["TF_CUDNN_USE_AUTOTUNE"] = "0"
         if gputouse is not None:
             os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
@@ -246,11 +230,7 @@ def train_network(
                 keepdeconvweights=keepdeconvweights,
                 allow_growth=allow_growth,
                 init_weights=init_weights,
-                remove_head=(
-                    True
-                    if superanimal_name != "" and superanimal_transfer_learning
-                    else False
-                ),
+                remove_head=(True if superanimal_name != "" and superanimal_transfer_learning else False),
             )  # pass on path and file name for pose_cfg.yaml!
 
         elif "multi-animal" in cfg_dlc["dataset_type"]:

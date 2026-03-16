@@ -66,9 +66,7 @@ class VideoReader:
         while fr < numframes:
             success, frame = self.video.read()
             if not success or frame is None:
-                warnings.warn(
-                    f"Opencv failed to load frame {fr}. Use ffmpeg to re-encode video file"
-                )
+                warnings.warn(f"Opencv failed to load frame {fr}. Use ffmpeg to re-encode video file")
             fr += 1
 
     @property
@@ -85,9 +83,7 @@ class VideoReader:
 
     @property
     def metadata(self):
-        return dict(
-            n_frames=len(self), fps=self.fps, width=self.width, height=self.height
-        )
+        return dict(n_frames=len(self), fps=self.fps, width=self.width, height=self.height)
 
     def get_n_frames(self, robust=False):
         if not robust:
@@ -98,21 +94,14 @@ class VideoReader:
                 f"-select_streams v:0 -show_entries stream=nb_read_frames "
                 f"-of default=nokey=1:noprint_wrappers=1"
             )
-            output = subprocess.check_output(
-                command, shell=True, stderr=subprocess.STDOUT
-            )
+            output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
             self._n_frames_robust = int(output)
         return self._n_frames_robust
 
     def calc_duration(self, robust=False):
         if robust:
-            command = (
-                f'ffprobe -i "{self.video_path}" -show_entries '
-                f'format=duration -v quiet -of csv="p=0"'
-            )
-            output = subprocess.check_output(
-                command, shell=True, stderr=subprocess.STDOUT
-            )
+            command = f'ffprobe -i "{self.video_path}" -show_entries format=duration -v quiet -of csv="p=0"'
+            output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
             return float(output)
         return len(self) / self.fps
 
@@ -121,10 +110,7 @@ class VideoReader:
             raise ValueError("Index must be a positive integer.")
         last_frame = len(self) - 1
         if ind > last_frame:
-            warnings.warn(
-                "Index exceeds the total number of frames. "
-                "Setting to last frame instead."
-            )
+            warnings.warn("Index exceeds the total number of frames. Setting to last frame instead.")
             ind = last_frame
         self.video.set(cv2.CAP_PROP_POS_FRAMES, ind)
 
@@ -161,9 +147,7 @@ class VideoReader:
 
     def set_bbox(self, x1, x2, y1, y2, relative=False):
         if x2 <= x1 or y2 <= y1:
-            raise ValueError(
-                f"Coordinates look wrong... " f"Ensure {x1} < {x2} and {y1} < {y2}."
-            )
+            raise ValueError(f"Coordinates look wrong... Ensure {x1} < {x2} and {y1} < {y2}.")
         if not relative:
             x1 /= self._width
             x2 /= self._width
@@ -171,9 +155,7 @@ class VideoReader:
             y2 /= self._height
         bbox = x1, x2, y1, y2
         if any(coord > 1 for coord in bbox):
-            warnings.warn(
-                "Bounding box larger than the video... " "Clipping to video dimensions."
-            )
+            warnings.warn("Bounding box larger than the video... Clipping to video dimensions.")
             bbox = tuple(map(lambda x: min(x, 1), bbox))
         self._bbox = bbox
 
@@ -204,9 +186,7 @@ class VideoReader:
     def parse_metadata(self):
         self._n_frames = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
         if self._n_frames >= 1e9:
-            warnings.warn(
-                "The video has more than 10^9 frames, we recommend chopping it up."
-            )
+            warnings.warn("The video has more than 10^9 frames, we recommend chopping it up.")
         self._width = int(self.video.get(cv2.CAP_PROP_FRAME_WIDTH))
         self._height = int(self.video.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self._fps = round(self.video.get(cv2.CAP_PROP_FPS), 2)
@@ -223,9 +203,7 @@ class VideoWriter(VideoReader):
         if fps:
             self.fps = fps
 
-    def shorten(
-        self, start, end, suffix="short", dest_folder=None, validate_inputs=True
-    ):
+    def shorten(self, start, end, suffix="short", dest_folder=None, validate_inputs=True):
         """
         Shorten the video from start to end.
 
@@ -251,10 +229,7 @@ class VideoWriter(VideoReader):
 
         def validate_timestamp(stamp):
             if not isinstance(stamp, str):
-                raise ValueError(
-                    "Timestamp should be a string formatted "
-                    "as hours:minutes:seconds."
-                )
+                raise ValueError("Timestamp should be a string formatted as hours:minutes:seconds.")
             time = datetime.datetime.strptime(stamp, "%H:%M:%S").time()
             # The above already raises a ValueError if formatting is wrong
             seconds = (time.hour * 60 + time.minute) * 60 + time.second
@@ -266,10 +241,7 @@ class VideoWriter(VideoReader):
                 validate_timestamp(stamp)
 
         output_path = self.make_output_path(suffix, dest_folder)
-        command = (
-            f'ffmpeg -n -i "{self.video_path}" -ss {start} -to {end} '
-            f'-c:a copy "{output_path}"'
-        )
+        command = f'ffmpeg -n -i "{self.video_path}" -ss {start} -to {end} -c:a copy "{output_path}"'
         subprocess.call(command, shell=True)
         return output_path
 
@@ -327,9 +299,9 @@ class VideoWriter(VideoReader):
         command = f'ffmpeg -n -i "{self.video_path}" -vf '
         if rotatecw == "Arbitrary":
             angle = np.deg2rad(angle)
-            command += f'rotate={angle} '
+            command += f"rotate={angle} "
         elif rotatecw == "Yes":
-            command += 'transpose=1 '
+            command += "transpose=1 "
         else:
             raise ValueError("Unknown rotation direction.")
 
@@ -347,10 +319,7 @@ class VideoWriter(VideoReader):
         dest_folder=None,
     ):
         output_path = self.make_output_path(suffix, dest_folder)
-        command = (
-            f'ffmpeg -n -i "{self.video_path}" -filter:v '
-            f'"scale={width}:{height}{{}}" -c:a copy "{output_path}"'
-        )
+        command = f'ffmpeg -n -i "{self.video_path}" -filter:v "scale={width}:{height}{{}}" -c:a copy "{output_path}"'
         # Rotate, see: https://stackoverflow.com/questions/3937387/rotating-videos-with-ffmpeg
         # interesting option to just update metadata.
         if rotatecw == "Arbitrary":
@@ -392,9 +361,7 @@ def imread(image_path, mode="skimage"):
         return img_as_ubyte(image)
 
     elif mode == "cv2":
-        return cv2.imread(image_path, cv2.IMREAD_UNCHANGED)[
-            ..., ::-1
-        ]  # ~10% faster than using cv2.cvtColor
+        return cv2.imread(image_path, cv2.IMREAD_UNCHANGED)[..., ::-1]  # ~10% faster than using cv2.cvtColor
 
 
 # https://docs.opencv.org/3.4.0/da/d54/group__imgproc__transform.html#ga5bb5a1fea74ea38e1a5445ca803ff121
@@ -407,9 +374,7 @@ def imresize(img, size=1.0, interpolationmethod=cv2.INTER_AREA):
         return img
 
 
-def ShortenVideo(
-    vname, start="00:00:01", stop="00:01:00", outsuffix="short", outpath=None
-):
+def ShortenVideo(vname, start="00:00:01", stop="00:01:00", outsuffix="short", outpath=None):
     """
     Auxiliary function to shorten video and output with outsuffix appended.
     to the same folder from start (hours:minutes:seconds) to stop (hours:minutes:seconds).
@@ -504,9 +469,7 @@ def CropVideo(
     writer = VideoWriter(vname)
 
     if useGUI:
-        print(
-            "Please, select your coordinates (draw from top left to bottom right ...)"
-        )
+        print("Please, select your coordinates (draw from top left to bottom right ...)")
         coords = draw_bbox(vname)
 
         if not coords:

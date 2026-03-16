@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-""" Tests for the bottom-up pytorch runner """
+"""Tests for the bottom-up pytorch runner"""
+
 from pathlib import Path
 from typing import Dict, Any
 
@@ -69,9 +70,7 @@ def test_build_bottom_up_runner(
     criterion = WeightedAggregateLoss(head_criterions)
 
     get_optimizer = getattr(torch.optim, pytorch_cfg["optimizer"]["type"])
-    optimizer = get_optimizer(
-        params=pose_model.parameters(), **pytorch_cfg["optimizer"]["params"]
-    )
+    optimizer = get_optimizer(params=pose_model.parameters(), **pytorch_cfg["optimizer"]["params"])
 
     predictor = PREDICTORS.build(dict(pytorch_cfg["model"]["predictor"]))
 
@@ -79,12 +78,8 @@ def test_build_bottom_up_runner(
         if pytorch_cfg["scheduler"]["type"] == "LRListScheduler":
             _scheduler = LRListScheduler
         else:
-            _scheduler = getattr(
-                torch.optim.lr_scheduler, pytorch_cfg["scheduler"]["type"]
-            )
-        scheduler = _scheduler(
-            optimizer=optimizer, **pytorch_cfg["scheduler"]["params"]
-        )
+            _scheduler = getattr(torch.optim.lr_scheduler, pytorch_cfg["scheduler"]["type"])
+        scheduler = _scheduler(optimizer=optimizer, **pytorch_cfg["scheduler"]["params"])
     else:
         scheduler = None
 

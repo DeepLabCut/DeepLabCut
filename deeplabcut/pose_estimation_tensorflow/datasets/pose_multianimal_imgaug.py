@@ -41,12 +41,8 @@ class MAImgaugPoseDataset(BasePoseDataset):
             self._n_animals = 1
 
         else:
-            self.main_cfg = auxiliaryfunctions.read_config(
-                os.path.join(self.cfg["project_path"], "config.yaml")
-            )
-            animals, unique, multi = auxfun_multianimal.extractindividualsandbodyparts(
-                self.main_cfg
-            )
+            self.main_cfg = auxiliaryfunctions.read_config(os.path.join(self.cfg["project_path"], "config.yaml"))
+            animals, unique, multi = auxfun_multianimal.extractindividualsandbodyparts(self.main_cfg)
             self._n_kpts = len(multi) + len(unique)
             self._n_animals = len(animals)
 
@@ -112,14 +108,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             item.im_size = sample["size"]
             if "joints" in sample.keys():
                 Joints = sample["joints"]
-                if (
-                    np.size(
-                        np.concatenate(
-                            [Joints[person_id][:, 1:3] for person_id in Joints.keys()]
-                        )
-                    )
-                    > 0
-                ):
+                if np.size(np.concatenate([Joints[person_id][:, 1:3] for person_id in Joints.keys()])) > 0:
                     item.joints = Joints
                 else:
                     has_gt = False  # no animal has joints!
@@ -131,9 +120,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         self.has_gt = has_gt
         return data
 
-    def _load_pseudo_data_from_h5(
-        self, cfg, threshold=0.5, mask_kpts_below_thresh=False
-    ):
+    def _load_pseudo_data_from_h5(self, cfg, threshold=0.5, mask_kpts_below_thresh=False):
         gt_file = cfg["pseudo_label"]
         assert os.path.exists(gt_file)
         path_ = Path(gt_file)
@@ -157,9 +144,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             if self.vid:
                 item.im_size = self.video_image_size
             else:
-                item.im_size = read_image_shape_fast(
-                    os.path.join(video_root, frame_name)
-                )
+                item.im_size = read_image_shape_fast(os.path.join(video_root, frame_name))
 
             item.joints = {}
 
@@ -251,29 +236,15 @@ class MAImgaugPoseDataset(BasePoseDataset):
             else:
                 pipeline.add(sometimes(iaa.MotionBlur(k=7, angle=(-90, 90))))
         if cfg.get("covering", False):
-            pipeline.add(
-                sometimes(iaa.CoarseDropout((0, 0.02), size_percent=(0.01, 0.05)))
-            )  # , per_channel=0.5)))
+            pipeline.add(sometimes(iaa.CoarseDropout((0, 0.02), size_percent=(0.01, 0.05))))  # , per_channel=0.5)))
         if cfg.get("elastic_transform", False):
             pipeline.add(sometimes(iaa.ElasticTransformation(sigma=5)))
         if cfg.get("gaussian_noise", False):
             opt = cfg.get("gaussian_noise", False)
             if type(opt) == int or type(opt) == float:
-                pipeline.add(
-                    sometimes(
-                        iaa.AdditiveGaussianNoise(
-                            loc=0, scale=(0.0, opt), per_channel=0.5
-                        )
-                    )
-                )
+                pipeline.add(sometimes(iaa.AdditiveGaussianNoise(loc=0, scale=(0.0, opt), per_channel=0.5)))
             else:
-                pipeline.add(
-                    sometimes(
-                        iaa.AdditiveGaussianNoise(
-                            loc=0, scale=(0.0, 0.05 * 255), per_channel=0.5
-                        )
-                    )
-                )
+                pipeline.add(sometimes(iaa.AdditiveGaussianNoise(loc=0, scale=(0.0, 0.05 * 255), per_channel=0.5)))
         if cfg.get("grayscale", False):
             pipeline.add(sometimes(iaa.Grayscale(alpha=(0.5, 1.0))))
 
@@ -303,17 +274,11 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
         if cfg_cnt["histeq"]:
             opt = get_aug_param(cfg_cnt["histeq"])
-            pipeline.add(
-                iaa.Sometimes(
-                    cfg_cnt["histeqratio"], iaa.AllChannelsHistogramEqualization(**opt)
-                )
-            )
+            pipeline.add(iaa.Sometimes(cfg_cnt["histeqratio"], iaa.AllChannelsHistogramEqualization(**opt)))
 
         if cfg_cnt["clahe"]:
             opt = get_aug_param(cfg_cnt["clahe"])
-            pipeline.add(
-                iaa.Sometimes(cfg_cnt["claheratio"], iaa.AllChannelsCLAHE(**opt))
-            )
+            pipeline.add(iaa.Sometimes(cfg_cnt["claheratio"], iaa.AllChannelsCLAHE(**opt)))
 
         if cfg_cnt["log"]:
             opt = get_aug_param(cfg_cnt["log"])
@@ -321,15 +286,11 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
         if cfg_cnt["linear"]:
             opt = get_aug_param(cfg_cnt["linear"])
-            pipeline.add(
-                iaa.Sometimes(cfg_cnt["linearratio"], iaa.LinearContrast(**opt))
-            )
+            pipeline.add(iaa.Sometimes(cfg_cnt["linearratio"], iaa.LinearContrast(**opt)))
 
         if cfg_cnt["sigmoid"]:
             opt = get_aug_param(cfg_cnt["sigmoid"])
-            pipeline.add(
-                iaa.Sometimes(cfg_cnt["sigmoidratio"], iaa.SigmoidContrast(**opt))
-            )
+            pipeline.add(iaa.Sometimes(cfg_cnt["sigmoidratio"], iaa.SigmoidContrast(**opt)))
 
         if cfg_cnt["gamma"]:
             opt = get_aug_param(cfg_cnt["gamma"])
@@ -359,9 +320,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         if trim_ends is None:
             trim_ends = 0
         # because of the existence of threshold, sampling population is adjusted to len(self.data)
-        img_idx = np.random.choice(
-            len(self.data) - trim_ends * 2, size=self.batch_size, replace=True
-        )
+        img_idx = np.random.choice(len(self.data) - trim_ends * 2, size=self.batch_size, replace=True)
         for i in range(self.batch_size):
             index = img_idx[i]
             offset = trim_ends
@@ -383,9 +342,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
                     for n, x, y in joints.get(j, []):
                         kpts[j * self._n_kpts + int(n)] = x, y
 
-                joint_id = [
-                    np.array(list(range(self._n_kpts))) for _ in range(self._n_animals)
-                ]
+                joint_id = [np.array(list(range(self._n_kpts))) for _ in range(self._n_animals)]
                 joint_ids.append(joint_id)
                 batch_joints.append(kpts)
 
@@ -406,18 +363,14 @@ class MAImgaugPoseDataset(BasePoseDataset):
             im_file = data_item.im_path
 
             logging.debug("image %s", im_file)
-            image = imread(
-                os.path.join(self.cfg["project_path"], im_file), mode="skimage"
-            )
+            image = imread(os.path.join(self.cfg["project_path"], im_file), mode="skimage")
             if self.has_gt:
                 joints = data_item.joints
                 kpts = np.full((self._n_kpts * self._n_animals, 2), np.nan)
                 for j in range(self._n_animals):
                     for n, x, y in joints.get(j, []):
                         kpts[j * self._n_kpts + int(n)] = x, y
-                joint_id = [
-                    np.array(list(range(self._n_kpts))) for _ in range(self._n_animals)
-                ]
+                joint_id = [np.array(list(range(self._n_kpts))) for _ in range(self._n_animals)]
                 joint_ids.append(joint_id)
                 batch_joints.append(kpts)
 
@@ -447,9 +400,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
                     part_score_weight,
                     locref_target,
                     locref_mask,
-                ) = self.gaussian_scmap(
-                    joint_ids[i], [joints[i]], data_items[i], sm_size, scale
-                )
+                ) = self.gaussian_scmap(joint_ids[i], [joints[i]], data_items[i], sm_size, scale)
             else:
                 (
                     part_score_target,
@@ -458,9 +409,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
                     locref_mask,
                     partaffinityfield_target,
                     partaffinityfield_mask,
-                ) = self.compute_target_part_scoremap_numpy(
-                    joint_ids[i], joints[i], data_items[i], sm_size, scale
-                )
+                ) = self.compute_target_part_scoremap_numpy(joint_ids[i], joints[i], data_items[i], sm_size, scale)
 
             part_score_targets.append(part_score_target)
             part_score_weights.append(part_score_weight)
@@ -484,9 +433,9 @@ class MAImgaugPoseDataset(BasePoseDataset):
         if not self.is_valid_size(target_size):
             target_size = self.default_size
         stride = self.cfg["stride"]
-        sm_size = np.ceil(target_size / (stride * self.cfg.get("smfactor", 2))).astype(
-            int
-        ) * self.cfg.get("smfactor", 2)
+        sm_size = np.ceil(target_size / (stride * self.cfg.get("smfactor", 2))).astype(int) * self.cfg.get(
+            "smfactor", 2
+        )
         if stride == 2:
             sm_size = np.ceil(target_size / 16).astype(int)
             sm_size *= 8
@@ -512,9 +461,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             target_size, sm_size = self.calc_target_and_scoremap_sizes()
             scale = np.mean(target_size / self.default_size)
             augmentation.update_crop_size(self.pipeline, *target_size)
-            batch_images, batch_joints = self.pipeline(
-                images=batch_images, keypoints=batch_joints
-            )
+            batch_images, batch_joints = self.pipeline(images=batch_images, keypoints=batch_joints)
             batch_images = np.asarray(batch_images)
             image_shape = batch_images.shape[1:3]
             # Discard keypoints whose coordinates lie outside the cropped image
@@ -554,9 +501,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
                         shape=batch_images[i].shape,
                     )
                     im = kps.draw_on_image(batch_images[i])
-                    imageio.imwrite(
-                        os.path.join(self.cfg["project_path"], str(i) + ".png"), im
-                    )
+                    imageio.imwrite(os.path.join(self.cfg["project_path"], str(i) + ".png"), im)
 
             batch = {Batch.inputs: batch_images.astype(np.float64)}
             if self.has_gt:
@@ -597,17 +542,13 @@ class MAImgaugPoseDataset(BasePoseDataset):
         cfg = self.cfg
         if cfg["weigh_only_present_joints"]:
             weights = np.zeros(scmap_shape)
-            for k, j_id in enumerate(
-                np.concatenate(joint_id)
-            ):  # looping over all animals
+            for k, j_id in enumerate(np.concatenate(joint_id)):  # looping over all animals
                 weights[:, :, j_id] = 1.0
         else:
             weights = np.ones(scmap_shape)
         return weights
 
-    def compute_target_part_scoremap_numpy(
-        self, joint_id, coords, data_item, size, scale
-    ):
+    def compute_target_part_scoremap_numpy(self, joint_id, coords, data_item, size, scale):
         stride = self.cfg["stride"]
         half_stride = stride // 2
         dist_thresh = float(self.cfg["pos_dist_thresh"] * scale)
@@ -638,9 +579,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         # Produce score maps and location refinement fields
         coords_sm = np.round((coords - half_stride) / stride).astype(int)
         mins = np.round(np.maximum(coords_sm - dist_thresh - 1, 0)).astype(int)
-        maxs = np.round(
-            np.minimum(coords_sm + dist_thresh + 1, [width - 1, height - 1])
-        ).astype(int)
+        maxs = np.round(np.minimum(coords_sm + dist_thresh + 1, [width - 1, height - 1])).astype(int)
         dx = coords[:, 0] - xx * stride - half_stride
         dx_ = dx * locref_scale
         dy = coords[:, 1] - yy * stride - half_stride
@@ -661,11 +600,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         if num_idchannel > 0:
             coordinateoffset = 0
             # Find indices of individuals in joint_id
-            idx = [
-                (i, id_)
-                for i, id_ in enumerate(data_item.joints)
-                if id_ < num_idchannel
-            ]
+            idx = [(i, id_) for i, id_ in enumerate(data_item.joints) if id_ < num_idchannel]
             for i, person_id in idx:
                 joint_ids = joint_id[i]
                 n_joints = joint_ids.size
@@ -705,24 +640,15 @@ class MAImgaugPoseDataset(BasePoseDataset):
                             d2mid = j_y * Dx - j_x * Dy  # orthogonal direction
 
                             distance_along = Dx * x + Dy * y
-                            distance_across = (
-                                ((y * Dx - x * Dy) - d2mid)
-                                * 1.0
-                                / self.cfg["pafwidth"]
-                                * scale
-                            )
+                            distance_across = ((y * Dx - x * Dy) - d2mid) * 1.0 / self.cfg["pafwidth"] * scale
 
-                            mask1 = (distance_along >= d1lowerboundary) & (
-                                distance_along <= d1upperboundary
-                            )
+                            mask1 = (distance_along >= d1lowerboundary) & (distance_along <= d1upperboundary)
                             distance_across_abs = np.abs(distance_across)
                             mask2 = distance_across_abs <= 1
                             mask = mask1 & mask2
                             temp = 1 - distance_across_abs[mask]
                             if self.cfg["weigh_only_present_joints"]:
-                                partaffinityfield_mask[mask, [l * 2 + 0, l * 2 + 1]] = (
-                                    1.0
-                                )
+                                partaffinityfield_mask[mask, [l * 2 + 0, l * 2 + 1]] = 1.0
                             partaffinityfield_map[mask, l * 2 + 0] = Dx * temp
                             partaffinityfield_map[mask, l * 2 + 1] = Dy * temp
 
@@ -754,9 +680,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         locref_scale = 1.0 / self.cfg["locref_stdev"]
         dist_thresh_sq = dist_thresh**2
 
-        partaffinityfield_shape = np.concatenate(
-            [size, np.array([self.cfg["num_limbs"] * 2])]
-        )
+        partaffinityfield_shape = np.concatenate([size, np.array([self.cfg["num_limbs"] * 2])])
         partaffinityfield_map = np.zeros(partaffinityfield_shape)
         if self.cfg["weigh_only_present_joints"]:
             partaffinityfield_mask = np.zeros(partaffinityfield_shape)
@@ -829,24 +753,14 @@ class MAImgaugPoseDataset(BasePoseDataset):
                             d1upperboundary = max(d1)
                             d2mid = j_y * Dx - j_x * Dy  # orthogonal direction
 
-                            distance_along = Dx * (x * stride + half_stride) + Dy * (
-                                y * stride + half_stride
-                            )
+                            distance_along = Dx * (x * stride + half_stride) + Dy * (y * stride + half_stride)
                             distance_across = (
-                                (
-                                    (
-                                        (y * stride + half_stride) * Dx
-                                        - (x * stride + half_stride) * Dy
-                                    )
-                                    - d2mid
-                                )
+                                (((y * stride + half_stride) * Dx - (x * stride + half_stride) * Dy) - d2mid)
                                 * 1.0
                                 / self.cfg["pafwidth"]
                                 * scale
                             )
-                            mask1 = (distance_along >= d1lowerboundary) & (
-                                distance_along <= d1upperboundary
-                            )
+                            mask1 = (distance_along >= d1lowerboundary) & (distance_along <= d1upperboundary)
                             mask2 = np.abs(distance_across) <= 1
                             # mask3 = ((x >= 0) & (x <= width-1))
                             # mask4 = ((y >= 0) & (y <= height-1))
@@ -855,12 +769,8 @@ class MAImgaugPoseDataset(BasePoseDataset):
                                 partaffinityfield_mask[mask, l * 2 + 0] = 1.0
                                 partaffinityfield_mask[mask, l * 2 + 1] = 1.0
 
-                            partaffinityfield_map[mask, l * 2 + 0] = (
-                                Dx * (1 - abs(distance_across))
-                            )[mask]
-                            partaffinityfield_map[mask, l * 2 + 1] = (
-                                Dy * (1 - abs(distance_across))
-                            )[mask]
+                            partaffinityfield_map[mask, l * 2 + 0] = (Dx * (1 - abs(distance_across)))[mask]
+                            partaffinityfield_map[mask, l * 2 + 1] = (Dy * (1 - abs(distance_across)))[mask]
 
             coordinateoffset += len(joint_ids)  # keeping track of the blocks
 

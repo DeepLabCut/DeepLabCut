@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Widget to display existing shuffles"""
+
 from __future__ import annotations
 
 from PySide6 import QtWidgets
@@ -39,7 +40,6 @@ class ShuffleMetadataViewer(QtWidgets.QDialog):
         inner_layout.setContentsMargins(0, 0, 0, 0)
 
         for line in self.file_content:
-
             inner_layout.addWidget(QtWidgets.QLabel(line))
 
         inner = QtWidgets.QFrame(scroll)

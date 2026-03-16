@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Custom collate functions"""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -118,7 +119,7 @@ class ResizeFromDataSizeCollate(ResizeCollate):
         max_ratio: float = 2.0,
         multiple_of: int | None = None,
         to_square: bool = False,
-        **kwargs
+        **kwargs,
     ) -> None:
         super().__init__(**kwargs)
         self.min_scale = min_scale
@@ -137,9 +138,7 @@ class ResizeFromDataSizeCollate(ResizeCollate):
         scale = self.generator.uniform(self.min_scale, self.max_scale)
         if self.to_square:
             short_side = min(h, w)
-            size = int(round(
-                min(self.max_short_side, max(self.min_short_side, scale * short_side))
-            ))
+            size = int(round(min(self.max_short_side, max(self.min_short_side, scale * short_side))))
             if self.multiple_of is not None:
                 size = _to_multiple(size, self.multiple_of)
             return size
@@ -149,9 +148,7 @@ class ResizeFromDataSizeCollate(ResizeCollate):
         if ratio > self.max_ratio:
             ratio = self.max_ratio
 
-        short_size = int(
-            round(min(self.max_short_side, max(self.min_short_side, scale * short)))
-        )
+        short_size = int(round(min(self.max_short_side, max(self.min_short_side, scale * short))))
         if h < w:
             h = short_size
             w = int(ratio * short_size)

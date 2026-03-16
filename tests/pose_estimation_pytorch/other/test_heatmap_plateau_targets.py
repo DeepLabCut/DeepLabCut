@@ -52,9 +52,7 @@ def get_target(
 
     """
     labels = {
-        "keypoints": torch.randint(
-            1, min(image_size), (batch_size, num_animals, num_joints, 2)
-        )
+        "keypoints": torch.randint(1, min(image_size), (batch_size, num_animals, num_joints, 2))
     }  # 2 for x,y coords
     stride = 1
     prediction = {

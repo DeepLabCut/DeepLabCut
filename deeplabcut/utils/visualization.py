@@ -17,6 +17,7 @@ Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
+
 from __future__ import annotations
 
 import os
@@ -75,8 +76,7 @@ def make_labeled_image(
     for scorerindex, loopscorer in enumerate(Scorers):
         for bpindex, bp in enumerate(bodyparts):
             if np.isfinite(
-                DataCombined[loopscorer][bp]["y"].iloc[imagenr]
-                + DataCombined[loopscorer][bp]["x"].iloc[imagenr]
+                DataCombined[loopscorer][bp]["y"].iloc[imagenr] + DataCombined[loopscorer][bp]["x"].iloc[imagenr]
             ):
                 y, x = (
                     int(DataCombined[loopscorer][bp]["y"].iloc[imagenr]),
@@ -160,9 +160,7 @@ def make_multianimal_labeled_image(
     ax.imshow(frame, "gray")
 
     if bounding_boxes is not None:
-        for i, (bbox, bbox_score) in enumerate(
-            zip(bounding_boxes[0], bounding_boxes[1])
-        ):
+        for i, (bbox, bbox_score) in enumerate(zip(bounding_boxes[0], bounding_boxes[1])):
             bbox_origin = (bbox[0], bbox[1])
             (bbox_width, bbox_height) = (bbox[2], bbox[3])
             if isinstance(bboxes_color, Colormap):
@@ -283,9 +281,7 @@ def erase_artists(ax):
 
 
 def prepare_figure_axes(width, height, scale=1.0, dpi=100):
-    fig = plt.figure(
-        frameon=False, figsize=(width * scale / dpi, height * scale / dpi), dpi=dpi
-    )
+    fig = plt.figure(frameon=False, figsize=(width * scale / dpi, height * scale / dpi), dpi=dpi)
     ax = fig.add_subplot(111)
     ax.axis("off")
     ax.set_xlim(0, width)
@@ -335,9 +331,7 @@ def make_labeled_images_from_dataframe(
     bodypart_names = bodyparts.unique()
     nbodyparts = len(bodypart_names)
     bodyparts = bodyparts[::2]
-    draw_skeleton = (
-        draw_skeleton and cfg["skeleton"]
-    )  # Only draw if a skeleton is defined
+    draw_skeleton = draw_skeleton and cfg["skeleton"]  # Only draw if a skeleton is defined
 
     if color_by == "bodypart":
         map_ = bodyparts.map(dict(zip(bodypart_names, range(nbodyparts))))
@@ -353,9 +347,7 @@ def make_labeled_images_from_dataframe(
             cmap = get_cmap(nindividuals, cfg["colormap"])
             colors = cmap(map_)
         except KeyError as e:
-            raise Exception(
-                "Coloring by individuals is only valid for multi-animal data"
-            ) from e
+            raise Exception("Coloring by individuals is only valid for multi-animal data") from e
     else:
         raise ValueError("`color_by` must be either `bodypart` or `individual`.")
 
@@ -371,9 +363,7 @@ def make_labeled_images_from_dataframe(
             bones.extend(zip(match1, match2))
     ind_bones = tuple(zip(*bones))
 
-    images_list = [
-        os.path.join(cfg["project_path"], *tuple_) for tuple_ in df.index.tolist()
-    ]
+    images_list = [os.path.join(cfg["project_path"], *tuple_) for tuple_ in df.index.tolist()]
     if not destfolder:
         destfolder = os.path.dirname(images_list[0])
     tmpfolder = destfolder + "_labeled"
@@ -430,9 +420,7 @@ def make_labeled_images_from_dataframe(
             for coord, c in zip(coords, colors):
                 ax.plot(*coord, keypoint, ms=s, alpha=alpha, color=c)
             if ind_bones:
-                coll = LineCollection(
-                    segs[ind], colors=cfg["skeleton_color"], alpha=alpha
-                )
+                coll = LineCollection(segs[ind], colors=cfg["skeleton_color"], alpha=alpha)
                 ax.add_collection(coll)
             imagename = os.path.basename(filename)
             fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
@@ -505,9 +493,7 @@ def plot_evaluation_results(
         image_path = Path(project_root) / data_folder / video / image
         frame = auxfun_videos.imread(str(image_path), mode="skimage")
 
-        row_multi = row.loc[
-            (slice(None), row.index.get_level_values("individuals") != "single")
-        ]
+        row_multi = row.loc[(slice(None), row.index.get_level_values("individuals") != "single")]
         individuals = len(row_multi.index.get_level_values("individuals").unique())
         bodyparts = len(row_multi.index.get_level_values("bodyparts").unique())
         df_gt = row_multi[scorer]
@@ -523,7 +509,7 @@ def plot_evaluation_results(
             actual_size_pred = df_predictions.size
             expected_size_gt = individuals * bodyparts * 2
             expected_size_pred = individuals * bodyparts * 3
-            
+
             print(f"Warning: DataFrame reshape failed for {image}")
             print(f"  Expected: {individuals} individuals, {bodyparts} bodyparts")
             print(f"  Ground truth: {actual_size_gt} elements (expected {expected_size_gt})")
@@ -534,23 +520,13 @@ def plot_evaluation_results(
         bboxes = bounding_boxes.get(row_index)
 
         if plot_unique_bodyparts:
-            row_unique = row.loc[
-                (slice(None), row.index.get_level_values("individuals") == "single")
-            ]
+            row_unique = row.loc[(slice(None), row.index.get_level_values("individuals") == "single")]
             unique_individuals = 1
-            unique_bodyparts = len(
-                row_unique.index.get_level_values("bodyparts").unique()
-            )
+            unique_bodyparts = len(row_unique.index.get_level_values("bodyparts").unique())
             try:
-                unique_ground_truth = (
-                    row_unique[scorer]
-                    .to_numpy()
-                    .reshape((unique_individuals, unique_bodyparts, 2))
-                )
+                unique_ground_truth = row_unique[scorer].to_numpy().reshape((unique_individuals, unique_bodyparts, 2))
                 unique_predictions = (
-                    row_unique[model_name]
-                    .to_numpy()
-                    .reshape((unique_individuals, unique_bodyparts, 3))
+                    row_unique[model_name].to_numpy().reshape((unique_individuals, unique_bodyparts, 3))
                 )
             except ValueError as e:
                 # Handle cases where unique bodyparts reshape fails

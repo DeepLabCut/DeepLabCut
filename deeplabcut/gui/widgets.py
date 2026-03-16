@@ -175,9 +175,7 @@ class ItemSelectionFrame(QtWidgets.QFrame):
 
 
 class NavigationToolbar(NavigationToolbar2QT):
-    toolitems = [
-        t for t in NavigationToolbar2QT.toolitems if t[0] in ("Home", "Pan", "Zoom")
-    ]
+    toolitems = [t for t in NavigationToolbar2QT.toolitems if t[0] in ("Home", "Pan", "Zoom")]
 
     def set_message(self, msg):
         pass
@@ -389,9 +387,7 @@ class DictViewer(QtWidgets.QWidget):
 
     def edit_value(self, item):
         keys, value = self.walk_recursively_to_root(item)
-        if (
-            "crop" not in keys
-        ):  # 'crop' should not be cast, otherwise it is understood as a list
+        if "crop" not in keys:  # 'crop' should not be cast, otherwise it is understood as a list
             value = self.cast_to_right_type(value)
         self.set_value(self.cfg, keys, value)
 
@@ -441,10 +437,7 @@ class ConfigEditor(QtWidgets.QDialog):
     def __init__(self, config, parent=None):
         super(ConfigEditor, self).__init__(parent)
         self.config = config
-        if (
-            config.endswith("config.yaml")
-            and not config.endswith("pytorch_config.yaml")
-        ):
+        if config.endswith("config.yaml") and not config.endswith("pytorch_config.yaml"):
             self.read_func = auxiliaryfunctions.read_config
             self.write_func = auxiliaryfunctions.write_config
         else:
@@ -546,12 +539,8 @@ class SkeletonBuilder(QtWidgets.QDialog):
         root = os.path.join(self.cfg["project_path"], "labeled-data")
         for dir_ in os.listdir(root):
             folder = os.path.join(root, dir_)
-            if os.path.isdir(folder) and not any(
-                folder.endswith(s) for s in ("cropped", "labeled")
-            ):
-                self.df = pd.read_hdf(
-                    os.path.join(folder, f'CollectedData_{self.cfg["scorer"]}.h5')
-                )
+            if os.path.isdir(folder) and not any(folder.endswith(s) for s in ("cropped", "labeled")):
+                self.df = pd.read_hdf(os.path.join(folder, f"CollectedData_{self.cfg['scorer']}.h5"))
                 row, col = self.pick_labeled_frame()
                 if "individuals" in self.df.columns.names:
                     self.df = self.df.xs(col, axis=1, level="individuals")
@@ -602,9 +591,7 @@ class SkeletonBuilder(QtWidgets.QDialog):
         layout.addWidget(self.canvas)
         self.setLayout(layout)
 
-        self.lines = LineCollection(
-            self.segs, colors=mcolors.to_rgba(self.cfg["skeleton_color"])
-        )
+        self.lines = LineCollection(self.segs, colors=mcolors.to_rgba(self.cfg["skeleton_color"]))
         self.lines.set_picker(True)
         self._show()
 

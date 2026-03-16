@@ -29,9 +29,7 @@ def get_model_configs_folder_path() -> Path:
 
 def get_project_configs_folder_path() -> Path:
     """Returns: the folder containing the SuperAnimal project configuration files"""
-    return (
-        Path(auxiliaryfunctions.get_deeplabcut_path()) / "modelzoo" / "project_configs"
-    )
+    return Path(auxiliaryfunctions.get_deeplabcut_path()) / "modelzoo" / "project_configs"
 
 
 def get_snapshot_folder_path() -> Path:
@@ -117,9 +115,7 @@ def load_super_animal_config(
     else:
         model_config["method"] = "TD"
         if super_animal != "superanimal_humanbody":
-            detector_cfg_path = get_super_animal_model_config_path(
-                model_name=detector_name
-            )
+            detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name)
             detector_cfg = read_config_as_dict(detector_cfg_path)
             model_config["detector"] = detector_cfg
     return model_config

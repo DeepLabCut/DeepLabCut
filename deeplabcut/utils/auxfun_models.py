@@ -80,9 +80,7 @@ def download_weights(modeltype, model_path):
     from io import BytesIO
 
     target_dir = model_path.parents[0]
-    neturls = auxiliaryfunctions.read_plainconfig(
-        target_dir / "pretrained_model_urls.yaml"
-    )
+    neturls = auxiliaryfunctions.read_plainconfig(target_dir / "pretrained_model_urls.yaml")
     try:
         if "efficientnet" in modeltype:
             url = neturls["efficientnet"]
@@ -134,11 +132,7 @@ def download_model(modelname, target_dir):
     if modelname in neturls.keys():
         url = neturls[modelname]
         response = urllib.request.urlopen(url)
-        print(
-            "Downloading the model from the DeepLabCut server @Harvard -> Go Crimson!!! {}....".format(
-                url
-            )
-        )
+        print("Downloading the model from the DeepLabCut server @Harvard -> Go Crimson!!! {}....".format(url))
         total_size = int(response.getheader("Content-Length"))
         pbar = tqdm(unit="B", total=total_size, position=0)
         filename, _ = urllib.request.urlretrieve(url, reporthook=show_progress)
@@ -146,11 +140,7 @@ def download_model(modelname, target_dir):
             tar.extractall(target_dir, members=tarfilenamecutting(tar))
     else:
         models = [
-            fn
-            for fn in neturls.keys()
-            if "resnet_" not in fn
-            and "efficientnet" not in fn
-            and "mobilenet_" not in fn
+            fn for fn in neturls.keys() if "resnet_" not in fn and "efficientnet" not in fn and "mobilenet_" not in fn
         ]
         print("Model does not exist: ", modelname)
         print("Pick one of the following: ", models)

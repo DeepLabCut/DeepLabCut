@@ -151,10 +151,7 @@ def create_new_project(
     for i in paths:
         # Check if it is a folder
         if i.is_dir():
-            vids_in_dir = [
-                p for p in i.iterdir()
-                if str(p).lower().endswith(videotype)
-            ]
+            vids_in_dir = [p for p in i.iterdir() if str(p).lower().endswith(videotype)]
             if len(vids_in_dir) == 0:
                 print("No videos found in", i)
                 print(
@@ -185,9 +182,7 @@ def create_new_project(
     if copy_videos:
         print("Copying the videos")
         for src, dst in zip(videos, destinations):
-            shutil.copy(
-                os.fspath(src), os.fspath(dst)
-            )  # https://www.python.org/dev/peps/pep-0519/
+            shutil.copy(os.fspath(src), os.fspath(dst))  # https://www.python.org/dev/peps/pep-0519/
     else:
         # creates the symlinks of the video and puts it in the videos directory.
         print("Attempting to create a symbolic link of the video ...")
@@ -205,10 +200,7 @@ def create_new_project(
 
                     subprocess.check_call("mklink %s %s" % (dst, src), shell=True)
                 except (OSError, subprocess.CalledProcessError):
-                    print(
-                        "Symlink creation impossible (exFat architecture?): "
-                        "copying the video instead."
-                    )
+                    print("Symlink creation impossible (exFat architecture?): copying the video instead.")
                     shutil.copy(os.fspath(src), os.fspath(dst))
                     print("{} copied to {}".format(src, dst))
             videos = destinations
@@ -247,11 +239,7 @@ def create_new_project(
         cfg_file, ruamelFile = auxiliaryfunctions.create_config_template(multianimal)
         cfg_file["multianimalproject"] = multianimal
         cfg_file["identity"] = False
-        cfg_file["individuals"] = (
-            individuals
-            if individuals
-            else ["individual1", "individual2", "individual3"]
-        )
+        cfg_file["individuals"] = individuals if individuals else ["individual1", "individual2", "individual3"]
         cfg_file["multianimalbodyparts"] = ["bodypart1", "bodypart2", "bodypart3"]
         cfg_file["uniquebodyparts"] = []
         cfg_file["bodyparts"] = "MULTI!"

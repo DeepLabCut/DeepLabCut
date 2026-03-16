@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Implementations of methods to compute distance metrics such as RMSE or OKS"""
+
 from __future__ import annotations
 
 import numpy as np
@@ -276,10 +277,12 @@ def compute_rmse(
     if pixel_errors is not None:
         bpt_cutoffs = pcutoff
         if not isinstance(pcutoff, (int, float)):
-            bpt_cutoffs = pcutoff[:pixel_errors.shape[1]]
+            bpt_cutoffs = pcutoff[: pixel_errors.shape[1]]
 
         error, support, cutoff_error, cutoff_support = collect_pixel_errors(
-            pixel_errors, keypoint_scores, bpt_cutoffs,
+            pixel_errors,
+            keypoint_scores,
+            bpt_cutoffs,
         )
 
     unique_pixel_errors, unique_keypoint_scores = None, None
@@ -291,9 +294,11 @@ def compute_rmse(
 
             bpt_cutoffs = pcutoff
             if not isinstance(pcutoff, (int, float)):
-                bpt_cutoffs = pcutoff[-unique_pixel_errors.shape[1]:]
+                bpt_cutoffs = pcutoff[-unique_pixel_errors.shape[1] :]
             u_error, u_support, u_cutoff_error, u_cutoff_support = collect_pixel_errors(
-                unique_pixel_errors, unique_keypoint_scores, bpt_cutoffs,
+                unique_pixel_errors,
+                unique_keypoint_scores,
+                bpt_cutoffs,
             )
             error += u_error
             support += u_support
@@ -384,8 +389,7 @@ def compute_detection_rmse(
     if data_unique is not None:
         for image_gt, image_pred in data_unique:
             assert len(image_gt) <= 1 and len(image_pred) <= 1, (
-                f"Unique GT an predictions must have length 0 or 1! Found {image_gt.shape}, "
-                f"{image_pred.shape}."
+                f"Unique GT an predictions must have length 0 or 1! Found {image_gt.shape}, {image_pred.shape}."
             )
 
             if len(image_gt) == 1 and len(image_pred) == 1:

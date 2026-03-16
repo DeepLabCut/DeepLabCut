@@ -141,10 +141,7 @@ def _video_inference_superanimal(
     if isinstance(video_paths, str):
         video_paths = [video_paths]
 
-    dest_folder = ( 
-        Path(video_paths[0]).parent if dest_folder is None
-        else Path(dest_folder)
-    )
+    dest_folder = Path(video_paths[0]).parent if dest_folder is None else Path(dest_folder)
     dest_folder.mkdir(parents=True, exist_ok=True)
     if create_labeled_video:
         superanimal_colormaps = get_superanimal_colormaps()

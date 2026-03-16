@@ -43,9 +43,7 @@ def make_multi_animal_rmse_df(
         names=["scorer", "individuals", "bodyparts"],
     )
     if error_data is None:
-        error_data = np.ones(
-            (len(train_indices) + len(test_indices), len(individuals) * len(bodyparts))
-        )
+        error_data = np.ones((len(train_indices) + len(test_indices), len(individuals) * len(bodyparts)))
     return pd.DataFrame(error_data, columns=columns)
 
 

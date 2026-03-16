@@ -103,10 +103,7 @@ class DynamicTextList(QtWidgets.QWidget):
         if " " in text:
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setText(
-                f"Spaces are not allowed in the {self.label_text} list. Use underscores "
-                f"instead."
-            )
+            msg.setText(f"Spaces are not allowed in the {self.label_text} list. Use underscores instead.")
             msg.setWindowTitle("Warning")
             msg.exec_()
             entry.setText(entry.text().replace(" ", "_"))
@@ -139,7 +136,6 @@ class DynamicTextList(QtWidgets.QWidget):
 
 
 class Switch(QtWidgets.QPushButton):
-
     def __init__(self, on_text="Yes", off_text="No", width=80, parent=None):
         super().__init__(parent)
         self.on_text = on_text
@@ -166,9 +162,7 @@ class Switch(QtWidgets.QPushButton):
         pen.setWidth(2)
         painter.setPen(pen)
 
-        painter.drawRoundedRect(
-            QtCore.QRect(-width, -radius, 2 * width, 2 * radius), radius, radius
-        )
+        painter.drawRoundedRect(QtCore.QRect(-width, -radius, 2 * width, 2 * radius), radius, radius)
         painter.setBrush(QBrush(bg_color))
         sw_rect = QtCore.QRect(-radius, -radius, width + radius, 2 * radius)
         if not self.isChecked():
@@ -321,36 +315,24 @@ class ProjectCreator(QtWidgets.QDialog):
 
         # Connect the unique_toggle to the unique_bodyparts_list
         self.unique_toggle.toggled.connect(
-            lambda yes: self.unique_bodyparts_list.setVisible(
-                yes and self.madlc_toggle.isChecked()
-            )
+            lambda yes: self.unique_bodyparts_list.setVisible(yes and self.madlc_toggle.isChecked())
         )
 
         # Connect 3d toggle to all other option visibility
         self.toggle_3d.toggled.connect(lambda yes: madlc_widget.setVisible(not yes))
         self.toggle_3d.toggled.connect(
-            lambda checked_3d: unique_widget.setVisible(
-                not checked_3d and self.madlc_toggle.isChecked()
-            )
+            lambda checked_3d: unique_widget.setVisible(not checked_3d and self.madlc_toggle.isChecked())
         )
         self.toggle_3d.toggled.connect(
-            lambda checked_3d: identity_widget.setVisible(
-                not checked_3d and self.madlc_toggle.isChecked()
-            )
+            lambda checked_3d: identity_widget.setVisible(not checked_3d and self.madlc_toggle.isChecked())
         )
+        self.toggle_3d.toggled.connect(lambda checked_3d: self.bodypart_list.setVisible(not checked_3d))
         self.toggle_3d.toggled.connect(
-            lambda checked_3d: self.bodypart_list.setVisible(not checked_3d)
-        )
-        self.toggle_3d.toggled.connect(
-            lambda checked_3d: self.individuals_list.setVisible(
-                not checked_3d and self.madlc_toggle.isChecked()
-            )
+            lambda checked_3d: self.individuals_list.setVisible(not checked_3d and self.madlc_toggle.isChecked())
         )
         self.toggle_3d.toggled.connect(
             lambda checked_3d: self.unique_bodyparts_list.setVisible(
-                not checked_3d
-                and self.madlc_toggle.isChecked()
-                and self.unique_toggle.isChecked()
+                not checked_3d and self.madlc_toggle.isChecked() and self.unique_toggle.isChecked()
             )
         )
 
@@ -379,9 +361,7 @@ class ProjectCreator(QtWidgets.QDialog):
         help_label = ClickableLabel(help_text, parent=self)
         help_label.setStyleSheet("text-decoration: underline; font-weight: bold;")
         help_label.setCursor(QtCore.Qt.PointingHandCursor)
-        help_label.signal.connect(
-            lambda: QDesktopServices.openUrl(QtCore.QUrl(docs_link))
-        )
+        help_label.signal.connect(lambda: QDesktopServices.openUrl(QtCore.QUrl(docs_link)))
 
         toggle_layout.addWidget(switch, alignment=QtCore.Qt.AlignLeft)
         toggle_layout.addWidget(toggle_label, alignment=QtCore.Qt.AlignLeft)
@@ -423,14 +403,14 @@ class ProjectCreator(QtWidgets.QDialog):
     def browse_videos(self):
         options = QtWidgets.QFileDialog.Options()
         options |= QtWidgets.QFileDialog.DontUseNativeDialog
-        
+
         if self.select_files_box.isChecked():
             # Select individual video files
             video_types = [f"*.{ext.lower()}" for ext in DLCParams.VIDEOTYPES[1:]] + [
                 f"*.{ext.upper()}" for ext in DLCParams.VIDEOTYPES[1:]
             ]
             video_filter = f"Videos ({' '.join(video_types)})"
-            
+
             files, _ = QtWidgets.QFileDialog.getOpenFileNames(
                 self,
                 "Select video files",
@@ -438,7 +418,7 @@ class ProjectCreator(QtWidgets.QDialog):
                 video_filter,
                 options=options,
             )
-            
+
             if files:
                 for video in files:
                     self.video_frame.fancy_list.add_item(video)
@@ -487,9 +467,7 @@ class ProjectCreator(QtWidgets.QDialog):
                     self.video_frame.fancy_list.setStyleSheet("border: 1px solid red")
                     return
                 else:
-                    self.video_frame.fancy_list.setStyleSheet(
-                        self.video_frame.fancy_list._default_style
-                    )
+                    self.video_frame.fancy_list.setStyleSheet(self.video_frame.fancy_list._default_style)
                 to_copy = self.copy_box.isChecked()
                 is_madlc = self.madlc_toggle.isChecked()
                 config = create_new_project(
@@ -511,10 +489,7 @@ class ProjectCreator(QtWidgets.QDialog):
                             if len(individuals) > 0:
                                 updates["individuals"] = individuals
 
-                        if (
-                            self.unique_toggle.isChecked()
-                            and self.unique_bodyparts_list is not None
-                        ):
+                        if self.unique_toggle.isChecked() and self.unique_bodyparts_list is not None:
                             unique_bodyparts = self.unique_bodyparts_list.get_entries()
                             if len(unique_bodyparts) > 0:
                                 updates["uniquebodyparts"] = unique_bodyparts
@@ -544,9 +519,7 @@ class ProjectCreator(QtWidgets.QDialog):
         self.close()
 
     def on_click(self):
-        dirname = QtWidgets.QFileDialog.getExistingDirectory(
-            self, "Please select a folder", self.loc_default
-        )
+        dirname = QtWidgets.QFileDialog.getExistingDirectory(self, "Please select a folder", self.loc_default)
         if not dirname:
             return
         self.loc_default = dirname

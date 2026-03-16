@@ -13,6 +13,7 @@
 Based on the official ``mmpose`` SimCC codec and RTMCC head implementation. For more
 information, see <https://github.com/open-mmlab/mmpose>.
 """
+
 from __future__ import annotations
 
 from itertools import product
@@ -76,9 +77,7 @@ class SimCCGenerator(BaseGenerator):
             )
 
         if self.smoothing_type == "gaussian" and self.label_smooth_weight > 0:
-            raise ValueError(
-                "Attribute `label_smooth_weight` is only " "used for `standard` mode."
-            )
+            raise ValueError("Attribute `label_smooth_weight` is only used for `standard` mode.")
 
         if self.label_smooth_weight < 0.0 or self.label_smooth_weight > 1.0:
             raise ValueError("`label_smooth_weight` should be in range [0, 1]")
@@ -139,9 +138,7 @@ class SimCCGenerator(BaseGenerator):
         W = np.around(w * self.simcc_split_ratio).astype(int)
         H = np.around(h * self.simcc_split_ratio).astype(int)
 
-        keypoints_split, keypoint_weights = self._map_coordinates(
-            keypoints, keypoints_visible
-        )
+        keypoints_split, keypoint_weights = self._map_coordinates(keypoints, keypoints_visible)
 
         target_x = np.zeros((N, K, W), dtype=np.float32)
         target_y = np.zeros((N, K, H), dtype=np.float32)
@@ -189,9 +186,7 @@ class SimCCGenerator(BaseGenerator):
         W = np.around(w * self.simcc_split_ratio).astype(int)
         H = np.around(h * self.simcc_split_ratio).astype(int)
 
-        keypoints_split, keypoint_weights = self._map_coordinates(
-            keypoints, keypoints_visible
-        )
+        keypoints_split, keypoint_weights = self._map_coordinates(keypoints, keypoints_visible)
 
         target_x = np.zeros((N, K, W), dtype=np.float32)
         target_y = np.zeros((N, K, H), dtype=np.float32)

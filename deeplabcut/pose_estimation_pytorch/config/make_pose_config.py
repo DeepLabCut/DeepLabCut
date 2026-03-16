@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Methods to create the configuration files for PyTorch DeepLabCut models"""
+
 from __future__ import annotations
 
 import copy
@@ -198,9 +199,7 @@ def make_pytorch_pose_config(
     return pose_config
 
 
-def _add_ctd_conditions(
-    model_cfg: dict, ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int]
-):
+def _add_ctd_conditions(model_cfg: dict, ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int]):
     """
     Args:
         model_cfg: dict, contents of pytorch_config.yaml
@@ -238,9 +237,7 @@ def _add_ctd_conditions(
         elif isinstance(ctd_conditions[1], str):
             conditions = {"shuffle": ctd_conditions[0], "snapshot": ctd_conditions[1]}
         else:
-            raise TypeError(
-                "Conditions snapshot must be of type int (index) or string (snapshot name)."
-            )
+            raise TypeError("Conditions snapshot must be of type int (index) or string (snapshot name).")
     else:
         raise TypeError("Conditions ctd_conditions is of invalid type.")
 
@@ -351,9 +348,7 @@ def make_basic_project_config(
     )
 
 
-def add_metadata(
-    project_config: dict, config: dict, pose_config_path: str | Path
-) -> dict:
+def add_metadata(project_config: dict, config: dict, pose_config_path: str | Path) -> dict:
     """Adds metadata to a pytorch pose configuration
 
     Args:
@@ -423,9 +418,7 @@ def create_backbone_with_heatmap_model(
         bodypart_head_name = "head_topdown.yaml"
 
     # add a bodypart head
-    bodypart_head_config = read_config_as_dict(
-        configs_dir / "base" / bodypart_head_name
-    )
+    bodypart_head_config = read_config_as_dict(configs_dir / "base" / bodypart_head_name)
     model_config["model"]["heads"] = {
         "bodypart": replace_default_values(
             bodypart_head_config,
@@ -463,9 +456,7 @@ def create_backbone_with_paf_model(
     backbone_output_channels = model_config["model"]["backbone_output_channels"]
 
     # add a bodypart head
-    bodypart_head_config = read_config_as_dict(
-        configs_dir / "base" / f"head_bodyparts_with_paf.yaml"
-    )
+    bodypart_head_config = read_config_as_dict(configs_dir / "base" / f"head_bodyparts_with_paf.yaml")
     model_config["model"]["heads"] = {
         "bodypart": replace_default_values(
             bodypart_head_config,
@@ -574,9 +565,7 @@ def _get_paf_parameters(
     paf_graph_degree: int = 6,
 ) -> dict:
     """Gets values for PAF parameters from the project configuration"""
-    paf_graph = [
-        [i, j] for i in range(len(bodyparts)) for j in range(i + 1, len(bodyparts))
-    ]
+    paf_graph = [[i, j] for i in range(len(bodyparts)) for j in range(i + 1, len(bodyparts))]
     num_limbs = len(paf_graph)
     # If the graph is unnecessarily large (with 15+ keypoints by default),
     # we randomly prune it to a size guaranteeing an average node degree of 6;

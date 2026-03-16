@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Loss criterions for DEKR models"""
+
 from __future__ import annotations
 
 import torch
@@ -56,7 +57,7 @@ class DEKROffsetLoss(BaseCriterion):
         l1_loss = torch.abs(pred - gt)
         return torch.where(
             l1_loss < self.beta,
-            0.5 * l1_loss ** 2 / self.beta,
+            0.5 * l1_loss**2 / self.beta,
             l1_loss - 0.5 * self.beta,
         )
 

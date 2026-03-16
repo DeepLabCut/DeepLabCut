@@ -67,9 +67,7 @@ def test_invalid_rmse(animals_and_keypoints_invalid: tuple) -> None:
     pred_kpts, gt_kpts, indv_names = animals_and_keypoints_invalid
 
     with pytest.raises(ValueError):
-        deeplabcut_torch_match_predictions_gt.rmse_match_prediction_to_gt(
-            pred_kpts, gt_kpts
-        )
+        deeplabcut_torch_match_predictions_gt.rmse_match_prediction_to_gt(pred_kpts, gt_kpts)
 
 
 def test_invalid_oks(animals_and_keypoints_invalid: tuple) -> None:
@@ -83,14 +81,10 @@ def test_invalid_oks(animals_and_keypoints_invalid: tuple) -> None:
     pred_kpts, gt_kpts, indv_names = animals_and_keypoints_invalid
 
     with pytest.raises(ValueError):
-        deeplabcut_torch_match_predictions_gt.oks_match_prediction_to_gt(
-            pred_kpts, gt_kpts, indv_names
-        )
+        deeplabcut_torch_match_predictions_gt.oks_match_prediction_to_gt(pred_kpts, gt_kpts, indv_names)
 
 
-def test_rmse_match_predictions_to_gt(
-    animals_and_keypoints: tuple, num_animals: int = 6
-) -> None:
+def test_rmse_match_predictions_to_gt(animals_and_keypoints: tuple, num_animals: int = 6) -> None:
     """Summary:
     Test if rmse_match_prediction_to_gt function returns the expected shape output.
 
@@ -100,16 +94,12 @@ def test_rmse_match_predictions_to_gt(
     """
     pred_kpts, gt_kpts, indv_names = animals_and_keypoints
 
-    col_ind = deeplabcut_torch_match_predictions_gt.rmse_match_prediction_to_gt(
-        pred_kpts, gt_kpts
-    )
+    col_ind = deeplabcut_torch_match_predictions_gt.rmse_match_prediction_to_gt(pred_kpts, gt_kpts)
     assert isinstance(col_ind, np.ndarray)
     assert col_ind.shape == (num_animals,)
 
 
-def test_oks_match_predictions_to_gt(
-    animals_and_keypoints: tuple, num_animals: int = 6
-) -> None:
+def test_oks_match_predictions_to_gt(animals_and_keypoints: tuple, num_animals: int = 6) -> None:
     """Summary:
     Test if oks_match_predictions_to_gt function returns the expected shape output.
 
@@ -119,9 +109,7 @@ def test_oks_match_predictions_to_gt(
     """
     pred_kpts, gt_kpts, indv_names = animals_and_keypoints
 
-    col_ind = deeplabcut_torch_match_predictions_gt.rmse_match_prediction_to_gt(
-        pred_kpts, gt_kpts
-    )
+    col_ind = deeplabcut_torch_match_predictions_gt.rmse_match_prediction_to_gt(pred_kpts, gt_kpts)
     assert isinstance(col_ind, np.ndarray)
     assert col_ind.shape == (num_animals,)
 
@@ -136,10 +124,6 @@ def test_extend_col_ind(animals_and_keypoints: tuple, num_animals: int = 6) -> N
     """
     pred_kpts, gt_kpts, indv_names = animals_and_keypoints
 
-    col_ind = deeplabcut_torch_match_predictions_gt.rmse_match_prediction_to_gt(
-        pred_kpts, gt_kpts
-    )
-    extended_array = deeplabcut_torch_match_predictions_gt.extend_col_ind(
-        col_ind, num_animals
-    )
+    col_ind = deeplabcut_torch_match_predictions_gt.rmse_match_prediction_to_gt(pred_kpts, gt_kpts)
+    extended_array = deeplabcut_torch_match_predictions_gt.extend_col_ind(col_ind, num_animals)
     assert extended_array.shape == (num_animals,)

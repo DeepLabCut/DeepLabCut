@@ -45,9 +45,7 @@ class TriMouseBenchmark(deeplabcut.benchmark.base.Benchmark):
         "tailend",
     )
     ground_truth = deeplabcut.benchmark.get_filepath("CollectedData_Daniel.h5")
-    metadata = deeplabcut.benchmark.get_filepath(
-        "Documentation_data-MultiMouse_70shuffle1.pickle"
-    )
+    metadata = deeplabcut.benchmark.get_filepath("Documentation_data-MultiMouse_70shuffle1.pickle")
     num_animals = 3
 
 
@@ -81,9 +79,7 @@ class ParentingMouseBenchmark(deeplabcut.benchmark.base.Benchmark):
     )
 
     ground_truth = deeplabcut.benchmark.get_filepath("CollectedData_Mostafizur.h5")
-    metadata = deeplabcut.benchmark.get_filepath(
-        "Documentation_data-CrackingParenting_70shuffle1.pickle"
-    )
+    metadata = deeplabcut.benchmark.get_filepath("Documentation_data-CrackingParenting_70shuffle1.pickle")
     num_animals = 2
 
     def compute_pose_map(self, results_objects):
@@ -100,10 +96,7 @@ class ParentingMouseBenchmark(deeplabcut.benchmark.base.Benchmark):
         """Fixes filenames for predictions made on old versions of the dataset"""
         return super()._validate_predictions(
             name,
-            {
-                k.replace("Dummy", "D").replace("Dead pup", "DP"): v
-                for k, v in predictions.items()
-            },
+            {k.replace("Dummy", "D").replace("Dead pup", "DP"): v for k, v in predictions.items()},
         )
 
 
@@ -134,9 +127,7 @@ class MarmosetBenchmark(deeplabcut.benchmark.base.Benchmark):
         "Body3",
     )
     ground_truth = deeplabcut.benchmark.get_filepath("CollectedData_Mackenzie.h5")
-    metadata = deeplabcut.benchmark.get_filepath(
-        "Documentation_data-Marmoset_70shuffle1.pickle"
-    )
+    metadata = deeplabcut.benchmark.get_filepath("Documentation_data-Marmoset_70shuffle1.pickle")
     num_animals = 2
 
 
@@ -151,9 +142,7 @@ class FishBenchmark(deeplabcut.benchmark.base.Benchmark):
     name = "fish"
     keypoints = ("tip", "gill", "peduncle", "caudaltip", "dfintip")
     ground_truth = deeplabcut.benchmark.get_filepath("CollectedData_Valentina.h5")
-    metadata = deeplabcut.benchmark.get_filepath(
-        "Documentation_data-Schooling_70shuffle1.pickle"
-    )
+    metadata = deeplabcut.benchmark.get_filepath("Documentation_data-Schooling_70shuffle1.pickle")
     num_animals = 14
 
     def compute_pose_rmse(self, results_objects):

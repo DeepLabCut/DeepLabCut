@@ -99,16 +99,10 @@ class SpatiotemporalAdaptation:
             dlc_root_path = get_deeplabcut_path()
 
             project_config = read_config(
-                os.path.join(
-                    dlc_root_path, "modelzoo", "project_configs", f"{project_name}.yaml"
-                )
+                os.path.join(dlc_root_path, "modelzoo", "project_configs", f"{project_name}.yaml")
             )
 
-            model_config = read_config(
-                os.path.join(
-                    dlc_root_path, "modelzoo", "model_configs", f"{model_name}.yaml"
-                )
-            )
+            model_config = read_config(os.path.join(dlc_root_path, "modelzoo", "model_configs", f"{model_name}.yaml"))
 
             joints = [i for i in range(len(project_config["bodyparts"]))]
             num_joints = len(joints)
@@ -190,14 +184,11 @@ class SpatiotemporalAdaptation:
         vname = str(Path(self.video_path).stem)
         video_root = Path(self.video_path).parent
 
-        _, pseudo_label_path, _, _ = load_analyzed_data(
-            video_root, vname, DLCscorer, False, ""
-        )
+        _, pseudo_label_path, _, _ = load_analyzed_data(video_root, vname, DLCscorer, False, "")
         if self.modelfolder != "":
             os.makedirs(self.modelfolder, exist_ok=True)
 
         self.adapt_iterations = kwargs.get("adapt_iterations", self.adapt_iterations)
-
 
         self.train_without_project(
             pseudo_label_path,
@@ -207,9 +198,7 @@ class SpatiotemporalAdaptation:
         )
 
     def after_adapt_inference(self, create_labeled_video, **kwargs):
-        pattern = os.path.join(
-            self.modelfolder, f"snapshot-{self.adapt_iterations}.index"
-        )
+        pattern = os.path.join(self.modelfolder, f"snapshot-{self.adapt_iterations}.index")
         ref_proj_config_path = ""
 
         files = glob.glob(pattern)

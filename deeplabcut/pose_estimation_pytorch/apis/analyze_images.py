@@ -186,9 +186,7 @@ def superanimal_analyze_images(
         config = modelzoo.load_super_animal_config(
             super_animal=superanimal_name,
             model_name=model_name,
-            detector_name=(
-                detector_name if superanimal_name != "superanimal_humanbody" else None
-            ),
+            detector_name=(detector_name if superanimal_name != "superanimal_humanbody" else None),
         )
     elif isinstance(customized_model_config, (str, Path)):
         config = config_utils.read_config_as_dict(customized_model_config)
@@ -319,9 +317,7 @@ def analyze_images(
     snapshot = get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
     detector_snapshot = None
     if detector_snapshot_index is not None:
-        detector_snapshot = get_model_snapshots(
-            detector_snapshot_index, train_folder, Task.DETECT
-        )[0]
+        detector_snapshot = get_model_snapshots(detector_snapshot_index, train_folder, Task.DETECT)[0]
 
     # Load the BU model for the conditions provider
     cond_provider = None
@@ -402,10 +398,7 @@ def analyze_images(
         bodyparts = model_cfg["metadata"]["bodyparts"]
         skeleton = None
         if plot_skeleton and len(cfg.get("skeleton", [])) > 0:
-            skeleton = [
-                (bodyparts.index(bpt_0), bodyparts.index(bpt_1))
-                for bpt_0, bpt_1 in cfg["skeleton"]
-            ]
+            skeleton = [(bodyparts.index(bpt_0), bodyparts.index(bpt_1)) for bpt_0, bpt_1 in cfg["skeleton"]]
 
         if pcutoff is None:
             pcutoff = cfg.get("pcutoff", 0.6)
@@ -471,11 +464,7 @@ def analyze_image_folder(
         model_cfg = config_utils.read_config_as_dict(model_cfg)
 
     pose_task = Task(model_cfg["method"])
-    if (
-        pose_task == Task.TOP_DOWN
-        and detector_path is None
-        and filtered_detector_config is None
-    ):
+    if pose_task == Task.TOP_DOWN and detector_path is None and filtered_detector_config is None:
         raise ValueError(
             "A detector path or filtered_detector_config must be specified for image analysis using top-down models"
             f" Please specify the `detector_path` parameter or the `filtered_detector_config` parameter."
@@ -507,10 +496,7 @@ def analyze_image_folder(
 
     image_paths = parse_images_and_image_folders(images, image_suffixes)
     if not image_paths:
-        logging.info(
-            f"No images found searching {images} for extensions {image_suffixes}. "
-            "Skipping analysis."
-        )
+        logging.info(f"No images found searching {images} for extensions {image_suffixes}. Skipping analysis.")
         return {}
     pose_inputs = image_paths
 
@@ -552,10 +538,7 @@ def analyze_image_folder(
 
     predictions = pose_runner.inference(pose_inputs)
 
-    return {
-        image_path: image_predictions
-        for image_path, image_predictions in zip(image_paths, predictions)
-    }
+    return {image_path: image_predictions for image_path, image_predictions in zip(image_paths, predictions)}
 
 
 def plot_images_coco(
@@ -668,9 +651,7 @@ def plot_images_coco(
         for bbox in bboxes:
             # Draw bounding boxes around detected objects
             xmin, ymin, w, h = bbox
-            rect = plt.Rectangle(
-                (xmin, ymin), w, h, fill=False, edgecolor="blue", linewidth=2
-            )
+            rect = plt.Rectangle((xmin, ymin), w, h, fill=False, edgecolor="blue", linewidth=2)
 
         ax.add_patch(rect)
         image_name = image_path.split("/")[-1]

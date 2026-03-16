@@ -18,6 +18,7 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
 """
+
 import sys
 import os
 import logging

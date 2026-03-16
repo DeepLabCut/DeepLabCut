@@ -63,9 +63,7 @@ class PoseResnet(BasePoseNet):
             if self.cfg["intermediate_supervision"]:
                 layer_name = "resnet_v1_{}/block{}/unit_{}/bottleneck_v1"
                 num_layers = re.findall("resnet_([0-9]*)", self.cfg["net_type"])[0]
-                interm_name = layer_name.format(
-                    num_layers, 3, self.cfg["intermediate_supervision_layer"]
-                )
+                interm_name = layer_name.format(num_layers, 3, self.cfg["intermediate_supervision_layer"])
                 block_interm_out = end_points[interm_name]
                 out["part_pred_interm"] = prediction_layer(
                     self.cfg,

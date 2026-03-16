@@ -354,9 +354,7 @@ def create_pretrained_project_pytorch(
         detector_name = "fasterrcnn_resnet50_fpn_v2"
 
     if dataset not in get_available_datasets():
-        raise ValueError(
-            f"Invalid dataset '{dataset}'. Available datasets are: {get_available_datasets()}"
-        )
+        raise ValueError(f"Invalid dataset '{dataset}'. Available datasets are: {get_available_datasets()}")
 
     if net_name not in get_available_models(dataset):
         raise ValueError(
@@ -433,16 +431,12 @@ def create_pretrained_project_pytorch(
     )
     pytorch_config = add_metadata(config, pytorch_config, train_cfg_path)
     pytorch_config["resume_training_from"] = str(train_dir / new_snapshot_name)
-    pytorch_config["detector"]["resume_training_from"] = str(
-        train_dir / new_detector_name
-    )
+    pytorch_config["detector"]["resume_training_from"] = str(train_dir / new_detector_name)
     write_config(train_cfg_path, pytorch_config)
 
     # Create test pose_cfg.yaml
     test_cfg_path = test_dir / "pose_cfg.yaml"
-    make_pytorch_test_config(
-        model_config=pytorch_config, test_config_path=test_cfg_path, save=True
-    )
+    make_pytorch_test_config(model_config=pytorch_config, test_config_path=test_cfg_path, save=True)
 
     # Create inference_cfg.yaml if needed
     if multi_animal:
@@ -469,9 +463,7 @@ def _create_inference_config(inference_cfg_path: str | Path, project_cfg: dict):
         topktoretain=len(project_cfg["individuals"]),
         withid=project_cfg.get("identity", False),
     )
-    default_inf_path = (
-        Path(auxiliaryfunctions.get_deeplabcut_path()) / "inference_cfg.yaml"
-    )
+    default_inf_path = Path(auxiliaryfunctions.get_deeplabcut_path()) / "inference_cfg.yaml"
     MakeInference_yaml(inf_updates, inference_cfg_path, default_inf_path)
 
 
@@ -554,9 +546,7 @@ def create_pretrained_project_tensorflow(
     if model in MODELOPTIONS:
         cwd = os.getcwd()
 
-        cfg = deeplabcut.create_new_project(
-            project, experimenter, videos, working_directory, copy_videos, videotype
-        )
+        cfg = deeplabcut.create_new_project(project, experimenter, videos, working_directory, copy_videos, videotype)
         if trainFraction is not None:
             auxiliaryfunctions.edit_config(cfg, {"TrainingFraction": [trainFraction]})
 
@@ -635,16 +625,8 @@ def create_pretrained_project_tensorflow(
         modelfoldername = auxiliaryfunctions.get_model_folder(
             trainFraction=config["TrainingFraction"][0], shuffle=1, cfg=config
         )
-        path_train_config = str(
-            os.path.join(
-                config["project_path"], Path(modelfoldername), "train", "pose_cfg.yaml"
-            )
-        )
-        path_test_config = str(
-            os.path.join(
-                config["project_path"], Path(modelfoldername), "test", "pose_cfg.yaml"
-            )
-        )
+        path_train_config = str(os.path.join(config["project_path"], Path(modelfoldername), "train", "pose_cfg.yaml"))
+        path_test_config = str(os.path.join(config["project_path"], Path(modelfoldername), "test", "pose_cfg.yaml"))
 
         # Download the weights and put then in appropriate directory
         print("Downloading weights...")
@@ -666,9 +648,7 @@ def create_pretrained_project_tensorflow(
         # model_path = auxfun_models.check_for_weights(pose_cfg['net_type'], parent_path)
 
         # Updating training and test pose_cfg:
-        snapshotname = [fn for fn in os.listdir(train_dir) if ".meta" in fn][0].split(
-            ".meta"
-        )[0]
+        snapshotname = [fn for fn in os.listdir(train_dir) if ".meta" in fn][0].split(".meta")[0]
         dict2change = {
             "init_weights": str(os.path.join(train_dir, snapshotname)),
             "project_path": str(config["project_path"]),
@@ -707,9 +687,7 @@ def create_pretrained_project_tensorflow(
         return "N/A", "N/A"
 
 
-def _create_training_datasets_metadata(
-    config: dict, shuffle_dir_name: str, engine: Engine
-):
+def _create_training_datasets_metadata(config: dict, shuffle_dir_name: str, engine: Engine):
     # First create the metadata object
     metadata = TrainingDatasetMetadata.create(config)
 
@@ -743,18 +721,12 @@ def _process_videos(
 
     if analyze_video:
         print("Analyzing video...")
-        deeplabcut.analyze_videos(
-            cfg_path, [video_dir], videotype=video_type, save_as_csv=True
-        )
+        deeplabcut.analyze_videos(cfg_path, [video_dir], videotype=video_type, save_as_csv=True)
 
     if create_labeled_video:
         if filtered:
             deeplabcut.filterpredictions(cfg_path, [video_dir], video_type)
 
         print("Plotting results...")
-        deeplabcut.create_labeled_video(
-            cfg_path, [video_dir], video_type, draw_skeleton=True, filtered=filtered
-        )
-        deeplabcut.plot_trajectories(
-            cfg_path, [video_dir], video_type, filtered=filtered
-        )
+        deeplabcut.create_labeled_video(cfg_path, [video_dir], video_type, draw_skeleton=True, filtered=filtered)
+        deeplabcut.plot_trajectories(cfg_path, [video_dir], video_type, filtered=filtered)

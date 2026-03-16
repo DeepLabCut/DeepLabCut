@@ -18,10 +18,12 @@ import pytest
 import deeplabcut.create_project.new as new_module
 from deeplabcut.utils.auxfun_videos import VideoReader
 
+
 @pytest.fixture
 def project_directory(tmpdir_factory) -> Path:
     proj_dir = Path(tmpdir_factory.mktemp("test-project"))
     return proj_dir
+
 
 @pytest.fixture
 def mock_video_file(tmpdir_factory) -> Path:
@@ -45,19 +47,19 @@ def video_directory(tmpdir_factory) -> Path:
     """Create a directory with multiple video files"""
     video_dir = Path(tmpdir_factory.mktemp("some_videos"))
     video_dir.mkdir(exist_ok=True)
-    
+
     # Create multiple video files with different extensions
     (video_dir / "video1.avi").write_bytes(b"fake video 1")
     (video_dir / "video2.mp4").write_bytes(b"fake video 2")
     (video_dir / "video3.mov").write_bytes(b"fake video 3")
     (video_dir / "not_a_video.txt").write_text("text file")
-    
+
     return video_dir
 
 
 def test_project_directory_creation_basic(
-    tmpdir: Path, 
-    mock_video_file: Path, 
+    tmpdir: Path,
+    mock_video_file: Path,
     mock_video_reader: VideoReader,
 ):
     """Test that project directories are created correctly"""
@@ -69,7 +71,7 @@ def test_project_directory_creation_basic(
             working_directory=str(tmpdir),
             copy_videos=False,
         )
-    
+
     project_path = Path(config_path).parent
     assert project_path.exists()
     assert (project_path / "videos").exists()
@@ -78,7 +80,7 @@ def test_project_directory_creation_basic(
     assert (project_path / "dlc-models").exists()
 
 
-@pytest.mark.parametrize('copy_videos', [True, False])
+@pytest.mark.parametrize("copy_videos", [True, False])
 def test_single_video_file(
     tmpdir: Path,
     mock_video_file: Path,
@@ -94,9 +96,9 @@ def test_single_video_file(
             working_directory=str(tmpdir),
             copy_videos=copy_videos,
         )
-    
+
     project_path = Path(config_path).parent
-    video_path = project_path / "videos" / 'test_video.avi'
+    video_path = project_path / "videos" / "test_video.avi"
     assert video_path.exists() or video_path.is_symlink()
 
     # Content should match
@@ -104,7 +106,7 @@ def test_single_video_file(
         assert mock_video_file.read_bytes() == video_path.read_bytes()
 
 
-@pytest.mark.parametrize('copy_videos', [True, False])    
+@pytest.mark.parametrize("copy_videos", [True, False])
 def test_video_directory(
     tmpdir: Path,
     video_directory: Path,
@@ -121,16 +123,16 @@ def test_video_directory(
             videotype=".avi",
             copy_videos=copy_videos,
         )
-    
+
     project_path = Path(config_path).parent
     assert (project_path / "videos" / "video1.avi").exists() or (project_path / "videos" / "video1.avi").is_symlink()
-    
+
     # Content should match
     if copy_videos:
         assert (project_path / "videos" / "video1.avi").read_bytes() == (video_directory / "video1.avi").read_bytes()
 
 
-@pytest.mark.parametrize('copy_videos', [True, False])  
+@pytest.mark.parametrize("copy_videos", [True, False])
 def test_mixed_video_files_and_directories(
     tmpdir,
     mock_video_file: Path,
@@ -148,7 +150,7 @@ def test_mixed_video_files_and_directories(
             videotype=".avi",
             copy_videos=copy_videos,
         )
-    
+
     project_path = Path(config_path).parent
     videos_dir = project_path / "videos"
     # Should have both the single file and files from directory
@@ -163,7 +165,7 @@ def test_empty_video_directory(
     """Test handling of empty video directory"""
     empty_dir = tmpdir / "empty_videos"
     empty_dir.mkdir()
-    
+
     with patch("deeplabcut.create_project.new.VideoReader", return_value=mock_video_reader):
         with warnings.catch_warnings(record=True) as w:
             result = new_module.create_new_project(
@@ -192,10 +194,11 @@ def test_valid_video_included_in_config(
             working_directory=str(tmpdir),
             copy_videos=False,
         )
-    
+
     from deeplabcut.utils import auxiliaryfunctions
+
     cfg = auxiliaryfunctions.read_config(config_path)
-    
+
     assert "video_sets" in cfg
     assert len(cfg["video_sets"]) > 0
     # Check that video path is in video_sets
@@ -210,7 +213,7 @@ def test_invalid_video_removed_from_project(
     """Test that invalid videos are removed from the project"""
     # Mock VideoReader to raise IOError
     mock_reader = Mock(side_effect=IOError("Cannot open video"))
-    
+
     with patch("deeplabcut.create_project.new.VideoReader", mock_reader):
         with warnings.catch_warnings(record=True):
             result = new_module.create_new_project(
@@ -220,11 +223,11 @@ def test_invalid_video_removed_from_project(
                 working_directory=str(tmpdir),
                 copy_videos=False,
             )
-    
+
     # Should return "nothingcreated" when no valid videos
     assert result == "nothingcreated"
 
-    
+
 def test_config_file_video_sets_format(
     tmpdir: Path,
     mock_video_file: Path,
@@ -239,13 +242,14 @@ def test_config_file_video_sets_format(
             working_directory=str(tmpdir),
             copy_videos=False,
         )
-    
+
     from deeplabcut.utils import auxiliaryfunctions
+
     cfg = auxiliaryfunctions.read_config(config_path)
-    
+
     assert "video_sets" in cfg
     assert isinstance(cfg["video_sets"], dict)
-    
+
     # Check format of video_sets entries
     for video_path, video_info in cfg["video_sets"].items():
         assert isinstance(video_info, dict)

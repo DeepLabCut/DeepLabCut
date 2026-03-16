@@ -39,11 +39,7 @@ def _format_gt_data(h5file: str, test_indices: Optional[List[int]] = None):
     animals = _get_unique_level_values(df.columns, "individuals")
     kpts = _get_unique_level_values(df.columns, "bodyparts")
     try:
-        n_unique = len(
-            _get_unique_level_values(
-                df.xs("single", level="individuals", axis=1).columns, "bodyparts"
-            )
-        )
+        n_unique = len(_get_unique_level_values(df.xs("single", level="individuals", axis=1).columns, "bodyparts"))
     except KeyError:
         n_unique = 0
     guarantee_multiindex_rows(df)
@@ -98,9 +94,7 @@ def calc_prediction_errors(preds, gt):
             if visible.size and xy_pred_.size:
                 # Pick the predictions closest to ground truth,
                 # rather than the ones the model has most confident in.
-                neighbors = crossvalutils.find_closest_neighbors(
-                    xy_gt_[visible], xy_pred_, k=3
-                )
+                neighbors = crossvalutils.find_closest_neighbors(xy_gt_[visible], xy_pred_, k=3)
                 found = neighbors != -1
                 if ~np.any(found):
                     continue
@@ -178,16 +172,14 @@ def calc_map_from_obj(
     missing_images = set(test_images) - set(eval_results_obj.keys())
     if len(missing_images) > 0:
         raise ValueError(
-            "Failed to compute the test mAP: there are test images missing from the"
-            f"prediction object: {missing_images}"
+            f"Failed to compute the test mAP: there are test images missing from theprediction object: {missing_images}"
         )
 
     ground_truth = df_test.to_numpy().reshape((len(test_images), n_animals, -1, 2))
     temp = np.ones((*ground_truth.shape[:3], 3))
     temp[..., :2] = ground_truth
     assemblies_gt_test = {
-        test_images[i]: assembly
-        for i, assembly in inferenceutils._parse_ground_truth_data(temp).items()
+        test_images[i]: assembly for i, assembly in inferenceutils._parse_ground_truth_data(temp).items()
     }
 
     # TODO(stes): remove/rewrite
@@ -233,9 +225,7 @@ def calc_rmse_from_obj(
         for ind in sorted(drop_kpts, reverse=True):
             kpts.pop(ind)
 
-    test_objects = {
-        k: v for k, v in eval_results_obj.items() if k in gt["annotations"].keys()
-    }
+    test_objects = {k: v for k, v in eval_results_obj.items() if k in gt["annotations"].keys()}
     if len(gt["annotations"]) != len(test_objects):
         gt_images = list(gt["annotations"].keys())
         missing_images = [img for img in gt_images if img not in test_objects]

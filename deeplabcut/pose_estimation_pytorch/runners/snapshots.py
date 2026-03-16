@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Code to handle storing models"""
+
 from __future__ import annotations
 
 import warnings
@@ -101,11 +102,7 @@ class TorchSnapshotManager:
 
             # Save the new best model
             save_path = self.snapshot_path(epoch, best=True)
-            parsed_state_dict = {
-                k: v
-                for k, v in state_dict.items()
-                if self.save_optimizer_state or k != "optimizer"
-            }
+            parsed_state_dict = {k: v for k, v in state_dict.items() if self.save_optimizer_state or k != "optimizer"}
             torch.save(parsed_state_dict, save_path)
 
             # Handle previous best model
@@ -118,11 +115,7 @@ class TorchSnapshotManager:
         elif last or epoch % self.save_epochs == 0:
             # Save regular snapshot if needed
             save_path = self.snapshot_path(epoch=epoch)
-            parsed_state_dict = {
-                k: v
-                for k, v in state_dict.items()
-                if self.save_optimizer_state or k != "optimizer"
-            }
+            parsed_state_dict = {k: v for k, v in state_dict.items() if self.save_optimizer_state or k != "optimizer"}
             torch.save(parsed_state_dict, save_path)
 
         # Clean up old snapshots if needed
@@ -167,9 +160,7 @@ class TorchSnapshotManager:
             trained for. If ``best_in_last=True`` and a best snapshot exists, it will be
             the last one in the list.
         """
-        return list_snapshots(
-            self.model_folder, self.snapshot_prefix, best_in_last=best_in_last
-        )
+        return list_snapshots(self.model_folder, self.snapshot_prefix, best_in_last=best_in_last)
 
     def snapshot_path(self, epoch: int, best: bool = False) -> Path:
         """

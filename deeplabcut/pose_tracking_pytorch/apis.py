@@ -139,9 +139,7 @@ def transformer_reID(
         destfolder=destfolder,
     )
 
-    transformer_checkpoint = os.path.join(
-        snapshotfolder, f"dlc_transreid_{train_epochs}.pth"
-    )
+    transformer_checkpoint = os.path.join(snapshotfolder, f"dlc_transreid_{train_epochs}.pth")
 
     if not os.path.exists(transformer_checkpoint):
         raise FileNotFoundError(f"checkpoint {transformer_checkpoint} not found")

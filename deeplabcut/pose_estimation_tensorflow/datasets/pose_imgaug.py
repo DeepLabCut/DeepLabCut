@@ -70,9 +70,7 @@ class ImgaugPoseDataset(BasePoseDataset):
 
         cfg["motion_blur"] = cfg.get("motion_blur", True)
         if cfg["motion_blur"]:
-            cfg["motion_blur_params"] = dict(
-                cfg.get("motion_blur_params", {"k": 7, "angle": (-90, 90)})
-            )
+            cfg["motion_blur_params"] = dict(cfg.get("motion_blur_params", {"k": 7, "angle": (-90, 90)}))
 
         print("Batch Size is %d" % self.batch_size)
 
@@ -181,9 +179,7 @@ class ImgaugPoseDataset(BasePoseDataset):
             pipeline.add(sometimes(iaa.MotionBlur(**opts)))
 
         if cfg["covering"]:
-            pipeline.add(
-                sometimes(iaa.CoarseDropout(0.02, size_percent=0.3, per_channel=0.5))
-            )
+            pipeline.add(sometimes(iaa.CoarseDropout(0.02, size_percent=0.3, per_channel=0.5)))
 
         if cfg["elastic_transform"]:
             pipeline.add(sometimes(iaa.ElasticTransformation(sigma=5)))
@@ -191,21 +187,9 @@ class ImgaugPoseDataset(BasePoseDataset):
         if cfg.get("gaussian_noise", False):
             opt = cfg.get("gaussian_noise", False)
             if type(opt) == int or type(opt) == float:
-                pipeline.add(
-                    sometimes(
-                        iaa.AdditiveGaussianNoise(
-                            loc=0, scale=(0.0, opt), per_channel=0.5
-                        )
-                    )
-                )
+                pipeline.add(sometimes(iaa.AdditiveGaussianNoise(loc=0, scale=(0.0, opt), per_channel=0.5)))
             else:
-                pipeline.add(
-                    sometimes(
-                        iaa.AdditiveGaussianNoise(
-                            loc=0, scale=(0.0, 0.05 * 255), per_channel=0.5
-                        )
-                    )
-                )
+                pipeline.add(sometimes(iaa.AdditiveGaussianNoise(loc=0, scale=(0.0, 0.05 * 255), per_channel=0.5)))
         if cfg.get("grayscale", False):
             pipeline.add(sometimes(iaa.Grayscale(alpha=(0.5, 1.0))))
 
@@ -235,17 +219,11 @@ class ImgaugPoseDataset(BasePoseDataset):
 
         if cfg_cnt["histeq"]:
             opt = get_aug_param(cfg_cnt["histeq"])
-            pipeline.add(
-                iaa.Sometimes(
-                    cfg_cnt["histeqratio"], iaa.AllChannelsHistogramEqualization(**opt)
-                )
-            )
+            pipeline.add(iaa.Sometimes(cfg_cnt["histeqratio"], iaa.AllChannelsHistogramEqualization(**opt)))
 
         if cfg_cnt["clahe"]:
             opt = get_aug_param(cfg_cnt["clahe"])
-            pipeline.add(
-                iaa.Sometimes(cfg_cnt["claheratio"], iaa.AllChannelsCLAHE(**opt))
-            )
+            pipeline.add(iaa.Sometimes(cfg_cnt["claheratio"], iaa.AllChannelsCLAHE(**opt)))
 
         if cfg_cnt["log"]:
             opt = get_aug_param(cfg_cnt["log"])
@@ -253,15 +231,11 @@ class ImgaugPoseDataset(BasePoseDataset):
 
         if cfg_cnt["linear"]:
             opt = get_aug_param(cfg_cnt["linear"])
-            pipeline.add(
-                iaa.Sometimes(cfg_cnt["linearratio"], iaa.LinearContrast(**opt))
-            )
+            pipeline.add(iaa.Sometimes(cfg_cnt["linearratio"], iaa.LinearContrast(**opt)))
 
         if cfg_cnt["sigmoid"]:
             opt = get_aug_param(cfg_cnt["sigmoid"])
-            pipeline.add(
-                iaa.Sometimes(cfg_cnt["sigmoidratio"], iaa.SigmoidContrast(**opt))
-            )
+            pipeline.add(iaa.Sometimes(cfg_cnt["sigmoidratio"], iaa.SigmoidContrast(**opt)))
 
         if cfg_cnt["gamma"]:
             opt = get_aug_param(cfg_cnt["gamma"])
@@ -332,9 +306,7 @@ class ImgaugPoseDataset(BasePoseDataset):
             im_file = data_item.im_path
 
             logging.debug("image %s", im_file)
-            image = imread(
-                os.path.join(self.cfg["project_path"], im_file), mode="skimage"
-            )
+            image = imread(os.path.join(self.cfg["project_path"], im_file), mode="skimage")
 
             if self.has_gt:
                 joints = data_item.joints
@@ -370,18 +342,14 @@ class ImgaugPoseDataset(BasePoseDataset):
                     part_score_weight,
                     locref_target,
                     locref_mask,
-                ) = self.gaussian_scmap(
-                    joint_ids[i], [joints[i]], data_items[i], sm_size, scale
-                )
+                ) = self.gaussian_scmap(joint_ids[i], [joints[i]], data_items[i], sm_size, scale)
             else:
                 (
                     part_score_target,
                     part_score_weight,
                     locref_target,
                     locref_mask,
-                ) = self.compute_target_part_scoremap_numpy(
-                    joint_ids[i], [joints[i]], data_items[i], sm_size, scale
-                )
+                ) = self.compute_target_part_scoremap_numpy(joint_ids[i], [joints[i]], data_items[i], sm_size, scale)
             part_score_targets.append(part_score_target)
             part_score_weights.append(part_score_weight)
             locref_targets.append(locref_target)
@@ -407,13 +375,12 @@ class ImgaugPoseDataset(BasePoseDataset):
             ) = self.get_batch()
 
             pipeline = self.build_augmentation_pipeline(
-                height=target_size[0], width=target_size[1],
+                height=target_size[0],
+                width=target_size[1],
                 apply_prob=cfg.get("apply_prob", 0.5),
             )
 
-            batch_images, batch_joints = pipeline(
-                images=batch_images, keypoints=batch_joints
-            )
+            batch_images, batch_joints = pipeline(images=batch_images, keypoints=batch_joints)
 
             image_shape = np.array(batch_images).shape[1:3]
 
@@ -526,9 +493,7 @@ class ImgaugPoseDataset(BasePoseDataset):
             weights = np.ones(scmap_shape)
         return weights
 
-    def compute_target_part_scoremap_numpy(
-        self, joint_id, coords, data_item, size, scale
-    ):
+    def compute_target_part_scoremap_numpy(self, joint_id, coords, data_item, size, scale):
         dist_thresh = float(self.cfg["pos_dist_thresh"] * scale)
         dist_thresh_sq = dist_thresh**2
         num_joints = self.cfg["num_joints"]

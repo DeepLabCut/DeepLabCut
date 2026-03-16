@@ -49,18 +49,10 @@ class DraggablePoint:
     def connect(self):
         "connect to all the events we need"
 
-        self.cidpress = self.point.figure.canvas.mpl_connect(
-            "button_press_event", self.on_press
-        )
-        self.cidrelease = self.point.figure.canvas.mpl_connect(
-            "button_release_event", self.on_release
-        )
-        self.cidmotion = self.point.figure.canvas.mpl_connect(
-            "motion_notify_event", self.on_motion
-        )
-        self.cidhover = self.point.figure.canvas.mpl_connect(
-            "motion_notify_event", self.on_hover
-        )
+        self.cidpress = self.point.figure.canvas.mpl_connect("button_press_event", self.on_press)
+        self.cidrelease = self.point.figure.canvas.mpl_connect("button_release_event", self.on_release)
+        self.cidmotion = self.point.figure.canvas.mpl_connect("motion_notify_event", self.on_motion)
+        self.cidhover = self.point.figure.canvas.mpl_connect("motion_notify_event", self.on_hover)
 
     def on_press(self, event):
         """
@@ -299,17 +291,13 @@ class PointSelector:
 class TrackletVisualizer:
     def __init__(self, manager, videoname, trail_len=50):
         self.manager = manager
-        self.cmap = plt.cm.get_cmap(
-            manager.cfg["colormap"], len(set(manager.tracklet2id))
-        )
+        self.cmap = plt.cm.get_cmap(manager.cfg["colormap"], len(set(manager.tracklet2id)))
         self.videoname = videoname
         self.video = VideoReader(videoname)
         self.nframes = len(self.video)
         # Take into consideration imprecise OpenCV estimation of total number of frames
         if abs(self.nframes - manager.nframes) >= 0.05 * manager.nframes:
-            print(
-                "Video duration and data length do not match. Continuing nonetheless..."
-            )
+            print("Video duration and data length do not match. Continuing nonetheless...")
         self.trail_len = trail_len
         self.help_text = ""
         self.draggable = False
@@ -364,9 +352,7 @@ class TrackletVisualizer:
         self.scat = self.ax1.scatter([], [], s=self.dotsize**2, picker=True)
         self.scat.set_offsets(manager.xy[:, 0])
         self.scat.set_color(self.colors)
-        self.trails = sum(
-            [self.ax1.plot([], [], "-", lw=2, c=c) for c in self.colors], []
-        )
+        self.trails = sum([self.ax1.plot([], [], "-", lw=2, c=c) for c in self.colors], [])
         self.lines_x = sum(
             [self.ax2.plot([], [], "-", lw=1, c=c, pickradius=5) for c in self.colors],
             [],
@@ -378,10 +364,7 @@ class TrackletVisualizer:
         self.vline_x = self.ax2.axvline(0, 0, 1, c="k", ls=":")
         self.vline_y = self.ax3.axvline(0, 0, 1, c="k", ls=":")
 
-        custom_lines = [
-            plt.Line2D([0], [0], color=self.cmap(i), lw=4)
-            for i in range(len(manager.individuals))
-        ]
+        custom_lines = [plt.Line2D([0], [0], color=self.cmap(i), lw=4) for i in range(len(manager.individuals))]
         self.leg = self.fig.legend(
             custom_lines,
             manager.individuals,
@@ -396,9 +379,7 @@ class TrackletVisualizer:
             line.set_picker(5)
 
         self.ax_slider = self.fig.add_axes([0.1, 0.1, 0.5, 0.03], facecolor="lightgray")
-        self.ax_slider2 = self.fig.add_axes(
-            [0.1, 0.05, 0.3, 0.03], facecolor="darkorange"
-        )
+        self.ax_slider2 = self.fig.add_axes([0.1, 0.05, 0.3, 0.03], facecolor="darkorange")
         self.slider = Slider(
             self.ax_slider,
             "# Frame",
@@ -463,18 +444,9 @@ class TrackletVisualizer:
 
     def swap_tracklets(self, event):
         if self.swap_id1 is not None and self.swap_id2 is not None:
-
             # Get tracklet indices for each individual
-            inds1 = [
-                k
-                for k in range(len(self.manager.tracklet2id))
-                if self.manager.tracklet2id[k] == self.swap_id1
-            ]
-            inds2 = [
-                k
-                for k in range(len(self.manager.tracklet2id))
-                if self.manager.tracklet2id[k] == self.swap_id2
-            ]
+            inds1 = [k for k in range(len(self.manager.tracklet2id)) if self.manager.tracklet2id[k] == self.swap_id1]
+            inds2 = [k for k in range(len(self.manager.tracklet2id)) if self.manager.tracklet2id[k] == self.swap_id2]
 
             print(f"Swapping tracklets {self.swap_id1} and {self.swap_id2}")
 
@@ -499,9 +471,7 @@ class TrackletVisualizer:
             self.swap_id1 = int(val)
             print("ID 1 set.")
         else:
-            print(
-                f"Invalid ID. Please select a valid ID from the list of individuals: {set(self.manager.tracklet2id)}"
-            )
+            print(f"Invalid ID. Please select a valid ID from the list of individuals: {set(self.manager.tracklet2id)}")
             self.swap_id1 = None
 
     def set_swap_id2(self, val):
@@ -510,9 +480,7 @@ class TrackletVisualizer:
             self.swap_id2 = int(val)
             print("ID 2 set.")
         else:
-            print(
-                f"Invalid ID. Please select a valid ID from the list of individuals: {set(self.manager.tracklet2id)}"
-            )
+            print(f"Invalid ID. Please select a valid ID from the list of individuals: {set(self.manager.tracklet2id)}")
             self.swap_id2 = None
 
     def terminate(self, event):
@@ -531,12 +499,8 @@ class TrackletVisualizer:
                     facecolor="darkgray",
                     alpha=0.2,
                 )
-            trans = mtransforms.blended_transform_factory(
-                self.ax_slider.transData, self.ax_slider.transAxes
-            )
-            self.ax_slider.vlines(
-                np.flatnonzero(mask), 0, 0.5, color="darkorange", transform=trans
-            )
+            trans = mtransforms.blended_transform_factory(self.ax_slider.transData, self.ax_slider.transAxes)
+            self.ax_slider.vlines(np.flatnonzero(mask), 0, 0.5, color="darkorange", transform=trans)
 
     def toggle_draggable_points(self, *args):
         self.draggable = not self.draggable
@@ -592,9 +556,7 @@ class TrackletVisualizer:
             if not nrow.size:
                 return
             nrow = nrow[0]
-            if not np.array_equal(
-                coords[nrow], dp.point.center
-            ):  # Keypoint has been displaced
+            if not np.array_equal(coords[nrow], dp.point.center):  # Keypoint has been displaced
                 coords[nrow] = dp.point.center
                 prob[ind] = 1
         self.manager.xy[nonempty, self._curr_frame] = coords
@@ -614,12 +576,8 @@ class TrackletVisualizer:
                     facecolor="darkgray",
                     alpha=0.2,
                 )
-            trans = mtransforms.blended_transform_factory(
-                self.ax_slider.transData, self.ax_slider.transAxes
-            )
-            self.ax_slider.vlines(
-                np.flatnonzero(mask), 0, 0.5, color="darkorange", transform=trans
-            )
+            trans = mtransforms.blended_transform_factory(self.ax_slider.transData, self.ax_slider.transAxes)
+            self.ax_slider.vlines(np.flatnonzero(mask), 0, 0.5, color="darkorange", transform=trans)
         self.fig.canvas.draw_idle()
 
     def on_scroll(self, event):
@@ -662,9 +620,9 @@ class TrackletVisualizer:
             if len(self.cuts) > 1:
                 self.cuts.sort()
                 if self.picked_pair:
-                    self.manager.tracklet_swaps[self.picked_pair][self.cuts] = (
-                        ~self.manager.tracklet_swaps[self.picked_pair][self.cuts]
-                    )
+                    self.manager.tracklet_swaps[self.picked_pair][self.cuts] = ~self.manager.tracklet_swaps[
+                        self.picked_pair
+                    ][self.cuts]
                     self.fill_shaded_areas()
                     self.cuts = []
                     for line in self.ax_slider.lines:
@@ -679,12 +637,7 @@ class TrackletVisualizer:
                 except IndexError:
                     pass
             else:  # Smart point removal
-                i = np.nanargmin(
-                    [
-                        self.calc_distance(*dp.point.center, event.xdata, event.ydata)
-                        for dp in self.dps
-                    ]
-                )
+                i = np.nanargmin([self.calc_distance(*dp.point.center, event.xdata, event.ydata) for dp in self.dps])
                 closest_dp = self.dps[i]
                 label = closest_dp.individual_names, closest_dp.bodyParts
                 closest_dp.disconnect()
@@ -718,14 +671,10 @@ class TrackletVisualizer:
     def swap(self):
         if self.picked_pair:
             swap_inds = self.manager.get_swap_indices(*self.picked_pair)
-            inds = np.insert(
-                swap_inds, [0, len(swap_inds)], [0, self.manager.nframes - 1]
-            )
+            inds = np.insert(swap_inds, [0, len(swap_inds)], [0, self.manager.nframes - 1])
             if len(inds):
                 ind = np.argmax(inds > self.curr_frame)
-                self.manager.swap_tracklets(
-                    *self.picked_pair, range(inds[ind - 1], inds[ind] + 1)
-                )
+                self.manager.swap_tracklets(*self.picked_pair, range(inds[ind - 1], inds[ind] + 1))
                 self.display_traces()
                 self.slider.set_val(self.curr_frame)
 
@@ -751,9 +700,7 @@ class TrackletVisualizer:
             if self.picked:
                 num_individual = self.leg.get_lines().index(artist)
                 nrow = self.manager.tracklet2id.index(num_individual)
-                inds = [
-                    nrow + self.manager.to_num_bodypart(pick) for pick in self.picked
-                ]
+                inds = [nrow + self.manager.to_num_bodypart(pick) for pick in self.picked]
                 xy = self.manager.xy[self.picked]
                 p = self.manager.prob[self.picked]
                 mask = np.zeros(xy.shape[1], dtype=bool)
@@ -799,9 +746,7 @@ class TrackletVisualizer:
             self.clean_collections()
 
     def clean_collections(self):
-        for coll in (
-            self.ax2.collections + self.ax3.collections + self.ax_slider.collections
-        ):
+        for coll in self.ax2.collections + self.ax3.collections + self.ax_slider.collections:
             coll.remove()
 
     def display_points(self, val):
@@ -903,9 +848,7 @@ class TrackletVisualizer:
 
         # Save additional frames to the labeled-data directory
         strwidth = int(np.ceil(np.log10(self.nframes)))
-        tmpfolder = os.path.join(
-            self.manager.cfg["project_path"], "labeled-data", self.video.name
-        )
+        tmpfolder = os.path.join(self.manager.cfg["project_path"], "labeled-data", self.video.name)
         if os.path.isdir(tmpfolder):
             print(
                 "Frames from video",
@@ -916,14 +859,8 @@ class TrackletVisualizer:
             attempt_to_make_folder(tmpfolder)
         index = []
         for ind in inds:
-            imagename = os.path.join(
-                tmpfolder, "img" + str(ind).zfill(strwidth) + ".png"
-            )
-            index.append(
-                tuple(
-                    (os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:])).split("\\")
-                )
-            )
+            imagename = os.path.join(tmpfolder, "img" + str(ind).zfill(strwidth) + ".png")
+            index.append(tuple((os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:])).split("\\")))
             if not os.path.isfile(imagename):
                 self.video.set_to_frame(ind)
                 frame = self.video.read_frame()
@@ -932,9 +869,7 @@ class TrackletVisualizer:
                     continue
                 frame = frame.astype(np.ubyte)
                 if self.manager.cfg["cropping"]:
-                    x1, x2, y1, y2 = [
-                        int(self.manager.cfg[key]) for key in ("x1", "x2", "y1", "y2")
-                    ]
+                    x1, x2, y1, y2 = [int(self.manager.cfg[key]) for key in ("x1", "x2", "y1", "y2")]
                     frame = frame[y1:y2, x1:x2]
                 io.imsave(imagename, frame)
 
@@ -948,14 +883,10 @@ class TrackletVisualizer:
             cols.loc[mask] = np.nan
             return cols
 
-        df = df.groupby(level="bodyparts", axis=1, group_keys=False).apply(
-            filter_low_prob, prob=pcutoff
-        )
+        df = df.groupby(level="bodyparts", axis=1, group_keys=False).apply(filter_low_prob, prob=pcutoff)
         df.index = pd.MultiIndex.from_tuples(index)
 
-        machinefile = os.path.join(
-            tmpfolder, "machinelabels-iter" + str(self.manager.cfg["iteration"]) + ".h5"
-        )
+        machinefile = os.path.join(tmpfolder, "machinelabels-iter" + str(self.manager.cfg["iteration"]) + ".h5")
         if os.path.isfile(machinefile):
             df_old = pd.read_hdf(machinefile)
             df_joint = pd.concat([df_old, df])
@@ -969,9 +900,7 @@ class TrackletVisualizer:
         # Merge with the already existing annotated data
         df.columns = df.columns.set_levels([self.manager.cfg["scorer"]], level="scorer")
         df.drop("likelihood", level="coords", axis=1, inplace=True)
-        output_path = os.path.join(
-            tmpfolder, f'CollectedData_{self.manager.cfg["scorer"]}.h5'
-        )
+        output_path = os.path.join(tmpfolder, f"CollectedData_{self.manager.cfg['scorer']}.h5")
         if os.path.isfile(output_path):
             print(
                 "A training dataset file is already found for this video. The refined machine labels are merged to this data!"
