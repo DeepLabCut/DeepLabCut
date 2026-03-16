@@ -800,9 +800,7 @@ def _render_decision_markdown(
     # Provenance collapsed by default, only if detailed
     if style == "detailed":
         md.append("## Provenance\n")
-        md.append(
-            "&lt;details&gt;&lt;summary&gt;&lt;strong&gt;Why these tests&lt;/strong&gt;&lt;/summary&gt;\n"
-        )
+        md.append("<details><summary><strong>Why these tests</strong></summary>\n")
         md.append("")
 
         if res.provenance.pytest:
@@ -819,7 +817,7 @@ def _render_decision_markdown(
         else:
             md.append("\n### Scripts\n_(none)_")
 
-        md.append("\n&lt;/details&gt;\n")
+        md.append("\n</details>\n")
 
     return "\n".join(md)
 
