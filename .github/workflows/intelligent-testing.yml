@@ -53,7 +53,7 @@ jobs:
             --json
 
       - name: Upload selector report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: test-selection-report
           path: |

@@ -43,7 +43,7 @@ jobs:
 
       - name: Upload built site artifact
         if: ${{ inputs.upload_artifact }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: built-book
           path: ${{ inputs.build_dir }}
