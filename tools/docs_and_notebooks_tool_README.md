@@ -81,7 +81,7 @@ If a doc page has **no** frontmatter, the tool can still report staleness (read-
 
 ## The metadata-commit marker (critical)
 
-Because metadata updates and notebook normalization can rewrite files, they would normally make git think the file was “updated now”.
+Because metadata updates and notebook normalization can rewrite files, they would normally make git (correctly) report that the file was “updated now”.
 
 To preserve a meaningful **`last_content_updated`**, **all metadata-only / normalization commits must include the marker**:
 
@@ -90,8 +90,11 @@ To preserve a meaningful **`last_content_updated`**, **all metadata-only / norma
 
 When you run `update --write` or `normalize --write`, the tool will:
 
-- require `--ack-meta-commit-marker` (guardrail)
-- print a suggested commit message
+- Require `--ack-meta-commit-marker` (guardrail)
+- Print a suggested commit message
+
+> [!WARNING]
+> If the marker changes in the future, previous iterations still HAVE to be acknowledged to avoid false positives.
 
 ---
 
@@ -118,7 +121,8 @@ Run policy checks. By default, CI will not fail unless allowlists are configured
 python tools/docs_and_notebooks_check.py check
 ```
 
-The allowlists live in `tools/docs_and_notebooks_report_config.yml` (start empty; ratchet later).
+The allowlists live in `tools/docs_and_notebooks_report_config.yml`.
+They are currently empty, but can help enforce stricter policies once populated (start empty; "ratchet" later).
 
 ### 3) Update metadata (write mode; explicit intent)
 
@@ -141,9 +145,9 @@ python tools/docs_and_notebooks_check.py update   --write   --targets docs/page.
 
 ### 4) Normalize notebooks (explicit churn)
 
-> [!WARNING]
+> [!IMPORTANT]
 > Notebook normalization rewrites the notebook JSON into a canonical form.
-> This is why it is a separate command.
+> As such, it is provided as a separate command.
 
 Dry-run (shows which files *would* change):
 
@@ -180,7 +184,7 @@ pip install pydantic pyyaml nbformat
 ## Troubleshooting
 
 - If you see `content_date_fallback_to_git_touched`, it usually means one of:
-  - the checkout history is too shallow, or
-  - *all* commits touching the file are metadata commits with the marker.
+  - The checkout history is too shallow, or
+  - *All* commits touching the file are metadata commits with the marker.
 
 - If Pydantic raises `class-not-fully-defined` errors, ensure the tool calls `.model_rebuild()` for its models (this is already done in the tool).
