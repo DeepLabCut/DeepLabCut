@@ -221,8 +221,15 @@ CATEGORY_RULES = validate_category_rules(
             pytest_paths=[
                 "tests/test_predict_supermodel.py",
                 "tests/pose_estimation_pytorch/modelzoo/",
+                "tests/pose_estimation_pytorch/other/test_modelzoo.py",  # (currently all tests are skipped in this file..)
             ],
-            functional_scripts=[],
+            functional_scripts=[
+                # TODO: decide which of these functional testscripts are useful and not too heavy
+                "examples/testscript_superanimal_adaptation.py",  # (runs inference + video adaptation training on shortened video)
+                # "examples/testscript_superanimal_create_pretrained_project.py", # (runs inference on example videos)
+                # "examples/testscript_superanimal_inference.py", # (runs inference on multiple videos with multiple models)
+                # "examples/testscript_superanimal_transfer_learning.py", # (runs full standard training pipeline after weight init)
+            ],
         ),
         CategoryRule(
             name="multianimal",
@@ -235,6 +242,8 @@ CATEGORY_RULES = validate_category_rules(
                 "tests/test_auxfun_multianimal.py",
                 "tests/test_pose_multianimal_imgaug.py",
                 "tests/test_predict_multianimal.py",
+                "tests/test_stitcher.py",
+                "tests/test_trackingutils.py",
             ],
             functional_scripts=[
                 "examples/testscript_tensorflow_multi_animal.py",
@@ -257,14 +266,26 @@ CATEGORY_RULES = validate_category_rules(
                 "tests/core/",
                 "tests/utils/",
             ],
-            functional_scripts=[],
+            functional_scripts=[
+                "examples/testscript_tensorflow_single_animal.py",
+                "examples/testscript_tensorflow_multi_animal.py",
+                "examples/testscript_pytorch_single_animal.py",
+                "examples/testscript_pytorch_multi_animal.py",
+            ],
         ),
         CategoryRule(
             name="pose_estimation_tensorflow",
             match_any=[
                 prefix(POSE_TF),
             ],
-            pytest_paths=[],
+            pytest_paths=[
+                "tests/test_dataset_augmentation.py",
+                "tests/test_pose_multianimal_imgaug.py",
+                "tests/test_predict_multianimal.py",
+                "tests/test_evaluate.py",
+                # "tests/test_inferenceutils.py",
+                # "tests/test_crossvalutils.py",
+            ],
             functional_scripts=[
                 "examples/testscript_tensorflow_multi_animal.py",
                 "examples/testscript_tensorflow_single_animal.py",
