@@ -92,7 +92,8 @@ pytest tests
 in the project root before opening a pull request.
 
 > [!IMPORTANT]
-> Heavier tests are also run automatically on GitHub, so this is not a strict requirement, > but it can help catch issues early and speed up the review process.
+> Heavier tests are also run automatically on GitHub, so this is not a strict requirement,
+> but it can help catch issues early and speed up the review process.
 
 ## Pull request guidelines
 
