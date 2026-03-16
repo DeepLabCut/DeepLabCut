@@ -107,6 +107,13 @@ When submitting a pull request, please:
 
 Smaller, focused pull requests are usually much easier to review than very large ones.
 
+### Draft pull requests
+
+We use draft pull requests to indicate work in progress.
+You may still request reviews and feedbacks on draft pull requests, and we encourage you to do so if you would like early feedback on your work.
+Please note that the draft status is in no way related to the perceived quality of the code or its potential for merging, but is simply a way to indicate that the work is not yet ready for final review and merging.
+Most pull requests exist for the majority of their lifetime as drafts, which is expected.
+
 ## Documentation
 
 Documentation improvements are always welcome.
