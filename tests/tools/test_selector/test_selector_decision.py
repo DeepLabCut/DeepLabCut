@@ -1,3 +1,4 @@
+# tests/tools/test_selector/test_selector_decision.py
 from __future__ import annotations
 
 from pathlib import Path
@@ -221,6 +222,83 @@ def test_validate_category_rules_rejects_duplicate_names():
 
     with pytest.raises(ValueError, match="Duplicate CategoryRule name"):
         validate_category_rules(rules)
+
+
+def test_lint_only_changes_select_skip_lane(selector):
+    files = [".pre-commit-config.yaml"]
+    res = selector.decide(files)
+
+    assert_lanes(res, skip=True)
+    assert res.pytest_paths == []
+    assert res.functional_scripts == []
+
+    assert "lint_only" in res.reasons
+    assert "skip" in res.lane_reasons
+    assert "lint_only" in res.lane_reasons["skip"]
+
+
+def test_validate_selected_paths_escalates_to_full_on_missing(selector, tmp_path: Path):
+    # Build a minimal repo dir with none of the selected paths present.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    res = selector.SelectorResult(
+        lanes=selector.LaneSelection(fast=True),
+        pytest_paths=["tests/does_not_exist.py"],
+        functional_scripts=["examples/missing_script.py"],
+        provenance=selector.SelectionProvenance(
+            pytest={"tests/does_not_exist.py": ["core"]},
+            scripts={"examples/missing_script.py": ["core"]},
+        ),
+        reasons=["category:core"],
+        changed_files=["deeplabcut/core/foo.py"],
+        lane_reasons={"fast": ["category:core"]},
+    )
+
+    out = selector.validate_selected_paths(res, repo)
+
+    assert out.lanes.fast is False
+    assert out.lanes.full is True
+
+    assert out.pytest_paths == []
+    assert out.functional_scripts == []
+    assert out.provenance.pytest == {}
+    assert out.provenance.scripts == {}
+
+    assert "missing_selected_paths" in out.reasons
+    assert any(r.startswith("pytest:tests/does_not_exist.py") for r in out.reasons)
+    assert any(r.startswith("script:examples/missing_script.py") for r in out.reasons)
+
+    assert "full" in out.lane_reasons
+
+
+def test_validate_selected_paths_keeps_fast_when_paths_exist(selector, tmp_path: Path):
+    repo = tmp_path / "repo"
+    (repo / "tests").mkdir(parents=True)
+    (repo / "examples").mkdir(parents=True)
+
+    (repo / "tests" / "test_ok.py").write_text("def test_ok(): pass\n")
+    (repo / "examples" / "script_ok.py").write_text("print('ok')\n")
+
+    res = selector.SelectorResult(
+        lanes=selector.LaneSelection(fast=True),
+        pytest_paths=["tests/test_ok.py"],
+        functional_scripts=["examples/script_ok.py"],
+        provenance=selector.SelectionProvenance(
+            pytest={"tests/test_ok.py": ["core"]},
+            scripts={"examples/script_ok.py": ["core"]},
+        ),
+        reasons=["category:core"],
+        changed_files=["deeplabcut/core/foo.py"],
+        lane_reasons={"fast": ["category:core"]},
+    )
+
+    out = selector.validate_selected_paths(res, repo)
+
+    assert out.lanes.fast is True
+    assert out.lanes.full is False
+    assert out.pytest_paths == ["tests/test_ok.py"]
+    assert out.functional_scripts == ["examples/script_ok.py"]
 
 
 # --------------------------------------
