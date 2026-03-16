@@ -59,7 +59,7 @@ Now, please make a [pull request](https://github.com/DeepLabCut/DeepLabCut/pull/
 <!-- **TestScript outputs:**
 
 - The **OS it has been tested on**
-- the **output of the [testscript.py](/examples/testscript.py)** and if you are editing the **3D code the [testscript_3d.py](/examples/testscript_3d.py)**, and if you edit multi-animal code please run the [maDLC test script](https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/testscript_multianimal.py). -->
+- the **output of the [testscript_tensorflow_single_animal.py](/examples/testscript_tensorflow_single_animal.py)** and if you are editing the **3D code the [testscript_3d.py](/examples/testscript_3d.py)**, and if you edit multi-animal code please run the [maDLC test script](https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/testscript_tensorflow_multi_animal.py). -->
 
 **Review & Formatting:**
 
