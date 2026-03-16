@@ -105,7 +105,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pytest
-          pip install -e . --group dev
+          pip install -e ".[tf]" --group dev
 
       - name: Run targeted pytest (paths selected by selector)
         env:
@@ -114,6 +114,9 @@ jobs:
           python - << 'PY'
           import json, os, subprocess, sys
           paths = json.loads(os.environ.get("PYTEST_PATHS", "[]"))
+          if not paths:
+            print("No pytest paths selected; skipping targeted pytest.")
+            sys.exit(0)
           cmd = ["python", "-m", "pytest"] + paths
           print("Running:", " ".join(cmd))
           sys.exit(subprocess.call(cmd))
