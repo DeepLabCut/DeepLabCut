@@ -107,18 +107,15 @@ def test_create_superanimal_inference_runners_uses_deepcopy_for_custom_dict(monk
     assert model_cfg["metadata"]["bodyparts"] == ["nose", "tail"]
 
 
-@pytest.mark.parametrize(
-    "cuda_available, expected_device",
-    [(True, "cuda:0"), (False, "cpu")],
-)
+@pytest.mark.parametrize("input_device", ["auto", None])
 def test_create_superanimal_inference_runners_auto_device_selection(
-    monkeypatch, cuda_available, expected_device
+    monkeypatch, input_device
 ):
     cfg = _dummy_cfg("TD")
     captured = {}
 
-    monkeypatch.setattr(helpers.torch.cuda, "is_available", lambda: cuda_available)
     monkeypatch.setattr(helpers, "read_config_as_dict", lambda path: cfg)
+
     def fake_update_config(config, max_individuals, device):
         captured["device"] = device
         return config
@@ -146,9 +143,9 @@ def test_create_superanimal_inference_runners_auto_device_selection(
         model_name="hrnet_w32",
         detector_name="fasterrcnn_resnet50_fpn_v2",
         customized_model_config="/tmp/custom_model_cfg.yaml",
-        device="auto",
+        device=input_device,
     )
-    assert captured["device"] == expected_device
+    assert captured["device"] == "auto"
 
 
 def test_create_superanimal_inference_runners_raises_for_fmpose3d():

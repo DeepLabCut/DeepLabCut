@@ -160,8 +160,8 @@ def create_superanimal_inference_runners(
             "FMPose3D is not supported in this helper. Use the FMPose3D inference API."
         )
 
-    if device in (None, "auto"):
-        device = "cuda:0" if torch.cuda.is_available() else "cpu"
+    if device is None:
+        device = "auto"
 
     if customized_model_config is not None:
         if isinstance(customized_model_config, (str, Path)):
