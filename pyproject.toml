@@ -4,7 +4,7 @@ requires = [ "setuptools>=61" ]
 
 [project]
 name = "deeplabcut"
-version = "3.0.0rc13"
+version = "3.0.0rc14"
 description = "Markerless pose-estimation of user-defined features with deep learning"
 readme = { file = "README.md", content-type = "text/markdown" }
 keywords = [
