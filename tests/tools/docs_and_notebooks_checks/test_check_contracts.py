@@ -67,8 +67,8 @@ def _write(repo: Path, rel: str, content: str) -> None:
 # -----------------------------
 def test_marker_constants_exist(tool):
     assert hasattr(tool, "META_COMMIT_MARKER")
-    assert hasattr(tool, "SUGGESTED_META_COMMIT_MESSAGE")
-    assert tool.META_COMMIT_MARKER in tool.SUGGESTED_META_COMMIT_MESSAGE
+    assert hasattr(tool, "SUGGESTED_TAGGED_COMMIT")
+    assert tool.META_COMMIT_MARKER in tool.SUGGESTED_TAGGED_COMMIT
 
 
 def test_schema_contract_fields(tool):
@@ -240,7 +240,7 @@ def test_update_set_content_date_from_git_only_changes_that_field(tool, tmp_path
 
     # Read back and confirm verified fields unchanged
     text = (repo / rel).read_text(encoding="utf-8")
-    fm, body = tool.read_md_frontmatter(text)
+    fm, body, _ = tool.read_md_frontmatter(text)
     assert isinstance(fm, dict) and tool.DLC_NAMESPACE in fm
     meta = fm[tool.DLC_NAMESPACE]
 
@@ -287,7 +287,7 @@ def test_update_set_verified_fields_only_changes_verified(tool, tmp_path: Path):
     assert len(records) == 1
 
     text = (repo / rel).read_text(encoding="utf-8")
-    fm, _body = tool.read_md_frontmatter(text)
+    fm, _body, _ = tool.read_md_frontmatter(text)
     meta = fm[tool.DLC_NAMESPACE]
 
     # Verified fields updated
