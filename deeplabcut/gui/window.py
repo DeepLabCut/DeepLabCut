@@ -14,6 +14,7 @@ import subprocess
 import sys
 import warnings
 from functools import cached_property
+from importlib import import_module
 from importlib.resources import files
 from pathlib import Path
 from urllib.error import URLError
@@ -37,7 +38,23 @@ import deeplabcut
 from deeplabcut import VERSION, auxiliaryfunctions, compat
 from deeplabcut.core.engine import Engine
 from deeplabcut.gui import BASE_DIR, components, utils
-from deeplabcut.gui.tabs import *
+from deeplabcut.gui.tabs import (
+    AnalyzeVideos,
+    CreateTrainingDataset,
+    CreateVideos,
+    EvaluateNetwork,
+    ExtractFrames,
+    ExtractOutlierFrames,
+    LabelFrames,
+    ManageProject,
+    ModelZoo,
+    OpenProject,
+    ProjectCreator,
+    RefineTracklets,
+    TrainNetwork,
+    UnsupervizedIdTracking,
+    VideoEditor,
+)
 from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
 from deeplabcut.utils.multiprocessing import call_with_timeout
 
@@ -193,7 +210,7 @@ class MainWindow(QMainWindow):
 
         if e == e.TF:
             try:
-                import tensorflow
+                import_module("tensorflow")
             except ModuleNotFoundError as err:
                 msg = QtWidgets.QMessageBox()
                 msg.setIcon(QtWidgets.QMessageBox.Warning)
@@ -371,7 +388,13 @@ class MainWindow(QMainWindow):
         image_widget.setPixmap(pixmap.scaledToHeight(400, QtCore.Qt.SmoothTransformation))
         self.layout.addWidget(image_widget)
 
-        description = "DeepLabCut™ is an open source tool for markerless pose estimation of user-defined body parts with deep learning.\nA.  and M.W.  Mathis Labs | http://www.deeplabcut.org\n\n To get started,  create a new project, load an existing one, or try one of our pretrained models from the Model Zoo."
+        description = str(
+            "DeepLabCut™ is an open source tool for markerless "
+            "pose estimation of user-defined body parts with deep learning.\n"
+            "A. and M.W. Mathis Labs | http://www.deeplabcut.org\n\n "
+            "To get started, create a new project, load an existing one, "
+            "or try one of our pretrained models from the Model Zoo."
+        )
         label = components._create_label_widget(
             description,
             "font-size:12px; text-align: center;",
@@ -553,7 +576,9 @@ class MainWindow(QMainWindow):
         dlg = QMessageBox(self)
         dlg.setWindowTitle("Learn DLC")
         dlg.setText(
-            """Learn DLC with <a href='https://deeplabcut.github.io/DeepLabCut/docs/UseOverviewGuide.html'>our docs and how-to guides</a>!"""
+            """Learn DLC with
+            <a href='https://deeplabcut.github.io/DeepLabCut/docs/UseOverviewGuide.html'>
+            our docs and how-to guides</a>!"""
         )
         _ = dlg.exec()
 
@@ -695,8 +720,7 @@ class MainWindow(QMainWindow):
     def is_transreid_available(self):
         if self.is_multianimal:
             try:
-                from deeplabcut.pose_tracking_pytorch import transformer_reID
-
+                import_module("deeplabcut.pose_tracking_pytorch.transformer_reID")
                 return True
             except ModuleNotFoundError:
                 return False
