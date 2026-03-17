@@ -64,9 +64,9 @@ Notes for CI
 - Ensure actions/checkout uses fetch-depth: 0 (or sufficiently deep),
   otherwise git log may not see history.
 - Requires:
-  - pydantic
+  - pydantic>=2,<3
   - PyYAML
-  - nbformat
+  - nbformat>=5
   to be installed in the environment.
   Recommended : install in CI job directly (pip install pydantic pyyaml nbformat) rather than adding to requirements, since these are only needed for this tool.
 """
@@ -322,18 +322,19 @@ def git_last_content_updated(
 FRONTMATTER_RE = re.compile(r"^---\s*$")
 
 
-def read_md_frontmatter(text: str) -> Tuple[Optional[dict], str]:
+def read_md_frontmatter(text: str) -> Tuple[Optional[dict], str, Optional[str]]:
     lines = text.splitlines(keepends=True)
     if not lines or not FRONTMATTER_RE.match(lines[0]):
-        return None, text
+        return None, text, None
 
     end_idx = None
     for i in range(1, min(len(lines), 5000)):
         if FRONTMATTER_RE.match(lines[i]):
             end_idx = i
             break
+
     if end_idx is None:
-        return None, text
+        return None, text, "unterminated_markdown_frontmatter"
 
     fm_text = "".join(lines[1:end_idx])
     body = "".join(lines[end_idx + 1 :])
@@ -343,8 +344,9 @@ def read_md_frontmatter(text: str) -> Tuple[Optional[dict], str]:
 
     fm = yaml.safe_load(fm_text) if fm_text.strip() else {}
     if not isinstance(fm, dict):
-        return None, text
-    return fm, body
+        return None, text, "markdown_frontmatter_not_mapping"
+
+    return fm, body, None
 
 
 def dump_md_frontmatter(frontmatter: dict, body: str) -> str:
@@ -367,11 +369,8 @@ def read_ipynb_meta(path: Path) -> tuple[Any, dict, bool]:
     meta = getattr(nb, "metadata", {}) or {}
     has_dlc = DLC_NAMESPACE in meta
 
-    dlc_meta = meta.get(DLC_NAMESPACE, {})
-    if not isinstance(dlc_meta, dict):
-        dlc_meta = {}
-
-    return nb, dlc_meta, has_dlc
+    raw_dlc_meta = meta.get(DLC_NAMESPACE)
+    return nb, raw_dlc_meta, has_dlc
 
 
 def notebook_is_normalized(path: Path, nb: Any) -> bool:
@@ -413,12 +412,7 @@ def meta_to_jsonable(meta: DLCMeta) -> dict:
     Return JSON-serializable metadata (dates become ISO strings).
     This prevents json.dumps() from failing when writing .ipynb files.
     """
-    try:
-        # Pydantic v2: mode='json' converts date/datetime into ISO strings
-        return meta.model_dump(mode="json", exclude_none=True)
-    except AttributeError:
-        # Pydantic v1: meta.json() encodes dates; parse back into dict
-        return json.loads(meta.json(exclude_none=True))
+    return meta.model_dump(mode="json", exclude_none=True)
 
 
 def compute_days_since(d: Optional[date], today: date) -> Optional[int]:
@@ -439,10 +433,7 @@ def load_config(config_path: Path) -> ToolConfig:
     if yaml is None:
         raise RuntimeError("PyYAML is required (pip install pyyaml)")
     raw = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-    try:
-        return ToolConfig.model_validate(raw)  # pydantic v2
-    except AttributeError:
-        return ToolConfig.parse_obj(raw)  # pydantic v1
+    return ToolConfig.model_validate(raw)
 
 
 def scan_files(
@@ -500,20 +491,25 @@ def scan_files(
 
             elif kind == "md":
                 text = p.read_text(encoding="utf-8")
-                fm, _body = read_md_frontmatter(text)
-                fm = fm or {}
+                fm, _body, fm_error = read_md_frontmatter(text)
 
-                has_dlc = DLC_NAMESPACE in fm
-                raw = fm.get(DLC_NAMESPACE)
-
-                if not has_dlc:
+                if fm_error:
                     rec.meta = None
-                    rec.warnings.append("missing_metadata")
+                    rec.warnings.append("invalid_metadata")
+                    rec.errors.append(f"markdown_frontmatter_invalid: {fm_error}")
                 else:
-                    rec.meta, valid = parse_dlc_meta(raw)
-                    if not valid:
+                    fm = fm or {}
+                    has_dlc = DLC_NAMESPACE in fm
+                    raw = fm.get(DLC_NAMESPACE)
+
+                    if not has_dlc:
                         rec.meta = None
-                        rec.warnings.append("invalid_metadata")
+                        rec.warnings.append("missing_metadata")
+                    else:
+                        rec.meta, valid = parse_dlc_meta(raw)
+                        if not valid:
+                            rec.meta = None
+                            rec.warnings.append("invalid_metadata")
 
             else:
                 rec.meta = None
@@ -521,12 +517,22 @@ def scan_files(
         except Exception as e:
             rec.errors.append(f"metadata_read_failed: {e}")
 
+        # ignore=True means: keep reporting diagnostics, but skip freshness/policy logic
         if rec.meta and rec.meta.ignore:
             records.append(rec)
             continue
 
         last_verified = rec.meta.last_verified if rec.meta else None
         rec.days_since_verified = compute_days_since(last_verified, today)
+
+        # Future dates are data errors
+        if rec.last_content_updated is not None and rec.last_content_updated > today:
+            rec.errors.append("future_last_content_updated")
+        if rec.meta and rec.meta.last_metadata_updated is not None:
+            if rec.meta.last_metadata_updated > today:
+                rec.errors.append("future_last_metadata_updated")
+        if last_verified is not None and last_verified > today:
+            rec.errors.append("future_last_verified")
 
         pol = cfg.policy
 
@@ -634,7 +640,13 @@ def update_files(
 
         elif rec.kind == "md":
             text = abs_path.read_text(encoding="utf-8")
-            fm, body = read_md_frontmatter(text)
+            fm, body, fm_error = read_md_frontmatter(text)
+            if fm_error:
+                msg = f"markdown_frontmatter_invalid: {fm_error}"
+                if msg not in rec.errors:
+                    rec.errors.append(msg)
+                continue
+
             fm = fm or {}
 
             prev = fm.get(DLC_NAMESPACE, {})
@@ -812,7 +824,7 @@ def to_markdown(report: Report, cfg: ToolConfig) -> str:
 
     err_recs = [r for r in report.records if r.errors]
     if err_recs:
-        lines.append("## Scan errors (non-fatal by default)\n")
+        lines.append("## Scan errors\n")
         for r in err_recs:
             lines.append(f"- **{r.path}**: {', '.join(r.errors)}\n")
         lines.append("\n")
@@ -836,10 +848,7 @@ def write_outputs(report: Report, cfg: ToolConfig, out_dir: Path) -> Tuple[Path,
     json_path = out_dir / f"{OUTPUT_FILENAME}.json"
     md_path = out_dir / f"{OUTPUT_FILENAME}.md"
 
-    try:
-        payload = report.model_dump(mode="json")  # pydantic v2
-    except AttributeError:
-        payload = json.loads(report.json())  # pydantic v1
+    payload = report.model_dump(mode="json")
 
     json_path.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
@@ -851,8 +860,6 @@ def write_outputs(report: Report, cfg: ToolConfig, out_dir: Path) -> Tuple[Path,
 # -----------------------------
 # Check enforcement
 # -----------------------------
-
-
 def enforce(cfg: ToolConfig, records: List[FileRecord]) -> List[str]:
     pol = cfg.policy
     violations: List[str] = []
@@ -864,20 +871,28 @@ def enforce(cfg: ToolConfig, records: List[FileRecord]) -> List[str]:
         if r.kind not in {"ipynb", "md"}:
             continue
 
-        if match_allowlist(r.path, pol.require_metadata) and r.meta is None:
-            violations.append(f"{r.path}: missing metadata")
+        has_invalid_metadata = "invalid_metadata" in (r.warnings or [])
+
+        if match_allowlist(r.path, pol.require_metadata):
+            if has_invalid_metadata:
+                violations.append(f"{r.path}: invalid metadata")
+            elif r.meta is None:
+                violations.append(f"{r.path}: missing metadata")
 
         if match_allowlist(r.path, pol.require_recent_verification):
-            lv = r.meta.last_verified if r.meta else None
-            if lv is None:
-                violations.append(f"{r.path}: missing last_verified")
+            if has_invalid_metadata:
+                violations.append(f"{r.path}: invalid metadata")
             else:
-                days = (today - lv).days
-                if days > pol.warn_if_verified_older_than_days:
-                    violations.append(
-                        f"{r.path}: last_verified is {days}d old "
-                        f"(> {pol.warn_if_verified_older_than_days}d)"
-                    )
+                lv = r.meta.last_verified if r.meta else None
+                if lv is None:
+                    violations.append(f"{r.path}: missing last_verified")
+                else:
+                    days = (today - lv).days
+                    if days > pol.warn_if_verified_older_than_days:
+                        violations.append(
+                            f"{r.path}: last_verified is {days}d old "
+                            f"(> {pol.warn_if_verified_older_than_days}d)"
+                        )
 
         if r.kind == "ipynb" and match_allowlist(
             r.path, pol.require_notebook_normalized
@@ -1004,7 +1019,6 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     repo_root = find_repo_root(Path.cwd())
     cfg = load_config(config_path)
     out_dir = Path(args.out_dir)
-    strict_mode = bool((args.strict_mode) or cfg.policy.fail_on_scan_errors)
 
     if args.cmd in {"report", "check"}:
         records = scan_files(repo_root, cfg, targets=getattr(args, "targets", None))
@@ -1073,6 +1087,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             for v in violations:
                 print(f"- {v}")
             return 2
+        strict_mode = bool((args.strict_mode) or cfg.policy.fail_on_scan_errors)
         if strict_mode and scan_errors:
             print("Strict mode enabled: failing due to scan/parsing errors.")
             return 1
