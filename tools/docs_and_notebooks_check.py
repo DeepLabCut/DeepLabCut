@@ -7,6 +7,8 @@ Goals
     * Notebook-level metadata for .ipynb (never cells/outputs)
     * YAML frontmatter for .md docs (optional)
 - Uses pydantic schemas with explicit schema_version for validation.
+- Aims to be contributor-friendly by default: check mode enforces configured policy, while
+  surfacing scan/parsing issues without failing unless strict mode is enabled.
 
 Terminology
 -----------
@@ -28,8 +30,14 @@ Usage modes
 Report (read-only):
     python tools/docs_and_notebooks_check.py report
 
-Check (read-only; may fail based on config allowlists):
+Check (read-only; policy enforcement):
     python tools/docs_and_notebooks_check.py check
+
+    Runs scans and evaluates configured policy rules.
+    Exits non-zero for policy violations.
+    Scan/parsing errors are always reported in console / JSON / Markdown output,
+    but are non-fatal by default unless strict mode is enabled or they imply a
+    policy violation.
 
 Update content-date field from git (write mode; requires --write):
     python tools/docs_and_notebooks_check.py update --write --set-content-date-from-git
@@ -73,7 +81,7 @@ import re
 import subprocess
 from datetime import date, datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Literal, Optional, Sequence, Tuple
 
 try:
     import yaml  # PyYAML
@@ -105,7 +113,7 @@ DEFAULT_CFG = SCRIPT_DIR / "docs_and_notebooks_report_config.yml"
 #   "git last touched" timestamps. To preserve meaningful "content age", all such
 #   commits must include this marker in the commit message.
 META_COMMIT_MARKER = "chore(metadata)"
-SUGGESTED_META_COMMIT_MESSAGE = f"{META_COMMIT_MARKER}: update docs/notebooks metadata"
+SUGGESTED_TAGGED_COMMIT = f"{META_COMMIT_MARKER}: update docs/notebooks metadata"
 
 
 # -----------------------------
@@ -142,6 +150,9 @@ class PolicyConfig(BaseModel):
     warn_if_content_older_than_days: int = 365
     warn_if_verified_older_than_days: int = 365
     missing_last_verified_is_warning: bool = True
+
+    # Strict-mode toggle: if true, scan/parsing errors also fail `check`
+    fail_on_scan_errors: bool = False
 
     # Allowlists for strict checks (start empty; ratchet later)
     require_metadata: List[str] = Field(default_factory=list)
@@ -555,7 +566,7 @@ def _require_meta_marker_ack(write: bool, ack_marker: bool) -> None:
     raise SystemExit(
         "Refusing to write without acknowledging metadata-commit convention.\n"
         "Re-run with --ack-meta-commit-marker and commit with:\n"
-        f"  {SUGGESTED_META_COMMIT_MESSAGE}\n"
+        f"  {SUGGESTED_TAGGED_COMMIT}\n"
     )
 
 
@@ -746,7 +757,7 @@ def to_markdown(report: Report, cfg: ToolConfig) -> str:
     lines.append("## Summary\n")
     lines.append(f"- Files scanned: **{t['files']}**\n")
     lines.append(f"- Files with warnings: **{t['warnings']}**\n")
-    lines.append(f"- Files with errors: **{t['errors']}**\n")
+    lines.append(f"- Files with scanning errors: **{t['errors']}**\n")
     lines.append(f"- Missing metadata: **{t['missing_metadata']}**\n")
     lines.append(f"- Missing last_verified: **{t['missing_last_verified']}**\n")
     lines.append(
@@ -801,7 +812,7 @@ def to_markdown(report: Report, cfg: ToolConfig) -> str:
 
     err_recs = [r for r in report.records if r.errors]
     if err_recs:
-        lines.append("## Errors\n")
+        lines.append("## Scan errors (non-fatal by default)\n")
         for r in err_recs:
             lines.append(f"- **{r.path}**: {', '.join(r.errors)}\n")
         lines.append("\n")
@@ -812,6 +823,10 @@ def to_markdown(report: Report, cfg: ToolConfig) -> str:
     )
     lines.append(
         "- last_git_touched / last_content_updated are computed from git history. last_verified is human-controlled.\n\n"
+    )
+    lines.append(
+        "- In `check` mode, scan/parsing errors are reported for visibility but do not "
+        "fail by default unless strict mode is enabled or they trigger an enforced policy rule.\n"
     )
     return "".join(lines)
 
@@ -887,6 +902,16 @@ def parse_date_token(token: str) -> date:
     return date.fromisoformat(token)
 
 
+def collect_scan_issues(
+    records: List[FileRecord], target: Literal["errors", "warnings"]
+) -> List[str]:
+    items: List[str] = []
+    for r in records:
+        for e in getattr(r, target, []):
+            items.append(f"{r.path}: {e}")
+    return items
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="DeepLabCut checks tool (docs + notebooks)"
@@ -912,12 +937,21 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     )
 
     chk = sub.add_parser(
-        "check", help="Run policy checks (read-only; may exit non-zero)"
+        "check",
+        help=(
+            "Run scans + policy checks (read-only). "
+            "Fails on enforced policy violations; scan errors are non-fatal by default."
+        ),
     )
     chk.add_argument(
         "--targets",
         nargs="*",
         help="Optional list of relative file paths to scan (limits scan to these files)",
+    )
+    chk.add_argument(
+        "--strict-mode",
+        action="store_true",
+        help="Enable failure on scan/parsing errors (overrides config for this run)",
     )
 
     up = sub.add_parser(
@@ -970,10 +1004,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     repo_root = find_repo_root(Path.cwd())
     cfg = load_config(config_path)
     out_dir = Path(args.out_dir)
+    strict_mode = bool((args.strict_mode) or cfg.policy.fail_on_scan_errors)
 
     if args.cmd in {"report", "check"}:
         records = scan_files(repo_root, cfg, targets=getattr(args, "targets", None))
-
     elif args.cmd == "update":
         lv = (
             parse_date_token(args.set_last_verified) if args.set_last_verified else None
@@ -989,7 +1023,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             ack_meta_commit_marker=bool(args.ack_meta_commit_marker),
         )
         if args.write:
-            print(f"\nSuggested commit message:\n  {SUGGESTED_META_COMMIT_MESSAGE}\n")
+            print(f"\nSuggested commit message:\n  {SUGGESTED_TAGGED_COMMIT}\n")
 
     else:  # normalize
         records = normalize_notebooks(
@@ -1000,7 +1034,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             ack_meta_commit_marker=bool(args.ack_meta_commit_marker),
         )
         if args.write:
-            print(f"\nSuggested commit message:\n  {SUGGESTED_META_COMMIT_MESSAGE}\n")
+            print(f"\nSuggested commit message:\n  {SUGGESTED_TAGGED_COMMIT}\n")
 
     report = Report(
         generated_at=datetime.now(timezone.utc),
@@ -1024,6 +1058,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         except Exception:
             pass
 
+    scan_errors = collect_scan_issues(records, target="errors")
+    if scan_errors:
+        print("\nScan errors detected (non-fatal by default):")
+        for item in scan_errors[:20]:
+            print(f"- {item}")
+        if len(scan_errors) > 20:
+            print(f"... and {len(scan_errors) - 20} more (see report for full details)")
+
     if args.cmd == "check":
         violations = enforce(cfg, records)
         if violations:
@@ -1031,10 +1073,22 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             for v in violations:
                 print(f"- {v}")
             return 2
+        if strict_mode and scan_errors:
+            print("Strict mode enabled: failing due to scan/parsing errors.")
+            return 1
 
     # Non-zero if metadata parsing errors occurred for non-report/check commands
     if args.cmd not in {"report", "check"} and any(r.errors for r in records):
         return 1
+    else:
+        print(f"\nReport generated:")
+        print(f"- JSON: {json_path}")
+        print(f"- Markdown: {md_path}")
+
+        if any(r.warnings for r in records):
+            print("Warnings detected; see report for details.")
+        if any(r.errors for r in records):
+            print("Scan errors detected; see report for details.")
     return 0
 
 
