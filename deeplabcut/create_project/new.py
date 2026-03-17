@@ -102,7 +102,8 @@ def create_new_project(
             copy_videos=True,
         )
 
-    Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
+    Users must format paths with either:
+    r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
     """
     from datetime import datetime as dt
 
@@ -216,7 +217,7 @@ def create_new_project(
             # For windows os.path.realpath does not work and does not link to the real
             # video. [old: rel_video_path = os.path.realpath(video)]
             rel_video_path = str(Path.resolve(Path(video)))
-        except:
+        except Exception:
             rel_video_path = os.readlink(str(video))
 
         try:
@@ -304,6 +305,11 @@ def create_new_project(
 
     print('Generated "{}"'.format(project_path / "config.yaml"))
     print(
-        f"\nA new project with name {project_name} is created at {str(wd)} and a configurable file (config.yaml) is stored there. Change the parameters in this file to adapt to your project's needs.\n Once you have changed the configuration file, use the function 'extract_frames' to select frames for labeling.\n. [OPTIONAL] Use the function 'add_new_videos' to add new videos to your project (at any stage)."
+        f"\nA new project with name {project_name} is created at {str(wd)} "
+        "and a configurable file (config.yaml) is stored there. "
+        "Change the parameters in this file to adapt to your project's needs.\n "
+        "Once you have changed the configuration file, "
+        "use the function 'extract_frames' to select frames for labeling.\n. "
+        "[OPTIONAL] Use the function 'add_new_videos' to add new videos to your project (at any stage)."
     )
     return projconfigfile
