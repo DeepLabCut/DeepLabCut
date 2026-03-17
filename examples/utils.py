@@ -71,7 +71,7 @@ def sample_pose_random(
     img_h: int,
     img_w: int,
 ) -> np.ndarray:
-    """Fully random pose sampling"""
+    """Fully random pose sampling."""
     xs = gen.choice(img_w, size=(num_individuals, num_bodyparts), replace=False)
     ys = gen.choice(img_h, size=(num_individuals, num_bodyparts), replace=False)
     pose = np.stack([xs, ys], axis=-1)
@@ -97,9 +97,9 @@ def sample_pose_from_center(
     num_unique: int,
     radius: int = 25,
 ) -> np.ndarray:
-    """Sample keypoints from the center of each individual"""
+    """Sample keypoints from the center of each individual."""
     pose = np.zeros((num_individuals, num_bodyparts, 2))
-    for i, (xc, yc) in enumerate(zip(center_xs, center_ys)):
+    for i, (xc, yc) in enumerate(zip(center_xs, center_ys, strict=False)):
         if i < num_individuals:
             x_start, x_end = xc - radius + 1, xc + radius - 1
             y_start, y_end = yc - radius + 1, yc + radius - 1

@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Bounding box metrics
+"""Bounding box metrics.
 
 Metrics are currently computed using pycocotools, which can be installed with `pypi`
 (see https://github.com/ppwwyyxx/cocoapi/tree/master).
@@ -97,7 +97,7 @@ def compute_bbox_metrics(
                 }
             )
 
-        for bbox, score in zip(detections[img]["bboxes"], detections[img]["scores"]):
+        for bbox, score in zip(detections[img]["bboxes"], detections[img]["scores"], strict=False):
             predictions.append(np.array([img_id, *bbox, score, 1]))
 
     if len(predictions) == 0:

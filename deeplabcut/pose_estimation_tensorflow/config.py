@@ -19,10 +19,8 @@ import yaml
 
 
 def _merge_a_into_b(a, b):
-    """
-    Merge config dictionary a into config dictionary b, clobbering the
-    options in b whenever they are also specified in a.
-    """
+    """Merge config dictionary a into config dictionary b, clobbering the options in b
+    whenever they are also specified in a."""
     for k, v in a.items():
         # a must specify keys that are in b
         # if k not in b:
@@ -43,9 +41,7 @@ def _merge_a_into_b(a, b):
 
 
 def cfg_from_file(filename):
-    """
-    Load a config from file filename and merge it into the default options.
-    """
+    """Load a config from file filename and merge it into the default options."""
     with open(filename) as f:
         yaml_cfg = yaml.load(f, Loader=yaml.SafeLoader)
 

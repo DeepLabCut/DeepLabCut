@@ -240,7 +240,7 @@ def get_scorer_name(
     snapshot_uid: str | None = None,
     modelprefix: str = "",
 ) -> str:
-    """Get the scorer name for a particular PyTorch DeepLabCut shuffle
+    """Get the scorer name for a particular PyTorch DeepLabCut shuffle.
 
     Args:
         cfg: The project configuration.
@@ -339,8 +339,7 @@ def list_videos_in_folder(
 
 
 def ensure_multianimal_df_format(df_predictions: pd.DataFrame) -> pd.DataFrame:
-    """
-    Convert dataframe to 'multianimal' format (with an "individuals" columns index)
+    """Convert dataframe to 'multianimal' format (with an "individuals" columns index)
 
     Args:
         df_predictions: the dataframe to convert
@@ -364,10 +363,9 @@ def _image_names_to_df_index(
     image_names: list[str],
     image_name_to_index: Callable[[str], tuple[str, ...]] | None = None,
 ) -> pd.MultiIndex | list[str]:
-    """
-    Creates index for predictions dataframe.
-    This method is used in build_predictions_dataframe, but also in build_bboxes_dict_for_dataframe.
-    It is important that these two methods return objects with the same index / keys.
+    """Creates index for predictions dataframe. This method is used in
+    build_predictions_dataframe, but also in build_bboxes_dict_for_dataframe. It is
+    important that these two methods return objects with the same index / keys.
 
     Args:
         image_names: list of image names
@@ -386,8 +384,7 @@ def build_predictions_dataframe(
     parameters: PoseDatasetParameters,
     image_name_to_index: Callable[[str], tuple[str, ...]] | None = None,
 ) -> pd.DataFrame:
-    """
-    Builds a pandas DataFrame from pose prediction data. The resulting DataFrame
+    """Builds a pandas DataFrame from pose prediction data. The resulting DataFrame
     includes properly formatted indices and column names for compatibility with
     DeepLabCut workflows.
 
@@ -436,8 +433,7 @@ def build_bboxes_dict_for_dataframe(
     predictions: dict[str, dict[str, np.ndarray]],
     image_name_to_index: Callable[[str], tuple[str, ...]] | None = None,
 ) -> dict:
-    """
-    Creates a dictionary with bounding boxes from predictions.
+    """Creates a dictionary with bounding boxes from predictions.
 
     The keys of the dictionary are the same as the index of the dataframe created by
     build_predictions_dataframe. Therefore, the structures returned by
@@ -462,7 +458,7 @@ def build_bboxes_dict_for_dataframe(
 
     index = _image_names_to_df_index(image_names, image_name_to_index)
 
-    return dict(zip(index, bboxes_data))
+    return dict(zip(index, bboxes_data, strict=False))
 
 
 def get_inference_runners(
@@ -482,7 +478,7 @@ def get_inference_runners(
     inference_cfg: InferenceConfig | dict | None = None,
     min_bbox_score: float | None = None,
 ) -> tuple[InferenceRunner, InferenceRunner | None]:
-    """Builds the runners for pose estimation
+    """Builds the runners for pose estimation.
 
     Args:
         model_config: the pytorch configuration file
@@ -723,8 +719,8 @@ def get_filtered_coco_detector_inference_runner(
     inference_cfg: InferenceConfig | dict | None = None,
     min_bbox_score: float | None = None,
 ) -> DetectorInferenceRunner:
-    """
-    Builds a detector inference runner using a pretrained COCO detector from torchvision.
+    """Builds a detector inference runner using a pretrained COCO detector from
+    torchvision.
 
     This function loads a pretrained object detection model from `torchvision.models.detection`,
     wraps it in a `FilteredDetector` that keeps only detections for a specified COCO category,

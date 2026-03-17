@@ -40,8 +40,7 @@ from deeplabcut.utils.auxfun_videos import VideoWriter
 
 class Tracklet:
     def __init__(self, data, inds):
-        """
-        Create a Tracklet object.
+        """Create a Tracklet object.
 
         Parameters
         ----------
@@ -108,11 +107,10 @@ class Tracklet:
 
     @property
     def centroid(self):
-        """
-        Return the instantaneous 2D position of the Tracklet centroid.
-        For Tracklets longer than 10 frames, the centroid is automatically
-        smoothed using an exponential moving average.
-        The result is cached for efficiency.
+        """Return the instantaneous 2D position of the Tracklet centroid.
+
+        For Tracklets longer than 10 frames, the centroid is automatically smoothed
+        using an exponential moving average. The result is cached for efficiency.
         """
         if self._centroid is None:
             self._update_centroid()
@@ -189,8 +187,8 @@ class Tracklet:
         return self + sum(fills)
 
     def contains_duplicates(self, return_indices=False):
-        """
-        Evaluate whether the Tracklet contains duplicate time indices.
+        """Evaluate whether the Tracklet contains duplicate time indices.
+
         If `return_indices`, also return the indices of the duplicates.
         """
         has_duplicates = len(set(self.inds)) != len(self.inds)
@@ -199,10 +197,10 @@ class Tracklet:
         return has_duplicates, np.flatnonzero(np.diff(self.inds) == 0)
 
     def calc_velocity(self, where="head", norm=True):
-        """
-        Calculate the linear velocity of either the `head`
-        or `tail` of the Tracklet, computed over the last or first
-        three frames, respectively. If `norm`, return the absolute
+        """Calculate the linear velocity of either the `head` or `tail` of the Tracklet,
+        computed over the last or first three frames, respectively.
+
+        If `norm`, return the absolute
         speed rather than a 2D vector.
         """
         if where == "tail":
@@ -221,11 +219,9 @@ class Tracklet:
         return np.sqrt(np.max(np.sum(vel**2, axis=1)))
 
     def calc_rate_of_turn(self, where="head"):
-        """
-        Calculate the rate of turn (or angular velocity) of
-        either the `head` or `tail` of the Tracklet, computed over
-        the last or first three frames, respectively.
-        """
+        """Calculate the rate of turn (or angular velocity) of either the `head` or
+        `tail` of the Tracklet, computed over the last or first three frames,
+        respectively."""
         if where == "tail":
             v = np.diff(self.centroid[:3], axis=0)
         else:
@@ -239,18 +235,16 @@ class Tracklet:
         return self.end - self.start + 1 == len(self)
 
     def immediately_follows(self, other_tracklet, max_gap=1):
-        """
-        Test whether this Tracklet follows another within
-        a tolerance of`max_gap` frames.
-        """
+        """Test whether this Tracklet follows another within a tolerance of`max_gap`
+        frames."""
         return 0 < self.start - other_tracklet.end <= max_gap
 
     def distance_to(self, other_tracklet):
-        """
-        Calculate the Euclidean distance between this Tracklet and another.
-        If the Tracklets overlap in time, this is the mean distance over
-        those frames. Otherwise, it is the distance between the head/tail
-        of one to the tail/head of the other.
+        """Calculate the Euclidean distance between this Tracklet and another.
+
+        If the Tracklets overlap in time, this is the mean distance over those frames.
+        Otherwise, it is the distance between the head/tail of one to the tail/head of
+        the other.
         """
         if self in other_tracklet:
             dist = (
@@ -264,11 +258,11 @@ class Tracklet:
             return np.sqrt(np.sum((self.centroid[0] - other_tracklet.centroid[-1]) ** 2))
 
     def motion_affinity_with(self, other_tracklet):
-        """
-        Evaluate the motion affinity of this Tracklet' with another one.
-        This evaluates whether the Tracklets could realistically be reached
-        by one another, knowing the time separating them and their velocities.
-        Return 0 if the Tracklets overlap.
+        """Evaluate the motion affinity of this Tracklet' with another one.
+
+        This evaluates whether the Tracklets could realistically be reached by one
+        another, knowing the time separating them and their velocities. Return 0 if the
+        Tracklets overlap.
         """
         time_gap = self.time_gap_to(other_tracklet)
         if time_gap > 0:
@@ -349,13 +343,11 @@ class Tracklet:
         return self.hankelize(self.centroid)
 
     def dynamic_dissimilarity_with(self, other_tracklet):
-        """
-        Compute a dissimilarity score between Hankelets.
-        This metric efficiently captures the degree of alignment of
-        the subspaces spanned by the columns of both matrices.
+        """Compute a dissimilarity score between Hankelets. This metric efficiently
+        captures the degree of alignment of the subspaces spanned by the columns of both
+        matrices.
 
-        See Li et al., 2012.
-            Cross-view Activity Recognition using Hankelets.
+        See Li et al., 2012.     Cross-view Activity Recognition using Hankelets.
         """
         hk1 = self.to_hankelet()
         hk1 /= np.linalg.norm(hk1)
@@ -367,12 +359,10 @@ class Tracklet:
         return 2 - np.linalg.norm(temp1 + temp2)
 
     def dynamic_similarity_with(self, other_tracklet, tol=0.01):
-        """
-        Evaluate the complexity of the tracklets' underlying dynamics
-        from the rank of their Hankel matrices, and assess whether
-        they originate from the same track. The idea is that if two
-        tracklets are part of the same track, they can be approximated
-        by a low order regressor. Conversely, tracklets belonging to
+        """Evaluate the complexity of the tracklets' underlying dynamics from the rank
+        of their Hankel matrices, and assess whether they originate from the same track.
+        The idea is that if two tracklets are part of the same track, they can be
+        approximated by a low order regressor. Conversely, tracklets belonging to
         different tracks will require a higher order regressor.
 
         See Dicle et al., 2013.
@@ -386,12 +376,11 @@ class Tracklet:
         return (rank1 + rank2) / joint_rank - 1
 
     def estimate_rank(self, tol):
-        """
-        Estimate the (low) rank of a noisy matrix via
-        hard thresholding of singular values.
+        """Estimate the (low) rank of a noisy matrix via hard thresholding of singular
+        values.
 
-        See Gavish & Donoho, 2013.
-            The optimal hard threshold for singular values is 4/sqrt(3)
+        See Gavish & Donoho, 2013.     The optimal hard threshold for singular values is
+        4/sqrt(3)
         """
         mat = self.to_hankelet()
         if np.any(mat):  # check that the matrix contains non-zero entries
@@ -989,9 +978,8 @@ def stitch_tracklets(
     save_as_csv=False,
     **kwargs,
 ):
-    """
-    Stitch sparse tracklets into full tracks via a graph-based,
-    minimum-cost flow optimization problem.
+    """Stitch sparse tracklets into full tracks via a graph-based, minimum-cost flow
+    optimization problem.
 
     Parameters
     ----------

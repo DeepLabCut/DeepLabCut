@@ -29,8 +29,7 @@ def extract_maps(
     Indices=None,
     modelprefix="",
 ):
-    """
-    Extracts the scoremap, locref, partaffinityfields (if available).
+    """Extracts the scoremap, locref, partaffinityfields (if available).
 
     Returns a dictionary indexed by: trainingsetfraction, snapshotindex, and imageindex
     for those keys, each item contains: (image,scmap,locref,paf,bpt names,partaffinity graph, imagename, True/False if this image was in trainingset)
@@ -56,7 +55,6 @@ def extract_maps(
     --------
     If you want to extract the data for image 0 and 103 (of the training set) for model trained with shuffle 0.
     >>> deeplabcut.extract_maps(configfile,0,Indices=[0,103])
-
     """
     from pathlib import Path
 

@@ -36,7 +36,7 @@ def benchmark_paf_graphs(
     overwrite: bool = False,
     update_config: bool = True,
 ) -> list[dict]:
-    """Prunes the PAF graph to maximize performance
+    """Prunes the PAF graph to maximize performance.
 
     Args:
         loader: The loader for the model to prune.
@@ -213,13 +213,13 @@ def compute_within_between_paf_costs(
 
         # Get animal IDs and corresponding indices in the arrays of detections
         lookup = dict()
-        for i, (coord_pred, coord_gt) in enumerate(zip(coords_pred, gt_pose)):
+        for i, (coord_pred, coord_gt) in enumerate(zip(coords_pred, gt_pose, strict=False)):
             inds = np.flatnonzero(np.all(~np.isnan(coord_pred), axis=1))
             inds_gt = np.flatnonzero(np.all(~np.isnan(coord_gt), axis=1))
             if inds.size and inds_gt.size:
                 neighbors = find_closest_neighbors(coord_gt[inds_gt], coord_pred[inds], k=3)
                 found = neighbors != -1
-                lookup[i] = dict(zip(inds_gt[found], inds[neighbors[found]]))
+                lookup[i] = dict(zip(inds_gt[found], inds[neighbors[found]], strict=False))
 
         for k, v in costs_pred.items():
             paf = v["m1"]
@@ -256,11 +256,13 @@ def get_n_best_paf_graphs(
     within_train, between_train = compute_within_between_paf_costs(model, ground_truth, preprocessor, device)
     existing_edges = list(set(k for k, v in within_train.items() if v))
 
-    scores, _ = zip(*[_calc_separability(between_train[n], within_train[n], metric=metric) for n in existing_edges])
+    scores, _ = zip(
+        *[_calc_separability(between_train[n], within_train[n], metric=metric) for n in existing_edges], strict=False
+    )
 
     # Find minimal skeleton
     G = nx.Graph()
-    for edge, score in zip(existing_edges, scores):
+    for edge, score in zip(existing_edges, scores, strict=False):
         if np.isfinite(score):
             G.add_edge(*full_graph[edge], weight=score)
 
@@ -278,4 +280,4 @@ def get_n_best_paf_graphs(
         best_edges.append(root_edges + list(order[:length]))
 
     model.heads.bodypart.predictor.return_preds = return_preds
-    return best_edges, dict(zip(existing_edges, scores))
+    return best_edges, dict(zip(existing_edges, scores, strict=False))

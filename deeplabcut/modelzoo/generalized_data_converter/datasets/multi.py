@@ -105,11 +105,9 @@ class MultiSourceDataset:
         print(f"Max individual in {dataset_name} is {max_num}")
 
     def whether_anno_image_match(self, images, annotations):
-        """
-        Every image id should be annotated at least once
-        There should not be any image that is not being annotated
-        There should not be any annotation for beyond the set of given images
-        """
+        """Every image id should be annotated at least once There should not be any
+        image that is not being annotated There should not be any annotation for beyond
+        the set of given images."""
 
         image_ids = set([image["id"] for image in images])
 
@@ -125,11 +123,11 @@ class MultiSourceDataset:
             # assert len(annotation_image_ids - image_ids) == 0, "You can't have annotation on non-existed images"
 
     def _update_imgids(self):
-        """
-        update image ids for both image and annotation
+        """Update image ids for both image and annotation.
 
-        If datasets are merged, their image id, annotation id will conflict because they are defined within their own local scope. Therefore, we will need to put these ids in the global scope
-
+        If datasets are merged, their image id, annotation id will conflict because they
+        are defined within their own local scope. Therefore, we will need to put these
+        ids in the global scope
         """
 
         from collections import defaultdict
@@ -177,11 +175,9 @@ class MultiSourceDataset:
         print("size of the union", len(union))
 
     def _merge_datasets(self, name2dataset):
-        """
-        Merged datasets into common list
+        """Merged datasets into common list.
 
         # only do this when iid/ood split is done
-
         """
 
         merged_train_images = []

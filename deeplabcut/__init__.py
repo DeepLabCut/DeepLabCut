@@ -74,7 +74,8 @@ except ModuleNotFoundError:
         """
         As PyTorch is not installed, unsupervised identity learning will not be available.
         Please run `pip install torch`, or ignore this warning.
-        """
+        """,
+        stacklevel=2,
     )
 
 # Train, evaluate & predict functions / all require TF

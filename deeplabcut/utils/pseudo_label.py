@@ -150,7 +150,7 @@ def keypoint_matching(
     device: str | None = None,
     train_file: str = "train.json",
 ):
-    """Runs the keypoint matching algorithm for a DeepLabCut project
+    """Runs the keypoint matching algorithm for a DeepLabCut project.
 
     Matches project keypoints to SuperAnimal keypoints automatically, by running
     SuperAnimal inference on all images in the dataset

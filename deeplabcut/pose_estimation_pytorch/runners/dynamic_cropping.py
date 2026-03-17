@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Modules to dynamically crop individuals out of videos to improve video analysis"""
+"""Modules to dynamically crop individuals out of videos to improve video analysis."""
 
 import math
 from dataclasses import dataclass, field
@@ -20,15 +20,14 @@ import torchvision.transforms.functional as F
 
 @dataclass
 class DynamicCropper:
-    """
-    If the state is true, then dynamic cropping will be performed. That means that
-    if an object is detected (i.e. any body part > detection threshold), then object
+    """If the state is true, then dynamic cropping will be performed. That means that if
+    an object is detected (i.e. any body part > detection threshold), then object
     boundaries are computed according to the smallest/largest x position and
-    smallest/largest y position of all body parts. This window is expanded by the
-    margin and from then on only the posture within this crop is analyzed (until the
-    object is lost, i.e. < detection threshold). The current position is utilized for
-    updating the crop window for the next frame (this is why the margin is important
-    and should be set large enough given the movement of the animal).
+    smallest/largest y position of all body parts. This window is expanded by the margin
+    and from then on only the posture within this crop is analyzed (until the object is
+    lost, i.e. < detection threshold). The current position is utilized for updating the
+    crop window for the next frame (this is why the margin is important and should be
+    set large enough given the movement of the animal).
 
     Attributes:
         threshold: float
@@ -148,12 +147,12 @@ class DynamicCropper:
         return pose
 
     def reset(self) -> None:
-        """Resets the DynamicCropper to not crop the next frame"""
+        """Resets the DynamicCropper to not crop the next frame."""
         self._crop = None
 
     @staticmethod
     def build(dynamic: bool, threshold: float, margin: int) -> Optional["DynamicCropper"]:
-        """Builds the DynamicCropper based on the given parameters
+        """Builds the DynamicCropper based on the given parameters.
 
         Args:
             dynamic: Whether dynamic cropping should be used
@@ -505,8 +504,7 @@ class TopDownDynamicCropper(DynamicCropper):
 
     @staticmethod
     def split_array(size: int, n: int, overlap: int) -> list[tuple[int, int]]:
-        """
-        Splits an array into n segments of equal size, where the overlap between each
+        """Splits an array into n segments of equal size, where the overlap between each
         segment is at least a given value.
 
         Args:
@@ -525,7 +523,7 @@ class TopDownDynamicCropper(DynamicCropper):
         segment_size = (padded_size // n) + (padded_size % n > 0)
         segments = []
         end = overlap
-        for i in range(n):
+        for _i in range(n):
             start = end - overlap
             end = start + segment_size
             if end > size:

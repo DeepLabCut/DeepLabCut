@@ -93,7 +93,7 @@ class CondProvider(ABC):
 
 
 class CondFromFile(CondProvider):
-    """A class providing conditions for a CTD model from a file
+    """A class providing conditions for a CTD model from a file.
 
     Args:
         filepath: The path to the file containing the conditions for the CTD model.
@@ -169,7 +169,7 @@ class CondFromFile(CondProvider):
         images: list[str] | None = None,
         path_prefix: str | Path | None = None,
     ) -> dict[str, np.ndarray] | list[np.ndarray]:
-        """Loads conditions for a model from a pandas DataFrame stored in an HDF file
+        """Loads conditions for a model from a pandas DataFrame stored in an HDF file.
 
         When loading conditions for individual images, the `images` must be provided
         (indicating which images to load conditions for). A dict is returned containing
@@ -394,7 +394,7 @@ class CondFromFile(CondProvider):
 
     @staticmethod
     def load_conditions_pickle(filepath: str | Path) -> list[np.ndarray]:
-        """Loads conditions from a `*_assemblies.pickle` file containing predictions
+        """Loads conditions from a `*_assemblies.pickle` file containing predictions.
 
         Args:
             filepath: Path to the Pickle file containing conditions.

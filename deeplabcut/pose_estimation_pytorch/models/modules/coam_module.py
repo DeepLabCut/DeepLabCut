@@ -16,9 +16,7 @@ from torch.nn import init
 
 
 class CoAMBlock(nn.Module):
-    """
-    Conditional Attention Module (CoAM) block.
-    """
+    """Conditional Attention Module (CoAM) block."""
 
     def __init__(self, spat_dims, channel_list, cond_enc, n_heads=1, channel_only=False):
         super().__init__()
@@ -208,9 +206,7 @@ class SelfAttentionModule_CoAM(nn.Module):
 
 # taken from: https://github.com/xmu-xiaoma666/External-Attention-pytorch/blob/master/model/attention/SelfAttention.py
 class ScaledDotProductAttention(nn.Module):
-    """
-    Scaled dot-product attention
-    """
+    """Scaled dot-product attention."""
 
     def __init__(self, in_dim_q, in_dim_k, d_k, d_v, h, dropout=0.1, rev=False):
         """
@@ -254,13 +250,13 @@ class ScaledDotProductAttention(nn.Module):
                     init.constant_(m.bias, 0)
 
     def forward(self, queries, keys, values, attention_mask=None, attention_weights=None):
-        """
-        Computes
-        :param queries: Queries (b_s, nq, d_model)
-        :param keys: Keys (b_s, nk, d_model)
-        :param values: Values (b_s, nk, d_model)
-        :param attention_mask: Mask over attention values (b_s, h, nq, nk). True indicates masking.
-        :param attention_weights: Multiplicative weights for attention values (b_s, h, nq, nk).
+        """Computes :param queries: Queries (b_s, nq, d_model) :param keys: Keys (b_s,
+        nk, d_model) :param values: Values (b_s, nk, d_model) :param attention_mask:
+        Mask over attention values (b_s, h, nq, nk).
+
+        True indicates masking.
+        :param attention_weights: Multiplicative weights for attention values (b_s, h,
+            nq, nk).
         :return:
         """
         b_s, nq = queries.shape[:2]
@@ -285,9 +281,7 @@ class ScaledDotProductAttention(nn.Module):
 
 # taken from: https://github.com/xmu-xiaoma666/External-Attention-pytorch/blob/master/model/attention/SimplifiedSelfAttention.py
 class SimplifiedScaledDotProductAttention(nn.Module):
-    """
-    Scaled dot-product attention
-    """
+    """Scaled dot-product attention."""
 
     def __init__(self, d_model, h, dropout=0.1):
         """
@@ -323,13 +317,13 @@ class SimplifiedScaledDotProductAttention(nn.Module):
                     init.constant_(m.bias, 0)
 
     def forward(self, queries, keys, values, attention_mask=None, attention_weights=None):
-        """
-        Computes
-        :param queries: Queries (b_s, nq, d_model)
-        :param keys: Keys (b_s, nk, d_model)
-        :param values: Values (b_s, nk, d_model)
-        :param attention_mask: Mask over attention values (b_s, h, nq, nk). True indicates masking.
-        :param attention_weights: Multiplicative weights for attention values (b_s, h, nq, nk).
+        """Computes :param queries: Queries (b_s, nq, d_model) :param keys: Keys (b_s,
+        nk, d_model) :param values: Values (b_s, nk, d_model) :param attention_mask:
+        Mask over attention values (b_s, h, nq, nk).
+
+        True indicates masking.
+        :param attention_weights: Multiplicative weights for attention values (b_s, h,
+            nq, nk).
         :return:
         """
         b_s, nq = queries.shape[:2]

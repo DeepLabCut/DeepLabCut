@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests for deeplabcut/generate_training_dataset/metadata.py"""
+"""Tests for deeplabcut/generate_training_dataset/metadata.py."""
 
 from __future__ import annotations
 
@@ -66,7 +66,7 @@ SHUFFLES = {
 )
 @pytest.mark.parametrize("load_splits", [True, False])
 def test_load_metadata(tmpdir, data: dict, load_splits: bool):
-    """Tests that loading the metadata from files doesn't fail"""
+    """Tests that loading the metadata from files doesn't fail."""
     # write data to tmp file
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
     with open(meta_path, "w") as f:
@@ -78,7 +78,7 @@ def test_load_metadata(tmpdir, data: dict, load_splits: bool):
     print(data["splits"])
     print()
 
-    for name, s in data["shuffles"].items():
+    for _name, s in data["shuffles"].items():
         split = data["splits"][s["split"]]
         train, test = split["train"], split["test"]
         _create_doc_data(cfg, trainset_dir, s["train_fraction"], s["index"], train, test)
@@ -161,7 +161,7 @@ def test_load_metadata(tmpdir, data: dict, load_splits: bool):
     ],
 )
 def test_save_metadata_simple(tmpdir, data):
-    """Tests that saving the metadata creates the expected file"""
+    """Tests that saving the metadata creates the expected file."""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
     trainset_meta = metadata.TrainingDatasetMetadata(cfg, data["shuffles"])
     print(trainset_meta)
@@ -179,7 +179,7 @@ def test_save_metadata_simple(tmpdir, data):
     [[SHUFFLES[i] for i in indices] for indices in [[1], [1, 2], [1, 2, 3], [1, 2, 4], [1, 3, 4], [1, 2, 3, 4]]],
 )
 def test_save_metadata(tmpdir, shuffles):
-    """Tests that saving the metadata and reloading it leads to the same instance"""
+    """Tests that saving the metadata and reloading it leads to the same instance."""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
     for s in shuffles:
         train, test = (
@@ -208,7 +208,7 @@ def test_save_metadata(tmpdir, shuffles):
 
 
 def test_add_shuffle(tmpdir):
-    """Tests that a shuffle can be added correctlt"""
+    """Tests that a shuffle can be added correctlt."""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
     trainset_meta = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1],))
     trainset_meta_added = trainset_meta.add(SHUFFLES[2])
@@ -218,7 +218,7 @@ def test_add_shuffle(tmpdir):
 
 
 def test_add_shuffle_twice(tmpdir):
-    """Tests that a shuffle can be added correctlt"""
+    """Tests that a shuffle can be added correctlt."""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
     trainset_meta = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1],))
     trainset_meta_added = trainset_meta.add(SHUFFLES[2])
@@ -230,7 +230,7 @@ def test_add_shuffle_twice(tmpdir):
 
 
 def test_add_shuffle_sorts_to_correct_order(tmpdir):
-    """Tests that a shuffle can be added correctlt"""
+    """Tests that a shuffle can be added correctlt."""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
     trainset_meta = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1], SHUFFLES[3]))
     trainset_meta_added = trainset_meta.add(SHUFFLES[2])
@@ -244,7 +244,7 @@ def test_add_shuffle_sorts_to_correct_order(tmpdir):
 )
 @pytest.mark.parametrize("shuffle_to_add", [1, 2, 3, 4])
 def test_add_shuffle(tmpdir, shuffles, shuffle_to_add):
-    """Tests"""
+    """Tests."""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
     trainset_meta = metadata.TrainingDatasetMetadata(cfg, tuple([SHUFFLES[i] for i in shuffles]))
     if shuffle_to_add in shuffles:
@@ -273,7 +273,7 @@ def test_add_shuffle(tmpdir, shuffles, shuffle_to_add):
     ],
 )
 def test_data_split_equality(split1, split2, equal):
-    """Tests that equality functions as expected for DataSplits"""
+    """Tests that equality functions as expected for DataSplits."""
     print(split1)
     print(split2)
     print(equal)
@@ -284,7 +284,7 @@ def test_data_split_equality(split1, split2, equal):
 @pytest.mark.parametrize("indices", [(2, 1), (10, 1), (1, 21, 20), (1, 2, 4, 3)])
 @pytest.mark.parametrize("sorted_indices", [(1, 2), (10, 12), (3, 4), (1, 1000, 1200)])
 def test_data_split_requires_sorted(split_idx: int, indices: tuple[int], sorted_indices: tuple[int]):
-    """Tests that equality functions as expected for DataSplits"""
+    """Tests that equality functions as expected for DataSplits."""
     with pytest.raises(RuntimeError):
         metadata.DataSplit(train_indices=tuple(indices), test_indices=tuple(sorted_indices))
 
@@ -309,7 +309,7 @@ def test_data_split_requires_sorted(split_idx: int, indices: tuple[int], sorted_
     ],
 )
 def test_create_metadata_from_shuffles(tmpdir, shuffles):
-    """Tests that equality functions as expected for DataSplits"""
+    """Tests that equality functions as expected for DataSplits."""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
     print(trainset_dir)
     for s in shuffles:
@@ -323,7 +323,7 @@ def test_create_metadata_from_shuffles(tmpdir, shuffles):
     print(trainset_metadata)
     assert len(trainset_metadata.shuffles) == len(shuffles)
 
-    for shuffle_data, shuffle in zip(shuffles, trainset_metadata.shuffles):
+    for shuffle_data, shuffle in zip(shuffles, trainset_metadata.shuffles, strict=False):
         print(shuffle.index)
         assert shuffle_data["idx"] == shuffle.index
         assert shuffle_data["train_fraction"] == shuffle.train_fraction

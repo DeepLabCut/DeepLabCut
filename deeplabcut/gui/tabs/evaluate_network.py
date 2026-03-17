@@ -47,7 +47,7 @@ class GridCanvas(QtWidgets.QDialog):
         self.canvas = FigureCanvas(self.figure)
         layout.addWidget(self.canvas)
 
-        for image_path, gridspec in zip(image_paths[:9], self.grid):
+        for image_path, gridspec in zip(image_paths[:9], self.grid, strict=False):
             ax = self.figure.add_subplot(gridspec)
             ax.set_axis_off()
             img = mpimg.imread(image_path)

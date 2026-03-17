@@ -14,8 +14,8 @@ import torch
 
 
 class Scheduler:
-    """Parameter Scheduler Base Class
-    A scheduler base class that can be used to schedule any optimizer parameter groups.
+    """Parameter Scheduler Base Class A scheduler base class that can be used to
+    schedule any optimizer parameter groups.
 
     Unlike the builtin PyTorch schedulers, this is intended to be consistently called
     * At the END of each epoch, before incrementing the epoch count, to calculate next epoch's value
@@ -93,7 +93,7 @@ class Scheduler:
     def update_groups(self, values):
         if not isinstance(values, (list, tuple)):
             values = [values] * len(self.optimizer.param_groups)
-        for param_group, value in zip(self.optimizer.param_groups, values):
+        for param_group, value in zip(self.optimizer.param_groups, values, strict=False):
             param_group[self.param_group_field] = value
 
     def _add_noise(self, lrs, t):

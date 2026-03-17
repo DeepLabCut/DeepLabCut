@@ -24,8 +24,8 @@ def get_target(
     locref_std: float,
     pos_dist_thresh: int,
 ):
-    """Summary
-    Getting the target generator for certain annotations, predictions and image size.
+    """Summary Getting the target generator for certain annotations, predictions and
+    image size.
 
     Args:
         batch_size (int): number of images
@@ -48,7 +48,6 @@ def get_target(
             locref_stdev = 7.2801
             pos_dist_thresh = 17
         output:
-
     """
     labels = {
         "keypoints": torch.randint(1, min(image_size), (batch_size, num_animals, num_joints, 2))
@@ -150,9 +149,9 @@ def test_single_animal(
     locref_stdev: float,
     pos_dist_thresh: int,
 ):
-    """Summary
-    Testing, for single animals experiments (num_animals=1) if the distance between the expected keypoints
-    and the annotations keypoints is smaller than the radius plateau.
+    """Summary Testing, for single animals experiments (num_animals=1) if the distance
+    between the expected keypoints and the annotations keypoints is smaller than the
+    radius plateau.
 
     'argmax' function returns the indices of the max values of all elements in the input tensor.
     If there are multiple maximal values, such as in our case because it's a plateau, then the

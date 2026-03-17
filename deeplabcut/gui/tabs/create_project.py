@@ -27,7 +27,7 @@ from deeplabcut.utils import auxiliaryfunctions
 
 
 class DynamicTextList(QtWidgets.QWidget):
-    """Dynamically add text entries"""
+    """Dynamically add text entries."""
 
     def __init__(self, label_text="bodyparts", parent=None):
         super().__init__(parent)
@@ -131,7 +131,7 @@ class DynamicTextList(QtWidgets.QWidget):
         return [entry[0].text() for entry in self.entries if entry[0].text()]
 
     def _update_indices(self):
-        for i, (entry, index_label) in enumerate(self.entries):
+        for i, (_entry, index_label) in enumerate(self.entries):
             index_label.setText(str(i + 1) + ".")
 
 
@@ -177,7 +177,7 @@ class Switch(QtWidgets.QPushButton):
 
 
 class ProjectCreator(QtWidgets.QDialog):
-    """Project creation dialog"""
+    """Project creation dialog."""
 
     def __init__(self, parent):
         super().__init__(parent)

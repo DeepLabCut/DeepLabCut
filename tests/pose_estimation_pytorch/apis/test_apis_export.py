@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests exporting models"""
+"""Tests exporting models."""
 
 import copy
 import shutil

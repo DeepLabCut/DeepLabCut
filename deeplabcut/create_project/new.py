@@ -175,9 +175,7 @@ def create_new_project(
     videos = collected_videos
     dirs = [data_path / i.stem for i in videos]
     for p in dirs:
-        """
-        Creates directory under data
-        """
+        """Creates directory under data."""
         p.mkdir(parents=True, exist_ok=True)
 
     destinations = [video_path.joinpath(vp.name) for vp in videos]

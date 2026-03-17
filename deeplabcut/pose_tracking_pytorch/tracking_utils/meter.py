@@ -9,7 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 class AverageMeter:
-    """Computes and stores the average and current value"""
+    """Computes and stores the average and current value."""
 
     def __init__(self):
         self.val = 0

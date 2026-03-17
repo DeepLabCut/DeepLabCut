@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Code to handle storing models"""
+"""Code to handle storing models."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from pathlib import Path
 
 @dataclass(frozen=True)
 class Snapshot:
-    """A snapshot for a model"""
+    """A snapshot for a model."""
 
     best: bool
     epochs: int | None

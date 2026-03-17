@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Module to display information about the selected shuffle in the GUI"""
+"""Module to display information about the selected shuffle in the GUI."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ from deeplabcut.utils import auxiliaryfunctions
 
 
 class SelectedShuffleDisplay(QtWidgets.QWidget):
-    """A widget displaying information about the selected shuffle"""
+    """A widget displaying information about the selected shuffle."""
 
     pose_cfg_signal = QtCore.Signal(dict)
 

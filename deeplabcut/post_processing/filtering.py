@@ -22,10 +22,8 @@ from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 
 def columnwise_spline_interp(data, max_gap=0):
-    """
-    Perform cubic spline interpolation over the columns of *data*.
-    All gaps of size lower than or equal to *max_gap* are filled,
-    and data slightly smoothed.
+    """Perform cubic spline interpolation over the columns of *data*. All gaps of size
+    lower than or equal to *max_gap* are filled, and data slightly smoothed.
 
     Parameters
     ----------
@@ -54,7 +52,7 @@ def columnwise_spline_interp(data, max_gap=0):
                 count = np.diff(inds)
                 inds = inds[:-1]
                 to_fill = np.ones_like(mask)
-                for ind, n, is_nan in zip(inds, count, ~mask[inds]):
+                for ind, n, is_nan in zip(inds, count, ~mask[inds], strict=False):
                     if is_nan and n > max_gap:
                         to_fill[ind : ind + n] = False
                 y[~to_fill] = np.nan
@@ -227,7 +225,7 @@ def filterpredictions(
         if destfolder is None:
             destfolder = str(Path(video).parents[0])
 
-        print("Filtering with %s model %s" % (filtertype, video))
+        print(f"Filtering with {filtertype} model {video}")
         vname = Path(video).stem
 
         try:

@@ -188,9 +188,8 @@ class DEKRGenerator(BaseGenerator):
 
 
 def dekr_heatmap_val(sigma: float, x: float, y: float, x0: float, y0: float) -> float:
-    """
-    Calculates the corresponding heat value of point (x,y) given the heat distribution centered
-    at (x0,y0) and spread value of sigma.
+    """Calculates the corresponding heat value of point (x,y) given the heat
+    distribution centered at (x0,y0) and spread value of sigma.
 
     Args:
         sigma: controls the spread or width of the heat distribution

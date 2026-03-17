@@ -270,7 +270,7 @@ class CreateVideos(DefaultTab):
         if all(videos_created):
             self.root.writer.write("Labeled videos created.")
         else:
-            failed_videos = [video for success, video in zip(videos_created, videos) if not success]
+            failed_videos = [video for success, video in zip(videos_created, videos, strict=False) if not success]
             failed_videos_str = ", ".join(failed_videos)
             self.root.writer.write(f"Failed to create videos from {failed_videos_str}.")
 

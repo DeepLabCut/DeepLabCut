@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Visualization methods for"""
+"""Visualization methods for."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ import numpy as np
 
 
 def form_figure(nx, ny) -> tuple[plt.Figure, plt.Axes]:
-    """Forms a figure on which to plot images"""
+    """Forms a figure on which to plot images."""
     fig, ax = plt.subplots(frameon=False)
     ax.set_xlim(0, nx)
     ax.set_ylim(0, ny)

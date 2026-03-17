@@ -22,7 +22,10 @@ from deeplabcut.pose_estimation_tensorflow.training import return_train_network_
 
 
 def pairwisedistances(DataCombined, scorer1, scorer2, pcutoff=-1, bodyparts=None):
-    """Calculates the pairwise Euclidean distance metric over body parts vs. images"""
+    """Calculates the pairwise Euclidean distance metric over body parts vs.
+
+    images
+    """
     mask = DataCombined[scorer2].xs("likelihood", level=1, axis=1) >= pcutoff
     if bodyparts is None:
         Pointwisesquareddistance = (DataCombined[scorer1] - DataCombined[scorer2]) ** 2
@@ -165,7 +168,7 @@ def calculatepafdistancebounds(config, shuffle=0, trainingsetindex=0, modelprefi
 
 
 def Plotting(cfg, comparisonbodyparts, DLCscorer, trainIndices, DataCombined, foldername):
-    """Function used for plotting GT and predictions"""
+    """Function used for plotting GT and predictions."""
     from deeplabcut.utils import visualization
 
     colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
@@ -199,9 +202,10 @@ def return_evaluate_network_data(
     modelprefix="",
     returnjustfns=True,
 ):
-    """
-    Returns the results for (previously evaluated) network. deeplabcut.evaluate_network(..)
-    Returns list of (per model): [trainingsiterations,trainfraction,shuffle,trainerror,testerror,pcutoff,trainerrorpcutoff,testerrorpcutoff,Snapshots[snapindex],scale,net_type]
+    """Returns the results for (previously evaluated) network.
+    deeplabcut.evaluate_network(..) Returns list of (per model): [trainingsiterations,tr
+    ainfraction,shuffle,trainerror,testerror,pcutoff,trainerrorpcutoff,testerrorpcutoff,
+    Snapshots[snapindex],scale,net_type]
 
     If fulldata=True, also returns (the complete annotation and prediction array)
     Returns list of: (DataMachine, Data, data, trainIndices, testIndices, trainFraction, DLCscorer,comparisonbodyparts, cfg, Snapshots[snapindex])
@@ -441,7 +445,7 @@ def keypoint_error(
     train_indices: list[int],
     test_indices: list[int],
 ) -> pd.DataFrame:
-    """Computes the RMSE error for each bodypart
+    """Computes the RMSE error for each bodypart.
 
     The error dataframes can be in single animal format (non-hierarchical columns, one
     column for each bodypart) or multi-animal format (hierarchical columns with 3
@@ -947,10 +951,10 @@ def evaluate_network(
 
 
 def make_results_file(final_result, evaluationfolder, DLCscorer):
-    """
-    Makes result file in csv format and saves under evaluation_results directory.
-    If the file exists (typically, when the network has already been evaluated),
-    newer results are appended to it.
+    """Makes result file in csv format and saves under evaluation_results directory.
+
+    If the file exists (typically, when the network has already been evaluated), newer
+    results are appended to it.
     """
     col_names = [
         "Training iterations:",
@@ -985,8 +989,7 @@ def get_available_requested_snapshots(
     requested_snapshots: list[str],
     available_snapshots: list[str],
 ) -> list[str]:
-    """
-    Intersects the requested snapshot names with the available snapshots.
+    """Intersects the requested snapshot names with the available snapshots.
 
     Returns: snapshot names
     """
@@ -1010,8 +1013,9 @@ def get_snapshots_by_index(
     idx: int | str,
     available_snapshots: list[str],
 ) -> list[str]:
-    """
-    Assume available_snapshots is ordered in ascending order. Returns snapshot names.
+    """Assume available_snapshots is ordered in ascending order.
+
+    Returns snapshot names.
     """
     if isinstance(idx, int) and -len(available_snapshots) <= idx < len(available_snapshots):
         return [available_snapshots[idx]]

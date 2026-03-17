@@ -8,9 +8,9 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""
-Uses imgaug dataflow for flexible augmentation
-Largely written by Mert Yüksekgönül during the summer in the Bethge lab -- Thanks!
+"""Uses imgaug dataflow for flexible augmentation Largely written by Mert Yüksekgönül
+during the summer in the Bethge lab -- Thanks!
+
 https://imgaug.readthedocs.io/en/latest/
 """
 

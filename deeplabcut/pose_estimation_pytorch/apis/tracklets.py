@@ -57,7 +57,7 @@ def convert_detections2tracklets(
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
     if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
-        warnings.warn("Switching to `box` tracker for single point tracking...")
+        warnings.warn("Switching to `box` tracker for single point tracking...", stacklevel=2)
         track_method = "box"
         cfg["default_track_method"] = track_method
         auxiliaryfunctions.write_config(config, cfg)
@@ -97,7 +97,7 @@ def convert_detections2tracklets(
     auxfun_multianimal.check_inferencecfg_sanity(cfg, inference_cfg)
 
     if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
-        warnings.warn("Switching to `box` tracker for single point tracking...")
+        warnings.warn("Switching to `box` tracker for single point tracking...", stacklevel=2)
         track_method = "box"
         # Also ensure `boundingboxslack` is greater than zero, otherwise overlap
         # between trackers cannot be evaluated, resulting in empty tracklets.
@@ -273,7 +273,7 @@ def build_tracklets(
                     unique_ids, idx = np.unique(animal_pose[:, 3], return_inverse=True)
                     total_scores = np.bincount(idx, weights=animal_pose[:, 2])
                     softmax_id_scores = softmax(total_scores)
-                    for pred_id, softmax_score in zip(unique_ids.astype(int), softmax_id_scores):
+                    for pred_id, softmax_score in zip(unique_ids.astype(int), softmax_id_scores, strict=False):
                         mat[row, pred_id] = softmax_score
 
                 inds = linear_sum_assignment(mat, maximize=True)
@@ -307,10 +307,8 @@ def _create_tracklets_header(joints, dlc_scorer):
 def _conv_predictions_to_assemblies(
     image_names: list[str], predictions: dict[str, np.ndarray]
 ) -> dict[int, list[Assembly]]:
-    """
-    Converts predictions to an assemblies dictionary
-    predictions shape (num_animals, num_keypoints, 2 or 3)
-    """
+    """Converts predictions to an assemblies dictionary predictions shape (num_animals,
+    num_keypoints, 2 or 3)"""
     assemblies = {}
     if len(predictions) == 0:
         return assemblies

@@ -124,6 +124,7 @@ class BasePoseNet(metaclass=abc.ABCMeta):
 
     def inference(self, inputs):
         """Direct TF inference on GPU.
+
         Added with: https://arxiv.org/abs/1909.11229
         """
         heads = self.get_net(inputs)
@@ -174,7 +175,7 @@ class BasePoseNet(metaclass=abc.ABCMeta):
         return {"pose": pose}
 
     def add_inference_layers(self, heads):
-        """initialized during inference"""
+        """Initialized during inference."""
         prob = tf.sigmoid(heads["part_pred"])
         nms_radius = int(self.cfg.get("nmsradius", 5))
 

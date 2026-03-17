@@ -30,7 +30,7 @@ import pandas as pd
 
 
 def Foldernames3Dproject(cfg_3d):
-    """Definitions of subfolders in 3D projects"""
+    """Definitions of subfolders in 3D projects."""
 
     img_path = os.path.join(cfg_3d["project_path"], "calibration_images")
     path_corners = os.path.join(cfg_3d["project_path"], "corners")
@@ -74,9 +74,7 @@ def create_empty_df(dataframe, scorer, flag):
 def compute_triangulation_calibration_images(
     stereo_matrix, projectedPoints1, projectedPoints2, path_undistort, cfg_3d, plot=True
 ):
-    """
-    Performs triangulation of the calibration images.
-    """
+    """Performs triangulation of the calibration images."""
     triangulate = []
     P1 = stereo_matrix["P1"]
     P2 = stereo_matrix["P2"]
@@ -114,11 +112,11 @@ def triangulatePoints(P1, P2, x1, x2):
 
 
 def get_camerawise_videos(path, cam_names, videotype):
-    """
-    This function returns the list of videos corresponding to the camera names specified in the cam_names.
-    e.g. if cam_names = ['camera-1','camera-2']
+    """This function returns the list of videos corresponding to the camera names
+    specified in the cam_names. e.g. if cam_names = ['camera-1','camera-2']
 
-    then it will return [['somename-camera-1-othername.avi', 'somename-camera-2-othername.avi']]
+    then it will return [['somename-camera-1-othername.avi', 'somename-
+    camera-2-othername.avi']]
     """
     import glob
     from pathlib import Path
@@ -164,9 +162,7 @@ def get_camerawise_videos(path, cam_names, videotype):
 
 
 def Get_list_of_triangulated_and_videoFiles(filepath, videotype, scorer_3d, cam_names, videofolder):
-    """
-    Returns the list of triangulated h5 and the corresponding video files.
-    """
+    """Returns the list of triangulated h5 and the corresponding video files."""
 
     prefix = []
     suffix = []
@@ -175,9 +171,7 @@ def Get_list_of_triangulated_and_videoFiles(filepath, videotype, scorer_3d, cam_
 
     # Checks if filepath is a directory
     if [os.path.isdir(i) for i in filepath] == [True]:
-        """
-        Analyzes all the videos in the directory.
-        """
+        """Analyzes all the videos in the directory."""
         print("Analyzing all the videos in the directory")
         videofolder = filepath[0]
         cwd = os.getcwd()
@@ -277,9 +271,8 @@ def _reconstruct_tracks_as_tracklets(df):
 
 
 def _associate_paired_view_tracks(tracklets1, tracklets2, F):
-    """
-    Computes the optimal matching between tracks in two cameras
-    using the xFx'=0 epipolar constraint equation.
+    """Computes the optimal matching between tracks in two cameras using the xFx'=0
+    epipolar constraint equation.
 
     Parameters:
     -----------
@@ -322,9 +315,7 @@ def _associate_paired_view_tracks(tracklets1, tracklets2, F):
 
 
 def cross_view_match_dataframes(df1, df2, F):
-    """
-    Computes the costs and matched voting for tracks between
-    a camera pair
+    """Computes the costs and matched voting for tracks between a camera pair.
 
     df: Data read from .h5 track file
     F: fundamental matrix from OpenCV

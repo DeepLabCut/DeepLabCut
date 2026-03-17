@@ -26,8 +26,8 @@ import numpy as np
 
 
 class VideoProcessor:
-    """
-    Base class for a video processing unit, implementation is required for video loading and saving
+    """Base class for a video processing unit, implementation is required for video
+    loading and saving.
 
     sh and sw are the output height and width respectively.
     """
@@ -85,47 +85,32 @@ class VideoProcessor:
         return self.nframes
 
     def get_video(self):
-        """
-        implement your own
-        """
+        """Implement your own."""
         pass
 
     def get_info(self):
-        """
-        implement your own
-        """
+        """Implement your own."""
         pass
 
     def create_video(self):
-        """
-        implement your own
-        """
+        """Implement your own."""
         pass
 
     def _read_frame(self):
-        """
-        implement your own
-        """
+        """Implement your own."""
         pass
 
     def save_frame(self, frame):
-        """
-        implement your own
-        """
+        """Implement your own."""
         pass
 
     def close(self):
-        """
-        implement your own
-        """
+        """Implement your own."""
         pass
 
 
 class VideoProcessorCV(VideoProcessor):
-    """
-    OpenCV implementation of VideoProcessor
-    requires opencv-python==3.4.0.12
-    """
+    """OpenCV implementation of VideoProcessor requires opencv-python==3.4.0.12."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

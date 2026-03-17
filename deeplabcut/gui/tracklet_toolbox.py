@@ -57,9 +57,7 @@ class DraggablePoint:
         self.cidhover = self.point.figure.canvas.mpl_connect("motion_notify_event", self.on_hover)
 
     def on_press(self, event):
-        """
-        Define the event for the button press!
-        """
+        """Define the event for the button press!"""
         if event.inaxes != self.point.axes:
             return
         if DraggablePoint.lock is not None:
@@ -68,9 +66,7 @@ class DraggablePoint:
         if not contains:
             return
         if event.button == 1:
-            """
-            This button press corresponds to the left click
-            """
+            """This button press corresponds to the left click."""
             self.press = (self.point.center), event.xdata, event.ydata
             DraggablePoint.lock = self
             canvas = self.point.figure.canvas
@@ -81,9 +77,11 @@ class DraggablePoint:
             axes.draw_artist(self.point)
             canvas.blit(axes.bbox)
         elif event.button == 2:
-            """
-            To remove a predicted label. Internally, the coordinates of the selected predicted label is replaced with nan. The user needs to middle click for the event. After right
-            click the data point is removed from the plot.
+            """To remove a predicted label.
+
+            Internally, the coordinates of the selected predicted label is replaced with
+            nan. The user needs to middle click for the event. After right click the
+            data point is removed from the plot.
             """
             message = f"Do you want to remove the label {self.bodyParts}?"
             if self.likelihood is not None:
@@ -106,9 +104,7 @@ class DraggablePoint:
         self.point.figure.canvas.draw()
 
     def on_motion(self, event):
-        """
-        During the drag!
-        """
+        """During the drag!"""
         if DraggablePoint.lock is not self:
             return
         if event.inaxes != self.point.axes:
@@ -145,9 +141,8 @@ class DraggablePoint:
             self.coords.append(self.final_point)
 
     def on_hover(self, event):
-        """
-        Annotate the labels and likelihood when the user hovers over the data points.
-        """
+        """Annotate the labels and likelihood when the user hovers over the data
+        points."""
         vis = self.annot.get_visible()
 
         if event.inaxes == self.point.axes:

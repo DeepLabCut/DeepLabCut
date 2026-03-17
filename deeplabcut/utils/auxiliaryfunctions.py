@@ -36,8 +36,9 @@ from deeplabcut.utils import auxfun_multianimal, auxfun_videos
 
 
 def create_config_template(multianimal=False):
-    """
-    Creates a template for config.yaml file. This specific order is preserved while saving as yaml file.
+    """Creates a template for config.yaml file.
+
+    This specific order is preserved while saving as yaml file.
     """
     if multianimal:
         yaml_str = """\
@@ -163,8 +164,9 @@ SuperAnimalConversionTables:
 
 
 def create_config_template_3d():
-    """
-    Creates a template for config.yaml file for 3d project. This specific order is preserved while saving as yaml file.
+    """Creates a template for config.yaml file for 3d project.
+
+    This specific order is preserved while saving as yaml file.
     """
     yaml_str = """\
 # Project definitions (do not edit)
@@ -196,9 +198,7 @@ scorername_3d: # Enter the scorer name for the 3D output
 
 
 def read_config(configname):
-    """
-    Reads structured config file defining a project.
-    """
+    """Reads structured config file defining a project."""
     ruamelFile = YAML()
     path = Path(configname)
     if os.path.exists(path):
@@ -237,9 +237,7 @@ def read_config(configname):
 
 
 def write_config(configname, cfg):
-    """
-    Write structured config file.
-    """
+    """Write structured config file."""
     with open(configname, "w") as cf:
         cfg_file, ruamelFile = create_config_template(cfg.get("multianimalproject", False))
         for key in cfg.keys():
@@ -258,8 +256,7 @@ def write_config(configname, cfg):
 
 
 def edit_config(configname, edits, output_name=""):
-    """
-    Convenience function to edit and save a config file from a dictionary.
+    """Convenience function to edit and save a config file from a dictionary.
 
     Parameters
     ----------
@@ -333,9 +330,7 @@ def get_unique_bodyparts(cfg: dict) -> list[str]:
 
 
 def write_config_3d(configname, cfg):
-    """
-    Write structured 3D config file.
-    """
+    """Write structured 3D config file."""
     with open(configname, "w") as cf:
         cfg_file, ruamelFile = create_config_template_3d()
         for key in cfg.keys():
@@ -361,7 +356,10 @@ def write_plainconfig(configname, cfg):
 
 
 def attempt_to_make_folder(foldername, recursive=False):
-    """Attempts to create a folder with specified name. Does nothing if it already exists."""
+    """Attempts to create a folder with specified name.
+
+    Does nothing if it already exists.
+    """
     try:
         os.path.isdir(foldername)
     except TypeError:  # https://www.python.org/dev/peps/pep-0519/
@@ -377,13 +375,13 @@ def attempt_to_make_folder(foldername, recursive=False):
 
 
 def read_pickle(filename):
-    """Read the pickle file"""
+    """Read the pickle file."""
     with open(filename, "rb") as handle:
         return pickle.load(handle)
 
 
 def write_pickle(filename, data):
-    """Write the pickle file"""
+    """Write the pickle file."""
     with open(filename, "wb") as handle:
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -393,8 +391,8 @@ def get_list_of_videos(
     videotype: list[str] | str = "",
     in_random_order: bool = True,
 ) -> list[str]:
-    """Returns list of videos of videotype "videotype" in
-    folder videos or for list of videos.
+    """Returns list of videos of videotype "videotype" in folder videos or for list of
+    videos.
 
     NOTE: excludes keyword videos of the form:
 
@@ -414,9 +412,7 @@ def get_list_of_videos(
         videos = [videos]
 
     if [os.path.isdir(i) for i in videos] == [True]:  # checks if input is a directory
-        """
-        Returns all the videos in the directory.
-        """
+        """Returns all the videos in the directory."""
         if not videotype:
             videotype = auxfun_videos.SUPPORTED_VIDEOS
 
@@ -451,7 +447,8 @@ def get_list_of_videos(
 
 
 def save_data(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv):
-    """Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py"""
+    """Save predicted data as h5 file and metadata as pickle file; created by
+    predict_videos.py."""
     DataMachine = pd.DataFrame(PredicteData, columns=pdindex, index=imagenames)
     if save_as_csv:
         print("Saving csv poses!")
@@ -480,7 +477,7 @@ def load_metadata(metadatafile):
 
 
 def get_immediate_subdirectories(a_dir):
-    """Get list of immediate subdirectories"""
+    """Get list of immediate subdirectories."""
     return [name for name in os.listdir(a_dir) if os.path.isdir(os.path.join(a_dir, name))]
 
 
@@ -497,8 +494,7 @@ def filter_files_by_patterns(
     contain_patterns: set[str] | None = None,
     end_patterns: set[str] | None = None,
 ) -> list[Path]:
-    """
-    Filters files in a folder based on start, contain, and end patterns.
+    """Filters files in a folder based on start, contain, and end patterns.
 
     Args:
         folder (str | Path): The folder to search for files.
@@ -533,7 +529,8 @@ def filter_files_by_patterns(
 
 
 def get_video_list(filename, videopath, videtype):
-    """Get list of videos in a path (if filetype == all), otherwise just a specific file."""
+    """Get list of videos in a path (if filetype == all), otherwise just a specific
+    file."""
     videos = list(grab_files_in_folder(videopath, videtype))
     if filename == "all":
         return videos
@@ -548,7 +545,7 @@ def get_video_list(filename, videopath, videtype):
 
 ## Various functions to get filenames, foldernames etc. based on configuration parameters.
 def get_training_set_folder(cfg: dict) -> Path:
-    """Training Set folder for config file based on parameters"""
+    """Training Set folder for config file based on parameters."""
     Task = cfg["Task"]
     date = cfg["date"]
     iterate = "iteration-" + str(cfg["iteration"])
@@ -653,8 +650,7 @@ def get_evaluation_folder(
 
 
 def get_snapshots_from_folder(train_folder: Path) -> list[str]:
-    """
-    Returns an ordered list of existing snapshot names in the train folder, sorted by
+    """Returns an ordered list of existing snapshot names in the train folder, sorted by
     increasing training iterations.
 
     Raises:
@@ -674,14 +670,15 @@ def get_snapshots_from_folder(train_folder: Path) -> list[str]:
 
 
 def get_deeplabcut_path():
-    """Get path of where deeplabcut is currently running"""
+    """Get path of where deeplabcut is currently running."""
     import importlib.util
 
     return os.path.split(importlib.util.find_spec("deeplabcut").origin)[0]
 
 
 def intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts):
-    """Returns all body parts when comparisonbodyparts=='all', otherwise all bpts that are in the intersection of comparisonbodyparts and the actual bodyparts"""
+    """Returns all body parts when comparisonbodyparts=='all', otherwise all bpts that
+    are in the intersection of comparisonbodyparts and the actual bodyparts."""
     # if "MULTI!" in allbpts:
     if cfg["multianimalproject"]:
         allbpts = cfg["multianimalbodyparts"] + cfg["uniquebodyparts"]
@@ -793,8 +790,11 @@ def get_scorer_name(
 
 
 def check_if_post_processing(folder, vname, DLCscorer, DLCscorerlegacy, suffix="filtered"):
-    """Checks if filtered/bone lengths were already calculated. If not, figures
-    out if data was already analyzed (either with legacy scorer name or new one!)"""
+    """Checks if filtered/bone lengths were already calculated.
+
+    If not, figures out if data was already analyzed (either with legacy scorer name or
+    new one!)
+    """
     outdataname = os.path.join(folder, vname + DLCscorer + suffix + ".h5")
     sourcedataname = os.path.join(folder, vname + DLCscorer + ".h5")
     if os.path.isfile(outdataname):  # was data already processed?
@@ -880,7 +880,7 @@ def find_video_full_data(folder, videoname, scorer):
 
 
 def find_video_metadata(folder, videoname: str, scorer: str):
-    """For backward compatibility, let us search the substring 'meta'"""
+    """For backward compatibility, let us search the substring 'meta'."""
 
     scorer_legacy = scorer.replace("DLC", "DeepCut")
     meta_files = filter_files_by_patterns(

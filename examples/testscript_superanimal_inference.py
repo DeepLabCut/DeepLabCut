@@ -8,10 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""
-Testscript for super animal inference
-
-"""
+"""Testscript for super animal inference."""
 
 import os
 

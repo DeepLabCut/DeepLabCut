@@ -9,8 +9,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""
-Created on Mon Nov 5 18:06:13 2018
+"""Created on Mon Nov 5 18:06:13 2018.
 
 @author: alex
 

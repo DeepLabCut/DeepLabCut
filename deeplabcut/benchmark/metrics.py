@@ -55,7 +55,7 @@ def _format_gt_data(h5file: str, test_indices: list[int] | None = None):
 
     meta = {"animals": animals, "keypoints": kpts, "n_unique": n_unique}
     return {
-        "annotations": dict(zip(file_paths, data)),
+        "annotations": dict(zip(file_paths, data, strict=False)),
         "metadata": meta,
     }
 
@@ -108,10 +108,8 @@ def calc_prediction_errors(preds, gt):
 
 
 def _map(strings, substrings):
-    """
-    Map image paths from predicted data to GT as the first are typically
-    absolute whereas the latter are relative to the project path.
-    """
+    """Map image paths from predicted data to GT as the first are typically absolute
+    whereas the latter are relative to the project path."""
 
     lookup = dict()
     strings_ = strings.copy()
@@ -251,10 +249,8 @@ def calc_rmse_from_obj(
 
 
 def load_test_images(h5file: str, metadata: str) -> list[str]:
-    """
-    Returns the names of the test images for the benchmark, in the order corresponding
-    to the test indices.
-    """
+    """Returns the names of the test images for the benchmark, in the order
+    corresponding to the test indices."""
     df = pd.read_hdf(h5file)
     test_indices = _load_test_indices(metadata)
     df_test = df.iloc[test_indices]
@@ -267,7 +263,7 @@ def load_test_images(h5file: str, metadata: str) -> list[str]:
 
 
 def _load_test_indices(shuffle_metadata_path: str) -> list[int]:
-    """Returns the indices of test images in the training dataset dataframe"""
+    """Returns the indices of test images in the training dataset dataframe."""
     with open(shuffle_metadata_path, "rb") as f:
         test_indices = set([int(i) for i in pickle.load(f)[2]])
     return list(sorted(test_indices))

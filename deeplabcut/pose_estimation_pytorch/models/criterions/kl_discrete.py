@@ -26,7 +26,7 @@ from deeplabcut.pose_estimation_pytorch.models.criterions.base import (
 
 @CRITERIONS.register_module
 class KLDiscreteLoss(BaseCriterion):
-    """KLDiscrete loss
+    """KLDiscrete loss.
 
     Args:
         beta: Temperature for the softmax.

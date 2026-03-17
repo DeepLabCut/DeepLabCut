@@ -148,7 +148,8 @@ def test_ctd_load_hdf_containing_rel_paths(
     idv_mask = ~np.all(keypoint_mask, axis=2)
 
     output_pose = [
-        p[p_mask] if np.any(p_mask) else np.zeros((0, num_bodyparts, 3)) for p, p_mask in zip(output_pose, idv_mask)
+        p[p_mask] if np.any(p_mask) else np.zeros((0, num_bodyparts, 3))
+        for p, p_mask in zip(output_pose, idv_mask, strict=False)
     ]
 
     # generate columns for the dataframe
@@ -170,7 +171,7 @@ def test_ctd_load_hdf_containing_rel_paths(
     df.to_hdf(conditions_filepath, key="df_with_missing")
 
     conditions = CondFromFile.load_conditions_h5(conditions_filepath, images, path_prefix=path_prefix)
-    for idx, (img_path, img_index) in enumerate(data):
+    for idx, (img_path, _img_index) in enumerate(data):
         assert img_path in conditions
         np.testing.assert_allclose(output_pose[idx], conditions[img_path])
 

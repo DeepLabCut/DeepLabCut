@@ -72,8 +72,8 @@ def create_labeled_video_3d(
     fps=30,
     dpi=300,
 ):
-    """
-    Creates a video with views from the two cameras and the 3d reconstruction for a selected number of frames.
+    """Creates a video with views from the two cameras and the 3d reconstruction for a
+    selected number of frames.
 
     Parameters
     ----------
@@ -128,7 +128,6 @@ def create_labeled_video_3d(
 
     To set the xlim, ylim, zlim and rotate the view of the 3d axis
     >>> deeplabcut.create_labeled_video_3d(config,['/data/project1/videos'],start=100, end=500,view=[30,90],xlim=[-12,12],ylim=[15,25],zlim=[20,30])
-
     """
     os.getcwd()
 

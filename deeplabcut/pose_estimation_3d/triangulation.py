@@ -31,8 +31,7 @@ def triangulate(
     save_as_csv=False,
     track_method="",
 ):
-    """
-    This function triangulates the detected DLC-keypoints from the two camera views
+    """This function triangulates the detected DLC-keypoints from the two camera views
     using the camera matrices (derived from calibration) to calculate 3D predictions.
 
     Parameters
@@ -492,10 +491,8 @@ def _undistort_views(df_view_pairs, stereo_params):
 def undistort_points(config, dataframe, camera_pair):
     cfg_3d = auxiliaryfunctions.read_config(config)
     path_camera_matrix = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)[2]
-    """
-    path_undistort = destfolder
-    filename_cam1 = Path(dataframe[0]).stem
-    filename_cam2 = Path(dataframe[1]).stem
+    """path_undistort = destfolder filename_cam1 = Path(dataframe[0]).stem filename_cam2
+    = Path(dataframe[1]).stem.
 
     #currently no intermediate saving of this due to high speed.
     # check if the undistorted files are already present

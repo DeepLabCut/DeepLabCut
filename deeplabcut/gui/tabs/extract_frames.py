@@ -27,11 +27,10 @@ from deeplabcut.gui.widgets import launch_napari
 
 
 def select_cropping_area(config, videos=None):
-    """
-    Interactively select the cropping area of all videos in the config.
-    A user interface pops up with a frame to select the cropping parameters.
-    Use the left click to draw a box and hit the button 'set cropping parameters'
-    to store the cropping parameters for a video in the config.yaml file.
+    """Interactively select the cropping area of all videos in the config. A user
+    interface pops up with a frame to select the cropping parameters. Use the left click
+    to draw a box and hit the button 'set cropping parameters' to store the cropping
+    parameters for a video in the config.yaml file.
 
     Parameters
     ----------
@@ -268,7 +267,7 @@ class ExtractFrames(DefaultTab):
         self.root.writer.write(root_message)
 
     def _check_symlink(self, video_path: str | Path) -> Path:
-        """Checks that a video is in the DeepLabCut 'videos' folder
+        """Checks that a video is in the DeepLabCut 'videos' folder.
 
         This is required before launching manual frame extraction. When users select
         a symlink of a video using the VideoSelectionWidget, the path is resolved to the

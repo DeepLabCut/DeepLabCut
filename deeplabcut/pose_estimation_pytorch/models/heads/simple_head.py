@@ -101,7 +101,7 @@ class HeatmapHead(WeightConversionMixin, BaseHead):
         module_prefix: str,
         conversion: torch.Tensor,
     ) -> dict[str, torch.Tensor]:
-        """Converts pre-trained weights to be fine-tuned on another dataset
+        """Converts pre-trained weights to be fine-tuned on another dataset.
 
         Args:
             state_dict: the state dict for the pre-trained model
@@ -127,9 +127,7 @@ class HeatmapHead(WeightConversionMixin, BaseHead):
 
 
 class DeconvModule(nn.Module):
-    """
-    Deconvolutional module to predict maps from the extracted features.
-    """
+    """Deconvolutional module to predict maps from the extracted features."""
 
     def __init__(
         self,
@@ -180,8 +178,7 @@ class DeconvModule(nn.Module):
         kernel_sizes: list[int],
         strides: list[int],
     ) -> list[nn.Module]:
-        """
-        Helper function to create the deconvolutional layers.
+        """Helper function to create the deconvolutional layers.
 
         Args:
             in_channels: number of input channels to the module
@@ -193,15 +190,14 @@ class DeconvModule(nn.Module):
             the deconvolutional layers
         """
         layers = []
-        for out_channels, k, s in zip(out_channels, kernel_sizes, strides):
+        for out_channels, k, s in zip(out_channels, kernel_sizes, strides, strict=False):
             layers.append(nn.ConvTranspose2d(in_channels, out_channels, kernel_size=k, stride=s))
             layers.append(nn.ReLU())
             in_channels = out_channels
         return layers[:-1]
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass of the HeatmapHead
+        """Forward pass of the HeatmapHead.
 
         Args:
             x: input tensor
@@ -219,7 +215,7 @@ class DeconvModule(nn.Module):
         module_prefix: str,
         conversion: torch.Tensor,
     ) -> dict[str, torch.Tensor]:
-        """Converts pre-trained weights to be fine-tuned on another dataset
+        """Converts pre-trained weights to be fine-tuned on another dataset.
 
         Args:
             state_dict: the state dict for the pre-trained model

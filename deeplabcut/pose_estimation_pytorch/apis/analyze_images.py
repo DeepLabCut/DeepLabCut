@@ -63,8 +63,7 @@ def superanimal_analyze_images(
     customized_detector_checkpoint: str | Path | None = None,
     close_figure_after_save=True,
 ) -> dict[str, dict]:
-    """
-    This function inferences a superanimal model on a set of images and saves the
+    """This function inferences a superanimal model on a set of images and saves the
     results as labeled images.
 
     Args:
@@ -433,7 +432,7 @@ def analyze_image_folder(
     filtered_detector_config: dict | None = None,
     cond_provider: CondFromModel | None = None,
 ) -> dict[str, dict[str, np.ndarray | np.ndarray]]:
-    """Runs pose inference on a folder of images and returns the predictions
+    """Runs pose inference on a folder of images and returns the predictions.
 
     Args:
         model_cfg: The model config (or its path) used to analyze the images.
@@ -529,7 +528,7 @@ def analyze_image_folder(
     if detector_runner is not None:
         detector_image_paths = tqdm(image_paths) if progress_bar else image_paths
         bbox_predictions = detector_runner.inference(images=detector_image_paths)
-        pose_inputs = list(zip(image_paths, bbox_predictions))
+        pose_inputs = list(zip(image_paths, bbox_predictions, strict=False))
 
     logging.info(f"Running pose estimation with {snapshot_path}")
 
@@ -538,7 +537,9 @@ def analyze_image_folder(
 
     predictions = pose_runner.inference(pose_inputs)
 
-    return {image_path: image_predictions for image_path, image_predictions in zip(image_paths, predictions)}
+    return {
+        image_path: image_predictions for image_path, image_predictions in zip(image_paths, predictions, strict=False)
+    }
 
 
 def plot_images_coco(
@@ -552,9 +553,8 @@ def plot_images_coco(
     max_individuals: int | None = None,
     cond_provider: CondFromModel | None = None,
 ) -> list[dict]:
-    """
-    Runs pose inference on a folder of images from a COCO dataset, and plots all
-    predicted keypoints and bounding boxes
+    """Runs pose inference on a folder of images from a COCO dataset, and plots all
+    predicted keypoints and bounding boxes.
 
     Args:
         model_cfg: The model config (or its path) used to analyze the images.

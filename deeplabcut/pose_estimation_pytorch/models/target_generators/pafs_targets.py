@@ -23,10 +23,8 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators.base import (
 
 @TARGET_GENERATORS.register_module
 class PartAffinityFieldGenerator(BaseGenerator):
-    """
-    Generate part affinity field targets from ground truth keypoints in order
-    to train baseline multi-animal deeplabcut model (ResNet + Deconv)
-    """
+    """Generate part affinity field targets from ground truth keypoints in order to
+    train baseline multi-animal deeplabcut model (ResNet + Deconv)"""
 
     def __init__(self, graph: list[list[int, int]], width: float):
         """

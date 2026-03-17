@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 """Contains definitions for EfficientNet model.
+
 [1] Mingxing Tan, Quoc V. Le
   EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks.
   ICML'19, https://arxiv.org/abs/1905.11946
@@ -68,6 +69,7 @@ BlockArgs.__new__.__defaults__ = (None,) * len(BlockArgs._fields)
 
 def conv_kernel_initializer(shape, dtype=None, partition_info=None):
     """Initialization for convolutional kernels.
+
     The main difference with tf.variance_scaling_initializer is that
     tf.variance_scaling_initializer uses a truncated normal with an uncorrected
     standard deviation, whereas here we use a normal distribution. Similarly,
@@ -88,6 +90,7 @@ def conv_kernel_initializer(shape, dtype=None, partition_info=None):
 
 def dense_kernel_initializer(shape, dtype=None, partition_info=None):
     """Initialization for dense kernels.
+
     This initialization is equal to
       tf.variance_scaling_initializer(scale=1.0/3.0, mode='fan_out',
                                       distribution='uniform').
@@ -139,6 +142,7 @@ class MBConvBlock(tf.keras.layers.Layer):
 
     def __init__(self, block_args, global_params):
         """Initializes a MBConv block.
+
         Args:
           block_args: BlockArgs, arguments to create a Block.
           global_params: GlobalParams, a set of global parameters.
@@ -246,6 +250,7 @@ class MBConvBlock(tf.keras.layers.Layer):
 
     def _call_se(self, input_tensor):
         """Call Squeeze and Excitation layer.
+
         Args:
           input_tensor: Tensor, a single input tensor for Squeeze/Excitation layer.
         Returns:
@@ -253,11 +258,12 @@ class MBConvBlock(tf.keras.layers.Layer):
         """
         se_tensor = tf.reduce_mean(input_tensor=input_tensor, axis=self._spatial_dims, keepdims=True)
         se_tensor = self._se_expand(self._relu_fn(self._se_reduce(se_tensor)))
-        tf.compat.v1.logging.info("Built Squeeze and Excitation with tensor shape: %s" % (se_tensor.shape))
+        tf.compat.v1.logging.info(f"Built Squeeze and Excitation with tensor shape: {se_tensor.shape}")
         return tf.sigmoid(se_tensor) * input_tensor
 
     def call(self, inputs, use_batch_norm=False, drop_out=False, drop_connect_rate=None):
         """Implementation of call().
+
         Args:
           inputs: the inputs tensor.
           training: boolean, whether the model is constructed for training.
@@ -265,15 +271,15 @@ class MBConvBlock(tf.keras.layers.Layer):
         Returns:
           A output tensor.
         """
-        tf.compat.v1.logging.info("Block input: %s shape: %s" % (inputs.name, inputs.shape))
+        tf.compat.v1.logging.info(f"Block input: {inputs.name} shape: {inputs.shape}")
         if self._block_args.expand_ratio != 1:
             x = self._relu_fn(self._bn0(self._expand_conv(inputs), training=use_batch_norm))
         else:
             x = inputs
-        tf.compat.v1.logging.info("Expand: %s shape: %s" % (x.name, x.shape))
+        tf.compat.v1.logging.info(f"Expand: {x.name} shape: {x.shape}")
 
         x = self._relu_fn(self._bn1(self._depthwise_conv(x), training=use_batch_norm))
-        tf.compat.v1.logging.info("DWConv: %s shape: %s" % (x.name, x.shape))
+        tf.compat.v1.logging.info(f"DWConv: {x.name} shape: {x.shape}")
 
         if self._has_se:
             with tf.compat.v1.variable_scope("se"):
@@ -291,7 +297,7 @@ class MBConvBlock(tf.keras.layers.Layer):
                 if drop_connect_rate:
                     x = utils.drop_connect(x, drop_out, drop_connect_rate)
                 x = tf.add(x, inputs)
-        tf.compat.v1.logging.info("Project: %s shape: %s" % (x.name, x.shape))
+        tf.compat.v1.logging.info(f"Project: {x.name} shape: {x.shape}")
         return x
 
 
@@ -335,6 +341,7 @@ class MBConvBlockWithoutDepthwise(MBConvBlock):
 
     def call(self, inputs, use_batch_norm=False, drop_out=False, drop_connect_rate=None):
         """Implementation of call().
+
         Args:
           inputs: the inputs tensor.
           training: boolean, whether the model is constructed for training.
@@ -342,12 +349,12 @@ class MBConvBlockWithoutDepthwise(MBConvBlock):
         Returns:
           A output tensor.
         """
-        tf.compat.v1.logging.info("Block input: %s shape: %s" % (inputs.name, inputs.shape))
+        tf.compat.v1.logging.info(f"Block input: {inputs.name} shape: {inputs.shape}")
         if self._block_args.expand_ratio != 1:
             x = self._relu_fn(self._bn0(self._expand_conv(inputs), training=use_batch_norm))
         else:
             x = inputs
-        tf.compat.v1.logging.info("Expand: %s shape: %s" % (x.name, x.shape))
+        tf.compat.v1.logging.info(f"Expand: {x.name} shape: {x.shape}")
 
         self.endpoints = {"expansion_output": x}
 
@@ -361,17 +368,19 @@ class MBConvBlockWithoutDepthwise(MBConvBlock):
                 if drop_connect_rate:
                     x = utils.drop_connect(x, drop_out, drop_connect_rate)
                 x = tf.add(x, inputs)
-        tf.compat.v1.logging.info("Project: %s shape: %s" % (x.name, x.shape))
+        tf.compat.v1.logging.info(f"Project: {x.name} shape: {x.shape}")
         return x
 
 
 class Model(tf.keras.Model):
     """A class implements tf.keras.Model for MNAS-like model.
+
     Reference: https://arxiv.org/abs/1807.11626
     """
 
     def __init__(self, blocks_args=None, global_params=None):
         """Initializes an `Model` instance.
+
         Args:
           blocks_args: A list of BlockArgs to construct block modules.
           global_params: GlobalParams, a set of global parameters.
@@ -463,6 +472,7 @@ class Model(tf.keras.Model):
 
     def call(self, inputs, use_batch_norm=False, drop_out=False, features_only=None):
         """Implementation of call().
+
         Args:
           inputs: input tensors.
           training: boolean, whether the model is constructed for training.
@@ -475,7 +485,7 @@ class Model(tf.keras.Model):
         # Calls Stem layers
         with tf.compat.v1.variable_scope("stem"):
             outputs = self._relu_fn(self._bn0(self._conv_stem(inputs), training=use_batch_norm))
-        tf.compat.v1.logging.info("Built stem layers with output shape: %s" % outputs.shape)
+        tf.compat.v1.logging.info(f"Built stem layers with output shape: {outputs.shape}")
         self.endpoints["stem"] = outputs
 
         # Calls blocks.
@@ -486,25 +496,25 @@ class Model(tf.keras.Model):
                 is_reduction = True
                 reduction_idx += 1
 
-            with tf.compat.v1.variable_scope("blocks_%s" % idx):
+            with tf.compat.v1.variable_scope(f"blocks_{idx}"):
                 drop_rate = self._global_params.drop_connect_rate
                 if drop_rate:
                     drop_rate *= float(idx) / len(self._blocks)
-                    tf.compat.v1.logging.info("block_%s drop_connect_rate: %s" % (idx, drop_rate))
+                    tf.compat.v1.logging.info(f"block_{idx} drop_connect_rate: {drop_rate}")
                 outputs = block.call(
                     outputs,
                     use_batch_norm=use_batch_norm,
                     drop_out=drop_out,
                     drop_connect_rate=drop_rate,
                 )
-                self.endpoints["block_%s" % idx] = outputs
+                self.endpoints[f"block_{idx}"] = outputs
                 if is_reduction:
-                    self.endpoints["reduction_%s" % reduction_idx] = outputs
+                    self.endpoints[f"reduction_{reduction_idx}"] = outputs
                 if block.endpoints:
                     for k, v in block.endpoints.items():
-                        self.endpoints["block_%s/%s" % (idx, k)] = v
+                        self.endpoints[f"block_{idx}/{k}"] = v
                         if is_reduction:
-                            self.endpoints["reduction_%s/%s" % (reduction_idx, k)] = v
+                            self.endpoints[f"reduction_{reduction_idx}/{k}"] = v
         self.endpoints["features"] = outputs
 
         if not features_only:

@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Methods to create the configuration files for PyTorch DeepLabCut models"""
+"""Methods to create the configuration files for PyTorch DeepLabCut models."""
 
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ def make_pytorch_pose_config(
     save: bool = False,
     ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
 ) -> dict:
-    """Creates a PyTorch pose configuration file for a DeepLabCut project
+    """Creates a PyTorch pose configuration file for a DeepLabCut project.
 
     The base/ folder contains default configurations, such as data augmentations or
     heatmap heads (that can be used to predict pose or identity based on visual
@@ -249,7 +249,7 @@ def make_pytorch_test_config(
     test_config_path: str | Path,
     save: bool = False,
 ) -> dict:
-    """Creates the test configuration for a model
+    """Creates the test configuration for a model.
 
     Args:
         model_config: The PyTorch config for the model.
@@ -349,7 +349,7 @@ def make_basic_project_config(
 
 
 def add_metadata(project_config: dict, config: dict, pose_config_path: str | Path) -> dict:
-    """Adds metadata to a pytorch pose configuration
+    """Adds metadata to a pytorch pose configuration.
 
     Args:
         project_config: the project configuration
@@ -378,9 +378,8 @@ def create_backbone_with_heatmap_model(
     bodyparts: list[str],
     top_down: bool,
 ) -> dict:
-    """
-    Creates a simple heatmap pose estimation model, composed of a backbone and a head
-    predicting heatmaps and location refinement maps
+    """Creates a simple heatmap pose estimation model, composed of a backbone and a head
+    predicting heatmaps and location refinement maps.
 
     Args:
         configs_dir: path to the DeepLabCut "configs" directory
@@ -436,8 +435,7 @@ def create_backbone_with_paf_model(
     bodyparts: list[str],
     paf_parameters: dict,
 ) -> dict:
-    """
-    Creates a pose estimation model, composed of a backbone and a head predicting
+    """Creates a pose estimation model, composed of a backbone and a head predicting
     heatmaps, location refinement maps and part affinity fields for multi-animal pose
     estimation.
 
@@ -475,7 +473,7 @@ def add_detector(
     num_individuals: int,
     detector_type: str | None = None,
 ) -> dict:
-    """Adds a detector to a model
+    """Adds a detector to a model.
 
     Args:
         configs_dir: path to the DeepLabCut "configs" directory
@@ -509,7 +507,7 @@ def add_unique_bodypart_head(
     num_unique_bodyparts: int,
     backbone_output_channels: int,
 ) -> dict:
-    """Adds a unique bodypart head to a model
+    """Adds a unique bodypart head to a model.
 
     Args:
         configs_dir: path to the DeepLabCut "configs" directory
@@ -537,7 +535,7 @@ def add_identity_head(
     num_individuals: int,
     backbone_output_channels: int,
 ) -> dict:
-    """Adds an identity head to a model
+    """Adds an identity head to a model.
 
     Args:
         configs_dir: path to the DeepLabCut "configs" directory
@@ -564,7 +562,7 @@ def _get_paf_parameters(
     num_limbs_threshold: int = 105,
     paf_graph_degree: int = 6,
 ) -> dict:
-    """Gets values for PAF parameters from the project configuration"""
+    """Gets values for PAF parameters from the project configuration."""
     paf_graph = [[i, j] for i in range(len(bodyparts)) for j in range(i + 1, len(bodyparts))]
     num_limbs = len(paf_graph)
     # If the graph is unnecessarily large (with 15+ keypoints by default),

@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Loss criterions for DEKR models"""
+"""Loss criterions for DEKR models."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ from deeplabcut.pose_estimation_pytorch.models.criterions.base import (
 
 @CRITERIONS.register_module
 class DEKRHeatmapLoss(BaseCriterion):
-    """DEKR Heatmap loss"""
+    """DEKR Heatmap loss."""
 
     def forward(
         self,
@@ -47,7 +47,7 @@ class DEKRHeatmapLoss(BaseCriterion):
 
 @CRITERIONS.register_module
 class DEKROffsetLoss(BaseCriterion):
-    """DEKR Offset loss"""
+    """DEKR Offset loss."""
 
     def __init__(self, beta: float = 1 / 9):
         super().__init__()

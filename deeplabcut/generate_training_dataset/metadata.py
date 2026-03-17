@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""File containing methods to load and parse shuffle metadata"""
+"""File containing methods to load and parse shuffle metadata."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ from deeplabcut.utils import auxiliaryfunctions
 
 @dataclass(frozen=True)
 class DataSplit:
-    """Class representing the metadata for a shuffle"""
+    """Class representing the metadata for a shuffle."""
 
     train_indices: tuple[int, ...]
     test_indices: tuple[int, ...]
@@ -47,7 +47,7 @@ class DataSplit:
 
 @dataclass(frozen=True)
 class ShuffleMetadata:
-    """Class representing the metadata for a shuffle"""
+    """Class representing the metadata for a shuffle."""
 
     name: str
     train_fraction: float
@@ -56,7 +56,7 @@ class ShuffleMetadata:
     split: DataSplit | None
 
     def load_split(self, cfg: dict, trainset_path: Path) -> ShuffleMetadata:
-        """Loads the data split for this shuffle
+        """Loads the data split for this shuffle.
 
         Args:
             cfg: the config for the DeepLabCut project
@@ -91,7 +91,7 @@ class ShuffleMetadata:
 
 @dataclass(frozen=True)
 class TrainingDatasetMetadata:
-    """An immutable class containing the metadata for a dataset
+    """An immutable class containing the metadata for a dataset.
 
     When creating a new "training-datasets" folder (e.g., when creating the first
     training set for a project, or when creating the first training for a given
@@ -137,7 +137,7 @@ class TrainingDatasetMetadata:
             ValueError if the indices are not sorted in increasing order
         """
         indices = [[s.train_fraction, s.index] for s in self.shuffles]
-        for (frac1, idx1), (frac2, idx2) in zip(indices[:-1], indices[1:]):
+        for (frac1, idx1), (frac2, idx2) in zip(indices[:-1], indices[1:], strict=False):
             if not (frac1 < frac2 or (frac1 == frac2 and idx1 < idx2)):
                 raise RuntimeError(
                     "The shuffles given must be sorted in order of ascending training "
@@ -149,8 +149,7 @@ class TrainingDatasetMetadata:
         shuffle: ShuffleMetadata,
         overwrite: bool = False,
     ) -> TrainingDatasetMetadata:
-        """
-        Adds a new shuffle to the metadata file
+        """Adds a new shuffle to the metadata file.
 
         Args:
             shuffle: the shuffle to add
@@ -202,7 +201,7 @@ class TrainingDatasetMetadata:
         raise ValueError(f"Could not find a shuffle with trainingset fraction {train_fraction} and index {index}")
 
     def save(self) -> None:
-        """Saves the training dataset metadata to disk"""
+        """Saves the training dataset metadata to disk."""
         metadata = {"shuffles": {}}
         data_splits: dict[DataSplit, int] = {}
         trainset_path = self.path(self.project_config).parent
@@ -231,7 +230,7 @@ class TrainingDatasetMetadata:
         config: str | Path | dict,
         load_splits: bool = False,
     ) -> TrainingDatasetMetadata:
-        """Loads the metadata from disk
+        """Loads the metadata from disk.
 
         Args:
             config: the config for the DeepLabCut project (or its path)
@@ -265,7 +264,7 @@ class TrainingDatasetMetadata:
 
     @staticmethod
     def create(config: str | Path | dict) -> TrainingDatasetMetadata:
-        """Function to create the metadata file
+        """Function to create the metadata file.
 
         Assumes that all existing shuffles use the TensorFlow engine, as this file
         should have already been created for PyTorch shuffles.
@@ -345,7 +344,7 @@ def update_metadata(
     test_indices: list[int],
     overwrite: bool = False,
 ) -> None:
-    """Updates the metadata for a training-dataset
+    """Updates the metadata for a training-dataset.
 
     Args:
         cfg: the config for the DeepLabCut project

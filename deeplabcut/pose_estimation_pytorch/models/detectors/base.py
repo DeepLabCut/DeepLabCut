@@ -26,7 +26,7 @@ def _build_detector(
     pretrained: bool = False,
     **kwargs,
 ) -> BaseDetector:
-    """Builds a detector using its configuration file
+    """Builds a detector using its configuration file.
 
     Args:
         cfg: The detector configuration.
@@ -52,8 +52,8 @@ DETECTORS = Registry("detectors", build_func=_build_detector)
 
 
 class BaseDetector(ABC, nn.Module):
-    """
-    Definition of the class BaseDetector object.
+    """Definition of the class BaseDetector object.
+
     This is an abstract class defining the common structure and inference for detectors.
     """
 
@@ -72,8 +72,7 @@ class BaseDetector(ABC, nn.Module):
     def forward(
         self, x: torch.Tensor, targets: list[dict[str, torch.Tensor]] | None = None
     ) -> tuple[dict[str, torch.Tensor], list[dict[str, torch.Tensor]]]:
-        """
-        Forward pass of the detector
+        """Forward pass of the detector.
 
         Args:
             x: images to be processed
@@ -87,8 +86,7 @@ class BaseDetector(ABC, nn.Module):
 
     @abstractmethod
     def get_target(self, labels: dict) -> list[dict]:
-        """
-        Get the target for training the detector
+        """Get the target for training the detector.
 
         Args:
             labels: annotations containing keypoints, bounding boxes, etc.
@@ -99,7 +97,7 @@ class BaseDetector(ABC, nn.Module):
         pass
 
     def freeze_batch_norm_layers(self) -> None:
-        """Freezes batch norm layers
+        """Freezes batch norm layers.
 
         Running mean + var are always given to F.batch_norm, except when the layer is
         in `train` mode and track_running_stats is False, see

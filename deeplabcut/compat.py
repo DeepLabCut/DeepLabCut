@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Compatibility file for methods available with either PyTorch or Tensorflow"""
+"""Compatibility file for methods available with either PyTorch or Tensorflow."""
 
 from __future__ import annotations
 
@@ -87,8 +87,7 @@ def train_network(
     pose_threshold: float | None = 0.1,
     pytorch_cfg_updates: dict | None = None,
 ):
-    """
-    Trains the network with the labels in the training dataset.
+    """Trains the network with the labels in the training dataset.
 
     Parameters
     ----------
@@ -316,9 +315,8 @@ def return_train_network_path(
     modelprefix: str = "",
     engine: Engine | None = None,
 ) -> tuple[Path, Path, Path]:
-    """
-    Returns the training and test pose config file names as well as the folder where the
-    snapshot is
+    """Returns the training and test pose config file names as well as the folder where
+    the snapshot is.
 
     Parameters
     ----------
@@ -582,9 +580,10 @@ def return_evaluate_network_data(
     returnjustfns: bool = True,
     engine: Engine | None = None,
 ):
-    """
-    Returns the results for (previously evaluated) network. deeplabcut.evaluate_network(..)
-    Returns list of (per model): [trainingsiterations,trainfraction,shuffle,trainerror,testerror,pcutoff,trainerrorpcutoff,testerrorpcutoff,Snapshots[snapindex],scale,net_type]
+    """Returns the results for (previously evaluated) network.
+    deeplabcut.evaluate_network(..) Returns list of (per model): [trainingsiterations,tr
+    ainfraction,shuffle,trainerror,testerror,pcutoff,trainerrorpcutoff,testerrorpcutoff,
+    Snapshots[snapindex],scale,net_type]
 
     This function is only implemented for tensorflow models/shuffles, and will throw
     an error if called with a PyTorch shuffle.
@@ -1295,8 +1294,8 @@ def analyze_time_lapse_frames(
     modelprefix: str = "",
     engine: Engine | None = None,
 ):
-    """
-    Analyzed all images (of type = frametype) in a folder and stores the output in one file.
+    """Analyzed all images (of type = frametype) in a folder and stores the output in
+    one file.
 
     You can crop the frames (before analysis), by changing 'cropping'=True and setting
     'x1','x2','y1','y2' in the config file.
@@ -1357,7 +1356,6 @@ def analyze_time_lapse_frames(
 
     Note: for test purposes one can extract all frames from a video with ffmeg, e.g.
     >>> ffmpeg -i testvideo.avi "thumb%04d.png"
-
     """
     if engine is None:
         engine = get_shuffle_engine(
@@ -1415,8 +1413,8 @@ def convert_detections2tracklets(
     track_method: str = "",
     engine: Engine | None = None,
 ):
-    """
-    This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
+    """This should be called at the end of deeplabcut.analyze_videos for multianimal
+    projects!
 
     Parameters
     ----------
@@ -1497,7 +1495,6 @@ def convert_detections2tracklets(
     >>> )
 
     --------
-
     """
     if engine is None:
         engine = get_shuffle_engine(
@@ -1565,8 +1562,7 @@ def extract_maps(
     modelprefix: str = "",
     engine: Engine | None = None,
 ):
-    """
-    Extracts the scoremap, locref, partaffinityfields (if available).
+    """Extracts the scoremap, locref, partaffinityfields (if available).
 
     Returns a dictionary indexed by: trainingsetfraction, snapshotindex, and imageindex
     for those keys, each item contains: (image, scmap, locref, paf, bpt_names,
@@ -1610,7 +1606,6 @@ def extract_maps(
     --------
     If you want to extract the data for image 0 and 103 (of the training set) for model trained with shuffle 0.
     >>> deeplabcut.extract_maps(configfile,0,Indices=[0,103])
-
     """
     if engine is None:
         engine = get_shuffle_engine(

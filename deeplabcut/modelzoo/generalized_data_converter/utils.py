@@ -58,9 +58,7 @@ def threshold_kpts(config_path, h5path, threshold_mean=0.9, threshold_min=0.1):
 def create_dummy_config_file_from_h5(
     proj_root, reference_h5, taskname="dummytask", scorer="dummyscorer", date="March30"
 ):
-    """
-    Assuming at least labeled-data folder is there
-    """
+    """Assuming at least labeled-data folder is there."""
 
     cfg_template = SingleDLC_config()
 
@@ -100,14 +98,12 @@ def create_dummy_config_file_from_pickle(
     scorer="dummyscorer",
     date="March30",
 ):
-    """
-    Assuming at least labeled-data folder is there
-    """
+    """Assuming at least labeled-data folder is there."""
 
     cfg_template = SingleDLC_config()
 
     with open(reference_pickle, "rb") as f:
-        pickle_obj = pickle.load(f)
+        pickle.load(f)
 
     # bodyparts  = pickle_obj['keypoint_names']
     bodyparts = [
@@ -122,7 +118,7 @@ def create_dummy_config_file_from_pickle(
         "left ear",
     ]
 
-    video_name = video_path.split("/")[-1]
+    video_path.split("/")[-1]
 
     video_sets = {f"{video_path}": {"crop": "0, 400, 0, 400"}}
 
@@ -145,18 +141,6 @@ def create_video_h5_from_pickle(proj_root, cfg, reference_pickle, videopath):
         pickle_obj = pickle.load(f)
 
     # bodyparts  = pickle_obj['keypoint_names']
-
-    bodyparts = [
-        "tail",
-        "spine4",
-        "spine3",
-        "spine2",
-        "spine1",
-        "head",
-        "nose",
-        "right ear",
-        "left ear",
-    ]
 
     video_name = videopath.split("/")[-1]
 
@@ -184,7 +168,7 @@ def create_video_h5_from_pickle(proj_root, cfg, reference_pickle, videopath):
     data = np.zeros((len(imagenames), len(columnindex))) * np.nan
     df = pd.DataFrame(data, columns=columnindex, index=imagenames)
 
-    for imagename, kpts in zip(imagenames, detections):
+    for imagename, kpts in zip(imagenames, detections, strict=False):
         for kpt_id, kpt_name in enumerate(keypoint_names):
             df.loc[imagename][scorer, kpt_name, "x"] = kpts[kpt_id, 0]
             df.loc[imagename][scorer, kpt_name, "y"] = kpts[kpt_id, 1]
@@ -286,7 +270,6 @@ def customized_colormap(config_path):
 
     colors = [cmap(i) for i in range(n_bodyparts)]
 
-    visited = set()
     for kpt_id in range(len(bodyparts)):
         bodypart = bodyparts[kpt_id]
         if "left" in bodypart:

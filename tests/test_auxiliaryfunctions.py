@@ -19,7 +19,7 @@ from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS
 def test_find_analyzed_data(tmpdir_factory):
     fake_folder = tmpdir_factory.mktemp("videos")
     SUPPORTED_VIDEOS = ["avi"]
-    n_ext = len(SUPPORTED_VIDEOS)
+    len(SUPPORTED_VIDEOS)
 
     SCORER = "DLC_dlcrnetms5_multi_mouseApr11shuffle1_5"
     WRONG_SCORER = "DLC_dlcrnetms5_multi_mouseApr11shuffle3_5"
@@ -117,7 +117,7 @@ def test_get_list_of_videos(tmpdir_factory):
 
 
 def test_write_config_has_skeleton(tmpdir_factory):
-    """Required for backward compatibility"""
+    """Required for backward compatibility."""
     fake_folder = tmpdir_factory.mktemp("fakeConfigs")
     fake_config_file = fake_folder / Path("fakeConfig")
     auxiliaryfunctions.write_config(fake_config_file, {})

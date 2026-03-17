@@ -22,7 +22,7 @@ class BaseDLCPoseDataset(BasePoseDataset):
     def __init__(self, proj_root, dataset_name, shuffle=1, modelprefix=""):
         super().__init__()
 
-        assert proj_root != None and dataset_name != None
+        assert proj_root is not None and dataset_name is not None
 
         self.meta["dataset_name"] = dataset_name
         self.meta["proj_root"] = proj_root

@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Code to handle storing models"""
+"""Code to handle storing models."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ from deeplabcut.pose_estimation_pytorch.data.snapshots import Snapshot, list_sna
 
 @dataclass
 class TorchSnapshotManager:
-    """Class handling model checkpoint I/O
+    """Class handling model checkpoint I/O.
 
     Attributes:
         snapshot_prefix: The prefix to use when saving snapshots.
@@ -76,7 +76,7 @@ class TorchSnapshotManager:
         self._key = f"metrics/{self.key_metric}"
 
     def update(self, epoch: int, state_dict: dict, last: bool = False) -> None:
-        """Saves the model state dict if the epoch is one that requires a save
+        """Saves the model state dict if the epoch is one that requires a save.
 
         Args:
             epoch: the number of epochs the model was trained for
@@ -136,7 +136,8 @@ class TorchSnapshotManager:
         if len(best_snapshots) > 1:
             warnings.warn(
                 f"TorchSnapshotManager.best(): found multiple best snapshots ("
-                f"{best_snapshots}), returning the last one."
+                f"{best_snapshots}), returning the last one.",
+                stacklevel=2,
             )
 
         best_snapshot = best_snapshots[-1]

@@ -62,8 +62,7 @@ class COCOLoader(Loader):
             self.test_json = self.load_json(self.project_root, self.test_json_filename)
 
     def get_dataset_parameters(self) -> PoseDatasetParameters:
-        """
-        Retrieves dataset parameters based on the instance's configuration.
+        """Retrieves dataset parameters based on the instance's configuration.
 
         Returns:
             An instance of the PoseDatasetParameters with the parameters set.
@@ -145,13 +144,15 @@ class COCOLoader(Loader):
                 warnings.warn(
                     f"Found a category with ID 0 ({cat}) in the COCO dataset. This is not"
                     f" allowed, as category ID 0 is reserved as the background ID for"
-                    f" torchvision detectors. All category IDs have been shifted by 1."
+                    f" torchvision detectors. All category IDs have been shifted by 1.",
+                    stacklevel=2,
                 )
 
         if len(coco_json["categories"]) > 1:
             warnings.warn(
                 "Found more than 1 category in the project. This is currently not"
-                " supported in DeepLabCut. All annotations will be given category 1"
+                " supported in DeepLabCut. All annotations will be given category 1",
+                stacklevel=2,
             )
 
         if cat_0:
@@ -165,7 +166,7 @@ class COCOLoader(Loader):
         return coco_json
 
     def validate_images(self, coco_json: dict) -> dict:
-        """Goes over images and annotations to look for potential errors
+        """Goes over images and annotations to look for potential errors.
 
         This code tries to ensure that training a model on this project does not crash
         down the line
@@ -200,7 +201,7 @@ class COCOLoader(Loader):
                 image_ids.add(image["id"])
 
         if len(missing_images) > 0:
-            warnings.warn(f"There are {len(missing_images)} images that cannot be found (here are some):")
+            warnings.warn(f"There are {len(missing_images)} images that cannot be found (here are some):", stacklevel=2)
             for img_id, file_name in missing_images.items():
                 print(f"  * {img_id}: {file_name}")
 
@@ -221,7 +222,8 @@ class COCOLoader(Loader):
 
         if len(coco_json["annotations"]) < len(validated_annotations):
             warnings.warn(
-                "Found some annotations for which the image ID was not in the images. Removing them from the dataset."
+                "Found some annotations for which the image ID was not in the images. Removing them from the dataset.",
+                stacklevel=2,
             )
             print(f"  All annotations: {len(coco_json['annotations'])}")
             print(f"  Annotations with correct image IDs: {len(validated_annotations)}")
@@ -308,7 +310,7 @@ class COCOLoader(Loader):
         predictions: dict[str, dict[str, np.ndarray]],
         mode: str = "train",
     ) -> list[dict]:
-        """Converts detections to COCO format
+        """Converts detections to COCO format.
 
         Args:
             predictions: a dictionary mapping image name to the predictions made for it

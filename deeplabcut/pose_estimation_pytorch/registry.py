@@ -14,8 +14,9 @@ from typing import Any
 
 
 def build_from_cfg(cfg: dict, registry: "Registry", default_args: dict | None = None) -> Any:
-    """Builds a module from the configuration dictionary when it represents a class configuration,
-    or call a function from the configuration dictionary when it represents a function configuration.
+    """Builds a module from the configuration dictionary when it represents a class
+    configuration, or call a function from the configuration dictionary when it
+    represents a function configuration.
 
     Args:
         cfg: Configuration dictionary. It should at least contain the key "type".
@@ -70,9 +71,9 @@ def build_from_cfg(cfg: dict, registry: "Registry", default_args: dict | None = 
 
 
 class Registry:
-    """A registry to map strings to classes or functions.
-    Registered objects could be built from the registry. Meanwhile, registered
-    functions could be called from the registry.
+    """A registry to map strings to classes or functions. Registered objects could be
+    built from the registry. Meanwhile, registered functions could be called from the
+    registry.
 
     Args:
         name: Registry name.
@@ -130,6 +131,7 @@ class Registry:
     @staticmethod
     def split_scope_key(key):
         """Split scope and key.
+
         The first scope will be split from key.
         Examples:
             >>> Registry.split_scope_key('mmdet.ResNet')
@@ -302,6 +304,7 @@ class Registry:
 
     def register_module(self, name=None, force=False, module=None):
         """Register a module.
+
         A record will be added to `self._module_dict`, whose key is the class
         name or the specified name, and value is the class itself.
         It can be used as a decorator or a normal function.

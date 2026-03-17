@@ -44,7 +44,7 @@ def get_pose_predictions(
     max_individuals: int,
     device: str | None = None,
 ) -> dict[str, dict]:
-    """Gets predictions made by a SuperAnimal model on a DeepLabCut project
+    """Gets predictions made by a SuperAnimal model on a DeepLabCut project.
 
     Args:
         loader: The path to the root of the project.
@@ -104,7 +104,7 @@ def get_pose_predictions(
     ]
     predictions = pose_runner.inference(pose_inputs)
 
-    for image, prediction in zip(images_to_process, predictions):
+    for image, prediction in zip(images_to_process, predictions, strict=False):
         sa_predictions[image] = prediction
 
     # save the updated SuperAnimal predictions
@@ -134,9 +134,7 @@ def prepare_memory_replay_dataset(
     pose_threshold: float = 0.0,
     device: str | None = None,
 ):
-    """
-    Need to first run inference on the source project train file
-    """
+    """Need to first run inference on the source project train file."""
     project_root = loader.project_path.resolve()
     source_dataset_folder = Path(source_dataset_folder).resolve()
 
@@ -189,7 +187,6 @@ def prepare_memory_replay_dataset(
         return temp_bbox
 
     def optimal_match(gts_list, preds_list):
-        arranged_preds_list = []
         num_gts = len(gts_list)
         num_preds = len(preds_list)
         cost_matrix = np.zeros((num_gts, num_preds))

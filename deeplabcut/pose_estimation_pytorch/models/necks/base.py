@@ -18,7 +18,7 @@ NECKS = Registry("necks", build_func=build_from_cfg)
 
 
 class BaseNeck(ABC, torch.nn.Module):
-    """Base Neck class for pose estimation"""
+    """Base Neck class for pose estimation."""
 
     def __init__(self):
         super().__init__()

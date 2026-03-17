@@ -26,8 +26,7 @@ from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, conversionc
 
 
 def merge_annotateddatasets(cfg):
-    """
-    Merges all the h5 files for all labeled-datasets (from individual videos).
+    """Merges all the h5 files for all labeled-datasets (from individual videos).
 
     This is a bit of a mess because of cross platform compatibility.
 

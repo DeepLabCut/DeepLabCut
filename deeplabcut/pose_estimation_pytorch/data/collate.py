@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Custom collate functions"""
+"""Custom collate functions."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ COLLATE_FUNCTIONS = Registry("collate_functions", build_func=build_from_cfg)
 
 
 class CollateFunction(ABC):
-    """A class that can be called as a collate function"""
+    """A class that can be called as a collate function."""
 
     @abstractmethod
     def __call__(self, batch) -> dict | list:
@@ -33,7 +33,7 @@ class CollateFunction(ABC):
 
 
 class ResizeCollate(CollateFunction, ABC):
-    """A collate function which resizes all images in a batch to the same size
+    """A collate function which resizes all images in a batch to the same size.
 
     Args:
         max_shift: The maximum shift, in pixels, to add to the random crop (this means
@@ -83,7 +83,7 @@ class ResizeCollate(CollateFunction, ABC):
 
 @COLLATE_FUNCTIONS.register_module
 class ResizeFromDataSizeCollate(ResizeCollate):
-    """A collate function which resizes all images in a batch to the same size
+    """A collate function which resizes all images in a batch to the same size.
 
     The target size is obtained by taking the size of the first image in the batch, and
     multiplying it by a scale taken uniformly at random from (min_scale, max_scale).
@@ -164,7 +164,7 @@ class ResizeFromDataSizeCollate(ResizeCollate):
 
 @COLLATE_FUNCTIONS.register_module
 class ResizeFromListCollate(ResizeCollate):
-    """A collate function which resizes all images in a batch to the same size
+    """A collate function which resizes all images in a batch to the same size.
 
     The target size image size is sampled from a list. If it's a list of integers,
     all images will be resized into squares. If it's a list of tuples, that will be the

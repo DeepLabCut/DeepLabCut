@@ -11,11 +11,10 @@
 
 
 def select_cropping_area(config, videos=None):
-    """
-    Interactively select the cropping area of all videos in the config.
-    A user interface pops up with a frame to select the cropping parameters.
-    Use the left click to draw a box and hit the button 'set cropping parameters'
-    to store the cropping parameters for a video in the config.yaml file.
+    """Interactively select the cropping area of all videos in the config. A user
+    interface pops up with a frame to select the cropping parameters. Use the left click
+    to draw a box and hit the button 'set cropping parameters' to store the cropping
+    parameters for a video in the config.yaml file.
 
     Parameters
     ----------

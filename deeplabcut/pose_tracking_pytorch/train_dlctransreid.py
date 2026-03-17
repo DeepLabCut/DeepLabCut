@@ -46,7 +46,6 @@ def set_seed(seed):
 def split_train_test(npy_list, train_frac):
     # with npy list form videos, split each to train and test
 
-    x_list = []
     train_list = []
     test_list = []
 

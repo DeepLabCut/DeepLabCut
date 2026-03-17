@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Widget to display existing shuffles"""
+"""Widget to display existing shuffles."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ import deeplabcut.generate_training_dataset.metadata as metadata
 
 
 class ShuffleMetadataViewer(QtWidgets.QDialog):
-    """Viewer for shuffle metadata"""
+    """Viewer for shuffle metadata."""
 
     def __init__(self, root: QtWidgets.QMainWindow, parent: QtWidgets.QWidget):
         super().__init__(parent)

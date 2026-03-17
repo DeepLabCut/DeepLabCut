@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Algorithms to match predictions to ground truth labels"""
+"""Algorithms to match predictions to ground truth labels."""
 
 from __future__ import annotations
 
@@ -54,7 +54,7 @@ class PotentialMatch:
         return np.linalg.norm(self.pose[:, :2] - self.gt[:, :2], axis=1)
 
     def match(self, gt: np.ndarray, oks: float) -> None:
-        """Adds a ground truth match to this PotentialMatch
+        """Adds a ground truth match to this PotentialMatch.
 
         Args:
             gt: The ground truth to which the prediction is matched. The ground truth
@@ -81,7 +81,7 @@ def match_greedy_oks(
     oks_matrix: np.ndarray,
     oks_threshold: float = 0.0,
 ) -> list[PotentialMatch]:
-    """Greedy matching of ground truth individuals to predicted individuals using OKS
+    """Greedy matching of ground truth individuals to predicted individuals using OKS.
 
     This is done in the same way as done in pycocotools. The predictions must be sorted
     by score before being passed to this function.
@@ -99,7 +99,7 @@ def match_greedy_oks(
     """
     matches = [PotentialMatch.from_pose(pose=pred) for pred in predictions]
     matched_gt_indices = set()
-    for idx, pred in enumerate(predictions):
+    for idx, _pred in enumerate(predictions):
         oks = oks_matrix[idx]
         if np.all(np.isnan(oks)):
             continue
@@ -125,7 +125,7 @@ def match_greedy_rmse(
     predictions: np.ndarray,
     keep_assemblies: bool = True,
 ) -> list[PotentialMatch]:
-    """Greedy matching of ground truth individuals to predicted individuals using RMSE
+    """Greedy matching of ground truth individuals to predicted individuals using RMSE.
 
     The predictions must be sorted by score before being passed to this function.
 

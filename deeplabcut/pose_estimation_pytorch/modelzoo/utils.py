@@ -90,7 +90,7 @@ def load_super_animal_config(
     max_individuals: int = 30,
     device: str | None = None,
 ) -> dict:
-    """Loads the model configuration file for a model, detector and SuperAnimal
+    """Loads the model configuration file for a model, detector and SuperAnimal.
 
     Args:
         super_animal: The name of the SuperAnimal for which to create the model config.
@@ -122,7 +122,7 @@ def load_super_animal_config(
 
 
 def download_super_animal_snapshot(dataset: str, model_name: str) -> Path:
-    """Downloads a SuperAnimal snapshot
+    """Downloads a SuperAnimal snapshot.
 
     Args:
         dataset: The name of the SuperAnimal dataset for which to download a snapshot.
@@ -157,7 +157,7 @@ def get_gpu_memory_map():
         encoding="utf-8",
     )
     gpu_memory = [int(x) for x in result.strip().split("\n")]
-    gpu_memory_map = dict(zip(range(len(gpu_memory)), gpu_memory))
+    gpu_memory_map = dict(zip(range(len(gpu_memory)), gpu_memory, strict=False))
 
     return gpu_memory_map
 
@@ -178,11 +178,12 @@ def raise_warning_if_called_directly():
         warnings.warn(
             f"{caller_name} is intended for internal use only and should not be called directly.",
             UserWarning,
+            stacklevel=2,
         )
 
 
 def update_config(config: dict, max_individuals: int, device: str):
-    """Loads the model configuration file for a model, detector and SuperAnimal
+    """Loads the model configuration file for a model, detector and SuperAnimal.
 
     Args:
         config: The default model configuration file.

@@ -1,4 +1,4 @@
-"""Tests mAP computation from inferenceutils"""
+"""Tests mAP computation from inferenceutils."""
 
 from __future__ import annotations
 
@@ -315,7 +315,7 @@ def _to_coco_ground_truth(
         images.append(dict(id=id_, file_name=path, width=w, height=h))
 
         assert image_keypoints.shape[1] == num_joints
-        for idv_id, kpts in enumerate(image_keypoints):
+        for _idv_id, kpts in enumerate(image_keypoints):
             visible = kpts[:, 2] > 0
             num_keypoints = visible.sum()
 

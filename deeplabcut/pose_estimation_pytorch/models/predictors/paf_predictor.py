@@ -111,7 +111,8 @@ class PartAffinityFieldPredictor(BasePredictor):
         )
 
     def forward(self, stride: float, outputs: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
-        """Forward pass of PartAffinityFieldPredictor. Gets predictions from model output.
+        """Forward pass of PartAffinityFieldPredictor. Gets predictions from model
+        output.
 
         Args:
             stride: the stride of the model
@@ -435,8 +436,8 @@ class PartAffinityFieldPredictor(BasePredictor):
         n_points: int = 10,
         n_decimals: int = 3,
     ) -> list[dict[str, NDArray]]:
-        """
-        Compute refined peak coordinates, confidence scores, and PAF edge costs for pose estimation.
+        """Compute refined peak coordinates, confidence scores, and PAF edge costs for
+        pose estimation.
 
         Args:
             heatmaps: Smoothed heatmaps tensor with shape (batch_size, num_joints, height, width).
@@ -518,7 +519,7 @@ class PartAffinityFieldPredictor(BasePredictor):
         return peaks_and_costs
 
     def set_paf_edges_to_keep(self, edge_indices: list[int]) -> None:
-        """Sets the PAF edge indices to use to assemble individuals
+        """Sets the PAF edge indices to use to assemble individuals.
 
         Args:
             edge_indices: The indices of edges in the graph to keep.

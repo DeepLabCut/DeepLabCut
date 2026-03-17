@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Gated Attention Unit
+"""Gated Attention Unit.
 
 Based on the building blocks used for the ``mmdetection`` CSPNeXt implementation. For
 more information, see <https://github.com/open-mmlab/mmdetection>.
@@ -73,7 +73,7 @@ class Scale(nn.Module):
 
 
 class GatedAttentionUnit(nn.Module):
-    """Gated Attention Unit (GAU) in RTMBlock"""
+    """Gated Attention Unit (GAU) in RTMBlock."""
 
     def __init__(
         self,

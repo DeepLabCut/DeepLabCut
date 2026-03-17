@@ -114,10 +114,8 @@ class AutocastConfig:
 
 @dataclass
 class InferenceConfig:
-    """
-    Top-level inference configuration that mirrors the `inference` block
-    in pytorch_config.yaml.
-    """
+    """Top-level inference configuration that mirrors the `inference` block in
+    pytorch_config.yaml."""
 
     multithreading: MultithreadingConfig = field(default_factory=MultithreadingConfig)
     compile: CompileConfig = field(default_factory=CompileConfig)
@@ -126,8 +124,8 @@ class InferenceConfig:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any] | None) -> InferenceConfig:
-        """
-        Build an InferenceConfig from a dict, supporting:
+        """Build an InferenceConfig from a dict, supporting:
+
           - nested dictionaries
           - dot-notation keys (e.g., {"compile.enabled": True})
         Raises KeyError if a key does not exist.
@@ -176,7 +174,7 @@ class InferenceConfig:
 
 
 class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
-    """Base class for inference runners
+    """Base class for inference runners.
 
     A runner takes a model and runs actions on it, such as training or inference
     """
@@ -241,7 +239,8 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             except Exception as e:
                 warnings.warn(
                     f"torch.compile failed with backend='{self.inference_cfg.compile.backend}', "
-                    f"falling back to eager mode. Error: {e}"
+                    f"falling back to eager mode. Error: {e}",
+                    stacklevel=2,
                 )
 
         self._batch_list: list[torch.Tensor] = []
@@ -260,7 +259,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
     @abstractmethod
     def predict(self, inputs: torch.Tensor, **kwargs) -> list[dict[str, dict[str, np.ndarray]]]:
-        """Makes predictions from a model input and output
+        """Makes predictions from a model input and output.
 
         Args:
             the inputs to the model, of shape (batch_size, ...)
@@ -275,7 +274,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
         shelf_writer: shelving.ShelfWriter | None = None,
     ) -> list[dict[str, np.ndarray]]:
-        """Run model inference on the given dataset
+        """Run model inference on the given dataset.
 
         TODO: Add an option to also return head outputs (such as heatmaps)? Can be
          super useful for debugging
@@ -307,7 +306,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
         shelf_writer: shelving.ShelfWriter | None = None,
     ) -> list[dict[str, np.ndarray]]:
-        """Original sequential inference implementation"""
+        """Original sequential inference implementation."""
         results = []
         for data in images:
             self._prepare_inputs(data)
@@ -326,7 +325,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
         shelf_writer: shelving.ShelfWriter | None = None,
     ) -> list[dict[str, np.ndarray]]:
-        """Async inference with pipeline parallelism"""
+        """Async inference with pipeline parallelism."""
         # Reset state
         self._stop_event.clear()
         self._exception = None
@@ -384,9 +383,8 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         self,
         data: str | Path | np.ndarray | tuple[str | Path | np.ndarray, dict],
     ) -> None:
-        """
-        Prepares inputs for an image and adds them to the data ready to be processed
-        """
+        """Prepares inputs for an image and adds them to the data ready to be
+        processed."""
         if isinstance(data, (str, Path, np.ndarray)):
             inputs, context = data, {}
         else:
@@ -457,9 +455,10 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         return results
 
     def _process_batch(self) -> None:
-        """
-        Processes a batch. There must be inputs waiting to be processed before this is
-        called, otherwise this method will raise an error.
+        """Processes a batch.
+
+        There must be inputs waiting to be processed before this is called, otherwise
+        this method will raise an error.
         """
         batch = torch.stack(self._batch_list[: self.batch_size], dim=0)
         model_kwargs = {mk: v[: self.batch_size] for mk, v in self._model_kwargs.items()}
@@ -479,7 +478,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         return len(self._batch_list) > 0
 
     def _safe_put(self, item: Any) -> bool:
-        """Put item in the queue, retrying until successful or stop_event is set"""
+        """Put item in the queue, retrying until successful or stop_event is set."""
         while not self._stop_event.is_set():
             try:
                 self._input_queue.put(item, timeout=1.0)
@@ -489,8 +488,8 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         return False
 
     def _safe_get(self) -> Any:
-        """
-        Get the next item from the queue safely, retrying until successful or stop_event is set
+        """Get the next item from the queue safely, retrying until successful or
+        stop_event is set.
 
         Returns:
             The item from the queue, or None if the producer is dead or stop_signal is raised and queue empty.
@@ -510,7 +509,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 continue
 
     def _preprocessing_worker(self, images: Iterable) -> None:
-        """Background worker that prepares inputs and puts them in the input queue"""
+        """Background worker that prepares inputs and puts them in the input queue."""
         try:
             for data in images:
                 if self._stop_event.is_set():
@@ -546,7 +545,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             self._safe_put(None)
 
     def __del__(self):
-        """Cleanup method to ensure threads are stopped"""
+        """Cleanup method to ensure threads are stopped."""
         if hasattr(self, "_stop_event"):
             self._stop_event.set()
         if hasattr(self, "_preprocessing_thread") and self._preprocessing_thread is not None:
@@ -554,7 +553,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
 
 class PoseInferenceRunner(InferenceRunner[PoseModel]):
-    """Runner for pose estimation inference"""
+    """Runner for pose estimation inference."""
 
     def __init__(
         self,
@@ -568,7 +567,7 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
             raise ValueError("Dynamic cropping can only be used with batch size 1. Please set your batch size to 1.")
 
     def predict(self, inputs: torch.Tensor, **kwargs) -> list[dict[str, dict[str, np.ndarray]]]:
-        """Makes predictions from a model input and output
+        """Makes predictions from a model input and output.
 
         Args:
             the inputs to the model, of shape (batch_size, ...)
@@ -608,7 +607,7 @@ class PoseInferenceRunner(InferenceRunner[PoseModel]):
 
 
 class CTDInferenceRunner(PoseInferenceRunner):
-    """Runner for pose estimation inference
+    """Runner for pose estimation inference.
 
     Args:
         model: The CTD model to run inference with.
@@ -655,7 +654,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
         images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
         shelf_writer: shelving.ShelfWriter | None = None,
     ) -> list[dict[str, np.ndarray]]:
-        """Run CTD model inference on the given dataset
+        """Run CTD model inference on the given dataset.
 
         Args:
             images: the images to run inference on, optionally with context
@@ -692,7 +691,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
         return results
 
     def predict(self, inputs: torch.Tensor, **kwargs) -> list[dict[str, dict[str, np.ndarray]]]:
-        """Makes predictions from a model input and output
+        """Makes predictions from a model input and output.
 
         Args:
             the inputs to the model, of shape (batch_size, ...)
@@ -833,7 +832,10 @@ class CTDInferenceRunner(PoseInferenceRunner):
         predictions: dict[str, np.ndarray],
         image_size: tuple[int, int],
     ) -> None:
-        """Post-processes predictions. In-place changes to the predictions dict."""
+        """Post-processes predictions.
+
+        In-place changes to the predictions dict.
+        """
         # reorder the previous poses so the indices match the track IDs
         if self._idx_to_id is not None:
             predictions["bodyparts"] = predictions["bodyparts"][self._idx_to_id]
@@ -895,9 +897,8 @@ class CTDInferenceRunner(PoseInferenceRunner):
             self._idx_ages = None
 
     def _merge_conditions(self, bu_cond: np.ndarray) -> np.ndarray:
-        """
-        Merges conditions made by a BU model with existing conditions from CTD tracking.
-        """
+        """Merges conditions made by a BU model with existing conditions from CTD
+        tracking."""
         # prepare the BU conditions for matching
         bu_cond = bu_cond.copy()[:, :, :3]
         # mask low-quality keypoints
@@ -938,7 +939,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
 
 
 class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
-    """Runner for object detection inference"""
+    """Runner for object detection inference."""
 
     def __init__(self, model: BaseDetector, **kwargs):
         """
@@ -949,7 +950,7 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
         super().__init__(model, **kwargs)
 
     def predict(self, inputs: torch.Tensor, **kwargs) -> list[dict[str, dict[str, np.ndarray]]]:
-        """Makes predictions from a model input and output
+        """Makes predictions from a model input and output.
 
         Args:
             the inputs to the model, of shape (batch_size, ...)
@@ -993,8 +994,7 @@ def build_inference_runner(
     inference_cfg: InferenceConfig | dict | None = None,
     **kwargs,
 ) -> InferenceRunner:
-    """
-    Build a runner object according to a pytorch configuration file
+    """Build a runner object according to a pytorch configuration file.
 
     Args:
         task: the inference task to run

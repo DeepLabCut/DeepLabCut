@@ -23,10 +23,8 @@ from deeplabcut.modelzoo.generalized_data_converter.datasets.utils import (
 
 
 class SingleDLCPoseDataset(BaseDLCPoseDataset):
-    """
-    The philosophy is to assume the dataset is already created so this class is not
-    responsible for creating training dataset
-    """
+    """The philosophy is to assume the dataset is already created so this class is not
+    responsible for creating training dataset."""
 
     def __init__(self, proj_root, dataset_name, shuffle=1, modelprefix=""):
         super().__init__(proj_root, dataset_name, shuffle=shuffle, modelprefix=modelprefix)

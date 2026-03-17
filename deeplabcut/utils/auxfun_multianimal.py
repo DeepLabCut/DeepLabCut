@@ -37,8 +37,7 @@ from deeplabcut.utils import auxiliaryfunctions, conversioncode
 
 
 def reorder_individuals_in_df(df: pd.DataFrame, order: list) -> pd.DataFrame:
-    """
-    Reorders data of df to match the order given in a list
+    """Reorders data of df to match the order given in a list.
 
     Parameters:
     ----------
@@ -92,7 +91,8 @@ def get_track_method(cfg, track_method=""):
 
 
 def IntersectionofIndividualsandOnesGivenbyUser(cfg, individuals):
-    """Returns all individuals when set to 'all', otherwise all bpts that are in the intersection of comparisonbodyparts and the actual bodyparts"""
+    """Returns all individuals when set to 'all', otherwise all bpts that are in the
+    intersection of comparisonbodyparts and the actual bodyparts."""
     if "individuals" not in cfg:  # Not a multi-animal project...
         return [""]
     all_indivs = extractindividualsandbodyparts(cfg)[0]
@@ -150,8 +150,9 @@ def prune_paf_graph(list_of_edges, desired_n_edges=None, average_degree=None):
 
 
 def getpafgraph(cfg, printnames=True):
-    """Auxiliary function that turns skeleton (list of connected bodypart pairs)
-    into a list of corresponding indices (with regard to the stacked multianimal/uniquebodyparts)
+    """Auxiliary function that turns skeleton (list of connected bodypart pairs) into a
+    list of corresponding indices (with regard to the stacked
+    multianimal/uniquebodyparts)
 
     Convention: multianimalbodyparts go first!
     """
@@ -190,7 +191,8 @@ def graph2names(cfg, partaffinityfield_graph):
 
 
 def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
-    """Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py"""
+    """Save predicted data as h5 file and metadata as pickle file; created by
+    predict_videos.py."""
     data_path = dataname.split(".h5")[0] + suffix + ".pickle"
     metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
 
@@ -202,7 +204,8 @@ def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
 
 
 def LoadFullMultiAnimalData(dataname):
-    """Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py"""
+    """Save predicted data as h5 file and metadata as pickle file; created by
+    predict_videos.py."""
     data_file = dataname.split(".h5")[0] + "_full.pickle"
     try:
         with open(data_file, "rb") as handle:
@@ -356,7 +359,10 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
 
 
 def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
-    """Convert multi animal to single animal code and vice versa. Note that by providing target='single'/'multi' this will be target!"""
+    """Convert multi animal to single animal code and vice versa.
+
+    Note that by providing target='single'/'multi' this will be target!
+    """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
     video_names = [Path(i).stem for i in videos]

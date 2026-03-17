@@ -31,7 +31,7 @@ HEADS = Registry("heads", build_func=build_from_cfg)
 
 
 class BaseHead(ABC, nn.Module):
-    """A head for pose estimation models
+    """A head for pose estimation models.
 
     Attributes:
         stride: The stride for the head (or neck + head pair), where positive values
@@ -88,8 +88,7 @@ class BaseHead(ABC, nn.Module):
 
     @abstractmethod
     def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
-        """
-        Given the feature maps for an image ()
+        """Given the feature maps for an image ()
 
         Args:
             x: the feature maps, of shape (b, c, h, w)
@@ -104,8 +103,7 @@ class BaseHead(ABC, nn.Module):
         outputs: dict[str, torch.Tensor],
         targets: dict[str, dict[str, torch.Tensor]],
     ) -> dict[str, torch.Tensor]:
-        """
-        Computes the loss for this head
+        """Computes the loss for this head.
 
         Args:
             outputs: the outputs of this head
@@ -126,7 +124,7 @@ class BaseHead(ABC, nn.Module):
         return losses
 
     def _init_weights(self) -> None:
-        """Should be called once all modules for the class are created"""
+        """Should be called once all modules for the class are created."""
         if self.weight_init is not None:
             self.weight_init.init_weights(self)
 
@@ -149,7 +147,7 @@ class WeightConversionMixin(ABC):
         module_prefix: str,
         conversion: torch.Tensor,
     ) -> dict[str, torch.Tensor]:
-        """Converts pre-trained weights to be fine-tuned on another dataset
+        """Converts pre-trained weights to be fine-tuned on another dataset.
 
         Args:
             state_dict: the state dict for the pre-trained model

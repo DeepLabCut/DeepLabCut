@@ -54,7 +54,7 @@ def train(
     max_snapshots_to_keep: int | None = None,
     load_head_weights: bool = True,
 ) -> None:
-    """Builds a model from a configuration and fits it to a dataset
+    """Builds a model from a configuration and fits it to a dataset.
 
     Args:
         loader: the loader containing the data to train on/validate with
@@ -217,7 +217,7 @@ def train_network(
     pose_threshold: float | None = 0.1,
     pytorch_cfg_updates: dict | None = None,
 ) -> None:
-    """Trains a network for a project
+    """Trains a network for a project.
 
     Args:
         config : path to the yaml config file of the project

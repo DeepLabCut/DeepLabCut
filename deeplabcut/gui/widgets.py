@@ -63,9 +63,7 @@ class BaseFrame(QtWidgets.QFrame):
         layout.addWidget(self.canvas)
 
     def getfigure(self):
-        """
-        Returns the figure, axes and canvas
-        """
+        """Returns the figure, axes and canvas."""
         return self.figure, self.axes, self.canvas
 
     def resetView(self):

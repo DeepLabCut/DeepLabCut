@@ -81,7 +81,7 @@ def extract_bpt_feature_from_video(
             nx,
             ny,
         )
-        start = time.time()
+        time.time()
 
         print("Starting to extract posture")
         if int(dlc_cfg["batch_size"]) > 1:
@@ -116,7 +116,7 @@ def AnalyzeMultiAnimalVideo(
     robust_nframes=False,
     use_shelve=False,
 ):
-    """Helper function for analyzing a video with multiple individuals"""
+    """Helper function for analyzing a video with multiple individuals."""
 
     print("Starting to analyze % ", video)
     vname = Path(video).stem
@@ -191,7 +191,7 @@ def AnalyzeMultiAnimalVideo(
 
         stop = time.time()
 
-        if cfg["cropping"] == True:
+        if cfg["cropping"]:
             coords = [cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]]
         else:
             coords = [0, nx, 0, ny]
@@ -212,7 +212,7 @@ def AnalyzeMultiAnimalVideo(
             "cropping_parameters": coords,
         }
         metadata = {"data": dictionary}
-        print("Video Analyzed. Saving results in %s..." % (destfolder))
+        print(f"Video Analyzed. Saving results in {destfolder}...")
 
         if use_shelve:
             metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
@@ -252,7 +252,7 @@ def GetPoseandCostsF_from_assemblies(
     feature_dict,
     extra_dict,
 ):
-    """Batchwise prediction of pose"""
+    """Batchwise prediction of pose."""
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
     batch_ind = 0  # keeps track of which image within a batch should be written to
     batch_num = 0  # keeps track of which batch you are at
@@ -289,7 +289,7 @@ def GetPoseandCostsF_from_assemblies(
                     continue
 
                 D, features = preds
-                for i, (ind, data) in enumerate(zip(inds, D)):
+                for i, (ind, data) in enumerate(zip(inds, D, strict=False)):
                     PredicteData["frame" + str(ind).zfill(strwidth)] = data
                     raw_coords = assemblies.get(ind)
                     if raw_coords is None:
@@ -315,7 +315,7 @@ def GetPoseandCostsF_from_assemblies(
                     continue
 
                 D, features = preds
-                for i, (ind, data) in enumerate(zip(inds, D)):
+                for i, (ind, data) in enumerate(zip(inds, D, strict=False)):
                     PredicteData["frame" + str(ind).zfill(strwidth)] = data
                     raw_coords = assemblies.get(ind)
                     if raw_coords is None:
@@ -358,7 +358,7 @@ def GetPoseandCostsF(
     batchsize,
     shelf_path,
 ):
-    """Batchwise prediction of pose"""
+    """Batchwise prediction of pose."""
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
     batch_ind = 0  # keeps track of which image within a batch should be written to
     batch_num = 0  # keeps track of which batch you are at
@@ -408,7 +408,7 @@ def GetPoseandCostsF(
                     inputs,
                     outputs,
                 )
-                for ind, data in zip(inds, D):
+                for ind, data in zip(inds, D, strict=False):
                     db["frame" + str(ind).zfill(strwidth)] = data
                 del D
                 batch_ind = 0
@@ -425,7 +425,7 @@ def GetPoseandCostsF(
                     inputs,
                     outputs,
                 )
-                for ind, data in zip(inds, D):
+                for ind, data in zip(inds, D, strict=False):
                     db["frame" + str(ind).zfill(strwidth)] = data
                 del D
             break

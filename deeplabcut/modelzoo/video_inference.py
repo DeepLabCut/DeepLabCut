@@ -35,8 +35,7 @@ from deeplabcut.utils.pseudo_label import (
 
 
 def get_checkpoint_epoch(checkpoint_path):
-    """
-    Load a PyTorch checkpoint and return the current epoch number.
+    """Load a PyTorch checkpoint and return the current epoch number.
 
     Args:
         checkpoint_path (str): Path to the checkpoint file
@@ -80,8 +79,7 @@ def video_inference_superanimal(
     plot_bboxes: bool = True,
     create_labeled_video: bool = True,
 ):
-    """
-    This function performs inference on videos using a pretrained SuperAnimal model.
+    """This function performs inference on videos using a pretrained SuperAnimal model.
 
     IMPORTANT: Note that since we have both TensorFlow and PyTorch Engines, we will
     route the engine based on the model you select:

@@ -83,8 +83,8 @@ Total remaining issues: **1437**
 
 ## E501
 
-Count: **333**  
-Hint: Line too long. Prefer wrapping expressions, splitting long strings/comments, or extracting variables.  
+Count: **333**
+Hint: Line too long. Prefer wrapping expressions, splitting long strings/comments, or extracting variables.
 
 ### Files affected
 
@@ -1232,8 +1232,8 @@ code -g "examples\testscript_pretrained_models.py:32"
 
 ## F401
 
-Count: **331**  
-Hint: Unused import. Usually safe to delete; verify imports with side effects.  
+Count: **331**
+Hint: Unused import. Usually safe to delete; verify imports with side effects.
 
 ### Files affected
 
@@ -2079,7 +2079,7 @@ code -g "deeplabcut\post_processing\__init__.py:21"
 
 ## B905
 
-Count: **176**  
+Count: **176**
 
 ### Files affected
 
@@ -3226,7 +3226,7 @@ code -g "tests\test_stitcher.py:103"
 
 ## F841
 
-Count: **141**  
+Count: **141**
 
 ### Files affected
 
@@ -3870,8 +3870,8 @@ code -g "tests\test_pose_multianimal_imgaug.py:109"
 
 ## E402
 
-Count: **93**  
-Hint: Module import not at top of file. Move imports above executable code if possible.  
+Count: **93**
+Hint: Module import not at top of file. Move imports above executable code if possible.
 
 ### Files affected
 
@@ -4095,8 +4095,8 @@ code -g "tests\pose_estimation_pytorch\modelzoo\test_fmpose_integration.py:19"
 
 ## UP031
 
-Count: **76**  
-Hint: Old `%` formatting. Convert to f-strings or `.format()` where appropriate.  
+Count: **76**
+Hint: Old `%` formatting. Convert to f-strings or `.format()` where appropriate.
 
 ### Files affected
 
@@ -4483,8 +4483,8 @@ code -g "examples\COLAB\COLAB_DEMO_SuperAnimal.ipynb:23"
 
 ## B007
 
-Count: **51**  
-Hint: Unused loop variable. Rename to `_` or use it.  
+Count: **51**
+Hint: Unused loop variable. Rename to `_` or use it.
 
 ### Files affected
 
@@ -4978,7 +4978,7 @@ code -g "tests\test_auxiliaryfunctions.py:39"
 
 ## B028
 
-Count: **49**  
+Count: **49**
 
 ### Files affected
 
@@ -5374,8 +5374,8 @@ code -g "deeplabcut\utils\auxiliaryfunctions.py:292"
 
 ## F403
 
-Count: **36**  
-Hint: `from x import *` makes names unclear. Replace with explicit imports.  
+Count: **36**
+Hint: `from x import *` makes names unclear. Replace with explicit imports.
 
 ### Files affected
 
@@ -5566,7 +5566,7 @@ code -g "deeplabcut\post_processing\__init__.py:22"
 
 ## E712
 
-Count: **22**  
+Count: **22**
 
 ### Files affected
 
@@ -5719,8 +5719,8 @@ code -g "deeplabcut\utils\auxiliaryfunctions_3d.py:94"
 
 ## F821
 
-Count: **22**  
-Hint: Undefined name. Usually a real bug or missing import.  
+Count: **22**
+Hint: Undefined name. Usually a real bug or missing import.
 
 ### Files affected
 
@@ -5825,8 +5825,8 @@ code -g "deeplabcut\pose_estimation_3d\triangulation.py:140"
 
 ## B904
 
-Count: **19**  
-Hint: Inside `except`, use `raise ... from e` to preserve exception chaining.  
+Count: **19**
+Hint: Inside `except`, use `raise ... from e` to preserve exception chaining.
 
 ### Files affected
 
@@ -6012,8 +6012,8 @@ code -g "deeplabcut\utils\conversioncode.py:303"
 
 ## E722
 
-Count: **19**  
-Hint: Bare `except:`. Catch `Exception` or a narrower exception type.  
+Count: **19**
+Hint: Bare `except:`. Catch `Exception` or a narrower exception type.
 
 ### Files affected
 
@@ -6223,8 +6223,8 @@ code -g "deeplabcut\utils\make_labeled_video.py:1333"
 
 ## F405
 
-Count: **16**  
-Hint: Likely consequence of `import *`. Import the name explicitly.  
+Count: **16**
+Hint: Likely consequence of `import *`. Import the name explicitly.
 
 ### Files affected
 
@@ -6263,8 +6263,8 @@ code -g "deeplabcut\gui\window.py:559"
 
 ## E721
 
-Count: **14**  
-Hint: Avoid direct `type(x) == Y`; prefer `isinstance(x, Y)`.  
+Count: **14**
+Hint: Avoid direct `type(x) == Y`; prefer `isinstance(x, Y)`.
 
 ### Files affected
 
@@ -6361,7 +6361,7 @@ code -g "deeplabcut\pose_estimation_tensorflow\datasets\pose_tensorpack.py:169"
 
 ## B006
 
-Count: **12**  
+Count: **12**
 
 ### Files affected
 
@@ -6468,7 +6468,7 @@ code -g "deeplabcut\utils\make_labeled_video.py:417"
 
 ## E711
 
-Count: **7**  
+Count: **7**
 
 ### Files affected
 
@@ -6534,7 +6534,7 @@ code -g "deeplabcut\modelzoo\generalized_data_converter\datasets\multi.py:43"
 
 ## E731
 
-Count: **4**  
+Count: **4**
 
 ### Files affected
 
@@ -6597,8 +6597,8 @@ code -g "deeplabcut\utils\auxfun_videos.py:272"
 
 ## B008
 
-Count: **3**  
-Hint: Function call in default arg. Use `None` + initialize inside the function.  
+Count: **3**
+Hint: Function call in default arg. Use `None` + initialize inside the function.
 
 ### Files affected
 
@@ -6648,8 +6648,8 @@ code -g "examples\testscript_pytorch_single_animal.py:29"
 
 ## B023
 
-Count: **2**  
-Hint: Function closes over loop variable. Bind it via default arg or helper.  
+Count: **2**
+Hint: Function closes over loop variable. Bind it via default arg or helper.
 
 ### Files affected
 
@@ -6686,8 +6686,8 @@ code -g "deeplabcut\refine_training_dataset\stitch.py:1177"
 
 ## B024
 
-Count: **2**  
-Hint: ABC without abstract method. Add `@abstractmethod` or remove ABC intent.  
+Count: **2**
+Hint: ABC without abstract method. Add `@abstractmethod` or remove ABC intent.
 
 ### Files affected
 
@@ -6724,8 +6724,8 @@ code -g "deeplabcut\pose_estimation_pytorch\runners\shelving.py:21"
 
 ## F811
 
-Count: **2**  
-Hint: Redefined while unused. Remove duplicate or rename.  
+Count: **2**
+Hint: Redefined while unused. Remove duplicate or rename.
 
 ### Files affected
 
@@ -6762,7 +6762,7 @@ code -g "tests\generate_training_dataset\test_trainset_metadata.py:246"
 
 ## B011
 
-Count: **1**  
+Count: **1**
 
 ### Files affected
 
@@ -6786,8 +6786,8 @@ code -g "deeplabcut\pose_estimation_tensorflow\nnets\utils.py:115"
 
 ## B012
 
-Count: **1**  
-Hint: Jump statement in `finally` can swallow exceptions. Restructure flow.  
+Count: **1**
+Hint: Jump statement in `finally` can swallow exceptions. Restructure flow.
 
 ### Files affected
 
@@ -6811,8 +6811,8 @@ code -g "deeplabcut\pose_estimation_tensorflow\predict_videos.py:1053"
 
 ## B016
 
-Count: **1**  
-Hint: Raise an exception instance/class, not a literal.  
+Count: **1**
+Hint: Raise an exception instance/class, not a literal.
 
 ### Files affected
 
@@ -6836,8 +6836,8 @@ code -g "examples\testscript_3d.py:126"
 
 ## B017
 
-Count: **1**  
-Hint: Use a more specific exception with `assertRaises`.  
+Count: **1**
+Hint: Use a more specific exception with `assertRaises`.
 
 ### Files affected
 
@@ -6861,8 +6861,8 @@ code -g "tests\pose_estimation_pytorch\other\test_api_utils.py:67"
 
 ## B020
 
-Count: **1**  
-Hint: Loop variable overrides iterator. Rename loop variables.  
+Count: **1**
+Hint: Loop variable overrides iterator. Rename loop variables.
 
 ### Files affected
 
@@ -6886,8 +6886,8 @@ code -g "deeplabcut\pose_estimation_pytorch\models\heads\simple_head.py:196"
 
 ## B027
 
-Count: **1**  
-Hint: Empty method in ABC without abstract decorator. Add `@abstractmethod` or implement it.  
+Count: **1**
+Hint: Empty method in ABC without abstract decorator. Add `@abstractmethod` or implement it.
 
 ### Files affected
 
@@ -6911,7 +6911,7 @@ code -g "deeplabcut\pose_estimation_pytorch\models\modules\kpt_encoders.py:47"
 
 ## UP028
 
-Count: **1**  
+Count: **1**
 
 ### Files affected
 

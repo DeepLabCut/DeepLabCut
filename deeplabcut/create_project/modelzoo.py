@@ -87,8 +87,7 @@ def create_pretrained_human_project(
     createlabeledvideo=True,
     analyzevideo=True,
 ):
-    """
-    LEGACY FUNCTION will be deprecated.
+    """LEGACY FUNCTION will be deprecated.
 
     Use deeplabcut.create_pretrained_project(project, experimenter, videos, model='full_human', ..)
 
@@ -133,8 +132,7 @@ def create_pretrained_project(
     net_name: str | None = None,
     detector_name: str | None = None,
 ):
-    r"""
-    Creates a new project directory, sub-directories and a basic configuration file.
+    r"""Creates a new project directory, sub-directories and a basic configuration file.
     Change its parameters to your projects need.
 
     The project will also be initialized with a pre-trained model from the DeepLabCut model zoo!
@@ -265,8 +263,7 @@ def create_pretrained_project_pytorch(
     net_name: str | None = None,
     detector_name: str | None = None,
 ):
-    r"""
-    Method used specifically for Pytorch-based ModelZoo models.
+    r"""Method used specifically for Pytorch-based ModelZoo models.
 
     Creates a new project directory, sub-directories and a basic configuration file.
     Change its parameters to your projects need.
@@ -484,8 +481,7 @@ def create_pretrained_project_tensorflow(
     createlabeledvideo: bool = True,
     trainFraction: float | None = None,
 ):
-    r"""
-    Method used specifically for Tensorflow-based ModelZoo models.
+    r"""Method used specifically for Tensorflow-based ModelZoo models.
 
     Creates a new project directory, sub-directories and a basic configuration file.
     Change its parameters to your projects need.

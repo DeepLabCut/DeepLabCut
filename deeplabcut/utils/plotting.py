@@ -58,7 +58,8 @@ def PlottingResults(
     resolution=100,
     linewidth=1.0,
 ):
-    """Plots poses vs time; pose x vs pose y; histogram of differences and likelihoods."""
+    """Plots poses vs time; pose x vs pose y; histogram of differences and
+    likelihoods."""
     pcutoff = cfg["pcutoff"]
     colors = visualization.get_cmap(len(bodyparts2plot), name=cfg["colormap"])
     alphavalue = cfg["alphavalue"]
@@ -432,8 +433,7 @@ def plot_edge_affinity_distributions(
     output_name="",
     figsize=(10, 7),
 ):
-    """
-    Display the distribution of affinity costs of within- and between-animal edges.
+    """Display the distribution of affinity costs of within- and between-animal edges.
 
     Parameters
     ----------
@@ -450,7 +450,6 @@ def plot_edge_affinity_distributions(
 
     figsize: tuple
         Figure size in inches.
-
     """
 
     with open(eval_pickle_file, "rb") as file:

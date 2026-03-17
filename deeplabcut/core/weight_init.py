@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Classes to configure how to initialize model weights"""
+"""Classes to configure how to initialize model weights."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ import numpy as np
 
 @dataclass
 class WeightInitialization:
-    """Configures weights initialization when transfer learning or fine-tuning models
+    """Configures weights initialization when transfer learning or fine-tuning models.
 
     Args:
         snapshot_path: The path to the snapshot used to initialize pose model weights
@@ -124,7 +124,7 @@ class WeightInitialization:
 
     @staticmethod
     def from_dict_legacy(data: dict) -> WeightInitialization:
-        """Deals with weight initialization that were created before 3.0.0rc5"""
+        """Deals with weight initialization that were created before 3.0.0rc5."""
         import deeplabcut.pose_estimation_pytorch.modelzoo.utils as utils
 
         conversion_array = data.get("conversion_array")
@@ -157,7 +157,7 @@ class WeightInitialization:
         customized_pose_checkpoint: str | None = None,
         customized_detector_checkpoint: str | None = None,
     ) -> WeightInitialization:
-        """Builds a WeightInitialization for a project
+        """Builds a WeightInitialization for a project.
 
         `WeightInitialization.build` is deprecated and will be removed in a future
         version of DeepLabCut. Please use `build_weight_init` from `deeplabcut.modelzoo`
@@ -193,7 +193,7 @@ class WeightInitialization:
             "future version of DeepLabCut. Please use `build_weight_init` from "
             "`deeplabcut.modelzoo` instead."
         )
-        warnings.warn(deprecation_warning, DeprecationWarning)
+        warnings.warn(deprecation_warning, DeprecationWarning, stacklevel=2)
 
         return build_weight_init(
             cfg,

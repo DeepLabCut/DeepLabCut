@@ -204,8 +204,7 @@ class VideoWriter(VideoReader):
             self.fps = fps
 
     def shorten(self, start, end, suffix="short", dest_folder=None, validate_inputs=True):
-        """
-        Shorten the video from start to end.
+        """Shorten the video from start to end.
 
         Parameter
         ----------
@@ -246,8 +245,7 @@ class VideoWriter(VideoReader):
         return output_path
 
     def split(self, n_splits, suffix="split", dest_folder=None):
-        """
-        Split a video into several shorter ones of equal duration.
+        """Split a video into several shorter ones of equal duration.
 
         Parameters
         ----------
@@ -353,7 +351,9 @@ def check_video_integrity(video_path):
 
 def imread(image_path, mode="skimage"):
     """Read image either with skimage or cv2.
-    Returns frame in uint with 3 color channels."""
+
+    Returns frame in uint with 3 color channels.
+    """
     if mode == "skimage":
         image = io.imread(image_path)
         if image.ndim == 2 or image.shape[-1] == 1:
@@ -378,9 +378,8 @@ def imresize(img, size=1.0, interpolationmethod=cv2.INTER_AREA):
 
 
 def ShortenVideo(vname, start="00:00:01", stop="00:01:00", outsuffix="short", outpath=None):
-    """
-    Auxiliary function to shorten video and output with outsuffix appended.
-    to the same folder from start (hours:minutes:seconds) to stop (hours:minutes:seconds).
+    """Auxiliary function to shorten video and output with outsuffix appended. to the
+    same folder from start (hours:minutes:seconds) to stop (hours:minutes:seconds).
 
     Returns the full path to the shortened video!
 
@@ -428,9 +427,8 @@ def CropVideo(
     outpath=None,
     useGUI=False,
 ):
-    """
-    Auxiliary function to crop a video and output it to the same folder with "outsuffix" appended in its name.
-    Width and height will control the new dimensions.
+    """Auxiliary function to crop a video and output it to the same folder with
+    "outsuffix" appended in its name. Width and height will control the new dimensions.
 
     Returns the full path to the downsampled video!
 
@@ -494,10 +492,10 @@ def DownSampleVideo(
     rotatecw="No",
     angle=0.0,
 ):
-    """
-    Auxiliary function to downsample a video and output it to the same folder with "outsuffix" appended in its name.
-    Width and height will control the new dimensions. You can also pass only height or width and set the other one to -1,
-    this will keep the aspect ratio identical.
+    """Auxiliary function to downsample a video and output it to the same folder with
+    "outsuffix" appended in its name. Width and height will control the new dimensions.
+    You can also pass only height or width and set the other one to -1, this will keep
+    the aspect ratio identical.
 
     Returns the full path to the downsampled video!
 
@@ -542,9 +540,8 @@ def DownSampleVideo(
 
 
 def rotate_video(vname, angle, rotatecw="Arbitrary", outsuffix="rotated", outpath=None):
-    """
-    Auxiliary function to rotate a video and output it to the same folder with "outsuffix" appended in its name.
-    Angle is in degrees.
+    """Auxiliary function to rotate a video and output it to the same folder with
+    "outsuffix" appended in its name. Angle is in degrees.
 
     Returns the full path to the rotated video!
 

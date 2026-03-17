@@ -23,7 +23,7 @@ KEYPOINT_ENCODERS = Registry("kpt_encoders", build_func=build_from_cfg)
 
 
 class BaseKeypointEncoder(ABC):
-    """Encodes keypoints into heatmaps
+    """Encodes keypoints into heatmaps.
 
     Modified from BUCTD/data/JointsDataset
     """
@@ -62,7 +62,7 @@ class BaseKeypointEncoder(ABC):
         raise NotImplementedError
 
     def blur_heatmap(self, heatmap: np.ndarray) -> np.ndarray:
-        """Applies a Gaussian blur to a heatmap
+        """Applies a Gaussian blur to a heatmap.
 
         Taken from BUCTD/data/JointsDataset, generate_heatmap
 
@@ -90,7 +90,7 @@ class BaseKeypointEncoder(ABC):
 
 @KEYPOINT_ENCODERS.register_module
 class StackedKeypointEncoder(BaseKeypointEncoder):
-    """Encodes keypoints into heatmaps, where each
+    """Encodes keypoints into heatmaps, where each.
 
     Modified from BUCTD/data/JointsDataset, get_stacked_condition
     """
@@ -152,7 +152,7 @@ class StackedKeypointEncoder(BaseKeypointEncoder):
 
 @KEYPOINT_ENCODERS.register_module
 class ColoredKeypointEncoder(BaseKeypointEncoder):
-    """Encodes keypoints into a given number of color channels
+    """Encodes keypoints into a given number of color channels.
 
     Modified from BUCTD/data/JointsDataset, get_condition_image_colored
     """

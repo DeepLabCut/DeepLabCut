@@ -154,7 +154,7 @@ class Assembly:
         unq, idx, cnt = np.unique(data[:, 3], return_inverse=True, return_counts=True)
         avg = np.bincount(idx, weights=data[:, 2]) / cnt
         soft = softmax(avg)
-        return dict(zip(unq.astype(int), soft))
+        return dict(zip(unq.astype(int), soft, strict=False))
 
     @property
     def affinity(self):
@@ -260,7 +260,7 @@ class Assembler:
         self.max_overlap = max_overlap
         self._has_identity = "identity" in self[0]
         if identity_only and not self._has_identity:
-            warnings.warn("The network was not trained with identity; setting `identity_only` to False.")
+            warnings.warn("The network was not trained with identity; setting `identity_only` to False.", stacklevel=2)
         self.identity_only = identity_only & self._has_identity
         self.nan_policy = nan_policy
         self.force_fusion = force_fusion
@@ -340,7 +340,7 @@ class Assembler:
             pass
         n_bpts = len(df.columns.get_level_values("bodyparts").unique())
         if n_bpts == 1:
-            warnings.warn("There is only one keypoint; skipping calibration...")
+            warnings.warn("There is only one keypoint; skipping calibration...", stacklevel=2)
             return
 
         xy = df.to_numpy().reshape((-1, n_bpts, 2))
@@ -348,7 +348,7 @@ class Assembler:
         # Only keeps skeletons that are more than 90% complete
         xy = xy[frac_valid >= 0.9]
         if not xy.size:
-            warnings.warn("No complete poses were found. Skipping calibration...")
+            warnings.warn("No complete poses were found. Skipping calibration...", stacklevel=2)
             return
 
         # TODO Normalize dists by longest length?
@@ -364,7 +364,7 @@ class Assembler:
             self.safe_edge = True
         except np.linalg.LinAlgError:
             # Covariance matrix estimation fails due to numerical singularities
-            warnings.warn("The assembler could not be robustly calibrated. Continuing without it...")
+            warnings.warn("The assembler could not be robustly calibrated. Continuing without it...", stacklevel=2)
 
     def calc_assembly_mahalanobis_dist(self, assembly, return_proba=False, nan_policy="little"):
         if self._kde is None:
@@ -420,10 +420,10 @@ class Assembler:
             ids = [np.ones(len(arr), dtype=int) * -1 for arr in confidence]
         else:
             ids = [arr.argmax(axis=1) for arr in ids]
-        for i, (coords, conf, id_) in enumerate(zip(coordinates, confidence, ids)):
+        for i, (coords, conf, id_) in enumerate(zip(coordinates, confidence, ids, strict=False)):
             if not np.any(coords):
                 continue
-            for xy, p, g in zip(coords, conf, id_):
+            for xy, p, g in zip(coords, conf, id_, strict=False):
                 joint = Joint(tuple(xy), p.item(), i, ind, g)
                 ind += 1
                 yield joint
@@ -457,13 +457,13 @@ class Assembler:
                 conf = np.asarray([[det_s.confidence * det_t.confidence for det_t in dets_t] for det_s in dets_s])
                 rows, cols = np.where((conf >= self.pcutoff * self.pcutoff) & (aff >= self.min_affinity))
                 candidates = sorted(
-                    zip(rows, cols, aff[rows, cols], lengths[rows, cols]),
+                    zip(rows, cols, aff[rows, cols], lengths[rows, cols], strict=False),
                     key=lambda x: x[2],
                     reverse=True,
                 )
                 i_seen = set()
                 j_seen = set()
-                for i, j, w, l in candidates:
+                for i, j, w, _l in candidates:
                     if i not in i_seen and j not in j_seen:
                         i_seen.add(i)
                         j_seen.add(j)
@@ -481,7 +481,7 @@ class Assembler:
                 keep_t = [ind for ind in inds_t if dets_t[ind].confidence >= self.pcutoff]
                 aff = aff[np.ix_(keep_s, keep_t)]
                 rows, cols = linear_sum_assignment(aff, maximize=True)
-                for row, col in zip(rows, cols):
+                for row, col in zip(rows, cols, strict=False):
                     w = aff[row, col]
                     if w >= self.min_affinity:
                         links.append(Link(dets_s[keep_s[row]], dets_t[keep_t[col]], w))
@@ -754,7 +754,7 @@ class Assembler:
                 scores = [-self.calc_assembly_mahalanobis_dist(ass) for ass in assemblies]
             else:
                 scores = [ass._affinity for ass in assemblies]
-            lst = list(zip(scores, assemblies))
+            lst = list(zip(scores, assemblies, strict=False))
             assemblies = []
             while lst:
                 temp = max(lst, key=lambda x: x[0])
@@ -882,7 +882,7 @@ class Assembler:
 
 @dataclass
 class MatchedPrediction:
-    """A match between a prediction and a ground truth assembly
+    """A match between a prediction and a ground truth assembly.
 
     The ground truth assembly should be None f the prediction was not matched to any GT,
     and the OKS should be 0.
@@ -956,7 +956,7 @@ def match_assemblies(
     greedy_matching: bool = False,
     greedy_oks_threshold: float = 0.0,
 ) -> tuple[int, list[MatchedPrediction]]:
-    """Matches assemblies to ground truth predictions
+    """Matches assemblies to ground truth predictions.
 
     Returns:
         int: the total number of valid ground truth assemblies
@@ -1030,7 +1030,7 @@ def match_assemblies(
                 if ~np.isnan(oks):
                     mat[i, j] = oks
         rows, cols = linear_sum_assignment(mat, maximize=True)
-        for row, col in zip(rows, cols):
+        for row, col in zip(rows, cols, strict=False):
             matched[row].ground_truth = ground_truth[col]
             matched[row].oks = mat[row, col]
             _ = inds_true.remove(col)
@@ -1081,7 +1081,7 @@ def find_outlier_assemblies(dict_of_assemblies, criterion="area", qs=(5, 95)):
     for frame_ind, assemblies in dict_of_assemblies.items():
         for assembly in assemblies:
             tuples.append((frame_ind, getattr(assembly, criterion)))
-    frame_inds, vals = zip(*tuples)
+    frame_inds, vals = zip(*tuples, strict=False)
     vals = np.asarray(vals)
     lo, up = np.percentile(vals, qs, interpolation="nearest")
     inds = np.flatnonzero((vals < lo) | (vals > up)).tolist()
@@ -1094,7 +1094,7 @@ def _compute_precision_and_recall(
     oks_threshold: float,
     recall_thresholds: np.ndarray,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Computes the precision and recall scores at a given OKS threshold
+    """Computes the precision and recall scores at a given OKS threshold.
 
     Args:
         num_gt_assemblies: the number of ground truth assemblies (used to compute false
@@ -1134,7 +1134,7 @@ def evaluate_assembly_greedy(
     margin: int | float = 0,
     symmetric_kpts: list[tuple[int, int]] | None = None,
 ) -> dict:
-    """Runs greedy mAP evaluation, as done by pycocotools
+    """Runs greedy mAP evaluation, as done by pycocotools.
 
     Args:
         assemblies_gt: A dictionary mapping image ID (e.g. filepath) to ground truth

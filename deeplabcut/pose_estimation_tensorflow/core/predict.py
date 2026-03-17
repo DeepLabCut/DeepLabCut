@@ -59,7 +59,7 @@ def setup_pose_prediction(cfg, allow_growth=False, collect_extra=False):
 
 
 def extract_cnn_output(outputs_np, cfg):
-    """extract locref + scmap from network"""
+    """Extract locref + scmap from network."""
     scmap = outputs_np[0]
     scmap = np.squeeze(scmap)
     locref = None
@@ -110,7 +110,7 @@ def multi_pose_predict(scmap, locref, stride, num_outputs):
 
 
 def getpose(image, cfg, sess, inputs, outputs, outall=False):
-    """Extract pose"""
+    """Extract pose."""
     im = np.expand_dims(image, axis=0).astype(float)
     outputs_np = sess.run(outputs, feed_dict={inputs: im})
     scmap, locref = extract_cnn_output(outputs_np, cfg)
@@ -160,7 +160,9 @@ def get_top_values(scmap, n_top=5):
 
 def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
     """Adapted from DeeperCut, performs numpy-based faster inference on batches.
-    Introduced in https://www.biorxiv.org/content/10.1101/457242v1"""
+
+    Introduced in https://www.biorxiv.org/content/10.1101/457242v1
+    """
 
     num_outputs = cfg.get("num_outputs", 1)
     outputs_np = sess.run(outputs, feed_dict={inputs: image})

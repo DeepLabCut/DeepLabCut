@@ -27,7 +27,8 @@ from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 # utility functions
 def calc_distance_between_points_two_vectors_2d(v1, v2):
-    """calc_distance_between_points_two_vectors_2d [pairwise distance between vectors points]
+    """calc_distance_between_points_two_vectors_2d [pairwise distance between vectors
+    points]
 
     Arguments:
         v1 {[np.array]} -- [description]
@@ -62,9 +63,10 @@ def calc_distance_between_points_two_vectors_2d(v1, v2):
 
 
 def angle_between_points_2d_anticlockwise(p1, p2):
-    """angle_between_points_2d_clockwise [Determines the angle of a straight line drawn between point one and two.
-        The number returned, which is a double in degrees, tells us how much we have to rotate
-        a horizontal line anti-clockwise for it to match the line between the two points.]
+    """angle_between_points_2d_clockwise [Determines the angle of a straight line drawn
+    between point one and two. The number returned, which is a double in degrees, tells
+    us how much we have to rotate a horizontal line anti-clockwise for it to match the
+    line between the two points.]
 
     Arguments:
         p1 {[np.ndarray, list]} -- np.array or list [ with the X and Y coordinates of the point]
@@ -98,7 +100,8 @@ def angle_between_points_2d_anticlockwise(p1, p2):
 
 
 def calc_angle_between_vectors_of_points_2d(v1, v2):
-    """calc_angle_between_vectors_of_points_2d [calculates the clockwise angle between each set of point for two 2d arrays of points]
+    """calc_angle_between_vectors_of_points_2d [calculates the clockwise angle between
+    each set of point for two 2d arrays of points]
 
     Arguments:
         v1 {[np.ndarray]} -- [2d array with X,Y position at each timepoint]

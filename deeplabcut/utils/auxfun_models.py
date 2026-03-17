@@ -44,7 +44,10 @@ MODELTYPE_FILEPATH_MAP = {
 
 
 def check_for_weights(modeltype, parent_path):
-    """gets local path to network weights and checks if they are present. If not, downloads them from tensorflow.org"""
+    """Gets local path to network weights and checks if they are present.
+
+    If not, downloads them from tensorflow.org
+    """
     if modeltype not in MODELTYPE_FILEPATH_MAP.keys():
         print(
             "Currently ResNet (50, 101, 152), MobilenetV2 (1, 0.75, 0.5 and 0.35) and EfficientNet (b0-b6) are supported, please change 'resnet' entry in config.yaml!"
@@ -72,8 +75,9 @@ def check_for_weights(modeltype, parent_path):
 
 
 def download_weights(modeltype, model_path):
-    """
-    Downloads the ImageNet pretrained weights for ResNets, MobileNets et al. from TensorFlow...
+    """Downloads the ImageNet pretrained weights for ResNets, MobileNets et al.
+
+    from TensorFlow...
     """
     import tarfile
     import urllib
@@ -97,9 +101,7 @@ def download_weights(modeltype, model_path):
 
 
 def download_model(modelname, target_dir):
-    """
-    Downloads a DeepLabCut Model Zoo Project
-    """
+    """Downloads a DeepLabCut Model Zoo Project."""
     import tarfile
     import urllib.request
 
@@ -109,8 +111,9 @@ def download_model(modelname, target_dir):
         pbar.update(block_size)
 
     def tarfilenamecutting(tarf):
-        """' auxfun to extract folder path
-        ie. /xyz-trainsetxyshufflez/
+        """' auxfun to extract folder path ie.
+
+        /xyz-trainsetxyshufflez/
         """
         for memberid, member in enumerate(tarf.getmembers()):
             if memberid == 0:

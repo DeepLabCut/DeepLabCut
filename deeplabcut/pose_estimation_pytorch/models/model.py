@@ -31,7 +31,7 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators import (
 
 
 class PoseModel(nn.Module):
-    """A pose estimation model
+    """A pose estimation model.
 
     A pose estimation model is composed of a backbone, optionally a neck, and an
     arbitrary number of heads. Outputs are computed as follows:
@@ -61,8 +61,7 @@ class PoseModel(nn.Module):
         self._strides = {name: _model_stride(self.backbone.stride, head.stride) for name, head in heads.items()}
 
     def forward(self, x: torch.Tensor, **backbone_kwargs) -> dict[str, dict[str, torch.Tensor]]:
-        """
-        Forward pass of the PoseModel.
+        """Forward pass of the PoseModel.
 
         Args:
             x: input images
@@ -230,8 +229,7 @@ class PoseModel(nn.Module):
 
 
 def filter_state_dict(state_dict: dict, module: str) -> dict[str, torch.Tensor]:
-    """
-    Filters keys in the state dict for a module to only keep a given prefix. Removes
+    """Filters keys in the state dict for a module to only keep a given prefix. Removes
     the module from the keys (e.g. for module="backbone", "backbone.stage1.weight" will
     be converted to "stage1.weight" so the state dict can be loaded into the backbone
     directly).
@@ -257,7 +255,7 @@ def filter_state_dict(state_dict: dict, module: str) -> dict[str, torch.Tensor]:
 
 
 def _model_stride(backbone_stride: int | float, head_stride: int | float) -> float:
-    """Computes the model stride from a backbone and a head"""
+    """Computes the model stride from a backbone and a head."""
     if head_stride > 0:
         return backbone_stride / head_stride
 

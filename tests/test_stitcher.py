@@ -100,7 +100,7 @@ def test_tracklet_data_access(tracklet):
 
 @pytest.mark.parametrize(
     "tracklet, where, norm",
-    list(zip(make_fake_tracklets(), ("head", "tail"), (False, True))),
+    list(zip(make_fake_tracklets(), ("head", "tail"), (False, True), strict=False)),
 )
 def test_tracklet_calc_velocity(tracklet, where, norm):
     _ = tracklet.calc_velocity(where, norm)

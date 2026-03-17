@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Cosine Scheduler
+"""Cosine Scheduler.
 
 Cosine LR schedule with warmup, cycle/restarts, noise.
 

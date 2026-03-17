@@ -8,10 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""
-Testscript human network
-
-"""
+"""Testscript human network."""
 
 import os
 

@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Util functions to create pytorch pose configuration files"""
+"""Util functions to create pytorch pose configuration files."""
 
 from __future__ import annotations
 
@@ -117,7 +117,7 @@ def replace_default_values(
 
 
 def update_config(config: dict, updates: dict, copy_original: bool = True) -> dict:
-    """Updates items in the configuration file
+    """Updates items in the configuration file.
 
     The configuration dict should only be composed of primitive Python types
     (dict, list and values). This is the case when reading the file using
@@ -147,7 +147,7 @@ def update_config(config: dict, updates: dict, copy_original: bool = True) -> di
 
 
 def update_config_by_dotpath(config: dict, updates: dict, copy_original: bool = True) -> dict:
-    """Updates items in the configuration file using dot notation for nested keys
+    """Updates items in the configuration file using dot notation for nested keys.
 
     The configuration dict should only be composed of primitive Python types
     (dict, list and values). This is the case when reading the file using
@@ -249,7 +249,7 @@ def available_models() -> list[str]:
 
 
 def is_model_top_down(net_type: str) -> bool:
-    """Checks whenever a given net_type is top-down or not"""
+    """Checks whenever a given net_type is top-down or not."""
     if net_type not in available_models():
         raise ValueError(f"Model {net_type} is not part of available models, which are {str(available_models())}")
 
@@ -272,7 +272,7 @@ def is_model_top_down(net_type: str) -> bool:
 
 
 def is_model_cond_top_down(net_type: str) -> bool:
-    """Checks whether a given net_type is conditional top-down or not"""
+    """Checks whether a given net_type is conditional top-down or not."""
     if net_type not in available_models():
         raise ValueError(f"Model {net_type} is not part of available models, which are {str(available_models())}")
 

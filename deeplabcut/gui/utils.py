@@ -58,9 +58,7 @@ def move_to_separate_thread(func: Callable, capture_outputs: bool = False):
 
 
 def parse_version(version: str) -> tuple[int, int, int]:
-    """
-    Parses a version string into a tuple of (major, minor, patch).
-    """
+    """Parses a version string into a tuple of (major, minor, patch)."""
     match = re.search(r"(\d+)\.(\d+)\.(\d+)", version)
     if match:
         return tuple(int(part) for part in match.groups())

@@ -112,7 +112,7 @@ class HighResolutionModule(nn.Module):
             )
         )
         self.num_inchannels[branch_index] = num_channels[branch_index] * block.expansion
-        for i in range(1, num_blocks[branch_index]):
+        for _i in range(1, num_blocks[branch_index]):
             layers.append(block(self.num_inchannels[branch_index], num_channels[branch_index]))
 
         return nn.Sequential(*layers)

@@ -43,8 +43,8 @@ def find_outliers_in_raw_data(
     extraction_algo="kmeans",
     copy_videos=False,
 ):
-    """
-    Extract outlier frames from either raw detections or assemblies of multiple animals.
+    """Extract outlier frames from either raw detections or assemblies of multiple
+    animals.
 
     Parameter
     ----------
@@ -75,7 +75,6 @@ def find_outliers_in_raw_data(
     copy_videos : bool, optional (default=False)
         If True, newly-added videos (from which outlier frames are extracted) are
         copied to the project folder. By default, symbolic links are created instead.
-
     """
     if extraction_algo not in ("kmeans", "uniform"):
         raise ValueError(f"Unsupported extraction algorithm {extraction_algo}.")
@@ -120,8 +119,7 @@ def find_outliers_in_raw_data(
 
 
 def find_outliers_in_raw_detections(pickled_data, algo="uncertain", threshold=0.1, kept_keypoints=None):
-    """
-    Find outlier frames from the raw detections of multiple animals.
+    """Find outlier frames from the raw detections of multiple animals.
 
     Parameter
     ----------
@@ -598,8 +596,8 @@ def FitSARIMAXModel(x, p, pcutoff, alpha, ARdegree, MAdegree, nforecast=0, disp=
 
 
 def compute_deviations(Dataframe, dataname, p_bound, alpha, ARdegree, MAdegree, storeoutput=None):
-    """Fits Seasonal AutoRegressive Integrated Moving Average with eXogenous regressors model to data and computes confidence interval
-    as well as mean fit."""
+    """Fits Seasonal AutoRegressive Integrated Moving Average with eXogenous regressors
+    model to data and computes confidence interval as well as mean fit."""
 
     print("Fitting state-space models with parameters:", ARdegree, MAdegree)
     df_x, df_y, df_likelihood = Dataframe.values.reshape((Dataframe.shape[0], -1, 3)).T
@@ -654,8 +652,7 @@ def attempt_to_add_video(
     copy_videos: bool,
     coords: list | None,
 ) -> bool:
-    """
-    Add new videos to the config file at any stage of the project.
+    """Add new videos to the config file at any stage of the project.
 
     Parameters
     ----------

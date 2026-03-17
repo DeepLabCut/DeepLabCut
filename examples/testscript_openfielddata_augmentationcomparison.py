@@ -9,9 +9,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""
-
-This is a test script to compare the loaders and models.
+"""This is a test script to compare the loaders and models.
 
 This script creates one identical splits for the openfield test dataset and trains it with imgaug (default), scalecrop
 and the tensorpack loader. We also compare 3 backbones (mobilenet, resnet, efficientnet)
@@ -51,7 +49,6 @@ effnet with tensorpack and scalecrop didn't converge.
 
 Notice: despite the higher RMSE for imgaug due to the augmentation,
 the network performs much better on the testvideo (see Neuron Primer: https://www.cell.com/neuron/pdf/S0896-6273(20)30717-0.pdf)
-
 """
 
 import os

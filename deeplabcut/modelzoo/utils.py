@@ -36,7 +36,7 @@ def dlc_modelzoo_path() -> Path:
 
 
 def get_super_animal_project_cfg(super_animal: str) -> dict:
-    """Gets the project configuration file for a SuperAnimal model
+    """Gets the project configuration file for a SuperAnimal model.
 
     Args:
         super_animal: the name of the SuperAnimal model for which to load the project
@@ -103,9 +103,8 @@ def create_conversion_table(
     super_animal: str,
     project_to_super_animal: dict[str, str],
 ) -> ConversionTable:
-    """
-    Creates a conversion table mapping bodyparts defined for a DeepLabCut project
-    to bodyparts defined for a SuperAnimal model. This allows to fine-tune SuperAnimal
+    """Creates a conversion table mapping bodyparts defined for a DeepLabCut project to
+    bodyparts defined for a SuperAnimal model. This allows to fine-tune SuperAnimal
     weights instead of transfer learning from ImageNet. The conversion table is directly
     added to the project's configuration file.
 
@@ -143,7 +142,7 @@ def create_conversion_table(
 
 
 def get_conversion_table(cfg: dict | str | Path, super_animal: str) -> ConversionTable:
-    """Gets the conversion table from a project to a SuperAnimal model
+    """Gets the conversion table from a project to a SuperAnimal model.
 
     Args:
         cfg: The path to a project configuration file, or directly the project config.
@@ -186,7 +185,7 @@ def read_conversion_table_from_csv(csv_path):
 
 
 def parse_project_model_name(superanimal_name: str) -> tuple[str, str]:
-    """Parses model zoo model names for SuperAnimal models
+    """Parses model zoo model names for SuperAnimal models.
 
     Args:
         superanimal_name: the name of the SuperAnimal model name to parse

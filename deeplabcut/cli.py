@@ -49,7 +49,9 @@ def main(ctx, verbose):
 #              help='Directory to create project in. Default is cwd().')
 @click.pass_context
 def create_new_project(_, *args, **kwargs):
-    """Create a new project directory, sub-directories and a basic configuration file. The configuration file is loaded with default values. Change its parameters to your projects need.\n
+    """Create a new project directory, sub-directories and a basic configuration file.
+    The configuration file is loaded with default values. Change its parameters to your
+    projects need.\n.
 
     Options \n
     ---------- \n
@@ -74,7 +76,6 @@ def create_new_project(_, *args, **kwargs):
 
     To create the project in another directory \n
     python3 dlc.py create_new_project reaching-task Tanmay /data/vies/mouse1.avi /data/videos/mouse2.avi /data/videos/mouse3.avi analysis/project -d home/project
-
     """
     from deeplabcut.create_project import new
 
@@ -95,8 +96,7 @@ def create_new_project(_, *args, **kwargs):
 )
 @click.pass_context
 def add_new_videos(_, *args, **kwargs):
-    """
-    Add new videos to the config file at any stage of the project.\n
+    """Add new videos to the config file at any stage of the project.\n.
 
     Options\n
     ----------\n
@@ -113,7 +113,6 @@ def add_new_videos(_, *args, **kwargs):
     Examples\n
     --------\n
     >>> python3 dlc.py add_new_videos /home/project/reaching-task-Tanmay-2018-08-23/config.yaml /data/videos/mouse5.avi
-
     """
     from deeplabcut.create_project import add
 
@@ -139,9 +138,10 @@ def add_new_videos(_, *args, **kwargs):
 )
 @click.pass_context
 def extract_frames(_, *args, **kwargs):
-    """
-    Extracts frames from the videos in the config.yaml file. Only the videos in the config.yaml will be used to select the frames.\n
-    Use the function ``add_new_videos`` at any stage of the project to add new videos to the config file and extract their frames.\n
+    """Extracts frames from the videos in the config.yaml file. Only the videos in the
+    config.yaml will be used to select the frames.\n Use the function ``add_new_videos``
+    at any stage of the project to add new videos to the config file and extract their
+    frames.\n.
 
     CONFIG : string \n
         Full path of the config.yaml file as a string.  \n \n \n
@@ -160,7 +160,6 @@ def extract_frames(_, *args, **kwargs):
     >>> deeplabcut.extract_frames /analysis/project/reaching-task/config.yaml manual \n
     While selecting the frames manually, you do not need to specify the cropping parameters. Rather, you will get a prompt in the graphic user interface to choose if you need to crop or not. \n
     -------- \n
-
     """
     from deeplabcut.generate_training_dataset import frameExtraction
 
@@ -172,7 +171,9 @@ def extract_frames(_, *args, **kwargs):
 @click.argument("config")
 @click.pass_context
 def label_frames(_, config):
-    """Manually label/annotate the extracted frames. Update the list of body parts you want to localize in the config.yaml file first.\n
+    """Manually label/annotate the extracted frames. Update the list of body parts you
+    want to localize in the config.yaml file first.\n.
+
     Example\n
     --------\n
     python3 dlc.py label_frames /analysis/project/reaching-task/config.yaml
@@ -187,7 +188,11 @@ def label_frames(_, config):
 @click.argument("config")
 @click.pass_context
 def check_labels(_, config):
-    """Check if labels were stored correctly by plotting annotations and inspect them visually. If some are wrong, then use the refine_labels to correct the labels.\n"""
+    """Check if labels were stored correctly by plotting annotations and inspect them
+    visually.
+
+    If some are wrong, then use the refine_labels to correct the labels.\n
+    """
     from deeplabcut.generate_training_dataset import labelFrames
 
     labelFrames.check_labels(config)
@@ -402,9 +407,9 @@ def analyze_videos(_, *args, **kwargs):
 )
 @click.pass_context
 def extract_outlier_frames(_, *args, **kwargs):
-    """
-    Extracts the outlier frames in case, the predictions are not correct for a certain video from the cropped video running from
-    start to stop as defined in config.yaml.
+    """Extracts the outlier frames in case, the predictions are not correct for a
+    certain video from the cropped video running from start to stop as defined in
+    config.yaml.
 
     Another crucial parameter in config.yaml is how many frames to extract 'numframes2extract'.
 
@@ -424,7 +429,6 @@ def extract_outlier_frames(_, *args, **kwargs):
     for extracting the frames with kmeans and epsilon = 5 pixels.\n
     >>> python3 dlc.py extract_outlier_frames /analysis/project/reaching-task/config.yaml /analysis/project/video/reachinvideo1.avi --epsilon 5 --extractionalgorithm kmeans \n
     --------\n
-
     """
     from deeplabcut.refine_training_dataset import outlier_frames
 
@@ -436,9 +440,10 @@ def extract_outlier_frames(_, *args, **kwargs):
 @click.argument("config")
 @click.pass_context
 def refine_labels(_, config):
-    """Refines the labels of the outlier frames extracted from the analyzed videos.\n Helps in augmenting the training dataset.
-    Use the function ``analyze_video`` to analyze a video and extracts the outlier frames using the function
-    ``extract_outlier_frames`` before refining the labels.\n
+    """Refines the labels of the outlier frames extracted from the analyzed videos.\n
+    Helps in augmenting the training dataset. Use the function ``analyze_video`` to
+    analyze a video and extracts the outlier frames using the function
+    ``extract_outlier_frames`` before refining the labels.\n.
 
     Examples \n
     --------\n
@@ -491,8 +496,9 @@ def refine_labels(_, config):
 )
 @click.pass_context
 def create_labeled_video(_, *args, **kwargs):
-    """
-    Labels the bodyparts in a video. Make sure the video is already analyzed by the function 'analyze_video'
+    """Labels the bodyparts in a video.
+
+    Make sure the video is already analyzed by the function 'analyze_video'
     """
     from deeplabcut.utils import make_labeled_video
 
@@ -528,8 +534,7 @@ def create_labeled_video(_, *args, **kwargs):
 )
 @click.pass_context
 def plot_trajectories(_, *args, **kwargs):
-    """
-    Plots the trajectories of various bodyparts across the video.\n
+    """Plots the trajectories of various bodyparts across the video.\n.
 
     Example\n
     --------\n
@@ -604,9 +609,9 @@ def plot_trajectories(_, *args, **kwargs):
 )
 @click.pass_context
 def export_model(_, *args, **kwargs):
-    """
-    Export DLC models for the model zoo or for live inference.\n
-    Saves the pose configuration, snapshot files, and frozen graph of the model to a directory named exported-models within the project directory
+    """Export DLC models for the model zoo or for live inference.\n Saves the pose
+    configuration, snapshot files, and frozen graph of the model to a directory named
+    exported-models within the project directory.
 
     Parameters
     -----------

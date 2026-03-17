@@ -87,10 +87,8 @@ class SingleDLC_config:
 
 class MaDLC_config:
     def __init__(self):
-        """
-        Plain text only for generating templates
-        Some variables can be configured by the user later
-        """
+        """Plain text only for generating templates Some variables can be configured by
+        the user later."""
 
         self.cfg = {k: v for k, v in vars().items() if "__" not in k and "self" not in k}
 
@@ -111,12 +109,12 @@ def _generic2madlc(
     full_image_path=True,
     append_image_id=True,
 ):
-    """
-    Within DeepLabCut, if we don't explicitly call deeplabcut.create_traindataset(), the train and test split might just be arbitrarily messed up. So here we need to calculate train and test indices to
+    """Within DeepLabCut, if we don't explicitly call deeplabcut.create_traindataset(),
+    the train and test split might just be arbitrarily messed up. So here we need to
+    calculate train and test indices to.
 
     Args:
     proj_root where to materialize the data
-
     """
 
     assert full_image_path, "DLC wants full image path"

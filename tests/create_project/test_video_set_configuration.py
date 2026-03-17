@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Unit tests for deeplabcut.create_project.new module"""
+"""Unit tests for deeplabcut.create_project.new module."""
 
 import warnings
 from pathlib import Path
@@ -28,7 +28,7 @@ def project_directory(tmpdir_factory) -> Path:
 
 @pytest.fixture
 def mock_video_file(tmpdir_factory) -> Path:
-    """Create a mock video file for testing"""
+    """Create a mock video file for testing."""
     fake_folder = tmpdir_factory.mktemp("some_video")
     video_path = Path(fake_folder) / "test_video.avi"
     video_path.write_bytes(b"fake video content")
@@ -37,7 +37,7 @@ def mock_video_file(tmpdir_factory) -> Path:
 
 @pytest.fixture
 def mock_video_reader() -> VideoReader:
-    """Create a mock VideoReader"""
+    """Create a mock VideoReader."""
     mock_reader = Mock(spec=VideoReader)
     mock_reader.get_bbox.return_value = (0, 640, 277, 624)
     return mock_reader
@@ -45,7 +45,7 @@ def mock_video_reader() -> VideoReader:
 
 @pytest.fixture
 def video_directory(tmpdir_factory) -> Path:
-    """Create a directory with multiple video files"""
+    """Create a directory with multiple video files."""
     video_dir = Path(tmpdir_factory.mktemp("some_videos"))
     video_dir.mkdir(exist_ok=True)
 
@@ -63,7 +63,7 @@ def test_project_directory_creation_basic(
     mock_video_file: Path,
     mock_video_reader: VideoReader,
 ):
-    """Test that project directories are created correctly"""
+    """Test that project directories are created correctly."""
     with patch("deeplabcut.create_project.new.VideoReader", return_value=mock_video_reader):
         config_path = new_module.create_new_project(
             project="test-project",
@@ -88,7 +88,7 @@ def test_single_video_file(
     mock_video_reader: VideoReader,
     copy_videos: bool,
 ):
-    """Test adding a single video file"""
+    """Test adding a single video file."""
     with patch("deeplabcut.create_project.new.VideoReader", return_value=mock_video_reader):
         config_path = new_module.create_new_project(
             project="test",
@@ -114,7 +114,7 @@ def test_video_directory(
     mock_video_reader: VideoReader,
     copy_videos: bool,
 ):
-    """Test adding videos from a directory"""
+    """Test adding videos from a directory."""
     with patch("deeplabcut.create_project.new.VideoReader", return_value=mock_video_reader):
         config_path = new_module.create_new_project(
             project="test",
@@ -141,7 +141,7 @@ def test_mixed_video_files_and_directories(
     mock_video_reader: VideoReader,
     copy_videos: bool,
 ):
-    """Test adding both video files and directories"""
+    """Test adding both video files and directories."""
     with patch("deeplabcut.create_project.new.VideoReader", return_value=mock_video_reader):
         config_path = new_module.create_new_project(
             project="test",
@@ -163,7 +163,7 @@ def test_empty_video_directory(
     tmpdir: Path,
     mock_video_reader: VideoReader,
 ):
-    """Test handling of empty video directory"""
+    """Test handling of empty video directory."""
     empty_dir = tmpdir / "empty_videos"
     empty_dir.mkdir()
 
@@ -186,7 +186,7 @@ def test_valid_video_included_in_config(
     mock_video_file: Path,
     mock_video_reader: VideoReader,
 ):
-    """Test that valid videos are included in the config file"""
+    """Test that valid videos are included in the config file."""
     with patch("deeplabcut.create_project.new.VideoReader", return_value=mock_video_reader):
         config_path = new_module.create_new_project(
             project="test",
@@ -211,7 +211,7 @@ def test_invalid_video_removed_from_project(
     tmpdir: Path,
     mock_video_file: Path,
 ):
-    """Test that invalid videos are removed from the project"""
+    """Test that invalid videos are removed from the project."""
     # Mock VideoReader to raise IOError
     mock_reader = Mock(side_effect=OSError("Cannot open video"))
 
@@ -234,7 +234,7 @@ def test_config_file_video_sets_format(
     mock_video_file: Path,
     mock_video_reader: VideoReader,
 ):
-    """Test that video_sets in config has correct format"""
+    """Test that video_sets in config has correct format."""
     with patch("deeplabcut.create_project.new.VideoReader", return_value=mock_video_reader):
         config_path = new_module.create_new_project(
             project="test",
@@ -252,7 +252,7 @@ def test_config_file_video_sets_format(
     assert isinstance(cfg["video_sets"], dict)
 
     # Check format of video_sets entries
-    for video_path, video_info in cfg["video_sets"].items():
+    for _video_path, video_info in cfg["video_sets"].items():
         assert isinstance(video_info, dict)
         assert "crop" in video_info
         assert isinstance(video_info["crop"], str)

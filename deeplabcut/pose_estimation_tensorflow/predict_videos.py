@@ -684,7 +684,7 @@ def checkcropping(cfg, cap):
 
 
 def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
-    """Batchwise prediction of pose"""
+    """Batchwise prediction of pose."""
     PredictedData = np.zeros((nframes, dlc_cfg["num_outputs"] * 3 * len(dlc_cfg["all_joints_names"])))
     batch_ind = 0  # keeps track of which image within a batch should be written to
     batch_num = 0  # keeps track of which batch you are at
@@ -801,7 +801,7 @@ def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
 
 
 def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
-    """Batchwise prediction of pose"""
+    """Batchwise prediction of pose."""
     PredictedData = np.zeros((nframes, 3 * len(dlc_cfg["all_joints_names"])))
     batch_ind = 0  # keeps track of which image within a batch should be written to
     batch_num = 0  # keeps track of which batch you are at
@@ -860,7 +860,8 @@ def getboundingbox(x, y, nx, ny, margin):
 
 
 def GetPoseDynamic(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, detectiontreshold, margin):
-    """Non batch wise pose estimation for video cap by dynamically cropping around previously detected parts."""
+    """Non batch wise pose estimation for video cap by dynamically cropping around
+    previously detected parts."""
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
     else:
@@ -1056,7 +1057,7 @@ def AnalyzeVideo(
 
 
 def GetPosesofFrames(cfg, dlc_cfg, sess, inputs, outputs, directory, framelist, nframes, batchsize):
-    """Batchwise prediction of pose for frame list in directory"""
+    """Batchwise prediction of pose for frame list in directory."""
     from deeplabcut.utils.auxfun_videos import imread
 
     print("Starting to extract posture")
@@ -1149,8 +1150,8 @@ def analyze_time_lapse_frames(
     save_as_csv=False,
     modelprefix="",
 ):
-    """
-    Analyzed all images (of type = frametype) in a folder and stores the output in one file.
+    """Analyzed all images (of type = frametype) in a folder and stores the output in
+    one file.
 
     You can crop the frames (before analysis), by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the config file.
 
@@ -1269,9 +1270,7 @@ def analyze_time_lapse_frames(
     ##################################################
     # checks if input is a directory
     if os.path.isdir(directory):
-        """
-        Analyzes all the frames in the directory.
-        """
+        """Analyzes all the frames in the directory."""
         print("Analyzing all frames in the directory: ", directory)
         os.chdir(directory)
         framelist = np.sort([fn for fn in os.listdir(os.curdir) if (frametype in fn)])
@@ -1451,8 +1450,8 @@ def convert_detections2tracklets(
     identity_only=False,
     track_method="",
 ):
-    """
-    This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
+    """This should be called at the end of deeplabcut.analyze_videos for multianimal
+    projects!
 
     Parameters
     ----------
@@ -1518,7 +1517,6 @@ def convert_detections2tracklets(
     >>> deeplabcut.convert_detections2tracklets('/analysis/project/reaching-task/config.yaml',[]'/analysis/project/video1.mp4'], videotype='.mp4',track_method='box')
 
     --------
-
     """
     cfg = auxiliaryfunctions.read_config(config)
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)

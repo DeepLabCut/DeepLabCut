@@ -56,7 +56,7 @@ def predict(
     mode: str,
     detector_runner: InferenceRunner | None = None,
 ) -> dict[str, dict[str, np.ndarray]]:
-    """Predicts poses on data contained in a loader
+    """Predicts poses on data contained in a loader.
 
     Args:
         pose_runner: The runner to use for pose estimation
@@ -91,10 +91,12 @@ def predict(
     if context is not None:
         if len(context) != len(image_paths):
             raise ValueError(f"Missing context for some images: {len(context)} != {len(image_paths)}")
-        images_with_context = list(zip(image_paths, context))
+        images_with_context = list(zip(image_paths, context, strict=False))
 
     predictions = pose_runner.inference(images=tqdm(images_with_context))
-    return {image_path: image_predictions for image_path, image_predictions in zip(image_paths, predictions)}
+    return {
+        image_path: image_predictions for image_path, image_predictions in zip(image_paths, predictions, strict=False)
+    }
 
 
 def evaluate(
@@ -461,9 +463,8 @@ def evaluate_snapshot(
     detector_snapshot: Snapshot | None = None,
     pcutoff: float | list[float] | dict[str, float] | None = None,
 ) -> pd.DataFrame:
-    """Evaluates a snapshot.
-    The evaluation results are stored in the .h5 and .csv file under the subdirectory
-    'evaluation_results'.
+    """Evaluates a snapshot. The evaluation results are stored in the .h5 and .csv file
+    under the subdirectory 'evaluation_results'.
 
     Args:
         cfg: the content of the project's config file
@@ -830,8 +831,7 @@ def image_to_dlc_df_index(image: str) -> tuple[str, ...]:
 
 
 def save_evaluation_results(df_scores: pd.DataFrame, scores_path: Path, print_results: bool, pcutoff: float) -> None:
-    """
-    Saves the evaluation results to a CSV file. Adds the evaluation results for the
+    """Saves the evaluation results to a CSV file. Adds the evaluation results for the
     model to the combined results file, or creates it if it does not yet exist.
 
     Args:
@@ -862,8 +862,7 @@ def save_rmse_per_bodypart(
     output_path: Path,
     print_results: bool,
 ) -> None:
-    """
-    Saves the evaluation results per bodypart to a CSV file.
+    """Saves the evaluation results per bodypart to a CSV file.
 
     Args:
         rmse_per_bodypart: The scores dataframe for a snapshot
@@ -896,7 +895,7 @@ def _validate_pcutoff(
     unique_bpts: list[str],
     pcutoff: float | list[float],
 ) -> None:
-    """Checks that the given `pcutoff` value has the correct number of elements"""
+    """Checks that the given `pcutoff` value has the correct number of elements."""
     if isinstance(pcutoff, (int, float)):
         return
 
@@ -964,7 +963,7 @@ def _extract_rmse_per_bodypart(
     bodyparts: list[str],
     unique_bodyparts: list[str],
 ) -> dict[str, float]:
-    """Extracts the RMSE per bodypart metrics from the results dict
+    """Extracts the RMSE per bodypart metrics from the results dict.
 
     This method modifies the given dict in-place, removing all keys for RMSE per
     bodypart or unique bodypart.

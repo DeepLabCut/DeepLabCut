@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""SimCC predictor for the RTMPose model
+"""SimCC predictor for the RTMPose model.
 
 Based on the official ``mmpose`` SimCC codec and RTMCC head implementation. For more
 information, see <https://github.com/open-mmlab/mmpose>.
@@ -27,7 +27,7 @@ from deeplabcut.pose_estimation_pytorch.models.predictors.base import (
 
 @PREDICTORS.register_module
 class SimCCPredictor(BasePredictor):
-    """Class used to make pose predictions from RTMPose head outputs
+    """Class used to make pose predictions from RTMPose head outputs.
 
     The RTMPose model uses coordinate classification for pose estimation. For more
     information, see "SimCC: a Simple Coordinate Classification Perspective for Human

@@ -112,7 +112,7 @@ def build_learning_rate(
     elif lr_decay_type == "constant":
         lr = initial_lr
     else:
-        assert False, "Unknown lr_decay_type : %s" % lr_decay_type
+        raise AssertionError(f"Unknown lr_decay_type : {lr_decay_type}")
 
     if warmup_epochs:
         tf.compat.v1.logging.info("Learning rate warmup_epochs: %d" % warmup_epochs)
@@ -169,9 +169,7 @@ class TpuBatchNormalization(tf.compat.v1.layers.BatchNormalization):
 
     def _moments(self, inputs, reduction_axes, keep_dims):
         """Compute the mean and variance: it overrides the original _moments."""
-        shard_mean, shard_variance = super()._moments(
-            inputs, reduction_axes, keep_dims=keep_dims
-        )
+        shard_mean, shard_variance = super()._moments(inputs, reduction_axes, keep_dims=keep_dims)
 
         num_shards = tpu_function.get_tpu_context().number_of_shards or 1
         if num_shards <= 8:  # Skip cross_replica for 2x2 or smaller slices.

@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Testscript for single animal PyTorch projects"""
+"""Testscript for single animal PyTorch projects."""
 
 from __future__ import annotations
 

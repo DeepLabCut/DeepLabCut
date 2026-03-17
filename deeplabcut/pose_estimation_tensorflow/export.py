@@ -57,9 +57,7 @@ def create_deploy_config_template():
 
 
 def write_deploy_config(configname, cfg):
-    """
-
-    CURRENTLY NOT IMPLEMENTED
+    """CURRENTLY NOT IMPLEMENTED.
 
     Write structured config file.
     """
@@ -78,10 +76,8 @@ def write_deploy_config(configname, cfg):
 
 
 def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelprefix=""):
-    """
-
-    Loads a tensorflow session with a DLC model from the associated configuration
-    Return a tensorflow session with DLC model given cfg and shuffle
+    """Loads a tensorflow session with a DLC model from the associated configuration
+    Return a tensorflow session with DLC model given cfg and shuffle.
 
     Parameters:
     -----------
@@ -115,7 +111,7 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
         cfg["project_path"],
         str(auxiliaryfunctions.get_model_folder(train_fraction, shuffle, cfg, modelprefix=modelprefix)),
     )
-    path_test_config = os.path.normpath(model_folder + "/test/pose_cfg.yaml")
+    os.path.normpath(model_folder + "/test/pose_cfg.yaml")
     path_train_config = os.path.normpath(model_folder + "/train/pose_cfg.yaml")
 
     try:
@@ -123,7 +119,7 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
         # dlc_cfg_train = load_config(str(path_train_config))
     except FileNotFoundError:
         raise FileNotFoundError(
-            "It seems the model for shuffle %s and trainFraction %s does not exist." % (shuffle, train_fraction)
+            f"It seems the model for shuffle {shuffle} and trainFraction {train_fraction} does not exist."
         )
 
     Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
@@ -142,7 +138,7 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
 
     # Check if data already was generated:
     dlc_cfg["init_weights"] = os.path.join(model_folder, "train", Snapshots[snapshotindex])
-    trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
+    (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
     dlc_cfg["num_outputs"] = cfg.get("num_outputs", dlc_cfg.get("num_outputs", 1))
     dlc_cfg["batch_size"] = None
 
@@ -214,9 +210,7 @@ def export_model(
     wipepaths=False,
     modelprefix="",
 ):
-    """
-
-    Export DeepLabCut models for the model zoo or for live inference.
+    """Export DeepLabCut models for the model zoo or for live inference.
 
     Saves the pose configuration, snapshot files, and frozen TF graph of the model to
     directory named exported-models within the project directory
@@ -267,7 +261,7 @@ def export_model(
     try:
         cfg = auxiliaryfunctions.read_config(cfg_path)
     except FileNotFoundError:
-        FileNotFoundError("The config.yaml file at %s does not exist." % cfg_path)
+        FileNotFoundError(f"The config.yaml file at {cfg_path} does not exist.")
 
     cfg["project_path"] = os.path.dirname(os.path.realpath(cfg_path))
     cfg["iteration"] = iteration if iteration is not None else cfg["iteration"]
@@ -278,7 +272,7 @@ def export_model(
 
     sess, input, output, dlc_cfg = load_model(cfg, shuffle, trainingsetindex, TFGPUinference, modelprefix)
     ckpt = dlc_cfg["init_weights"]
-    model_dir = os.path.dirname(ckpt)
+    os.path.dirname(ckpt)
 
     ### set up export directory
 
@@ -296,7 +290,7 @@ def export_model(
 
     if os.path.isdir(full_export_dir):
         if not overwrite:
-            raise FileExistsError("Export directory %s already exists. Terminating export..." % full_export_dir)
+            raise FileExistsError(f"Export directory {full_export_dir} already exists. Terminating export...")
     else:
         os.mkdir(full_export_dir)
 
@@ -322,7 +316,7 @@ def export_model(
 
     ckpt_files = glob.glob(ckpt + "*")
     ckpt_dest = [os.path.normpath(full_export_dir + "/" + os.path.basename(ckf)) for ckf in ckpt_files]
-    for ckf, ckd in zip(ckpt_files, ckpt_dest):
+    for ckf, ckd in zip(ckpt_files, ckpt_dest, strict=False):
         shutil.copy(ckf, ckd)
 
     ### create pbtxt and pb files for checkpoint in export directory

@@ -506,7 +506,7 @@ class ModelZoo(DefaultTab):
             msg.exec_()
 
     def stop_processes(self):
-        """Stop any running processes"""
+        """Stop any running processes."""
         if self.thread and self.thread.isRunning():
             print("Stopping running processes...")
             self.thread.quit()
@@ -520,7 +520,7 @@ class ModelZoo(DefaultTab):
             self.root._progress_bar.hide()
 
     def closeEvent(self, event):
-        """Override closeEvent to stop processes when tab is closed"""
+        """Override closeEvent to stop processes when tab is closed."""
         self.stop_processes()
         super().closeEvent(event)
 

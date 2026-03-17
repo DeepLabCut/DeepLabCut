@@ -28,8 +28,7 @@ def create_folder(path_to_folder):
 
 
 def fix_seeds(seed: int) -> None:
-    """
-    Fixes the random seed for python, numpy and pytorch
+    """Fixes the random seed for python, numpy and pytorch.
 
     Args:
         seed: the seed to set
@@ -42,7 +41,7 @@ def fix_seeds(seed: int) -> None:
 
 
 def resolve_device(model_config: dict) -> str:
-    """Determines which device should be used from the model config
+    """Determines which device should be used from the model config.
 
     When the device is set to 'auto':
         If an Nvidia GPU is available, selects the device as cuda:0.

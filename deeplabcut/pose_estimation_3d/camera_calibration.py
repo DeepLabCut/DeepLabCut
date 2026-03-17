@@ -26,7 +26,9 @@ matplotlib_axes_logger.setLevel("ERROR")
 
 
 def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, search_window_size=(11, 11)):
-    """This function extracts the corners points from the calibration images, calibrates the camera and stores the calibration files in the project folder (defined in the config file).
+    """This function extracts the corners points from the calibration images, calibrates
+    the camera and stores the calibration files in the project folder (defined in the
+    config file).
 
     Make sure you have around 20-60 pairs of calibration images. The function should be used iteratively to select the right set of calibration images.
 
@@ -66,7 +68,6 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
 
     Once the right set of calibration images are selected,
     >>> deeplabcut.calibrate_camera(config,calibrate=True)
-
     """
     # Termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -264,9 +265,9 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
 
 
 def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
-    """
-    This function undistorts the calibration images based on the camera matrices and stores them in the project folder(defined in the config file)
-    to visually check if the camera matrices are correct.
+    """This function undistorts the calibration images based on the camera matrices and
+    stores them in the project folder(defined in the config file) to visually check if
+    the camera matrices are correct.
 
     Parameters
     ----------
@@ -286,7 +287,6 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
     --------
     Linux/MacOs/Windows
     >>> deeplabcut.check_undistortion(config, cbrow = 8,cbcol = 6)
-
     """
 
     # Read the config file

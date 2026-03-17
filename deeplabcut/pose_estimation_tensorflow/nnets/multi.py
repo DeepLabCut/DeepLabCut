@@ -281,7 +281,6 @@ class PoseMultiNet(BasePoseNet):
                     stage_hm_output = stage1_hm_out
 
                     for i in range(2, 5):
-                        pre_stage_paf_output = stage_paf_output
                         pre_stage_hm_output = stage_hm_output
 
                         stage_paf_output = prediction_layer_stage(

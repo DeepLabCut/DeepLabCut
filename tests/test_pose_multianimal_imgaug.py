@@ -70,12 +70,12 @@ def test_get_batch(ma_dataset):
         ma_dataset.batch_size = batch_size
         batch_images, joint_ids, batch_joints, data_items = ma_dataset.get_batch()
         assert len(batch_images) == len(joint_ids) == len(batch_joints) == len(data_items) == batch_size
-        for data_item, joint_id, batch_joint in zip(data_items, joint_ids, batch_joints):
+        for data_item, joint_id, batch_joint in zip(data_items, joint_ids, batch_joints, strict=False):
             assert len(data_item.joints) == len(joint_id)
             assert len(batch_joint) == len(np.concatenate(joint_id))
             start = 0
             mask = ~np.isnan(batch_joint).any(axis=1)
-            for joints, id_ in zip(data_item.joints.values(), joint_id):
+            for joints, id_ in zip(data_item.joints.values(), joint_id, strict=False):
                 inds = id_ + start
                 mask_ = mask[inds]
                 np.testing.assert_equal(joints[:, 0], id_[mask_])
@@ -106,4 +106,4 @@ def test_get_targetmaps(ma_dataset, num_idchannel):
 
 def test_batching(ma_dataset):
     for _ in range(10):
-        batch = ma_dataset.next_batch()
+        ma_dataset.next_batch()

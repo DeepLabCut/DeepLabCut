@@ -8,12 +8,10 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""
+"""Effnet added by T.
 
-Effnet added by T. Biasi & AM
-Efficient Nets added by T. Biasi & AM
-See https://openaccess.thecvf.com/content/WACV2021/html/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.html
-
+Biasi & AM Efficient Nets added by T. Biasi & AM See
+https://openaccess.thecvf.com/content/WACV2021/html/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.html
 """
 
 import tensorflow as tf

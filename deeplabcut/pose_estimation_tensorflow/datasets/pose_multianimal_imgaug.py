@@ -126,13 +126,13 @@ class MAImgaugPoseDataset(BasePoseDataset):
         assert os.path.exists(gt_file)
         path_ = Path(gt_file)
         print("Using gt file:", path_.name)
-        num_kpts = len(cfg["all_joints_names"])
+        len(cfg["all_joints_names"])
         df = pd.read_hdf(gt_file)
         video_name = path_.name.split("DLC")[0]
         video_root = str(path_.parents[0] / video_name)
 
         itemlist = []
-        for image_id, imagename in enumerate(df.index):
+        for _image_id, imagename in enumerate(df.index):
             item = DataItem()
             data = df.loc[imagename]
             # 3 for likelihood
@@ -178,7 +178,9 @@ class MAImgaugPoseDataset(BasePoseDataset):
     def build_augmentation_pipeline(self, apply_prob=0.5):
         cfg = self.cfg
 
-        sometimes = lambda aug: iaa.Sometimes(apply_prob, aug)
+        def sometimes(aug):
+            return iaa.Sometimes(apply_prob, aug)
+
         pipeline = iaa.Sequential(random_order=False)
 
         pre_resize = cfg.get("pre_resize")
@@ -312,7 +314,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         return pipeline
 
     def get_batch_from_video(self):
-        num_images = len(self.vid)
+        len(self.vid)
         batch_images = []
         batch_joints = []
         joint_ids = []
@@ -469,7 +471,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             batch_joints_valid = []
             joint_ids_valid = []
 
-            for joints, ids in zip(batch_joints, joint_ids):
+            for joints, ids in zip(batch_joints, joint_ids, strict=False):
                 # Invisible joints are represented by nans
                 visible = ~np.isnan(joints[:, 0])
                 inside = np.logical_and.reduce(
@@ -543,7 +545,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         cfg = self.cfg
         if cfg["weigh_only_present_joints"]:
             weights = np.zeros(scmap_shape)
-            for k, j_id in enumerate(np.concatenate(joint_id)):  # looping over all animals
+            for _k, j_id in enumerate(np.concatenate(joint_id)):  # looping over all animals
                 weights[:, :, j_id] = 1.0
         else:
             weights = np.ones(scmap_shape)
@@ -702,11 +704,11 @@ class MAImgaugPoseDataset(BasePoseDataset):
         for k, j_id in enumerate(np.concatenate(joint_id)):
             joint_pt = coords[0][k, :]
             j_x = joint_pt[0].item()
-            j_x_sm = round((j_x - half_stride) / stride)
+            round((j_x - half_stride) / stride)
             j_y = joint_pt[1].item()
-            j_y_sm = round((j_y - half_stride) / stride)
+            round((j_y - half_stride) / stride)
 
-            map_j = grid.copy()
+            grid.copy()
             # Distance between the joint point and each coordinate
             dist = np.linalg.norm(grid - (j_y, j_x), axis=2) ** 2
             scmap_j = np.exp(-dist / (2 * (std**2)))

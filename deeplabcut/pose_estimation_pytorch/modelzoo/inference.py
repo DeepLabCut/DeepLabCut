@@ -31,7 +31,7 @@ from deeplabcut.utils.make_labeled_video import create_video
 
 
 class NumpyEncoder(json.JSONEncoder):
-    """Special json encoder for numpy types"""
+    """Special json encoder for numpy types."""
 
     def default(self, obj):
         if isinstance(obj, np.ndarray):
@@ -65,11 +65,11 @@ def _video_inference_superanimal(
     create_labeled_video: bool = True,
     torchvision_detector_name: str | None = None,
 ) -> dict:
-    """
-    Perform inference on a video using a superanimal model from the model zoo specified by `superanimal_name`.
-    During inference, the video is analyzed using the specified model and the results are saved in the specified
-    destination folder. The predictions are saved in the form of a .h5 file. The video with the predictions is saved
-    in the form of a .mp4 file.
+    """Perform inference on a video using a superanimal model from the model zoo
+    specified by `superanimal_name`. During inference, the video is analyzed using the
+    specified model and the results are saved in the specified destination folder. The
+    predictions are saved in the form of a .h5 file. The video with the predictions is
+    saved in the form of a .mp4 file.
 
     WARNING: This function is an internal utility function and should not be
     called directly. It is designed to be used by deeplabcut.modelzoo.api.video_inference.py

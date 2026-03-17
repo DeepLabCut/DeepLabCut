@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Methods to help with conditional top-down models"""
+"""Methods to help with conditional top-down models."""
 
 from pathlib import Path
 
@@ -61,7 +61,7 @@ def get_conditions_provider_for_video(
     cond_provider: CondFromModel,
     video: str | Path,
 ) -> CondFromFile | None:
-    """Tries to create a conditions loader
+    """Tries to create a conditions loader.
 
     Args:
         cond_provider: The CondFromModel condition provider that will be used. The
@@ -90,7 +90,7 @@ def get_conditions_provider_for_video(
 
 
 def load_conditions_for_evaluation(loader: data.Loader, images: list[str]) -> dict[str, np.ndarray]:
-    """Loads the conditions needed to evaluate a CTD model
+    """Loads the conditions needed to evaluate a CTD model.
 
     Args:
         loader: The Loader for the CTD model to evaluate.

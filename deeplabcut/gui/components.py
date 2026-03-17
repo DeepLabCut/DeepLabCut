@@ -71,10 +71,9 @@ def _create_grid_layout(
 
 
 def set_combo_items(combo_box: QtWidgets.QComboBox, items: list[str], index: int = 0):
-    """
-    Safely replaces all items in a QComboBox and sets the current index,
-    ensuring that the `currentTextChanged` signal is emitted exactly once
-    (and only if items are present).
+    """Safely replaces all items in a QComboBox and sets the current index, ensuring
+    that the `currentTextChanged` signal is emitted exactly once (and only if items are
+    present).
 
     This method suppresses intermediate signal emissions that can be triggered
     by `clear()` and `addItems()` — both of which may emit multiple signals

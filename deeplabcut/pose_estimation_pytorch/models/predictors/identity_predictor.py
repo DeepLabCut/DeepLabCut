@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Predictor to generate identity maps from head outputs"""
+"""Predictor to generate identity maps from head outputs."""
 
 import torch
 import torch.nn as nn
@@ -22,7 +22,7 @@ from deeplabcut.pose_estimation_pytorch.models.predictors.base import (
 
 @PREDICTORS.register_module
 class IdentityPredictor(BasePredictor):
-    """Predictor to generate identity maps from head outputs
+    """Predictor to generate identity maps from head outputs.
 
     Attributes:
         apply_sigmoid: Apply sigmoid to heatmaps. Defaults to True.
@@ -38,10 +38,9 @@ class IdentityPredictor(BasePredictor):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, stride: float, outputs: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
-        """
-        Swaps the dimensions so the heatmap are (batch_size, h, w, num_individuals),
-        optionally applies a sigmoid to the heatmaps, and rescales it to be the size
-        of the original image (so that the identity scores of keypoints can be computed)
+        """Swaps the dimensions so the heatmap are (batch_size, h, w, num_individuals),
+        optionally applies a sigmoid to the heatmaps, and rescales it to be the size of
+        the original image (so that the identity scores of keypoints can be computed)
 
         Args:
             stride: the stride of the model

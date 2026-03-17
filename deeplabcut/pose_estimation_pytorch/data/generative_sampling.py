@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""A file containing code to perform generative sampling of keypoints for CTD
+"""A file containing code to perform generative sampling of keypoints for CTD.
 
 This code comes from PoseFix (see https://arxiv.org/pdf/1812.03595.pdf), and was then
 adapted for BUCTD (github.com/amathislab/BUCTD/blob/main/lib/dataset/pose_synthesis.py,
@@ -90,7 +90,7 @@ class GenSamplingConfig:
 
 
 class GenerativeSampler:
-    """Performs generative sampling of keypoints for CTD model training"""
+    """Performs generative sampling of keypoints for CTD model training."""
 
     def __init__(
         self,
@@ -137,7 +137,7 @@ class GenerativeSampler:
         area: float,
         image_size: tuple[int, int],
     ) -> np.ndarray:
-        """Samples keypoints
+        """Samples keypoints.
 
         PoseFix uses conditional keypoints (estimated by a bottom-up model) when ground
         truth keypoints are not available. For simplicity, we omit that. See

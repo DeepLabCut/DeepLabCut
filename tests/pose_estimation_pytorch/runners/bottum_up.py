@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests for the bottom-up pytorch runner"""
+"""Tests for the bottom-up pytorch runner."""
 
 from pathlib import Path
 from typing import Any
@@ -54,7 +54,7 @@ def test_build_bottom_up_runner(
 
     root_path = Path(auxiliaryfunctions.get_deeplabcut_path())
     template_path = root_path / "pose_estimation_pytorch" / "apis" / "pytorch_config.yaml"
-    template = auxiliaryfunctions.read_plainconfig(str(template_path))
+    auxiliaryfunctions.read_plainconfig(str(template_path))
     pytorch_cfg = make_pytorch_pose_config(project_cfg, str(template_path), net_type)
     print_dict(pytorch_cfg)
 
@@ -83,7 +83,7 @@ def test_build_bottom_up_runner(
         scheduler = None
 
     logger = None
-    runner = RUNNERS.build(
+    RUNNERS.build(
         dict(
             **pytorch_cfg["solver"],
             model=pose_model,

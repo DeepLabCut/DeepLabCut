@@ -24,8 +24,7 @@ def transformer_reID(
     modelprefix: str = "",
     destfolder: str = None,
 ):
-    """
-    Enables tracking with transformer.
+    """Enables tracking with transformer.
 
     Substeps include:
         - Mines triplets from tracklets in videos (from another tracker)
@@ -87,7 +86,6 @@ def transformer_reID(
     >>>     track_method="transformer",
     >>> )
     --------
-
     """
     import os
 

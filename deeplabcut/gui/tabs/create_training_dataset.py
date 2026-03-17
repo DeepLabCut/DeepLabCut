@@ -356,8 +356,7 @@ class CreateTrainingDataset(DefaultTab):
                 self.root.writer.write("Training dataset creation failed.")
 
     def _confirm_overwrite(self, shuffle: int, existing_indices: list[int]) -> bool:
-        """
-        Asks the user to confirm that they want to overwrite a shuffle.
+        """Asks the user to confirm that they want to overwrite a shuffle.
 
         Args:
             shuffle: the shuffle the user wants to overwrite
@@ -598,7 +597,7 @@ class CreateTrainingDataset(DefaultTab):
 
 
 class WeightInitializationSelector(QtWidgets.QWidget):
-    """Widget to select weight initialization"""
+    """Widget to select weight initialization."""
 
     def __init__(self, root):
         super().__init__()
@@ -636,7 +635,7 @@ class WeightInitializationSelector(QtWidgets.QWidget):
         return self.memory_replay_box.isChecked()
 
     def update_choices(self, choices: list[str]) -> None:
-        """Updates the WeightInitialization methods that can be selected"""
+        """Updates the WeightInitialization methods that can be selected."""
         set_combo_items(
             combo_box=self.weight_init_choice,
             items=choices,
@@ -703,7 +702,8 @@ class WeightInitializationSelector(QtWidgets.QWidget):
 
 
 class DataSplitSelector(QtWidgets.QWidget):
-    """Allows users to create training sets with the same train/test split as another"""
+    """Allows users to create training sets with the same train/test split as
+    another."""
 
     def __init__(self, root: QtWidgets.QMainWindow, parent: QtWidgets.QWidget):
         super().__init__()
@@ -753,7 +753,7 @@ class DataSplitSelector(QtWidgets.QWidget):
 
     @property
     def from_shuffle(self) -> int:
-        """The shuffle from which to copy the data split"""
+        """The shuffle from which to copy the data split."""
         return self.shuffle_selector.value()
 
     def _checkbox_status_changed(self, state: int) -> None:

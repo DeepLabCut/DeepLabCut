@@ -100,7 +100,7 @@ class OpenVINOSession:
 
 
 def GetPoseF_OV(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
-    """Prediction of pose"""
+    """Prediction of pose."""
     PredictedData = np.zeros((nframes, 3 * len(dlc_cfg["all_joints_names"])))
     ny, nx = int(cap.get(4)), int(cap.get(3))
     if cfg["cropping"]:

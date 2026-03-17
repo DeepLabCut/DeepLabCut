@@ -1,4 +1,4 @@
-"""Testscript for single animal PyTorch projects"""
+"""Testscript for single animal PyTorch projects."""
 
 from __future__ import annotations
 

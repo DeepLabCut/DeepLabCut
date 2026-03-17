@@ -17,7 +17,7 @@ from skimage.feature import peak_local_max
 
 
 def extract_cnn_output(outputs_np, cfg):
-    """extract locref, scmap and partaffinityfield from network"""
+    """Extract locref, scmap and partaffinityfield from network."""
     scmap = outputs_np[0]
     scmap = np.squeeze(scmap)
     if cfg["location_refinement"]:
@@ -87,7 +87,7 @@ def compute_edge_costs(
         idx = np.arange(peaks.shape[0])
         idx_per_bpt = {j: idx[bpt_inds == j].tolist() for j in range(n_bodyparts)}
         edges = []
-        for k, (s, t) in zip(paf_inds, graph):
+        for k, (s, t) in zip(paf_inds, graph, strict=False):
             inds_s = idx_per_bpt[s]
             inds_t = idx_per_bpt[t]
             if not (inds_s and inds_t):

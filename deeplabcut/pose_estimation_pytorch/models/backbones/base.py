@@ -57,7 +57,7 @@ class BaseBackbone(ABC, nn.Module):
         pass
 
     def freeze_batch_norm_layers(self) -> None:
-        """Freezes batch norm layers
+        """Freezes batch norm layers.
 
         Running mean + var are always given to F.batch_norm, except when the layer is
         in `train` mode and track_running_stats is False, see
@@ -85,7 +85,7 @@ class BaseBackbone(ABC, nn.Module):
 
 
 class HuggingFaceWeightsMixin:
-    """Mixin for backbones where the pretrained weights are stored on HuggingFace"""
+    """Mixin for backbones where the pretrained weights are stored on HuggingFace."""
 
     def __init__(
         self,
@@ -104,7 +104,7 @@ class HuggingFaceWeightsMixin:
         self.repo_id = repo_id
 
     def download_weights(self, filename: str, force: bool = False) -> Path:
-        """Downloads the backbone weights from the HuggingFace repo
+        """Downloads the backbone weights from the HuggingFace repo.
 
         Args:
             filename: The name of the model file to download in the repo.

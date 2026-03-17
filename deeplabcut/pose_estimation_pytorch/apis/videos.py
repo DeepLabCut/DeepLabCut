@@ -47,7 +47,7 @@ from deeplabcut.utils import VideoReader, auxiliaryfunctions
 
 
 class VideoIterator(VideoReader):
-    """A class to iterate over videos, with possible added context"""
+    """A class to iterate over videos, with possible added context."""
 
     def __init__(
         self,
@@ -129,7 +129,7 @@ def video_inference(
     robust_nframes: bool = False,
     show_gpu_memory: bool = False,
 ) -> list[dict[str, np.ndarray]]:
-    """Runs inference on a video
+    """Runs inference on a video.
 
     Args:
         video: The video to analyze
@@ -514,7 +514,7 @@ def analyze_videos(
     )
 
     detector_runner = None
-    detector_path, detector_snapshot = None, None
+    _detector_path, detector_snapshot = None, None
     if loader.pose_task == Task.TOP_DOWN and dynamic is None:
         if detector_snapshot_index is None:
             raise ValueError(
@@ -770,7 +770,7 @@ def _generate_assemblies_file(
     num_bodyparts: int,
     num_unique_bodyparts: int,
 ) -> None:
-    """Generates the assemblies file from predictions"""
+    """Generates the assemblies file from predictions."""
     if full_data_path.exists():
         with open(full_data_path, "rb") as f:
             data = pickle.load(f)
@@ -831,7 +831,7 @@ def _generate_assemblies_file(
 
 
 def _validate_destfolder(destfolder: str | None) -> None:
-    """Checks that the destfolder for video analysis is valid"""
+    """Checks that the destfolder for video analysis is valid."""
     if destfolder is not None and destfolder != "":
         output_folder = Path(destfolder)
         if not output_folder.exists():

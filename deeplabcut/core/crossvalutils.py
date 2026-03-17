@@ -55,7 +55,7 @@ def _unsorted_unique(array):
 
 
 def find_closest_neighbors(query: np.ndarray, ref: np.ndarray, k: int = 3) -> np.ndarray:
-    """Greedy matching of predicted keypoints to ground truth keypoints
+    """Greedy matching of predicted keypoints to ground truth keypoints.
 
     Args:
         query: the query keypoints
@@ -143,13 +143,13 @@ def _calc_within_between_pafs(
         coords = dict_["prediction"]["coordinates"][0]
         # Get animal IDs and corresponding indices in the arrays of detections
         lookup = dict()
-        for i, (coord, coord_gt) in enumerate(zip(coords, coords_gt)):
+        for i, (coord, coord_gt) in enumerate(zip(coords, coords_gt, strict=False)):
             inds = np.flatnonzero(np.all(~np.isnan(coord), axis=1))
             inds_gt = np.flatnonzero(np.all(~np.isnan(coord_gt), axis=1))
             if inds.size and inds_gt.size:
                 neighbors = find_closest_neighbors(coord_gt[inds_gt], coord[inds], k=3)
                 found = neighbors != -1
-                lookup[i] = dict(zip(inds_gt[found], inds[neighbors[found]]))
+                lookup[i] = dict(zip(inds_gt[found], inds[neighbors[found]], strict=False))
 
         costs = dict_["prediction"]["costs"]
         for k, v in costs.items():
@@ -222,7 +222,7 @@ def _benchmark_paf_graphs(
         idx = idx.drop("single", level="individuals")
     individuals = idx.get_level_values("individuals").unique()
     n_individuals = len(individuals)
-    map_ = dict(zip(individuals, range(n_individuals)))
+    map_ = dict(zip(individuals, range(n_individuals), strict=False))
 
     # Form ground truth beforehand
     ground_truth = []
@@ -340,13 +340,15 @@ def _get_n_best_paf_graphs(
 
     if not any(between_train.values()):
         # Only 1 animal, let us return the full graph indices only
-        return ([existing_edges], dict(zip(existing_edges, [0] * len(existing_edges))))
+        return ([existing_edges], dict(zip(existing_edges, [0] * len(existing_edges), strict=False)))
 
-    scores, _ = zip(*[_calc_separability(between_train[n], within_train[n], metric=metric) for n in existing_edges])
+    scores, _ = zip(
+        *[_calc_separability(between_train[n], within_train[n], metric=metric) for n in existing_edges], strict=False
+    )
 
     # Find minimal skeleton
     G = nx.Graph()
-    for edge, score in zip(existing_edges, scores):
+    for edge, score in zip(existing_edges, scores, strict=False):
         if np.isfinite(score):
             G.add_edge(*full_graph[edge], weight=score)
     if which == "best":
@@ -368,7 +370,7 @@ def _get_n_best_paf_graphs(
     paf_inds = [root]
     for length in lengths:
         paf_inds.append(root + list(order[:length]))
-    return paf_inds, dict(zip(existing_edges, scores))
+    return paf_inds, dict(zip(existing_edges, scores, strict=False))
 
 
 def cross_validate_paf_graphs(

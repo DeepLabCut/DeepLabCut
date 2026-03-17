@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests the dynamic cropper"""
+"""Tests the dynamic cropper."""
 
 import numpy as np
 import pytest
@@ -163,7 +163,7 @@ def test_tddc_array_split(size: int, n: int, overlap: int) -> None:
     assert len(set(sizes)) == 1
 
     # check the overlap is big enough for each section
-    for (start_1, end_1), (start_2, end_2) in zip(sections[:-1], sections[1:]):
+    for (_start_1, end_1), (start_2, _end_2) in zip(sections[:-1], sections[1:], strict=False):
         assert end_1 >= start_2
         assert end_1 - start_2 >= overlap
 

@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Post-process predictions made by models"""
+"""Post-process predictions made by models."""
 
 from __future__ import annotations
 
@@ -30,8 +30,7 @@ class Postprocessor(ABC):
 
     @abstractmethod
     def __call__(self, predictions: Any, context: Context) -> Any:
-        """
-        Post-processes the outputs of a model into a single prediction.
+        """Post-processes the outputs of a model into a single prediction.
 
         Args:
             predictions: the predictions made by the model on a single image
@@ -134,7 +133,7 @@ def build_top_down_postprocessor(
     num_unique_bodyparts: int,
     with_backbone_features: bool = False,
 ) -> Postprocessor:
-    """Creates a postprocessor for top-down pose estimation
+    """Creates a postprocessor for top-down pose estimation.
 
     Args:
         max_individuals: the maximum number of individuals in a single image
@@ -192,7 +191,7 @@ def build_detector_postprocessor(
     max_individuals: int,
     min_bbox_score: float | None = None,
 ) -> Postprocessor:
-    """Creates a postprocessor for top-down pose estimation
+    """Creates a postprocessor for top-down pose estimation.
 
     Args:
         max_individuals: the maximum number of detections to keep in a single image
@@ -227,10 +226,8 @@ def build_detector_postprocessor(
 
 
 class ComposePostprocessor(Postprocessor):
-    """
-    Class to preprocess an image and turn it into a batch of
-    inputs before running inference
-    """
+    """Class to preprocess an image and turn it into a batch of inputs before running
+    inference."""
 
     def __init__(self, components: list[Postprocessor]) -> None:
         self.components = components
@@ -242,7 +239,7 @@ class ComposePostprocessor(Postprocessor):
 
 
 class ConcatenateOutputs(Postprocessor):
-    """Checks that there is a single prediction for the image and returns it"""
+    """Checks that there is a single prediction for the image and returns it."""
 
     def __init__(
         self,
@@ -275,7 +272,7 @@ class ConcatenateOutputs(Postprocessor):
 
 
 class PadOutputs(Postprocessor):
-    """Pads the outputs to have the maximum number of individuals"""
+    """Pads the outputs to have the maximum number of individuals."""
 
     def __init__(
         self,
@@ -313,7 +310,7 @@ class PadOutputs(Postprocessor):
 
 
 class TrimOutputs(Postprocessor):
-    """Ensures all outputs have at most `max_individuals` detections
+    """Ensures all outputs have at most `max_individuals` detections.
 
     Assumes that the outputs are sorted by decreasing score, such that the first
     `max_individuals` predictions are the ones to keep.
@@ -332,7 +329,7 @@ class TrimOutputs(Postprocessor):
 
 
 class RescaleAndOffset(Postprocessor):
-    """Rescales and offsets predictions back to their position in the original image
+    """Rescales and offsets predictions back to their position in the original image.
 
     This can be done in 3 ways:
         BBOX_XYWH: the data has shape (num_individuals, 4), in xywh format, and there
@@ -392,7 +389,7 @@ class RescaleAndOffset(Postprocessor):
                         rescaled = outputs
                     else:
                         rescaled_individuals = []
-                        for output, scale, offset in zip(outputs, scales, offsets):
+                        for output, scale, offset in zip(outputs, scales, offsets, strict=False):
                             output_rescaled = output.copy()
                             output_rescaled[:, :2] = output[:, :2] * scale + offset
                             rescaled_individuals.append(output_rescaled)
@@ -421,9 +418,8 @@ class RescaleAndOffset(Postprocessor):
 
 
 class RemoveLowConfidenceBoxes(Postprocessor):
-    """
-    Removes low confidence bounding boxes from detector output before they reach the pose estimator
-    """
+    """Removes low confidence bounding boxes from detector output before they reach the
+    pose estimator."""
 
     def __init__(self, bbox_score_thresh: float):
         super().__init__()
@@ -455,10 +451,8 @@ class BboxToCoco(Postprocessor):
 
 
 class AddContextToOutput(Postprocessor):
-    """
-    Adds items from the context to the output, such as the bounding boxes contained
-    during top-down inference.
-    """
+    """Adds items from the context to the output, such as the bounding boxes contained
+    during top-down inference."""
 
     def __init__(self, keys: list[str]) -> None:
         super().__init__()
@@ -476,7 +470,7 @@ class AddContextToOutput(Postprocessor):
 
 
 class PredictKeypointIdentities(Postprocessor):
-    """Assigns predicted identities to keypoints
+    """Assigns predicted identities to keypoints.
 
     The identity maps have shape (h, w, num_ids).
 
@@ -515,7 +509,7 @@ class PredictKeypointIdentities(Postprocessor):
             ys = np.clip(heatmap_indices[:, 1], 0, h - 1)
 
             # get the score from each identity heatmap at each predicted keypoint
-            for kpt_idx, (x, y) in enumerate(zip(xs, ys)):
+            for kpt_idx, (x, y) in enumerate(zip(xs, ys, strict=False)):
                 id_score_matrix[pred_idx, kpt_idx] = identity_heatmap[y, x, :]
 
         predictions[self.identity_key] = id_score_matrix
@@ -528,7 +522,7 @@ class PredictKeypointIdentities(Postprocessor):
 
 
 class AssignIndividualIdentities(Postprocessor):
-    """Assigns predicted identities to individuals
+    """Assigns predicted identities to individuals.
 
     Attributes:
         identity_key: Key with which to add predicted identities in the predictions dict
@@ -547,7 +541,7 @@ class AssignIndividualIdentities(Postprocessor):
 
 
 class PrepareBackboneFeatures(Postprocessor):
-    """Adds backbone features for each individual and keypoint to the outputs
+    """Adds backbone features for each individual and keypoint to the outputs.
 
     Attributes:
         top_down: Whether the model is a top-down model.

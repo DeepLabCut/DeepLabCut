@@ -11,8 +11,7 @@
 
 
 def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frames=False):
-    """
-    Add new videos to the config file at any stage of the project.
+    """Add new videos to the config file at any stage of the project.
 
     Parameters
     ----------
@@ -43,7 +42,6 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
 
     Two videos will be added, with cropping dimensions [0,100,0,200] and [0,100,0,250], respectively.
     >>> deeplabcut.add_new_videos('/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi','/data/videos/mouse6.avi'],copy_videos=False,coords=[[0,100,0,200],[0,100,0,250]])
-
     """
     import os
     import shutil
@@ -67,9 +65,7 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
     dirs = [data_path / Path(i.stem) for i in videos]
 
     for p in dirs:
-        """
-        Creates directory under data & perhaps copies videos (to /video)
-        """
+        """Creates directory under data & perhaps copies videos (to /video)"""
         p.mkdir(parents=True, exist_ok=True)
 
     destinations = [video_path.joinpath(vp.name) for vp in videos]

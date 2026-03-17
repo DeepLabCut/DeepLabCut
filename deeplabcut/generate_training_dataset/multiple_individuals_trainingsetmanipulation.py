@@ -119,12 +119,10 @@ def create_multianimaltraining_dataset(
     engine: Engine | None = None,
     ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
 ):
-    """
-    Creates a training dataset for multi-animal datasets. Labels from all the extracted
-    frames are merged into a single .h5 file.\n
-    Only the videos included in the config file are used to create this dataset.\n
-    [OPTIONAL] Use the function 'add_new_videos' at any stage of the project to add more
-    videos to the project.
+    """Creates a training dataset for multi-animal datasets. Labels from all the
+    extracted frames are merged into a single .h5 file.\n Only the videos included in
+    the config file are used to create this dataset.\n [OPTIONAL] Use the function
+    'add_new_videos' at any stage of the project to add more videos to the project.
 
     Important differences to standard:
      - stores coordinates with numdigits as many digits

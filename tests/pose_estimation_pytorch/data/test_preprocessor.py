@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests the pre-processors"""
+"""Tests the pre-processors."""
 
 import albumentations as A
 import numpy as np
@@ -153,6 +153,6 @@ def deep_equal(a, b):
     elif isinstance(a, list) and isinstance(b, list):
         if len(a) != len(b):
             return False
-        return all(deep_equal(x, y) for x, y in zip(a, b))
+        return all(deep_equal(x, y) for x, y in zip(a, b, strict=False))
     else:
         return a == b

@@ -94,7 +94,7 @@ def CreateVideo(
     bboxes_pcutoff=0.6,
     bboxes_color: tuple | None = None,
 ):
-    """Creating individual frames with labeled body parts and making a video"""
+    """Creating individual frames with labeled body parts and making a video."""
     bpts = Dataframe.columns.get_level_values("bodyparts")
     all_bpts = bpts.values[::3]
     if draw_skeleton:
@@ -246,7 +246,7 @@ def CreateVideoSlow(
     bboxes_pcutoff=0.6,
     bboxes_color: str | None = None,
 ):
-    """Creating individual frames with labeled body parts and making a video"""
+    """Creating individual frames with labeled body parts and making a video."""
 
     if displaycropped:
         ny, nx = y2 - y1, x2 - x1
@@ -809,7 +809,7 @@ def proc_video(
     plot_bboxes: bool = True,
     bboxes_pcutoff: float = 0.6,
 ):
-    """Helper function for create_videos
+    """Helper function for create_videos.
 
     Parameters
     ----------
@@ -1155,8 +1155,7 @@ def create_video_with_all_detections(
     plot_bboxes: bool = True,
     **kwargs,
 ):
-    """
-    Create a video labeled with all the detections stored in a '*_full.pickle' file.
+    """Create a video labeled with all the detections stored in a '*_full.pickle' file.
 
     Parameters
     ----------
@@ -1412,7 +1411,7 @@ def _get_default_conf_to_alpha(
     confidence_to_alpha: bool,
     pcutoff: float,
 ) -> Callable[[float], float] | None:
-    """Creates the default confidence_to_alpha function"""
+    """Creates the default confidence_to_alpha function."""
     if not confidence_to_alpha:
         return None
 

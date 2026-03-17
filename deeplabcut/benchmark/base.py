@@ -9,7 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-"""Base classes for benchmark and result definition
+"""Base classes for benchmark and result definition.
 
 Benchmarks subclass the abstract ``Benchmark`` class and are defined by ``name``, their
 ``keypoints`` names, as well as groundtruth and metadata necessary to run evaluation.
@@ -46,9 +46,9 @@ class Benchmark(abc.ABC):
     def names(self):
         """A unique key to describe this submission, e.g. the model name.
 
-        This is also the name that will later appear in the benchmark table.
-        The name needs to be unique across the whole benchmark. Non-unique names
-        will raise an error during submission of a PR.
+        This is also the name that will later appear in the benchmark table. The name
+        needs to be unique across the whole benchmark. Non-unique names will raise an
+        error during submission of a PR.
         """
         raise NotImplementedError()
 
@@ -110,9 +110,10 @@ class Benchmark(abc.ABC):
         )
 
     def _validate_predictions(self, name: str, predictions: dict) -> dict:
-        """Validates the submitted predictions object
-        Checks that there is a prediction for each test image, and raises a warning if
-        that is not the case. Returns only predictions made for test images.
+        """Validates the submitted predictions object Checks that there is a prediction
+        for each test image, and raises a warning if that is not the case.
+
+        Returns only predictions made for test images.
         """
         test_images = deeplabcut.benchmark.metrics.load_test_images(self.ground_truth, self.metadata)
         missing_images = set(test_images) - set(predictions.keys())
@@ -120,7 +121,8 @@ class Benchmark(abc.ABC):
             warnings.warn(
                 f"Missing {len(missing_images)} test images in the predictions for "
                 f"{name}: {list(missing_images)} Metrics will be computed as if no "
-                "individuals were detected in those images."
+                "individuals were detected in those images.",
+                stacklevel=2,
             )
 
         return {img: predictions.get(img, tuple()) for img in test_images}
@@ -155,7 +157,7 @@ class Result:
 
     @property
     def primary_key_names(self) -> tuple[str]:
-        """Names of the primary keys"""
+        """Names of the primary keys."""
         return tuple(self._export_mapping.get(k) for k in self._primary_key)
 
     def __str__(self):
@@ -185,7 +187,7 @@ class ResultCollection:
         return next(iter(self.results.values())).primary_key_names
 
     def toframe(self) -> pd.DataFrame:
-        """Convert results to pandas dataframe"""
+        """Convert results to pandas dataframe."""
         return pd.DataFrame([result.todict() for result in self.results.values()]).set_index(
             list(self.primary_key_names)
         )

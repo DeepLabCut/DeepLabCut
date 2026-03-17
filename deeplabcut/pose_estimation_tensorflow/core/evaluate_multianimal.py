@@ -56,7 +56,7 @@ def _compute_stats(df):
 def _calc_prediction_error(data):
     _ = data.pop("metadata", None)
     dists = []
-    for n, dict_ in enumerate(tqdm(data.values())):
+    for _n, dict_ in enumerate(tqdm(data.values())):
         gt = np.concatenate(dict_["groundtruth"][1])
         xy = np.concatenate(dict_["prediction"]["coordinates"][0])
         p = np.concatenate(dict_["prediction"]["confidence"])
@@ -88,7 +88,7 @@ def _calc_train_test_error(data, metadata, pcutoff=0.3):
 
 def evaluate_multianimal_full(
     config,
-    Shuffles=[1],
+    Shuffles=None,
     trainingsetindex=0,
     plotting=False,
     show_errors=True,
@@ -113,6 +113,8 @@ def evaluate_multianimal_full(
         conversioncode,
     )
 
+    if Shuffles is None:
+        Shuffles = [1]
     if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
         del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
 
@@ -328,7 +330,7 @@ def evaluate_multianimal_full(
                             temp["bodyparts"] = (
                                 temp["bodyparts"]
                                 .replace(
-                                    dict(zip(joints, range(len(joints)))),
+                                    dict(zip(joints, range(len(joints)), strict=False)),
                                 )
                                 .infer_objects(copy=False)
                             )

@@ -37,14 +37,13 @@ from deeplabcut.utils.auxfun_videos import VideoReader
 
 
 def comparevideolistsanddatafolders(config):
-    """
-    Auxiliary function that compares the folders in labeled-data and the ones listed under video_sets (in the config file).
+    """Auxiliary function that compares the folders in labeled-data and the ones listed
+    under video_sets (in the config file).
 
     Parameter
     ----------
     config : string
         String containing the full path of the config file in the project.
-
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
@@ -64,9 +63,10 @@ def comparevideolistsanddatafolders(config):
 
 
 def adddatasetstovideolistandviceversa(config):
-    """
-    First run comparevideolistsanddatafolders(config) to compare the folders in labeled-data and the ones listed under video_sets (in the config file).
-    If you detect differences this function can be used to maker sure each folder has a video entry & vice versa.
+    """First run comparevideolistsanddatafolders(config) to compare the folders in
+    labeled-data and the ones listed under video_sets (in the config file). If you
+    detect differences this function can be used to maker sure each folder has a video
+    entry & vice versa.
 
     It corrects this problem in the following way:
 
@@ -123,15 +123,13 @@ def adddatasetstovideolistandviceversa(config):
 
 
 def dropduplicatesinannotatinfiles(config):
-    """
-
-    Drop duplicate entries (of images) in annotation files (this should no longer happen, but might be useful).
+    """Drop duplicate entries (of images) in annotation files (this should no longer
+    happen, but might be useful).
 
     Parameter
     ----------
     config : string
         String containing the full path of the config file in the project.
-
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
@@ -154,15 +152,14 @@ def dropduplicatesinannotatinfiles(config):
 
 
 def dropannotationfileentriesduetodeletedimages(config):
-    """
-    Drop entries for all deleted images in annotation files, i.e. for folders of the type: /labeled-data/*folder*/CollectedData_*scorer*.h5
-    Will be carried out iteratively for all *folders* in labeled-data.
+    """Drop entries for all deleted images in annotation files, i.e. for folders of the
+    type: /labeled-data/*folder*/CollectedData_*scorer*.h5 Will be carried out
+    iteratively for all *folders* in labeled-data.
 
     Parameter
     ----------
     config : string
         String containing the full path of the config file in the project.
-
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
@@ -237,15 +234,14 @@ def dropimagesduetolackofannotation(config):
 
 
 def dropunlabeledframes(config):
-    """
-    Drop entries such that all the bodyparts are not labeled from the annotation files, i.e. h5 and csv files
-    Will be carried out iteratively for all *folders* in labeled-data.
+    """Drop entries such that all the bodyparts are not labeled from the annotation
+    files, i.e. h5 and csv files Will be carried out iteratively for all *folders* in
+    labeled-data.
 
     Parameter
     ----------
     config : string
         String containing the full path of the config file in the project.
-
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
@@ -453,7 +449,7 @@ def _robust_path_split(path):
 
 
 def parse_video_filenames(videos: list[str]) -> list[str]:
-    """Parses the names of all videos listed in a project's ``config.yaml`` file
+    """Parses the names of all videos listed in a project's ``config.yaml`` file.
 
     Goes through the paths all videos listed for a project, and removes entries with a
     duplicate video name (e.g. if a video is listed twice, once with the path
@@ -497,8 +493,7 @@ def parse_video_filenames(videos: list[str]) -> list[str]:
 
 
 def merge_annotateddatasets(cfg, trainingsetfolder_full):
-    """
-    Merges all the h5 files for all labeled-datasets (from individual videos).
+    """Merges all the h5 files for all labeled-datasets (from individual videos).
 
     This is a bit of a mess because of cross platform compatibility.
 
@@ -561,10 +556,12 @@ def SplitTrials(
     trainFraction=0.8,
     enforce_train_fraction=False,
 ):
-    """Split a trial index into train and test sets. Also checks that the trainFraction is a two digit number between 0 an 1. The reason
-    is that the folders contain the trainfraction as int(100*trainFraction).
-    If enforce_train_fraction is True, train and test indices are padded with -1
-    such that the ratio of their lengths is exactly the desired train fraction.
+    """Split a trial index into train and test sets.
+
+    Also checks that the trainFraction is a two digit number between 0 an 1. The reason
+    is that the folders contain the trainfraction as int(100*trainFraction). If
+    enforce_train_fraction is True, train and test indices are padded with -1 such that
+    the ratio of their lengths is exactly the desired train fraction.
     """
     if trainFraction > 1 or trainFraction < 0:
         print(
@@ -619,8 +616,7 @@ def pad_train_test_indices(train_inds, test_inds, train_fraction):
 
 
 def mergeandsplit(config, trainindex=0, uniform=True):
-    """
-    This function allows additional control over "create_training_dataset".
+    """This function allows additional control over "create_training_dataset".
 
     Merge annotated data sets (from different folders) and split data in a specific way, returns the split variables (train/test indices).
     Importantly, this allows one to freeze a split.
@@ -654,7 +650,6 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     You can then create two model instances that have the identical trainingset. Thereby you can assess the role of various parameters on the performance of DLC.
     >>> deeplabcut.create_training_dataset(config,Shuffles=[0,1],trainIndices=[trainIndices, trainIndices],testIndices=[testIndices, testIndices])
     --------
-
     """
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
@@ -1575,9 +1570,8 @@ def create_training_dataset_from_existing_split(
     weight_init: WeightInitialization | None = None,
     engine: Engine | None = None,
 ) -> None | list[int]:
-    """
-    Labels from all the extracted frames are merged into a single .h5 file.
-    Only the videos included in the config file are used to create this dataset.
+    """Labels from all the extracted frames are merged into a single .h5 file. Only the
+    videos included in the config file are used to create this dataset.
 
     Args:
         config: Full path of the ``config.yaml`` file as a string.
@@ -1727,8 +1721,7 @@ def _compute_padding(
     num_train: int,
     num_test: int,
 ) -> tuple[int, int]:
-    """
-    Computes the amount of padding to add to train/test indices such that
+    """Computes the amount of padding to add to train/test indices such that
     train_fraction = num_train / (num_train + num_test).
 
     Returns:

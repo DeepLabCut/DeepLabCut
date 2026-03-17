@@ -24,9 +24,10 @@ from deeplabcut.pose_estimation_pytorch.models.modules import (  # ColoredKeypoi
 
 @BACKBONES.register_module
 class CondPreNet(BaseBackbone):
-    """
-    Wrapper module that adds a conditional preNet before any backbone.
-    This allows to process image and condition features and prepare them for the main backbone.
+    """Wrapper module that adds a conditional preNet before any backbone.
+
+    This allows to process image and condition features and prepare them for the main
+    backbone.
     """
 
     def __init__(
@@ -36,8 +37,7 @@ class CondPreNet(BaseBackbone):
         img_size: tuple[int, int] = (256, 256),
         **kwargs,
     ):
-        """
-        Initialize the PreNetWrapper.
+        """Initialize the PreNetWrapper.
 
         Args:
             backbone: The backbone model to wrap.

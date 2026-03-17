@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Class implementing the Loader for DeepLabCut projects"""
+"""Class implementing the Loader for DeepLabCut projects."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ from deeplabcut.pose_estimation_pytorch.data.utils import bbox_from_keypoints, r
 
 
 class DLCLoader(Loader):
-    """A Loader for DeepLabCut projects"""
+    """A Loader for DeepLabCut projects."""
 
     def __init__(
         self,
@@ -174,7 +174,7 @@ class DLCLoader(Loader):
         )
 
     def load_data(self, mode: str = "train") -> dict:
-        """Loads DeepLabCut data into COCO-style annotations
+        """Loads DeepLabCut data into COCO-style annotations.
 
         This function reads data from h5 file, split the data and returns it in
         COCO-like format
@@ -267,7 +267,7 @@ class DLCLoader(Loader):
         trainset_index: int = 0,
         shuffle: int = 0,
     ) -> dict[str, list[int]]:
-        """Loads the train/test split for a DeepLabCut shuffle
+        """Loads the train/test split for a DeepLabCut shuffle.
 
         Args:
             config: the DeepLabCut project config
@@ -338,8 +338,7 @@ class DLCLoader(Loader):
         dlc_df: pd.DataFrame,
         split: dict[str, list[int]],
     ) -> dict[str, pd.DataFrame | None]:
-        """
-        Splits a DeepLabCut DataFrame into train/test dataframes
+        """Splits a DeepLabCut DataFrame into train/test dataframes.
 
         Args:
             dlc_df: the dataframe containing the labeled data
@@ -364,7 +363,7 @@ class DLCLoader(Loader):
         df: pd.DataFrame,
         parameters: PoseDatasetParameters,
     ) -> dict:
-        """Formerly Shaokai's function
+        """Formerly Shaokai's function.
 
         Args:
             project_root: the path to the project root
@@ -494,7 +493,7 @@ class DLCLoader(Loader):
 
     @property
     def _dfs(self) -> dict[str, pd.DataFrame]:
-        """Lazy-loading of the training dataset dataframes"""
+        """Lazy-loading of the training dataset dataframes."""
         if self._loaded_df is None:
             self._loaded_df, image_sizes = self.load_ground_truth(
                 self._project_config,
@@ -511,7 +510,7 @@ def _load_mat_dataset(
     scorer: str,
     params: PoseDatasetParameters,
 ) -> tuple[set[tuple[int, int]], pd.DataFrame]:
-    """Loads the training dataset stored as a .mat file
+    """Loads the training dataset stored as a .mat file.
 
     Returns: images_sizes, dlc_dataset
         images_sizes: all possible images sizes in the dataset
@@ -571,7 +570,7 @@ def _load_pickle_dataset(
     scorer: str,
     params: PoseDatasetParameters,
 ) -> tuple[set[tuple[int, int]], pd.DataFrame]:
-    """Loads the training dataset stored as a .mat file
+    """Loads the training dataset stored as a .mat file.
 
     Returns: images_sizes, dlc_dataset
         images_sizes: all possible images sizes in the dataset
@@ -643,7 +642,7 @@ def _validate_dataframes(
     df_train: pd.DataFrame,
     strict: bool = False,
 ) -> dict[str, pd.DataFrame]:
-    """Validates the training/test DataFrames
+    """Validates the training/test DataFrames.
 
     Performs the following validation steps:
         1. Checks that the training data loaded from CollectedData.h5 matches the
@@ -733,7 +732,7 @@ def build_dlc_dataframe_columns(
     parameters: PoseDatasetParameters,
     with_likelihood: bool,
 ) -> pd.MultiIndex:
-    """Builds the columns for a DeepLabCut DataFrame
+    """Builds the columns for a DeepLabCut DataFrame.
 
     Args:
         scorer: the scorer name

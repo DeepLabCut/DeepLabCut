@@ -150,7 +150,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
     @abstractmethod
     def step(self, batch: dict[str, Any], mode: str = "train") -> dict[str, torch.Tensor]:
-        """Perform a single epoch gradient update or validation step
+        """Perform a single epoch gradient update or validation step.
 
         Args:
             batch: the batch data on which to run a step
@@ -165,7 +165,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
     @abstractmethod
     def _compute_epoch_metrics(self) -> dict[str, float]:
-        """Computes the metrics using the data accumulated during an epoch
+        """Computes the metrics using the data accumulated during an epoch.
 
         Returns:
             A dictionary containing the different losses for the step
@@ -339,7 +339,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
 
 class PoseTrainingRunner(TrainingRunner[PoseModel]):
-    """Runner to train pose estimation models"""
+    """Runner to train pose estimation models."""
 
     def __init__(
         self,
@@ -366,7 +366,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         model: PoseModel,
         weights_only: bool | None = None,
     ) -> dict:
-        """Loads the state dict for a model from a file
+        """Loads the state dict for a model from a file.
 
         This method loads a file containing a DeepLabCut PyTorch model snapshot onto
         a given device, and sets the model weights using the state_dict.
@@ -495,7 +495,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         scales: torch.Tensor,
         offsets: torch.Tensor,
     ) -> None:
-        """Updates the stored predictions with a new batch"""
+        """Updates the stored predictions with a new batch."""
         epoch_gt_metric = self._epoch_ground_truth.get(name, {})
         epoch_metric = self._epoch_predictions.get(name, {})
         assert len(gt_keypoints) == len(pred_keypoints)
@@ -508,6 +508,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             pred_keypoints,
             scales,
             offsets,
+            strict=False,
         ):
             ground_truth = gt.detach().cpu().numpy()
             pred = pred.copy()
@@ -526,7 +527,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
 
 
 class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
-    """Runner to train object detection models"""
+    """Runner to train object detection models."""
 
     def __init__(self, model: BaseDetector, optimizer: torch.optim.Optimizer, **kwargs):
         """
@@ -634,9 +635,9 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
         scales: torch.Tensor,
         offsets: torch.Tensor,
     ) -> None:
-        """Updates the stored predictions with a new batch"""
+        """Updates the stored predictions with a new batch."""
         for img_path, img_size, img_bboxes, img_pred, scale, offset in zip(
-            paths, sizes, bboxes, predictions, scales, offsets
+            paths, sizes, bboxes, predictions, scales, offsets, strict=False
         ):
             scale_x, scale_y = scale
             scale_factors = np.array([scale_x, scale_y, scale_x, scale_y])
@@ -679,8 +680,7 @@ def build_training_runner(
     load_head_weights: bool = True,
     logger: BaseLogger | None = None,
 ) -> TrainingRunner:
-    """
-    Build a runner object according to a pytorch configuration file
+    """Build a runner object according to a pytorch configuration file.
 
     Args:
         runner_config: the configuration for the runner

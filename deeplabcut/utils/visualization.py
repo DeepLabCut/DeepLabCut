@@ -61,7 +61,8 @@ def make_labeled_image(
     scaling=1,
     ax=None,
 ):
-    """Creating a labeled image with the original human labels, as well as the DeepLabCut's!"""
+    """Creating a labeled image with the original human labels, as well as the
+    DeepLabCut's!"""
 
     if labels is None:
         labels = ["+", ".", "x"]
@@ -131,8 +132,8 @@ def make_multianimal_labeled_image(
     bboxes_cutoff: float = 0.6,
     bboxes_color: Colormap | str | None = None,
 ) -> plt.Axes:
-    """
-    Plots groundtruth labels and predictions onto the matplotlib's axes, with the specified graphical parameters.
+    """Plots groundtruth labels and predictions onto the matplotlib's axes, with the
+    specified graphical parameters.
 
     Args:
         frame: image
@@ -304,8 +305,8 @@ def make_labeled_images_from_dataframe(
     draw_skeleton=True,
     color_by="bodypart",
 ):
-    """
-    Write labeled frames to disk from a DataFrame.
+    """Write labeled frames to disk from a DataFrame.
+
     Parameters
     ----------
     df : pd.DataFrame
@@ -452,9 +453,8 @@ def plot_evaluation_results(
     bboxes_cutoff: float = 0.6,
     bounding_boxes_color: str = "auto",
 ) -> None:
-    """
-    Creates labeled images using the results of inference, and saves them to an output
-    folder.
+    """Creates labeled images using the results of inference, and saves them to an
+    output folder.
 
     Args:
         df_combined: dataframe with multiindex rows ("labeled-data", video_name,
@@ -480,7 +480,6 @@ def plot_evaluation_results(
             If set to "auto" (default value):
                 - if mode is "bodypart", the bbox color will be a default color
                 - if mode is "individual", each individual's color will be used for its bounding box
-
     """
     if bounding_boxes is None:
         bounding_boxes = {}

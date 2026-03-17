@@ -225,7 +225,7 @@ def test_evaluate_with_pcutoff(
 
     num_idv = len(individuals)
     num_bodyparts = len(bodyparts)
-    num_unique = len(unique_bodyparts)
+    len(unique_bodyparts)
 
     gt, pred = {}, {}
     for img in images:
