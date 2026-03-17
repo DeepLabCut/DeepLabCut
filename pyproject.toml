@@ -136,8 +136,15 @@ line-length = 120
 fix = true
 [tool.ruff.lint]
 select = [ "E", "F", "B", "I", "UP" ]
-ignore = [ "E741" ]
-per-file-ignores = { "__init__.py" = [ "F401", "E402" ] }
+ignore = [ "E741", "E501" ]
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = [ "F401", "E402" ]
+"deeplabcut/**/__init__.py" = [ "F403" ]
+"deeplabcut/gui/window.py" = [ "F403" ]
+"deeplabcut/pose_estimation_tensorflow/lib/crossvalutils.py" = [ "F403" ]
+"deeplabcut/pose_estimation_tensorflow/lib/inferenceutils.py" = [ "F403" ]
+"deeplabcut/pose_estimation_tensorflow/lib/trackingutils.py" = [ "F403" ]
+"*.ipynb" = [ "E402" ]
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
