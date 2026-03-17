@@ -10,21 +10,20 @@
 #
 from functools import partial
 from pathlib import Path
-from typing import Union
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
-from deeplabcut.gui.dlc_params import DLCParams
+from deeplabcut.generate_training_dataset import extract_frames
 from deeplabcut.gui.components import (
     DefaultTab,
     VideoSelectionWidget,
     _create_grid_layout,
     _create_label_widget,
 )
+from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.gui.widgets import launch_napari
-from deeplabcut.generate_training_dataset import extract_frames
 
 
 def select_cropping_area(config, videos=None):
@@ -48,8 +47,8 @@ def select_cropping_area(config, videos=None):
     cfg : dict
         Updated project configuration
     """
-    from deeplabcut.utils import auxiliaryfunctions
     from deeplabcut.gui.widgets import FrameCropper
+    from deeplabcut.utils import auxiliaryfunctions
 
     cfg = auxiliaryfunctions.read_config(config)
     if videos is None:
@@ -83,7 +82,7 @@ def select_cropping_area(config, videos=None):
 
 class ExtractFrames(DefaultTab):
     def __init__(self, root, parent, h1_description):
-        super(ExtractFrames, self).__init__(root, parent, h1_description)
+        super().__init__(root, parent, h1_description)
         self.worker = None
         self.thread = None
         self._set_page()
@@ -268,7 +267,7 @@ class ExtractFrames(DefaultTab):
         msg.exec_()
         self.root.writer.write(root_message)
 
-    def _check_symlink(self, video_path: Union[str, Path]) -> Path:
+    def _check_symlink(self, video_path: str | Path) -> Path:
         """Checks that a video is in the DeepLabCut 'videos' folder
 
         This is required before launching manual frame extraction. When users select

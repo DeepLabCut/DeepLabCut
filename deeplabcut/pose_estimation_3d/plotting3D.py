@@ -130,7 +130,7 @@ def create_labeled_video_3d(
     >>> deeplabcut.create_labeled_video_3d(config,['/data/project1/videos'],start=100, end=500,view=[30,90],xlim=[-12,12],ylim=[15,25],zlim=[20,30])
 
     """
-    start_path = os.getcwd()
+    os.getcwd()
 
     # Read the config file and related variables
     cfg_3d = auxiliaryfunctions.read_config(config)
@@ -176,12 +176,7 @@ def create_labeled_video_3d(
             cam1_scorer = metadata_["scorer_name"][cam_names[0]]
             cam2_scorer = metadata_["scorer_name"][cam_names[1]]
             print(
-                "Creating 3D video from %s and %s using %s"
-                % (
-                    Path(cam1_view_video).name,
-                    Path(cam2_view_video).name,
-                    Path(triangulate_file).name,
-                )
+                f"Creating 3D video from {Path(cam1_view_video).name} and {Path(cam2_view_video).name} using {Path(triangulate_file).name}"
             )
 
             # Read the video files and corresponfing h5 files
@@ -262,7 +257,7 @@ def create_labeled_video_3d(
                 bodyparts2connect,
                 bpts,
             )
-            ind_links = tuple(zip(*links))
+            ind_links = tuple(zip(*links, strict=False))
 
             if color_by == "bodypart":
                 color = plt.cm.get_cmap(cmap, len(bodyparts2plot))
@@ -325,7 +320,7 @@ def create_labeled_video_3d(
                     frame_cam1 = vid_cam1.read_frame()
                     frame_cam2 = vid_cam2.read_frame()
                     if frame_cam1 is None or frame_cam2 is None:
-                        raise IOError("A video frame is empty.")
+                        raise OSError("A video frame is empty.")
 
                     im1.set_data(frame_cam1)
                     im2.set_data(frame_cam2)

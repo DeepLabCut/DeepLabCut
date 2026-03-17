@@ -20,8 +20,8 @@ import numpy as np
 import torch
 
 from deeplabcut.pose_estimation_pytorch.models.predictors.base import (
-    BasePredictor,
     PREDICTORS,
+    BasePredictor,
 )
 
 

@@ -15,7 +15,7 @@ from abc import ABC, abstractmethod
 import torch
 from torch import nn
 
-from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
+from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 PREDICTORS = Registry("predictors", build_func=build_from_cfg)
 

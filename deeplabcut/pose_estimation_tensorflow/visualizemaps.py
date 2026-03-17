@@ -9,13 +9,14 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import os
+
 import matplotlib.pyplot as plt
 from skimage.transform import resize
+
 from deeplabcut.core.visualization import (
-    form_figure,  # for backwards compatibility
-    visualize_scoremaps,
     visualize_locrefs,
     visualize_paf,
+    visualize_scoremaps,
 )
 
 
@@ -57,20 +58,23 @@ def extract_maps(
     >>> deeplabcut.extract_maps(configfile,0,Indices=[0,103])
 
     """
-    from deeplabcut.utils.auxfun_videos import imread, imresize
+    from pathlib import Path
+
+    import numpy as np
+    import pandas as pd
+    import tensorflow as tf
+    from tqdm import tqdm
+
+    from deeplabcut.pose_estimation_tensorflow.config import load_config
     from deeplabcut.pose_estimation_tensorflow.core import (
         predict,
+    )
+    from deeplabcut.pose_estimation_tensorflow.core import (
         predict_multianimal as predictma,
     )
-    from deeplabcut.pose_estimation_tensorflow.config import load_config
     from deeplabcut.pose_estimation_tensorflow.datasets.utils import data_to_input
     from deeplabcut.utils import auxiliaryfunctions
-    from tqdm import tqdm
-    import tensorflow as tf
-
-    import pandas as pd
-    from pathlib import Path
-    import numpy as np
+    from deeplabcut.utils.auxfun_videos import imread, imresize
 
     tf.compat.v1.reset_default_graph()
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  #
@@ -135,7 +139,7 @@ def extract_maps(
             dlc_cfg = load_config(str(path_test_config))
         except FileNotFoundError:
             raise FileNotFoundError(
-                "It seems the model for shuffle %s and trainFraction %s does not exist." % (shuffle, trainFraction)
+                f"It seems the model for shuffle {shuffle} and trainFraction {trainFraction} does not exist."
             )
 
         # change batch size, if it was edited during analysis!
@@ -171,7 +175,7 @@ def extract_maps(
             dlc_cfg["init_weights"] = os.path.join(
                 str(modelfolder), "train", Snapshots[snapindex]
             )  # setting weights to corresponding snapshot.
-            trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[
+            (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[
                 -1
             ]  # read how many training siterations that corresponds to.
 
@@ -184,7 +188,7 @@ def extract_maps(
             # Specifying state of model (snapshot / training state)
             sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
             Numimages = len(Data.index)
-            PredicteData = np.zeros((Numimages, 3 * len(dlc_cfg["all_joints_names"])))
+            np.zeros((Numimages, 3 * len(dlc_cfg["all_joints_names"])))
             print("Analyzing data...")
             if Indices is None:
                 Indices = enumerate(Data.index)
@@ -249,7 +253,7 @@ def resize_all_maps(image, scmap, locref, paf):
 
 
 def _save_individual_subplots(fig, axes, labels, output_path):
-    for ax, label in zip(axes, labels):
+    for ax, label in zip(axes, labels, strict=False):
         extent = ax.get_tightbbox(fig.canvas.renderer).transformed(fig.dpi_scale_trans.inverted())
         fig.savefig(output_path.format(bp=label), bbox_inches=extent)
 
@@ -306,13 +310,14 @@ def extract_save_all_maps(
 
     """
 
+    from tqdm import tqdm
+
     from deeplabcut.utils.auxiliaryfunctions import (
-        read_config,
         attempt_to_make_folder,
         get_evaluation_folder,
         intersection_of_body_parts_and_ones_given_by_user,
+        read_config,
     )
-    from tqdm import tqdm
 
     cfg = read_config(config)
     data = extract_maps(config, shuffle, trainingsetindex, gputouse, rescale, Indices, modelprefix)
@@ -408,7 +413,7 @@ def extract_save_all_maps(
                         fig3, _ = visualize_paf(image, paf[:, :, inds], colors=colors)
                         temp = dest_path.format(
                             imname=imname,
-                            map=f"paf",
+                            map="paf",
                             label=label,
                             shuffle=shuffle,
                             frac=frac,

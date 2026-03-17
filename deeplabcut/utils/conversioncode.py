@@ -19,11 +19,12 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import os
-import pandas as pd
-from deeplabcut.utils import auxiliaryfunctions
 from itertools import islice
 from pathlib import Path
 
+import pandas as pd
+
+from deeplabcut.utils import auxiliaryfunctions
 
 SUPPORTED_FILETYPES = "csv", "nwb"
 

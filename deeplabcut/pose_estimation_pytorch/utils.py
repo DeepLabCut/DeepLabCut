@@ -12,12 +12,9 @@ from __future__ import annotations
 
 import os
 import random
-from pathlib import Path
 
 import numpy as np
 import torch
-
-from deeplabcut.utils.auxiliaryfunctions import read_plainconfig
 
 
 def create_folder(path_to_folder):

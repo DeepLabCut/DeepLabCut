@@ -8,35 +8,34 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from typing import List, Optional
+import os
+import pickle
+import re
+import shelve
+import warnings
+from collections import defaultdict
+from functools import partial
+from itertools import combinations, cycle
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-import os
 import pandas as pd
-import pickle
-import re
 import scipy.linalg.interpolative as sli
-import shelve
-import warnings
-from collections import defaultdict
-
-import deeplabcut
-from deeplabcut.utils.auxfun_videos import VideoWriter
-from functools import partial
-from deeplabcut.core.trackingutils import (
-    calc_iou,
-    TRACK_METHODS,
-)
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
-from itertools import combinations, cycle
 from networkx.algorithms.flow import preflow_push
-from pathlib import Path
 from scipy.linalg import hankel
 from scipy.spatial.distance import directed_hausdorff
 from scipy.stats import mode
 from tqdm import trange
+
+import deeplabcut
+from deeplabcut.core.trackingutils import (
+    TRACK_METHODS,
+    calc_iou,
+)
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import VideoWriter
 
 
 class Tracklet:
@@ -60,7 +59,7 @@ class Tracklet:
 
         self.data = data.astype(np.float64)
         self.inds = np.array(inds)
-        monotonically_increasing = all(a < b for a, b in zip(inds, inds[1:]))
+        monotonically_increasing = all(a < b for a, b in zip(inds, inds[1:], strict=False))
         if not monotonically_increasing:
             idx = np.argsort(inds, kind="mergesort")  # For stable sort with duplicates
             self.inds = self.inds[idx]
@@ -464,7 +463,7 @@ class TrackletStitcher:
                     self.residuals.append(t)
 
         if not len(self.tracklets):
-            raise IOError("Tracklets are empty.")
+            raise OSError("Tracklets are empty.")
 
         if prestitch_residuals:
             self._prestitch_residuals(5)  # Hard-coded but found to work very well
@@ -524,7 +523,7 @@ class TrackletStitcher:
         single = None
         for k, dict_ in dict_of_dict.items():
             try:
-                inds, data = zip(*[(cls.get_frame_ind(k), v) for k, v in dict_.items()])
+                inds, data = zip(*[(cls.get_frame_ind(k), v) for k, v in dict_.items()], strict=False)
             except ValueError:
                 continue
             inds = np.asarray(inds)
@@ -562,7 +561,7 @@ class TrackletStitcher:
         idx = sorted(set(np.searchsorted(tracklet.inds, inds)))
         inds_new = np.split(tracklet.inds, idx)
         data_new = np.split(tracklet.data, idx)
-        return [Tracklet(data, inds) for data, inds in zip(data_new, inds_new)]
+        return [Tracklet(data, inds) for data, inds in zip(data_new, inds_new, strict=False)]
 
     @property
     def n_frames(self):
@@ -625,12 +624,12 @@ class TrackletStitcher:
         self.G = nx.DiGraph()
         self.G.add_node("source", demand=-self.n_tracks)
         self.G.add_node("sink", demand=self.n_tracks)
-        nodes_in, nodes_out = zip(*[v.values() for k, v in self._mapping.items() if k in nodes])
+        nodes_in, nodes_out = zip(*[v.values() for k, v in self._mapping.items() if k in nodes], strict=False)
         self.G.add_nodes_from(nodes_in, demand=1)
         self.G.add_nodes_from(nodes_out, demand=-1)
-        self.G.add_edges_from(zip(nodes_in, nodes_out), capacity=1)
-        self.G.add_edges_from(zip(["source"] * n_nodes, nodes_in), capacity=1)
-        self.G.add_edges_from(zip(nodes_out, ["sink"] * n_nodes), capacity=1)
+        self.G.add_edges_from(zip(nodes_in, nodes_out, strict=False), capacity=1)
+        self.G.add_edges_from(zip(["source"] * n_nodes, nodes_in, strict=False), capacity=1)
+        self.G.add_edges_from(zip(nodes_out, ["sink"] * n_nodes, strict=False), capacity=1)
         if weight_func is None:
             weight_func = self.calculate_edge_weight
         for i in trange(n_nodes):
@@ -669,15 +668,15 @@ class TrackletStitcher:
             _, self.flow = nx.capacity_scaling(self.G)
             self.paths = self.reconstruct_paths()
         except nx.exception.NetworkXUnfeasible:
-            warnings.warn("No optimal solution found. Employing black magic...")
+            warnings.warn("No optimal solution found. Employing black magic...", stacklevel=2)
             # Let us prune the graph by removing all source and sink edges
             # but those connecting the `n_tracks` first and last tracklets.
             in_to_keep = [self._mapping[first_tracklet]["in"] for first_tracklet in self._first_tracklets]
             out_to_keep = [self._mapping[last_tracklet]["out"] for last_tracklet in self._last_tracklets]
             in_to_remove = set(node for _, node in self.G.out_edges("source")).difference(in_to_keep)
             out_to_remove = set(node for node, _ in self.G.in_edges("sink")).difference(out_to_keep)
-            self.G.remove_edges_from(zip(["source"] * len(in_to_remove), in_to_remove))
-            self.G.remove_edges_from(zip(out_to_remove, ["sink"] * len(out_to_remove)))
+            self.G.remove_edges_from(zip(["source"] * len(in_to_remove), in_to_remove, strict=False))
+            self.G.remove_edges_from(zip(out_to_remove, ["sink"] * len(out_to_remove), strict=False))
             # Preflow push seems to work slightly better than shortest
             # augmentation path..., and is more computationally efficient.
             paths = []
@@ -724,7 +723,7 @@ class TrackletStitcher:
                     paths += self.reconstruct_paths()
             self.paths = paths
             if len(self.paths) != self.n_tracks:
-                warnings.warn(f"Only {len(self.paths)} tracks could be reconstructed.")
+                warnings.warn(f"Only {len(self.paths)} tracks could be reconstructed.", stacklevel=2)
 
         finally:
             if self.paths is None:
@@ -913,7 +912,7 @@ class TrackletStitcher:
         for path in self.paths:
             length = len(path)
             colors = plt.get_cmap(colormap, length)(range(length))
-            for tracklet, color in zip(path, colors):
+            for tracklet, color in zip(path, colors, strict=False):
                 tracklet.plot(color=color, ax=ax)
 
     def plot_tracks(self, colormap="viridis"):
@@ -926,7 +925,7 @@ class TrackletStitcher:
             if loc != "bottom":
                 spine.set_visible(False)
         colors = plt.get_cmap(colormap, self.n_tracks)(range(self.n_tracks))
-        for track, color in zip(self.tracks, colors):
+        for track, color in zip(self.tracks, colors, strict=False):
             track.plot(color=color, ax=ax)
 
     def plot_tracklets(self, colormap="Paired"):
@@ -948,7 +947,7 @@ class TrackletStitcher:
             tracklet2lines[tracklet] = lines
             for line in lines:
                 line2tracklet[line] = tracklet
-            for i, (x, y) in zip(tracklet.inds, tracklet.centroid):
+            for i, (x, y) in zip(tracklet.inds, tracklet.centroid, strict=False):
                 all_points[i][(x, y)] = color
 
     def reconstruct_paths(self):
@@ -976,7 +975,7 @@ def stitch_tracklets(
     shuffle=1,
     trainingsetindex=0,
     n_tracks=None,
-    animal_names: Optional[List[str]] = None,
+    animal_names: list[str] | None = None,
     min_length=10,
     split_tracklets=True,
     prestitch_residuals=True,

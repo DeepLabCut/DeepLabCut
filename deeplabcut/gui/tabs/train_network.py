@@ -49,7 +49,7 @@ class TrainAttributeRow:
 
 class TrainNetwork(DefaultTab):
     def __init__(self, root, parent, h1_description):
-        super(TrainNetwork, self).__init__(root, parent, h1_description)
+        super().__init__(root, parent, h1_description)
         self._shuffle: ShuffleSpinBox = ShuffleSpinBox(root=self.root, parent=self)
         self._shuffle_display = SelectedShuffleDisplay(self.root)
 

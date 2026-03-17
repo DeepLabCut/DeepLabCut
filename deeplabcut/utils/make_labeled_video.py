@@ -30,10 +30,10 @@ import os
 # Dependencies
 ####################################################
 import os.path
+from collections.abc import Callable, Iterable
 from functools import partial
-from multiprocessing import get_start_method, Pool
+from multiprocessing import Pool, get_start_method
 from pathlib import Path
-from typing import Callable, Iterable, List, Optional, Union
 
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
@@ -42,7 +42,7 @@ import pandas as pd
 from matplotlib import patches
 from matplotlib.animation import FFMpegWriter
 from matplotlib.collections import LineCollection
-from skimage.draw import disk, line_aa, set_color, rectangle_perimeter
+from skimage.draw import disk, line_aa, rectangle_perimeter, set_color
 from skimage.util import img_as_ubyte
 from tqdm import trange
 
@@ -63,7 +63,8 @@ def get_segment_indices(bodyparts2connect, all_bpts):
                     *(
                         np.flatnonzero(all_bpts == bpt1),
                         np.flatnonzero(all_bpts == bpt2),
-                    )
+                    ),
+                    strict=False,
                 )
             )
     return bpts2connect
@@ -113,8 +114,8 @@ def CreateVideo(
     nframes = clip.nframes
     duration = nframes / fps
 
-    print("Duration of video [s]: {}, recorded with {} fps!".format(round(duration, 2), round(fps, 2)))
-    print("Overall # of frames: {} with cropped frame dimensions: {} {}".format(nframes, nx, ny))
+    print(f"Duration of video [s]: {round(duration, 2)}, recorded with {round(fps, 2)} fps!")
+    print(f"Overall # of frames: {nframes} with cropped frame dimensions: {nx} {ny}")
     print("Generating frames and creating video.")
 
     df_x, df_y, df_likelihood = Dataframe.values.reshape((len(Dataframe), -1, 3)).T
@@ -259,8 +260,8 @@ def CreateVideoSlow(
     nframes = clip.nframes
     duration = nframes / fps
 
-    print("Duration of video [s]: {}, recorded with {} fps!".format(round(duration, 2), round(fps, 2)))
-    print("Overall # of frames: {} with cropped frame dimensions: {} {}".format(nframes, nx, ny))
+    print(f"Duration of video [s]: {round(duration, 2)}, recorded with {round(fps, 2)} fps!")
+    print(f"Overall # of frames: {nframes} with cropped frame dimensions: {nx} {ny}")
     print("Generating frames and creating video.")
     df_x, df_y, df_likelihood = Dataframe.values.reshape((len(Dataframe), -1, 3)).T
     if cropping and not displaycropped:
@@ -385,7 +386,7 @@ def CreateVideoSlow(
                 writer.grab_frame()
                 ax.clear()
 
-    print("Labeled video {} successfully created.".format(videooutname))
+    print(f"Labeled video {videooutname} successfully created.")
     plt.switch_backend(prev_backend)
 
 
@@ -414,16 +415,16 @@ def create_labeled_video(
     track_method: str = "",
     superanimal_name: str = "",
     pcutoff: float | None = None,
-    skeleton: list = [],
+    skeleton: list = None,
     skeleton_color: str = "white",
     dotsize: int = 8,
     colormap: str = "rainbow",
     alphavalue: float = 0.5,
     overwrite: bool = False,
-    confidence_to_alpha: Union[bool, Callable[[float], float]] = False,
+    confidence_to_alpha: bool | Callable[[float], float] = False,
     plot_bboxes: bool = True,
     bboxes_pcutoff: float | None = None,
-    max_workers: Optional[int] = None,
+    max_workers: int | None = None,
     **kwargs,
 ):
     """Labels the bodyparts in a video.
@@ -629,6 +630,8 @@ def create_labeled_video(
             videotype='mp4',
         )
     """
+    if skeleton is None:
+        skeleton = []
     if config == "":
         if pcutoff is None:
             pcutoff = 0.6
@@ -802,7 +805,7 @@ def proc_video(
     video,
     init_weights="",
     pcutoff: float | None = None,
-    confidence_to_alpha: Optional[Callable[[float], float]] = None,
+    confidence_to_alpha: Callable[[float], float] | None = None,
     plot_bboxes: bool = True,
     bboxes_pcutoff: float = 0.6,
 ):
@@ -829,7 +832,7 @@ def proc_video(
     auxiliaryfunctions.attempt_to_make_folder(destfolder)
 
     os.chdir(destfolder)  # THE VIDEO IS STILL IN THE VIDEO FOLDER
-    print("Starting to process video: {}".format(video))
+    print(f"Starting to process video: {video}")
     vname = str(Path(video).stem)
 
     if init_weights != "":
@@ -847,7 +850,7 @@ def proc_video(
         print(f"Labeled video {vname} already created.")
         return True
     else:
-        print("Loading {} and data.".format(video))
+        print(f"Loading {video} and data.")
         try:
             df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
                 destfolder, vname, DLCscorer, filtered, track_method
@@ -1089,14 +1092,14 @@ def create_video_with_keypoints_only(
     xyp = df.values.reshape((n_frames, -1, 3))
 
     if color_by == "bodypart":
-        map_ = bodyparts.map(dict(zip(bodypart_names, range(n_bodyparts))))
+        map_ = bodyparts.map(dict(zip(bodypart_names, range(n_bodyparts), strict=False)))
         cmap = plt.get_cmap(colormap, n_bodyparts)
     elif color_by == "individual":
         try:
             individuals = df.columns.get_level_values("individuals")[::3]
             individual_names = individuals.unique().to_list()
             n_individuals = len(individual_names)
-            map_ = individuals.map(dict(zip(individual_names, range(n_individuals))))
+            map_ = individuals.map(dict(zip(individual_names, range(n_individuals), strict=False)))
             cmap = plt.get_cmap(colormap, n_individuals)
         except KeyError as e:
             raise Exception("Coloring by individuals is only valid for multi-animal data") from e
@@ -1113,7 +1116,7 @@ def create_video_with_keypoints_only(
     scat.set_offsets(coords)
     colors = cmap(map_)
     scat.set_color(colors)
-    segs = coords[tuple(zip(*tuple(ind_links))), :].swapaxes(0, 1) if ind_links else []
+    segs = coords[tuple(zip(*tuple(ind_links), strict=False)), :].swapaxes(0, 1) if ind_links else []
     coll = LineCollection(segs, colors=skeleton_color, alpha=alpha)
     ax.add_collection(coll)
     ax.set_xlim(0, nx)
@@ -1131,7 +1134,7 @@ def create_video_with_keypoints_only(
             coords[xyp[index, :, 2] < pcutoff] = np.nan
             scat.set_offsets(coords)
             if ind_links:
-                segs = coords[tuple(zip(*tuple(ind_links))), :].swapaxes(0, 1)
+                segs = coords[tuple(zip(*tuple(ind_links), strict=False)), :].swapaxes(0, 1)
             coll.set_segments(segs)
             writer.grab_frame()
     plt.close(fig)
@@ -1145,10 +1148,10 @@ def create_video_with_all_detections(
     shuffle=1,
     trainingsetindex=0,
     displayedbodyparts="all",
-    cropping: Optional[List[int]] = None,
+    cropping: list[int] | None = None,
     destfolder=None,
     modelprefix="",
-    confidence_to_alpha: Union[bool, Callable[[float], float]] = False,
+    confidence_to_alpha: bool | Callable[[float], float] = False,
     plot_bboxes: bool = True,
     **kwargs,
 ):
@@ -1225,7 +1228,7 @@ def create_video_with_all_detections(
         videofolder = os.path.splitext(video)[0]
 
         if destfolder is None:
-            outputname = "{}_full.mp4".format(videofolder + DLCscorername)
+            outputname = f"{videofolder + DLCscorername}_full.mp4"
             full_pickle = os.path.join(videofolder + DLCscorername + "_full.pickle")
         else:
             auxiliaryfunctions.attempt_to_make_folder(destfolder)
@@ -1408,7 +1411,7 @@ def create_video_from_pickled_tracks(video, pickle_file, destfolder="", output_n
 def _get_default_conf_to_alpha(
     confidence_to_alpha: bool,
     pcutoff: float,
-) -> Optional[Callable[[float], float]]:
+) -> Callable[[float], float] | None:
     """Creates the default confidence_to_alpha function"""
     if not confidence_to_alpha:
         return None

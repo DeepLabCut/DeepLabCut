@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import warnings
 from collections import defaultdict
-from functools import reduce, lru_cache
+from functools import cache, reduce
 from pathlib import Path
 
 import albumentations as A
@@ -20,7 +20,7 @@ import numpy as np
 from PIL import Image
 
 
-@lru_cache(maxsize=None)
+@cache
 def read_image_shape_fast(path: str | Path) -> tuple[int, int, int]:
     """Blazing fast and does not load the image into memory"""
     with Image.open(path) as img:

@@ -80,9 +80,9 @@ def merge_annotateddatasets(cfg):
 
 class SingleDLCDataFrame(BasePoseDataset):
     def __init__(self, proj_root, dataset_name):
-        super(SingleDLCDataFrame, self).__init__()
+        super().__init__()
         self.meta["max_individuals"] = 1
-        assert proj_root != None and dataset_name != None
+        assert proj_root is not None and dataset_name is not None
         self.proj_root = proj_root
         self.dataset_name = dataset_name
         self.meta["dataset_name"] = dataset_name

@@ -63,7 +63,7 @@ class DropPath(nn.Module):
     """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual blocks)."""
 
     def __init__(self, drop_prob=None):
-        super(DropPath, self).__init__()
+        super().__init__()
         self.drop_prob = drop_prob
 
     def forward(self, x):
@@ -272,7 +272,7 @@ class DLCTransReID(nn.Module):
 
     def forward_features(self, x):
         # x: inputs
-        B = x.shape[0]
+        x.shape[0]
         # (B, 12, 768)
         x = self.kpt_embed(x)
 
@@ -329,9 +329,9 @@ class DLCTransReID(nn.Module):
             except:
                 print("===========================ERROR=========================")
                 print(
-                    "shape do not match in k :{}: param_dict{} vs self.state_dict(){}".format(
-                        k, v.shape, self.state_dict()[k].shape
-                    )
+                    f"shape do not match in k :{k}: param_dict{v.shape} vs self.state_dict(){
+                        self.state_dict()[k].shape
+                    }"
                 )
 
 
@@ -345,9 +345,9 @@ def resize_pos_embed(posemb, posemb_new, height, width):
 
     gs_old = int(math.sqrt(len(posemb_grid)))
     print(
-        "Resized position embedding from size:{} to size: {} with height:{} width: {}".format(
-            posemb.shape, posemb_new.shape, height, width
-        )
+        f"Resized position embedding from size:{posemb.shape} to size: {posemb_new.shape} with height:{height} width: {
+            width
+        }"
     )
     posemb_grid = posemb_grid.reshape(1, gs_old, gs_old, -1).permute(0, 3, 1, 2)
     posemb_grid = F.interpolate(posemb_grid, size=(height, width), mode="bilinear")

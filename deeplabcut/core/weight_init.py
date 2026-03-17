@@ -62,19 +62,19 @@ class WeightInitialization:
 
         if self.with_decoder and self.conversion_array is None:
             raise ValueError(
-                f"You must specify a conversion_array to initialize decoder weights (``with_decoder=True``)."
+                "You must specify a conversion_array to initialize decoder weights (``with_decoder=True``)."
             )
 
         if self.bodyparts is not None and self.conversion_array is None:
             raise ValueError(
-                f"Specifying bodyparts should only be done when `with_decoder=True` and"
-                f" the conversion array is specified."
+                "Specifying bodyparts should only be done when `with_decoder=True` and"
+                " the conversion array is specified."
             )
 
         if self.conversion_array is not None and self.bodyparts is not None:
             if not len(self.conversion_array) == len(self.bodyparts):
                 raise ValueError(
-                    f"There must be the same number of elements in the bodyparts list "
+                    "There must be the same number of elements in the bodyparts list "
                     "and conv. array; found {self.bodyparts}, {self.conversion_array}"
                 )
 
@@ -100,7 +100,7 @@ class WeightInitialization:
         return data
 
     @staticmethod
-    def from_dict(data: dict) -> "WeightInitialization":
+    def from_dict(data: dict) -> WeightInitialization:
         if "snapshot_path" not in data:
             return WeightInitialization.from_dict_legacy(data)
 
@@ -123,7 +123,7 @@ class WeightInitialization:
         )
 
     @staticmethod
-    def from_dict_legacy(data: dict) -> "WeightInitialization":
+    def from_dict_legacy(data: dict) -> WeightInitialization:
         """Deals with weight initialization that were created before 3.0.0rc5"""
         import deeplabcut.pose_estimation_pytorch.modelzoo.utils as utils
 
@@ -156,7 +156,7 @@ class WeightInitialization:
         memory_replay: bool = False,
         customized_pose_checkpoint: str | None = None,
         customized_detector_checkpoint: str | None = None,
-    ) -> "WeightInitialization":
+    ) -> WeightInitialization:
         """Builds a WeightInitialization for a project
 
         `WeightInitialization.build` is deprecated and will be removed in a future

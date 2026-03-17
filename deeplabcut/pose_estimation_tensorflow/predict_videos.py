@@ -31,17 +31,15 @@ from scipy.optimize import linear_sum_assignment
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
-from deeplabcut.core import trackingutils, inferenceutils
+from deeplabcut.core import inferenceutils, trackingutils
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import predict
-
-from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, auxfun_models
 from deeplabcut.pose_estimation_tensorflow.core.openvino.session import (
     GetPoseF_OV,
     is_openvino_available,
 )
-
+from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
+from deeplabcut.utils import auxfun_models, auxfun_multianimal, auxiliaryfunctions
 
 ####################################################
 # Loading data, and defining model folder
@@ -75,7 +73,9 @@ def create_tracking_dataset(
         extract_bpt_feature_from_video,
     )
 
-    # allow_growth must be true here because tensorflow does not automatically free gpu memory and setting it as false occupies all gpu memory so that pytorch cannot kick in
+    # allow_growth must be true here because tensorflow does not automatically
+    # free gpu memory and setting it as false occupies all gpu memory so that
+    # pytorch cannot kick in
     allow_growth = True
 
     if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
@@ -105,7 +105,7 @@ def create_tracking_dataset(
         dlc_cfg = load_config(str(path_test_config))
     except FileNotFoundError:
         raise FileNotFoundError(
-            "It seems the model for shuffle %s and trainFraction %s does not exist." % (shuffle, trainFraction)
+            f"It seems the model for shuffle {shuffle} and trainFraction {trainFraction} does not exist."
         )
 
     Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
@@ -120,7 +120,7 @@ def create_tracking_dataset(
     else:
         snapshotindex = cfg["snapshotindex"]
 
-    print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
+    print(f"Using {Snapshots[snapshotindex]}", "for model", modelfolder)
 
     ##################################################
     # Load and setup CNN part detector
@@ -182,7 +182,7 @@ def create_tracking_dataset(
             dlc_cfg, allow_growth=allow_growth, collect_extra=True
         )
 
-    pdindex = pd.MultiIndex.from_product(
+    pd.MultiIndex.from_product(
         [[DLCscorer], dlc_cfg["all_joints_names"], xyz_labs],
         names=["scorer", "bodyparts", "coords"],
     )
@@ -488,8 +488,7 @@ def analyze_videos(
         dlc_cfg = load_config(str(path_test_config))
     except FileNotFoundError:
         raise FileNotFoundError(
-            "It seems the model for iteration %s and shuffle %s and trainFraction %s does not exist."
-            % (iteration, shuffle, trainFraction)
+            f"It seems the model for iteration {iteration} and shuffle {shuffle} and trainFraction {trainFraction} does not exist."
         )
 
     Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
@@ -504,7 +503,7 @@ def analyze_videos(
     else:
         snapshotindex = cfg["snapshotindex"]
 
-    print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
+    print(f"Using {Snapshots[snapshotindex]}", "for model", modelfolder)
 
     ##################################################
     # Load and setup CNN part detector
@@ -662,8 +661,9 @@ def analyze_videos(
 
 def checkcropping(cfg, cap):
     print(
-        "Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file."
-        % (cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"])
+        "Cropping based on the x1 = {} x2 = {} y1 = {} y2 = {}. You can adjust the cropping coordinates in the config.yaml file.".format(
+            cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]
+        )
     )
     nx = cfg["x2"] - cfg["x1"]
     ny = cfg["y2"] - cfg["y1"]
@@ -823,7 +823,7 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
         ret, frame = cap.read()
         counter += 1
         if not ret:
-            warnings.warn(f"Could not decode frame #{counter}.")
+            warnings.warn(f"Could not decode frame #{counter}.", stacklevel=2)
             continue
 
         if cfg["cropping"]:
@@ -909,7 +909,7 @@ def GetPoseDynamic(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, detectiont
                         frame = img_as_ubyte(originalframe)
                     pose = predict.getpose(frame, dlc_cfg, sess, inputs, outputs).flatten()  # no offset is necessary
 
-                x0, y0 = x1, y1
+                _x0, _y0 = x1, y1
                 x1, x2, y1, y2 = 0, nx, 0, ny
                 detected = False
 
@@ -952,7 +952,7 @@ def AnalyzeVideo(
         print("Loading ", video)
         cap = cv2.VideoCapture(video)
         if not cap.isOpened():
-            raise IOError("Video could not be opened. Please check that the the file integrity.")
+            raise OSError("Video could not be opened. Please check that the the file integrity.")
         # https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
         fps = cap.get(cv2.CAP_PROP_FPS)
         nframes = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -1018,7 +1018,7 @@ def AnalyzeVideo(
                     PredictedData, nframes = GetPoseS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes)
 
         stop = time.time()
-        if cfg["cropping"] == True:
+        if cfg["cropping"]:
             coords = [cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]]
         else:
             coords = [0, nx, 0, ny]
@@ -1076,8 +1076,9 @@ def GetPosesofFrames(cfg, dlc_cfg, sess, inputs, outputs, directory, framelist, 
     batch_num = 0  # keeps track of which batch you are at
     if cfg["cropping"]:
         print(
-            "Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file."
-            % (cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"])
+            "Cropping based on the x1 = {} x2 = {} y1 = {} y2 = {}. You can adjust the cropping coordinates in the config.yaml file.".format(
+                cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]
+            )
         )
         nx, ny = cfg["x2"] - cfg["x1"], cfg["y2"] - cfg["y1"]
         if nx > 0 and ny > 0:
@@ -1209,7 +1210,7 @@ def analyze_time_lapse_frames(
         dlc_cfg = load_config(str(path_test_config))
     except FileNotFoundError:
         raise FileNotFoundError(
-            "It seems the model for shuffle %s and trainFraction %s does not exist." % (shuffle, trainFraction)
+            f"It seems the model for shuffle {shuffle} and trainFraction {trainFraction} does not exist."
         )
 
     Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
@@ -1224,7 +1225,7 @@ def analyze_time_lapse_frames(
     else:
         snapshotindex = cfg["snapshotindex"]
 
-    print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
+    print(f"Using {Snapshots[snapshotindex]}", "for model", modelfolder)
 
     ##################################################
     # Load and setup CNN part detector
@@ -1267,7 +1268,7 @@ def analyze_time_lapse_frames(
     # Loading the images
     ##################################################
     # checks if input is a directory
-    if os.path.isdir(directory) == True:
+    if os.path.isdir(directory):
         """
         Analyzes all the frames in the directory.
         """
@@ -1296,7 +1297,7 @@ def analyze_time_lapse_frames(
                 )
                 stop = time.time()
 
-                if cfg["cropping"] == True:
+                if cfg["cropping"]:
                     coords = [cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]]
                 else:
                     coords = [0, nx, 0, ny]
@@ -1316,7 +1317,7 @@ def analyze_time_lapse_frames(
                 }
                 metadata = {"data": dictionary}
 
-                print("Saving results in %s..." % (directory))
+                print(f"Saving results in {directory}...")
 
                 auxiliaryfunctions.save_data(
                     PredictedData[:nframes, :],
@@ -1523,7 +1524,7 @@ def convert_detections2tracklets(
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
     if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
-        warnings.warn("Switching to `box` tracker for single point tracking...")
+        warnings.warn("Switching to `box` tracker for single point tracking...", stacklevel=2)
         track_method = "box"
         cfg["default_track_method"] = track_method
         auxiliaryfunctions.write_config(config, cfg)
@@ -1547,7 +1548,7 @@ def convert_detections2tracklets(
         dlc_cfg = load_config(str(path_test_config))
     except FileNotFoundError:
         raise FileNotFoundError(
-            "It seems the model for shuffle %s and trainFraction %s does not exist." % (shuffle, trainFraction)
+            f"It seems the model for shuffle {shuffle} and trainFraction {trainFraction} does not exist."
         )
 
     if "multi-animal" not in dlc_cfg["dataset_type"]:
@@ -1560,7 +1561,7 @@ def convert_detections2tracklets(
         auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
 
     if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
-        warnings.warn("Switching to `box` tracker for single point tracking...")
+        warnings.warn("Switching to `box` tracker for single point tracking...", stacklevel=2)
         track_method = "box"
         # Also ensure `boundingboxslack` is greater than zero, otherwise overlap
         # between trackers cannot be evaluated, resulting in empty tracklets.
@@ -1578,7 +1579,7 @@ def convert_detections2tracklets(
     else:
         snapshotindex = cfg["snapshotindex"]
 
-    print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
+    print(f"Using {Snapshots[snapshotindex]}", "for model", modelfolder)
     dlc_cfg["init_weights"] = os.path.join(modelfolder, "train", Snapshots[snapshotindex])
     trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
 
@@ -1625,7 +1626,8 @@ def convert_detections2tracklets(
                 numjoints = len(all_jointnames)
 
                 # TODO: adjust this for multi + unique bodyparts!
-                # this is only for multianimal parts and uniquebodyparts as one (not one uniquebodyparts guy tracked etc. )
+                # this is only for multianimal parts and uniquebodyparts as one (not one
+                # uniquebodyparts guy tracked etc. )
                 bodypartlabels = [bpt for i, bpt in enumerate(all_jointnames) for _ in range(3)]
                 scorers = len(bodypartlabels) * [DLCscorer]
                 xylvalue = int(len(bodypartlabels) / 3) * ["x", "y", "likelihood"]

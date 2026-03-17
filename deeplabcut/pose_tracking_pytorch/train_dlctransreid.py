@@ -15,18 +15,21 @@ try:
     import torch
 except ModuleNotFoundError:
     raise ModuleNotFoundError("Unsupervised identity learning requires PyTorch. Please run `pip install torch`.")
-import numpy as np
-import os
 import glob
-from deeplabcut.utils import auxiliaryfunctions
+import os
 from pathlib import Path
+
+import numpy as np
+
+from deeplabcut.utils import auxiliaryfunctions
+
 from .config import cfg
 from .datasets import make_dlc_dataloader
+from .loss import easy_triplet_loss
 from .model import make_dlc_model
+from .processor import do_dlc_train
 from .solver import make_easy_optimizer
 from .solver.scheduler_factory import create_scheduler
-from .loss import easy_triplet_loss
-from .processor import do_dlc_train
 
 
 def set_seed(seed):

@@ -15,8 +15,8 @@ import torch.nn as nn
 import torchvision.transforms.functional as F
 
 from deeplabcut.pose_estimation_pytorch.models.predictors.base import (
-    BasePredictor,
     PREDICTORS,
+    BasePredictor,
 )
 
 

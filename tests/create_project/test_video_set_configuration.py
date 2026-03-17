@@ -13,6 +13,7 @@
 import warnings
 from pathlib import Path
 from unittest.mock import Mock, patch
+
 import pytest
 
 import deeplabcut.create_project.new as new_module
@@ -212,7 +213,7 @@ def test_invalid_video_removed_from_project(
 ):
     """Test that invalid videos are removed from the project"""
     # Mock VideoReader to raise IOError
-    mock_reader = Mock(side_effect=IOError("Cannot open video"))
+    mock_reader = Mock(side_effect=OSError("Cannot open video"))
 
     with patch("deeplabcut.create_project.new.VideoReader", mock_reader):
         with warnings.catch_warnings(record=True):

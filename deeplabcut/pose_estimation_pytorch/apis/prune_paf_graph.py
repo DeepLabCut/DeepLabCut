@@ -69,7 +69,7 @@ def benchmark_paf_graphs(
     model.eval()
 
     if not isinstance(predictor, predictors.PartAffinityFieldPredictor):
-        raise ValueError(f"Predictor should be a PartAffinityFieldPredictor.")
+        raise ValueError("Predictor should be a PartAffinityFieldPredictor.")
 
     if verbose:
         print("-------------------------------------------------")

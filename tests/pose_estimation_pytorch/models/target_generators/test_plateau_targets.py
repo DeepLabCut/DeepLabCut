@@ -11,8 +11,8 @@
 """Tests the heatmap target generators (plateau and gaussian)"""
 
 import numpy as np
-import torch
 import pytest
+import torch
 
 from deeplabcut.pose_estimation_pytorch.models.target_generators.heatmap_targets import (
     HeatmapGenerator,

@@ -13,7 +13,6 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Optional, Union
 
 import torch
 from dlclibrary.dlcmodelzoo.modelzoo_download import download_huggingface_model
@@ -54,13 +53,13 @@ def get_checkpoint_epoch(checkpoint_path):
 
 
 def video_inference_superanimal(
-    videos: Union[str, list],
+    videos: str | list,
     superanimal_name: str,
     model_name: str,
     detector_name: str | None = None,
-    scale_list: Optional[list] = None,
+    scale_list: list | None = None,
     videotype: str = ".mp4",
-    dest_folder: Optional[str] = None,
+    dest_folder: str | None = None,
     cropping: list[int] | None = None,
     video_adapt: bool = False,
     plot_trajectories: bool = False,
@@ -74,10 +73,10 @@ def video_inference_superanimal(
     pose_epochs: int = 4,
     max_individuals: int = 10,
     video_adapt_batch_size: int = 8,
-    device: Optional[str] = "auto",
-    customized_pose_checkpoint: Optional[str] = None,
-    customized_detector_checkpoint: Optional[str] = None,
-    customized_model_config: Optional[str] = None,
+    device: str | None = "auto",
+    customized_pose_checkpoint: str | None = None,
+    customized_detector_checkpoint: str | None = None,
+    customized_model_config: str | None = None,
     plot_bboxes: bool = True,
     create_labeled_video: bool = True,
 ):
@@ -320,7 +319,7 @@ def video_inference_superanimal(
     print(f"Running video inference on {videos} with {superanimal_name}_{model_name}")
     dlc_root_path = get_deeplabcut_path()
     modelzoo_path = os.path.join(dlc_root_path, "modelzoo")
-    available_architectures = json.load(open(os.path.join(modelzoo_path, "models_to_framework.json"), "r"))
+    available_architectures = json.load(open(os.path.join(modelzoo_path, "models_to_framework.json")))
     framework = available_architectures[model_name]
     print(f"Using {framework} for model {model_name}")
     if framework == "tensorflow":
@@ -448,7 +447,7 @@ def video_inference_superanimal(
                     pseudo_anno_dir = Path(dest_folder)
 
                 pseudo_anno_name = f"{video_path.stem}_{dlc_scorer}_before_adapt.json"
-                with open(pseudo_anno_dir / pseudo_anno_name, "r") as f:
+                with open(pseudo_anno_dir / pseudo_anno_name) as f:
                     predictions = json.load(f)
 
                 # make sure we tune parameters inside this function such as pseudo
@@ -478,7 +477,8 @@ def video_inference_superanimal(
 
             # get the current epoch of the pose model
             current_pose_epoch = get_checkpoint_epoch(pose_model_path)
-            # update the checkpoint path with the current epoch, if the checkpoint does not exist, use the best checkpoint
+            # update the checkpoint path with the current epoch, if the checkpoint
+            # does not exist, use the best checkpoint
             adapted_pose_checkpoint = model_folder / f"{model_snapshot_prefix}-{current_pose_epoch + pose_epochs:03}.pt"
             if not Path(adapted_pose_checkpoint).exists():
                 adapted_pose_checkpoint = (
@@ -518,7 +518,7 @@ def video_inference_superanimal(
                 print("Running video adaptation with following parameters:\n" + params_msg)
 
                 train_file = pseudo_dataset_folder / "annotations" / "train.json"
-                with open(train_file, "r") as f:
+                with open(train_file) as f:
                     temp_obj = json.load(f)
 
                 annotations = temp_obj["annotations"]
@@ -547,7 +547,8 @@ def video_inference_superanimal(
                     skip_detector=(superanimal_name == "superanimal_humanbody"),
                 )
 
-            # after video adaptation, re-update the adapted checkpoint path, if the checkpoint does not exist, use the best checkpoint
+            # after video adaptation, re-update the adapted checkpoint path, if the
+            # checkpoint does not exist, use the best checkpoint
             adapted_pose_checkpoint = model_folder / f"{model_snapshot_prefix}-{current_pose_epoch + pose_epochs:03}.pt"
             if not Path(adapted_pose_checkpoint).exists():
                 adapted_pose_checkpoint = (

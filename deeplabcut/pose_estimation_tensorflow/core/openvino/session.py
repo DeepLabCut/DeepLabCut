@@ -11,12 +11,12 @@
 import os
 import subprocess
 
+import cv2
 import numpy as np
 from tqdm import tqdm
-import cv2
 
 try:
-    from openvino.runtime import Core, AsyncInferQueue
+    from openvino.runtime import AsyncInferQueue, Core
 
     is_openvino_available = True
 except ImportError:

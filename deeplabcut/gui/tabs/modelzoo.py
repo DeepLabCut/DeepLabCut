@@ -15,21 +15,19 @@ from pathlib import Path
 
 import dlclibrary
 from PySide6 import QtWidgets
-from PySide6.QtCore import QRegularExpression, Qt, QTimer, Signal, Slot, QSize
+from PySide6.QtCore import QRegularExpression, QSize, Qt, QTimer, Signal, Slot
 from PySide6.QtGui import QIcon, QPixmap, QRegularExpressionValidator
-import cv2
-import torch
 
 import deeplabcut
 from deeplabcut.core.engine import Engine
 from deeplabcut.gui import BASE_DIR
 from deeplabcut.gui.components import (
-    _create_grid_layout,
-    _create_label_widget,
     DefaultTab,
     VideoSelectionWidget,
-    set_layout_contents_visible,
+    _create_grid_layout,
+    _create_label_widget,
     set_combo_items,
+    set_layout_contents_visible,
 )
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.gui.widgets import ClickableLabel
@@ -102,7 +100,9 @@ class ModelZoo(DefaultTab):
         self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
 
         self.go_to_button = QtWidgets.QPushButton("Read Documentation")
-        # go to url https://deeplabcut.github.io/DeepLabCut/docs/ModelZoo.html#about-the-superanimal-models when button is clicked
+        # go to url
+        # https://deeplabcut.github.io/DeepLabCut/docs/ModelZoo.html#about-the-superanimal-models
+        # when button is clicked
         self.go_to_button.clicked.connect(
             lambda: webbrowser.open(
                 "https://deeplabcut.github.io/DeepLabCut/docs/ModelZoo.html#about-the-superanimal-models"
@@ -458,7 +458,7 @@ class ModelZoo(DefaultTab):
                 self.thread.start()
             else:
                 print(f"Calling video_inference_superanimal with kwargs={kwargs}")
-                results = deeplabcut.video_inference_superanimal(
+                deeplabcut.video_inference_superanimal(
                     files,
                     supermodel_name,
                     dest_folder=self._destfolder,
@@ -494,13 +494,13 @@ class ModelZoo(DefaultTab):
         # Show appropriate message
         if videos_created:
             msg = QtWidgets.QMessageBox(
-                text=f"SuperAnimal video inference complete!\n\nCreated labeled videos:\n" + "\n".join(videos_created)
+                text="SuperAnimal video inference complete!\n\nCreated labeled videos:\n" + "\n".join(videos_created)
             )
             msg.setIcon(QtWidgets.QMessageBox.Information)
             msg.exec_()
         else:
             msg = QtWidgets.QMessageBox(
-                text=f"SuperAnimal video inference complete, but no labeled videos were created."
+                text="SuperAnimal video inference complete, but no labeled videos were created."
             )
             msg.setIcon(QtWidgets.QMessageBox.Warning)
             msg.exec_()
@@ -587,8 +587,8 @@ class ModelZoo(DefaultTab):
         set_layout_contents_visible(self.detector_row, self.root.engine == Engine.PYTORCH)
 
     def _update_adaptation_detector_visibility(self, superanimal: str):
-        self.adapt_det_epoch_label.setVisible((superanimal != "superanimal_humanbody"))
-        self.torch_adapt_det_epoch_spinbox.setVisible((superanimal != "superanimal_humanbody"))
+        self.adapt_det_epoch_label.setVisible(superanimal != "superanimal_humanbody")
+        self.torch_adapt_det_epoch_spinbox.setVisible(superanimal != "superanimal_humanbody")
 
     @Slot(Engine)
     def _on_engine_change(self, engine: Engine) -> None:

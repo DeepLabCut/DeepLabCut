@@ -8,8 +8,9 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import numpy as np
 from enum import Enum
+
+import numpy as np
 
 
 class Batch(Enum):

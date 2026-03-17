@@ -10,30 +10,28 @@
 #
 from __future__ import annotations
 
-import math
 import logging
+import math
 import os
 import os.path
 import warnings
-
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
-from PIL import Image
-from typing import List
 
 import numpy as np
 import pandas as pd
 import yaml
+from PIL import Image
 
 import deeplabcut.compat as compat
 import deeplabcut.generate_training_dataset.metadata as metadata
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import (
-    auxiliaryfunctions,
-    conversioncode,
     auxfun_models,
     auxfun_multianimal,
+    auxiliaryfunctions,
+    conversioncode,
 )
 from deeplabcut.utils.auxfun_videos import VideoReader
 
@@ -186,7 +184,7 @@ def dropannotationfileentriesduetodeletedimages(config):
                 print("Dropping...", imagename)
                 DC = DC.drop(imagename)
                 dropped = True
-        if dropped == True:
+        if dropped:
             DC.to_hdf(fn, key="df_with_missing", mode="w")
             DC.to_csv(os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv"))
 
@@ -276,7 +274,7 @@ def dropunlabeledframes(config):
 
 def check_labels(
     config,
-    Labels=["+", ".", "x"],
+    Labels=None,
     scale=1,
     dpi=100,
     draw_skeleton=True,
@@ -326,12 +324,14 @@ def check_labels(
 
     from deeplabcut.utils import visualization
 
+    if Labels is None:
+        Labels = ["+", ".", "x"]
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
     video_names = [_robust_path_split(video)[1] for video in videos]
 
     folders = [os.path.join(cfg["project_path"], "labeled-data", str(Path(i))) for i in video_names]
-    print("Creating images with labels by %s." % cfg["scorer"])
+    print("Creating images with labels by {}.".format(cfg["scorer"]))
     for folder in folders:
         try:
             DataCombined = pd.read_hdf(os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5"))
@@ -447,12 +447,12 @@ def _robust_path_split(path):
     elif len(splits) == 2:
         parent, file = splits
     else:
-        raise ("Unknown filepath split for path {}".format(path))
+        raise (f"Unknown filepath split for path {path}")
     filename, ext = os.path.splitext(file)
     return parent, filename, ext
 
 
-def parse_video_filenames(videos: List[str]) -> List[str]:
+def parse_video_filenames(videos: list[str]) -> list[str]:
     """Parses the names of all videos listed in a project's ``config.yaml`` file
 
     Goes through the paths all videos listed for a project, and removes entries with a
@@ -678,7 +678,7 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     conversioncode.guarantee_multiindex_rows(Data)
     Data = Data[scorer]  # extract labeled data
 
-    if uniform == True:
+    if uniform:
         TrainingFraction = cfg["TrainingFraction"]
         trainFraction = TrainingFraction[trainindex]
         trainIndices, testIndices = SplitTrials(
@@ -701,7 +701,7 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     return trainIndices, testIndices
 
 
-@lru_cache(maxsize=None)
+@cache
 def read_image_shape_fast(path):
     # Blazing fast and does not load the image into memory
     with Image.open(path) as img:
@@ -946,11 +946,12 @@ def create_training_dataset(
         warnings.warn(
             "`windows2linux` has no effect since 2.2.0.4 and will be removed in 2.2.1.",
             FutureWarning,
+            stacklevel=2,
         )
 
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
-    dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
+    auxiliaryfunctions.get_deeplabcut_path()
 
     if superanimal_name != "":
         raise ValueError(
@@ -1096,7 +1097,7 @@ def create_training_dataset(
             if len(trainIndices) != len(testIndices) != len(Shuffles):
                 raise ValueError("Number of Shuffles and train and test indexes should be equal.")
             splits = []
-            for shuffle, (train_inds, test_inds) in enumerate(zip(trainIndices, testIndices)):
+            for shuffle, (train_inds, test_inds) in enumerate(zip(trainIndices, testIndices, strict=False)):
                 trainFraction = round(len(train_inds) * 1.0 / (len(train_inds) + len(test_inds)), 2)
                 print(f"You passed a split with the following fraction: {int(100 * trainFraction)}%")
                 # Now that the training fraction is guaranteed to be correct,
@@ -1297,7 +1298,7 @@ def get_existing_shuffle_indices(
     cfg: dict | str | Path,
     train_fraction: float | None = None,
     engine: Engine | None = None,
-) -> List[int]:
+) -> list[int]:
     """
     Args:
         cfg: The content of a project configuration file, or the path to the project
@@ -1396,8 +1397,8 @@ def create_training_model_comparison(
     config,
     trainindex=0,
     num_shuffles=1,
-    net_types=["resnet_50"],
-    augmenter_types=["imgaug"],
+    net_types=None,
+    augmenter_types=None,
     userfeedback=False,
     windows2linux=False,
 ):
@@ -1487,12 +1488,17 @@ def create_training_model_comparison(
     of how to use ``shuffle_list``.
     """
     # read cfg file
+    if augmenter_types is None:
+        augmenter_types = ["imgaug"]
+    if net_types is None:
+        net_types = ["resnet_50"]
     cfg = auxiliaryfunctions.read_config(config)
 
     if windows2linux:
         warnings.warn(
             "`windows2linux` has no effect since 2.2.0.4 and will be removed in 2.2.1.",
             FutureWarning,
+            stacklevel=2,
         )
 
     # create log file

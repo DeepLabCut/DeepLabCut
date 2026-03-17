@@ -12,8 +12,8 @@
 
 import numpy as np
 import tensorflow as tf
-from skimage.feature import peak_local_max
 from scipy.ndimage import measurements
+from skimage.feature import peak_local_max
 
 
 def extract_cnn_output(outputs_np, cfg):

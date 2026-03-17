@@ -26,7 +26,7 @@ def main(ctx, verbose):
         click.echo(main.get_help(ctx))
 
 
-###########################################################################################################################
+##########################################################################
 @main.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("project")
 @click.argument("experimenter")
@@ -81,7 +81,7 @@ def create_new_project(_, *args, **kwargs):
     new.create_new_project(*args, **kwargs)
 
 
-###########################################################################################################################
+##########################################################################
 
 
 @main.command(context_settings=CONTEXT_SETTINGS)
@@ -120,7 +120,7 @@ def add_new_videos(_, *args, **kwargs):
     add.add_new_videos(*args, **kwargs)
 
 
-###########################################################################################################################
+##########################################################################
 @main.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("config")
 @click.argument("mode")
@@ -167,7 +167,7 @@ def extract_frames(_, *args, **kwargs):
     frameExtraction.extract_frames(*args, **kwargs)
 
 
-###########################################################################################################################
+##########################################################################
 @main.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("config")
 @click.pass_context
@@ -182,7 +182,7 @@ def label_frames(_, config):
     labelFrames.label_frames(config)
 
 
-###########################################################################################################################
+##########################################################################
 @main.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("config")
 @click.pass_context
@@ -193,7 +193,7 @@ def check_labels(_, config):
     labelFrames.check_labels(config)
 
 
-###########################################################################################################################
+##########################################################################
 @main.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("config")
 @click.option(
@@ -221,7 +221,7 @@ def create_training_dataset(_, *args, **kwargs):
     labelFrames.create_training_dataset(*args, **kwargs)
 
 
-###########################################################################################################################
+##########################################################################
 @main.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("config")
 @click.option(
@@ -246,7 +246,7 @@ def train_network(_, *args, **kwargs):
     training.train_network(*args, **kwargs)
 
 
-###########################################################################################################################
+##########################################################################
 @main.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("config")
 @click.option(
@@ -273,7 +273,7 @@ def evaluate_network(_, config, **kwargs):
     evaluate.evaluate_network(config, **kwargs)
 
 
-###########################################################################################################################
+##########################################################################
 
 
 @main.command(context_settings=CONTEXT_SETTINGS)
@@ -320,7 +320,7 @@ def analyze_videos(_, *args, **kwargs):
     #     predict.predict_video(config, video,**kwargs)
 
 
-###########################################################################################################################
+##########################################################################
 
 
 @main.command(context_settings=CONTEXT_SETTINGS)
@@ -431,7 +431,7 @@ def extract_outlier_frames(_, *args, **kwargs):
     outlier_frames.extract_outlier_frames(*args, **kwargs)
 
 
-###########################################################################################################################
+##########################################################################
 @main.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("config")
 @click.pass_context
@@ -450,7 +450,7 @@ def refine_labels(_, config):
     outlier_frames.refine_labels(config)
 
 
-###########################################################################################################################
+##########################################################################
 @main.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("config")
 @click.argument("videos", nargs=-1)
@@ -499,7 +499,7 @@ def create_labeled_video(_, *args, **kwargs):
     make_labeled_video.create_labeled_video(*args, **kwargs)
 
 
-###########################################################################################################################
+##########################################################################
 @main.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("config")
 @click.argument("videos", nargs=-1)
@@ -542,7 +542,7 @@ def plot_trajectories(_, *args, **kwargs):
     plotting.plot_trajectories(*args, **kwargs)
 
 
-###########################################################################################################################
+##########################################################################
 @main.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("cfg-path", nargs=1, type=click.STRING)
 @click.option(
@@ -645,4 +645,4 @@ def export_model(_, *args, **kwargs):
     export_model(*args, **kwargs)
 
 
-###########################################################################################################################
+##########################################################################

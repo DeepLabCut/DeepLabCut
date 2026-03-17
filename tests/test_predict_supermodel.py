@@ -10,6 +10,7 @@
 #
 import numpy as np
 import pytest
+
 from deeplabcut.pose_estimation_tensorflow.modelzoo.api import superanimal_inference
 
 

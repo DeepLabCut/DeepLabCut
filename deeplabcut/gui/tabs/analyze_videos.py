@@ -9,30 +9,30 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 from functools import partial
+
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
-from deeplabcut.gui.utils import move_to_separate_thread
-from deeplabcut.gui.widgets import ConfigEditor
+import deeplabcut
 from deeplabcut.gui.components import (
-    DefaultTab,
     BodypartListWidget,
+    DefaultTab,
     ShuffleSpinBox,
     VideoSelectionWidget,
     _create_grid_layout,
-    _create_label_widget,
     _create_horizontal_layout,
+    _create_label_widget,
     _create_vertical_layout,
 )
-
-import deeplabcut
-from deeplabcut.utils.auxiliaryfunctions import edit_config
+from deeplabcut.gui.utils import move_to_separate_thread
+from deeplabcut.gui.widgets import ConfigEditor
 from deeplabcut.utils import auxfun_multianimal
+from deeplabcut.utils.auxiliaryfunctions import edit_config
 
 
 class AnalyzeVideos(DefaultTab):
     def __init__(self, root, parent, h1_description):
-        super(AnalyzeVideos, self).__init__(root, parent, h1_description)
+        super().__init__(root, parent, h1_description)
 
         self._set_page()
 

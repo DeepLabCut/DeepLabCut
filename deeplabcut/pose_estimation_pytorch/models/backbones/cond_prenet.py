@@ -17,8 +17,8 @@ from deeplabcut.pose_estimation_pytorch.models.backbones.base import (
     BaseBackbone,
 )
 from deeplabcut.pose_estimation_pytorch.models.modules import (  # ColoredKeypointEncoder,; StackedKeypointEncoder,
-    BaseKeypointEncoder,
     KEYPOINT_ENCODERS,
+    BaseKeypointEncoder,
 )
 
 

@@ -17,8 +17,8 @@ import numpy as np
 import torch
 
 from deeplabcut.pose_estimation_pytorch.models.target_generators.base import (
-    BaseGenerator,
     TARGET_GENERATORS,
+    BaseGenerator,
 )
 
 

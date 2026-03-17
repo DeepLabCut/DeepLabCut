@@ -11,6 +11,7 @@
 """Module to display information about the selected shuffle in the GUI"""
 
 from __future__ import annotations
+
 from pathlib import Path
 
 import PySide6.QtCore as QtCore
@@ -67,7 +68,7 @@ class SelectedShuffleDisplay(QtWidgets.QWidget):
 
         try:
             pose_cfg_path = Path(self.root.pose_cfg_path)
-        except ValueError as err:
+        except ValueError:
             self._set_text_error(f"Failed to read shuffle {self._current_index} - check that it exists!")
             return
         except ModuleNotFoundError as err:
@@ -98,7 +99,7 @@ class SelectedShuffleDisplay(QtWidgets.QWidget):
 
         text = f"net type: {self._net_type}  |  engine: {engine_str}"
         if self._engine == Engine.PYTORCH and self._is_top_down:
-            text += f"  |  top-down"
+            text += "  |  top-down"
 
         style = f"margin: 0px 0px {self._row_margin}px 0px;"
         if self._engine != self.root.engine:

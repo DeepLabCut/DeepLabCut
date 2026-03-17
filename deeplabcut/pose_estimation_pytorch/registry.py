@@ -10,10 +10,10 @@
 #
 import inspect
 from functools import partial
-from typing import Any, Dict, Optional
+from typing import Any
 
 
-def build_from_cfg(cfg: Dict, registry: "Registry", default_args: Optional[Dict] = None) -> Any:
+def build_from_cfg(cfg: dict, registry: "Registry", default_args: dict | None = None) -> Any:
     """Builds a module from the configuration dictionary when it represents a class configuration,
     or call a function from the configuration dictionary when it represents a function configuration.
 

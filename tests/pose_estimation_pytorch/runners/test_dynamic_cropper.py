@@ -10,9 +10,8 @@
 #
 """Tests the dynamic cropper"""
 
-import pytest
-
 import numpy as np
+import pytest
 import torch
 
 from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (

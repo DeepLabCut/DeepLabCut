@@ -12,7 +12,6 @@ import os
 import pickle
 import warnings
 from pathlib import Path
-from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -20,29 +19,29 @@ from scipy.optimize import linear_sum_assignment
 from scipy.special import softmax
 from tqdm import tqdm
 
-import deeplabcut.utils.auxiliaryfunctions as auxiliaryfunctions
 import deeplabcut.utils.auxfun_multianimal as auxfun_multianimal
+import deeplabcut.utils.auxiliaryfunctions as auxiliaryfunctions
 from deeplabcut.core import trackingutils
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.inferenceutils import Assembly
-from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_scorer_name,
     list_videos_in_folder,
     parse_snapshot_index_for_analysis,
 )
+from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
 
 
 def convert_detections2tracklets(
     config: str,
-    videos: Union[str, List[str]],
-    videotype: Optional[str] = None,
+    videos: str | list[str],
+    videotype: str | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     overwrite: bool = False,
-    destfolder: Optional[str] = None,
-    ignore_bodyparts: Optional[List[str]] = None,
-    inferencecfg: Optional[dict] = None,
+    destfolder: str | None = None,
+    ignore_bodyparts: list[str] | None = None,
+    inferencecfg: dict | None = None,
     modelprefix="",
     greedy: bool = False,  # TODO(niels): implement greedy assembly during video analysis
     calibrate: bool = False,  # TODO(niels): implement assembly calibration during video analysis
@@ -306,8 +305,8 @@ def _create_tracklets_header(joints, dlc_scorer):
 
 
 def _conv_predictions_to_assemblies(
-    image_names: List[str], predictions: Dict[str, np.ndarray]
-) -> Dict[int, List[Assembly]]:
+    image_names: list[str], predictions: dict[str, np.ndarray]
+) -> dict[int, list[Assembly]]:
     """
     Converts predictions to an assemblies dictionary
     predictions shape (num_animals, num_keypoints, 2 or 3)

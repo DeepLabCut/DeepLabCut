@@ -20,8 +20,8 @@ Licensed under GNU Lesser General Public License v3.0
 
 import os
 from pathlib import Path
-from deeplabcut.utils import auxiliaryfunctions
 
+from deeplabcut.utils import auxiliaryfunctions
 
 # This dictionary maps the model types to the file locations where the models exist.
 MODEL_BASE_PATH = Path("pose_estimation_tensorflow") / "models" / "pretrained"
@@ -75,8 +75,8 @@ def download_weights(modeltype, model_path):
     """
     Downloads the ImageNet pretrained weights for ResNets, MobileNets et al. from TensorFlow...
     """
-    import urllib
     import tarfile
+    import urllib
     from io import BytesIO
 
     target_dir = model_path.parents[0]
@@ -87,7 +87,7 @@ def download_weights(modeltype, model_path):
             url = url + modeltype.replace("_", "-") + ".tar.gz"
         else:
             url = neturls[modeltype]
-        print("Downloading a ImageNet-pretrained model from {}....".format(url))
+        print(f"Downloading a ImageNet-pretrained model from {url}....")
         response = urllib.request.urlopen(url)
         with tarfile.open(fileobj=BytesIO(response.read()), mode="r:gz") as tar:
             tar.extractall(path=target_dir)
@@ -100,8 +100,9 @@ def download_model(modelname, target_dir):
     """
     Downloads a DeepLabCut Model Zoo Project
     """
-    import urllib.request
     import tarfile
+    import urllib.request
+
     from tqdm import tqdm
 
     def show_progress(count, block_size, total_size):
@@ -132,7 +133,7 @@ def download_model(modelname, target_dir):
     if modelname in neturls.keys():
         url = neturls[modelname]
         response = urllib.request.urlopen(url)
-        print("Downloading the model from the DeepLabCut server @Harvard -> Go Crimson!!! {}....".format(url))
+        print(f"Downloading the model from the DeepLabCut server @Harvard -> Go Crimson!!! {url}....")
         total_size = int(response.getheader("Content-Length"))
         pbar = tqdm(unit="B", total=total_size, position=0)
         filename, _ = urllib.request.urlretrieve(url, reporthook=show_progress)
@@ -153,7 +154,9 @@ def set_visible_devices(gputouse: int):
     n_devices = len(physical_devices)
     if gputouse >= n_devices:
         raise ValueError(
-            f"There are {n_devices} available GPUs: {physical_devices}\nPlease choose `gputouse` in {list(range(n_devices))}."
+            f"There are {n_devices} available GPUs: {physical_devices}\nPlease choose `gputouse` in {
+                list(range(n_devices))
+            }."
         )
     tf.config.set_visible_devices(physical_devices[gputouse], "GPU")
 

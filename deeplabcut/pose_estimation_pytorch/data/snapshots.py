@@ -13,12 +13,8 @@
 from __future__ import annotations
 
 import re
-import warnings
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-
-import numpy as np
-import torch
 
 
 @dataclass(frozen=True)
@@ -36,7 +32,7 @@ class Snapshot:
             return str(self.epochs)
 
     @staticmethod
-    def from_path(path: Path) -> "Snapshot":
+    def from_path(path: Path) -> Snapshot:
         best = "-best" in path.stem
         # Use regex to extract epoch number more robustly
         match = re.search(r"-(\d+)\.pt$", path.name)

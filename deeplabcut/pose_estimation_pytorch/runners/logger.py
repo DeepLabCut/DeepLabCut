@@ -14,15 +14,15 @@ import csv
 import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 import torch
 import torchvision.transforms as transforms
 import torchvision.transforms.functional as F
+import yaml
 from torch.utils.data import DataLoader
 from torchvision.utils import draw_bounding_boxes, draw_keypoints
-import yaml
 
 try:
     import wandb
@@ -80,7 +80,7 @@ class BaseLogger(ABC):
         """
 
     @abstractmethod
-    def log(self, metrics: dict[str, Any], step: Optional[int] = None) -> None:
+    def log(self, metrics: dict[str, Any], step: int | None = None) -> None:
         """Logs data from a training run
 
         Args:
@@ -317,7 +317,7 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
 
         logging.info(f"WandB run info saved to {output_path}")
 
-    def log(self, metrics: dict[str, Any], step: Optional[int] = None) -> None:
+    def log(self, metrics: dict[str, Any], step: int | None = None) -> None:
         """Logs metrics from runs
 
         Args:
@@ -413,7 +413,7 @@ class CSVLogger(BaseLogger):
         if self.log_file.exists():
             self._load_existing_data()
 
-    def log(self, metrics: dict[str, Any], step: Optional[int] = None) -> None:
+    def log(self, metrics: dict[str, Any], step: int | None = None) -> None:
         """Logs metrics from runs
 
         Args:
@@ -454,7 +454,7 @@ class CSVLogger(BaseLogger):
         """Loads existing CSV data if the log file exists"""
         logging.info(f"Loading existing CSV data from {self.log_file}")
         try:
-            with open(self.log_file, "r", newline="") as f:
+            with open(self.log_file, newline="") as f:
                 reader = csv.DictReader(f)
 
                 # Update logged metrics from header

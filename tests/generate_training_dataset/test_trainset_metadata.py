@@ -11,6 +11,7 @@
 """Tests for deeplabcut/generate_training_dataset/metadata.py"""
 
 from __future__ import annotations
+
 import pickle
 
 import pytest
@@ -166,7 +167,7 @@ def test_save_metadata_simple(tmpdir, data):
     print(trainset_meta)
 
     trainset_meta.save()
-    with open(meta_path, "r") as f:
+    with open(meta_path) as f:
         meta = YAML().load(f)
     print(data)
     print(meta)

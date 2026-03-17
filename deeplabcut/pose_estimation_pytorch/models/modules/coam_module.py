@@ -9,11 +9,10 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import numpy as np
-
 import torch
 import torch.nn as nn
-from torch.nn import init
 import torchvision.transforms.functional as TF
+from torch.nn import init
 
 
 class CoAMBlock(nn.Module):
@@ -22,7 +21,7 @@ class CoAMBlock(nn.Module):
     """
 
     def __init__(self, spat_dims, channel_list, cond_enc, n_heads=1, channel_only=False):
-        super(CoAMBlock, self).__init__()
+        super().__init__()
         self.att_layers = []
         self.spat_dims = spat_dims
         self.cond_enc = cond_enc
@@ -187,7 +186,7 @@ class SelfDAModule(nn.Module):
 
 class SelfAttentionModule_CoAM(nn.Module):
     def __init__(self, spat_dims, channel_list):
-        super(SelfAttentionModule_CoAM, self).__init__()
+        super().__init__()
         self.att_layers = []
         for i in range(len(spat_dims)):
             att_layer = SelfDAModule(
@@ -220,7 +219,7 @@ class ScaledDotProductAttention(nn.Module):
         :param d_v: Dimensionality of values
         :param h: Number of heads
         """
-        super(ScaledDotProductAttention, self).__init__()
+        super().__init__()
 
         # 'rev': condition is key/value and orig. feature map is query
         if rev:
@@ -297,7 +296,7 @@ class SimplifiedScaledDotProductAttention(nn.Module):
         :param d_v: Dimensionality of values
         :param h: Number of heads
         """
-        super(SimplifiedScaledDotProductAttention, self).__init__()
+        super().__init__()
 
         self.d_model = d_model
         self.d_k = d_model // h

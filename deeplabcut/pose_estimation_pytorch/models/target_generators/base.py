@@ -15,7 +15,7 @@ from abc import ABC, abstractmethod
 import torch
 import torch.nn as nn
 
-from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
+from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 TARGET_GENERATORS = Registry("target_generators", build_func=build_from_cfg)
 

@@ -15,7 +15,7 @@ import pytest
 import torch
 
 import deeplabcut.pose_estimation_pytorch.models as dlc_models
-from deeplabcut.pose_estimation_pytorch.models import CRITERIONS, TARGET_GENERATORS, PREDICTORS
+from deeplabcut.pose_estimation_pytorch.models import CRITERIONS, PREDICTORS, TARGET_GENERATORS
 from deeplabcut.pose_estimation_pytorch.models.criterions import LOSS_AGGREGATORS
 from deeplabcut.pose_estimation_pytorch.models.modules import AdaptBlock, BasicBlock
 

@@ -10,13 +10,14 @@
 #
 from __future__ import annotations
 
+import threading
 import warnings
 from abc import ABCMeta, abstractmethod
-from dataclasses import dataclass, field, asdict
+from collections.abc import Iterable
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Generic, Iterable
-import threading
-from queue import Queue, Empty, Full
+from queue import Empty, Full, Queue
+from typing import Any, Generic
 
 import numpy as np
 import torch
@@ -68,7 +69,7 @@ class MultithreadingConfig:
     timeout: float = 30.0
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "MultithreadingConfig":
+    def from_dict(cls, data: dict[str, Any]) -> MultithreadingConfig:
         return cls(**_merge_defaults(cls, data or {}))
 
     def to_dict(self) -> dict:
@@ -87,7 +88,7 @@ class CompileConfig:
     backend: str = "inductor"
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "CompileConfig":
+    def from_dict(cls, data: dict[str, Any]) -> CompileConfig:
         return cls(**_merge_defaults(cls, data or {}))
 
     def to_dict(self) -> dict:
@@ -104,7 +105,7 @@ class AutocastConfig:
     enabled: bool = False
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "AutocastConfig":
+    def from_dict(cls, data: dict[str, Any]) -> AutocastConfig:
         return cls(**_merge_defaults(cls, data or {}))
 
     def to_dict(self) -> dict:
@@ -124,7 +125,7 @@ class InferenceConfig:
     conditions: dict | None = None
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any] | None) -> "InferenceConfig":
+    def from_dict(cls, data: dict[str, Any] | None) -> InferenceConfig:
         """
         Build an InferenceConfig from a dict, supporting:
           - nested dictionaries
@@ -1035,8 +1036,8 @@ def build_inference_runner(
     if task == Task.DETECT:
         if dynamic is not None:
             raise ValueError(
-                f"The DynamicCropper can only be used for pose estimation; not object "
-                f"detection. Please turn off dynamic cropping."
+                "The DynamicCropper can only be used for pose estimation; not object "
+                "detection. Please turn off dynamic cropping."
             )
         return DetectorInferenceRunner(**kwargs)
 

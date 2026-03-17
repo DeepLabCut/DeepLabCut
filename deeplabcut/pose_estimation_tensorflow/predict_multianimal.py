@@ -21,9 +21,8 @@ from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal as predict
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter
-import pickle
 
 
 def extract_bpt_feature_from_video(
@@ -225,8 +224,8 @@ def AnalyzeMultiAnimalVideo(
 
 def _get_features_dict(raw_coords, features, stride):
     from deeplabcut.pose_tracking_pytorch import (
-        load_features_from_coord,
         convert_coord_from_img_space_to_feature_space,
+        load_features_from_coord,
     )
 
     coords_img_space = np.array([coord[:, :2] for coord in raw_coords])  # only first two columns are useful

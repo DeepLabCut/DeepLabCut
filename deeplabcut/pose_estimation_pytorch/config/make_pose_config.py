@@ -26,7 +26,7 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
 )
 from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.task import Task
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 
 def make_pytorch_pose_config(
@@ -221,12 +221,12 @@ def _add_ctd_conditions(model_cfg: dict, ctd_conditions: int | str | Path | tupl
         if not ctd_conditions.exists():
             raise FileNotFoundError(f"Invalid path: {ctd_conditions}")
         if ctd_conditions.suffix not in (".h5", ".json"):
-            raise ValueError(f"Invalid conditions file extension.")
+            raise ValueError("Invalid conditions file extension.")
         conditions = str(ctd_conditions.resolve())
 
     elif isinstance(ctd_conditions, tuple):
         if len(ctd_conditions) != 2:
-            raise ValueError(f"Invalid conditions tuple length.")
+            raise ValueError("Invalid conditions tuple length.")
         if not isinstance(ctd_conditions[0], int):
             raise TypeError("Conditions shuffle number must be of type int.")
         if isinstance(ctd_conditions[1], int):
@@ -456,7 +456,7 @@ def create_backbone_with_paf_model(
     backbone_output_channels = model_config["model"]["backbone_output_channels"]
 
     # add a bodypart head
-    bodypart_head_config = read_config_as_dict(configs_dir / "base" / f"head_bodyparts_with_paf.yaml")
+    bodypart_head_config = read_config_as_dict(configs_dir / "base" / "head_bodyparts_with_paf.yaml")
     model_config["model"]["heads"] = {
         "bodypart": replace_default_values(
             bodypart_head_config,

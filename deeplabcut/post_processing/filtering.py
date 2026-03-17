@@ -18,7 +18,7 @@ from scipy import signal
 from scipy.interpolate import CubicSpline
 
 from deeplabcut.refine_training_dataset.outlier_frames import FitSARIMAXModel
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 
 def columnwise_spline_interp(data, max_gap=0):

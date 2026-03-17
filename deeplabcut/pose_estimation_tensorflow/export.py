@@ -15,13 +15,12 @@ import shutil
 import tarfile
 from pathlib import Path
 
-import numpy as np
 import ruamel.yaml
 import tensorflow as tf
 
-from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import predict
+from deeplabcut.utils import auxiliaryfunctions
 
 
 def create_deploy_config_template():
@@ -72,7 +71,7 @@ def write_deploy_config(configname, cfg):
             cfg_file[key] = cfg[key]
 
         # Adding default value for variable skeleton and skeleton_color for backward compatibility.
-        if not "skeleton" in cfg.keys():
+        if "skeleton" not in cfg.keys():
             cfg_file["skeleton"] = []
             cfg_file["skeleton_color"] = "black"
         ruamelFile.dump(cfg_file, cf)

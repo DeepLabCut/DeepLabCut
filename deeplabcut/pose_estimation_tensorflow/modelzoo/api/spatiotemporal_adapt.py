@@ -10,9 +10,8 @@
 #
 import glob
 import os
-import io
 from pathlib import Path
-import yaml
+
 from deeplabcut.pose_estimation_tensorflow.modelzoo.api.superanimal_inference import (
     video_inference,
 )

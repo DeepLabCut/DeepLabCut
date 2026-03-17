@@ -22,10 +22,10 @@ from deeplabcut.pose_estimation_pytorch.models.criterions import (
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
 from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
 from deeplabcut.pose_estimation_pytorch.models.weight_init import (
-    BaseWeightInitializer,
     WEIGHT_INIT,
+    BaseWeightInitializer,
 )
-from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
+from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 HEADS = Registry("heads", build_func=build_from_cfg)
 
@@ -81,10 +81,10 @@ class BaseHead(ABC, nn.Module):
 
         if isinstance(criterion, dict):
             if aggregator is None:
-                raise ValueError(f"When multiple criterions are defined, a loss aggregator must also be given")
+                raise ValueError("When multiple criterions are defined, a loss aggregator must also be given")
         else:
             if aggregator is not None:
-                raise ValueError(f"Cannot use a loss aggregator with a single criterion")
+                raise ValueError("Cannot use a loss aggregator with a single criterion")
 
     @abstractmethod
     def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:

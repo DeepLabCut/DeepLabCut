@@ -100,7 +100,7 @@ def load_conditions_for_evaluation(loader: data.Loader, images: list[str]) -> di
         The conditions for the images.
     """
     if loader.pose_task != Task.COND_TOP_DOWN:
-        raise ValueError(f"Conditions can only be loaded for CTD models")
+        raise ValueError("Conditions can only be loaded for CTD models")
 
     # load the conditions config
     condition_cfg = loader.model_cfg["inference"].get("conditions")

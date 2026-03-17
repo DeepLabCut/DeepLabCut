@@ -21,14 +21,15 @@ import scipy.io
 import scipy.ndimage
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
-from deeplabcut.pose_estimation_tensorflow.datasets.factory import PoseDatasetFactory
 from deeplabcut.pose_estimation_tensorflow.datasets import Batch
-from .predict import (
-    setup_pose_prediction,
-    extract_cnn_output,
-    argmax_pose_predict,
-)
+from deeplabcut.pose_estimation_tensorflow.datasets.factory import PoseDatasetFactory
 from deeplabcut.pose_estimation_tensorflow.util import visualize
+
+from .predict import (
+    argmax_pose_predict,
+    extract_cnn_output,
+    setup_pose_prediction,
+)
 
 
 def test_net(visualise, cache_scoremaps):
@@ -50,7 +51,7 @@ def test_net(visualise, cache_scoremaps):
     predictions = np.zeros((num_images,), dtype=np.object)
 
     for k in range(num_images):
-        print("processing image {}/{}".format(k, num_images - 1))
+        print(f"processing image {k}/{num_images - 1}")
 
         batch = dataset.next_batch()
 

@@ -25,19 +25,19 @@ import deeplabcut.generate_training_dataset.metadata as metadata
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.generate_training_dataset import (
-    merge_annotateddatasets,
-    read_image_shape_fast,
-    SplitTrials,
-    MakeTrain_pose_yaml,
-    MakeTest_pose_yaml,
     MakeInference_yaml,
+    MakeTest_pose_yaml,
+    MakeTrain_pose_yaml,
+    SplitTrials,
+    merge_annotateddatasets,
     pad_train_test_indices,
+    read_image_shape_fast,
     validate_shuffles,
 )
 from deeplabcut.utils import (
-    auxiliaryfunctions,
     auxfun_models,
     auxfun_multianimal,
+    auxiliaryfunctions,
 )
 
 
@@ -275,6 +275,7 @@ def create_multianimaltraining_dataset(
         warnings.warn(
             "`windows2linux` has no effect since 2.2.0.4 and will be removed in 2.2.1.",
             FutureWarning,
+            stacklevel=2,
         )
 
     if len(crop_size) != 2 or not all(isinstance(v, int) for v in crop_size):
@@ -321,7 +322,7 @@ def create_multianimaltraining_dataset(
         num_layers = re.findall("dlcr([0-9]*)", net_type)[0]
         if num_layers == "":
             num_layers = 50
-        net_type = "resnet_{}".format(num_layers)
+        net_type = f"resnet_{num_layers}"
         multi_stage = True
 
     dataset_type = "multi-animal-imgaug"
@@ -384,7 +385,7 @@ def create_multianimaltraining_dataset(
         if len(trainIndices) != len(testIndices) != len(Shuffles):
             raise ValueError("Number of Shuffles and train and test indexes should be equal.")
         splits = []
-        for shuffle, (train_inds, test_inds) in enumerate(zip(trainIndices, testIndices)):
+        for shuffle, (train_inds, test_inds) in enumerate(zip(trainIndices, testIndices, strict=False)):
             trainFraction = round(len(train_inds) * 1.0 / (len(train_inds) + len(test_inds)), 2)
             print(f"You passed a split with the following fraction: {int(100 * trainFraction)}%")
             # Now that the training fraction is guaranteed to be correct,
@@ -619,9 +620,11 @@ def convert_cropped_to_standard_dataset(
     delete_crops=True,
     back_up=True,
 ):
-    import pandas as pd
     import pickle
     import shutil
+
+    import pandas as pd
+
     from deeplabcut.generate_training_dataset import trainingsetmanipulation
     from deeplabcut.utils import read_plainconfig, write_config
 

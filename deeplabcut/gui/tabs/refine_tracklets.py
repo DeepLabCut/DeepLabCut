@@ -10,10 +10,12 @@
 #
 import os
 from pathlib import Path
+
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
-from deeplabcut.gui.widgets import ConfigEditor
+import deeplabcut
+from deeplabcut.core import trackingutils
 from deeplabcut.gui.components import (
     DefaultTab,
     ShuffleSpinBox,
@@ -22,15 +24,13 @@ from deeplabcut.gui.components import (
     _create_horizontal_layout,
     _create_label_widget,
 )
-
-import deeplabcut
-from deeplabcut.core import trackingutils
+from deeplabcut.gui.widgets import ConfigEditor
 from deeplabcut.utils.auxiliaryfunctions import GetScorerName
 
 
 class RefineTracklets(DefaultTab):
     def __init__(self, root, parent, h1_description):
-        super(RefineTracklets, self).__init__(root, parent, h1_description)
+        super().__init__(root, parent, h1_description)
         self._set_page()
 
     @property

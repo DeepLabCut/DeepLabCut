@@ -8,26 +8,25 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import numpy as np
 import os
+
+import numpy as np
 import pandas as pd
 import pytest
-from typing import List
-
 from conftest import TEST_DATA_DIR
+from skimage import color, io
+
 from deeplabcut.generate_training_dataset import (
-    read_image_shape_fast,
     SplitTrials,
-    format_training_data,
     format_multianimal_training_data,
-    trainingsetmanipulation,
+    format_training_data,
     multiple_individuals_trainingsetmanipulation,
     parse_video_filenames,
+    read_image_shape_fast,
+    trainingsetmanipulation,
 )
-
 from deeplabcut.utils.auxfun_videos import imread
 from deeplabcut.utils.conversioncode import guarantee_multiindex_rows
-from skimage import color, io
 
 
 def test_read_image_shape_fast(tmp_path):
@@ -106,6 +105,6 @@ def test_format_multianimal_training_data(monkeypatch):
         (["/a/v1.mp4", "/a/v2.mov", "/b/v2.mov", "/b/v3.mp4"], ["v1", "v2", "v3"]),
     ],
 )
-def test_parse_video_filenames(videos: List[str], expected_filenames: List[str]):
+def test_parse_video_filenames(videos: list[str], expected_filenames: list[str]):
     filenames = parse_video_filenames(videos)
     assert filenames == expected_filenames

@@ -11,14 +11,16 @@
 
 import logging
 import os
+import pickle
 import time
+
+import numpy as np
 import torch
+import torch.distributed as dist
 import torch.nn as nn
+
 from ..tracking_utils.meter import AverageMeter
 from ..tracking_utils.metrics import R1_mAP_eval
-import torch.distributed as dist
-import pickle
-import numpy as np
 
 
 def dist(a, b):
@@ -126,13 +128,8 @@ def do_dlc_train(
 
             if (n_iter + 1) % log_period == 0:
                 logger.info(
-                    "Epoch[{}] Iteration[{}/{}] Loss: {:.3f}, , Base Lr: {:.2e}".format(
-                        epoch,
-                        (n_iter + 1),
-                        len(train_loader),
-                        loss_meter.avg,
-                        scheduler._get_lr(epoch)[0],
-                    )
+                    f"Epoch[{epoch}] Iteration[{n_iter + 1}/{len(train_loader)}] Loss: {
+                        loss_meter.avg:.3f}, , Base Lr: {scheduler._get_lr(epoch)[0]:.2e}"
                 )
 
         end_time = time.time()
@@ -144,12 +141,11 @@ def do_dlc_train(
             pass
         else:
             logger.info(
-                "Epoch {} done. Time per batch: {:.3f}[s] Speed: {:.1f}[samples/s]".format(
-                    epoch, time_per_batch, train_loader.batch_size / time_per_batch
-                )
+                f"Epoch {epoch} done. Time per batch: {time_per_batch:.3f}[s] Speed: {
+                    train_loader.batch_size / time_per_batch:.1f}[samples/s]"
             )
 
-        model_name = f"dlc_transreid"
+        model_name = "dlc_transreid"
 
         if epoch % checkpoint_period == 0:
             torch.save(
@@ -158,7 +154,7 @@ def do_dlc_train(
                     "num_kpts": num_kpts,
                     "feature_dim": feature_dim,
                 },
-                os.path.join(ckpt_folder, model_name + "_{}.pth".format(epoch)),
+                os.path.join(ckpt_folder, model_name + f"_{epoch}.pth"),
             )
 
         if epoch % eval_period == 0:
@@ -180,7 +176,7 @@ def do_dlc_train(
                     total_n += anchor_feat.shape[0]
                     total_correct += calc_correct(anchor_feat, pos_feat, neg_feat)
 
-            logger.info("Validation Results - Epoch: {}".format(epoch))
+            logger.info(f"Validation Results - Epoch: {epoch}")
 
             # print (f'validation loss {val_loss/len(val_loader)}')
             test_acc = total_correct / total_n
@@ -210,7 +206,7 @@ def do_dlc_inference(cfg, model, triplet_loss, val_loader, num_query):
 
     if device:
         if torch.cuda.device_count() > 1:
-            print("Using {} GPUs for inference".format(torch.cuda.device_count()))
+            print(f"Using {torch.cuda.device_count()} GPUs for inference")
             model = nn.DataParallel(model)
         model.to(device)
 
@@ -221,7 +217,7 @@ def do_dlc_inference(cfg, model, triplet_loss, val_loader, num_query):
     labels_list = []
     total_n = 0.0
     total_correct = 0.0
-    for n_iter, (anchor, pos, neg) in enumerate(val_loader):
+    for _n_iter, (anchor, pos, neg) in enumerate(val_loader):
         with torch.no_grad():
             anchor = anchor.to(device)
             pos = pos.to(device)
@@ -233,7 +229,7 @@ def do_dlc_inference(cfg, model, triplet_loss, val_loader, num_query):
 
             features_list.append(pos_feat.cpu().detach().numpy())
             features_list.append(neg_feat.cpu().detach().numpy())
-            for i in range(neg.shape[0]):
+            for _i in range(neg.shape[0]):
                 labels_list.append(0)
                 labels_list.append(1)
             total_n += anchor_feat.shape[0]
@@ -269,16 +265,15 @@ def do_dlc_pair_inference(cfg, model, val_loader, num_query):
 
     if device and torch.cuda.is_available():
         if torch.cuda.device_count() > 1:
-            print("Using {} GPUs for inference".format(torch.cuda.device_count()))
+            print(f"Using {torch.cuda.device_count()} GPUs for inference")
             model = nn.DataParallel(model)
         model.to(device)
 
     model.eval()
-    val_loss = 0.0
 
     total_n = 0.0
     total_correct = 0.0
-    for n_iter, ((vec1, gt1), (vec2, gt2)) in enumerate(val_loader):
+    for _n_iter, ((vec1, gt1), (vec2, gt2)) in enumerate(val_loader):
         with torch.no_grad():
             gt1 = gt1.to(device)
             gt2 = gt2.to(device)

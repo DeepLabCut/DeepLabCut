@@ -66,7 +66,7 @@ class SkeletonBuilder:
                     found = True
                     break
         if self.df is None:
-            raise IOError("No labeled data were found.")
+            raise OSError("No labeled data were found.")
 
         self.bpts = self.df.columns.get_level_values("bodyparts").unique()
         if not found:
@@ -149,7 +149,7 @@ class SkeletonBuilder:
         unconnected = [i for i in range(len(self.xy)) if i not in inds_flat]
         if len(unconnected):
             warnings.warn(
-                f"You didn't connect all the bodyparts (which is fine!). This is just a note to let you know."
+                "You didn't connect all the bodyparts (which is fine!). This is just a note to let you know."
             )
         self.cfg["skeleton"] = [tuple(self.bpts[list(pair)]) for pair in self.inds]
         write_config(self.config_path, self.cfg)

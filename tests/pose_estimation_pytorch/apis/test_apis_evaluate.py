@@ -17,7 +17,6 @@ import pytest
 import deeplabcut.pose_estimation_pytorch.apis as apis
 import deeplabcut.pose_estimation_pytorch.data as data
 
-
 PREDICT = Mock()
 
 

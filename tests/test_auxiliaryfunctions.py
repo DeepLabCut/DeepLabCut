@@ -9,7 +9,9 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 from pathlib import Path
+
 import pytest
+
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS
 

@@ -51,7 +51,7 @@ class ShelfManager(ABC):
 
     def keys(self) -> list[str]:
         if not self._open:
-            raise ValueError(f"You must call open() before reading keys!")
+            raise ValueError("You must call open() before reading keys!")
 
         return [k for k in self._db]
 
@@ -69,7 +69,7 @@ class ShelfReader(ShelfManager):
             The item.
         """
         if not self._open:
-            raise ValueError(f"You must call open() before reading data!")
+            raise ValueError("You must call open() before reading data!")
 
         return self._db[item]
 
@@ -113,7 +113,7 @@ class ShelfWriter(ShelfManager):
             identity_scores: The predicted identities, if there are any.
         """
         if not self._open:
-            raise ValueError(f"You must call open() before adding data!")
+            raise ValueError("You must call open() before adding data!")
 
         key = "frame" + str(self._frame_index).zfill(self._str_width)
 
@@ -206,7 +206,7 @@ class FeatureShelfWriter(ShelfWriter):
             features: The features for the bodyparts.
         """
         if not self._open:
-            raise ValueError(f"You must call open() before adding data!")
+            raise ValueError("You must call open() before adding data!")
 
         key = "frame" + str(self._frame_index).zfill(self._str_width)
 

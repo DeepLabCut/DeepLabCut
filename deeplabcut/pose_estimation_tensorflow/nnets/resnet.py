@@ -13,6 +13,7 @@
 #
 
 import re
+
 import tensorflow as tf
 import tf_slim as slim
 from tf_slim.nets import resnet_v1
@@ -20,7 +21,6 @@ from tf_slim.nets import resnet_v1
 from .base import BasePoseNet
 from .factory import PoseNetFactory
 from .layers import prediction_layer
-
 
 net_funcs = {
     "resnet_50": resnet_v1.resnet_v1_50,
@@ -32,7 +32,7 @@ net_funcs = {
 @PoseNetFactory.register("resnet")
 class PoseResnet(BasePoseNet):
     def __init__(self, cfg):
-        super(PoseResnet, self).__init__(cfg)
+        super().__init__(cfg)
 
     def extract_features(self, inputs):
         net_fun = net_funcs[self.cfg["net_type"]]
@@ -53,7 +53,7 @@ class PoseResnet(BasePoseNet):
         scope="pose",
         reuse=None,
     ):
-        out = super(PoseResnet, self).prediction_layers(
+        out = super().prediction_layers(
             features,
             scope,
             reuse,

@@ -17,10 +17,10 @@ Hacked together by / Copyright 2020 Ross Wightman
 
 import logging
 import math
+
 import torch
 
 from .scheduler import Scheduler
-
 
 _logger = logging.getLogger(__name__)
 

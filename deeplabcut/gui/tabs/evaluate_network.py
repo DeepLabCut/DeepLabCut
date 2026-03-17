@@ -11,18 +11,18 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
+
 import matplotlib.image as mpimg
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
 )
 from matplotlib.figure import Figure
-from pathlib import Path
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
 
 import deeplabcut
 from deeplabcut.core.engine import Engine
-from deeplabcut.gui.displays.selected_shuffle_display import SelectedShuffleDisplay
 from deeplabcut.gui.components import (
     BodypartListWidget,
     DefaultTab,
@@ -31,6 +31,7 @@ from deeplabcut.gui.components import (
     _create_label_widget,
     _create_vertical_layout,
 )
+from deeplabcut.gui.displays.selected_shuffle_display import SelectedShuffleDisplay
 from deeplabcut.gui.widgets import ConfigEditor, launch_napari
 from deeplabcut.utils import auxiliaryfunctions
 
@@ -55,7 +56,7 @@ class GridCanvas(QtWidgets.QDialog):
 
 class EvaluateNetwork(DefaultTab):
     def __init__(self, root, parent, h1_description):
-        super(EvaluateNetwork, self).__init__(root, parent, h1_description)
+        super().__init__(root, parent, h1_description)
 
         self.bodyparts_to_use = self.root.all_bodyparts
 

@@ -18,10 +18,10 @@ from __future__ import annotations
 
 import math
 
+import timm.layers as timm_layers
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import timm.layers as timm_layers
 
 from deeplabcut.pose_estimation_pytorch.models.modules.norm import ScaleNorm
 
@@ -91,7 +91,7 @@ class GatedAttentionUnit(nn.Module):
         use_rel_bias=True,
         pos_enc=False,
     ):
-        super(GatedAttentionUnit, self).__init__()
+        super().__init__()
         self.s = s
         self.num_token = num_token
         self.use_rel_bias = use_rel_bias

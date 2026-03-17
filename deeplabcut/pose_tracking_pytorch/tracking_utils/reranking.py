@@ -39,7 +39,7 @@ def re_ranking(probFea, galFea, k1, k2, lambda_value, local_distmat=None, only_l
         distmat.addmm_(1, -2, feat, feat.t())
         original_dist = distmat.cpu().numpy()
         del feat
-        if not local_distmat is None:
+        if local_distmat is not None:
             original_dist = original_dist + local_distmat
     gallery_num = original_dist.shape[0]
     original_dist = np.transpose(original_dist / np.max(original_dist, axis=0))

@@ -11,7 +11,7 @@
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
-from deeplabcut.gui.dlc_params import DLCParams
+import deeplabcut
 from deeplabcut.gui.components import (
     DefaultTab,
     ShuffleSpinBox,
@@ -19,14 +19,13 @@ from deeplabcut.gui.components import (
     _create_horizontal_layout,
     _create_label_widget,
 )
+from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import launch_napari
-
-import deeplabcut
 
 
 class ExtractOutlierFrames(DefaultTab):
     def __init__(self, root, parent, h1_description):
-        super(ExtractOutlierFrames, self).__init__(root, parent, h1_description)
+        super().__init__(root, parent, h1_description)
         self.filelist = []
 
         self._set_page()

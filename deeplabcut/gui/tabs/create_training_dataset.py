@@ -11,8 +11,8 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 import re
+from pathlib import Path
 
 import dlclibrary
 from PySide6 import QtWidgets
@@ -25,14 +25,14 @@ from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.generate_training_dataset import get_existing_shuffle_indices
 from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 from deeplabcut.gui.components import (
+    ConditionsSelectionWidget,
     DefaultTab,
     ShuffleSpinBox,
-    ConditionsSelectionWidget,
+    _create_confirmation_box,
     _create_grid_layout,
     _create_label_widget,
-    set_combo_items,
     _create_message_box,
-    _create_confirmation_box,
+    set_combo_items,
 )
 from deeplabcut.gui.displays.shuffle_metadata_viewer import ShuffleMetadataViewer
 from deeplabcut.gui.dlc_params import DLCParams
@@ -40,8 +40,8 @@ from deeplabcut.gui.widgets import launch_napari
 from deeplabcut.modelzoo import build_weight_init
 from deeplabcut.pose_estimation_pytorch import (
     available_models,
-    is_model_top_down,
     is_model_cond_top_down,
+    is_model_top_down,
 )
 from deeplabcut.utils.auxiliaryfunctions import (
     get_data_and_metadata_filenames,
@@ -51,7 +51,7 @@ from deeplabcut.utils.auxiliaryfunctions import (
 
 class CreateTrainingDataset(DefaultTab):
     def __init__(self, root, parent, h1_description):
-        super(CreateTrainingDataset, self).__init__(root, parent, h1_description)
+        super().__init__(root, parent, h1_description)
 
         self.model_comparison = False
 
@@ -217,7 +217,7 @@ class CreateTrainingDataset(DefaultTab):
                     return
             else:
                 msg = _create_message_box(
-                    f"The training dataset could not be created.",
+                    "The training dataset could not be created.",
                     (
                         f"Shuffle {shuffle} already exists - you can create a new "
                         "training dataset with an unused shuffle index (existing "
@@ -306,7 +306,7 @@ class CreateTrainingDataset(DefaultTab):
                     )
             except ValueError as err:
                 msg = _create_message_box(
-                    f"The training dataset could not be created.",
+                    "The training dataset could not be created.",
                     str(err),
                 )
                 msg.exec_()
@@ -323,7 +323,7 @@ class CreateTrainingDataset(DefaultTab):
                     "    Apple Silicon:\n"
                     "      pip install 'deeplabcut[apple_mchips]'"
                 )
-                msg = _create_message_box(f"The training dataset could not be created.", info_text)
+                msg = _create_message_box("The training dataset could not be created.", info_text)
                 msg.exec_()
                 return
 

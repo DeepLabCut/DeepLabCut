@@ -36,7 +36,7 @@ def _merge_a_into_b(a, b):
                 try:
                     _merge_a_into_b(a[k], b[k])
                 except:
-                    print("Error under config key: {}".format(k))
+                    print(f"Error under config key: {k}")
                     raise
         else:
             b[k] = v
@@ -46,7 +46,7 @@ def cfg_from_file(filename):
     """
     Load a config from file filename and merge it into the default options.
     """
-    with open(filename, "r") as f:
+    with open(filename) as f:
         yaml_cfg = yaml.load(f, Loader=yaml.SafeLoader)
 
     # Update the snapshot path to the corresponding path!
@@ -56,6 +56,7 @@ def cfg_from_file(filename):
 
     # reloading defaults, as they can bleed over from a previous run otherwise
     import importlib
+
     from . import default_config
 
     importlib.reload(default_config)

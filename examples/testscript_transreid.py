@@ -9,13 +9,15 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import os
-import deeplabcut
-import numpy as np
-import pandas as pd
 import pickle
-from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 import random
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+import deeplabcut
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 # MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0", "mobilenet_v2_0.35"]
 MODELS = [

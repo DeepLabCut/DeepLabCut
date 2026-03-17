@@ -11,26 +11,29 @@
 
 
 import logging
-import numpy as np
 import os
+
+import numpy as np
 import scipy.io as sio
+
 from deeplabcut.utils.auxfun_videos import imread, imresize
 from deeplabcut.utils.conversioncode import robust_split_path
+
 from .factory import PoseDatasetFactory
 from .pose_base import BasePoseDataset
 from .utils import (
-    DataItem,
-    mirror_joints_map,
-    crop_image,
     Batch,
+    DataItem,
+    crop_image,
     data_to_input,
+    mirror_joints_map,
 )
 
 
 @PoseDatasetFactory.register("deterministic")
 class DeterministicPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
-        super(DeterministicPoseDataset, self).__init__(cfg)
+        super().__init__(cfg)
         self.data = self.load_dataset()
         self.num_images = len(self.data)
         if self.cfg["mirror"]:

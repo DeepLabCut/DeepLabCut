@@ -8,14 +8,16 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import numpy as np
 import os
 import pickle
+from copy import deepcopy
+
+import numpy as np
 import pytest
 from conftest import TEST_DATA_DIR
-from copy import deepcopy
-from deeplabcut.core import inferenceutils
 from scipy.spatial.distance import squareform
+
+from deeplabcut.core import inferenceutils
 
 
 def test_conv_square_to_condensed_indices():

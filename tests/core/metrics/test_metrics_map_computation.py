@@ -267,7 +267,7 @@ def _evaluate(gt: dict[str, np.ndarray], pred: dict[str, np.ndarray]):
     coco_pred = _to_coco_predictions(coco_gt, pred, bbox_margin=0)
     coco_oks = eval_coco(coco_gt, coco_pred, num_joints)
     print(20 * "-")
-    print(f"dlc mAP:")
+    print("dlc mAP:")
     for k, v in oks.items():
         print(k)
         print(v)
@@ -395,5 +395,5 @@ def eval_coco(
         coco_eval.summarize()
         return float(coco_eval.stats[0])
 
-    except ModuleNotFoundError as err:
-        print(f"pycocotools is not installed")
+    except ModuleNotFoundError:
+        print("pycocotools is not installed")

@@ -100,7 +100,7 @@ refine_labels = label_frames
 
 class LabelFrames(DefaultTab):
     def __init__(self, root, parent, h1_description):
-        super(LabelFrames, self).__init__(root, parent, h1_description)
+        super().__init__(root, parent, h1_description)
 
         self._set_page()
 

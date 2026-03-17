@@ -12,20 +12,19 @@ from __future__ import annotations
 
 import logging
 import random
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 import albumentations as A
 import numpy as np
 import pandas as pd
-
 from torchvision.models import detection
 from torchvision.models.detection import (
-    fasterrcnn_resnet50_fpn,
-    fasterrcnn_mobilenet_v3_large_fpn,
-    FasterRCNN_ResNet50_FPN_Weights,
-    FasterRCNN_ResNet50_FPN_V2_Weights,
     FasterRCNN_MobileNet_V3_Large_FPN_Weights,
+    FasterRCNN_ResNet50_FPN_V2_Weights,
+    FasterRCNN_ResNet50_FPN_Weights,
+    fasterrcnn_mobilenet_v3_large_fpn,
+    fasterrcnn_resnet50_fpn,
 )
 
 from deeplabcut.core.config import read_config_as_dict
@@ -42,8 +41,8 @@ from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
 )
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import (
     build_bottom_up_preprocessor,
-    build_top_down_preprocessor,
     build_conditional_top_down_preprocessor,
+    build_top_down_preprocessor,
 )
 from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
@@ -51,13 +50,13 @@ from deeplabcut.pose_estimation_pytorch.models.detectors.filtered_detector impor
     FilteredDetector,
 )
 from deeplabcut.pose_estimation_pytorch.runners import (
-    build_inference_runner,
     CTDTrackingConfig,
     DetectorInferenceRunner,
     DynamicCropper,
     InferenceRunner,
     PoseInferenceRunner,
     TopDownDynamicCropper,
+    build_inference_runner,
 )
 from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import (
@@ -185,7 +184,7 @@ def get_model_snapshots(
         all_snapshots = snapshot_manager.snapshots()
         snapshots = [s for s in all_snapshots if s.path.stem in snapshot_filter]
         if len(snapshots) != len(snapshot_filter):
-            print(f"Warning: could not find all `snapshots_to_evaluate`.")
+            print("Warning: could not find all `snapshots_to_evaluate`.")
             print(f"  Requested snapshots: {snapshot_filter}")
             print(f"  Found snapshots: {[s.path.stem for s in all_snapshots]}")
             print(f"  Snapshots returned: {[s.path.stem for s in snapshots]}")

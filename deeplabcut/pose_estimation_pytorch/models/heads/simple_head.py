@@ -18,8 +18,8 @@ from deeplabcut.pose_estimation_pytorch.models.criterions import (
     BaseLossAggregator,
 )
 from deeplabcut.pose_estimation_pytorch.models.heads.base import (
-    BaseHead,
     HEADS,
+    BaseHead,
     WeightConversionMixin,
 )
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor

@@ -9,10 +9,11 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import os
+
 import pytest
 from conftest import TEST_DATA_DIR
-from deeplabcut.utils.auxfun_videos import VideoWriter
 
+from deeplabcut.utils.auxfun_videos import VideoWriter
 
 POS_FRAMES = 1  # Equivalent to cv2.CAP_PROP_POS_FRAMES
 

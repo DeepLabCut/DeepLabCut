@@ -23,16 +23,16 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.collections import LineCollection
 from matplotlib.colors import Colormap
-import matplotlib.patches as patches
-from skimage import io, color
+from skimage import color, io
 from tqdm import trange
 
-from deeplabcut.utils import auxiliaryfunctions, auxfun_videos
+from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
 
 
 def get_cmap(n: int, name: str = "hsv") -> Colormap:
@@ -57,12 +57,14 @@ def make_labeled_image(
     bodyparts,
     colors,
     cfg,
-    labels=["+", ".", "x"],
+    labels=None,
     scaling=1,
     ax=None,
 ):
     """Creating a labeled image with the original human labels, as well as the DeepLabCut's!"""
 
+    if labels is None:
+        labels = ["+", ".", "x"]
     alphavalue = cfg["alphavalue"]  # .5
     dotsize = cfg["dotsize"]  # =15
 
@@ -73,7 +75,7 @@ def make_labeled_image(
             h, w = np.shape(frame)
         _, ax = prepare_figure_axes(w, h, scaling)
     ax.imshow(frame, "gray")
-    for scorerindex, loopscorer in enumerate(Scorers):
+    for _scorerindex, loopscorer in enumerate(Scorers):
         for bpindex, bp in enumerate(bodyparts):
             if np.isfinite(
                 DataCombined[loopscorer][bp]["y"].iloc[imagenr] + DataCombined[loopscorer][bp]["x"].iloc[imagenr]
@@ -123,7 +125,7 @@ def make_multianimal_labeled_image(
     dotsize: float | int = 12,
     alphavalue: float = 0.7,
     pcutoff: float = 0.6,
-    labels: list = ["+", ".", "x"],
+    labels: list = None,
     ax: plt.Axes | None = None,
     bounding_boxes: tuple[np.ndarray, np.ndarray] | None = None,
     bboxes_cutoff: float = 0.6,
@@ -154,13 +156,15 @@ def make_multianimal_labeled_image(
         matplotlib Axes object with plotted labels and predictions.
     """
 
+    if labels is None:
+        labels = ["+", ".", "x"]
     if ax is None:
         h, w, _ = np.shape(frame)
         _, ax = prepare_figure_axes(w, h)
     ax.imshow(frame, "gray")
 
     if bounding_boxes is not None:
-        for i, (bbox, bbox_score) in enumerate(zip(bounding_boxes[0], bounding_boxes[1])):
+        for i, (bbox, bbox_score) in enumerate(zip(bounding_boxes[0], bounding_boxes[1], strict=False)):
             bbox_origin = (bbox[0], bbox[1])
             (bbox_width, bbox_height) = (bbox[2], bbox[3])
             if isinstance(bboxes_color, Colormap):
@@ -180,7 +184,7 @@ def make_multianimal_labeled_image(
             )
             ax.add_patch(rectangle)
 
-    for n, data in enumerate(zip(coords_truth, coords_pred, probs_pred)):
+    for n, data in enumerate(zip(coords_truth, coords_pred, probs_pred, strict=False)):
         color = colors(n)
         coord_gt, coord_pred, prob_pred = data
 
@@ -334,7 +338,7 @@ def make_labeled_images_from_dataframe(
     draw_skeleton = draw_skeleton and cfg["skeleton"]  # Only draw if a skeleton is defined
 
     if color_by == "bodypart":
-        map_ = bodyparts.map(dict(zip(bodypart_names, range(nbodyparts))))
+        map_ = bodyparts.map(dict(zip(bodypart_names, range(nbodyparts), strict=False)))
         cmap = get_cmap(nbodyparts, cfg["colormap"])
         colors = cmap(map_)
     elif color_by == "individual":
@@ -343,7 +347,7 @@ def make_labeled_images_from_dataframe(
             individual_names = individuals.unique().to_list()
             nindividuals = len(individual_names)
             individuals = individuals[::2]
-            map_ = individuals.map(dict(zip(individual_names, range(nindividuals))))
+            map_ = individuals.map(dict(zip(individual_names, range(nindividuals), strict=False)))
             cmap = get_cmap(nindividuals, cfg["colormap"])
             colors = cmap(map_)
         except KeyError as e:
@@ -360,8 +364,8 @@ def make_labeled_images_from_dataframe(
                     match1.append(j)
                 elif bp == bp2:
                     match2.append(j)
-            bones.extend(zip(match1, match2))
-    ind_bones = tuple(zip(*bones))
+            bones.extend(zip(match1, match2, strict=False))
+    ind_bones = tuple(zip(*bones, strict=False))
 
     images_list = [os.path.join(cfg["project_path"], *tuple_) for tuple_ in df.index.tolist()]
     if not destfolder:
@@ -396,7 +400,7 @@ def make_labeled_images_from_dataframe(
             if img.ndim == 2 or img.shape[-1] == 1:
                 img = color.gray2rgb(ic[i])
             im.set_data(img)
-            for pt, coord in zip(pts, coords):
+            for pt, coord in zip(pts, coords, strict=False):
                 pt.set_data(*np.expand_dims(coord, axis=1))
             if ind_bones:
                 coll.set_segments(segs[ind])
@@ -417,7 +421,7 @@ def make_labeled_images_from_dataframe(
             h, w = image.shape[:2]
             fig, ax = prepare_figure_axes(w, h, scale, dpi)
             ax.imshow(image)
-            for coord, c in zip(coords, colors):
+            for coord, c in zip(coords, colors, strict=False):
                 ax.plot(*coord, keypoint, ms=s, alpha=alpha, color=c)
             if ind_bones:
                 coll = LineCollection(segs[ind], colors=cfg["skeleton_color"], alpha=alpha)
@@ -503,7 +507,7 @@ def plot_evaluation_results(
         try:
             ground_truth = df_gt.to_numpy().reshape((individuals, bodyparts, 2))
             predictions = df_predictions.to_numpy().reshape((individuals, bodyparts, 3))
-        except ValueError as e:
+        except ValueError:
             # Handle cases where the actual data size doesn't match expected shape
             actual_size_gt = df_gt.size
             actual_size_pred = df_predictions.size
@@ -514,7 +518,7 @@ def plot_evaluation_results(
             print(f"  Expected: {individuals} individuals, {bodyparts} bodyparts")
             print(f"  Ground truth: {actual_size_gt} elements (expected {expected_size_gt})")
             print(f"  Predictions: {actual_size_pred} elements (expected {expected_size_pred})")
-            print(f"  Skipping visualization for this image")
+            print("  Skipping visualization for this image")
             continue
 
         bboxes = bounding_boxes.get(row_index)
@@ -528,7 +532,7 @@ def plot_evaluation_results(
                 unique_predictions = (
                     row_unique[model_name].to_numpy().reshape((unique_individuals, unique_bodyparts, 3))
                 )
-            except ValueError as e:
+            except ValueError:
                 # Handle cases where unique bodyparts reshape fails
                 print(f"Warning: Unique bodyparts reshape failed for {image}, skipping unique bodyparts")
                 plot_unique_bodyparts = False

@@ -29,7 +29,7 @@ class SingleDLCPoseDataset(BaseDLCPoseDataset):
     """
 
     def __init__(self, proj_root, dataset_name, shuffle=1, modelprefix=""):
-        super(SingleDLCPoseDataset, self).__init__(proj_root, dataset_name, shuffle=shuffle, modelprefix=modelprefix)
+        super().__init__(proj_root, dataset_name, shuffle=shuffle, modelprefix=modelprefix)
 
         # overriding max_individuals
         self.meta["max_individuals"] = 1

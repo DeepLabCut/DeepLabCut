@@ -19,8 +19,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from deeplabcut.pose_estimation_pytorch.models.criterions.base import (
-    BaseCriterion,
     CRITERIONS,
+    BaseCriterion,
 )
 
 

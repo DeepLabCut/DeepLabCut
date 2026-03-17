@@ -11,7 +11,8 @@
 from __future__ import annotations
 
 import warnings
-from typing import Any, Iterable, Sequence
+from collections.abc import Iterable, Sequence
+from typing import Any
 
 import albumentations as A
 import cv2

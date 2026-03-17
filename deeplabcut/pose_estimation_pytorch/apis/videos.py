@@ -43,7 +43,7 @@ from deeplabcut.pose_estimation_pytorch.runners import (
 from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
-from deeplabcut.utils import auxiliaryfunctions, VideoReader
+from deeplabcut.utils import VideoReader, auxiliaryfunctions
 
 
 class VideoIterator(VideoReader):

@@ -80,8 +80,8 @@ def merge_annotateddatasets(cfg):
 
 class MaDLCDataFrame(BasePoseDataset):
     def __init__(self, proj_root, dataset_name):
-        super(MaDLCDataFrame, self).__init__()
-        assert proj_root != None and dataset_name != None
+        super().__init__()
+        assert proj_root is not None and dataset_name is not None
         self.proj_root = proj_root
         self.dataset_name = dataset_name
         self.meta["dataset_name"] = dataset_name
@@ -181,7 +181,7 @@ class MaDLCDataFrame(BasePoseDataset):
 
             image_id += 1
 
-            for individual_id, individual in enumerate(individuals):
+            for _individual_id, individual in enumerate(individuals):
                 category_id = 0
                 try:
                     kpts = data.xs(individual, level="individuals").to_numpy().reshape((-1, 2))

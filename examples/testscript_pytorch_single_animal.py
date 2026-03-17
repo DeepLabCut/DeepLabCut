@@ -4,17 +4,17 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import deeplabcut.utils.auxiliaryfunctions as af
-from deeplabcut.compat import Engine
-
 from utils import (
+    SyntheticProjectParameters,
     cleanup,
     copy_project_for_test,
     create_fake_project,
     log_step,
     run,
-    SyntheticProjectParameters,
 )
+
+import deeplabcut.utils.auxiliaryfunctions as af
+from deeplabcut.compat import Engine
 
 
 def main(

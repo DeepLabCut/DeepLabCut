@@ -57,7 +57,7 @@ def _load_metadata(cfg: dict) -> list[str]:
         trainset_meta = metadata.TrainingDatasetMetadata.create(cfg)
         trainset_meta.save()
 
-    with open(metadata_path, "r") as file:
+    with open(metadata_path) as file:
         raw_metadata = file.read()
 
     return raw_metadata.split("\n")

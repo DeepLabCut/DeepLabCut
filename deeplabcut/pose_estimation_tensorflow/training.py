@@ -149,11 +149,11 @@ def train_network(
     if allow_growth:
         os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
 
-    import tensorflow as tf
-
     # reload logger.
     import importlib
     import logging
+
+    import tensorflow as tf
 
     importlib.reload(logging)
     logging.shutdown()
@@ -185,15 +185,17 @@ def train_network(
         cfg_dlc = auxiliaryfunctions.read_plainconfig(poseconfigfile)
 
         if superanimal_name != "":
-            from deeplabcut.modelzoo.utils import parse_available_supermodels
-            from dlclibrary.dlcmodelzoo.modelzoo_download import (
-                download_huggingface_model,
-                MODELOPTIONS,
-            )
             import glob
 
+            from dlclibrary.dlcmodelzoo.modelzoo_download import (
+                MODELOPTIONS,
+                download_huggingface_model,
+            )
+
+            from deeplabcut.modelzoo.utils import parse_available_supermodels
+
             dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
-            supermodels = parse_available_supermodels()
+            parse_available_supermodels()
             weight_folder = str(
                 Path(dlc_root_path)
                 / "pose_estimation_tensorflow"

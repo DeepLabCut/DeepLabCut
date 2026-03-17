@@ -14,7 +14,9 @@
 
 import numpy as np
 import tensorflow as tf
+
 from deeplabcut.pose_estimation_tensorflow.nnets.factory import PoseNetFactory
+
 from .openvino.session import OpenVINOSession
 
 

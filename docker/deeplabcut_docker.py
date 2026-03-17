@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DeepLabCut2.0-2.2 Toolbox (deeplabcut.org)
 © A. & M. Mathis Labs

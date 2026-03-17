@@ -40,7 +40,7 @@ class MultiSourceDataset:
         names = []
         for dataset in datasets:
             # Must project datasets to same keypoint space before merging
-            if table_path != None:
+            if table_path is not None:
                 dataset.project_with_conversion_table(table_path)
             name = dataset.meta["dataset_name"]
             names.append(name)
@@ -82,7 +82,8 @@ class MultiSourceDataset:
 
         species_set = set()
         for dataset_name, dataset in self.name2genericdataset.items():
-            # I could of course do this during merge to save compute, but doing it here makes the logic cleaner to understand
+            # I could of course do this during merge to save compute, but doing it
+            # here makes the logic cleaner to understand
             total_images = dataset.generic_train_images + dataset.generic_test_images
 
             for image in total_images:
@@ -118,7 +119,7 @@ class MultiSourceDataset:
             print("images-annotations", image_ids - annotation_image_ids)
             print("annotations-images", annotation_image_ids - image_ids)
 
-            warnings.warn("annotation and image ids do not match")
+            warnings.warn("annotation and image ids do not match", stacklevel=2)
 
             # This is constrain is too hard
             # assert len(annotation_image_ids - image_ids) == 0, "You can't have annotation on non-existed images"
@@ -169,7 +170,7 @@ class MultiSourceDataset:
         from functools import reduce
 
         count = 0
-        for k, v in dataset_id_pool.items():
+        for _k, v in dataset_id_pool.items():
             count += len(v)
         print("size of the summation", count)
         union = reduce(set.union, dataset_id_pool.values())
@@ -188,7 +189,7 @@ class MultiSourceDataset:
         merged_train_annotations = []
         merged_test_annotations = []
 
-        for dataset_name, dataset in name2dataset.items():
+        for _dataset_name, dataset in name2dataset.items():
             train_images = dataset.generic_train_images
             test_images = dataset.generic_test_images
             train_annotations = dataset.generic_train_annotations

@@ -17,7 +17,9 @@ See https://openaccess.thecvf.com/content/WACV2021/html/Mathis_Pretraining_Boost
 """
 
 import tensorflow as tf
+
 import deeplabcut.pose_estimation_tensorflow.backbones.efficientnet_builder as eff
+
 from .base import BasePoseNet
 from .factory import PoseNetFactory
 
@@ -25,7 +27,7 @@ from .factory import PoseNetFactory
 @PoseNetFactory.register("efficientnet")
 class PoseEfficientNet(BasePoseNet):
     def __init__(self, cfg):
-        super(PoseEfficientNet, self).__init__(cfg)
+        super().__init__(cfg)
         if "use_batch_norm" not in self.cfg:
             self.cfg["use_batch_norm"] = False
         if "use_drop_out" not in self.cfg:

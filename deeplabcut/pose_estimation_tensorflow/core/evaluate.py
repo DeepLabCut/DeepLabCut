@@ -13,7 +13,6 @@
 import argparse
 import os
 from pathlib import Path
-from typing import List, Union
 
 import numpy as np
 import pandas as pd
@@ -58,8 +57,9 @@ def calculatepafdistancebounds(config, shuffle=0, trainingsetindex=0, modelprefi
 
     """
     import os
-    from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+
     from deeplabcut.pose_estimation_tensorflow.config import load_config
+    from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
     # Read file path for pose_config file. >> pass it on
     cfg = auxiliaryfunctions.read_config(config)
@@ -106,7 +106,7 @@ def calculatepafdistancebounds(config, shuffle=0, trainingsetindex=0, modelprefi
         jointnames = [test_pose_cfg["all_joints_names"][i] for i in range(len(test_pose_cfg["all_joints"]))]
         path_inferencebounds_config = Path(modelfolder) / "test" / "inferencebounds.yaml"
         inferenceboundscfg = {}
-        for pi, edge in enumerate(partaffinityfield_graph):
+        for _pi, edge in enumerate(partaffinityfield_graph):
             j1, j2 = jointnames[edge[0]], jointnames[edge[1]]
             ds_within = []
             ds_across = []
@@ -269,7 +269,7 @@ def return_evaluate_network_data(
         test_pose_cfg = load_config(str(path_test_config))
     except FileNotFoundError:
         raise FileNotFoundError(
-            "It seems the model for shuffle %s and trainFraction %s does not exist." % (shuffle, trainFraction)
+            f"It seems the model for shuffle {shuffle} and trainFraction {trainFraction} does not exist."
         )
 
     train_pose_cfg = load_config(str(path_train_config))
@@ -279,7 +279,7 @@ def return_evaluate_network_data(
     )
 
     ########################### RESCALING (to global scale)
-    if rescale == True:
+    if rescale:
         scale = test_pose_cfg["global_scale"]
         print("Rescaling Data to ", scale)
         Data = (
@@ -347,7 +347,9 @@ def return_evaluate_network_data(
             resultsfilename,
             DLCscorer,
         ) = auxiliaryfunctions.check_if_not_evaluated(str(evaluationfolder), DLCscorer, DLCscorerlegacy, snapshot_name)
-        # resultsfilename=os.path.join(str(evaluationfolder),DLCscorer + '-' + str(Snapshots[snapindex])+  '.h5') # + '-' + str(snapshot)+  ' #'-' + Snapshots[snapindex]+  '.h5')
+        # resultsfilename=os.path.join(str(evaluationfolder),DLCscorer + '-' +
+        # str(Snapshots[snapindex])+  '.h5') # + '-' + str(snapshot)+  ' #'-' +
+        # Snapshots[snapindex]+  '.h5')
         print(resultsfilename)
         resultsfns.append(resultsfilename)
         if not returnjustfns:
@@ -366,7 +368,7 @@ def return_evaluate_network_data(
                 trainerror = np.nanmean(RMSE.iloc[trainIndices].values.flatten())
                 testerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[testIndices].values.flatten())
                 trainerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[trainIndices].values.flatten())
-                if show_errors == True:
+                if show_errors:
                     print(
                         "Results for",
                         trainingsiterations,
@@ -406,7 +408,7 @@ def return_evaluate_network_data(
                 results.append(r)
             else:
                 print("Model not trained/evaluated!")
-            if fulldata == True:
+            if fulldata:
                 DATA.append(
                     [
                         DataMachine,
@@ -427,7 +429,7 @@ def return_evaluate_network_data(
     if returnjustfns:
         return resultsfns
     else:
-        if fulldata == True:
+        if fulldata:
             return DATA, results
         else:
             return results
@@ -436,8 +438,8 @@ def return_evaluate_network_data(
 def keypoint_error(
     df_error: pd.DataFrame,
     df_error_p_cutoff: pd.DataFrame,
-    train_indices: List[int],
-    test_indices: List[int],
+    train_indices: list[int],
+    test_indices: list[int],
 ) -> pd.DataFrame:
     """Computes the RMSE error for each bodypart
 
@@ -484,7 +486,7 @@ def keypoint_error(
 
 def evaluate_network(
     config,
-    Shuffles=[1],
+    Shuffles=None,
     trainingsetindex=0,
     plotting=False,
     show_errors=True,
@@ -493,7 +495,7 @@ def evaluate_network(
     rescale=False,
     modelprefix="",
     per_keypoint_evaluation: bool = False,
-    snapshots_to_evaluate: List[str] = None,
+    snapshots_to_evaluate: list[str] = None,
 ):
     """Evaluates the network.
 
@@ -584,6 +586,8 @@ def evaluate_network(
 
     Note: This defaults to standard plotting for single-animal projects.
     """
+    if Shuffles is None:
+        Shuffles = [1]
     if plotting not in (True, False, "bodypart", "individual"):
         raise ValueError(f"Unknown value for `plotting`={plotting}")
 
@@ -610,12 +614,13 @@ def evaluate_network(
             snapshots_to_evaluate=snapshots_to_evaluate,
         )
     else:
-        from deeplabcut.utils.auxfun_videos import imread, imresize
-        from deeplabcut.pose_estimation_tensorflow.core import predict
+        import tensorflow as tf
+
         from deeplabcut.pose_estimation_tensorflow.config import load_config
+        from deeplabcut.pose_estimation_tensorflow.core import predict
         from deeplabcut.pose_estimation_tensorflow.datasets.utils import data_to_input
         from deeplabcut.utils import auxiliaryfunctions, conversioncode
-        import tensorflow as tf
+        from deeplabcut.utils.auxfun_videos import imread, imresize
 
         # If a string was passed in, auto-convert to True for backward compatibility
         plotting = bool(plotting)
@@ -977,9 +982,9 @@ def make_results_file(final_result, evaluationfolder, DLCscorer):
 
 
 def get_available_requested_snapshots(
-    requested_snapshots: List[str],
-    available_snapshots: List[str],
-) -> List[str]:
+    requested_snapshots: list[str],
+    available_snapshots: list[str],
+) -> list[str]:
     """
     Intersects the requested snapshot names with the available snapshots.
 
@@ -1002,9 +1007,9 @@ def get_available_requested_snapshots(
 
 
 def get_snapshots_by_index(
-    idx: Union[int, str],
-    available_snapshots: List[str],
-) -> List[str]:
+    idx: int | str,
+    available_snapshots: list[str],
+) -> list[str]:
     """
     Assume available_snapshots is ordered in ascending order. Returns snapshot names.
     """

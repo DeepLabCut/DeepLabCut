@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # DeepLabCut Toolbox (deeplabcut.org)
 # © A. & M.W. Mathis Labs
@@ -42,10 +41,12 @@ task = "TEST-deterministic"  # Enter the name of your experiment Task
 scorer = "Alex"  # Enter the name of the experimenter/labeler
 
 
-import os, subprocess, deeplabcut
-from pathlib import Path
-import pandas as pd
+import os
+
 import numpy as np
+import pandas as pd
+
+import deeplabcut
 
 print("Imported DLC!")
 basepath = os.path.dirname(os.path.abspath("testscript.py"))

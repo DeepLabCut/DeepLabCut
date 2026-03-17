@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 
 import torch.nn as nn
 
-from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
+from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 
 def _build_weight_init(cfg: str | dict, **kwargs) -> BaseWeightInitializer:

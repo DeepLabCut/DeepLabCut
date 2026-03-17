@@ -12,8 +12,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 from ruamel.yaml import YAML
 
@@ -26,7 +26,7 @@ def read_config_as_dict(config_path: str | Path) -> dict:
     Returns:
         The configuration file with pure Python classes
     """
-    with open(config_path, "r") as f:
+    with open(config_path) as f:
         cfg = YAML(typ="safe", pure=True).load(f)
 
     return cfg

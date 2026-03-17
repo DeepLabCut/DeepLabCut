@@ -18,7 +18,7 @@ import torch
 import torch.nn as nn
 import torchvision.ops as ops
 
-from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
+from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 BLOCKS = Registry("blocks", build_func=build_from_cfg)
 
@@ -88,7 +88,7 @@ class BasicBlock(BaseBlock):
         downsample: nn.Module | None = None,
         dilation: int = 1,
     ):
-        super(BasicBlock, self).__init__()
+        super().__init__()
         self.conv1 = nn.Conv2d(
             in_channels,
             out_channels,
@@ -167,7 +167,7 @@ class Bottleneck(BaseBlock):
         downsample: nn.Module | None = None,
         dilation: int = 1,
     ):
-        super(Bottleneck, self).__init__()
+        super().__init__()
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(out_channels, momentum=self.bn_momentum)
         self.conv2 = nn.Conv2d(
@@ -246,7 +246,7 @@ class AdaptBlock(BaseBlock):
         dilation: int = 1,
         deformable_groups: int = 1,
     ):
-        super(AdaptBlock, self).__init__()
+        super().__init__()
         regular_matrix = torch.tensor([[-1, -1, -1, 0, 0, 0, 1, 1, 1], [-1, 0, 1, -1, 0, 1, -1, 0, 1]])
         self.register_buffer("regular_matrix", regular_matrix.float())
         self.downsample = downsample

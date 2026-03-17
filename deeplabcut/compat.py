@@ -12,8 +12,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 import numpy as np
 from ruamel.yaml import YAML
@@ -1960,7 +1960,7 @@ def _load_config(config: str) -> dict:
     if not config_path.exists():
         raise FileNotFoundError(f"Config {config} is not found. Please make sure that the file exists.")
 
-    with open(config, "r") as f:
+    with open(config) as f:
         project_config = YAML(typ="safe", pure=True).load(f)
 
     return project_config

@@ -11,7 +11,7 @@
 
 import torch
 import torch.nn.functional as F
-from einops import rearrange, repeat
+from einops import rearrange
 
 
 class Residual(torch.nn.Module):

@@ -8,13 +8,15 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import numpy as np
-import pandas as pd
 import pickle
 import re
+
+import numpy as np
+import pandas as pd
+from tqdm import trange
+
 from deeplabcut.post_processing import columnwise_spline_interp
 from deeplabcut.utils import auxiliaryfunctions
-from tqdm import trange
 
 
 class TrackletManager:
@@ -81,7 +83,7 @@ class TrackletManager:
         # Sort tracklets by length to prioritize greater continuity
         temp = sorted(tracklets.values(), key=len)
         if not len(temp):
-            raise IOError("Tracklets are empty.")
+            raise OSError("Tracklets are empty.")
 
         get_frame_ind = lambda s: int(re.findall(r"\d+", s)[0])
 

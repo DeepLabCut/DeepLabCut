@@ -25,7 +25,7 @@ import cv2
 import numpy as np
 
 
-class VideoProcessor(object):
+class VideoProcessor:
     """
     Base class for a video processing unit, implementation is required for video loading and saving
 
@@ -128,7 +128,7 @@ class VideoProcessorCV(VideoProcessor):
     """
 
     def __init__(self, *args, **kwargs):
-        super(VideoProcessorCV, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_video(self):
         return cv2.VideoCapture(self.fname)

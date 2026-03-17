@@ -20,7 +20,7 @@ from deeplabcut.utils import auxiliaryfunctions
 
 class BaseDLCPoseDataset(BasePoseDataset):
     def __init__(self, proj_root, dataset_name, shuffle=1, modelprefix=""):
-        super(BaseDLCPoseDataset, self).__init__()
+        super().__init__()
 
         assert proj_root != None and dataset_name != None
 

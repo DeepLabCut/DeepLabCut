@@ -21,13 +21,10 @@ Licensed under GNU Lesser General Public License v3.0
 from __future__ import annotations
 
 import os
-import typing
 import pickle
 import warnings
 from pathlib import Path
-from typing import List
 
-import numpy as np
 import pandas as pd
 import ruamel.yaml.representer
 import yaml
@@ -35,7 +32,7 @@ from ruamel.yaml import YAML
 
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.trackingutils import TRACK_METHODS
-from deeplabcut.utils import auxfun_videos, auxfun_multianimal
+from deeplabcut.utils import auxfun_multianimal, auxfun_videos
 
 
 def create_config_template(multianimal=False):
@@ -206,7 +203,7 @@ def read_config(configname):
     path = Path(configname)
     if os.path.exists(path):
         try:
-            with open(path, "r") as f:
+            with open(path) as f:
                 cfg = ruamelFile.load(f)
                 curr_dir = str(Path(configname).parent.resolve())
 
@@ -226,7 +223,7 @@ def read_config(configname):
         except Exception as err:
             if len(err.args) > 2:
                 if err.args[2] == "could not determine a constructor for the tag '!!python/tuple'":
-                    with open(path, "r") as ymlfile:
+                    with open(path) as ymlfile:
                         cfg = yaml.load(ymlfile, Loader=yaml.SafeLoader)
                         write_config(configname, cfg)
                 else:
@@ -249,7 +246,7 @@ def write_config(configname, cfg):
             cfg_file[key] = cfg[key]
 
         # Adding default value for variable skeleton and skeleton_color for backward compatibility.
-        if not "skeleton" in cfg.keys():
+        if "skeleton" not in cfg.keys():
             cfg_file["skeleton"] = []
             cfg_file["skeleton_color"] = "black"
         # Use a very large width so long strings (e.g., file paths or keys with spaces)
@@ -292,14 +289,14 @@ def edit_config(configname, edits, output_name=""):
     try:
         write_plainconfig(output_name, cfg)
     except ruamel.yaml.representer.RepresenterError:
-        warnings.warn("Some edits could not be written. The configuration file will be left unchanged.")
+        warnings.warn("Some edits could not be written. The configuration file will be left unchanged.", stacklevel=2)
         for key in edits:
             cfg.pop(key)
         write_plainconfig(output_name, cfg)
     return cfg
 
 
-def get_bodyparts(cfg: dict) -> typing.List[str]:
+def get_bodyparts(cfg: dict) -> list[str]:
     """
     Args:
         cfg: a project configuration file
@@ -317,7 +314,7 @@ def get_bodyparts(cfg: dict) -> typing.List[str]:
     return cfg["bodyparts"]
 
 
-def get_unique_bodyparts(cfg: dict) -> typing.List[str]:
+def get_unique_bodyparts(cfg: dict) -> list[str]:
     """
     Args:
         cfg: a project configuration file
@@ -392,10 +389,10 @@ def write_pickle(filename, data):
 
 
 def get_list_of_videos(
-    videos: typing.Union[typing.List[str], str],
-    videotype: typing.Union[typing.List[str], str] = "",
+    videos: list[str] | str,
+    videotype: list[str] | str = "",
     in_random_order: bool = True,
-) -> typing.List[str]:
+) -> list[str]:
     """Returns list of videos of videotype "videotype" in
     folder videos or for list of videos.
 
@@ -499,7 +496,7 @@ def filter_files_by_patterns(
     start_patterns: set[str] | None = None,
     contain_patterns: set[str] | None = None,
     end_patterns: set[str] | None = None,
-) -> List[Path]:
+) -> list[Path]:
     """
     Filters files in a folder based on start, contain, and end patterns.
 
@@ -655,7 +652,7 @@ def get_evaluation_folder(
     )
 
 
-def get_snapshots_from_folder(train_folder: Path) -> List[str]:
+def get_snapshots_from_folder(train_folder: Path) -> list[str]:
     """
     Returns an ordered list of existing snapshot names in the train folder, sorted by
     increasing training iterations.

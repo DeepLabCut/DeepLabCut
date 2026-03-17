@@ -211,7 +211,7 @@ def generate_model_output_plots(
 
     if paf is not None:
         if paf_graph is None:
-            raise ValueError(f"When plotting the PAF, you must pass the ``paf_graph``")
+            raise ValueError("When plotting the PAF, you must pass the ``paf_graph``")
 
         edge_list = []
         for n, edge in enumerate(paf_graph):

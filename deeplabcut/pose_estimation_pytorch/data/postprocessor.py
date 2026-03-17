@@ -12,10 +12,10 @@
 
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any
-import logging
 
 import numpy as np
 

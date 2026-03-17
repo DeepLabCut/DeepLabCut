@@ -14,9 +14,9 @@ import torch.nn as nn
 from deeplabcut.pose_estimation_pytorch.models.backbones.base import BACKBONES
 from deeplabcut.pose_estimation_pytorch.models.backbones.hrnet import HRNet
 from deeplabcut.pose_estimation_pytorch.models.modules import (  # ColoredKeypointEncoder,; StackedKeypointEncoder,
+    KEYPOINT_ENCODERS,
     BaseKeypointEncoder,
     CoAMBlock,
-    KEYPOINT_ENCODERS,
     SelfAttentionModule_CoAM,
 )
 

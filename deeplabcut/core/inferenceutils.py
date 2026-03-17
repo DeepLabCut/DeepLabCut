@@ -17,9 +17,10 @@ import operator
 import pickle
 import warnings
 from collections import defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass
 from math import erf, sqrt
-from typing import Any, Iterable, Tuple
+from typing import Any
 
 import networkx as nx
 import numpy as np
@@ -41,7 +42,7 @@ def _conv_square_to_condensed_indices(ind_row, ind_col, n):
     return n * ind_col - ind_col * (ind_col + 1) // 2 + ind_row - 1 - ind_col
 
 
-Position = Tuple[float, float]
+Position = tuple[float, float]
 
 
 @dataclass(frozen=True)

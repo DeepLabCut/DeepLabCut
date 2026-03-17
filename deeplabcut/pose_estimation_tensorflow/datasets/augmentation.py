@@ -8,18 +8,18 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+
 import imgaug.augmenters as iaa
 import numpy as np
 from imgaug import KeypointsOnImage
 from scipy.spatial.distance import pdist, squareform
-from typing import List, Union, Tuple
 
 
 class KeypointFliplr(iaa.Fliplr):
     def __init__(
         self,
-        keypoints: List[str],
-        symmetric_pairs: List[Union[Tuple, List]],
+        keypoints: list[str],
+        symmetric_pairs: list[tuple | list],
         p: float = 1.0,
     ):
         super().__init__(p=p)
@@ -72,7 +72,7 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
             "density" (weighing preferentially dense regions of keypoints),
             or "hybrid" (alternating randomly between "uniform" and "density").
         """
-        super(KeypointAwareCropToFixedSize, self).__init__(
+        super().__init__(
             width,
             height,
             name="kptscrop",

@@ -67,7 +67,7 @@ def get_pose_predictions(
     # COCO-format annotations file containing predictions made by the SuperAnimal model
     sa_predictions = {}
     if predictions_file.exists():
-        with open(predictions_file, "r") as f:
+        with open(predictions_file) as f:
             raw_sa_predictions = json.load(f)
 
         # parse predictions to convert lists to numpy arrays
@@ -142,7 +142,7 @@ def prepare_memory_replay_dataset(
 
     # Contains the ground truth annotations for the DeepLabCut project
     # .../dlc-models-pytorch/.../...shuffle0/train/memory_replay/annotations/train.json
-    with open(source_dataset_folder / "annotations" / train_file, "r") as f:
+    with open(source_dataset_folder / "annotations" / train_file) as f:
         project_gt = json.load(f)
 
     # parse the GT so that image paths are in the format (no matter the OS):

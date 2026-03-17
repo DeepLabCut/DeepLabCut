@@ -21,6 +21,7 @@
 
 import collections
 import math
+
 import numpy as np
 import tensorflow as tf
 
@@ -118,7 +119,7 @@ def round_filters(filters, global_params):
     # Make sure that round down does not go down by more than 10%.
     if new_filters < 0.9 * filters:
         new_filters += divisor
-    tf.compat.v1.logging.info("round_filter input={} output={}".format(orig_f, new_filters))
+    tf.compat.v1.logging.info(f"round_filter input={orig_f} output={new_filters}")
     return int(new_filters)
 
 
@@ -142,7 +143,7 @@ class MBConvBlock(tf.keras.layers.Layer):
           block_args: BlockArgs, arguments to create a Block.
           global_params: GlobalParams, a set of global parameters.
         """
-        super(MBConvBlock, self).__init__()
+        super().__init__()
         self._block_args = block_args
         self._batch_norm_momentum = global_params.batch_norm_momentum
         self._batch_norm_epsilon = global_params.batch_norm_epsilon
@@ -377,7 +378,7 @@ class Model(tf.keras.Model):
         Raises:
           ValueError: when blocks_args is not specified as a list.
         """
-        super(Model, self).__init__()
+        super().__init__()
         if not isinstance(blocks_args, list):
             raise ValueError("blocks_args should be a list.")
         self._global_params = global_params

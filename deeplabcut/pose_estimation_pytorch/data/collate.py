@@ -18,8 +18,7 @@ import numpy as np
 from torch.utils.data import default_collate
 
 from deeplabcut.pose_estimation_pytorch.data.image import resize_and_random_crop
-from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
-
+from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 COLLATE_FUNCTIONS = Registry("collate_functions", build_func=build_from_cfg)
 

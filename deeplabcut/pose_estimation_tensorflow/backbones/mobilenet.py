@@ -72,7 +72,7 @@ def op(opfunc, multiplier_func=depth_multiplier, **params):
     return _Op(opfunc, params=params, multiplier_func=multiplier)
 
 
-class NoOpScope(object):
+class NoOpScope:
     """No-op context manager."""
 
     def __enter__(self):

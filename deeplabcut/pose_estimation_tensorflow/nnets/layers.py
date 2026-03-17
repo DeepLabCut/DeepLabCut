@@ -11,7 +11,6 @@
 import tensorflow as tf
 import tf_slim as slim
 
-
 # FIXME Fix wrong scope with Keras layers
 # def prediction_layer(cfg, input, name, num_outputs):
 #     with tf.compat.v1.variable_scope(name):

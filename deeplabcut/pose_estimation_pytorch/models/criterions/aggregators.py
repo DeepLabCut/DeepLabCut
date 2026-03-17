@@ -13,8 +13,8 @@ from __future__ import annotations
 import torch
 
 from deeplabcut.pose_estimation_pytorch.models.criterions.base import (
-    BaseLossAggregator,
     LOSS_AGGREGATORS,
+    BaseLossAggregator,
 )
 
 

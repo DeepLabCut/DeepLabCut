@@ -22,10 +22,10 @@ import deeplabcut.core.config as config_utils
 import deeplabcut.pose_estimation_pytorch.utils as utils
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.data import (
-    build_transforms,
     COCOLoader,
     DLCLoader,
     Loader,
+    build_transforms,
 )
 from deeplabcut.pose_estimation_pytorch.data.collate import COLLATE_FUNCTIONS
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
@@ -34,8 +34,8 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.memory_replay import (
 )
 from deeplabcut.pose_estimation_pytorch.runners import build_training_runner
 from deeplabcut.pose_estimation_pytorch.runners.logger import (
-    destroy_file_logging,
     LOGGER,
+    destroy_file_logging,
     setup_file_logging,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task

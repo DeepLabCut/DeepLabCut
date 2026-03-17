@@ -22,8 +22,8 @@ from deeplabcut.pose_estimation_pytorch.models.criterions import (
     CRITERIONS,
     LOSS_AGGREGATORS,
 )
-from deeplabcut.pose_estimation_pytorch.models.heads import BaseHead, HEADS
-from deeplabcut.pose_estimation_pytorch.models.necks import BaseNeck, NECKS
+from deeplabcut.pose_estimation_pytorch.models.heads import HEADS, BaseHead
+from deeplabcut.pose_estimation_pytorch.models.necks import NECKS, BaseNeck
 from deeplabcut.pose_estimation_pytorch.models.predictors import PREDICTORS
 from deeplabcut.pose_estimation_pytorch.models.target_generators import (
     TARGET_GENERATORS,
@@ -153,7 +153,7 @@ class PoseModel(nn.Module):
         cfg: dict,
         weight_init: None | WeightInitialization = None,
         pretrained_backbone: bool = False,
-    ) -> "PoseModel":
+    ) -> PoseModel:
         """
         Args:
             cfg: The configuration of the model to build.

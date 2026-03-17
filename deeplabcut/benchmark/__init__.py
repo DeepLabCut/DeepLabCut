@@ -12,7 +12,7 @@
 
 import json
 import os
-from typing import Container
+from collections.abc import Container
 from typing import Literal
 
 from deeplabcut.benchmark.base import Benchmark, Result, ResultCollection
@@ -112,7 +112,7 @@ def loadcache(cache=CACHE, on_missing: Literal["raise", "ignore"] = "ignore") ->
         if on_missing == "raise":
             raise FileNotFoundError(cache)
         return ResultCollection()
-    with open(cache, "r") as fh:
+    with open(cache) as fh:
         try:
             data = json.load(fh)
         except json.decoder.JSONDecodeError as e:

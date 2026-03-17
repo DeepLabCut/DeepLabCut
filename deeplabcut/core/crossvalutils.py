@@ -24,8 +24,8 @@ from sklearn.metrics.cluster import contingency_matrix
 from tqdm import tqdm
 
 from deeplabcut.core.inferenceutils import (
-    _parse_ground_truth_data,
     Assembler,
+    _parse_ground_truth_data,
     evaluate_assembly,
 )
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions

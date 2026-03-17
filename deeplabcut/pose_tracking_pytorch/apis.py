@@ -89,8 +89,9 @@ def transformer_reID(
     --------
 
     """
-    import deeplabcut
     import os
+
+    import deeplabcut
     from deeplabcut.utils import auxiliaryfunctions
 
     # calling create_tracking_dataset, train_tracking_transformer, stitch_tracklets

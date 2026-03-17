@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 modified from: https://github.com/DeepLabCut/DeepLabCut-core/testscript_cli.py
 by Mackenzie.
@@ -12,20 +11,17 @@ It produces nothing of interest scientifically.
 task = "Testcore"  # Enter the name of your experiment Task
 scorer = "Mackenzie"  # Enter the name of the experimenter/labeler
 
-import os, subprocess, sys
+import os
+import platform
 
+import numpy as np
+import pandas as pd
 
 # def install(package):
 #    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 # install("tensorflow==1.13.1")
-
 import deeplabcut as dlc
 from deeplabcut.core.engine import Engine
-
-from pathlib import Path
-import pandas as pd
-import numpy as np
-import platform
 
 print("Imported DLC!")
 

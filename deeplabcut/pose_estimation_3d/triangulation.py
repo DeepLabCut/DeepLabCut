@@ -11,13 +11,13 @@
 
 import os
 from pathlib import Path
+
 import cv2
 import numpy as np
 import pandas as pd
 
-from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
-from deeplabcut.utils import auxiliaryfunctions_3d
 from deeplabcut.core.trackingutils import TRACK_METHODS
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, auxiliaryfunctions_3d
 
 
 def triangulate(
@@ -104,7 +104,7 @@ def triangulate(
 
     # flag to check if the video_path variable is a string or a list of list
     flag = False  # assumes that video path is a list
-    if isinstance(video_path, str) == True:
+    if isinstance(video_path, str):
         flag = True
         video_list = auxiliaryfunctions_3d.get_camerawise_videos(video_path, cam_names, videotype=videotype)
     else:
@@ -129,7 +129,7 @@ def triangulate(
             if cam_names[j] not in video_list[i][j]:
                 raise ValueError(f"Camera name '{cam_names[j]}' not found in video list '{video_list[i][j]}'.")
             else:
-                print("Analyzing video %s using %s" % (video_list[i][j], str("config_file_" + cam_names[j])))
+                print("Analyzing video {} using {}".format(video_list[i][j], str("config_file_" + cam_names[j])))
 
                 config_2d = snapshots[cam_names[j]]
                 cfg = auxiliaryfunctions.read_config(config_2d)
@@ -146,7 +146,7 @@ def triangulate(
                 shuffle = cfg_3d[str("shuffle_" + cam_names[j])]
                 trainingsetindex = cfg_3d[str("trainingsetindex_" + cam_names[j])]
                 trainFraction = cfg["TrainingFraction"][trainingsetindex]
-                if flag == True:
+                if flag:
                     video = os.path.join(video_path, video_list[i][j])
                 else:
                     video_path = str(Path(video_list[i][j]).parents[0])
@@ -295,17 +295,18 @@ def triangulate(
                 import warnings
 
                 warnings.warn(
-                    "The number of frames do not match in the two videos. Please make sure that your videos have same number of frames and then retry! Excluding the extra frames from the longer video."
+                    "The number of frames do not match in the two videos. Please make sure that your videos have same number of frames and then retry! Excluding the extra frames from the longer video.",
+                    stacklevel=2,
                 )
                 if len(dataFrame_camera1_undistort) > len(dataFrame_camera2_undistort):
                     dataFrame_camera1_undistort = dataFrame_camera1_undistort[: len(dataFrame_camera2_undistort)]
                 if len(dataFrame_camera2_undistort) > len(dataFrame_camera1_undistort):
                     dataFrame_camera2_undistort = dataFrame_camera2_undistort[: len(dataFrame_camera1_undistort)]
             #                raise Exception("The number of frames do not match in the two videos. Please make sure that your videos have same number of frames and then retry!")
-            scorer_cam1 = dataFrame_camera1_undistort.columns.get_level_values(0)[0]
-            scorer_cam2 = dataFrame_camera2_undistort.columns.get_level_values(0)[0]
+            dataFrame_camera1_undistort.columns.get_level_values(0)[0]
+            dataFrame_camera2_undistort.columns.get_level_values(0)[0]
 
-            bodyparts = dataFrame_camera1_undistort.columns.get_level_values("bodyparts").unique()
+            dataFrame_camera1_undistort.columns.get_level_values("bodyparts").unique()
 
             P1 = stereomatrix["P1"]
             P2 = stereomatrix["P2"]
@@ -471,7 +472,7 @@ def _undistort_points(points, mat, coeffs, p, r):
 
 def _undistort_views(df_view_pairs, stereo_params):
     df_views_undist = []
-    for df_view_pair, camera_pair in zip(df_view_pairs, stereo_params):
+    for df_view_pair, camera_pair in zip(df_view_pairs, stereo_params, strict=False):
         params = stereo_params[camera_pair]
         dfs = []
         for i, df_view in enumerate(df_view_pair, start=1):

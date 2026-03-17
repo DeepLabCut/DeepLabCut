@@ -11,6 +11,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+
 from deeplabcut.pose_estimation_3d import triangulation
 
 

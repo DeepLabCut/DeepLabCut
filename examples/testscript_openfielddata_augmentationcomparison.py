@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # DeepLabCut Toolbox (deeplabcut.org)
 # © A. & M.W. Mathis Labs
@@ -58,8 +57,8 @@ the network performs much better on the testvideo (see Neuron Primer: https://ww
 import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = str(0)
+
 import deeplabcut
-import numpy as np
 
 # Loading example data set
 path_config_file = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30/config.yaml")

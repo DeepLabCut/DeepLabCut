@@ -13,9 +13,9 @@ Testscript for super animal inference
 
 """
 
-import deeplabcut
 import os
 
+import deeplabcut
 
 if __name__ == "__main__":
     basepath = os.path.dirname(os.path.realpath(__file__))

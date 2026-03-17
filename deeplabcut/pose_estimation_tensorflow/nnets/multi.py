@@ -10,18 +10,19 @@
 #
 
 import re
+
 import tensorflow as tf
 import tf_slim as slim
 from tf_slim.nets import resnet_v1
 
 import deeplabcut.pose_estimation_tensorflow.backbones.efficientnet_builder as eff
+from deeplabcut.pose_estimation_tensorflow.backbones import mobilenet, mobilenet_v2
 from deeplabcut.pose_estimation_tensorflow.nnets import conv_blocks
-from deeplabcut.pose_estimation_tensorflow.backbones import mobilenet_v2, mobilenet
+
 from .base import BasePoseNet
 from .factory import PoseNetFactory
 from .layers import prediction_layer_stage
 from .utils import wrapper
-
 
 # Change the stride from 2 to 1 to get 16x downscaling instead of 32x.
 mobilenet_v2.V2_DEF["spec"][14] = mobilenet.op(conv_blocks.expanded_conv, stride=1, num_outputs=160)
@@ -104,7 +105,7 @@ def prediction_layer(cfg, input, name, num_outputs):
 @PoseNetFactory.register("multi")
 class PoseMultiNet(BasePoseNet):
     def __init__(self, cfg):
-        super(PoseMultiNet, self).__init__(cfg)
+        super().__init__(cfg)
         multi_stage = self.cfg.get("multi_stage", False)
         # Multi stage is currently only implemented for resnets
         self.cfg["multi_stage"] = multi_stage and "resnet" in self.cfg["net_type"]
@@ -149,7 +150,7 @@ class PoseMultiNet(BasePoseNet):
         if self.cfg["multi_stage"]:  # MuNet! (multi_stage decoder + multi_fusion)
             # Defining multi_fusion backbone
             num_layers = re.findall("resnet_([0-9]*)", net_type)[0]
-            layer_name = "resnet_v1_{}".format(num_layers) + "/block{}/unit_{}/bottleneck_v1"
+            layer_name = f"resnet_v1_{num_layers}" + "/block{}/unit_{}/bottleneck_v1"
             mid_pt_block1 = layer_name.format(1, 3)
             mid_pt_block2 = layer_name.format(2, 3)
 
@@ -374,7 +375,7 @@ class PoseMultiNet(BasePoseNet):
                         scope="block4",
                     )
             net = tf.concat([bank_3, upsampled_features], 3)
-            out = super(PoseMultiNet, self).prediction_layers(
+            out = super().prediction_layers(
                 net,
                 scope,
                 reuse,

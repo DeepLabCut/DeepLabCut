@@ -16,9 +16,8 @@ Metrics are currently computed using pycocotools, which can be installed with `p
 
 from __future__ import annotations
 
-from unittest.mock import Mock, patch
-
 from datetime import datetime
+from unittest.mock import Mock, patch
 
 import numpy as np
 
@@ -27,7 +26,7 @@ try:
     from pycocotools.cocoeval import COCOeval
 
     with_pycocotools = True
-except ModuleNotFoundError as err:
+except ModuleNotFoundError:
     with_pycocotools = False
 
 

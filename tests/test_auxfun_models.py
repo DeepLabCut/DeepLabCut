@@ -10,9 +10,9 @@
 #
 
 
+import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import unittest
 from unittest.mock import patch
 
 from deeplabcut.utils.auxfun_models import MODELTYPE_FILEPATH_MAP, check_for_weights

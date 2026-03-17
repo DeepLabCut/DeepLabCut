@@ -25,24 +25,25 @@ import os
 import cv2
 import numpy as np
 import scipy.io as sio
-from deeplabcut.utils.conversioncode import robust_split_path
 from numpy import array as arr
 from tensorpack.dataflow.base import RNGDataFlow
 from tensorpack.dataflow.common import MapData
 from tensorpack.dataflow.imgaug import (
     Brightness,
     Contrast,
+    GaussianBlur,
+    GaussianNoise,
     RandomResize,
     Rotation,
     Saturation,
-    GaussianNoise,
-    GaussianBlur,
 )
 from tensorpack.dataflow.imgaug.crop import RandomCropRandomShape
 from tensorpack.dataflow.imgaug.meta import RandomApplyAug
 from tensorpack.dataflow.imgaug.transform import CropTransform
-from tensorpack.dataflow.parallel import MultiProcessRunnerZMQ, MultiProcessRunner
+from tensorpack.dataflow.parallel import MultiProcessRunner, MultiProcessRunnerZMQ
 from tensorpack.utils.utils import get_rng
+
+from deeplabcut.utils.conversioncode import robust_split_path
 
 from .factory import PoseDatasetFactory
 from .pose_base import BasePoseDataset
@@ -236,7 +237,7 @@ class TensorpackPoseDataset(BasePoseDataset):
 
         cfg["cropratio"] = cfg.get("cropratio", 0.4)
 
-        super(TensorpackPoseDataset, self).__init__(cfg)
+        super().__init__(cfg)
         self.scaling = RandomResize(
             xrange=(
                 self.cfg["scale_jitter_lo"] * self.cfg["global_scale"],
@@ -416,13 +417,12 @@ class TensorpackPoseDataset(BasePoseDataset):
 
     def make_batch(self, components):
         data_item = DataItem.from_dict(components[0])
-        mirror = components[2]
+        components[2]
         part_score_targets = components[3]
         part_score_weights = components[4]
         locref_targets = components[5]
         locref_mask = components[6]
 
-        im_file = data_item.im_path
         # logging.debug('image %s', im_file)
         # print('image: {}'.format(im_file))
         # logging.debug('mirror %r', mirror)

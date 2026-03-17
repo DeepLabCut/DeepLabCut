@@ -72,43 +72,11 @@ class NpEncoder(json.JSONEncoder):
         elif isinstance(obj, np.ndarray):
             return obj.tolist()
         else:
-            return super(NpEncoder, self).default(obj)
+            return super().default(obj)
 
 
 class SingleDLC_config:
     def __init__(self):
-        Task = ""  # could be dataset name
-        project_path = ""
-        scorer = ""  # random stuff
-        date = ""  # random stuff
-        video_sets = ""  # has to be used for labeled data
-        skeleton = ""  # could be arbitrary
-        bodyparts = ""  # either single or multi
-        start = 0  # not sure
-        stop = 1  # not sure
-        numframes2pick = 42  # does not matter
-        skeleton_color = "black"
-        pcutoff = 0.6
-        dotsize = 8
-        alphavalue = 0.7
-        colormap = "rainbow"
-        TrainingFraction = ""  # need to be filled correctly
-        iteration = 0
-        default_net_type = "resnet_50"
-        default_augmenter = "imgaug"
-        snapshotindex = -1
-        batch_size = 8
-        cropping = False
-        croppedtraining = False
-        multianimalproject = False
-        uniquebodyparts = []
-        x1 = 0
-        x2 = 640
-        y1 = 277
-        y2 = 624
-        corer2move2 = [50, 50]
-        move2corner = True
-        identity = False
         self.cfg = {k: v for k, v in vars().items() if "__" not in k and "self" not in k}
 
     def create_cfg(self, proj_root, kwargs):
@@ -124,40 +92,6 @@ class MaDLC_config:
         Some variables can be configured by the user later
         """
 
-        Task = ""  # could be dataset name
-        project_path = ""
-        scorer = ""  # random stuff
-        date = ""  # random stuff
-        video_sets = ""  # has to be used for labeled data
-        individuals = ""  # number of individuals
-        multianimalbodyparts = ""  # keypoints
-        skeleton = ""  # could be arbitrary
-        bodyparts = ""  # either single or multi
-        start = 0  # not sure
-        stop = 1  # not sure
-        numframes2pick = 42  # does not matter
-        skeleton_color = "black"
-        pcutoff = 0.6
-        dotsize = 8
-        alphavalue = 0.7
-        colormap = "rainbow"
-        TrainingFraction = ""  # need to be filled correctly
-        iteration = 0
-        default_net_type = "resnet_50"
-        default_augmenter = "multi-animal-imgaug"
-        snapshotindex = -1
-        batch_size = 8
-        cropping = False
-        croppedtraining = True
-        multianimalproject = True
-        uniquebodyparts = []
-        x1 = 0
-        x2 = 640
-        y1 = 277
-        y2 = 624
-        corer2move2 = [50, 50]
-        move2corner = True
-        identity = False
         self.cfg = {k: v for k, v in vars().items() if "__" not in k and "self" not in k}
 
     def create_cfg(self, proj_root, kwargs):
@@ -236,17 +170,16 @@ def _generic2madlc(
 
     # it's important to put train first so the train_fraction parameter can work correctly
     total_images = train_images + test_images
-    total_annotations = train_annotations + test_annotations
+    train_annotations + test_annotations
 
     # DLC uses relative dest as index into dataframe
     imageid2relativedest = {}
-    count = 0
     for image in total_images:
         image_id = image["id"]
         file_name = image["file_name"]
         image_name = file_name.split(os.sep)[-1]
         pre, suffix = image_name.split(".")
-        if append_image_id == True:
+        if append_image_id:
             dest_image_name = f"{pre}_{image_id}.{suffix}"
         else:
             dest_image_name = image_name
@@ -261,14 +194,13 @@ def _generic2madlc(
         else:
             try:
                 os.symlink(file_name, dest)
-            except Exception as e:
+            except Exception:
                 pass
 
         relative_dest = os.path.join("labeled-data", dataset_name, dest_image_name)
 
         imageid2relativedest[image_id] = relative_dest
 
-    temp_count = 0
     for dataset_name, dataset in meta["mat_datasets"].items():
         dataset_total_images = dataset.generic_train_images + dataset.generic_test_images
         dataset_total_annotations = dataset.generic_train_annotations + dataset.generic_test_annotations
@@ -317,7 +249,9 @@ def _generic2madlc(
     create_multianimaltraining_dataset(os.path.join(proj_root, "config.yaml"), paf_graph=None)
 
     # dlc's merge_annotation messes up my indices, so I will need to overwrite the documentation file
-    # I could have done it in a more elegant way if I could modify part of DLC source code, but for backward compatibility reasons, overriding documentation is smarter
+    # I could have done it in a more elegant way if I could modify part of DLC
+    # source code, but for backward compatibility reasons, overriding
+    # documentation is smarter
 
     config_path = os.path.join(proj_root, "config.yaml")
 
@@ -372,7 +306,7 @@ def _generic2madlc(
 
     # need to overwrite the data pickle file too
 
-    nbodyparts = len(bodyparts)
+    len(bodyparts)
 
     if "individuals" not in dlc_df.columns.names:
         old_idx = dlc_df.columns.to_frame()
@@ -437,15 +371,15 @@ def _generic2sdlc(
     columnindex = pd.MultiIndex.from_product([[scorer], bodyparts, ["x", "y"]], names=["scorer", "bodyparts", "coords"])
 
     total_images = train_images + test_images
-    total_annotations = train_annotations + test_annotations
+    train_annotations + test_annotations
 
     # DLC uses relative dest as index
     imageid2relativedest = {}
 
     for image in total_images:
         imageid = image["id"]
-        filename = image["file_name"]
-        datasetname = imageid2datasetname[imageid]
+        image["file_name"]
+        imageid2datasetname[imageid]
     count = 0
     for image in total_images:
         image_id = image["id"]
@@ -454,7 +388,7 @@ def _generic2sdlc(
         image_name = file_name.split(os.sep)[-1]
         pre, suffix = image_name.split(".")
 
-        if append_image_id == True:
+        if append_image_id:
             dest_image_name = f"{pre}_{image_id}.{suffix}"
         else:
             dest_image_name = image_name
@@ -485,9 +419,8 @@ def _generic2sdlc(
         dataset_total_annotations = dataset.generic_train_annotations + dataset.generic_test_annotations
 
         dataset_index = []
-        freq = {}
         for image in dataset_total_images:
-            filename = image["file_name"]
+            image["file_name"]
 
             image_id = image["id"]
             relative_dest = imageid2relativedest[image_id]
@@ -500,7 +433,7 @@ def _generic2sdlc(
 
         df = pd.DataFrame(raw_data, columns=columnindex, index=dataset_index)
 
-        for idx, anno in enumerate(dataset_total_annotations):
+        for _idx, anno in enumerate(dataset_total_annotations):
             keypoints = np.array(anno["keypoints"])
             image_id = anno["image_id"]
 
@@ -529,7 +462,9 @@ def _generic2sdlc(
     create_training_dataset(os.path.join(proj_root, "config.yaml"))
 
     # dlc's merge_annotation messes up my indices, so I will need to overwrite the documentation file
-    # I could have done it in a more elegant way if I could modify part of DLC source code, but for backward compatibility reasons, overriding documentation is smarter
+    # I could have done it in a more elegant way if I could modify part of DLC
+    # source code, but for backward compatibility reasons, overriding
+    # documentation is smarter
 
     config_path = os.path.join(proj_root, "config.yaml")
 
@@ -636,7 +571,7 @@ def _generic2coco(
             annotation["iscrowd"] = 0
 
         keypoints = annotation["keypoints"]
-        for kpt_id, kpt_name in enumerate(meta["categories"]["keypoints"]):
+        for kpt_id, _kpt_name in enumerate(meta["categories"]["keypoints"]):
             coord = keypoints[3 * kpt_id : 3 * kpt_id + 3]
             if coord[0] < 0 or coord[1] < 0:
                 coord[2] = -1

@@ -18,7 +18,6 @@ import pytest
 
 from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromFile
 
-
 CONDITIONS = [
     np.zeros((4, 3, 3)).tolist(),
     np.ones((4, 3, 3)).tolist(),

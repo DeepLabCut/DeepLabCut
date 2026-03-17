@@ -8,18 +8,19 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import numpy as np
 import os
 import pickle
-import pytest
 import shutil
 import urllib.request
 import zipfile
-from deeplabcut.core import inferenceutils
 from io import BytesIO
+
+import numpy as np
+import pytest
 from PIL import Image
 from tqdm import tqdm
 
+from deeplabcut.core import inferenceutils
 
 TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
 

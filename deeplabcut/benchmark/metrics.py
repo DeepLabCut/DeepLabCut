@@ -23,17 +23,16 @@ for mod_name in MOCK_MODULES:
 import os
 import pickle
 from collections import defaultdict
-from typing import List, Optional
 
 import numpy as np
 import pandas as pd
 
 import deeplabcut.benchmark.utils
-from deeplabcut.core import inferenceutils, crossvalutils
+from deeplabcut.core import crossvalutils, inferenceutils
 from deeplabcut.utils.conversioncode import guarantee_multiindex_rows
 
 
-def _format_gt_data(h5file: str, test_indices: Optional[List[int]] = None):
+def _format_gt_data(h5file: str, test_indices: list[int] | None = None):
     df = pd.read_hdf(h5file)
 
     animals = _get_unique_level_values(df.columns, "individuals")
@@ -251,7 +250,7 @@ def calc_rmse_from_obj(
     return np.nanmean(errors[..., 0])
 
 
-def load_test_images(h5file: str, metadata: str) -> List[str]:
+def load_test_images(h5file: str, metadata: str) -> list[str]:
     """
     Returns the names of the test images for the benchmark, in the order corresponding
     to the test indices.

@@ -27,7 +27,7 @@ from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 @pytest.fixture()
 def project_dir(tmp_path_factory) -> Path:
     project_dir = tmp_path_factory.mktemp("tmp-project")
-    print(f"\nTemporary project directory:")
+    print("\nTemporary project directory:")
     print(str(project_dir))
     print("---")
     yield project_dir

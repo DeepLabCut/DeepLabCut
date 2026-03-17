@@ -19,7 +19,7 @@ import pkgutil
 import sys
 
 
-class RedirectStdStreams(object):
+class RedirectStdStreams:
     """Context manager for redirecting stdout and stderr
     Reference:
         https://stackoverflow.com/a/6796752

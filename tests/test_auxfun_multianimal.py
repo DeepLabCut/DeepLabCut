@@ -8,12 +8,14 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from itertools import combinations
+
 import networkx as nx
 import numpy as np
 import pandas as pd
 import pytest
+
 from deeplabcut.utils import auxfun_multianimal
-from itertools import combinations
 
 
 def test_prune_paf_graph():

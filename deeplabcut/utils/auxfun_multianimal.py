@@ -31,9 +31,9 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from deeplabcut.utils import auxiliaryfunctions, conversioncode
-from deeplabcut.generate_training_dataset import trainingsetmanipulation
 from deeplabcut.core.trackingutils import TRACK_METHODS
+from deeplabcut.generate_training_dataset import trainingsetmanipulation
+from deeplabcut.utils import auxiliaryfunctions, conversioncode
 
 
 def reorder_individuals_in_df(df: pd.DataFrame, order: list) -> pd.DataFrame:
@@ -79,7 +79,8 @@ def get_track_method(cfg, track_method=""):
             track_method = cfg.get("default_track_method", "")
             if not track_method:
                 warnings.warn(
-                    "default_track_method` is undefined in the config.yaml file and will be set to `ellipse`."
+                    "default_track_method` is undefined in the config.yaml file and will be set to `ellipse`.",
+                    stacklevel=2,
                 )
                 track_method = "ellipse"
                 cfg["default_track_method"] = track_method
@@ -278,7 +279,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
                 folders = []
 
     for folder in folders:
-        if userfeedback == True:
+        if userfeedback:
             print("Do you want to convert the annotation file in folder:", folder, "?")
             askuser = input("yes/no")
         else:
@@ -363,7 +364,7 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
 
     prefixes, uniquebodyparts, multianimalbodyparts = extractindividualsandbodyparts(cfg)
     for folder in folders:
-        if userfeedback == True:
+        if userfeedback:
             print("Do you want to convert the annotation file in folder:", folder, "?")
             askuser = input("yes/no")
         else:

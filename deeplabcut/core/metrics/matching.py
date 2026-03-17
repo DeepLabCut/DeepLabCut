@@ -66,7 +66,7 @@ class PotentialMatch:
         self.oks = oks
 
     @classmethod
-    def from_pose(cls, pose: np.ndarray) -> "PotentialMatch":
+    def from_pose(cls, pose: np.ndarray) -> PotentialMatch:
         assert len(pose.shape) == 2  # Must be pose for a single individual
         scores = pose[:, 2]
         if np.all(np.isnan(scores)):

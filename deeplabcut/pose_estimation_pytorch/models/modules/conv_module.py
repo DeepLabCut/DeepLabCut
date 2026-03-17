@@ -11,7 +11,6 @@
 """The code is based on DEKR: https://github.com/HRNet/DEKR/tree/main"""
 
 import logging
-from typing import List
 
 import torch.nn as nn
 
@@ -46,7 +45,7 @@ class HighResolutionModule(nn.Module):
         fuse_method: str,
         multi_scale_output: bool = True,
     ):
-        super(HighResolutionModule, self).__init__()
+        super().__init__()
         self._check_branches(num_branches, block, num_blocks, num_inchannels, num_channels)
 
         self.num_inchannels = num_inchannels
@@ -68,17 +67,17 @@ class HighResolutionModule(nn.Module):
         num_channels: int,
     ):
         if num_branches != len(num_blocks):
-            error_msg = "NUM_BRANCHES({}) <> NUM_BLOCKS({})".format(num_branches, len(num_blocks))
+            error_msg = f"NUM_BRANCHES({num_branches}) <> NUM_BLOCKS({len(num_blocks)})"
             logger.error(error_msg)
             raise ValueError(error_msg)
 
         if num_branches != len(num_channels):
-            error_msg = "NUM_BRANCHES({}) <> NUM_CHANNELS({})".format(num_branches, len(num_channels))
+            error_msg = f"NUM_BRANCHES({num_branches}) <> NUM_CHANNELS({len(num_channels)})"
             logger.error(error_msg)
             raise ValueError(error_msg)
 
         if num_branches != len(num_inchannels):
-            error_msg = "NUM_BRANCHES({}) <> NUM_INCHANNELS({})".format(num_branches, len(num_inchannels))
+            error_msg = f"NUM_BRANCHES({num_branches}) <> NUM_INCHANNELS({len(num_inchannels)})"
             logger.error(error_msg)
             raise ValueError(error_msg)
 
@@ -195,7 +194,7 @@ class HighResolutionModule(nn.Module):
     def get_num_inchannels(self) -> int:
         return self.num_inchannels
 
-    def forward(self, x) -> List:
+    def forward(self, x) -> list:
         """Forward pass through the HighResolutionModule.
 
         Args:

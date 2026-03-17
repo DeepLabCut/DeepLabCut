@@ -10,8 +10,8 @@
 #
 import numpy as np
 import tensorflow as tf
-from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal
 
+from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal
 
 RADIUS = 5
 THRESHOLD = 0.01

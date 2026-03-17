@@ -9,13 +9,16 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-import numpy as np
 import os
 import pickle
 import shelve
+from pathlib import Path
+
+import numpy as np
+
 from deeplabcut.core import trackingutils
 from deeplabcut.refine_training_dataset.stitch import TrackletStitcher
-from pathlib import Path
+
 from .tracking_utils.preprocessing import query_feature_by_coord_in_img_space
 
 np.random.seed(0)

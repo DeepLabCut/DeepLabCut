@@ -25,7 +25,7 @@ from deeplabcut.utils import auxfun_videos
 
 class VideoEditor(DefaultTab):
     def __init__(self, root, parent, h1_description):
-        super(VideoEditor, self).__init__(root, parent, h1_description)
+        super().__init__(root, parent, h1_description)
 
         self._set_page()
 

@@ -4,15 +4,16 @@ This file can be called as a python script without arguments. For
 configuration, see the instructions in NOTICE.yml.
 """
 
-import tempfile
-import glob
-import yaml
 import fnmatch
+import glob
 import subprocess
+import tempfile
+
+import yaml
 
 
 def load_config(filename):
-    with open(filename, "r") as fh:
+    with open(filename) as fh:
         config = yaml.safe_load(fh)
     return config
 

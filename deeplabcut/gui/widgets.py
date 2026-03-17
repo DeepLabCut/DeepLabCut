@@ -11,22 +11,24 @@
 import ast
 import os
 import warnings
+from queue import Queue
 
 import matplotlib.colors as mcolors
 import napari
 import numpy as np
 import pandas as pd
-from matplotlib.collections import LineCollection
-from matplotlib.path import Path
 from matplotlib.backends.backend_qt5agg import (
-    NavigationToolbar2QT,
     FigureCanvasQTAgg as FigureCanvas,
 )
+from matplotlib.backends.backend_qt5agg import (
+    NavigationToolbar2QT,
+)
+from matplotlib.collections import LineCollection
 from matplotlib.figure import Figure
-from matplotlib.widgets import RectangleSelector, Button, LassoSelector
-from queue import Queue
+from matplotlib.path import Path
+from matplotlib.widgets import Button, LassoSelector, RectangleSelector
 from PySide6 import QtCore, QtWidgets
-from PySide6.QtGui import QStandardItemModel, QStandardItem, QCursor, QAction
+from PySide6.QtGui import QAction, QCursor, QStandardItem, QStandardItemModel
 from scipy.spatial import cKDTree as KDTree
 from skimage import io
 
@@ -73,7 +75,7 @@ class BaseFrame(QtWidgets.QFrame):
 
 class DragDropListView(QtWidgets.QListView):
     def __init__(self, parent=None):
-        super(DragDropListView, self).__init__(parent)
+        super().__init__(parent)
         self.parent = parent
         self.setAcceptDrops(True)
         self.setDropIndicatorShown(True)
@@ -128,7 +130,7 @@ class DragDropListView(QtWidgets.QListView):
 
 class ItemSelectionFrame(QtWidgets.QFrame):
     def __init__(self, items, parent=None):
-        super(ItemSelectionFrame, self).__init__(parent)
+        super().__init__(parent)
         self.setFrameShape(self.Shape.StyledPanel)
         self.setLineWidth(0)
 
@@ -181,7 +183,7 @@ class NavigationToolbar(NavigationToolbar2QT):
         pass
 
     def release_zoom(self, event):
-        super(NavigationToolbar, self).release_zoom(event)
+        super().release_zoom(event)
         self.zoom()
 
 
@@ -201,7 +203,7 @@ class StreamReceiver(QtCore.QThread):
     new_text = QtCore.Signal(str)
 
     def __init__(self, queue):
-        super(StreamReceiver, self).__init__()
+        super().__init__()
         self.queue = queue
 
     def run(self):
@@ -214,7 +216,7 @@ class ClickableLabel(QtWidgets.QLabel):
     signal = QtCore.Signal()
 
     def __init__(self, text="", color="turquoise", parent=None):
-        super(ClickableLabel, self).__init__(text, parent)
+        super().__init__(text, parent)
         self._default_style = self.styleSheet()
         self.color = color
         self.setStyleSheet(f"color: {self.color}")
@@ -235,7 +237,7 @@ class ItemCreator(QtWidgets.QDialog):
     created = QtCore.Signal(QtWidgets.QTreeWidgetItem)
 
     def __init__(self, parent=None):
-        super(ItemCreator, self).__init__(parent)
+        super().__init__(parent)
         self.parent = parent
         vbox = QtWidgets.QVBoxLayout(self)
         self.field1 = QtWidgets.QLineEdit(self)
@@ -263,7 +265,7 @@ class ItemCreator(QtWidgets.QDialog):
 # TODO Insert skeleton link
 class ContextMenu(QtWidgets.QMenu):
     def __init__(self, parent):
-        super(ContextMenu, self).__init__(parent)
+        super().__init__(parent)
         self.parent = parent
         self.current_item = parent.tree.currentItem()
         insert = QAction("Insert", self)
@@ -287,7 +289,7 @@ class ContextMenu(QtWidgets.QMenu):
 
 class DictViewer(QtWidgets.QWidget):
     def __init__(self, cfg, filename="", parent=None):
-        super(DictViewer, self).__init__(parent)
+        super().__init__(parent)
         self.cfg = cfg
         self.filename = filename
         self.parent = parent
@@ -435,7 +437,7 @@ class DictViewer(QtWidgets.QWidget):
 
 class ConfigEditor(QtWidgets.QDialog):
     def __init__(self, config, parent=None):
-        super(ConfigEditor, self).__init__(parent)
+        super().__init__(parent)
         self.config = config
         if config.endswith("config.yaml") and not config.endswith("pytorch_config.yaml"):
             self.read_func = auxiliaryfunctions.read_config
@@ -470,12 +472,12 @@ class ConfigEditor(QtWidgets.QDialog):
 
     def accept(self):
         self.write_func(self.config, self.cfg)
-        super(ConfigEditor, self).accept()
+        super().accept()
 
 
 class FrameCropper(QtWidgets.QDialog):
     def __init__(self, video, parent=None):
-        super(FrameCropper, self).__init__(parent)
+        super().__init__(parent)
         self.clip = VideoWriter(video)
 
         self.fig = Figure()
@@ -530,7 +532,7 @@ class FrameCropper(QtWidgets.QDialog):
 
 class SkeletonBuilder(QtWidgets.QDialog):
     def __init__(self, config_path, parent=None):
-        super(SkeletonBuilder, self).__init__(parent)
+        super().__init__(parent)
         self.config_path = config_path
         self.cfg = auxiliaryfunctions.read_config(config_path)
         # Find uncropped labeled data
@@ -550,13 +552,14 @@ class SkeletonBuilder(QtWidgets.QDialog):
                     found = True
                     break
         if self.df is None:
-            raise IOError("No labeled data were found.")
+            raise OSError("No labeled data were found.")
 
         self.bpts = self.df.columns.get_level_values("bodyparts").unique()
         if not found:
             warnings.warn(
                 f"A fully labeled animal could not be found. "
-                f"{', '.join(self.bpts[missing])} will need to be manually connected in the config.yaml."
+                f"{', '.join(self.bpts[missing])} will need to be manually connected in the config.yaml.",
+                stacklevel=2,
             )
         self.tree = KDTree(self.xy)
         # Handle image previously annotated on a different platform
@@ -639,7 +642,8 @@ class SkeletonBuilder(QtWidgets.QDialog):
         unconnected = [i for i in range(len(self.xy)) if i not in inds_flat]
         if len(unconnected):
             warnings.warn(
-                f"You didn't connect all the bodyparts (which is fine!). This is just a note to let you know."
+                "You didn't connect all the bodyparts (which is fine!). This is just a note to let you know.",
+                stacklevel=2,
             )
         self.cfg["skeleton"] = [tuple(self.bpts[list(pair)]) for pair in self.inds]
         auxiliaryfunctions.write_config(self.config_path, self.cfg)
@@ -658,7 +662,7 @@ class SkeletonBuilder(QtWidgets.QDialog):
         for lst in inds:
             if len(lst) and lst[0] not in inds_unique:
                 inds_unique.append(lst[0])
-        for pair in zip(inds_unique, inds_unique[1:]):
+        for pair in zip(inds_unique, inds_unique[1:], strict=False):
             pair_sorted = tuple(sorted(pair))
             self.inds.add(pair_sorted)
             self.segs.add(tuple(map(tuple, self.xy[pair_sorted, :])))

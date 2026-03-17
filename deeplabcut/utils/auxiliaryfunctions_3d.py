@@ -91,7 +91,7 @@ def compute_triangulation_calibration_images(
     triangulate = np.asanyarray(triangulate)
 
     # Plotting
-    if plot == True:
+    if plot:
         col = colormap(np.linspace(0, 1, triangulate.shape[0]))
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
@@ -134,7 +134,7 @@ def get_camerawise_videos(path, cam_names, videotype):
         file_to_exclude = str("labeled" + videotype)
     else:
         file_to_exclude = str("labeled." + videotype)
-    videos = [v for v in videos if os.path.isfile(v) and not (file_to_exclude in v)]
+    videos = [v for v in videos if os.path.isfile(v) and file_to_exclude not in v]
     video_list = []
     cam = cam_names[0]  # camera1
     vid.append(
@@ -203,7 +203,8 @@ def Get_list_of_triangulated_and_videoFiles(filepath, videotype, scorer_3d, cam_
         if filename[i][0] == "_" or filename[i][0] == "-":
             filename[i] = filename[i][1:]
 
-    # Get the suffix and prefix of the video filenames so that they can be used for matching the triangulated file names.
+    # Get the suffix and prefix of the video filenames so that they can be
+    # used for matching the triangulated file names.
     for i in range(len(video_list)):
         pre = [
             str(Path(video_list[i][0]).stem).split(cam_names[0])[0],
@@ -225,7 +226,8 @@ def Get_list_of_triangulated_and_videoFiles(filepath, videotype, scorer_3d, cam_
         suffix.append(suf)
         prefix.append(pre)
 
-    # Match the suffix and prefix with the triangulated file name and return the list with triangulated file and corresponding video files.
+    # Match the suffix and prefix with the triangulated file name and return
+    # the list with triangulated file and corresponding video files.
     for k in range(len(filename)):
         for j in range(len(prefix)):
             if (prefix[j][0] in filename[k] and prefix[j][1] in filename[k]) and (
@@ -314,7 +316,7 @@ def _associate_paired_view_tracks(tracklets1, tracklets2, F):
             costs[i, j] = cost
 
     match_inds = linear_sum_assignment(np.abs(costs))
-    voting = dict(zip(*match_inds))
+    voting = dict(zip(*match_inds, strict=False))
 
     return costs, voting
 

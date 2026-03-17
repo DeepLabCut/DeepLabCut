@@ -19,16 +19,16 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import skimage.color
-from skimage import io
-from skimage.util import img_as_ubyte
-import cv2
 import datetime
-import numpy as np
 import os
 import subprocess
 import warnings
 
+import cv2
+import numpy as np
+import skimage.color
+from skimage import io
+from skimage.util import img_as_ubyte
 
 # more videos are in principle covered, as OpenCV is used and allows many formats.
 SUPPORTED_VIDEOS = "avi", "mp4", "mov", "mpeg", "mpg", "mpv", "mkv", "flv", "qt", "yuv"
@@ -41,7 +41,7 @@ class VideoReader:
         self.video_path = video_path
         self.video = cv2.VideoCapture(video_path)
         if not self.video.isOpened():
-            raise IOError("Video could not be opened; it may be corrupted.")
+            raise OSError("Video could not be opened; it may be corrupted.")
         self.parse_metadata()
         self._bbox = 0, 1, 0, 1
         self._n_frames_robust = None
@@ -58,7 +58,7 @@ class VideoReader:
         command = f'ffmpeg -v error -i "{self.video_path}" -f null - 2>"{dest}"'
         subprocess.call(command, shell=True)
         if os.path.getsize(dest) != 0:
-            warnings.warn(f'Video contains errors. See "{dest}" for a detailed report.')
+            warnings.warn(f'Video contains errors. See "{dest}" for a detailed report.', stacklevel=2)
 
     def check_integrity_robust(self):
         numframes = self.video.get(cv2.CAP_PROP_FRAME_COUNT)
@@ -66,7 +66,7 @@ class VideoReader:
         while fr < numframes:
             success, frame = self.video.read()
             if not success or frame is None:
-                warnings.warn(f"Opencv failed to load frame {fr}. Use ffmpeg to re-encode video file")
+                warnings.warn(f"Opencv failed to load frame {fr}. Use ffmpeg to re-encode video file", stacklevel=2)
             fr += 1
 
     @property
@@ -110,7 +110,7 @@ class VideoReader:
             raise ValueError("Index must be a positive integer.")
         last_frame = len(self) - 1
         if ind > last_frame:
-            warnings.warn("Index exceeds the total number of frames. Setting to last frame instead.")
+            warnings.warn("Index exceeds the total number of frames. Setting to last frame instead.", stacklevel=2)
             ind = last_frame
         self.video.set(cv2.CAP_PROP_POS_FRAMES, ind)
 
@@ -155,7 +155,7 @@ class VideoReader:
             y2 /= self._height
         bbox = x1, x2, y1, y2
         if any(coord > 1 for coord in bbox):
-            warnings.warn("Bounding box larger than the video... Clipping to video dimensions.")
+            warnings.warn("Bounding box larger than the video... Clipping to video dimensions.", stacklevel=2)
             bbox = tuple(map(lambda x: min(x, 1), bbox))
         self._bbox = bbox
 
@@ -186,7 +186,7 @@ class VideoReader:
     def parse_metadata(self):
         self._n_frames = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
         if self._n_frames >= 1e9:
-            warnings.warn("The video has more than 10^9 frames, we recommend chopping it up.")
+            warnings.warn("The video has more than 10^9 frames, we recommend chopping it up.", stacklevel=2)
         self._width = int(self.video.get(cv2.CAP_PROP_FRAME_WIDTH))
         self._height = int(self.video.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self._fps = round(self.video.get(cv2.CAP_PROP_FPS), 2)
@@ -197,7 +197,7 @@ class VideoReader:
 
 class VideoWriter(VideoReader):
     def __init__(self, video_path, codec="h264", dpi=100, fps=None):
-        super(VideoWriter, self).__init__(video_path)
+        super().__init__(video_path)
         self.codec = codec
         self.dpi = dpi
         if fps:
@@ -269,9 +269,12 @@ class VideoWriter(VideoReader):
             raise ValueError("The video should at least be split in half.")
         chunk_dur = self.calc_duration() / n_splits
         splits = np.arange(n_splits + 1) * chunk_dur
-        time_formatter = lambda val: str(datetime.timedelta(seconds=val))
+
+        def time_formatter(val):
+            return str(datetime.timedelta(seconds=val))
+
         clips = []
-        for n, (start, end) in enumerate(zip(splits, splits[1:]), start=1):
+        for n, (start, end) in enumerate(zip(splits, splits[1:], strict=False), start=1):
             clips.append(
                 self.shorten(
                     time_formatter(start),
@@ -326,7 +329,7 @@ class VideoWriter(VideoReader):
             angle = np.deg2rad(angle)
             command = command.format(f", rotate={angle}")
         elif rotatecw == "Yes":
-            command = command.format(f", transpose=1")
+            command = command.format(", transpose=1")
         else:
             command = command.format("")
         subprocess.call(command, shell=True)
@@ -581,7 +584,7 @@ def rotate_video(vname, angle, rotatecw="Arbitrary", outsuffix="rotated", outpat
 
 def draw_bbox(video):
     import matplotlib.pyplot as plt
-    from matplotlib.widgets import RectangleSelector, Button
+    from matplotlib.widgets import Button, RectangleSelector
 
     clip = VideoWriter(video)
     frame = None
@@ -613,7 +616,7 @@ def draw_bbox(video):
     help_button = Button(ax_help, "Help")
     help_button.on_clicked(display_help)
 
-    rs = RectangleSelector(
+    RectangleSelector(
         ax,
         line_select_callback,
         minspanx=5,

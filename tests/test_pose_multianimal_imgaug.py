@@ -8,14 +8,16 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import numpy as np
 import os
+
+import numpy as np
 import pytest
 from conftest import TEST_DATA_DIR
+
 from deeplabcut.pose_estimation_tensorflow.datasets import (
     Batch,
-    pose_multianimal_imgaug,
     PoseDatasetFactory,
+    pose_multianimal_imgaug,
 )
 from deeplabcut.utils import read_plainconfig
 

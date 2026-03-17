@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # DeepLabCut Toolbox (deeplabcut.org)
 # © A. & M.W. Mathis Labs
@@ -30,9 +29,9 @@ With pcutoff of 0.1  train error: 2.89 pixels. Test error: 2.81 pixels
 The analysis of the video takes 41 seconds (batch size 32) and creating the frames 8 seconds (+ a few seconds for ffmpeg) to create the video.
 """
 
-import deeplabcut
 import os
 
+import deeplabcut
 
 if __name__ == "__main__":
     # Loading example data set

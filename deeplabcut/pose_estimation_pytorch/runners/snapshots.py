@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from deeplabcut.pose_estimation_pytorch.data.snapshots import list_snapshots, Snapshot
+from deeplabcut.pose_estimation_pytorch.data.snapshots import Snapshot, list_snapshots
 
 
 @dataclass
@@ -72,7 +72,7 @@ class TorchSnapshotManager:
     _key: str = field(init=False)
 
     def __post_init__(self):
-        assert self.max_snapshots > 0, f"max_snapshots must be a positive integer"
+        assert self.max_snapshots > 0, "max_snapshots must be a positive integer"
         self._key = f"metrics/{self.key_metric}"
 
     def update(self, epoch: int, state_dict: dict, last: bool = False) -> None:

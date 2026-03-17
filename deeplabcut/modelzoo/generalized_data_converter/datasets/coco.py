@@ -24,7 +24,7 @@ class COCOPoseDataset(BasePoseDataset):
         shuffle=None,
     ):
 
-        super(COCOPoseDataset, self).__init__()
+        super().__init__()
 
         self.meta["dataset_name"] = dataset_name
         self.meta["proj_root"] = proj_root
@@ -45,7 +45,7 @@ class COCOPoseDataset(BasePoseDataset):
 
     def _load_json(self, json_fn):
         path = os.path.join(self.proj_root, "annotations", json_fn)
-        with open(path, "r") as f:
+        with open(path) as f:
             json_obj = json.load(f)
         return json_obj
 

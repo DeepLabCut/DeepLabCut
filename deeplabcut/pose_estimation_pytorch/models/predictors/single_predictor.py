@@ -10,13 +10,11 @@
 #
 from __future__ import annotations
 
-from typing import Tuple
-
 import torch
 
 from deeplabcut.pose_estimation_pytorch.models.predictors.base import (
-    BasePredictor,
     PREDICTORS,
+    BasePredictor,
 )
 
 
@@ -93,7 +91,7 @@ class HeatmapPredictor(BasePredictor):
 
         return {"poses": poses}
 
-    def get_top_values(self, heatmap: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def get_top_values(self, heatmap: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """Get the top values from the heatmap.
 
         Args:

@@ -13,10 +13,9 @@ import pickle
 import random
 from pathlib import Path
 
+import matplotlib
 import numpy as np
 import pandas as pd
-
-import matplotlib
 
 matplotlib.use("Agg")  # Non-interactive backend, for CI/CD on Windows
 
@@ -24,7 +23,6 @@ import deeplabcut
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoReader
-
 
 MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0"]
 

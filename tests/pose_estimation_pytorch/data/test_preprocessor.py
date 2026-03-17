@@ -13,13 +13,12 @@
 import albumentations as A
 import numpy as np
 import pytest
-from albumentations import BaseCompose
 
-from deeplabcut.pose_estimation_pytorch.data.transforms import build_resize_transforms
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import (
     AugmentImage,
     build_conditional_top_down_preprocessor,
 )
+from deeplabcut.pose_estimation_pytorch.data.transforms import build_resize_transforms
 
 
 @pytest.mark.parametrize(

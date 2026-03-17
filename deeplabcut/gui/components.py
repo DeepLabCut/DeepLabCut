@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
@@ -19,7 +20,6 @@ from PySide6.QtGui import QIcon
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import ConfigEditor
-from pathlib import Path
 
 
 def _create_label_widget(
@@ -236,7 +236,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
 
     def clear_selected_videos(self):
         self.root.clear_video_files()
-        self.root.logger.info(f"Cleared selected videos")
+        self.root.logger.info("Cleared selected videos")
 
 
 class SnapshotSelectionWidget(QtWidgets.QWidget):
@@ -377,7 +377,7 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
         if selected_filter.startswith(snapshots_label) and selected_conditions:
             if not _is_model_bu(selected_conditions):
                 msg = _create_message_box(
-                    f"Invalid conditions",
+                    "Invalid conditions",
                     (
                         f"The selected snapshot ({selected_conditions}) cannot be "
                         "used as conditions because it is not a Bottom-Up model."

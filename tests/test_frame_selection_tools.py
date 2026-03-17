@@ -12,7 +12,9 @@
 
 import math
 from unittest.mock import Mock
+
 import pytest
+
 import deeplabcut.utils.frameselectiontools as fst
 
 

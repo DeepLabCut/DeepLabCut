@@ -20,8 +20,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes._axes import _log as matplotlib_axes_logger
 
-from deeplabcut.utils import auxiliaryfunctions
-from deeplabcut.utils import auxiliaryfunctions_3d
+from deeplabcut.utils import auxiliaryfunctions, auxiliaryfunctions_3d
 
 matplotlib_axes_logger.setLevel("ERROR")
 
@@ -134,7 +133,7 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
                 )  #  (8,6) pattern (dimensions = common points of black squares)
                 # If found, add object points, image points (after refining them)
 
-                if ret == True:
+                if ret:
                     img_shape[cam] = gray.shape[::-1]
                     objpoints[cam].append(objp)
                     corners = cv2.cornerSubPix(gray, corners, search_window_size, (-1, -1), criteria)
@@ -143,7 +142,7 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
                     img = cv2.drawChessboardCorners(img, (cbcol, cbrow), corners, ret)
                     cv2.imwrite(os.path.join(str(path_corners), filename + "_corner.jpg"), img)
                 else:
-                    print("Corners not found for the image %s" % Path(fname).name)
+                    print(f"Corners not found for the image {Path(fname).name}")
                     for new_cam in cam_names:
                         remove_fname = Path(fname).name.replace(cam, new_cam)
                         os.rename(
@@ -161,7 +160,7 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
         )
 
     # Perform calibration for each cameras and store the matrices as a pickle file
-    if calibrate == True:
+    if calibrate:
         # Calibrating each camera
         for cam in cam_names:
             ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(
@@ -183,8 +182,7 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
                 ),
             )
             print(
-                "Saving intrinsic camera calibration matrices for %s as a pickle file in %s"
-                % (cam, os.path.join(path_camera_matrix))
+                f"Saving intrinsic camera calibration matrices for {cam} as a pickle file in {os.path.join(path_camera_matrix)}"
             )
 
             # Compute mean re-projection errors for individual cameras
@@ -193,12 +191,12 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
                 imgpoints_proj, _ = cv2.projectPoints(objpoints[cam][i], rvecs[i], tvecs[i], mtx, dist)
                 error = cv2.norm(imgpoints[cam][i], imgpoints_proj, cv2.NORM_L2) / len(imgpoints_proj)
                 mean_error += error
-            print("Mean re-projection error for %s images: %.3f pixels " % (cam, mean_error / len(objpoints[cam])))
+            print(f"Mean re-projection error for {cam} images: {mean_error / len(objpoints[cam]):.3f} pixels ")
 
         # Compute stereo calibration for each pair of cameras
         camera_pair = [[cam_names[0], cam_names[1]]]
         for pair in camera_pair:
-            print("Computing stereo calibration for " % pair)
+            print("Computing stereo calibration for ")
             (
                 retval,
                 cameraMatrix1,
@@ -254,16 +252,14 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
             }
 
         print(
-            "Saving the stereo parameters for every pair of cameras as a pickle file in %s"
-            % str(os.path.join(path_camera_matrix))
+            f"Saving the stereo parameters for every pair of cameras as a pickle file in {str(os.path.join(path_camera_matrix))}"
         )
 
         auxiliaryfunctions.write_pickle(os.path.join(path_camera_matrix, "stereo_params.pickle"), stereo_params)
         print("Camera calibration done! Use the function ``check_undistortion`` to check the check the calibration")
     else:
         print(
-            "Corners extracted! You may check for the extracted corners in the directory %s and remove the pair of images where the corners are incorrectly detected. If all the corners are detected correctly with right order, then re-run the same function and use the flag ``calibrate=True``, to calbrate the camera."
-            % str(path_corners)
+            f"Corners extracted! You may check for the extracted corners in the directory {str(path_corners)} and remove the pair of images where the corners are incorrectly detected. If all the corners are detected correctly with right order, then re-run the same function and use the flag ``calibrate=True``, to calbrate the camera."
         )
 
 
@@ -398,10 +394,10 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
 
         cam1_undistort = np.array(cam1_undistort)
         cam2_undistort = np.array(cam2_undistort)
-        print("All images are undistorted and stored in %s" % str(path_undistort))
+        print(f"All images are undistorted and stored in {str(path_undistort)}")
         print("Use the function ``triangulate`` to undistort the dataframes and compute the triangulation")
 
-        if plot == True:
+        if plot:
             f1, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
             f1.suptitle(
                 str("Original Image: Views from " + pair[0] + " and " + pair[1]),
@@ -412,7 +408,7 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
             ax1.imshow(cv2.cvtColor(img1, cv2.COLOR_BGR2RGB))
             ax2.imshow(cv2.cvtColor(img2, cv2.COLOR_BGR2RGB))
 
-            norm = mcolors.Normalize(vmin=0.0, vmax=cam1_undistort.shape[1])
+            mcolors.Normalize(vmin=0.0, vmax=cam1_undistort.shape[1])
             plt.savefig(os.path.join(str(path_undistort), "Original_Image.png"))
 
             # Plot the undistorted corner points

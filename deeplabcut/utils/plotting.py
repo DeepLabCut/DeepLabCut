@@ -22,20 +22,20 @@ from __future__ import annotations
 
 import argparse
 import os
-import pickle
-import pandas as pd
 
 ####################################################
 # Dependencies
 ####################################################
 import os.path
+import pickle
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 from deeplabcut.core import crossvalutils
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
 
 
 def Histogram(vector, color, bins, ax=None, linewidth=1.0):

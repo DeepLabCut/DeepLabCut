@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # DeepLabCut Toolbox (deeplabcut.org)
 # © A. & M.W. Mathis Labs
@@ -28,6 +27,7 @@ import platform
 import random
 from pathlib import Path
 
+import matplotlib
 import numpy as np
 import pandas as pd
 import scipy.io as sio
@@ -35,8 +35,6 @@ import scipy.io as sio
 import deeplabcut
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
-
-import matplotlib
 
 matplotlib.use("Agg")  # Non-interactive backend, for CI/CD on Windows
 
@@ -233,7 +231,7 @@ if __name__ == "__main__":
 
     print("CREATE VIDEO")
     successful = deeplabcut.create_labeled_video(path_config_file, [newvideo], destfolder=DESTFOLDER, save_frames=True)
-    assert all(successful), f"Failed to create a labeled video!"
+    assert all(successful), "Failed to create a labeled video!"
 
     print("Making plots")
     deeplabcut.plot_trajectories(path_config_file, [newvideo], destfolder=DESTFOLDER)
@@ -363,13 +361,13 @@ if __name__ == "__main__":
         displaycropped=True,
         filtered=True,
     )
-    assert all(successful), f"Failed to create a labeled video!"
+    assert all(successful), "Failed to create a labeled video!"
 
     print("Creating a Johansson video!")
     successful = deeplabcut.create_labeled_video(
         path_config_file, [newvideo2], destfolder=DESTFOLDER, keypoints_only=True
     )
-    assert all(successful), f"Failed to create a labeled video!"
+    assert all(successful), "Failed to create a labeled video!"
 
     deeplabcut.plot_trajectories(path_config_file, [newvideo2], destfolder=DESTFOLDER, filtered=True)
 

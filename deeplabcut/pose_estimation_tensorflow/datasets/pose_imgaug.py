@@ -21,19 +21,21 @@ import pickle
 import imgaug.augmenters as iaa
 import numpy as np
 import scipy.io as sio
+
 from deeplabcut.pose_estimation_tensorflow.datasets import augmentation
 from deeplabcut.utils.auxfun_videos import imread
 from deeplabcut.utils.conversioncode import robust_split_path
+
 from .factory import PoseDatasetFactory
 from .pose_base import BasePoseDataset
-from .utils import DataItem, Batch
+from .utils import Batch, DataItem
 
 
 @PoseDatasetFactory.register("default")
 @PoseDatasetFactory.register("imgaug")
 class ImgaugPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
-        super(ImgaugPoseDataset, self).__init__(cfg)
+        super().__init__(cfg)
         self._n_kpts = len(cfg["all_joints_names"])
         self.data = self.load_dataset()
         self.batch_size = cfg.get("batch_size", 1)
@@ -139,7 +141,9 @@ class ImgaugPoseDataset(BasePoseDataset):
             return data
 
     def build_augmentation_pipeline(self, height=None, width=None, apply_prob=0.5):
-        sometimes = lambda aug: iaa.Sometimes(apply_prob, aug)
+        def sometimes(aug):
+            return iaa.Sometimes(apply_prob, aug)
+
         pipeline = iaa.Sequential(random_order=False)
 
         cfg = self.cfg
@@ -386,7 +390,7 @@ class ImgaugPoseDataset(BasePoseDataset):
 
             batch_joints_valid = []
             joint_ids_valid = []
-            for joints, ids in zip(batch_joints, joint_ids):
+            for joints, ids in zip(batch_joints, joint_ids, strict=False):
                 # invisible joints are represented by nans
                 mask = ~np.isnan(joints[:, 0])
                 joints = joints[mask, :]
@@ -466,10 +470,10 @@ class ImgaugPoseDataset(BasePoseDataset):
             for k, j_id in enumerate(joint_id[person_id]):
                 joint_pt = coords[person_id][k, :]
                 j_x = np.asarray(joint_pt[0]).item()
-                j_x_sm = round((j_x - self.half_stride) / self.stride)
+                round((j_x - self.half_stride) / self.stride)
                 j_y = np.asarray(joint_pt[1]).item()
-                j_y_sm = round((j_y - self.half_stride) / self.stride)
-                map_j = grid.copy()
+                round((j_y - self.half_stride) / self.stride)
+                grid.copy()
                 # Distance between the joint point and each coordinate
                 dist = np.linalg.norm(grid - (j_y, j_x), axis=2) ** 2
                 scmap_j = np.exp(-dist / (2 * (std**2)))

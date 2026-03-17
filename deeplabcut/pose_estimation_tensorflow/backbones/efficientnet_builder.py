@@ -16,6 +16,7 @@
 import functools
 import os
 import re
+
 import tensorflow as tf
 
 import deeplabcut.pose_estimation_tensorflow.backbones.efficientnet_model as efficientnet_model
@@ -41,7 +42,7 @@ def efficientnet_params(model_name):
     return params_dict[model_name]
 
 
-class BlockDecoder(object):
+class BlockDecoder:
     """Block Decoder for readability."""
 
     def _decode_block_string(self, block_string):

@@ -49,9 +49,9 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
     import shutil
     from pathlib import Path
 
+    from deeplabcut.generate_training_dataset import frame_extraction
     from deeplabcut.utils import auxiliaryfunctions
     from deeplabcut.utils.auxfun_videos import VideoReader
-    from deeplabcut.generate_training_dataset import frame_extraction
 
     # Read the config file
     cfg = auxiliaryfunctions.read_config(config)
@@ -74,7 +74,7 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
 
     destinations = [video_path.joinpath(vp.name) for vp in videos]
     if copy_videos:
-        for src, dst in zip(videos, destinations):
+        for src, dst in zip(videos, destinations, strict=False):
             if dst.exists():
                 pass
             else:
@@ -84,7 +84,7 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
     else:
         # creates the symlinks of the video and puts it in the videos directory.
         print("Attempting to create a symbolic link of the video ...")
-        for src, dst in zip(videos, destinations):
+        for src, dst in zip(videos, destinations, strict=False):
             if dst.exists():
                 print(f"Video {dst} already exists. Skipping...")
                 continue
@@ -92,16 +92,16 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
                 src = str(src)
                 dst = str(dst)
                 os.symlink(src, dst)
-                print("Created the symlink of {} to {}".format(src, dst))
+                print(f"Created the symlink of {src} to {dst}")
             except OSError:
                 try:
                     import subprocess
 
-                    subprocess.check_call("mklink %s %s" % (dst, src), shell=True)
+                    subprocess.check_call(f"mklink {dst} {src}", shell=True)
                 except (OSError, subprocess.CalledProcessError):
                     print("Symlink creation impossible (exFat architecture?): copying the video instead.")
                     shutil.copy(os.fspath(src), os.fspath(dst))
-                    print("{} copied to {}".format(src, dst))
+                    print(f"{src} copied to {dst}")
             videos = destinations
 
     if copy_videos:

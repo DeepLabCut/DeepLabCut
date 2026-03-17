@@ -8,8 +8,8 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 from fmpose3d import (
-    FMPose3DInference,
     FMPose3DConfig,
+    FMPose3DInference,
     SupportedModel,
 )
 

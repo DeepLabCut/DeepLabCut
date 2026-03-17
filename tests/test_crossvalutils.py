@@ -8,8 +8,10 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import numpy as np
 import pickle
+
+import numpy as np
+
 from deeplabcut.core import crossvalutils
 
 BEST_GRAPH = [14, 15, 16, 11, 22, 31, 61, 7, 59, 62, 64]

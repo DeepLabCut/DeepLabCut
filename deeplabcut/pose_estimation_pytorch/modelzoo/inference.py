@@ -14,15 +14,15 @@ from pathlib import Path
 import numpy as np
 
 from deeplabcut.modelzoo.utils import get_super_animal_scorer, get_superanimal_colormaps
-from deeplabcut.pose_estimation_pytorch.apis.videos import (
-    create_df_from_prediction,
-    video_inference,
-    VideoIterator,
-)
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
+    get_filtered_coco_detector_inference_runner,
     get_inference_runners,
     get_pose_inference_runner,
-    get_filtered_coco_detector_inference_runner,
+)
+from deeplabcut.pose_estimation_pytorch.apis.videos import (
+    VideoIterator,
+    create_df_from_prediction,
+    video_inference,
 )
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     raise_warning_if_called_directly,

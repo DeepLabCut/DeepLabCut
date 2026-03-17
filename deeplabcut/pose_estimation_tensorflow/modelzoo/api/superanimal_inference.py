@@ -50,7 +50,7 @@ def get_multi_scale_frames(frame, scale_list):
 def _project_pred_to_original_size(pred, old_shape, new_shape):
     old_h, old_w, _ = old_shape
     new_h, new_w, _ = new_shape
-    ratio_h, ratio_w = old_h / new_h, old_w / new_w
+    ratio_h, _ratio_w = old_h / new_h, old_w / new_w
 
     coordinate = pred["coordinates"][0]
     confidence = pred["confidence"]
@@ -87,7 +87,7 @@ def _average_multiple_scale_preds(
             continue
         coordinates = pred["coordinates"][0]
         confidence = pred["confidence"]
-        for i, (coords, conf) in enumerate(zip(coordinates, confidence)):
+        for i, (coords, conf) in enumerate(zip(coordinates, confidence, strict=False)):
             if not np.any(coords):
                 continue
             xyp[scale_id, i, :2] = coords
@@ -122,8 +122,10 @@ def _video_inference(
     cap,
     nframes,
     batchsize,
-    scale_list=[],
+    scale_list=None,
 ):
+    if scale_list is None:
+        scale_list = []
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
     batch_ind = 0  # keeps track of which image within a batch should be written to
 
@@ -244,7 +246,7 @@ def video_inference(
     videos,
     project_name,
     model_name,
-    scale_list=[],
+    scale_list=None,
     videotype="avi",
     destfolder=None,
     batchsize=1,
@@ -253,6 +255,8 @@ def video_inference(
     init_weights="",
     customized_test_config="",
 ):
+    if scale_list is None:
+        scale_list = []
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 
     if customized_test_config == "":
@@ -384,7 +388,7 @@ def video_inference(
                 "cropping_parameters": coords,
             }
             metadata = {"data": dictionary}
-            print("Saving results in %s..." % (destfolder))
+            print(f"Saving results in {destfolder}...")
 
             metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
 
@@ -408,7 +412,7 @@ def video_inference(
                     keypoints = dict_["coordinates"][0]
                     confidence = dict_["confidence"]
                     temp = np.full((len(keypoints), 3), np.nan)
-                    for n, (xy, c) in enumerate(zip(keypoints, confidence)):
+                    for n, (xy, c) in enumerate(zip(keypoints, confidence, strict=False)):
                         if xy.size and c.size:
                             temp[n, :2] = xy
                             temp[n, 2] = c
@@ -423,7 +427,7 @@ def _video_inference_superanimal(
     videos,
     project_name,
     model_name,
-    scale_list=[],
+    scale_list=None,
     videotype=".mp4",
     video_adapt=False,
     plot_trajectories=True,
@@ -494,6 +498,8 @@ def _video_inference_superanimal(
         SpatiotemporalAdaptation,
     )
 
+    if scale_list is None:
+        scale_list = []
     superanimal_name = project_name + "_" + model_name
     for video in videos:
         modelfolder = Path(video).parent / f"{Path(video).stem}_video_adaptation"

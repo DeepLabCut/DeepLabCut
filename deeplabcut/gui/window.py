@@ -8,39 +8,38 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
 import logging
+import os
 import subprocess
 import sys
-from functools import cached_property
-from pathlib import Path
-from typing import List
-from urllib.error import URLError
 import warnings
-import qdarkstyle
+from functools import cached_property
 from importlib.resources import files
+from pathlib import Path
+from urllib.error import URLError
+
+import qdarkstyle
+from napari_deeplabcut import misc
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QAction, QIcon, QPixmap
+from PySide6.QtWidgets import (
+    QComboBox,
+    QLabel,
+    QMainWindow,
+    QMenu,
+    QMessageBox,
+    QSizePolicy,
+    QWidget,
+)
 
 import deeplabcut
-from deeplabcut import auxiliaryfunctions, VERSION, compat
+from deeplabcut import VERSION, auxiliaryfunctions, compat
 from deeplabcut.core.engine import Engine
 from deeplabcut.gui import BASE_DIR, components, utils
 from deeplabcut.gui.tabs import *
 from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
 from deeplabcut.utils.multiprocessing import call_with_timeout
-from napari_deeplabcut import misc
-from PySide6.QtWidgets import (
-    QMessageBox,
-    QMenu,
-    QWidget,
-    QMainWindow,
-    QComboBox,
-    QLabel,
-    QSizePolicy,
-)
-from PySide6 import QtCore
-from PySide6.QtGui import QIcon, QAction, QPixmap
-from PySide6 import QtWidgets, QtGui
-from PySide6.QtCore import Qt, QTimer
 
 warnings.filterwarnings(
     "ignore",
@@ -59,7 +58,7 @@ def _check_for_updates(silent=True):
     if is_latest and is_latest_plugin:
         if not silent:
             msg = QtWidgets.QMessageBox(
-                text=f"DeepLabCut is up-to-date",
+                text="DeepLabCut is up-to-date",
             )
             msg.exec_()
     else:
@@ -94,7 +93,7 @@ class MainWindow(QMainWindow):
     shuffle_created = QtCore.Signal(int)
 
     def __init__(self, app):
-        super(MainWindow, self).__init__()
+        super().__init__()
         self.app = app
         screen_size = app.screens()[0].size()
         self.screen_width = screen_size.width()
@@ -229,14 +228,14 @@ class MainWindow(QMainWindow):
         return bool(self.cfg.get("multianimalproject"))
 
     @property
-    def all_bodyparts(self) -> List:
+    def all_bodyparts(self) -> list:
         if self.is_multianimal:
             return self.cfg.get("multianimalbodyparts")
         else:
             return self.cfg["bodyparts"]
 
     @property
-    def all_individuals(self) -> List:
+    def all_individuals(self) -> list:
         if self.is_multianimal:
             return self.cfg.get("individuals")
         else:

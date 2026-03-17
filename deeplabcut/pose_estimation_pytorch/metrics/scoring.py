@@ -10,8 +10,9 @@
 #
 from __future__ import annotations
 
-import numpy as np
 import pickle
+
+import numpy as np
 from sklearn.metrics import accuracy_score
 
 from deeplabcut.core.crossvalutils import find_closest_neighbors

@@ -17,12 +17,12 @@ from PySide6.QtGui import QBrush, QColor, QDesktopServices, QIcon, QPainter, QPe
 from deeplabcut.create_project import create_new_project, create_new_project_3d
 from deeplabcut.gui import BASE_DIR
 from deeplabcut.gui.dlc_params import DLCParams
-from deeplabcut.gui.widgets import ClickableLabel, ItemSelectionFrame
 from deeplabcut.gui.tabs.docs import (
     URL_3D,
     URL_MA_CONFIGURE,
     URL_USE_GUIDE_SCENARIO,
 )
+from deeplabcut.gui.widgets import ClickableLabel, ItemSelectionFrame
 from deeplabcut.utils import auxiliaryfunctions
 
 
@@ -30,7 +30,7 @@ class DynamicTextList(QtWidgets.QWidget):
     """Dynamically add text entries"""
 
     def __init__(self, label_text="bodyparts", parent=None):
-        super(DynamicTextList, self).__init__(parent)
+        super().__init__(parent)
         self.label_text = label_text
         self.layout = QtWidgets.QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -180,7 +180,7 @@ class ProjectCreator(QtWidgets.QDialog):
     """Project creation dialog"""
 
     def __init__(self, parent):
-        super(ProjectCreator, self).__init__(parent)
+        super().__init__(parent)
         self.parent = parent
         self.setWindowTitle("New Project")
         self.setModal(True)
@@ -509,7 +509,7 @@ class ProjectCreator(QtWidgets.QDialog):
                 self.parent.load_config(config)
                 self.parent._update_project_state(config=config, loaded=True)
         except FileExistsError:
-            print('Project "{}" already exists!'.format(self.proj_default))
+            print(f'Project "{self.proj_default}" already exists!')
             return
 
         msg = QtWidgets.QMessageBox(text="New project created")

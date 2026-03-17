@@ -29,8 +29,8 @@ import functools
 import tensorflow as tf
 import tf_slim as slim
 
-from deeplabcut.pose_estimation_tensorflow.nnets import conv_blocks as ops
 from deeplabcut.pose_estimation_tensorflow.backbones import mobilenet as lib
+from deeplabcut.pose_estimation_tensorflow.nnets import conv_blocks as ops
 
 op = lib.op
 

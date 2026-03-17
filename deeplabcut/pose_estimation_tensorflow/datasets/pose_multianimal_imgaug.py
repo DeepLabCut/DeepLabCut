@@ -13,28 +13,29 @@
 import logging
 import os
 import pickle
+from math import sqrt
+from pathlib import Path
+
 import imageio
 import imgaug.augmenters as iaa
 import numpy as np
 import pandas as pd
 from imgaug.augmentables import Keypoint, KeypointsOnImage
+
 from deeplabcut.generate_training_dataset import read_image_shape_fast
 from deeplabcut.pose_estimation_tensorflow.datasets import augmentation
 from deeplabcut.pose_estimation_tensorflow.datasets.factory import PoseDatasetFactory
 from deeplabcut.pose_estimation_tensorflow.datasets.pose_base import BasePoseDataset
-from deeplabcut.pose_estimation_tensorflow.datasets.utils import DataItem, Batch
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
-from deeplabcut.utils.auxfun_videos import imread
-from deeplabcut.utils.auxfun_videos import VideoReader
+from deeplabcut.pose_estimation_tensorflow.datasets.utils import Batch, DataItem
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import VideoReader, imread
 from deeplabcut.utils.conversioncode import robust_split_path
-from pathlib import Path
-from math import sqrt
 
 
 @PoseDatasetFactory.register("multi-animal-imgaug")
 class MAImgaugPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
-        super(MAImgaugPoseDataset, self).__init__(cfg)
+        super().__init__(cfg)
 
         if cfg.get("pseudo_label", ""):
             self._n_kpts = len(cfg["all_joints_names"])

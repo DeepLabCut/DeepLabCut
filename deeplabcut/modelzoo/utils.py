@@ -181,7 +181,7 @@ def read_conversion_table_from_csv(csv_path):
     df = df.dropna()
     df[0] = df[0].str.replace(r"\s+", "", regex=True)
     df[1] = df[1].str.replace(r"\s+", "", regex=True)
-    _map = dict(zip(df[0], df[1]))
+    _map = dict(zip(df[0], df[1], strict=False))
     return _map
 
 
@@ -200,6 +200,7 @@ def parse_project_model_name(superanimal_name: str) -> tuple[str, str]:
         warnings.warn(
             f"{superanimal_name} is deprecated and will be removed in a future version. Use {superanimal_name}_model_suffix instead.",
             DeprecationWarning,
+            stacklevel=2,
         )
         superanimal_name = "superanimal_quadruped_hrnetw32"
 
@@ -207,6 +208,7 @@ def parse_project_model_name(superanimal_name: str) -> tuple[str, str]:
         warnings.warn(
             f"{superanimal_name} is deprecated and will be removed in a future version. Use {superanimal_name}_model_suffix instead.",
             DeprecationWarning,
+            stacklevel=2,
         )
         superanimal_name = "superanimal_topviewmouse_dlcrnet"
 
@@ -223,7 +225,7 @@ def parse_project_model_name(superanimal_name: str) -> tuple[str, str]:
         raise ValueError(f"Model {model_name} not found. Available models are: {available_models}")
 
     available_project_configs = glob(os.path.join(modelzoo_path, "project_configs", "*.yaml"))
-    available_projects = [os.path.splitext(os.path.basename(path))[0] for path in available_project_configs]
+    [os.path.splitext(os.path.basename(path))[0] for path in available_project_configs]
 
     return project_name, model_name
 

@@ -9,9 +9,11 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 from functools import partial
+
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
+import deeplabcut
 from deeplabcut.gui.components import (
     DefaultTab,
     ShuffleSpinBox,
@@ -21,12 +23,10 @@ from deeplabcut.gui.components import (
 )
 from deeplabcut.gui.utils import move_to_separate_thread
 
-import deeplabcut
-
 
 class UnsupervizedIdTracking(DefaultTab):
     def __init__(self, root, parent, h1_description):
-        super(UnsupervizedIdTracking, self).__init__(root, parent, h1_description)
+        super().__init__(root, parent, h1_description)
 
         self._set_page()
 

@@ -122,7 +122,7 @@ class CondFromFile(CondProvider):
                 )
 
         if not filepath.exists():
-            raise ValueError(f"Conditions file {{conditions_filepath}} does not exist. Please check the given path.")
+            raise ValueError("Conditions file {conditions_filepath} does not exist. Please check the given path.")
 
         self.filepath = filepath
 
@@ -337,7 +337,7 @@ class CondFromFile(CondProvider):
             A dictionary mapping image paths to condition arrays. Each array has shape
             (num_conditions, num_bodyparts, 3).
         """
-        with open(filepath, "r") as f:
+        with open(filepath) as f:
             conditions = json.load(f)
 
         # Parse list and return

@@ -13,10 +13,9 @@ Testscript human network
 
 """
 
-import os, subprocess, deeplabcut
-from pathlib import Path
-import pandas as pd
-import numpy as np
+import os
+
+import deeplabcut
 
 Task = "human_dancing"
 YourName = "teamDLC"

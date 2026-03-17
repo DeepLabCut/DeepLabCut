@@ -17,7 +17,7 @@ from deeplabcut.pose_estimation_pytorch.models.criterions import (
     BaseCriterion,
     BaseLossAggregator,
 )
-from deeplabcut.pose_estimation_pytorch.models.heads.base import BaseHead, HEADS
+from deeplabcut.pose_estimation_pytorch.models.heads.base import HEADS, BaseHead
 from deeplabcut.pose_estimation_pytorch.models.modules.conv_block import (
     AdaptBlock,
     BaseBlock,

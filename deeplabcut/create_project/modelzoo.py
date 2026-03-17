@@ -15,8 +15,8 @@ from pathlib import Path
 import yaml
 from dlclibrary import get_available_detectors
 from dlclibrary.dlcmodelzoo.modelzoo_download import (
-    download_huggingface_model,
     MODELOPTIONS,
+    download_huggingface_model,
     get_available_datasets,
     get_available_models,
 )
@@ -25,9 +25,9 @@ import deeplabcut
 from deeplabcut.core.config import read_config_as_dict, write_config
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import (
-    TrainingDatasetMetadata,
-    ShuffleMetadata,
     DataSplit,
+    ShuffleMetadata,
+    TrainingDatasetMetadata,
 )
 from deeplabcut.generate_training_dataset.trainingsetmanipulation import (
     MakeInference_yaml,
@@ -358,12 +358,16 @@ def create_pretrained_project_pytorch(
 
     if net_name not in get_available_models(dataset):
         raise ValueError(
-            f"Invalid net_name '{net_name}' for dataset {dataset}. The following net types are available: {get_available_models(dataset)}"
+            f"Invalid net_name '{net_name}' for dataset {dataset}. The following net types are available: {
+                get_available_models(dataset)
+            }"
         )
 
     if detector_name not in get_available_detectors(dataset):
         raise ValueError(
-            f"Invalid detector_name '{detector_name}' for dataset {dataset}. The following detectors are available: {get_available_detectors(dataset)}"
+            f"Invalid detector_name '{detector_name}' for dataset {dataset}. The following detectors are available: {
+                get_available_detectors(dataset)
+            }"
         )
 
     # Create project

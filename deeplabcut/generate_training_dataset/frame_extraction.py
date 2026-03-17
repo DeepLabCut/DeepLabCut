@@ -31,7 +31,7 @@ def select_cropping_area(config, videos=None):
     cfg : dict
         Updated project configuration
     """
-    from deeplabcut.utils import auxiliaryfunctions, auxfun_videos
+    from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
 
     cfg = auxiliaryfunctions.read_config(config)
     if videos is None:
@@ -251,16 +251,17 @@ def extract_frames(
             extracted_cam=0,
         )
     """
-    import os
-    import sys
-    import re
     import glob
-    import numpy as np
+    import os
+    import re
+    import sys
     from pathlib import Path
+
+    import numpy as np
     from skimage import io
     from skimage.util import img_as_ubyte
-    from deeplabcut.utils import frameselectiontools
-    from deeplabcut.utils import auxiliaryfunctions
+
+    from deeplabcut.utils import auxiliaryfunctions, frameselectiontools
 
     config_file = Path(config).resolve()
     cfg = auxiliaryfunctions.read_config(config_file)
@@ -359,7 +360,7 @@ def extract_frames(
                 else:
                     coords = None
 
-                print("Extracting frames based on %s ..." % algo)
+                print(f"Extracting frames based on {algo} ...")
                 if algo == "uniform":
                     if opencv:
                         frames2pick = frameselectiontools.UniformFramescv2(cap, numframes2pick, start, stop)
@@ -462,7 +463,7 @@ def extract_frames(
             videos = [v for v in videos if v in videos_list]
         project_path = Path(config).parents[0]
         labels_path = os.path.join(project_path, "labeled-data/")
-        video_dir = os.path.join(project_path, "videos/")
+        os.path.join(project_path, "videos/")
         try:
             cfg_3d = auxiliaryfunctions.read_config(config3d)
         except:
@@ -494,7 +495,7 @@ def extract_frames(
                     coords = None
                 crop_list.append(coords)
 
-        for coords, dirPath in zip(crop_list, label_dirs):
+        for coords, dirPath in zip(crop_list, label_dirs, strict=False):
             extracted_images = glob.glob(os.path.join(dirPath, "*png"))
 
             imgPattern = re.compile("[0-9]{1,10}")

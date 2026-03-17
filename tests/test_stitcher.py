@@ -11,8 +11,8 @@
 import numpy as np
 import pandas as pd
 import pytest
-from deeplabcut.refine_training_dataset.stitch import Tracklet, TrackletStitcher
 
+from deeplabcut.refine_training_dataset.stitch import Tracklet, TrackletStitcher
 
 TRACKLET_LEN = 1000
 TRACKLET_START = 50

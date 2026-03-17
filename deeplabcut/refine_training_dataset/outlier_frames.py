@@ -15,7 +15,6 @@ import os
 import pickle
 import re
 from pathlib import Path
-from typing import List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,11 +24,11 @@ from skimage.util import img_as_ubyte
 
 from deeplabcut.core import inferenceutils
 from deeplabcut.utils import (
-    auxiliaryfunctions,
     auxfun_multianimal,
+    auxiliaryfunctions,
     conversioncode,
-    visualization,
     frameselectiontools,
+    visualization,
 )
 from deeplabcut.utils.auxfun_videos import VideoWriter
 
@@ -104,7 +103,7 @@ def find_outliers_in_raw_data(
             assemblies[k] = ass
         inds = inferenceutils.find_outlier_assemblies(assemblies, qs=percentiles)
     else:
-        raise IOError(f"Raw data file {pickle_file} could not be parsed.")
+        raise OSError(f"Raw data file {pickle_file} could not be parsed.")
 
     cfg = auxiliaryfunctions.read_config(config)
     ExtractFramesbasedonPreselection(
@@ -147,7 +146,7 @@ def find_outliers_in_raw_detections(pickled_data, algo="uncertain", threshold=0.
         Indices of video frames containing potential outliers
     """
     if algo != "uncertain":
-        raise ValueError(f"Only method 'uncertain' is currently supported.")
+        raise ValueError("Only method 'uncertain' is currently supported.")
 
     try:
         _ = pickled_data.pop("metadata")
@@ -473,7 +472,7 @@ def extract_outlier_frames(
                 if frames2use is not None:
                     try:
                         frames2use = np.array(frames2use).astype("int")
-                    except ValueError() as e:
+                    except ValueError():
                         print(
                             "Could not cast frames2use into np array, please check that frames2use is a simply a list of integers!"
                         )
@@ -557,11 +556,13 @@ def convertparms2start(pn):
 
 def FitSARIMAXModel(x, p, pcutoff, alpha, ARdegree, MAdegree, nforecast=0, disp=False):
     # Seasonal Autoregressive Integrated Moving-Average with eXogenous regressors (SARIMAX)
-    # see http://www.statsmodels.org/stable/statespace.html#seasonal-autoregressive-integrated-moving-average-with-exogenous-regressors-sarimax
+    # see
+    # http://www.statsmodels.org/stable/statespace.html#seasonal-autoregressive-integrated-moving-average-with-exogenous-regressors-sarimax
     Y = x.copy()
     Y[p < pcutoff] = np.nan  # Set uncertain estimates to nan (modeled as missing data)
     if np.sum(np.isfinite(Y)) > 10:
-        # SARIMAX implementation has better prediction models than simple ARIMAX (however we do not use the seasonal etc. parameters!)
+        # SARIMAX implementation has better prediction models than simple ARIMAX
+        # (however we do not use the seasonal etc. parameters!)
         mod = sm.tsa.statespace.SARIMAX(
             Y.flatten(),
             order=(ARdegree, 0, MAdegree),
@@ -572,7 +573,8 @@ def FitSARIMAXModel(x, p, pcutoff, alpha, ARdegree, MAdegree, nforecast=0, disp=
         # mod = sm.tsa.ARIMA(Y, order=(ARdegree,0,MAdegree)) #order=(ARdegree,0,MAdegree)
         try:
             res = mod.fit(disp=disp)
-        except ValueError:  # https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk (let's update to statsmodels 0.10.0 soon...)
+        # https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk (let's update to statsmodels 0.10.0 soon...)
+        except ValueError:
             startvalues = np.array([convertparms2start(pn) for pn in mod.param_names])
             res = mod.fit(start_params=startvalues, disp=disp)
         except np.linalg.LinAlgError:
@@ -650,7 +652,7 @@ def attempt_to_add_video(
     config: str,
     video: str,
     copy_videos: bool,
-    coords: Optional[List],
+    coords: list | None,
 ) -> bool:
     """
     Add new videos to the config file at any stage of the project.
@@ -688,7 +690,7 @@ def attempt_to_add_video(
         # can we make a catch here? - in fact we should drop indices from DataCombined
         # if they are in CollectedData.. [ideal behavior; currently pretty unlikely]
         print(
-            f"AUTOMATIC ADDING OF VIDEO TO CONFIG FILE FAILED! You need to "
+            "AUTOMATIC ADDING OF VIDEO TO CONFIG FILE FAILED! You need to "
             "do this manually for including it in the config.yaml file!"
         )
         print("Videopath:", video, "Coordinates for cropping:", coords)
@@ -716,7 +718,7 @@ def ExtractFramesbasedonPreselection(
     numframes2extract = cfg["numframes2pick"]
     bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, "all")
 
-    videofolder = str(Path(video).parents[0])
+    str(Path(video).parents[0])
     vname = str(Path(video).stem)
     tmpfolder = os.path.join(cfg["project_path"], "labeled-data", vname)
     if os.path.isdir(tmpfolder):
@@ -796,7 +798,8 @@ def ExtractFramesbasedonPreselection(
         print("Please implement this method yourself! Currently the options are 'kmeans', 'jump', 'uniform'.")
         frames2pick = []
 
-    # Extract frames + frames with plotted labels and store them in folder (with name derived from video name) nder labeled-data
+    # Extract frames + frames with plotted labels and store them in folder
+    # (with name derived from video name) nder labeled-data
     print("Let's select frames indices:", frames2pick)
     colors = visualization.get_cmap(len(bodyparts), cfg["colormap"])
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
@@ -838,7 +841,8 @@ def ExtractFramesbasedonPreselection(
         clip.close()
         del clip
 
-    # Extract annotations based on DeepLabCut and store in the folder (with name derived from video name) under labeled-data
+    # Extract annotations based on DeepLabCut and store in the folder (with
+    # name derived from video name) under labeled-data
     if len(frames2pick) > 0:
         added_video = attempt_to_add_video(
             config=config,
@@ -929,7 +933,7 @@ def ExtractFramesbasedonPreselection(
                 df.to_hdf(machinefile, key="df_with_missing", mode="w")
                 df.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
 
-        print(r"The outlier frames are extracted. They are stored in the subdirectory labeled-data\%s." % vname)
+        print(rf"The outlier frames are extracted. They are stored in the subdirectory labeled-data\{vname}.")
         print("Once you extracted frames for all videos, use 'refine_labels' to manually correct the labels.")
     else:
         print("No frames were extracted.")
@@ -1094,7 +1098,7 @@ def merge_datasets(config, forceiterate=None):
         os.path.join(bf, fn) for fn in os.listdir(bf) if "_labeled" not in fn and not fn.startswith(".")
     ]  # exclude labeled data folders and temporary files
     flagged = False
-    for findex, folder in enumerate(allfolders):
+    for _findex, folder in enumerate(allfolders):
         if os.path.isfile(os.path.join(folder, "MachineLabelsRefine.h5")):  # Folder that was manually refine...
             pass
         elif os.path.isfile(

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # DeepLabCut Toolbox (deeplabcut.org)
 # © A. & M.W. Mathis Labs
@@ -26,10 +25,12 @@ It produces nothing of interest scientifically.
 import os
 
 os.environ["DLClight"] = "True"
-import deeplabcut
 from pathlib import Path
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+
+import deeplabcut
 
 
 def Cuttrainingschedule(path_config_file, shuffle, trainingsetindex=0, initweights="imagenet", lastvalue=10):
@@ -71,7 +72,7 @@ def Cuttrainingschedule(path_config_file, shuffle, trainingsetindex=0, initweigh
         )
 
     print("CHANGING training parameters to end quickly!")
-    DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
+    deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
     return
 
 

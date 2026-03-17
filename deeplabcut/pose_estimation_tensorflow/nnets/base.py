@@ -9,9 +9,12 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import abc
+
 import tensorflow as tf
-from deeplabcut.pose_estimation_tensorflow.datasets import Batch
+
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal
+from deeplabcut.pose_estimation_tensorflow.datasets import Batch
+
 from .layers import prediction_layer
 from .utils import make_2d_gaussian_kernel
 

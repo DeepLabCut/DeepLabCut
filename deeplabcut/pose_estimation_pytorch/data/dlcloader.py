@@ -26,8 +26,7 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.snapshots import Snapshot
-from deeplabcut.pose_estimation_pytorch.data.utils import bbox_from_keypoints
-from deeplabcut.pose_estimation_pytorch.data.utils import read_image_shape_fast
+from deeplabcut.pose_estimation_pytorch.data.utils import bbox_from_keypoints, read_image_shape_fast
 
 
 class DLCLoader(Loader):
@@ -724,7 +723,7 @@ def _validate_dataframes(
             )
 
     if error and strict:
-        raise ValueError(f"Found errors when validating the dataset")
+        raise ValueError("Found errors when validating the dataset")
 
     return dfs
 

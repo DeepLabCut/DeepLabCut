@@ -8,13 +8,12 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from typing import Tuple
 
 import torch
 from einops import rearrange, repeat
 from timm.layers import trunc_normal_
 
-from deeplabcut.pose_estimation_pytorch.models.necks.base import BaseNeck, NECKS
+from deeplabcut.pose_estimation_pytorch.models.necks.base import NECKS, BaseNeck
 from deeplabcut.pose_estimation_pytorch.models.necks.layers import TransformerLayer
 from deeplabcut.pose_estimation_pytorch.models.necks.utils import (
     make_sine_position_embedding,
@@ -79,15 +78,15 @@ class Transformer(BaseNeck):
     def __init__(
         self,
         *,
-        feature_size: Tuple[int, int],
-        patch_size: Tuple[int, int],
+        feature_size: tuple[int, int],
+        patch_size: tuple[int, int],
         num_keypoints: int,
         dim: int,
         depth: int,
         heads: int,
         mlp_dim: int = 3,
         apply_init: bool = False,
-        heatmap_size: Tuple[int, int] = (64, 64),
+        heatmap_size: tuple[int, int] = (64, 64),
         channels: int = 32,
         dropout: float = 0.0,
         emb_dropout: float = 0.0,
@@ -165,7 +164,7 @@ class Transformer(BaseNeck):
         with torch.no_grad():
             self.pe_h = h
             self.pe_w = w
-            length = h * w
+            h * w
         if pe_type != "learnable":
             self.pos_embedding = torch.nn.Parameter(make_sine_position_embedding(h, w, d_model), requires_grad=False)
         else:
@@ -199,7 +198,7 @@ class Transformer(BaseNeck):
         layers = []
         layers.append(block(self.inplanes, planes, stride, downsample))
         self.inplanes = planes * block.expansion
-        for i in range(1, blocks):
+        for _i in range(1, blocks):
             layers.append(block(self.inplanes, planes))
 
         return torch.nn.Sequential(*layers)

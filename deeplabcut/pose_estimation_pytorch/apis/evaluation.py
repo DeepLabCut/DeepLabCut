@@ -11,8 +11,8 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 import albumentations as A
 import matplotlib.pyplot as plt
@@ -26,13 +26,13 @@ import deeplabcut.pose_estimation_pytorch.apis.prune_paf_graph as prune_paf_grap
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch import utils
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
+    build_bboxes_dict_for_dataframe,
     build_predictions_dataframe,
     ensure_multianimal_df_format,
     get_inference_runners,
     get_model_snapshots,
     get_scorer_name,
     get_scorer_uid,
-    build_bboxes_dict_for_dataframe,
 )
 from deeplabcut.pose_estimation_pytorch.data import DLCLoader, Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
@@ -826,7 +826,7 @@ def image_to_dlc_df_index(image: str) -> tuple[str, ...]:
     if len(image_path.parts) >= 3 and image_path.parts[-3] == "labeled-data":
         return Path(image_path).parts[-3:]
 
-    raise ValueError(f"Unexpected image filepath for a DLC project")
+    raise ValueError("Unexpected image filepath for a DLC project")
 
 
 def save_evaluation_results(df_scores: pd.DataFrame, scores_path: Path, print_results: bool, pcutoff: float) -> None:

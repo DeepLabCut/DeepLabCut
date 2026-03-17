@@ -46,6 +46,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
 
     """
     from datetime import datetime as dt
+
     from deeplabcut.utils import auxiliaryfunctions
 
     date = dt.today()
@@ -62,7 +63,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
     project_path = wd / project_name
     # Create project and sub-directories
     if not DEBUG and project_path.exists():
-        print('Project "{}" already exists!'.format(project_path))
+        print(f'Project "{project_path}" already exists!')
         return
 
     camera_matrix_path = project_path / "camera_matrix"
@@ -79,7 +80,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
         path_removed_images,
     ]:
         p.mkdir(parents=True, exist_ok=DEBUG)
-        print('Created "{}"'.format(p))
+        print(f'Created "{p}"')
 
     # Create config file
     cfg_file_3d, ruamelFile_3d = auxiliaryfunctions.create_config_template_3d()
@@ -122,7 +123,6 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
 
     print('Generated "{}"'.format(project_path / "config.yaml"))
     print(
-        "\nA new project with name %s is created at %s and a configurable file (config.yaml) is stored there. If you have not calibrated the cameras, then use the function 'calibrate_camera' to start calibrating the camera otherwise use the function ``triangulate`` to triangulate the dataframe"
-        % (project_name, wd)
+        f"\nA new project with name {project_name} is created at {wd} and a configurable file (config.yaml) is stored there. If you have not calibrated the cameras, then use the function 'calibrate_camera' to start calibrating the camera otherwise use the function ``triangulate`` to triangulate the dataframe"
     )
     return projconfigfile

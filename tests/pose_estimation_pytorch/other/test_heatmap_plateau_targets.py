@@ -9,7 +9,6 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-from typing import Tuple
 
 import pytest
 import torch
@@ -21,7 +20,7 @@ def get_target(
     batch_size: int,
     num_animals: int,
     num_joints: int,
-    image_size: Tuple[int, int],
+    image_size: tuple[int, int],
     locref_std: float,
     pos_dist_thresh: int,
 ):
@@ -81,7 +80,7 @@ def test_expected_output(
     batch_size: int,
     num_animals: int,
     num_joints: int,
-    image_size: Tuple[int, int],
+    image_size: tuple[int, int],
     locref_stdev: float,
     pos_dist_thresh: int,
 ):
@@ -147,7 +146,7 @@ def test_single_animal(
     batch_size: int,
     num_animals: int,
     num_joints: int,
-    image_size: Tuple[int, int],
+    image_size: tuple[int, int],
     locref_stdev: float,
     pos_dist_thresh: int,
 ):

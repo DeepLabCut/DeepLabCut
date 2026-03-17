@@ -34,7 +34,7 @@ from deeplabcut.pose_estimation_tensorflow.util.logging import setup_logging
 from deeplabcut.utils import auxfun_models
 
 
-class LearningRate(object):
+class LearningRate:
     def __init__(self, cfg):
         self.steps = cfg["multi_step"]
         self.current_step = 0
@@ -205,7 +205,7 @@ def train(
 
     info = build_info.build_info
     if not info["is_cuda_build"]:  # Apple Silicon is not built with CUDA
-        warnings.warn("Switching to Adam, as SGD crashes on Apple Silicon.")
+        warnings.warn("Switching to Adam, as SGD crashes on Apple Silicon.", stacklevel=2)
         cfg["optimizer"] = "adam"
         cfg["lr_init"] = 5e-4
         cfg["multi_step"] = [[1e-4, 7500], [5e-5, 12000], [1e-5, 200000]]
@@ -271,8 +271,8 @@ def train(
         if it % display_iters == 0 and it > start_iter:
             average_loss = cum_loss / display_iters
             cum_loss = 0.0
-            logging.info("iteration: {} loss: {} lr: {}".format(it, "{0:.4f}".format(average_loss), current_lr))
-            lrf.write("{}, {:.5f}, {}\n".format(it, average_loss, current_lr))
+            logging.info("iteration: {} loss: {} lr: {}".format(it, f"{average_loss:.4f}", current_lr))
+            lrf.write(f"{it}, {average_loss:.5f}, {current_lr}\n")
             lrf.flush()
 
         # Save snapshot

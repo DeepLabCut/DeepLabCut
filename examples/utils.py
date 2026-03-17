@@ -22,13 +22,14 @@ import matplotlib
 matplotlib.use("Agg")  # Non-interactive backend, for CI/CD on Windows
 
 import cv2
-import deeplabcut
-import deeplabcut.utils.auxiliaryfunctions as af
 import numpy as np
 import pandas as pd
+from PIL import Image
+
+import deeplabcut
+import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.compat import Engine
 from deeplabcut.generate_training_dataset import get_existing_shuffle_indices
-from PIL import Image
 
 
 def log_step(message: Any) -> None:
@@ -255,7 +256,7 @@ def generate_video_from_images(image_dir: Path, output_video: Path) -> None:
 
 def create_fake_project(path: Path, params: SyntheticProjectParameters) -> None:
     if path.exists():
-        raise ValueError(f"Cannot create a fake project at an existing path")
+        raise ValueError("Cannot create a fake project at an existing path")
 
     scorer = "synthetic"
     video_name = "cat"

@@ -10,17 +10,18 @@
 #
 from __future__ import annotations
 
+from collections import defaultdict
+
 import numpy as np
 import torch
 import torch.nn.functional as F
 from numpy.typing import NDArray
-from collections import defaultdict
 
-from deeplabcut.pose_estimation_pytorch.models.predictors.base import (
-    BasePredictor,
-    PREDICTORS,
-)
 from deeplabcut.core import inferenceutils
+from deeplabcut.pose_estimation_pytorch.models.predictors.base import (
+    PREDICTORS,
+    BasePredictor,
+)
 
 Graph = list[tuple[int, int]]
 
@@ -384,7 +385,7 @@ class PartAffinityFieldPredictor(BasePredictor):
 
         # Build an index dict of slices for group lookup by (batch, limb)
         batch_groups = defaultdict(list)  # (batch)->list of (limb, start, end)
-        for st, en in zip(group_starts, group_ends):
+        for st, en in zip(group_starts, group_ends, strict=False):
             b = batch_inds[st]
             k = edge_idx[st]
             batch_groups[b].append((k, st, en))

@@ -17,7 +17,7 @@ import torch
 import torch.nn as nn
 
 from deeplabcut.core.weight_init import WeightInitialization
-from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
+from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 
 def _build_detector(

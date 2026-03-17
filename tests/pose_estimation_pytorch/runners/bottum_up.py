@@ -11,25 +11,24 @@
 """Tests for the bottom-up pytorch runner"""
 
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 import pytest
 import torch
-from deeplabcut.pose_estimation_pytorch.config import make_pytorch_pose_config
-
-from deeplabcut.pose_estimation_pytorch.models import PoseModel, LOSSES, PREDICTORS
 from deeplabcut.pose_estimation_pytorch.models.criterion import WeightedAggregateLoss
+
+from deeplabcut.pose_estimation_pytorch.config import make_pytorch_pose_config
+from deeplabcut.pose_estimation_pytorch.models import LOSSES, PREDICTORS, PoseModel
 from deeplabcut.pose_estimation_pytorch.runners import RUNNERS
 from deeplabcut.pose_estimation_pytorch.runners.schedulers import LRListScheduler
 from deeplabcut.utils import auxiliaryfunctions
-
 
 SINGLE_ANIMAL_NETS = ["resnet_50"]
 MULTI_ANIMAL_NETS = ["dekr_w18"]
 NETS = [(n, False) for n in SINGLE_ANIMAL_NETS] + [(n, True) for n in MULTI_ANIMAL_NETS]
 
 
-def print_dict(data: Dict, indent: int = 0):
+def print_dict(data: dict, indent: int = 0):
     for k, v in data.items():
         if isinstance(v, dict):
             print_dict(v, indent=indent + 2)
@@ -42,7 +41,7 @@ def test_build_bottom_up_runner(
     net_type: str,
     multianimal: bool,
 ) -> None:
-    project_cfg: Dict[str, Any] = {"multianimalproject": multianimal}
+    project_cfg: dict[str, Any] = {"multianimalproject": multianimal}
     if multianimal:
         project_cfg["bodyparts"] = "MULTI!"
         project_cfg["multianimalbodyparts"] = ["head", "shoulder", "knee", "toe"]

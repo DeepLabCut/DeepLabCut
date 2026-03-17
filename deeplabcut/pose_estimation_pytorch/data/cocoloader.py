@@ -112,7 +112,7 @@ class COCOLoader(Loader):
         if not os.path.exists(json_path):
             raise FileNotFoundError(f"File {json_path} does not exist.")
 
-        with open(json_path, "r") as f:
+        with open(json_path) as f:
             json_obj = json.load(f)
 
         if not isinstance(json_obj, dict):
@@ -150,8 +150,8 @@ class COCOLoader(Loader):
 
         if len(coco_json["categories"]) > 1:
             warnings.warn(
-                f"Found more than 1 category in the project. This is currently not"
-                f" supported in DeepLabCut. All annotations will be given category 1"
+                "Found more than 1 category in the project. This is currently not"
+                " supported in DeepLabCut. All annotations will be given category 1"
             )
 
         if cat_0:
@@ -221,7 +221,7 @@ class COCOLoader(Loader):
 
         if len(coco_json["annotations"]) < len(validated_annotations):
             warnings.warn(
-                f"Found some annotations for which the image ID was not in the images. Removing them from the dataset."
+                "Found some annotations for which the image ID was not in the images. Removing them from the dataset."
             )
             print(f"  All annotations: {len(coco_json['annotations'])}")
             print(f"  Annotations with correct image IDs: {len(validated_annotations)}")
