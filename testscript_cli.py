@@ -8,24 +8,23 @@ This script tests various functionalities in an automatic way.
 It produces nothing of interest scientifically.
 """
 
-task = "Testcore"  # Enter the name of your experiment Task
-scorer = "Mackenzie"  # Enter the name of the experimenter/labeler
-
 import os
 import platform
 
 import numpy as np
 import pandas as pd
 
-# def install(package):
-#    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-# install("tensorflow==1.13.1")
 import deeplabcut as dlc
 from deeplabcut.core.engine import Engine
 
+task = "Testcore"  # Enter the name of your experiment Task
+scorer = "Mackenzie"  # Enter the name of the experimenter/labeler
 print("Imported DLC!")
 
 engine = Engine.PYTORCH
+# def install(package):
+#    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+# install("tensorflow==1.13.1")
 
 basepath = os.path.dirname(os.path.abspath("testscript_cli.py"))
 videoname = "reachingvideo1"
