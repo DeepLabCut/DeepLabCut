@@ -175,15 +175,13 @@ class EllipseFitter:
     @staticmethod
     @jit(nopython=True)
     def _fit(x, y):
-        """
-        Least Squares ellipse fitting algorithm
-        Fit an ellipse to a set of X- and Y-coordinates.
-        See Halir and Flusser, 1998 for implementation details
+        """Least Squares ellipse fitting algorithm Fit an ellipse to a set of X- and
+        Y-coordinates. See Halir and Flusser, 1998 for implementation details.
 
         :param x: ndarray, 1D trajectory
         :param y: ndarray, 1D trajectory
-        :return: 1D ndarray of 6 coefficients of the general quadratic curve:
-            ax^2 + 2bxy + cy^2 + 2dx + 2fy + g = 0
+        :return: 1D ndarray of 6 coefficients of the general quadratic curve: ax^2 +
+            2bxy + cy^2 + 2dx + 2fy + g = 0
         """
         D1 = np.vstack((x * x, x * y, y * y))
         D2 = np.vstack((x, y, np.ones_like(x)))
@@ -205,8 +203,7 @@ class EllipseFitter:
     @staticmethod
     @jit(nopython=True)
     def _fit_error(x, y, sd):
-        """
-        Fit a sd-sigma covariance error ellipse to the data.
+        """Fit a sd-sigma covariance error ellipse to the data.
 
         :param x: ndarray, 1D input of X coordinates
         :param y: ndarray, 1D input of Y coordinates
@@ -361,10 +358,8 @@ class BoxTracker(BaseTracker):
 
     @staticmethod
     def convert_x_to_bbox(x, score=None):
-        """
-        Takes a bounding box in the centre form [x,y,s,r] and returns it in the form
-        [x1,y1,x2,y2] where x1,y1 is the top left and x2,y2 is the bottom right
-        """
+        """Takes a bounding box in the centre form [x,y,s,r] and returns it in the form
+        [x1,y1,x2,y2] where x1,y1 is the top left and x2,y2 is the bottom right."""
         w = np.sqrt(x[2] * x[3])
         h = x[2] / w
         if score is None:
@@ -374,11 +369,9 @@ class BoxTracker(BaseTracker):
 
     @staticmethod
     def convert_bbox_to_z(bbox):
-        """
-        Takes a bounding box in the form [x1,y1,x2,y2] and returns z in the form
+        """Takes a bounding box in the form [x1,y1,x2,y2] and returns z in the form
         [x,y,s,r] where x,y is the centre of the box and s is the scale/area and r is
-        the aspect ratio
-        """
+        the aspect ratio."""
         w = bbox[2] - bbox[0]
         h = bbox[3] - bbox[1]
         x = bbox[0] + w / 2.0
@@ -444,7 +437,7 @@ class SORTEllipse(SORTBase):
             unmatched_detections = [i for i, _ in enumerate(ellipses) if i not in row_indices]
             unmatched_trackers = [j for j, _ in enumerate(trackers) if j not in col_indices]
             matches = []
-            for row, col in zip(row_indices, col_indices):
+            for row, col in zip(row_indices, col_indices, strict=False):
                 val = cost_matrix[row, col]
                 # diff = val - cost_matrix
                 # diff[row, col] += val
@@ -564,7 +557,7 @@ class SORTSkeleton(SORTBase):
                 self.trackers.append(tracker)
 
         poses_ref = []
-        for i, tracker in enumerate(self.trackers):
+        for _, tracker in enumerate(self.trackers):
             pose_ref = tracker.predict()
             poses_ref.append(pose_ref.reshape((-1, 2)))
 
@@ -674,8 +667,7 @@ class SORTBox(SORTBase):
 
     @staticmethod
     def match_detections_to_trackers(detections, trackers, iou_threshold):
-        """
-        Assigns detections to tracked object (both represented as bounding boxes)
+        """Assigns detections to tracked object (both represented as bounding boxes)
 
         Returns 3 lists of matches, unmatched_detections and unmatched_trackers
         """
@@ -693,17 +685,17 @@ class SORTBox(SORTBase):
         row_indices, col_indices = linear_sum_assignment(-iou_matrix)
 
         unmatched_detections = []
-        for d, det in enumerate(detections):
+        for d, _ in enumerate(detections):
             if d not in row_indices:
                 unmatched_detections.append(d)
         unmatched_trackers = []
-        for t, trk in enumerate(trackers):
+        for t, _ in enumerate(trackers):
             if t not in col_indices:
                 unmatched_trackers.append(t)
 
         # filter out matched with low IOU
         matches = []
-        for row, col in zip(row_indices, col_indices):
+        for row, col in zip(row_indices, col_indices, strict=False):
             if iou_matrix[row, col] < iou_threshold:
                 unmatched_detections.append(row)
                 unmatched_trackers.append(col)
@@ -745,9 +737,9 @@ def calc_bboxes_from_keypoints(data, slack=0, offset=0):
 
 
 def reconstruct_all_ellipses(data, sd):
-    """
-    Reconstructs ellipses for multiple individuals based on their body part coordinates
-    across multiple frames. Each ellipse is fitted to the coordinates using an `EllipseFitter`.
+    """Reconstructs ellipses for multiple individuals based on their body part
+    coordinates across multiple frames. Each ellipse is fitted to the coordinates using
+    an `EllipseFitter`.
 
     Parameters
     ----------
