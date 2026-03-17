@@ -8,22 +8,16 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""
-DeepLabCut2.0 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-Please see AUTHORS for contributors.
-
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 
 import os
 from itertools import islice
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
+import deeplabcut as dlc
 from deeplabcut.utils import auxiliaryfunctions
 
 SUPPORTED_FILETYPES = "csv", "nwb"
@@ -32,17 +26,20 @@ SUPPORTED_FILETYPES = "csv", "nwb"
 def convertcsv2h5(config, userfeedback=True, scorer=None):
     """
     Convert (image) annotation files in folder labeled-data from csv to h5.
-    This function allows the user to manually edit the csv (e.g. to correct the scorer name and then convert it into hdf format).
+    This function allows the user to manually edit the csv
+    (e.g. to correct the scorer name and then convert it into hdf format).
     WARNING: conversion might corrupt the data.
 
     config : string
         Full path of the config.yaml file as a string.
 
     userfeedback: bool, optional
-        If true the user will be asked specifically for each folder in labeled-data if the containing csv shall be converted to hdf format.
+        If true the user will be asked specifically
+        for each folder in labeled-data if the containing csv shall be converted to hdf format.
 
     scorer: string, optional
-        If a string is given, then the scorer/annotator in all csv and hdf files that are changed, will be overwritten with this name.
+        If a string is given, then the scorer/annotator
+        in all csv and hdf files that are changed, will be overwritten with this name.
 
     Examples
     --------
@@ -50,7 +47,8 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
     >>> deeplabcut.convertcsv2h5('/analysis/project/reaching-task/config.yaml')
 
     --------
-    Convert csv annotation files for reaching-task project into hdf while changing the scorer/annotator in all annotation files to Albert!
+    Convert csv annotation files for reaching-task project into hdf
+    while changing the scorer/annotator in all annotation files to Albert!
     >>> deeplabcut.convertcsv2h5('/analysis/project/reaching-task/config.yaml',scorer='Albert')
     --------
     """
@@ -107,7 +105,9 @@ def adapt_labeled_data_to_new_project(config_path, remove_old_bodyparts=False, o
     other_scorer : bool (default = False)
         If True, the labels will be converted to the new scorer.
     userfeedback : bool (default = True)
-        If true the user will be asked specifically for each folder in labeled-data if the containing csv shall be converted to hdf format.
+        If true the user will be asked specifically
+        for each folder in labeled-data if the containing csv
+        shall be converted to hdf format.
     """
 
     # Load the config file
@@ -234,7 +234,8 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
     Examples
     --------
 
-    Converts all pose-output files belonging to mp4 videos in the folder '/media/alex/experimentaldata/cheetahvideos' to csv files.
+    Converts all pose-output files belonging to mp4 videos
+    in the folder '/media/alex/experimentaldata/cheetahvideos' to csv files.
     deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
     """
 
@@ -273,7 +274,8 @@ def analyze_videos_converth5_to_nwb(
     Examples
     --------
 
-    Converts all pose-output files belonging to mp4 videos in the folder '/media/alex/experimentaldata/cheetahvideos' to csv files.
+    Converts all pose-output files belonging to mp4 videos in the folder
+    '/media/alex/experimentaldata/cheetahvideos' to csv files.
     deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
     """
     if listofvideos:  # can also be called with a list of videos (from GUI)
@@ -300,8 +302,8 @@ def _convert_h5_files_to(filetype, config, h5_files, videos):
     if filetype == "nwb":
         try:
             from dlc2nwb.utils import convert_h5_to_nwb
-        except ImportError:
-            raise ImportError("The package `dlc2nwb` is missing. Please run `pip install dlc2nwb`.")
+        except ImportError as e:
+            raise ImportError("The package `dlc2nwb` is missing. Please run `pip install dlc2nwb`.") from e
 
     for video in videos:
         if "_labeled" in video:
