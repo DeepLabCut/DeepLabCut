@@ -34,7 +34,7 @@ from deeplabcut.utils import auxiliaryfunctions
 
 
 def get_filename(filename):
-    if type(filename) == tuple:
+    if isinstance(filename, tuple):
         filename = os.path.join(*filename)
     return filename
 
@@ -401,7 +401,7 @@ def _generic2sdlc(
         else:
             try:
                 os.symlink(file_name, dest)
-            except:
+            except Exception:
                 pass
 
         if dataset_name == "AwA-Pose":

@@ -35,13 +35,21 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
     Examples
     --------
     Video will be added, with cropping dimensions according to the frame dimensions of mouse5.avi
-    >>> deeplabcut.add_new_videos('/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi'])
+    >>> deeplabcut.add_new_videos(
+        '/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi']
+        )
 
     Video will be added, with cropping dimensions [0,100,0,200]
-    >>> deeplabcut.add_new_videos('/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi'],copy_videos=False,coords=[[0,100,0,200]])
+    >>> deeplabcut.add_new_videos(
+        '/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',
+        ['/data/videos/mouse5.avi'],copy_videos=False,coords=[[0,100,0,200]]
+        )
 
     Two videos will be added, with cropping dimensions [0,100,0,200] and [0,100,0,250], respectively.
-    >>> deeplabcut.add_new_videos('/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi','/data/videos/mouse6.avi'],copy_videos=False,coords=[[0,100,0,200],[0,100,0,250]])
+    >>> deeplabcut.add_new_videos(
+        '/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',
+        ['/data/videos/mouse5.avi','/data/videos/mouse6.avi'],
+        copy_videos=False,coords=[[0,100,0,200],[0,100,0,250]])
     """
     import os
     import shutil
@@ -108,7 +116,7 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
             # For windows os.path.realpath does not work and does not link to the real video.
             video_path = str(Path.resolve(Path(video)))
         #           video_path = os.path.realpath(video)
-        except:
+        except Exception:
             video_path = os.readlink(video)
 
         vid = VideoReader(video_path)

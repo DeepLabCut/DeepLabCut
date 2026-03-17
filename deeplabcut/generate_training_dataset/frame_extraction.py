@@ -421,7 +421,8 @@ def extract_frames(
                             io.imsave(img_name, image)
                             if np.var(image) == 0:  # constant image
                                 print(
-                                    "Seems like black/constant images are extracted from your video. Perhaps consider using opencv under the hood, by setting: opencv=True"
+                                    "Seems like black/constant images are extracted from your video."
+                                    "Perhaps consider using opencv under the hood, by setting: opencv=True"
                                 )
                             is_valid.append(True)
                         except FileNotFoundError:
@@ -447,7 +448,8 @@ def extract_frames(
             print("Frames were successfully extracted, for the videos listed in the config.yaml file.")
         print(
             "\nYou can now label the frames using the function 'label_frames' "
-            "(Note, you should label frames extracted from diverse videos (and many videos; we do not recommend training on single videos!))."
+            "(Note, you should label frames extracted from diverse videos "
+            "(and many videos; we do not recommend training on single videos!))."
         )
         return has_failed
 
@@ -465,10 +467,10 @@ def extract_frames(
         os.path.join(project_path, "videos/")
         try:
             cfg_3d = auxiliaryfunctions.read_config(config3d)
-        except:
+        except Exception as e:
             raise Exception(
                 "You must create a 3D project and edit the 3D config file before extracting matched frames. \n"
-            )
+            ) from e
         cams = cfg_3d["camera_names"]
         extCam_name = cams[extracted_cam]
         del cams[extracted_cam]
@@ -540,6 +542,7 @@ def extract_frames(
 
     else:
         print(
-            "Invalid MODE. Choose either 'manual', 'automatic' or 'match'. Check ``help(deeplabcut.extract_frames)`` on python and ``deeplabcut.extract_frames?`` \
-              for ipython/jupyter notebook for more details."
+            "Invalid MODE. Choose either 'manual', 'automatic' or 'match'. "
+            "Check ``help(deeplabcut.extract_frames)`` on python and ``deeplabcut.extract_frames?``"
+            " for ipython/jupyter notebook for more details."
         )

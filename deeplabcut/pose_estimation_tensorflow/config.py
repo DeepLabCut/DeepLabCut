@@ -33,7 +33,7 @@ def _merge_a_into_b(a, b):
             else:
                 try:
                     _merge_a_into_b(a[k], b[k])
-                except:
+                except Exception:
                     print(f"Error under config key: {k}")
                     raise
         else:

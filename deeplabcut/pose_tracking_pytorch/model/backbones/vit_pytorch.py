@@ -327,7 +327,7 @@ class DLCTransReID(nn.Module):
                 v = resize_pos_embed(v, self.pos_embed, self.patch_embed.num_y, self.patch_embed.num_x)
             try:
                 self.state_dict()[k].copy_(v)
-            except:
+            except Exception:
                 print("===========================ERROR=========================")
                 print(
                     f"shape do not match in k :{k}: param_dict{v.shape} vs self.state_dict(){

@@ -262,7 +262,9 @@ def extract_outlier_frames(
         * ``'jump'`` identifies larger jumps than 'epsilon' in any body part
         * ``'uncertain'`` looks for frames with confidence below p_bound
         * ``'manual'`` launches a GUI from which the user can choose the frames
-        * ``'list'`` looks for user to provide a list of frame numbers to use, 'frames2use'. In this case, ``'extractionalgorithm'`` is forced to be ``'uniform.'``
+        * ``'list'`` looks for user to provide a list of
+          frame numbers to use, 'frames2use'.
+          In this case, ``'extractionalgorithm'`` is forced to be ``'uniform.'``
 
     frames2use: list[str], optional, default=None
         If ``'outlieralgorithm'`` is ``'list'``, provide the list of frames here.
@@ -472,7 +474,8 @@ def extract_outlier_frames(
                         frames2use = np.array(frames2use).astype("int")
                     except ValueError():
                         print(
-                            "Could not cast frames2use into np array, please check that frames2use is a simply a list of integers!"
+                            "Could not cast frames2use into np array, "
+                            "please check that frames2use is a simply a list of integers!"
                         )
                         raise
                     Indices.extend(frames2use)
@@ -534,7 +537,8 @@ def extract_outlier_frames(
             print(e)
             print(
                 "It seems the video has not been analyzed yet, or the video is not found! "
-                "You can only refine the labels after the a video is analyzed. Please run 'analyze_video' first. "
+                "You can only refine the labels after the a video is analyzed. "
+                "Please run 'analyze_video' first. "
                 "Or, please double check your video file path"
             )
 
@@ -663,7 +667,8 @@ def attempt_to_add_video(
         Full path of the video to add to the project.
 
     copy_videos : bool, optional
-        If this is set to True, the videos will be copied to the project/videos directory. If False, the symlink of the
+        If this is set to True, the videos will be copied to the project/videos directory.
+        If False, the symlink of the
         videos will be copied instead. The default is
         ``False``; if provided it must be either ``True`` or ``False``.
 
@@ -683,7 +688,7 @@ def attempt_to_add_video(
 
     try:
         add.add_new_videos(config, videos, coords=coords, copy_videos=copy_videos)
-    except:
+    except Exception:
         # can we make a catch here? - in fact we should drop indices from DataCombined
         # if they are in CollectedData.. [ideal behavior; currently pretty unlikely]
         print(

@@ -302,7 +302,7 @@ def _associate_paired_view_tracks(tracklets1, tracklets2, F):
 
                 # Get average cost of the entire track
                 cost = cost.mean()
-            except:
+            except Exception:
                 # typically when dim 2 differs, with uniquebodyparts
                 cost = 100000.0
 

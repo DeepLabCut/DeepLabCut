@@ -29,7 +29,7 @@ def threshold_kpts(config_path, h5path, threshold_mean=0.9, threshold_min=0.1):
     scorer = df.columns.get_level_values("scorer").unique()[0]
     try:
         data = df[scorer]["individual0"]
-    except:
+    except Exception:
         data = df[scorer]
 
     cfg = auxiliaryfunctions.read_config(config_path)

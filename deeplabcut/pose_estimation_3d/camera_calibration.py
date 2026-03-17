@@ -30,12 +30,17 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
     the camera and stores the calibration files in the project folder (defined in the
     config file).
 
-    Make sure you have around 20-60 pairs of calibration images. The function should be used iteratively to select the right set of calibration images.
+    Make sure you have around 20-60 pairs of calibration images.
+    The function should be used iteratively to select the right set of calibration images.
 
-    A pair of calibration image is considered "correct", if the corners are detected correctly in both the images. It may happen that during the first run of this function,
-    the extracted corners are incorrect or the order of detected corners does not align for the corresponding views (i.e. camera-1 and camera-2 images).
+    A pair of calibration image is considered "correct",
+    if the corners are detected correctly in both the images.
+    It may happen that during the first run of this function,
+    the extracted corners are incorrect or the order of detected corners
+    does not align for the corresponding views (i.e. camera-1 and camera-2 images).
 
-    In such a case, remove those pairs of images and re-run this function. Once the right number of calibration images are selected,
+    In such a case, remove those pairs of images and re-run this function.
+    Once the right number of calibration images are selected,
     use the parameter ``calibrate=True`` to calibrate the cameras.
 
     Parameters
@@ -50,11 +55,14 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
         Integer specifying the number of columns in the calibration image.
 
     calibrate : bool
-        If this is set to True, the cameras are calibrated with the current set of calibration images. The default is ``False``
-        Set it to True, only after checking the results of the corner detection method and removing dysfunctional images!
+        If this is set to True, the cameras are calibrated with the current set of calibration images.
+        The default is ``False``
+        Set it to True, only after checking the results of the corner detection method
+        and removing dysfunctional images!
 
     alpha: float
-        Floating point number between 0 and 1 specifying the free scaling parameter. When alpha = 0, the rectified images with only valid pixels are stored
+        Floating point number between 0 and 1 specifying the free scaling parameter.
+        When alpha = 0, the rectified images with only valid pixels are stored
         i.e. the rectified images are zoomed in. When alpha = 1, all the pixels from the original images are retained.
         For more details: https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
 
@@ -95,7 +103,7 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
             cfg_3d[str("config_file_" + cam_names[i])] = cfg_3d.pop(str("config_file_camera-" + str(i + 1)))
         for i in range(len(cam_names)):
             cfg_3d[str("shuffle_" + cam_names[i])] = cfg_3d.pop(str("shuffle_camera-" + str(i + 1)))
-    except:
+    except Exception:
         pass
 
     project_path = cfg_3d["project_path"]
@@ -117,7 +125,9 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
     images.sort(key=lambda f: int("".join(filter(str.isdigit, f))))
     if len(images) == 0:
         raise Exception(
-            "No calibration images found. Make sure the calibration images are saved as .jpg and with prefix as the camera name as specified in the config.yaml file."
+            "No calibration images found. "
+            "Make sure the calibration images are saved as .jpg and "
+            "with prefix as the camera name as specified in the config.yaml file."
         )
 
     skip_images = []
@@ -155,10 +165,13 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
 
     try:
         h, w = img.shape[:2]
-    except:
+    except Exception as e:
         raise Exception(
-            "It seems that the name of calibration images does not match with the camera names in the config file. Please make sure that the calibration images are named with camera names as specified in the config.yaml file."
-        )
+            "It seems that the name of calibration images does not match "
+            "with the camera names in the config file. "
+            "Please make sure that the calibration images are named"
+            " with camera names as specified in the config.yaml file."
+        ) from e
 
     # Perform calibration for each cameras and store the matrices as a pickle file
     if calibrate:
@@ -183,7 +196,8 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
                 ),
             )
             print(
-                f"Saving intrinsic camera calibration matrices for {cam} as a pickle file in {os.path.join(path_camera_matrix)}"
+                f"Saving intrinsic camera calibration matrices for {cam}"
+                f" as a pickle file in {os.path.join(path_camera_matrix)}"
             )
 
             # Compute mean re-projection errors for individual cameras
@@ -253,14 +267,18 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
             }
 
         print(
-            f"Saving the stereo parameters for every pair of cameras as a pickle file in {str(os.path.join(path_camera_matrix))}"
+            "Saving the stereo parameters for every "
+            f"pair of cameras as a pickle file in {str(os.path.join(path_camera_matrix))}"
         )
 
         auxiliaryfunctions.write_pickle(os.path.join(path_camera_matrix, "stereo_params.pickle"), stereo_params)
         print("Camera calibration done! Use the function ``check_undistortion`` to check the check the calibration")
     else:
         print(
-            f"Corners extracted! You may check for the extracted corners in the directory {str(path_corners)} and remove the pair of images where the corners are incorrectly detected. If all the corners are detected correctly with right order, then re-run the same function and use the flag ``calibrate=True``, to calbrate the camera."
+            f"Corners extracted! You may check for the extracted corners in the directory {str(path_corners)}"
+            " and remove the pair of images where the corners are incorrectly detected. "
+            "If all the corners are detected correctly with right order, "
+            "then re-run the same function and use the flag ``calibrate=True``, to calbrate the camera."
         )
 
 
@@ -281,7 +299,8 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
         Int specifying the number of columns in the calibration image.
 
     plot : bool
-        If this is set to True, the results of undistortion are saved as plots. The default is ``True``; if provided it must be either ``True`` or ``False``.
+        If this is set to True, the results of undistortion are saved as plots.
+        The default is ``True``; if provided it must be either ``True`` or ``False``.
 
     Example
     --------

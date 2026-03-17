@@ -77,7 +77,7 @@ class MaDLCPoseDataset(BaseDLCPoseDataset):
                 category_id = 0
                 try:
                     kpts = data.xs(individual, level="individuals").to_numpy().reshape((-1, 2))
-                except:
+                except Exception:
                     # somehow there are duplicates. So only use the first occurrence
                     data = data.iloc[0]
                     kpts = data.xs(individual, level="individuals").to_numpy().reshape((-1, 2))
