@@ -66,8 +66,10 @@ def create_tracking_dataset(
 ):
     try:
         from deeplabcut.pose_tracking_pytorch import create_triplets_dataset
-    except ModuleNotFoundError:
-        raise ModuleNotFoundError("Unsupervised identity learning requires PyTorch. Please run `pip install torch`.")
+    except ModuleNotFoundError as e:
+        raise ModuleNotFoundError(
+            "Unsupervised identity learning requires PyTorch. Please run `pip install torch`."
+        ) from e
 
     from deeplabcut.pose_estimation_tensorflow.predict_multianimal import (
         extract_bpt_feature_from_video,
@@ -103,10 +105,10 @@ def create_tracking_dataset(
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
     try:
         dlc_cfg = load_config(str(path_test_config))
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         raise FileNotFoundError(
             f"It seems the model for shuffle {shuffle} and trainFraction {trainFraction} does not exist."
-        )
+        ) from e
 
     Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
         train_folder=Path(modelfolder) / "train",
@@ -114,7 +116,10 @@ def create_tracking_dataset(
 
     if cfg["snapshotindex"] == "all":
         print(
-            "Snapshotindex is set to 'all' in the config.yaml file. Running video analysis with all snapshots is very costly! Use the function 'evaluate_network' to choose the best the snapshot. For now, changing snapshot index to -1!"
+            "Snapshotindex is set to 'all' in the config.yaml file. "
+            "Running video analysis with all snapshots is very costly! "
+            "Use the function 'evaluate_network' to choose the best the snapshot. "
+            "For now, changing snapshot index to -1!"
         )
         snapshotindex = -1
     else:
@@ -150,7 +155,9 @@ def create_tracking_dataset(
         TFGPUinference = False
         dlc_cfg["batch_size"] = 1
         print(
-            "Switching batchsize to 1, num_outputs (per animal) to 1 and TFGPUinference to False (all these features are not supported in this mode)."
+            "Switching batchsize to 1, "
+            "num_outputs (per animal) to 1 and TFGPUinference to False "
+            "(all these features are not supported in this mode)."
         )
 
     # Name for scorer:
@@ -164,7 +171,8 @@ def create_tracking_dataset(
     if dlc_cfg["num_outputs"] > 1:
         if TFGPUinference:
             print(
-                "Switching to numpy-based keypoint extraction code, as multiple point extraction is not supported by TF code currently."
+                "Switching to numpy-based keypoint extraction code, "
+                "as multiple point extraction is not supported by TF code currently."
             )
             TFGPUinference = False
         print("Extracting ", dlc_cfg["num_outputs"], "instances per bodypart")
@@ -225,14 +233,17 @@ def create_tracking_dataset(
         os.chdir(str(start_path))
         if "multi-animal" in dlc_cfg["dataset_type"]:
             print(
-                "If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
+                "If the tracking is not satisfactory for some videos, consider expanding the training set. "
+                "You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
             )
         else:
             print(
-                "The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'"
+                "The videos are analyzed. Now your research can truly start! "
+                "\n You can create labeled videos with 'create_labeled_video'"
             )
             print(
-                "If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
+                "If the tracking is not satisfactory for some videos, consider expanding the training set. "
+                "You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
             )
         return DLCscorer  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
@@ -333,10 +344,14 @@ def analyze_videos(
         Source: https://arxiv.org/abs/1909.11229
 
     dynamic: tuple(bool, float, int) triple containing (state, detectiontreshold, margin)
-        If the state is true, then dynamic cropping will be performed. That means that if an object is detected (i.e. any body part > detectiontreshold),
-        then object boundaries are computed according to the smallest/largest x position and smallest/largest y position of all body parts. This  window is
-        expanded by the margin and from then on only the posture within this crop is analyzed (until the object is lost, i.e. <detectiontreshold). The
-        current position is utilized for updating the crop window for the next frame (this is why the margin is important and should be set large
+        If the state is true, then dynamic cropping will be performed. That means that if
+        an object is detected (i.e. any body part > detectiontreshold),
+        then object boundaries are computed according to
+        the smallest/largest x position and smallest/largest y position of all body parts.
+        This window is expanded by the margin and from then on only the posture within
+        this crop is analyzed (until the object is lost, i.e. <detectiontreshold).
+        The current position is utilized for updating the crop window for the next frame
+        (this is why the margin is important and should be set large
         enough given the movement of the animal).
 
     modelprefix: str, optional, default=""
@@ -486,10 +501,11 @@ def analyze_videos(
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
     try:
         dlc_cfg = load_config(str(path_test_config))
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         raise FileNotFoundError(
-            f"It seems the model for iteration {iteration} and shuffle {shuffle} and trainFraction {trainFraction} does not exist."
-        )
+            f"It seems the model for iteration {iteration} and shuffle "
+            f"{shuffle} and trainFraction {trainFraction} does not exist."
+        ) from e
 
     Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
         train_folder=Path(modelfolder) / "train",
@@ -497,7 +513,10 @@ def analyze_videos(
 
     if cfg["snapshotindex"] == "all":
         print(
-            "Snapshotindex is set to 'all' in the config.yaml file. Running video analysis with all snapshots is very costly! Use the function 'evaluate_network' to choose the best the snapshot. For now, changing snapshot index to -1!"
+            "Snapshotindex is set to 'all' in the config.yaml file."
+            "Running video analysis with all snapshots is very costly! "
+            "Use the function 'evaluate_network' to choose the best the snapshot. "
+            "For now, changing snapshot index to -1!"
         )
         snapshotindex = -1
     else:
@@ -533,7 +552,8 @@ def analyze_videos(
         TFGPUinference = False
         dlc_cfg["batch_size"] = 1
         print(
-            "Switching batchsize to 1, num_outputs (per animal) to 1 and TFGPUinference to False (all these features are not supported in this mode)."
+            "Switching batchsize to 1, num_outputs (per animal) to 1 "
+            "and TFGPUinference to False (all these features are not supported in this mode)."
         )
 
     # Name for scorer:
@@ -547,7 +567,8 @@ def analyze_videos(
     if dlc_cfg["num_outputs"] > 1:
         if TFGPUinference:
             print(
-                "Switching to numpy-based keypoint extraction code, as multiple point extraction is not supported by TF code currently."
+                "Switching to numpy-based keypoint extraction code, "
+                "as multiple point extraction is not supported by TF code currently."
             )
             TFGPUinference = False
         print("Extracting ", dlc_cfg["num_outputs"], "instances per bodypart")
@@ -641,17 +662,21 @@ def analyze_videos(
         os.chdir(str(start_path))
         if "multi-animal" in dlc_cfg["dataset_type"]:
             print(
-                "The videos are analyzed. Time to assemble animals and track 'em... \n Call 'create_video_with_all_detections' to check multi-animal detection quality before tracking."
+                "The videos are analyzed. Time to assemble animals and track 'em... \n"
+                " Call 'create_video_with_all_detections' to check multi-animal detection quality before tracking."
             )
             print(
-                "If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
+                "If the tracking is not satisfactory for some videos, consider expanding the training set. "
+                "You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
             )
         else:
             print(
-                "The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'"
+                "The videos are analyzed. Now your research can truly start! \n "
+                "You can create labeled videos with 'create_labeled_video'"
             )
             print(
-                "If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
+                "If the tracking is not satisfactory for some videos, consider expanding the training set. "
+                "You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
             )
         return DLCscorer  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
@@ -661,9 +686,9 @@ def analyze_videos(
 
 def checkcropping(cfg, cap):
     print(
-        "Cropping based on the x1 = {} x2 = {} y1 = {} y2 = {}. You can adjust the cropping coordinates in the config.yaml file.".format(
-            cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]
-        )
+        "Cropping based on the "
+        f"x1 = {cfg['x1']} x2 = {cfg['x2']} y1 = {cfg['y1']} y2 = {cfg['y2']}. "
+        "You can adjust the cropping coordinates in the config.yaml file."
     )
     nx = cfg["x2"] - cfg["x1"]
     ny = cfg["y2"] - cfg["y1"]
@@ -902,7 +927,8 @@ def GetPoseDynamic(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, detectiont
             else:
                 if (
                     detected and (x1 + y1 + y2 - ny + x2 - nx) != 0
-                ):  # was detected in last frame and dyn. cropping was performed >> but object lost in cropped variant >> re-run on full frame!
+                ):  # was detected in last frame and dyn. cropping was performed >>
+                    # but object lost in cropped variant >> re-run on full frame!
                     # print("looking again, lost!")
                     if cfg["cropping"]:
                         frame = img_as_ubyte(originalframe[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]])
@@ -949,11 +975,11 @@ def AnalyzeVideo(
     vname = Path(video).stem
     try:
         _ = auxiliaryfunctions.load_analyzed_data(destfolder, vname, DLCscorer)
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         print("Loading ", video)
         cap = cv2.VideoCapture(video)
         if not cap.isOpened():
-            raise OSError("Video could not be opened. Please check that the the file integrity.")
+            raise OSError("Video could not be opened. Please check the file integrity.") from e
         # https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
         fps = cap.get(cv2.CAP_PROP_FPS)
         nframes = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -1052,8 +1078,7 @@ def AnalyzeVideo(
             range(nframes),
             save_as_csv,
         )
-    finally:
-        return DLCscorer
+    return DLCscorer
 
 
 def GetPosesofFrames(cfg, dlc_cfg, sess, inputs, outputs, directory, framelist, nframes, batchsize):
@@ -1077,7 +1102,8 @@ def GetPosesofFrames(cfg, dlc_cfg, sess, inputs, outputs, directory, framelist, 
     batch_num = 0  # keeps track of which batch you are at
     if cfg["cropping"]:
         print(
-            "Cropping based on the x1 = {} x2 = {} y1 = {} y2 = {}. You can adjust the cropping coordinates in the config.yaml file.".format(
+            "Cropping based on the x1 = {} x2 = {} y1 = {} y2 = {}. "
+            "You can adjust the cropping coordinates in the config.yaml file.".format(
                 cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]
             )
         )
@@ -1153,12 +1179,17 @@ def analyze_time_lapse_frames(
     """Analyzed all images (of type = frametype) in a folder and stores the output in
     one file.
 
-    You can crop the frames (before analysis), by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the config file.
+    You can crop the frames (before analysis),
+    by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the config file.
 
-    Output: The labels are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
-            in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
-            in the same directory, where the video is stored. However, if the flag save_as_csv is set to True, the data can also be exported in \n
-            comma-separated values format (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.
+    Output:
+    The labels are stored as MultiIndex Pandas Array,
+    which contains the name of the network, body part name, (x, y) label position \n
+    in pixels, and the likelihood for each frame per body part.
+    These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
+    in the same directory, where the video is stored.
+    However, if the flag save_as_csv is set to True, the data can also be exported in \n
+    comma-separated values format (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.
 
     Parameters
     ----------
@@ -1169,27 +1200,35 @@ def analyze_time_lapse_frames(
         Full path to directory containing the frames that shall be analyzed
 
     frametype: string, optional
-        Checks for the file extension of the frames. Only images with this extension are analyzed. The default is ``.png``
+        Checks for the file extension of the frames.
+        Only images with this extension are analyzed. The default is ``.png``
 
     shuffle: int, optional
         An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml).
 
-    gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
+    gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi).
+    If you do not have a GPU, set to None.
     See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
     save_as_csv: bool, optional
-        Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
+        Saves the predictions in a .csv file. The default is ``False``;
+        if provided it must be either ``True`` or ``False``
 
     Examples
     --------
     If you want to analyze all frames in /analysis/project/timelapseexperiment1
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1')
+    >>> deeplabcut.analyze_videos(
+        '/analysis/project/reaching-task/config.yaml',
+        '/analysis/project/timelapseexperiment1'
+        )
     --------
 
-    Note: for test purposes one can extract all frames from a video with ffmeg, e.g. ffmpeg -i testvideo.avi thumb%04d.png
+    Note: for test purposes one can extract all frames from a video with ffmpeg,
+    e.g. ffmpeg -i testvideo.avi thumb%04d.png
     """
     if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
         del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
@@ -1209,10 +1248,10 @@ def analyze_time_lapse_frames(
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
     try:
         dlc_cfg = load_config(str(path_test_config))
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         raise FileNotFoundError(
             f"It seems the model for shuffle {shuffle} and trainFraction {trainFraction} does not exist."
-        )
+        ) from e
 
     Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
         train_folder=Path(modelfolder) / "train",
@@ -1220,7 +1259,10 @@ def analyze_time_lapse_frames(
 
     if cfg["snapshotindex"] == "all":
         print(
-            "Snapshotindex is set to 'all' in the config.yaml file. Running video analysis with all snapshots is very costly! Use the function 'evaluate_network' to choose the best the snapshot. For now, changing snapshot index to -1!"
+            "Snapshotindex is set to 'all' in the config.yaml file. "
+            "Running video analysis with all snapshots is very costly! "
+            "Use the function 'evaluate_network' to choose the best the snapshot. "
+            "For now, changing snapshot index to -1!"
         )
         snapshotindex = -1
     else:
@@ -1459,24 +1501,28 @@ def convert_detections2tracklets(
         Full path of the config.yaml file as a string.
 
     videos : list
-        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+        A list of strings containing the full paths to videos for analysis
+        or a path to the directory, where all the videos with same extension are stored.
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        Checks for the extension of the video in case the input to the video is a directory.\n
+        Only videos with this extension are analyzed.
         If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
     shuffle: int, optional
-        An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
+        An integer specifying the shuffle index of the training dataset used for training the network.
+        The default is 1.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml).
 
     overwrite: bool, optional.
         Overwrite tracks file i.e. recompute tracks from full detections and overwrite.
 
     destfolder: string, optional
-        Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
-        folder also needs to be passed.
+        Specifies the destination folder for analysis data (default is the path of the video).
+        Note that for subsequent analysis this folder also needs to be passed.
 
     ignore_bodyparts: optional
         List of body part names that should be ignored during tracking (advanced).
@@ -1511,10 +1557,19 @@ def convert_detections2tracklets(
     Examples
     --------
     If you want to convert detections to tracklets:
-    >>> deeplabcut.convert_detections2tracklets('/analysis/project/reaching-task/config.yaml',[]'/analysis/project/video1.mp4'], videotype='.mp4')
+    >>> deeplabcut.convert_detections2tracklets(
+        '/analysis/project/reaching-task/config.yaml',
+        ['/analysis/project/video1.mp4'],
+        videotype='.mp4'
+        )
 
     If you want to convert detections to tracklets based on box_tracker:
-    >>> deeplabcut.convert_detections2tracklets('/analysis/project/reaching-task/config.yaml',[]'/analysis/project/video1.mp4'], videotype='.mp4',track_method='box')
+    >>> deeplabcut.convert_detections2tracklets(
+        '/analysis/project/reaching-task/config.yaml',
+        ['/analysis/project/video1.mp4'],
+        videotype='.mp4',
+        track_method='box'
+        )
 
     --------
     """
@@ -1544,10 +1599,10 @@ def convert_detections2tracklets(
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
     try:
         dlc_cfg = load_config(str(path_test_config))
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         raise FileNotFoundError(
             f"It seems the model for shuffle {shuffle} and trainFraction {trainFraction} does not exist."
-        )
+        ) from e
 
     if "multi-animal" not in dlc_cfg["dataset_type"]:
         raise ValueError("This function is only required for multianimal projects!")
@@ -1571,7 +1626,10 @@ def convert_detections2tracklets(
 
     if cfg["snapshotindex"] == "all":
         print(
-            "Snapshotindex is set to 'all' in the config.yaml file. Running video analysis with all snapshots is very costly! Use the function 'evaluate_network' to choose the best the snapshot. For now, changing snapshot index to -1!"
+            "Snapshotindex is set to 'all' in the config.yaml file. "
+            "Running video analysis with all snapshots is very costly! "
+            "Use the function 'evaluate_network' to choose the best the snapshot. "
+            "For now, changing snapshot index to -1!"
         )
         snapshotindex = -1
     else:
@@ -1740,7 +1798,8 @@ def convert_detections2tracklets(
         os.chdir(str(start_path))
 
         print(
-            "The tracklets were created (i.e., under the hood deeplabcut.convert_detections2tracklets was run). Now you can 'refine_tracklets' in the GUI, or run 'deeplabcut.stitch_tracklets'."
+            "The tracklets were created (i.e., under the hood deeplabcut.convert_detections2tracklets was run). "
+            "Now you can 'refine_tracklets' in the GUI, or run 'deeplabcut.stitch_tracklets'."
         )
     else:
         print("No video(s) found. Please check your path!")

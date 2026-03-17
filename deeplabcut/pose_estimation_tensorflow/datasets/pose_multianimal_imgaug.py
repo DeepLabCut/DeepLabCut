@@ -58,7 +58,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
         self.data = self.load_dataset()
         self.num_images = len(self.data)
         self.batch_size = cfg["batch_size"]
-        print("Batch Size is %d" % self.batch_size)
+        print("Batch size is %d", self.batch_size)
         self._default_size = np.array(self.cfg.get("crop_size", (400, 400)))
         self.pipeline = self.build_augmentation_pipeline(
             apply_prob=cfg.get("apply_prob", 0.5),
@@ -210,7 +210,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
         if cfg.get("fliplr", False) and cfg.get("symmetric_pairs"):
             opt = cfg.get("fliplr", False)
-            if type(opt) == int:
+            if isinstance(opt, int):
                 p = opt
             else:
                 p = 0.5
@@ -225,7 +225,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             )
         if cfg.get("rotation", False):
             opt = cfg.get("rotation", False)
-            if type(opt) == int:
+            if isinstance(opt, int):
                 pipeline.add(sometimes(iaa.Affine(rotate=(-opt, opt))))
             else:
                 pipeline.add(sometimes(iaa.Affine(rotate=(-10, 10))))
@@ -233,7 +233,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             pipeline.add(sometimes(iaa.AllChannelsHistogramEqualization()))
         if cfg.get("motion_blur", False):
             opts = cfg.get("motion_blur", False)
-            if type(opts) == list:
+            if isinstance(opts, list):
                 opts = dict(opts)
                 pipeline.add(sometimes(iaa.MotionBlur(**opts)))
             else:
@@ -244,7 +244,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             pipeline.add(sometimes(iaa.ElasticTransformation(sigma=5)))
         if cfg.get("gaussian_noise", False):
             opt = cfg.get("gaussian_noise", False)
-            if type(opt) == int or type(opt) == float:
+            if isinstance(opt, int) or isinstance(opt, float):
                 pipeline.add(sometimes(iaa.AdditiveGaussianNoise(loc=0, scale=(0.0, opt), per_channel=0.5)))
             else:
                 pipeline.add(sometimes(iaa.AdditiveGaussianNoise(loc=0, scale=(0.0, 0.05 * 255), per_channel=0.5)))
@@ -699,6 +699,8 @@ class MAImgaugPoseDataset(BasePoseDataset):
         # Grid of coordinates
         grid = np.mgrid[:height, :width].transpose((1, 2, 0))
         grid = grid * stride + half_stride
+        # NOTE @C-Achard 2026--03-17: x and y were never assigned, added here
+        y, x = np.rollaxis(grid, 2)
         # the animal id plays no role for scoremap + locref!
         # so let's just loop over all bpts.
         for k, j_id in enumerate(np.concatenate(joint_id)):

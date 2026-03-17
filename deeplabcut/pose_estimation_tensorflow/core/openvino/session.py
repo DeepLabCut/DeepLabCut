@@ -15,6 +15,8 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 
+from deeplabcut.pose_estimation_tensorflow.predict_videos import checkcropping
+
 try:
     from openvino.runtime import AsyncInferQueue, Core
 
@@ -87,7 +89,7 @@ class OpenVINOSession:
 
         def completion_callback(request, inp_id):
             output = next(iter(request.results.values()))
-            batch_output[out_id] = output
+            batch_output[inp_id] = output
 
         self.infer_queue.set_callback(completion_callback)
 
