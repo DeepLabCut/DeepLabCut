@@ -11,15 +11,6 @@
 
 """Evaluation metrics for the DeepLabCut benchmark."""
 
-import sys
-import unittest.mock
-
-# TODO(stes) mocking a few modules to rely in fewer dependencies, without
-# causing import errors when using deeplabcut.
-MOCK_MODULES = ["statsmodels", "statsmodels.api", "pytables"]
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = unittest.mock.MagicMock()
-
 import os
 import pickle
 from collections import defaultdict
