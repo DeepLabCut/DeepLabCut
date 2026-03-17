@@ -138,3 +138,6 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# Tools output
+tmp/*

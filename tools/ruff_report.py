@@ -64,7 +64,7 @@ def relpath(path: str) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("paths", nargs="*", default=["."], help="Files/directories to scan")
-    parser.add_argument("--output", default="ruff-report.md", help="Markdown output path")
+    parser.add_argument("--output", default="tmp/ruff-report.md", help="Markdown output path")
     args = parser.parse_args()
 
     issues = run_ruff(args.paths)
