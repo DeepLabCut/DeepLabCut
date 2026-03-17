@@ -131,12 +131,13 @@ requires-dist = []
 torch-backend = "auto"
 
 [tool.ruff]
-lint.select = ["E", "F", "B", "I", "UP"]
-lint.ignore = ["E741"]
 target-version = "py310"
-fix = true
 line-length = 120
-
+fix = true
+[tool.ruff.lint]
+select = [ "E", "F", "B", "I", "UP" ]
+ignore = [ "E741" ]
+per-file-ignores = { "__init__.py" = [ "F401", "E402" ] }
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
