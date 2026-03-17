@@ -20,8 +20,6 @@ import warnings
 from pathlib import Path
 
 import tensorflow as tf
-
-tf.compat.v1.disable_eager_execution()
 import tf_slim as slim
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
@@ -32,6 +30,8 @@ from deeplabcut.pose_estimation_tensorflow.datasets import (
 from deeplabcut.pose_estimation_tensorflow.nnets import PoseNetFactory
 from deeplabcut.pose_estimation_tensorflow.util.logging import setup_logging
 from deeplabcut.utils import auxfun_models
+
+tf.compat.v1.disable_eager_execution()
 
 
 class LearningRate:
@@ -148,7 +148,8 @@ def train(
     net_type = cfg["net_type"]
     if cfg["dataset_type"] in ("scalecrop", "tensorpack", "deterministic"):
         print(
-            "Switching batchsize to 1, as tensorpack/scalecrop/deterministic loaders do not support batches >1. Use imgaug/default loader."
+            "Switching batchsize to 1, as tensorpack/scalecrop/deterministic loaders "
+            "do not support batches >1. Use imgaug/default loader."
         )
         cfg["batch_size"] = 1  # in case this was edited for analysis.-
 
