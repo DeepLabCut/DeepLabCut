@@ -10,6 +10,11 @@
 #
 import warnings
 
+from deeplabcut.modelzoo.generalized_data_converter.datasets.base import (
+    BasePoseDataset,
+    raw_2_imagename,
+    raw_2_imagename_with_id,
+)
 from deeplabcut.modelzoo.generalized_data_converter.datasets.materialize import (
     mat_func_factory,
 )
@@ -98,7 +103,7 @@ class MultiSourceDataset:
         self.meta["imageid2datasetname"] = self.imageid2datasetname
 
         max_num = 0
-        for dataset_name, dataset in self.name2genericdataset.items():
+        for _dataset_name, dataset in self.name2genericdataset.items():
             max_num = max(max_num, dataset.meta["max_individuals"])
         self.meta["max_individuals"] = max_num
         dataset_name = self.meta["dataset_name"]
