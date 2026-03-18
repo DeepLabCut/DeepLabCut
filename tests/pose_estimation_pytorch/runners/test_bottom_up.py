@@ -18,7 +18,7 @@ import pytest
 from deeplabcut.pose_estimation_pytorch.config import make_pytorch_pose_config
 from deeplabcut.pose_estimation_pytorch.models import PoseModel
 from deeplabcut.pose_estimation_pytorch.runners.train import build_training_runner
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.pose_estimation_pytorch.task import Task
 
 SINGLE_ANIMAL_NETS = ["resnet_50"]
 MULTI_ANIMAL_NETS = ["dekr_w18"]
@@ -33,13 +33,19 @@ def print_dict(data: dict, indent: int = 0):
             print(f"{indent * ' '}{k}: {v}")
 
 
+# @pytest.mark.skip(reason="This test is outdated and needs to be updated to reflect changes in the codebase.")
+
+
 @pytest.mark.parametrize("net_type, multianimal", NETS)
 def test_build_bottom_up_runner(
     net_type: str,
     multianimal: bool,
     tmp_path: Path,
 ) -> None:
-    project_cfg: dict[str, Any] = {"multianimalproject": multianimal, "project_path": str(tmp_path)}
+    project_cfg: dict[str, Any] = {
+        "multianimalproject": multianimal,
+        "project_path": str(tmp_path),
+    }
     if multianimal:
         project_cfg["bodyparts"] = "MULTI!"
         project_cfg["multianimalbodyparts"] = ["head", "shoulder", "knee", "toe"]
@@ -51,28 +57,21 @@ def test_build_bottom_up_runner(
         project_cfg["individuals"] = ["tom"]
 
     root_path = Path(__file__).parent.parent
-    template_path = root_path / "other/test_configs/pytorch_config.yaml"
-    template_path = template_path.resolve()
+    template_path = (root_path / "other/test_configs/pytorch_config.yaml").resolve()
     assert template_path.is_file(), f"Template config not found at {template_path}"
-    auxiliaryfunctions.read_plainconfig(str(template_path))
-    pytorch_cfg = make_pytorch_pose_config(project_cfg, str(template_path), net_type)
-    print_dict(pytorch_cfg)
 
+    pytorch_cfg = make_pytorch_pose_config(project_cfg, str(template_path), net_type)
     pose_model = PoseModel.build(pytorch_cfg["model"])
 
     # NOTE: @C-Achard 2026-03-18 This file was not named with test_* as a prefix,
     #  so it never ran in CI. A lot of imports are outdated and non-existent
     # FIX: replace RUNNERS registry with build_training_runner and remove unused imports
-    runner_config = {
-        **pytorch_cfg["solver"],
-        "optimizer": pytorch_cfg["optimizer"],
-        "scheduler": pytorch_cfg.get("scheduler"),
-    }
-    _ = build_training_runner(
-        runner_config=runner_config,
-        model_folder=Path("."),
-        task=pose_model.task,
+    runner = build_training_runner(
+        runner_config=pytorch_cfg["runner"],
+        model_folder=tmp_path,
+        task=Task.BOTTOM_UP,
         model=pose_model,
         device=pytorch_cfg["device"],
         logger=None,
     )
+    assert runner is not None
