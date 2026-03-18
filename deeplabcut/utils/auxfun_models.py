@@ -157,9 +157,7 @@ def set_visible_devices(gputouse: int):
     n_devices = len(physical_devices)
     if gputouse >= n_devices:
         raise ValueError(
-            f"There are {n_devices} available GPUs: {physical_devices}\nPlease choose `gputouse` in {
-                list(range(n_devices))
-            }."
+            f"There are {n_devices} available GPUs: {physical_devices}\nPlease choose `gputouse` in {list(range(n_devices))}."
         )
     tf.config.set_visible_devices(physical_devices[gputouse], "GPU")
 
