@@ -344,9 +344,7 @@ def resize_pos_embed(posemb, posemb_new, height, width):
 
     gs_old = int(math.sqrt(len(posemb_grid)))
     print(
-        f"Resized position embedding from size:{posemb.shape} to size: {posemb_new.shape} with height:{height} width: {
-            width
-        }"
+        f"Resized position embedding from size:{posemb.shape} to size: {posemb_new.shape} with height:{height} width: {width}"
     )
     posemb_grid = posemb_grid.reshape(1, gs_old, gs_old, -1).permute(0, 3, 1, 2)
     posemb_grid = F.interpolate(posemb_grid, size=(height, width), mode="bilinear")
