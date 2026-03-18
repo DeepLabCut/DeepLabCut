@@ -190,10 +190,10 @@ class DeconvModule(nn.Module):
             the deconvolutional layers
         """
         layers = []
-        for out_channels, k, s in zip(out_channels, kernel_sizes, strides, strict=False):
-            layers.append(nn.ConvTranspose2d(in_channels, out_channels, kernel_size=k, stride=s))
+        for out_c, k, s in zip(out_channels, kernel_sizes, strides, strict=False):
+            layers.append(nn.ConvTranspose2d(in_channels, out_c, kernel_size=k, stride=s))
             layers.append(nn.ReLU())
-            in_channels = out_channels
+            in_channels = out_c
         return layers[:-1]
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

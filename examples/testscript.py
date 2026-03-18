@@ -202,7 +202,7 @@ if __name__ == "__main__":
             outsuffix="short",
             outpath=os.path.join(cfg["project_path"], "videos"),
         )
-    except:  # if ffmpeg is broken/missing
+    except Exception:  # if ffmpeg is broken/missing
         print("using alternative method")
         newvideo = os.path.join(cfg["project_path"], "videos", videoname + "short.mp4")
         from moviepy.editor import VideoClip, VideoFileClip
@@ -324,7 +324,7 @@ if __name__ == "__main__":
             outpath=os.path.join(cfg["project_path"], "videos"),
         )
 
-    except:  # if ffmpeg is broken
+    except Exception:  # if ffmpeg is broken
         newvideo2 = os.path.join(cfg["project_path"], "videos", videoname + "short2.mp4")
         from moviepy.editor import VideoClip, VideoFileClip
 

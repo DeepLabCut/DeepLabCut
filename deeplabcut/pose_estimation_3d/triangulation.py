@@ -10,6 +10,7 @@
 #
 
 import os
+import warnings
 from pathlib import Path
 
 import cv2
@@ -136,7 +137,7 @@ def triangulate(
                 # Get track_method and do related checks
                 track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
                 if len(cfg.get("multianimalbodyparts", [])) == 1 and track_method != "box":
-                    warnings.warn("Switching to `box` tracker for single point tracking...")
+                    warnings.warn("Switching to `box` tracker for single point tracking...", stacklevel=2)
                     track_method = "box"
 
                 # Get track method suffix
@@ -291,8 +292,6 @@ def triangulate(
                 path_stereo_file,
             ) = undistort_points(config, dataname, str(cam_names[0] + "-" + cam_names[1]))
             if len(dataFrame_camera1_undistort) != len(dataFrame_camera2_undistort):
-                import warnings
-
                 warnings.warn(
                     "The number of frames do not match in the two videos. Please make sure that your videos have same number of frames and then retry! Excluding the extra frames from the longer video.",
                     stacklevel=2,

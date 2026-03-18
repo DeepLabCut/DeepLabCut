@@ -45,6 +45,7 @@ class BaseKeypointEncoder(ABC):
         self.img_size = img_size
 
     @property
+    @abstractmethod
     def num_channels(self):
         pass
 

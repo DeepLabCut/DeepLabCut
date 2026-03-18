@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 import re
+from importlib import import_module
 from pathlib import Path
 
 import dlclibrary
@@ -245,7 +246,7 @@ class CreateTrainingDataset(DefaultTab):
                 detector_type = None
                 ctd_conditions = None
                 if engine == Engine.TF:
-                    import tensorflow
+                    import_module("tensorflow")
 
                     # try importing TF so they can't create shuffles for it if they
                     # don't have it installed

@@ -16,21 +16,20 @@ import time
 
 import numpy as np
 import torch
-import torch.distributed as dist
 import torch.nn as nn
 
 from ..tracking_utils.meter import AverageMeter
 from ..tracking_utils.metrics import R1_mAP_eval
 
 
-def dist(a, b):
+def custom_dist(a, b):
     return torch.sqrt(torch.sum((a - b) ** 2, dim=1))
 
 
 def calc_correct(anchor, pos, neg):
     # cos = torch.cdist
-    ap_dist = dist(anchor, pos)
-    an_dist = dist(anchor, neg)
+    ap_dist = custom_dist(anchor, pos)
+    an_dist = custom_dist(anchor, neg)
     indices = ap_dist < an_dist
 
     return torch.sum(indices)

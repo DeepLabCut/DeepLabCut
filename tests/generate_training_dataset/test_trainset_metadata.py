@@ -243,7 +243,7 @@ def test_add_shuffle_sorts_to_correct_order(tmpdir):
     "shuffles", [indices for indices in [[1], [1, 2], [1, 2, 3], [1, 2, 4], [1, 3, 4], [1, 2, 3, 4]]]
 )
 @pytest.mark.parametrize("shuffle_to_add", [1, 2, 3, 4])
-def test_add_shuffle(tmpdir, shuffles, shuffle_to_add):
+def test_add_shuffle_indices(tmpdir, shuffles, shuffle_to_add):
     """Tests."""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
     trainset_meta = metadata.TrainingDatasetMetadata(cfg, tuple([SHUFFLES[i] for i in shuffles]))

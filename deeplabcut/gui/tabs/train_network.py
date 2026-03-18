@@ -185,7 +185,9 @@ class TrainNetwork(DefaultTab):
                     spin_box.setMinimum(attribute.min)
                     spin_box.setMaximum(attribute.max)
                     spin_box.setValue(attribute.default)
-                    spin_box.valueChanged.connect(lambda new_val: self.log_attribute_change(attribute, new_val))
+                    spin_box.valueChanged.connect(
+                        lambda new_val, attr=attribute: self.log_attribute_change(attr, new_val)
+                    )
                     self._attribute_kwargs[engine][attribute.fn_key] = spin_box
 
                     # Pad below to create spacing with other rows

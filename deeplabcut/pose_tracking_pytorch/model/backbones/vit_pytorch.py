@@ -330,9 +330,7 @@ class DLCTransReID(nn.Module):
             except Exception:
                 print("===========================ERROR=========================")
                 print(
-                    f"shape do not match in k :{k}: param_dict{v.shape} vs self.state_dict(){
-                        self.state_dict()[k].shape
-                    }"
+                    f"shape do not match in k :{k}: param_dict{v.shape} vs self.state_dict(){self.state_dict()[k].shape}"
                 )
 
 

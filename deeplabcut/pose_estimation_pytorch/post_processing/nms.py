@@ -88,6 +88,6 @@ def nms_oks(
             for j in order
         ]
         to_keep = [s < oks_threshold and not np.isnan(s) for s in oks_scores]
-        order = [idx for idx, kept in zip(order, to_keep) if kept]
+        order = [idx for idx, kept in zip(order, to_keep, strict=False) if kept]
 
     return keep
