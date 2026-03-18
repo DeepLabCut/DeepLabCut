@@ -115,7 +115,7 @@ def build_learning_rate(
         raise AssertionError(f"Unknown lr_decay_type : {lr_decay_type}")
 
     if warmup_epochs:
-        tf.compat.v1.logging.info("Learning rate warmup_epochs: %d" % warmup_epochs)
+        tf.compat.v1.logging.info(f"Learning rate warmup_epochs: {warmup_epochs}")
         warmup_steps = int(warmup_epochs * steps_per_epoch)
         warmup_lr = initial_lr * tf.cast(global_step, tf.float32) / tf.cast(warmup_steps, tf.float32)
         lr = tf.cond(
@@ -139,7 +139,7 @@ def build_optimizer(learning_rate, optimizer_name="rmsprop", decay=0.9, epsilon=
         tf.compat.v1.logging.info("Using RMSProp optimizer")
         optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate, decay, momentum, epsilon)
     else:
-        tf.compat.v1.logging.fatal("Unknown optimizer:", optimizer_name)
+        tf.compat.v1.logging.fatal(f"Unknown optimizer: {optimizer_name}")
     return optimizer
 
 
@@ -158,9 +158,7 @@ class TpuBatchNormalization(tf.compat.v1.layers.BatchNormalization):
         group_assignment = None
         if num_shards_per_group > 1:
             if num_shards % num_shards_per_group != 0:
-                raise ValueError(
-                    "num_shards: %d mod shards_per_group: %d, should be 0" % (num_shards, num_shards_per_group)
-                )
+                raise ValueError(f"num_shards: {num_shards} mod shards_per_group: {num_shards_per_group}, should be 0")
             num_groups = num_shards // num_shards_per_group
             group_assignment = [
                 [x for x in range(num_shards) if x // num_shards_per_group == y] for y in range(num_groups)
@@ -176,7 +174,7 @@ class TpuBatchNormalization(tf.compat.v1.layers.BatchNormalization):
             num_shards_per_group = 1
         else:
             num_shards_per_group = max(8, num_shards // 8)
-        tf.compat.v1.logging.info("TpuBatchNormalization with num_shards_per_group %s", num_shards_per_group)
+        tf.compat.v1.logging.info(f"TpuBatchNormalization with num_shards_per_group {num_shards_per_group}")
         if num_shards_per_group > 1:
             # Compute variance using: Var[X]= E[X^2] - E[X]^2.
             shard_square_of_mean = tf.math.square(shard_mean)

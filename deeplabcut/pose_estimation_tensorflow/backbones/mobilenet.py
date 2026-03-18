@@ -239,11 +239,11 @@ def mobilenet_base(  # pylint: disable=invalid-name
                 else:
                     params["use_explicit_padding"] = True
 
-            end_point = "layer_%d" % (i + 1)
+            end_point = f"layer_{i + 1}"
             try:
                 net = opdef.op(net, **params)
             except Exception:
-                print("Failed to create op %i: %r params: %r" % (i, opdef, params))
+                print(f"Failed to create op {i}: {opdef} params: {params}")
                 raise
             end_points[end_point] = net
             scope = os.path.dirname(net.name)
@@ -322,7 +322,7 @@ def mobilenet(
     is_training = mobilenet_args.get("is_training", False)
     input_shape = inputs.get_shape().as_list()
     if len(input_shape) != 4:
-        raise ValueError("Expected rank 4 input, was: %d" % len(input_shape))
+        raise ValueError(f"Expected rank 4 input, was: {len(input_shape)}")
 
     with tf.compat.v1.variable_scope(scope, "Mobilenet", reuse=reuse) as scope:
         inputs = tf.identity(inputs, "input")

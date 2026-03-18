@@ -74,13 +74,13 @@ class BlockDecoder:
     def _encode_block_string(self, block):
         """Encodes a block to a string."""
         args = [
-            "r%d" % block.num_repeat,
-            "k%d" % block.kernel_size,
-            "s%d%d" % (block.strides[0], block.strides[1]),
+            f"r{block.num_repeat}",
+            f"k{block.kernel_size}",
+            f"s{block.strides[0]}{block.strides[1]}",
             f"e{block.expand_ratio}",
-            "i%d" % block.input_filters,
-            "o%d" % block.output_filters,
-            "c%d" % block.conv_type,
+            f"i{block.input_filters}",
+            f"o{block.output_filters}",
+            f"c{block.conv_type}",
         ]
         if block.se_ratio > 0 and block.se_ratio <= 1:
             args.append(f"se{block.se_ratio}")

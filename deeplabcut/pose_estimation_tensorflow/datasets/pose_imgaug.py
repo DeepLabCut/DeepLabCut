@@ -56,7 +56,7 @@ class ImgaugPoseDataset(BasePoseDataset):
         cfg["rotation"] = cfg.get("rotation", True)
         if cfg.get("rotation", True):  # i.e. pm 10 degrees
             opt = cfg.get("rotation", False)
-            if type(opt) == int:
+            if isinstance(opt, int):
                 cfg["rotation"] = cfg.get("rotation", 25)
             else:
                 cfg["rotation"] = 25
@@ -74,7 +74,7 @@ class ImgaugPoseDataset(BasePoseDataset):
         if cfg["motion_blur"]:
             cfg["motion_blur_params"] = dict(cfg.get("motion_blur_params", {"k": 7, "angle": (-90, 90)}))
 
-        print("Batch Size is %d" % self.batch_size)
+        print(f"Batch Size is {self.batch_size}")
 
     def load_dataset(self):
         cfg = self.cfg
@@ -149,14 +149,14 @@ class ImgaugPoseDataset(BasePoseDataset):
         cfg = self.cfg
         if cfg["mirror"]:
             opt = cfg["mirror"]  # fliplr
-            if type(opt) == int:
+            if isinstance(opt, int):
                 pipeline.add(sometimes(iaa.Fliplr(opt)))
             else:
                 pipeline.add(sometimes(iaa.Fliplr(0.5)))
 
         if cfg.get("fliplr", False) and cfg.get("symmetric_pairs"):
             opt = cfg.get("fliplr", False)
-            if type(opt) == int:
+            if isinstance(opt, int):
                 p = opt
             else:
                 p = 0.5
@@ -190,7 +190,7 @@ class ImgaugPoseDataset(BasePoseDataset):
 
         if cfg.get("gaussian_noise", False):
             opt = cfg.get("gaussian_noise", False)
-            if type(opt) == int or type(opt) == float:
+            if isinstance(opt, (int, float)):
                 pipeline.add(sometimes(iaa.AdditiveGaussianNoise(loc=0, scale=(0.0, opt), per_channel=0.5)))
             else:
                 pipeline.add(sometimes(iaa.AdditiveGaussianNoise(loc=0, scale=(0.0, 0.05 * 255), per_channel=0.5)))
@@ -309,7 +309,7 @@ class ImgaugPoseDataset(BasePoseDataset):
             data_items.append(data_item)
             im_file = data_item.im_path
 
-            logging.debug("image %s", im_file)
+            logging.debug(f"image {im_file}")
             image = imread(os.path.join(self.cfg["project_path"], im_file), mode="skimage")
 
             if self.has_gt:

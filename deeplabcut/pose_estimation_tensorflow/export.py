@@ -117,10 +117,10 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
     try:
         dlc_cfg = load_config(str(path_train_config))
         # dlc_cfg_train = load_config(str(path_train_config))
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         raise FileNotFoundError(
             f"It seems the model for shuffle {shuffle} and trainFraction {train_fraction} does not exist."
-        )
+        ) from e
 
     Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
         train_folder=Path(model_folder) / "train",
@@ -280,12 +280,7 @@ def export_model(
     if not os.path.isdir(export_dir):
         os.mkdir(export_dir)
 
-    sub_dir_name = "DLC_%s_%s_iteration-%d_shuffle-%d" % (
-        cfg["Task"],
-        dlc_cfg["net_type"],
-        cfg["iteration"],
-        shuffle,
-    )
+    sub_dir_name = f"DLC_{cfg['Task']}_{dlc_cfg['net_type']}_iteration-{cfg['iteration']}_shuffle-{shuffle}"
     full_export_dir = os.path.normpath(export_dir + "/" + sub_dir_name)
 
     if os.path.isdir(full_export_dir):
