@@ -271,10 +271,10 @@ def return_evaluate_network_data(
 
     try:
         test_pose_cfg = load_config(str(path_test_config))
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         raise FileNotFoundError(
             f"It seems the model for shuffle {shuffle} and trainFraction {trainFraction} does not exist."
-        )
+        ) from e
 
     train_pose_cfg = load_config(str(path_train_config))
     # Load meta data

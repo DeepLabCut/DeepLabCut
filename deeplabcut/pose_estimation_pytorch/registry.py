@@ -67,7 +67,7 @@ def build_from_cfg(cfg: dict, registry: "Registry", default_args: dict | None = 
         return obj_cls(**filtered_args)
     except Exception as e:
         # Normal TypeError does not print class name.
-        raise type(e)(f"{obj_cls.__name__}: {e}")
+        raise type(e)(f"{obj_cls.__name__}: {e}") from None
 
 
 class Registry:

@@ -89,7 +89,7 @@ if __name__ == "__main__":
                 output2,
             ]
         )
-    except:
+    except Exception:
         pass
 
     """
@@ -104,8 +104,8 @@ if __name__ == "__main__":
     # checking if 2d test project is available
     try:
         config = glob.glob(os.path.join(basepath, "TEST*", "config.yaml"))[-1]
-    except:
-        raise RuntimeError("Please run the testscript.py first before testing for 3d")
+    except Exception as e:
+        raise RuntimeError("Please run the testscript.py first before testing for 3d") from e
 
     dfolder = None
 
@@ -122,8 +122,8 @@ if __name__ == "__main__":
 
         cfg["skeleton"] = [["bodypart1", "bodypart2"], ["objectA", "bodypart3"]]
         deeplabcut.auxiliaryfunctions.write_config_3d(path_config_file, cfg)
-    except:
-        raise ("Please delete the project and re-try.")  # otherwise the cfg is an empty array!
+    except Exception as e:
+        raise RuntimeError("Please delete the project and re-try.") from e  # otherwise the cfg is an empty array!
 
     """
     # Creating the name of the project
