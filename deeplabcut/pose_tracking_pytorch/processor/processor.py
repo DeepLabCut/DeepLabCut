@@ -127,8 +127,10 @@ def do_dlc_train(
 
             if (n_iter + 1) % log_period == 0:
                 logger.info(
-                    f"Epoch[{epoch}] Iteration[{n_iter + 1}/{len(train_loader)}] Loss: {
-                        loss_meter.avg:.3f}, , Base Lr: {scheduler._get_lr(epoch)[0]:.2e}"
+                    f"Epoch[{epoch}] "
+                    f"Iteration[{n_iter + 1}/{len(train_loader)}] "
+                    f"Loss: {loss_meter.avg:.3f} "
+                    f"Base Lr: {scheduler._get_lr(epoch)[0]:.2e}"
                 )
 
         end_time = time.time()
@@ -140,8 +142,9 @@ def do_dlc_train(
             pass
         else:
             logger.info(
-                f"Epoch {epoch} done. Time per batch: {time_per_batch:.3f}[s] Speed: {
-                    train_loader.batch_size / time_per_batch:.1f}[samples/s]"
+                f"Epoch {epoch} done. "
+                f"Time per batch: {time_per_batch:.3f}[s] "
+                f"Speed: {train_loader.batch_size / time_per_batch:.1f}[samples/s]"
             )
 
         model_name = "dlc_transreid"
