@@ -361,7 +361,7 @@ def compute_detection_rmse(
         image_gt = image_gt.transpose((1, 0, 2))  # to (num_bpts, num_gt_individuals, 3)
         image_pred = image_pred.transpose((1, 0, 2))  # to (num_bpts, num_pred, 3)
 
-        for bpt_index, (bpt_gt, bpt_pred) in enumerate(zip(image_gt, image_pred, strict=True)):
+        for bpt_index, (bpt_gt, bpt_pred) in enumerate(zip(image_gt, image_pred, strict=False)):
             # filter NaNs and invalid values
             bpt_gt = bpt_gt[~np.any(np.isnan(bpt_gt), axis=1)]
             bpt_pred = bpt_pred[~np.any(np.isnan(bpt_pred), axis=1)]
@@ -399,7 +399,7 @@ def compute_detection_rmse(
                 if not isinstance(pcutoff, (int, float)):
                     unique_cutoffs = pcutoff[-num_unique:]
 
-                for bpt_index, (gt, pred) in enumerate(zip(unique_gt, unique_pred, strict=False), strict=True):
+                for bpt_index, (gt, pred) in enumerate(zip(unique_gt, unique_pred, strict=False)):
                     dist = np.linalg.norm(gt[:2] - pred[:2])
                     distances.append(dist)
 
