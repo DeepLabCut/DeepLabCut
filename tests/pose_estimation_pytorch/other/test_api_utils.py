@@ -64,10 +64,10 @@ def test_build_transforms(transform_dict, size_image, num_keypoints, num_animals
         bboxes[:, 3] = h - bboxes[:, 1]
         keypoints = np.random.randint(0, min(w, h), (num_keypoints, 2))
 
-        with pytest.raises(Exception):
-            transformed = transform_bbox_aug(image=test_image)
-            transformed = transform_bbox_aug(image=test_image, bboxes=bboxes.copy())
-            transformed = transform_bbox_aug(image=test_image, keypoints=keypoints.copy(), bboxes=bboxes.copy())
+        with pytest.raises(ValueError) as _err_info:
+            _ = transform_bbox_aug(image=test_image)
+            _ = transform_bbox_aug(image=test_image, bboxes=bboxes.copy())
+            _ = transform_bbox_aug(image=test_image, keypoints=keypoints.copy(), bboxes=bboxes.copy())
 
         transformed_with_bbox = transform_bbox_aug(
             image=test_image,
