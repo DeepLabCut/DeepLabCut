@@ -10,6 +10,7 @@
 #
 """Unit tests for deeplabcut.create_project.new module."""
 
+import logging
 import warnings
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -199,12 +200,17 @@ def test_valid_video_included_in_config(
     from deeplabcut.utils import auxiliaryfunctions
 
     cfg = auxiliaryfunctions.read_config(config_path)
+    logging.debug(f"Config content: {cfg}")
+    logging.debug(f"Video sets in config: {cfg.get('video_sets', {})}")
+    logging.debug(f"Video sets keys: {list(cfg.get('video_sets', {}).keys())}")
 
     assert "video_sets" in cfg
     assert len(cfg["video_sets"]) > 0
     # Check that video path is in video_sets
-    video_path_str = str(Path(mock_video_file).resolve())
-    assert any(video_path_str in key for key in cfg["video_sets"].keys())
+    video_keys = [Path(k) for k in cfg["video_sets"].keys()]
+    project_video = Path(config_path).parent / "videos" / mock_video_file.name
+
+    assert any(k.resolve() == project_video.resolve() for k in video_keys)
 
 
 def test_invalid_video_removed_from_project(
