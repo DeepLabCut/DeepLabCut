@@ -52,8 +52,10 @@ def test_build_bottom_up_runner(
         project_cfg["uniquebodyparts"] = []
         project_cfg["individuals"] = ["tom"]
 
-    root_path = Path(auxiliaryfunctions.get_deeplabcut_path())
-    template_path = root_path / "pose_estimation_pytorch" / "apis" / "pytorch_config.yaml"
+    root_path = Path(__file__).parent.parent
+    template_path = root_path / "other/test_configs/pytorch_config.yaml"
+    template_path.resolve()
+    assert template_path.is_file(), f"Template config not found at {template_path}"
     auxiliaryfunctions.read_plainconfig(str(template_path))
     pytorch_cfg = make_pytorch_pose_config(project_cfg, str(template_path), net_type)
     print_dict(pytorch_cfg)
