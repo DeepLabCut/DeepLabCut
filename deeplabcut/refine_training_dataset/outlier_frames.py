@@ -650,11 +650,9 @@ def compute_deviations(
     # Use the existing valid keypoint combinations, in their original order.
     # The goal is to extract each stream (e.g. Scorer/ID/Bodypart) as a separate column,
     # and then build, for each stat, a MultiIndex with the same levels, i.e.
-    # Scorer/ID/Bodypart/stat (see stats below)
-    coord_level = columns.names.index("coords") if "coords" in columns.names else -1
-    base_cols = columns[columns.get_level_values(coord_level) == "x"].droplevel(
-        coord_level
-    )
+    # Scorer/ID/Bodypart/stat (see stats below).
+    # Note, this could be built from "y" as well without any difference in the output
+    base_cols = Dataframe.xs("x", axis=1, level="coords", drop_level=True).columns
     stats = [
         "distance",
         "sig",
