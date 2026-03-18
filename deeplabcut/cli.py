@@ -158,7 +158,8 @@ def extract_frames(_, *args, **kwargs):
     for selecting frames automatically with 'kmeans' and do not want to crop the frames \n
     >>> python3 dlc.py extract_frames /analysis/project/reaching-task/config.yaml automatic --algo kmeans \n
     -------- \n
-    for selecting frames automatically with 'uniform' and want to crop the frames based on the ``crop`` parameters in config.yaml \n
+    for selecting frames automatically with 'uniform' and want to
+    crop the frames based on the ``crop`` parameters in config.yaml \n
     >>> python3 dlc.py extract_frames /analysis/project/reaching-task/config.yaml automatic --crop
     -------- \n
     for selecting frames manually, \n
@@ -353,11 +354,14 @@ def analyze_videos(_, *args, **kwargs):
     "--outlier_algo",
     "outlieralgorithm",
     default="fitting",
-    help="String specifying the algorithm used to detect the outliers. Currently, deeplabcut supports only sarimax (this will be updated). \
-              This method fits a Seasonal AutoRegressive Integrated Moving Average with eXogenous regressors model \
-              to data and computes confidence interval. \
-              Based on the fraction of data points outside the confidence interval and the average distance (compared to delta) \
-              the user can identify potential outlier frames. The default is set to ``fitting``. Other choices: `fitting`, `jump`, `uncertain`",
+    help="String specifying the algorithm used to detect the outliers.\
+        Currently, deeplabcut supports only sarimax (this will be updated). \
+        This method fits a Seasonal AutoRegressive Integrated Moving Average with eXogenous regressors model \
+        to data and computes confidence interval. \
+        Based on the fraction of data points outside the confidence interval \
+        and the average distance (compared to delta) \
+        the user can identify potential outlier frames.\
+        The default is set to ``fitting``. Other choices: `fitting`, `jump`, `uncertain`",
 )
 @click.option(
     "-compare",
@@ -366,7 +370,8 @@ def analyze_videos(_, *args, **kwargs):
     default="all",
     help="This select the body parts for which the comparisons with the outliers are carried out. Either ``all``, \
               then all body parts from config.yaml are used orr a list of strings that are a subset of the full list.\
-               E.g. [`hand`,`Joystick`] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.",
+               E.g. [`hand`,`Joystick`]"
+    " for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.",
 )
 @click.option(
     "-e",
@@ -374,15 +379,18 @@ def analyze_videos(_, *args, **kwargs):
     "epsilon",
     default=20,
     help="Meaning depends on outlieralgoritm. The default is set to 20 pixels.For outlieralgorithm `fitting`: \
-              Float bound according to which frames are picked when the (average) body part estimate deviates from model fit. \
-              For outlieralgorithm `jump`: Float bound specifying the distance by which body points jump from one frame to next (Euclidean distance)",
+            Float bound according to which frames are picked when the (average)\
+            body part estimate deviates from model fit. \
+            For outlier algorithm `jump`:"
+    "Float bound specifying the distance by which body points jump from one frame to next (Euclidean distance)",
 )
 @click.option(
     "-p",
     "--p_bound",
     "p_bound",
     default=0.01,
-    help="For outlieralgorithm `uncertain` this parameter defines the likelihood below, below which a body part will be flagged as a putative outlier.",
+    help="For outlieralgorithm `uncertain` this parameter defines the likelihood below, "
+    "below which a body part will be flagged as a putative outlier.",
 )
 @click.option(
     "-ard",
@@ -412,9 +420,11 @@ def analyze_videos(_, *args, **kwargs):
     "--extraction_algo",
     "extractionalgorithm",
     default="uniform",
-    help="String specifying the algorithm to use for selecting the frames from the identified outliers. \
-              Currently, deeplabcut supports either ``kmeans`` or ``uniform`` based selection (same logic as for extract_frames).\
-              The default is set to``uniform``, if provided it must be either ``uniform`` or ``kmeans``.",
+    help="String specifying the algorithm to use for selecting the frames from the identified outliers.\
+            Currently, deeplabcut supports either ``kmeans`` or ``uniform``\
+            based selection (same logic as for extract_frames).\
+            The default is set to``uniform``,\
+            if provided it must be either ``uniform`` or ``kmeans``.",
 )
 @click.pass_context
 def extract_outlier_frames(_, *args, **kwargs):
@@ -432,15 +442,16 @@ def extract_outlier_frames(_, *args, **kwargs):
     Example \n
     --------\n
     for extracting the frames with default settings\n
-    >>> python3 dlc.py extract_outlier_frames /analysis/project/reaching-task/config.yaml /analysis/project/video/reachinvideo1.avi \n
+    >>> python3 dlc.py extract_outlier_frames /analysis/project/reaching-task/config.yaml
+    ... /analysis/project/video/reachinvideo1.avi \n
     --------\n
     for extracting the frames with kmeans\n
     >>> python3 dlc.py extract_outlier_frames /analysis/project/reaching-task/config.yaml
-        /analysis/project/video/reachinvideo1.avi --extractionalgorithm 'kmeans' \n
+    ... /analysis/project/video/reachinvideo1.avi --extractionalgorithm 'kmeans' \n
     --------\n
     for extracting the frames with kmeans and epsilon = 5 pixels.\n
     >>> python3 dlc.py extract_outlier_frames /analysis/project/reaching-task/config.yaml
-        /analysis/project/video/reachinvideo1.avi --epsilon 5 --extractionalgorithm kmeans \n
+    ... /analysis/project/video/reachinvideo1.avi --epsilon 5 --extractionalgorithm kmeans \n
     --------\n
     """
     from deeplabcut.refine_training_dataset import outlier_frames
