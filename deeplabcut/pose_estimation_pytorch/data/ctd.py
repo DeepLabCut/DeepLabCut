@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import json
 import pickle
-from abc import ABC
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 import numpy as np
@@ -27,6 +27,7 @@ class CondProvider(ABC):
     """A class providing conditions for a CTD model."""
 
     @classmethod
+    @abstractmethod
     def get_loader_and_snapshot(
         cls,
         config: str | Path,

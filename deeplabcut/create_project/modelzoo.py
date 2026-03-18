@@ -355,16 +355,14 @@ def create_pretrained_project_pytorch(
 
     if net_name not in get_available_models(dataset):
         raise ValueError(
-            f"Invalid net_name '{net_name}' for dataset {dataset}. The following net types are available: {
-                get_available_models(dataset)
-            }"
+            f"Invalid net_name '{net_name}' for dataset {dataset}. "
+            f"The following net types are available: {get_available_models(dataset)}"
         )
 
     if detector_name not in get_available_detectors(dataset):
         raise ValueError(
-            f"Invalid detector_name '{detector_name}' for dataset {dataset}. The following detectors are available: {
-                get_available_detectors(dataset)
-            }"
+            f"Invalid detector_name '{detector_name}' for dataset {dataset}. "
+            f"The following detectors are available: {get_available_detectors(dataset)}"
         )
 
     # Create project

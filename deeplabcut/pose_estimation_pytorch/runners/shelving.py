@@ -12,13 +12,12 @@
 
 import pickle
 import shelve
-from abc import ABC
 from pathlib import Path
 
 import numpy as np
 
 
-class ShelfManager(ABC):
+class ShelfManager:
     """Class to manage shelf data."""
 
     def __init__(self, filepath: str | Path, flag: str = "r") -> None:
