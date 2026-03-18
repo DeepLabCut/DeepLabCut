@@ -2,8 +2,8 @@
 """Generate a readable Markdown report from Ruff JSON output.
 
 Usage:
-    python generate_ruff_report.py . --output ruff-report.md
-    python generate_ruff_report.py src tests --output lint/ruff-report.md
+    python ruff_report.py . --output ruff-report.md
+    python ruff_report.py src tests --output lint/ruff-report.md
 """
 
 from __future__ import annotations
@@ -42,7 +42,7 @@ RULE_NOTES = {
 
 
 def run_ruff(paths: Iterable[str]) -> list[dict]:
-    cmd = ["ruff", "check", *paths, "--output-format=json", "--exit-zero"]
+    cmd = [sys.executable, "-m", "ruff", "check", *paths, "--output-format=json", "--exit-zero"]
     proc = subprocess.run(cmd, capture_output=True, text=True)
     if proc.returncode not in (0, 1):
         print(proc.stdout)
