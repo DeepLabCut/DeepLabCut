@@ -104,7 +104,8 @@ def oks_match_prediction_to_gt(pred_kpts: np.array, gt_kpts: np.array, individua
             num_animals: Number of animals.
             num_keypoints: Number of keypoints.
             3: (x, y, score) coordinates of each keypoint.
-        gt_kpts: Ground truth keypoints for each animal. The shape of the array is (num_animals, num_keypoints(+1 if with center), 2):
+        gt_kpts: Ground truth keypoints for each animal. The shape of the array is (num_animals, num_keypoints(+1 if
+        with center), 2):
             num_animals: Number of animals.
             num_keypoints: Number of keypoints.
         individual_names: names of individuals

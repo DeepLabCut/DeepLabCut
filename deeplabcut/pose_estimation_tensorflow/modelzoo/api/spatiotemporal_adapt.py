@@ -49,11 +49,14 @@ class SpatiotemporalAdaptation:
         scale_list: list
            A list of different resolutions for the spatial pyramid
         videotype: string
-           Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
+           Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this
+           extension are analyzed. The default is ``.avi``
         adapt_iterations: int
-           Number of iterations for adaptation training. Empirically 1000 is sufficient. Training longer can cause worse performance depending whether there is occlusion in the video
+           Number of iterations for adaptation training. Empirically 1000 is sufficient. Training longer can cause worse
+           performance depending whether there is occlusion in the video
         modelfolder: string, optional
-           Because the API does not need a dlc project, the checkpoint and logs go to this temporary model folder, and otherwise model is saved to the current work place
+           Because the API does not need a dlc project, the checkpoint and logs go to this temporary model folder, and
+           otherwise model is saved to the current work place
         customized_pose_config: string, optional
            For future support of non modelzoo model
 

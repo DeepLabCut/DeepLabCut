@@ -987,17 +987,20 @@ def stitch_tracklets(
         Path to the main project config.yaml file.
 
     videos : list
-        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the
+        videos with same extension are stored.
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this
+        extension are analyzed.
         If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
     shuffle: int, optional
         An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list
+        in config.yaml).
 
     n_tracks : int, optional
         Number of tracks to reconstruct. By default, taken as the number

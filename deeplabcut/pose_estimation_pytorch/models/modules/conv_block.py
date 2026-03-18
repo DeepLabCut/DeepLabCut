@@ -26,7 +26,8 @@ BLOCKS = Registry("blocks", build_func=build_from_cfg)
 class BaseBlock(ABC, nn.Module):
     """Abstract Base class for defining custom blocks.
 
-    This class defines an abstract base class for creating custom blocks used in the HigherHRNet for Human Pose Estimation.
+    This class defines an abstract base class for creating custom blocks used in the HigherHRNet for Human Pose
+    Estimation.
 
     Attributes:
         bn_momentum: Batch normalization momentum.

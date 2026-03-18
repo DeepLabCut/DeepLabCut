@@ -33,7 +33,8 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
         An integer value specifying the number of cameras.
 
     working_directory : string, optional
-        The directory where the project will be created. The default is the ``current working directory``; if provided, it must be a string.
+        The directory where the project will be created. The default is the ``current working directory``; if provided,
+        it must be a string.
 
 
     Example
@@ -88,7 +89,10 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
     cfg_file_3d["scorer"] = experimenter
     cfg_file_3d["date"] = d
     cfg_file_3d["project_path"] = str(project_path)
-    #    cfg_file_3d['config_files']= [str('Enter the path of the config file ')+str(i)+ ' to include' for i in range(1,3)]
+    #    cfg_file_3d['config_files']= [
+    #        str('Enter the path of the config file ') + str(i) + ' to include'
+    #        for i in range(1, 3)
+    #    ]
     #    cfg_file_3d['config_files']= ['Enter the path of the config file 1']
     cfg_file_3d["colormap"] = "jet"
     cfg_file_3d["dotsize"] = 15
@@ -123,6 +127,8 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
 
     print('Generated "{}"'.format(project_path / "config.yaml"))
     print(
-        f"\nA new project with name {project_name} is created at {wd} and a configurable file (config.yaml) is stored there. If you have not calibrated the cameras, then use the function 'calibrate_camera' to start calibrating the camera otherwise use the function ``triangulate`` to triangulate the dataframe"
+        f"\nA new project with name {project_name} is created at {wd} and a configurable file (config.yaml) is stored"
+        f"there. If you have not calibrated the cameras, then use the function 'calibrate_camera' to start calibrating"
+        f"the camera otherwise use the function ``triangulate`` to triangulate the dataframe"
     )
     return projconfigfile

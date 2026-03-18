@@ -94,7 +94,8 @@ class TrainNetwork(DefaultTab):
         self.resume_from_snapshot_label.setToolTip(
             "<span style='font-weight:normal; white-space:nowrap;'>"
             "If you've already trained a model on this shuffle, you can continue training it instead of starting "
-            "from scratch again. <br>When using top-down models, you can also choose a detector to resume training from."
+            "from scratch again. <br>When using top-down models, you can also choose a detector to resume training"
+            "from."
             "</span>"
         )
         self.main_layout.addWidget(self.resume_from_snapshot_label)

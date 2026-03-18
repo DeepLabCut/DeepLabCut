@@ -524,7 +524,8 @@ class FrameCropper(QtWidgets.QDialog):
 
     def display_help(self, *args):
         print(
-            "1. Use left click to select the region of interest. A red box will be drawn around the selected region. \n\n2. Use the corner points to expand the box and center to move the box around the image. \n\n3. Click "
+            "1. Use left click to select the region of interest. A red box will be drawn around the selected region."
+            "\n\n2. Use the corner points to expand the box and center to move the box around the image. \n\n3. Click"
         )
 
 

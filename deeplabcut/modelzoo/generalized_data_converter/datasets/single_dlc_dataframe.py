@@ -30,7 +30,8 @@ def merge_annotateddatasets(cfg):
 
     This is a bit of a mess because of cross platform compatibility.
 
-    Within platform comp. is straightforward. But if someone labels on windows and wants to train on a unix cluster or colab...
+    Within platform comp. is straightforward. But if someone labels on windows and wants to train on a unix cluster or
+    colab...
     """
     AnnotationData = []
     data_path = Path(os.path.join(cfg["project_path"], "labeled-data"))
@@ -43,7 +44,9 @@ def merge_annotateddatasets(cfg):
             conversioncode.guarantee_multiindex_rows(data)
             if data.columns.levels[0][0] != cfg["scorer"]:
                 print(
-                    f"{file_path} labeled by a different scorer. This data will not be utilized in training dataset creation. If you need to merge datasets across scorers, see https://github.com/DeepLabCut/DeepLabCut/wiki/Using-labeled-data-in-DeepLabCut-that-was-annotated-elsewhere-(or-merge-across-labelers)"
+                    f"{file_path} labeled by a different scorer. This data will not be utilized in training dataset"
+                    f"creation. If you need to merge datasets across scorers, see"
+                    f"https://github.com/DeepLabCut/DeepLabCut/wiki/Using-labeled-data-in-DeepLabCut-that-was-annotated-elsewhere-(or-merge-across-labelers)"
                 )
                 continue
             AnnotationData.append(data)
@@ -52,7 +55,8 @@ def merge_annotateddatasets(cfg):
 
     if not len(AnnotationData):
         print(
-            "Annotation data was not found by splitting video paths (from config['video_sets']). An alternative route is taken..."
+            "Annotation data was not found by splitting video paths (from config['video_sets']). An alternative route"
+            "is taken..."
         )
         AnnotationData = conversioncode.merge_windowsannotationdataONlinuxsystem(cfg)
         if not len(AnnotationData):

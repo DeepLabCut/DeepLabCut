@@ -257,14 +257,17 @@ def create_multianimaltraining_dataset(
         It defines the conditions that will be used with the CTD model.
         It can be either:
             * A shuffle number (ctd_conditions: int), which must correspond to a bottom-up (BU) network type.
-            * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5 predictions file.
-            * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
+            * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5
+            predictions file.
+            * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which
+            respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
 
     Example
     --------
     >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
 
-    >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml', Shuffles=[0,1,2], trainIndices=[trainInd1, trainInd2, trainInd3], testIndices=[testInd1, testInd2, testInd3])
+    >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml', Shuffles=[0,1,2],
+    trainIndices=[trainInd1, trainInd2, trainInd3], testIndices=[testInd1, testInd2, testInd3])
 
     Windows:
     >>> deeplabcut.create_multianimaltraining_dataset(r'C:\\Users\\Ulf\\looming-task\\config.yaml',Shuffles=[3,17,5])

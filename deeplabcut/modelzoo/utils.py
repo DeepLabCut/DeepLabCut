@@ -197,7 +197,8 @@ def parse_project_model_name(superanimal_name: str) -> tuple[str, str]:
 
     if superanimal_name == "superanimal_quadruped":
         warnings.warn(
-            f"{superanimal_name} is deprecated and will be removed in a future version. Use {superanimal_name}_model_suffix instead.",
+            f"{superanimal_name} is deprecated and will be removed in a future version. Use"
+            f"{superanimal_name}_model_suffix instead.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -205,7 +206,8 @@ def parse_project_model_name(superanimal_name: str) -> tuple[str, str]:
 
     if superanimal_name == "superanimal_topviewmouse":
         warnings.warn(
-            f"{superanimal_name} is deprecated and will be removed in a future version. Use {superanimal_name}_model_suffix instead.",
+            f"{superanimal_name} is deprecated and will be removed in a future version. Use"
+            f"{superanimal_name}_model_suffix instead.",
             DeprecationWarning,
             stacklevel=2,
         )

@@ -145,7 +145,8 @@ print("CREATING TRAININGSET 2")
 dlc.create_training_dataset(path_config_file, Shuffles=[2],net_type=net_type,augmenter_type=augmenter_type2)
 
 cfg=dlc.auxiliaryfunctions.read_config(path_config_file)
-posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(2),'train/pose_cfg.yaml')
+posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] +
+'-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(2),'train/pose_cfg.yaml')
 DLC_config=dlc.auxiliaryfunctions.read_plainconfig(posefile)
 DLC_config['save_iters']=numiter
 DLC_config['display_iters']=1
@@ -169,5 +170,6 @@ print("Export model...")
 dlc.export_model(path_config_file, shuffle=1, make_tar=False)
 
 print(
-    "ALL DONE!!! - default/imgaug cases of DLCcore training and evaluation are functional (no extract outlier or refinement tested)."
+    "ALL DONE!!! - default/imgaug cases of DLCcore training and evaluation are functional (no extract outlier or"
+    "refinement tested)."
 )

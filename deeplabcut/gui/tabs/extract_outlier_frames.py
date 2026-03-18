@@ -159,7 +159,8 @@ class ExtractOutlierFrames(DefaultTab):
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Warning)
         msg.setText(
-            "Make sure that you have refined all the labels before merging the dataset.If you merge the dataset, you need to re-create the training dataset before you start the training. Are you ready to merge the dataset?"
+            "Make sure that you have refined all the labels before merging the dataset.If you merge the dataset, you"
+            "need to re-create the training dataset before you start the training. Are you ready to merge the dataset?"
         )
         msg.setWindowTitle("Warning")
         msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)

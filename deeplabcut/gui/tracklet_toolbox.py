@@ -901,7 +901,8 @@ class TrackletVisualizer:
         output_path = os.path.join(tmpfolder, f"CollectedData_{self.manager.cfg['scorer']}.h5")
         if os.path.isfile(output_path):
             print(
-                "A training dataset file is already found for this video. The refined machine labels are merged to this data!"
+                "A training dataset file is already found for this video. The refined machine labels are merged to this"
+                "data!"
             )
             df_orig = pd.read_hdf(output_path)
             df_joint = pd.concat([df, df_orig])
