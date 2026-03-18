@@ -165,7 +165,7 @@ class MBConvBlock(tf.keras.layers.Layer):
             global_params.use_se and self._block_args.se_ratio is not None and 0 < self._block_args.se_ratio <= 1
         )
 
-        self.endpoints = None
+        self.endpoints = {}
 
         # Builds the block accordings to arguments.
         self._build()
@@ -395,7 +395,7 @@ class Model(tf.keras.Model):
         self._relu_fn = global_params.relu_fn or tf.nn.swish
         self._batch_norm = global_params.batch_norm
 
-        self.endpoints = None
+        self.endpoints = {}
 
         self._build()
 
@@ -510,11 +510,12 @@ class Model(tf.keras.Model):
                 self.endpoints[f"block_{idx}"] = outputs
                 if is_reduction:
                     self.endpoints[f"reduction_{reduction_idx}"] = outputs
-                if block.endpoints:
-                    for k, v in block.endpoints.items():
-                        self.endpoints[f"block_{idx}/{k}"] = v
-                        if is_reduction:
-                            self.endpoints[f"reduction_{reduction_idx}/{k}"] = v
+
+                for k, v in block.endpoints.items():
+                    self.endpoints[f"block_{idx}/{k}"] = v
+                    if is_reduction:
+                        self.endpoints[f"reduction_{reduction_idx}/{k}"] = v
+
         self.endpoints["features"] = outputs
 
         if not features_only:
