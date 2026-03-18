@@ -39,8 +39,15 @@ repos:
     rev: v1.7.7
     hooks:
       - id: docformatter
+        name: docformatter (fix)
         args: [--wrap-descriptions=88, --wrap-summaries=88, --in-place, --black]
-        stages: [pre-commit]    # modifies -> local only
+        stages: [pre-commit]
+
+      - id: docformatter
+        name: docformatter (ci)
+        args: [--wrap-descriptions=88, --wrap-summaries=88, --check, --black]
+        stages: [manual]
+
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.6
