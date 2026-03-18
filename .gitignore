@@ -141,3 +141,6 @@ ENV/
 
 # Tools output
 tmp/*
+
+# Test data
+tests/data/*

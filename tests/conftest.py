@@ -10,19 +10,21 @@
 #
 import os
 import pickle
-import shutil
 import urllib.request
 import zipfile
 from io import BytesIO
 
 import numpy as np
 import pytest
+from filelock import FileLock
 from PIL import Image
 from tqdm import tqdm
 
 from deeplabcut.core import inferenceutils
 
 TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+TEST_DATA_SENTINEL = os.path.join(TEST_DATA_DIR, ".download_complete")
+LOCK_FILE = os.path.join(os.path.dirname(TEST_DATA_DIR), ".test_data.lock")
 
 
 def unzip_from_url(url, dest_folder):
@@ -37,16 +39,17 @@ def unzip_from_url(url, dest_folder):
                 pass
 
 
+def _test_data_ready() -> bool:
+    return os.path.isdir(TEST_DATA_DIR) and os.path.isfile(TEST_DATA_SENTINEL)
+
+
 def pytest_sessionstart(session):
-    unzip_from_url(
-        "https://github.com/DeepLabCut/UnitTestData/raw/main/data.zip",
-        os.path.split(TEST_DATA_DIR)[0],
-    )
-    session.__DATA_FOLDER = TEST_DATA_DIR
-
-
-def pytest_sessionfinish(session, exitstatus):
-    shutil.rmtree(session.__DATA_FOLDER)
+    with FileLock(LOCK_FILE):
+        if not _test_data_ready():
+            unzip_from_url(
+                "https://github.com/DeepLabCut/UnitTestData/raw/main/data.zip",
+                os.path.split(TEST_DATA_DIR)[0],
+            )
 
 
 @pytest.fixture(scope="function")
