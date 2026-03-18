@@ -442,27 +442,39 @@ def _video_inference_superanimal(
 
     Makes prediction based on a super animal model. Note right now we only support single animal video inference
 
-    The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
+    The index of the trained network is specified by parameters in the config file
+    (in particular the variable 'snapshotindex')
 
-    Output: The labels are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
-            in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
+    Output: The labels are stored as MultiIndex Pandas Array,
+    which contains the name of the network, body part name, (x, y) label position \n
+            in pixels, and the likelihood for each frame per body part.
+            These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
             in the same directory, where the video is stored.
 
     Parameters
     ----------
     videos: list
-        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+        A list of strings containing the full paths to videos for analysis or a path to the directory,
+        where all the videos with same extension are stored.
 
     superanimal_name: str
-        The name of the superanimal model. In TensorFlow, we only support "superanimal_quadruped", "superanimal_topviewmouse". Check out the PyTorch version for active development, better performance and additional models (humans, birds, ...)
+        The name of the superanimal model.
+        In TensorFlow, we only support "superanimal_quadruped", "superanimal_topviewmouse".
+        Check out the PyTorch version for active development,
+        better performance and additional models (humans, birds, ...)
     scale_list: list
-        A list of int containing the target height of the multi scale test time augmentation. By default it uses the original size. Users are advised to try a wide range of scale list when the super model does not give reasonable results
+        A list of int containing the target height of the multi scale test time augmentation.
+        By default it uses the original size.
+        Users are advised to try a wide range of scale list when the super model does not give reasonable results
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
+        Checks for the extension of the video in case the input to the video is a directory.\n
+        Only videos with this extension are analyzed.
+        The default is ``.avi``
 
     video_adapt: bool, optional
-        Set True if you want to apply video adaptation to make the resulted video less jittering and better. However, adaptation training takes more time than usual video inference
+        Set True if you want to apply video adaptation to make the resulted video less jittering and better.
+        However, adaptation training takes more time than usual video inference
 
     plot_trajectories: bool, optional (default=True)
         By default, plot the trajectories of various body parts across the video.

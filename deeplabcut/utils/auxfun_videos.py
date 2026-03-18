@@ -409,9 +409,11 @@ def ShortenVideo(vname, start="00:00:01", stop="00:01:00", outsuffix="short", ou
     Extracts (sub)video from 1st second to 1st minutes (default values) and saves it in /data/videos as mouse1short.avi
 
     Windows:
-    >>> deeplabcut.ShortenVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi', start='00:17:00',stop='00:22:00',outsuffix='brief')
+    >>> deeplabcut.ShortenVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi',
+    ... start='00:17:00',stop='00:22:00',outsuffix='brief')
 
-    Extracts (sub)video from minute 17 to 22 and and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1brief.avi
+    Extracts (sub)video from minute 17 to 22 and and saves it in
+    C:\\yourusername\\rig-95\\Videos as reachingvideo1brief.avi
     """
     writer = VideoWriter(vname)
     return writer.shorten(start, stop, outsuffix, outpath)
@@ -463,9 +465,11 @@ def CropVideo(
     Crops the video using default values and saves it in /data/videos as mouse1cropped.avi
 
     Windows:
-    >>> =deeplabcut.CropVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi', width=220,height=320,outsuffix='cropped')
+    >>> =deeplabcut.CropVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi',
+    ... width=220,height=320,outsuffix='cropped')
 
-    Crops the video to a width of 220 and height of 320 starting at the origin (top left) and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
+    Crops the video to a width of 220 and height of 320 starting at the origin (top left)
+    and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
     """
     writer = VideoWriter(vname)
 
@@ -531,9 +535,11 @@ def DownSampleVideo(
     Downsamples the video using default values and saves it in /data/videos as mouse1cropped.avi
 
     Windows:
-    >>> shortenedvideoname=deeplabcut.DownSampleVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi', width=220,height=320,outsuffix='cropped')
+    >>> shortenedvideoname=deeplabcut.DownSampleVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi',
+    ... width=220,height=320,outsuffix='cropped')
 
-    Downsamples the video to a width of 220 and height of 320 and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
+    Downsamples the video to a width of 220 and height of 320 and
+    saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
     """
     writer = VideoWriter(vname)
     return writer.rescale(width, height, rotatecw, angle, outsuffix, outpath)
@@ -571,9 +577,11 @@ def rotate_video(vname, angle, rotatecw="Arbitrary", outsuffix="rotated", outpat
     Rotates the video by 90 degrees and saves it in /data/videos as mouse1rotated.avi
 
     Windows:
-    >>> shortenedvideoname=deeplabcut.rotate_video('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi', angle=180,rotatecw='Yes')
+    >>> shortenedvideoname=deeplabcut.rotate_video('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi',
+    ... angle=180,rotatecw='Yes')
 
-    Rotates the video by 180 degrees and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1rotated.avi
+    Rotates the video by 180 degrees and
+    saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1rotated.avi
     """
     writer = VideoWriter(vname)
     return writer.rotate(angle, rotatecw, outsuffix, outpath)
@@ -600,7 +608,10 @@ def draw_bbox(video):
 
     def display_help(*args):
         print(
-            "1. Use left click to select the region of interest. A red box will be drawn around the selected region. \n\n2. Use the corner points to expand the box and center to move the box around the image. \n\n3. Click "
+            "1. Use left click to select the region of interest. "
+            "A red box will be drawn around the selected region. \n\n"
+            "2. Use the corner points to expand the box and center to move the box around the image. \n\n"
+            "3. Click "
         )
 
     fig = plt.figure()

@@ -46,7 +46,8 @@ def triangulate(
         i.e. [['video1-camera-1.avi','video1-camera-2.avi']]
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        Checks for the extension of the video in case the input to the video is a directory.\n
+        Only videos with this extension are analyzed.
         If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
 
@@ -74,7 +75,9 @@ def triangulate(
     >>> deeplabcut.triangulate(config,'/data/project1/videos/')
 
     To analyze only a few pairs of videos:
-    >>> deeplabcut.triangulate(config,[['/data/project1/videos/video1-camera-1.avi','/data/project1/videos/video1-camera-2.avi'],['/data/project1/videos/video2-camera-1.avi','/data/project1/videos/video2-camera-2.avi']])
+    >>> deeplabcut.triangulate(config,[['/data/project1/videos/video1-camera-1.avi',
+    ... '/data/project1/videos/video1-camera-2.avi'],['/data/project1/videos/video2-camera-1.avi',
+    ... '/data/project1/videos/video2-camera-2.avi']])
 
 
     Windows
@@ -82,7 +85,10 @@ def triangulate(
     >>> deeplabcut.triangulate(config,'C:\\yourusername\\rig-95\\Videos')
 
     To analyze only a few pair of videos:
-    >>> deeplabcut.triangulate(config,[['C:\\yourusername\\rig-95\\Videos\\video1-camera-1.avi','C:\\yourusername\\rig-95\\Videos\\video1-camera-2.avi'],['C:\\yourusername\\rig-95\\Videos\\video2-camera-1.avi','C:\\yourusername\\rig-95\\Videos\\video2-camera-2.avi']])
+    >>> deeplabcut.triangulate(config,[['C:\\yourusername\\rig-95\\Videos\\video1-camera-1.avi',
+    ... 'C:\\yourusername\\rig-95\\Videos\\video1-camera-2.avi'],
+    ... ['C:\\yourusername\\rig-95\\Videos\\video2-camera-1.avi',
+    ... 'C:\\yourusername\\rig-95\\Videos\\video2-camera-2.avi']])
     """
     from deeplabcut.compat import analyze_videos
     from deeplabcut.post_processing import filtering
@@ -113,7 +119,8 @@ def triangulate(
     if video_list == []:
         print("No videos found in the specified video path.", video_path)
         print(
-            "Please make sure that the video names are specified with correct camera names as entered in the config file or"
+            "Please make sure that the video names are specified with"
+            " correct camera names as entered in the config file or"
         )
         print(
             "perhaps the videotype is distinct from the videos in the path, I was looking for:",
@@ -185,7 +192,8 @@ def triangulate(
                         pd.read_hdf(output_filename + ".h5").to_csv(str(output_filename + ".csv"))
 
                     print(
-                        "Already analyzed...Checking the meta data for any change in the camera matrices and/or scorer names",
+                        "Already analyzed..."
+                        "Checking the meta data for any change in the camera matrices and/or scorer names",
                         vname,
                     )
                     pickle_file = str(output_filename + "_meta.pickle")
@@ -293,14 +301,17 @@ def triangulate(
             ) = undistort_points(config, dataname, str(cam_names[0] + "-" + cam_names[1]))
             if len(dataFrame_camera1_undistort) != len(dataFrame_camera2_undistort):
                 warnings.warn(
-                    "The number of frames do not match in the two videos. Please make sure that your videos have same number of frames and then retry! Excluding the extra frames from the longer video.",
+                    "The number of frames do not match in the two videos. "
+                    "Please make sure that your videos have same number of frames and then retry! "
+                    "Excluding the extra frames from the longer video.",
                     stacklevel=2,
                 )
                 if len(dataFrame_camera1_undistort) > len(dataFrame_camera2_undistort):
                     dataFrame_camera1_undistort = dataFrame_camera1_undistort[: len(dataFrame_camera2_undistort)]
                 if len(dataFrame_camera2_undistort) > len(dataFrame_camera1_undistort):
                     dataFrame_camera2_undistort = dataFrame_camera2_undistort[: len(dataFrame_camera1_undistort)]
-            #                raise Exception("The number of frames do not match in the two videos. Please make sure that your videos have same number of frames and then retry!")
+                    # raise Exception("The number of frames do not match in the two videos.
+                    # Please make sure that your videos have same number of frames and then retry!")
             dataFrame_camera1_undistort.columns.get_level_values(0)[0]
             dataFrame_camera2_undistort.columns.get_level_values(0)[0]
 
@@ -495,7 +506,8 @@ def undistort_points(config, dataframe, camera_pair):
 
     #currently no intermediate saving of this due to high speed.
     # check if the undistorted files are already present
-    if os.path.exists(os.path.join(path_undistort,filename_cam1 + '_undistort.h5')) and os.path.exists(os.path.join(path_undistort,filename_cam2 + '_undistort.h5')):
+    if os.path.exists(os.path.join(path_undistort,filename_cam1 + \
+    '_undistort.h5')) and os.path.exists(os.path.join(path_undistort,filename_cam2 + '_undistort.h5')):
         print("The undistorted files are already present at %s" % os.path.join(path_undistort,filename_cam1))
         dataFrame_cam1_undistort = pd.read_hdf(os.path.join(path_undistort,filename_cam1 + '_undistort.h5'))
         dataFrame_cam2_undistort = pd.read_hdf(os.path.join(path_undistort,filename_cam2 + '_undistort.h5'))
@@ -503,7 +515,8 @@ def undistort_points(config, dataframe, camera_pair):
     """
     if len(dataframe) != 2:
         raise ValueError(
-            f"undistort_points(config, dataframe, camera_pair) needs filenames to two data frames, but got dataframe={dataframe}."
+            "undistort_points(config, dataframe, camera_pair) "
+            f"needs filenames to two data frames, but got dataframe={dataframe}."
         )
     for filename in dataframe:
         if not os.path.exists(filename):

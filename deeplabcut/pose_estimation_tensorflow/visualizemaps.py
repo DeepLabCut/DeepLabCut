@@ -32,7 +32,8 @@ def extract_maps(
     """Extracts the scoremap, locref, partaffinityfields (if available).
 
     Returns a dictionary indexed by: trainingsetfraction, snapshotindex, and imageindex
-    for those keys, each item contains: (image,scmap,locref,paf,bpt names,partaffinity graph, imagename, True/False if this image was in trainingset)
+    for those keys, each item contains: (image,scmap,locref,paf,bpt names,partaffinity graph,
+    imagename, True/False if this image was in trainingset)
     ----------
     config : string
         Full path of the config.yaml file as a string.
@@ -41,15 +42,19 @@ def extract_maps(
         integers specifying shuffle index of the training dataset. The default is 0.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
-        variable can also be set to "all".
+        Integer specifying which TrainingsetFraction to use. By default the first
+        (note that TrainingFraction is a list in config.yaml).
+        This variable can also be set to "all".
 
     rescale: bool, default False
-        Evaluate the model at the 'global_scale' variable (as set in the test/pose_config.yaml file for a particular project). I.e. every
-        image will be resized according to that scale and prediction will be compared to the resized ground truth. The error will be reported
-        in pixels at rescaled to the *original* size. I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
-        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!. The evaluation images are also shown for the
-        original size!
+        Evaluate the model at the 'global_scale' variable
+        (as set in the test/pose_config.yaml file for a particular project).
+        I.e. every image will be resized according to that scale
+        and prediction will be compared to the resized ground truth.
+        The error will be reported in pixels at rescaled to the *original* size.
+        I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
+        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!.
+        The evaluation images are also shown for the original size!
 
     Examples
     --------
@@ -178,8 +183,11 @@ def extract_maps(
             ]  # read how many training siterations that corresponds to.
 
             # Name for deeplabcut net (based on its parameters)
-            # DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations)
-            # notanalyzed, resultsfilename, DLCscorer=auxiliaryfunctions.CheckifNotEvaluated(str(evaluationfolder),DLCscorer,DLCscorerlegacy,Snapshots[snapindex])
+            # DLCscorer,DLCscorerlegacy =
+            # auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations)
+            # notanalyzed, resultsfilename,
+            # DLCscorer=auxiliaryfunctions.CheckifNotEvaluated(str(evaluationfolder),
+            # DLCscorer,DLCscorerlegacy,Snapshots[snapindex])
             # print("Extracting maps for ", DLCscorer, " with # of trainingiterations:", trainingsiterations)
             # if notanalyzed: #this only applies to ask if h5 exists...
 
@@ -281,8 +289,9 @@ def extract_save_all_maps(
         integers specifying shuffle index of the training dataset. The default is 1.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
-        variable can also be set to "all".
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml).
+        This variable can also be set to "all".
 
     comparisonbodyparts: list of bodyparts, Default is "all".
         The average error will be computed for those body parts only (Has to be a subset of the body parts).
