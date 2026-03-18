@@ -53,7 +53,8 @@ def calculatepafdistancebounds(config, shuffle=0, trainingsetindex=0, modelprefi
         integers specifying shuffle index of the training dataset. The default is 0.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml). This
         variable can also be set to "all".
 
     numdigits: number of digits to round for distances.
@@ -208,7 +209,9 @@ def return_evaluate_network_data(
     Snapshots[snapindex],scale,net_type]
 
     If fulldata=True, also returns (the complete annotation and prediction array)
-    Returns list of: (DataMachine, Data, data, trainIndices, testIndices, trainFraction, DLCscorer,comparisonbodyparts, cfg, Snapshots[snapindex])
+    Returns list of:
+    (DataMachine, Data, data, trainIndices, testIndices, trainFraction,
+    DLCscorer,comparisonbodyparts, cfg, Snapshots[snapindex])
     ----------
     config : string
         Full path of the config.yaml file as a string.
@@ -217,18 +220,22 @@ def return_evaluate_network_data(
         integers specifying shuffle index of the training dataset. The default is 0.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
-        variable can also be set to "all".
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml).
+        This variable can also be set to "all".
 
     comparisonbodyparts: list of bodyparts, Default is "all".
         The average error will be computed for those body parts only (Has to be a subset of the body parts).
 
     rescale: bool, default False
-        Evaluate the model at the 'global_scale' variable (as set in the test/pose_config.yaml file for a particular project). I.e. every
-        image will be resized according to that scale and prediction will be compared to the resized ground truth. The error will be reported
-        in pixels at rescaled to the *original* size. I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
-        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!. The evaluation images are also shown for the
-        original size!
+        Evaluate the model at the 'global_scale' variable
+        (as set in the test/pose_config.yaml file for a particular project).
+        I.e. every image will be resized according to that scale and
+        prediction will be compared to the resized ground truth. The error will be reported
+        in pixels at rescaled to the *original* size.
+        I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
+        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!.
+        The evaluation images are also shown for the original size!
 
     Examples
     --------
@@ -250,7 +257,12 @@ def return_evaluate_network_data(
 
     # Loading human annotatated data
     trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
-    # Data=pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
+    # Data=pd.read_hdf(
+    # os.path.join(
+    # cfg["project_path"],
+    # str(trainingsetfolder
+    # ),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing'
+    # )
 
     # Get list of body parts to evaluate network for
     comparisonbodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts)
@@ -682,7 +694,8 @@ def evaluate_network(
                 )
                 modelfolder = Path(cfg["project_path"]) / modelfolder_rel_path
 
-                # TODO: Unlike using create_training_dataset() If create_training_model_comparison() is used there won't
+                # TODO: Unlike using create_training_dataset()
+                # If create_training_model_comparison() is used there won't
                 #  necessarily be training fractions for every shuffle which will raise the FileNotFoundError..
                 #  Not sure if this should throw an exception or just be a warning...
                 if not modelfolder.exists():
@@ -884,11 +897,12 @@ def evaluate_network(
                             )
                             if scale != 1:
                                 print(
-                                    "The predictions have been calculated for rescaled images (and rescaled ground truth). Scale:",
-                                    scale,
+                                    "The predictions have been calculated for"
+                                    f" rescaled images (and rescaled ground truth). Scale: {scale}"
                                 )
                             print(
-                                "Thereby, the errors are given by the average distances between the labels by DLC and the scorer."
+                                "Thereby, the errors are given by the average distances "
+                                "between the labels by DLC and the scorer."
                             )
 
                         if plotting:
@@ -920,7 +934,9 @@ def evaluate_network(
                             )
                             if not os.path.exists(foldername):
                                 print(
-                                    "Plotting...(attention scale might be inconsistent in comparison to when data was analyzed; i.e. if you used rescale)"
+                                    "Plotting..."
+                                    "(warning, scale might be inconsistent in comparison "
+                                    "to when data was analyzed; i.e. if you used rescale)"
                                 )
                                 auxiliaryfunctions.attempt_to_make_folder(foldername)
                                 Plotting(
@@ -940,10 +956,13 @@ def evaluate_network(
                         "The network is evaluated and the results are stored in the subdirectory 'evaluation_results'."
                     )
                     print(
-                        "Please check the results, then choose the best model (snapshot) for prediction. You can update the config.yaml file with the appropriate index for the 'snapshotindex'.\nUse the function 'analyze_video' to make predictions on new videos."
+                        "Please check the results, then choose the best model (snapshot) for prediction. "
+                        "You can update the config.yaml file with the appropriate index for the 'snapshotindex'.\n"
+                        "Use the function 'analyze_video' to make predictions on new videos."
                     )
                     print(
-                        "Otherwise, consider adding more labeled-data and retraining the network (see DeepLabCut workflow Fig 2, Nath 2019)"
+                        "Otherwise, consider adding more labeled-data and retraining the network "
+                        "(see DeepLabCut workflow Fig 2, Nath 2019)"
                     )
 
     # returning to initial folder
