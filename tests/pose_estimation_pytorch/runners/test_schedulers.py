@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests building schedulers from config"""
+"""Tests building schedulers from config."""
 
 import random
 from dataclasses import dataclass

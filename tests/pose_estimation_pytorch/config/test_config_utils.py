@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Test util functions for config creation"""
+"""Test util functions for config creation."""
 
 import pytest
 

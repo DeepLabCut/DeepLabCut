@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Test script for superanimal_humanbody with torchvision detector
-"""
+"""Test script for superanimal_humanbody with torchvision detector."""
 
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     TORCHVISION_DETECTORS,
@@ -14,7 +12,7 @@ from deeplabcut.pose_estimation_pytorch.modelzoo import load_super_animal_config
 
 
 def test_torchvision_detector():
-    """Test that the torchvision detector works with superanimal_humanbody"""
+    """Test that the torchvision detector works with superanimal_humanbody."""
     for detector_name in TORCHVISION_DETECTORS:
         # Load the superanimal_humanbody config
         superanimal_config = load_super_animal_config(

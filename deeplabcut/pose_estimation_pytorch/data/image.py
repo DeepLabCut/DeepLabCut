@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Classes and functions to manipulate images"""
+"""Classes and functions to manipulate images."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ from deeplabcut.pose_estimation_pytorch.data.utils import _compute_crop_bounds
 
 
 def load_image(filepath: str | Path, color_mode: str = "RGB") -> np.ndarray:
-    """Loads an image from a file using cv2
+    """Loads an image from a file using cv2.
 
     Args:
         filepath: the path of the file containing the image to load
@@ -49,7 +49,7 @@ def resize_and_random_crop(
     max_size: int | None = None,
     max_shift: int | None = None,
 ) -> tuple[torch.tensor, dict]:
-    """Resizes images while preserving their aspect ratio
+    """Resizes images while preserving their aspect ratio.
 
     If size is an integer: resizes to square images.
         First, resizes the image so that it's short side is equal to `size`. If this
@@ -214,9 +214,8 @@ def top_down_crop(
     center_padding: bool = False,
     crop_with_context: bool = True,
 ) -> tuple[np.array, tuple[int, int], tuple[float, float]]:
-    """
-    Crops images around bounding boxes for top-down pose estimation. Computes offsets so
-    that coordinates in the original image can be mapped to the cropped one;
+    """Crops images around bounding boxes for top-down pose estimation. Computes offsets
+    so that coordinates in the original image can be mapped to the cropped one;
 
         x_cropped = (x - offset_x) / scale_x
         x_cropped = (y - offset_y) / scale_y

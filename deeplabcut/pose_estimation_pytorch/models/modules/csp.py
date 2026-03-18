@@ -37,7 +37,7 @@ def build_norm(norm: str, *args, **kwargs) -> nn.Module:
 
 
 class SPPBottleneck(nn.Module):
-    """Spatial pyramid pooling layer used in YOLOv3-SPP and (among others) CSPNeXt
+    """Spatial pyramid pooling layer used in YOLOv3-SPP and (among others) CSPNeXt.
 
     Args:
         in_channels: input channels to the bottleneck
@@ -174,7 +174,7 @@ class CSPConvModule(nn.Module):
         return x
 
     def _init_weights(self) -> None:
-        """Same init as in <mmcv> convolutions"""
+        """Same init as in <mmcv> convolutions."""
         nn.init.kaiming_normal_(self.conv.weight, a=0, nonlinearity="relu")
         if self.with_bias:
             nn.init.constant_(self.conv.bias, 0)

@@ -38,7 +38,7 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 
 @dataclass(frozen=True)
 class PoseDatasetParameters:
-    """Parameters for a pose dataset
+    """Parameters for a pose dataset.
 
     Attributes:
         bodyparts: the names of bodyparts in the dataset
@@ -76,7 +76,7 @@ class PoseDatasetParameters:
 
 @dataclass
 class PoseDataset(Dataset):
-    """A pose dataset"""
+    """A pose dataset."""
 
     images: list[dict]
     annotations: list[dict]
@@ -118,8 +118,7 @@ class PoseDataset(Dataset):
         return len(self.annotations)
 
     def _get_raw_item(self, index: int) -> tuple[str, list[dict], int]:
-        """
-        Retrieve the image path and annotations for the specified index.
+        """Retrieve the image path and annotations for the specified index.
 
         Args:
             index (int): The index of the item to retrieve.
@@ -142,9 +141,7 @@ class PoseDataset(Dataset):
         return img["file_name"], [ann], img["id"]
 
     def _get_raw_item_crop_context(self, index: int) -> tuple[str, list[dict], int]:
-        """
-        Includes keypoints from other individuals in the image ("context").
-        """
+        """Includes keypoints from other individuals in the image ("context")."""
         ann = self.annotations[index]
         img = self.images[self.img_id_to_index[ann["image_id"]]]
         near_anns = []
@@ -157,8 +154,7 @@ class PoseDataset(Dataset):
         return img["file_name"], [ann] + near_anns, img["id"]
 
     def __getitem__(self, index: int) -> dict:
-        """
-        Gets the item at the specified index from the dataset.
+        """Gets the item at the specified index from the dataset.
 
         Args:
             index: ordered number of the items in the dataset
@@ -360,8 +356,7 @@ class PoseDataset(Dataset):
         }
 
     def _get_data_based_on_task(self, index: int) -> tuple[str, list[dict], int]:
-        """
-        Retrieve data based on the specified task.
+        """Retrieve data based on the specified task.
 
         For the 'TD' (top-down pose estimation) task:
         - Provides a cropped image and its annotations.
@@ -393,7 +388,7 @@ class PoseDataset(Dataset):
         keypoints_unique: np.ndarray,
         bboxes: np.ndarray,
     ) -> dict[str, np.ndarray]:
-        """Transforms the image using this class's transform
+        """Transforms the image using this class's transform.
 
         Args:
             image: the image to transform
@@ -444,8 +439,8 @@ class PoseDataset(Dataset):
         coords: tuple[tuple[int, int], tuple[int, int]],
         output_size: tuple[int, int],
     ) -> tuple[np.ndarray, np.ndarray, tuple[int, int], tuple[int, int]]:
-        """
-        Crop the image based on a given bounding box and resize it to the desired output size.
+        """Crop the image based on a given bounding box and resize it to the desired
+        output size.
 
         Args:
             image: the image to transform
@@ -485,7 +480,7 @@ class PoseDataset(Dataset):
 
     @staticmethod
     def add_center_keypoints(keypoints: np.ndarray) -> np.ndarray:
-        """Adds a keypoint in the mean of each individual
+        """Adds a keypoint in the mean of each individual.
 
         Args:
             keypoints: shape (num_idv, num_kpts, 3)

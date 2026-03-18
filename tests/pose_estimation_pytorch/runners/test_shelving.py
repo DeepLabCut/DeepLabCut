@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests for ShelfWriter / ShelfReader"""
+"""Tests for ShelfWriter / ShelfReader."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ POSE_CFG = {
 
 
 def _make_bodyparts(num_assemblies: int = 2, num_bpts: int = 3) -> np.ndarray:
-    """(num_assemblies, num_bpts, 3)  — x, y, score"""
+    """(num_assemblies, num_bpts, 3)  — x, y, score."""
     rng = np.random.default_rng(0)
     return rng.random((num_assemblies, num_bpts, 3)).astype(np.float32)
 

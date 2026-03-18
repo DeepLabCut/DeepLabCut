@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests method to create the tracking dataset in PyTorch"""
+"""Tests method to create the tracking dataset in PyTorch."""
 
 from pathlib import Path
 
@@ -20,7 +20,7 @@ import deeplabcut.pose_estimation_pytorch.models as models
 
 
 class MockLoader(dlc_torch.Loader):
-    """Mock loader for data"""
+    """Mock loader for data."""
 
     def __init__(self, tmp_folder: Path, bodyparts: list[str] | None = None):
         if bodyparts is None:

@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Code to export DeepLabCut models for DLCLive inference"""
+"""Code to export DeepLabCut models for DLCLive inference."""
 
 import copy
 from pathlib import Path
@@ -175,8 +175,7 @@ def get_export_filename(
 
 
 def wipe_paths_from_model_config(model_cfg: dict) -> None:
-    """
-    Removes all paths from the contents of the ``pytorch_config`` file.
+    """Removes all paths from the contents of the ``pytorch_config`` file.
 
     Args:
         model_cfg: The model configuration to wipe.

@@ -20,7 +20,7 @@ from deeplabcut.pose_estimation_pytorch.models.detectors.torchvision import (
 
 @DETECTORS.register_module
 class FasterRCNN(TorchvisionDetectorAdaptor):
-    """A FasterRCNN detector
+    """A FasterRCNN detector.
 
     Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks
         Ren, Shaoqing, Kaiming He, Ross Girshick, and Jian Sun. "Faster r-cnn: Towards

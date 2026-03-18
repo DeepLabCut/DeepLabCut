@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Code to create tracking datasets for ReID model training"""
+"""Code to create tracking datasets for ReID model training."""
 
 from pathlib import Path
 
@@ -32,7 +32,7 @@ def build_feature_extraction_runner(
     device: str,
     batch_size: int = 1,
 ) -> runners.PoseInferenceRunner:
-    """Builds a runner to extract backbone features for poses of individuals
+    """Builds a runner to extract backbone features for poses of individuals.
 
     Args:
         loader: The loader for the model to use.

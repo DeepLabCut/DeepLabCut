@@ -238,9 +238,10 @@ def test_resuming_training_scheduler_every_epoch(
     ],
 )
 def test_resuming_training_with_no_scheduler_state(runner_cls, test_cfg: SchedulerTestConfig, resume_epoch: int):
-    """
-    Without a scheduler config, there is no way to set the initial LR. All we can do is
-    set the last_epoch value, and adjust correctly at milestones going forward.
+    """Without a scheduler config, there is no way to set the initial LR.
+
+    All we can do is set the last_epoch value, and adjust correctly at milestones going
+    forward.
     """
     runner = _fit_runner_and_check_lrs(
         runner_cls,

@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Configuration for CTD tracking"""
+"""Configuration for CTD tracking."""
 
 from dataclasses import dataclass
 

@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Normalization layers"""
+"""Normalization layers."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ import torch.nn as nn
 
 
 class ScaleNorm(nn.Module):
-    """Implementation of ScaleNorm
+    """Implementation of ScaleNorm.
 
     ScaleNorm was introduced in "Transformers without Tears: Improving the Normalization
     of Self-Attention".

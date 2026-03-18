@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests RMSE computation"""
+"""Tests RMSE computation."""
 
 import numpy as np
 import pytest

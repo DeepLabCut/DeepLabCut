@@ -51,7 +51,7 @@ def set_load_weights_only(value: bool) -> None:
 
 
 class Runner(ABC, Generic[ModelType]):
-    """Runner base class
+    """Runner base class.
 
     A runner takes a model and runs actions on it, such as training or inference
     """
@@ -93,7 +93,7 @@ class Runner(ABC, Generic[ModelType]):
         model: ModelType,
         weights_only: bool | None = None,
     ) -> dict:
-        """Loads the state dict for a model from a file
+        """Loads the state dict for a model from a file.
 
         This method loads a file containing a DeepLabCut PyTorch model snapshot onto
         a given device, and sets the model weights using the state_dict.
@@ -183,7 +183,7 @@ def attempt_snapshot_load(
 
 
 def fix_snapshot_metadata(path: str | Path) -> None:
-    """Replace numpy floats in snapshot metrics
+    """Replace numpy floats in snapshot metrics.
 
     Only call this method with snapshots that you trust, as torch.load(...) is called
     with `weights_only=False`. For more information, see:
@@ -209,8 +209,7 @@ def fix_snapshot_metadata(path: str | Path) -> None:
 
 
 def _add_numpy_to_torch_safe_globals():
-    """
-    Attempts tot add numpy classes allowing snapshots containing numpy floats in the
+    """Attempts tot add numpy classes allowing snapshots containing numpy floats in the
     metrics to be loaded without needing to change the `weights_only` argument.
 
     This fix only works for `numpy>=1.25.0`.

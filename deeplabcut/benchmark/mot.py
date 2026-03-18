@@ -22,9 +22,8 @@ from deeplabcut.core import trackingutils
 
 
 def convert_bboxes_to_xywh(bboxes: NDArray, inplace: bool = False) -> NDArray:
-    """
-    Converts bounding box coordinates from [x_min, y_min, x_max, y_max] format
-    to [x, y, width, height] format.
+    """Converts bounding box coordinates from [x_min, y_min, x_max, y_max] format to [x,
+    y, width, height] format.
 
     Parameters
     ----------
@@ -58,8 +57,7 @@ _convert_bboxes_to_xywh = convert_bboxes_to_xywh
 
 
 def reconstruct_bboxes_from_bodyparts(data: pd.DataFrame, margin: float, to_xywh: bool = False) -> NDArray:
-    """
-    Reconstructs bounding boxes from body part coordinates and likelihoods.
+    """Reconstructs bounding boxes from body part coordinates and likelihoods.
 
     Parameters
     ----------
@@ -103,8 +101,7 @@ def reconstruct_bboxes_from_bodyparts(data: pd.DataFrame, margin: float, to_xywh
 
 
 def reconstruct_all_bboxes(data: pd.DataFrame, margin: float, to_xywh: bool = False) -> NDArray:
-    """
-    Reconstructs bounding boxes for multiple individuals from body part data.
+    """Reconstructs bounding boxes for multiple individuals from body part data.
 
     Parameters
     ----------

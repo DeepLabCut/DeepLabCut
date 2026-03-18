@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""General tests for the metrics API"""
+"""General tests for the metrics API."""
 
 import numpy as np
 import pytest

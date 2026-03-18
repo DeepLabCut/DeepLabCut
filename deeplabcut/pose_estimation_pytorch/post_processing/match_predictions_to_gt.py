@@ -18,8 +18,7 @@ from deeplabcut.core.inferenceutils import (
 
 
 def rmse_match_prediction_to_gt(pred_kpts: np.ndarray, gt_kpts: np.ndarray) -> np.ndarray:
-    """
-    Hungarian algorithm predicted individuals to ground truth ones, using root mean
+    """Hungarian algorithm predicted individuals to ground truth ones, using root mean
     squared error (rmse). The function provides a way to match predicted individuals to
     ground truth individuals based on the rmse distance between their corresponding
     keypoints. This algorithm is used to find the optimal matching, taking into account

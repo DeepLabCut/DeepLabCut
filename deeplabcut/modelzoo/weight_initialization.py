@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Functions to build weight initialization parameters for SuperAnimal models"""
+"""Functions to build weight initialization parameters for SuperAnimal models."""
 
 from pathlib import Path
 
@@ -30,7 +30,7 @@ def build_weight_init(
     customized_pose_checkpoint: str | Path | None = None,
     customized_detector_checkpoint: str | Path | None = None,
 ) -> WeightInitialization:
-    """Builds the WeightInitialization from a SuperAnimal model for a project
+    """Builds the WeightInitialization from a SuperAnimal model for a project.
 
     Args:
         cfg: The project's configuration, or the path to the project configuration file.

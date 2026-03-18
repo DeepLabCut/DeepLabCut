@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Implementation of the CSPNeXt Backbone
+"""Implementation of the CSPNeXt Backbone.
 
 Based on the ``mmdetection`` CSPNeXt implementation. For more information, see:
 <https://github.com/open-mmlab/mmdetection/blob/main/mmdet/models/backbones/cspnext.py>
@@ -36,7 +36,7 @@ from deeplabcut.pose_estimation_pytorch.models.modules.csp import (
 
 @dataclass(frozen=True)
 class CSPNeXtLayerConfig:
-    """Configuration for a CSPNeXt layer"""
+    """Configuration for a CSPNeXt layer."""
 
     in_channels: int
     out_channels: int
@@ -47,7 +47,7 @@ class CSPNeXtLayerConfig:
 
 @BACKBONES.register_module
 class CSPNeXt(HuggingFaceWeightsMixin, BaseBackbone):
-    """CSPNeXt Backbone
+    """CSPNeXt Backbone.
 
     Args:
         model_name: The model variant to build. If ``pretrained==True``, must be one of

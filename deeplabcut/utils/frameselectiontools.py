@@ -28,9 +28,9 @@ from tqdm import tqdm
 
 
 def UniformFrames(clip, numframes2pick, start, stop, Index=None):
-    """Temporally uniformly sampling frames in interval (start,stop).
-    Visual information of video is irrelevant for this method. This code is fast and sufficient (to extract distinct frames),
-    when behavioral videos naturally covers many states.
+    """Temporally uniformly sampling frames in interval (start,stop). Visual information
+    of video is irrelevant for this method. This code is fast and sufficient (to extract
+    distinct frames), when behavioral videos naturally covers many states.
 
     The variable Index allows to pass on a subindex for the frames.
     """
@@ -71,9 +71,9 @@ def UniformFrames(clip, numframes2pick, start, stop, Index=None):
 
 # uses openCV
 def UniformFramescv2(cap, numframes2pick, start, stop, Index=None):
-    """Temporally uniformly sampling frames in interval (start,stop).
-    Visual information of video is irrelevant for this method. This code is fast and sufficient (to extract distinct frames),
-    when behavioral videos naturally covers many states.
+    """Temporally uniformly sampling frames in interval (start,stop). Visual information
+    of video is irrelevant for this method. This code is fast and sufficient (to extract
+    distinct frames), when behavioral videos naturally covers many states.
 
     The variable Index allows to pass on a subindex for the frames.
     """
@@ -127,7 +127,8 @@ def KmeansbasedFrameselection(
 
     Consider not extracting the frames from the whole video but rather set start and stop to a period around interesting behavior.
 
-    Note: this method can return fewer images than numframes2pick."""
+    Note: this method can return fewer images than numframes2pick.
+    """
 
     print(
         "Kmeans-quantization based extracting of frames from",
@@ -210,10 +211,11 @@ def KmeansbasedFrameselectioncv2(
     max_iter=50,
     color=False,
 ):
-    """This code downsamples the video to a width of resizewidth.
-    The video is extracted as a numpy array, which is then clustered with kmeans, whereby each frames is treated as a vector.
-    Frames from different clusters are then selected for labeling. This procedure makes sure that the frames "look different",
-    i.e. different postures etc. On large videos this code is slow.
+    """This code downsamples the video to a width of resizewidth. The video is extracted
+    as a numpy array, which is then clustered with kmeans, whereby each frames is
+    treated as a vector. Frames from different clusters are then selected for labeling.
+    This procedure makes sure that the frames "look different", i.e. different postures
+    etc. On large videos this code is slow.
 
     Consider not extracting the frames from the whole video but rather set start and stop to a period around interesting behavior.
 

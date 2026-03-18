@@ -22,9 +22,8 @@ def load_demo_data(
     createtrainingset: bool = True,
     engine: Engine = Engine.PYTORCH,
 ):
-    """
-    Loads the demo data -- subset from trail-tracking data in Mathis et al. 2018.
-    When loading, it sets paths correctly to run this project on your system
+    """Loads the demo data -- subset from trail-tracking data in Mathis et al. 2018.
+    When loading, it sets paths correctly to run this project on your system.
 
     Parameter
       ----------
@@ -52,8 +51,8 @@ def load_demo_data(
 
 
 def transform_data(config):
-    """
-    This function adds the full path to labeling dataset.
+    """This function adds the full path to labeling dataset.
+
     It also adds the correct path to the video file in the config file.
     """
 

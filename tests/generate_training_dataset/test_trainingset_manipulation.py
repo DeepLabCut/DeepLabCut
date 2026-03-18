@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests for deeplabcut/generate_training_dataset/metadata.py"""
+"""Tests for deeplabcut/generate_training_dataset/metadata.py."""
 
 from __future__ import annotations
 

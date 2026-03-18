@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Methods to create the configuration files to fine-tune SuperAnimal models"""
+"""Methods to create the configuration files to fine-tune SuperAnimal models."""
 
 from __future__ import annotations
 
@@ -41,8 +41,7 @@ def make_super_animal_finetune_config(
     detector_name: str | None,
     save: bool = False,
 ) -> dict:
-    """
-    Creates a PyTorch pose configuration file to finetune a SuperAnimal model on a
+    """Creates a PyTorch pose configuration file to finetune a SuperAnimal model on a
     downstream project.
 
     Args:
@@ -115,7 +114,7 @@ def create_config_from_modelzoo(
     project_config: dict,
     pose_config_path: str | Path,
 ) -> dict:
-    """Creates a model configuration file to fine-tune a SuperAnimal model
+    """Creates a model configuration file to fine-tune a SuperAnimal model.
 
     Args:
         super_animal: The SuperAnimal dataset on which the model was trained.

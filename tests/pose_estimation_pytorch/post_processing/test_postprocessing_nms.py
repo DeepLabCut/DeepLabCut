@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests pose NMS"""
+"""Tests pose NMS."""
 
 import numpy as np
 import pytest
@@ -98,7 +98,7 @@ import deeplabcut.pose_estimation_pytorch.post_processing.nms as nms
     ],
 )
 def test_oks_nms_post_processing(poses, score_threshold, expected_kept):
-    """Tests pose NMS"""
+    """Tests pose NMS."""
     kept = nms.nms_oks(
         predictions=np.asarray(poses),
         oks_threshold=0.9,
