@@ -5,6 +5,12 @@ Usage:
     python fix_e501_with_autopep8.py . --line-length 88
     python fix_e501_with_autopep8.py src tests --line-length 100 --check
 
+NOTE: if this creates broken escaped f-strings :
+f"some string with a {
+    var
+}"
+Use the ^[ \t]*\}"[ \t]*$ regex to find and fix them.
+
 Requirements:
     - ruff
     - autopep8
