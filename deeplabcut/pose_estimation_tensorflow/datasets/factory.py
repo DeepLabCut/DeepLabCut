@@ -23,7 +23,7 @@ class PoseDatasetFactory:
     def register(cls, type_):
         def wrapper(dataset):
             if type_ in cls._datasets:
-                warnings.warn("Overwriting existing dataset {}.")
+                warnings.warn(f"Overwriting existing dataset {type_}.", stacklevel=2)
             cls._datasets[type_] = dataset
             return dataset
 
