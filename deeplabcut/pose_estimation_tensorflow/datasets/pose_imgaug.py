@@ -412,7 +412,8 @@ class ImgaugPoseDataset(BasePoseDataset):
             # import imageio
             # for i in range(self.batch_size):
             #    joints = batch_joints[i]
-            #    kps = KeypointsOnImage([Keypoint(x=joint[0], y=joint[1]) for joint in joints], shape=batch_images[i].shape)
+            # kps = KeypointsOnImage([Keypoint(x=joint[0], y=joint[1]) for joint in joints],
+            # shape=batch_images[i].shape)
             #    im = kps.draw_on_image(batch_images[i])
             #    imageio.imwrite('some_location/augmented/'+str(i)+'.png', im)
 

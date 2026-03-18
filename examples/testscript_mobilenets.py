@@ -14,7 +14,8 @@ Created on Tue Oct  2 13:56:11 2018
 @author: alex
 
 DEVELOPERS:
-This script tests various functionalities (creating project ,training, evaluating, outlierextraction, retraining...) in an automatic way.
+This script tests various functionalities (creating project ,training, evaluating, outlierextraction, retraining...) in
+an automatic way.
 For that purpose, it trains ResNet and MobileNet briefly on a "fake" dataset.
 
 It should take about 4:15 minutes to run this in a CPU. (incl. downloading the ResNet + MobileNet weights)

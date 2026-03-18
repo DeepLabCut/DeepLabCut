@@ -50,7 +50,8 @@ def check_for_weights(modeltype, parent_path):
     """
     if modeltype not in MODELTYPE_FILEPATH_MAP.keys():
         print(
-            "Currently ResNet (50, 101, 152), MobilenetV2 (1, 0.75, 0.5 and 0.35) and EfficientNet (b0-b6) are supported, please change 'resnet' entry in config.yaml!"
+            "Currently ResNet (50, 101, 152), MobilenetV2 (1, 0.75, 0.5 and 0.35) and EfficientNet (b0-b6) are"
+            "supported, please change 'resnet' entry in config.yaml!"
         )
         # Exit the function early if an unknown modeltype is provided.
         return parent_path
@@ -157,7 +158,8 @@ def set_visible_devices(gputouse: int):
     n_devices = len(physical_devices)
     if gputouse >= n_devices:
         raise ValueError(
-            f"There are {n_devices} available GPUs: {physical_devices}\nPlease choose `gputouse` in {list(range(n_devices))}."
+            f"There are {n_devices} available GPUs: {physical_devices}\nPlease choose `gputouse` in"
+            f"{list(range(n_devices))}."
         )
     tf.config.set_visible_devices(physical_devices[gputouse], "GPU")
 

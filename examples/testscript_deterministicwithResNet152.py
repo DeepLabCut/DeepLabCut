@@ -113,7 +113,8 @@ deeplabcut.check_labels(path_config_file)
 print("CREATING TRAININGSET")
 deeplabcut.create_training_dataset(path_config_file)
 
-# posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(1),'train/pose_cfg.yaml')
+# posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date']
+# + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(1),'train/pose_cfg.yaml')
 
 shuffle = 1
 posefile, _, _ = deeplabcut.return_train_network_path(path_config_file, shuffle=shuffle)

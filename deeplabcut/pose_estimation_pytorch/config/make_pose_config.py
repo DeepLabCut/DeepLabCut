@@ -75,8 +75,10 @@ def make_pytorch_pose_config(
             It defines the conditions that will be used with the CTD model.
             It can be either:
                 * A shuffle number (ctd_conditions: int), which must correspond to a bottom-up (BU) network type.
-                * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5 predictions file.
-                * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
+                * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5
+                predictions file.
+                * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which
+                respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
 
 
     Returns:

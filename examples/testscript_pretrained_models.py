@@ -26,7 +26,8 @@ video = [os.path.join(basepath, "Reaching-Mackenzie-2018-08-30", "videos", video
 """
 configfile, path_train_config=deeplabcut.create_pretrained_human_project(Task, YourName,video,
                                                                         videotype='avi', analyzevideo=True,
-                                                                        createlabeledvideo=True, copy_videos=False) #must leave copy_videos=True
+                                                                        createlabeledvideo=True, copy_videos=False)
+                                                                        #must leave copy_videos=True
 """
 # new way:
 configfile, path_train_config = deeplabcut.create_pretrained_project(

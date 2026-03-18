@@ -231,7 +231,8 @@ def read_config(configname):
 
     else:
         raise FileNotFoundError(
-            f"Config file at {path} not found. Please make sure that the file exists and/or that you passed the path of the config file correctly!"
+            f"Config file at {path} not found. Please make sure that the file exists and/or that you passed the path of"
+            f"the config file correctly!"
         )
     return cfg
 
@@ -400,10 +401,12 @@ def get_list_of_videos(
     *_full.videotype
 
     Args:
-        videos (list[str], str): List of video paths or a single path string. If string (or len() == 1 list of strings) is a directory,
+        videos (list[str], str): List of video paths or a single path string. If string (or len() == 1 list of strings)
+        is a directory,
             finds all videos whose extension matches  ``videotype`` in the directory
 
-        videotype (list[str], str): File extension used to filter videos. Optional if ``videos`` is a list of video files,
+        videotype (list[str], str): File extension used to filter videos. Optional if ``videos`` is a list of video
+        files,
             and filters with common video extensions if a directory is passed in.
 
         in_random_order (bool): Whether or not to return a shuffled list of videos.
@@ -783,8 +786,10 @@ def get_scorer_name(
         raise ValueError(f"Failed to abbreviate network name: {dlc_cfg['net_type']}")
 
     scorer = "DLC_" + netname + "_" + Task + str(date) + "shuffle" + str(shuffle) + "_" + str(trainingsiterations)
-    # legacy scorername until DLC 2.1. (cfg['resnet'] is deprecated / which is why we get the resnet_xyz name from dlc_cfg!
-    # scorer_legacy = 'DeepCut' + "_resnet" + str(cfg['resnet']) + "_" + Task + str(date) + 'shuffle' + str(shuffle) + '_' + str(trainingsiterations)
+    # legacy scorername until DLC 2.1. (cfg['resnet'] is deprecated / which is why we get the resnet_xyz name from
+    # dlc_cfg!
+    # scorer_legacy = 'DeepCut' + "_resnet" + str(cfg['resnet']) + "_" + Task + str(date) + 'shuffle' + str(shuffle) +
+    # '_' + str(trainingsiterations)
     scorer_legacy = scorer.replace("DLC", "DeepCut")
     return scorer, scorer_legacy
 

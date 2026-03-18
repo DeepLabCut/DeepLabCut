@@ -27,7 +27,8 @@ def main():
         launch_dlc()
     else:
         print(
-            "You installed DLC lite, thus GUI's cannot be used. If you need GUI support please: pip install 'deeplabcut[gui]''"
+            "You installed DLC lite, thus GUI's cannot be used. If you need GUI support please: pip install"
+            "'deeplabcut[gui]''"
         )
 
 

@@ -27,7 +27,8 @@ def return_train_network_path(config, shuffle=1, trainingsetindex=0, modelprefix
         Integer value specifying the shuffle index to select for training.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list
+        in config.yaml).
 
     Returns the triple: trainposeconfigfile, testposeconfigfile, snapshotfolder
     """
@@ -175,7 +176,8 @@ def train_network(
         print("The training datafile ", poseconfigfile, " is not present.")
         print("Probably, the training dataset for this specific shuffle index was not created.")
         print(
-            "Try with a different shuffle/trainingsetfraction or use function 'create_training_dataset' to create a new trainingdataset with this shuffle index."
+            "Try with a different shuffle/trainingsetfraction or use function 'create_training_dataset' to create a new"
+            "trainingdataset with this shuffle index."
         )
     else:
         # Set environment variables

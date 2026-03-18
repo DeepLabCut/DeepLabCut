@@ -224,7 +224,8 @@ class TensorpackPoseDataset(BasePoseDataset):
         # Number of datapoints to prefetch at a time during training
         cfg["num_prefetch"] = cfg.get("num_prefetch", 50)
 
-        # Auto cropping is new (was not in Nature Neuroscience 2018 paper, but introduced in Nath et al. Nat. Protocols 2019)
+        # Auto cropping is new (was not in Nature Neuroscience 2018 paper, but introduced in Nath et al. Nat. Protocols
+        # 2019)
         # and boosts performance by 2X, particularly on challenging datasets, like the cheetah in Nath et al.
         # Parameters for augmentation with regard to cropping:
 

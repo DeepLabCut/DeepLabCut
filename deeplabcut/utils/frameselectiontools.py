@@ -121,11 +121,14 @@ def KmeansbasedFrameselection(
 ):
     """This code downsamples the video to a width of resizewidth.
 
-    The video is extracted as a numpy array, which is then clustered with kmeans, whereby each frames is treated as a vector.
-    Frames from different clusters are then selected for labeling. This procedure makes sure that the frames "look different",
+    The video is extracted as a numpy array, which is then clustered with kmeans, whereby each frames is treated as a
+    vector.
+    Frames from different clusters are then selected for labeling. This procedure makes sure that the frames "look
+    different",
     i.e. different postures etc. On large videos this code is slow.
 
-    Consider not extracting the frames from the whole video but rather set start and stop to a period around interesting behavior.
+    Consider not extracting the frames from the whole video but rather set start and stop to a period around interesting
+    behavior.
 
     Note: this method can return fewer images than numframes2pick.
     """
@@ -170,7 +173,8 @@ def KmeansbasedFrameselection(
             for counter, index in tqdm(enumerate(Index)):
                 if ncolors == 1:
                     DATA[counter, :, :] = img_as_ubyte(clipresized.get_frame(index * 1.0 / clipresized.fps))
-                else:  # attention: averages over color channels to keep size small / perhaps you want to use color information?
+                else:  # attention: averages over color channels to keep size small
+                    # / perhaps you want to use color information?
                     DATA[counter, :, :] = img_as_ubyte(
                         np.array(
                             np.mean(clipresized.get_frame(index * 1.0 / clipresized.fps), 2),
@@ -217,11 +221,13 @@ def KmeansbasedFrameselectioncv2(
     This procedure makes sure that the frames "look different", i.e. different postures
     etc. On large videos this code is slow.
 
-    Consider not extracting the frames from the whole video but rather set start and stop to a period around interesting behavior.
+    Consider not extracting the frames from the whole video but rather set start and stop to a period around interesting
+    behavior.
 
     Note: this method can return fewer images than numframes2pick.
 
-    Attention: the flow of commands was not optimized for readability, but rather speed. This is why it might appear tedious and repetitive.
+    Attention: the flow of commands was not optimized for readability, but rather speed. This is why it might appear
+    tedious and repetitive.
     """
     nframes = len(cap)
     nx, ny = cap.dimensions

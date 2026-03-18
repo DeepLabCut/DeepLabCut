@@ -396,7 +396,8 @@ def dlc3predictions_2_annotation_from_video(
     # Since the inference API does not return the image path, I assume the
     # predictions are provided in the same order as the frames in the video.
     assert len(image_paths) == len(predictions), (
-        f"number of images must be equal to number of predictions. image_paths: {len(image_paths)} , predictions: {len(predictions)}"
+        f"number of images must be equal to number of predictions. image_paths: {len(image_paths)} , predictions:"
+        f"{len(predictions)}"
     )
 
     len(bodyparts)

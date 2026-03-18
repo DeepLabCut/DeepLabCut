@@ -12,7 +12,9 @@
 import numpy as np
 import pytest
 
-import deeplabcut.pose_estimation_pytorch.post_processing.match_predictions_to_gt as deeplabcut_torch_match_predictions_gt
+from deeplabcut.pose_estimation_pytorch.post_processing import (
+    match_predictions_to_gt as deeplabcut_torch_match_predictions_gt,
+)
 
 
 @pytest.fixture
@@ -75,7 +77,8 @@ def test_invalid_oks(animals_and_keypoints_invalid: tuple) -> None:
     Test if an invalid output really returns a ValueError in the oks function.
 
     Args:
-        animals_and_keypoints_invalid   (tuple): containing predicted keypoints (pred_kpts), ground truth keypoints (gt_kpts)
+        animals_and_keypoints_invalid   (tuple): containing predicted keypoints (pred_kpts), ground truth keypoints
+        (gt_kpts)
                 and individual names (indv_names)
     """
     pred_kpts, gt_kpts, indv_names = animals_and_keypoints_invalid

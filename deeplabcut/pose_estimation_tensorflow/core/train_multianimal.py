@@ -89,7 +89,8 @@ def train(
 
     if (
         cfg["partaffinityfield_predict"] and "multi-animal" in cfg["dataset_type"]
-        # the PAF code currently just hijacks the pairwise net stuff (for the batch feeding via Batch.pairwise_targets: 5)
+        # the PAF code currently just hijacks the pairwise net stuff (for the batch feeding via Batch.pairwise_targets:
+        # 5)
     ):
         print("Activating limb prediction...")
         cfg["pairwise_predict"] = True
@@ -206,7 +207,8 @@ def train(
             current_lr = lr_gen.get_lr(it - start_iter)
             lr_dict = {learning_rate: current_lr}
 
-        # [_, loss_val, summary] = sess.run([train_op, total_loss, merged_summaries],feed_dict={learning_rate: current_lr})
+        # [_, loss_val, summary] = sess.run([train_op, total_loss, merged_summaries],feed_dict={learning_rate:
+        # current_lr})
         [_, alllosses, loss_val, summary] = sess.run(
             [train_op, losses, total_loss, merged_summaries], feed_dict=lr_dict
         )

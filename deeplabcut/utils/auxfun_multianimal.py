@@ -120,7 +120,8 @@ def validate_paf_graph(cfg, paf_graph):
         raise ValueError(
             f"Unconnected {', '.join(multianimalbodyparts[i] for i in unconnected)}. "
             f"For multi-animal projects, all multianimalbodyparts should be connected. "
-            f"Ideally there should be at least one (multinode) path from each multianimalbodyparts to each other multianimalbodyparts. "
+            f"Ideally there should be at least one (multinode) path from each multianimalbodyparts to each other"
+            f"multianimalbodyparts."
         )
 
 
@@ -243,8 +244,10 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
         Full path of the config.yaml file as a string.
 
     userfeedback: bool, optional
-            If this is set to false during automatic mode then frames for all videos are extracted. The user can set this to true, which will result in a dialog,
-            where the user is asked for each video if (additional/any) frames from this video should be extracted. Use this, e.g. if you have already labeled
+            If this is set to false during automatic mode then frames for all videos are extracted. The user can set
+            this to true, which will result in a dialog,
+            where the user is asked for each video if (additional/any) frames from this video should be extracted. Use
+            this, e.g. if you have already labeled
             some folders and want to extract data for new videos.
 
     forceindividual: None default

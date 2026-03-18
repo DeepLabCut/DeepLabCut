@@ -74,7 +74,8 @@ def build_weight_init(
     """
     if super_animal == "superanimal_humanbody":
         raise NotImplementedError(
-            "Weight Initialization, Transfer-Learning and Finetuning is currently not supported for superanimal_humanbody"
+            "Weight Initialization, Transfer-Learning and Finetuning is currently not supported for"
+            "superanimal_humanbody"
         )
 
     if isinstance(cfg, (str, Path)):
