@@ -35,18 +35,23 @@ repos:
       - id: validate-pyproject
         stages: [pre-commit, manual]
 
-  - repo: https://github.com/PyCQA/docformatter
-    rev: v1.7.7
-    hooks:
-      - id: docformatter
-        name: docformatter (fix)
-        args: [--wrap-descriptions=88, --wrap-summaries=88, --in-place, --black]
-        stages: [pre-commit]
+  # NOTE: @C-Achard 2026-03-18 disabled for now
+  # It had its use in introducing and enforcing linting, especially for docstrings
+  # but now ruff should be our de-facto linter.
+  # Only re-enable if we end up requiring large-scale docstring reformatting
+  # or we need some features from this in the future
+  # - repo: https://github.com/PyCQA/docformatter
+  #   rev: v1.7.7
+  #   hooks:
+  #     - id: docformatter
+  #       name: docformatter (fix)
+  #       args: [--wrap-descriptions=88, --wrap-summaries=88, --in-place, --black]
+  #       stages: [pre-commit]
 
-      - id: docformatter
-        name: docformatter (ci)
-        args: [--wrap-descriptions=88, --wrap-summaries=88, --check, --black]
-        stages: [manual]
+  #     - id: docformatter
+  #       name: docformatter (ci)
+  #       args: [--wrap-descriptions=88, --wrap-summaries=88, --check, --black]
+  #       stages: [manual]
 
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
