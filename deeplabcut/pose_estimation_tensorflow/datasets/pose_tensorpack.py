@@ -166,7 +166,7 @@ class TensorpackPoseDataset(BasePoseDataset):
         # range [-rotate_max_deg_abs; rotate_max_deg_abs] to augment training data
 
         if cfg.get("rotation", True):  # i.e. pm 25 degrees
-            if type(cfg.get("rotation", False)) == int:
+            if isinstance(cfg.get("rotation", False), int):
                 cfg["rotation"] = cfg.get("rotation", 25)
             else:
                 cfg["rotation"] = 25

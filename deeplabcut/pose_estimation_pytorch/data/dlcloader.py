@@ -319,7 +319,7 @@ class DLCLoader(Loader):
 
         predictions = {}
         for idx in dlc_preds.index.unique():
-            if type(idx) == tuple:
+            if isinstance(idx, tuple):
                 img_path = pred_path.parent.parent / Path(*idx)
             else:
                 img_path = pred_path.parent.parent / Path(idx)
