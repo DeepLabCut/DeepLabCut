@@ -1131,6 +1131,7 @@ def stitch_tracklets(
 
         return -dist
 
+    base_weight_func = weight_func
     for video in vids:
         print("Processing... ", video)
         nframe = len(VideoWriter(video))
@@ -1146,8 +1147,8 @@ def stitch_tracklets(
 
             try:
                 feature_dict = shelve.open(feature_dict_path, flag="r")
-            except dbm.error:
-                raise FileNotFoundError(f"{feature_dict_path} does not exist. Did you run transformer_reID()?")
+            except dbm.error as err:
+                raise FileNotFoundError(f"{feature_dict_path} does not exist. Did you run transformer_reID()?") from err
 
         dataname = os.path.join(dest, vname + DLCscorer + ".h5")
 
@@ -1157,10 +1158,11 @@ def stitch_tracklets(
             stitcher = TrackletStitcher.from_pickle(
                 pickle_file, n_tracks, min_length, split_tracklets, prestitch_residuals
             )
+            current_weight_func = base_weight_func
             with_id = any(tracklet.identity != -1 for tracklet in stitcher)
             if with_id and weight_func is None:
                 # Add in identity weighing before building the graph
-                def weight_func(t1, t2):
+                def current_weight_func(t1, t2, stitcher=stitcher):
                     w = 0.01 if t1.identity == t2.identity else 1
                     return w * stitcher.calculate_edge_weight(t1, t2)
 
@@ -1170,7 +1172,7 @@ def stitch_tracklets(
                     weight_func=partial(trans_weight_func, nframe=nframe, feature_dict=feature_dict),
                 )
             else:
-                stitcher.build_graph(max_gap=max_gap, weight_func=weight_func)
+                stitcher.build_graph(max_gap=max_gap, weight_func=current_weight_func)
 
             stitcher.stitch()
             if transformer_checkpoint:

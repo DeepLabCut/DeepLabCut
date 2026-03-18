@@ -179,7 +179,7 @@ def smart_restore(restorer, sess, checkpoint_path, net_type):
             _ = check_for_weights(net_type, Path(dlcparent_path))
             restorer.restore(sess, checkpoint_path)
         else:
-            raise ValueError(e)
+            raise ValueError(e) from e
 
 
 # Aliases for backwards-compatibility

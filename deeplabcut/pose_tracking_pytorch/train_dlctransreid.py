@@ -13,8 +13,8 @@ import random
 
 try:
     import torch
-except ModuleNotFoundError:
-    raise ModuleNotFoundError("Unsupervised identity learning requires PyTorch. Please run `pip install torch`.")
+except ModuleNotFoundError as e:
+    raise ModuleNotFoundError("Unsupervised identity learning requires PyTorch. Please run `pip install torch`.") from e
 import glob
 import os
 from pathlib import Path

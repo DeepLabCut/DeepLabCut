@@ -135,10 +135,10 @@ def extract_maps(
         ) = auxiliaryfunctions.load_metadata(os.path.join(cfg["project_path"], metadatafn))
         try:
             dlc_cfg = load_config(str(path_test_config))
-        except FileNotFoundError:
+        except FileNotFoundError as e:
             raise FileNotFoundError(
                 f"It seems the model for shuffle {shuffle} and trainFraction {trainFraction} does not exist."
-            )
+            ) from e
 
         # change batch size, if it was edited during analysis!
         dlc_cfg["batch_size"] = 1  # in case this was edited for analysis.
