@@ -62,20 +62,25 @@ def create_new_project(_, *args, **kwargs):
     videos : list \n
     \tA list of string containing the full paths of the videos to include in the project.\n
     working_directory : string, optional \n
-    \tThe directory where the project will be created. The default is the ``current working directory``; if provided, it must be a string\n
+    \tThe directory where the project will be created.
+    The default is the ``current working directory``; if provided, it must be a string\n
     copy_videos : bool, optional \n
-    If this is set to True, the symlink of the videos are copied to the project/videos directory. The default is ``True``; if provided it must be either ``True`` or ``False`` \n
+    If this is set to True, the symlink of the videos are copied to the project/videos directory.
+    The default is ``True``; if provided it must be either ``True`` or ``False`` \n
 
     Example \n
     -------- \n
     To create the project in the current working directory \n
-    python3 dlc.py create_new_project reaching-task Tanmay /data/videos/mouse1.avi /data/videos/mouse2.avi /data/videos/mouse3.avi /analysis/project/
+    python3 dlc.py create_new_project reaching-task
+    Tanmay /data/videos/mouse1.avi /data/videos/mouse2.avi /data/videos/mouse3.avi /analysis/project/
 
     To create the project in the current working directory but do not want to create the symlinks \n
-    python3 dlc.py create_new_project reaching-task Tanmay /data/videos/mouse1.avi /data/videos/mouse2.avi /data/videos/mouse3.avi /analysis/project/ -c False
+    python3 dlc.py create_new_project reaching-task
+    Tanmay /data/videos/mouse1.avi /data/videos/mouse2.avi /data/videos/mouse3.avi /analysis/project/ -c False
 
     To create the project in another directory \n
-    python3 dlc.py create_new_project reaching-task Tanmay /data/vies/mouse1.avi /data/videos/mouse2.avi /data/videos/mouse3.avi analysis/project -d home/project
+    python3 dlc.py create_new_project reaching-task
+    Tanmay /data/vies/mouse1.avi /data/videos/mouse2.avi /data/videos/mouse3.avi analysis/project -d home/project
     """
     from deeplabcut.create_project import new
 
@@ -158,7 +163,8 @@ def extract_frames(_, *args, **kwargs):
     -------- \n
     for selecting frames manually, \n
     >>> deeplabcut.extract_frames /analysis/project/reaching-task/config.yaml manual \n
-    While selecting the frames manually, you do not need to specify the cropping parameters. Rather, you will get a prompt in the graphic user interface to choose if you need to crop or not. \n
+    While selecting the frames manually, you do not need to specify the cropping parameters.
+    Rather, you will get a prompt in the graphic user interface to choose if you need to crop or not. \n
     -------- \n
     """
     from deeplabcut.generate_training_dataset.frame_extraction import extract_frames as _extract_frames
@@ -210,7 +216,8 @@ def check_labels(_, config):
 )
 @click.pass_context
 def create_training_dataset(_, *args, **kwargs):
-    """Combine frame and label information into a an array. Create training and test sets. Update parameters TrainFraction, iteration in config.yaml
+    """Combine frame and label information into a an array. Create training and test sets.
+    Update parameters TrainFraction, iteration in config.yaml
         Also update parameters for pose_config.yaml as wanted.\n
     CONFIG: Full path of the config.yaml file in the train directory of a project.\n
     Example \n
@@ -338,7 +345,8 @@ def analyze_videos(_, *args, **kwargs):
     "--num_shuffles",
     "shuffle",
     default=1,
-    help="The shuffle index of training dataset. The extracted frames will be stored in the labeled-dataset for the corresponding shuffle of training dataset. Default is set to 1",
+    help="The shuffle index of training dataset. The extracted frames will be stored in the "
+    "labeled-dataset for the corresponding shuffle of training dataset. Default is set to 1",
 )
 @click.option(
     "-outlier",
@@ -346,7 +354,8 @@ def analyze_videos(_, *args, **kwargs):
     "outlieralgorithm",
     default="fitting",
     help="String specifying the algorithm used to detect the outliers. Currently, deeplabcut supports only sarimax (this will be updated). \
-              This method fits a Seasonal AutoRegressive Integrated Moving Average with eXogenous regressors model to data and computes confidence interval. \
+              This method fits a Seasonal AutoRegressive Integrated Moving Average with eXogenous regressors model \
+              to data and computes confidence interval. \
               Based on the fraction of data points outside the confidence interval and the average distance (compared to delta) \
               the user can identify potential outlier frames. The default is set to ``fitting``. Other choices: `fitting`, `jump`, `uncertain`",
 )
@@ -426,10 +435,12 @@ def extract_outlier_frames(_, *args, **kwargs):
     >>> python3 dlc.py extract_outlier_frames /analysis/project/reaching-task/config.yaml /analysis/project/video/reachinvideo1.avi \n
     --------\n
     for extracting the frames with kmeans\n
-    >>> python3 dlc.py extract_outlier_frames /analysis/project/reaching-task/config.yaml /analysis/project/video/reachinvideo1.avi --extractionalgorithm 'kmeans' \n
+    >>> python3 dlc.py extract_outlier_frames /analysis/project/reaching-task/config.yaml
+        /analysis/project/video/reachinvideo1.avi --extractionalgorithm 'kmeans' \n
     --------\n
     for extracting the frames with kmeans and epsilon = 5 pixels.\n
-    >>> python3 dlc.py extract_outlier_frames /analysis/project/reaching-task/config.yaml /analysis/project/video/reachinvideo1.avi --epsilon 5 --extractionalgorithm kmeans \n
+    >>> python3 dlc.py extract_outlier_frames /analysis/project/reaching-task/config.yaml
+        /analysis/project/video/reachinvideo1.avi --epsilon 5 --extractionalgorithm kmeans \n
     --------\n
     """
     from deeplabcut.refine_training_dataset import outlier_frames
@@ -541,7 +552,8 @@ def plot_trajectories(_, *args, **kwargs):
     Example\n
     --------\n
     for labeling the frames\n
-    >>> python3 dlc.py plot_trajectories /analysis/project/reaching-task/config.yaml /analysis/project/videos/reachingvideo1.avi  \n
+    >>> python3 dlc.py plot_trajectories /analysis/project/reaching-task/config.yaml
+        /analysis/project/videos/reachingvideo1.avi  \n
     --------\n
     """
     from deeplabcut.utils import plotting

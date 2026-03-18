@@ -589,7 +589,8 @@ def return_evaluate_network_data(
     an error if called with a PyTorch shuffle.
 
     If fulldata=True, also returns (the complete annotation and prediction array)
-    Returns list of: (DataMachine, Data, data, trainIndices, testIndices, trainFraction, DLCscorer,comparisonbodyparts, cfg, Snapshots[snapindex])
+    Returns list of:
+       (DataMachine, Data, data, trainIndices, testIndices, trainFraction, DLCscorer,comparisonbodyparts, cfg, Snapshots[snapindex])
     ----------
     config : string
         Full path of the config.yaml file as a string.
@@ -598,18 +599,19 @@ def return_evaluate_network_data(
         integers specifying shuffle index of the training dataset. The default is 0.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
-        variable can also be set to "all".
+        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+        This variable can also be set to "all".
 
     comparisonbodyparts: list of bodyparts, Default is "all".
         The average error will be computed for those body parts only (Has to be a subset of the body parts).
 
     rescale: bool, default False
-        Evaluate the model at the 'global_scale' variable (as set in the test/pose_config.yaml file for a particular project). I.e. every
-        image will be resized according to that scale and prediction will be compared to the resized ground truth. The error will be reported
-        in pixels at rescaled to the *original* size. I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
-        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!. The evaluation images are also shown for the
-        original size!
+        Evaluate the model at the 'global_scale' variable (as set in the test/pose_config.yaml file for a particular project).
+        I.e. every image will be resized according to that scale and prediction will be compared to the resized ground truth.
+        The error will be reported in pixels at rescaled to the *original* size.
+        I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
+        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!.
+        The evaluation images are also shown for the original size!
 
     engine: Engine, optional, default = None.
         The default behavior loads the engine for the shuffle from the metadata. You can
@@ -1422,23 +1424,28 @@ def convert_detections2tracklets(
         Full path of the config.yaml file as a string.
 
     videos : list
-        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+        A list of strings containing the full paths to videos for analysis or a path to the directory,
+        where all the videos with same extension are stored.
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        Checks for the extension of the video in case the input to the video is a directory.\n
+        Only videos with this extension are analyzed.
         If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
     shuffle: int, optional
-        An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
+        An integer specifying the shuffle index of the training dataset used for training the network. T
+        he default is 1.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml).
 
     overwrite: bool, optional.
         Overwrite tracks file i.e. recompute tracks from full detections and overwrite.
 
     destfolder: string, optional
-        Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
+        Specifies the destination folder for analysis data (default is the path of the video).
+        Note that for subsequent analysis this
         folder also needs to be passed.
 
     ignore_bodyparts: optional
@@ -1591,11 +1598,12 @@ def extract_maps(
         https://pytorch.org/docs/stable/notes/cuda.html for more information.
 
     rescale: bool, default False
-        Evaluate the model at the 'global_scale' variable (as set in the test/pose_config.yaml file for a particular project). I.e. every
-        image will be resized according to that scale and prediction will be compared to the resized ground truth. The error will be reported
-        in pixels at rescaled to the *original* size. I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
-        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!. The evaluation images are also shown for the
-        original size!
+        Evaluate the model at the 'global_scale' variable (as set in the test/pose_config.yaml file for a particular project).
+        I.e. every image will be resized according to that scale and prediction will be compared to the resized ground truth.
+        The error will be reported in pixels at rescaled to the *original* size.
+        I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
+        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!.
+        The evaluation images are also shown for the original size!
 
     engine: Engine, optional, default = None.
         The default behavior loads the engine for the shuffle from the metadata. You can
@@ -1729,8 +1737,9 @@ def extract_save_all_maps(
         integers specifying shuffle index of the training dataset. The default is 1.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
-        variable can also be set to "all".
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml).
+        This variable can also be set to "all".
 
     comparisonbodyparts: list of bodyparts, Default is "all".
         The average error will be computed for those body parts only (Has to be a subset of the body parts).

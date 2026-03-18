@@ -71,7 +71,8 @@ def adddatasetstovideolistandviceversa(config):
     It corrects this problem in the following way:
 
     If a video entry in the config file does not contain a folder in labeled-data, then the entry is removed.
-    If a folder in labeled-data does not contain a video entry in the config file then the prefix path will be added in front of the name of the labeled-data folder and combined
+    If a folder in labeled-data does not contain a video entry in the config file then
+    the prefix path will be added in front of the name of the labeled-data folder and combined
     with the suffix variable as an ending. Width and height will be added as cropping variables as passed on.
 
     Handle with care!
@@ -510,7 +511,9 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
             conversioncode.guarantee_multiindex_rows(data)
             if data.columns.levels[0][0] != cfg["scorer"]:
                 print(
-                    f"{file_path} labeled by a different scorer. This data will not be utilized in training dataset creation. If you need to merge datasets across scorers, see https://github.com/DeepLabCut/DeepLabCut/wiki/Using-labeled-data-in-DeepLabCut-that-was-annotated-elsewhere-(or-merge-across-labelers)"
+                    f"{file_path} labeled by a different scorer. This data will not be utilized in training dataset creation."
+                    "If you need to merge datasets across scorers, see "
+                    "https://github.com/DeepLabCut/DeepLabCut/wiki/Using-labeled-data-in-DeepLabCut-that-was-annotated-elsewhere-(or-merge-across-labelers)"
                 )
                 continue
             AnnotationData.append(data)
@@ -647,7 +650,8 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     To freeze a (uniform) split (i.e. iid sampled from all the data):
     >>> trainIndices, testIndices=deeplabcut.mergeandsplit(config,trainindex=0,uniform=True)
 
-    You can then create two model instances that have the identical trainingset. Thereby you can assess the role of various parameters on the performance of DLC.
+    You can then create two model instances that have the identical trainingset.
+    Thereby you can assess the role of various parameters on the performance of DLC.
     >>> deeplabcut.create_training_dataset(config,Shuffles=[0,1],trainIndices=[trainIndices, trainIndices],testIndices=[testIndices, testIndices])
     --------
     """
@@ -1116,11 +1120,14 @@ def create_training_dataset(
                     )
                     if trainposeconfigfile.is_file():
                         askuser = input(
-                            "The model folder is already present. If you continue, it will overwrite the existing model (split). Do you want to continue?(yes/no): "
+                            "The model folder is already present. "
+                            "If you continue, it will overwrite the existing model (split). "
+                            "Do you want to continue?(yes/no): "
                         )
                         if askuser == "no" or askuser == "No" or askuser == "N" or askuser == "No":
                             raise Exception(
-                                "Use the Shuffles argument as a list to specify a different shuffle index. Check out the help for more details."
+                                "Use the Shuffles argument as a list to specify a different shuffle index. "
+                                "Check out the help for more details."
                             )
 
                 ####################################################
