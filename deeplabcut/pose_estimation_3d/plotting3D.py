@@ -81,38 +81,56 @@ def create_labeled_video_3d(
         Full path of the config.yaml file as a string.
 
     path : list
-        A list of strings containing the full paths to triangulated files for analysis or a path to the directory, where all the triangulated files are stored.
+        A list of strings containing the full paths to triangulated files for analysis or a path to the directory,
+        where all the triangulated files are stored.
 
     videofolder: string
-        Full path of the folder where the videos are stored. Use this if the videos are stored in a different location other than where the triangulation files are stored. By default is ``None`` and therefore looks for video files in the directory where the triangulation file is stored.
+        Full path of the folder where the videos are stored.
+        Use this if the videos are stored in a different location other than
+        where the triangulation files are stored.
+        By default is ``None`` and therefore looks for video files in the
+        directory where the triangulation file is stored.
 
     start: int
-        Integer specifying the start of frame index to select. Default is set to 0.
+        Integer specifying the start of frame index to select.
+        Default is set to 0.
 
     end: int
-        Integer specifying the end of frame index to select. Default is set to None, where all the frames of the video are used for creating the labeled video.
+        Integer specifying the end of frame index to select.
+        Default is set to None, where all the frames of the video are used for creating the labeled video.
 
     trailpoints: int
-        Number of revious frames whose body parts are plotted in a frame (for displaying history). Default is set to 0.
+        Number of revious frames whose body parts are plotted in a frame (for displaying history).
+        Default is set to 0.
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        Checks for the extension of the video in case the input to the video is a directory.\n
+        Only videos with this extension are analyzed.
         If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
     view: list
-        A list that sets the elevation angle in z plane and azimuthal angle in x,y plane of 3d view. Useful for rotating the axis for 3d view
+        A list that sets the elevation angle in z plane and azimuthal angle in x,y plane of 3d view.
+        Useful for rotating the axis for 3d view
 
     xlim: list
-        A list of integers specifying the limits for xaxis of 3d view. By default it is set to [None,None], where the x limit is set by taking the minimum and maximum value of the x coordinates for all the bodyparts.
+        A list of integers specifying the limits for xaxis of 3d view.
+        By default it is set to [None,None], where the x limit is set by t
+        aking the minimum and maximum value of the x coordinates for all the bodyparts.
 
     ylim: list
-        A list of integers specifying the limits for yaxis of 3d view. By default it is set to [None,None], where the y limit is set by taking the minimum and maximum value of the y coordinates for all the bodyparts.
+        A list of integers specifying the limits for yaxis of 3d view.
+        By default it is set to [None,None], where the y limit is set by
+        taking the minimum and maximum value of the y coordinates for all the bodyparts.
 
     zlim: list
-        A list of integers specifying the limits for zaxis of 3d view. By default it is set to [None,None], where the z limit is set by taking the minimum and maximum value of the z coordinates for all the bodyparts.
+        A list of integers specifying the limits for zaxis of 3d view.
+        By default it is set to [None,None], where the z limit is set by
+        taking the minimum and maximum value of the z coordinates for all the bodyparts.
 
     draw_skeleton: bool
-        If ``True`` adds a line connecting the body parts making a skeleton on on each frame. The body parts to be connected and the color of these connecting lines are specified in the config file. By default: ``True``
+        If ``True`` adds a line connecting the body parts making a skeleton on on each frame.
+        The body parts to be connected and the color of these connecting lines are specified in the config file.
+        By default: ``True``
 
     color_by : string, optional (default='bodypart')
         Coloring rule. By default, each bodypart is colored differently.
@@ -127,7 +145,8 @@ def create_labeled_video_3d(
     >>> deeplabcut.create_labeled_video_3d(config,['/data/project1/videos'],start=100, end=500)
 
     To set the xlim, ylim, zlim and rotate the view of the 3d axis
-    >>> deeplabcut.create_labeled_video_3d(config,['/data/project1/videos'],start=100, end=500,view=[30,90],xlim=[-12,12],ylim=[15,25],zlim=[20,30])
+    >>> deeplabcut.create_labeled_video_3d(config,['/data/project1/videos'],start=100,
+        end=500,view=[30,90],xlim=[-12,12],ylim=[15,25],zlim=[20,30])
     """
     os.getcwd()
 
@@ -151,7 +170,9 @@ def create_labeled_video_3d(
     print(file_list)
     if file_list == []:
         raise Exception(
-            "No corresponding video file(s) found for the specified triangulated file or folder. Did you specify the video file type? If videos are stored in a different location, please use the ``videofolder`` argument to specify their path."
+            "No corresponding video file(s) found for the specified triangulated file or folder. "
+            "Did you specify the video file type? If videos are stored in a different location, "
+            "please use the ``videofolder`` argument to specify their path."
         )
 
     for file in file_list:
@@ -175,7 +196,8 @@ def create_labeled_video_3d(
             cam1_scorer = metadata_["scorer_name"][cam_names[0]]
             cam2_scorer = metadata_["scorer_name"][cam_names[1]]
             print(
-                f"Creating 3D video from {Path(cam1_view_video).name} and {Path(cam2_view_video).name} using {Path(triangulate_file).name}"
+                f"Creating 3D video from {Path(cam1_view_video).name} "
+                f"and {Path(cam2_view_video).name} using {Path(triangulate_file).name}"
             )
 
             # Read the video files and corresponfing h5 files
