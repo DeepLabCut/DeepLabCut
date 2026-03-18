@@ -15,12 +15,12 @@ from typing import Any
 
 import pytest
 import torch
-from deeplabcut.pose_estimation_pytorch.models.criterion import WeightedAggregateLoss
 
 from deeplabcut.pose_estimation_pytorch.config import make_pytorch_pose_config
-from deeplabcut.pose_estimation_pytorch.models import LOSSES, PREDICTORS, PoseModel
-from deeplabcut.pose_estimation_pytorch.runners import RUNNERS
+from deeplabcut.pose_estimation_pytorch.models import LOSS_AGGREGATORS, PREDICTORS, PoseModel
+from deeplabcut.pose_estimation_pytorch.models.criterions.aggregators import WeightedLossAggregator
 from deeplabcut.pose_estimation_pytorch.runners.schedulers import LRListScheduler
+from deeplabcut.pose_estimation_pytorch.runners.train import build_training_runner
 from deeplabcut.utils import auxiliaryfunctions
 
 SINGLE_ANIMAL_NETS = ["resnet_50"]
@@ -64,35 +64,37 @@ def test_build_bottom_up_runner(
     for head_cfg in pytorch_cfg["model"]["heads"]:
         crit_cfg = head_cfg["criterion"]
         criterion_weight = crit_cfg.get("weight", 1)
-        criterion = LOSSES.build({k: v for k, v in crit_cfg.items() if k != "weight"})
+        criterion = LOSS_AGGREGATORS.build({k: v for k, v in crit_cfg.items() if k != "weight"})
         head_criterions.append((criterion_weight, criterion))
-    criterion = WeightedAggregateLoss(head_criterions)
+    criterion = WeightedLossAggregator(head_criterions)
 
     get_optimizer = getattr(torch.optim, pytorch_cfg["optimizer"]["type"])
     optimizer = get_optimizer(params=pose_model.parameters(), **pytorch_cfg["optimizer"]["params"])
 
-    predictor = PREDICTORS.build(dict(pytorch_cfg["model"]["predictor"]))
+    PREDICTORS.build(dict(pytorch_cfg["model"]["predictor"]))
 
     if pytorch_cfg.get("scheduler"):
         if pytorch_cfg["scheduler"]["type"] == "LRListScheduler":
             _scheduler = LRListScheduler
         else:
             _scheduler = getattr(torch.optim.lr_scheduler, pytorch_cfg["scheduler"]["type"])
-        scheduler = _scheduler(optimizer=optimizer, **pytorch_cfg["scheduler"]["params"])
+        _scheduler(optimizer=optimizer, **pytorch_cfg["scheduler"]["params"])
     else:
-        scheduler = None
+        pass
 
-    logger = None
-    RUNNERS.build(
-        dict(
-            **pytorch_cfg["solver"],
-            model=pose_model,
-            criterion=criterion,
-            optimizer=optimizer,
-            predictor=predictor,
-            cfg=pytorch_cfg,
-            device=pytorch_cfg["device"],
-            scheduler=scheduler,
-            logger=logger,
-        )
+    # NOTE: @C-Achard 2026-03-18 This file was not named with test_* as a prefix,
+    #  so it never ran in CI. A lot of imports are outdated and non-existent
+    # FIX: replace RUNNERS registry with build_training_runner and remove unused imports
+    runner_config = {
+        **pytorch_cfg["solver"],
+        "optimizer": pytorch_cfg["optimizer"],
+        "scheduler": pytorch_cfg.get("scheduler"),
+    }
+    _ = build_training_runner(
+        runner_config=runner_config,
+        model_folder=Path("."),
+        task=pose_model.task,
+        model=pose_model,
+        device=pytorch_cfg["device"],
+        logger=None,
     )
