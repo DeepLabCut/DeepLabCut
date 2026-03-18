@@ -1,33 +1,71 @@
+default_stages: [pre-commit]
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
+      # These are safe to run in both local & CI (they don't require "fix vs check" split)
       - id: check-added-large-files
+        stages: [pre-commit, manual]
       - id: check-yaml
+        stages: [pre-commit, manual]
       - id: check-toml
-      - id: end-of-file-fixer
+        stages: [pre-commit, manual]
+      - id: check-merge-conflict
+        stages: [pre-commit, manual]
       - id: name-tests-test
         args: [--pytest-test-first]
+        stages: [pre-commit, manual]
+
+      # These modify files. Run locally only (pre-commit stage).
+      - id: end-of-file-fixer
+        stages: [pre-commit]
       - id: trailing-whitespace
-      - id: check-merge-conflict
+        stages: [pre-commit]
+
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.18.1
+    rev: v2.19.0
     hooks:
       - id: pyproject-fmt
+        stages: [pre-commit]    # modifies -> local only
+
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.25
     hooks:
       - id: validate-pyproject
+        stages: [pre-commit, manual]
+
   - repo: https://github.com/PyCQA/docformatter
     rev: v1.7.7
     hooks:
       - id: docformatter
-        args: ["--wrap-summaries=88", "--wrap-descriptions=88", "--in-place", "--black"]
+        args: [--wrap-descriptions=88, --wrap-summaries=88, --in-place, --black]
+        stages: [pre-commit]    # modifies -> local only
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.6
     hooks:
-      # Run the formatter.
-      - id: ruff-format
-      # Run the linter.
+      # --------------------------
+      # LOCAL AUTOFIX (developers)
+      # --------------------------
       - id: ruff-check
-        args: [--fix,--unsafe-fixes]
+        name: ruff-check (fix)
+        args: [--fix, --unsafe-fixes]
+        stages: [pre-commit]
+
+      - id: ruff-format
+        name: ruff-format (write)
+        stages: [pre-commit]
+
+      # --------------------------
+      # CI CHECK-ONLY (no writes)
+      # --------------------------
+      - id: ruff-check
+        name: ruff-check (ci)
+        args: [--output-format=github]
+        stages: [manual]
+
+      - id: ruff-format
+        name: ruff-format (ci)
+        args: [--check, --diff]
+        stages: [manual]
