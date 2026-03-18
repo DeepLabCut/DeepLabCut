@@ -335,7 +335,7 @@ def test_make_tokenpose_config(
     )
 
     if identity or len(unique_bodyparts) > 0:
-        with pytest.raises(ValueError) as _err_info:
+        with pytest.raises(ValueError) as _:
             # Not yet implemented!
             _ = make_pytorch_pose_config(
                 project_config,

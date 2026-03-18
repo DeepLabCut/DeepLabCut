@@ -1197,12 +1197,14 @@ def evaluate_assembly(
     ass_pred_dict,
     ass_true_dict,
     oks_sigma=0.072,
-    oks_thresholds=np.linspace(0.5, 0.95, 10),
+    oks_thresholds=None,
     margin=0,
     symmetric_kpts=None,
     greedy_matching=False,
     with_tqdm: bool = True,
 ):
+    if oks_thresholds is None:
+        oks_thresholds = np.linspace(0.5, 0.95, 10)
     if greedy_matching:
         return evaluate_assembly_greedy(
             ass_true_dict,
