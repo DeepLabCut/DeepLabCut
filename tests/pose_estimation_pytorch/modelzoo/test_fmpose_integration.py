@@ -16,7 +16,7 @@ import pytest
 
 fmpose3d = pytest.importorskip("fmpose3d", reason="fmpose3d not installed")
 
-from deeplabcut.modelzoo.fmpose_3d.fmpose3d import get_fmpose3d_inference_api
+from deeplabcut.modelzoo.fmpose_3d.fmpose3d import get_fmpose3d_inference_api  # noqa: E402
 
 
 def _has_network(host="huggingface.co", port=443, timeout=3) -> bool:

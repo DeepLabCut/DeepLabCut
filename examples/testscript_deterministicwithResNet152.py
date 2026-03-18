@@ -37,10 +37,6 @@ iteration: 10 loss: 0.1220 lr: 0.001
 It produces nothing of interest scientifically.
 """
 
-task = "TEST-deterministic"  # Enter the name of your experiment Task
-scorer = "Alex"  # Enter the name of the experimenter/labeler
-
-
 import os
 
 import numpy as np
@@ -48,6 +44,8 @@ import pandas as pd
 
 import deeplabcut
 
+task = "TEST-deterministic"  # Enter the name of your experiment Task
+scorer = "Alex"  # Enter the name of the experimenter/labeler
 print("Imported DLC!")
 basepath = os.path.dirname(os.path.abspath("testscript.py"))
 videoname = "reachingvideo1"
