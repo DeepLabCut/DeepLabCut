@@ -15,8 +15,6 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 
-from ...predict_videos import checkcropping
-
 try:
     from openvino.runtime import AsyncInferQueue, Core
 
@@ -106,6 +104,8 @@ def GetPoseF_OV(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
     PredictedData = np.zeros((nframes, 3 * len(dlc_cfg["all_joints_names"])))
     ny, nx = int(cap.get(4)), int(cap.get(3))
     if cfg["cropping"]:
+        from ...predict_videos import checkcropping
+
         ny, nx = checkcropping(cfg, cap)
 
     sess._init_model(ny, nx)
