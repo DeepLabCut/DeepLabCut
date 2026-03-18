@@ -55,9 +55,9 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
     import shutil
     from pathlib import Path
 
-    from deeplabcut.generate_training_dataset import frame_extraction
-    from deeplabcut.utils import auxiliaryfunctions
-    from deeplabcut.utils.auxfun_videos import VideoReader
+    from ..generate_training_dataset import frame_extraction
+    from ..utils import auxiliaryfunctions
+    from ..utils.auxfun_videos import VideoReader
 
     # Read the config file
     cfg = auxiliaryfunctions.read_config(config)

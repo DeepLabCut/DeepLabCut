@@ -15,7 +15,7 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 
-from deeplabcut.pose_estimation_tensorflow.predict_videos import checkcropping
+from ...predict_videos import checkcropping
 
 try:
     from openvino.runtime import AsyncInferQueue, Core

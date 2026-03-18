@@ -624,8 +624,9 @@ def convert_cropped_to_standard_dataset(
 
     import pandas as pd
 
-    from deeplabcut.generate_training_dataset import trainingsetmanipulation
     from deeplabcut.utils import read_plainconfig, write_config
+
+    from . import trainingsetmanipulation
 
     cfg = auxiliaryfunctions.read_config(config_path)
     videos_orig = cfg.pop("video_sets_original")

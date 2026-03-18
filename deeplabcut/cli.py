@@ -161,9 +161,9 @@ def extract_frames(_, *args, **kwargs):
     While selecting the frames manually, you do not need to specify the cropping parameters. Rather, you will get a prompt in the graphic user interface to choose if you need to crop or not. \n
     -------- \n
     """
-    from deeplabcut.generate_training_dataset import frameExtraction
+    from deeplabcut.generate_training_dataset.frame_extraction import extract_frames as _extract_frames
 
-    frameExtraction.extract_frames(*args, **kwargs)
+    _extract_frames(*args, **kwargs)
 
 
 ##########################################################################
@@ -178,9 +178,9 @@ def label_frames(_, config):
     --------\n
     python3 dlc.py label_frames /analysis/project/reaching-task/config.yaml
     """
-    from deeplabcut.generate_training_dataset import labelFrames
+    from deeplabcut.gui.tabs.label_frames import label_frames as _label_frames
 
-    labelFrames.label_frames(config)
+    _label_frames(config)
 
 
 ##########################################################################
@@ -193,9 +193,9 @@ def check_labels(_, config):
 
     If some are wrong, then use the refine_labels to correct the labels.\n
     """
-    from deeplabcut.generate_training_dataset import labelFrames
+    from deeplabcut.generate_training_dataset.trainingsetmanipulation import check_labels as _check_labels
 
-    labelFrames.check_labels(config)
+    _check_labels(config)
 
 
 ##########################################################################
@@ -221,9 +221,11 @@ def create_training_dataset(_, *args, **kwargs):
     To create a training dataset with only 2 shuffles
     python3 dlc.py create_training_dataset /analysis/project/reaching-task/config.yaml num_shuffles 2
     """
-    from deeplabcut.generate_training_dataset import labelFrames
+    from deeplabcut.generate_training_dataset.trainingsetmanipulation import (
+        create_training_dataset as _create_training_dataset,
+    )
 
-    labelFrames.create_training_dataset(*args, **kwargs)
+    _create_training_dataset(*args, **kwargs)
 
 
 ##########################################################################
@@ -273,9 +275,9 @@ def evaluate_network(_, config, **kwargs):
     python3 dlc.py evaluate_network  /home/project/reaching/config.yaml
 
     """
-    from deeplabcut.pose_estimation_tensorflow import evaluate
+    from deeplabcut.pose_estimation_tensorflow.core.evaluate import evaluate_network as _evaluate_network
 
-    evaluate.evaluate_network(config, **kwargs)
+    _evaluate_network(config, **kwargs)
 
 
 ##########################################################################
