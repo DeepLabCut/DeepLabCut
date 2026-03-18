@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Implementations of methods to compute distance metrics such as RMSE or OKS"""
+"""Implementations of methods to compute distance metrics such as RMSE or OKS."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ def compute_oks_matrix(
     oks_sigma: float | np.ndarray,
     oks_bbox_margin: float = 0.0,
 ) -> np.ndarray:
-    """Computes the OKS score for each (prediction, gt) pair in an image
+    """Computes the OKS score for each (prediction, gt) pair in an image.
 
     Args:
         ground_truth: The GT poses for an image, shape (n_individuals, n_kpts, 2)
@@ -361,7 +361,7 @@ def compute_detection_rmse(
         image_gt = image_gt.transpose((1, 0, 2))  # to (num_bpts, num_gt_individuals, 3)
         image_pred = image_pred.transpose((1, 0, 2))  # to (num_bpts, num_pred, 3)
 
-        for bpt_index, (bpt_gt, bpt_pred) in enumerate(zip(image_gt, image_pred)):
+        for bpt_index, (bpt_gt, bpt_pred) in enumerate(zip(image_gt, image_pred, strict=True)):
             # filter NaNs and invalid values
             bpt_gt = bpt_gt[~np.any(np.isnan(bpt_gt), axis=1)]
             bpt_pred = bpt_pred[~np.any(np.isnan(bpt_pred), axis=1)]
@@ -399,7 +399,7 @@ def compute_detection_rmse(
                 if not isinstance(pcutoff, (int, float)):
                     unique_cutoffs = pcutoff[-num_unique:]
 
-                for bpt_index, (gt, pred) in enumerate(zip(unique_gt, unique_pred)):
+                for bpt_index, (gt, pred) in enumerate(zip(unique_gt, unique_pred, strict=False), strict=True):
                     dist = np.linalg.norm(gt[:2] - pred[:2])
                     distances.append(dist)
 
@@ -433,7 +433,7 @@ def collect_pixel_errors(
     keypoint_scores: np.ndarray,
     pcutoff: float,
 ) -> tuple[float, int, float, int]:
-    """Collects pixel errors for RMSE computation
+    """Collects pixel errors for RMSE computation.
 
     Args:
         pixel_errors: The pixel errors to collect, of shape (num_matches, num_bodyparts)

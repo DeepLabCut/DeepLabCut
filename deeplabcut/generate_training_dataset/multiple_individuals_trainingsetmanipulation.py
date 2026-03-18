@@ -24,7 +24,13 @@ import deeplabcut.compat as compat
 import deeplabcut.generate_training_dataset.metadata as metadata
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
-from deeplabcut.generate_training_dataset import (
+from deeplabcut.utils import (
+    auxfun_models,
+    auxfun_multianimal,
+    auxiliaryfunctions,
+)
+
+from .trainingsetmanipulation import (
     MakeInference_yaml,
     MakeTest_pose_yaml,
     MakeTrain_pose_yaml,
@@ -33,11 +39,6 @@ from deeplabcut.generate_training_dataset import (
     pad_train_test_indices,
     read_image_shape_fast,
     validate_shuffles,
-)
-from deeplabcut.utils import (
-    auxfun_models,
-    auxfun_multianimal,
-    auxiliaryfunctions,
 )
 
 

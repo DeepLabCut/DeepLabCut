@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests the pre-processors"""
+"""Tests the pre-processors."""
 
 import numpy as np
 import pytest
@@ -58,7 +58,7 @@ from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
     ],
 )
 def test_rescale_topdown(data):
-    """expects x_processed = x * scale + offset"""
+    """Expects x_processed = x * scale + offset."""
     postprocessor = RescaleAndOffset(
         keys_to_rescale=["bodyparts"],
         mode=RescaleAndOffset.Mode.KEYPOINT_TD,
@@ -87,7 +87,7 @@ def test_rescale_topdown(data):
     ],
 )
 def test_trim_outputs(data):
-    """expects x_processed = x * scale + offset"""
+    """Expects x_processed = x * scale + offset."""
     postprocessor = TrimOutputs(max_individuals=data["max_individuals"])
     context = {}
     predictions = {"bboxes": np.array(data["bboxes"]), "bbox_scores": np.array(data["bbox_scores"])}
@@ -122,7 +122,7 @@ def test_trim_outputs(data):
     ],
 )
 def test_rescale_bottom_up(data):
-    """expects x_processed = x * scale + offset"""
+    """Expects x_processed = x * scale + offset."""
     postprocessor = RescaleAndOffset(
         keys_to_rescale=["bodyparts"],
         mode=RescaleAndOffset.Mode.KEYPOINT,
@@ -167,7 +167,7 @@ def test_rescale_bottom_up(data):
     ],
 )
 def test_rescale_detector(data):
-    """expects x_processed = x * scale + offset"""
+    """Expects x_processed = x * scale + offset."""
     postprocessor = RescaleAndOffset(
         keys_to_rescale=["bboxes"],
         mode=RescaleAndOffset.Mode.BBOX_XYWH,
@@ -301,7 +301,7 @@ def test_prepare_top_down_backbone_features():
 
     assert len(predictions_out) == 2
     assert len(context_out) == 1
-    for preds, expected in zip(predictions_out, [[1, 2, 3], [11, 12, 13]]):
+    for preds, expected in zip(predictions_out, [[1, 2, 3], [11, 12, 13]], strict=True):
         assert "backbone" in preds
         assert "bodypart_features" in preds["backbone"]
         bodypart_features = preds["backbone"]["bodypart_features"]
@@ -345,7 +345,7 @@ def test_prepare_top_down_backbone_features():
     ],
 )
 def test_remove_low_confidence_boxes(data):
-    """Tests that RemoveLowConfidenceBoxes filters boxes below threshold"""
+    """Tests that RemoveLowConfidenceBoxes filters boxes below threshold."""
     postprocessor = RemoveLowConfidenceBoxes(bbox_score_thresh=data["threshold"])
     context = {}
 

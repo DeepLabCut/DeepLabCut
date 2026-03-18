@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Implementations of methods to compute identity prediction accuracy"""
+"""Implementations of methods to compute identity prediction accuracy."""
 
 from __future__ import annotations
 
@@ -64,7 +64,7 @@ def compute_identity_scores(
         gt = gt.transpose((1, 0, 2))
         pred = pred.transpose((1, 0, 2))[..., :2]
         id_scores = id_scores.transpose((1, 0, 2))
-        for bpt, bpt_gt, bpt_pred, bpt_id_scores in zip(bodyparts, gt, pred, id_scores):
+        for bpt, bpt_gt, bpt_pred, bpt_id_scores in zip(bodyparts, gt, pred, id_scores, strict=True):
             # assign ground truth keypoints to the closest prediction, so the ID score
             # is the closest possible to the ID score computed with "ground truth"
             indices_gt = np.flatnonzero(np.all(~np.isnan(bpt_gt), axis=1))

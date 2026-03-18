@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Methods to help with visualization of model outputs"""
+"""Methods to help with visualization of model outputs."""
 
 from __future__ import annotations
 
@@ -146,7 +146,7 @@ def create_labeled_images(
         if "bboxes" in image_predictions and "bbox_scores" in image_predictions:
             bboxes = image_predictions["bboxes"]
             bbox_scores = image_predictions["bbox_scores"]
-            for idx, (bbox, score) in enumerate(zip(bboxes, bbox_scores)):
+            for idx, (bbox, score) in enumerate(zip(bboxes, bbox_scores, strict=True)):
                 if score <= bboxes_pcutoff:
                     continue
 
@@ -174,7 +174,7 @@ def extract_model_outputs(
     device: str = "auto",
     context: list[dict[str, np.ndarray]] | None = None,
 ) -> list[dict[str, np.ndarray]]:
-    """Obtains the outputs for a model for a list of images
+    """Obtains the outputs for a model for a list of images.
 
     Args:
         images: List of image paths for which to get model outputs.
@@ -249,9 +249,8 @@ def extract_maps(
     snapshot_index: int | str | None = None,
     detector_snapshot_index: int | str | None = None,
 ) -> dict:
-    """
-    Extracts the different maps output by DeepLabCut models, such as scoremaps, location
-    refinement fields and part-affinity fields.
+    """Extracts the different maps output by DeepLabCut models, such as scoremaps,
+    location refinement fields and part-affinity fields.
 
     Args:
         config: Full path of the config.yaml file as a string.
@@ -363,7 +362,7 @@ def extract_maps(
 
                 # key can be just image_idx, or (image_idx, bbox_idx) for TD models
                 keys, images, outputs = _collect_model_outputs(loader.pose_task, result, image_idx)
-                for key, image, output in zip(keys, images, outputs):
+                for key, image, output in zip(keys, images, outputs, strict=False):
                     parsed = _parse_model_outputs(
                         image,
                         output,
@@ -404,10 +403,9 @@ def extract_save_all_maps(
     detector_snapshot_index: int | str | None = None,
     dest_folder: str | Path | None = None,
 ):
-    """
-    Extracts the scoremap, location refinement field and part affinity field prediction
-    of the model. The maps will be rescaled to the size of the input image and stored
-    in the corresponding model folder in /evaluation-results-pytorch.
+    """Extracts the scoremap, location refinement field and part affinity field
+    prediction of the model. The maps will be rescaled to the size of the input image
+    and stored in the corresponding model folder in /evaluation-results-pytorch.
 
     Args:
         config: Full path of the config.yaml file as a string.
@@ -441,7 +439,6 @@ def extract_save_all_maps(
         >>>     shuffle=1,
         >>>     indices=[0, 1, 33]
         >>> )
-
     """
     cfg = read_config_as_dict(config)
     maps = extract_maps(
@@ -511,7 +508,7 @@ def _get_context(
     detector_snapshot_index: int | str | None,
     device: str,
 ) -> list[dict] | None:
-    """Gets the context for top-down pose estimation models"""
+    """Gets the context for top-down pose estimation models."""
     if loader.pose_task != Task.TOP_DOWN:
         return None
 
@@ -645,7 +642,7 @@ def _get_maps_folder(
     model_prefix: str | None,
     dest_folder: str | Path | None,
 ) -> Path:
-    """Gets the destination folder for output maps"""
+    """Gets the destination folder for output maps."""
     if dest_folder is None:
         project_path = Path(cfg["project_path"])
         eval_folder = auxiliaryfunctions.get_evaluation_folder(

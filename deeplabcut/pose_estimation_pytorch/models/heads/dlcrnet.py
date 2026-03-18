@@ -29,7 +29,7 @@ from deeplabcut.pose_estimation_pytorch.models.weight_init import BaseWeightInit
 
 @HEADS.register_module
 class DLCRNetHead(HeatmapHead):
-    """A head for DLCRNet models using Part-Affinity Fields to predict individuals"""
+    """A head for DLCRNet models using Part-Affinity Fields to predict individuals."""
 
     def __init__(
         self,
@@ -117,7 +117,9 @@ class DLCRNetHead(HeatmapHead):
             stage_in = stage2_in
             stage_paf_out = stage1_paf_out
             stage_hm_out = stage1_hm_out
-            for i, (hm_ref_layer, paf_ref_layer) in enumerate(zip(self.hm_ref_layers, self.paf_ref_layers)):
+            for i, (hm_ref_layer, paf_ref_layer) in enumerate(
+                zip(self.hm_ref_layers, self.paf_ref_layers, strict=True)
+            ):
                 pre_stage_hm_out = stage_hm_out
                 stage_hm_out = hm_ref_layer(stage_in)
                 stage_paf_out = paf_ref_layer(stage_in)
