@@ -498,7 +498,8 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
 
     This is a bit of a mess because of cross platform compatibility.
 
-    Within platform comp. is straightforward. But if someone labels on windows and wants to train on a unix cluster or colab...
+    Within platform comp. is straightforward.
+    But if someone labels on windows and wants to train on a unix cluster or colab...
     """
     AnnotationData = []
     data_path = Path(os.path.join(cfg["project_path"], "labeled-data"))
@@ -511,9 +512,11 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
             conversioncode.guarantee_multiindex_rows(data)
             if data.columns.levels[0][0] != cfg["scorer"]:
                 print(
-                    f"{file_path} labeled by a different scorer. This data will not be utilized in training dataset creation."
+                    f"{file_path} labeled by a different scorer. "
+                    "This data will not be utilized in training dataset creation."
                     "If you need to merge datasets across scorers, see "
-                    "https://github.com/DeepLabCut/DeepLabCut/wiki/Using-labeled-data-in-DeepLabCut-that-was-annotated-elsewhere-(or-merge-across-labelers)"
+                    "https://github.com/DeepLabCut/DeepLabCut/wiki/Using-labeled-data-in\
+                        -DeepLabCut-that-was-annotated-elsewhere-(or-merge-across-labelers)"
                 )
                 continue
             AnnotationData.append(data)
@@ -522,7 +525,8 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
 
     if not len(AnnotationData):
         print(
-            "Annotation data was not found by splitting video paths (from config['video_sets']). An alternative route is taken..."
+            "Annotation data was not found by splitting video paths (from config['video_sets']). "
+            "An alternative route is taken..."
         )
         AnnotationData = conversioncode.merge_windowsannotationdataONlinuxsystem(cfg)
         if not len(AnnotationData):
@@ -621,10 +625,12 @@ def pad_train_test_indices(train_inds, test_inds, train_fraction):
 def mergeandsplit(config, trainindex=0, uniform=True):
     """This function allows additional control over "create_training_dataset".
 
-    Merge annotated data sets (from different folders) and split data in a specific way, returns the split variables (train/test indices).
+    Merge annotated data sets (from different folders) and split data in a specific way,
+    returns the split variables (train/test indices).
     Importantly, this allows one to freeze a split.
 
-    One can also either create a uniform split (uniform = True; thereby indexing TrainingFraction in config file) or leave-one-folder out split
+    One can also either create a uniform split (uniform = True; thereby indexing TrainingFraction in config file)
+    or leave-one-folder out split
     by passing the index of the corresponding video from the config.yaml file as variable trainindex.
 
     Parameter
@@ -633,8 +639,10 @@ def mergeandsplit(config, trainindex=0, uniform=True):
         Full path of the config.yaml file as a string.
 
     trainindex: int, optional
-        Either (in case uniform = True) indexes which element of TrainingFraction in the config file should be used (note it is a list!).
-        Alternatively (uniform = False) indexes which folder is dropped, i.e. the first if trainindex=0, the second if trainindex =1, etc.
+        Either (in case uniform = True) indexes which element of TrainingFraction
+        in the config file should be used (note it is a list!).
+        Alternatively (uniform = False) indexes which folder is dropped,
+        i.e. the first if trainindex=0, the second if trainindex =1, etc.
 
     uniform: bool, optional
         Perform uniform split (disregarding folder structure in labeled data), or (if False) leave one folder out.
@@ -643,7 +651,8 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     --------
     To create a leave-one-folder-out model:
     >>> trainIndices, testIndices=deeplabcut.mergeandsplit(config,trainindex=0,uniform=False)
-    returns the indices for the first video folder (as defined in config file) as testIndices and all others as trainIndices.
+    returns the indices for the first video folder (as defined in config file)
+    as testIndices and all others as trainIndices.
     You can then create the training set by calling (e.g. defining it as Shuffle 3):
     >>> deeplabcut.create_training_dataset(config,Shuffles=[3],trainIndices=trainIndices,testIndices=testIndices)
 
@@ -652,7 +661,9 @@ def mergeandsplit(config, trainindex=0, uniform=True):
 
     You can then create two model instances that have the identical trainingset.
     Thereby you can assess the role of various parameters on the performance of DLC.
-    >>> deeplabcut.create_training_dataset(config,Shuffles=[0,1],trainIndices=[trainIndices, trainIndices],testIndices=[testIndices, testIndices])
+    >>> deeplabcut.create_training_dataset(
+    ...     config,Shuffles=[0,1],trainIndices=[trainIndices, trainIndices],
+    ...     testIndices=[testIndices, testIndices])
     --------
     """
     # Loading metadata from config file:
@@ -1061,11 +1072,13 @@ def create_training_dataset(
         if posecfg_template:
             if net_type != prior_cfg["net_type"]:
                 print(
-                    "WARNING: Specified net_type does not match net_type from posecfg_template path entered. Proceed with caution."
+                    "WARNING: Specified net_type does not match net_type from "
+                    "posecfg_template path entered. Proceed with caution."
                 )
             if augmenter_type != prior_cfg["dataset_type"]:
                 print(
-                    "WARNING: Specified augmenter_type does not match dataset_type from posecfg_template path entered. Proceed with caution."
+                    "WARNING: Specified augmenter_type does not match dataset_type "
+                    "from posecfg_template path entered. Proceed with caution."
                 )
 
         # Loading the encoder (if necessary downloading from TF)
