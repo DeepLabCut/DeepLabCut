@@ -24,6 +24,7 @@ RULE_NOTES = {
     "F403": "`from x import *` makes names unclear. Replace with explicit imports.",
     "F405": "Likely consequence of `import *`. Import the name explicitly.",
     "F821": "Undefined name. Usually a real bug or missing import.",
+    "F841": "Local variable assigned but never used. Consider removing or using it.",
     "E722": "Bare `except:`. Catch `Exception` or a narrower exception type.",
     "B904": "Inside `except`, use `raise ... from e` to preserve exception chaining.",
     "B007": "Unused loop variable. Rename to `_` or use it.",
@@ -38,6 +39,8 @@ RULE_NOTES = {
     "B017": "Use a more specific exception with `assertRaises`.",
     "B020": "Loop variable overrides iterator. Rename loop variables.",
     "B027": "Empty method in ABC without abstract decorator. Add `@abstractmethod` or implement it.",
+    "B028": "Method in ABC without implementation or abstract decorator. Add `@abstractmethod` or implement it.",
+    "B905": "Use `raise ... from None` to suppress context when re-raising an exception.",
 }
 
 
