@@ -121,11 +121,32 @@ class CondFromFile(CondProvider):
                     f"snapshot {bu_snapshot.path.name} for {kwargs['shuffle']} "
                     f"was evaluated (which is when the predictions file is created)."
                 )
+        else:
+            filepath = Path(filepath)
 
         if not filepath.exists():
-            raise ValueError("Conditions file {conditions_filepath} does not exist. Please check the given path.")
+            raise ValueError(f"Conditions file {filepath} does not exist. Please check the given path.")
 
         self.filepath = filepath
+
+    @classmethod
+    def get_loader_and_snapshot(
+        cls,
+        config: str | Path,
+        shuffle: int,
+        trainset_index: int = 0,
+        modelprefix: str = "",
+        snapshot: str | None = None,
+        snapshot_index: int | None = None,
+    ) -> tuple[DLCLoader, Snapshot]:
+        return super().get_loader_and_snapshot(
+            config=config,
+            shuffle=shuffle,
+            trainset_index=trainset_index,
+            modelprefix=modelprefix,
+            snapshot=snapshot,
+            snapshot_index=snapshot_index,
+        )
 
     def load_conditions(
         self,
@@ -465,3 +486,22 @@ class CondFromModel(CondProvider):
         self.config_path = config_path
         self.snapshot_path = snapshot_path
         self.scorer = scorer
+
+    @classmethod
+    def get_loader_and_snapshot(
+        cls,
+        config: str | Path,
+        shuffle: int,
+        trainset_index: int = 0,
+        modelprefix: str = "",
+        snapshot: str | None = None,
+        snapshot_index: int | None = None,
+    ) -> tuple[DLCLoader, Snapshot]:
+        return super().get_loader_and_snapshot(
+            config=config,
+            shuffle=shuffle,
+            trainset_index=trainset_index,
+            modelprefix=modelprefix,
+            snapshot=snapshot,
+            snapshot_index=snapshot_index,
+        )
