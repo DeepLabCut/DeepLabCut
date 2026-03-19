@@ -175,6 +175,7 @@ def create_superanimal_inference_runners(
             model_name=model_name,
             detector_name=detector_name,
         )
+    model_cfg = update_config(model_cfg, max_individuals=max_individuals, device=device)
 
     if superanimal_name == "superanimal_humanbody":
         return _build_humanbody_inference_runners(
@@ -201,7 +202,6 @@ def create_superanimal_inference_runners(
             "Returning detector_runner=None; pass bboxes in pose input context."
         )
 
-    model_cfg = update_config(model_cfg, max_individuals=max_individuals, device=device)
     weight_init = weight_initialization.build_weight_init(
         cfg=model_cfg,
         super_animal=superanimal_name,
