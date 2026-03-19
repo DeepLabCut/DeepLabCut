@@ -21,6 +21,9 @@ from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import add_metadata
 from deeplabcut.utils import auxiliaryfunctions
 
+# COCO category ID for the "person" class.
+COCO_PERSON_CATEGORY_ID = 1
+
 
 def get_model_configs_folder_path() -> Path:
     """Returns: the folder containing the SuperAnimal model configuration files"""

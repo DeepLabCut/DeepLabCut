@@ -13,13 +13,13 @@ In order to make changes to `deeplabcut`, you will need to [fork](https://guides
 
 If you are not familiar with `git`, we recommend reading up on [this guide](https://guides.github.com/introduction/git-handbook/#basic-git).
 
-Here are guidelines for installing deeplabcut locally on your own computer, where you can make changes to the code! We often update the master deeplabcut code base on github, and then ~1 a month we push out a stable release on pypi. This is what most users turn to on a daily basis (i.e. pypi is where you get your `pip install deeplabcut` code from! 
+Here are guidelines for installing deeplabcut locally on your own computer, where you can make changes to the code! We often update the master deeplabcut code base on github, and then ~1 a month we push out a stable release on pypi. This is what most users turn to on a daily basis (i.e. pypi is where you get your `pip install deeplabcut` code from!
 
-But, sometimes we add things to the repo that are not yet integrated, or you might want to edit the code yourself, or you will need to do this to contribute. Here, we show you how to do this. 
+But, sometimes we add things to the repo that are not yet integrated, or you might want to edit the code yourself, or you will need to do this to contribute. Here, we show you how to do this.
 
 **Step 1:**
 
-- git clone the repo into a folder on your computer:  
+- git clone the repo into a folder on your computer:
 
 - click on this green button and copy the link:
 
@@ -52,26 +52,26 @@ Now, please make a [pull request](https://github.com/DeepLabCut/DeepLabCut/pull/
 
 - How you modified the code and what new functionality it has.
 - DOCSTRING update for your change
-- A working example of how it works for users. 
-- If it's a function that also can be used in downstream steps (i.e. could be plotted) we ask you (1) highlight this, and (2) ideally you provide that functionality as well. If you have any questions, please reach out: admin@deeplabcut.org 
+- A working example of how it works for users.
+- If it's a function that also can be used in downstream steps (i.e. could be plotted) we ask you (1) highlight this, and (2) ideally you provide that functionality as well. If you have any questions, please reach out: admin@deeplabcut.org
 
-**TestScript outputs:**
+<!-- NOTE commented by @C-Achard 2026-03-13 this is now done in CI automatically -->
+<!-- **TestScript outputs:**
 
 - The **OS it has been tested on**
-- the **output of the [testscript.py](/examples/testscript.py)** and if you are editing the **3D code the [testscript_3d.py](/examples/testscript_3d.py)**, and if you edit multi-animal code please run the [maDLC test script](https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/testscript_multianimal.py).
+- the **output of the [testscript_tensorflow_single_animal.py](/examples/testscript_tensorflow_single_animal.py)** and if you are editing the **3D code the [testscript_3d.py](/examples/testscript_3d.py)**, and if you edit multi-animal code please run the [maDLC test script](https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/testscript_tensorflow_multi_animal.py). -->
 
 **Review & Formatting:**
 
-- Please run black on the code to conform to our Black code style (see more at https://pypi.org/project/black/). 
+- Please run black on the code to conform to our Black code style (see more at https://pypi.org/project/black/).
 - Please assign a reviewer, typically @AlexEMG, @mmathislab, or @jeylau (i/e. the [core-developers](https://github.com/orgs/DeepLabCut/teams/core-developers/members))
 
 **Code headers**
 
 - The code headers can be standardized by running `python tools/update_license_headers.py`
-- Edit `NOTICE.yml` to update the header. 
+- Edit `NOTICE.yml` to update the header.
 
 **DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals:**
 
 - the [authors](/AUTHORS)
-- [code contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors) 
-
+- [code contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors)
