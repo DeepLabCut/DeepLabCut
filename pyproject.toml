@@ -78,7 +78,7 @@ docs = [
   "numpydoc",
   "sphinxcontrib-mermaid",
 ]
-fmpose3d = [ "fmpose3d" ]
+fmpose3d = [ "fmpose3d>=0.0.8" ]
 tf = [
   # !!! TensorFlow is not supported on Windows with Python >= 3.11
   "tensorflow>=2,<=2.10; platform_system=='Windows' and python_version<'3.11'",
@@ -113,6 +113,7 @@ dev = [
   "coverage",
   "nbformat>5",
   "pydantic>2",
+  "pydantic>=2,<3",
   "pytest",
   "pytest-cov",
 ]

@@ -27,6 +27,7 @@ import platform
 import random
 from pathlib import Path
 
+import matplotlib
 import numpy as np
 import pandas as pd
 import scipy.io as sio
@@ -35,7 +36,6 @@ import deeplabcut
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
 
-import matplotlib
 matplotlib.use("Agg")  # Non-interactive backend, for CI/CD on Windows
 
 USE_SHELVE = random.choice([True, False])
@@ -138,7 +138,10 @@ if __name__ == "__main__":
 
     print("CREATING TRAININGSET")
     deeplabcut.create_training_dataset(
-        path_config_file, net_type=NET, augmenter_type=augmenter_type, engine=engine,
+        path_config_file,
+        net_type=NET,
+        augmenter_type=augmenter_type,
+        engine=engine,
     )
 
     # Check the training image paths are correctly stored as arrays of strings

@@ -13,7 +13,7 @@ We often update the master deeplabcut code base on GitHub, and then ~1 a month w
 
 ### Method 1:
 
-If you want to *use* the latest, you can use pip and add the specific tags, such as `gui`, etc. by modifying and running: 
+If you want to *use* the latest, you can use pip and add the specific tags, such as `gui`, etc. by modifying and running:
 ```
 pip install --upgrade 'git+https://github.com/deeplabcut/deeplabcut.git#egg=deeplabcut[gui]'
 ```
@@ -24,13 +24,13 @@ which will download and update deeplabcut, and any dependencies that don't match
 pip install --upgrade --upgrade-strategy eager 'git+https://github.com/deeplabcut/deeplabcut.git#egg=deeplabcut[gui]'
 ```
 
-### Method 2: 
+### Method 2:
 
 If you want to be able to *edit* the source code of DeepLabCut, i.e., maybe add a feature or fix a 🐛, then you need to "clone" the source code:
 
 **Step 1:**
 
-- git clone the repo into a folder on your computer:  
+- git clone the repo into a folder on your computer:
 
 - click on this green button and copy the link:
 
@@ -64,7 +64,7 @@ i.e., for example:
 python testscript_pytorch_multi_animal.py
 
 # Testing with the TensorFlow engine
-python testscript_multianimal.py
+python testscript_tensorflow_multi_animal.py
 ```
 
 
@@ -295,7 +295,7 @@ Follow prompts!
 ## Troubleshooting: Note, if you get a failed build due to wxPython (note, this does not happen on Ubuntu 18, 16, etc), i.e.:
 
 ```{warning}
-DeepLabCut no longer uses `wxpython` for its GUI - if you're getting such an error, 
+DeepLabCut no longer uses `wxpython` for its GUI - if you're getting such an error,
 you're likely installing an old version of DeepLabCut.
 ```
 
@@ -371,7 +371,7 @@ During training and analysis steps, DeepLabCut does not use the GPU processor he
 
 **On Windows**:
 
-(1) Open the task manager. If it looks like the image below, click on "More Details" 
+(1) Open the task manager. If it looks like the image below, click on "More Details"
 
 ![](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/a0db3157-2228-4444-8084-36801659f272/installBrandon1.png?format=500w)
 
@@ -379,9 +379,9 @@ During training and analysis steps, DeepLabCut does not use the GPU processor he
 
 ![](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/117e3573-60bb-4599-b00b-c75276b24173/installBrandon2.png?format=500w)
 
-(3) Click on the **Performance** tab. On that page, click on the small arrow under GPU (it might start as **3D**, and change it to **CUDA**.  
+(3) Click on the **Performance** tab. On that page, click on the small arrow under GPU (it might start as **3D**, and change it to **CUDA**.
 
-(4) During training, you should see the **Dedicated GPU memory usage** increase to near maximum, and you should see some activity in the **CUDA** graph. The graph below is the activity while running `testscript.py`.
+(4) During training, you should see the **Dedicated GPU memory usage** increase to near maximum, and you should see some activity in the **CUDA** graph. The graph below is the activity while running `testscript_tensorflow_single_animal.py`.
 
 ![](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/b1d03ca0-f8ba-4a31-a399-6e86856c81b0/installBrandon3.png?format=500w)
 
