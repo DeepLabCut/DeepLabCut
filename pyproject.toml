@@ -112,7 +112,6 @@ Documentation = "https://deeplabcut.github.io/DeepLabCut/README.html"
 dev = [
   "coverage",
   "nbformat>5",
-  "pydantic>2",
   "pydantic>=2,<3",
   "pytest",
   "pytest-cov",
