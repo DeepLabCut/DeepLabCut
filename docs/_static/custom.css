@@ -68,27 +68,54 @@ html[data-theme="dark"] {
 }
 
 /* Header */
+/* Header */
 .bd-header-article {
-  /* position: fixed; */
+  position: relative;
+  overflow: hidden;
   background-color: var(--header-bg-color);
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 1000;
+}
+
+/* Keep header controls above the banner art */
+.bd-header-article>* {
+  position: relative;
+  z-index: 1;
 }
 
 /* Header background image */
 .bd-header-article::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  /* background-image: url("images/header.jpg"); */
-  /* background-size: cover; */
-  /* background-repeat: no-repeat; */
-  /* background-position: center; */
-  opacity: 0.75;
-  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.92;
+
+  background:
+    /* UI-safe left/right zones */
+    linear-gradient(90deg,
+      rgba(69, 83, 100, 0.88) 0%,
+      rgba(69, 83, 100, 0.55) 10%,
+      rgba(69, 83, 100, 0.12) 22%,
+      rgba(69, 83, 100, 0.08) 78%,
+      rgba(69, 83, 100, 0.62) 90%,
+      rgba(69, 83, 100, 0.90) 100%),
+    /* subtle top/bottom shaping */
+    linear-gradient(180deg,
+      rgba(0, 0, 0, 0.20) 0%,
+      rgba(0, 0, 0, 0.00) 35%,
+      rgba(0, 0, 0, 0.18) 100%),
+    /* fish image as centered motif, not full-bleed */
+    url("banner_crop.png");
+
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-position: center, center, center 100%;
+  background-size:
+    100% 100%,
+    100% 100%,
+    auto 100%;
 }
 
 /* Header buttons */
@@ -102,3 +129,29 @@ html[data-theme="dark"] {
   z-index: 1;
 }
 
+/* Primary sidebar toggle button */
+button.sidebar-toggle.primary-toggle,
+.primary-toggle,
+label.primary-toggle {
+  color: var(--button-color) !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+}
+
+/* Icon inside the button */
+button.sidebar-toggle.primary-toggle i,
+button.sidebar-toggle.primary-toggle svg,
+.primary-toggle i,
+.primary-toggle svg {
+  color: var(--button-color) !important;
+  fill: var(--button-color) !important;
+  stroke: var(--button-color) !important;
+}
+
+/* Hover/focus */
+button.sidebar-toggle.primary-toggle:hover,
+button.sidebar-toggle.primary-toggle:focus,
+.primary-toggle:hover,
+.primary-toggle:focus {
+  opacity: 0.8;
+}

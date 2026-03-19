@@ -23,6 +23,7 @@ execute:
 
 html:
   extra_navbar: ""
+  html_static_path: ["docs/_static"]
   use_issues_button: true
   use_repository_button: true
   extra_footer: |
