@@ -1146,6 +1146,9 @@ docs = [
     { name = "numpydoc" },
     { name = "sphinxcontrib-mermaid" },
 ]
+fmpose3d = [
+    { name = "fmpose3d" },
+]
 gui = [
     { name = "napari-deeplabcut" },
     { name = "pyside6" },
@@ -1192,6 +1195,7 @@ requires-dist = [
     { name = "einops" },
     { name = "filelock", specifier = ">=3.12,<3.16" },
     { name = "filterpy", specifier = ">=1.4.4" },
+    { name = "fmpose3d", marker = "extra == 'fmpose3d'", specifier = ">=0.0.8" },
     { name = "h5py", marker = "sys_platform == 'darwin'", specifier = ">=3.15.1" },
     { name = "huggingface-hub", specifier = ">=0.23" },
     { name = "huggingface-hub", marker = "extra == 'modelzoo'" },
@@ -1240,7 +1244,7 @@ requires-dist = [
     { name = "tqdm" },
     { name = "wandb", marker = "extra == 'wandb'" },
 ]
-provides-extras = ["gui", "openvino", "docs", "tf", "apple-mchips", "modelzoo", "wandb"]
+provides-extras = ["gui", "openvino", "docs", "fmpose3d", "tf", "apple-mchips", "modelzoo", "wandb"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -1371,6 +1375,33 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/82/99/b4de7e39e8eaf8207ba1a8fa2241dd98b2ba72ae6e16960d8351736d8702/flexparser-0.4.tar.gz", hash = "sha256:266d98905595be2ccc5da964fe0a2c3526fbbffdc45b65b3146d75db992ef6b2", size = 31799, upload-time = "2024-11-07T02:00:56.249Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/fe/5e/3be305568fe5f34448807976dc82fc151d76c3e0e03958f34770286278c1/flexparser-0.4-py3-none-any.whl", hash = "sha256:3738b456192dcb3e15620f324c447721023c0293f6af9955b481e91d00179846", size = 27625, upload-time = "2024-11-07T02:00:54.523Z" },
+]
+
+[[package]]
+name = "fmpose3d"
+version = "0.0.8"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "einops" },
+    { name = "filterpy" },
+    { name = "huggingface-hub" },
+    { name = "numba" },
+    { name = "numpy" },
+    { name = "opencv-python" },
+    { name = "pandas" },
+    { name = "scikit-image", version = "0.25.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "scikit-image", version = "0.26.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "timm" },
+    { name = "torch" },
+    { name = "torchvision" },
+    { name = "tqdm" },
+    { name = "yacs" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/39/c8/6a57261ba0637d11c81526dcf6bccba4d81569b410ee68c141aa3fc20e06/fmpose3d-0.0.8.tar.gz", hash = "sha256:57ad77820a83b7a255f101da880cec19116c8f12ddeeebf1369cf4f9a19eff88", size = 113886, upload-time = "2026-03-19T11:07:45.943Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/96/3a/5e38167cfecde23b72a7ffd4f9b6d77bf5495da9659cb15d30addae75b09/fmpose3d-0.0.8-py3-none-any.whl", hash = "sha256:0c1182bd3a72d4ba144d127fe16cad44f35358544df20418a20a67c36b143c24", size = 131361, upload-time = "2026-03-19T11:07:44.313Z" },
 ]
 
 [[package]]
@@ -7502,6 +7533,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/82/dd/e5176e4b241c9f528402cebb238a36785a628179d7d8b71091154b3e4c9e/wrapt-2.1.2-cp314-cp314t-win_amd64.whl", hash = "sha256:08ffa54146a7559f5b8df4b289b46d963a8e74ed16ba3687f99896101a3990c5", size = 63969, upload-time = "2026-03-06T02:54:39Z" },
     { url = "https://files.pythonhosted.org/packages/5c/99/79f17046cf67e4a95b9987ea129632ba8bcec0bc81f3fb3d19bdb0bd60cd/wrapt-2.1.2-cp314-cp314t-win_arm64.whl", hash = "sha256:72aaa9d0d8e4ed0e2e98019cea47a21f823c9dd4b43c7b77bba6679ffcca6a00", size = 60554, upload-time = "2026-03-06T02:53:14.132Z" },
     { url = "https://files.pythonhosted.org/packages/1a/c7/8528ac2dfa2c1e6708f647df7ae144ead13f0a31146f43c7264b4942bf12/wrapt-2.1.2-py3-none-any.whl", hash = "sha256:b8fd6fa2b2c4e7621808f8c62e8317f4aae56e59721ad933bac5239d913cf0e8", size = 43993, upload-time = "2026-03-06T02:53:12.905Z" },
+]
+
+[[package]]
+name = "yacs"
+version = "0.1.8"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pyyaml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/44/3e/4a45cb0738da6565f134c01d82ba291c746551b5bc82e781ec876eb20909/yacs-0.1.8.tar.gz", hash = "sha256:efc4c732942b3103bea904ee89af98bcd27d01f0ac12d8d4d369f1e7a2914384", size = 11100, upload-time = "2020-08-10T16:37:47.755Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/38/4f/fe9a4d472aa867878ce3bb7efb16654c5d63672b86dc0e6e953a67018433/yacs-0.1.8-py3-none-any.whl", hash = "sha256:99f893e30497a4b66842821bac316386f7bd5c4f47ad35c9073ef089aa33af32", size = 14747, upload-time = "2020-08-10T16:37:46.4Z" },
 ]
 
 [[package]]
