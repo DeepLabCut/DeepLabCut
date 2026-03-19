@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2025-06-30'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+---
 # DeepLabCut Benchmarking - User Guide
 
 ## Reasoning for benchmarking models in DLC (across DLC versions and architectures)

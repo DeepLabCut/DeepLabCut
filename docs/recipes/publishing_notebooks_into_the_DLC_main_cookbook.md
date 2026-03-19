@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2025-06-30'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+---
 # Publishing Notebooks into the Main DLC Cookbook
 ### Your Recipe Guide to Contributing to the DLC Cookbook
 

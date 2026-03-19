@@ -1,4 +1,9 @@
-
+---
+deeplabcut:
+  last_content_updated: '2026-02-10'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+---
 # Clustering in the napari-DeepLabCut GUI
 
 To increase model performance, one can find the errors in the user-defined label (or in output H5 files after video

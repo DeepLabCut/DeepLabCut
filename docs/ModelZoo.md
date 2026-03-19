@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2025-07-06'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+---
 (file:model-zoo)=
 # The DeepLabCut Model Zoo!
 

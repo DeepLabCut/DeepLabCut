@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_metadata_updated: '2026-03-17'
+  ignore: false
+---
 (file:dlclivegui-basler-backend)=
 # Basler backend
 
@@ -11,7 +16,7 @@ This backend requires the optional `pypylon` dependency. If `pypylon` is not ins
 
 ---
 
-## Features & design 
+## Features & design
 
 - Native Basler camera support via **pypylon** (Pylon SDK bindings).
 - Best-effort device discovery without opening cameras (enumerates `DeviceInfo` entries).
