@@ -54,7 +54,7 @@ and makes it possible to use the GPU with both PyTorch and TensorFlow.
   - **CPU?** Great, jump to the next section below!
 
   - **NVIDIA GPU?**  If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatible GPU, CUDA, and cuDNN installed. Please note, which CUDA you install depends on what version of PyTorch you want to use. So, please check "GPU Support" below carefully. **Note, DeepLabCut is up to date with the latest CUDA and PyTorch!**
-  
+
   - **Apple M-chip GPU?** Be sure to install miniconda3, and your GPU will be used by default.
 ````
 
@@ -122,13 +122,13 @@ NOTE: no need to run pip install deeplabcut, as it is already installed!!! :)
 
 ````{admonition} DeepLabCut TensorFlow Support
 :class: dropdown
-As of June 2024 we have a PyTorch Engine backend and we will be depreciating the 
-TensorFlow backend by the end of 2024. Currently, if you want to use TensorFlow, you 
-need to run `pip install deeplabcut[tf]` in order to install the correct version of 
-TensorFlow in your conda env. Please note, we will be providing bug fixes, but we will 
+As of June 2024 we have a PyTorch Engine backend and we will be depreciating the
+TensorFlow backend by the end of 2024. Currently, if you want to use TensorFlow, you
+need to run `pip install deeplabcut[tf]` in order to install the correct version of
+TensorFlow in your conda env. Please note, we will be providing bug fixes, but we will
 not be supporting new TensorFlow versions beyond 2.10 (Windows), and 2.12 for other OS.
 
-Installing TensorFlow and getting it to have access to the GPU can be a bit tricky. 
+Installing TensorFlow and getting it to have access to the GPU can be a bit tricky.
 Check TensorFlow's [compatibility matrix](https://www.tensorflow.org/install/source#gpu)
 to know which version of CUDA and cuDNN you should install.
 
@@ -163,7 +163,7 @@ pip install  --pre deeplabcut
 
 ### Step 3: Really, that's it! Let's run DeepLabCut
 
-Head over to the [User Guide Overview](https://deeplabcut.github.io/DeepLabCut/docs/UseOverviewGuide.html) for information. 
+Head over to the [User Guide Overview](https://deeplabcut.github.io/DeepLabCut/docs/UseOverviewGuide.html) for information.
 
 🎉 Launch DeepLabCut in your new env by running `python -m deeplabcut`
 
@@ -179,7 +179,7 @@ To git clone type: ``git clone https://github.com/DeepLabCut/DeepLabCut.git``). 
 ### PIP:
 
 - Everything you need to build custom models within DeepLabCut (i.e., use our source code and our dependencies) can be installed with `pip install 'deeplabcut[gui]'` (for GUI support w/PyTorch) or without the gui: `pip install 'deeplabcut'`.
-- If you want to use the SuperAnimal models, then please use `pip install 'deeplabcut[gui,modelzoo]'`. 
+- If you want to use the SuperAnimal models, then please use `pip install 'deeplabcut[gui,modelzoo]'`.
 
 ## DOCKER:
 
@@ -192,23 +192,23 @@ More [installation ProTips](installation-tips) are also available.
 If you ever want to update your DLC, just run `pip install --upgrade deeplabcut` once
 you are inside your env. If you want to use a specific release, then you need to specify
 the version you want, such as `pip install deeplabcut==3.0`. Once installed, you can
-check the version by running `import deeplabcut` `deeplabcut.__version__`. Don't be 
-afraid to update, DLC is backwards compatible with your 2.0+ projects and performance 
+check the version by running `import deeplabcut` `deeplabcut.__version__`. Don't be
+afraid to update, DLC is backwards compatible with your 2.0+ projects and performance
 continues to get better and new features are added nearly monthly.
 
 **All of the data you labelled in version 2.X is also compatible with version 3+ and the
 PyTorch engine**! There is no change in the workflow or the way labels are handled: the
 big changes happen under-the-hood! If you've been working with DeepLabCut 2.X and want
-to learn more about moving to the PyTorch engine, checkout our docs on [moving from 
+to learn more about moving to the PyTorch engine, checkout our docs on [moving from
 TensorFlow to PyTorch](dlc3-user-guide)
 
 Here are some conda environment management tips: [kapeli.com: Conda Cheat Sheet](
 https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index)
 
-**Pro Tip:** If you want to modify code and then test it, you can use our provided 
+**Pro Tip:** If you want to modify code and then test it, you can use our provided
 testscripts. This would mean you need to be up-to-date with the latest GitHub-based code
 though! Please see [here](installation-tips) on how to get the latest GitHub code, and
-how to test your installation by following this video: 
+how to test your installation by following this video:
 https://www.youtube.com/watch?v=IOWtKn3l33s.
 
 ## Creating your own customized conda env (recommended route for Linux: Ubuntu, CentOS, Mint, etc.)
@@ -234,16 +234,16 @@ The ONLY thing you need to do **first** if you have an NVIDIA GPU and the matchi
 
 ### The most common "new user" hurdle is installing and using your GPU, so don't get discouraged!
 
-**CRITICAL:** If you have a GPU, you should FIRST **install an appropriate driver for 
+**CRITICAL:** If you have a GPU, you should FIRST **install an appropriate driver for
 your specific GPU**, then you can use the supplied conda file. You'll need an NVIDIA GPU
-which is compatible with CUDA. To see a list of CUDA-enabled NVIDIA GPUs, please [see 
+which is compatible with CUDA. To see a list of CUDA-enabled NVIDIA GPUs, please [see
 their website](https://developer.nvidia.com/cuda-gpus).
 
 - Here we provide notes on how to install and check your GPU use with TensorFlow (which
 is used by DeepLabCut and already installed with the Anaconda files above). Thus, you do
 not need to independently install tensorflow.
 
-**FIRST**, install a driver for your GPU. Find DRIVER HERE: 
+**FIRST**, install a driver for your GPU. Find DRIVER HERE:
 https://www.nvidia.com/download/index.aspx
 
 - Check which driver is installed by typing this into the terminal: ``nvidia-smi``.
@@ -254,10 +254,10 @@ https://www.nvidia.com/download/index.aspx
 
 ### Notes:
 
-- **As of version 3.0+ we moved to PyTorch. The Last supported version of TensorFlow is 
+- **As of version 3.0+ we moved to PyTorch. The Last supported version of TensorFlow is
 2.10  (window users) and 2.12 for others (we have not tested beyond this).**
 - Please be mindful different versions of TensorFlow require different CUDA versions.
-- As the combination of TensorFlow and CUDA matters, we strongly encourage you to 
+- As the combination of TensorFlow and CUDA matters, we strongly encourage you to
 **check your driver/cuDNN/CUDA/TensorFlow versions** [on this StackOverflow post](
 https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690
 ).
@@ -265,9 +265,9 @@ https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-
 
 `nvcc -V` to check your installed version(s).
 
-- The best practice is to then run the supplied `testscript_pytorch_single_animal.py` 
-(or `testscript.py` for the TensorFlow engine); this is inside the examples folder you
-acquired when you git cloned the repo. Here is more information/a short 
+- The best practice is to then run the supplied `testscript_pytorch_single_animal.py`
+(or `testscript_tensorflow_single_animal.py` for the TensorFlow engine); this is inside the examples folder you
+acquired when you git cloned the repo. Here is more information/a short
 [video on running the testscript](https://www.youtube.com/watch?v=IOWtKn3l33s).
 - Additionally, if you want to use the bleeding edge, with your git clone you also get
 the latest code. While inside the main DeepLabCut folder, you can run `./reinstall.sh`
