@@ -586,7 +586,7 @@ document.write(`
 <span class="n">python</span> <span class="n">testscript_pytorch_multi_animal</span><span class="o">.</span><span class="n">py</span>
 
 <span class="c1"># Testing with the TensorFlow engine</span>
-<span class="n">python</span> <span class="n">testscript_multianimal</span><span class="o">.</span><span class="n">py</span>
+<span class="n">python</span> <span class="n">testscript_tensorflow_multi_animal</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </section>
@@ -842,7 +842,7 @@ extra with DeepLabCut. You can do so by running:</p>
 <p>(2) That will bring up the following, which still isn’t helpful and has caused confusion for users. The %GPU does not reflect DeepLabCut usage.</p>
 <p><img alt="" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/117e3573-60bb-4599-b00b-c75276b24173/installBrandon2.png?format=500w" /></p>
 <p>(3) Click on the <strong>Performance</strong> tab. On that page, click on the small arrow under GPU (it might start as <strong>3D</strong>, and change it to <strong>CUDA</strong>.</p>
-<p>(4) During training, you should see the <strong>Dedicated GPU memory usage</strong> increase to near maximum, and you should see some activity in the <strong>CUDA</strong> graph. The graph below is the activity while running <code class="docutils literal notranslate"><span class="pre">testscript.py</span></code>.</p>
+<p>(4) During training, you should see the <strong>Dedicated GPU memory usage</strong> increase to near maximum, and you should see some activity in the <strong>CUDA</strong> graph. The graph below is the activity while running <code class="docutils literal notranslate"><span class="pre">testscript_tensorflow_single_animal.py</span></code>.</p>
 <p><img alt="" src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/b1d03ca0-f8ba-4a31-a399-6e86856c81b0/installBrandon3.png?format=500w" /></p>
 <p>(5) If you don’t see activity there during training, then your GPU is likely not installed correctly for DeepLabCut. Return to the installation instructions, and be sure you installed CUDA 11+, and ran <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">cudnn</span> <span class="pre">-c</span> <span class="pre">conda-forge</span></code> after installing DeepLabCut.</p>
 </section>
