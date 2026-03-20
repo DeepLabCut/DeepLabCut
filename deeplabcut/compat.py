@@ -8,11 +8,12 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Compatibility file for methods available with either PyTorch or Tensorflow"""
+"""Compatibility file for methods available with either PyTorch or Tensorflow."""
+
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 import numpy as np
 from ruamel.yaml import YAML
@@ -86,8 +87,7 @@ def train_network(
     pose_threshold: float | None = 0.1,
     pytorch_cfg_updates: dict | None = None,
 ):
-    """
-    Trains the network with the labels in the training dataset.
+    """Trains the network with the labels in the training dataset.
 
     Parameters
     ----------
@@ -315,9 +315,8 @@ def return_train_network_path(
     modelprefix: str = "",
     engine: Engine | None = None,
 ) -> tuple[Path, Path, Path]:
-    """
-    Returns the training and test pose config file names as well as the folder where the
-    snapshot is
+    """Returns the training and test pose config file names as well as the folder where
+    the snapshot is.
 
     Parameters
     ----------
@@ -526,13 +525,9 @@ def evaluate_network(
                 )
             )
         if len(engines) == 0:
-            raise ValueError(
-                f"You must pass at least one shuffle to evaluate (had {list(Shuffles)})"
-            )
+            raise ValueError(f"You must pass at least one shuffle to evaluate (had {list(Shuffles)})")
         elif len(engines) > 1:
-            raise ValueError(
-                f"All shuffles must have the same engine (found {list(engines)})"
-            )
+            raise ValueError(f"All shuffles must have the same engine (found {list(engines)})")
         engine = engines.pop()
 
     if engine == Engine.TF:
@@ -585,35 +580,46 @@ def return_evaluate_network_data(
     returnjustfns: bool = True,
     engine: Engine | None = None,
 ):
-    """
-    Returns the results for (previously evaluated) network. deeplabcut.evaluate_network(..)
-    Returns list of (per model): [trainingsiterations,trainfraction,shuffle,trainerror,testerror,pcutoff,trainerrorpcutoff,testerrorpcutoff,Snapshots[snapindex],scale,net_type]
+    """Returns the results for (previously evaluated) network.
+    deeplabcut.evaluate_network(..) Returns list of (per model): [trainingsiterations,tr
+    ainfraction,shuffle,trainerror,testerror,pcutoff,trainerrorpcutoff,testerrorpcutoff,
+    Snapshots[snapindex],scale,net_type]
 
     This function is only implemented for tensorflow models/shuffles, and will throw
     an error if called with a PyTorch shuffle.
 
     If fulldata=True, also returns (the complete annotation and prediction array)
-    Returns list of: (DataMachine, Data, data, trainIndices, testIndices, trainFraction, DLCscorer,comparisonbodyparts, cfg, Snapshots[snapindex])
+    Returns list of:
+       (DataMachine, Data, data, trainIndices,
+       testIndices, trainFraction, DLCscorer,
+       comparisonbodyparts, cfg, Snapshots[snapindex]
+       )
     ----------
     config : string
         Full path of the config.yaml file as a string.
 
     shuffle: integer
-        integers specifying shuffle index of the training dataset. The default is 0.
+        integers specifying shuffle index of the training dataset.
+        The default is 0.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
-        variable can also be set to "all".
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml).
+        This variable can also be set to "all".
 
     comparisonbodyparts: list of bodyparts, Default is "all".
-        The average error will be computed for those body parts only (Has to be a subset of the body parts).
+        The average error will be computed for those body parts only
+        (Has to be a subset of the body parts).
 
     rescale: bool, default False
-        Evaluate the model at the 'global_scale' variable (as set in the test/pose_config.yaml file for a particular project). I.e. every
-        image will be resized according to that scale and prediction will be compared to the resized ground truth. The error will be reported
-        in pixels at rescaled to the *original* size. I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
-        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!. The evaluation images are also shown for the
-        original size!
+        Evaluate the model at the 'global_scale' variable
+        (as set in the test/pose_config.yaml file for a particular project).
+        I.e. every image will be resized according to
+        that scale and prediction will be compared to the resized ground truth.
+        The error will be reported in pixels at rescaled to the *original* size.
+        I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
+        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!.
+        The evaluation images are also shown for the original size!
 
     engine: Engine, optional, default = None.
         The default behavior loads the engine for the shuffle from the metadata. You can
@@ -1298,8 +1304,8 @@ def analyze_time_lapse_frames(
     modelprefix: str = "",
     engine: Engine | None = None,
 ):
-    """
-    Analyzed all images (of type = frametype) in a folder and stores the output in one file.
+    """Analyzed all images (of type = frametype) in a folder and stores the output in
+    one file.
 
     You can crop the frames (before analysis), by changing 'cropping'=True and setting
     'x1','x2','y1','y2' in the config file.
@@ -1360,7 +1366,6 @@ def analyze_time_lapse_frames(
 
     Note: for test purposes one can extract all frames from a video with ffmeg, e.g.
     >>> ffmpeg -i testvideo.avi "thumb%04d.png"
-
     """
     if engine is None:
         engine = get_shuffle_engine(
@@ -1418,8 +1423,8 @@ def convert_detections2tracklets(
     track_method: str = "",
     engine: Engine | None = None,
 ):
-    """
-    This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
+    """This should be called at the end of deeplabcut.analyze_videos for multianimal
+    projects!
 
     Parameters
     ----------
@@ -1427,23 +1432,28 @@ def convert_detections2tracklets(
         Full path of the config.yaml file as a string.
 
     videos : list
-        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+        A list of strings containing the full paths to videos for analysis or a path to the directory,
+        where all the videos with same extension are stored.
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        Checks for the extension of the video in case the input to the video is a directory.\n
+        Only videos with this extension are analyzed.
         If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
     shuffle: int, optional
-        An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
+        An integer specifying the shuffle index of the training dataset used for training the network. T
+        he default is 1.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml).
 
     overwrite: bool, optional.
         Overwrite tracks file i.e. recompute tracks from full detections and overwrite.
 
     destfolder: string, optional
-        Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
+        Specifies the destination folder for analysis data (default is the path of the video).
+        Note that for subsequent analysis this
         folder also needs to be passed.
 
     ignore_bodyparts: optional
@@ -1500,7 +1510,6 @@ def convert_detections2tracklets(
     >>> )
 
     --------
-
     """
     if engine is None:
         engine = get_shuffle_engine(
@@ -1536,8 +1545,7 @@ def convert_detections2tracklets(
 
         if greedy or calibrate or window_size:
             raise NotImplementedError(
-                f"The 'greedy', 'calibrate' and 'window_size' option are not yet "
-                f"implemented with {engine}"
+                f"The 'greedy', 'calibrate' and 'window_size' option are not yet implemented with {engine}"
             )
 
         return convert_detections2tracklets(
@@ -1569,8 +1577,7 @@ def extract_maps(
     modelprefix: str = "",
     engine: Engine | None = None,
 ):
-    """
-    Extracts the scoremap, locref, partaffinityfields (if available).
+    """Extracts the scoremap, locref, partaffinityfields (if available).
 
     Returns a dictionary indexed by: trainingsetfraction, snapshotindex, and imageindex
     for those keys, each item contains: (image, scmap, locref, paf, bpt_names,
@@ -1599,11 +1606,14 @@ def extract_maps(
         https://pytorch.org/docs/stable/notes/cuda.html for more information.
 
     rescale: bool, default False
-        Evaluate the model at the 'global_scale' variable (as set in the test/pose_config.yaml file for a particular project). I.e. every
-        image will be resized according to that scale and prediction will be compared to the resized ground truth. The error will be reported
-        in pixels at rescaled to the *original* size. I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
-        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!. The evaluation images are also shown for the
-        original size!
+        Evaluate the model at the 'global_scale' variable
+        (as set in the test/pose_config.yaml file for a particular project).
+        I.e. every image will be resized according to that scale and prediction
+        will be compared to the resized ground truth.
+        The error will be reported in pixels at rescaled to the *original* size.
+        I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
+        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!.
+        The evaluation images are also shown for the original size!
 
     engine: Engine, optional, default = None.
         The default behavior loads the engine for the shuffle from the metadata. You can
@@ -1614,7 +1624,6 @@ def extract_maps(
     --------
     If you want to extract the data for image 0 and 103 (of the training set) for model trained with shuffle 0.
     >>> deeplabcut.extract_maps(configfile,0,Indices=[0,103])
-
     """
     if engine is None:
         engine = get_shuffle_engine(
@@ -1686,9 +1695,7 @@ def visualize_locrefs(
     Returns:
         The figure and axis on which the image scoremap and locref field were plot.
     """
-    return visualization.visualize_locrefs(
-        image, scmap, locref_x, locref_y, step=step, zoom_width=zoom_width
-    )
+    return visualization.visualize_locrefs(image, scmap, locref_x, locref_y, step=step, zoom_width=zoom_width)
 
 
 def visualize_paf(
@@ -1740,8 +1747,9 @@ def extract_save_all_maps(
         integers specifying shuffle index of the training dataset. The default is 1.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
-        variable can also be set to "all".
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml).
+        This variable can also be set to "all".
 
     comparisonbodyparts: list of bodyparts, Default is "all".
         The average error will be computed for those body parts only (Has to be a subset of the body parts).
@@ -1964,11 +1972,9 @@ def _gpu_to_use_to_device(gpu_to_use: int | None, device: str | None) -> str | N
 def _load_config(config: str) -> dict:
     config_path = Path(config)
     if not config_path.exists():
-        raise FileNotFoundError(
-            f"Config {config} is not found. Please make sure that the file exists."
-        )
+        raise FileNotFoundError(f"Config {config} is not found. Please make sure that the file exists.")
 
-    with open(config, "r") as f:
+    with open(config) as f:
         project_config = YAML(typ="safe", pure=True).load(f)
 
     return project_config

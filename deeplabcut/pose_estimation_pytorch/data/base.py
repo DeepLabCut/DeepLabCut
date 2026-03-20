@@ -25,7 +25,7 @@ from deeplabcut.pose_estimation_pytorch.data.dataset import (
 from deeplabcut.pose_estimation_pytorch.data.generative_sampling import (
     GenSamplingConfig,
 )
-from deeplabcut.pose_estimation_pytorch.data.snapshots import list_snapshots, Snapshot
+from deeplabcut.pose_estimation_pytorch.data.snapshots import Snapshot, list_snapshots
 from deeplabcut.pose_estimation_pytorch.data.utils import (
     _compute_crop_bounds,
     bbox_from_keypoints,
@@ -35,8 +35,8 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 class Loader(ABC):
-    """
-    Abstract class that represents a blueprint for loading and processing dataset information.
+    """Abstract class that represents a blueprint for loading and processing dataset
+    information.
 
     Methods:
         load_data(mode: str = 'train') -> dict:
@@ -93,7 +93,7 @@ class Loader(ABC):
         return list_snapshots(self.model_folder, prefix, best_in_last=best_in_last)
 
     def update_model_cfg(self, updates: dict) -> None:
-        """Updates the model configuration
+        """Updates the model configuration.
 
         Args:
             updates: the items to update in the model configuration
@@ -103,7 +103,8 @@ class Loader(ABC):
 
     @abstractmethod
     def load_data(self, mode: str = "train") -> dict[str, list[dict]]:
-        """Abstract method to convert the project configuration to a standard coco format.
+        """Abstract method to convert the project configuration to a standard coco
+        format.
 
         Raises:
             NotImplementedError: This method must be implemented in the derived classes.
@@ -124,11 +125,8 @@ class Loader(ABC):
         data = self._loaded_data[mode]
         return [image["file_name"] for image in data["images"]]
 
-    def ground_truth_keypoints(
-        self, mode: str = "train", unique_bodypart: bool = False
-    ) -> dict[str, np.ndarray]:
-        """
-        Creates a dictionary containing the ground truth data
+    def ground_truth_keypoints(self, mode: str = "train", unique_bodypart: bool = False) -> dict[str, np.ndarray]:
+        """Creates a dictionary containing the ground truth data.
 
         TODO: make more efficient
 
@@ -171,8 +169,7 @@ class Loader(ABC):
         for image in data["images"]:
             image_path = image["file_name"]
             individual_keypoints = {
-                annotations[i]["individual"]: annotations[i]["keypoints"]
-                for i in img_to_ann_map[image["id"]]
+                annotations[i]["individual"]: annotations[i]["keypoints"] for i in img_to_ann_map[image["id"]]
             }
             gt_array = np.zeros((len(individuals), num_bodyparts, 3))
             # Keep the shape of the ground truth
@@ -186,7 +183,7 @@ class Loader(ABC):
         return ground_truth_dict
 
     def ground_truth_bboxes(self, mode: str = "train") -> dict[str, dict]:
-        """Creates a dictionary containing the ground truth bounding boxes
+        """Creates a dictionary containing the ground truth bounding boxes.
 
         Args:
             mode: {"train", "test"} whether to load train or test data
@@ -234,8 +231,7 @@ class Loader(ABC):
         mode: str = "train",
         task: Task = Task.BOTTOM_UP,
     ) -> PoseDataset:
-        """
-        Creates a PoseDataset based on provided arguments.
+        """Creates a PoseDataset based on provided arguments.
 
         Args:
             transform: Transformation to be applied on dataset. Defaults to None.
@@ -271,8 +267,7 @@ class Loader(ABC):
 
     @abstractmethod
     def get_dataset_parameters(self) -> PoseDatasetParameters:
-        """
-        Retrieves dataset parameters based on the instance's configuration.
+        """Retrieves dataset parameters based on the instance's configuration.
 
         Returns:
             An instance of the PoseDatasetParameters with the parameters set.
@@ -281,7 +276,7 @@ class Loader(ABC):
 
     @staticmethod
     def filter_annotations(annotations: list[dict], task: Task) -> list[dict]:
-        """Filters annotations based on the task, removing empty annotations
+        """Filters annotations based on the task, removing empty annotations.
 
         For pose estimation tasks, annotations with empty keypoints are removed. For
         detection task, annotations with no bounding boxes are removed
@@ -296,9 +291,7 @@ class Loader(ABC):
         filtered_annotations = []
         for annotation in annotations:
             keypoints = annotation["keypoints"].reshape(-1, 3)
-            if task in (Task.DETECT, Task.TOP_DOWN) and (
-                annotation["bbox"][2] <= 0 or annotation["bbox"][3] <= 0
-            ):
+            if task in (Task.DETECT, Task.TOP_DOWN) and (annotation["bbox"][2] <= 0 or annotation["bbox"][3] <= 0):
                 continue
             elif task != Task.DETECT and np.all(keypoints[:, :2] <= 0):
                 continue
@@ -339,7 +332,7 @@ class Loader(ABC):
             return annotations
 
         elif method == "gt":
-            for i, annotation in enumerate(annotations):
+            for _i, annotation in enumerate(annotations):
                 if "bbox" not in annotation:
                     # or do something else?
                     raise ValueError(

@@ -8,6 +8,12 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+# For backwards compatibility
+from deeplabcut.core.config import (
+    pretty_print,
+    read_config_as_dict,
+    write_config,
+)
 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
     make_basic_project_config,
     make_pytorch_pose_config,
@@ -16,15 +22,8 @@ from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
 from deeplabcut.pose_estimation_pytorch.config.utils import (
     available_detectors,
     available_models,
-    is_model_top_down,
     is_model_cond_top_down,
+    is_model_top_down,
     update_config,
     update_config_by_dotpath,
-)
-
-# For backwards compatibility
-from deeplabcut.core.config import (
-    read_config_as_dict,
-    write_config,
-    pretty_print,
 )

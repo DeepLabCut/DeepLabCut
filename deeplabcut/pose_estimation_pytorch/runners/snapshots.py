@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Code to handle storing models"""
+"""Code to handle storing models."""
+
 from __future__ import annotations
 
 import warnings
@@ -18,12 +19,12 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from deeplabcut.pose_estimation_pytorch.data.snapshots import list_snapshots, Snapshot
+from deeplabcut.pose_estimation_pytorch.data.snapshots import Snapshot, list_snapshots
 
 
 @dataclass
 class TorchSnapshotManager:
-    """Class handling model checkpoint I/O
+    """Class handling model checkpoint I/O.
 
     Attributes:
         snapshot_prefix: The prefix to use when saving snapshots.
@@ -71,11 +72,11 @@ class TorchSnapshotManager:
     _key: str = field(init=False)
 
     def __post_init__(self):
-        assert self.max_snapshots > 0, f"max_snapshots must be a positive integer"
+        assert self.max_snapshots > 0, "max_snapshots must be a positive integer"
         self._key = f"metrics/{self.key_metric}"
 
     def update(self, epoch: int, state_dict: dict, last: bool = False) -> None:
-        """Saves the model state dict if the epoch is one that requires a save
+        """Saves the model state dict if the epoch is one that requires a save.
 
         Args:
             epoch: the number of epochs the model was trained for
@@ -101,11 +102,7 @@ class TorchSnapshotManager:
 
             # Save the new best model
             save_path = self.snapshot_path(epoch, best=True)
-            parsed_state_dict = {
-                k: v
-                for k, v in state_dict.items()
-                if self.save_optimizer_state or k != "optimizer"
-            }
+            parsed_state_dict = {k: v for k, v in state_dict.items() if self.save_optimizer_state or k != "optimizer"}
             torch.save(parsed_state_dict, save_path)
 
             # Handle previous best model
@@ -118,11 +115,7 @@ class TorchSnapshotManager:
         elif last or epoch % self.save_epochs == 0:
             # Save regular snapshot if needed
             save_path = self.snapshot_path(epoch=epoch)
-            parsed_state_dict = {
-                k: v
-                for k, v in state_dict.items()
-                if self.save_optimizer_state or k != "optimizer"
-            }
+            parsed_state_dict = {k: v for k, v in state_dict.items() if self.save_optimizer_state or k != "optimizer"}
             torch.save(parsed_state_dict, save_path)
 
         # Clean up old snapshots if needed
@@ -143,7 +136,8 @@ class TorchSnapshotManager:
         if len(best_snapshots) > 1:
             warnings.warn(
                 f"TorchSnapshotManager.best(): found multiple best snapshots ("
-                f"{best_snapshots}), returning the last one."
+                f"{best_snapshots}), returning the last one.",
+                stacklevel=2,
             )
 
         best_snapshot = best_snapshots[-1]
@@ -167,9 +161,7 @@ class TorchSnapshotManager:
             trained for. If ``best_in_last=True`` and a best snapshot exists, it will be
             the last one in the list.
         """
-        return list_snapshots(
-            self.model_folder, self.snapshot_prefix, best_in_last=best_in_last
-        )
+        return list_snapshots(self.model_folder, self.snapshot_prefix, best_in_last=best_in_last)
 
     def snapshot_path(self, epoch: int, best: bool = False) -> Path:
         """

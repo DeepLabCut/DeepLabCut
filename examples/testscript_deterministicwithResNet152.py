@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # DeepLabCut Toolbox (deeplabcut.org)
 # © A. & M.W. Mathis Labs
@@ -38,23 +37,19 @@ iteration: 10 loss: 0.1220 lr: 0.001
 It produces nothing of interest scientifically.
 """
 
+import os
+
+import numpy as np
+import pandas as pd
+
+import deeplabcut
+
 task = "TEST-deterministic"  # Enter the name of your experiment Task
 scorer = "Alex"  # Enter the name of the experimenter/labeler
-
-
-import os, subprocess, deeplabcut
-from pathlib import Path
-import pandas as pd
-import numpy as np
-
 print("Imported DLC!")
 basepath = os.path.dirname(os.path.abspath("testscript.py"))
 videoname = "reachingvideo1"
-video = [
-    os.path.join(
-        basepath, "Reaching-Mackenzie-2018-08-30", "videos", videoname + ".avi"
-    )
-]
+video = [os.path.join(basepath, "Reaching-Mackenzie-2018-08-30", "videos", videoname + ".avi")]
 
 # to test destination folder:
 # dfolder=basepath
@@ -118,7 +113,8 @@ deeplabcut.check_labels(path_config_file)
 print("CREATING TRAININGSET")
 deeplabcut.create_training_dataset(path_config_file)
 
-# posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(1),'train/pose_cfg.yaml')
+# posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date']
+# + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(1),'train/pose_cfg.yaml')
 
 shuffle = 1
 posefile, _, _ = deeplabcut.return_train_network_path(path_config_file, shuffle=shuffle)

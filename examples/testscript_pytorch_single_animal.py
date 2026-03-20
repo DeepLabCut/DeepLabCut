@@ -1,20 +1,20 @@
-"""Testscript for single animal PyTorch projects"""
+"""Testscript for single animal PyTorch projects."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
-import deeplabcut.utils.auxiliaryfunctions as af
-from deeplabcut.compat import Engine
-
 from utils import (
+    SyntheticProjectParameters,
     cleanup,
     copy_project_for_test,
     create_fake_project,
     log_step,
     run,
-    SyntheticProjectParameters,
 )
+
+import deeplabcut.utils.auxiliaryfunctions as af
+from deeplabcut.compat import Engine
 
 
 def main(
@@ -26,13 +26,15 @@ def main(
     batch_size: int = 1,
     device: str = "cpu",
     logger: dict | None = None,
-    synthetic_data_params: SyntheticProjectParameters = SyntheticProjectParameters(
-        multianimal=False,
-        num_bodyparts=6,
-    ),
+    synthetic_data_params: SyntheticProjectParameters = None,
     create_labeled_videos: bool = False,
     delete_after_test_run: bool = False,
 ) -> None:
+    if synthetic_data_params is None:
+        synthetic_data_params = SyntheticProjectParameters(
+            multianimal=False,
+            num_bodyparts=6,
+        )
     engine = Engine.PYTORCH
     if synthetic_data:
         project_path = Path("synthetic-data-niels-single-animal").resolve()

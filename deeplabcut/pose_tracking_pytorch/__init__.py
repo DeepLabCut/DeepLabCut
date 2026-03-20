@@ -9,7 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
+from .apis import transformer_reID
 from .create_dataset import *
 from .tracking_utils.preprocessing import *
 from .train_dlctransreid import train_tracking_transformer
-from .apis import transformer_reID

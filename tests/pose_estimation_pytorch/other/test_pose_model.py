@@ -15,7 +15,7 @@ import pytest
 import torch
 
 import deeplabcut.pose_estimation_pytorch.models as dlc_models
-from deeplabcut.pose_estimation_pytorch.models import CRITERIONS, TARGET_GENERATORS, PREDICTORS
+from deeplabcut.pose_estimation_pytorch.models import CRITERIONS, PREDICTORS, TARGET_GENERATORS
 from deeplabcut.pose_estimation_pytorch.models.criterions import LOSS_AGGREGATORS
 from deeplabcut.pose_estimation_pytorch.models.modules import AdaptBlock, BasicBlock
 
@@ -250,9 +250,7 @@ def test_head(head_dict, input_shape, num_keypoints):
         output_channels = num_keypoints + 1
         head_dict["target_generator"]["num_joints"] = num_keypoints
         head_dict["heatmap_config"]["channels"][2] = num_keypoints + 1
-        head_dict["offset_config"]["channels"][1] = (
-            num_keypoints * head_dict["offset_config"]["num_offset_per_kpt"]
-        )
+        head_dict["offset_config"]["channels"][1] = num_keypoints * head_dict["offset_config"]["num_offset_per_kpt"]
         head_dict["offset_config"]["channels"][2] = num_keypoints
         input_tensor = torch.zeros((1, input_channels, h, w))
 
@@ -263,18 +261,14 @@ def test_head(head_dict, input_shape, num_keypoints):
         criterions = {}
         for loss_name, criterion_cfg in head_dict["criterion"].items():
             weights[loss_name] = criterion_cfg.get("weight", 1.0)
-            criterion_cfg = {
-                k: v for k, v in criterion_cfg.items() if k != "weight"
-            }
+            criterion_cfg = {k: v for k, v in criterion_cfg.items() if k != "weight"}
             criterions[loss_name] = CRITERIONS.build(criterion_cfg)
 
         aggregator_cfg = {"type": "WeightedLossAggregator", "weights": weights}
         head_dict["aggregator"] = LOSS_AGGREGATORS.build(aggregator_cfg)
         head_dict["criterion"] = criterions
 
-    head_dict["target_generator"] = TARGET_GENERATORS.build(
-        head_dict["target_generator"]
-    )
+    head_dict["target_generator"] = TARGET_GENERATORS.build(head_dict["target_generator"])
     head_dict["predictor"] = PREDICTORS.build(head_dict["predictor"])
     head = dlc_models.HEADS.build(head_dict)
 

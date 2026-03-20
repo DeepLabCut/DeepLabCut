@@ -8,10 +8,10 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests the dynamic cropper"""
-import pytest
+"""Tests the dynamic cropper."""
 
 import numpy as np
+import pytest
 import torch
 
 from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (
@@ -86,22 +86,23 @@ def test_dynamic_cropper_does_nothing_with_low_quality(threshold: float):
                 [[float("nan"), float("nan"), float("nan")]],
                 [[float("nan"), float("nan"), float("nan")]],
             ],
-            0.15, 10, [0, 0, 64, 64]
+            0.15,
+            10,
+            [0, 0, 64, 64],
         ),
         (
             [
                 [[20, 30, 0.8], [5, 12, 0.2]],
                 [[40, 10, 0.2], [35, 15, 0.79]],
             ],
-            0.15, 5, [0, 5, 45, 35]
+            0.15,
+            5,
+            [0, 5, 45, 35],
         ),
     ],
 )
 def test_dynamic_cropper_basic_crop(
-    pose: list[list[float]],
-    threshold: float,
-    margin: int,
-    expected_crop: tuple[int, int, int, int]
+    pose: list[list[float]], threshold: float, margin: int, expected_crop: tuple[int, int, int, int]
 ) -> None:
     x0, y0, x1, y1 = expected_crop
     crop_w, crop_h = x1 - x0, y1 - y0
@@ -162,7 +163,7 @@ def test_tddc_array_split(size: int, n: int, overlap: int) -> None:
     assert len(set(sizes)) == 1
 
     # check the overlap is big enough for each section
-    for (start_1, end_1), (start_2, end_2) in zip(sections[:-1], sections[1:]):
+    for (_start_1, end_1), (start_2, _end_2) in zip(sections[:-1], sections[1:], strict=False):
         assert end_1 >= start_2
         assert end_1 - start_2 >= overlap
 

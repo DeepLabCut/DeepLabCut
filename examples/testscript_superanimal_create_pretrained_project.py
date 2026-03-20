@@ -8,10 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""
-Testscript for creating a pretrained project from a super animal model
+"""Testscript for creating a pretrained project from a super animal model."""
 
-"""
 import glob
 import shutil
 from pathlib import Path

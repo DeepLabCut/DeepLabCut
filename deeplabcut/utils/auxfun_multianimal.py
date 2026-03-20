@@ -31,14 +31,13 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from deeplabcut.utils import auxiliaryfunctions, conversioncode
-from deeplabcut.generate_training_dataset import trainingsetmanipulation
 from deeplabcut.core.trackingutils import TRACK_METHODS
+from deeplabcut.generate_training_dataset import trainingsetmanipulation
+from deeplabcut.utils import auxiliaryfunctions, conversioncode
 
 
 def reorder_individuals_in_df(df: pd.DataFrame, order: list) -> pd.DataFrame:
-    """
-    Reorders data of df to match the order given in a list
+    """Reorders data of df to match the order given in a list.
 
     Parameters:
     ----------
@@ -73,22 +72,18 @@ def get_track_method(cfg, track_method=""):
         if track_method != "":
             # check if it exists:
             if track_method not in TRACK_METHODS:
-                raise ValueError(
-                    f"Invalid tracking method. Only {', '.join(TRACK_METHODS)} are "
-                    "currently supported."
-                )
+                raise ValueError(f"Invalid tracking method. Only {', '.join(TRACK_METHODS)} are currently supported.")
             return track_method
         else:  # default
             track_method = cfg.get("default_track_method", "")
             if not track_method:
                 warnings.warn(
-                    "default_track_method` is undefined in the config.yaml file and will be set to `ellipse`."
+                    "default_track_method` is undefined in the config.yaml file and will be set to `ellipse`.",
+                    stacklevel=2,
                 )
                 track_method = "ellipse"
                 cfg["default_track_method"] = track_method
-                auxiliaryfunctions.write_config(
-                    str(Path(cfg["project_path"]) / "config.yaml"), cfg
-                )
+                auxiliaryfunctions.write_config(str(Path(cfg["project_path"]) / "config.yaml"), cfg)
             return track_method
 
     else:  # no tracker for single-animal projects
@@ -96,7 +91,8 @@ def get_track_method(cfg, track_method=""):
 
 
 def IntersectionofIndividualsandOnesGivenbyUser(cfg, individuals):
-    """Returns all individuals when set to 'all', otherwise all bpts that are in the intersection of comparisonbodyparts and the actual bodyparts"""
+    """Returns all individuals when set to 'all', otherwise all bpts that are in the
+    intersection of comparisonbodyparts and the actual bodyparts."""
     if "individuals" not in cfg:  # Not a multi-animal project...
         return [""]
     all_indivs = extractindividualsandbodyparts(cfg)[0]
@@ -122,17 +118,16 @@ def validate_paf_graph(cfg, paf_graph):
     unconnected = set(range(len(multianimalbodyparts))).difference(connected)
     if unconnected and len(multianimalbodyparts) > 1:  # for single bpt not important!
         raise ValueError(
-            f'Unconnected {", ".join(multianimalbodyparts[i] for i in unconnected)}. '
+            f"Unconnected {', '.join(multianimalbodyparts[i] for i in unconnected)}. "
             f"For multi-animal projects, all multianimalbodyparts should be connected. "
-            f"Ideally there should be at least one (multinode) path from each multianimalbodyparts to each other multianimalbodyparts. "
+            f"Ideally there should be at least one (multinode) path from each multianimalbodyparts to each other"
+            f"multianimalbodyparts."
         )
 
 
 def prune_paf_graph(list_of_edges, desired_n_edges=None, average_degree=None):
     if not (desired_n_edges or average_degree):
-        raise ValueError(
-            "Either `desired_n_edges` or `average_degree` must be specified."
-        )
+        raise ValueError("Either `desired_n_edges` or `average_degree` must be specified.")
 
     G = nx.Graph(list_of_edges)
     n_edges = len(G.edges)
@@ -156,14 +151,13 @@ def prune_paf_graph(list_of_edges, desired_n_edges=None, average_degree=None):
 
 
 def getpafgraph(cfg, printnames=True):
-    """Auxiliary function that turns skeleton (list of connected bodypart pairs)
-    into a list of corresponding indices (with regard to the stacked multianimal/uniquebodyparts)
+    """Auxiliary function that turns skeleton (list of connected bodypart pairs) into a
+    list of corresponding indices (with regard to the stacked
+    multianimal/uniquebodyparts)
 
     Convention: multianimalbodyparts go first!
     """
-    individuals, uniquebodyparts, multianimalbodyparts = extractindividualsandbodyparts(
-        cfg
-    )
+    individuals, uniquebodyparts, multianimalbodyparts = extractindividualsandbodyparts(cfg)
     # Attention this order has to be consistent (for training set creation, training, inference etc.)
 
     bodypartnames = multianimalbodyparts + uniquebodyparts
@@ -191,16 +185,15 @@ def getpafgraph(cfg, printnames=True):
 
 
 def graph2names(cfg, partaffinityfield_graph):
-    individuals, uniquebodyparts, multianimalbodyparts = extractindividualsandbodyparts(
-        cfg
-    )
+    individuals, uniquebodyparts, multianimalbodyparts = extractindividualsandbodyparts(cfg)
     bodypartnames = multianimalbodyparts + uniquebodyparts
     for pair in partaffinityfield_graph:
         print(pair, bodypartnames[pair[0]], bodypartnames[pair[1]])
 
 
 def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
-    """Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py"""
+    """Save predicted data as h5 file and metadata as pickle file; created by
+    predict_videos.py."""
     data_path = dataname.split(".h5")[0] + suffix + ".pickle"
     metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
 
@@ -212,7 +205,8 @@ def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
 
 
 def LoadFullMultiAnimalData(dataname):
-    """Save predicted data as h5 file and metadata as pickle file; created by predict_videos.py"""
+    """Save predicted data as h5 file and metadata as pickle file; created by
+    predict_videos.py."""
     data_file = dataname.split(".h5")[0] + "_full.pickle"
     try:
         with open(data_file, "rb") as handle:
@@ -233,9 +227,7 @@ def returnlabelingdata(config):
     for folder in folders:
         print("Do you want to get the data for folder:", folder, "?")
         askuser = input("yes/no")
-        if (
-            askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha"
-        ):  # multilanguage support :)
+        if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":  # multilanguage support :)
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
             Data = pd.read_hdf(fn)
             return Data
@@ -252,8 +244,10 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
         Full path of the config.yaml file as a string.
 
     userfeedback: bool, optional
-            If this is set to false during automatic mode then frames for all videos are extracted. The user can set this to true, which will result in a dialog,
-            where the user is asked for each video if (additional/any) frames from this video should be extracted. Use this, e.g. if you have already labeled
+            If this is set to false during automatic mode then frames for all videos are extracted. The user can set
+            this to true, which will result in a dialog,
+            where the user is asked for each video if (additional/any) frames from this video should be extracted. Use
+            this, e.g. if you have already labeled
             some folders and want to extract data for new videos.
 
     forceindividual: None default
@@ -275,9 +269,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
     video_names = [trainingsetmanipulation._robust_path_split(i)[1] for i in videos]
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
 
-    individuals, uniquebodyparts, multianimalbodyparts = extractindividualsandbodyparts(
-        cfg
-    )
+    individuals, uniquebodyparts, multianimalbodyparts = extractindividualsandbodyparts(cfg)
 
     if forceindividual is None:
         if len(individuals) == 0:
@@ -289,21 +281,17 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
 
         if forceindividual == "single":  # no specific individual ()
             if len(multianimalbodyparts) > 0:  # there should be an individual name...
-                print(
-                    "At least one individual should exist beyond 'single', as there are multianimalbodyparts..."
-                )
+                print("At least one individual should exist beyond 'single', as there are multianimalbodyparts...")
                 folders = []
 
     for folder in folders:
-        if userfeedback == True:
+        if userfeedback:
             print("Do you want to convert the annotation file in folder:", folder, "?")
             askuser = input("yes/no")
         else:
             askuser = "yes"
 
-        if (
-            askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha"
-        ):  # multilanguage support :)
+        if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":  # multilanguage support :)
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
             Data = pd.read_hdf(fn + ".h5")
             conversioncode.guarantee_multiindex_rows(Data)
@@ -314,16 +302,12 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
             # -> adding (single,bpt) for uniquebodyparts
             for j, bpt in enumerate(uniquebodyparts):
                 index = pd.MultiIndex.from_arrays(
-                    np.array(
-                        [2 * [cfg["scorer"]], 2 * ["single"], 2 * [bpt], ["x", "y"]]
-                    ),
+                    np.array([2 * [cfg["scorer"]], 2 * ["single"], 2 * [bpt], ["x", "y"]]),
                     names=["scorer", "individuals", "bodyparts", "coords"],
                 )
 
                 if bpt in Data[cfg["scorer"]].keys():
-                    frame = pd.DataFrame(
-                        Data[cfg["scorer"]][bpt].values, columns=index, index=imindex
-                    )
+                    frame = pd.DataFrame(Data[cfg["scorer"]][bpt].values, columns=index, index=imindex)
                 else:
                     frame = pd.DataFrame(
                         np.ones((len(imindex), 2)) * np.nan,
@@ -354,9 +338,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
                 )
 
                 if bpt in Data[cfg["scorer"]].keys():
-                    frame = pd.DataFrame(
-                        Data[cfg["scorer"]][bpt].values, columns=index, index=imindex
-                    )
+                    frame = pd.DataFrame(Data[cfg["scorer"]][bpt].values, columns=index, index=imindex)
                 else:
                     frame = pd.DataFrame(
                         np.ones((len(imindex), 2)) * np.nan,
@@ -380,33 +362,30 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
 
 
 def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
-    """Convert multi animal to single animal code and vice versa. Note that by providing target='single'/'multi' this will be target!"""
+    """Convert multi animal to single animal code and vice versa.
+
+    Note that by providing target='single'/'multi' this will be target!
+    """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
     video_names = [Path(i).stem for i in videos]
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
 
-    prefixes, uniquebodyparts, multianimalbodyparts = extractindividualsandbodyparts(
-        cfg
-    )
+    prefixes, uniquebodyparts, multianimalbodyparts = extractindividualsandbodyparts(cfg)
     for folder in folders:
-        if userfeedback == True:
+        if userfeedback:
             print("Do you want to convert the annotation file in folder:", folder, "?")
             askuser = input("yes/no")
         else:
             askuser = "yes"
 
-        if (
-            askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha"
-        ):  # multilanguage support :)
+        if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":  # multilanguage support :)
             fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
             Data = pd.read_hdf(fn + ".h5")
             conversioncode.guarantee_multiindex_rows(Data)
             imindex = Data.index
 
-            if "individuals" in Data.columns.names and (
-                target is None or target == "single"
-            ):
+            if "individuals" in Data.columns.names and (target is None or target == "single"):
                 print("This is a multianimal data set, converting to single...", folder)
                 for prfxindex, prefix in enumerate(prefixes):
                     if prefix == "single":
@@ -456,9 +435,7 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
                 )
                 DataFrame.to_csv(fn + ".csv")
             elif target is None or target == "multi":
-                print(
-                    "This is a single animal data set, converting to multi...", folder
-                )
+                print("This is a single animal data set, converting to multi...", folder)
                 for prfxindex, prefix in enumerate(prefixes):
                     if prefix == "single":
                         if cfg["uniquebodyparts"] != [None]:
@@ -552,9 +529,7 @@ def form_default_inferencecfg(cfg):
         os.path.join(auxiliaryfunctions.get_deeplabcut_path(), "inference_cfg.yaml")
     )
     # set project specific parameters:
-    inferencecfg["minimalnumberofconnections"] = (
-        len(cfg["multianimalbodyparts"]) / 2
-    )  # reasonable default
+    inferencecfg["minimalnumberofconnections"] = len(cfg["multianimalbodyparts"]) / 2  # reasonable default
     inferencecfg["topktoretain"] = len(cfg["individuals"])
     return inferencecfg
 
@@ -563,7 +538,7 @@ def check_inferencecfg_sanity(cfg, inferencecfg):
     template = form_default_inferencecfg(cfg)
     missing = [key for key in template if key not in inferencecfg]
     if missing:
-        raise KeyError(f'Keys {", ".join(missing)} are missing in the inferencecfg.')
+        raise KeyError(f"Keys {', '.join(missing)} are missing in the inferencecfg.")
 
 
 def read_inferencecfg(path_inference_config, cfg):
@@ -572,7 +547,5 @@ def read_inferencecfg(path_inference_config, cfg):
         inferencecfg = auxiliaryfunctions.read_plainconfig(str(path_inference_config))
     except FileNotFoundError:
         inferencecfg = form_default_inferencecfg(cfg)
-        auxiliaryfunctions.write_plainconfig(
-            str(path_inference_config), dict(inferencecfg)
-        )
+        auxiliaryfunctions.write_plainconfig(str(path_inference_config), dict(inferencecfg))
     return inferencecfg

@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Implementations of methods to compute distance metrics such as RMSE or OKS"""
+"""Implementations of methods to compute distance metrics such as RMSE or OKS."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -24,7 +25,7 @@ def compute_oks_matrix(
     oks_sigma: float | np.ndarray,
     oks_bbox_margin: float = 0.0,
 ) -> np.ndarray:
-    """Computes the OKS score for each (prediction, gt) pair in an image
+    """Computes the OKS score for each (prediction, gt) pair in an image.
 
     Args:
         ground_truth: The GT poses for an image, shape (n_individuals, n_kpts, 2)
@@ -276,10 +277,12 @@ def compute_rmse(
     if pixel_errors is not None:
         bpt_cutoffs = pcutoff
         if not isinstance(pcutoff, (int, float)):
-            bpt_cutoffs = pcutoff[:pixel_errors.shape[1]]
+            bpt_cutoffs = pcutoff[: pixel_errors.shape[1]]
 
         error, support, cutoff_error, cutoff_support = collect_pixel_errors(
-            pixel_errors, keypoint_scores, bpt_cutoffs,
+            pixel_errors,
+            keypoint_scores,
+            bpt_cutoffs,
         )
 
     unique_pixel_errors, unique_keypoint_scores = None, None
@@ -291,9 +294,11 @@ def compute_rmse(
 
             bpt_cutoffs = pcutoff
             if not isinstance(pcutoff, (int, float)):
-                bpt_cutoffs = pcutoff[-unique_pixel_errors.shape[1]:]
+                bpt_cutoffs = pcutoff[-unique_pixel_errors.shape[1] :]
             u_error, u_support, u_cutoff_error, u_cutoff_support = collect_pixel_errors(
-                unique_pixel_errors, unique_keypoint_scores, bpt_cutoffs,
+                unique_pixel_errors,
+                unique_keypoint_scores,
+                bpt_cutoffs,
             )
             error += u_error
             support += u_support
@@ -356,7 +361,7 @@ def compute_detection_rmse(
         image_gt = image_gt.transpose((1, 0, 2))  # to (num_bpts, num_gt_individuals, 3)
         image_pred = image_pred.transpose((1, 0, 2))  # to (num_bpts, num_pred, 3)
 
-        for bpt_index, (bpt_gt, bpt_pred) in enumerate(zip(image_gt, image_pred)):
+        for bpt_index, (bpt_gt, bpt_pred) in enumerate(zip(image_gt, image_pred, strict=False)):
             # filter NaNs and invalid values
             bpt_gt = bpt_gt[~np.any(np.isnan(bpt_gt), axis=1)]
             bpt_pred = bpt_pred[~np.any(np.isnan(bpt_pred), axis=1)]
@@ -384,8 +389,7 @@ def compute_detection_rmse(
     if data_unique is not None:
         for image_gt, image_pred in data_unique:
             assert len(image_gt) <= 1 and len(image_pred) <= 1, (
-                f"Unique GT an predictions must have length 0 or 1! Found {image_gt.shape}, "
-                f"{image_pred.shape}."
+                f"Unique GT an predictions must have length 0 or 1! Found {image_gt.shape}, {image_pred.shape}."
             )
 
             if len(image_gt) == 1 and len(image_pred) == 1:
@@ -395,7 +399,7 @@ def compute_detection_rmse(
                 if not isinstance(pcutoff, (int, float)):
                     unique_cutoffs = pcutoff[-num_unique:]
 
-                for bpt_index, (gt, pred) in enumerate(zip(unique_gt, unique_pred)):
+                for bpt_index, (gt, pred) in enumerate(zip(unique_gt, unique_pred, strict=False)):
                     dist = np.linalg.norm(gt[:2] - pred[:2])
                     distances.append(dist)
 
@@ -429,7 +433,7 @@ def collect_pixel_errors(
     keypoint_scores: np.ndarray,
     pcutoff: float,
 ) -> tuple[float, int, float, int]:
-    """Collects pixel errors for RMSE computation
+    """Collects pixel errors for RMSE computation.
 
     Args:
         pixel_errors: The pixel errors to collect, of shape (num_matches, num_bodyparts)

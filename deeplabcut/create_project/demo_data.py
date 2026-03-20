@@ -22,9 +22,8 @@ def load_demo_data(
     createtrainingset: bool = True,
     engine: Engine = Engine.PYTORCH,
 ):
-    """
-    Loads the demo data -- subset from trail-tracking data in Mathis et al. 2018.
-    When loading, it sets paths correctly to run this project on your system
+    """Loads the demo data -- subset from trail-tracking data in Mathis et al. 2018.
+    When loading, it sets paths correctly to run this project on your system.
 
     Parameter
       ----------
@@ -52,8 +51,8 @@ def load_demo_data(
 
 
 def transform_data(config):
-    """
-    This function adds the full path to labeling dataset.
+    """This function adds the full path to labeling dataset.
+
     It also adds the correct path to the video file in the config file.
     """
 
@@ -69,8 +68,6 @@ def transform_data(config):
         print("This is not an official demo dataset.")
 
     if "WILL BE AUTOMATICALLY UPDATED BY DEMO CODE" in cfg["video_sets"].keys():
-        cfg["video_sets"][str(video_file)] = cfg["video_sets"].pop(
-            "WILL BE AUTOMATICALLY UPDATED BY DEMO CODE"
-        )
+        cfg["video_sets"][str(video_file)] = cfg["video_sets"].pop("WILL BE AUTOMATICALLY UPDATED BY DEMO CODE")
 
     auxiliaryfunctions.write_config(config, cfg)

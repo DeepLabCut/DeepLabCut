@@ -24,20 +24,21 @@ import deeplabcut.compat as compat
 import deeplabcut.generate_training_dataset.metadata as metadata
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
-from deeplabcut.generate_training_dataset import (
-    merge_annotateddatasets,
-    read_image_shape_fast,
-    SplitTrials,
-    MakeTrain_pose_yaml,
-    MakeTest_pose_yaml,
-    MakeInference_yaml,
-    pad_train_test_indices,
-    validate_shuffles,
-)
 from deeplabcut.utils import (
-    auxiliaryfunctions,
     auxfun_models,
     auxfun_multianimal,
+    auxiliaryfunctions,
+)
+
+from .trainingsetmanipulation import (
+    MakeInference_yaml,
+    MakeTest_pose_yaml,
+    MakeTrain_pose_yaml,
+    SplitTrials,
+    merge_annotateddatasets,
+    pad_train_test_indices,
+    read_image_shape_fast,
+    validate_shuffles,
 )
 
 
@@ -55,9 +56,7 @@ def format_multianimal_training_data(
     n_individuals = individuals.unique().size
     mask_single = individuals.str.contains("single")
     n_animals = n_individuals - 1 if np.any(mask_single) else n_individuals
-    array = np.full(
-        (nrows, n_individuals, n_bodyparts, 3), fill_value=np.nan, dtype=np.float32
-    )
+    array = np.full((nrows, n_individuals, n_bodyparts, 3), fill_value=np.nan, dtype=np.float32)
     array[..., 0] = np.arange(n_bodyparts)
     temp = df.to_numpy()
     temp_multi = temp[:, ~mask_single].reshape((nrows, n_animals, -1, 2))
@@ -121,12 +120,10 @@ def create_multianimaltraining_dataset(
     engine: Engine | None = None,
     ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
 ):
-    """
-    Creates a training dataset for multi-animal datasets. Labels from all the extracted
-    frames are merged into a single .h5 file.\n
-    Only the videos included in the config file are used to create this dataset.\n
-    [OPTIONAL] Use the function 'add_new_videos' at any stage of the project to add more
-    videos to the project.
+    """Creates a training dataset for multi-animal datasets. Labels from all the
+    extracted frames are merged into a single .h5 file.\n Only the videos included in
+    the config file are used to create this dataset.\n [OPTIONAL] Use the function
+    'add_new_videos' at any stage of the project to add more videos to the project.
 
     Important differences to standard:
      - stores coordinates with numdigits as many digits
@@ -260,14 +257,17 @@ def create_multianimaltraining_dataset(
         It defines the conditions that will be used with the CTD model.
         It can be either:
             * A shuffle number (ctd_conditions: int), which must correspond to a bottom-up (BU) network type.
-            * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5 predictions file.
-            * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
+            * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5
+            predictions file.
+            * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which
+            respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
 
     Example
     --------
     >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
 
-    >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml', Shuffles=[0,1,2], trainIndices=[trainInd1, trainInd2, trainInd3], testIndices=[testInd1, testInd2, testInd3])
+    >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml', Shuffles=[0,1,2],
+    trainIndices=[trainInd1, trainInd2, trainInd3], testIndices=[testInd1, testInd2, testInd3])
 
     Windows:
     >>> deeplabcut.create_multianimaltraining_dataset(r'C:\\Users\\Ulf\\looming-task\\config.yaml',Shuffles=[3,17,5])
@@ -277,6 +277,7 @@ def create_multianimaltraining_dataset(
         warnings.warn(
             "`windows2linux` has no effect since 2.2.0.4 and will be removed in 2.2.1.",
             FutureWarning,
+            stacklevel=2,
         )
 
     if len(crop_size) != 2 or not all(isinstance(v, int) for v in crop_size):
@@ -284,8 +285,7 @@ def create_multianimaltraining_dataset(
 
     if crop_sampling not in ("uniform", "keypoints", "density", "hybrid"):
         raise ValueError(
-            f"Invalid sampling {crop_sampling}. Must be "
-            f"either 'uniform', 'keypoints', 'density', or 'hybrid."
+            f"Invalid sampling {crop_sampling}. Must be either 'uniform', 'keypoints', 'density', or 'hybrid."
         )
 
     # Loading metadata from config file:
@@ -314,10 +314,7 @@ def create_multianimaltraining_dataset(
     if engine is None:
         engine = compat.get_project_engine(cfg)
 
-    if not (
-        any(net in net_type for net in ("resnet", "eff", "dlc", "mob"))
-        or engine == Engine.PYTORCH
-    ):
+    if not (any(net in net_type for net in ("resnet", "eff", "dlc", "mob")) or engine == Engine.PYTORCH):
         raise ValueError(f"Unsupported network {net_type} for engine {engine}.")
 
     multi_stage = False
@@ -327,7 +324,7 @@ def create_multianimaltraining_dataset(
         num_layers = re.findall("dlcr([0-9]*)", net_type)[0]
         if num_layers == "":
             num_layers = 50
-        net_type = "resnet_{}".format(num_layers)
+        net_type = f"resnet_{num_layers}"
         multi_stage = True
 
     dataset_type = "multi-animal-imgaug"
@@ -339,9 +336,7 @@ def create_multianimaltraining_dataset(
 
     if paf_graph is None:  # Automatically form a complete PAF graph
         n_bpts = len(multianimalbodyparts)
-        partaffinityfield_graph = [
-            list(edge) for edge in combinations(range(n_bpts), 2)
-        ]
+        partaffinityfield_graph = [list(edge) for edge in combinations(range(n_bpts), 2)]
         n_edges_orig = len(partaffinityfield_graph)
         # If the graph is unnecessarily large (with 15+ keypoints by default),
         # we randomly prune it to a size guaranteeing an average node degree of 6;
@@ -356,21 +351,14 @@ def create_multianimaltraining_dataset(
             # Use the skeleton defined in the config file
             skeleton = cfg["skeleton"]
             paf_graph = [
-                sorted(
-                    (multianimalbodyparts.index(bpt1), multianimalbodyparts.index(bpt2))
-                )
-                for bpt1, bpt2 in skeleton
+                sorted((multianimalbodyparts.index(bpt1), multianimalbodyparts.index(bpt2))) for bpt1, bpt2 in skeleton
             ]
-            print(
-                "Using `skeleton` from the config file as a paf_graph. Data-driven skeleton will not be computed."
-            )
+            print("Using `skeleton` from the config file as a paf_graph. Data-driven skeleton will not be computed.")
 
         # Ignore possible connections between 'multi' and 'unique' body parts;
         # one can never be too careful...
         to_ignore = auxfun_multianimal.filter_unwanted_paf_connections(cfg, paf_graph)
-        partaffinityfield_graph = [
-            edge for i, edge in enumerate(paf_graph) if i not in to_ignore
-        ]
+        partaffinityfield_graph = [edge for i, edge in enumerate(paf_graph) if i not in to_ignore]
         auxfun_multianimal.validate_paf_graph(cfg, partaffinityfield_graph)
 
     print("Utilizing the following graph:", partaffinityfield_graph)
@@ -397,19 +385,11 @@ def create_multianimaltraining_dataset(
                 splits.append((train_frac, shuffle, (train_inds, test_inds)))
     else:
         if len(trainIndices) != len(testIndices) != len(Shuffles):
-            raise ValueError(
-                "Number of Shuffles and train and test indexes should be equal."
-            )
+            raise ValueError("Number of Shuffles and train and test indexes should be equal.")
         splits = []
-        for shuffle, (train_inds, test_inds) in enumerate(
-            zip(trainIndices, testIndices)
-        ):
-            trainFraction = round(
-                len(train_inds) * 1.0 / (len(train_inds) + len(test_inds)), 2
-            )
-            print(
-                f"You passed a split with the following fraction: {int(100 * trainFraction)}%"
-            )
+        for shuffle, (train_inds, test_inds) in enumerate(zip(trainIndices, testIndices, strict=False)):
+            trainFraction = round(len(train_inds) * 1.0 / (len(train_inds) + len(test_inds)), 2)
+            print(f"You passed a split with the following fraction: {int(100 * trainFraction)}%")
             # Now that the training fraction is guaranteed to be correct,
             # the values added to pad the indices are removed.
             train_inds = np.asarray(train_inds)
@@ -446,9 +426,7 @@ def create_multianimaltraining_dataset(
             (
                 datafilename,
                 metadatafilename,
-            ) = auxiliaryfunctions.get_data_and_metadata_filenames(
-                trainingsetfolder, trainFraction, shuffle, cfg
-            )
+            ) = auxiliaryfunctions.get_data_and_metadata_filenames(trainingsetfolder, trainFraction, shuffle, cfg)
             ################################################################################
             # Saving metadata and data file (Pickle file)
             ################################################################################
@@ -487,15 +465,9 @@ def create_multianimaltraining_dataset(
                 cfg,
                 engine=engine,
             )
-            auxiliaryfunctions.attempt_to_make_folder(
-                Path(config).parents[0] / modelfoldername, recursive=True
-            )
-            auxiliaryfunctions.attempt_to_make_folder(
-                str(Path(config).parents[0] / modelfoldername / "train")
-            )
-            auxiliaryfunctions.attempt_to_make_folder(
-                str(Path(config).parents[0] / modelfoldername / "test")
-            )
+            auxiliaryfunctions.attempt_to_make_folder(Path(config).parents[0] / modelfoldername, recursive=True)
+            auxiliaryfunctions.attempt_to_make_folder(str(Path(config).parents[0] / modelfoldername / "train"))
+            auxiliaryfunctions.attempt_to_make_folder(str(Path(config).parents[0] / modelfoldername / "test"))
 
             path_train_config = str(
                 os.path.join(
@@ -529,11 +501,9 @@ def create_multianimaltraining_dataset(
                     "dataset": datafilename,
                     "engine": engine.aliases[0],
                     "metadataset": metadatafilename,
-                    "num_joints": len(multianimalbodyparts)
-                    + len(uniquebodyparts),  # cfg["uniquebodyparts"]),
+                    "num_joints": len(multianimalbodyparts) + len(uniquebodyparts),  # cfg["uniquebodyparts"]),
                     "all_joints": [
-                        [i]
-                        for i in range(len(multianimalbodyparts) + len(uniquebodyparts))
+                        [i] for i in range(len(multianimalbodyparts) + len(uniquebodyparts))
                     ],  # cfg["uniquebodyparts"]))],
                     "all_joints_names": jointnames,
                     "init_weights": str(model_path),
@@ -552,9 +522,7 @@ def create_multianimaltraining_dataset(
                     "multi_step": [[1e-4, 7500], [5 * 1e-5, 12000], [1e-5, 200000]],
                     "save_iters": 10000,
                     "display_iters": 500,
-                    "num_idchannel": (
-                        len(cfg["individuals"]) if cfg.get("identity", False) else 0
-                    ),
+                    "num_idchannel": (len(cfg["individuals"]) if cfg.get("identity", False) else 0),
                     "crop_size": list(crop_size),
                     "crop_sampling": crop_sampling,
                 }
@@ -654,20 +622,20 @@ def convert_cropped_to_standard_dataset(
     delete_crops=True,
     back_up=True,
 ):
-    import pandas as pd
     import pickle
     import shutil
-    from deeplabcut.generate_training_dataset import trainingsetmanipulation
+
+    import pandas as pd
+
     from deeplabcut.utils import read_plainconfig, write_config
+
+    from . import trainingsetmanipulation
 
     cfg = auxiliaryfunctions.read_config(config_path)
     videos_orig = cfg.pop("video_sets_original")
     is_cropped = cfg.pop("croppedtraining")
     if videos_orig is None or not is_cropped:
-        print(
-            "Labeled data do not appear to be cropped. "
-            "Project will remain unchanged..."
-        )
+        print("Labeled data do not appear to be cropped. Project will remain unchanged...")
         return
 
     project_path = cfg["project_path"]
@@ -705,9 +673,7 @@ def convert_cropped_to_standard_dataset(
         file = file.split("c")[0]
         return os.path.join(head, file + "." + ext)
 
-    img_names_old = np.asarray(
-        [strip_cropped_image_name(img) for img in df_old.index.to_list()]
-    )
+    img_names_old = np.asarray([strip_cropped_image_name(img) for img in df_old.index.to_list()])
     df = merge_annotateddatasets(cfg, datasets_folder)
     img_names = df.index.to_numpy()
     train_idx = []
@@ -720,15 +686,9 @@ def convert_cropped_to_standard_dataset(
             if filename.startswith("Docu"):
                 with open(pickle_file, "rb") as f:
                     _, train_inds, test_inds, train_frac = pickle.load(f)
-                    train_inds_temp = np.flatnonzero(
-                        np.isin(img_names, img_names_old[train_inds])
-                    )
-                    test_inds_temp = np.flatnonzero(
-                        np.isin(img_names, img_names_old[test_inds])
-                    )
-                    train_inds, test_inds = pad_train_test_indices(
-                        train_inds_temp, test_inds_temp, train_frac
-                    )
+                    train_inds_temp = np.flatnonzero(np.isin(img_names, img_names_old[train_inds]))
+                    test_inds_temp = np.flatnonzero(np.isin(img_names, img_names_old[test_inds]))
+                    train_inds, test_inds = pad_train_test_indices(train_inds_temp, test_inds_temp, train_frac)
                     train_idx.append(train_inds)
                     test_idx.append(test_inds)
 

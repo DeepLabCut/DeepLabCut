@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Code to create tracking datasets for ReID model training"""
+"""Code to create tracking datasets for ReID model training."""
+
 from pathlib import Path
 
 from tqdm import tqdm
@@ -31,7 +32,7 @@ def build_feature_extraction_runner(
     device: str,
     batch_size: int = 1,
 ) -> runners.PoseInferenceRunner:
-    """Builds a runner to extract backbone features for poses of individuals
+    """Builds a runner to extract backbone features for poses of individuals.
 
     Args:
         loader: The loader for the model to use.
@@ -59,8 +60,7 @@ def build_feature_extraction_runner(
         )
     else:
         preprocessor = data.build_bottom_up_preprocessor(
-            loader.model_cfg["data"]["colormode"],
-            data.build_transforms(loader.model_cfg["data"]["inference"])
+            loader.model_cfg["data"]["colormode"], data.build_transforms(loader.model_cfg["data"]["inference"])
         )
 
     postprocessor = postprocessing.ComposePostprocessor(
@@ -91,9 +91,7 @@ def build_feature_extraction_runner(
         postprocessor=postprocessor,
         load_weights_only=loader.model_cfg["runner"].get("load_weights_only", None),
     )
-    assert isinstance(runner, runners.PoseInferenceRunner), (
-        f"Failed to build inference runner: got type {type(runner)}"
-    )
+    assert isinstance(runner, runners.PoseInferenceRunner), f"Failed to build inference runner: got type {type(runner)}"
 
     # Set the model to output backbone features
     runner.model.output_features = True
@@ -187,10 +185,15 @@ def create_tracking_dataset(
     test_cfg = read_config_as_dict(test_cfg_path)
 
     snapshot_index, detector_snapshot_index = utils.parse_snapshot_index_for_analysis(
-        loader.project_cfg, loader.model_cfg, None, None,
+        loader.project_cfg,
+        loader.model_cfg,
+        None,
+        None,
     )
     snapshot = utils.get_model_snapshots(
-        snapshot_index, loader.model_folder, loader.pose_task,
+        snapshot_index,
+        loader.model_folder,
+        loader.pose_task,
     )[0]
 
     if cropping is None and loader.project_cfg.get("cropping", False):
@@ -209,9 +212,7 @@ def create_tracking_dataset(
         batch_size = loader.project_cfg["batch_size"]
 
     device = utils.resolve_device(loader.model_cfg)
-    runner = build_feature_extraction_runner(
-        loader, snapshot.path, device, batch_size=batch_size
-    )
+    runner = build_feature_extraction_runner(loader, snapshot.path, device, batch_size=batch_size)
 
     detector_runner = None
     detector_snapshot = None
@@ -220,7 +221,9 @@ def create_tracking_dataset(
             detector_batch_size = loader.project_cfg.get("detector_batch_size", 1)
 
         detector_snapshot = utils.get_model_snapshots(
-            detector_snapshot_index, loader.model_folder, Task.DETECT,
+            detector_snapshot_index,
+            loader.model_folder,
+            Task.DETECT,
         )[0]
         detector_runner = utils.get_detector_inference_runner(
             model_config=loader.model_cfg,
@@ -264,9 +267,7 @@ def create_tracking_dataset(
             output_filepath,
             num_frames=video.get_n_frames(robust=robust_nframes),
         )
-        extract_features_for_video(
-            runner, video, shelf_writer, detector_runner=detector_runner
-        )
+        extract_features_for_video(runner, video, shelf_writer, detector_runner=detector_runner)
 
     create_triplets_dataset(
         videos,

@@ -8,21 +8,18 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Code to handle storing models"""
+"""Code to handle storing models."""
+
 from __future__ import annotations
 
 import re
-import warnings
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-
-import numpy as np
-import torch
 
 
 @dataclass(frozen=True)
 class Snapshot:
-    """A snapshot for a model"""
+    """A snapshot for a model."""
 
     best: bool
     epochs: int | None
@@ -35,10 +32,10 @@ class Snapshot:
             return str(self.epochs)
 
     @staticmethod
-    def from_path(path: Path) -> "Snapshot":
+    def from_path(path: Path) -> Snapshot:
         best = "-best" in path.stem
         # Use regex to extract epoch number more robustly
-        match = re.search(r'-(\d+)\.pt$', path.name)
+        match = re.search(r"-(\d+)\.pt$", path.name)
         if match:
             epochs = int(match.group(1))
         else:
@@ -65,6 +62,7 @@ def list_snapshots(
         trained for. If ``best_in_last=True`` and a best snapshot exists, it will be
         the last one in the list.
     """
+
     def _sort_key(snapshot: Snapshot) -> int:
         return snapshot.epochs
 
@@ -72,9 +70,7 @@ def list_snapshots(
         return 1 if snapshot.best else 0, snapshot.epochs
 
     pattern = r"^(" + snapshot_prefix + r"(-best)?-\d+\.pt)$"
-    snapshots = [
-        Snapshot.from_path(f) for f in model_folder.iterdir() if re.match(pattern, f.name)
-    ]
+    snapshots = [Snapshot.from_path(f) for f in model_folder.iterdir() if re.match(pattern, f.name)]
 
     sort_key = _sort_key
     if best_in_last:

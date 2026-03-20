@@ -71,5 +71,5 @@ Before getting started, be aware of the following constraints:
 ## Feedback, issues, and contributions
 
 > *This project is under active development. Feedback from real experimental use is highly valued.*
-> 
+>
 > [Please report issues, suggest features, or contribute to the codebase on GitHub !](https://github.com/DeepLabCut/DeepLabCut-live-GUI)

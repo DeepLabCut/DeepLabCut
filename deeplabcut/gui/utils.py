@@ -8,10 +8,10 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from typing import Callable, Tuple
+import re
+from collections.abc import Callable
 
 from PySide6 import QtCore
-import re
 
 
 class Worker(QtCore.QObject):
@@ -57,10 +57,8 @@ def move_to_separate_thread(func: Callable, capture_outputs: bool = False):
     return worker, thread
 
 
-def parse_version(version: str) -> Tuple[int, int, int]:
-    """
-    Parses a version string into a tuple of (major, minor, patch).
-    """
+def parse_version(version: str) -> tuple[int, int, int]:
+    """Parses a version string into a tuple of (major, minor, patch)."""
     match = re.search(r"(\d+)\.(\d+)\.(\d+)", version)
     if match:
         return tuple(int(part) for part in match.groups())
@@ -71,6 +69,7 @@ def parse_version(version: str) -> Tuple[int, int, int]:
 def is_latest_deeplabcut_version():
     import json
     import urllib.request
+
     from deeplabcut import VERSION
 
     url = "https://pypi.org/pypi/deeplabcut/json"

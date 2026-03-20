@@ -1,9 +1,9 @@
 # PyTorch DeepLabCut API
 
-This overview is primarily written for maintainers and expert users. 
+This overview is primarily written for maintainers and expert users.
 
 Here we detail the logic and structure for the DLC3.* PyTorch code. Furthermore, we
-provide many practical examples to illustrate the usage of the code for developers. 
+provide many practical examples to illustrate the usage of the code for developers.
 
 ## Structure of the PyTorch DLC code
 
@@ -27,12 +27,12 @@ Thus, they are also ideally suited for developers.
 ### Models
 
 We provide state-of-the-art pose estimation models such as DLCRNet, HRNet, DEKR, BUCTD
-and more are coming! Object detection models are also available (and implemented in 
+and more are coming! Object detection models are also available (and implemented in
 `deeplabcut.pose_estimations_pytorch.models.detectors`).
 
 The `deeplabcut.pose_estimations_pytorch.models` package contains all components related
-to building a model. Models are flexibly build from modular components: `backbone`, 
-`neck` (optional) and `head` (as discussed below). 
+to building a model. Models are flexibly build from modular components: `backbone`,
+`neck` (optional) and `head` (as discussed below).
 
 You can check available models by running:
 
@@ -50,15 +50,15 @@ print(deeplabcut.pose_estimation_pytorch.available_detectors())
 
 Model architectures are built according to a configuration specified in a `yaml` file.
 This file (named `pytorch_cfg.yaml`) describes the architecture of the model you want to
-train (but also hyperparameters, optimizer, ...). All code to manipulate PyTorch 
+train (but also hyperparameters, optimizer, ...). All code to manipulate PyTorch
 configuration files is in `deeplabcut.pose_estimations_pytorch.config`.
 
-To generate a model configuration, you can call `make_pytorch_pose_config`. Note that 
-this does not save the configuration to a given filepath - it just returns it as a 
-dictionary. However, you can save it with `write_config`. 
+To generate a model configuration, you can call `make_pytorch_pose_config`. Note that
+this does not save the configuration to a given filepath - it just returns it as a
+dictionary. However, you can save it with `write_config`.
 
-During a typical DeepLabCut project management workflow, these methods don't need to be 
-called, as `create_training_dataset` will create this configuration file and save it to 
+During a typical DeepLabCut project management workflow, these methods don't need to be
+called, as `create_training_dataset` will create this configuration file and save it to
 disk.
 
 ```python
@@ -97,7 +97,7 @@ adding models.
 ### Model Registry
 
 Registries are created for all model building blocks to make it easy to add new models.
-All you need to do is add the decorator `REGISTRY.register_module` to be able to load 
+All you need to do is add the decorator `REGISTRY.register_module` to be able to load
 your model from a configuration file. Available registries are `BACKBONES`, `NECKS`,
 `HEADS`, `PREDICTORS` and `TARGET_GENERATORS`. Each building block has a base class
 that should be inherited by the class added to the model registry (`BaseBackbone`,
@@ -116,11 +116,11 @@ from deeplabcut.pose_estimation_pytorch.models.backbones import BACKBONES, BaseB
 @BACKBONES.register_module
 class DummyBackbone(BaseBackbone):
     """A dummy backbone, simply max-pooling the input"""
-    
+
     def __init__(self, kernel_size: int = 2):
         super().__init__(stride=kernel_size)
         self.kernel_size = kernel_size
-    
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return F.max_pool2d(x, kernel_size=self.kernel_size)
 
@@ -134,15 +134,15 @@ a head which takes as input the output of a backbone (which has shape `(num_chan
 H', W')`) and put it through a kernel-size 1 convolution, simply changing the number of
 channels.
 
-Heads can output multiple tensors (such as heatmaps and location refinement fields). 
+Heads can output multiple tensors (such as heatmaps and location refinement fields).
 Therefore, their `forward(...)` method outputs a dictionary mapping strings to tensors.
 Here, we return the `heatmap` and `locref` tensors.
 
 A head must contain different: a `target_generator` to generate targets for
 its outputs and a `predictor` to convert model outputs to pose. Make sure that the keys
 output by the `target_generator` and the `head` match! Some `criterion` also needs to be
-defined to compute the loss between the outputs and targets. When more than one output 
-is specified (such as in this case, where we're generating heatmaps and location 
+defined to compute the loss between the outputs and targets. When more than one output
+is specified (such as in this case, where we're generating heatmaps and location
 refinement fields), a loss aggregator must also be given to combine all losses into one
 (this should simply be a `WeightedLossAggregator`, indicating the weight for each loss).
 
@@ -171,7 +171,7 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators import (
 @HEADS.register_module
 class DummyHead(BaseHead):
     """A dummy backbone, simply max-pooling the input"""
-    
+
     def __init__(
         self,
         num_input_channels: int,
@@ -256,9 +256,9 @@ print(loader.df_train)
 print(loader.df_test)
 ```
 
-The `PoseDataset` class is an instance of 
-[torch.utils.Dataset](https://pytorch.org/docs/stable/data.html), which converts raw 
-images and keypoints to a tensor dataset for training and evaluation. You can generate 
+The `PoseDataset` class is an instance of
+[torch.utils.Dataset](https://pytorch.org/docs/stable/data.html), which converts raw
+images and keypoints to a tensor dataset for training and evaluation. You can generate
 an instance of training/test dataset with your `DLCLoader`:
 
 ```python3
@@ -281,9 +281,9 @@ valid_dataset = loader.create_dataset(
 )
 ```
 
-A `COCOLoader` is also available, and allows you train models in DeepLabCut on 
+A `COCOLoader` is also available, and allows you train models in DeepLabCut on
 [COCO-format](https://medium.com/@manuktiwary/coco-format-what-and-how-5c7d22cf5301)
-datasets. This essentially consists of having a folder containing your dataset in the 
+datasets. This essentially consists of having a folder containing your dataset in the
 format:
 
 ```
@@ -291,24 +291,24 @@ COCOProject
 └───annotations
 │   │   train.json
 │   │   test.json
-│   
+│
 └───images
     │   img0000.png
     │   img0001.png
     │           ...
 ```
 
-In your `train.json` and `test.json` files, you can either specify your image 
-`"file_name"` with a relative path or with an absolute path. If a relative path is 
-used (e.g. `img0000.png` or `subfolder/img0000.png`), it will be resolved to the 
-`images` folder in your project (i.e. `/path/to/COCOProject/images/img0000.png` or 
+In your `train.json` and `test.json` files, you can either specify your image
+`"file_name"` with a relative path or with an absolute path. If a relative path is
+used (e.g. `img0000.png` or `subfolder/img0000.png`), it will be resolved to the
+`images` folder in your project (i.e. `/path/to/COCOProject/images/img0000.png` or
 `/path/to/COCOProject/images/subfolder/img0000.png`).
 
-If you specify an absolute path, the path to the image will not be resolved, and the 
+If you specify an absolute path, the path to the image will not be resolved, and the
 image will be loaded from the specified path. This allows you to keep data on different
 disks, or reuse the same images in different projects without having to duplicate them.
 
-To train a DeepLabCut model on a COCO-format dataset, you'll need to specify a model 
+To train a DeepLabCut model on a COCO-format dataset, you'll need to specify a model
 configuration file (as described in [#model_configuration_files]).
 
 ```python3
@@ -363,7 +363,7 @@ valid_dataset = loader.create_dataset(
 
 ### Runners
 
-The `deeplabcut.pose_estimations_pytorch.runners` contains code to get models, load 
+The `deeplabcut.pose_estimations_pytorch.runners` contains code to get models, load
 pretrained weights, and either train them or run inference with them.
 
 ## Code Examples
@@ -460,8 +460,8 @@ predictions = dlc_torch.video_inference(
 
 When `deeplabcut.pose_estimation_pytorch.apis.videos.video_inference` is called
 with a top-down model, it is assumed that a detector snapshot is given as well to obtain
-bounding boxes with which to run pose estimation. It's possible that you've already 
-obtained bounding boxes for your video (with another object detector or through some 
+bounding boxes with which to run pose estimation. It's possible that you've already
+obtained bounding boxes for your video (with another object detector or through some
 other means), and you want to reuse those bounding boxes instead of running an object
 detector again.
 

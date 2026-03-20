@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests the custom transforms"""
+"""Tests the custom transforms."""
+
 import random
 
 import albumentations as A
@@ -55,7 +56,7 @@ def test_dlc_resize_pad_good_aspect_ratio(height, width, image_shapes):
 )
 def test_dlc_resize_pad_bad_aspect_ratio(data):
     aug = transforms.KeepAspectRatioResize(width=data["width"], height=data["height"], mode="pad")
-    for in_shape, out_shape in zip(data["in_shapes"], data["out_shapes"]):
+    for in_shape, out_shape in zip(data["in_shapes"], data["out_shapes"], strict=False):
         fake_image = np.zeros(in_shape)
         transformed = aug(image=fake_image, keypoints=[])
         assert transformed["image"].shape == out_shape
@@ -95,7 +96,7 @@ def test_dlc_resize_pad_bad_aspect_ratio_with_keypoints(data):
 
 
 def test_coarse_dropout():
-    aug = transforms.CoarseDropout(
+    transforms.CoarseDropout(
         max_holes=10,
         max_height=0.05,
         min_height=0.01,
@@ -141,7 +142,9 @@ def test_random_bbox_transform_does_not_modify_with_base_config(data: dict) -> N
         bbox_params=A.BboxParams(format="coco", label_fields=["bbox_labels"]),
     )
     output = t(
-        image=np.zeros((h, w, c)), bboxes=bboxes, bbox_labels=np.zeros(len(bboxes)),
+        image=np.zeros((h, w, c)),
+        bboxes=bboxes,
+        bbox_labels=np.zeros(len(bboxes)),
     )
     print("Output bounding boxes")
     for out_bbox in output["bboxes"]:
@@ -207,7 +210,9 @@ def test_random_bbox_transform_scale(data: dict) -> None:
         bbox_params=A.BboxParams(format="coco", label_fields=["bbox_labels"]),
     )
     output = t(
-        image=np.zeros((h, w, c)), bboxes=bboxes, bbox_labels=np.zeros(len(bboxes)),
+        image=np.zeros((h, w, c)),
+        bboxes=bboxes,
+        bbox_labels=np.zeros(len(bboxes)),
     )
     print("Output bounding boxes")
     for out_bbox in output["bboxes"]:
@@ -216,7 +221,7 @@ def test_random_bbox_transform_scale(data: dict) -> None:
 
     bboxes_out = np.asarray(output["bboxes"])
     scale_low, scale_high = data["transform_config"]["scale_factor"]
-    for bbox_in_wh, bbox_out_wh in zip(bboxes[:, 2:], bboxes_out[:, 2:]):
+    for bbox_in_wh, bbox_out_wh in zip(bboxes[:, 2:], bboxes_out[:, 2:], strict=False):
         print("bbox_in_wh", bbox_in_wh)
         w, h = bbox_in_wh[0].item(), bbox_in_wh[1].item()
         w_low, w_high = w * scale_low, w * scale_high
@@ -253,7 +258,9 @@ def test_random_bbox_transform_shift(data: dict) -> None:
         bbox_params=A.BboxParams(format="coco", label_fields=["bbox_labels"]),
     )
     output = t(
-        image=np.zeros((h, w, c)), bboxes=bboxes, bbox_labels=np.zeros(len(bboxes)),
+        image=np.zeros((h, w, c)),
+        bboxes=bboxes,
+        bbox_labels=np.zeros(len(bboxes)),
     )
     print("Output bounding boxes")
     for out_bbox in output["bboxes"]:
@@ -262,7 +269,7 @@ def test_random_bbox_transform_shift(data: dict) -> None:
 
     bboxes_out = np.asarray(output["bboxes"])
     shift = data["transform_config"]["shift_factor"]
-    for bbox_in, bbox_out in zip(bboxes, bboxes_out):
+    for bbox_in, bbox_out in zip(bboxes, bboxes_out, strict=False):
         print("bbox_in", bbox_in)
         x, y, w, h = bbox_in
         x_out, y_out, w_out, h_out = bbox_out
@@ -277,7 +284,10 @@ def _set_random_seed():
 
 
 def _gen_random_bboxes(
-    gen: np.random.Generator, num_bboxes: int, w: int, h: int,
+    gen: np.random.Generator,
+    num_bboxes: int,
+    w: int,
+    h: int,
 ) -> np.ndarray:
     image_wh = np.array([w, h])
     bboxes = np.zeros((num_bboxes, 4))

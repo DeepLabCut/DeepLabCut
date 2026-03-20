@@ -8,9 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""
-Test script for super animal adaptation
-"""
+"""Test script for super animal adaptation."""
+
 import os
 
 import deeplabcut
@@ -18,7 +17,6 @@ from deeplabcut.modelzoo.weight_initialization import build_weight_init
 
 print(deeplabcut.__file__)
 if __name__ == "__main__":
-
     superanimal_name = "superanimal_topviewmouse"
     basepath = os.path.dirname(os.path.realpath(__file__))
     config_path = os.path.join(basepath, "openfield-Pranav-2018-10-30", "config.yaml")

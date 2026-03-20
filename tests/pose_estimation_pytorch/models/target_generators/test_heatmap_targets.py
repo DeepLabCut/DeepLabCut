@@ -9,13 +9,15 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Tests the heatmap target generators (plateau and gaussian)"""
+
 import numpy as np
-import torch
 import pytest
+import torch
 
 from deeplabcut.pose_estimation_pytorch.models.target_generators.heatmap_targets import (
     HeatmapGaussianGenerator,
 )
+
 
 @pytest.mark.parametrize(
     "data",
@@ -56,7 +58,7 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators.heatmap_targets
                 [0.1054, 0.3247, 0.1054, 0.0036],
                 [0.3247, 1.0, 0.3247, 0.0111],
                 [0.1054, 0.3247, 0.1054, 0.0036],
-                [0.0036, 0.0111, 0.0036, 0.0001]
+                [0.0036, 0.0111, 0.0036, 0.0001],
             ],
         },
     ],
@@ -91,23 +93,17 @@ def test_gaussian_heatmap_generation_single_keypoint(data):
     "batch_size, num_keypoints, image_size",
     [(2, 2, (64, 64)), (1, 5, (48, 64)), (15, 50, (64, 48))],
 )
-def test_random_gaussian_target_generation(
-    batch_size: int, num_keypoints: int, image_size: tuple, num_animals=1
-):
+def test_random_gaussian_target_generation(batch_size: int, num_keypoints: int, image_size: tuple, num_animals=1):
     # generate annotations
     annotations = {
-        "keypoints": torch.randint(
-            1, min(image_size), (batch_size, num_animals, num_keypoints, 2)
-        )
+        "keypoints": torch.randint(1, min(image_size), (batch_size, num_animals, num_keypoints, 2))
     }  # batch size, num animals, num keypoints, 2 for x,y
 
     # model stride 1
     stride = 1
 
     # generate predictions
-    predicted_heatmaps = {
-        "heatmap": torch.zeros((batch_size, num_keypoints, *image_size))
-    }
+    predicted_heatmaps = {"heatmap": torch.zeros((batch_size, num_keypoints, *image_size))}
 
     # generate heatmap
     generator = HeatmapGaussianGenerator(
@@ -117,9 +113,7 @@ def test_random_gaussian_target_generation(
         generate_locref=False,
     )
     targets = generator(stride, predicted_heatmaps, annotations)
-    target_heatmap = targets["heatmap"]["target"].reshape(
-        batch_size, num_keypoints, image_size[0] * image_size[1]
-    )
+    target_heatmap = targets["heatmap"]["target"].reshape(batch_size, num_keypoints, image_size[0] * image_size[1])
 
     # get coords of max value of the heatmap
     gaus_max = torch.argmax(target_heatmap, dim=2)

@@ -24,9 +24,7 @@ from deeplabcut.modelzoo.generalized_data_converter.datasets.utils import (
 
 class MaDLCPoseDataset(BaseDLCPoseDataset):
     def __init__(self, proj_root, dataset_name, shuffle=1, modelprefix=""):
-        super(MaDLCPoseDataset, self).__init__(
-            proj_root, dataset_name, shuffle=shuffle, modelprefix=modelprefix
-        )
+        super().__init__(proj_root, dataset_name, shuffle=shuffle, modelprefix=modelprefix)
 
     def _df2generic(self, df, image_id_offset=0):
 
@@ -36,15 +34,10 @@ class MaDLCPoseDataset(BaseDLCPoseDataset):
 
         if "single" in individuals:
             unique_bpts.extend(
-                df.xs("single", level="individuals", axis=1)
-                .columns.get_level_values("bodyparts")
-                .unique()
+                df.xs("single", level="individuals", axis=1).columns.get_level_values("bodyparts").unique()
             )
         multi_bpts = (
-            df.xs(individuals[0], level="individuals", axis=1)
-            .columns.get_level_values("bodyparts")
-            .unique()
-            .tolist()
+            df.xs(individuals[0], level="individuals", axis=1).columns.get_level_values("bodyparts").unique().tolist()
         )
 
         coco_categories = []
@@ -80,22 +73,14 @@ class MaDLCPoseDataset(BaseDLCPoseDataset):
 
             image_id += 1
 
-            for individual_id, individual in enumerate(individuals):
+            for _individual_id, individual in enumerate(individuals):
                 category_id = 0
                 try:
-                    kpts = (
-                        data.xs(individual, level="individuals")
-                        .to_numpy()
-                        .reshape((-1, 2))
-                    )
-                except:
+                    kpts = data.xs(individual, level="individuals").to_numpy().reshape((-1, 2))
+                except Exception:
                     # somehow there are duplicates. So only use the first occurrence
                     data = data.iloc[0]
-                    kpts = (
-                        data.xs(individual, level="individuals")
-                        .to_numpy()
-                        .reshape((-1, 2))
-                    )
+                    kpts = data.xs(individual, level="individuals").to_numpy().reshape((-1, 2))
 
                 keypoints = np.zeros((len(kpts), 3))
 

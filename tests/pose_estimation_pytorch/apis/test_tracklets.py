@@ -95,6 +95,6 @@ def test_build_tracklets(
     if unique_bodyparts:
         assert "single" in tracklets
     else:
-        assert not "single" in tracklets
+        assert "single" not in tracklets
 
     assert isinstance(tracklets, dict)

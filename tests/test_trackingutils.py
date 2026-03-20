@@ -10,6 +10,7 @@
 #
 import numpy as np
 import pytest
+
 from deeplabcut.core import trackingutils
 
 
@@ -21,9 +22,7 @@ def ellipse():
 
 def test_ellipse(ellipse):
     assert ellipse.aspect_ratio == 2
-    np.testing.assert_equal(
-        ellipse.contains_points(np.asarray([[0, 0], [10, 10]])), [True, False]
-    )
+    np.testing.assert_equal(ellipse.contains_points(np.asarray([[0, 0], [10, 10]])), [True, False])
 
 
 def test_ellipse_similarity(ellipse):
@@ -73,12 +72,8 @@ def test_tracking_ellipse(real_assemblies, real_tracklets):
         trackers = mot_tracker.track(animals[..., :2])
         trackingutils.fill_tracklets(tracklets, trackers, animals, ind)
     assert len(tracklets) == len(tracklets_ref)
-    assert [len(tracklet) for tracklet in tracklets.values()] == [
-        len(tracklet) for tracklet in tracklets_ref.values()
-    ]
-    assert all(
-        t.shape[1] == 4 for tracklet in tracklets.values() for t in tracklet.values()
-    )
+    assert [len(tracklet) for tracklet in tracklets.values()] == [len(tracklet) for tracklet in tracklets_ref.values()]
+    assert all(t.shape[1] == 4 for tracklet in tracklets.values() for t in tracklet.values())
 
 
 def test_box_tracker():
@@ -105,12 +100,8 @@ def test_tracking_box(real_assemblies, real_tracklets):
         trackers = mot_tracker.track(bboxes)
         trackingutils.fill_tracklets(tracklets, trackers, animals, ind)
     assert len(tracklets) == len(tracklets_ref)
-    assert [len(tracklet) for tracklet in tracklets.values()] == [
-        len(tracklet) for tracklet in tracklets_ref.values()
-    ]
-    assert all(
-        t.shape[1] == 4 for tracklet in tracklets.values() for t in tracklet.values()
-    )
+    assert [len(tracklet) for tracklet in tracklets.values()] == [len(tracklet) for tracklet in tracklets_ref.values()]
+    assert all(t.shape[1] == 4 for tracklet in tracklets.values() for t in tracklet.values())
 
 
 def test_tracking_montblanc(
@@ -127,9 +118,7 @@ def test_tracking_montblanc(
         trackers = mot_tracker.track(animals[..., :2])
         trackingutils.fill_tracklets(tracklets, trackers, animals, ind)
     assert len(tracklets) == len(tracklets_ref)
-    assert [len(tracklet) for tracklet in tracklets.values()] == [
-        len(tracklet) for tracklet in tracklets_ref.values()
-    ]
+    assert [len(tracklet) for tracklet in tracklets.values()] == [len(tracklet) for tracklet in tracklets_ref.values()]
     for k, assemblies in tracklets.items():
         ref = tracklets_ref[k]
         for ind, data in assemblies.items():
@@ -140,12 +129,8 @@ def test_tracking_montblanc(
 def test_calc_bboxes_from_keypoints():
     # Test bounding box from a single keypoint
     xy = np.asarray([[[0, 0, 1]]])
-    np.testing.assert_equal(
-        trackingutils.calc_bboxes_from_keypoints(xy, 10), [[-10, -10, 10, 10, 1]]
-    )
-    np.testing.assert_equal(
-        trackingutils.calc_bboxes_from_keypoints(xy, 20, 10), [[-10, -20, 30, 20, 1]]
-    )
+    np.testing.assert_equal(trackingutils.calc_bboxes_from_keypoints(xy, 10), [[-10, -10, 10, 10, 1]])
+    np.testing.assert_equal(trackingutils.calc_bboxes_from_keypoints(xy, 20, 10), [[-10, -20, 30, 20, 1]])
 
     width = 200
     height = width * 2
@@ -160,9 +145,7 @@ def test_calc_bboxes_from_keypoints():
 
     slack = 20
     bboxes = trackingutils.calc_bboxes_from_keypoints(xyp, slack=slack)
-    np.testing.assert_equal(
-        bboxes, [[-slack, -slack, width + slack, height + slack, 0.5]]
-    )
+    np.testing.assert_equal(bboxes, [[-slack, -slack, width + slack, height + slack, 0.5]])
 
     offset = 50
     bboxes = trackingutils.calc_bboxes_from_keypoints(xyp, offset=offset)

@@ -17,8 +17,8 @@ import numpy as np
 import torch
 
 from deeplabcut.pose_estimation_pytorch.models.target_generators.base import (
-    BaseGenerator,
     TARGET_GENERATORS,
+    BaseGenerator,
 )
 
 
@@ -33,10 +33,9 @@ class HeatmapGenerator(BaseGenerator):
     """
 
     class Mode(Enum):
-        """
-        KEYPOINT generates one heatmap per type of keypoint (for pose estimation heads)
-        INDIVIDUAL generates one heatmap per individual (for identification heads)
-        """
+        """KEYPOINT generates one heatmap per type of keypoint (for pose estimation
+        heads) INDIVIDUAL generates one heatmap per individual (for identification
+        heads)"""
 
         INDIVIDUAL = "INDIVIDUAL"
         KEYPOINT = "KEYPOINT"
@@ -106,9 +105,9 @@ class HeatmapGenerator(BaseGenerator):
     def forward(
         self, stride: float, outputs: dict[str, torch.Tensor], labels: dict
     ) -> dict[str, dict[str, torch.Tensor]]:
-        """
-        Given the annotations and predictions of your keypoints, this function returns the targets,
-        a dictionary containing the heatmaps, locref_maps and locref_masks.
+        """Given the annotations and predictions of your keypoints, this function
+        returns the targets, a dictionary containing the heatmaps, locref_maps and
+        locref_masks.
 
         Args:
             stride: the stride of the model
@@ -257,9 +256,8 @@ class HeatmapGenerator(BaseGenerator):
         locref_map: np.ndarray | None,
         locref_mask: np.ndarray | None,
     ) -> None:
-        """
-        Updates the heatmap and locref targets in-place following an update rule (e.g.,
-        Gaussian or Plateau).
+        """Updates the heatmap and locref targets in-place following an update rule
+        (e.g., Gaussian or Plateau).
 
         Args:
             heatmap: the heatmap to update of shape (height, width)
@@ -275,7 +273,7 @@ class HeatmapGenerator(BaseGenerator):
 
 @TARGET_GENERATORS.register_module
 class HeatmapGaussianGenerator(HeatmapGenerator):
-    """Generates gaussian heatmaps (and locref) targets from keypoints"""
+    """Generates gaussian heatmaps (and locref) targets from keypoints."""
 
     def update(
         self,
@@ -285,7 +283,7 @@ class HeatmapGaussianGenerator(HeatmapGenerator):
         locref_map: np.ndarray | None,
         locref_mask: np.ndarray | None,
     ) -> None:
-        """Updates the heatmap (and locref if defined) with gaussian values"""
+        """Updates the heatmap (and locref if defined) with gaussian values."""
         # revert keypoints to follow image convention: from x,y to y,x
         keypoint = keypoint.copy()[::-1]
 
@@ -305,7 +303,7 @@ class HeatmapGaussianGenerator(HeatmapGenerator):
 
 @TARGET_GENERATORS.register_module
 class HeatmapPlateauGenerator(HeatmapGenerator):
-    """Generates plateau heatmaps (and locref) targets from keypoints"""
+    """Generates plateau heatmaps (and locref) targets from keypoints."""
 
     def update(
         self,
@@ -315,7 +313,7 @@ class HeatmapPlateauGenerator(HeatmapGenerator):
         locref_map: np.ndarray | None,
         locref_mask: np.ndarray | None,
     ) -> None:
-        """Updates the heatmap (and locref if defined) with plateau values"""
+        """Updates the heatmap (and locref if defined) with plateau values."""
         # revert keypoints to follow image convention: from x,y to y,x
         keypoint = keypoint.copy()[::-1]
         dist = np.sum((grid - keypoint) ** 2, axis=2)

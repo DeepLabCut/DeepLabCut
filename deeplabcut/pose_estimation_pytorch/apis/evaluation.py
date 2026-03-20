@@ -11,8 +11,8 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 import albumentations as A
 import matplotlib.pyplot as plt
@@ -26,13 +26,13 @@ import deeplabcut.pose_estimation_pytorch.apis.prune_paf_graph as prune_paf_grap
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch import utils
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
+    build_bboxes_dict_for_dataframe,
     build_predictions_dataframe,
     ensure_multianimal_df_format,
     get_inference_runners,
     get_model_snapshots,
     get_scorer_name,
     get_scorer_uid,
-    build_bboxes_dict_for_dataframe,
 )
 from deeplabcut.pose_estimation_pytorch.data import DLCLoader, Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
@@ -56,7 +56,7 @@ def predict(
     mode: str,
     detector_runner: InferenceRunner | None = None,
 ) -> dict[str, dict[str, np.ndarray]]:
-    """Predicts poses on data contained in a loader
+    """Predicts poses on data contained in a loader.
 
     Args:
         pose_runner: The runner to use for pose estimation
@@ -80,10 +80,7 @@ def predict(
             context = bbox_predictions
         else:
             ground_truth_bboxes = loader.ground_truth_bboxes(mode=mode)
-            context = [
-                {"bboxes": ground_truth_bboxes[image]["bboxes"]}
-                for image in image_paths
-            ]
+            context = [{"bboxes": ground_truth_bboxes[image]["bboxes"]} for image in image_paths]
 
     elif loader.pose_task == Task.COND_TOP_DOWN:
         # Load conditions for context
@@ -93,15 +90,12 @@ def predict(
     images_with_context = image_paths
     if context is not None:
         if len(context) != len(image_paths):
-            raise ValueError(
-                f"Missing context for some images: {len(context)} != {len(image_paths)}"
-            )
-        images_with_context = list(zip(image_paths, context))
+            raise ValueError(f"Missing context for some images: {len(context)} != {len(image_paths)}")
+        images_with_context = list(zip(image_paths, context, strict=False))
 
     predictions = pose_runner.inference(images=tqdm(images_with_context))
     return {
-        image_path: image_predictions
-        for image_path, image_predictions in zip(image_paths, predictions)
+        image_path: image_predictions for image_path, image_predictions in zip(image_paths, predictions, strict=False)
     }
 
 
@@ -163,9 +157,7 @@ def evaluate(
     gt_unique, pred_unique, unique_idx = None, None, None
     if parameters.num_unique_bpts >= 1:
         gt_unique = loader.ground_truth_keypoints(mode, unique_bodypart=True)
-        pred_unique = {
-            filename: pred["unique_bodyparts"] for filename, pred in predictions.items()
-        }
+        pred_unique = {filename: pred["unique_bodyparts"] for filename, pred in predictions.items()}
         unique_idx = _get_keypoints_to_use(parameters.unique_bpts, comparison_bodyparts)
 
     # When `comparison_bodyparts` is used, check that the bodyparts used for evaluation
@@ -214,9 +206,7 @@ def evaluate(
     )
 
     if loader.model_cfg["metadata"]["with_identity"]:
-        pred_id_scores = {
-            filename: pred["identity_scores"] for filename, pred in predictions.items()
-        }
+        pred_id_scores = {filename: pred["identity_scores"] for filename, pred in predictions.items()}
         id_scores = metrics.compute_identity_scores(
             individuals=parameters.individuals,
             bodyparts=parameters.bodyparts,
@@ -276,9 +266,7 @@ def visualize_predictions(
     image_paths = list(predictions.keys())
     if num_samples and num_samples < len(image_paths):
         if random_select:
-            image_paths = np.random.choice(
-                image_paths, num_samples, replace=False
-            ).tolist()
+            image_paths = np.random.choice(image_paths, num_samples, replace=False).tolist()
         else:
             image_paths = image_paths[:num_samples]
 
@@ -312,11 +300,7 @@ def visualize_predictions(
         if plot_bboxes:
             bboxes = predictions[image_path].get("bboxes", None)
             bbox_scores = predictions[image_path].get("bbox_scores", None)
-            bounding_boxes = (
-                (bboxes, bbox_scores)
-                if bboxes is not None and bbox_scores is not None
-                else None
-            )
+            bounding_boxes = (bboxes, bbox_scores) if bboxes is not None and bbox_scores is not None else None
         else:
             bounding_boxes = None
 
@@ -479,9 +463,8 @@ def evaluate_snapshot(
     detector_snapshot: Snapshot | None = None,
     pcutoff: float | list[float] | dict[str, float] | None = None,
 ) -> pd.DataFrame:
-    """Evaluates a snapshot.
-    The evaluation results are stored in the .h5 and .csv file under the subdirectory
-    'evaluation_results'.
+    """Evaluates a snapshot. The evaluation results are stored in the .h5 and .csv file
+    under the subdirectory 'evaluation_results'.
 
     Args:
         cfg: the content of the project's config file
@@ -557,10 +540,7 @@ def evaluate_snapshot(
     if pcutoff is None:
         pcutoff = cfg.get("pcutoff", 0.6)
     elif isinstance(pcutoff, dict):
-        pcutoff = [
-            pcutoff.get(bpt, 0.6)
-            for bpt in eval_parameters.bodyparts + eval_parameters.unique_bpts
-        ]
+        pcutoff = [pcutoff.get(bpt, 0.6) for bpt in eval_parameters.bodyparts + eval_parameters.unique_bpts]
     _validate_pcutoff(parameters.bodyparts, parameters.unique_bpts, pcutoff)
 
     predictions = {}
@@ -570,14 +550,8 @@ def evaluate_snapshot(
         "%Training dataset": loader.train_fraction,
         "Shuffle number": loader.shuffle,
         "Training epochs": snapshot.epochs,
-        "Detector epochs (TD only)": (
-            -1 if detector_snapshot is None else detector_snapshot.epochs
-        ),
-        "pcutoff": (
-            ", ".join([str(v) for v in pcutoff])
-            if isinstance(pcutoff, list)
-            else pcutoff
-        ),
+        "Detector epochs (TD only)": (-1 if detector_snapshot is None else detector_snapshot.epochs),
+        "pcutoff": (", ".join([str(v) for v in pcutoff]) if isinstance(pcutoff, list) else pcutoff),
     }
     for split in ["train", "test"]:
         results, predictions_for_split = evaluate(
@@ -634,9 +608,7 @@ def evaluate_snapshot(
     save_evaluation_results(df_scores, scores_filepath, show_errors, pcutoff)
 
     if per_keypoint_evaluation:
-        rmse_per_bpt_path = output_filename.with_name(
-            output_filename.stem + "-keypoint-results.csv"
-        )
+        rmse_per_bpt_path = output_filename.with_name(output_filename.stem + "-keypoint-results.csv")
         save_rmse_per_bodypart(rmse_per_bodypart, rmse_per_bpt_path, show_errors)
 
     if plotting:
@@ -650,16 +622,10 @@ def evaluate_snapshot(
 
         df_ground_truth = ensure_multianimal_df_format(loader.df)
 
-        bboxes_cutoff = (
-            loader.model_cfg.get("detector", {})
-            .get("model", {})
-            .get("box_score_thresh", 0.6)
-        )
+        bboxes_cutoff = loader.model_cfg.get("detector", {}).get("model", {}).get("box_score_thresh", 0.6)
 
         for mode in ["train", "test"]:
-            df_combined = predictions[mode].merge(
-                df_ground_truth, left_index=True, right_index=True
-            )
+            df_combined = predictions[mode].merge(df_ground_truth, left_index=True, right_index=True)
             bboxes_split = bounding_boxes[mode]
 
             plot_evaluation_results(
@@ -804,9 +770,7 @@ def evaluate_network(
             detector_snapshots = [None]
             if loader.pose_task == Task.TOP_DOWN:
                 if detector_snapshot_index is not None:
-                    det_snapshots = get_model_snapshots(
-                        "all", loader.model_folder, Task.DETECT
-                    )
+                    det_snapshots = get_model_snapshots("all", loader.model_folder, Task.DETECT)
                     if len(det_snapshots) == 0:
                         print(
                             "The detector_snapshot_index was set to "
@@ -863,14 +827,11 @@ def image_to_dlc_df_index(image: str) -> tuple[str, ...]:
     if len(image_path.parts) >= 3 and image_path.parts[-3] == "labeled-data":
         return Path(image_path).parts[-3:]
 
-    raise ValueError(f"Unexpected image filepath for a DLC project")
+    raise ValueError("Unexpected image filepath for a DLC project")
 
 
-def save_evaluation_results(
-    df_scores: pd.DataFrame, scores_path: Path, print_results: bool, pcutoff: float
-) -> None:
-    """
-    Saves the evaluation results to a CSV file. Adds the evaluation results for the
+def save_evaluation_results(df_scores: pd.DataFrame, scores_path: Path, print_results: bool, pcutoff: float) -> None:
+    """Saves the evaluation results to a CSV file. Adds the evaluation results for the
     model to the combined results file, or creates it if it does not yet exist.
 
     Args:
@@ -889,9 +850,7 @@ def save_evaluation_results(
     # Update combined results
     combined_scores_path = scores_path.parent.parent / "CombinedEvaluation-results.csv"
     if combined_scores_path.exists():
-        df_existing_results = pd.read_csv(
-            combined_scores_path, index_col=[0, 1, 2, 3, 4]
-        )
+        df_existing_results = pd.read_csv(combined_scores_path, index_col=[0, 1, 2, 3, 4])
         df_scores = df_scores.combine_first(df_existing_results)
 
     df_scores = df_scores.sort_index()
@@ -903,8 +862,7 @@ def save_rmse_per_bodypart(
     output_path: Path,
     print_results: bool,
 ) -> None:
-    """
-    Saves the evaluation results per bodypart to a CSV file.
+    """Saves the evaluation results per bodypart to a CSV file.
 
     Args:
         rmse_per_bodypart: The scores dataframe for a snapshot
@@ -937,7 +895,7 @@ def _validate_pcutoff(
     unique_bpts: list[str],
     pcutoff: float | list[float],
 ) -> None:
-    """Checks that the given `pcutoff` value has the correct number of elements"""
+    """Checks that the given `pcutoff` value has the correct number of elements."""
     if isinstance(pcutoff, (int, float)):
         return
 
@@ -1005,7 +963,7 @@ def _extract_rmse_per_bodypart(
     bodyparts: list[str],
     unique_bodyparts: list[str],
 ) -> dict[str, float]:
-    """Extracts the RMSE per bodypart metrics from the results dict
+    """Extracts the RMSE per bodypart metrics from the results dict.
 
     This method modifies the given dict in-place, removing all keys for RMSE per
     bodypart or unique bodypart.

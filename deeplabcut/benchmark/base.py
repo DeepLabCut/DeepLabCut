@@ -9,7 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-"""Base classes for benchmark and result definition
+"""Base classes for benchmark and result definition.
 
 Benchmarks subclass the abstract ``Benchmark`` class and are defined by ``name``, their
 ``keypoints`` names, as well as groundtruth and metadata necessary to run evaluation.
@@ -24,8 +24,7 @@ into this evaluation framework, please feel free to extend the base classes
 import abc
 import dataclasses
 import warnings
-from typing import Iterable
-from typing import Tuple
+from collections.abc import Iterable
 
 import pandas as pd
 
@@ -47,9 +46,9 @@ class Benchmark(abc.ABC):
     def names(self):
         """A unique key to describe this submission, e.g. the model name.
 
-        This is also the name that will later appear in the benchmark table.
-        The name needs to be unique across the whole benchmark. Non-unique names
-        will raise an error during submission of a PR.
+        This is also the name that will later appear in the benchmark table. The name
+        needs to be unique across the whole benchmark. Non-unique names will raise an
+        error during submission of a PR.
         """
         raise NotImplementedError()
 
@@ -62,10 +61,7 @@ class Benchmark(abc.ABC):
         keys = ["code", "name", "keypoints", "ground_truth", "metadata"]
         for key in keys:
             if not hasattr(self, key):
-                raise NotImplementedError(
-                    f"Subclass of abstract Benchmark class need "
-                    f"to define the {key} property."
-                )
+                raise NotImplementedError(f"Subclass of abstract Benchmark class need to define the {key} property.")
 
     def compute_pose_rmse(self, results_objects):
         return deeplabcut.benchmark.metrics.calc_rmse_from_obj(
@@ -81,9 +77,7 @@ class Benchmark(abc.ABC):
         """Evaluate this benchmark with all registered methods."""
 
         if name not in self.names():
-            raise ValueError(
-                f"{name} is not registered. Valid names are {self.names()}"
-            )
+            raise ValueError(f"{name} is not registered. Valid names are {self.names()}")
         if on_error not in ("ignore", "return", "raise"):
             raise ValueError(f"on_error got an undefined value: {on_error}")
         mean_avg_precision = float("nan")
@@ -104,9 +98,7 @@ class Benchmark(abc.ABC):
                 pass
             elif on_error == "raise":
                 # raise the error and stop evaluation
-                raise BenchmarkEvaluationError(
-                    f"Error during benchmark evaluation for model {name}"
-                ) from exception
+                raise BenchmarkEvaluationError(f"Error during benchmark evaluation for model {name}") from exception
             else:
                 raise NotImplementedError() from exception
         return Result(
@@ -118,19 +110,19 @@ class Benchmark(abc.ABC):
         )
 
     def _validate_predictions(self, name: str, predictions: dict) -> dict:
-        """Validates the submitted predictions object
-        Checks that there is a prediction for each test image, and raises a warning if
-        that is not the case. Returns only predictions made for test images.
+        """Validates the submitted predictions object Checks that there is a prediction
+        for each test image, and raises a warning if that is not the case.
+
+        Returns only predictions made for test images.
         """
-        test_images = deeplabcut.benchmark.metrics.load_test_images(
-            self.ground_truth, self.metadata
-        )
+        test_images = deeplabcut.benchmark.metrics.load_test_images(self.ground_truth, self.metadata)
         missing_images = set(test_images) - set(predictions.keys())
         if len(missing_images) > 0:
             warnings.warn(
                 f"Missing {len(missing_images)} test images in the predictions for "
                 f"{name}: {list(missing_images)} Metrics will be computed as if no "
-                "individuals were detected in those images."
+                "individuals were detected in those images.",
+                stacklevel=2,
             )
 
         return {img: predictions.get(img, tuple()) for img in test_images}
@@ -159,13 +151,13 @@ class Result:
     _primary_key = ("benchmark_name", "method_name", "benchmark_version")
 
     @property
-    def primary_key(self) -> Tuple[str]:
+    def primary_key(self) -> tuple[str]:
         """The primary key to uniquely identify this result."""
         return tuple(getattr(self, k) for k in self._primary_key)
 
     @property
-    def primary_key_names(self) -> Tuple[str]:
-        """Names of the primary keys"""
+    def primary_key_names(self) -> tuple[str]:
+        """Names of the primary keys."""
         return tuple(self._export_mapping.get(k) for k in self._primary_key)
 
     def __str__(self):
@@ -195,10 +187,10 @@ class ResultCollection:
         return next(iter(self.results.values())).primary_key_names
 
     def toframe(self) -> pd.DataFrame:
-        """Convert results to pandas dataframe"""
-        return pd.DataFrame(
-            [result.todict() for result in self.results.values()]
-        ).set_index(list(self.primary_key_names))
+        """Convert results to pandas dataframe."""
+        return pd.DataFrame([result.todict() for result in self.results.values()]).set_index(
+            list(self.primary_key_names)
+        )
 
     def add(self, result: Result):
         """Add a result to the collection."""
@@ -225,10 +217,7 @@ class ResultCollection:
 
     def __contains__(self, other: Result):
         if not isinstance(other, Result):
-            raise ValueError(
-                f"{type(self)} can only store objects of type Result, "
-                f"but got {type(other)}."
-            )
+            raise ValueError(f"{type(self)} can only store objects of type Result, but got {type(other)}.")
         return other.primary_key in self.results
 
     def __eq__(self, other):

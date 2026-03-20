@@ -10,8 +10,8 @@
 #
 import numpy as np
 import tensorflow as tf
-from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal
 
+from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal
 
 RADIUS = 5
 THRESHOLD = 0.01
@@ -66,14 +66,10 @@ def test_association_costs(model_outputs, ground_truth_detections):
     costs_pred = preds["costs"]
     assert len(costs_pred) == len(costs_gt)
     eq = [
-        np.array_equal(np.argmax(v["m1"], axis=0), np.argmax(costs_gt[k]["m1"], axis=0))
-        for k, v in costs_pred.items()
+        np.array_equal(np.argmax(v["m1"], axis=0), np.argmax(costs_gt[k]["m1"], axis=0)) for k, v in costs_pred.items()
     ]
     assert sum(eq) == 60  # 6 arrays are unequal as cost computation was corrected
-    assert all(
-        np.allclose(v["distance"], costs_gt[k]["distance"], atol=1.5)
-        for k, v in costs_pred.items()
-    )
+    assert all(np.allclose(v["distance"], costs_gt[k]["distance"], atol=1.5) for k, v in costs_pred.items())
 
 
 def test_compute_peaks_and_costs_no_graph(model_outputs):

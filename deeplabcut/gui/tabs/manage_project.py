@@ -9,16 +9,18 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import os
+
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QPushButton,
     QFileDialog,
     QLabel,
     QLineEdit,
+    QPushButton,
 )
+
 from deeplabcut.create_project import add_new_videos
-from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.components import DefaultTab, _create_horizontal_layout
+from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import ConfigEditor
 
 

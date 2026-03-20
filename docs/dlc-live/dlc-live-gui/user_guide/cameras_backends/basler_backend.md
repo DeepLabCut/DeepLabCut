@@ -11,7 +11,7 @@ This backend requires the optional `pypylon` dependency. If `pypylon` is not ins
 
 ---
 
-## Features & design 
+## Features & design
 
 - Native Basler camera support via **pypylon** (Pylon SDK bindings).
 - Best-effort device discovery without opening cameras (enumerates `DeviceInfo` entries).

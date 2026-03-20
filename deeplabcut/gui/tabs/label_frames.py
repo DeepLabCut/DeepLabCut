@@ -22,10 +22,7 @@ from deeplabcut.gui.widgets import launch_napari
 from deeplabcut.utils.skeleton import SkeletonBuilder
 
 
-def label_frames(
-    config_path: str | Path | None = None,
-    image_folder: str | None = None
-):
+def label_frames(config_path: str | Path | None = None, image_folder: str | None = None):
     """Launches the napari-deeplabcut labelling GUI.
 
     For more information on labelling data with napari-deeplabcut, see our docs:
@@ -103,7 +100,7 @@ refine_labels = label_frames
 
 class LabelFrames(DefaultTab):
     def __init__(self, root, parent, h1_description):
-        super(LabelFrames, self).__init__(root, parent, h1_description)
+        super().__init__(root, parent, h1_description)
 
         self._set_page()
 
@@ -125,9 +122,7 @@ class LabelFrames(DefaultTab):
         dialog = QtWidgets.QFileDialog(self)
         dialog.setFileMode(QtWidgets.QFileDialog.Directory)
         dialog.setViewMode(QtWidgets.QFileDialog.Detail)
-        dialog.setDirectory(
-            os.path.join(os.path.dirname(self.root.config), "labeled-data")
-        )
+        dialog.setDirectory(os.path.join(os.path.dirname(self.root.config), "labeled-data"))
         if dialog.exec_():
             folder = dialog.selectedFiles()[0]
             has_h5 = False

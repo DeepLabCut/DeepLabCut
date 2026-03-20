@@ -4,7 +4,6 @@ import json
 import subprocess
 from pathlib import Path
 
-import pydantic
 import pytest
 
 
@@ -15,8 +14,7 @@ def _git(repo: Path, *args: str) -> str:
     proc = subprocess.run(
         ["git", *args],
         cwd=repo,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         text=True,
         check=False,
     )
@@ -117,9 +115,7 @@ def test_determine_diff_range_push_uses_before_after(selector, tmp_path, monkeyp
     assert mode == selector.DiffMode.PUSH
 
 
-def test_determine_diff_range_push_zero_sha_uses_empty_tree(
-    selector, tmp_path, monkeypatch
-):
+def test_determine_diff_range_push_zero_sha_uses_empty_tree(selector, tmp_path, monkeypatch):
     repo = _init_repo(tmp_path)
 
     after = _commit_file(repo, "initial.txt", "hello", "initial commit")
@@ -135,9 +131,7 @@ def test_determine_diff_range_push_zero_sha_uses_empty_tree(
     assert mode == selector.DiffMode.INITIAL
 
 
-def test_determine_diff_range_fallback_uses_head_parent(
-    selector, tmp_path, monkeypatch
-):
+def test_determine_diff_range_fallback_uses_head_parent(selector, tmp_path, monkeypatch):
     repo = _init_repo(tmp_path)
 
     prev = _commit_file(repo, "a.txt", "one", "first commit")

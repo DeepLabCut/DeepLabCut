@@ -10,10 +10,10 @@
 #
 
 from deeplabcut.pose_estimation_pytorch.runners.base import (
-    attempt_snapshot_load,
-    get_load_weights_only,
-    fix_snapshot_metadata,
     Runner,
+    attempt_snapshot_load,
+    fix_snapshot_metadata,
+    get_load_weights_only,
     set_load_weights_only,
 )
 from deeplabcut.pose_estimation_pytorch.runners.ctd import CTDTrackingConfig
@@ -22,16 +22,16 @@ from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (
     TopDownDynamicCropper,
 )
 from deeplabcut.pose_estimation_pytorch.runners.inference import (
-    build_inference_runner,
     DetectorInferenceRunner,
     InferenceRunner,
     PoseInferenceRunner,
+    build_inference_runner,
 )
 from deeplabcut.pose_estimation_pytorch.runners.logger import LOGGER
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import TorchSnapshotManager
 from deeplabcut.pose_estimation_pytorch.runners.train import (
-    build_training_runner,
     DetectorTrainingRunner,
     PoseTrainingRunner,
     TrainingRunner,
+    build_training_runner,
 )

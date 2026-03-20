@@ -17,11 +17,11 @@ from torch.optim.lr_scheduler import _LRScheduler
 
 
 class LRListScheduler(_LRScheduler):
-    """
-    You can achieve increased performance and faster training by using a learning rate
-    that changes during training. A scheduler makes the learning rate adaptive. Given a
-    list of learning rates and milestones modifies the learning rate accordingly during
-    training.
+    """You can achieve increased performance and faster training by using a learning
+    rate that changes during training.
+
+    A scheduler makes the learning rate adaptive. Given a list of learning rates and
+    milestones modifies the learning rate accordingly during training.
     """
 
     def __init__(self, optimizer, milestones, lr_list, last_epoch=-1) -> None:
@@ -62,7 +62,7 @@ class LRListScheduler(_LRScheduler):
 def build_scheduler(
     scheduler_cfg: dict | None, optimizer: torch.optim.Optimizer
 ) -> torch.optim.lr_scheduler.LRScheduler | None:
-    """Builds a scheduler from a configuration, if defined
+    """Builds a scheduler from a configuration, if defined.
 
     Args:
         scheduler_cfg: the configuration of the scheduler to build
@@ -92,7 +92,7 @@ def build_scheduler(
 
 
 def _parse_scheduler_param(param: Any, optimizer: torch.optim.Optimizer) -> Any:
-    """Parses parameters so they're built as schedulers if they're configured as one"""
+    """Parses parameters so they're built as schedulers if they're configured as one."""
     if isinstance(param, dict) and "type" in param:
         param = build_scheduler(param, optimizer)
 
@@ -114,7 +114,7 @@ def load_scheduler_state(
     try:
         scheduler.load_state_dict(state_dict)
     except Exception as err:
-        raise ValueError(f"Failed to load state dict: {err}")
+        raise ValueError("Failed to load state dict") from err
 
     param_groups = scheduler.optimizer.param_groups
     resume_lrs = scheduler.get_last_lr()
@@ -126,5 +126,5 @@ def load_scheduler_state(
         )
 
     # Update the learning rate for the optimizer based on the scheduler
-    for group, resume_lr in zip(param_groups, resume_lrs):
-        group['lr'] = resume_lr
+    for group, resume_lr in zip(param_groups, resume_lrs, strict=False):
+        group["lr"] = resume_lr

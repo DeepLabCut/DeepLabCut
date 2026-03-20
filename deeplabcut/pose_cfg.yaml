@@ -83,7 +83,7 @@ contrast:
    claheratio: 0.1
    histeq: True
    histeqratio: 0.1
-   
+
 # dictionary with convolution parameters
 convolution:
    sharpen: False
