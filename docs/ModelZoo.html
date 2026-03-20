@@ -265,7 +265,6 @@
 
 
 
-<li class="toctree-l1"><a class="reference internal" href="recipes/fmpose3d.html">3D Pose Estimation with FMPose3D</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
@@ -516,6 +515,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#superanimal-topviewmouse">SuperAnimal-TopViewMouse:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#superanimal-human">SuperAnimal-Human:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example-using-superanimal-models-for-inference-without-training">Practical example: Using SuperAnimal models for inference without training.</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example-fmpose3d-monocular-3d-inference">Practical example: FMPose3D monocular 3D inference</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example-using-superanimal-model-bottom-up-considering-video-animal-size">Practical example: Using SuperAnimal model bottom up, considering video/animal size.</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example-using-transfer-learning-with-superanimal-weights">Practical example: Using transfer learning with superanimal weights.</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#potential-failure-modes-for-superanimal-models-and-how-to-fix-it">Potential failure modes for SuperAnimal Models and how to fix it.</a></li>
@@ -644,6 +644,31 @@ test our models in 🕸<a class="reference external" href="https://contrib.deepl
                                         <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;hrnet_w32&quot;</span><span class="p">,</span>
                                         <span class="n">detector_name</span><span class="o">=</span><span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span><span class="p">,</span>
                                         <span class="n">video_adapt</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="practical-example-fmpose3d-monocular-3d-inference">
+<h3>Practical example: FMPose3D monocular 3D inference<a class="headerlink" href="#practical-example-fmpose3d-monocular-3d-inference" title="Link to this heading">#</a></h3>
+<p>For FMPose3D models, use <code class="docutils literal notranslate"><span class="pre">model_name=&quot;fmpose3d_animals&quot;</span></code> or
+<code class="docutils literal notranslate"><span class="pre">model_name=&quot;fmpose3d_humans&quot;</span></code>. Model selection is still determined by
+<code class="docutils literal notranslate"><span class="pre">model_name</span></code>, but to stay aligned with SuperAnimal naming conventions use:
+<code class="docutils literal notranslate"><span class="pre">superanimal_name=&quot;superanimal_quadruped&quot;</span></code> for <code class="docutils literal notranslate"><span class="pre">fmpose3d_animals</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">superanimal_name=&quot;superanimal_humanbody&quot;</span></code> for <code class="docutils literal notranslate"><span class="pre">fmpose3d_humans</span></code>.</p>
+<p>Like the 2D superanimal models, this inference branch writes
+intermediate 2D predictions to <code class="docutils literal notranslate"><span class="pre">&lt;video&gt;_DLC_fmpose3d_*.h5</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;video&gt;_DLC_fmpose3d_*.json</span></code>. In addition, 3D predictions are saved to
+<code class="docutils literal notranslate"><span class="pre">&lt;video&gt;_DLC_fmpose3d_*_3d.h5</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;video&gt;_DLC_fmpose3d_*_3d.json</span></code>. Set <code class="docutils literal notranslate"><span class="pre">fmpose_return_3d=True</span></code> to also return
+the in-memory 3D dataframe (<code class="docutils literal notranslate"><span class="pre">df_3d</span></code>) in the function output.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
+
+<span class="n">video_path</span> <span class="o">=</span> <span class="s2">&quot;demo-video.mp4&quot;</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">video_inference_superanimal</span><span class="p">(</span>
+    <span class="n">videos</span><span class="o">=</span><span class="p">[</span><span class="n">video_path</span><span class="p">],</span>
+    <span class="n">superanimal_name</span><span class="o">=</span><span class="s2">&quot;superanimal_quadruped&quot;</span><span class="p">,</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;fmpose3d_animals&quot;</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">fmpose_return_3d</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># include 3D dataframe in returned payload</span>
+<span class="p">)</span>
+<span class="n">df_3d</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">video_path</span><span class="p">][</span><span class="s2">&quot;df_3d&quot;</span><span class="p">]</span>
 </pre></div>
 </div>
 </section>
@@ -807,6 +832,7 @@ preprint={abs/2203.07436}
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#superanimal-topviewmouse">SuperAnimal-TopViewMouse:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#superanimal-human">SuperAnimal-Human:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example-using-superanimal-models-for-inference-without-training">Practical example: Using SuperAnimal models for inference without training.</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example-fmpose3d-monocular-3d-inference">Practical example: FMPose3D monocular 3D inference</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example-using-superanimal-model-bottom-up-considering-video-animal-size">Practical example: Using SuperAnimal model bottom up, considering video/animal size.</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#practical-example-using-transfer-learning-with-superanimal-weights">Practical example: Using transfer learning with superanimal weights.</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#potential-failure-modes-for-superanimal-models-and-how-to-fix-it">Potential failure modes for SuperAnimal Models and how to fix it.</a></li>
