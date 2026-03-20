@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_metadata_updated: '2026-03-17'
+  ignore: false
+---
 (file:dlclivegui-camera-support)=
 # Camera support
 
@@ -32,9 +37,9 @@ You can select the backend in the GUI from the "Backend" dropdown, or in your co
 Below are some general recommendations for backend selection based on your operating system and camera type.
 
 ```{note}
-Please understand this may not reflect the exact capabilities for every setup. 
+Please understand this may not reflect the exact capabilities for every setup.
 
-Let us know about your experience with different cameras and backends on different platforms to help us improve our documentation and support! 
+Let us know about your experience with different cameras and backends on different platforms to help us improve our documentation and support!
 ```
 
 ### Windows
@@ -89,5 +94,3 @@ Install vendor-provided camera drivers and SDK. CTI files are typically in:
 | Windows | ✅ | ✅ | ❌ | ✅ |
 | Linux | ✅ | ✅ | ✅ | ✅ |
 | macOS | ✅ | ❌ | ⚠️ | ✅ |
-
-

@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2026-02-10'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+---
 (governance-model)=
 # Governance Model of DeepLabCut
 (adapted from https://napari.org/stable/community/governance.html)

@@ -26,3 +26,20 @@ repos:
     hooks:
       - id: black
         language_version: python3
+  - repo: local
+    hooks:
+      - id: dlc-docs-notebooks-check
+        name: DLC docs+notebooks staleness/check + nbformat validate + normalization
+        entry: python tools/docs_and_notebooks_check.py
+        language: python
+        pass_filenames: true
+        files: ^(docs/|examples/(JUPYTER|COLAB)/|tools/).*(\.md|\.ipynb)$
+        args:
+          - --config
+          - tools/docs_and_notebooks_report_config.yml
+          - check
+          - --targets
+        additional_dependencies:
+          - "pydantic>=2,<3"
+          - "pyyaml"
+          - "nbformat>=5"
