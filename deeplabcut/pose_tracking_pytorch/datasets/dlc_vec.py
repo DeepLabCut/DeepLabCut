@@ -9,8 +9,8 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-from torch.utils.data import Dataset
 import numpy as np
+from torch.utils.data import Dataset
 
 
 class TripletDataset(Dataset):

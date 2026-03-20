@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests for the scoring methods"""
+"""Tests for the scoring methods."""
+
 import numpy as np
 import pytest
 

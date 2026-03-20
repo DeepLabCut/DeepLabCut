@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Defines conversion tables mapping DeepLabCut project bodyparts to SA bodyparts"""
+"""Defines conversion tables mapping DeepLabCut project bodyparts to SA bodyparts."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -18,7 +19,7 @@ import numpy as np
 
 @dataclass
 class ConversionTable:
-    """Maps DLC project bodyparts to the corresponding SuperAnimal bodyparts
+    """Maps DLC project bodyparts to the corresponding SuperAnimal bodyparts.
 
     The conversion table must satisfy the following conditions (checked by validate):
         - All SuperAnimal bodyparts must be valid (defined for the SuperAnimal model)
@@ -31,7 +32,7 @@ class ConversionTable:
     table: dict[str, str]
 
     def __post_init__(self):
-        """Validates the table"""
+        """Validates the table."""
         self.validate()
 
     def to_array(self) -> np.ndarray:

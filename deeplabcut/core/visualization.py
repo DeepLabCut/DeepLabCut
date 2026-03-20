@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Visualization methods for """
+"""Visualization methods for."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -18,7 +19,7 @@ import numpy as np
 
 
 def form_figure(nx, ny) -> tuple[plt.Figure, plt.Axes]:
-    """Forms a figure on which to plot images"""
+    """Forms a figure on which to plot images."""
     fig, ax = plt.subplots(frameon=False)
     ax.set_xlim(0, nx)
     ax.set_ylim(0, ny)
@@ -171,12 +172,11 @@ def generate_model_output_plots(
         paf_colormap: The colormap to use for the PAF maps.
         output_suffix: The filename suffix for the maps to output.
     """
+
     def _filename(map_name) -> str:
         return f"{image_name}_{map_name}_{output_suffix}.png"
 
-    to_plot = [
-        i for i, bpt in enumerate(bodypart_names) if bpt in bodyparts_to_plot
-    ]
+    to_plot = [i for i, bpt in enumerate(bodypart_names) if bpt in bodyparts_to_plot]
     if len(to_plot) > 1:
         map_ = scmap[:, :, to_plot].sum(axis=2)
     elif len(to_plot) == 1 and len(bodypart_names) > 1:
@@ -211,15 +211,13 @@ def generate_model_output_plots(
 
     if paf is not None:
         if paf_graph is None:
-            raise ValueError(f"When plotting the PAF, you must pass the ``paf_graph``")
+            raise ValueError("When plotting the PAF, you must pass the ``paf_graph``")
 
         edge_list = []
         for n, edge in enumerate(paf_graph):
             if any(ind in to_plot for ind in edge):
                 e0, e1 = edge
-                edge_list.append(
-                    [(2 * n, 2 * n + 1), (bodypart_names[e0], bodypart_names[e1])]
-                )
+                edge_list.append([(2 * n, 2 * n + 1), (bodypart_names[e0], bodypart_names[e1])])
 
         if paf_all_in_one:
             inds = [elem[0] for elem in edge_list]

@@ -30,15 +30,13 @@ import pandas as pd
 
 
 def Foldernames3Dproject(cfg_3d):
-    """Definitions of subfolders in 3D projects"""
+    """Definitions of subfolders in 3D projects."""
 
     img_path = os.path.join(cfg_3d["project_path"], "calibration_images")
     path_corners = os.path.join(cfg_3d["project_path"], "corners")
     path_camera_matrix = os.path.join(cfg_3d["project_path"], "camera_matrix")
     path_undistort = os.path.join(cfg_3d["project_path"], "undistortion")
-    path_removed_images = os.path.join(
-        cfg_3d["project_path"], "removed_calibration_images"
-    )
+    path_removed_images = os.path.join(cfg_3d["project_path"], "removed_calibration_images")
 
     return (
         img_path,
@@ -76,9 +74,7 @@ def create_empty_df(dataframe, scorer, flag):
 def compute_triangulation_calibration_images(
     stereo_matrix, projectedPoints1, projectedPoints2, path_undistort, cfg_3d, plot=True
 ):
-    """
-    Performs triangulation of the calibration images.
-    """
+    """Performs triangulation of the calibration images."""
     triangulate = []
     P1 = stereo_matrix["P1"]
     P2 = stereo_matrix["P2"]
@@ -93,7 +89,7 @@ def compute_triangulation_calibration_images(
     triangulate = np.asanyarray(triangulate)
 
     # Plotting
-    if plot == True:
+    if plot:
         col = colormap(np.linspace(0, 1, triangulate.shape[0]))
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
@@ -116,11 +112,11 @@ def triangulatePoints(P1, P2, x1, x2):
 
 
 def get_camerawise_videos(path, cam_names, videotype):
-    """
-    This function returns the list of videos corresponding to the camera names specified in the cam_names.
-    e.g. if cam_names = ['camera-1','camera-2']
+    """This function returns the list of videos corresponding to the camera names
+    specified in the cam_names. e.g. if cam_names = ['camera-1','camera-2']
 
-    then it will return [['somename-camera-1-othername.avi', 'somename-camera-2-othername.avi']]
+    then it will return [['somename-camera-1-othername.avi', 'somename-
+    camera-2-othername.avi']]
     """
     import glob
     from pathlib import Path
@@ -128,10 +124,7 @@ def get_camerawise_videos(path, cam_names, videotype):
     vid = []
 
     # Find videos only specific to the cam names
-    videos = [
-        glob.glob(os.path.join(path, str("*" + cam_names[i] + "*" + videotype)))
-        for i in range(len(cam_names))
-    ]
+    videos = [glob.glob(os.path.join(path, str("*" + cam_names[i] + "*" + videotype))) for i in range(len(cam_names))]
     videos = [y for x in videos for y in x]
 
     # Exclude the labeled video files
@@ -139,14 +132,11 @@ def get_camerawise_videos(path, cam_names, videotype):
         file_to_exclude = str("labeled" + videotype)
     else:
         file_to_exclude = str("labeled." + videotype)
-    videos = [v for v in videos if os.path.isfile(v) and not (file_to_exclude in v)]
+    videos = [v for v in videos if os.path.isfile(v) and file_to_exclude not in v]
     video_list = []
     cam = cam_names[0]  # camera1
     vid.append(
-        [
-            name
-            for name in glob.glob(os.path.join(path, str("*" + cam + "*" + videotype)))
-        ]
+        [name for name in glob.glob(os.path.join(path, str("*" + cam + "*" + videotype)))]
     )  # all videos with cam
     # print("here is what I found",vid)
     for k in range(len(vid[0])):
@@ -163,24 +153,16 @@ def get_camerawise_videos(path, cam_names, videotype):
                 if suf == "":
                     putativecam2name = os.path.join(path, pref + cam_names[1] + ending)
                 else:
-                    putativecam2name = os.path.join(
-                        path, pref + cam_names[1] + suf + ending
-                    )
+                    putativecam2name = os.path.join(path, pref + cam_names[1] + suf + ending)
             # print([os.path.join(path,pref+cam+suf+ending),putativecam2name])
             if os.path.isfile(putativecam2name):
                 # found a pair!!!
-                video_list.append(
-                    [os.path.join(path, pref + cam + suf + ending), putativecam2name]
-                )
+                video_list.append([os.path.join(path, pref + cam + suf + ending), putativecam2name])
     return video_list
 
 
-def Get_list_of_triangulated_and_videoFiles(
-    filepath, videotype, scorer_3d, cam_names, videofolder
-):
-    """
-    Returns the list of triangulated h5 and the corresponding video files.
-    """
+def Get_list_of_triangulated_and_videoFiles(filepath, videotype, scorer_3d, cam_names, videofolder):
+    """Returns the list of triangulated h5 and the corresponding video files."""
 
     prefix = []
     suffix = []
@@ -189,26 +171,18 @@ def Get_list_of_triangulated_and_videoFiles(
 
     # Checks if filepath is a directory
     if [os.path.isdir(i) for i in filepath] == [True]:
-        """
-        Analyzes all the videos in the directory.
-        """
+        """Analyzes all the videos in the directory."""
         print("Analyzing all the videos in the directory")
         videofolder = filepath[0]
         cwd = os.getcwd()
         os.chdir(videofolder)
-        triangulated_file_list = [
-            fn for fn in os.listdir(os.curdir) if (string_to_search in fn)
-        ]
+        triangulated_file_list = [fn for fn in os.listdir(os.curdir) if (string_to_search in fn)]
         video_list = get_camerawise_videos(videofolder, cam_names, videotype)
         os.chdir(cwd)
         triangulated_folder = videofolder
     else:
-        triangulated_file_list = [
-            str(Path(fn).name) for fn in filepath if (string_to_search in fn)
-        ]
-        triangulated_folder = [
-            str(Path(fn).parents[0]) for fn in filepath if (string_to_search in fn)
-        ]
+        triangulated_file_list = [str(Path(fn).name) for fn in filepath if (string_to_search in fn)]
+        triangulated_folder = [str(Path(fn).parents[0]) for fn in filepath if (string_to_search in fn)]
         triangulated_folder = triangulated_folder[0]
 
         if videofolder is None:
@@ -223,7 +197,8 @@ def Get_list_of_triangulated_and_videoFiles(
         if filename[i][0] == "_" or filename[i][0] == "-":
             filename[i] = filename[i][1:]
 
-    # Get the suffix and prefix of the video filenames so that they can be used for matching the triangulated file names.
+    # Get the suffix and prefix of the video filenames so that they can be
+    # used for matching the triangulated file names.
     for i in range(len(video_list)):
         pre = [
             str(Path(video_list[i][0]).stem).split(cam_names[0])[0],
@@ -245,7 +220,8 @@ def Get_list_of_triangulated_and_videoFiles(
         suffix.append(suf)
         prefix.append(pre)
 
-    # Match the suffix and prefix with the triangulated file name and return the list with triangulated file and corresponding video files.
+    # Match the suffix and prefix with the triangulated file name and return
+    # the list with triangulated file and corresponding video files.
     for k in range(len(filename)):
         for j in range(len(prefix)):
             if (prefix[j][0] in filename[k] and prefix[j][1] in filename[k]) and (
@@ -258,9 +234,7 @@ def Get_list_of_triangulated_and_videoFiles(
                     )
                 )
                 vfiles = get_camerawise_videos(videofolder, cam_names, videotype)
-                vfiles = [
-                    z for z in vfiles if prefix[j][0] in z[0] and suffix[j][0] in z[1]
-                ][0]
+                vfiles = [z for z in vfiles if prefix[j][0] in z[0] and suffix[j][0] in z[1]][0]
                 file_list.append(triangulated_file + vfiles)
 
     return file_list
@@ -297,9 +271,8 @@ def _reconstruct_tracks_as_tracklets(df):
 
 
 def _associate_paired_view_tracks(tracklets1, tracklets2, F):
-    """
-    Computes the optimal matching between tracks in two cameras
-    using the xFx'=0 epipolar constraint equation.
+    """Computes the optimal matching between tracks in two cameras using the xFx'=0
+    epipolar constraint equation.
 
     Parameters:
     -----------
@@ -329,22 +302,20 @@ def _associate_paired_view_tracks(tracklets1, tracklets2, F):
 
                 # Get average cost of the entire track
                 cost = cost.mean()
-            except:
+            except Exception:
                 # typically when dim 2 differs, with uniquebodyparts
                 cost = 100000.0
 
             costs[i, j] = cost
 
     match_inds = linear_sum_assignment(np.abs(costs))
-    voting = dict(zip(*match_inds))
+    voting = dict(zip(*match_inds, strict=False))
 
     return costs, voting
 
 
 def cross_view_match_dataframes(df1, df2, F):
-    """
-    Computes the costs and matched voting for tracks between
-    a camera pair
+    """Computes the costs and matched voting for tracks between a camera pair.
 
     df: Data read from .h5 track file
     F: fundamental matrix from OpenCV

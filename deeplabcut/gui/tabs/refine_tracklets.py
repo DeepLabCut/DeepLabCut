@@ -10,10 +10,12 @@
 #
 import os
 from pathlib import Path
+
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
-from deeplabcut.gui.widgets import ConfigEditor
+import deeplabcut
+from deeplabcut.core import trackingutils
 from deeplabcut.gui.components import (
     DefaultTab,
     ShuffleSpinBox,
@@ -22,15 +24,13 @@ from deeplabcut.gui.components import (
     _create_horizontal_layout,
     _create_label_widget,
 )
-
-import deeplabcut
-from deeplabcut.core import trackingutils
+from deeplabcut.gui.widgets import ConfigEditor
 from deeplabcut.utils.auxiliaryfunctions import GetScorerName
 
 
 class RefineTracklets(DefaultTab):
     def __init__(self, root, parent, h1_description):
-        super(RefineTracklets, self).__init__(root, parent, h1_description)
+        super().__init__(root, parent, h1_description)
         self._set_page()
 
     @property
@@ -122,9 +122,7 @@ class RefineTracklets(DefaultTab):
         layout.addWidget(self.num_animals_in_videos)
 
     def _generate_layout_refinement(self, layout):
-        section_title = _create_label_widget(
-            "Refinement Settings", "font:bold", (0, 50, 0, 0)
-        )
+        section_title = _create_label_widget("Refinement Settings", "font:bold", (0, 50, 0, 0))
 
         # Min swap length
         swap_length_label = QtWidgets.QLabel("Min swap length to highlight")
@@ -230,7 +228,8 @@ class RefineTracklets(DefaultTab):
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Warning)
         msg.setText(
-            "Make sure that you have refined all the labels before merging the dataset.If you merge the dataset, you need to re-create the training dataset before you start the training. Are you ready to merge the dataset?"
+            "Make sure that you have refined all the labels before merging the dataset.If you merge the dataset, you"
+            "need to re-create the training dataset before you start the training. Are you ready to merge the dataset?"
         )
         msg.setWindowTitle("Warning")
         msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)

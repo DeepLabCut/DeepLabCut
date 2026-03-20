@@ -8,9 +8,9 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""
-Uses imgaug dataflow for flexible augmentation
-Largely written by Mert Yüksekgönül during the summer in the Bethge lab -- Thanks!
+"""Uses imgaug dataflow for flexible augmentation Largely written by Mert Yüksekgönül
+during the summer in the Bethge lab -- Thanks!
+
 https://imgaug.readthedocs.io/en/latest/
 """
 
@@ -21,19 +21,21 @@ import pickle
 import imgaug.augmenters as iaa
 import numpy as np
 import scipy.io as sio
+
 from deeplabcut.pose_estimation_tensorflow.datasets import augmentation
 from deeplabcut.utils.auxfun_videos import imread
 from deeplabcut.utils.conversioncode import robust_split_path
+
 from .factory import PoseDatasetFactory
 from .pose_base import BasePoseDataset
-from .utils import DataItem, Batch
+from .utils import Batch, DataItem
 
 
 @PoseDatasetFactory.register("default")
 @PoseDatasetFactory.register("imgaug")
 class ImgaugPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
-        super(ImgaugPoseDataset, self).__init__(cfg)
+        super().__init__(cfg)
         self._n_kpts = len(cfg["all_joints_names"])
         self.data = self.load_dataset()
         self.batch_size = cfg.get("batch_size", 1)
@@ -54,7 +56,7 @@ class ImgaugPoseDataset(BasePoseDataset):
         cfg["rotation"] = cfg.get("rotation", True)
         if cfg.get("rotation", True):  # i.e. pm 10 degrees
             opt = cfg.get("rotation", False)
-            if type(opt) == int:
+            if isinstance(opt, int):
                 cfg["rotation"] = cfg.get("rotation", 25)
             else:
                 cfg["rotation"] = 25
@@ -70,11 +72,9 @@ class ImgaugPoseDataset(BasePoseDataset):
 
         cfg["motion_blur"] = cfg.get("motion_blur", True)
         if cfg["motion_blur"]:
-            cfg["motion_blur_params"] = dict(
-                cfg.get("motion_blur_params", {"k": 7, "angle": (-90, 90)})
-            )
+            cfg["motion_blur_params"] = dict(cfg.get("motion_blur_params", {"k": 7, "angle": (-90, 90)}))
 
-        print("Batch Size is %d" % self.batch_size)
+        print(f"Batch Size is {self.batch_size}")
 
     def load_dataset(self):
         cfg = self.cfg
@@ -141,20 +141,22 @@ class ImgaugPoseDataset(BasePoseDataset):
             return data
 
     def build_augmentation_pipeline(self, height=None, width=None, apply_prob=0.5):
-        sometimes = lambda aug: iaa.Sometimes(apply_prob, aug)
+        def sometimes(aug):
+            return iaa.Sometimes(apply_prob, aug)
+
         pipeline = iaa.Sequential(random_order=False)
 
         cfg = self.cfg
         if cfg["mirror"]:
             opt = cfg["mirror"]  # fliplr
-            if type(opt) == int:
+            if isinstance(opt, int):
                 pipeline.add(sometimes(iaa.Fliplr(opt)))
             else:
                 pipeline.add(sometimes(iaa.Fliplr(0.5)))
 
         if cfg.get("fliplr", False) and cfg.get("symmetric_pairs"):
             opt = cfg.get("fliplr", False)
-            if type(opt) == int:
+            if isinstance(opt, int):
                 p = opt
             else:
                 p = 0.5
@@ -181,31 +183,17 @@ class ImgaugPoseDataset(BasePoseDataset):
             pipeline.add(sometimes(iaa.MotionBlur(**opts)))
 
         if cfg["covering"]:
-            pipeline.add(
-                sometimes(iaa.CoarseDropout(0.02, size_percent=0.3, per_channel=0.5))
-            )
+            pipeline.add(sometimes(iaa.CoarseDropout(0.02, size_percent=0.3, per_channel=0.5)))
 
         if cfg["elastic_transform"]:
             pipeline.add(sometimes(iaa.ElasticTransformation(sigma=5)))
 
         if cfg.get("gaussian_noise", False):
             opt = cfg.get("gaussian_noise", False)
-            if type(opt) == int or type(opt) == float:
-                pipeline.add(
-                    sometimes(
-                        iaa.AdditiveGaussianNoise(
-                            loc=0, scale=(0.0, opt), per_channel=0.5
-                        )
-                    )
-                )
+            if isinstance(opt, (int, float)):
+                pipeline.add(sometimes(iaa.AdditiveGaussianNoise(loc=0, scale=(0.0, opt), per_channel=0.5)))
             else:
-                pipeline.add(
-                    sometimes(
-                        iaa.AdditiveGaussianNoise(
-                            loc=0, scale=(0.0, 0.05 * 255), per_channel=0.5
-                        )
-                    )
-                )
+                pipeline.add(sometimes(iaa.AdditiveGaussianNoise(loc=0, scale=(0.0, 0.05 * 255), per_channel=0.5)))
         if cfg.get("grayscale", False):
             pipeline.add(sometimes(iaa.Grayscale(alpha=(0.5, 1.0))))
 
@@ -235,17 +223,11 @@ class ImgaugPoseDataset(BasePoseDataset):
 
         if cfg_cnt["histeq"]:
             opt = get_aug_param(cfg_cnt["histeq"])
-            pipeline.add(
-                iaa.Sometimes(
-                    cfg_cnt["histeqratio"], iaa.AllChannelsHistogramEqualization(**opt)
-                )
-            )
+            pipeline.add(iaa.Sometimes(cfg_cnt["histeqratio"], iaa.AllChannelsHistogramEqualization(**opt)))
 
         if cfg_cnt["clahe"]:
             opt = get_aug_param(cfg_cnt["clahe"])
-            pipeline.add(
-                iaa.Sometimes(cfg_cnt["claheratio"], iaa.AllChannelsCLAHE(**opt))
-            )
+            pipeline.add(iaa.Sometimes(cfg_cnt["claheratio"], iaa.AllChannelsCLAHE(**opt)))
 
         if cfg_cnt["log"]:
             opt = get_aug_param(cfg_cnt["log"])
@@ -253,15 +235,11 @@ class ImgaugPoseDataset(BasePoseDataset):
 
         if cfg_cnt["linear"]:
             opt = get_aug_param(cfg_cnt["linear"])
-            pipeline.add(
-                iaa.Sometimes(cfg_cnt["linearratio"], iaa.LinearContrast(**opt))
-            )
+            pipeline.add(iaa.Sometimes(cfg_cnt["linearratio"], iaa.LinearContrast(**opt)))
 
         if cfg_cnt["sigmoid"]:
             opt = get_aug_param(cfg_cnt["sigmoid"])
-            pipeline.add(
-                iaa.Sometimes(cfg_cnt["sigmoidratio"], iaa.SigmoidContrast(**opt))
-            )
+            pipeline.add(iaa.Sometimes(cfg_cnt["sigmoidratio"], iaa.SigmoidContrast(**opt)))
 
         if cfg_cnt["gamma"]:
             opt = get_aug_param(cfg_cnt["gamma"])
@@ -331,10 +309,8 @@ class ImgaugPoseDataset(BasePoseDataset):
             data_items.append(data_item)
             im_file = data_item.im_path
 
-            logging.debug("image %s", im_file)
-            image = imread(
-                os.path.join(self.cfg["project_path"], im_file), mode="skimage"
-            )
+            logging.debug(f"image {im_file}")
+            image = imread(os.path.join(self.cfg["project_path"], im_file), mode="skimage")
 
             if self.has_gt:
                 joints = data_item.joints
@@ -370,18 +346,14 @@ class ImgaugPoseDataset(BasePoseDataset):
                     part_score_weight,
                     locref_target,
                     locref_mask,
-                ) = self.gaussian_scmap(
-                    joint_ids[i], [joints[i]], data_items[i], sm_size, scale
-                )
+                ) = self.gaussian_scmap(joint_ids[i], [joints[i]], data_items[i], sm_size, scale)
             else:
                 (
                     part_score_target,
                     part_score_weight,
                     locref_target,
                     locref_mask,
-                ) = self.compute_target_part_scoremap_numpy(
-                    joint_ids[i], [joints[i]], data_items[i], sm_size, scale
-                )
+                ) = self.compute_target_part_scoremap_numpy(joint_ids[i], [joints[i]], data_items[i], sm_size, scale)
             part_score_targets.append(part_score_target)
             part_score_weights.append(part_score_weight)
             locref_targets.append(locref_target)
@@ -407,19 +379,18 @@ class ImgaugPoseDataset(BasePoseDataset):
             ) = self.get_batch()
 
             pipeline = self.build_augmentation_pipeline(
-                height=target_size[0], width=target_size[1],
+                height=target_size[0],
+                width=target_size[1],
                 apply_prob=cfg.get("apply_prob", 0.5),
             )
 
-            batch_images, batch_joints = pipeline(
-                images=batch_images, keypoints=batch_joints
-            )
+            batch_images, batch_joints = pipeline(images=batch_images, keypoints=batch_joints)
 
             image_shape = np.array(batch_images).shape[1:3]
 
             batch_joints_valid = []
             joint_ids_valid = []
-            for joints, ids in zip(batch_joints, joint_ids):
+            for joints, ids in zip(batch_joints, joint_ids, strict=False):
                 # invisible joints are represented by nans
                 mask = ~np.isnan(joints[:, 0])
                 joints = joints[mask, :]
@@ -441,7 +412,8 @@ class ImgaugPoseDataset(BasePoseDataset):
             # import imageio
             # for i in range(self.batch_size):
             #    joints = batch_joints[i]
-            #    kps = KeypointsOnImage([Keypoint(x=joint[0], y=joint[1]) for joint in joints], shape=batch_images[i].shape)
+            # kps = KeypointsOnImage([Keypoint(x=joint[0], y=joint[1]) for joint in joints],
+            # shape=batch_images[i].shape)
             #    im = kps.draw_on_image(batch_images[i])
             #    imageio.imwrite('some_location/augmented/'+str(i)+'.png', im)
 
@@ -499,10 +471,10 @@ class ImgaugPoseDataset(BasePoseDataset):
             for k, j_id in enumerate(joint_id[person_id]):
                 joint_pt = coords[person_id][k, :]
                 j_x = np.asarray(joint_pt[0]).item()
-                j_x_sm = round((j_x - self.half_stride) / self.stride)
+                round((j_x - self.half_stride) / self.stride)
                 j_y = np.asarray(joint_pt[1]).item()
-                j_y_sm = round((j_y - self.half_stride) / self.stride)
-                map_j = grid.copy()
+                round((j_y - self.half_stride) / self.stride)
+                grid.copy()
                 # Distance between the joint point and each coordinate
                 dist = np.linalg.norm(grid - (j_y, j_x), axis=2) ** 2
                 scmap_j = np.exp(-dist / (2 * (std**2)))
@@ -526,9 +498,7 @@ class ImgaugPoseDataset(BasePoseDataset):
             weights = np.ones(scmap_shape)
         return weights
 
-    def compute_target_part_scoremap_numpy(
-        self, joint_id, coords, data_item, size, scale
-    ):
+    def compute_target_part_scoremap_numpy(self, joint_id, coords, data_item, size, scale):
         dist_thresh = float(self.cfg["pos_dist_thresh"] * scale)
         dist_thresh_sq = dist_thresh**2
         num_joints = self.cfg["num_joints"]

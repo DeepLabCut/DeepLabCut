@@ -31,17 +31,15 @@ from scipy.optimize import linear_sum_assignment
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
-from deeplabcut.core import trackingutils, inferenceutils
+from deeplabcut.core import inferenceutils, trackingutils
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import predict
-
-from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, auxfun_models
 from deeplabcut.pose_estimation_tensorflow.core.openvino.session import (
     GetPoseF_OV,
     is_openvino_available,
 )
-
+from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
+from deeplabcut.utils import auxfun_models, auxfun_multianimal, auxiliaryfunctions
 
 ####################################################
 # Loading data, and defining model folder
@@ -68,16 +66,18 @@ def create_tracking_dataset(
 ):
     try:
         from deeplabcut.pose_tracking_pytorch import create_triplets_dataset
-    except ModuleNotFoundError:
+    except ModuleNotFoundError as e:
         raise ModuleNotFoundError(
             "Unsupervised identity learning requires PyTorch. Please run `pip install torch`."
-        )
+        ) from e
 
     from deeplabcut.pose_estimation_tensorflow.predict_multianimal import (
         extract_bpt_feature_from_video,
     )
 
-    # allow_growth must be true here because tensorflow does not automatically free gpu memory and setting it as false occupies all gpu memory so that pytorch cannot kick in
+    # allow_growth must be true here because tensorflow does not automatically
+    # free gpu memory and setting it as false occupies all gpu memory so that
+    # pytorch cannot kick in
     allow_growth = True
 
     if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
@@ -100,20 +100,15 @@ def create_tracking_dataset(
 
     modelfolder = os.path.join(
         cfg["project_path"],
-        str(
-            auxiliaryfunctions.get_model_folder(
-                trainFraction, shuffle, cfg, modelprefix=modelprefix
-            )
-        ),
+        str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
     )
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
     try:
         dlc_cfg = load_config(str(path_test_config))
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         raise FileNotFoundError(
-            "It seems the model for shuffle %s and trainFraction %s does not exist."
-            % (shuffle, trainFraction)
-        )
+            f"It seems the model for shuffle {shuffle} and trainFraction {trainFraction} does not exist."
+        ) from e
 
     Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
         train_folder=Path(modelfolder) / "train",
@@ -121,22 +116,23 @@ def create_tracking_dataset(
 
     if cfg["snapshotindex"] == "all":
         print(
-            "Snapshotindex is set to 'all' in the config.yaml file. Running video analysis with all snapshots is very costly! Use the function 'evaluate_network' to choose the best the snapshot. For now, changing snapshot index to -1!"
+            "Snapshotindex is set to 'all' in the config.yaml file. "
+            "Running video analysis with all snapshots is very costly! "
+            "Use the function 'evaluate_network' to choose the best the snapshot. "
+            "For now, changing snapshot index to -1!"
         )
         snapshotindex = -1
     else:
         snapshotindex = cfg["snapshotindex"]
 
-    print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
+    print(f"Using {Snapshots[snapshotindex]}", "for model", modelfolder)
 
     ##################################################
     # Load and setup CNN part detector
     ##################################################
 
     # Check if data already was generated:
-    dlc_cfg["init_weights"] = os.path.join(
-        modelfolder, "train", Snapshots[snapshotindex]
-    )
+    dlc_cfg["init_weights"] = os.path.join(modelfolder, "train", Snapshots[snapshotindex])
     trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
     # Update number of output and batchsize
     dlc_cfg["num_outputs"] = cfg.get("num_outputs", dlc_cfg.get("num_outputs", 1))
@@ -159,7 +155,9 @@ def create_tracking_dataset(
         TFGPUinference = False
         dlc_cfg["batch_size"] = 1
         print(
-            "Switching batchsize to 1, num_outputs (per animal) to 1 and TFGPUinference to False (all these features are not supported in this mode)."
+            "Switching batchsize to 1, "
+            "num_outputs (per animal) to 1 and TFGPUinference to False "
+            "(all these features are not supported in this mode)."
         )
 
     # Name for scorer:
@@ -173,7 +171,8 @@ def create_tracking_dataset(
     if dlc_cfg["num_outputs"] > 1:
         if TFGPUinference:
             print(
-                "Switching to numpy-based keypoint extraction code, as multiple point extraction is not supported by TF code currently."
+                "Switching to numpy-based keypoint extraction code, "
+                "as multiple point extraction is not supported by TF code currently."
             )
             TFGPUinference = False
         print("Extracting ", dlc_cfg["num_outputs"], "instances per bodypart")
@@ -185,15 +184,13 @@ def create_tracking_dataset(
         xyz_labs = ["x", "y", "likelihood"]
 
     if TFGPUinference:
-        sess, inputs, outputs = predict.setup_GPUpose_prediction(
-            dlc_cfg, allow_growth=allow_growth
-        )
+        sess, inputs, outputs = predict.setup_GPUpose_prediction(dlc_cfg, allow_growth=allow_growth)
     else:
         sess, inputs, outputs, extra_dict = predict.setup_pose_prediction(
             dlc_cfg, allow_growth=allow_growth, collect_extra=True
         )
 
-    pdindex = pd.MultiIndex.from_product(
+    pd.MultiIndex.from_product(
         [[DLCscorer], dlc_cfg["all_joints_names"], xyz_labs],
         names=["scorer", "bodyparts", "coords"],
     )
@@ -236,14 +233,17 @@ def create_tracking_dataset(
         os.chdir(str(start_path))
         if "multi-animal" in dlc_cfg["dataset_type"]:
             print(
-                "If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
+                "If the tracking is not satisfactory for some videos, consider expanding the training set. "
+                "You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
             )
         else:
             print(
-                "The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'"
+                "The videos are analyzed. Now your research can truly start! "
+                "\n You can create labeled videos with 'create_labeled_video'"
             )
             print(
-                "If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
+                "If the tracking is not satisfactory for some videos, consider expanding the training set. "
+                "You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
             )
         return DLCscorer  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
@@ -344,10 +344,14 @@ def analyze_videos(
         Source: https://arxiv.org/abs/1909.11229
 
     dynamic: tuple(bool, float, int) triple containing (state, detectiontreshold, margin)
-        If the state is true, then dynamic cropping will be performed. That means that if an object is detected (i.e. any body part > detectiontreshold),
-        then object boundaries are computed according to the smallest/largest x position and smallest/largest y position of all body parts. This  window is
-        expanded by the margin and from then on only the posture within this crop is analyzed (until the object is lost, i.e. <detectiontreshold). The
-        current position is utilized for updating the crop window for the next frame (this is why the margin is important and should be set large
+        If the state is true, then dynamic cropping will be performed. That means that if
+        an object is detected (i.e. any body part > detectiontreshold),
+        then object boundaries are computed according to
+        the smallest/largest x position and smallest/largest y position of all body parts.
+        This window is expanded by the margin and from then on only the posture within
+        this crop is analyzed (until the object is lost, i.e. <detectiontreshold).
+        The current position is utilized for updating the crop window for the next frame
+        (this is why the margin is important and should be set large
         enough given the movement of the animal).
 
     modelprefix: str, optional, default=""
@@ -492,20 +496,16 @@ def analyze_videos(
 
     modelfolder = os.path.join(
         cfg["project_path"],
-        str(
-            auxiliaryfunctions.get_model_folder(
-                trainFraction, shuffle, cfg, modelprefix=modelprefix
-            )
-        ),
+        str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
     )
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
     try:
         dlc_cfg = load_config(str(path_test_config))
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         raise FileNotFoundError(
-            "It seems the model for iteration %s and shuffle %s and trainFraction %s does not exist."
-            % (iteration, shuffle, trainFraction)
-        )
+            f"It seems the model for iteration {iteration} and shuffle "
+            f"{shuffle} and trainFraction {trainFraction} does not exist."
+        ) from e
 
     Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
         train_folder=Path(modelfolder) / "train",
@@ -513,22 +513,23 @@ def analyze_videos(
 
     if cfg["snapshotindex"] == "all":
         print(
-            "Snapshotindex is set to 'all' in the config.yaml file. Running video analysis with all snapshots is very costly! Use the function 'evaluate_network' to choose the best the snapshot. For now, changing snapshot index to -1!"
+            "Snapshotindex is set to 'all' in the config.yaml file."
+            "Running video analysis with all snapshots is very costly! "
+            "Use the function 'evaluate_network' to choose the best the snapshot. "
+            "For now, changing snapshot index to -1!"
         )
         snapshotindex = -1
     else:
         snapshotindex = cfg["snapshotindex"]
 
-    print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
+    print(f"Using {Snapshots[snapshotindex]}", "for model", modelfolder)
 
     ##################################################
     # Load and setup CNN part detector
     ##################################################
 
     # Check if data already was generated:
-    dlc_cfg["init_weights"] = os.path.join(
-        modelfolder, "train", Snapshots[snapshotindex]
-    )
+    dlc_cfg["init_weights"] = os.path.join(modelfolder, "train", Snapshots[snapshotindex])
     trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
     # Update number of output and batchsize
     dlc_cfg["num_outputs"] = cfg.get("num_outputs", dlc_cfg.get("num_outputs", 1))
@@ -551,7 +552,8 @@ def analyze_videos(
         TFGPUinference = False
         dlc_cfg["batch_size"] = 1
         print(
-            "Switching batchsize to 1, num_outputs (per animal) to 1 and TFGPUinference to False (all these features are not supported in this mode)."
+            "Switching batchsize to 1, num_outputs (per animal) to 1 "
+            "and TFGPUinference to False (all these features are not supported in this mode)."
         )
 
     # Name for scorer:
@@ -565,7 +567,8 @@ def analyze_videos(
     if dlc_cfg["num_outputs"] > 1:
         if TFGPUinference:
             print(
-                "Switching to numpy-based keypoint extraction code, as multiple point extraction is not supported by TF code currently."
+                "Switching to numpy-based keypoint extraction code, "
+                "as multiple point extraction is not supported by TF code currently."
             )
             TFGPUinference = False
         print("Extracting ", dlc_cfg["num_outputs"], "instances per bodypart")
@@ -577,17 +580,11 @@ def analyze_videos(
         xyz_labs = ["x", "y", "likelihood"]
 
     if use_openvino:
-        sess, inputs, outputs = predict.setup_openvino_pose_prediction(
-            dlc_cfg, device=use_openvino
-        )
+        sess, inputs, outputs = predict.setup_openvino_pose_prediction(dlc_cfg, device=use_openvino)
     elif TFGPUinference:
-        sess, inputs, outputs = predict.setup_GPUpose_prediction(
-            dlc_cfg, allow_growth=allow_growth
-        )
+        sess, inputs, outputs = predict.setup_GPUpose_prediction(dlc_cfg, allow_growth=allow_growth)
     else:
-        sess, inputs, outputs = predict.setup_pose_prediction(
-            dlc_cfg, allow_growth=allow_growth
-        )
+        sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg, allow_growth=allow_growth)
 
     pdindex = pd.MultiIndex.from_product(
         [[DLCscorer], dlc_cfg["all_joints_names"], xyz_labs],
@@ -665,17 +662,21 @@ def analyze_videos(
         os.chdir(str(start_path))
         if "multi-animal" in dlc_cfg["dataset_type"]:
             print(
-                "The videos are analyzed. Time to assemble animals and track 'em... \n Call 'create_video_with_all_detections' to check multi-animal detection quality before tracking."
+                "The videos are analyzed. Time to assemble animals and track 'em... \n"
+                " Call 'create_video_with_all_detections' to check multi-animal detection quality before tracking."
             )
             print(
-                "If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
+                "If the tracking is not satisfactory for some videos, consider expanding the training set. "
+                "You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
             )
         else:
             print(
-                "The videos are analyzed. Now your research can truly start! \n You can create labeled videos with 'create_labeled_video'"
+                "The videos are analyzed. Now your research can truly start! \n "
+                "You can create labeled videos with 'create_labeled_video'"
             )
             print(
-                "If the tracking is not satisfactory for some videos, consider expanding the training set. You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
+                "If the tracking is not satisfactory for some videos, consider expanding the training set. "
+                "You can use the function 'extract_outlier_frames' to extract a few representative outlier frames."
             )
         return DLCscorer  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
@@ -685,8 +686,9 @@ def analyze_videos(
 
 def checkcropping(cfg, cap):
     print(
-        "Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file."
-        % (cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"])
+        "Cropping based on the "
+        f"x1 = {cfg['x1']} x2 = {cfg['x2']} y1 = {cfg['y1']} y2 = {cfg['y2']}. "
+        "You can adjust the cropping coordinates in the config.yaml file."
     )
     nx = cfg["x2"] - cfg["x1"]
     ny = cfg["y2"] - cfg["y1"]
@@ -707,21 +709,15 @@ def checkcropping(cfg, cap):
 
 
 def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
-    """Batchwise prediction of pose"""
-    PredictedData = np.zeros(
-        (nframes, dlc_cfg["num_outputs"] * 3 * len(dlc_cfg["all_joints_names"]))
-    )
+    """Batchwise prediction of pose."""
+    PredictedData = np.zeros((nframes, dlc_cfg["num_outputs"] * 3 * len(dlc_cfg["all_joints_names"])))
     batch_ind = 0  # keeps track of which image within a batch should be written to
     batch_num = 0  # keeps track of which batch you are at
-    ny, nx = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(
-        cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    )
+    ny, nx = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
 
-    frames = np.empty(
-        (batchsize, ny, nx, 3), dtype="ubyte"
-    )  # this keeps all frames in a batch
+    frames = np.empty((batchsize, ny, nx, 3), dtype="ubyte")  # this keeps all frames in a batch
     pbar = tqdm(total=nframes)
     counter = 0
     step = max(10, int(nframes / 100))
@@ -733,9 +729,7 @@ def GetPoseF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             if cfg["cropping"]:
-                frames[batch_ind] = img_as_ubyte(
-                    frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
-                )
+                frames[batch_ind] = img_as_ubyte(frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]])
             else:
                 frames[batch_ind] = img_as_ubyte(frame)
             inds.append(counter)
@@ -765,9 +759,7 @@ def GetPoseS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
 
-    PredictedData = np.zeros(
-        (nframes, dlc_cfg["num_outputs"] * 3 * len(dlc_cfg["all_joints_names"]))
-    )
+    PredictedData = np.zeros((nframes, dlc_cfg["num_outputs"] * 3 * len(dlc_cfg["all_joints_names"])))
     pbar = tqdm(total=nframes)
     counter = 0
     step = max(10, int(nframes / 100))
@@ -779,9 +771,7 @@ def GetPoseS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             if cfg["cropping"]:
-                frame = img_as_ubyte(
-                    frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
-                )
+                frame = img_as_ubyte(frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]])
             else:
                 frame = img_as_ubyte(frame)
             pose = predict.getpose(frame, dlc_cfg, sess, inputs, outputs)
@@ -801,9 +791,7 @@ def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
 
-    pose_tensor = predict.extract_GPUprediction(
-        outputs, dlc_cfg
-    )  # extract_output_tensor(outputs, dlc_cfg)
+    pose_tensor = predict.extract_GPUprediction(outputs, dlc_cfg)  # extract_output_tensor(outputs, dlc_cfg)
     PredictedData = np.zeros((nframes, 3 * len(dlc_cfg["all_joints_names"])))
     pbar = tqdm(total=nframes)
     counter = 0
@@ -816,9 +804,7 @@ def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             if cfg["cropping"]:
-                frame = img_as_ubyte(
-                    frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
-                )
+                frame = img_as_ubyte(frame[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]])
             else:
                 frame = img_as_ubyte(frame)
 
@@ -840,7 +826,7 @@ def GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes):
 
 
 def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
-    """Batchwise prediction of pose"""
+    """Batchwise prediction of pose."""
     PredictedData = np.zeros((nframes, 3 * len(dlc_cfg["all_joints_names"])))
     batch_ind = 0  # keeps track of which image within a batch should be written to
     batch_num = 0  # keeps track of which batch you are at
@@ -862,7 +848,7 @@ def GetPoseF_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, batchsize):
         ret, frame = cap.read()
         counter += 1
         if not ret:
-            warnings.warn(f"Could not decode frame #{counter}.")
+            warnings.warn(f"Could not decode frame #{counter}.", stacklevel=2)
             continue
 
         if cfg["cropping"]:
@@ -898,16 +884,13 @@ def getboundingbox(x, y, nx, ny, margin):
     return x1, x2, y1, y2
 
 
-def GetPoseDynamic(
-    cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, detectiontreshold, margin
-):
-    """Non batch wise pose estimation for video cap by dynamically cropping around previously detected parts."""
+def GetPoseDynamic(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, detectiontreshold, margin):
+    """Non batch wise pose estimation for video cap by dynamically cropping around
+    previously detected parts."""
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
     else:
-        ny, nx = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(
-            cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-        )
+        ny, nx = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     x1, x2, y1, y2 = 0, nx, 0, ny
     detected = False
     # TODO: perform detection on resized image (For speed)
@@ -925,9 +908,7 @@ def GetPoseDynamic(
             # print(counter,x1,x2,y1,y2,detected)
             originalframe = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             if cfg["cropping"]:
-                frame = img_as_ubyte(
-                    originalframe[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
-                )[y1:y2, x1:x2]
+                frame = img_as_ubyte(originalframe[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]])[y1:y2, x1:x2]
             else:
                 frame = img_as_ubyte(originalframe[y1:y2, x1:x2])
 
@@ -946,19 +927,16 @@ def GetPoseDynamic(
             else:
                 if (
                     detected and (x1 + y1 + y2 - ny + x2 - nx) != 0
-                ):  # was detected in last frame and dyn. cropping was performed >> but object lost in cropped variant >> re-run on full frame!
+                ):  # was detected in last frame and dyn. cropping was performed >>
+                    # but object lost in cropped variant >> re-run on full frame!
                     # print("looking again, lost!")
                     if cfg["cropping"]:
-                        frame = img_as_ubyte(
-                            originalframe[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]]
-                        )
+                        frame = img_as_ubyte(originalframe[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"]])
                     else:
                         frame = img_as_ubyte(originalframe)
-                    pose = predict.getpose(
-                        frame, dlc_cfg, sess, inputs, outputs
-                    ).flatten()  # no offset is necessary
+                    pose = predict.getpose(frame, dlc_cfg, sess, inputs, outputs).flatten()  # no offset is necessary
 
-                x0, y0 = x1, y1
+                _x0, _y0 = x1, y1
                 x1, x2, y1, y2 = 0, nx, 0, ny
                 detected = False
 
@@ -997,13 +975,11 @@ def AnalyzeVideo(
     vname = Path(video).stem
     try:
         _ = auxiliaryfunctions.load_analyzed_data(destfolder, vname, DLCscorer)
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         print("Loading ", video)
         cap = cv2.VideoCapture(video)
         if not cap.isOpened():
-            raise IOError(
-                "Video could not be opened. Please check that the the file integrity."
-            )
+            raise OSError("Video could not be opened. Please check the file integrity.") from e
         # https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
         fps = cap.get(cv2.CAP_PROP_FPS)
         nframes = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -1064,16 +1040,12 @@ def AnalyzeVideo(
                     PredictedData, nframes = GetPoseF(*args)
             else:
                 if TFGPUinference:
-                    PredictedData, nframes = GetPoseS_GTF(
-                        cfg, dlc_cfg, sess, inputs, outputs, cap, nframes
-                    )
+                    PredictedData, nframes = GetPoseS_GTF(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes)
                 else:
-                    PredictedData, nframes = GetPoseS(
-                        cfg, dlc_cfg, sess, inputs, outputs, cap, nframes
-                    )
+                    PredictedData, nframes = GetPoseS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes)
 
         stop = time.time()
-        if cfg["cropping"] == True:
+        if cfg["cropping"]:
             coords = [cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]]
         else:
             coords = [0, nx, 0, ny]
@@ -1106,14 +1078,11 @@ def AnalyzeVideo(
             range(nframes),
             save_as_csv,
         )
-    finally:
-        return DLCscorer
+    return DLCscorer
 
 
-def GetPosesofFrames(
-    cfg, dlc_cfg, sess, inputs, outputs, directory, framelist, nframes, batchsize
-):
-    """Batchwise prediction of pose for frame list in directory"""
+def GetPosesofFrames(cfg, dlc_cfg, sess, inputs, outputs, directory, framelist, nframes, batchsize):
+    """Batchwise prediction of pose for frame list in directory."""
     from deeplabcut.utils.auxfun_videos import imread
 
     print("Starting to extract posture")
@@ -1128,27 +1097,22 @@ def GetPosesofFrames(
         ny,
     )
 
-    PredictedData = np.zeros(
-        (nframes, dlc_cfg["num_outputs"] * 3 * len(dlc_cfg["all_joints_names"]))
-    )
+    PredictedData = np.zeros((nframes, dlc_cfg["num_outputs"] * 3 * len(dlc_cfg["all_joints_names"])))
     batch_ind = 0  # keeps track of which image within a batch should be written to
     batch_num = 0  # keeps track of which batch you are at
     if cfg["cropping"]:
         print(
-            "Cropping based on the x1 = %s x2 = %s y1 = %s y2 = %s. You can adjust the cropping coordinates in the config.yaml file."
-            % (cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"])
+            "Cropping based on the x1 = {} x2 = {} y1 = {} y2 = {}. "
+            "You can adjust the cropping coordinates in the config.yaml file.".format(
+                cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]
+            )
         )
         nx, ny = cfg["x2"] - cfg["x1"], cfg["y2"] - cfg["y1"]
         if nx > 0 and ny > 0:
             pass
         else:
             raise Exception("Please check the order of cropping parameter!")
-        if (
-            cfg["x1"] >= 0
-            and cfg["x2"] < int(np.shape(im)[1])
-            and cfg["y1"] >= 0
-            and cfg["y2"] < int(np.shape(im)[0])
-        ):
+        if cfg["x1"] >= 0 and cfg["x2"] < int(np.shape(im)[1]) and cfg["y1"] >= 0 and cfg["y2"] < int(np.shape(im)[0]):
             pass  # good cropping box
         else:
             raise Exception("Please check the boundary of cropping!")
@@ -1165,18 +1129,14 @@ def GetPosesofFrames(
                 pbar.update(step)
 
             if cfg["cropping"]:
-                frame = img_as_ubyte(
-                    im[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"], :]
-                )
+                frame = img_as_ubyte(im[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"], :])
             else:
                 frame = img_as_ubyte(im)
 
             pose = predict.getpose(frame, dlc_cfg, sess, inputs, outputs)
             PredictedData[counter, :] = pose.flatten()
     else:
-        frames = np.empty(
-            (batchsize, ny, nx, 3), dtype="ubyte"
-        )  # this keeps all the frames of a batch
+        frames = np.empty((batchsize, ny, nx, 3), dtype="ubyte")  # this keeps all the frames of a batch
         for counter, framename in enumerate(framelist):
             im = imread(os.path.join(directory, framename), mode="skimage")
 
@@ -1184,31 +1144,23 @@ def GetPosesofFrames(
                 pbar.update(step)
 
             if cfg["cropping"]:
-                frames[batch_ind] = img_as_ubyte(
-                    im[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"], :]
-                )
+                frames[batch_ind] = img_as_ubyte(im[cfg["y1"] : cfg["y2"], cfg["x1"] : cfg["x2"], :])
             else:
                 frames[batch_ind] = img_as_ubyte(im)
 
             if batch_ind == batchsize - 1:
                 pose = predict.getposeNP(frames, dlc_cfg, sess, inputs, outputs)
-                PredictedData[
-                    batch_num * batchsize : (batch_num + 1) * batchsize, :
-                ] = pose
+                PredictedData[batch_num * batchsize : (batch_num + 1) * batchsize, :] = pose
                 batch_ind = 0
                 batch_num += 1
             else:
                 batch_ind += 1
 
-        if (
-            batch_ind > 0
-        ):  # take care of the last frames (the batch that might have been processed)
+        if batch_ind > 0:  # take care of the last frames (the batch that might have been processed)
             pose = predict.getposeNP(
                 frames, dlc_cfg, sess, inputs, outputs
             )  # process the whole batch (some frames might be from previous batch!)
-            PredictedData[
-                batch_num * batchsize : batch_num * batchsize + batch_ind, :
-            ] = pose[:batch_ind, :]
+            PredictedData[batch_num * batchsize : batch_num * batchsize + batch_ind, :] = pose[:batch_ind, :]
 
     pbar.close()
     return PredictedData, nframes, nx, ny
@@ -1224,15 +1176,20 @@ def analyze_time_lapse_frames(
     save_as_csv=False,
     modelprefix="",
 ):
-    """
-    Analyzed all images (of type = frametype) in a folder and stores the output in one file.
+    """Analyzed all images (of type = frametype) in a folder and stores the output in
+    one file.
 
-    You can crop the frames (before analysis), by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the config file.
+    You can crop the frames (before analysis),
+    by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the config file.
 
-    Output: The labels are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
-            in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
-            in the same directory, where the video is stored. However, if the flag save_as_csv is set to True, the data can also be exported in \n
-            comma-separated values format (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.
+    Output:
+    The labels are stored as MultiIndex Pandas Array,
+    which contains the name of the network, body part name, (x, y) label position \n
+    in pixels, and the likelihood for each frame per body part.
+    These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
+    in the same directory, where the video is stored.
+    However, if the flag save_as_csv is set to True, the data can also be exported in \n
+    comma-separated values format (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.
 
     Parameters
     ----------
@@ -1243,27 +1200,35 @@ def analyze_time_lapse_frames(
         Full path to directory containing the frames that shall be analyzed
 
     frametype: string, optional
-        Checks for the file extension of the frames. Only images with this extension are analyzed. The default is ``.png``
+        Checks for the file extension of the frames.
+        Only images with this extension are analyzed. The default is ``.png``
 
     shuffle: int, optional
         An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml).
 
-    gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not have a GPU put None.
+    gputouse: int, optional. Natural number indicating the number of your GPU (see number in nvidia-smi).
+    If you do not have a GPU, set to None.
     See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
     save_as_csv: bool, optional
-        Saves the predictions in a .csv file. The default is ``False``; if provided it must be either ``True`` or ``False``
+        Saves the predictions in a .csv file. The default is ``False``;
+        if provided it must be either ``True`` or ``False``
 
     Examples
     --------
     If you want to analyze all frames in /analysis/project/timelapseexperiment1
-    >>> deeplabcut.analyze_videos('/analysis/project/reaching-task/config.yaml','/analysis/project/timelapseexperiment1')
+    >>> deeplabcut.analyze_videos(
+        '/analysis/project/reaching-task/config.yaml',
+        '/analysis/project/timelapseexperiment1'
+        )
     --------
 
-    Note: for test purposes one can extract all frames from a video with ffmeg, e.g. ffmpeg -i testvideo.avi thumb%04d.png
+    Note: for test purposes one can extract all frames from a video with ffmpeg,
+    e.g. ffmpeg -i testvideo.avi thumb%04d.png
     """
     if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
         del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
@@ -1278,20 +1243,15 @@ def analyze_time_lapse_frames(
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     modelfolder = os.path.join(
         cfg["project_path"],
-        str(
-            auxiliaryfunctions.get_model_folder(
-                trainFraction, shuffle, cfg, modelprefix=modelprefix
-            )
-        ),
+        str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
     )
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
     try:
         dlc_cfg = load_config(str(path_test_config))
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         raise FileNotFoundError(
-            "It seems the model for shuffle %s and trainFraction %s does not exist."
-            % (shuffle, trainFraction)
-        )
+            f"It seems the model for shuffle {shuffle} and trainFraction {trainFraction} does not exist."
+        ) from e
 
     Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
         train_folder=Path(modelfolder) / "train",
@@ -1299,22 +1259,23 @@ def analyze_time_lapse_frames(
 
     if cfg["snapshotindex"] == "all":
         print(
-            "Snapshotindex is set to 'all' in the config.yaml file. Running video analysis with all snapshots is very costly! Use the function 'evaluate_network' to choose the best the snapshot. For now, changing snapshot index to -1!"
+            "Snapshotindex is set to 'all' in the config.yaml file. "
+            "Running video analysis with all snapshots is very costly! "
+            "Use the function 'evaluate_network' to choose the best the snapshot. "
+            "For now, changing snapshot index to -1!"
         )
         snapshotindex = -1
     else:
         snapshotindex = cfg["snapshotindex"]
 
-    print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
+    print(f"Using {Snapshots[snapshotindex]}", "for model", modelfolder)
 
     ##################################################
     # Load and setup CNN part detector
     ##################################################
 
     # Check if data already was generated:
-    dlc_cfg["init_weights"] = os.path.join(
-        modelfolder, "train", Snapshots[snapshotindex]
-    )
+    dlc_cfg["init_weights"] = os.path.join(modelfolder, "train", Snapshots[snapshotindex])
     trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
 
     # update batchsize (based on parameters in config.yaml)
@@ -1350,10 +1311,8 @@ def analyze_time_lapse_frames(
     # Loading the images
     ##################################################
     # checks if input is a directory
-    if os.path.isdir(directory) == True:
-        """
-        Analyzes all the frames in the directory.
-        """
+    if os.path.isdir(directory):
+        """Analyzes all the frames in the directory."""
         print("Analyzing all frames in the directory: ", directory)
         os.chdir(directory)
         framelist = np.sort([fn for fn in os.listdir(os.curdir) if (frametype in fn)])
@@ -1379,7 +1338,7 @@ def analyze_time_lapse_frames(
                 )
                 stop = time.time()
 
-                if cfg["cropping"] == True:
+                if cfg["cropping"]:
                     coords = [cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]]
                 else:
                     coords = [0, nx, 0, ny]
@@ -1399,7 +1358,7 @@ def analyze_time_lapse_frames(
                 }
                 metadata = {"data": dictionary}
 
-                print("Saving results in %s..." % (directory))
+                print(f"Saving results in {directory}...")
 
                 auxiliaryfunctions.save_data(
                     PredictedData[:nframes, :],
@@ -1410,13 +1369,9 @@ def analyze_time_lapse_frames(
                     save_as_csv,
                 )
                 print("The folder was analyzed. Now your research can truly start!")
-                print(
-                    "If the tracking is not satisfactory for some frame, consider expanding the training set."
-                )
+                print("If the tracking is not satisfactory for some frame, consider expanding the training set.")
             else:
-                print(
-                    "No frames were found. Consider changing the path or the frametype."
-                )
+                print("No frames were found. Consider changing the path or the frametype.")
 
     os.chdir(str(start_path))
 
@@ -1437,9 +1392,7 @@ def _convert_detections_to_tracklets(
         )
 
     if track_method == "ctd":
-        raise ValueError(
-            "CTD tracking is only available for BUCTD models with the PyTorch engine."
-        )
+        raise ValueError("CTD tracking is only available for BUCTD models with the PyTorch engine.")
 
     joints = data["metadata"]["all_joints_names"]
     partaffinityfield_graph = data["metadata"]["PAFgraph"]
@@ -1475,7 +1428,7 @@ def _convert_detections_to_tracklets(
         greedy=greedy,
         pcutoff=inference_cfg.get("pcutoff", 0.1),
         min_affinity=inference_cfg.get("pafthreshold", 0.05),
-        min_n_links=inference_cfg["minimalnumberofconnections"]
+        min_n_links=inference_cfg["minimalnumberofconnections"],
     )
     if calibrate:
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
@@ -1499,9 +1452,7 @@ def _convert_detections_to_tracklets(
         assemblies = assembly_builder.assemblies.get(i)
         if assemblies is None:
             continue
-        animals = np.stack(
-            [assembly_builder.data[:, :3] for assembly_builder in assemblies]
-        )
+        animals = np.stack([assembly_builder.data[:, :3] for assembly_builder in assemblies])
         if track_method == "box":
             xy = trackingutils.calc_bboxes_from_keypoints(
                 animals, inference_cfg.get("boundingboxslack", 0)
@@ -1541,8 +1492,8 @@ def convert_detections2tracklets(
     identity_only=False,
     track_method="",
 ):
-    """
-    This should be called at the end of deeplabcut.analyze_videos for multianimal projects!
+    """This should be called at the end of deeplabcut.analyze_videos for multianimal
+    projects!
 
     Parameters
     ----------
@@ -1550,24 +1501,28 @@ def convert_detections2tracklets(
         Full path of the config.yaml file as a string.
 
     videos : list
-        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+        A list of strings containing the full paths to videos for analysis
+        or a path to the directory, where all the videos with same extension are stored.
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        Checks for the extension of the video in case the input to the video is a directory.\n
+        Only videos with this extension are analyzed.
         If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
     shuffle: int, optional
-        An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
+        An integer specifying the shuffle index of the training dataset used for training the network.
+        The default is 1.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml).
 
     overwrite: bool, optional.
         Overwrite tracks file i.e. recompute tracks from full detections and overwrite.
 
     destfolder: string, optional
-        Specifies the destination folder for analysis data (default is the path of the video). Note that for subsequent analysis this
-        folder also needs to be passed.
+        Specifies the destination folder for analysis data (default is the path of the video).
+        Note that for subsequent analysis this folder also needs to be passed.
 
     ignore_bodyparts: optional
         List of body part names that should be ignored during tracking (advanced).
@@ -1602,19 +1557,27 @@ def convert_detections2tracklets(
     Examples
     --------
     If you want to convert detections to tracklets:
-    >>> deeplabcut.convert_detections2tracklets('/analysis/project/reaching-task/config.yaml',[]'/analysis/project/video1.mp4'], videotype='.mp4')
+    >>> deeplabcut.convert_detections2tracklets(
+        '/analysis/project/reaching-task/config.yaml',
+        ['/analysis/project/video1.mp4'],
+        videotype='.mp4'
+        )
 
     If you want to convert detections to tracklets based on box_tracker:
-    >>> deeplabcut.convert_detections2tracklets('/analysis/project/reaching-task/config.yaml',[]'/analysis/project/video1.mp4'], videotype='.mp4',track_method='box')
+    >>> deeplabcut.convert_detections2tracklets(
+        '/analysis/project/reaching-task/config.yaml',
+        ['/analysis/project/video1.mp4'],
+        videotype='.mp4',
+        track_method='box'
+        )
 
     --------
-
     """
     cfg = auxiliaryfunctions.read_config(config)
     track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
 
     if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
-        warnings.warn("Switching to `box` tracker for single point tracking...")
+        warnings.warn("Switching to `box` tracker for single point tracking...", stacklevel=2)
         track_method = "box"
         cfg["default_track_method"] = track_method
         auxiliaryfunctions.write_config(config, cfg)
@@ -1631,20 +1594,15 @@ def convert_detections2tracklets(
 
     modelfolder = os.path.join(
         cfg["project_path"],
-        str(
-            auxiliaryfunctions.get_model_folder(
-                trainFraction, shuffle, cfg, modelprefix=modelprefix
-            )
-        ),
+        str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
     )
     path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
     try:
         dlc_cfg = load_config(str(path_test_config))
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         raise FileNotFoundError(
-            "It seems the model for shuffle %s and trainFraction %s does not exist."
-            % (shuffle, trainFraction)
-        )
+            f"It seems the model for shuffle {shuffle} and trainFraction {trainFraction} does not exist."
+        ) from e
 
     if "multi-animal" not in dlc_cfg["dataset_type"]:
         raise ValueError("This function is only required for multianimal projects!")
@@ -1656,7 +1614,7 @@ def convert_detections2tracklets(
         auxfun_multianimal.check_inferencecfg_sanity(cfg, inferencecfg)
 
     if len(cfg["multianimalbodyparts"]) == 1 and track_method != "box":
-        warnings.warn("Switching to `box` tracker for single point tracking...")
+        warnings.warn("Switching to `box` tracker for single point tracking...", stacklevel=2)
         track_method = "box"
         # Also ensure `boundingboxslack` is greater than zero, otherwise overlap
         # between trackers cannot be evaluated, resulting in empty tracklets.
@@ -1668,16 +1626,17 @@ def convert_detections2tracklets(
 
     if cfg["snapshotindex"] == "all":
         print(
-            "Snapshotindex is set to 'all' in the config.yaml file. Running video analysis with all snapshots is very costly! Use the function 'evaluate_network' to choose the best the snapshot. For now, changing snapshot index to -1!"
+            "Snapshotindex is set to 'all' in the config.yaml file. "
+            "Running video analysis with all snapshots is very costly! "
+            "Use the function 'evaluate_network' to choose the best the snapshot. "
+            "For now, changing snapshot index to -1!"
         )
         snapshotindex = -1
     else:
         snapshotindex = cfg["snapshotindex"]
 
-    print("Using %s" % Snapshots[snapshotindex], "for model", modelfolder)
-    dlc_cfg["init_weights"] = os.path.join(
-        modelfolder, "train", Snapshots[snapshotindex]
-    )
+    print(f"Using {Snapshots[snapshotindex]}", "for model", modelfolder)
+    dlc_cfg["init_weights"] = os.path.join(modelfolder, "train", Snapshots[snapshotindex])
     trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
 
     # Name for scorer:
@@ -1712,9 +1671,7 @@ def convert_detections2tracklets(
             trackname = dataname.split(".h5")[0] + f"_{method}.pickle"
             # NOTE: If dataname line above is changed then line below is obsolete?
             # trackname = trackname.replace(videofolder, destfolder)
-            if (
-                os.path.isfile(trackname) and not overwrite
-            ):  # TODO: check if metadata are identical (same parameters!)
+            if os.path.isfile(trackname) and not overwrite:  # TODO: check if metadata are identical (same parameters!)
                 print("Tracklets already computed", trackname)
                 print("Set overwrite = True to overwrite.")
             else:
@@ -1725,10 +1682,9 @@ def convert_detections2tracklets(
                 numjoints = len(all_jointnames)
 
                 # TODO: adjust this for multi + unique bodyparts!
-                # this is only for multianimal parts and uniquebodyparts as one (not one uniquebodyparts guy tracked etc. )
-                bodypartlabels = [
-                    bpt for i, bpt in enumerate(all_jointnames) for _ in range(3)
-                ]
+                # this is only for multianimal parts and uniquebodyparts as one (not one
+                # uniquebodyparts guy tracked etc. )
+                bodypartlabels = [bpt for i, bpt in enumerate(all_jointnames) for _ in range(3)]
                 scorers = len(bodypartlabels) * [DLCscorer]
                 xylvalue = int(len(bodypartlabels) / 3) * ["x", "y", "likelihood"]
                 pdindex = pd.MultiIndex.from_arrays(
@@ -1768,14 +1724,12 @@ def convert_detections2tracklets(
                     min_affinity=inferencecfg.get("pafthreshold", 0.05),
                     window_size=window_size,
                     identity_only=identity_only,
-                    min_n_links=inferencecfg["minimalnumberofconnections"]
+                    min_n_links=inferencecfg["minimalnumberofconnections"],
                 )
                 assemblies_filename = dataname.split(".h5")[0] + "_assemblies.pickle"
                 if not os.path.exists(assemblies_filename) or overwrite:
                     if calibrate:
-                        trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
-                            cfg
-                        )
+                        trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
                         train_data_file = os.path.join(
                             cfg["project_path"],
                             str(trainingsetfolder),
@@ -1792,9 +1746,7 @@ def convert_detections2tracklets(
                 except AttributeError:
                     pass
 
-                if cfg[
-                    "uniquebodyparts"
-                ]:  # Initialize storage of the 'single' individual track
+                if cfg["uniquebodyparts"]:  # Initialize storage of the 'single' individual track
                     tracklets["single"] = {}
                     _single = {}
                     for index, imname in enumerate(imnames):
@@ -1819,9 +1771,7 @@ def convert_detections2tracklets(
                         assemblies = assembly_builder.assemblies.get(index)
                         if assemblies is None:
                             continue
-                        animals = np.stack(
-                            [assembly_builder.data for assembly_builder in assemblies]
-                        )
+                        animals = np.stack([assembly_builder.data for assembly_builder in assemblies])
                         if not identity_only:
                             if track_method == "box":
                                 xy = trackingutils.calc_bboxes_from_keypoints(
@@ -1833,17 +1783,13 @@ def convert_detections2tracklets(
                             trackers = mot_tracker.track(xy)
                         else:
                             # Optimal identity assignment based on soft voting
-                            mat = np.zeros(
-                                (len(assemblies), inferencecfg["topktoretain"])
-                            )
+                            mat = np.zeros((len(assemblies), inferencecfg["topktoretain"]))
                             for nrow, assembly in enumerate(assemblies):
                                 for k, v in assembly.soft_identity.items():
                                     mat[nrow, k] = v
                             inds = linear_sum_assignment(mat, maximize=True)
                             trackers = np.c_[inds][:, ::-1]
-                        trackingutils.fill_tracklets(
-                            tracklets, trackers, animals, imname
-                        )
+                        trackingutils.fill_tracklets(tracklets, trackers, animals, imname)
 
                 tracklets["header"] = pdindex
                 with open(trackname, "wb") as f:
@@ -1852,7 +1798,8 @@ def convert_detections2tracklets(
         os.chdir(str(start_path))
 
         print(
-            "The tracklets were created (i.e., under the hood deeplabcut.convert_detections2tracklets was run). Now you can 'refine_tracklets' in the GUI, or run 'deeplabcut.stitch_tracklets'."
+            "The tracklets were created (i.e., under the hood deeplabcut.convert_detections2tracklets was run). "
+            "Now you can 'refine_tracklets' in the GUI, or run 'deeplabcut.stitch_tracklets'."
         )
     else:
         print("No video(s) found. Please check your path!")

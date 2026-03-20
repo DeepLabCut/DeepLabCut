@@ -19,31 +19,31 @@ A Neural Net Training Interface on TensorFlow, with focus on speed + flexibility
 https://github.com/tensorpack/tensorpack
 """
 
-
 import multiprocessing
 import os
 
 import cv2
 import numpy as np
 import scipy.io as sio
-from deeplabcut.utils.conversioncode import robust_split_path
 from numpy import array as arr
 from tensorpack.dataflow.base import RNGDataFlow
 from tensorpack.dataflow.common import MapData
 from tensorpack.dataflow.imgaug import (
     Brightness,
     Contrast,
+    GaussianBlur,
+    GaussianNoise,
     RandomResize,
     Rotation,
     Saturation,
-    GaussianNoise,
-    GaussianBlur,
 )
 from tensorpack.dataflow.imgaug.crop import RandomCropRandomShape
 from tensorpack.dataflow.imgaug.meta import RandomApplyAug
 from tensorpack.dataflow.imgaug.transform import CropTransform
-from tensorpack.dataflow.parallel import MultiProcessRunnerZMQ, MultiProcessRunner
+from tensorpack.dataflow.parallel import MultiProcessRunner, MultiProcessRunnerZMQ
 from tensorpack.utils.utils import get_rng
+
+from deeplabcut.utils.conversioncode import robust_split_path
 
 from .factory import PoseDatasetFactory
 from .pose_base import BasePoseDataset
@@ -166,7 +166,7 @@ class TensorpackPoseDataset(BasePoseDataset):
         # range [-rotate_max_deg_abs; rotate_max_deg_abs] to augment training data
 
         if cfg.get("rotation", True):  # i.e. pm 25 degrees
-            if type(cfg.get("rotation", False)) == int:
+            if isinstance(cfg.get("rotation", False), int):
                 cfg["rotation"] = cfg.get("rotation", 25)
             else:
                 cfg["rotation"] = 25
@@ -211,9 +211,7 @@ class TensorpackPoseDataset(BasePoseDataset):
         # Randomly applies gaussian blur to an image with a random window size
         # within the range [0, 2 * blur_max_window_size + 1] to augment training data
         cfg["blur_max_window_size"] = cfg.get("blur_max_window_size", 10)
-        cfg["blurratio"] = cfg.get(
-            "blurratio", 0.2
-        )  # what is the fraction of training samples with blur augmentation?
+        cfg["blurratio"] = cfg.get("blurratio", 0.2)  # what is the fraction of training samples with blur augmentation?
 
         # Whether image is RGB  or RBG. If None, contrast augmentation uses the mean per-channel.
         cfg["is_rgb"] = cfg.get("is_rgb", True)
@@ -226,7 +224,8 @@ class TensorpackPoseDataset(BasePoseDataset):
         # Number of datapoints to prefetch at a time during training
         cfg["num_prefetch"] = cfg.get("num_prefetch", 50)
 
-        # Auto cropping is new (was not in Nature Neuroscience 2018 paper, but introduced in Nath et al. Nat. Protocols 2019)
+        # Auto cropping is new (was not in Nature Neuroscience 2018 paper, but introduced in Nath et al. Nat. Protocols
+        # 2019)
         # and boosts performance by 2X, particularly on challenging datasets, like the cheetah in Nath et al.
         # Parameters for augmentation with regard to cropping:
 
@@ -239,7 +238,7 @@ class TensorpackPoseDataset(BasePoseDataset):
 
         cfg["cropratio"] = cfg.get("cropratio", 0.4)
 
-        super(TensorpackPoseDataset, self).__init__(cfg)
+        super().__init__(cfg)
         self.scaling = RandomResize(
             xrange=(
                 self.cfg["scale_jitter_lo"] * self.cfg["global_scale"],
@@ -261,9 +260,7 @@ class TensorpackPoseDataset(BasePoseDataset):
             rgb=self.cfg["is_rgb"],
             clip=self.cfg["to_clip"],
         )
-        self.saturation = Saturation(
-            self.cfg["saturation_max_dif"], rgb=self.cfg["is_rgb"]
-        )
+        self.saturation = Saturation(self.cfg["saturation_max_dif"], rgb=self.cfg["is_rgb"])
         self.gaussian_noise = GaussianNoise(sigma=self.cfg["noise_sigma"])
         self.gaussian_blur = GaussianBlur(max_size=self.cfg["blur_max_window_size"])
         self.augmentors = [
@@ -305,9 +302,7 @@ class TensorpackPoseDataset(BasePoseDataset):
         aug_img = img
         aug_coords = coords
         size = [aug_img.shape[0], aug_img.shape[1]]
-        aug_coords = [
-            aug_coords.reshape(int(len(aug_coords[~np.isnan(aug_coords)]) / 2), 2)
-        ]
+        aug_coords = [aug_coords.reshape(int(len(aug_coords[~np.isnan(aug_coords)]) / 2), 2)]
         joint_id = data.joint_id
 
         return [joint_id, aug_img, aug_coords, data, size, scale]
@@ -322,13 +317,9 @@ class TensorpackPoseDataset(BasePoseDataset):
         if num_processes <= 1:
             num_processes = 2  # recommended to use more than one process for training
         if os.name == "nt":
-            df2 = MultiProcessRunner(
-                df, num_proc=num_processes, num_prefetch=self.cfg["num_prefetch"]
-            )
+            df2 = MultiProcessRunner(df, num_proc=num_processes, num_prefetch=self.cfg["num_prefetch"])
         else:
-            df2 = MultiProcessRunnerZMQ(
-                df, num_proc=num_processes, hwm=self.cfg["num_prefetch"]
-            )
+            df2 = MultiProcessRunnerZMQ(df, num_proc=num_processes, hwm=self.cfg["num_prefetch"])
         return df2
 
     def compute_target_part_scoremap(self, components):
@@ -418,10 +409,7 @@ class TensorpackPoseDataset(BasePoseDataset):
         if "min_input_size" in self.cfg and "max_input_size" in self.cfg:
             input_width = image_size[2] * scale
             input_height = image_size[1] * scale
-            if (
-                input_height < self.cfg["min_input_size"]
-                or input_width < self.cfg["min_input_size"]
-            ):
+            if input_height < self.cfg["min_input_size"] or input_width < self.cfg["min_input_size"]:
                 return False
             if input_height * input_width > self.cfg["max_input_size"] ** 2:
                 return False
@@ -430,13 +418,12 @@ class TensorpackPoseDataset(BasePoseDataset):
 
     def make_batch(self, components):
         data_item = DataItem.from_dict(components[0])
-        mirror = components[2]
+        components[2]
         part_score_targets = components[3]
         part_score_weights = components[4]
         locref_targets = components[5]
         locref_mask = components[6]
 
-        im_file = data_item.im_path
         # logging.debug('image %s', im_file)
         # print('image: {}'.format(im_file))
         # logging.debug('mirror %r', mirror)

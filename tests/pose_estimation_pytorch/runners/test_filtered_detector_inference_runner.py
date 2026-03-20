@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-Test script for superanimal_humanbody with torchvision detector
-"""
+"""Test script for superanimal_humanbody with torchvision detector."""
 
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     TORCHVISION_DETECTORS,
@@ -15,9 +13,8 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import COCO_PERSON_CATEGO
 
 
 def test_torchvision_detector():
-    """Test that the torchvision detector works with superanimal_humanbody"""
+    """Test that the torchvision detector works with superanimal_humanbody."""
     for detector_name in TORCHVISION_DETECTORS:
-
         # Load the superanimal_humanbody config
         superanimal_config = load_super_animal_config(
             super_animal="superanimal_humanbody",
@@ -35,9 +32,7 @@ def test_torchvision_detector():
         print("Torchvision detector loaded successfully!")
 
         # Test loading the FilteredDetector
-        person_detector = FilteredDetector(
-            coco_detector, class_id=COCO_PERSON_CATEGORY_ID
-        )
+        person_detector = FilteredDetector(coco_detector, class_id=COCO_PERSON_CATEGORY_ID)
         person_detector.eval()
         print("Filtered detector loaded successfully!")
 
@@ -49,9 +44,7 @@ def test_torchvision_detector():
         )
         print("Filtered detector runner created successfully!")
 
-    print(
-        "\n✅ All tests passed! The torchvision detector integration is working correctly."
-    )
+    print("\n✅ All tests passed! The torchvision detector integration is working correctly.")
     return True
 
 
@@ -59,10 +52,6 @@ if __name__ == "__main__":
     print("Testing superanimal_humanbody with torchvision detector...")
     success = test_torchvision_detector()
     if success:
-        print(
-            "\n✅ Test passed! The torchvision detector works with superanimal_humanbody"
-        )
+        print("\n✅ Test passed! The torchvision detector works with superanimal_humanbody")
     else:
-        print(
-            "\n❌ Test failed! There's an issue with the torchvision detector integration"
-        )
+        print("\n❌ Test failed! There's an issue with the torchvision detector integration")

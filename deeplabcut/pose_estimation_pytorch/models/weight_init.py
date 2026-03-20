@@ -1,4 +1,4 @@
-"""Ways to initialize weights for PyTorch modules"""
+"""Ways to initialize weights for PyTorch modules."""
 
 from __future__ import annotations
 
@@ -6,11 +6,11 @@ from abc import ABC, abstractmethod
 
 import torch.nn as nn
 
-from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
+from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 
 def _build_weight_init(cfg: str | dict, **kwargs) -> BaseWeightInitializer:
-    """Builds a BaseWeightInitializer using its config or the name of the initializer
+    """Builds a BaseWeightInitializer using its config or the name of the initializer.
 
     Args:
         cfg: Either the name of the initializer (e.g. 'normal') or the config
@@ -28,7 +28,7 @@ WEIGHT_INIT = Registry("weight_init", build_func=_build_weight_init)
 
 
 class BaseWeightInitializer(ABC):
-    """Class to used to initialize model weights"""
+    """Class to used to initialize model weights."""
 
     @abstractmethod
     def init_weights(self, model: nn.Module) -> None:
@@ -41,7 +41,7 @@ class BaseWeightInitializer(ABC):
 
 @WEIGHT_INIT.register_module
 class Normal(BaseWeightInitializer):
-    """Class to used to initialize model weights using a normal distribution
+    """Class to used to initialize model weights using a normal distribution.
 
     Weights are initialized with a normal distribution, and biases are initialized to 0.
 
@@ -62,7 +62,7 @@ class Normal(BaseWeightInitializer):
 
 @WEIGHT_INIT.register_module
 class Dekr(BaseWeightInitializer):
-    """Class to used to initialize model weights in the same way as DEKR
+    """Class to used to initialize model weights in the same way as DEKR.
 
     Attributes:
         std: the standard deviation to use to initialize weights
@@ -90,7 +90,7 @@ class Dekr(BaseWeightInitializer):
 
 @WEIGHT_INIT.register_module
 class Rtmpose(BaseWeightInitializer):
-    """Class to used to initialize head weights in the same way as RTMPose"""
+    """Class to used to initialize head weights in the same way as RTMPose."""
 
     def init_weights(self, model: nn.Module) -> None:
         for module in model.modules():

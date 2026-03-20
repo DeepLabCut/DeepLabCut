@@ -43,11 +43,11 @@ from deeplabcut.pose_estimation_pytorch.runners import (
 from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
-from deeplabcut.utils import auxiliaryfunctions, VideoReader
+from deeplabcut.utils import VideoReader, auxiliaryfunctions
 
 
 class VideoIterator(VideoReader):
-    """A class to iterate over videos, with possible added context"""
+    """A class to iterate over videos, with possible added context."""
 
     def __init__(
         self,
@@ -129,7 +129,7 @@ def video_inference(
     robust_nframes: bool = False,
     show_gpu_memory: bool = False,
 ) -> list[dict[str, np.ndarray]]:
-    """Runs inference on a video
+    """Runs inference on a video.
 
     Args:
         video: The video to analyze
@@ -213,9 +213,7 @@ def video_inference(
 
     if detector_runner is not None:
         print(f"Running detector with batch size {detector_runner.batch_size}")
-        bbox_predictions = detector_runner.inference(
-            images = GpuTqdm(video) if show_gpu_memory else tqdm(video)
-        )
+        bbox_predictions = detector_runner.inference(images=GpuTqdm(video) if show_gpu_memory else tqdm(video))
         video.set_context(bbox_predictions)
 
     print(f"Running pose prediction with batch size {pose_runner.batch_size}")
@@ -223,8 +221,7 @@ def video_inference(
         shelf_writer.open()
 
     predictions = pose_runner.inference(
-        images = GpuTqdm(video) if show_gpu_memory else tqdm(video),
-        shelf_writer=shelf_writer
+        images=GpuTqdm(video) if show_gpu_memory else tqdm(video), shelf_writer=shelf_writer
     )
     if shelf_writer is not None:
         shelf_writer.close()
@@ -457,8 +454,7 @@ def analyze_videos(
         save_as_df = True
         if use_shelve:
             print(
-                "The ``use_shelve`` parameter cannot be used for single animal "
-                "projects. Setting ``use_shelve=False``."
+                "The ``use_shelve`` parameter cannot be used for single animal projects. Setting ``use_shelve=False``."
             )
             use_shelve = False
 
@@ -482,9 +478,7 @@ def analyze_videos(
         print(f"Creating a TopDownDynamicCropper with configuration {top_down_dynamic}")
         dynamic = TopDownDynamicCropper(**top_down_dynamic)
 
-    snapshot = utils.get_model_snapshots(
-        snapshot_index, loader.model_folder, loader.pose_task
-    )[0]
+    snapshot = utils.get_model_snapshots(snapshot_index, loader.model_folder, loader.pose_task)[0]
 
     # Load the BU model for the conditions provider
     cond_provider = None
@@ -520,7 +514,7 @@ def analyze_videos(
     )
 
     detector_runner = None
-    detector_path, detector_snapshot = None, None
+    _detector_path, detector_snapshot = None, None
     if loader.pose_task == Task.TOP_DOWN and dynamic is None:
         if detector_snapshot_index is None:
             raise ValueError(
@@ -532,9 +526,7 @@ def analyze_videos(
         if detector_batch_size is None:
             detector_batch_size = loader.project_cfg.get("detector_batch_size", 1)
 
-        detector_snapshot = utils.get_model_snapshots(
-            detector_snapshot_index, loader.model_folder, Task.DETECT
-        )[0]
+        detector_snapshot = utils.get_model_snapshots(detector_snapshot_index, loader.model_folder, Task.DETECT)[0]
         print(f"  -> Using detector {detector_snapshot.path}")
         detector_runner = utils.get_detector_inference_runner(
             model_config=loader.model_cfg,
@@ -647,9 +639,7 @@ def analyze_videos(
                     for i in range(num_frames):
                         frame_data = full_data.get("frame" + str(i).zfill(str_width))
                         if frame_data is None:
-                            pose = np.full(
-                                (len(individuals), len(bodyparts), 3), np.nan
-                            )
+                            pose = np.full((len(individuals), len(bodyparts), 3), np.nan)
                             ctd_predictions.append(dict(bodyparts=pose))
                             continue
 
@@ -780,7 +770,7 @@ def _generate_assemblies_file(
     num_bodyparts: int,
     num_unique_bodyparts: int,
 ) -> None:
-    """Generates the assemblies file from predictions"""
+    """Generates the assemblies file from predictions."""
     if full_data_path.exists():
         with open(full_data_path, "rb") as f:
             data = pickle.load(f)
@@ -841,16 +831,14 @@ def _generate_assemblies_file(
 
 
 def _validate_destfolder(destfolder: str | None) -> None:
-    """Checks that the destfolder for video analysis is valid"""
+    """Checks that the destfolder for video analysis is valid."""
     if destfolder is not None and destfolder != "":
         output_folder = Path(destfolder)
         if not output_folder.exists():
             print(f"Creating the output folder {output_folder}")
             output_folder.mkdir(parents=True)
 
-        assert Path(
-            output_folder
-        ).is_dir(), f"Output folder must be a directory: you passed '{output_folder}'"
+        assert Path(output_folder).is_dir(), f"Output folder must be a directory: you passed '{output_folder}'"
 
 
 def _generate_metadata(
@@ -870,8 +858,7 @@ def _generate_metadata(
     else:
         if not len(cropping) == 4:
             raise ValueError(
-                "The cropping parameters should be exactly 4 values: [x_min, x_max, "
-                f"y_min, y_max]. Found {cropping}"
+                f"The cropping parameters should be exactly 4 values: [x_min, x_max, y_min, y_max]. Found {cropping}"
             )
         cropping_parameters = cropping
 
@@ -912,10 +899,7 @@ def _generate_output_data(
                 np.arange(len(pose_config.get("partaffinityfield_graph", []))),
             ),
             "all_joints": [[i] for i in range(len(pose_config["all_joints"]))],
-            "all_joints_names": [
-                pose_config["all_joints_names"][i]
-                for i in range(len(pose_config["all_joints"]))
-            ],
+            "all_joints_names": [pose_config["all_joints_names"][i] for i in range(len(pose_config["all_joints"]))],
             "nframes": len(predictions),
             "key_str_width": str_width,
         }
@@ -959,8 +943,6 @@ def _generate_output_data(
             if num_unique > 0:
                 # needed for create_video_with_all_detections to display unique bpts
                 num_assem, num_ind = id_scores.shape[1:]
-                output[key]["identity"] += [
-                    -1 * np.ones((num_assem, num_ind)) for i in range(num_unique)
-                ]
+                output[key]["identity"] += [-1 * np.ones((num_assem, num_ind)) for i in range(num_unique)]
 
     return output

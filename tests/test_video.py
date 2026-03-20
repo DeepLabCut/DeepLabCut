@@ -9,10 +9,11 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import os
+
 import pytest
 from conftest import TEST_DATA_DIR
-from deeplabcut.utils.auxfun_videos import VideoWriter
 
+from deeplabcut.utils.auxfun_videos import VideoWriter
 
 POS_FRAMES = 1  # Equivalent to cv2.CAP_PROP_POS_FRAMES
 
@@ -57,9 +58,7 @@ def test_reader_wrong_fps(video_clip):
 
 
 def test_reader_duration(video_clip):
-    assert video_clip.calc_duration() == pytest.approx(
-        video_clip.calc_duration(robust=False), abs=0.01
-    )
+    assert video_clip.calc_duration() == pytest.approx(video_clip.calc_duration(robust=False), abs=0.01)
 
 
 def test_reader_set_frame(video_clip):
@@ -93,9 +92,7 @@ def test_writer_bbox(video_clip):
     assert video_clip.get_bbox(relative=True) == (0, 1, 0, 1)
 
 
-@pytest.mark.parametrize(
-    "start, end", [(0, 10), ("0:0", "0:10"), ("00:00:00", "00:00:10")]
-)
+@pytest.mark.parametrize("start, end", [(0, 10), ("0:0", "0:10"), ("00:00:00", "00:00:10")])
 def test_writer_shorten_invalid_timestamps(video_clip, start, end):
     with pytest.raises(ValueError):
         video_clip.shorten(start, end)

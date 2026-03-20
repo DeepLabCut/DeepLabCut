@@ -10,13 +10,14 @@
 #
 import deeplabcut.pose_estimation_pytorch.config as config
 from deeplabcut.pose_estimation_pytorch.apis import (
+    VideoIterator,
     analyze_image_folder,
     analyze_images,
     analyze_videos,
     build_predictions_dataframe,
+    convert_detections2tracklets,
     create_labeled_images,
     create_tracking_dataset,
-    convert_detections2tracklets,
     evaluate,
     evaluate_network,
     extract_maps,
@@ -28,42 +29,41 @@ from deeplabcut.pose_estimation_pytorch.apis import (
     train,
     train_network,
     video_inference,
-    VideoIterator,
     visualize_predictions,
 )
 from deeplabcut.pose_estimation_pytorch.config import (
     available_detectors,
     available_models,
-    is_model_top_down,
     is_model_cond_top_down,
+    is_model_top_down,
 )
 from deeplabcut.pose_estimation_pytorch.data import (
-    build_transforms,
-    COCOLoader,
     COLLATE_FUNCTIONS,
+    COCOLoader,
     DLCLoader,
     GenerativeSampler,
     GenSamplingConfig,
-    list_snapshots,
     Loader,
     PoseDataset,
     PoseDatasetParameters,
     Snapshot,
+    build_transforms,
+    list_snapshots,
 )
 from deeplabcut.pose_estimation_pytorch.runners import (
-    build_inference_runner,
-    build_training_runner,
     DetectorInferenceRunner,
     DetectorTrainingRunner,
     DynamicCropper,
-    get_load_weights_only,
     InferenceRunner,
     PoseInferenceRunner,
     PoseTrainingRunner,
-    set_load_weights_only,
     TopDownDynamicCropper,
     TorchSnapshotManager,
     TrainingRunner,
+    build_inference_runner,
+    build_training_runner,
+    get_load_weights_only,
+    set_load_weights_only,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import fix_seeds

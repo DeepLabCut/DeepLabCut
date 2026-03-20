@@ -24,8 +24,7 @@ def transformer_reID(
     modelprefix: str = "",
     destfolder: str = None,
 ):
-    """
-    Enables tracking with transformer.
+    """Enables tracking with transformer.
 
     Substeps include:
         - Mines triplets from tracklets in videos (from another tracker)
@@ -87,10 +86,10 @@ def transformer_reID(
     >>>     track_method="transformer",
     >>> )
     --------
-
     """
-    import deeplabcut
     import os
+
+    import deeplabcut
     from deeplabcut.utils import auxiliaryfunctions
 
     # calling create_tracking_dataset, train_tracking_transformer, stitch_tracklets
@@ -139,9 +138,7 @@ def transformer_reID(
         destfolder=destfolder,
     )
 
-    transformer_checkpoint = os.path.join(
-        snapshotfolder, f"dlc_transreid_{train_epochs}.pth"
-    )
+    transformer_checkpoint = os.path.join(snapshotfolder, f"dlc_transreid_{train_epochs}.pth")
 
     if not os.path.exists(transformer_checkpoint):
         raise FileNotFoundError(f"checkpoint {transformer_checkpoint} not found")

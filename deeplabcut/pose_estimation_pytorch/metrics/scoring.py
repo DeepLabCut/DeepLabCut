@@ -10,17 +10,16 @@
 #
 from __future__ import annotations
 
-import numpy as np
 import pickle
+
+import numpy as np
 from sklearn.metrics import accuracy_score
 
 from deeplabcut.core.crossvalutils import find_closest_neighbors
 from deeplabcut.utils.auxiliaryfunctions import read_config
 
 
-def _match_identity_preds_to_gt(
-    config_path: str, full_pickle_path: str
-) -> tuple[np.ndarray, list]:
+def _match_identity_preds_to_gt(config_path: str, full_pickle_path: str) -> tuple[np.ndarray, list]:
     with open(full_pickle_path, "rb") as f:
         data = pickle.load(f)
     metadata = data.pop("metadata")
@@ -54,9 +53,7 @@ def _match_identity_preds_to_gt(
                 found = neighbors != -1
                 inds = np.flatnonzero(all_bpts == bpt)
                 id_ = dict_["prediction"]["identity"][n_joint]
-                ids[i, inds[inds_gt[found]], 1] = np.argmax(
-                    id_[neighbors[found]], axis=1
-                )
+                ids[i, inds[inds_gt[found]], 1] = np.argmax(id_[neighbors[found]], axis=1)
     ids = ids[:, :n_multibodyparts].reshape((len(data), len(cfg["individuals"]), -1, 2))
     return ids, list(data)
 

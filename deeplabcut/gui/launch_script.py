@@ -18,15 +18,16 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 
 """
-import sys
+
 import os
-import logging
+import sys
 
 import PySide6.QtWidgets as QtWidgets
 import qdarkstyle
-from deeplabcut.gui import BASE_DIR
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QPixmap
+
+from deeplabcut.gui import BASE_DIR
 
 
 def launch_dlc():
@@ -40,7 +41,7 @@ def launch_dlc():
     splash.show()
 
     stylefile = os.path.join(BASE_DIR, "style.qss")
-    with open(stylefile, "r") as f:
+    with open(stylefile) as f:
         app.setStyleSheet(f.read())
 
     dark_stylesheet = qdarkstyle.load_stylesheet_pyside2()

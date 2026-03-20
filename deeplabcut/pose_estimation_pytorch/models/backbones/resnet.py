@@ -93,21 +93,11 @@ class DLCRNet(ResNet):
         self.interm_features = {}
         self.model.layer1[2].register_forward_hook(self._get_features("bank1"))
         self.model.layer2[2].register_forward_hook(self._get_features("bank2"))
-        self.conv_block1 = self._make_conv_block(
-            in_channels=512, out_channels=512, kernel_size=3, stride=2
-        )
-        self.conv_block2 = self._make_conv_block(
-            in_channels=512, out_channels=128, kernel_size=1, stride=1
-        )
-        self.conv_block3 = self._make_conv_block(
-            in_channels=256, out_channels=256, kernel_size=3, stride=2
-        )
-        self.conv_block4 = self._make_conv_block(
-            in_channels=256, out_channels=256, kernel_size=3, stride=2
-        )
-        self.conv_block5 = self._make_conv_block(
-            in_channels=256, out_channels=128, kernel_size=1, stride=1
-        )
+        self.conv_block1 = self._make_conv_block(in_channels=512, out_channels=512, kernel_size=3, stride=2)
+        self.conv_block2 = self._make_conv_block(in_channels=512, out_channels=128, kernel_size=1, stride=1)
+        self.conv_block3 = self._make_conv_block(in_channels=256, out_channels=256, kernel_size=3, stride=2)
+        self.conv_block4 = self._make_conv_block(in_channels=256, out_channels=256, kernel_size=3, stride=2)
+        self.conv_block5 = self._make_conv_block(in_channels=256, out_channels=128, kernel_size=1, stride=1)
 
     def _make_conv_block(
         self,
@@ -118,9 +108,7 @@ class DLCRNet(ResNet):
         momentum: float = 0.001,  # (1 - decay)
     ) -> torch.nn.Sequential:
         return nn.Sequential(
-            nn.Conv2d(
-                in_channels, out_channels, kernel_size=kernel_size, stride=stride
-            ),
+            nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=stride),
             nn.BatchNorm2d(out_channels, momentum=momentum),
             nn.ReLU(),
         )

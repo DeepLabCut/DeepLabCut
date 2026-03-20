@@ -8,12 +8,14 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from itertools import combinations
+
 import networkx as nx
 import numpy as np
 import pandas as pd
 import pytest
+
 from deeplabcut.utils import auxfun_multianimal
-from itertools import combinations
 
 
 def test_prune_paf_graph():
@@ -44,9 +46,7 @@ def test_reorder_individuals_in_df():
     individuals = df.columns.get_level_values("individuals").unique().to_list()
 
     # Generate a random permutation and reorder data. Ignore the unique bodypart
-    permutation_indices = random.sample(
-        range(len(individuals[:-1])), k=len(individuals[:-1])
-    )
+    permutation_indices = random.sample(range(len(individuals[:-1])), k=len(individuals[:-1]))
     permutation = [individuals[i] for i in permutation_indices]
     permutation.append("single")
     df_reordered = auxfun_multianimal.reorder_individuals_in_df(df, permutation)
@@ -56,9 +56,7 @@ def test_reorder_individuals_in_df():
     inverse_permutation_indices = np.argsort(permutation_indices).tolist()
     inverse_permutation = [individuals[i] for i in inverse_permutation_indices]
     inverse_permutation.append("single")
-    df_inverse_reordering = auxfun_multianimal.reorder_individuals_in_df(
-        df_reordered, inverse_permutation
-    )
+    df_inverse_reordering = auxfun_multianimal.reorder_individuals_in_df(df_reordered, inverse_permutation)
 
     # Check
     pd.testing.assert_frame_equal(df, df_inverse_reordering)

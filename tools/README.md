@@ -34,7 +34,13 @@ pre-commit run --all-files
 
 ---
 
-## 2) License headers
+## 2) Ruff cleanup helpers
+
+For **local Ruff backlog work** (not a substitute for CI or pre-commit), see [Ruff cleanup helpers](ruff_cleanup_helpers.md). It documents `generate_ruff_report.py` (Markdown report from Ruff JSON) and `fix_e501_with_autopep8.py` (targeted long-line cleanup plus Ruff fix/format).
+
+---
+
+## 3) License headers
 
 Code headers can be standardized by running:
 
@@ -46,7 +52,7 @@ Run from the repository root. Update `NOTICE.yml` to change header content.
 
 ---
 
-## 3) Running tests locally
+## 4) Running tests locally
 
 ### Run the full test suite
 
@@ -68,9 +74,7 @@ coverage run -m pytest
 coverage report
 ```
 
----
-
-## 4) Intelligent test selection (local + CI)
+## 5) Intelligent test selection (local + CI)
 
 The repository includes a deterministic test-selection tool to reduce CI runtime by running only the relevant workflows and tests based on changed files.
 
@@ -187,7 +191,7 @@ Common causes include:
 
 ---
 
-## 5) Docs: Jupyter Book build (local)
+## 6) Docs: Jupyter Book build (local)
 
 The repo uses Jupyter Book for docs:
 
@@ -201,7 +205,7 @@ jupyter-book build .
 
 ---
 
-## 6) Testing the test selector
+## 7) Testing the test selector
 
 The selector has dedicated tests covering:
 
@@ -218,7 +222,7 @@ pytest tests/tools/test_selector/
 
 ---
 
-## 7) Troubleshooting tips
+## 8) Troubleshooting tips
 
 - If a workflow run is unexpectedly selecting `full`, inspect the selector reports first.
 - If targeted tests fail due to missing dependencies, either:

@@ -17,7 +17,7 @@ from .pose_deterministic import DeterministicPoseDataset
 @PoseDatasetFactory.register("scalecrop")
 class ScalecropPoseDataset(DeterministicPoseDataset):
     def __init__(self, cfg):
-        super(ScalecropPoseDataset, self).__init__(cfg)
+        super().__init__(cfg)
         self.cfg["deterministic"] = False
         self.max_input_sizesquare = cfg.get("max_input_size", 1500) ** 2
         self.min_input_sizesquare = cfg.get("min_input_size", 64) ** 2

@@ -57,15 +57,11 @@ def _set_arg_scope_defaults(defaults):
 
 
 @slim.add_arg_scope
-def depth_multiplier(
-    output_params, multiplier, divisible_by=8, min_depth=8, **unused_kwargs
-):
+def depth_multiplier(output_params, multiplier, divisible_by=8, min_depth=8, **unused_kwargs):
     if "num_outputs" not in output_params:
         return
     d = output_params["num_outputs"]
-    output_params["num_outputs"] = _make_divisible(
-        d * multiplier, divisible_by, min_depth
-    )
+    output_params["num_outputs"] = _make_divisible(d * multiplier, divisible_by, min_depth)
 
 
 _Op = collections.namedtuple("Op", ["op", "params", "multiplier_func"])
@@ -76,7 +72,7 @@ def op(opfunc, multiplier_func=depth_multiplier, **params):
     return _Op(opfunc, params=params, multiplier_func=multiplier)
 
 
-class NoOpScope(object):
+class NoOpScope:
     """No-op context manager."""
 
     def __enter__(self):
@@ -188,10 +184,11 @@ def mobilenet_base(  # pylint: disable=invalid-name
     # c) set all defaults
     # d) set all extra overrides.
     # pylint: disable=g-backslash-continuation
-    with _scope_all(scope, default_scope="Mobilenet"), safe_arg_scope(
-        [slim.batch_norm], is_training=is_training
-    ), _set_arg_scope_defaults(conv_defs_defaults), _set_arg_scope_defaults(
-        conv_defs_overrides
+    with (
+        _scope_all(scope, default_scope="Mobilenet"),
+        safe_arg_scope([slim.batch_norm], is_training=is_training),
+        _set_arg_scope_defaults(conv_defs_defaults),
+        _set_arg_scope_defaults(conv_defs_overrides),
     ):
         # The current_stride variable keeps track of the output stride of the
         # activations, i.e., the running product of convolution strides up to the
@@ -242,11 +239,11 @@ def mobilenet_base(  # pylint: disable=invalid-name
                 else:
                     params["use_explicit_padding"] = True
 
-            end_point = "layer_%d" % (i + 1)
+            end_point = f"layer_{i + 1}"
             try:
                 net = opdef.op(net, **params)
             except Exception:
-                print("Failed to create op %i: %r params: %r" % (i, opdef, params))
+                print(f"Failed to create op {i}: {opdef} params: {params}")
                 raise
             end_points[end_point] = net
             scope = os.path.dirname(net.name)
@@ -266,9 +263,10 @@ def mobilenet_base(  # pylint: disable=invalid-name
 
 @contextlib.contextmanager
 def _scope_all(scope, default_scope=None):
-    with tf.compat.v1.variable_scope(
-        scope, default_name=default_scope
-    ) as s, tf.compat.v1.name_scope(s.original_name_scope):
+    with (
+        tf.compat.v1.variable_scope(scope, default_name=default_scope) as s,
+        tf.compat.v1.name_scope(s.original_name_scope),
+    ):
         yield s
 
 
@@ -280,7 +278,7 @@ def mobilenet(
     reuse=None,
     scope="Mobilenet",
     base_only=False,
-    **mobilenet_args
+    **mobilenet_args,
 ):
     """Mobilenet model for classification, supports both V1 and V2.
 
@@ -324,7 +322,7 @@ def mobilenet(
     is_training = mobilenet_args.get("is_training", False)
     input_shape = inputs.get_shape().as_list()
     if len(input_shape) != 4:
-        raise ValueError("Expected rank 4 input, was: %d" % len(input_shape))
+        raise ValueError(f"Expected rank 4 input, was: {len(input_shape)}")
 
     with tf.compat.v1.variable_scope(scope, "Mobilenet", reuse=reuse) as scope:
         inputs = tf.identity(inputs, "input")
@@ -385,9 +383,7 @@ def global_pool(input_tensor, pool_op=tf.nn.avg_pool2d):
         )
     else:
         kernel_size = [1, shape[1], shape[2], 1]
-    output = pool_op(
-        input_tensor, ksize=kernel_size, strides=[1, 1, 1, 1], padding="VALID"
-    )
+    output = pool_op(input_tensor, ksize=kernel_size, strides=[1, 1, 1, 1], padding="VALID")
     # Recover output shape, for unknown shape.
     output.set_shape([None, 1, 1, None])
     return output
@@ -433,20 +429,19 @@ def training_scope(
         weight_intitializer = tf.compat.v1.truncated_normal_initializer(stddev=stddev)
 
     # Set weight_decay for weights in Conv and FC layers.
-    with slim.arg_scope(
-        [slim.conv2d, slim.fully_connected, slim.separable_conv2d],
-        weights_initializer=weight_intitializer,
-        normalizer_fn=slim.batch_norm,
-    ), slim.arg_scope(
-        [mobilenet_base, mobilenet], is_training=is_training
-    ), safe_arg_scope(
-        [slim.batch_norm], **batch_norm_params
-    ), safe_arg_scope(
-        [slim.dropout], is_training=is_training, keep_prob=dropout_keep_prob
-    ), slim.arg_scope(
-        [slim.conv2d],
-        weights_regularizer=tf.keras.regularizers.l2(0.5 * (weight_decay)),
-    ), slim.arg_scope(
-        [slim.separable_conv2d], weights_regularizer=None
-    ) as s:
+    with (
+        slim.arg_scope(
+            [slim.conv2d, slim.fully_connected, slim.separable_conv2d],
+            weights_initializer=weight_intitializer,
+            normalizer_fn=slim.batch_norm,
+        ),
+        slim.arg_scope([mobilenet_base, mobilenet], is_training=is_training),
+        safe_arg_scope([slim.batch_norm], **batch_norm_params),
+        safe_arg_scope([slim.dropout], is_training=is_training, keep_prob=dropout_keep_prob),
+        slim.arg_scope(
+            [slim.conv2d],
+            weights_regularizer=tf.keras.regularizers.l2(0.5 * (weight_decay)),
+        ),
+        slim.arg_scope([slim.separable_conv2d], weights_regularizer=None) as s,
+    ):
         return s

@@ -9,9 +9,10 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Tests the heatmap target generators (plateau and gaussian)"""
+
 import numpy as np
-import torch
 import pytest
+import torch
 
 from deeplabcut.pose_estimation_pytorch.models.target_generators.heatmap_targets import (
     HeatmapGenerator,
@@ -29,9 +30,9 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators.heatmap_targets
             "out_shape": (3, 3),
             "centers": [(1, 1)],
             "expected_output": [
-                [0., 1., 0.],
-                [1., 1., 1.],
-                [0., 1., 0.],
+                [0.0, 1.0, 0.0],
+                [1.0, 1.0, 1.0],
+                [0.0, 1.0, 0.0],
             ],
         },
         {
@@ -41,11 +42,11 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators.heatmap_targets
             "out_shape": (5, 5),
             "centers": [[1, 1], [2, 2]],
             "expected_output": [
-                [1., 1., 1., 0., 0.],
-                [1., 1., 1., 1., 0.],
-                [1., 1., 1., 1., 1.],
-                [0., 1., 1., 1., 0.],
-                [0., 0., 1., 0., 0.],
+                [1.0, 1.0, 1.0, 0.0, 0.0],
+                [1.0, 1.0, 1.0, 1.0, 0.0],
+                [1.0, 1.0, 1.0, 1.0, 1.0],
+                [0.0, 1.0, 1.0, 1.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0],
             ],
         },
         {
@@ -55,10 +56,10 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators.heatmap_targets
             "out_shape": (4, 4),
             "centers": [[1, 1]],
             "expected_output": [
-                [1., 1., 1., 0.],
-                [1., 1., 1., 1.],
-                [1., 1., 1., 0.],
-                [0., 1., 0., 0.],
+                [1.0, 1.0, 1.0, 0.0],
+                [1.0, 1.0, 1.0, 1.0],
+                [1.0, 1.0, 1.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0],
             ],
         },
     ],

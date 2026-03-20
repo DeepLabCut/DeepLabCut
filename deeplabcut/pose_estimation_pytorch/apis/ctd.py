@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Methods to help with conditional top-down models"""
+"""Methods to help with conditional top-down models."""
+
 from pathlib import Path
 
 import numpy as np
@@ -44,8 +45,7 @@ def get_condition_provider(
 
     if isinstance(condition_cfg, (str, Path)):
         error_message = (
-            "To run inference with CTD models, you must specify the BU model you "
-            "want to use to generate conditions.\n"
+            "To run inference with CTD models, you must specify the BU model you want to use to generate conditions.\n"
         ) + error_message
         raise ValueError(error_message)
     elif not isinstance(condition_cfg, dict):
@@ -61,7 +61,7 @@ def get_conditions_provider_for_video(
     cond_provider: CondFromModel,
     video: str | Path,
 ) -> CondFromFile | None:
-    """Tries to create a conditions loader
+    """Tries to create a conditions loader.
 
     Args:
         cond_provider: The CondFromModel condition provider that will be used. The
@@ -81,7 +81,6 @@ def get_conditions_provider_for_video(
     # Load pickle for multi-animal projects
     cond_file = video.parent / f"{video.stem}{cond_provider.scorer}_assemblies.pickle"
     if not cond_file.exists():
-
         # Load h5 for single-animal projects
         cond_file = video.parent / f"{video.stem}{cond_provider.scorer}.h5"
         if not cond_file.exists():
@@ -90,10 +89,8 @@ def get_conditions_provider_for_video(
     return CondFromFile(filepath=cond_file)
 
 
-def load_conditions_for_evaluation(
-    loader: data.Loader, images: list[str]
-) -> dict[str, np.ndarray]:
-    """Loads the conditions needed to evaluate a CTD model
+def load_conditions_for_evaluation(loader: data.Loader, images: list[str]) -> dict[str, np.ndarray]:
+    """Loads the conditions needed to evaluate a CTD model.
 
     Args:
         loader: The Loader for the CTD model to evaluate.
@@ -103,7 +100,7 @@ def load_conditions_for_evaluation(
         The conditions for the images.
     """
     if loader.pose_task != Task.COND_TOP_DOWN:
-        raise ValueError(f"Conditions can only be loaded for CTD models")
+        raise ValueError("Conditions can only be loaded for CTD models")
 
     # load the conditions config
     condition_cfg = loader.model_cfg["inference"].get("conditions")

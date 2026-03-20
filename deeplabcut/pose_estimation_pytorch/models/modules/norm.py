@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Normalization layers"""
+"""Normalization layers."""
+
 from __future__ import annotations
 
 import torch
@@ -16,7 +17,7 @@ import torch.nn as nn
 
 
 class ScaleNorm(nn.Module):
-    """Implementation of ScaleNorm
+    """Implementation of ScaleNorm.
 
     ScaleNorm was introduced in "Transformers without Tears: Improving the Normalization
     of Self-Attention".
@@ -31,7 +32,7 @@ class ScaleNorm(nn.Module):
 
     def __init__(self, dim: int, eps: float = 1e-5):
         super().__init__()
-        self.scale = dim ** -0.5
+        self.scale = dim**-0.5
         self.eps = eps
         self.g = nn.Parameter(torch.ones(1))
 

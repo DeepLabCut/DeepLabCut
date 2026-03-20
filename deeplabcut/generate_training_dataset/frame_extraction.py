@@ -11,11 +11,10 @@
 
 
 def select_cropping_area(config, videos=None):
-    """
-    Interactively select the cropping area of all videos in the config.
-    A user interface pops up with a frame to select the cropping parameters.
-    Use the left click to draw a box and hit the button 'set cropping parameters'
-    to store the cropping parameters for a video in the config.yaml file.
+    """Interactively select the cropping area of all videos in the config. A user
+    interface pops up with a frame to select the cropping parameters. Use the left click
+    to draw a box and hit the button 'set cropping parameters' to store the cropping
+    parameters for a video in the config.yaml file.
 
     Parameters
     ----------
@@ -31,7 +30,7 @@ def select_cropping_area(config, videos=None):
     cfg : dict
         Updated project configuration
     """
-    from deeplabcut.utils import auxiliaryfunctions, auxfun_videos
+    from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
 
     cfg = auxiliaryfunctions.read_config(config)
     if videos is None:
@@ -251,16 +250,17 @@ def extract_frames(
             extracted_cam=0,
         )
     """
-    import os
-    import sys
-    import re
     import glob
-    import numpy as np
+    import os
+    import re
+    import sys
     from pathlib import Path
+
+    import numpy as np
     from skimage import io
     from skimage.util import img_as_ubyte
-    from deeplabcut.utils import frameselectiontools
-    from deeplabcut.utils import auxiliaryfunctions
+
+    from deeplabcut.utils import auxiliaryfunctions, frameselectiontools
 
     config_file = Path(config).resolve()
     cfg = auxiliaryfunctions.read_config(config_file)
@@ -284,13 +284,9 @@ def extract_frames(
 
         # Check for variable correctness
         if start > 1 or stop > 1 or start < 0 or stop < 0 or start >= stop:
-            raise Exception(
-                "Erroneous start or stop values. Please correct it in the config file."
-            )
+            raise Exception("Erroneous start or stop values. Please correct it in the config file.")
         if numframes2pick < 1 and not int(numframes2pick):
-            raise Exception(
-                "Perhaps consider extracting more, or a natural number of frames."
-            )
+            raise Exception("Perhaps consider extracting more, or a natural number of frames.")
 
         if opencv:
             from deeplabcut.utils.auxfun_videos import VideoWriter
@@ -340,12 +336,7 @@ def extract_frames(
                             askuser = input(
                                 "The directory already contains some frames. Do you want to add to it?(yes/no): "
                             )
-                        if not (
-                            askuser == "y"
-                            or askuser == "yes"
-                            or askuser == "Y"
-                            or askuser == "Yes"
-                        ):
+                        if not (askuser == "y" or askuser == "yes" or askuser == "Y" or askuser == "Yes"):
                             sys.exit("Delete the frames and try again later!")
 
                 if crop == "GUI":
@@ -368,16 +359,12 @@ def extract_frames(
                 else:
                     coords = None
 
-                print("Extracting frames based on %s ..." % algo)
+                print(f"Extracting frames based on {algo} ...")
                 if algo == "uniform":
                     if opencv:
-                        frames2pick = frameselectiontools.UniformFramescv2(
-                            cap, numframes2pick, start, stop
-                        )
+                        frames2pick = frameselectiontools.UniformFramescv2(cap, numframes2pick, start, stop)
                     else:
-                        frames2pick = frameselectiontools.UniformFrames(
-                            clip, numframes2pick, start, stop
-                        )
+                        frames2pick = frameselectiontools.UniformFrames(clip, numframes2pick, start, stop)
                 elif algo == "kmeans":
                     if opencv:
                         frames2pick = frameselectiontools.KmeansbasedFrameselectioncv2(
@@ -401,18 +388,16 @@ def extract_frames(
                         )
                 else:
                     print(
-                         "Please implement this method yourself and send us a pull "
-                         "request! Otherwise, choose 'uniform' or 'kmeans'."
-                     )
+                        "Please implement this method yourself and send us a pull "
+                        "request! Otherwise, choose 'uniform' or 'kmeans'."
+                    )
                     frames2pick = []
 
                 if not len(frames2pick):
                     print("Frame selection failed...")
                     return []
 
-                output_path = (
-                    Path(config).parents[0] / "labeled-data" / Path(video).stem
-                )
+                output_path = Path(config).parents[0] / "labeled-data" / Path(video).stem
                 output_path.mkdir(parents=True, exist_ok=True)
                 is_valid = []
                 if opencv:
@@ -421,12 +406,7 @@ def extract_frames(
                         frame = cap.read_frame(crop=True)
                         if frame is not None:
                             image = img_as_ubyte(frame)
-                            img_name = (
-                                str(output_path)
-                                + "/img"
-                                + str(index).zfill(indexlength)
-                                + ".png"
-                            )
+                            img_name = str(output_path) + "/img" + str(index).zfill(indexlength) + ".png"
                             io.imsave(img_name, image)
                             is_valid.append(True)
                         else:
@@ -437,16 +417,12 @@ def extract_frames(
                     for index in frames2pick:
                         try:
                             image = img_as_ubyte(clip.get_frame(index * 1.0 / clip.fps))
-                            img_name = (
-                                str(output_path)
-                                + "/img"
-                                + str(index).zfill(indexlength)
-                                + ".png"
-                            )
+                            img_name = str(output_path) + "/img" + str(index).zfill(indexlength) + ".png"
                             io.imsave(img_name, image)
                             if np.var(image) == 0:  # constant image
                                 print(
-                                    "Seems like black/constant images are extracted from your video. Perhaps consider using opencv under the hood, by setting: opencv=True"
+                                    "Seems like black/constant images are extracted from your video."
+                                    "Perhaps consider using opencv under the hood, by setting: opencv=True"
                                 )
                             is_valid.append(True)
                         except FileNotFoundError:
@@ -469,12 +445,11 @@ def extract_frames(
         elif any(has_failed):
             print("Although most frames were extracted, some were invalid.")
         else:
-            print(
-                "Frames were successfully extracted, for the videos listed in the config.yaml file."
-            )
+            print("Frames were successfully extracted, for the videos listed in the config.yaml file.")
         print(
             "\nYou can now label the frames using the function 'label_frames' "
-            "(Note, you should label frames extracted from diverse videos (and many videos; we do not recommend training on single videos!))."
+            "(Note, you should label frames extracted from diverse videos "
+            "(and many videos; we do not recommend training on single videos!))."
         )
         return has_failed
 
@@ -489,19 +464,17 @@ def extract_frames(
             videos = [v for v in videos if v in videos_list]
         project_path = Path(config).parents[0]
         labels_path = os.path.join(project_path, "labeled-data/")
-        video_dir = os.path.join(project_path, "videos/")
+        os.path.join(project_path, "videos/")
         try:
             cfg_3d = auxiliaryfunctions.read_config(config3d)
-        except:
+        except Exception as e:
             raise Exception(
                 "You must create a 3D project and edit the 3D config file before extracting matched frames. \n"
-            )
+            ) from e
         cams = cfg_3d["camera_names"]
         extCam_name = cams[extracted_cam]
         del cams[extracted_cam]
-        label_dirs = sorted(
-            glob.glob(os.path.join(labels_path, "*" + extCam_name + "*"))
-        )
+        label_dirs = sorted(glob.glob(os.path.join(labels_path, "*" + extCam_name + "*")))
 
         # select crop method
         crop_list = []
@@ -523,7 +496,7 @@ def extract_frames(
                     coords = None
                 crop_list.append(coords)
 
-        for coords, dirPath in zip(crop_list, label_dirs):
+        for coords, dirPath in zip(crop_list, label_dirs, strict=False):
             extracted_images = glob.glob(os.path.join(dirPath, "*png"))
 
             imgPattern = re.compile("[0-9]{1,10}")
@@ -565,12 +538,11 @@ def extract_frames(
                             )
                         else:
                             io.imsave(img_name, image)
-        print(
-            "\n Done extracting matched frames. You can now begin labeling frames using the function label_frames\n"
-        )
+        print("\n Done extracting matched frames. You can now begin labeling frames using the function label_frames\n")
 
     else:
         print(
-            "Invalid MODE. Choose either 'manual', 'automatic' or 'match'. Check ``help(deeplabcut.extract_frames)`` on python and ``deeplabcut.extract_frames?`` \
-              for ipython/jupyter notebook for more details."
+            "Invalid MODE. Choose either 'manual', 'automatic' or 'match'. "
+            "Check ``help(deeplabcut.extract_frames)`` on python and ``deeplabcut.extract_frames?``"
+            " for ipython/jupyter notebook for more details."
         )

@@ -8,10 +8,10 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from .ma_dlc import MaDLCPoseDataset
-from .multi import MultiSourceDataset
 from .coco import COCOPoseDataset
+from .ma_dlc import MaDLCPoseDataset
+from .ma_dlc_dataframe import MaDLCDataFrame
 from .materialize import mat_func_factory
+from .multi import MultiSourceDataset
 from .single_dlc import SingleDLCPoseDataset
 from .single_dlc_dataframe import SingleDLCDataFrame
-from .ma_dlc_dataframe import MaDLCDataFrame

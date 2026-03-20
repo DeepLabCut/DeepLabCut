@@ -11,6 +11,7 @@
 
 
 import abc
+
 import numpy as np
 
 
@@ -30,8 +31,6 @@ class BasePoseDataset(metaclass=abc.ABCMeta):
             np.random.seed(42)
         scale = self.cfg["global_scale"]
         if "scale_jitter_lo" in self.cfg and "scale_jitter_up" in self.cfg:
-            scale_jitter = np.random.uniform(
-                self.cfg["scale_jitter_lo"], self.cfg["scale_jitter_up"]
-            )
+            scale_jitter = np.random.uniform(self.cfg["scale_jitter_lo"], self.cfg["scale_jitter_up"])
             scale *= scale_jitter
         return scale

@@ -29,13 +29,9 @@ def make_easy_optimizer(cfg, model):
         params += [{"params": [value], "lr": lr, "weight_decay": weight_decay}]
     optimizer_name = cfg["optimizer_name"]
     if optimizer_name == "SGD":
-        optimizer = getattr(torch.optim, optimizer_name)(
-            params, momentum=cfg["momentum"]
-        )
+        optimizer = getattr(torch.optim, optimizer_name)(params, momentum=cfg["momentum"])
     elif optimizer_name == "AdamW":
-        optimizer = torch.optim.AdamW(
-            params, lr=cfg["base_lr"], weight_decay=cfg["weight_decay"]
-        )
+        optimizer = torch.optim.AdamW(params, lr=cfg["base_lr"], weight_decay=cfg["weight_decay"])
     else:
         optimizer = getattr(torch.optim, optimizer_name)(params)
 

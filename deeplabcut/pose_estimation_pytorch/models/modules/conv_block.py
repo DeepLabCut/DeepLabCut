@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """The code is based on DEKR: https://github.com/HRNet/DEKR/tree/main"""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -17,7 +18,7 @@ import torch
 import torch.nn as nn
 import torchvision.ops as ops
 
-from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
+from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 BLOCKS = Registry("blocks", build_func=build_from_cfg)
 
@@ -25,7 +26,8 @@ BLOCKS = Registry("blocks", build_func=build_from_cfg)
 class BaseBlock(ABC, nn.Module):
     """Abstract Base class for defining custom blocks.
 
-    This class defines an abstract base class for creating custom blocks used in the HigherHRNet for Human Pose Estimation.
+    This class defines an abstract base class for creating custom blocks used in the HigherHRNet for Human Pose
+    Estimation.
 
     Attributes:
         bn_momentum: Batch normalization momentum.
@@ -87,7 +89,7 @@ class BasicBlock(BaseBlock):
         downsample: nn.Module | None = None,
         dilation: int = 1,
     ):
-        super(BasicBlock, self).__init__()
+        super().__init__()
         self.conv1 = nn.Conv2d(
             in_channels,
             out_channels,
@@ -166,7 +168,7 @@ class Bottleneck(BaseBlock):
         downsample: nn.Module | None = None,
         dilation: int = 1,
     ):
-        super(Bottleneck, self).__init__()
+        super().__init__()
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(out_channels, momentum=self.bn_momentum)
         self.conv2 = nn.Conv2d(
@@ -179,12 +181,8 @@ class Bottleneck(BaseBlock):
             dilation=dilation,
         )
         self.bn2 = nn.BatchNorm2d(out_channels, momentum=self.bn_momentum)
-        self.conv3 = nn.Conv2d(
-            out_channels, out_channels * self.expansion, kernel_size=1, bias=False
-        )
-        self.bn3 = nn.BatchNorm2d(
-            out_channels * self.expansion, momentum=self.bn_momentum
-        )
+        self.conv3 = nn.Conv2d(out_channels, out_channels * self.expansion, kernel_size=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(out_channels * self.expansion, momentum=self.bn_momentum)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
@@ -249,10 +247,8 @@ class AdaptBlock(BaseBlock):
         dilation: int = 1,
         deformable_groups: int = 1,
     ):
-        super(AdaptBlock, self).__init__()
-        regular_matrix = torch.tensor(
-            [[-1, -1, -1, 0, 0, 0, 1, 1, 1], [-1, 0, 1, -1, 0, 1, -1, 0, 1]]
-        )
+        super().__init__()
+        regular_matrix = torch.tensor([[-1, -1, -1, 0, 0, 0, 1, 1, 1], [-1, 0, 1, -1, 0, 1, -1, 0, 1]])
         self.register_buffer("regular_matrix", regular_matrix.float())
         self.downsample = downsample
         self.transform_matrix_conv = nn.Conv2d(in_channels, 4, 3, 1, 1, bias=True)
@@ -283,9 +279,7 @@ class AdaptBlock(BaseBlock):
 
         N, _, H, W = x.shape
         transform_matrix = self.transform_matrix_conv(x)
-        transform_matrix = transform_matrix.permute(0, 2, 3, 1).reshape(
-            (N * H * W, 2, 2)
-        )
+        transform_matrix = transform_matrix.permute(0, 2, 3, 1).reshape((N * H * W, 2, 2))
         offset = torch.matmul(transform_matrix, self.regular_matrix)
         offset = offset - self.regular_matrix
         offset = offset.transpose(1, 2).reshape((N, H, W, 18)).permute(0, 3, 1, 2)
