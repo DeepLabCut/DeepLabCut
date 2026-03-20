@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2024-10-27'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+---
 # How to Cite DeepLabCut
 
 Thank you for using DeepLabCut! Here are our recommendations for citing and documenting your use of DeepLabCut in your Methods section:
