@@ -105,9 +105,7 @@ if __name__ == "__main__":
     try:
         config = glob.glob(os.path.join(basepath, "TEST*", "config.yaml"))[-1]
     except Exception as e:
-        raise RuntimeError(
-            "Please run the testscript_tensorflow_single_animal.py first before testing for 3d"
-        ) from e
+        raise RuntimeError("Please run the testscript_tensorflow_single_animal.py first before testing for 3d") from e
 
     dfolder = None
 
@@ -183,9 +181,7 @@ if __name__ == "__main__":
     deeplabcut.triangulate(path_config_file, video_dir, save_as_csv=True)
 
     print("CREATING LABELED VIDEO 3-D")
-    deeplabcut.create_labeled_video_3d(
-        path_config_file, [video_dir], start=5, end=10, videotype=".avi"
-    )
+    deeplabcut.create_labeled_video_3d(path_config_file, [video_dir], start=5, end=10, videotype=".avi")
 
     # output_path = [os.path.join(basepath,folder)]
     # deeplabcut.create_labeled_video_3d(path_config_file,output_path,start=5,end=10)

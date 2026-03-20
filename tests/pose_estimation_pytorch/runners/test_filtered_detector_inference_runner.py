@@ -32,9 +32,7 @@ def test_torchvision_detector():
         print("Torchvision detector loaded successfully!")
 
         # Test loading the FilteredDetector
-        person_detector = FilteredDetector(
-            coco_detector, class_id=COCO_PERSON_CATEGORY_ID
-        )
+        person_detector = FilteredDetector(coco_detector, class_id=COCO_PERSON_CATEGORY_ID)
         person_detector.eval()
         print("Filtered detector loaded successfully!")
 
