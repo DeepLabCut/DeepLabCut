@@ -40,7 +40,10 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     parse_snapshot_index_for_analysis,
 )
 from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
-from deeplabcut.pose_estimation_pytorch.modelzoo.utils import update_config
+from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
+    COCO_PERSON_CATEGORY_ID,
+    update_config,
+)
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import resolve_device
 from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
@@ -175,10 +178,9 @@ def superanimal_analyze_images(
             torchvision_detector_name = detector_name
         else:
             torchvision_detector_name = "fasterrcnn_mobilenet_v3_large_fpn"
-        COCO_PERSON = 1  # COCO class ID for person
         filtered_detector_config = {
             "torchvision_detector_name": torchvision_detector_name,
-            "category_id": COCO_PERSON,
+            "category_id": COCO_PERSON_CATEGORY_ID,
         }
 
     if customized_model_config is None:

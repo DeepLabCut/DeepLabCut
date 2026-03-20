@@ -9,6 +9,7 @@ from deeplabcut.pose_estimation_pytorch.models.detectors.filtered_detector impor
     FilteredDetector,
 )
 from deeplabcut.pose_estimation_pytorch.modelzoo import load_super_animal_config
+from deeplabcut.pose_estimation_pytorch.modelzoo.utils import COCO_PERSON_CATEGORY_ID
 
 
 def test_torchvision_detector():
@@ -31,14 +32,15 @@ def test_torchvision_detector():
         print("Torchvision detector loaded successfully!")
 
         # Test loading the FilteredDetector
-        COCO_PERSON = 1  # COCO class ID for person
-        person_detector = FilteredDetector(coco_detector, class_id=COCO_PERSON)
+        person_detector = FilteredDetector(
+            coco_detector, class_id=COCO_PERSON_CATEGORY_ID
+        )
         person_detector.eval()
         print("Filtered detector loaded successfully!")
 
         _ = get_filtered_coco_detector_inference_runner(
             model_name=detector_name,
-            category_id=COCO_PERSON,
+            category_id=COCO_PERSON_CATEGORY_ID,
             batch_size=1,
             model_config=superanimal_config,
         )

@@ -97,7 +97,12 @@ if __name__ == "__main__":
     df = pd.DataFrame(fake_data, index=index, columns=columns)
     output_path = os.path.join(image_folder, f"CollectedData_{SCORER}.csv")
     df.to_csv(output_path)
-    df.to_hdf(output_path.replace("csv", "h5"), key="df_with_missing", format="table", mode="w")
+    df.to_hdf(
+        output_path.replace("csv", "h5"),
+        key="df_with_missing",
+        format="table",
+        mode="w",
+    )
     print("Artificial data created.")
 
     print("Checking labels...")

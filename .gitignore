@@ -5,9 +5,6 @@ _build/*
 #Data and examples
 /examples/open*
 /examples/Reac*
-/examples/TES*
-/examples/multi*
-/examples/3D*
 /examples/m3*
 /examples/OUT
 /examples/pretrained*
@@ -144,3 +141,8 @@ tmp/*
 
 # Test data
 tests/data/*
+
+
+
+# Automatic test selection report
+**/tmp/test-selection/

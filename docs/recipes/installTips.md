@@ -58,7 +58,7 @@ i.e., for example:
 python testscript_pytorch_multi_animal.py
 
 # Testing with the TensorFlow engine
-python testscript_multianimal.py
+python testscript_tensorflow_multi_animal.py
 ```
 
 
@@ -375,7 +375,7 @@ During training and analysis steps, DeepLabCut does not use the GPU processor he
 
 (3) Click on the **Performance** tab. On that page, click on the small arrow under GPU (it might start as **3D**, and change it to **CUDA**.
 
-(4) During training, you should see the **Dedicated GPU memory usage** increase to near maximum, and you should see some activity in the **CUDA** graph. The graph below is the activity while running `testscript.py`.
+(4) During training, you should see the **Dedicated GPU memory usage** increase to near maximum, and you should see some activity in the **CUDA** graph. The graph below is the activity while running `testscript_tensorflow_single_animal.py`.
 
 ![](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/b1d03ca0-f8ba-4a31-a399-6e86856c81b0/installBrandon3.png?format=500w)
 

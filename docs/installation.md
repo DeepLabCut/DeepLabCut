@@ -266,7 +266,7 @@ https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-
 `nvcc -V` to check your installed version(s).
 
 - The best practice is to then run the supplied `testscript_pytorch_single_animal.py`
-(or `testscript.py` for the TensorFlow engine); this is inside the examples folder you
+(or `testscript_tensorflow_single_animal.py` for the TensorFlow engine); this is inside the examples folder you
 acquired when you git cloned the repo. Here is more information/a short
 [video on running the testscript](https://www.youtube.com/watch?v=IOWtKn3l33s).
 - Additionally, if you want to use the bleeding edge, with your git clone you also get

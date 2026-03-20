@@ -25,6 +25,7 @@ from deeplabcut.pose_estimation_pytorch.apis.videos import (
     video_inference,
 )
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
+    COCO_PERSON_CATEGORY_ID,
     raise_warning_if_called_directly,
 )
 from deeplabcut.utils.make_labeled_video import create_video
@@ -110,10 +111,9 @@ def _video_inference_superanimal(
     if superanimal_name == "superanimal_humanbody":
         if not torchvision_detector_name:
             torchvision_detector_name = "fasterrcnn_mobilenet_v3_large_fpn"
-        COCO_PERSON = 1  # COCO class ID for person
         detector_runner = get_filtered_coco_detector_inference_runner(
             model_name=torchvision_detector_name,
-            category_id=COCO_PERSON,
+            category_id=COCO_PERSON_CATEGORY_ID,
             batch_size=detector_batch_size,
             max_individuals=max_individuals,
             model_config=model_cfg,
