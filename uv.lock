@@ -1069,6 +1069,7 @@ dependencies = [
     { name = "pandas", extra = ["hdf5", "performance"] },
     { name = "pillow" },
     { name = "pycocotools" },
+    { name = "pydantic" },
     { name = "pyyaml" },
     { name = "ruamel-yaml" },
     { name = "scikit-image", version = "0.25.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1137,6 +1138,7 @@ wandb = [
 [package.dev-dependencies]
 dev = [
     { name = "coverage" },
+    { name = "nbformat" },
     { name = "pydantic" },
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -1166,6 +1168,7 @@ requires-dist = [
     { name = "pandas", extras = ["hdf5", "performance"], specifier = ">=2.2,<3" },
     { name = "pillow", specifier = ">=7.1" },
     { name = "pycocotools" },
+    { name = "pydantic", specifier = ">=2,<3" },
     { name = "pyside6", marker = "platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'gui'", specifier = "<6.10" },
     { name = "pyside6", marker = "(platform_machine != 'x86_64' and extra == 'gui') or (sys_platform != 'linux' and extra == 'gui')" },
     { name = "pyyaml" },
@@ -1203,6 +1206,7 @@ provides-extras = ["gui", "openvino", "docs", "fmpose3d", "tf", "apple-mchips", 
 [package.metadata.requires-dev]
 dev = [
     { name = "coverage" },
+    { name = "nbformat", specifier = ">5" },
     { name = "pydantic", specifier = ">=2,<3" },
     { name = "pytest" },
     { name = "pytest-cov" },
