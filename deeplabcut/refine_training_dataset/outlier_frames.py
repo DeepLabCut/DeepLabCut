@@ -25,11 +25,11 @@ from skimage.util import img_as_ubyte
 
 from deeplabcut.core import inferenceutils
 from deeplabcut.utils import (
-    auxiliaryfunctions,
     auxfun_multianimal,
+    auxiliaryfunctions,
     conversioncode,
-    visualization,
     frameselectiontools,
+    visualization,
 )
 from deeplabcut.utils.auxfun_videos import VideoWriter
 
@@ -177,8 +177,7 @@ def find_outliers_in_raw_detections(
 
 
 def _read_video_specific_cropping_margins(
-    config: str | Path | dict,
-    video_path: str | Path
+    config: str | Path | dict, video_path: str | Path
 ) -> tuple[int, int]:
     if isinstance(config, (str, Path)):
         config = auxiliaryfunctions.read_config(config)
@@ -438,8 +437,12 @@ def extract_outlier_frames(
             out_x1, out_y1 = _read_video_specific_cropping_margins(config, video)
             if metadata.get("data", {}).get("cropping"):
                 x1, _, y1, _ = metadata["data"]["cropping_parameters"]
-                df.iloc[:, df.columns.get_level_values(level="coords") == "x"] += x1 - out_x1
-                df.iloc[:, df.columns.get_level_values(level="coords") == "y"] += y1 - out_y1
+                df.iloc[:, df.columns.get_level_values(level="coords") == "x"] += (
+                    x1 - out_x1
+                )
+                df.iloc[:, df.columns.get_level_values(level="coords") == "y"] += (
+                    y1 - out_y1
+                )
 
             df = df.iloc[Index]
             mask = df.columns.get_level_values("bodyparts").isin(bodyparts)
@@ -644,23 +647,29 @@ def compute_deviations(
         preds.append(np.c_[distance, significant, meanx, meany, CIx, CIy])
 
     columns = Dataframe.columns
-    prod = []
-    for i in range(columns.nlevels - 1):
-        prod.append(columns.get_level_values(i).unique())
-    prod.append(
-        [
-            "distance",
-            "sig",
-            "meanx",
-            "meany",
-            "lowerCIx",
-            "higherCIx",
-            "lowerCIy",
-            "higherCIy",
-        ]
+    # Use the existing valid keypoint combinations, in their original order.
+    # The goal is to extract each stream (e.g. Scorer/ID/Bodypart) as a separate column,
+    # and then build, for each stat, a MultiIndex with the same levels, i.e.
+    # Scorer/ID/Bodypart/stat (see stats below).
+    # Note, this could be built from "y" as well without any difference in the output
+    base_cols = Dataframe.xs("x", axis=1, level="coords", drop_level=True).columns
+    stats = [
+        "distance",
+        "sig",
+        "meanx",
+        "meany",
+        "lowerCIx",
+        "higherCIx",
+        "lowerCIy",
+        "higherCIy",
+    ]
+    pdindex = pd.MultiIndex.from_tuples(
+        [(*col, stat) for col in base_cols for stat in stats],
+        names=[n for n in columns.names if n != "coords"] + ["stats"],
     )
-    pdindex = pd.MultiIndex.from_product(prod, names=columns.names)
-    data = pd.DataFrame(np.concatenate(preds, axis=1), columns=pdindex)
+    data = pd.DataFrame(
+        np.concatenate(preds, axis=1), columns=pdindex
+    )  # preds (n_frames, n_stats * n_streams)
     # average distance and average # significant differences avg. over comparisonbodyparts
     d = data.xs("distance", axis=1, level=-1).mean(axis=1).values
     o = data.xs("sig", axis=1, level=-1).mean(axis=1).values
