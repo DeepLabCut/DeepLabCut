@@ -256,6 +256,11 @@ def write_config(configname, cfg):
         if not "skeleton" in cfg.keys():
             cfg_file["skeleton"] = []
             cfg_file["skeleton_color"] = "black"
+        # Use a very large width so long strings (e.g., file paths or keys with spaces)
+        # are kept on a single line instead of being wrapped, which can otherwise cause
+        # them to be emitted as complex keys. See also:
+        # https://stackoverflow.com/questions/31197268/pyyaml-yaml-dump-produces-complex-key-for-string-key-122-chars/31199123#31199123
+        ruamelFile.width = 1_000_000
         ruamelFile.dump(cfg_file, cf)
 
 
@@ -938,8 +943,9 @@ def find_video_full_data(folder, videoname, scorer):
     return full_files[0]
 
 
-def find_video_metadata(folder, videoname, scorer):
+def find_video_metadata(folder, videoname: str, scorer: str):
     """For backward compatibility, let us search the substring 'meta'"""
+    
     scorer_legacy = scorer.replace("DLC", "DeepCut")
     meta_files = filter_files_by_patterns(
         folder=folder,
@@ -963,8 +969,9 @@ def load_video_full_data(folder, videoname, scorer):
     return read_pickle(find_video_full_data(folder, videoname, scorer))
 
 
-def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method=""):
+def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, track_method=""):
     """Find potential data files from the hints given to the function."""
+    
     scorer_legacy = scorer.replace("DLC", "DeepCut")
     suffix = "_filtered" if filtered else ""
     tracker = TRACK_METHODS.get(track_method, "")
@@ -1006,7 +1013,7 @@ def find_analyzed_data(folder, videoname, scorer, filtered=False, track_method="
             f"{n_candidates} possible data files were found: {candidates}.\n"
             f"Picking the first by default..."
         )
-    filepath = os.path.join(folder, candidates[0])
+    filepath = str(Path(folder) / candidates[0])
     scorer = scorer if scorer in filepath else scorer_legacy
     return filepath, scorer, suffix
 

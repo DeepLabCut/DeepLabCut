@@ -1,24 +1,49 @@
 version: 2.1
 
 orbs:
-  python: circleci/python@0.2.1
+  python: circleci/python@4.0.0
 
 jobs:
   build-and-test:
-    working_directory: ~/circleci-demo-python-django
-    docker:
-      - image: circleci/python:3.10  # primary container for the build job
-        auth:
-          username: mydockerhub-user
-          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
+    executor:
+      name: python/default
+      tag: '3.10' # or '3.12'
     steps:
       - checkout
-      - python/load-cache
-      - python/install-deps
-      - python/save-cache
+
+      # 1) Restore uv cache
+      - restore_cache:
+          name: Restore uv cache
+          keys:
+            - v2-uv-pip-{{ checksum "pyproject.toml" }}
+            - v2-uv-pip-
+      # 2) Install uv
       - run:
-          command: python testscript_cli.py
+          name: Install uv
+          command: |
+            pip install uv
+
+      - run:
+          name: Install DeepLabCut runtime deps only
+          command: |
+            uv pip install --system -e .
+
+      # 3) (Optional) Trim the cache for CI so uploads stay small and fast
+      - run:
+          name: Prune uv cache for CI
+          command: uv cache prune --ci || true
+
+      # 4) Save the cache for next runs
+      - save_cache:
+          name: Save uv cache
+          key: v2-uv-pip-{{ checksum "pyproject.toml" }}
+          paths:
+            - ~/.cache/uv
+
+      - run:
           name: TestDLC
+          # uv handles the installation of the dependencies
+          command: python testscript_cli.py
 
 workflows:
   main:

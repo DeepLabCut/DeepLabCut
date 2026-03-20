@@ -887,7 +887,7 @@ def evaluate_network(
                         DataMachine = pd.DataFrame(
                             PredicteData, columns=index, index=Data.index
                         )
-                        DataMachine.to_hdf(resultsfilename, "df_with_missing")
+                        DataMachine.to_hdf(resultsfilename, key="df_with_missing")
 
                         print(
                             "Analysis is done and the results are stored (see evaluation-results) for snapshot: ",

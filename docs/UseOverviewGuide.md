@@ -39,7 +39,7 @@ We are primarily a package that enables deep learning-based pose estimation. We 
  - [HOW-TO-GUIDES:](overview) step-by-step user guidelines for using DeepLabCut on your own datasets (see below)
  - [EXPLANATIONS:](https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials) resources on understanding how DeepLabCut works
  - [REFERENCES:](https://github.com/DeepLabCut/DeepLabCut#references) read the science behind DeepLabCut
- - [BEGINNER GUIDE TO THE GUI](https://deeplabcut.github.io/DeepLabCut/docs/beginners-guide.html)
+ - [BEGINNER GUIDE TO THE GUI](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html)
 
 Getting Started: [a video tutorial on navigating the documentation!](https://www.youtube.com/watch?v=A9qZidI7tL8)
 

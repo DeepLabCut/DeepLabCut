@@ -413,6 +413,10 @@ class CSVLogger(BaseLogger):
         self._metric_store: list[dict] = []
         self._logged_metrics: set[str] = set()
 
+        # Load existing data if the file exists (e.g., when resuming from snapshot)
+        if self.log_file.exists():
+            self._load_existing_data()
+
     def log(self, metrics: dict[str, Any], step: Optional[int] = None) -> None:
         """Logs metrics from runs
 
@@ -450,6 +454,54 @@ class CSVLogger(BaseLogger):
         """
         pass
 
+    def _load_existing_data(self) -> None:
+        """Loads existing CSV data if the log file exists"""
+        logging.info(f"Loading existing CSV data from {self.log_file}")
+        try:
+            with open(self.log_file, "r", newline="") as f:
+                reader = csv.DictReader(f)
+
+                # Update logged metrics from header
+                if "step" not in reader.fieldnames:
+                    raise ValueError("Invalid CSV format: missing 'step' column")
+
+                metric_names = [m for m in reader.fieldnames if m != "step"]
+                self._logged_metrics.update(metric_names)
+
+                # Load data rows
+                steps = []
+                metric_store = []
+                for row in reader:
+                    try:
+                        step = int(row["step"])
+                    except (ValueError, KeyError):
+                        logging.warning(f"Invalid step value in row: {row}")
+                        continue
+
+                    # Convert metric values: empty strings -> None, numeric strings -> float
+                    step_metrics = {}
+                    for metric in metric_names:
+                        value = row.get(metric, "").strip()
+                        if not value:
+                            step_metrics[metric] = None
+                        else:
+                            try:
+                                step_metrics[metric] = float(value)
+                            except ValueError:
+                                step_metrics[metric] = value
+
+                    steps.append(step)
+                    metric_store.append(step_metrics)
+
+        except Exception as e:
+            logging.warning(
+                f"Failed to load existing CSV data from {self.log_file}: {e}. "
+                "Starting with empty log."
+            )
+            return
+        self._steps.extend(steps)
+        self._metric_store.extend(metric_store)
+
     def _prepare_logs(self) -> list[list]:
         """Prepares the data to log as a list of strings"""
         if len(self._metric_store) == 0:
@@ -458,6 +510,11 @@ class CSVLogger(BaseLogger):
         metrics = list(sorted(self._logged_metrics))
         logs = [["step"] + metrics]
         for step, step_metrics in zip(self._steps, self._metric_store):
-            logs.append([step] + [step_metrics.get(m) for m in metrics])
+            # Convert None values to empty strings for proper CSV formatting
+            row = [step] + [
+                "" if step_metrics.get(m) is None else step_metrics.get(m)
+                for m in metrics
+            ]
+            logs.append(row)
 
         return logs

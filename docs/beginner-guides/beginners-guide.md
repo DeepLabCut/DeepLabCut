@@ -50,21 +50,18 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 
 **(2) Install DeepLabCut** 
 
-Alright! Next, we will install `Tables` (also called pytables), which is a package to read the HDF5 files that make up the backbone of data management in DeepLabCut, then we will install all the `deeplabcut` source code 🔥. Please decide which version you want (stable or alpha), then type: 
+Alright! Next, we will install all the `deeplabcut` source code 🔥. Please decide which version you want (stable or alpha), then type:
 
-```
-conda install -c conda-forge pytables==3.8.0
-```
-
-- **Alpha release:**
-```
-pip install "git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=deeplabcut[gui,modelzoo,wandb]"
-```
-- OR run for the **Stable release:**
+- For the **Stable release:**
 ```
 pip install "deeplabcut[gui,modelzoo,wandb]"
 ```
 - This gives you DeepLabCut, the DLC GUI (gui), our latest neural networks (modelzoo) and a cool data logger (wandb) if you choose to use it later on!
+
+- OR for the **Alpha release (from GitHub bleeding edge of the code):**
+```
+pip install "git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=deeplabcut[gui,modelzoo,wandb]"
+```
 
 ## Starting DeepLabCut
 
@@ -134,4 +131,4 @@ When you first launch the GUI, you'll find three primary main options:
 
 ![DeepLabCut Create Project GIF](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779616437-30U5RFYV0OY6ACGDG7F4/create-project.gif?format=500w)
 
-## Next, head over the beginner guide for [Setting up what keypoints to track](https://deeplabcut.github.io/DeepLabCut/docs/manage-project)
+## Next, head over to the beginner guide for [Setting up what keypoints to track](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/manage-project.html)

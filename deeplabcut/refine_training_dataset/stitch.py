@@ -938,7 +938,7 @@ class TrackletStitcher:
             if suffix:
                 suffix = "_" + suffix
             output_name = self.filename.replace(".pickle", f"{suffix}.h5")
-        df.to_hdf(output_name, "tracks", format="table", mode="w")
+        df.to_hdf(output_name, key="tracks", format="table", mode="w")
         if save_as_csv:
             df.to_csv(output_name.replace(".h5", ".csv"))
 

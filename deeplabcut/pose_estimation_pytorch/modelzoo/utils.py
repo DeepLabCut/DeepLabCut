@@ -21,6 +21,9 @@ from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import add_metadata
 from deeplabcut.utils import auxiliaryfunctions
 
+# COCO category ID for the "person" class.
+COCO_PERSON_CATEGORY_ID = 1
+
 
 def get_model_configs_folder_path() -> Path:
     """Returns: the folder containing the SuperAnimal model configuration files"""
@@ -144,7 +147,9 @@ def download_super_animal_snapshot(dataset: str, model_name: str) -> Path:
     model_path = snapshot_dir / model_filename
 
     download_huggingface_model(
-        model_name, target_dir=str(snapshot_dir), rename_mapping=model_filename
+        model_name,
+        target_dir=str(snapshot_dir),
+        rename_mapping={model_filename: model_filename},
     )
     if not model_path.exists():
         raise RuntimeError(f"Failed to download {model_name} to {model_path}")
