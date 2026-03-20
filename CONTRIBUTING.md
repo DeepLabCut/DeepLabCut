@@ -1,77 +1,153 @@
-# How to Contribute to DeepLabCut
+# Contributing to DeepLabCut
 
-DeepLabCut is an actively developed package and we welcome community development and involvement. We are especially seeking people from underrepresented backgrounds in OSS to contribute their expertise and experience. Please get in touch if you want to discuss specific contributions you are interested in developing, and we can help shape a road-map.
+Thanks for your interest in contributing to DeepLabCut! We welcome bug fixes, new features, documentation improvements, tests, and general maintenance contributions.
 
-We are happy to receive code extensions, bug fixes, documentation updates, etc.
+We especially encourage contributions from people from backgrounds that are underrepresented in open-source software. If you want to discuss an idea before opening a pull request, feel free to start a discussion or open an issue.
 
-If you are a new user, we recommend checking out the detailed [Github Guides](https://guides.github.com).
+If you are new to GitHub, the [GitHub Guides](https://guides.github.com/) are a great place to start.
 
-## Setting up a development installation
+## Ways to contribute
 
-In order to make changes to `deeplabcut`, you will need to [fork](https://guides.github.com/activities/forking/#fork) the
-[repository](https://github.com/deeplabcut/deeplabcut).
+You can help by:
 
-If you are not familiar with `git`, we recommend reading up on [this guide](https://guides.github.com/introduction/git-handbook/#basic-git).
+- Fixing bugs
+- Improving documentation
+- Adding tests
+- Improving examples
+- Refactoring or cleaning up code
+- Proposing or implementing new features
 
-Here are guidelines for installing deeplabcut locally on your own computer, where you can make changes to the code! We often update the master deeplabcut code base on github, and then ~1 a month we push out a stable release on pypi. This is what most users turn to on a daily basis (i.e. pypi is where you get your `pip install deeplabcut` code from!
+## Development setup
 
-But, sometimes we add things to the repo that are not yet integrated, or you might want to edit the code yourself, or you will need to do this to contribute. Here, we show you how to do this.
+To work on DeepLabCut locally:
 
-**Step 1:**
+1. [Fork the repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo).
+2. Clone your fork:
 
-- git clone the repo into a folder on your computer:
+```bash
+git clone https://github.com/<your-username>/DeepLabCut.git
+cd DeepLabCut
+```
 
-- click on this green button and copy the link:
+3. Create and activate a Python environment.
 
-![](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1581984907363-G8AFGX4V20Y1XD1PSZAK/ke17ZwdGBToddI8pDm48kGJBV0_F4LE4_UtCip_K_3lZw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVE0ejQCe16973Pm-pux3j5_Oqt57D2H0YbaJ3tl8vn_eR926scO3xePJoa6uVJa9B4/gitclone.png?format=500w)
+We recommend using the project's development dependency group from `pyproject.toml` so you get the tools needed for local development (including formatting, linting, and testing).
 
-- then in the terminal type: `git clone https://github.com/DeepLabCut/DeepLabCut.git`
+For example, with `uv`:
 
-**Step 2:**
+```bash
+uv sync --group dev
+```
 
-- Now you will work from the terminal inside this cloned folder:
+With `pip` (e.g. in a `conda` environment):
 
-![](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1581985288123-V8XUAY0C0ZDNJ5WBHB7Y/ke17ZwdGBToddI8pDm48kIsGBOdR9tS_SxF6KQXIcDtZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpz3c8X74DzCy4P3pv-ZANOdh-3ZL9iVkcryTbbTskaGvEc42UcRKU-PHxLXKM6ZekE/terminal.png?format=750w)
+```bash
+pip install -e . --group dev
+```
 
-- Now, when you start `ipython` and `import deeplabcut` you are importing the folder "deeplabcut" - so any changes you make, or any changes we made before adding it to the pip package, are here.
+If you use a different environment manager, install the package in editable/development mode together with the `dev` dependency group defined in `pyproject.toml`.
 
-- You can also check which deeplabcut you are importing by running: `deeplabcut.__file__`
+## Working on the code
 
-![](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1581985466026-94OCSZJ5TL8U52JLB5VU/ke17ZwdGBToddI8pDm48kNdOD5iqmBzHwUaWGKS6qHBZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpyQPoegsR7K4odW9xcCi1MIHmvHh95_BFXYdKinJaRhV61R4G3qaUq94yWmtQgdj1A/importlocal.png?format=750w)
+Once your environment is ready, your local checkout is what Python will import.
 
-If you make changes to the code/first use the code, be sure you run `./resinstall.sh`, which you find in the main DeepLabCut folder:
+If you want to verify that you are using the local source tree, you can run:
 
-![](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1609353210708-FRNREI7HUNS4GLDSJ00G/ke17ZwdGBToddI8pDm48kAya1IcSd32bok4WHvykeicUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYy7Mythp_T-mtop-vrsUOmeInPi9iDjx9w8K4ZfjXt2dq18t0tDkB2HMfL2JGcLHN27k5rSOPIU8nEAZT0p1MiSCjLISwBs8eEdxAxTptZAUg/Screen+Shot+2020-12-30+at+7.33.16+PM.png?format=2500w)
+```bash
+python -c "import deeplabcut; print(deeplabcut.__file__)"
+```
 
+Using `ipython` or Jupyter is completely optional—use whatever workflow you prefer.
 
+If you change packaged resources or otherwise need to refresh the local installation, run:
 
-Note, before committing to DeepLabCut, please be sure your code is formatted according to `black`. To learn more,
-see [`black`'s documentation](https://black.readthedocs.io/en/stable/).
+```bash
+./reinstall.sh
+```
 
-Now, please make a [pull request](https://github.com/DeepLabCut/DeepLabCut/pull/new/) that includes both a **summary of and changes to**:
+> [!NOTE]
+> This script automatically uninstalls the package, builds a new wheel using `setup.py`, and installs that wheel. It is not a simple `pip install -e .` because some resources are copied during installation and need to be refreshed.
 
-- How you modified the code and what new functionality it has.
-- DOCSTRING update for your change
-- A working example of how it works for users.
-- If it's a function that also can be used in downstream steps (i.e. could be plotted) we ask you (1) highlight this, and (2) ideally you provide that functionality as well. If you have any questions, please reach out: admin@deeplabcut.org
+## Code style and pre-commit
 
-<!-- NOTE commented by @C-Achard 2026-03-13 this is now done in CI automatically -->
-<!-- **TestScript outputs:**
+We use `pre-commit` to run formatting and other checks before code is committed.
 
-- The **OS it has been tested on**
-- the **output of the [testscript_tensorflow_single_animal.py](/examples/testscript_tensorflow_single_animal.py)** and if you are editing the **3D code the [testscript_3d.py](/examples/testscript_3d.py)**, and if you edit multi-animal code please run the [maDLC test script](https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/testscript_tensorflow_multi_animal.py). -->
+Set it up once in your clone:
 
-**Review & Formatting:**
+```bash
+pre-commit install
+```
 
-- Please run black on the code to conform to our Black code style (see more at https://pypi.org/project/black/).
-- Please assign a reviewer, typically @AlexEMG, @mmathislab, or @jeylau (i/e. the [core-developers](https://github.com/orgs/DeepLabCut/teams/core-developers/members))
+Whenever you commit, `pre-commit` will run the configured checks.
 
-**Code headers**
+Please run `pre-commit` before opening a pull request. This helps catch formatting, import ordering, whitespace, YAML, and other common issues early and accelerates code review greatly.
 
-- The code headers can be standardized by running `python tools/update_license_headers.py`
-- Edit `NOTICE.yml` to update the header.
+## Tests
 
-**DeepLabCut is an open-source tool and has benefited from suggestions and edits by many individuals:**
+Pull requests are validated in CI, and contributors are encouraged to run tests locally using:
 
-- the [authors](/AUTHORS)
-- [code contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors)
+```bash
+pytest tests
+```
+in the project root before opening a pull request.
+
+> [!IMPORTANT]
+> Heavier tests are also run automatically on GitHub, so this is not a strict requirement,
+> but it can help catch issues early and speed up the review process.
+
+## Pull request guidelines
+
+When submitting a pull request, please:
+
+- Clearly describe what changed and why
+- Link any related issue(s)
+- Update docstrings and documentation when behavior changes
+- Add or update tests when appropriate
+- Include a small usage example when it helps reviewers understand and/or test the change
+
+Smaller, focused pull requests are usually much easier to review than very large ones.
+
+### Draft pull requests
+
+We use draft pull requests to indicate work in progress.
+You may still request reviews and feedbacks on draft pull requests, and we encourage you to do so if you would like early feedback on your work.
+Please note that the draft status is in no way related to the perceived quality of the code or its potential for merging, but is simply a way to indicate that the work is not yet ready for final review and merging.
+Most pull requests exist for the majority of their lifetime as drafts, which is expected.
+
+## Documentation
+
+Documentation improvements are always welcome.
+
+If your change affects users, please update the relevant docs, examples, or inline docstrings so the behavior is discoverable and easy to understand.
+
+## Code headers and notices
+
+If you need to standardize code headers, run:
+
+```bash
+python tools/update_license_headers.py
+```
+
+Contributors are requested not to update `NOTICE.yml` or `LICENSE` files.
+
+## Review process
+
+A maintainer will review your pull request. You do not need to supply a specific release timeline in your PR description—contributions are reviewed and merged as capacity allows.
+
+If you have questions about where a change should go or how to structure it, opening a draft pull request is completely fine.
+
+## Need help?
+
+If you are unsure whether something is in scope, open an issue or draft PR and ask.
+We'd much rather help early than have you spend time on the wrong thing.
+We also welcome "Feature requests" issues if you would like to discuss implementation details or would like preliminary feedback.
+
+## Acknowledgments
+
+DeepLabCut is an open-source project and has benefited from many contributors over time, including:
+
+- The [authors](/AUTHORS)
+- Listed [code contributors](https://github.com/DeepLabCut/DeepLabCut/graphs/contributors)
+- And many others over the years.
+
+We look forward to your contributions!

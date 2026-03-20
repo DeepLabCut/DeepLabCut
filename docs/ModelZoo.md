@@ -99,6 +99,33 @@ deeplabcut.video_inference_superanimal([video_path],
                                         video_adapt = False)
 ```
 
+### Practical example: FMPose3D monocular 3D inference
+
+For FMPose3D models, use `model_name="fmpose3d_animals"` or
+`model_name="fmpose3d_humans"`. Model selection is still determined by
+`model_name`, but to stay aligned with SuperAnimal naming conventions use:
+`superanimal_name="superanimal_quadruped"` for `fmpose3d_animals`, and
+`superanimal_name="superanimal_humanbody"` for `fmpose3d_humans`.
+
+Like the 2D superanimal models, this inference branch writes
+intermediate 2D predictions to `<video>_DLC_fmpose3d_*.h5` and `<video>_DLC_fmpose3d_*.json`. In addition, 3D predictions are saved to
+`<video>_DLC_fmpose3d_*_3d.h5` and `<video>_DLC_fmpose3d_*_3d.json`. Set `fmpose_return_3d=True` to also return
+the in-memory 3D dataframe (`df_3d`) in the function output.
+
+```python
+import deeplabcut
+
+video_path = "demo-video.mp4"
+result = deeplabcut.video_inference_superanimal(
+    videos=[video_path],
+    superanimal_name="superanimal_quadruped",
+    model_name="fmpose3d_animals",
+    batch_size=8,
+    fmpose_return_3d=True,  # include 3D dataframe in returned payload
+)
+df_3d = result[video_path]["df_3d"]
+```
+
 
 ### Practical example: Using SuperAnimal model bottom up, considering video/animal size.
 
