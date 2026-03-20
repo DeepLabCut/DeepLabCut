@@ -160,10 +160,10 @@ table_format = "long"
 
 [tool.pytest.ini_options]
 markers = [
-    "require_models: mark test as requiring models to run",
-    "fmpose3d: tests for fmpose3d integration",
-    "unittest: fast unit-level tests",
-    "functional: functional/integration-style tests",
+  "require_models: mark test as requiring models to run",
+  "fmpose3d: tests for fmpose3d integration",
+  "unittest: fast unit-level tests",
+  "functional: functional/integration-style tests",
 ]
 
 ## TEMPORARY - TODO - Remove after linting changes are made

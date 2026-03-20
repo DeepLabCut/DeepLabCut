@@ -10,8 +10,8 @@ Licensed under GNU Lesser General Public License v3.0
 from dataclasses import dataclass
 
 from fmpose3d import (
-    FMPose3DInference,
     FMPose3DConfig,
+    FMPose3DInference,
     SupportedModel,
 )
 

@@ -19,10 +19,11 @@ import pytest
 fmpose3d = pytest.importorskip("fmpose3d", reason="fmpose3d not installed")
 pytestmark = pytest.mark.fmpose3d
 
-from deeplabcut.pose_estimation_pytorch.modelzoo.fmpose_3d.fmpose3d import (
+# DLC fmpose_3d modules import fmpose3d; load only after importorskip above.
+from deeplabcut.pose_estimation_pytorch.modelzoo.fmpose_3d import inference as fmp_inf  # noqa: E402
+from deeplabcut.pose_estimation_pytorch.modelzoo.fmpose_3d.fmpose3d import (  # noqa: E402
     get_fmpose3d_inference_api,
 )
-from deeplabcut.pose_estimation_pytorch.modelzoo.fmpose_3d import inference as fmp_inf
 
 
 def _has_network(host="huggingface.co", port=443, timeout=3) -> bool:
@@ -53,9 +54,7 @@ _EXAMPLE_IMAGE = (
 # ---------------------------------------------------------------------------
 # Lightweight: verifies the API object is constructed correctly
 # ---------------------------------------------------------------------------
-@pytest.mark.parametrize(
-    "model_type", ["fmpose3d_humans", "fmpose3d_animals"]
-)
+@pytest.mark.parametrize("model_type", ["fmpose3d_humans", "fmpose3d_animals"])
 @pytest.mark.unittest
 def test_api_init(model_type):
     api = get_fmpose3d_inference_api(model_type, device="cpu")
@@ -181,11 +180,16 @@ def test_video_inference_fmpose3d_include_3d_return(tmp_path, monkeypatch):
         "get_fmpose3d_inference_api",
         lambda model_type, device: FakeAPI(),
     )
-    monkeypatch.setattr(fmp_inf, "create_df_from_prediction", _fake_create_df_from_prediction)
+    monkeypatch.setattr(
+        fmp_inf, "create_df_from_prediction", _fake_create_df_from_prediction
+    )
     monkeypatch.setattr(
         fmp_inf,
         "get_superanimal_colormaps",
-        lambda: {"superanimal_quadruped": "viridis", "superanimal_humanbody": "viridis"},
+        lambda: {
+            "superanimal_quadruped": "viridis",
+            "superanimal_humanbody": "viridis",
+        },
     )
 
     result = fmp_inf._video_inference_fmpose3d(
