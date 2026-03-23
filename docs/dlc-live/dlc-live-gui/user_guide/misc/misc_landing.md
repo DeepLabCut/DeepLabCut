@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_metadata_updated: '2026-03-17'
+  ignore: false
+---
 # Additional resources
 
 In this section, you can find additional resources related to the GUI and DLC-live, including:

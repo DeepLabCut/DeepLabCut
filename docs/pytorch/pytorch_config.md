@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2025-10-02'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+---
 (dlc3-pytorch-config)=
 # The PyTorch Configuration file
 

@@ -136,6 +136,8 @@ ENV/
 # mypy
 .mypy_cache/
 
+# Automated docs checks
+**/tmp/docs_nb_checks/
 
 
 # Automatic test selection report
