@@ -142,6 +142,8 @@ tmp/*
 # Test data
 tests/data/*
 
+# Automated docs checks
+**/tmp/docs_nb_checks/
 
 
 # Automatic test selection report

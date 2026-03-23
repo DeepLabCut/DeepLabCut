@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2024-01-17'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+---
 # DeepLabCut: PyTorch API
 
 ## Modules

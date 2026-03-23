@@ -11,7 +11,9 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
+import warnings
 from pathlib import Path
 
 import torch
@@ -32,6 +34,8 @@ from deeplabcut.utils.pseudo_label import (
     dlc3predictions_2_annotation_from_video,
     video_to_frames,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def get_checkpoint_epoch(checkpoint_path):
@@ -78,6 +82,7 @@ def video_inference_superanimal(
     customized_model_config: str | None = None,
     plot_bboxes: bool = True,
     create_labeled_video: bool = True,
+    fmpose_return_3d: bool = False,
 ):
     """This function performs inference on videos using a pretrained SuperAnimal model.
 
@@ -173,6 +178,13 @@ def video_inference_superanimal(
 
     create_labeled_video (bool):
         Specifies if a labeled video needs to be created, True by default.
+
+    fmpose_return_3d (bool):
+        Only used when ``model_name`` starts with ``"fmpose3d"``.
+        If True, include in-memory 3D poses in the return payload
+        (per video: ``{"df_2d": ..., "df_3d": ...}``).
+        If False (default), keep the legacy return payload with only
+        the 2D DataFrame per video.
 
     Raises:
         NotImplementedError:
@@ -313,8 +325,10 @@ def video_inference_superanimal(
     """
     if scale_list is None:
         scale_list = []
-
-    print(f"Running video inference on {videos} with {superanimal_name}_{model_name}")
+    if not model_name.startswith("fmpose3d"):
+        print(
+            f"Running video inference on {videos} with {superanimal_name}_{model_name}"
+        )
     dlc_root_path = get_deeplabcut_path()
     modelzoo_path = os.path.join(dlc_root_path, "modelzoo")
     available_architectures = json.load(open(os.path.join(modelzoo_path, "models_to_framework.json")))
@@ -345,6 +359,42 @@ def video_inference_superanimal(
             create_labeled_video=create_labeled_video,
         )
     elif framework == "pytorch":
+        if model_name.startswith("fmpose3d"):
+            logger.info("Running video inference on %s using %s", videos, model_name)
+
+            recommended_superanimal_name = {
+                "fmpose3d_animals": "quadruped",
+                "fmpose3d_humans": "human",
+            }.get(model_name)
+
+            provided_superanimal_name = superanimal_name or "<not provided>"
+            if superanimal_name != recommended_superanimal_name:
+                warnings.warn(
+                    "For FMPose3D models, model selection is driven by 'model_name'. But for API "
+                    "consistency, it is recommended to set 'superanimal_name' to the corresponding value."
+                    f"Provided superanimal_name={provided_superanimal_name!r} differs from the "
+                    f"recommended value for {model_name!r}: "
+                    f"{recommended_superanimal_name!r}.",
+                    stacklevel=2,
+                )
+
+            from deeplabcut.pose_estimation_pytorch.modelzoo.fmpose_3d.inference import (
+                _video_inference_fmpose3d,
+            )
+
+            return _video_inference_fmpose3d(
+                video_paths=videos,
+                model_name=model_name,
+                max_individuals=max_individuals,
+                pcutoff=pcutoff,
+                batch_size=batch_size,
+                dest_folder=dest_folder,
+                device=device,
+                create_labeled_video=create_labeled_video,
+                cropping=cropping,
+                include_3d_in_return=fmpose_return_3d,
+            )
+
         torchvision_detector_name = None
         if superanimal_name != "superanimal_humanbody" and detector_name is None:
             raise ValueError("You have to specify a detector_name when using the Pytorch framework.")

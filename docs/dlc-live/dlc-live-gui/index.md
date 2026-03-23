@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_metadata_updated: '2026-03-17'
+  ignore: false
+---
 # DeepLabCut-live-GUI
 
 A graphical application for **real-time pose estimation with DeepLabCut** using one or more cameras.

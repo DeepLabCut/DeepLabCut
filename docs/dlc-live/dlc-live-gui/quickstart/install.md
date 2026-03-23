@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_metadata_updated: '2026-03-17'
+  ignore: false
+---
 # Installation
 
 This page explains how to install **DeepLabCut-live-GUI** for interactive, real‑time pose estimation.

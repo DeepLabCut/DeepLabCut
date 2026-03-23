@@ -2,19 +2,9 @@
 
 This document summarizes the developer tooling and workflows used in this repo.
 
-> **Quick start (recommended)**
->
-> ```bash
-> python -m pip install -U pip
-> pip install -U pytest coverage pre-commit
-> ```
->
-> If you prefer faster dependency installs, you can use `uv` (optional):
->
-> ```bash
-> # Install uv (see https://docs.astral.sh/uv/ for platform-specific installers)
-> uv --version
-> ```
+```bash
+pip install -e . --group dev
+```
 
 ---
 
@@ -28,11 +18,7 @@ pre-commit install
 
 Run on all files:
 
-```bash
-pre-commit run --all-files
-```
-
----
+Steering committee members may edit the `NOTICE.yml` to update the header.
 
 ## 2) Ruff cleanup helpers
 
@@ -44,9 +30,7 @@ For **local Ruff backlog work** (not a substitute for CI or pre-commit), see [Ru
 
 Code headers can be standardized by running:
 
-```bash
-python tools/update_license_headers.py
-```
+Please follow the instructions in `CONTRIBUTING.md` for contributing to the codebase, including running tests and pre-commit checks before opening a pull request.
 
 Run from the repository root. Update `NOTICE.yml` to change header content.
 
@@ -61,13 +45,6 @@ pytest
 ```
 
 ### Run a specific test module or folder
-
-```bash
-pytest tests/test_auxiliaryfunctions.py
-pytest tests/core/
-```
-
-### Coverage
 
 ```bash
 coverage run -m pytest

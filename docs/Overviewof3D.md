@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2025-10-14'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+---
 (3D-overview)=
 # 3D DeepLabCut
 
