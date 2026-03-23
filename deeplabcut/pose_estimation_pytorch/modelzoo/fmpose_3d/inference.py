@@ -67,9 +67,7 @@ def _pose2d_to_dlc_predictions(
 #  i/o migration to validated keypoint schemas (parquet)
 def _poses3d_to_dataframe(poses_3d: list[np.ndarray], df_2d, scorer_3d: str):
     """Create and fill a 3D dataframe using the shared auxiliary helper."""
-    df_3d, scorer_3d, bodyparts = auxiliaryfunctions_3d.create_empty_df(
-        df_2d, scorer_3d, "3d"
-    )
+    df_3d, scorer_3d, bodyparts = auxiliaryfunctions_3d.create_empty_df(df_2d, scorer_3d, "3d")
     n_frames = len(poses_3d)
     n_bodyparts = len(bodyparts)
     arr = np.full((n_frames, n_bodyparts, 3), np.nan, dtype=float)
@@ -135,9 +133,7 @@ def _video_inference_fmpose3d(
 
     api = get_fmpose3d_inference_api(model_type=model_name, device=device)
 
-    dest_folder = (
-        Path(video_paths[0]).parent if dest_folder is None else Path(dest_folder)
-    )
+    dest_folder = Path(video_paths[0]).parent if dest_folder is None else Path(dest_folder)
     dest_folder.mkdir(parents=True, exist_ok=True)
 
     if create_labeled_video:
@@ -156,7 +152,11 @@ def _video_inference_fmpose3d(
         all_poses_3d: list[np.ndarray] = []
         warned_multi_person_2d = False
 
-        def _process_batch(frames: list[np.ndarray]) -> None:
+        def _process_batch(
+            frames: list[np.ndarray],
+            predictions_2d=predictions_2d,
+            all_poses_3d=all_poses_3d,
+        ) -> None:
             nonlocal warned_multi_person_2d
             pose_2d = api.prepare_2d(source=np.stack(frames))
             num_detected = int(np.asarray(pose_2d.keypoints).shape[0])
@@ -180,9 +180,7 @@ def _video_inference_fmpose3d(
                 )
                 all_poses_3d.extend(np.asarray(pose_3d.poses_3d))
             except ValueError as e:
-                logger.info(
-                    "Skipping 3D lifting for batch due to invalid 2D result: %s", e
-                )
+                logger.info("Skipping 3D lifting for batch due to invalid 2D result: %s", e)
                 all_poses_3d.extend([np.zeros((0, num_bodyparts, 3)) for _ in frames])
 
         batch: list[np.ndarray] = []
@@ -224,10 +222,7 @@ def _video_inference_fmpose3d(
         with open(output_json, "w") as f:
             json.dump(predictions_2d, f, cls=NumpyEncoder)
 
-        poses_3d_serialisable = [
-            pose.tolist() if isinstance(pose, np.ndarray) else pose
-            for pose in all_poses_3d
-        ]
+        poses_3d_serialisable = [pose.tolist() if isinstance(pose, np.ndarray) else pose for pose in all_poses_3d]
         output_3d_json = dest_folder / f"{output_prefix}_3d.json"
         with open(output_3d_json, "w") as f:
             json.dump(
