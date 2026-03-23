@@ -123,7 +123,7 @@ jobs:
           elif [ "$RUNNER_OS" == "macOS" ]; then
             brew install ffmpeg || true
           else
-            choco install ffmpeg
+            choco install ffmpeg -y --no-progress
           fi
 
       - name: Run pytest
