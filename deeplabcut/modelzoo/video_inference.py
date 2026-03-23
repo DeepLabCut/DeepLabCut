@@ -326,9 +326,7 @@ def video_inference_superanimal(
     if scale_list is None:
         scale_list = []
     if not model_name.startswith("fmpose3d"):
-        print(
-            f"Running video inference on {videos} with {superanimal_name}_{model_name}"
-        )
+        print(f"Running video inference on {videos} with {superanimal_name}_{model_name}")
     dlc_root_path = get_deeplabcut_path()
     modelzoo_path = os.path.join(dlc_root_path, "modelzoo")
     available_architectures = json.load(open(os.path.join(modelzoo_path, "models_to_framework.json")))

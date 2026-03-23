@@ -100,4 +100,4 @@ repos:
           - "pydantic>=2,<3"
           - "pyyaml"
           - "nbformat>=5"
-        stages: [pre-commit, manual] 
+        stages: [pre-commit, manual]
