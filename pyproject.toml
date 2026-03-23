@@ -164,8 +164,3 @@ markers = [
   "unittest: fast unit-level tests",
   "functional: functional/integration-style tests",
 ]
-
-## TEMPORARY - TODO - Remove after linting changes are made
-[tool.yapf]
-based_on_style = "google"
-indent_width = 4
