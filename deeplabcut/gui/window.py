@@ -349,17 +349,32 @@ class MainWindow(QMainWindow):
             self.status_bar.showMessage(latest_line)
             self.logger.info(latest_line)
 
+    def _cleanup_update_process(self):
+        if self._update_process is not None:
+            self._update_process.deleteLater()
+            self._update_process = None
+        self._update_process_output = []
+        self._progress_bar.hide()
+        self.status_bar.showMessage("www.deeplabcut.org")
+
+    def _cleanup_update_process(self):
+        if self._update_process is not None:
+            self._update_process.deleteLater()
+            self._update_process = None
+        self._update_process_output = []
+        self._progress_bar.hide()
+        self.status_bar.showMessage("www.deeplabcut.org")
+
     def _on_update_process_error(self, error):
         if self._closing:
-            if self._update_process is not None:
-                self._update_process.deleteLater()
-                self._update_process = None
-            self._update_process_output = []
+            self._cleanup_update_process()
             return
 
-        self._progress_bar.hide()
         error_strings = {
-            QtCore.QProcess.FailedToStart: "Process failed to start. Check that pip is available and you have sufficient permissions.",
+            QtCore.QProcess.FailedToStart: (
+                "Process failed to start. Check that pip is available and you have "
+                "sufficient permissions."
+            ),
             QtCore.QProcess.Crashed: "Update process crashed unexpectedly.",
             QtCore.QProcess.Timedout: "Update process timed out.",
             QtCore.QProcess.WriteError: "Could not write to update process.",
@@ -368,17 +383,15 @@ class MainWindow(QMainWindow):
         }
         message = error_strings.get(error, "An unknown error occurred.")
         QtWidgets.QMessageBox.warning(self, "Update failed", message)
-        if self._update_process is not None:
-            self._update_process.deleteLater()
-            self._update_process = None
-        self.status_bar.showMessage("www.deeplabcut.org")
+
+        self._cleanup_update_process()
 
     def _on_update_process_finished(self, exit_code, exit_status):
         if self._closing:
-            if self._update_process is not None:
-                self._update_process.deleteLater()
-                self._update_process = None
-            self._update_process_output = []
+            self._cleanup_update_process()
+            return
+
+        if self._update_process is None:
             return
 
         self._progress_bar.hide()
@@ -405,12 +418,7 @@ class MainWindow(QMainWindow):
             if output:
                 self.logger.error(output)
 
-        if self._update_process is not None:
-            self._update_process.deleteLater()
-            self._update_process = None
-
-        self._update_process_output = []
-        self.status_bar.showMessage("www.deeplabcut.org")
+        self._cleanup_update_process()
 
     def _on_update_check_finished(self, result):
         if self._closing:
