@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2025-02-28'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+---
 # Using ModelZoo models on your own datasets
 
 <p style='text-align: justify;'>Animal behavior has to be analyzed with painstaking accuracy. Therefore, animal pose estimation has been

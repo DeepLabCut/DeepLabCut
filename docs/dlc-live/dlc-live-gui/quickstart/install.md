@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_metadata_updated: '2026-03-17'
+  ignore: false
+---
 # Installation
 
 This page explains how to install **DeepLabCut-live-GUI** for interactive, real‑time pose estimation.
@@ -59,7 +64,7 @@ cd dlclivegui
 uv venv -p 3.12 # or desired Python version
 source .venv/bin/activate   # Windows: see tabs below
 uv pip install torch torchvision --index-url https://download.pytorch.org/whl/cu<your-cuda-version> # e.g. cu128 for CUDA 12.8, or skip for CPU-only
-uv pip install "deeplabcut-live-gui[pytorch] @ git+https://github.com/DeepLabCut/DeepLabCut-live-GUI.git"
+uv pip install --pre "deeplabcut-live-gui[pytorch]"
 dlclivegui
 ```
 
@@ -73,16 +78,9 @@ The main DeepLabCut package and its GUI are not required to use this software, a
 
 ### Install DeepLabCut-live-GUI
 
-```{danger}
-This beta version of the package is not currently on PyPI.
-For this reason, the install process requires cloning the repository and installing from source.
-```
-
-#### Clone the repository
-
-```bash
-git clone https://github.com/DeepLabCut/DeepLabCut-live-GUI.git
-cd DeepLabCut-live-GUI
+```{important}
+The current release is distributed on PyPI as a **pre-release**.
+Use `--pre` when installing with `pip`/`uv pip` so the release candidate can be resolved.
 ```
 
 #### Install with `uv`
@@ -128,7 +126,7 @@ To **enable GPU support** and obtain detailed installation instructions,
 please refer to the [official PyTorch installation guide](https://pytorch.org/get-started/locally/) and install PyTorch **before** installing the GUI package.
 ```
 ```bash
-uv pip install -e ".[pytorch]"
+uv pip install --pre "deeplabcut-live-gui[pytorch]"
 ```
 ````
 
@@ -138,10 +136,20 @@ Please note TensorFlow is **no longer available** on **Windows** for **Python > 
 ```
 
 ```bash
-uv pip install -e ".[tf]"
+uv pip install --pre "deeplabcut-live-gui[tf]"
 ```
 ```{note}
 For detailed installation instructions, please refer to the [official TensorFlow installation guide](https://www.tensorflow.org/install/pip).
+```
+````
+
+````{tab-item} Both backends
+```{caution}
+Installing both backends may increase environment size and dependency resolution time.
+```
+
+```bash
+uv pip install --pre "deeplabcut-live-gui[pytorch,tf]"
 ```
 ````
 `````
@@ -170,7 +178,7 @@ To **enable GPU support** and obtain detailed installation instructions,
 please refer to the [official PyTorch installation guide](https://pytorch.org/get-started/locally/) and install PyTorch **before** installing the GUI package.
 ```
 ```bash
-pip install -e ".[pytorch]"
+pip install --pre "deeplabcut-live-gui[pytorch]"
 ```
 ````
 
@@ -180,10 +188,20 @@ Please note TensorFlow is **no longer available** on **Windows** for **Python > 
 ```
 
 ```bash
-pip install -e ".[tf]"
+pip install --pre "deeplabcut-live-gui[tf]"
 ```
 ```{note}
 For detailed installation instructions, please refer to the [official TensorFlow installation guide](https://www.tensorflow.org/install/pip).
+```
+````
+
+````{tab-item} Both backends
+```{caution}
+Installing both backends may increase environment size and dependency resolution time.
+```
+
+```bash
+pip install --pre "deeplabcut-live-gui[pytorch,tf]"
 ```
 ````
 `````

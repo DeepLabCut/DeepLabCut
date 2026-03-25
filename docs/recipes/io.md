@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2022-04-11'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+---
 # Input/output manipulations with DeepLabCut
 
 ## Analyzing very large videos in chunks
