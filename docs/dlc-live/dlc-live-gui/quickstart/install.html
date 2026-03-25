@@ -517,7 +517,6 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quickstart-recommended-defaults">Quickstart (recommended defaults)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choose-your-installation-method">Choose your installation method</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-deeplabcut-live-gui">Install DeepLabCut-live-GUI</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#clone-the-repository">Clone the repository</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#install-with-uv">Install with <code class="docutils literal notranslate"><span class="pre">uv</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#create-and-activate-a-new-virtual-environment">Create and activate a new virtual environment</a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#choose-inference-backend">Choose inference backend</a></li>
@@ -640,7 +639,7 @@ document.write(`
 uv<span class="w"> </span>venv<span class="w"> </span>-p<span class="w"> </span><span class="m">3</span>.12<span class="w"> </span><span class="c1"># or desired Python version</span>
 <span class="nb">source</span><span class="w"> </span>.venv/bin/activate<span class="w">   </span><span class="c1"># Windows: see tabs below</span>
 uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>torch<span class="w"> </span>torchvision<span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu&lt;your-cuda-version&gt;<span class="w"> </span><span class="c1"># e.g. cu128 for CUDA 12.8, or skip for CPU-only</span>
-uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;deeplabcut-live-gui[pytorch] @ git+https://github.com/DeepLabCut/DeepLabCut-live-GUI.git&quot;</span>
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span><span class="s2">&quot;deeplabcut-live-gui[pytorch]&quot;</span>
 dlclivegui
 </pre></div>
 </div>
@@ -654,18 +653,11 @@ dlclivegui
 </div>
 <section id="install-deeplabcut-live-gui">
 <h3>Install DeepLabCut-live-GUI<a class="headerlink" href="#install-deeplabcut-live-gui" title="Link to this heading">#</a></h3>
-<div class="admonition danger">
-<p class="admonition-title">Danger</p>
-<p>This beta version of the package is not currently on PyPI.
-For this reason, the install process requires cloning the repository and installing from source.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The current release is distributed on PyPI as a <strong>pre-release</strong>.
+Use <code class="docutils literal notranslate"><span class="pre">--pre</span></code> when installing with <code class="docutils literal notranslate"><span class="pre">pip</span></code>/<code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span></code> so the release candidate can be resolved.</p>
 </div>
-<section id="clone-the-repository">
-<h4>Clone the repository<a class="headerlink" href="#clone-the-repository" title="Link to this heading">#</a></h4>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/DeepLabCut/DeepLabCut-live-GUI.git
-<span class="nb">cd</span><span class="w"> </span>DeepLabCut-live-GUI
-</pre></div>
-</div>
-</section>
 <section id="install-with-uv">
 <h4>Install with <code class="docutils literal notranslate"><span class="pre">uv</span></code><a class="headerlink" href="#install-with-uv" title="Link to this heading">#</a></h4>
 <p>We recommend installing with <a class="reference external" href="https://github.com/astral-sh/uv"><code class="docutils literal notranslate"><span class="pre">uv</span></code></a>,
@@ -712,7 +704,7 @@ PyTorch</label><div class="sd-tab-content docutils">
 <p>To <strong>enable GPU support</strong> and obtain detailed installation instructions,
 please refer to the <a class="reference external" href="https://pytorch.org/get-started/locally/">official PyTorch installation guide</a> and install PyTorch <strong>before</strong> installing the GUI package.</p>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[pytorch]&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span><span class="s2">&quot;deeplabcut-live-gui[pytorch]&quot;</span>
 </pre></div>
 </div>
 </div>
@@ -723,12 +715,23 @@ TensorFlow</label><div class="sd-tab-content docutils">
 <p class="admonition-title">Caution</p>
 <p>Please note TensorFlow is <strong>no longer available</strong> on <strong>Windows</strong> for <strong>Python &gt; 3.10</strong>.</p>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[tf]&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span><span class="s2">&quot;deeplabcut-live-gui[tf]&quot;</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>For detailed installation instructions, please refer to the <a class="reference external" href="https://www.tensorflow.org/install/pip">official TensorFlow installation guide</a>.</p>
+</div>
+</div>
+<input id="sd-tab-item-5" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-5">
+Both backends</label><div class="sd-tab-content docutils">
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>Installing both backends may increase environment size and dependency resolution time.</p>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span><span class="s2">&quot;deeplabcut-live-gui[pytorch,tf]&quot;</span>
+</pre></div>
 </div>
 </div>
 </div>
@@ -749,31 +752,42 @@ conda<span class="w"> </span>activate<span class="w"> </span>dlclivegui
 <p>We offer two distinct inference backends: <strong>PyTorch</strong> and <strong>TensorFlow</strong>.
 You may install either or both, but you must <strong>choose at least one</strong> to run the pose estimation models.</p>
 <div class="sd-tab-set docutils">
-<input checked="checked" id="sd-tab-item-5" name="sd-tab-set-2" type="radio">
-<label class="sd-tab-label" for="sd-tab-item-5">
+<input checked="checked" id="sd-tab-item-6" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-6">
 PyTorch</label><div class="sd-tab-content docutils">
 <div class="admonition important">
 <p class="admonition-title">Important</p>
 <p>To <strong>enable GPU support</strong> and obtain detailed installation instructions,
 please refer to the <a class="reference external" href="https://pytorch.org/get-started/locally/">official PyTorch installation guide</a> and install PyTorch <strong>before</strong> installing the GUI package.</p>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[pytorch]&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span><span class="s2">&quot;deeplabcut-live-gui[pytorch]&quot;</span>
 </pre></div>
 </div>
 </div>
-<input id="sd-tab-item-6" name="sd-tab-set-2" type="radio">
-<label class="sd-tab-label" for="sd-tab-item-6">
+<input id="sd-tab-item-7" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-7">
 TensorFlow</label><div class="sd-tab-content docutils">
 <div class="admonition caution">
 <p class="admonition-title">Caution</p>
 <p>Please note TensorFlow is <strong>no longer available</strong> on <strong>Windows</strong> for <strong>Python &gt; 3.10</strong>.</p>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[tf]&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span><span class="s2">&quot;deeplabcut-live-gui[tf]&quot;</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>For detailed installation instructions, please refer to the <a class="reference external" href="https://www.tensorflow.org/install/pip">official TensorFlow installation guide</a>.</p>
+</div>
+</div>
+<input id="sd-tab-item-8" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-8">
+Both backends</label><div class="sd-tab-content docutils">
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>Installing both backends may increase environment size and dependency resolution time.</p>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>--pre<span class="w"> </span><span class="s2">&quot;deeplabcut-live-gui[pytorch,tf]&quot;</span>
+</pre></div>
 </div>
 </div>
 </div>
@@ -892,7 +906,6 @@ For now, you can use the <code class="docutils literal notranslate"><span class=
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quickstart-recommended-defaults">Quickstart (recommended defaults)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choose-your-installation-method">Choose your installation method</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-deeplabcut-live-gui">Install DeepLabCut-live-GUI</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#clone-the-repository">Clone the repository</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#install-with-uv">Install with <code class="docutils literal notranslate"><span class="pre">uv</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#create-and-activate-a-new-virtual-environment">Create and activate a new virtual environment</a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#choose-inference-backend">Choose inference backend</a></li>
