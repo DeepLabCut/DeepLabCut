@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2026-02-23'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+---
 (how-to-install)=
 # How To Install DeepLabCut
 

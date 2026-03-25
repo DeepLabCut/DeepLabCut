@@ -1,3 +1,8 @@
+---
+deeplabcut:
+  last_metadata_updated: '2026-03-17'
+  ignore: false
+---
 (deeplabcut-live)=
 # Running DeepLabCut models in real-time
 
