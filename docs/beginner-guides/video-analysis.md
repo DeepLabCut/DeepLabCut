@@ -37,5 +37,5 @@ After training and evaluating your model, the next step is to apply it to your v
 - Your labeled video will be in your video folder, named after the original video plus model details and 'labeled'.
 - Watch the video to assess the model's labeling accuracy.
 
-## Happy DeepLabCutting! 
+## Happy DeepLabCutting!
 - Check out the more advanced user guides for even more options!

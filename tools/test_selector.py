@@ -53,9 +53,10 @@ import os
 import re
 import subprocess
 from collections import defaultdict
+from collections.abc import Callable, Sequence
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
@@ -111,9 +112,7 @@ class LaneSelection(BaseModel):
 
     skip: bool = False  # Skip all tests (e.g. lint-only changes only)
     docs: bool = False  # Run docs build checks
-    fast: bool = (
-        False  # Run targeted pytest + optional functional scripts (single-lane)
-    )
+    fast: bool = False  # Run targeted pytest + optional functional scripts (single-lane)
     full: bool = False  # Delegate to full test workflow/matrix
 
 
@@ -122,8 +121,8 @@ class SelectionProvenance(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    pytest: Dict[str, List[str]] = Field(default_factory=dict)
-    scripts: Dict[str, List[str]] = Field(default_factory=dict)
+    pytest: dict[str, list[str]] = Field(default_factory=dict)
+    scripts: dict[str, list[str]] = Field(default_factory=dict)
 
 
 class SelectorResult(BaseModel):
@@ -136,16 +135,17 @@ class SelectorResult(BaseModel):
 
     lanes: LaneSelection = Field(default_factory=LaneSelection)
 
-    pytest_paths: List[str] = Field(default_factory=list)
-    functional_scripts: List[str] = Field(default_factory=list)
+    pytest_paths: list[str] = Field(default_factory=list)
+    functional_scripts: list[str] = Field(default_factory=list)
     provenance: SelectionProvenance = Field(default_factory=SelectionProvenance)
 
-    reasons: List[str] = Field(default_factory=list)
-    changed_files: List[str] = Field(default_factory=list)
-    lane_reasons: Dict[str, List[str]] = Field(default_factory=dict)
+    reasons: list[str] = Field(default_factory=list)
+    changed_files: list[str] = Field(default_factory=list)
+    lane_reasons: dict[str, list[str]] = Field(default_factory=dict)
 
 
 SelectorResult.model_rebuild()  # Ensure model is fully built at import time for validation in main()
+
 
 # -----------------------------
 # Git helpers
@@ -154,8 +154,7 @@ def _run_git(args: Sequence[str], cwd: Path) -> str:
     proc = subprocess.run(
         ["git", *args],
         cwd=str(cwd),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         text=True,
         check=False,
     )
@@ -179,7 +178,7 @@ def _ensure_commit_exists(sha: str, cwd: Path) -> None:
     _run_git(["cat-file", "-e", f"{sha}^{{commit}}"], cwd)
 
 
-def _load_github_event() -> Dict[str, Any]:
+def _load_github_event() -> dict[str, Any]:
     path = os.environ.get("GITHUB_EVENT_PATH")
     if not path:
         return {}
@@ -210,9 +209,7 @@ def _empty_tree(repo: Path) -> str:
     return _validate_sha("empty-tree", empty)
 
 
-def determine_diff_range(
-    repo: Path, override_base: Optional[str], override_head: Optional[str]
-) -> Tuple[str, str, DiffMode]:
+def determine_diff_range(repo: Path, override_base: str | None, override_head: str | None) -> tuple[str, str, DiffMode]:
     """Return (base_commit, head_commit, mode)."""
     zero_sha = "0" * 40
     event_name = os.environ.get("GITHUB_EVENT_NAME", "")
@@ -257,9 +254,7 @@ def determine_diff_range(
         _ensure_commit_exists(head, repo)
 
         try:
-            prev = _validate_sha(
-                "HEAD^", _run_git(["rev-parse", "--verify", "HEAD^"], repo)
-            )
+            prev = _validate_sha("HEAD^", _run_git(["rev-parse", "--verify", "HEAD^"], repo))
             _ensure_commit_exists(prev, repo)
             return prev, head, DiffMode.FALLBACK
         except Exception:
@@ -270,7 +265,7 @@ def determine_diff_range(
         return "", "", DiffMode.FALLBACK_NO_HEAD
 
 
-def changed_files(repo: Path, base: str, head: str) -> List[str]:
+def changed_files(repo: Path, base: str, head: str) -> list[str]:
     if not base or not head:
         return []
     out = _run_git(["diff", "--name-only", "--diff-filter=ACMRTD", base, head], repo)
@@ -290,7 +285,7 @@ def _is_safe_relpath(p: str) -> bool:
 
 
 def validate_selected_paths(res: SelectorResult, repo: Path) -> SelectorResult:
-    missing: List[str] = []
+    missing: list[str] = []
 
     # validate pytest paths (files/dirs)
     for p in res.pytest_paths:
@@ -337,9 +332,9 @@ def _matches_any(path: str, preds: Sequence[Callable[[str], bool]]) -> bool:
     return False
 
 
-def decide(files: List[str]) -> SelectorResult:
-    reasons: List[str] = []
-    lane_reasons: Dict[str, List[str]] = {}
+def decide(files: list[str]) -> SelectorResult:
+    reasons: list[str] = []
+    lane_reasons: dict[str, list[str]] = {}
     lanes = LaneSelection()
 
     if not files:
@@ -378,28 +373,22 @@ def decide(files: List[str]) -> SelectorResult:
 
     # Docs lane is orthogonal: if any routed file matches docs, enable docs lane.
     docs_rule = CATEGORY_RULE_BY_NAME.get("docs")
-    docs_touched = bool(
-        docs_rule and any(_matches_any(f, docs_rule.match_any) for f in routed_files)
-    )
-    docs_matched_files = {
-        f for f in routed_files if docs_rule and _matches_any(f, docs_rule.match_any)
-    }
+    docs_touched = bool(docs_rule and any(_matches_any(f, docs_rule.match_any) for f in routed_files))
+    docs_matched_files = {f for f in routed_files if docs_rule and _matches_any(f, docs_rule.match_any)}
     non_docs_routed_files = [f for f in routed_files if f not in docs_matched_files]
 
-    docs_pytests_sorted: List[str] = []
-    docs_scripts_sorted: List[str] = []
+    docs_pytests_sorted: list[str] = []
+    docs_scripts_sorted: list[str] = []
 
     if docs_touched:
         lanes.docs = True
         reasons.append("category:docs")
         lane_reasons["docs"] = ["category:docs"]
         docs_pytests_sorted = sorted(set(docs_rule.pytest_paths)) if docs_rule else []
-        docs_scripts_sorted = (
-            sorted(set(docs_rule.functional_scripts)) if docs_rule else []
-        )
+        docs_scripts_sorted = sorted(set(docs_rule.functional_scripts)) if docs_rule else []
 
     # Full-suite triggers always win over fast, but docs lane can still remain enabled.
-    triggered: List[Tuple[str, str]] = []
+    triggered: list[tuple[str, str]] = []
     for f in routed_files:
         for name, pred in FULL_SUITE_TRIGGERS:
             if _matches_any(f, [pred]):
@@ -436,10 +425,10 @@ def decide(files: List[str]) -> SelectorResult:
     for rule in matched_non_docs:
         reasons.append(f"category:{rule.name}")
 
-    pytest_paths_set: Set[str] = set()
-    functional_set: Set[str] = set()
-    pytest_sources: Dict[str, Set[str]] = defaultdict(set)
-    script_sources: Dict[str, Set[str]] = defaultdict(set)
+    pytest_paths_set: set[str] = set()
+    functional_set: set[str] = set()
+    pytest_sources: dict[str, set[str]] = defaultdict(set)
+    script_sources: dict[str, set[str]] = defaultdict(set)
 
     # Docs rules may contribute tests/scripts to the fast lane.
     if docs_touched:
@@ -502,7 +491,7 @@ def decide(files: List[str]) -> SelectorResult:
     # Fast lane selected
     lanes.fast = True
 
-    fast_reasons: List[str] = []
+    fast_reasons: list[str] = []
     if docs_touched and (docs_pytests_sorted or docs_scripts_sorted):
         fast_reasons.append("category:docs")
     fast_reasons.extend(f"category:{rule.name}" for rule in matched_non_docs)
@@ -527,17 +516,17 @@ def decide(files: List[str]) -> SelectorResult:
 # -----------------------------
 # Outputs
 # -----------------------------
-def explain_changed_files(files: List[str]) -> Dict[str, Any]:
+def explain_changed_files(files: list[str]) -> dict[str, Any]:
     """
     Build an explanation structure for reporting:
       - per-file: full_trigger_matches, category_matches
       - grouped: full_triggers, by_category, uncategorized
     """
-    per_file: Dict[str, Dict[str, Any]] = {}
-    by_category: Dict[str, List[str]] = defaultdict(list)
-    full_trigger_files: Dict[str, List[str]] = defaultdict(list)
-    lint_only_files: List[str] = []
-    uncategorized: List[str] = []
+    per_file: dict[str, dict[str, Any]] = {}
+    by_category: dict[str, list[str]] = defaultdict(list)
+    full_trigger_files: dict[str, list[str]] = defaultdict(list)
+    lint_only_files: list[str] = []
+    uncategorized: list[str] = []
 
     # Prep category predicates
     categories = [(r.name, r.match_any) for r in CATEGORY_RULES]
@@ -597,7 +586,7 @@ def explain_changed_files(files: List[str]) -> Dict[str, Any]:
 
 def _render_file_line(
     f: str,
-    info: Dict[str, Any],
+    info: dict[str, Any],
     emoji: bool = False,
     add_tag: bool = True,
     add_marker: bool = False,
@@ -629,7 +618,7 @@ def _render_file_line(
     return f"- {marker}`{f}`{tag_str}"
 
 
-def _enabled_lane_names(res: SelectorResult) -> List[str]:
+def _enabled_lane_names(res: SelectorResult) -> list[str]:
     order = ("skip", "docs", "fast", "full")
     return [name for name in order if getattr(res.lanes, name)]
 
@@ -645,7 +634,7 @@ def _lane_label(name: str, emoji: bool = False) -> str:
     }.get(name, name)
 
 
-def _compact_reasons(reasons: List[str]) -> List[str]:
+def _compact_reasons(reasons: list[str]) -> list[str]:
     cats = sorted({r.split(":", 1)[1] for r in reasons if r.startswith("category:")})
     other = [r for r in reasons if not r.startswith("category:")]
     out = []
@@ -672,7 +661,7 @@ def _render_decision_markdown(
     style: str = "minimal",
     emoji: bool = False,
 ) -> str:
-    def bullet(items: List[str], limit_: int = limit) -> str:
+    def bullet(items: list[str], limit_: int = limit) -> str:
         if not items:
             return "_(none)_"
         shown = items[:limit_]
@@ -684,9 +673,7 @@ def _render_decision_markdown(
     # Selection line (minimal, no emoji by default)
     selected_lanes = _enabled_lane_names(res)
     if emoji:
-        selected_lanes_label = ", ".join(
-            _lane_label(name, emoji=True) for name in selected_lanes
-        )
+        selected_lanes_label = ", ".join(_lane_label(name, emoji=True) for name in selected_lanes)
     else:
         selected_lanes_label = ", ".join(f"`{name}`" for name in selected_lanes)
 
@@ -695,7 +682,7 @@ def _render_decision_markdown(
 
     diff_mode = f"{MODE_LABELS.get(res.diff_mode, res.diff_mode.value)}"
 
-    md: List[str] = []
+    md: list[str] = []
     md.append("# Test selection\n")
     md.append(f"**Selected workflows:** {selected_lanes_label}\n")
     md.append(f"**Diff mode:** `{diff_mode}`\n")
@@ -727,9 +714,7 @@ def _render_decision_markdown(
     # (Always collapsible if present; otherwise omit section.)
     if exp["full_trigger_files"]:
         total_triggered = sum(len(v) for v in exp["full_trigger_files"].values())
-        md.append(
-            _details_open(f"Files that match full-suite triggers ({total_triggered})")
-        )
+        md.append(_details_open(f"Files that match full-suite triggers ({total_triggered})"))
         for trig_name in sorted(exp["full_trigger_files"].keys()):
             files_for_trigger = exp["full_trigger_files"][trig_name]
             md.append(f"**{trig_name}** ({len(files_for_trigger)})")
@@ -765,9 +750,7 @@ def _render_decision_markdown(
     # Lint-only as collapsible
     if exp.get("lint_only"):
         lint_files = exp["lint_only"]
-        md.append(
-            _details_open(f"Lint-only ({len(lint_files)}) — ignored for test selection")
-        )
+        md.append(_details_open(f"Lint-only ({len(lint_files)}) — ignored for test selection"))
         md.append("")
         for f in lint_files[:limit]:
             md.append(f"- `{f}`")
@@ -836,7 +819,7 @@ def write_report_files(
     out_dir: Path,
     report_style: str = "minimal",
     no_emoji: bool = False,
-) -> Tuple[Path, Path]:
+) -> tuple[Path, Path]:
     out_dir.mkdir(parents=True, exist_ok=True)
     json_path = out_dir / "selection.json"
     md_path = out_dir / "decision.md"
@@ -885,7 +868,7 @@ def write_github_output(res: SelectorResult) -> None:
         f.write(f"provenance={j(res.provenance.model_dump())}\n")
 
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Deterministic DeepLabCut test selector")
     ap.add_argument("--json", action="store_true", help="Print JSON result to stdout")
     ap.add_argument(
@@ -948,9 +931,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     # Always write report files for transparency
     report_dir = Path(args.report_dir)
-    json_path, md_path = write_report_files(
-        res, report_dir, report_style=args.report_style, no_emoji=args.no_emoji
-    )
+    json_path, md_path = write_report_files(res, report_dir, report_style=args.report_style, no_emoji=args.no_emoji)
 
     if args.json:
         print(res.model_dump_json(indent=2))

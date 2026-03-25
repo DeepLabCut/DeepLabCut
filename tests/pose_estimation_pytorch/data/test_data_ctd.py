@@ -18,7 +18,6 @@ import pytest
 
 from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromFile
 
-
 CONDITIONS = [
     np.zeros((4, 3, 3)).tolist(),
     np.ones((4, 3, 3)).tolist(),
@@ -58,10 +57,7 @@ def test_ctd_load_json_containing_rel_paths(
             path_prefix = _to_windows_path(path_prefix)
         print(f"  Converted {path_prefix}")
 
-        data = [
-            (_to_windows_path(img), _to_windows_path(key), cond)
-            for img, key, cond in data
-        ]
+        data = [(_to_windows_path(img), _to_windows_path(key), cond) for img, key, cond in data]
         print(f"Images: {[d[0] for d in data]}")
         print(f"Condition keys: {[d[1] for d in data]}")
         print("---")
@@ -153,7 +149,7 @@ def test_ctd_load_hdf_containing_rel_paths(
 
     output_pose = [
         p[p_mask] if np.any(p_mask) else np.zeros((0, num_bodyparts, 3))
-        for p, p_mask in zip(output_pose, idv_mask)
+        for p, p_mask in zip(output_pose, idv_mask, strict=False)
     ]
 
     # generate columns for the dataframe
@@ -174,10 +170,8 @@ def test_ctd_load_hdf_containing_rel_paths(
     conditions_filepath = tmp_folder / "conditions.h5"
     df.to_hdf(conditions_filepath, key="df_with_missing")
 
-    conditions = CondFromFile.load_conditions_h5(
-        conditions_filepath, images, path_prefix=path_prefix
-    )
-    for idx, (img_path, img_index) in enumerate(data):
+    conditions = CondFromFile.load_conditions_h5(conditions_filepath, images, path_prefix=path_prefix)
+    for idx, (img_path, _img_index) in enumerate(data):
         assert img_path in conditions
         np.testing.assert_allclose(output_pose[idx], conditions[img_path])
 

@@ -131,7 +131,7 @@ for project in Projects[model]:
     for vtype in ['.mp4','.m4v','.mpg']:
         try:
             deeplabcut.analyze_videos(config, [str(os.path.join(projectpath, "videos"))], shuffle=shuffle, videotype=vtype, save_as_csv=True)
-        except:
+        except Exception:
             pass
 
     print("DONE WITH ", project," resetting to original path")

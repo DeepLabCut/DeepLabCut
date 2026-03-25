@@ -21,32 +21,32 @@ Create a new project:
 ```
 deeplabcut.create_new_project("project_name", "experimenter", ["path of video 1", "path of video2", ..])
 ```
-    
+
 Set a config_path variable for ease of use + go edit this file!:
 ```
 config_path = "yourdirectory/project_name/config.yaml"
 ```
-        
+
 Extract frames:
 ```
 deeplabcut.extract_frames(config_path)
 ```
 
 Label frames:
-``` 
+```
 deeplabcut.label_frames(config_path)
 ```
-  
+
 Check labels [OPTIONAL]:
 ```
 deeplabcut.check_labels(config_path)
 ```
-   
+
 Create training dataset:
 ```
 deeplabcut.create_training_dataset(config_path)
 ```
- 
+
 Train the network:
 ```
 deeplabcut.train_network(config_path)

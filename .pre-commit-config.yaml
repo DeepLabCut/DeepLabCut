@@ -1,31 +1,88 @@
+default_stages: [pre-commit]
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v6.0.0
     hooks:
+      # These are safe to run in both local & CI (they don't require "fix vs check" split)
       - id: check-added-large-files
+        stages: [pre-commit, manual]
       - id: check-yaml
+        stages: [pre-commit, manual]
       - id: check-toml
-      - id: end-of-file-fixer
+        stages: [pre-commit, manual]
+      - id: check-merge-conflict
+        stages: [pre-commit, manual]
       - id: name-tests-test
         args: [--pytest-test-first]
+        stages: [pre-commit, manual]
+
+      # These modify files. Run locally only (pre-commit stage).
+      - id: end-of-file-fixer
+        stages: [pre-commit]
       - id: trailing-whitespace
+        stages: [pre-commit]
+
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.15.2
+    rev: v2.19.0
     hooks:
       - id: pyproject-fmt
+        stages: [pre-commit]    # modifies -> local only
+
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.25
     hooks:
       - id: validate-pyproject
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
+        stages: [pre-commit, manual]
+
+  # NOTE: @C-Achard 2026-03-18 disabled for now
+  # It had its use in introducing and enforcing linting, especially for docstrings
+  # but now ruff should be our de-facto linter.
+  # Only re-enable if we end up requiring large-scale docstring reformatting
+  # or we need some features from this in the future
+  # - repo: https://github.com/PyCQA/docformatter
+  #   rev: v1.7.7
+  #   hooks:
+  #     - id: docformatter
+  #       name: docformatter (fix)
+  #       args: [--wrap-descriptions=88, --wrap-summaries=88, --in-place, --black]
+  #       stages: [pre-commit]
+
+  #     - id: docformatter
+  #       name: docformatter (ci)
+  #       args: [--wrap-descriptions=88, --wrap-summaries=88, --check, --black]
+  #       stages: [manual]
+
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.6
     hooks:
-      - id: isort
-  - repo: https://github.com/psf/black
-    rev: 22.3.0
-    hooks:
-      - id: black
-        language_version: python3
+      # --------------------------
+      # LOCAL AUTOFIX (developers)
+      # --------------------------
+      - id: ruff-check
+        name: ruff-check (fix)
+        args: [--fix, --unsafe-fixes]
+        stages: [pre-commit]
+
+      - id: ruff-format
+        name: ruff-format (write)
+        stages: [pre-commit]
+
+      # --------------------------
+      # CI CHECK-ONLY (no writes)
+      # --------------------------
+      - id: ruff-check
+        name: ruff-check (ci)
+        args: [--output-format=github]
+        stages: [manual]
+
+      - id: ruff-format
+        name: ruff-format (ci)
+        args: [--check, --diff]
+        stages: [manual]
+
+  # check only, no modifications
   - repo: local
     hooks:
       - id: dlc-docs-notebooks-check
@@ -43,3 +100,4 @@ repos:
           - "pydantic>=2,<3"
           - "pyyaml"
           - "nbformat>=5"
+        stages: [pre-commit, manual]

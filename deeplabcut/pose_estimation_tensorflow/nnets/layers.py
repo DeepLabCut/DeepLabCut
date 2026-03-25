@@ -11,7 +11,6 @@
 import tensorflow as tf
 import tf_slim as slim
 
-
 # FIXME Fix wrong scope with Keras layers
 # def prediction_layer(cfg, input, name, num_outputs):
 #     with tf.compat.v1.variable_scope(name):
@@ -36,9 +35,7 @@ def prediction_layer(cfg, input, name, num_outputs):
         weights_regularizer=slim.l2_regularizer(cfg["weight_decay"]),
     ):
         with tf.compat.v1.variable_scope(name):
-            pred = slim.conv2d_transpose(
-                input, num_outputs, kernel_size=[3, 3], stride=2, scope="block4"
-            )
+            pred = slim.conv2d_transpose(input, num_outputs, kernel_size=[3, 3], stride=2, scope="block4")
             return pred
 
 

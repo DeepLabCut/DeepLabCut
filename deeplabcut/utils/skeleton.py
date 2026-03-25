@@ -35,9 +35,7 @@ from skimage import io
 
 def read_config(configname):
     if not os.path.exists(configname):
-        raise FileNotFoundError(
-            f"Config {configname} is not found. Please make sure that the file exists."
-        )
+        raise FileNotFoundError(f"Config {configname} is not found. Please make sure that the file exists.")
     with open(configname) as file:
         return YAML().load(file)
 
@@ -57,12 +55,8 @@ class SkeletonBuilder:
         root = os.path.join(self.cfg["project_path"], "labeled-data")
         for dir_ in os.listdir(root):
             folder = os.path.join(root, dir_)
-            if os.path.isdir(folder) and not any(
-                folder.endswith(s) for s in ("cropped", "labeled")
-            ):
-                self.df = pd.read_hdf(
-                    os.path.join(folder, f'CollectedData_{self.cfg["scorer"]}.h5')
-                )
+            if os.path.isdir(folder) and not any(folder.endswith(s) for s in ("cropped", "labeled")):
+                self.df = pd.read_hdf(os.path.join(folder, f"CollectedData_{self.cfg['scorer']}.h5"))
                 row, col = self.pick_labeled_frame()
                 if "individuals" in self.df.columns.names:
                     self.df = self.df.xs(col, axis=1, level="individuals")
@@ -72,13 +66,14 @@ class SkeletonBuilder:
                     found = True
                     break
         if self.df is None:
-            raise IOError("No labeled data were found.")
+            raise OSError("No labeled data were found.")
 
         self.bpts = self.df.columns.get_level_values("bodyparts").unique()
         if not found:
             warnings.warn(
                 f"A fully labeled animal could not be found. "
-                f"{', '.join(self.bpts[missing])} will need to be manually connected in the config.yaml."
+                f"{', '.join(self.bpts[missing])} will need to be manually connected in the config.yaml.",
+                stacklevel=2,
             )
         self.tree = KDTree(self.xy)
         # Handle image previously annotated on a different platform
@@ -97,9 +92,7 @@ class SkeletonBuilder:
                 pair_sorted = tuple(sorted(pair))
                 self.inds.add(pair_sorted)
                 self.segs.add(tuple(map(tuple, self.xy[pair_sorted, :])))
-        self.lines = LineCollection(
-            self.segs, colors=mcolors.to_rgba(self.cfg["skeleton_color"])
-        )
+        self.lines = LineCollection(self.segs, colors=mcolors.to_rgba(self.cfg["skeleton_color"]))
         self.lines.set_picker(True)
         self.show()
 
@@ -157,7 +150,8 @@ class SkeletonBuilder:
         unconnected = [i for i in range(len(self.xy)) if i not in inds_flat]
         if len(unconnected):
             warnings.warn(
-                f"You didn't connect all the bodyparts (which is fine!). This is just a note to let you know."
+                "You didn't connect all the bodyparts (which is fine!). This is just a note to let you know.",
+                stacklevel=2,
             )
         self.cfg["skeleton"] = [tuple(self.bpts[list(pair)]) for pair in self.inds]
         write_config(self.config_path, self.cfg)
@@ -176,7 +170,7 @@ class SkeletonBuilder:
         for lst in inds:
             if len(lst) and lst[0] not in inds_unique:
                 inds_unique.append(lst[0])
-        for pair in zip(inds_unique, inds_unique[1:]):
+        for pair in zip(inds_unique, inds_unique[1:], strict=False):
             pair_sorted = tuple(sorted(pair))
             self.inds.add(pair_sorted)
             self.segs.add(tuple(map(tuple, self.xy[pair_sorted, :])))

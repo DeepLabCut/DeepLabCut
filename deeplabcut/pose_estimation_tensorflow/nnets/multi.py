@@ -10,23 +10,22 @@
 #
 
 import re
+
 import tensorflow as tf
 import tf_slim as slim
 from tf_slim.nets import resnet_v1
 
 import deeplabcut.pose_estimation_tensorflow.backbones.efficientnet_builder as eff
+from deeplabcut.pose_estimation_tensorflow.backbones import mobilenet, mobilenet_v2
 from deeplabcut.pose_estimation_tensorflow.nnets import conv_blocks
-from deeplabcut.pose_estimation_tensorflow.backbones import mobilenet_v2, mobilenet
+
 from .base import BasePoseNet
 from .factory import PoseNetFactory
 from .layers import prediction_layer_stage
 from .utils import wrapper
 
-
 # Change the stride from 2 to 1 to get 16x downscaling instead of 32x.
-mobilenet_v2.V2_DEF["spec"][14] = mobilenet.op(
-    conv_blocks.expanded_conv, stride=1, num_outputs=160
-)
+mobilenet_v2.V2_DEF["spec"][14] = mobilenet.op(conv_blocks.expanded_conv, stride=1, num_outputs=160)
 
 
 net_funcs = {
@@ -106,7 +105,7 @@ def prediction_layer(cfg, input, name, num_outputs):
 @PoseNetFactory.register("multi")
 class PoseMultiNet(BasePoseNet):
     def __init__(self, cfg):
-        super(PoseMultiNet, self).__init__(cfg)
+        super().__init__(cfg)
         multi_stage = self.cfg.get("multi_stage", False)
         # Multi stage is currently only implemented for resnets
         self.cfg["multi_stage"] = multi_stage and "resnet" in self.cfg["net_type"]
@@ -117,9 +116,7 @@ class PoseMultiNet(BasePoseNet):
         if "resnet" in net_type:
             net_fun = net_funcs[net_type]
             with slim.arg_scope(resnet_v1.resnet_arg_scope()):
-                net, end_points = net_fun(
-                    im_centered, global_pool=False, output_stride=16, is_training=False
-                )
+                net, end_points = net_fun(im_centered, global_pool=False, output_stride=16, is_training=False)
         elif "mobilenet" in net_type:
             net_fun = net_funcs[net_type]
             with slim.arg_scope(mobilenet_v2.training_scope()):
@@ -153,15 +150,11 @@ class PoseMultiNet(BasePoseNet):
         if self.cfg["multi_stage"]:  # MuNet! (multi_stage decoder + multi_fusion)
             # Defining multi_fusion backbone
             num_layers = re.findall("resnet_([0-9]*)", net_type)[0]
-            layer_name = (
-                "resnet_v1_{}".format(num_layers) + "/block{}/unit_{}/bottleneck_v1"
-            )
+            layer_name = f"resnet_v1_{num_layers}" + "/block{}/unit_{}/bottleneck_v1"
             mid_pt_block1 = layer_name.format(1, 3)
             mid_pt_block2 = layer_name.format(2, 3)
 
-            final_dims = tf.math.ceil(
-                tf.divide(input_shape[1:3], tf.convert_to_tensor(16))
-            )
+            final_dims = tf.math.ceil(tf.divide(input_shape[1:3], tf.convert_to_tensor(16)))
 
             interim_dims_s8 = tf.scalar_mul(2, final_dims)
             interim_dims_s8 = tf.cast(interim_dims_s8, tf.int32)
@@ -269,30 +262,18 @@ class PoseMultiNet(BasePoseNet):
                 )
 
                 if self.cfg["location_refinement"]:
-                    out["locref"] = prediction_layer(
-                        self.cfg, net, "locref_pred", self.cfg["num_joints"] * 2
-                    )
-                if (
-                    self.cfg["pairwise_predict"]
-                    and "multi-animal" not in self.cfg["dataset_type"]
-                ):
+                    out["locref"] = prediction_layer(self.cfg, net, "locref_pred", self.cfg["num_joints"] * 2)
+                if self.cfg["pairwise_predict"] and "multi-animal" not in self.cfg["dataset_type"]:
                     out["pairwise_pred"] = prediction_layer(
                         self.cfg,
                         net,
                         "pairwise_pred",
                         self.cfg["num_joints"] * (self.cfg["num_joints"] - 1) * 2,
                     )
-                if (
-                    self.cfg["partaffinityfield_predict"]
-                    and "multi-animal" in self.cfg["dataset_type"]
-                ):
-                    feature = slim.conv2d_transpose(
-                        net, self.cfg.get("bank3", 128), kernel_size=[3, 3], stride=2
-                    )
+                if self.cfg["partaffinityfield_predict"] and "multi-animal" in self.cfg["dataset_type"]:
+                    feature = slim.conv2d_transpose(net, self.cfg.get("bank3", 128), kernel_size=[3, 3], stride=2)
 
-                    stage1_paf_out = prediction_layer(
-                        self.cfg, net, "pairwise_pred_s1", self.cfg["num_limbs"] * 2
-                    )
+                    stage1_paf_out = prediction_layer(self.cfg, net, "pairwise_pred_s1", self.cfg["num_limbs"] * 2)
 
                     stage2_in = tf.concat([stage1_hm_out, stage1_paf_out, feature], 3)
                     stage_input = stage2_in
@@ -300,7 +281,6 @@ class PoseMultiNet(BasePoseNet):
                     stage_hm_output = stage1_hm_out
 
                     for i in range(2, 5):
-                        pre_stage_paf_output = stage_paf_output
                         pre_stage_hm_output = stage_hm_output
 
                         stage_paf_output = prediction_layer_stage(
@@ -321,9 +301,7 @@ class PoseMultiNet(BasePoseNet):
                             # stage_paf_output = stage_paf_output + pre_stage_paf_output
                             stage_hm_output = stage_hm_output + pre_stage_hm_output
 
-                        stage_input = tf.concat(
-                            [stage_hm_output, stage_paf_output, feature], 3
-                        )
+                        stage_input = tf.concat([stage_hm_output, stage_paf_output, feature], 3)
 
                     out["part_pred"] = prediction_layer_stage(
                         self.cfg,
@@ -340,9 +318,7 @@ class PoseMultiNet(BasePoseNet):
                     )
 
                 if self.cfg["intermediate_supervision"]:
-                    interm_name = layer_name.format(
-                        3, self.cfg["intermediate_supervision_layer"]
-                    )
+                    interm_name = layer_name.format(3, self.cfg["intermediate_supervision_layer"])
                     block_interm_out = end_points[interm_name]
                     out["part_pred_interm"] = prediction_layer(
                         self.cfg,
@@ -363,9 +339,7 @@ class PoseMultiNet(BasePoseNet):
             else:
                 raise ValueError(f"Unknown network of type {net_type}")
 
-            final_dims = tf.math.ceil(
-                tf.divide(input_shape[1:3], tf.convert_to_tensor(value=16))
-            )
+            final_dims = tf.math.ceil(tf.divide(input_shape[1:3], tf.convert_to_tensor(value=16)))
             interim_dims = tf.scalar_mul(2, final_dims)
             interim_dims = tf.cast(interim_dims, tf.int32)
             bank_3 = end_points[mid_pt]
@@ -375,9 +349,7 @@ class PoseMultiNet(BasePoseNet):
                 [slim.conv2d],
                 padding="SAME",
                 normalizer_fn=None,
-                weights_regularizer=tf.keras.regularizers.l2(
-                    0.5 * (self.cfg["weight_decay"])
-                ),
+                weights_regularizer=tf.keras.regularizers.l2(0.5 * (self.cfg["weight_decay"])),
             ):
                 with tf.compat.v1.variable_scope("decoder_filters"):
                     bank_3 = slim.conv2d(
@@ -391,9 +363,7 @@ class PoseMultiNet(BasePoseNet):
                 [slim.conv2d_transpose],
                 padding="SAME",
                 normalizer_fn=None,
-                weights_regularizer=tf.keras.regularizers.l2(
-                    0.5 * (self.cfg["weight_decay"])
-                ),
+                weights_regularizer=tf.keras.regularizers.l2(0.5 * (self.cfg["weight_decay"])),
             ):
                 with tf.compat.v1.variable_scope("upsampled_features"):
                     upsampled_features = slim.conv2d_transpose(
@@ -404,26 +374,19 @@ class PoseMultiNet(BasePoseNet):
                         scope="block4",
                     )
             net = tf.concat([bank_3, upsampled_features], 3)
-            out = super(PoseMultiNet, self).prediction_layers(
+            out = super().prediction_layers(
                 net,
                 scope,
                 reuse,
             )
             with tf.compat.v1.variable_scope(scope, reuse=reuse):
-                if (
-                    self.cfg["intermediate_supervision"]
-                    and "efficientnet" not in net_type
-                ):
+                if self.cfg["intermediate_supervision"] and "efficientnet" not in net_type:
                     if "mobilenet" in net_type:
-                        feat = end_points[
-                            f"layer_{self.cfg['intermediate_supervision_layer']}"
-                        ]
+                        feat = end_points[f"layer_{self.cfg['intermediate_supervision_layer']}"]
                     elif "resnet" in net_type:
                         layer_name = "resnet_v1_{}/block{}/unit_{}/bottleneck_v1"
                         num_layers = re.findall("resnet_([0-9]*)", net_type)[0]
-                        interm_name = layer_name.format(
-                            num_layers, 3, self.cfg["intermediate_supervision_layer"]
-                        )
+                        interm_name = layer_name.format(num_layers, 3, self.cfg["intermediate_supervision_layer"])
                         feat = end_points[interm_name]
                     else:
                         return out

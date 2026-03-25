@@ -15,7 +15,7 @@ from abc import ABC, abstractmethod
 import torch
 import torch.nn as nn
 
-from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
+from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 LOSS_AGGREGATORS = Registry("loss_aggregators", build_func=build_from_cfg)
 CRITERIONS = Registry("criterions", build_func=build_from_cfg)
@@ -26,9 +26,7 @@ class BaseCriterion(ABC, nn.Module):
         super().__init__()
 
     @abstractmethod
-    def forward(
-        self, output: torch.Tensor, target: torch.Tensor, **kwargs
-    ) -> torch.Tensor:
+    def forward(self, output: torch.Tensor, target: torch.Tensor, **kwargs) -> torch.Tensor:
         """
         Args:
             output: the output from which to compute the loss

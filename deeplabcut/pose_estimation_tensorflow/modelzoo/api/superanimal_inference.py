@@ -50,7 +50,7 @@ def get_multi_scale_frames(frame, scale_list):
 def _project_pred_to_original_size(pred, old_shape, new_shape):
     old_h, old_w, _ = old_shape
     new_h, new_w, _ = new_shape
-    ratio_h, ratio_w = old_h / new_h, old_w / new_w
+    ratio_h, _ratio_w = old_h / new_h, old_w / new_w
 
     coordinate = pred["coordinates"][0]
     confidence = pred["confidence"]
@@ -87,7 +87,7 @@ def _average_multiple_scale_preds(
             continue
         coordinates = pred["coordinates"][0]
         confidence = pred["confidence"]
-        for i, (coords, conf) in enumerate(zip(coordinates, confidence)):
+        for i, (coords, conf) in enumerate(zip(coordinates, confidence, strict=False)):
             if not np.any(coords):
                 continue
             xyp[scale_id, i, :2] = coords
@@ -122,8 +122,10 @@ def _video_inference(
     cap,
     nframes,
     batchsize,
-    scale_list=[],
+    scale_list=None,
 ):
+    if scale_list is None:
+        scale_list = []
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
     batch_ind = 0  # keeps track of which image within a batch should be written to
 
@@ -152,10 +154,7 @@ def _video_inference(
 
             if multi_scale_batched_frames is None:
                 multi_scale_batched_frames = [
-                    np.empty(
-                        (batchsize, frame.shape[0], frame.shape[1], 3), dtype="ubyte"
-                    )
-                    for frame in frames
+                    np.empty((batchsize, frame.shape[0], frame.shape[1], 3), dtype="ubyte") for frame in frames
                 ]
 
             for scale_id, frame in enumerate(frames):
@@ -165,9 +164,7 @@ def _video_inference(
                 preds = []
                 for scale_id, batched_frames in enumerate(multi_scale_batched_frames):
                     # batch full, start true inferencing
-                    D = predict.predict_batched_peaks_and_costs(
-                        test_cfg, batched_frames, sess, inputs, outputs
-                    )
+                    D = predict.predict_batched_peaks_and_costs(test_cfg, batched_frames, sess, inputs, outputs)
                     preds.append(D)
                     # only do this when animal is detected
                 ind_start = inds[0]
@@ -181,9 +178,7 @@ def _video_inference(
                         else:
                             pred = preds[scale_id][i]
                         if pred != []:
-                            pred = _project_pred_to_original_size(
-                                pred, old_shape, frame_shapes[scale_id]
-                            )
+                            pred = _project_pred_to_original_size(pred, old_shape, frame_shapes[scale_id])
 
                         PredicteData["frame" + str(ind).zfill(strwidth)].append(pred)
 
@@ -218,9 +213,7 @@ def _video_inference(
                         else:
                             pred = preds[scale_id][i]
                         if pred != []:
-                            pred = _project_pred_to_original_size(
-                                pred, old_shape, frame_shapes[scale_id]
-                            )
+                            pred = _project_pred_to_original_size(pred, old_shape, frame_shapes[scale_id])
                         PredicteData["frame" + str(ind).zfill(strwidth)].append(pred)
 
             break
@@ -240,13 +233,9 @@ def _video_inference(
         "minimal confidence": test_cfg.get("minconfidence", None),
         "sigma": test_cfg.get("sigma", 1),
         "PAFgraph": test_cfg.get("partaffinityfield_graph", None),
-        "PAFinds": test_cfg.get(
-            "paf_best", np.arange(len(test_cfg["partaffinityfield_graph"]))
-        ),
+        "PAFinds": test_cfg.get("paf_best", np.arange(len(test_cfg["partaffinityfield_graph"]))),
         "all_joints": [[i] for i in range(len(test_cfg["all_joints"]))],
-        "all_joints_names": [
-            test_cfg["all_joints_names"][i] for i in range(len(test_cfg["all_joints"]))
-        ],
+        "all_joints_names": [test_cfg["all_joints_names"][i] for i in range(len(test_cfg["all_joints"]))],
         "nframes": nframes,
     }
 
@@ -257,7 +246,7 @@ def video_inference(
     videos,
     project_name,
     model_name,
-    scale_list=[],
+    scale_list=None,
     videotype="avi",
     destfolder=None,
     batchsize=1,
@@ -266,6 +255,8 @@ def video_inference(
     init_weights="",
     customized_test_config="",
 ):
+    if scale_list is None:
+        scale_list = []
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 
     if customized_test_config == "":
@@ -296,12 +287,7 @@ def video_inference(
         test_cfg = customized_test_config
 
     # add a temp folder for checkpoint
-    weight_folder = str(
-        Path(dlc_root_path)
-        / "modelzoo"
-        / "checkpoints"
-        / f"{project_name}_{model_name}"
-    )
+    weight_folder = str(Path(dlc_root_path) / "modelzoo" / "checkpoints" / f"{project_name}_{model_name}")
     snapshots = glob.glob(os.path.join(weight_folder, "snapshot-*.index"))
     test_cfg["partaffinityfield_graph"] = []
     test_cfg["partaffinityfield_predict"] = False
@@ -310,9 +296,7 @@ def video_inference(
         test_cfg["init_weights"] = init_weights
     else:
         if len(snapshots) == 0:
-            raise FileNotFoundError(
-                f"Did not find any super animal snapshots in {weight_folder}"
-            )
+            raise FileNotFoundError(f"Did not find any super animal snapshots in {weight_folder}")
 
         init_weights = os.path.abspath(snapshots[0]).replace(".index", "")
         test_cfg["init_weights"] = init_weights
@@ -320,9 +304,7 @@ def video_inference(
     test_cfg["num_outputs"] = 1
     test_cfg["batch_size"] = batchsize
 
-    sess, inputs, outputs = single_predict.setup_pose_prediction(
-        test_cfg, allow_growth=allow_growth
-    )
+    sess, inputs, outputs = single_predict.setup_pose_prediction(test_cfg, allow_growth=allow_growth)
     DLCscorer = "DLC_" + Path(test_cfg["init_weights"]).stem
     videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
 
@@ -406,7 +388,7 @@ def video_inference(
                 "cropping_parameters": coords,
             }
             metadata = {"data": dictionary}
-            print("Saving results in %s..." % (destfolder))
+            print(f"Saving results in {destfolder}...")
 
             metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
 
@@ -430,7 +412,7 @@ def video_inference(
                     keypoints = dict_["coordinates"][0]
                     confidence = dict_["confidence"]
                     temp = np.full((len(keypoints), 3), np.nan)
-                    for n, (xy, c) in enumerate(zip(keypoints, confidence)):
+                    for n, (xy, c) in enumerate(zip(keypoints, confidence, strict=False)):
                         if xy.size and c.size:
                             temp[n, :2] = xy
                             temp[n, 2] = c
@@ -445,7 +427,7 @@ def _video_inference_superanimal(
     videos,
     project_name,
     model_name,
-    scale_list=[],
+    scale_list=None,
     videotype=".mp4",
     video_adapt=False,
     plot_trajectories=True,
@@ -460,27 +442,39 @@ def _video_inference_superanimal(
 
     Makes prediction based on a super animal model. Note right now we only support single animal video inference
 
-    The index of the trained network is specified by parameters in the config file (in particular the variable 'snapshotindex')
+    The index of the trained network is specified by parameters in the config file
+    (in particular the variable 'snapshotindex')
 
-    Output: The labels are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
-            in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
+    Output: The labels are stored as MultiIndex Pandas Array,
+    which contains the name of the network, body part name, (x, y) label position \n
+            in pixels, and the likelihood for each frame per body part.
+            These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
             in the same directory, where the video is stored.
 
     Parameters
     ----------
     videos: list
-        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+        A list of strings containing the full paths to videos for analysis or a path to the directory,
+        where all the videos with same extension are stored.
 
     superanimal_name: str
-        The name of the superanimal model. In TensorFlow, we only support "superanimal_quadruped", "superanimal_topviewmouse". Check out the PyTorch version for active development, better performance and additional models (humans, birds, ...)
+        The name of the superanimal model.
+        In TensorFlow, we only support "superanimal_quadruped", "superanimal_topviewmouse".
+        Check out the PyTorch version for active development,
+        better performance and additional models (humans, birds, ...)
     scale_list: list
-        A list of int containing the target height of the multi scale test time augmentation. By default it uses the original size. Users are advised to try a wide range of scale list when the super model does not give reasonable results
+        A list of int containing the target height of the multi scale test time augmentation.
+        By default it uses the original size.
+        Users are advised to try a wide range of scale list when the super model does not give reasonable results
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
+        Checks for the extension of the video in case the input to the video is a directory.\n
+        Only videos with this extension are analyzed.
+        The default is ``.avi``
 
     video_adapt: bool, optional
-        Set True if you want to apply video adaptation to make the resulted video less jittering and better. However, adaptation training takes more time than usual video inference
+        Set True if you want to apply video adaptation to make the resulted video less jittering and better.
+        However, adaptation training takes more time than usual video inference
 
     plot_trajectories: bool, optional (default=True)
         By default, plot the trajectories of various body parts across the video.
@@ -516,6 +510,8 @@ def _video_inference_superanimal(
         SpatiotemporalAdaptation,
     )
 
+    if scale_list is None:
+        scale_list = []
     superanimal_name = project_name + "_" + model_name
     for video in videos:
         modelfolder = Path(video).parent / f"{Path(video).stem}_video_adaptation"

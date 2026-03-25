@@ -10,17 +10,18 @@
 #
 from __future__ import annotations
 
+from collections import defaultdict
+
 import numpy as np
 import torch
 import torch.nn.functional as F
 from numpy.typing import NDArray
-from collections import defaultdict
 
-from deeplabcut.pose_estimation_pytorch.models.predictors.base import (
-    BasePredictor,
-    PREDICTORS,
-)
 from deeplabcut.core import inferenceutils
+from deeplabcut.pose_estimation_pytorch.models.predictors.base import (
+    PREDICTORS,
+    BasePredictor,
+)
 
 Graph = list[tuple[int, int]]
 
@@ -32,7 +33,8 @@ class PartAffinityFieldPredictor(BasePredictor):
     Args:
         num_animals: Number of animals in the project.
         num_multibodyparts: Number of animal's body parts (ignoring unique body parts).
-        num_uniquebodyparts: Number of unique body parts.  # FIXME - should not be needed here if we separate the unique bodypart head
+        num_uniquebodyparts: Number of unique body parts.  # FIXME - should not be needed here if we separate the unique
+        bodypart head
         graph: Part affinity field graph edges.
         edges_to_keep: List of indices in `graph` of the edges to keep.
         locref_stdev: Standard deviation for location refinement.
@@ -109,10 +111,9 @@ class PartAffinityFieldPredictor(BasePredictor):
             force_fusion=force_fusion,
         )
 
-    def forward(
-        self, stride: float, outputs: dict[str, torch.Tensor]
-    ) -> dict[str, torch.Tensor]:
-        """Forward pass of PartAffinityFieldPredictor. Gets predictions from model output.
+    def forward(self, stride: float, outputs: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
+        """Forward pass of PartAffinityFieldPredictor. Gets predictions from model
+        output.
 
         Args:
             stride: the stride of the model
@@ -141,21 +142,15 @@ class PartAffinityFieldPredictor(BasePredictor):
 
         # Filter predicted heatmaps with a 2D Gaussian kernel as in:
         # https://openaccess.thecvf.com/content_CVPR_2020/papers/Huang_The_Devil_Is_in_the_Details_Delving_Into_Unbiased_Data_CVPR_2020_paper.pdf
-        kernel = self.make_2d_gaussian_kernel(
-            sigma=self.sigma, size=self.nms_radius * 2 + 1
-        )[None, None]
+        kernel = self.make_2d_gaussian_kernel(sigma=self.sigma, size=self.nms_radius * 2 + 1)[None, None]
         kernel = kernel.repeat(n_channels, 1, 1, 1).to(heatmaps.device)
-        heatmaps = F.conv2d(
-            heatmaps, kernel, stride=1, padding="same", groups=n_channels
-        )
+        heatmaps = F.conv2d(heatmaps, kernel, stride=1, padding="same", groups=n_channels)
 
         peaks = self.find_local_peak_indices_maxpool_nms(
             heatmaps, self.nms_radius, threshold=0.01
         )  # (n_peaks, 4) -> columns: (batch, part, height, width)
         if ~torch.any(peaks):
-            poses = -torch.ones(
-                (batch_size, self.num_animals, self.num_multibodyparts, 5)
-            )
+            poses = -torch.ones((batch_size, self.num_animals, self.num_multibodyparts, 5))
             results = dict(poses=poses)
             if self.return_preds:
                 results["preds"] = ([dict(coordinates=[[]], costs=[])],)
@@ -163,12 +158,8 @@ class PartAffinityFieldPredictor(BasePredictor):
             return results
 
         locrefs = locrefs.reshape(batch_size, n_channels, 2, height, width)
-        locrefs = (
-            locrefs * self.locref_stdev
-        )  # (batch_size, num_joints, 2, height, width)
-        pafs = pafs.reshape(
-            batch_size, -1, 2, height, width
-        )  # (batch_size, num_edges, 2, height, width)
+        locrefs = locrefs * self.locref_stdev  # (batch_size, num_joints, 2, height, width)
+        pafs = pafs.reshape(batch_size, -1, 2, height, width)  # (batch_size, num_edges, 2, height, width)
 
         # Use only the minimal tree edges for efficiency
         graph = [self.graph[ind] for ind in self.edges_to_keep]
@@ -209,9 +200,7 @@ class PartAffinityFieldPredictor(BasePredictor):
         return out
 
     @staticmethod
-    def find_local_peak_indices_maxpool_nms(
-        input_: torch.Tensor, radius: int, threshold: float
-    ) -> torch.Tensor:
+    def find_local_peak_indices_maxpool_nms(input_: torch.Tensor, radius: int, threshold: float) -> torch.Tensor:
         pooled = F.max_pool2d(input_, kernel_size=radius, stride=1, padding=radius // 2)
         maxima = input_ * torch.eq(input_, pooled).float()
         peak_indices = torch.nonzero(maxima >= threshold, as_tuple=False)
@@ -304,12 +293,8 @@ class PartAffinityFieldPredictor(BasePredictor):
             batch_bodyparts = peak_bodyparts[batch_mask]
 
             # Masks of peaks that match each edge's source/dest bodypart for this batch
-            src_mask = batch_bodyparts.unsqueeze(0) == src_bodypart_id.unsqueeze(
-                1
-            )  # (n_edges, n_batch_peaks)
-            dst_mask = batch_bodyparts.unsqueeze(0) == dst_bodypart_id.unsqueeze(
-                1
-            )  # (n_edges, n_batch_peaks)
+            src_mask = batch_bodyparts.unsqueeze(0) == src_bodypart_id.unsqueeze(1)  # (n_edges, n_batch_peaks)
+            dst_mask = batch_bodyparts.unsqueeze(0) == dst_bodypart_id.unsqueeze(1)  # (n_edges, n_batch_peaks)
 
             # Valid src/dst peaks for each edge in this batch: (n_edges, n_batch_peaks, n_batch_peaks)
             valid_pairs = src_mask.unsqueeze(2) & dst_mask.unsqueeze(1)
@@ -339,12 +324,8 @@ class PartAffinityFieldPredictor(BasePredictor):
         edge_idx = paf_limb_inds[edge_idx]  # Map back to original PAF indices
 
         # Gather coordinates
-        src_coords = torch.stack(
-            [peak_rows[src_idx], peak_cols[src_idx]], dim=1
-        )  # (found_pairs, 2)
-        dst_coords = torch.stack(
-            [peak_rows[dst_idx], peak_cols[dst_idx]], dim=1
-        )  # (found_pairs, 2)
+        src_coords = torch.stack([peak_rows[src_idx], peak_cols[src_idx]], dim=1)  # (found_pairs, 2)
+        dst_coords = torch.stack([peak_rows[dst_idx], peak_cols[dst_idx]], dim=1)  # (found_pairs, 2)
 
         vecs_s = src_coords.float()  # (found_pairs, 2)
         vecs_t = dst_coords.float()  # (found_pairs, 2)
@@ -372,9 +353,7 @@ class PartAffinityFieldPredictor(BasePredictor):
         ]
 
         # Integrate PAF along segment using trapezoidal rule
-        xy_reversed = torch.flip(
-            xy.float(), dims=[-1]
-        )
+        xy_reversed = torch.flip(xy.float(), dims=[-1])
         integ = torch.trapz(y, xy_reversed, dim=1)  # (n_edges, 2)
         affinities = torch.norm(integ, dim=1)  # (n_edges,)
         affinities = affinities / lengths
@@ -401,16 +380,14 @@ class PartAffinityFieldPredictor(BasePredictor):
         # Run-length encode on (batch, limb) boundaries where (batch, limb) changes
         change = np.empty(batch_inds.size, dtype=bool)
         change[0] = True
-        change[1:] = (batch_inds[1:] != batch_inds[:-1]) | (
-            edge_idx[1:] != edge_idx[:-1]
-        )
+        change[1:] = (batch_inds[1:] != batch_inds[:-1]) | (edge_idx[1:] != edge_idx[:-1])
         group_starts = np.flatnonzero(change)
         # Add sentinel end
         group_ends = np.r_[group_starts[1:], batch_inds.size]
 
         # Build an index dict of slices for group lookup by (batch, limb)
         batch_groups = defaultdict(list)  # (batch)->list of (limb, start, end)
-        for st, en in zip(group_starts, group_ends):
+        for st, en in zip(group_starts, group_ends, strict=False):
             b = batch_inds[st]
             k = edge_idx[st]
             batch_groups[b].append((k, st, en))
@@ -460,8 +437,8 @@ class PartAffinityFieldPredictor(BasePredictor):
         n_points: int = 10,
         n_decimals: int = 3,
     ) -> list[dict[str, NDArray]]:
-        """
-        Compute refined peak coordinates, confidence scores, and PAF edge costs for pose estimation.
+        """Compute refined peak coordinates, confidence scores, and PAF edge costs for
+        pose estimation.
 
         Args:
             heatmaps: Smoothed heatmaps tensor with shape (batch_size, num_joints, height, width).
@@ -499,9 +476,7 @@ class PartAffinityFieldPredictor(BasePredictor):
         batch_size, n_channels = heatmaps.shape[:2]
         n_bodyparts = n_channels - n_id_channels
         # Refine peak positions to input-image pixels
-        pos = self.calc_peak_locations(
-            locrefs, peak_inds_in_batch, strides
-        )  # (n_peaks, 2)
+        pos = self.calc_peak_locations(locrefs, peak_inds_in_batch, strides)  # (n_peaks, 2)
 
         # Compute per-limb affinity matrices via PAF line integral
         costs = self.compute_edge_costs(
@@ -545,7 +520,7 @@ class PartAffinityFieldPredictor(BasePredictor):
         return peaks_and_costs
 
     def set_paf_edges_to_keep(self, edge_indices: list[int]) -> None:
-        """Sets the PAF edge indices to use to assemble individuals
+        """Sets the PAF edge indices to use to assemble individuals.
 
         Args:
             edge_indices: The indices of edges in the graph to keep.

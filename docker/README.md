@@ -51,9 +51,9 @@ when calling `docker run`:
 deeplabcut-docker bash --gpus all -v /home/john:/home/john
 ```
 
-You can select which DeepLabCut version and CUDA version to use through the 
-`DLC_VERSION` and `CUDA_VERSION` environment variables. So to launch a container with 
-CUDA 12.1 and DLC 3.0.0, you can run: 
+You can select which DeepLabCut version and CUDA version to use through the
+`DLC_VERSION` and `CUDA_VERSION` environment variables. So to launch a container with
+CUDA 12.1 and DLC 3.0.0, you can run:
 
 ```bash
 DLC_VERSION=3.0.0 CUDA_VERSION=12.1 deeplabcut-docker bash --gpus all
@@ -64,10 +64,10 @@ script if this is preferred over a python helper script.*
 
 ### Jupyter Notebooks Running on Remote Servers
 
-Sometimes, we want to run Jupyter Notebooks on remote servers but connect to them 
+Sometimes, we want to run Jupyter Notebooks on remote servers but connect to them
 through the browser on our local machine. To do so, port forwarding needs to be used.
 This is straightforward, and there are many resources you can explore on how to do so (
-such as [this StackOverflow post](https://stackoverflow.com/a/69244262) or the [Jupyter 
+such as [this StackOverflow post](https://stackoverflow.com/a/69244262) or the [Jupyter
 Notebook docs](https://jupyter-notebook.readthedocs.io/en/4.x/public_server.html)).
 
 This can easily be done with `deeplabcut-docker`. To run a DeepLabCut notebook on a
@@ -93,7 +93,7 @@ DLC_NOTEBOOK_PORT=8889 deeplabcut-docker notebook --gpus all
 ### Using Docker without `deeplabcut-docker`
 
 Docker images can also be run without the `deeplabcut-docker` package, for more expert
-users. This is not the recommended, as many of the nice features (such as starting 
+users. This is not the recommended, as many of the nice features (such as starting
 the container with the current user instead of root) won't be there.
 
 The `core` image can simply be run by pulling the image and using `docker run`:
@@ -103,12 +103,12 @@ docker pull deeplabcut/deeplabcut:3.0.0-core-cuda11.8-cudnn9
 docker run -it --rm --gpus all deeplabcut/deeplabcut:3.0.0-core-cuda11.8-cudnn9
 ```
 
-The `jupyter` image cannot be run in the same way. Notebook servers cannot be run as 
+The `jupyter` image cannot be run in the same way. Notebook servers cannot be run as
 the root user (which can be dangerous) without passing the `--allow-root` option, so
-running `docker run deeplabcut/deeplabcut:3.0.0-jupyter-cuda11.8-cudnn9` will lead to an  
-error (`Running as root is not recommended. Use --allow-root to bypass`). What you can 
+running `docker run deeplabcut/deeplabcut:3.0.0-jupyter-cuda11.8-cudnn9` will lead to an
+error (`Running as root is not recommended. Use --allow-root to bypass`). What you can
 do (and we do in the `deeplabcut-docker` package) is to build a docker image with the
-`jupyter` image as a base. We would recommend doing this for the `core` images as well. 
+`jupyter` image as a base. We would recommend doing this for the `core` images as well.
 You can create the `Dockerfile`:
 
 ```dockerfile
@@ -159,31 +159,31 @@ Images can be verified by running
 
 ```
 docker/build.sh test
-``` 
+```
 
 Built images can be pushed to DockerHub by running
 
 ```
 docker/build.sh push
-``` 
+```
 
 ## Prerequisites (if you don't have Docker installed already)
 
 **(1)** Install Docker. See https://docs.docker.com/install/ & for Ubuntu: https://docs.docker.com/install/linux/docker-ce/ubuntu/
-Test docker: 
+Test docker:
 
     $ sudo docker run hello-world
-    
+
  The output should be: ``Hello from Docker! This message shows that your installation appears to be working correctly.``
 
-*if you get the error ``docker: Error response from daemon: Unknown runtime specified nvidia.`` just simply restart docker: 
-  
+*if you get the error ``docker: Error response from daemon: Unknown runtime specified nvidia.`` just simply restart docker:
+
        $ sudo systemctl daemon-reload
        $ sudo systemctl restart docker
 
-    
+
 **(2)** Add your user to the docker group (https://docs.docker.com/install/linux/linux-postinstall/#manage-docker-as-a-non-root-user)
-Quick guide  to create the docker group and add your user: 
+Quick guide  to create the docker group and add your user:
 Create the docker group.
 
     $ sudo groupadd docker
@@ -203,12 +203,12 @@ Ascii art in the MOTD is adapted from https://ascii.co.uk/art/mice and https://p
                      '.__/o   o\__.'
                        `{=  ^  =}´
                          >  u  <
- ____________________.""`-------`"".______________________  
+ ____________________.""`-------`"".______________________
 \   ___                   __         __   _____       __  /
 /  / _ \ ___  ___  ___   / /  ___ _ / /  / ___/__ __ / /_ \
 \ / // // -_)/ -_)/ _ \ / /__/ _ `// _ \/ /__ / // // __/ /
 //____/ \__/ \__// .__//____/\_,_//_.__/\___/ \_,_/ \__/  \
 \_________________________________________________________/
-                       ___)( )(___ `-.___. 
+                       ___)( )(___ `-.___.
                       (((__) (__)))      ~`
 ```

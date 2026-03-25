@@ -9,9 +9,12 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import abc
+
 import tensorflow as tf
-from deeplabcut.pose_estimation_tensorflow.datasets import Batch
+
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal
+from deeplabcut.pose_estimation_tensorflow.datasets import Batch
+
 from .layers import prediction_layer
 from .utils import make_2d_gaussian_kernel
 
@@ -41,10 +44,7 @@ class BasePoseNet(metaclass=abc.ABCMeta):
         loss = {"part_loss": add_part_loss("part_pred")}
         total_loss = loss["part_loss"]
 
-        if (
-            self.cfg["intermediate_supervision"]
-            and "efficientnet" not in self.cfg["net_type"]
-        ):
+        if self.cfg["intermediate_supervision"] and "efficientnet" not in self.cfg["net_type"]:
             loss["part_loss_interm"] = add_part_loss("part_pred_interm")
             total_loss += loss["part_loss_interm"]
 
@@ -105,20 +105,14 @@ class BasePoseNet(metaclass=abc.ABCMeta):
                     "locref_pred",
                     n_joints * 2,
                 )
-            if (
-                self.cfg["pairwise_predict"]
-                and "multi-animal" not in self.cfg["dataset_type"]
-            ):
+            if self.cfg["pairwise_predict"] and "multi-animal" not in self.cfg["dataset_type"]:
                 out["pairwise_pred"] = prediction_layer(
                     self.cfg,
                     features,
                     "pairwise_pred",
                     n_joints * (n_joints - 1) * 2,
                 )
-            if (
-                self.cfg["partaffinityfield_predict"]
-                and "multi-animal" in self.cfg["dataset_type"]
-            ):
+            if self.cfg["partaffinityfield_predict"] and "multi-animal" in self.cfg["dataset_type"]:
                 out["pairwise_pred"] = prediction_layer(
                     self.cfg,
                     features,
@@ -130,6 +124,7 @@ class BasePoseNet(metaclass=abc.ABCMeta):
 
     def inference(self, inputs):
         """Direct TF inference on GPU.
+
         Added with: https://arxiv.org/abs/1909.11229
         """
         heads = self.get_net(inputs)
@@ -143,21 +138,13 @@ class BasePoseNet(metaclass=abc.ABCMeta):
             locref = tf.reshape(locref, (l_shape[0] * l_shape[1], -1, 2))
             probs = tf.reshape(probs, (l_shape[0] * l_shape[1], -1))
             maxloc = tf.argmax(input=probs, axis=0)
-            loc = tf.unravel_index(
-                maxloc, (tf.cast(l_shape[0], tf.int64), tf.cast(l_shape[1], tf.int64))
-            )
+            loc = tf.unravel_index(maxloc, (tf.cast(l_shape[0], tf.int64), tf.cast(l_shape[1], tf.int64)))
             maxloc = tf.reshape(maxloc, (1, -1))
 
-            joints = tf.reshape(
-                tf.range(0, tf.cast(l_shape[2], dtype=tf.int64)), (1, -1)
-            )
+            joints = tf.reshape(tf.range(0, tf.cast(l_shape[2], dtype=tf.int64)), (1, -1))
         else:
-            l_shape = tf.shape(
-                input=probs
-            )  # batchsize times x times y times body parts
-            locref = tf.reshape(
-                locref, (l_shape[0], l_shape[1], l_shape[2], l_shape[3], 2)
-            )
+            l_shape = tf.shape(input=probs)  # batchsize times x times y times body parts
+            locref = tf.reshape(locref, (l_shape[0], l_shape[1], l_shape[2], l_shape[3], 2))
             # turn into x times y time bs * bpts
             locref = tf.transpose(a=locref, perm=[1, 2, 0, 3, 4])
             probs = tf.transpose(a=probs, perm=[1, 2, 0, 3])
@@ -171,9 +158,7 @@ class BasePoseNet(metaclass=abc.ABCMeta):
                 maxloc, (tf.cast(l_shape[0], tf.int64), tf.cast(l_shape[1], tf.int64))
             )  # tuple of max indices
             maxloc = tf.reshape(maxloc, (1, -1))
-            joints = tf.reshape(
-                tf.range(0, tf.cast(l_shape[2] * l_shape[3], dtype=tf.int64)), (1, -1)
-            )
+            joints = tf.reshape(tf.range(0, tf.cast(l_shape[2] * l_shape[3], dtype=tf.int64)), (1, -1))
 
         # extract corresponding locref x and y as well as probability
         indices = tf.transpose(a=tf.concat([maxloc, joints], axis=0))
@@ -190,7 +175,7 @@ class BasePoseNet(metaclass=abc.ABCMeta):
         return {"pose": pose}
 
     def add_inference_layers(self, heads):
-        """initialized during inference"""
+        """Initialized during inference."""
         prob = tf.sigmoid(heads["part_pred"])
         nms_radius = int(self.cfg.get("nmsradius", 5))
 

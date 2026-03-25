@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-""" Tests the Task enum """
+"""Tests the Task enum."""
+
 import pytest
 
 from deeplabcut.pose_estimation_pytorch.task import Task

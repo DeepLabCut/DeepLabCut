@@ -267,7 +267,7 @@ labels to the bodyparts in the config.yaml file. Thereafter, the user can call t
 2.0.5+: then a box will pop up and ask the user if they wish to display all parts, or only add in the new labels.
 Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.
 
-For more information, checkout the [napari-deeplabcut docs](napari-gui) for 
+For more information, checkout the [napari-deeplabcut docs](napari-gui) for
 more information about the labelling workflow.
 
 ### (E) Check Annotated Frames
@@ -304,7 +304,7 @@ saves file sets as both Linux and Windows for you).
 config.yaml file - that's it - no need to change the video paths, etc! Your project is fully portable.
 
 - Be aware you select your neural network backbone at this stage. As of DLC3+ we support PyTorch (and TensorFlow, but
-this will be phased out). 
+this will be phased out).
 
 **OVERVIEW:** This function combines the labeled datasets from all the videos and splits them to create train and test
 datasets. The training data will be used to train the network, while the test data set will be used for evaluating the
@@ -365,11 +365,11 @@ supervision, etc. Here are the available loaders:
 
 **MODEL COMPARISON**: You can also test several models by creating the same train/test
 split for different networks.
-You can easily do this in the Project Manager GUI (by selecting the "Use an existing 
+You can easily do this in the Project Manager GUI (by selecting the "Use an existing
 data split" option), which also lets you compare PyTorch and TensorFlow models.
 
 ````{versionadded} 3.0.0
-You can now create new shuffles using the same train/test split as 
+You can now create new shuffles using the same train/test split as
 existing shuffles with `create_training_dataset_from_existing_split`. This allows you to
 compare model performance (between different architectures or when using different
 training hyper-parameters) as the shuffles were trained on the same data, and evaluated
@@ -416,11 +416,11 @@ The function ‘train_network’ helps the user in training the network. It is u
 deeplabcut.train_network(config_path)
 ```
 The set of arguments in the function starts training the network for the dataset created
-for one specific shuffle. Note that you can change training parameters in the 
+for one specific shuffle. Note that you can change training parameters in the
 [**pytorch_config.yaml**](dlc3-pytorch-config) file (or **pose_cfg.yaml** for TensorFlow
 models) of the model that you want to train (before you start training).
 
-At user specified iterations during training checkpoints are stored in the subdirectory 
+At user specified iterations during training checkpoints are stored in the subdirectory
 *train* under the respective iteration & shuffle directory.
 
 ````{admonition} Tips on training models with the PyTorch Engine
@@ -448,7 +448,7 @@ training image exactly once. So if you have 64 training images for your network,
 epoch is 64 iterations with batch size 1 (or 32 iterations with batch size 2, 16 with
 batch size 4, etc.).
 
-By default, the pretrained networks are not in the DeepLabCut toolbox (as they can be 
+By default, the pretrained networks are not in the DeepLabCut toolbox (as they can be
 more than 100MB), but they get downloaded automatically before you train.
 
 If the user wishes to restart the training at a specific checkpoint they can specify the
@@ -457,7 +457,7 @@ full path of the checkpoint to the variable ``resume_training_from`` in the [
 dlc3-pytorch-config) file (checkout the "Restarting Training at a Specific Checkpoint"
 section of the docs) under the *train* subdirectory.
 
-**CRITICAL POINT:** It is recommended to train the networks **until the loss plateaus** 
+**CRITICAL POINT:** It is recommended to train the networks **until the loss plateaus**
 (depending on the dataset, model architecture and training hyper-parameters this happens
 after 100 to 250 epochs of training).
 
@@ -466,7 +466,7 @@ dlc3-pytorch-config) file allows the user to alter how often the loss is display
 and how often the weights are stored. We suggest saving every 5 to 25 epochs.
 ````
 
-````{admonition} Tips on training models with the TensorFlow Engine 
+````{admonition} Tips on training models with the TensorFlow Engine
 :class: dropdown
 
 Example parameters that one can call:
@@ -486,10 +486,10 @@ deeplabcut.train_network(
 )
 ```
 
-By default, the pretrained networks are not in the DeepLabCut toolbox (as they are 
+By default, the pretrained networks are not in the DeepLabCut toolbox (as they are
 around 100MB each), but they get downloaded before you train. However, if not previously
 downloaded from the TensorFlow model weights, it will be downloaded and stored in a
-subdirectory *pre-trained* under the subdirectory *models* in 
+subdirectory *pre-trained* under the subdirectory *models* in
 *Pose_Estimation_Tensorflow*. At user specified iterations during training checkpoints
 are stored in the subdirectory *train* under the respective iteration directory.
 

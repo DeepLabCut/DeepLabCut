@@ -74,9 +74,9 @@ All information seen on the output image is recorded on the **Download JSON file
  "file": "image0.jpg",  //image filename uploaded
  "number_of_bb": 1,     //number of bounding boxes detected on the image
  "dlc_model": "full_dog",  //model used
- "bb_0": {              
+ "bb_0": {
   "corner_1": [          //top left corner
-   76.08082580566406,    //x  
+   76.08082580566406,    //x
    91.02932739257812     //y
   ],
   "corner_2": [          //bottom right corner

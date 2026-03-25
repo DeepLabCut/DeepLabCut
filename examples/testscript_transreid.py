@@ -9,13 +9,15 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import os
-import deeplabcut
-import numpy as np
-import pandas as pd
 import pickle
-from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 import random
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+import deeplabcut
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 # MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0", "mobilenet_v2_0.35"]
 MODELS = [
@@ -43,14 +45,10 @@ if __name__ == "__main__":
     DESTFOLDER = basepath
 
     video = "m3v1mp4"
-    video_path = os.path.join(
-        basepath, "openfield-Pranav-2018-10-30", "videos", video + ".mp4"
-    )
+    video_path = os.path.join(basepath, "openfield-Pranav-2018-10-30", "videos", video + ".mp4")
 
     print("Creating project...")
-    config_path = deeplabcut.create_new_project(
-        TASK, SCORER, [video_path], copy_videos=True, multianimal=True
-    )
+    config_path = deeplabcut.create_new_project(TASK, SCORER, [video_path], copy_videos=True, multianimal=True)
 
     print("Project created.")
 
@@ -79,34 +77,23 @@ if __name__ == "__main__":
         bodyparts_single,
         bodyparts_multi,
     ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
-    animals_id = [i for i in range(n_animals) for _ in bodyparts_multi] + [
-        n_animals
-    ] * len(bodyparts_single)
-    map_ = dict(zip(range(len(animals)), animals))
+    animals_id = [i for i in range(n_animals) for _ in bodyparts_multi] + [n_animals] * len(bodyparts_single)
+    map_ = dict(zip(range(len(animals)), animals, strict=False))
     individuals = [map_[ind] for ind in animals_id for _ in range(2)]
     scorer = [SCORER] * len(individuals)
     coords = ["x", "y"] * len(animals_id)
-    bodyparts = [
-        bp for _ in range(n_animals) for bp in bodyparts_multi for _ in range(2)
-    ]
+    bodyparts = [bp for _ in range(n_animals) for bp in bodyparts_multi for _ in range(2)]
     bodyparts += [bp for bp in bodyparts_single for _ in range(2)]
     columns = pd.MultiIndex.from_arrays(
         [scorer, individuals, bodyparts, coords],
         names=["scorer", "individuals", "bodyparts", "coords"],
     )
-    index = [
-        os.path.join(rel_folder, image)
-        for image in auxiliaryfunctions.grab_files_in_folder(image_folder, "png")
-    ]
-    fake_data = np.tile(
-        np.repeat(50 * np.arange(len(animals_id)) + 50, 2), (len(index), 1)
-    )
+    index = [os.path.join(rel_folder, image) for image in auxiliaryfunctions.grab_files_in_folder(image_folder, "png")]
+    fake_data = np.tile(np.repeat(50 * np.arange(len(animals_id)) + 50, 2), (len(index), 1))
     df = pd.DataFrame(fake_data, index=index, columns=columns)
     output_path = os.path.join(image_folder, f"CollectedData_{SCORER}.csv")
     df.to_csv(output_path)
-    df.to_hdf(
-        output_path.replace("csv", "h5"), key="df_with_missing", format="table", mode="w"
-    )
+    df.to_hdf(output_path.replace("csv", "h5"), key="df_with_missing", format="table", mode="w")
     print("Artificial data created.")
 
     print("Checking labels...")
@@ -114,9 +101,7 @@ if __name__ == "__main__":
     print("Labels checked.")
 
     print("Creating train dataset...")
-    deeplabcut.create_multianimaltraining_dataset(
-        config_path, net_type=NET, crop_size=(200, 200)
-    )
+    deeplabcut.create_multianimaltraining_dataset(config_path, net_type=NET, crop_size=(200, 200))
     print("Train dataset created.")
 
     # Check the training image paths are correctly stored as arrays of strings
@@ -134,9 +119,7 @@ if __name__ == "__main__":
     assert all(len(pickledata[i]["joints"]) == 3 for i in range(num_images))
 
     print("Editing pose config...")
-    model_folder = auxiliaryfunctions.get_model_folder(
-        TRAIN_SIZE, 1, cfg, cfg["project_path"]
-    )
+    model_folder = auxiliaryfunctions.get_model_folder(TRAIN_SIZE, 1, cfg, cfg["project_path"])
     pose_config_path = os.path.join(model_folder, "train", "pose_cfg.yaml")
     edits = {
         "global_scale": 0.5,
@@ -191,9 +174,7 @@ if __name__ == "__main__":
     print("Video created.")
 
     print("Convert detections to tracklets...")
-    deeplabcut.convert_detections2tracklets(
-        config_path, [new_video_path], "mp4", track_method=TESTTRACKER
-    )
+    deeplabcut.convert_detections2tracklets(config_path, [new_video_path], "mp4", track_method=TESTTRACKER)
     print("Tracklets created...")
 
     ### adding it here
@@ -202,9 +183,7 @@ if __name__ == "__main__":
         trainposeconfigfile,
         testposeconfigfile,
         snapshotfolder,
-    ) = deeplabcut.return_train_network_path(
-        config_path, shuffle=1, modelprefix=modelprefix, trainingsetindex=0
-    )
+    ) = deeplabcut.return_train_network_path(config_path, shuffle=1, modelprefix=modelprefix, trainingsetindex=0)
 
     print("Creating triplet dataset")
 
@@ -230,9 +209,7 @@ if __name__ == "__main__":
         ckpt_folder=snapshotfolder,
     )
 
-    transformer_checkpoint = os.path.join(
-        snapshotfolder, f"dlc_transreid_{train_epochs}.pth"
-    )
+    transformer_checkpoint = os.path.join(snapshotfolder, f"dlc_transreid_{train_epochs}.pth")
 
     print("Stitching tracklets based on transformer")
 
@@ -245,9 +222,7 @@ if __name__ == "__main__":
     )
 
     print("Plotting trajectories...")
-    deeplabcut.plot_trajectories(
-        config_path, [new_video_path], "mp4", track_method=TESTTRACKER
-    )
+    deeplabcut.plot_trajectories(config_path, [new_video_path], "mp4", track_method=TESTTRACKER)
     print("Trajectory plotted.")
 
     print("Creating labeled video...")
@@ -262,15 +237,11 @@ if __name__ == "__main__":
     print("Labeled video created.")
 
     print("Filtering predictions...")
-    deeplabcut.filterpredictions(
-        config_path, [new_video_path], "mp4", track_method=TESTTRACKER
-    )
+    deeplabcut.filterpredictions(config_path, [new_video_path], "mp4", track_method=TESTTRACKER)
     print("Predictions filtered.")
 
     print("Extracting outlier frames...")
-    deeplabcut.extract_outlier_frames(
-        config_path, [new_video_path], "mp4", automatic=True, track_method=TESTTRACKER
-    )
+    deeplabcut.extract_outlier_frames(config_path, [new_video_path], "mp4", automatic=True, track_method=TESTTRACKER)
     print("Outlier frames extracted.")
 
     vname = Path(new_video_path).stem

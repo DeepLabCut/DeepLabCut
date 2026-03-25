@@ -19,7 +19,7 @@ import torch
 import torch.nn as nn
 from huggingface_hub import hf_hub_download
 
-from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
+from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 BACKBONES = Registry("backbones", build_func=build_from_cfg)
 
@@ -57,7 +57,7 @@ class BaseBackbone(ABC, nn.Module):
         pass
 
     def freeze_batch_norm_layers(self) -> None:
-        """Freezes batch norm layers
+        """Freezes batch norm layers.
 
         Running mean + var are always given to F.batch_norm, except when the layer is
         in `train` mode and track_running_stats is False, see
@@ -85,7 +85,7 @@ class BaseBackbone(ABC, nn.Module):
 
 
 class HuggingFaceWeightsMixin:
-    """Mixin for backbones where the pretrained weights are stored on HuggingFace"""
+    """Mixin for backbones where the pretrained weights are stored on HuggingFace."""
 
     def __init__(
         self,
@@ -104,7 +104,7 @@ class HuggingFaceWeightsMixin:
         self.repo_id = repo_id
 
     def download_weights(self, filename: str, force: bool = False) -> Path:
-        """Downloads the backbone weights from the HuggingFace repo
+        """Downloads the backbone weights from the HuggingFace repo.
 
         Args:
             filename: The name of the model file to download in the repo.
@@ -121,11 +121,7 @@ class HuggingFaceWeightsMixin:
 
         logging.info(f"Downloading the pre-trained backbone to {model_path}")
         self.backbone_weight_folder.mkdir(exist_ok=True, parents=False)
-        output_path = Path(
-            hf_hub_download(
-                self.repo_id, filename, cache_dir=self.backbone_weight_folder
-            )
-        )
+        output_path = Path(hf_hub_download(self.repo_id, filename, cache_dir=self.backbone_weight_folder))
 
         # resolve gets the actual path if the output path is a symlink
         output_path = output_path.resolve()

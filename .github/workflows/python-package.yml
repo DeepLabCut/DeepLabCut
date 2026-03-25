@@ -67,7 +67,7 @@ jobs:
       - name: Set up Python
         uses: conda-incubator/setup-miniconda@v3
         with:
-          channels: conda-forge,defaults
+          channels: conda-forge
           channel-priority: strict
           python-version: ${{ matrix.python-version }}
 

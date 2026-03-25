@@ -107,31 +107,26 @@ def test_iter_all_dataset_no_transform(batch_size):
     num_keypoints = dataset.parameters.num_joints
     for i, item in enumerate(dataloader):
         is_last_batch = i == (len(dataloader) - 1)
-        assert (
-            set(item.keys()) == key_set
-        ), f"the key returned don't match the required ones: {item.keys()} != {key_set}"
+        assert set(item.keys()) == key_set, (
+            f"the key returned don't match the required ones: {item.keys()} != {key_set}"
+        )
 
         anno = item["annotations"]
-        assert (
-            set(anno.keys()) == anno_key_set
-        ), "the annotation keys returned don't match the required ones"
+        assert set(anno.keys()) == anno_key_set, "the annotation keys returned don't match the required ones"
 
-        assert (len(item["image"].shape) == 4) and (
-            (item["image"].shape[:2] == (batch_size, 3)) or is_last_batch
-        ), "image shape is not (batch_size, 3, h, w)"
+        assert (len(item["image"].shape) == 4) and ((item["image"].shape[:2] == (batch_size, 3)) or is_last_batch), (
+            "image shape is not (batch_size, 3, h, w)"
+        )
 
         b, _, h, w = item["image"].shape
         kpts, bboxes = anno["keypoints"], anno["boxes"]
-        assert (
-            kpts.shape == (batch_size, max_num_animals, num_keypoints, 3)
-            or is_last_batch
-        ), "keypoints have the wrong shape"
-        assert (
-            bboxes.shape == (batch_size, max_num_animals, 4) or is_last_batch
-        ), "boxes have the wrong shape"
-        assert ((bboxes[:, :, 0] + bboxes[:, :, 2]) <= w).all() and (
-            (bboxes[:, :, 1] + bboxes[:, :, 3]) <= h
-        ).all(), "boxes don't seem to be un the format (x, y, w, h)"
+        assert kpts.shape == (batch_size, max_num_animals, num_keypoints, 3) or is_last_batch, (
+            "keypoints have the wrong shape"
+        )
+        assert bboxes.shape == (batch_size, max_num_animals, 4) or is_last_batch, "boxes have the wrong shape"
+        assert ((bboxes[:, :, 0] + bboxes[:, :, 2]) <= w).all() and ((bboxes[:, :, 1] + bboxes[:, :, 3]) <= h).all(), (
+            "boxes don't seem to be un the format (x, y, w, h)"
+        )
 
 
 def _generate_random_test_values_aug(min_exa):
@@ -170,29 +165,22 @@ def test_iter_all_augmented_dataset(batch_size, x_size, y_size, exaggeration):
     num_keypoints = dataset.parameters.num_joints
     for i, item in enumerate(dataloader):
         is_last_batch = i == (len(dataloader) - 1)
-        assert (
-            set(item.keys()) == key_set
-        ), f"the key returned don't match the required ones: {item.keys()} != {key_set}"
+        assert set(item.keys()) == key_set, (
+            f"the key returned don't match the required ones: {item.keys()} != {key_set}"
+        )
 
         anno = item["annotations"]
-        assert (
-            set(anno.keys()) == anno_key_set
-        ), "the annotation keys returned don't match the required ones"
+        assert set(anno.keys()) == anno_key_set, "the annotation keys returned don't match the required ones"
 
-        assert (len(item["image"].shape) == 4) and (
-            (item["image"].shape[:2] == (batch_size, 3)) or is_last_batch
-        ), "image shape is not (batch_size, 3, h, w)"
+        assert (len(item["image"].shape) == 4) and ((item["image"].shape[:2] == (batch_size, 3)) or is_last_batch), (
+            "image shape is not (batch_size, 3, h, w)"
+        )
 
         kpts, bboxes = anno["keypoints"], anno["boxes"]
         b, _, h, w = item["image"].shape
         assert (h == y_size) and (w == x_size)
-        assert (
-            kpts.shape == (batch_size, max_num_animals, num_keypoints, 3)
-            or is_last_batch
-        ), "keypoints have the wrong shape"
-        assert (
-            bboxes.shape == (batch_size, max_num_animals, 4) or is_last_batch
-        ), "boxes have the wrong shape"
-        assert ((bboxes[:, :, 0] + bboxes[:, :, 2]) <= w).all() and (
-            (bboxes[:, :, 1] + bboxes[:, :, 3]) <= h
-        ).all()
+        assert kpts.shape == (batch_size, max_num_animals, num_keypoints, 3) or is_last_batch, (
+            "keypoints have the wrong shape"
+        )
+        assert bboxes.shape == (batch_size, max_num_animals, 4) or is_last_batch, "boxes have the wrong shape"
+        assert ((bboxes[:, :, 0] + bboxes[:, :, 2]) <= w).all() and ((bboxes[:, :, 1] + bboxes[:, :, 3]) <= h).all()

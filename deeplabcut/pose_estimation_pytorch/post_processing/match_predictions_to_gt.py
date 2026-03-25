@@ -17,11 +17,8 @@ from deeplabcut.core.inferenceutils import (
 )
 
 
-def rmse_match_prediction_to_gt(
-    pred_kpts: np.ndarray, gt_kpts: np.ndarray
-) -> np.ndarray:
-    """
-    Hungarian algorithm predicted individuals to ground truth ones, using root mean
+def rmse_match_prediction_to_gt(pred_kpts: np.ndarray, gt_kpts: np.ndarray) -> np.ndarray:
+    """Hungarian algorithm predicted individuals to ground truth ones, using root mean
     squared error (rmse). The function provides a way to match predicted individuals to
     ground truth individuals based on the rmse distance between their corresponding
     keypoints. This algorithm is used to find the optimal matching, taking into account
@@ -96,9 +93,7 @@ def rmse_match_prediction_to_gt(
     return np.array(col_ind)
 
 
-def oks_match_prediction_to_gt(
-    pred_kpts: np.array, gt_kpts: np.array, individual_names: list
-) -> np.array:
+def oks_match_prediction_to_gt(pred_kpts: np.array, gt_kpts: np.array, individual_names: list) -> np.array:
     """Summary:
     Hungarian algorithm predicted individuals to ground truth ones, using object keypoint similarity (oks).
     Oks measures the accuracy of predicted keypoints compared to ground truth keypoints.
@@ -109,7 +104,8 @@ def oks_match_prediction_to_gt(
             num_animals: Number of animals.
             num_keypoints: Number of keypoints.
             3: (x, y, score) coordinates of each keypoint.
-        gt_kpts: Ground truth keypoints for each animal. The shape of the array is (num_animals, num_keypoints(+1 if with center), 2):
+        gt_kpts: Ground truth keypoints for each animal. The shape of the array is (num_animals, num_keypoints(+1 if
+        with center), 2):
             num_animals: Number of animals.
             num_keypoints: Number of keypoints.
         individual_names: names of individuals
@@ -141,9 +137,7 @@ def oks_match_prediction_to_gt(
             num_animals_gt -= 1
 
     oks_matrix = np.zeros((num_animals_gt, num_animals))
-    gt_kpts_without_ctr[
-        gt_kpts_without_ctr < 0
-    ] = np.nan  # non visible keypoints should be nan to use calc_oks
+    gt_kpts_without_ctr[gt_kpts_without_ctr < 0] = np.nan  # non visible keypoints should be nan to use calc_oks
     idx_gt = -1
     for g in range(num_animals):
         if np.isnan(gt_kpts_without_ctr[g]).all():

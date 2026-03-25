@@ -8,11 +8,12 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Modified SimCC target generator for the RTMPose model
+"""Modified SimCC target generator for the RTMPose model.
 
 Based on the official ``mmpose`` SimCC codec and RTMCC head implementation. For more
 information, see <https://github.com/open-mmlab/mmpose>.
 """
+
 from __future__ import annotations
 
 from itertools import product
@@ -21,14 +22,14 @@ import numpy as np
 import torch
 
 from deeplabcut.pose_estimation_pytorch.models.target_generators.base import (
-    BaseGenerator,
     TARGET_GENERATORS,
+    BaseGenerator,
 )
 
 
 @TARGET_GENERATORS.register_module
 class SimCCGenerator(BaseGenerator):
-    """Class used generate targets from RTMPose head outputs
+    """Class used generate targets from RTMPose head outputs.
 
     The RTMPose model uses coordinate classification for pose estimation. For more
     information, see "SimCC: a Simple Coordinate Classification Perspective for Human
@@ -76,9 +77,7 @@ class SimCCGenerator(BaseGenerator):
             )
 
         if self.smoothing_type == "gaussian" and self.label_smooth_weight > 0:
-            raise ValueError(
-                "Attribute `label_smooth_weight` is only " "used for `standard` mode."
-            )
+            raise ValueError("Attribute `label_smooth_weight` is only used for `standard` mode.")
 
         if self.label_smooth_weight < 0.0 or self.label_smooth_weight > 1.0:
             raise ValueError("`label_smooth_weight` should be in range [0, 1]")
@@ -139,9 +138,7 @@ class SimCCGenerator(BaseGenerator):
         W = np.around(w * self.simcc_split_ratio).astype(int)
         H = np.around(h * self.simcc_split_ratio).astype(int)
 
-        keypoints_split, keypoint_weights = self._map_coordinates(
-            keypoints, keypoints_visible
-        )
+        keypoints_split, keypoint_weights = self._map_coordinates(keypoints, keypoints_visible)
 
         target_x = np.zeros((N, K, W), dtype=np.float32)
         target_y = np.zeros((N, K, H), dtype=np.float32)
@@ -171,7 +168,7 @@ class SimCCGenerator(BaseGenerator):
     def _map_coordinates(
         self, keypoints: np.ndarray, keypoints_visible: np.ndarray | None = None
     ) -> tuple[np.ndarray, np.ndarray]:
-        """Mapping keypoint coordinates into SimCC space"""
+        """Mapping keypoint coordinates into SimCC space."""
         keypoints_split = keypoints.copy()
         # set non-visible keypoints to 0; deals with NaNs
         keypoints_split[keypoints_visible <= 0] = 0
@@ -183,15 +180,13 @@ class SimCCGenerator(BaseGenerator):
     def _generate_gaussian(
         self, keypoints: np.ndarray, keypoints_visible: np.ndarray | None = None
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Encoding keypoints into SimCC labels with Gaussian Label Smoothing"""
+        """Encoding keypoints into SimCC labels with Gaussian Label Smoothing."""
         N, K, _ = keypoints.shape
         w, h = self.input_size
         W = np.around(w * self.simcc_split_ratio).astype(int)
         H = np.around(h * self.simcc_split_ratio).astype(int)
 
-        keypoints_split, keypoint_weights = self._map_coordinates(
-            keypoints, keypoints_visible
-        )
+        keypoints_split, keypoint_weights = self._map_coordinates(keypoints, keypoints_visible)
 
         target_x = np.zeros((N, K, W), dtype=np.float32)
         target_y = np.zeros((N, K, H), dtype=np.float32)

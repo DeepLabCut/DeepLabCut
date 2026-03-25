@@ -5,7 +5,7 @@ deeplabcut:
   ignore: false
 ---
 (beginners-guide)=
-# Using DeepLabCut 
+# Using DeepLabCut
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572296495650-Y4ZTJ2XP2Z9XF1AD74VW/ke17ZwdGBToddI8pDm48kMulEJPOrz9Y8HeI7oJuXxR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UZiU3J6AN9rgO1lHw9nGbkYQrCLTag1XBHRgOrY8YAdXW07ycm2Trb21kYhaLJjddA/DLC_logo_blk-01.png?format=1000w" width="150" title="DLC-live" alt="DLC LIVE!" align="right" vspace = "50">
 
 This guide, and related pages, are meant as a very-new-to-python beginner guide to DeepLabCut. After you are comfortable with this material we recommend then jumping into the more detailed User Guides!
@@ -21,20 +21,20 @@ Before you begin, make sure that DeepLabCut is installed on your system.
 ## Beginner User Guide
 If you are new to Python, the best way to get Python installed onto your computer is with Anaconda. [Head over here and download the version that is best for your computer](https://www.anaconda.com/download).
 
-- "Conda", as it's often called, it a very nice way to create "environments (env)" on your computer. While there can be some cross-talk, in general, it allows you to separate the different tools you need to use to get your science done 💪. 
+- "Conda", as it's often called, it a very nice way to create "environments (env)" on your computer. While there can be some cross-talk, in general, it allows you to separate the different tools you need to use to get your science done 💪.
 
 ## Let's learn a bit and create a DeeplabCut env:
 
-After you have installed Anaconda, open the new program (Anaconda Terminal). You will be in your "root" directory by default. 
+After you have installed Anaconda, open the new program (Anaconda Terminal). You will be in your "root" directory by default.
 
-**(0) Create a fresh `conda environment`** 
+**(0) Create a fresh `conda environment`**
 
 In the terminal, type:
 
 ```
 conda create -n deeplabcut python=3.10
 ```
-You will be prompted (y/n) to install, and then wait for the magic to happen. At the end, check the terminal, it should prompt you to then type: 
+You will be prompted (y/n) to install, and then wait for the magic to happen. At the end, check the terminal, it should prompt you to then type:
 
 ```
 conda activate deeplabcut
@@ -54,7 +54,7 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 ```
 
-**(2) Install DeepLabCut** 
+**(2) Install DeepLabCut**
 
 Alright! Next, we will install all the `deeplabcut` source code 🔥. Please decide which version you want (stable or alpha), then type:
 
@@ -100,19 +100,19 @@ When you first launch the GUI, you'll find three primary main options:
 1. **Launch New Project:**
    - When you start a new project, you'll be presented with an empty project window. In DLC3+ you will see a new option "Engine".
    - We recommend using the PyTorch Engine:
-  
+
  ![DeepLabCut Engine](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717780414978-17LOVBUJ8JR102QVSFDY/Screen+Shot+2024-06-07+at+7.13.14+PM.png?format=1500w))
 
 2. **Filling in Project Details:**
    - **Naming Your Project:**
      - Give a specific, well-defined name to your project.
-      
+
       > **💡 Tip:** Avoid empty spaces in your project name.
 
    - **Naming the Experimenter:**
      - Fill in the name of the experimenter. This part of the data remains immutable.
 
-3. **Determine Project Location:** 
+3. **Determine Project Location:**
    - By default, your project will be located on the **Desktop**.
    - To pick a different home, modify the path as needed.
 
@@ -123,15 +123,15 @@ When you first launch the GUI, you'll find three primary main options:
 5. **Adding Videos:**
    - First, click on **`Browse Videos`** button on the right side of the window, to search for the video contents.
    - Once the media selection tool opens, navigate and select the folder with your videos.
-     
+
      > **💡 Tip:** DeepLabCut supports **`.mp4`**, **`.avi`**, **`.mkv`** and **`.mov`** files.
    - A list will be created with all the videos inside this folder.
    - Unselect the videos you wish to remove from the project.
-     
+
 6. **Create your project:**
    - Click on **`Create`** button on the bottom, right side of the main window.
    - A new folder named after your project's name will be created in the location you chose above.
-     
+
 
 ### 📽 Video Tutorial: Setting Up Your Project in DeepLabCut
 

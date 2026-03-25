@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Module to adapt torchvision detectors for DeepLabCut"""
+"""Module to adapt torchvision detectors for DeepLabCut."""
+
 from __future__ import annotations
 
 import torch
@@ -20,7 +21,7 @@ from deeplabcut.pose_estimation_pytorch.models.detectors.base import (
 
 
 class TorchvisionDetectorAdaptor(BaseDetector):
-    """An adaptor for torchvision detectors
+    """An adaptor for torchvision detectors.
 
     This class is an adaptor for torchvision detectors to DeepLabCut detectors. Some of
     the models (from fastest to most powerful) available are:
@@ -84,8 +85,7 @@ class TorchvisionDetectorAdaptor(BaseDetector):
     def forward(
         self, x: torch.Tensor, targets: list[dict[str, torch.Tensor]] | None = None
     ) -> tuple[dict[str, torch.Tensor], list[dict[str, torch.Tensor]]]:
-        """
-        Forward pass of the torchvision detector
+        """Forward pass of the torchvision detector.
 
         Args:
             x: images to be processed, of shape (b, c, h, w)
@@ -98,8 +98,7 @@ class TorchvisionDetectorAdaptor(BaseDetector):
         return self.model(x, targets)
 
     def get_target(self, labels: dict) -> list[dict[str, torch.Tensor]]:
-        """
-        Returns target in a format a torchvision detector can handle
+        """Returns target in a format a torchvision detector can handle.
 
         Args:
             labels: dict of annotations, must contain the keys:

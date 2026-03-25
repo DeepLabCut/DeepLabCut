@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Custom collate functions"""
+"""Custom collate functions."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -17,14 +18,13 @@ import numpy as np
 from torch.utils.data import default_collate
 
 from deeplabcut.pose_estimation_pytorch.data.image import resize_and_random_crop
-from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
-
+from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 COLLATE_FUNCTIONS = Registry("collate_functions", build_func=build_from_cfg)
 
 
 class CollateFunction(ABC):
-    """A class that can be called as a collate function"""
+    """A class that can be called as a collate function."""
 
     @abstractmethod
     def __call__(self, batch) -> dict | list:
@@ -33,7 +33,7 @@ class CollateFunction(ABC):
 
 
 class ResizeCollate(CollateFunction, ABC):
-    """A collate function which resizes all images in a batch to the same size
+    """A collate function which resizes all images in a batch to the same size.
 
     Args:
         max_shift: The maximum shift, in pixels, to add to the random crop (this means
@@ -83,7 +83,7 @@ class ResizeCollate(CollateFunction, ABC):
 
 @COLLATE_FUNCTIONS.register_module
 class ResizeFromDataSizeCollate(ResizeCollate):
-    """A collate function which resizes all images in a batch to the same size
+    """A collate function which resizes all images in a batch to the same size.
 
     The target size is obtained by taking the size of the first image in the batch, and
     multiplying it by a scale taken uniformly at random from (min_scale, max_scale).
@@ -118,7 +118,7 @@ class ResizeFromDataSizeCollate(ResizeCollate):
         max_ratio: float = 2.0,
         multiple_of: int | None = None,
         to_square: bool = False,
-        **kwargs
+        **kwargs,
     ) -> None:
         super().__init__(**kwargs)
         self.min_scale = min_scale
@@ -137,9 +137,7 @@ class ResizeFromDataSizeCollate(ResizeCollate):
         scale = self.generator.uniform(self.min_scale, self.max_scale)
         if self.to_square:
             short_side = min(h, w)
-            size = int(round(
-                min(self.max_short_side, max(self.min_short_side, scale * short_side))
-            ))
+            size = int(round(min(self.max_short_side, max(self.min_short_side, scale * short_side))))
             if self.multiple_of is not None:
                 size = _to_multiple(size, self.multiple_of)
             return size
@@ -149,9 +147,7 @@ class ResizeFromDataSizeCollate(ResizeCollate):
         if ratio > self.max_ratio:
             ratio = self.max_ratio
 
-        short_size = int(
-            round(min(self.max_short_side, max(self.min_short_side, scale * short)))
-        )
+        short_size = int(round(min(self.max_short_side, max(self.min_short_side, scale * short))))
         if h < w:
             h = short_size
             w = int(ratio * short_size)
@@ -168,7 +164,7 @@ class ResizeFromDataSizeCollate(ResizeCollate):
 
 @COLLATE_FUNCTIONS.register_module
 class ResizeFromListCollate(ResizeCollate):
-    """A collate function which resizes all images in a batch to the same size
+    """A collate function which resizes all images in a batch to the same size.
 
     The target size image size is sampled from a list. If it's a list of integers,
     all images will be resized into squares. If it's a list of tuples, that will be the

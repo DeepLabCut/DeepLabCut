@@ -18,14 +18,10 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators import HeatmapG
     "batch_size, num_keypoints, image_size",
     [(2, 2, (64, 64)), (1, 5, (48, 64)), (15, 50, (64, 48))],
 )
-def test_gaussian_target_generation(
-    batch_size: int, num_keypoints: int, image_size: tuple, num_animals=1
-):
+def test_gaussian_target_generation(batch_size: int, num_keypoints: int, image_size: tuple, num_animals=1):
     # generate annotations
     labels = {
-        "keypoints": torch.randint(
-            1, min(image_size), (batch_size, num_animals, num_keypoints, 2)
-        )
+        "keypoints": torch.randint(1, min(image_size), (batch_size, num_animals, num_keypoints, 2))
     }  # batch size, num animals, num keypoints, 2 for x,y
     # generate predictions
     stride = 1

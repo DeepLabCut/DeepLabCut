@@ -10,29 +10,27 @@
 #
 from functools import partial
 from pathlib import Path
-from typing import Union
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
-from deeplabcut.gui.dlc_params import DLCParams
+from deeplabcut.generate_training_dataset import extract_frames
 from deeplabcut.gui.components import (
     DefaultTab,
     VideoSelectionWidget,
     _create_grid_layout,
     _create_label_widget,
 )
+from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.gui.widgets import launch_napari
-from deeplabcut.generate_training_dataset import extract_frames
 
 
 def select_cropping_area(config, videos=None):
-    """
-    Interactively select the cropping area of all videos in the config.
-    A user interface pops up with a frame to select the cropping parameters.
-    Use the left click to draw a box and hit the button 'set cropping parameters'
-    to store the cropping parameters for a video in the config.yaml file.
+    """Interactively select the cropping area of all videos in the config. A user
+    interface pops up with a frame to select the cropping parameters. Use the left click
+    to draw a box and hit the button 'set cropping parameters' to store the cropping
+    parameters for a video in the config.yaml file.
 
     Parameters
     ----------
@@ -48,8 +46,8 @@ def select_cropping_area(config, videos=None):
     cfg : dict
         Updated project configuration
     """
-    from deeplabcut.utils import auxiliaryfunctions
     from deeplabcut.gui.widgets import FrameCropper
+    from deeplabcut.utils import auxiliaryfunctions
 
     cfg = auxiliaryfunctions.read_config(config)
     if videos is None:
@@ -83,7 +81,7 @@ def select_cropping_area(config, videos=None):
 
 class ExtractFrames(DefaultTab):
     def __init__(self, root, parent, h1_description):
-        super(ExtractFrames, self).__init__(root, parent, h1_description)
+        super().__init__(root, parent, h1_description)
         self.worker = None
         self.thread = None
         self._set_page()
@@ -131,25 +129,19 @@ class ExtractFrames(DefaultTab):
         self.extraction_method_widget = QtWidgets.QComboBox()
         options = ["automatic", "manual"]
         self.extraction_method_widget.addItems(options)
-        self.extraction_method_widget.currentTextChanged.connect(
-            self.log_extraction_method
-        )
+        self.extraction_method_widget.currentTextChanged.connect(self.log_extraction_method)
 
         # Frame extraction algorithm
         ext_algo_label = QtWidgets.QLabel("Extraction algorithm")
         self.extraction_algorithm_widget = QtWidgets.QComboBox()
         self.extraction_algorithm_widget.addItems(DLCParams.FRAME_EXTRACTION_ALGORITHMS)
-        self.extraction_algorithm_widget.currentTextChanged.connect(
-            self.log_extraction_algorithm
-        )
+        self.extraction_algorithm_widget.currentTextChanged.connect(self.log_extraction_algorithm)
 
         # Frame cropping
         frame_crop_label = QtWidgets.QLabel("Frame cropping")
         self.frame_cropping_widget = QtWidgets.QComboBox()
         self.frame_cropping_widget.addItems(["disabled", "read from config", "GUI"])
-        self.frame_cropping_widget.currentTextChanged.connect(
-            self.log_frame_cropping_choice
-        )
+        self.frame_cropping_widget.currentTextChanged.connect(self.log_frame_cropping_choice)
 
         # Cluster step
         cluster_step_label = QtWidgets.QLabel("Cluster step")
@@ -208,9 +200,7 @@ class ExtractFrames(DefaultTab):
                 return
             first_video = videos[0]
             if len(videos) > 1:
-                self.root.writer.write(
-                    f"Only the first video ({first_video}) will be opened."
-                )
+                self.root.writer.write(f"Only the first video ({first_video}) will be opened.")
             video_path_in_folder = self._check_symlink(first_video)
             _ = launch_napari(str(video_path_in_folder))
             return
@@ -258,19 +248,14 @@ class ExtractFrames(DefaultTab):
                 return
 
             if len(failed) == 0:
-                message = (
-                    "Frame extraction failed. Please check your terminal output "
-                    "for more information."
-                )
+                message = "Frame extraction failed. Please check your terminal output for more information."
             elif all(failed):
                 message = "Frame extraction failed. Video files must be corrupted."
             elif any(failed):
                 message = "Although most frames were extracted, some were invalid."
                 root_message = "failed to extract (some) frames"
             else:
-                message = (
-                    "Frames were successfully extracted, for the videos of interest."
-                )
+                message = "Frames were successfully extracted, for the videos of interest."
                 root_message = "successfully extracted frames"
 
         msg = QtWidgets.QMessageBox()
@@ -281,8 +266,8 @@ class ExtractFrames(DefaultTab):
         msg.exec_()
         self.root.writer.write(root_message)
 
-    def _check_symlink(self, video_path: Union[str, Path]) -> Path:
-        """Checks that a video is in the DeepLabCut 'videos' folder
+    def _check_symlink(self, video_path: str | Path) -> Path:
+        """Checks that a video is in the DeepLabCut 'videos' folder.
 
         This is required before launching manual frame extraction. When users select
         a symlink of a video using the VideoSelectionWidget, the path is resolved to the

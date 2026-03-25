@@ -29,8 +29,8 @@ import functools
 import tensorflow as tf
 import tf_slim as slim
 
-from deeplabcut.pose_estimation_tensorflow.nnets import conv_blocks as ops
 from deeplabcut.pose_estimation_tensorflow.backbones import mobilenet as lib
+from deeplabcut.pose_estimation_tensorflow.nnets import conv_blocks as ops
 
 op = lib.op
 
@@ -98,7 +98,7 @@ def mobilenet(
     min_depth=None,
     divisible_by=None,
     activation_fn=None,
-    **kwargs
+    **kwargs,
 ):
     """Creates mobilenet V2 network.
 
@@ -139,10 +139,7 @@ def mobilenet(
     if conv_defs is None:
         conv_defs = V2_DEF
     if "multiplier" in kwargs:
-        raise ValueError(
-            "mobilenetv2 doesn't support generic "
-            'multiplier parameter use "depth_multiplier" instead.'
-        )
+        raise ValueError('mobilenetv2 doesn\'t support generic multiplier parameter use "depth_multiplier" instead.')
     if finegrain_classification_mode:
         conv_defs = copy.deepcopy(conv_defs)
         if depth_multiplier < 1:
@@ -150,9 +147,7 @@ def mobilenet(
     if activation_fn:
         conv_defs = copy.deepcopy(conv_defs)
         defaults = conv_defs["defaults"]
-        conv_defaults = defaults[
-            (slim.conv2d, slim.fully_connected, slim.separable_conv2d)
-        ]
+        conv_defaults = defaults[(slim.conv2d, slim.fully_connected, slim.separable_conv2d)]
         conv_defaults["activation_fn"] = activation_fn
 
     depth_args = {}
@@ -170,7 +165,7 @@ def mobilenet(
             conv_defs=conv_defs,
             scope=scope,
             multiplier=depth_multiplier,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -187,20 +182,14 @@ def wrapped_partial(func, *args, **kwargs):
 # 'finegrain_classification_mode' is set to True, which means the embedding
 # layer will not be shrunk when given a depth-multiplier < 1.0.
 mobilenet_v2_140 = wrapped_partial(mobilenet, depth_multiplier=1.4)
-mobilenet_v2_050 = wrapped_partial(
-    mobilenet, depth_multiplier=0.50, finegrain_classification_mode=True
-)
-mobilenet_v2_035 = wrapped_partial(
-    mobilenet, depth_multiplier=0.35, finegrain_classification_mode=True
-)
+mobilenet_v2_050 = wrapped_partial(mobilenet, depth_multiplier=0.50, finegrain_classification_mode=True)
+mobilenet_v2_035 = wrapped_partial(mobilenet, depth_multiplier=0.35, finegrain_classification_mode=True)
 
 
 @slim.add_arg_scope
 def mobilenet_base(input_tensor, depth_multiplier=1.0, **kwargs):
     """Creates base of the mobilenet (no pooling and no logits) ."""
-    return mobilenet(
-        input_tensor, depth_multiplier=depth_multiplier, base_only=True, **kwargs
-    )
+    return mobilenet(input_tensor, depth_multiplier=depth_multiplier, base_only=True, **kwargs)
 
 
 def training_scope(**kwargs):

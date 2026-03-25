@@ -10,9 +10,8 @@
 #
 import glob
 import os
-import io
 from pathlib import Path
-import yaml
+
 from deeplabcut.pose_estimation_tensorflow.modelzoo.api.superanimal_inference import (
     video_inference,
 )
@@ -37,8 +36,7 @@ class SpatiotemporalAdaptation:
         customized_pose_config="",
         init_weights="",
     ):
-        """
-        This class supports video adaptation to a super model.
+        """This class supports video adaptation to a super model.
 
         Parameters
         ----------
@@ -51,11 +49,14 @@ class SpatiotemporalAdaptation:
         scale_list: list
            A list of different resolutions for the spatial pyramid
         videotype: string
-           Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
+           Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this
+           extension are analyzed. The default is ``.avi``
         adapt_iterations: int
-           Number of iterations for adaptation training. Empirically 1000 is sufficient. Training longer can cause worse performance depending whether there is occlusion in the video
+           Number of iterations for adaptation training. Empirically 1000 is sufficient. Training longer can cause worse
+           performance depending whether there is occlusion in the video
         modelfolder: string, optional
-           Because the API does not need a dlc project, the checkpoint and logs go to this temporary model folder, and otherwise model is saved to the current work place
+           Because the API does not need a dlc project, the checkpoint and logs go to this temporary model folder, and
+           otherwise model is saved to the current work place
         customized_pose_config: string, optional
            For future support of non modelzoo model
 
@@ -74,8 +75,6 @@ class SpatiotemporalAdaptation:
         adapter.before_adapt_inference()
         adapter.adaptation_training()
         adapter.after_adapt_inference()
-
-
         """
         if scale_list is None:
             scale_list = []
@@ -99,16 +98,10 @@ class SpatiotemporalAdaptation:
             dlc_root_path = get_deeplabcut_path()
 
             project_config = read_config(
-                os.path.join(
-                    dlc_root_path, "modelzoo", "project_configs", f"{project_name}.yaml"
-                )
+                os.path.join(dlc_root_path, "modelzoo", "project_configs", f"{project_name}.yaml")
             )
 
-            model_config = read_config(
-                os.path.join(
-                    dlc_root_path, "modelzoo", "model_configs", f"{model_name}.yaml"
-                )
-            )
+            model_config = read_config(os.path.join(dlc_root_path, "modelzoo", "model_configs", f"{model_name}.yaml"))
 
             joints = [i for i in range(len(project_config["bodyparts"]))]
             num_joints = len(joints)
@@ -180,8 +173,9 @@ class SpatiotemporalAdaptation:
         )
 
     def adaptation_training(self, displayiters=500, saveiters=1000, **kwargs):
-        """
-        There should be two choices, either taking a config, with is then assuming there is a DLC project.
+        """There should be two choices, either taking a config, with is then assuming
+        there is a DLC project.
+
         Or we make up a fake one, then we use a light way convention to do adaptation
         """
 
@@ -190,14 +184,11 @@ class SpatiotemporalAdaptation:
         vname = str(Path(self.video_path).stem)
         video_root = Path(self.video_path).parent
 
-        _, pseudo_label_path, _, _ = load_analyzed_data(
-            video_root, vname, DLCscorer, False, ""
-        )
+        _, pseudo_label_path, _, _ = load_analyzed_data(video_root, vname, DLCscorer, False, "")
         if self.modelfolder != "":
             os.makedirs(self.modelfolder, exist_ok=True)
 
         self.adapt_iterations = kwargs.get("adapt_iterations", self.adapt_iterations)
-
 
         self.train_without_project(
             pseudo_label_path,
@@ -207,9 +198,7 @@ class SpatiotemporalAdaptation:
         )
 
     def after_adapt_inference(self, create_labeled_video, **kwargs):
-        pattern = os.path.join(
-            self.modelfolder, f"snapshot-{self.adapt_iterations}.index"
-        )
+        pattern = os.path.join(self.modelfolder, f"snapshot-{self.adapt_iterations}.index")
         ref_proj_config_path = ""
 
         files = glob.glob(pattern)

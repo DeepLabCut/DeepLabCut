@@ -12,7 +12,7 @@ deeplabcut:
 With TensorFlow, all GPU memory is allocated to training by default, preventing
 other Tensorflow processes from being run on the same machine.
 
-A flexible solution to limiting memory usage is to call 
+A flexible solution to limiting memory usage is to call
 `deeplabcut.train(..., allow_growth=True)`, which dynamically grows the GPU memory
 region as it is needed. Another, stricter option is to explicitly cap GPU usage to only
 a fraction of the available memory. For example, allocating a maximum of 1/4 of the
@@ -58,7 +58,7 @@ best. Put 'all' in the snapshots section of the `config.yaml` to do this.
 ## What neural network should I use? (Trade offs, speed performance, and considerations)
 
 You always select the network type when you create a training data set: i.e., standard
-dlc: `deeplabcut.create_training_dataset(config, net_type=resnet_50)` , or maDLC: 
+dlc: `deeplabcut.create_training_dataset(config, net_type=resnet_50)` , or maDLC:
 `deeplabcut.create_multianimaltraining_dataset(config, net_type=dlcrnet_ms5)`. There is
 nothing else you should change.
 
@@ -90,7 +90,7 @@ other on the open-field dataset):
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1548558406678-S32H6T3M3U7BWVS4IGYD/ke17ZwdGBToddI8pDm48kD4CqqHoJgLzZVYacqX5G8QUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYy7Mythp_T-mtop-vrsUOmeInPi9iDjx9w8K4ZfjXt2dqTB9h4P9po3-YSCqzKkit0PccqviqYX7RTAdOBUgXwbCjLISwBs8eEdxAxTptZAUg/SupplFig2-01.png?format=1000w" width="80%">
 </p>
 
-This is also one of the main result figures, generated with ResNet-50. BLUE is 
+This is also one of the main result figures, generated with ResNet-50. BLUE is
 training - RED is testing - BLACK is our best human-level performance, and 10 pixels is
 the width - of the mouse nose -so anything under that is good performance for us on this
 task!
@@ -99,7 +99,7 @@ task!
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1547585317499-0QWTWL5KVPK8ZWINQ30U/ke17ZwdGBToddI8pDm48kH23KVWagbNOYpajbj_MQLNZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PI-4DGGLi3WdhIPQDa6khDzRWGU5SknjCO3Yd6rloU2Zw/ErrorvsTrainingsetSize.png?format=1000w" width="60%">
 </p>
 
-Here are also some speed stats for analyzing videos with ResNet-50, see 
+Here are also some speed stats for analyzing videos with ResNet-50, see
 https://www.biorxiv.org/content/early/2018/10/30/457242 for more details:
 
 <p align="center">
@@ -148,7 +148,7 @@ https://arxiv.org/abs/1905.11946) are an excellent choice if you want speed and
 performance. They do require more careful handling though! Especially for small
 datasets, you will need to tune the batch size and learning rates. So, we suggest these
 for more advanced users, or those willing to run experiments to find the best settings.
-Here is the speed comparison, and for performance see our latest work at: 
+Here is the speed comparison, and for performance see our latest work at:
 http://horse10.deeplabcut.org
 
 <p align="center">

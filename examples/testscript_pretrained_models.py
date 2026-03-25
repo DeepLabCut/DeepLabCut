@@ -8,16 +8,9 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""
-Testscript human network
+"""Testscript human network."""
 
-"""
 import os
-import subprocess
-from pathlib import Path
-
-import numpy as np
-import pandas as pd
 
 import deeplabcut
 
@@ -27,17 +20,14 @@ MODEL_NAME = "horse_sideview"  # full_human"
 
 basepath = os.path.dirname(os.path.abspath("testscript_tensorflow_single_animal.py"))
 videoname = "reachingvideo1"
-video = [
-    os.path.join(
-        basepath, "Reaching-Mackenzie-2018-08-30", "videos", videoname + ".avi"
-    )
-]
+video = [os.path.join(basepath, "Reaching-Mackenzie-2018-08-30", "videos", videoname + ".avi")]
 
 # legacy mode:
 """
 configfile, path_train_config=deeplabcut.create_pretrained_human_project(Task, YourName,video,
                                                                         videotype='avi', analyzevideo=True,
-                                                                        createlabeledvideo=True, copy_videos=False) #must leave copy_videos=True
+                                                                        createlabeledvideo=True, copy_videos=False)
+                                                                        #must leave copy_videos=True
 """
 # new way:
 configfile, path_train_config = deeplabcut.create_pretrained_project(

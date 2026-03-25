@@ -136,6 +136,12 @@ ENV/
 # mypy
 .mypy_cache/
 
+# Tools output
+tmp/*
+
+# Test data
+tests/data/*
+
 # Automated docs checks
 **/tmp/docs_nb_checks/
 

@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Types of tasks that can be run by DeepLabCut pose estimation models"""
+"""Types of tasks that can be run by DeepLabCut pose estimation models."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -22,7 +23,7 @@ class TaskDataMixin:
 
 
 class Task(TaskDataMixin, Enum):
-    """A task to solve"""
+    """A task to solve."""
 
     BOTTOM_UP = ("BU", "BottomUp"), "snapshot"
     DETECT = ("DT", "Detect"), "snapshot-detector"

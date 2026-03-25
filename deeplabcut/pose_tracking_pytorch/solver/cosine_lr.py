@@ -8,18 +8,19 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-""" Cosine Scheduler
+"""Cosine Scheduler.
 
 Cosine LR schedule with warmup, cycle/restarts, noise.
 
 Hacked together by / Copyright 2020 Ross Wightman
 """
+
 import logging
 import math
+
 import torch
 
 from .scheduler import Scheduler
-
 
 _logger = logging.getLogger(__name__)
 
@@ -78,9 +79,7 @@ class CosineLRScheduler(Scheduler):
         self.warmup_prefix = warmup_prefix
         self.t_in_epochs = t_in_epochs
         if self.warmup_t:
-            self.warmup_steps = [
-                (v - warmup_lr_init) / self.warmup_t for v in self.base_values
-            ]
+            self.warmup_steps = [(v - warmup_lr_init) / self.warmup_t for v in self.base_values]
             super().update_groups(self.warmup_lr_init)
         else:
             self.warmup_steps = [1 for _ in self.base_values]
@@ -93,9 +92,7 @@ class CosineLRScheduler(Scheduler):
                 t = t - self.warmup_t
 
             if self.t_mul != 1:
-                i = math.floor(
-                    math.log(1 - t / self.t_initial * (1 - self.t_mul), self.t_mul)
-                )
+                i = math.floor(math.log(1 - t / self.t_initial * (1 - self.t_mul), self.t_mul))
                 t_i = self.t_mul**i * self.t_initial
                 t_curr = t - (1 - self.t_mul**i) / (1 - self.t_mul) * self.t_initial
             else:
@@ -109,8 +106,7 @@ class CosineLRScheduler(Scheduler):
 
             if self.cycle_limit == 0 or (self.cycle_limit > 0 and i < self.cycle_limit):
                 lrs = [
-                    lr_min
-                    + 0.5 * (lr_max - lr_min) * (1 + math.cos(math.pi * t_curr / t_i))
+                    lr_min + 0.5 * (lr_max - lr_min) * (1 + math.cos(math.pi * t_curr / t_i))
                     for lr_max in lr_max_values
                 ]
             else:
@@ -137,8 +133,4 @@ class CosineLRScheduler(Scheduler):
         if self.t_mul == 1.0:
             return self.t_initial * cycles
         else:
-            return int(
-                math.floor(
-                    -self.t_initial * (self.t_mul**cycles - 1) / (1 - self.t_mul)
-                )
-            )
+            return int(math.floor(-self.t_initial * (self.t_mul**cycles - 1) / (1 - self.t_mul)))

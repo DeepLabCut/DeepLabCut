@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # DeepLabCut Toolbox (deeplabcut.org)
 # © A. & M.W. Mathis Labs
@@ -10,9 +9,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""
-
-This is a test script to compare the loaders and models. 
+"""This is a test script to compare the loaders and models.
 
 This script creates one identical splits for the openfield test dataset and trains it with imgaug (default), scalecrop
 and the tensorpack loader. We also compare 3 backbones (mobilenet, resnet, efficientnet)
@@ -52,15 +49,13 @@ effnet with tensorpack and scalecrop didn't converge.
 
 Notice: despite the higher RMSE for imgaug due to the augmentation,
 the network performs much better on the testvideo (see Neuron Primer: https://www.cell.com/neuron/pdf/S0896-6273(20)30717-0.pdf)
-
 """
-
 
 import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = str(0)
+
 import deeplabcut
-import numpy as np
 
 # Loading example data set
 path_config_file = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30/config.yaml")
@@ -82,9 +77,7 @@ Shuffles = deeplabcut.create_training_model_comparison(
 )
 
 for idx, shuffle in enumerate(Shuffles):
-    posefile, _, _ = deeplabcut.return_train_network_path(
-        path_config_file, shuffle=shuffle
-    )
+    posefile, _, _ = deeplabcut.return_train_network_path(path_config_file, shuffle=shuffle)
 
     # Setting specific parameters for training
     if idx % 3 == 0:  # imgaug
@@ -115,9 +108,7 @@ for shuffle in Shuffles:
 
     print("Analyze Video")
 
-    videofile_path = os.path.join(
-        os.getcwd(), "openfield-Pranav-2018-10-30", "videos", "m3v1mp4.mp4"
-    )
+    videofile_path = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30", "videos", "m3v1mp4.mp4")
 
     deeplabcut.analyze_videos(path_config_file, [videofile_path], shuffle=shuffle)
 

@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests for ShelfWriter / ShelfReader"""
+"""Tests for ShelfWriter / ShelfReader."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -29,7 +30,7 @@ POSE_CFG = {
 
 
 def _make_bodyparts(num_assemblies: int = 2, num_bpts: int = 3) -> np.ndarray:
-    """(num_assemblies, num_bpts, 3)  — x, y, score"""
+    """(num_assemblies, num_bpts, 3)  — x, y, score."""
     rng = np.random.default_rng(0)
     return rng.random((num_assemblies, num_bpts, 3)).astype(np.float32)
 
@@ -122,9 +123,7 @@ def test_metadata_nframes_updated_on_close(tmp_path):
 def test_unique_bodyparts_appended(tmp_path):
     num_assemblies, num_bpts, num_unique = 2, 3, 1
     bp = _make_bodyparts(num_assemblies, num_bpts)
-    ubp = np.random.default_rng(1).random((num_assemblies, num_unique, 3)).astype(
-        np.float32
-    )
+    ubp = np.random.default_rng(1).random((num_assemblies, num_unique, 3)).astype(np.float32)
 
     writer = ShelfWriter(POSE_CFG, tmp_path / "shelf", num_frames=5)
     writer.open()
@@ -145,9 +144,7 @@ def test_unique_bodyparts_appended(tmp_path):
 def test_identity_scores_stored(tmp_path):
     num_assemblies, num_bpts, num_individuals = 2, 3, 2
     bp = _make_bodyparts(num_assemblies, num_bpts)
-    ids = np.random.default_rng(2).random(
-        (num_assemblies, num_bpts, num_individuals)
-    ).astype(np.float32)
+    ids = np.random.default_rng(2).random((num_assemblies, num_bpts, num_individuals)).astype(np.float32)
 
     writer = ShelfWriter(POSE_CFG, tmp_path / "shelf", num_frames=5)
     writer.open()

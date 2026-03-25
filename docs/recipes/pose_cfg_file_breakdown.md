@@ -17,7 +17,7 @@ When you train, evaluate, and run inference with a neural network there are hype
 
 # 1. What is the *pose_cfg.yml* file?
 <a id="whatisposecfg"></a>
-- The `pose_cfg.yaml` file offers easy access to a range of training parameters that the user may want or have to adjust depending on the used dataset and task. 
+- The `pose_cfg.yaml` file offers easy access to a range of training parameters that the user may want or have to adjust depending on the used dataset and task.
 - You will find the file in the dlc-models > test and train sub-directories. There is also a button in the GUI to directly open this file.
 - This recipe is aimed at giving an average user an intuition on those hyperparameters and situations in which addressing them can be useful.
 
@@ -46,11 +46,11 @@ When you train, evaluate, and run inference with a neural network there are hype
 - [References](#references)
 
 <a id="hyperparam"></a>
-## 2.1 Training Hyperparameters 
+## 2.1 Training Hyperparameters
 
 <a id="input_size"></a>
 ### 2.1.A `max_input_size` and `min_input_size`
-The default values are `1500` and `64`, respectively. 
+The default values are `1500` and `64`, respectively.
 
 💡Pro-tip:💡
 - change `max_input_size` when the resolution of the video is higher than 1500x1500 or when `scale_jitter_up` will possibly go over that value
@@ -75,11 +75,11 @@ In both cases, you can increase the batchsize up to the limit of your GPU memory
 
 ___________________________________________________________________________________
 
-Values mentioned above and the augmentation parameters are often intuitive, and knowing our own data, we are able to decide on what will and won't be beneficial. Unfortunately, not all hyperparameters are this simple or intuitive. Two parameters that might require some tuning on challenging datasets are `pafwidth` and `pos_dist_thresh`. 
+Values mentioned above and the augmentation parameters are often intuitive, and knowing our own data, we are able to decide on what will and won't be beneficial. Unfortunately, not all hyperparameters are this simple or intuitive. Two parameters that might require some tuning on challenging datasets are `pafwidth` and `pos_dist_thresh`.
 
 <a id="pos"></a>
 ### 2.1.D `pos_dist_thresh`
-The default value is `17`. It's the size of a window within which detections are considered positive training samples, meaning they tell the model that it's going in the right direction. 
+The default value is `17`. It's the size of a window within which detections are considered positive training samples, meaning they tell the model that it's going in the right direction.
 
 <a id="paf"></a>
 ### 2.1.E `pafwidth`
@@ -89,7 +89,7 @@ The default value is `20`. PAF stands for part affinity fields. It is a method o
 ## 2.2 Data augmentation parameters
 In the simplest form, we can think of data augmentation as something similar to imagination or dreaming. Humans imagine different scenarios based on experience, ultimately allowing us to better understand our world. [2, 3, 4](#references)
 
-Similarly, we train our models to different types of "imagined" scenarios, which we limit to the foreseeable ones, so we ultimately get a robust model that can more likely handle new data and scenes. 
+Similarly, we train our models to different types of "imagined" scenarios, which we limit to the foreseeable ones, so we ultimately get a robust model that can more likely handle new data and scenes.
 
 Classes of data augmentations, characterized by their nature, are given by:
 - [**Geometric transformations**](#geometric)
@@ -133,7 +133,7 @@ During training, each image is randomly scaled within the range `[scale_jitter_l
 
 <a id="rot"></a>
 ### 2.1.2 `rotation`
-*Rotation augmentations* are done by rotating the image right or left on an axis between $1^{\circ}$ and $359^{\circ}$. The safety of rotation augmentations is heavily determined by the rotation degree parameter. Slight rotations such as between $+1^{\circ}$ and $+20^{\circ}$ or $-1^{\circ}$ to $-20^{\circ}$ is generally an acceptable range. Keep in mind that as the rotation degree increases, the precision of the label placement can decrease 
+*Rotation augmentations* are done by rotating the image right or left on an axis between $1^{\circ}$ and $359^{\circ}$. The safety of rotation augmentations is heavily determined by the rotation degree parameter. Slight rotations such as between $+1^{\circ}$ and $+20^{\circ}$ or $-1^{\circ}$ to $-20^{\circ}$ is generally an acceptable range. Keep in mind that as the rotation degree increases, the precision of the label placement can decrease
 
 The image below, retrieved from [2](#ref2), illustrates the difference between the different rotation degrees.
 
@@ -142,11 +142,11 @@ The image below, retrieved from [2](#ref2), illustrates the difference between t
 During training, each image is rotated $+/-$ the `rotation` degree parameter set. By default, this parameter is set to `25`, which means that the images are augmented with a $+25^{\circ}$ rotation of itself and a $-25^{\circ}$ degree rotation of itself. Should you want to opt out of this augmentation, set the rotation value to `False`.
 
 💡Pro-tips:💡
-- ⭐If you have labelled all the possible rotations of your animal/s, keeping the **default** value **unchanged** is **enough** ✅ 
+- ⭐If you have labelled all the possible rotations of your animal/s, keeping the **default** value **unchanged** is **enough** ✅
 
 - However, you may want to adjust this parameter if you want your model to:
-  - handle new data with new rotations of the animal subjects 
-  - handle the possibly unlabelled rotations of your minimally-labeled data 
+  - handle new data with new rotations of the animal subjects
+  - handle the possibly unlabelled rotations of your minimally-labeled data
   - But as a consequence, the more you increase the rotation degree, the more the original keypoint labels may not be preserved
 
 <a id="rotratio"></a>
@@ -154,7 +154,7 @@ During training, each image is rotated $+/-$ the `rotation` degree parameter set
 This parameter in the DLC module is given by the percentage of sampled data to be augmented from your training data. The default value is set to `0.4` or $40\%$. This means that there is a $40\%$ chance that images within the current batch will be rotated.
 
 💡Pro-tip:💡
-- ⭐ Generally, keeping the **default** value **unchanged** is **enough** ✅ 
+- ⭐ Generally, keeping the **default** value **unchanged** is **enough** ✅
 
 <a id="fliplr"></a>
 ### 2.2.4 `fliplr` (or a horizontal flip)
@@ -173,48 +173,48 @@ By default, this parameter is set to `False` especially on poses with mirror sym
 
 <a id ="crop_size"></a>
  ### 2.2.5 `crop_size`
- Cropping consists of removing unwanted pixels from the image, thus selecting a part of the image and discarding the rest, reducing the size of the input. 
+ Cropping consists of removing unwanted pixels from the image, thus selecting a part of the image and discarding the rest, reducing the size of the input.
 
  In DeepLabCut *pose_config.yaml* file, by default, `crop_size` is set to (`400,400`), width, and height, respectively. This means it will cut out parts of an image of this size.
 
  💡Pro-tip:💡
   - If your images are very large, you could consider increasing the crop size. However, be aware that you'll need a strong GPU, or you will hit memory errors!
-  - If your images are very small, you could consider decreasing the crop size. 
+  - If your images are very small, you could consider decreasing the crop size.
 
  <a id ="cropratio"></a>
  ### 2.2.6 `crop_ratio`
-  Also, the number of frames to be cropped is defined by the variable `cropratio`, which is set to `0.4` by default. That means that there is a $40\%$ the images within the current batch will be cropped. By default, this value works well. 
+  Also, the number of frames to be cropped is defined by the variable `cropratio`, which is set to `0.4` by default. That means that there is a $40\%$ the images within the current batch will be cropped. By default, this value works well.
 
   <a id ="max_shift"></a>
  ### 2.2.7 `max_shift`
 
   The crop shift between each cropped image is defined by `max_shift` variable, which explains the max relative shift to the position of the crop centre. By default is set to `0.4`, which means it will be displaced 40% max from the center to not apply identical cropping each time the same image is encountered during training - this is especially important for `density` and `hybrid` cropping methods.
 
- The image below is modified from 
- [2](#references). 
- 
+ The image below is modified from
+ [2](#references).
+
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1690471479692-R078RFZXIQ8K552OIOFP/cropping.png?format=750w">
 
  <a id ="crop_sampling"></a>
  ### 2.2.8 `crop_sampling`
- Likewise, there are different cropping sampling methods (`crop_sampling`), we can use depending on how our image looks like. 
+ Likewise, there are different cropping sampling methods (`crop_sampling`), we can use depending on how our image looks like.
 
  💡Pro-tips💡
- - For highly crowded scenes, `hybrid` and `density` approaches will work best. 
+ - For highly crowded scenes, `hybrid` and `density` approaches will work best.
  - `uniform` will take out random parts of the image, disregarding the annotations completely
  - 'keypoint' centers on a random keypoint and crops based on that location - might be best in preserving the whole animal (if reasonable `crop_size` is used)
 
  <a id ="kernel"></a>
- ### Kernel transformations 
+ ### Kernel transformations
  Kernel filters are very popular in image processing to sharpen and blur images. Intuitively, blurring an image might increase the motion blur resistance during testing. Otherwise, sharpening for data enhancement could result in capturing more detail on objects of interest.
 
  <a id ="sharp"></a>
  ### 2.2.9 `sharpening` and `sharpenratio`
- In DeepLabCut *pose_config.yaml* file, by default, `sharpening` is set to `False`, but if we want to use this type of data augmentation, we can set it `True` and specify a value for `sharpenratio`, which by default is set to `0.3`. Blurring is not defined in the *pose_config.yaml*, but if the user finds it convenient, it can be added to the data augmentation pipeline. 
+ In DeepLabCut *pose_config.yaml* file, by default, `sharpening` is set to `False`, but if we want to use this type of data augmentation, we can set it `True` and specify a value for `sharpenratio`, which by default is set to `0.3`. Blurring is not defined in the *pose_config.yaml*, but if the user finds it convenient, it can be added to the data augmentation pipeline.
 
- The image below is modified from 
- [2](#references). 
- 
+ The image below is modified from
+ [2](#references).
+
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1690471480991-HBZAYJP1FY0K8H2KB8DB/kernelfilter.png?format=1500w">
 
  <a id ="edge"></a>
@@ -222,7 +222,7 @@ By default, this parameter is set to `False` especially on poses with mirror sym
  Concerning sharpness, we have an additional parameter, `edge` enhancement, which enhances the edge contrast of an image to improve its apparent sharpness. Likewise, by default, this parameter is set `False`, but if you want to include it, you just need to set it `True`.
 
 
-# References 
+# References
  <ol id="references">
      <li id="ref1">Cao, Z., Simon, T., Wei, S. E., & Sheikh, Y. (2017). Realtime multi-person 2d pose estimation using part affinity fields. In Proceedings of the IEEE conference on Computer Vision and Pattern Recognition (pp. 7291-7299).<a href="https://openaccess.thecvf.com/content_cvpr_2017/html/Cao_Realtime_Multi-Person_2D_CVPR_2017_paper.html">https://openaccess.thecvf.com/content_cvpr_2017/html/Cao_Realtime_Multi-Person_2D_CVPR_2017_paper.html</a></li>
      <li id="ref2">Mathis, A., Schneider, S., Lauer, J., & Mathis, M. W. (2020). A Primer on Motion Capture with Deep Learning: Principles, Pitfalls, and Perspectives. In Neuron (Vol. 108, Issue 1, pp. 44-65). <a href="https://doi.org/10.1016/j.neuron.2020.09.017">https://doi.org/10.1016/j.neuron.2020.09.017</a></li>

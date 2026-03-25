@@ -12,7 +12,7 @@
 
 import json
 import os
-from typing import Container
+from collections.abc import Container
 from typing import Literal
 
 from deeplabcut.benchmark.base import Benchmark, Result, ResultCollection
@@ -38,9 +38,7 @@ def register(cls):
         not a subclass of ``benchmark.base.Benchmark``.
     """
     if not issubclass(cls, Benchmark):
-        raise ValueError(
-            f"Can only register subclasses of {type(Benchmark)}, " f"but got {cls}."
-        )
+        raise ValueError(f"Can only register subclasses of {type(Benchmark)}, but got {cls}.")
     __registry.append(cls)
 
 
@@ -85,11 +83,14 @@ def evaluate(
                 continue
         benchmark = benchmark_cls()
         for name in benchmark.names():
-            if Result(
-                code=benchmark.code,
-                method_name=name,
-                benchmark_name=benchmark_cls.name,
-            ) in results:
+            if (
+                Result(
+                    code=benchmark.code,
+                    method_name=name,
+                    benchmark_name=benchmark_cls.name,
+                )
+                in results
+            ):
                 continue
             else:
                 result = benchmark.evaluate(name, on_error=on_error)
@@ -106,14 +107,12 @@ def savecache(results: ResultCollection):
         json.dump(results.todicts(), fh, indent=2)
 
 
-def loadcache(
-    cache=CACHE, on_missing: Literal["raise", "ignore"] = "ignore"
-) -> ResultCollection:
+def loadcache(cache=CACHE, on_missing: Literal["raise", "ignore"] = "ignore") -> ResultCollection:
     if not os.path.exists(cache):
         if on_missing == "raise":
             raise FileNotFoundError(cache)
         return ResultCollection()
-    with open(cache, "r") as fh:
+    with open(cache) as fh:
         try:
             data = json.load(fh)
         except json.decoder.JSONDecodeError as e:
