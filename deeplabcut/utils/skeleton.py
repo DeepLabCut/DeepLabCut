@@ -29,22 +29,26 @@ from matplotlib.collections import LineCollection
 from matplotlib.path import Path
 from matplotlib.widgets import Button, LassoSelector
 from ruamel.yaml import YAML
-from scipy.spatial import cKDTree as KDTree
+from scipy.spatial import KDTree
 from skimage import io
 
 
+# NOTE @C-Achard 2026-03-26 duplicate config read/write functions
+# should be addressed in config refactor
 def read_config(configname):
     if not os.path.exists(configname):
         raise FileNotFoundError(
             f"Config {configname} is not found. Please make sure that the file exists."
         )
-    with open(configname) as file:
-        return YAML().load(file)
+    yaml = YAML(typ="rt")
+    with open(configname, encoding="utf-8") as file:
+        return yaml.load(file)
 
 
 def write_config(configname, cfg):
-    with open(configname, "w") as file:
-        YAML().dump(cfg, file)
+    yaml = YAML(typ="rt")
+    with open(configname, "w", encoding="utf-8") as file:
+        yaml.dump(cfg, file)
 
 
 class SkeletonBuilder:
@@ -159,18 +163,26 @@ class SkeletonBuilder:
             warnings.warn(
                 f"You didn't connect all the bodyparts (which is fine!). This is just a note to let you know."
             )
-        self.cfg["skeleton"] = [tuple(self.bpts[list(pair)]) for pair in self.inds]
+        # sort to ensure consistent order in config.yaml
+        self.cfg["skeleton"] = [
+            tuple(self.bpts[list(pair)]) for pair in sorted(self.inds)
+        ]
         write_config(self.config_path, self.cfg)
 
     def on_pick(self, event):
         if event.mouseevent.button == 3:
-            removed = event.artist.get_segments().pop(event.ind[0])
-            self.segs.remove(tuple(map(tuple, removed)))
-            self.inds.remove(tuple(self.tree.query(removed)[1]))
+            seg = tuple(map(tuple, event.artist.get_segments()[event.ind[0]]))
+            self.segs.discard(seg)
+
+            pair = tuple(sorted(self.tree.query(np.asarray(seg))[1]))
+            self.inds.discard(pair)
+
+            self.lines.set_segments(list(self.segs))
+            self.fig.canvas.draw_idle()
 
     def on_select(self, verts):
-        self.path = Path(verts)
-        self.verts = verts
+        # self.path = Path(verts)
+        # self.verts = verts
         inds = self.tree.query_ball_point(verts, 5)
         inds_unique = []
         for lst in inds:
