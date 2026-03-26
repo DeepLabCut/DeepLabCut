@@ -157,7 +157,14 @@ class SkeletonBuilder:
     def clear(self, *args):
         self.inds.clear()
         self.segs.clear()
-        self.lines.set_segments(self.segs)
+        self.lines.set_segments([])
+        self.fig.canvas.draw_idle()
+
+    def read_config(self, config_path):
+        return read_config(config_path)
+
+    def write_config(self, config_path, cfg):
+        write_config(config_path, cfg)
 
     def export(self, *args):
         inds_flat = set(ind for pair in self.inds for ind in pair)
@@ -170,7 +177,7 @@ class SkeletonBuilder:
         self.cfg["skeleton"] = [
             tuple(self.bpts[list(pair)]) for pair in sorted(self.inds)
         ]
-        write_config(self.config_path, self.cfg)
+        self.write_config(self.config_path, self.cfg)
 
     def on_pick(self, event):
         if event.mouseevent.button == 3:

@@ -579,6 +579,16 @@ class SkeletonBuilder(QtWidgets.QDialog, BaseSkeletonBuilder):
         self.lasso = LassoSelector(self.ax, onselect=self.on_select)
         self.canvas.draw_idle()
 
+    def read_config(self, config_path):
+        return auxiliaryfunctions.read_config(config_path)
+
+    def write_config(self, config_path, cfg):
+        # Normalize to plain lists before writing config.yaml
+        cfg = dict(cfg)
+        if "skeleton" in cfg:
+            cfg["skeleton"] = [list(pair) for pair in cfg["skeleton"]]
+        auxiliaryfunctions.write_config(config_path, cfg)
+
     def display(self):
         # No-op, the dialog is shown/exec'd by the caller
         pass
