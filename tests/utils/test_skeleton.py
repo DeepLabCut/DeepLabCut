@@ -125,6 +125,7 @@ def test_clear_resets_indices_segments_and_linecollection():
     builder.lines = LineCollection(
         [np.array([[0.0, 0.0], [10.0, 0.0]]), np.array([[10.0, 0.0], [20.0, 0.0]])]
     )
+    attach_fake_canvas(builder)
 
     builder.clear()
 
