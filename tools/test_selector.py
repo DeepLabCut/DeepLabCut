@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Deterministic, strictly validated test selector for DeepLabCut.
 
-Outputs orthogonal workflow lane selections plus structured test selections:
+Outputs orthogonal workflow mode selections plus structured test selections:
 
   - lanes: which workflow lanes should run (skip, docs, fast, full)
   - pytest_paths: JSON list of pytest path arguments
@@ -26,10 +26,10 @@ Intended usage in GitHub Actions
     python tools/test_selector.py --write-github-output --json
 
 This will write the following keys to $GITHUB_OUTPUT:
-    - run_skip (bool): whether to run the skip lane
-    - run_docs (bool): whether to run the docs lane
-    - run_fast (bool): whether to run the fast lane
-    - run_full (bool): whether to run the full lane
+    - run_skip (bool): whether to run the skip mode
+    - run_docs (bool): whether to run the docs workflow
+    - run_fast (bool): whether to run targeted test execution
+    - run_full (bool): whether to run the full matrix/full suite workflow
     - selected_workflows (list): list of selected workflow lanes
     - lane_reasons (dict): reasons for selecting each workflow lane
     - diff_mode (str): how the diff was determined
@@ -112,7 +112,7 @@ class LaneSelection(BaseModel):
 
     skip: bool = False  # Skip all tests (e.g. lint-only changes only)
     docs: bool = False  # Run docs build checks
-    fast: bool = False  # Run targeted pytest + optional functional scripts (single-lane)
+    fast: bool = False  # Run targeted pytest + optional functional scripts in test workflow
     full: bool = False  # Delegate to full test workflow/matrix
 
 
