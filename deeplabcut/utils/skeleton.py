@@ -105,25 +105,10 @@ class SkeletonBuilder:
             self.segs, colors=mcolors.to_rgba(self.cfg["skeleton_color"])
         )
         self.lines.set_picker(True)
-        self.show()
+        self.build_ui()
+        self.display()
 
-    def pick_labeled_frame(self):
-        # Find the most 'complete' animal
-        try:
-            count = self.df.groupby(level="individuals", axis=1).count()
-            if "single" in count:
-                count.drop("single", axis=1, inplace=True)
-        except KeyError:
-            count = self.df.count(axis=1).to_frame()
-        mask = count.where(count == count.values.max())
-        kept = mask.stack().index.to_list()
-        np.random.shuffle(kept)
-        picked = kept.pop()
-        row = picked[:-1]
-        col = picked[-1]
-        return row, col
-
-    def show(self):
+    def build_ui(self):
         self.fig = plt.figure()
         ax = self.fig.add_subplot(111)
         ax.axis("off")
@@ -149,7 +134,25 @@ class SkeletonBuilder:
         self.export_button = Button(ax_export, "Export")
         self.export_button.on_clicked(self.export)
         self.fig.canvas.mpl_connect("pick_event", self.on_pick)
+
+    def display(self):
         plt.show()
+
+    def pick_labeled_frame(self):
+        # Find the most 'complete' animal
+        if "individuals" in self.df.columns.names:
+            count = self.df.T.groupby(level="individuals").count().T
+            if "single" in count.columns:
+                count = count.drop(columns="single")
+        else:
+            count = self.df.count(axis=1).to_frame()
+        mask = count.where(count == count.to_numpy().max())
+        kept = mask.stack().index.to_list()
+        np.random.shuffle(kept)
+        picked = kept.pop()
+        row = picked[:-1]
+        col = picked[-1]
+        return row, col
 
     def clear(self, *args):
         self.inds.clear()
