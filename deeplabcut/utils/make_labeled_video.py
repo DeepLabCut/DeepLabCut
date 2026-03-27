@@ -174,8 +174,9 @@ def CreateVideo(
                 for i in range(n_bboxes):
                     bbox = bboxes[i]
                     x, y = bbox[0], bbox[1]
-                    x += x1
-                    y += y1
+                    if cropping and not displaycropped:
+                        x += x1
+                        y += y1
                     w, h = bbox[2], bbox[3]
                     if bbox_scores is not None and bbox_scores[i] < bboxes_pcutoff:
                         continue
@@ -1027,6 +1028,7 @@ def proc_video(
                     plot_bboxes=plot_bboxes,
                     bboxes_list=bboxes_list,
                     bboxes_pcutoff=bboxes_pcutoff,
+                    cropping=cropping,
                 )
 
             return True
@@ -1058,6 +1060,7 @@ def create_video(
     bboxes_list=None,
     bboxes_pcutoff=0.6,
     bboxes_color: tuple | None = None,
+    cropping: bool | None = None,
 ):
     if color_by not in ("bodypart", "individual"):
         raise ValueError("`color_by` should be either 'bodypart' or 'individual'.")
@@ -1075,7 +1078,10 @@ def create_video(
         fps=fps,
     )
 
-    cropping = bbox != (0, clip.w, 0, clip.h)
+    # If not specified whether to crop or not,
+    # infer from the bounding box size if cropping is needed.
+    if cropping is None:
+        cropping = bbox != (0, clip.w, 0, clip.h)
 
     x1, x2, y1, y2 = bbox if bbox is not None else (0, clip.w, 0, clip.h)
 
