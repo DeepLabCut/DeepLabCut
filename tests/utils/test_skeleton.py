@@ -1,5 +1,4 @@
 import warnings
-from pathlib import Path as SysPath
 from types import SimpleNamespace
 
 import matplotlib
@@ -14,7 +13,7 @@ from matplotlib.figure import Figure
 from scipy.spatial import KDTree
 
 from deeplabcut.utils import skeleton as skeleton_mod
-from deeplabcut.utils.skeleton import read_config, SkeletonBuilder, write_config
+from deeplabcut.utils.skeleton import SkeletonBuilder, write_config
 
 # ---------------------------------------------------------------------
 # Helpers
@@ -122,9 +121,7 @@ def test_clear_resets_indices_segments_and_linecollection():
         ((0.0, 0.0), (10.0, 0.0)),
         ((10.0, 0.0), (20.0, 0.0)),
     }
-    builder.lines = LineCollection(
-        [np.array([[0.0, 0.0], [10.0, 0.0]]), np.array([[10.0, 0.0], [20.0, 0.0]])]
-    )
+    builder.lines = LineCollection([np.array([[0.0, 0.0], [10.0, 0.0]]), np.array([[10.0, 0.0], [20.0, 0.0]])])
     attach_fake_canvas(builder)
 
     builder.clear()
@@ -347,9 +344,7 @@ def test_init_loads_dataframe_image_and_existing_skeleton(tmp_path, monkeypatch)
     h5_path = labeled_data / "CollectedData_TestScorer.h5"
     df.to_hdf(h5_path, key="df", mode="w")
 
-    monkeypatch.setattr(
-        skeleton_mod.io, "imread", lambda path: np.zeros((5, 5, 3), dtype=np.uint8)
-    )
+    monkeypatch.setattr(skeleton_mod.io, "imread", lambda path: np.zeros((5, 5, 3), dtype=np.uint8))
     monkeypatch.setattr(SkeletonBuilder, "build_ui", lambda self: None)
     monkeypatch.setattr(SkeletonBuilder, "display", lambda self: None)
     monkeypatch.setattr(np.random, "shuffle", lambda x: None)

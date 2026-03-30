@@ -10,23 +10,16 @@
 #
 import ast
 import os
-import warnings
 from queue import Queue
 
-import matplotlib.colors as mcolors
 import napari
 import numpy as np
-import pandas as pd
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
-from matplotlib.collections import LineCollection
 from matplotlib.figure import Figure
-from matplotlib.path import Path
 from matplotlib.widgets import Button, LassoSelector, RectangleSelector
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtGui import QAction, QCursor, QStandardItem, QStandardItemModel
-from scipy.spatial import cKDTree as KDTree
-from skimage import io
 
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter
@@ -434,9 +427,7 @@ class ConfigEditor(QtWidgets.QDialog):
     def __init__(self, config, parent=None):
         super().__init__(parent)
         self.config = config
-        if config.endswith("config.yaml") and not config.endswith(
-            "pytorch_config.yaml"
-        ):
+        if config.endswith("config.yaml") and not config.endswith("pytorch_config.yaml"):
             self.read_func = auxiliaryfunctions.read_config
             self.write_func = auxiliaryfunctions.write_config
         else:

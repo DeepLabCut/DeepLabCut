@@ -26,7 +26,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.collections import LineCollection
-from matplotlib.path import Path
 from matplotlib.widgets import Button, LassoSelector
 from ruamel.yaml import YAML
 from scipy.spatial import KDTree
@@ -37,9 +36,7 @@ from skimage import io
 # should be addressed in config refactor
 def read_config(configname):
     if not os.path.exists(configname):
-        raise FileNotFoundError(
-            f"Config {configname} is not found. Please make sure that the file exists."
-        )
+        raise FileNotFoundError(f"Config {configname} is not found. Please make sure that the file exists.")
     yaml = YAML(typ="rt")
     with open(configname, encoding="utf-8") as file:
         return yaml.load(file)
@@ -170,9 +167,7 @@ class SkeletonBuilder:
                 stacklevel=2,
             )
         # sort to ensure consistent order in config.yaml
-        self.cfg["skeleton"] = [
-            tuple(self.bpts[list(pair)]) for pair in sorted(self.inds)
-        ]
+        self.cfg["skeleton"] = [tuple(self.bpts[list(pair)]) for pair in sorted(self.inds)]
         self.write_config(self.config_path, self.cfg)
 
     def on_pick(self, event):
