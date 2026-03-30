@@ -35,7 +35,7 @@ tested **TensorFlow versions 1.0 to 1.15, and 2.0 to 2.12 (2.10 for Windows)**; 
 recommend TF2.12 for MacOS/Ubuntu and 2.10 for Windows) for Python 3.10 with GPU
 support.
 
-To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see: 
+To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see:
 [Mathis & Warren](https://www.biorxiv.org/content/early/2018/10/30/457242)). However, this is the preferred path if you want to test
 DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of
 a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for
@@ -44,5 +44,5 @@ testing.
 Docker: We highly recommend advanced users use the supplied [Docker container](
 docker-containers).
 
-NOTE: [Currently GPU support in Docker Desktop is only available on Windows with the 
+NOTE: [Currently GPU support in Docker Desktop is only available on Windows with the
 WSL2 backend.](https://docs.docker.com/desktop/features/gpu/)

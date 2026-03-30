@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=0404b0d7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=d0fcb2aa" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -51,7 +51,7 @@
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../../_static/togglebutton.js?v=1ae7504c"></script>
+    <script src="../../_static/togglebutton.js?v=b8b12719"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
@@ -600,21 +600,22 @@ document.write(`
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download our demo project:</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">BytesIO</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">zipfile</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZipFile</span>
 
-<span class="n">url_record</span> <span class="o">=</span> <span class="s1">&#39;https://zenodo.org/api/records/7883589&#39;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+
+<span class="n">url_record</span> <span class="o">=</span> <span class="s2">&quot;https://zenodo.org/api/records/7883589&quot;</span>
 <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url_record</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
-    <span class="n">file</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;files&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="n">file</span><span class="p">[</span><span class="s1">&#39;key&#39;</span><span class="p">]</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;files&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">file</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">]</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">file</span><span class="p">[</span><span class="s1">&#39;links&#39;</span><span class="p">][</span><span class="s1">&#39;self&#39;</span><span class="p">],</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">file</span><span class="p">[</span><span class="s2">&quot;links&quot;</span><span class="p">][</span><span class="s2">&quot;self&quot;</span><span class="p">],</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">r</span><span class="p">:</span>
         <span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="p">))</span> <span class="k">as</span> <span class="n">zf</span><span class="p">:</span>
-            <span class="n">zf</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;/content&#39;</span><span class="p">)</span>
+            <span class="n">zf</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;/content&quot;</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The URL </span><span class="si">{</span><span class="n">url_record</span><span class="si">}</span><span class="s1"> could not be reached.&#39;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The URL </span><span class="si">{</span><span class="n">url_record</span><span class="si">}</span><span class="s2"> could not be reached.&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -624,14 +625,15 @@ document.write(`
 <h2>Analyze a novel 3 mouse video with our maDLC DLCRNet, pretrained on 3 mice data (i.e., here you extract detections and association costs):<a class="headerlink" href="#analyze-a-novel-3-mouse-video-with-our-madlc-dlcrnet-pretrained-on-3-mice-data-i-e-here-you-extract-detections-and-association-costs" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dlc</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dlc</span>
 
 <span class="n">project_path</span> <span class="o">=</span> <span class="s2">&quot;/content/demo-me-2021-07-14&quot;</span>
 <span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="s2">&quot;config.yaml&quot;</span><span class="p">)</span>
 <span class="n">video</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_path</span><span class="p">,</span> <span class="s2">&quot;videos&quot;</span><span class="p">,</span> <span class="s2">&quot;videocompressed1.mp4&quot;</span><span class="p">)</span>
 
-<span class="n">dlc</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span><span class="n">config_path</span><span class="p">,[</span><span class="n">video</span><span class="p">],</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">,</span><span class="n">auto_track</span><span class="o">=</span><span class="kc">False</span> <span class="p">)</span>
+<span class="n">dlc</span><span class="o">.</span><span class="n">analyze_videos</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="n">video</span><span class="p">],</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">,</span> <span class="n">auto_track</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -646,10 +648,14 @@ document.write(`
 <span class="n">dlc</span><span class="o">.</span><span class="n">convert_detections2tracklets</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="p">[</span><span class="n">video</span><span class="p">],</span>
-    <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;mp4&#39;</span><span class="p">,</span>
+    <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">,</span>
     <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">track_method</span><span class="o">=</span><span class="n">TRACK_METHOD</span><span class="p">,</span>
-    <span class="n">ignore_bodyparts</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;tail1&quot;</span><span class="p">,</span> <span class="s2">&quot;tail2&quot;</span><span class="p">,</span> <span class="s2">&quot;tailend&quot;</span><span class="p">],</span>  <span class="c1"># Some body parts can optionally be ignored during tracking for better assembly (but they are used later)</span>
+    <span class="n">ignore_bodyparts</span><span class="o">=</span><span class="p">[</span>
+        <span class="s2">&quot;tail1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tail2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tailend&quot;</span><span class="p">,</span>
+    <span class="p">],</span>  <span class="c1"># Some body parts can optionally be ignored during tracking for better assembly (but they are used later)</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -663,7 +669,7 @@ document.write(`
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dlc</span><span class="o">.</span><span class="n">stitch_tracklets</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="p">[</span><span class="n">video</span><span class="p">],</span>
-    <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;mp4&#39;</span><span class="p">,</span>
+    <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">,</span>
     <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">track_method</span><span class="o">=</span><span class="n">TRACK_METHOD</span><span class="p">,</span>
     <span class="n">n_tracks</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
@@ -677,17 +683,13 @@ document.write(`
 <h2>Create a pretty video output:<a class="headerlink" href="#create-a-pretty-video-output" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#Filter the predictions to remove small jitter, if desired:</span>
-<span class="n">dlc</span><span class="o">.</span><span class="n">filterpredictions</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> 
-                                 <span class="p">[</span><span class="n">video</span><span class="p">],</span> 
-                                 <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                                 <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;mp4&#39;</span><span class="p">,</span> 
-                                 <span class="n">track_method</span> <span class="o">=</span> <span class="n">TRACK_METHOD</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Filter the predictions to remove small jitter, if desired:</span>
+<span class="n">dlc</span><span class="o">.</span><span class="n">filterpredictions</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="n">video</span><span class="p">],</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">,</span> <span class="n">track_method</span><span class="o">=</span><span class="n">TRACK_METHOD</span><span class="p">)</span>
 
 <span class="n">dlc</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span>
     <span class="n">config_path</span><span class="p">,</span>
     <span class="p">[</span><span class="n">video</span><span class="p">],</span>
-    <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;mp4&#39;</span><span class="p">,</span>
+    <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">,</span>
     <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">color_by</span><span class="o">=</span><span class="s2">&quot;individual&quot;</span><span class="p">,</span>
     <span class="n">keypoints_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -708,7 +710,7 @@ document.write(`
 </div></blockquote>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dlc</span><span class="o">.</span><span class="n">plot_trajectories</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="n">video</span><span class="p">],</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;mp4&#39;</span><span class="p">,</span> <span class="n">track_method</span><span class="o">=</span><span class="n">TRACK_METHOD</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dlc</span><span class="o">.</span><span class="n">plot_trajectories</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="n">video</span><span class="p">],</span> <span class="n">shuffle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">,</span> <span class="n">track_method</span><span class="o">=</span><span class="n">TRACK_METHOD</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=0404b0d7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=d0fcb2aa" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -51,7 +51,7 @@
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../../_static/togglebutton.js?v=1ae7504c"></script>
+    <script src="../../_static/togglebutton.js?v=b8b12719"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
@@ -594,7 +594,7 @@ or inference</p></li>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">data</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">bbox_margin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
 <span class="w">  </span><span class="nt">colormode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RGB</span><span class="w">  </span><span class="c1"># should never be changed</span>
-<span class="w">  </span><span class="nt">inference</span><span class="p">:</span><span class="w">  </span><span class="c1"># the augmentations to apply to images during inference </span>
+<span class="w">  </span><span class="nt">inference</span><span class="p">:</span><span class="w">  </span><span class="c1"># the augmentations to apply to images during inference</span>
 <span class="w">    </span><span class="nt">normalize_images</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># this should always be set to true</span>
 <span class="w">  </span><span class="nt">train</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">affine</span><span class="p">:</span>
@@ -605,7 +605,7 @@ or inference</p></li>
 <span class="w">    </span><span class="nt">covering</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">crop_sampling</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">width</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">448</span><span class="w">   </span><span class="c1"># if your images are very small or very large, you may need to edit!</span>
-<span class="w">      </span><span class="nt">height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">448</span><span class="w">  </span><span class="c1"># see below for more information about crop_sampling! </span>
+<span class="w">      </span><span class="nt">height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">448</span><span class="w">  </span><span class="c1"># see below for more information about crop_sampling!</span>
 <span class="w">      </span><span class="nt">max_shift</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span>
 <span class="w">      </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hybrid</span>
 <span class="w">    </span><span class="nt">gaussian_noise</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">12.75</span>
@@ -659,7 +659,7 @@ right hand, and vice versa). This augmentation should not be used for pose model
 have symmetric keypoints! However, it is safe to use it to train detectors. If you want
 to use horizontal flips with symmetric keypoints, you need to specify them through the
 <code class="docutils literal notranslate"><span class="pre">symmetries</span></code> parameter!</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># augmentation for object detectors or when no symmetric (left/right) keypoints exist: </span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># augmentation for object detectors or when no symmetric (left/right) keypoints exist:</span>
 <span class="nt">hflip</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 
 <span class="c1"># augmentation if your bodyparts are [snout, eye_L, eye_R, ear_L, ear_R]</span>
@@ -716,10 +716,10 @@ keypoints. The methods to sample the center of the crop are as follows:</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">hybrid</span></code>: alternating randomly between <code class="docutils literal notranslate"><span class="pre">uniform</span></code> and <code class="docutils literal notranslate"><span class="pre">density</span></code></p></li>
 </ul>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">crop_sampling</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">400</span><span class="w">  </span><span class="c1"># int: the height of the crop </span>
-<span class="w">  </span><span class="nt">width</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">400</span><span class="w">  </span><span class="c1"># int: the height of the crop </span>
+<span class="w">  </span><span class="nt">height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">400</span><span class="w">  </span><span class="c1"># int: the height of the crop</span>
+<span class="w">  </span><span class="nt">width</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">400</span><span class="w">  </span><span class="c1"># int: the height of the crop</span>
 <span class="w">  </span><span class="nt">max_shift</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.4</span><span class="w">  </span><span class="c1"># float: maximum allowed shift of the cropping center position as a fraction of the crop size.</span>
-<span class="w">  </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hybrid</span><span class="w"> </span><span class="c1"># str: the center sampling method (one of &#39;uniform&#39;, &#39;keypoints&#39;, &#39;density&#39;, &#39;hybrid&#39;) </span>
+<span class="w">  </span><span class="nt">method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hybrid</span><span class="w"> </span><span class="c1"># str: the center sampling method (one of &#39;uniform&#39;, &#39;keypoints&#39;, &#39;density&#39;, &#39;hybrid&#39;)</span>
 </pre></div>
 </div>
 <p><strong>Collate</strong>: Defines how images are collated into batches. The default way collate
@@ -739,15 +739,15 @@ are the smallest size such that the target size fits entirely in the image.</p><
 <span class="w">  </span><span class="nt">max_shift</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span><span class="w">  </span><span class="c1"># the maximum shift, in pixels, to add to the random crop (this means</span>
 <span class="w">    </span><span class="c1"># there can be a slight border around the image)</span>
 <span class="w">  </span><span class="nt">max_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1024</span><span class="w">  </span><span class="c1">#  the maximum size of the long edge of the image when resized. If the</span>
-<span class="w">    </span><span class="c1"># longest side will be greater than this value, resizes such that the longest side </span>
-<span class="w">    </span><span class="c1"># is this size, and the shortest side is smaller than the desired size. This is </span>
+<span class="w">    </span><span class="c1"># longest side will be greater than this value, resizes such that the longest side</span>
+<span class="w">    </span><span class="c1"># is this size, and the shortest side is smaller than the desired size. This is</span>
 <span class="w">    </span><span class="c1"># useful to keep some information from images with extreme aspect ratios.</span>
 <span class="w">  </span><span class="nt">min_scale</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.4</span><span class="w">  </span><span class="c1"># the minimum scale to resize the image with</span>
 <span class="w">  </span><span class="nt">max_scale</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span><span class="w">  </span><span class="c1"># the maximum scale to resize the image with</span>
 <span class="w">  </span><span class="nt">min_short_side</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">128</span><span class="w">  </span><span class="c1"># the minimum size of the target short side</span>
 <span class="w">  </span><span class="nt">max_short_side</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1152</span><span class="w">  </span><span class="c1"># the maximum size of the target short side</span>
 <span class="w">  </span><span class="nt">multiple_of</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span><span class="w">  </span><span class="c1"># pads the target height, width such that they are multiples of 32</span>
-<span class="w">  </span><span class="nt">to_square</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># instead of using the aspect ratio of the first image, only the </span>
+<span class="w">  </span><span class="nt">to_square</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># instead of using the aspect ratio of the first image, only the</span>
 <span class="w">    </span><span class="c1"># short side of the first image will be used to sample a &quot;side&quot;, and the images will</span>
 <span class="w">    </span><span class="c1"># be cropped in squares</span>
 </pre></div>
@@ -803,7 +803,7 @@ in the configuration.</p>
 <span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HRNet</span>
 <span class="w">    </span><span class="nt">model_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hrnet_w32</span><span class="w">  </span><span class="c1"># creates an HRNet W32</span>
 <span class="w">    </span><span class="nt">pretrained</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># the backbone weights for training will be loaded from TIMM (pre-trained on ImageNet)</span>
-<span class="w">    </span><span class="nt">interpolate_branches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># don&#39;t interpolate &amp; concatenate channels from all branches </span>
+<span class="w">    </span><span class="nt">interpolate_branches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># don&#39;t interpolate &amp; concatenate channels from all branches</span>
 <span class="w">    </span><span class="nt">increased_channel_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># use the incre_modules defined in the TIMM HRNet</span>
 <span class="w">  </span><span class="nt">backbone_output_channels</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">128</span><span class="w">  </span><span class="c1"># number of channels output by the backbone</span>
 </pre></div>
@@ -826,7 +826,7 @@ models <strong>it is not recommended to change the optimizer or scheduler</stron
 <span class="w">  </span><span class="nt">load_scheduler_state_dict</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true/false</span><span class="w"> </span><span class="c1"># whether to load scheduler state when resuming training from a snapshot,</span>
 <span class="w">  </span><span class="nt">snapshots</span><span class="p">:</span><span class="w">  </span><span class="c1"># parameters for the TorchSnapshotManager</span>
 <span class="w">    </span><span class="nt">max_snapshots</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">  </span><span class="c1"># the maximum number of snapshots to save (the &quot;best&quot; model does not count as one of them)</span>
-<span class="w">    </span><span class="nt">save_epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">25</span><span class="w">  </span><span class="c1"># the interval between each snapshot save  </span>
+<span class="w">    </span><span class="nt">save_epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">25</span><span class="w">  </span><span class="c1"># the interval between each snapshot save</span>
 <span class="w">    </span><span class="nt">save_optimizer_state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># whether the optimizer state should be saved with the model snapshots (very little reason to set to true)</span>
 <span class="w">  </span><span class="nt">gpus</span><span class="p">:</span><span class="w"> </span><span class="c1"># GPUs to use to train the network</span>
 <span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
@@ -926,7 +926,7 @@ will use multi-process data loading. You should always keep
 <code class="docutils literal notranslate"><span class="pre">dataloader_pin_memory:</span> <span class="pre">true</span></code> when training on an NVIDIA GPU.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">train_settings</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">  </span><span class="c1"># the batch size used for training</span>
-<span class="w">  </span><span class="nt">dataloader_workers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">  </span><span class="c1"># the number of workers for the PyTorch Dataloader </span>
+<span class="w">  </span><span class="nt">dataloader_workers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">  </span><span class="c1"># the number of workers for the PyTorch Dataloader</span>
 <span class="w">  </span><span class="nt">dataloader_pin_memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># pin DataLoader memory</span>
 <span class="w">  </span><span class="nt">display_iters</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">500</span><span class="w">  </span><span class="c1"># the number of iterations (steps) between each log print</span>
 <span class="w">  </span><span class="nt">epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">200</span><span class="w">  </span><span class="c1"># the maximum number of epochs for which to train the model</span>

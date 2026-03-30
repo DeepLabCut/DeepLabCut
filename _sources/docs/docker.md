@@ -16,8 +16,8 @@ running Jupyter notebooks with DeepLabCut pre-installed are shipped with the pro
 Docker images.
 
 The [`napari-deeplabcut` labelling GUI](
-https://deeplabcut.github.io/DeepLabCut/docs/gui/napari_GUI.html) can be used to label 
-your data, but it cannot be run in a Docker container: it should be installed as 
+https://deeplabcut.github.io/DeepLabCut/docs/gui/napari_GUI.html) can be used to label
+your data, but it cannot be run in a Docker container: it should be installed as
 documented in the link above: `pip install napari-deeplabcut` (checkout the [workflow](
 https://deeplabcut.github.io/DeepLabCut/docs/gui/napari_GUI.html#workflow) as well!).
 
@@ -46,7 +46,7 @@ If you want to mount the whole directory could e.g., pass*
 If read-only access is enough, `deeplabcut-docker bash -v /home/mackenzie/DEEPLABCUT:/home/mackenzie/DEEPLABCUT:ro`
 
 
-### Terminal mode 
+### Terminal mode
 
 You can run the light version of DeepLabCut and open a terminal by running
 
@@ -54,7 +54,7 @@ You can run the light version of DeepLabCut and open a terminal by running
 $ deeplabcut-docker bash
 ```
 
-**Important:** if have GPUs on your machine and want to use them to train models, you 
+**Important:** if have GPUs on your machine and want to use them to train models, you
 need to pass the `--gpus all` argument to `deeplabcut-docker`:
 
 ``` bash
@@ -73,7 +73,7 @@ $ ipython
 You can run DeepLabCut by starting a jupyter notebook server. The corresponding image can be pulled and started by running
 
 ``` bash
-$ deeplabcut-docker notebook 
+$ deeplabcut-docker notebook
 ```
 
 which will start a Jupyter notebook server. Follow the terminal instructions to open the notebook, by entering `http://127.0.0.1:8888` in your favorite browser. When prompted for a password, use `deeplabcut`, which is the pre-set option in the container.
@@ -87,20 +87,20 @@ Advanced users and developers can visit the [`/docker` subdirectory](https://git
 ## Prerequisites (if you don't have Docker installed already)
 
 **(1)** Install Docker. See https://docs.docker.com/install/ & for Ubuntu: https://docs.docker.com/install/linux/docker-ce/ubuntu/
-Test docker: 
+Test docker:
 
     $ sudo docker run hello-world
-    
+
  The output should be: ``Hello from Docker! This message shows that your installation appears to be working correctly.``
 
-*if you get the error ``docker: Error response from daemon: Unknown runtime specified nvidia.`` just simply restart docker: 
-  
+*if you get the error ``docker: Error response from daemon: Unknown runtime specified nvidia.`` just simply restart docker:
+
        $ sudo systemctl daemon-reload
        $ sudo systemctl restart docker
 
-    
+
 **(2)** Add your user to the docker group (https://docs.docker.com/install/linux/linux-postinstall/#manage-docker-as-a-non-root-user)
-Quick guide  to create the docker group and add your user: 
+Quick guide  to create the docker group and add your user:
 Create the docker group.
 
     $ sudo groupadd docker

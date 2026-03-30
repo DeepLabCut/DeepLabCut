@@ -221,7 +221,7 @@ video filename must contain this naming, i.e. this could be named as `rig-1-mous
 `rig-1-mouse-day1-camera-2-date.avi`.
 
 - **Note** that to correctly pair the videos, the file names otherwise need to be the same!
-- If helpful, [here is the software we use to record videos](https://github.com/AdaptiveMotorControlLab/Camera_Control).  
+- If helpful, [here is the software we use to record videos](https://github.com/AdaptiveMotorControlLab/Camera_Control).
 
 (**CRITICAL!**) You must also edit the **3D project config.yaml** file to denote which DeepLabCut projects have the
 information for the 2D views.

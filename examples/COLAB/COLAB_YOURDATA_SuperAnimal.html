@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=0404b0d7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=d0fcb2aa" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -51,7 +51,7 @@
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../../_static/togglebutton.js?v=1ae7504c"></script>
+    <script src="../../_static/togglebutton.js?v=b8b12719"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
@@ -625,15 +625,15 @@ document.write(`
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut.utils.auxiliaryfunctions</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">auxiliaryfunctions</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.pose_estimation_pytorch.apis</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">superanimal_analyze_images</span><span class="p">,</span>
-<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.modelzoo</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_weight_init</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.modelzoo.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">create_conversion_table</span><span class="p">,</span>
     <span class="n">read_conversion_table_from_csv</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.modelzoo.video_inference</span><span class="w"> </span><span class="kn">import</span> <span class="n">video_inference_superanimal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.pose_estimation_pytorch.apis</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">superanimal_analyze_images</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">deeplabcut.utils.pseudo_label</span><span class="w"> </span><span class="kn">import</span> <span class="n">keypoint_matching</span>
 </pre></div>
 </div>
@@ -677,9 +677,11 @@ In this section, we show how to use SuperAnimal models to predict pose from imag
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># @markdown ---</span>
 <span class="c1"># @markdown SuperAnimal Configurations</span>
-<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">&quot;superanimal_topviewmouse&quot;</span> <span class="c1">#@param [&quot;superanimal_topviewmouse&quot;, &quot;superanimal_quadruped&quot;]</span>
-<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;hrnet_w32&quot;</span> <span class="c1">#@param [&quot;hrnet_w32&quot;, &quot;resnet_50&quot;]</span>
-<span class="n">detector_name</span> <span class="o">=</span> <span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span> <span class="c1">#@param [&quot;fasterrcnn_resnet50_fpn_v2&quot;, &quot;fasterrcnn_mobilenet_v3_large_fpn&quot;]</span>
+<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">&quot;superanimal_topviewmouse&quot;</span>  <span class="c1"># @param [&quot;superanimal_topviewmouse&quot;, &quot;superanimal_quadruped&quot;]</span>
+<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;hrnet_w32&quot;</span>  <span class="c1"># @param [&quot;hrnet_w32&quot;, &quot;resnet_50&quot;]</span>
+<span class="n">detector_name</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span>  <span class="c1"># @param [&quot;fasterrcnn_resnet50_fpn_v2&quot;, &quot;fasterrcnn_mobilenet_v3_large_fpn&quot;]</span>
+<span class="p">)</span>
 
 <span class="c1"># @markdown ---</span>
 <span class="c1"># @markdown What is the maximum number of animals you expect to have in an image</span>
@@ -735,9 +737,11 @@ In this section, we show how to use SuperAnimal models to predict pose from imag
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># @markdown ---</span>
 <span class="c1"># @markdown SuperAnimal Configurations</span>
-<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">&quot;superanimal_topviewmouse&quot;</span> <span class="c1">#@param [&quot;superanimal_topviewmouse&quot;, &quot;superanimal_quadruped&quot;]</span>
-<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;hrnet_w32&quot;</span> <span class="c1">#@param [&quot;hrnet_w32&quot;, &quot;resnet_50&quot;]</span>
-<span class="n">detector_name</span> <span class="o">=</span> <span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span> <span class="c1">#@param [&quot;fasterrcnn_resnet50_fpn_v2&quot;, &quot;fasterrcnn_mobilenet_v3_large_fpn&quot;]</span>
+<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">&quot;superanimal_topviewmouse&quot;</span>  <span class="c1"># @param [&quot;superanimal_topviewmouse&quot;, &quot;superanimal_quadruped&quot;]</span>
+<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;hrnet_w32&quot;</span>  <span class="c1"># @param [&quot;hrnet_w32&quot;, &quot;resnet_50&quot;]</span>
+<span class="n">detector_name</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span>  <span class="c1"># @param [&quot;fasterrcnn_resnet50_fpn_v2&quot;, &quot;fasterrcnn_mobilenet_v3_large_fpn&quot;]</span>
+<span class="p">)</span>
 
 <span class="c1"># @markdown ---</span>
 <span class="c1"># @markdown What is the maximum number of animals you expect to have in an image</span>
@@ -782,7 +786,7 @@ In this section, we show how to use SuperAnimal models to predict pose from imag
     <span class="n">bbox_threshold</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
     <span class="n">detector_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">pose_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">dest_folder</span><span class="o">=</span><span class="s2">&quot;/content/&quot;</span>
+    <span class="n">dest_folder</span><span class="o">=</span><span class="s2">&quot;/content/&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -811,7 +815,8 @@ You can compare the evaluation results and get a sense of each baseline. We have
 <span class="c1"># authorization instructions:</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">google.colab</span><span class="w"> </span><span class="kn">import</span> <span class="n">drive</span>
-<span class="n">drive</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s1">&#39;/content/drive&#39;</span><span class="p">)</span>
+
+<span class="n">drive</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s2">&quot;/content/drive&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -833,9 +838,11 @@ You can compare the evaluation results and get a sense of each baseline. We have
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># @markdown ---</span>
 <span class="c1"># @markdown SuperAnimal Configurations</span>
-<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">&quot;superanimal_topviewmouse&quot;</span> <span class="c1">#@param [&quot;superanimal_topviewmouse&quot;, &quot;superanimal_quadruped&quot;]</span>
-<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;hrnet_w32&quot;</span> <span class="c1">#@param [&quot;hrnet_w32&quot;, &quot;resnet_50&quot;]</span>
-<span class="n">detector_name</span> <span class="o">=</span> <span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span> <span class="c1">#@param [&quot;fasterrcnn_resnet50_fpn_v2&quot;, &quot;fasterrcnn_mobilenet_v3_large_fpn&quot;]</span>
+<span class="n">superanimal_name</span> <span class="o">=</span> <span class="s2">&quot;superanimal_topviewmouse&quot;</span>  <span class="c1"># @param [&quot;superanimal_topviewmouse&quot;, &quot;superanimal_quadruped&quot;]</span>
+<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;hrnet_w32&quot;</span>  <span class="c1"># @param [&quot;hrnet_w32&quot;, &quot;resnet_50&quot;]</span>
+<span class="n">detector_name</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;fasterrcnn_resnet50_fpn_v2&quot;</span>  <span class="c1"># @param [&quot;fasterrcnn_resnet50_fpn_v2&quot;, &quot;fasterrcnn_mobilenet_v3_large_fpn&quot;]</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -933,7 +940,7 @@ model, a paradigm adopted from previous task-agnostic transfer learning.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">weight_init</span> <span class="o">=</span> <span class="n">build_weight_init</span><span class="p">(</span>
-    <span class="n">cfg</span><span class="o">=</span><span class="n">auxiliaryfunctions</span><span class="o">.</span><span class="n">read_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">),</span> 
+    <span class="n">cfg</span><span class="o">=</span><span class="n">auxiliaryfunctions</span><span class="o">.</span><span class="n">read_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">),</span>
     <span class="n">super_animal</span><span class="o">=</span><span class="n">superanimal_name</span><span class="p">,</span>
     <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
     <span class="n">detector_name</span><span class="o">=</span><span class="n">detector_name</span><span class="p">,</span>
@@ -1023,7 +1030,7 @@ of the model, especially for zero-shot. In the case where, e.g., the annotation 
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">confusion_matrix_image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">confusion_matrix_path</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">confusion_matrix_image</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>  <span class="c1"># Hide the axes for better view</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>  <span class="c1"># Hide the axes for better view</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -1061,9 +1068,7 @@ of the model, especially for zero-shot. In the case where, e.g., the annotation 
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">create_conversion_table</span><span class="p">(</span>
     <span class="n">config</span><span class="o">=</span><span class="n">config_path</span><span class="p">,</span>
     <span class="n">super_animal</span><span class="o">=</span><span class="n">superanimal_name</span><span class="p">,</span>
-    <span class="n">project_to_super_animal</span><span class="o">=</span><span class="n">read_conversion_table_from_csv</span><span class="p">(</span>
-        <span class="n">conversion_table_path</span>
-    <span class="p">),</span>
+    <span class="n">project_to_super_animal</span><span class="o">=</span><span class="n">read_conversion_table_from_csv</span><span class="p">(</span><span class="n">conversion_table_path</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -1076,7 +1081,7 @@ of the model, especially for zero-shot. In the case where, e.g., the annotation 
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">weight_init</span> <span class="o">=</span> <span class="n">build_weight_init</span><span class="p">(</span>
-    <span class="n">cfg</span><span class="o">=</span><span class="n">auxiliaryfunctions</span><span class="o">.</span><span class="n">read_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">),</span> 
+    <span class="n">cfg</span><span class="o">=</span><span class="n">auxiliaryfunctions</span><span class="o">.</span><span class="n">read_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">),</span>
     <span class="n">super_animal</span><span class="o">=</span><span class="n">superanimal_name</span><span class="p">,</span>
     <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
     <span class="n">detector_name</span><span class="o">=</span><span class="n">detector_name</span><span class="p">,</span>
@@ -1155,7 +1160,7 @@ set to 1, memory replay fine-tuning becomes naive-fine-tuning.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">weight_init</span> <span class="o">=</span> <span class="n">build_weight_init</span><span class="p">(</span>
-    <span class="n">cfg</span><span class="o">=</span><span class="n">auxiliaryfunctions</span><span class="o">.</span><span class="n">read_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">),</span> 
+    <span class="n">cfg</span><span class="o">=</span><span class="n">auxiliaryfunctions</span><span class="o">.</span><span class="n">read_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">),</span>
     <span class="n">super_animal</span><span class="o">=</span><span class="n">superanimal_name</span><span class="p">,</span>
     <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
     <span class="n">detector_name</span><span class="o">=</span><span class="n">detector_name</span><span class="p">,</span>

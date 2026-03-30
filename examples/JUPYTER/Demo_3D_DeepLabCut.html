@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=0404b0d7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=d0fcb2aa" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -51,7 +51,7 @@
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../../_static/togglebutton.js?v=1ae7504c"></script>
+    <script src="../../_static/togglebutton.js?v=b8b12719"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
@@ -587,16 +587,16 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#Setup your project variables:</span>
-<span class="n">YourName</span> <span class="o">=</span> <span class="s1">&#39;teamDLC&#39;</span>
-<span class="n">YourExperimentName</span> <span class="o">=</span> <span class="s1">&#39;testing&#39;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Setup your project variables:</span>
+<span class="n">YourName</span> <span class="o">=</span> <span class="s2">&quot;teamDLC&quot;</span>
+<span class="n">YourExperimentName</span> <span class="o">=</span> <span class="s2">&quot;testing&quot;</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">config_path</span> <span class="o">=</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project_3d</span><span class="p">(</span><span class="n">YourExperimentName</span><span class="p">,</span><span class="n">YourName</span><span class="p">,</span><span class="n">num_cameras</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">config_path</span> <span class="o">=</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_new_project_3d</span><span class="p">(</span><span class="n">YourExperimentName</span><span class="p">,</span> <span class="n">YourName</span><span class="p">,</span> <span class="n">num_cameras</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -616,11 +616,11 @@ A new project with name testing-teamDLC-2019-10-29-3d is created at /home/macken
 <p><strong>TIP 2:</strong> you can also place config_path3d in front of deeplabcut.create_new_project_3d to create a variable that holds the path to the config.yaml file, i.e. <code class="docutils literal notranslate"><span class="pre">config_path3d=deeplabcut.create_new_project_3d(...</span></code></p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#If you&#39;re loading an already created project, just set the 3D Project config_path variable:</span>
-<span class="c1">#import os</span>
-<span class="c1">#from pathlib import Path</span>
-<span class="c1">#config_path3d = os.path.join(os.getcwd(),&#39;testing3D-DeepLabCutTeam-2019-06-05-3d/config.yaml&#39;)</span>
-<span class="c1">#print(config_path3d)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># If you&#39;re loading an already created project, just set the 3D Project config_path variable:</span>
+<span class="c1"># import os</span>
+<span class="c1"># from pathlib import Path</span>
+<span class="c1"># config_path3d = os.path.join(os.getcwd(),&#39;testing3D-DeepLabCutTeam-2019-06-05-3d/config.yaml&#39;)</span>
+<span class="c1"># print(config_path3d)</span>
 </pre></div>
 </div>
 </div>
@@ -659,7 +659,7 @@ extracts the grid pattern from the calibration images and store them under the <
 </ul>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">calibrate_cameras</span><span class="p">(</span><span class="n">config_path3d</span><span class="p">,</span> <span class="n">cbrow</span> <span class="o">=</span><span class="mi">9</span><span class="p">,</span><span class="n">cbcol</span> <span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">calibrate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">calibrate_cameras</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">cbrow</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">cbcol</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">calibrate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -671,7 +671,7 @@ extracts the grid pattern from the calibration images and store them under the <
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559776966423-RATM6ZQT8JXHYAN768F6/ke17ZwdGBToddI8pDm48kKmw982fUOZVIQXHUCR1F55Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpw5XnxLBmEFHJGf_0qFdDpmIncOw4kq9OpCHNTYqzGO-E1YJr-Thht9Tdog4YtCwrE/right02_corner.jpg?format=500w" width="30%">
 </p> <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">calibrate_cameras</span><span class="p">(</span><span class="n">config_path3d</span><span class="p">,</span> <span class="n">cbrow</span> <span class="o">=</span> <span class="mi">9</span><span class="p">,</span><span class="n">cbcol</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">calibrate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">calibrate_cameras</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">cbrow</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">cbcol</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">calibrate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -683,10 +683,9 @@ extracts the grid pattern from the calibration images and store them under the <
 <p>In order to check how well the stereo calibration is, it is recommended to undistort the calibration images and the corner points using camera matrices and project these undistorted points on the undistorted images to check if they align correctly. This can be done in deeplabcut as:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span>
-<span class="o">%</span><span class="k">matplotlib</span> inline
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
 
-<span class="n">deeplabcut</span><span class="o">.</span><span class="n">check_undistortion</span><span class="p">(</span><span class="n">config_path3d</span><span class="p">)</span>
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">check_undistortion</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -710,12 +709,12 @@ extracts the grid pattern from the calibration images and store them under the <
 <p><strong>Next,</strong> pass the <code class="docutils literal notranslate"><span class="pre">config_path3d</span></code> and now the <code class="docutils literal notranslate"><span class="pre">video_path</span></code>, which is the path to the <strong>folder</strong> where all the videos from two cameras are stored. The triangulation can be done in deeplabcut by typing:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Of course, this does not work on the demo calibration images, </span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Of course, this does not work on the demo calibration images,</span>
 <span class="c1"># but when you are ready for your own dataset, edit and then run the following!</span>
 
-<span class="n">video_path</span> <span class="o">=</span> <span class="s1">&#39;/home/yourname/videoFolder&#39;</span>
+<span class="n">video_path</span> <span class="o">=</span> <span class="s2">&quot;/home/yourname/videoFolder&quot;</span>
 
-<span class="n">deeplabcut</span><span class="o">.</span><span class="n">triangulate</span><span class="p">(</span><span class="n">config_path3d</span><span class="p">,</span><span class="n">video_path</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s1">&#39;mp4&#39;</span><span class="p">)</span>
+<span class="n">deeplabcut</span><span class="o">.</span><span class="n">triangulate</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">video_path</span><span class="p">,</span> <span class="n">videotype</span><span class="o">=</span><span class="s2">&quot;mp4&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -727,7 +726,7 @@ extracts the grid pattern from the calibration images and store them under the <
 <p>In order to visualize the pose in 3D, the user can create a 3D video for certain frames (these are large files, so we advise just looking at a subset of frames). The user can specify the path of the triangulated file and specify the start and end frame indices to create a 3D labeled video. Note that the triangulated_file is the newly created file that ends with yourDLC_3D_scorername.h5. This can be done using:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video_3d</span><span class="p">(</span><span class="n">config_path</span><span class="p">,[</span><span class="s1">&#39;triangulated_file_folder&#39;</span><span class="p">],</span><span class="n">start</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span><span class="n">end</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span> <span class="n">trailpoints</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video_3d</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;triangulated_file_folder&quot;</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span> <span class="n">trailpoints</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

@@ -35,7 +35,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=0404b0d7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=d0fcb2aa" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
@@ -51,7 +51,7 @@
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../../_static/togglebutton.js?v=1ae7504c"></script>
+    <script src="../../_static/togglebutton.js?v=b8b12719"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
@@ -605,6 +605,7 @@ document.write(`
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">deeplabcut</span>
 </pre></div>
 </div>
@@ -620,7 +621,7 @@ document.write(`
 
 <span class="n">uploaded</span> <span class="o">=</span> <span class="n">files</span><span class="o">.</span><span class="n">upload</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">content</span> <span class="ow">in</span> <span class="n">uploaded</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-  <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;User uploaded file &quot;</span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s1">&quot; with length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="si">}</span><span class="s1"> bytes&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;User uploaded file &quot;</span><span class="si">{</span><span class="n">filepath</span><span class="si">}</span><span class="s1">&quot; with length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="si">}</span><span class="s1"> bytes&#39;</span><span class="p">)</span>
 <span class="n">video_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
 
 <span class="c1"># If this cell fails (e.g., when using Safari in place of Google Chrome),</span>
@@ -640,10 +641,7 @@ document.write(`
 
 <span class="n">model_options</span> <span class="o">=</span> <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_project</span><span class="o">.</span><span class="n">modelzoo</span><span class="o">.</span><span class="n">Modeloptions</span>
 <span class="n">model_selection</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">Dropdown</span><span class="p">(</span>
-    <span class="n">options</span><span class="o">=</span><span class="n">model_options</span><span class="p">,</span>
-    <span class="n">value</span><span class="o">=</span><span class="n">model_options</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Choose a DLC ModelZoo model!&quot;</span><span class="p">,</span>
-    <span class="n">disabled</span><span class="o">=</span><span class="kc">False</span>
+    <span class="n">options</span><span class="o">=</span><span class="n">model_options</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">model_options</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Choose a DLC ModelZoo model!&quot;</span><span class="p">,</span> <span class="n">disabled</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">model_selection</span><span class="p">)</span>
 </pre></div>
@@ -652,10 +650,10 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">project_name</span> <span class="o">=</span> <span class="s1">&#39;myDLC_modelZoo&#39;</span>
-<span class="n">your_name</span> <span class="o">=</span> <span class="s1">&#39;teamDLC&#39;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">project_name</span> <span class="o">=</span> <span class="s2">&quot;myDLC_modelZoo&quot;</span>
+<span class="n">your_name</span> <span class="o">=</span> <span class="s2">&quot;teamDLC&quot;</span>
 <span class="n">model2use</span> <span class="o">=</span> <span class="n">model_selection</span><span class="o">.</span><span class="n">value</span>
-<span class="n">videotype</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">video_path</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span> <span class="c1">#or MOV, or avi, whatever you uploaded!</span>
+<span class="n">videotype</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">video_path</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>  <span class="c1"># or MOV, or avi, whatever you uploaded!</span>
 </pre></div>
 </div>
 </div>
@@ -689,7 +687,7 @@ document.write(`
     <span class="n">model</span><span class="o">=</span><span class="n">model2use</span><span class="p">,</span>
     <span class="n">analyzevideo</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">createlabeledvideo</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">copy_videos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="c1">#must leave copy_videos=True</span>
+    <span class="n">copy_videos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># must leave copy_videos=True</span>
     <span class="n">engine</span><span class="o">=</span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">Engine</span><span class="o">.</span><span class="n">TF</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -709,9 +707,9 @@ document.write(`
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Updating the plotting within the config.yaml file (without opening it ;):</span>
 <span class="n">edits</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;dotsize&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>  <span class="c1"># size of the dots!</span>
-    <span class="s1">&#39;colormap&#39;</span><span class="p">:</span> <span class="s1">&#39;spring&#39;</span><span class="p">,</span>  <span class="c1"># any matplotlib colormap!</span>
-    <span class="s1">&#39;pcutoff&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># the higher the more conservative the plotting!</span>
+    <span class="s2">&quot;dotsize&quot;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>  <span class="c1"># size of the dots!</span>
+    <span class="s2">&quot;colormap&quot;</span><span class="p">:</span> <span class="s2">&quot;spring&quot;</span><span class="p">,</span>  <span class="c1"># any matplotlib colormap!</span>
+    <span class="s2">&quot;pcutoff&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># the higher the more conservative the plotting!</span>
 <span class="p">}</span>
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">auxiliaryfunctions</span><span class="o">.</span><span class="n">edit_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">edits</span><span class="p">)</span>
 </pre></div>
@@ -724,14 +722,14 @@ document.write(`
 <span class="n">project_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
 <span class="n">full_video_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
     <span class="n">project_path</span><span class="p">,</span>
-    <span class="s1">&#39;videos&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;videos&quot;</span><span class="p">,</span>
     <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">video_path</span><span class="p">),</span>
 <span class="p">)</span>
 
-<span class="c1">#filter predictions (should already be done above ;):</span>
+<span class="c1"># filter predictions (should already be done above ;):</span>
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">filterpredictions</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="n">full_video_path</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="n">videotype</span><span class="p">)</span>
 
-<span class="c1">#re-create the video with your edits!</span>
+<span class="c1"># re-create the video with your edits!</span>
 <span class="n">deeplabcut</span><span class="o">.</span><span class="n">create_labeled_video</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="p">[</span><span class="n">full_video_path</span><span class="p">],</span> <span class="n">videotype</span><span class="o">=</span><span class="n">videotype</span><span class="p">,</span> <span class="n">filtered</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>

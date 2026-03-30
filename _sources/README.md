@@ -1,5 +1,5 @@
 <div align="center">
-  
+
 
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1628250004229-KVYD7JJVHYEFDJ32L9VJ/DLClogo2021.jpg?format=1000w" width="95%">
@@ -8,7 +8,7 @@
 <p align="center">
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1619609897110-TKSTWKEM6HTGXID9D489/ke17ZwdGBToddI8pDm48kAvjv6tW_eojYQmNU0ncbllZw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVHBSTXHtjUKlhRtWJ1Vo6l1B2bxJtByvWSjL6Vz3amc5yb8BodarTVrzIWCp72ioWw/triMouseDLC.gif?format=180w" height="150">
-  
+
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/daed7f16-527f-4150-8bdd-cbb20e267451/cheetah-ezgif.com-video-to-gif-converter.gif?format=180w" height="150">
 
@@ -18,7 +18,7 @@
 
 
 
-  
+
 
 
 
@@ -27,13 +27,13 @@
 [🌎 Home Page](https://www.deeplabcut.org) |
 [🐿🐴🐁🐘🐆 Model Zoo](http://www.mackenziemathislab.org/deeplabcut/) |
 [🚨 News](https://deeplabcut.github.io/DeepLabCut/README.html#news-and-in-the-news) |
-[🪲 Reporting Issues](https://github.com/DeepLabCut/DeepLabCut/issues) 
+[🪲 Reporting Issues](https://github.com/DeepLabCut/DeepLabCut/issues)
 
 
-[🫶 Getting Assistance](https://deeplabcut.github.io/DeepLabCut/README.html#be-part-of-the-dlc-community) | 
-[∞ DeepLabCut Online Course](https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials/blob/master/DLCcourse.md) | 
-[📝 Publications](https://deeplabcut.github.io/DeepLabCut/README.html#references) | 
-[👩🏾‍💻👨‍💻 DeepLabCut AI Residency](https://www.deeplabcutairesidency.org/) 
+[🫶 Getting Assistance](https://deeplabcut.github.io/DeepLabCut/README.html#be-part-of-the-dlc-community) |
+[∞ DeepLabCut Online Course](https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials/blob/master/DLCcourse.md) |
+[📝 Publications](https://deeplabcut.github.io/DeepLabCut/README.html#references) |
+[👩🏾‍💻👨‍💻 DeepLabCut AI Residency](https://www.deeplabcutairesidency.org/)
 
 
 ![Version](https://img.shields.io/badge/python_version-3.10-purple)
@@ -55,7 +55,7 @@
 
 # Welcome! 👋
 
-**DeepLabCut™️** is a toolbox for state-of-the-art markerless pose estimation of animals performing various behaviors. As long as you can see (label) what you want to track, you can use this toolbox, as it is animal and object agnostic. [Read a short development and application summary below](https://github.com/DeepLabCut/DeepLabCut#why-use-deeplabcut). 
+**DeepLabCut™️** is a toolbox for state-of-the-art markerless pose estimation of animals performing various behaviors. As long as you can see (label) what you want to track, you can use this toolbox, as it is animal and object agnostic. [Read a short development and application summary below](https://github.com/DeepLabCut/DeepLabCut#why-use-deeplabcut).
 
 # [Installation: how to install DeepLabCut](https://deeplabcut.github.io/DeepLabCut/docs/installation.html)
 
@@ -63,7 +63,7 @@ Please click the link above for all the information you need to get started! Ple
 
 ## Quick start
 
-Developers Stable Release: very quick start (Python 3.10+ required) to install 
+Developers Stable Release: very quick start (Python 3.10+ required) to install
 DeepLabCut with the PyTorch engine
 
 - [1] [Install PyTorch](https://pytorch.org/get-started/locally/) (**install and then select the desired
@@ -77,15 +77,15 @@ conda install pytorch cudatoolkit=11.3 -c pytorch
 ```bash
 pip install --pre  "deeplabcut[gui]"
 ```
-or `pip install  --pre "deeplabcut"` (headless 
+or `pip install  --pre "deeplabcut"` (headless
 version with PyTorch)!
 
 To use the TensorFlow (TF) engine (requires Python 3.10; TF up to v2.10 supported on Windows,
-up to v2.12 on other platforms): you'll need to run `pip install "deeplabcut[gui,tf]"` 
+up to v2.12 on other platforms): you'll need to run `pip install "deeplabcut[gui,tf]"`
 (which includes all functions plus GUIs) or `pip install "deeplabcut[tf]"` (headless
 version with PyTorch and TensorFlow). We aim to depreciate the TF part in 2027.
 
-We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/main/conda-environments/README.md) or the [`deeplabcut-docker` package](https://github.com/DeepLabCut/DeepLabCut/tree/main/docker). 
+We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/main/conda-environments/README.md) or the [`deeplabcut-docker` package](https://github.com/DeepLabCut/DeepLabCut/tree/main/docker).
 
 # [Documentation: The DeepLabCut Process](https://deeplabcut.github.io/DeepLabCut/README.html)
 
@@ -105,11 +105,11 @@ See [more demos here](https://github.com/DeepLabCut/DeepLabCut/blob/main/example
 
 # Why use DeepLabCut?
 
-DeepLabCut continues to be actively maintained and we strive to provide a user-friendly `GUI` and `API` for computer vision researchers and life scientists alike. This means we integrate state-of-the-art models and frameworks, while providing our "best-guess" defaults for life scientists. We highly encourage you to read our papers to get a better understanding of what to use and how to modify the models for your setting. 
+DeepLabCut continues to be actively maintained and we strive to provide a user-friendly `GUI` and `API` for computer vision researchers and life scientists alike. This means we integrate state-of-the-art models and frameworks, while providing our "best-guess" defaults for life scientists. We highly encourage you to read our papers to get a better understanding of what to use and how to modify the models for your setting.
 
 ## Performance 🔥
 
-In general, we provide all the tooling for you to train and use custom models with various high-performance backbones. 
+In general, we provide all the tooling for you to train and use custom models with various high-performance backbones.
 We also provide two foundation pretrained animal models: `SuperAnimal-Quadruped`, `SuperAnimal-TopViewMouse`. To gauge their *out-of-distribution* performance, we provide the following tables.
 
 These models are trained on the [SuperAnimal-Quadruped with AP-10K held out for out-of-domain testing]([https://cocodataset.org/](https://www.nature.com/articles/s41467-024-48792-2)) and the [SuperAnimal-TopViewMouse with DLC-openfield held out for out-of-distribution testing](https://www.nature.com/articles/s41467-024-48792-2). We provide models that include AP-10K in the API (and GUI).
@@ -139,7 +139,7 @@ We currently provide state-of-the-art performance for animal pose estimation and
 <p align="center">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e47258a922d548c483247/1547585339819/ErrorvsTrainingsetSize.png?format=750w" height="160">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e469d8a922d548c4828fa/1547585194560/compressionrobustness.png?format=750w" height="160">
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3fbed74fa51acecd63deeb/1547681534736/MouseLocomotion_warren.gif?format=500w" height="160">  
+<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3fbed74fa51acecd63deeb/1547681534736/MouseLocomotion_warren.gif?format=500w" height="160">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3fc1c6758d46950ce7eec7/1547682383595/cheetah.png?format=750w" height="160">
 </p>
 
@@ -169,7 +169,7 @@ DeepLabCut is an open-source tool and has benefited from suggestions and edits b
 |------------------------------------------------------------|-----------------------------------------------------------------------------|---------------------------|----------------------------------------|
 | GitHub DeepLabCut/[Issues](https://github.com/DeepLabCut/DeepLabCut/issues)                                  | To report bugs and code issues🐛   (we encourage you to search issues first) | 2-5 days                  | DLC Core Dev Team                               |
 | GitHub DeepLabCut/[Contributing](https://github.com/DeepLabCut/DeepLabCut/blob/master/CONTRIBUTING.md)                          | To contribute your expertise and experience🙏💯                               | 2-5 days                | DLC Core Dev Team                               |
-| 🚧 GitHub DeepLabCut/[Roadmap](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/roadmap.md)                             | To learn more about our journey✈️                                            | N/A                       | N/A                                    
+| 🚧 GitHub DeepLabCut/[Roadmap](https://github.com/DeepLabCut/DeepLabCut/blob/master/docs/roadmap.md)                             | To learn more about our journey✈️                                            | N/A                       | N/A
 | [![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftag%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tag/deeplabcut) <br /> 🐭Tag: DeepLabCut | To ask help and support questions 👋                                          | Promptly🔥                 | The DLC Community |
 |[![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)                               | To discuss with other users,  share ideas and collaborate💡                  | 2-5 days                    | The DLC Community                      |
 | [BluSky🦋](https://bsky.app/profile/deeplabcut.bsky.social)                                                  | To keep up with our latest news and updates 📢                               | 2-5 days                     | DLC Team                               |
@@ -217,7 +217,7 @@ VERSION 1.0: The initial, Nature Neuroscience version of [DeepLabCut](https://ww
 
 - June 2024: Our second DLC paper ['Using DeepLabCut for 3D markerless pose estimation across species and behaviors'](https://www.nature.com/articles/s41596-019-0176-0) in Nature Protocols has surpassed 1,000 Google Scholar citations!
 - May 2024: DeepLabCut was featured in Nature: ['DeepLabCut: the motion-tracking tool that went viral'](https://www.nature.com/articles/d41586-024-01474-x)
-- January 2024: Our original paper ['DeepLabCut: markerless pose estimation of user-defined body parts with deep learning'](https://www.nature.com/articles/s41593-018-0209-y) in Nature Neuroscience has surpassed 3,000 Google Scholar citations! 
+- January 2024: Our original paper ['DeepLabCut: markerless pose estimation of user-defined body parts with deep learning'](https://www.nature.com/articles/s41593-018-0209-y) in Nature Neuroscience has surpassed 3,000 Google Scholar citations!
 - December 2023: DeepLabCut hit 600,000 downloads!
 - October 2023: DeepLabCut celebrates a milestone with 4,000 🌟 in Github!
 - July 2023: The user forum is very active with more than 1k questions and answers: [![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&amp;url=https%3A%2F%2Fforum.image.sc%2Ftag%2Fdeeplabcut.json&amp;query=%24.topic_list.tags.0.topic_count&amp;colorB=brightgreen&amp;&amp;suffix=%20topics&amp;logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tag/deeplabcut)
