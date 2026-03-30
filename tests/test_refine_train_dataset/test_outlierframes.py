@@ -76,9 +76,7 @@ def sparse_multianimal_df():
         for c in coords:
             tuples.append((scorer, "single", bp, c))
 
-    columns = pd.MultiIndex.from_tuples(
-        tuples, names=["scorer", "individuals", "bodyparts", "coords"]
-    )
+    columns = pd.MultiIndex.from_tuples(tuples, names=["scorer", "individuals", "bodyparts", "coords"])
 
     # 18 shared * 2 + 4 unique = 40 streams, each with x/y/likelihood
     assert len(columns) == 40 * 3
@@ -109,13 +107,9 @@ def dense_multianimal_df():
     bodyparts = ["nose", "tail", "paw"]
     coords = ["x", "y", "likelihood"]
 
-    tuples = [
-        (scorer, ind, bp, c) for ind in individuals for bp in bodyparts for c in coords
-    ]
+    tuples = [(scorer, ind, bp, c) for ind in individuals for bp in bodyparts for c in coords]
 
-    columns = pd.MultiIndex.from_tuples(
-        tuples, names=["scorer", "individuals", "bodyparts", "coords"]
-    )
+    columns = pd.MultiIndex.from_tuples(tuples, names=["scorer", "individuals", "bodyparts", "coords"])
 
     rng = np.random.default_rng(42)
     values = rng.normal(size=(n_frames, len(columns)))
@@ -132,11 +126,7 @@ def _expected_output_columns_from_actual_streams(df):
     """
     base_cols = df.xs("x", axis=1, level="coords", drop_level=True).columns
     return pd.MultiIndex.from_tuples(
-        [
-            (tuple(col) if isinstance(col, tuple) else (col,)) + (stat,)
-            for col in base_cols
-            for stat in STATS
-        ],
+        [(tuple(col) if isinstance(col, tuple) else (col,)) + (stat,) for col in base_cols for stat in STATS],
         names=df.columns.names,
     )
 

@@ -171,9 +171,7 @@ def find_outliers_in_raw_detections(pickled_data, algo="uncertain", threshold=0.
     return candidates, data
 
 
-def _read_video_specific_cropping_margins(
-    config: str | Path | dict, video_path: str | Path
-) -> tuple[int, int]:
+def _read_video_specific_cropping_margins(config: str | Path | dict, video_path: str | Path) -> tuple[int, int]:
     if isinstance(config, (str, Path)):
         config = auxiliaryfunctions.read_config(config)
     output_crop = config["video_sets"].get(str(video_path), {}).get("crop")
@@ -430,12 +428,8 @@ def extract_outlier_frames(
             out_x1, out_y1 = _read_video_specific_cropping_margins(config, video)
             if metadata.get("data", {}).get("cropping"):
                 x1, _, y1, _ = metadata["data"]["cropping_parameters"]
-                df.iloc[:, df.columns.get_level_values(level="coords") == "x"] += (
-                    x1 - out_x1
-                )
-                df.iloc[:, df.columns.get_level_values(level="coords") == "y"] += (
-                    y1 - out_y1
-                )
+                df.iloc[:, df.columns.get_level_values(level="coords") == "x"] += x1 - out_x1
+                df.iloc[:, df.columns.get_level_values(level="coords") == "y"] += y1 - out_y1
 
             df = df.iloc[Index]
             mask = df.columns.get_level_values("bodyparts").isin(bodyparts)
@@ -643,9 +637,7 @@ def compute_deviations(Dataframe, dataname, p_bound, alpha, ARdegree, MAdegree, 
         [(*col, stat) for col in base_cols for stat in stats],
         names=[n for n in columns.names if n != "coords"] + ["stats"],
     )
-    data = pd.DataFrame(
-        np.concatenate(preds, axis=1), columns=pdindex
-    )  # preds (n_frames, n_stats * n_streams)
+    data = pd.DataFrame(np.concatenate(preds, axis=1), columns=pdindex)  # preds (n_frames, n_stats * n_streams)
     # average distance and average # significant differences avg. over comparisonbodyparts
     d = data.xs("distance", axis=1, level=-1).mean(axis=1).values
     o = data.xs("sig", axis=1, level=-1).mean(axis=1).values
