@@ -94,10 +94,7 @@ def test_fast_multianimal_includes_functional(selector):
     assert "examples/testscript_tensorflow_multi_animal.py" in res.functional_scripts
 
     assert "multianimal" in res.provenance.pytest["tests/test_predict_multianimal.py"]
-    assert (
-        "multianimal"
-        in res.provenance.scripts["examples/testscript_tensorflow_multi_animal.py"]
-    )
+    assert "multianimal" in res.provenance.scripts["examples/testscript_tensorflow_multi_animal.py"]
 
 
 def test_fast_ci_workflows_uses_minimal_pytest(selector):
@@ -209,9 +206,7 @@ def test_category_rule_rejects_invalid_repo_relative_paths(field_name, bad_value
     }
     kwargs[field_name] = [bad_value]
 
-    with pytest.raises(
-        ValidationError, match="repo-relative|path traversal|absolute path"
-    ):
+    with pytest.raises(ValidationError, match="repo-relative|path traversal|absolute path"):
         CategoryRule(**kwargs)
 
 

@@ -25,16 +25,14 @@ import cv2
 import numpy as np
 
 
-class VideoProcessor(object):
-    """
-    Base class for a video processing unit, implementation is required for video loading and saving
+class VideoProcessor:
+    """Base class for a video processing unit, implementation is required for video
+    loading and saving.
 
     sh and sw are the output height and width respectively.
     """
 
-    def __init__(
-        self, fname="", sname="", nframes=-1, fps=None, codec="X264", sh="", sw=""
-    ):
+    def __init__(self, fname="", sname="", nframes=-1, fps=None, codec="X264", sh="", sw=""):
         self.fname = fname
         self.sname = sname
         self.nframes = nframes
@@ -87,50 +85,35 @@ class VideoProcessor(object):
         return self.nframes
 
     def get_video(self):
-        """
-        implement your own
-        """
+        """Implement your own."""
         pass
 
     def get_info(self):
-        """
-        implement your own
-        """
+        """Implement your own."""
         pass
 
     def create_video(self):
-        """
-        implement your own
-        """
+        """Implement your own."""
         pass
 
     def _read_frame(self):
-        """
-        implement your own
-        """
+        """Implement your own."""
         pass
 
     def save_frame(self, frame):
-        """
-        implement your own
-        """
+        """Implement your own."""
         pass
 
     def close(self):
-        """
-        implement your own
-        """
+        """Implement your own."""
         pass
 
 
 class VideoProcessorCV(VideoProcessor):
-    """
-    OpenCV implementation of VideoProcessor
-    requires opencv-python==3.4.0.12
-    """
+    """OpenCV implementation of VideoProcessor requires opencv-python==3.4.0.12."""
 
     def __init__(self, *args, **kwargs):
-        super(VideoProcessorCV, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_video(self):
         return cv2.VideoCapture(self.fname)

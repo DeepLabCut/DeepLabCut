@@ -11,15 +11,15 @@
 from __future__ import annotations
 
 import os
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 from zipfile import Path
 
 import numpy as np
 import pytest
 
+from deeplabcut.generate_training_dataset import create_training_dataset
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
 from deeplabcut.pose_estimation_pytorch.data.utils import merge_list_of_dicts
-from deeplabcut.generate_training_dataset import create_training_dataset
 
 
 def mock_aux() -> Mock:

@@ -68,8 +68,10 @@ Notes for CI
   - PyYAML
   - nbformat>=5
   to be installed in the environment.
-  Recommended : install in CI job directly (pip install pydantic pyyaml nbformat) rather than adding to requirements, since these are only needed for this tool.
+  Recommended : install in CI job directly (pip install pydantic pyyaml nbformat)
+  rather than adding to requirements, since these are only needed for this tool.
 """
+
 # tools/docs_and_notebooks_check.py
 from __future__ import annotations
 
@@ -79,24 +81,15 @@ import json
 import os
 import re
 import subprocess
+from collections.abc import Sequence
 from datetime import date, datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Sequence, Tuple
+from typing import Any, Literal
 
-try:
-    import yaml  # PyYAML
-except Exception:
-    yaml = None
-
-try:
-    from pydantic import BaseModel, ConfigDict, Field, ValidationError
-except Exception:  # pragma: no cover
-    raise RuntimeError("Pydantic is required to run this script")
-try:
-    import nbformat
-    from nbformat.validator import NotebookValidationError
-except Exception:
-    raise RuntimeError("nbformat is required to read/write .ipynb files")
+import nbformat
+import yaml
+from nbformat.validator import NotebookValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 SCHEMA_VERSION = 1
 DLC_NAMESPACE = "deeplabcut"
@@ -127,23 +120,23 @@ class DLCMeta(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     # Tool-managed: last meaningful content update date (excluding metadata commits)
-    last_content_updated: Optional[date] = None
+    last_content_updated: date | None = None
 
     # Optional tool-managed: last time metadata/normalization was performed
-    last_metadata_updated: Optional[date] = None
+    last_metadata_updated: date | None = None
     # Optional human-managed verification fields
-    last_verified: Optional[date] = None
+    last_verified: date | None = None
     # Version or other string indicating what this file was verified for (e.g. "3.0.0rc13")
-    verified_for: Optional[str] = None
+    verified_for: str | None = None
     # Extra metadata fields for later usage (e.g. allowlist tier classification), but not currently used by the tool
-    tier: Optional[str] = None
+    tier: str | None = None
     ignore: bool = False
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 class ScanConfig(BaseModel):
-    include: List[str] = Field(default_factory=list)
-    exclude: List[str] = Field(default_factory=list)
+    include: list[str] = Field(default_factory=list)
+    exclude: list[str] = Field(default_factory=list)
 
 
 class PolicyConfig(BaseModel):
@@ -155,10 +148,10 @@ class PolicyConfig(BaseModel):
     fail_on_scan_errors: bool = False
 
     # Allowlists for strict checks (start empty; ratchet later)
-    require_metadata: List[str] = Field(default_factory=list)
-    require_recent_verification: List[str] = Field(default_factory=list)
+    require_metadata: list[str] = Field(default_factory=list)
+    require_recent_verification: list[str] = Field(default_factory=list)
 
-    require_notebook_normalized: List[str] = Field(default_factory=list)
+    require_notebook_normalized: list[str] = Field(default_factory=list)
 
 
 class ToolConfig(BaseModel):
@@ -172,19 +165,19 @@ class FileRecord(BaseModel):
     kind: str  # ipynb | md | other
 
     # Computed from git (excluding metadata-only commits)
-    last_content_updated: Optional[date] = None
+    last_content_updated: date | None = None
     # Debug-only: raw git last touched (may be metadata commit)
-    last_git_touched: Optional[date] = None
+    last_git_touched: date | None = None
 
     # Read from file metadata/frontmatter
-    meta: Optional[DLCMeta] = None
+    meta: DLCMeta | None = None
 
     # Derived
-    days_since_content_update: Optional[int] = None
-    days_since_verified: Optional[int] = None
+    days_since_content_update: int | None = None
+    days_since_verified: int | None = None
 
-    warnings: List[str] = Field(default_factory=list)
-    errors: List[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    errors: list[str] = Field(default_factory=list)
 
     # If update mode would change file
     would_change: bool = False
@@ -196,8 +189,8 @@ class Report(BaseModel):
     repo_root: str
     config_path: str
 
-    totals: Dict[str, int]
-    records: List[FileRecord]
+    totals: dict[str, int]
+    records: list[FileRecord]
 
 
 # Rebuild models due to __future__ annotations
@@ -216,12 +209,11 @@ def _iso_today() -> date:
     return datetime.now(timezone.utc).date()
 
 
-def _run_git(args: Sequence[str], cwd: Path) -> Tuple[int, str, str]:
+def _run_git(args: Sequence[str], cwd: Path) -> tuple[int, str, str]:
     p = subprocess.run(
         ["git", *args],
         cwd=str(cwd),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         text=True,
     )
     return p.returncode, p.stdout.strip(), p.stderr.strip()
@@ -241,14 +233,14 @@ def find_repo_root(start: Path) -> Path:
     raise RuntimeError("Could not locate repository root")
 
 
-def glob_paths(repo_root: Path, patterns: List[str]) -> List[Path]:
-    results: List[Path] = []
+def glob_paths(repo_root: Path, patterns: list[str]) -> list[Path]:
+    results: list[Path] = []
     for pat in patterns:
         results.extend(repo_root.glob(pat))
     return sorted({p.resolve() for p in results if p.is_file()})
 
 
-def is_excluded(rel_path: str, exclude_patterns: List[str]) -> bool:
+def is_excluded(rel_path: str, exclude_patterns: list[str]) -> bool:
     return any(fnmatch.fnmatch(rel_path, pat) for pat in exclude_patterns)
 
 
@@ -261,7 +253,7 @@ def file_kind(path: Path) -> str:
     return "other"
 
 
-def _parse_git_iso_date(out: str) -> Optional[date]:
+def _parse_git_iso_date(out: str) -> date | None:
     out = (out or "").strip()
     if not out:
         return None
@@ -279,9 +271,7 @@ def _parse_git_iso_date(out: str) -> Optional[date]:
         return None
 
 
-def _git_log_date(
-    repo_root: Path, rel_path: str, extra_args: Sequence[str] = ()
-) -> Optional[date]:
+def _git_log_date(repo_root: Path, rel_path: str, extra_args: Sequence[str] = ()) -> date | None:
     args = [
         "log",
         "-1",
@@ -297,13 +287,11 @@ def _git_log_date(
     return _parse_git_iso_date(out)
 
 
-def git_last_touched(repo_root: Path, rel_path: str) -> Optional[date]:
+def git_last_touched(repo_root: Path, rel_path: str) -> date | None:
     return _git_log_date(repo_root, rel_path)
 
 
-def git_last_content_updated(
-    repo_root: Path, rel_path: str
-) -> Tuple[Optional[date], bool]:
+def git_last_content_updated(repo_root: Path, rel_path: str) -> tuple[date | None, bool]:
     d = _git_log_date(
         repo_root,
         rel_path,
@@ -322,7 +310,7 @@ def git_last_content_updated(
 FRONTMATTER_RE = re.compile(r"^---\s*$")
 
 
-def read_md_frontmatter(text: str) -> Tuple[Optional[dict], str, Optional[str]]:
+def read_md_frontmatter(text: str) -> tuple[dict | None, str, str | None]:
     lines = text.splitlines(keepends=True)
     if not lines or not FRONTMATTER_RE.match(lines[0]):
         return None, text, None
@@ -397,7 +385,7 @@ def write_ipynb_meta(path: Path, nb: Any) -> None:
     path.write_text(text + "\n", encoding="utf-8")
 
 
-def parse_dlc_meta(raw: Any) -> tuple[Optional[DLCMeta], bool]:
+def parse_dlc_meta(raw: Any) -> tuple[DLCMeta | None, bool]:
     # returns (meta, valid)
     if raw is None or not isinstance(raw, dict):
         return None, False
@@ -415,11 +403,11 @@ def meta_to_jsonable(meta: DLCMeta) -> dict:
     return meta.model_dump(mode="json", exclude_none=True)
 
 
-def compute_days_since(d: Optional[date], today: date) -> Optional[int]:
+def compute_days_since(d: date | None, today: date) -> int | None:
     return None if d is None else (today - d).days
 
 
-def match_allowlist(rel_path: str, allowlist: List[str]) -> bool:
+def match_allowlist(rel_path: str, allowlist: list[str]) -> bool:
     # Support exact matches or glob patterns
     return any(pat == rel_path or fnmatch.fnmatch(rel_path, pat) for pat in allowlist)
 
@@ -436,12 +424,10 @@ def load_config(config_path: Path) -> ToolConfig:
     return ToolConfig.model_validate(raw)
 
 
-def scan_files(
-    repo_root: Path, cfg: ToolConfig, targets: Optional[List[str]] = None
-) -> List[FileRecord]:
+def scan_files(repo_root: Path, cfg: ToolConfig, targets: list[str] | None = None) -> list[FileRecord]:
     today = _iso_today()
     paths = glob_paths(repo_root, cfg.scan.include)
-    records: List[FileRecord] = []
+    records: list[FileRecord] = []
     target_set = None
     if targets:
         target_set = set(t.replace(os.sep, "/") for t in targets)
@@ -456,12 +442,8 @@ def scan_files(
         rec = FileRecord(path=rel, kind=kind)
 
         rec.last_git_touched = git_last_touched(repo_root, rel)
-        rec.last_content_updated, used_fallback = git_last_content_updated(
-            repo_root, rel
-        )
-        rec.days_since_content_update = compute_days_since(
-            rec.last_content_updated, today
-        )
+        rec.last_content_updated, used_fallback = git_last_content_updated(repo_root, rel)
+        rec.days_since_content_update = compute_days_since(rec.last_content_updated, today)
         if used_fallback:
             rec.warnings.append("content_date_fallback_to_git_touched")
 
@@ -544,13 +526,8 @@ def scan_files(
 
         if last_verified is None and pol.missing_last_verified_is_warning:
             rec.warnings.append("missing_last_verified")
-        elif (
-            rec.days_since_verified is not None
-            and rec.days_since_verified > pol.warn_if_verified_older_than_days
-        ):
-            rec.warnings.append(
-                f"verified_stale>{pol.warn_if_verified_older_than_days}d"
-            )
+        elif rec.days_since_verified is not None and rec.days_since_verified > pol.warn_if_verified_older_than_days:
+            rec.warnings.append(f"verified_stale>{pol.warn_if_verified_older_than_days}d")
 
         records.append(rec)
 
@@ -579,13 +556,13 @@ def _require_meta_marker_ack(write: bool, ack_marker: bool) -> None:
 def update_files(
     repo_root: Path,
     cfg: ToolConfig,
-    targets: Optional[List[str]],
+    targets: list[str] | None,
     write: bool,
     set_content_date_from_git: bool,
-    set_last_verified: Optional[date],
-    set_verified_for: Optional[str],
+    set_last_verified: date | None,
+    set_verified_for: str | None,
     ack_meta_commit_marker: bool,
-) -> List[FileRecord]:
+) -> list[FileRecord]:
     today = _iso_today()
     records = scan_files(repo_root, cfg, targets=targets)
     target_set = set(t.replace(os.sep, "/") for t in targets) if targets else None
@@ -626,9 +603,7 @@ def update_files(
             if merged_base != prev:
                 changed = True
                 if write:
-                    _require_meta_marker_ack(
-                        write=True, ack_marker=ack_meta_commit_marker
-                    )
+                    _require_meta_marker_ack(write=True, ack_marker=ack_meta_commit_marker)
 
                     meta.last_metadata_updated = today
                     desired_final = meta_to_jsonable(meta)
@@ -659,9 +634,7 @@ def update_files(
             if merged_base != prev:
                 changed = True
                 if write:
-                    _require_meta_marker_ack(
-                        write=True, ack_marker=ack_meta_commit_marker
-                    )
+                    _require_meta_marker_ack(write=True, ack_marker=ack_meta_commit_marker)
 
                     meta.last_metadata_updated = today
                     desired_final = meta_to_jsonable(meta)
@@ -684,10 +657,10 @@ def update_files(
 def normalize_notebooks(
     repo_root: Path,
     cfg: ToolConfig,
-    targets: Optional[List[str]],
+    targets: list[str] | None,
     write: bool,
     ack_meta_commit_marker: bool,
-) -> List[FileRecord]:
+) -> list[FileRecord]:
     """
     Normalize notebooks deterministically (canonical nbformat JSON).
     This is intentionally separated from update() because it causes churn.
@@ -737,30 +710,22 @@ def normalize_notebooks(
 # -----------------------------
 
 
-def summarize(records: List[FileRecord]) -> Dict[str, int]:
+def summarize(records: list[FileRecord]) -> dict[str, int]:
     return {
         "files": len(records),
         "warnings": sum(1 for r in records if r.warnings),
         "errors": sum(1 for r in records if r.errors),
         "missing_metadata": sum(1 for r in records if "missing_metadata" in r.warnings),
-        "missing_last_verified": sum(
-            1 for r in records if "missing_last_verified" in r.warnings
-        ),
-        "content_stale": sum(
-            1 for r in records if any(w.startswith("content_stale") for w in r.warnings)
-        ),
-        "verified_stale": sum(
-            1
-            for r in records
-            if any(w.startswith("verified_stale") for w in r.warnings)
-        ),
+        "missing_last_verified": sum(1 for r in records if "missing_last_verified" in r.warnings),
+        "content_stale": sum(1 for r in records if any(w.startswith("content_stale") for w in r.warnings)),
+        "verified_stale": sum(1 for r in records if any(w.startswith("verified_stale") for w in r.warnings)),
     }
 
 
 def to_markdown(report: Report, cfg: ToolConfig) -> str:
     pol = cfg.policy
     t = report.totals
-    lines: List[str] = []
+    lines: list[str] = []
 
     lines.append("# 🌡️ DeepLabCut freshness report\n")
     lines.append(f"Generated: {report.generated_at.isoformat()}\n")
@@ -772,19 +737,13 @@ def to_markdown(report: Report, cfg: ToolConfig) -> str:
     lines.append(f"- Files with scanning errors: **{t['errors']}**\n")
     lines.append(f"- Missing metadata: **{t['missing_metadata']}**\n")
     lines.append(f"- Missing last_verified: **{t['missing_last_verified']}**\n")
-    lines.append(
-        f"- Content-stale (> {pol.warn_if_content_older_than_days}d): **{t['content_stale']}**\n"
-    )
-    lines.append(
-        f"- Verification-stale (> {pol.warn_if_verified_older_than_days}d): **{t['verified_stale']}**\n\n"
-    )
+    lines.append(f"- Content-stale (> {pol.warn_if_content_older_than_days}d): **{t['content_stale']}**\n")
+    lines.append(f"- Verification-stale (> {pol.warn_if_verified_older_than_days}d): **{t['verified_stale']}**\n\n")
 
-    def fmt_date(d: Optional[date]) -> str:
+    def fmt_date(d: date | None) -> str:
         return d.isoformat() if d else "-"
 
-    warn_recs = [
-        r for r in report.records if r.warnings and not (r.meta and r.meta.ignore)
-    ]
+    warn_recs = [r for r in report.records if r.warnings and not (r.meta and r.meta.ignore)]
     warn_recs.sort(
         key=lambda r: (
             -(r.days_since_verified or -1),
@@ -805,9 +764,7 @@ def to_markdown(report: Report, cfg: ToolConfig) -> str:
             if r.last_git_touched:
                 lines.append(f"  - last_git_touched: {fmt_date(r.last_git_touched)}\n")
             if meta and meta.last_metadata_updated:
-                lines.append(
-                    f"  - last_metadata_updated: {fmt_date(meta.last_metadata_updated)}\n"
-                )
+                lines.append(f"  - last_metadata_updated: {fmt_date(meta.last_metadata_updated)}\n")
             lv = meta.last_verified if meta else None
             lines.append(
                 f"  - last_verified: {fmt_date(lv)} "
@@ -830,11 +787,10 @@ def to_markdown(report: Report, cfg: ToolConfig) -> str:
         lines.append("\n")
 
     lines.append("## Notes\n")
+    lines.append("- 'Out of date' does not necessarily mean 'broken'. Use this as a triage signal.\n")
     lines.append(
-        "- 'Out of date' does not necessarily mean 'broken'. Use this as a triage signal.\n"
-    )
-    lines.append(
-        "- last_git_touched / last_content_updated are computed from git history. last_verified is human-controlled.\n\n"
+        "- last_git_touched / last_content_updated are computed from git history. "
+        "last_verified is human-controlled.\n\n"
     )
     lines.append(
         "- In `check` mode, scan/parsing errors are reported for visibility but do not "
@@ -843,16 +799,14 @@ def to_markdown(report: Report, cfg: ToolConfig) -> str:
     return "".join(lines)
 
 
-def write_outputs(report: Report, cfg: ToolConfig, out_dir: Path) -> Tuple[Path, Path]:
+def write_outputs(report: Report, cfg: ToolConfig, out_dir: Path) -> tuple[Path, Path]:
     out_dir.mkdir(parents=True, exist_ok=True)
     json_path = out_dir / f"{OUTPUT_FILENAME}.json"
     md_path = out_dir / f"{OUTPUT_FILENAME}.md"
 
     payload = report.model_dump(mode="json")
 
-    json_path.write_text(
-        json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-    )
+    json_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     md_path.write_text(to_markdown(report, cfg), encoding="utf-8")
     return json_path, md_path
 
@@ -860,9 +814,9 @@ def write_outputs(report: Report, cfg: ToolConfig, out_dir: Path) -> Tuple[Path,
 # -----------------------------
 # Check enforcement
 # -----------------------------
-def enforce(cfg: ToolConfig, records: List[FileRecord]) -> List[str]:
+def enforce(cfg: ToolConfig, records: list[FileRecord]) -> list[str]:
     pol = cfg.policy
-    violations: List[str] = []
+    violations: list[str] = []
     today = _iso_today()
 
     for r in records:
@@ -890,17 +844,12 @@ def enforce(cfg: ToolConfig, records: List[FileRecord]) -> List[str]:
                     days = (today - lv).days
                     if days > pol.warn_if_verified_older_than_days:
                         violations.append(
-                            f"{r.path}: last_verified is {days}d old "
-                            f"(> {pol.warn_if_verified_older_than_days}d)"
+                            f"{r.path}: last_verified is {days}d old (> {pol.warn_if_verified_older_than_days}d)"
                         )
 
-        if r.kind == "ipynb" and match_allowlist(
-            r.path, pol.require_notebook_normalized
-        ):
+        if r.kind == "ipynb" and match_allowlist(r.path, pol.require_notebook_normalized):
             if "notebook_not_normalized" in (r.warnings or []):
-                violations.append(
-                    f"{r.path}: notebook is not normalized (run update/format)"
-                )
+                violations.append(f"{r.path}: notebook is not normalized (run update/format)")
 
     return violations
 
@@ -917,31 +866,23 @@ def parse_date_token(token: str) -> date:
     return date.fromisoformat(token)
 
 
-def collect_scan_issues(
-    records: List[FileRecord], target: Literal["errors", "warnings"]
-) -> List[str]:
-    items: List[str] = []
+def collect_scan_issues(records: list[FileRecord], target: Literal["errors", "warnings"]) -> list[str]:
+    items: list[str] = []
     for r in records:
         for e in getattr(r, target, []):
             items.append(f"{r.path}: {e}")
     return items
 
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="DeepLabCut checks tool (docs + notebooks)"
-    )
-    parser.add_argument(
-        "--config", default=str(DEFAULT_CFG), help="Path to YAML config file"
-    )
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="DeepLabCut checks tool (docs + notebooks)")
+    parser.add_argument("--config", default=str(DEFAULT_CFG), help="Path to YAML config file")
     parser.add_argument(
         "--no-step-summary",
         action="store_true",
         help="Do not write to GITHUB_STEP_SUMMARY",
     )
-    parser.add_argument(
-        "--out-dir", default=f"tmp/{OUTPUT_FILENAME}", help="Directory to write outputs"
-    )
+    parser.add_argument("--out-dir", default=f"tmp/{OUTPUT_FILENAME}", help="Directory to write outputs")
 
     sub = parser.add_subparsers(dest="cmd", required=True)
     rep = sub.add_parser("report", help="Generate staleness report (read-only)")
@@ -969,9 +910,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         help="Enable failure on scan/parsing errors (overrides config for this run)",
     )
 
-    up = sub.add_parser(
-        "update", help="Update metadata/frontmatter (write mode requires --write)"
-    )
+    up = sub.add_parser("update", help="Update metadata/frontmatter (write mode requires --write)")
     up.add_argument(
         "--write",
         action="store_true",
@@ -982,9 +921,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         action="store_true",
         help="Set embedded last_content_updated from computed git content date",
     )
-    up.add_argument(
-        "--targets", nargs="*", help="Optional list of relative file paths to update"
-    )
+    up.add_argument("--targets", nargs="*", help="Optional list of relative file paths to update")
     up.add_argument("--set-last-verified", default=None, help="YYYY-MM-DD or 'today'")
     up.add_argument("--set-verified-for", default=None, help="String like 3.0.0rc13")
     up.add_argument(
@@ -1023,9 +960,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if args.cmd in {"report", "check"}:
         records = scan_files(repo_root, cfg, targets=getattr(args, "targets", None))
     elif args.cmd == "update":
-        lv = (
-            parse_date_token(args.set_last_verified) if args.set_last_verified else None
-        )
+        lv = parse_date_token(args.set_last_verified) if args.set_last_verified else None
         records = update_files(
             repo_root,
             cfg,
@@ -1096,7 +1031,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if args.cmd not in {"report", "check"} and any(r.errors for r in records):
         return 1
     else:
-        print(f"\nReport generated:")
+        print("\nReport generated:")
         print(f"- JSON: {json_path}")
         print(f"- Markdown: {md_path}")
 

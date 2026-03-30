@@ -10,14 +10,13 @@
 #
 import os
 
-from PySide6 import QtWidgets, QtCore
+from PySide6 import QtCore, QtWidgets
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QCheckBox
 
 
 class OpenProject(QtWidgets.QDialog):
     def __init__(self, parent):
-        super(OpenProject, self).__init__(parent)
+        super().__init__(parent)
 
         self.setWindowTitle("Load Existing Project")
 

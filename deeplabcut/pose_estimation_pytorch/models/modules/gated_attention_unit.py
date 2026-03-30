@@ -8,19 +8,20 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Gated Attention Unit
+"""Gated Attention Unit.
 
 Based on the building blocks used for the ``mmdetection`` CSPNeXt implementation. For
 more information, see <https://github.com/open-mmlab/mmdetection>.
 """
+
 from __future__ import annotations
 
 import math
 
+import timm.layers as timm_layers
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import timm.layers as timm_layers
 
 from deeplabcut.pose_estimation_pytorch.models.modules.norm import ScaleNorm
 
@@ -36,17 +37,13 @@ def rope(x, dim):
     for i in spatial_shape:
         total_len *= i
 
-    position = torch.reshape(
-        torch.arange(total_len, dtype=torch.int, device=x.device), spatial_shape
-    )
+    position = torch.reshape(torch.arange(total_len, dtype=torch.int, device=x.device), spatial_shape)
 
     for i in range(dim[-1] + 1, len(shape) - 1, 1):
         position = torch.unsqueeze(position, dim=-1)
 
     half_size = shape[-1] // 2
-    freq_seq = -torch.arange(half_size, dtype=torch.int, device=x.device) / float(
-        half_size
-    )
+    freq_seq = -torch.arange(half_size, dtype=torch.int, device=x.device) / float(half_size)
     inv_freq = 10000**-freq_seq
 
     sinusoid = position[..., None] * inv_freq[None, None, :]
@@ -76,7 +73,7 @@ class Scale(nn.Module):
 
 
 class GatedAttentionUnit(nn.Module):
-    """Gated Attention Unit (GAU) in RTMBlock"""
+    """Gated Attention Unit (GAU) in RTMBlock."""
 
     def __init__(
         self,
@@ -94,7 +91,7 @@ class GatedAttentionUnit(nn.Module):
         use_rel_bias=True,
         pos_enc=False,
     ):
-        super(GatedAttentionUnit, self).__init__()
+        super().__init__()
         self.s = s
         self.num_token = num_token
         self.use_rel_bias = use_rel_bias
@@ -109,9 +106,7 @@ class GatedAttentionUnit(nn.Module):
         self.e = int(in_token_dims * expansion_factor)
         if use_rel_bias:
             if attn_type == "self-attn":
-                self.w = nn.Parameter(
-                    torch.rand([2 * num_token - 1], dtype=torch.float)
-                )
+                self.w = nn.Parameter(torch.rand([2 * num_token - 1], dtype=torch.float))
             else:
                 self.a = nn.Parameter(torch.rand([1, s], dtype=torch.float))
                 self.b = nn.Parameter(torch.rand([1, s], dtype=torch.float))

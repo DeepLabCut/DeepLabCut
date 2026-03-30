@@ -8,41 +8,39 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from typing import List, Optional
+import os
+import pickle
+import re
+import shelve
+import warnings
+from collections import defaultdict
+from functools import partial
+from itertools import combinations, cycle
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-import os
 import pandas as pd
-import pickle
-import re
 import scipy.linalg.interpolative as sli
-import shelve
-import warnings
-from collections import defaultdict
-
-import deeplabcut
-from deeplabcut.utils.auxfun_videos import VideoWriter
-from functools import partial
-from deeplabcut.core.trackingutils import (
-    calc_iou,
-    TRACK_METHODS,
-)
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
-from itertools import combinations, cycle
 from networkx.algorithms.flow import preflow_push
-from pathlib import Path
 from scipy.linalg import hankel
 from scipy.spatial.distance import directed_hausdorff
 from scipy.stats import mode
 from tqdm import trange
 
+import deeplabcut
+from deeplabcut.core.trackingutils import (
+    TRACK_METHODS,
+    calc_iou,
+)
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import VideoWriter
+
 
 class Tracklet:
     def __init__(self, data, inds):
-        """
-        Create a Tracklet object.
+        """Create a Tracklet object.
 
         Parameters
         ----------
@@ -56,13 +54,11 @@ class Tracklet:
             raise ValueError("Data must of shape (nframes, nbodyparts, 3 or 4)")
 
         if data.shape[0] != len(inds):
-            raise ValueError(
-                "Data and corresponding indices must have the same length."
-            )
+            raise ValueError("Data and corresponding indices must have the same length.")
 
         self.data = data.astype(np.float64)
         self.inds = np.array(inds)
-        monotonically_increasing = all(a < b for a, b in zip(inds, inds[1:]))
+        monotonically_increasing = all(a < b for a, b in zip(inds, inds[1:], strict=False))
         if not monotonically_increasing:
             idx = np.argsort(inds, kind="mergesort")  # For stable sort with duplicates
             self.inds = self.inds[idx]
@@ -102,10 +98,7 @@ class Tracklet:
         return np.isin(self.inds, other_tracklet.inds, assume_unique=True).any()
 
     def __repr__(self):
-        return (
-            f"Tracklet of length {len(self)} from {self.start} to {self.end} "
-            f"with reliability {self.likelihood:.3f}"
-        )
+        return f"Tracklet of length {len(self)} from {self.start} to {self.end} with reliability {self.likelihood:.3f}"
 
     @property
     def xy(self):
@@ -114,20 +107,17 @@ class Tracklet:
 
     @property
     def centroid(self):
-        """
-        Return the instantaneous 2D position of the Tracklet centroid.
-        For Tracklets longer than 10 frames, the centroid is automatically
-        smoothed using an exponential moving average.
-        The result is cached for efficiency.
+        """Return the instantaneous 2D position of the Tracklet centroid.
+
+        For Tracklets longer than 10 frames, the centroid is automatically smoothed
+        using an exponential moving average. The result is cached for efficiency.
         """
         if self._centroid is None:
             self._update_centroid()
         return self._centroid
 
     def _update_centroid(self):
-        like = (
-            self.data[..., 2:3] + 1e-10
-        )  # Avoid division by zero in very uncertain tracklets
+        like = self.data[..., 2:3] + 1e-10  # Avoid division by zero in very uncertain tracklets
         self._centroid = np.nansum(self.xy * like, axis=1) / np.nansum(like, axis=1)
 
     @property
@@ -197,8 +187,8 @@ class Tracklet:
         return self + sum(fills)
 
     def contains_duplicates(self, return_indices=False):
-        """
-        Evaluate whether the Tracklet contains duplicate time indices.
+        """Evaluate whether the Tracklet contains duplicate time indices.
+
         If `return_indices`, also return the indices of the duplicates.
         """
         has_duplicates = len(set(self.inds)) != len(self.inds)
@@ -207,22 +197,16 @@ class Tracklet:
         return has_duplicates, np.flatnonzero(np.diff(self.inds) == 0)
 
     def calc_velocity(self, where="head", norm=True):
-        """
-        Calculate the linear velocity of either the `head`
-        or `tail` of the Tracklet, computed over the last or first
-        three frames, respectively. If `norm`, return the absolute
+        """Calculate the linear velocity of either the `head` or `tail` of the Tracklet,
+        computed over the last or first three frames, respectively.
+
+        If `norm`, return the absolute
         speed rather than a 2D vector.
         """
         if where == "tail":
-            vel = (
-                np.diff(self.centroid[:3], axis=0)
-                / np.diff(self.inds[:3])[:, np.newaxis]
-            )
+            vel = np.diff(self.centroid[:3], axis=0) / np.diff(self.inds[:3])[:, np.newaxis]
         elif where == "head":
-            vel = (
-                np.diff(self.centroid[-3:], axis=0)
-                / np.diff(self.inds[-3:])[:, np.newaxis]
-            )
+            vel = np.diff(self.centroid[-3:], axis=0) / np.diff(self.inds[-3:])[:, np.newaxis]
         else:
             raise ValueError(f"Unknown where={where}")
         if norm:
@@ -235,11 +219,9 @@ class Tracklet:
         return np.sqrt(np.max(np.sum(vel**2, axis=1)))
 
     def calc_rate_of_turn(self, where="head"):
-        """
-        Calculate the rate of turn (or angular velocity) of
-        either the `head` or `tail` of the Tracklet, computed over
-        the last or first three frames, respectively.
-        """
+        """Calculate the rate of turn (or angular velocity) of either the `head` or
+        `tail` of the Tracklet, computed over the last or first three frames,
+        respectively."""
         if where == "tail":
             v = np.diff(self.centroid[:3], axis=0)
         else:
@@ -253,18 +235,16 @@ class Tracklet:
         return self.end - self.start + 1 == len(self)
 
     def immediately_follows(self, other_tracklet, max_gap=1):
-        """
-        Test whether this Tracklet follows another within
-        a tolerance of`max_gap` frames.
-        """
+        """Test whether this Tracklet follows another within a tolerance of`max_gap`
+        frames."""
         return 0 < self.start - other_tracklet.end <= max_gap
 
     def distance_to(self, other_tracklet):
-        """
-        Calculate the Euclidean distance between this Tracklet and another.
-        If the Tracklets overlap in time, this is the mean distance over
-        those frames. Otherwise, it is the distance between the head/tail
-        of one to the tail/head of the other.
+        """Calculate the Euclidean distance between this Tracklet and another.
+
+        If the Tracklets overlap in time, this is the mean distance over those frames.
+        Otherwise, it is the distance between the head/tail of one to the tail/head of
+        the other.
         """
         if self in other_tracklet:
             dist = (
@@ -273,34 +253,26 @@ class Tracklet:
             )
             return np.sqrt(np.sum(dist**2, axis=1)).mean()
         elif self < other_tracklet:
-            return np.sqrt(
-                np.sum((self.centroid[-1] - other_tracklet.centroid[0]) ** 2)
-            )
+            return np.sqrt(np.sum((self.centroid[-1] - other_tracklet.centroid[0]) ** 2))
         else:
-            return np.sqrt(
-                np.sum((self.centroid[0] - other_tracklet.centroid[-1]) ** 2)
-            )
+            return np.sqrt(np.sum((self.centroid[0] - other_tracklet.centroid[-1]) ** 2))
 
     def motion_affinity_with(self, other_tracklet):
-        """
-        Evaluate the motion affinity of this Tracklet' with another one.
-        This evaluates whether the Tracklets could realistically be reached
-        by one another, knowing the time separating them and their velocities.
-        Return 0 if the Tracklets overlap.
+        """Evaluate the motion affinity of this Tracklet' with another one.
+
+        This evaluates whether the Tracklets could realistically be reached by one
+        another, knowing the time separating them and their velocities. Return 0 if the
+        Tracklets overlap.
         """
         time_gap = self.time_gap_to(other_tracklet)
         if time_gap > 0:
             if self < other_tracklet:
                 d1 = self.centroid[-1] + time_gap * self.calc_velocity(norm=False)
-                d2 = other_tracklet.centroid[
-                    0
-                ] - time_gap * other_tracklet.calc_velocity("tail", False)
+                d2 = other_tracklet.centroid[0] - time_gap * other_tracklet.calc_velocity("tail", False)
                 delta1 = other_tracklet.centroid[0] - d1
                 delta2 = self.centroid[-1] - d2
             else:
-                d1 = other_tracklet.centroid[
-                    -1
-                ] + time_gap * other_tracklet.calc_velocity(norm=False)
+                d1 = other_tracklet.centroid[-1] + time_gap * other_tracklet.calc_velocity(norm=False)
                 d2 = self.centroid[0] - time_gap * self.calc_velocity("tail", False)
                 delta1 = self.centroid[0] - d1
                 delta2 = other_tracklet.centroid[-1] - d2
@@ -371,13 +343,11 @@ class Tracklet:
         return self.hankelize(self.centroid)
 
     def dynamic_dissimilarity_with(self, other_tracklet):
-        """
-        Compute a dissimilarity score between Hankelets.
-        This metric efficiently captures the degree of alignment of
-        the subspaces spanned by the columns of both matrices.
+        """Compute a dissimilarity score between Hankelets. This metric efficiently
+        captures the degree of alignment of the subspaces spanned by the columns of both
+        matrices.
 
-        See Li et al., 2012.
-            Cross-view Activity Recognition using Hankelets.
+        See Li et al., 2012.     Cross-view Activity Recognition using Hankelets.
         """
         hk1 = self.to_hankelet()
         hk1 /= np.linalg.norm(hk1)
@@ -389,12 +359,10 @@ class Tracklet:
         return 2 - np.linalg.norm(temp1 + temp2)
 
     def dynamic_similarity_with(self, other_tracklet, tol=0.01):
-        """
-        Evaluate the complexity of the tracklets' underlying dynamics
-        from the rank of their Hankel matrices, and assess whether
-        they originate from the same track. The idea is that if two
-        tracklets are part of the same track, they can be approximated
-        by a low order regressor. Conversely, tracklets belonging to
+        """Evaluate the complexity of the tracklets' underlying dynamics from the rank
+        of their Hankel matrices, and assess whether they originate from the same track.
+        The idea is that if two tracklets are part of the same track, they can be
+        approximated by a low order regressor. Conversely, tracklets belonging to
         different tracks will require a higher order regressor.
 
         See Dicle et al., 2013.
@@ -408,12 +376,11 @@ class Tracklet:
         return (rank1 + rank2) / joint_rank - 1
 
     def estimate_rank(self, tol):
-        """
-        Estimate the (low) rank of a noisy matrix via
-        hard thresholding of singular values.
+        """Estimate the (low) rank of a noisy matrix via hard thresholding of singular
+        values.
 
-        See Gavish & Donoho, 2013.
-            The optimal hard threshold for singular values is 4/sqrt(3)
+        See Gavish & Donoho, 2013.     The optimal hard threshold for singular values is
+        4/sqrt(3)
         """
         mat = self.to_hankelet()
         if np.any(mat):  # check that the matrix contains non-zero entries
@@ -485,7 +452,7 @@ class TrackletStitcher:
                     self.residuals.append(t)
 
         if not len(self.tracklets):
-            raise IOError("Tracklets are empty.")
+            raise OSError("Tracklets are empty.")
 
         if prestitch_residuals:
             self._prestitch_residuals(5)  # Hard-coded but found to work very well
@@ -500,13 +467,8 @@ class TrackletStitcher:
 
         # Map each Tracklet to an entry and output nodes and vice versa,
         # which is convenient once the tracklets are stitched.
-        self._mapping = {
-            tracklet: {"in": f"{i}in", "out": f"{i}out"}
-            for i, tracklet in enumerate(self)
-        }
-        self._mapping_inv = {
-            label: k for k, v in self._mapping.items() for label in v.values()
-        }
+        self._mapping = {tracklet: {"in": f"{i}in", "out": f"{i}out"} for i, tracklet in enumerate(self)}
+        self._mapping_inv = {label: k for k, v in self._mapping.items() for label in v.values()}
 
         # Store tracklets and corresponding negatives (those that overlap in time)
         self._lu_overlap = defaultdict(list)
@@ -532,9 +494,7 @@ class TrackletStitcher:
     ):
         with open(pickle_file, "rb") as file:
             tracklets = pickle.load(file)
-        class_ = cls.from_dict_of_dict(
-            tracklets, n_tracks, min_length, split_tracklets, prestitch_residuals
-        )
+        class_ = cls.from_dict_of_dict(tracklets, n_tracks, min_length, split_tracklets, prestitch_residuals)
         class_.filename = pickle_file
         return class_
 
@@ -552,7 +512,7 @@ class TrackletStitcher:
         single = None
         for k, dict_ in dict_of_dict.items():
             try:
-                inds, data = zip(*[(cls.get_frame_ind(k), v) for k, v in dict_.items()])
+                inds, data = zip(*[(cls.get_frame_ind(k), v) for k, v in dict_.items()], strict=False)
             except ValueError:
                 continue
             inds = np.asarray(inds)
@@ -567,9 +527,7 @@ class TrackletStitcher:
                 single = tracklet
             else:
                 tracklets.append(Tracklet(data, inds))
-        class_ = cls(
-            tracklets, n_tracks, min_length, split_tracklets, prestitch_residuals
-        )
+        class_ = cls(tracklets, n_tracks, min_length, split_tracklets, prestitch_residuals)
         class_.header = header
         class_.single = single
         return class_
@@ -592,7 +550,7 @@ class TrackletStitcher:
         idx = sorted(set(np.searchsorted(tracklet.inds, inds)))
         inds_new = np.split(tracklet.inds, idx)
         data_new = np.split(tracklet.data, idx)
-        return [Tracklet(data, inds) for data, inds in zip(data_new, inds_new)]
+        return [Tracklet(data, inds) for data, inds in zip(data_new, inds_new, strict=False)]
 
     @property
     def n_frames(self):
@@ -626,9 +584,7 @@ class TrackletStitcher:
             if not overlapping_tracklets:
                 continue
             # Pick the closest (spatially) overlapping tracklet
-            ind_min = np.argmin(
-                [tracklet.distance_to(t) for t in overlapping_tracklets]
-            )
+            ind_min = np.argmin([tracklet.distance_to(t) for t in overlapping_tracklets])
             overlapping_tracklet = overlapping_tracklets[ind_min]
             common_inds = set(tracklet.inds).intersection(overlapping_tracklet.inds)
             ind_anchor = np.random.choice(list(common_inds))
@@ -657,14 +613,12 @@ class TrackletStitcher:
         self.G = nx.DiGraph()
         self.G.add_node("source", demand=-self.n_tracks)
         self.G.add_node("sink", demand=self.n_tracks)
-        nodes_in, nodes_out = zip(
-            *[v.values() for k, v in self._mapping.items() if k in nodes]
-        )
+        nodes_in, nodes_out = zip(*[v.values() for k, v in self._mapping.items() if k in nodes], strict=False)
         self.G.add_nodes_from(nodes_in, demand=1)
         self.G.add_nodes_from(nodes_out, demand=-1)
-        self.G.add_edges_from(zip(nodes_in, nodes_out), capacity=1)
-        self.G.add_edges_from(zip(["source"] * n_nodes, nodes_in), capacity=1)
-        self.G.add_edges_from(zip(nodes_out, ["sink"] * n_nodes), capacity=1)
+        self.G.add_edges_from(zip(nodes_in, nodes_out, strict=False), capacity=1)
+        self.G.add_edges_from(zip(["source"] * n_nodes, nodes_in, strict=False), capacity=1)
+        self.G.add_edges_from(zip(nodes_out, ["sink"] * n_nodes, strict=False), capacity=1)
         if weight_func is None:
             weight_func = self.calculate_edge_weight
         for i in trange(n_nodes):
@@ -703,46 +657,28 @@ class TrackletStitcher:
             _, self.flow = nx.capacity_scaling(self.G)
             self.paths = self.reconstruct_paths()
         except nx.exception.NetworkXUnfeasible:
-            warnings.warn("No optimal solution found. Employing black magic...")
+            warnings.warn("No optimal solution found. Employing black magic...", stacklevel=2)
             # Let us prune the graph by removing all source and sink edges
             # but those connecting the `n_tracks` first and last tracklets.
-            in_to_keep = [
-                self._mapping[first_tracklet]["in"]
-                for first_tracklet in self._first_tracklets
-            ]
-            out_to_keep = [
-                self._mapping[last_tracklet]["out"]
-                for last_tracklet in self._last_tracklets
-            ]
-            in_to_remove = set(
-                node for _, node in self.G.out_edges("source")
-            ).difference(in_to_keep)
-            out_to_remove = set(node for node, _ in self.G.in_edges("sink")).difference(
-                out_to_keep
-            )
-            self.G.remove_edges_from(zip(["source"] * len(in_to_remove), in_to_remove))
-            self.G.remove_edges_from(zip(out_to_remove, ["sink"] * len(out_to_remove)))
+            in_to_keep = [self._mapping[first_tracklet]["in"] for first_tracklet in self._first_tracklets]
+            out_to_keep = [self._mapping[last_tracklet]["out"] for last_tracklet in self._last_tracklets]
+            in_to_remove = set(node for _, node in self.G.out_edges("source")).difference(in_to_keep)
+            out_to_remove = set(node for node, _ in self.G.in_edges("sink")).difference(out_to_keep)
+            self.G.remove_edges_from(zip(["source"] * len(in_to_remove), in_to_remove, strict=False))
+            self.G.remove_edges_from(zip(out_to_remove, ["sink"] * len(out_to_remove), strict=False))
             # Preflow push seems to work slightly better than shortest
             # augmentation path..., and is more computationally efficient.
             paths = []
-            for path in nx.node_disjoint_paths(
-                self.G, "source", "sink", preflow_push, self.n_tracks
-            ):
+            for path in nx.node_disjoint_paths(self.G, "source", "sink", preflow_push, self.n_tracks):
                 temp = set()
                 for node in path[1:-1]:
                     self.G.remove_node(node)
                     temp.add(self._mapping_inv[node])
                 paths.append(list(temp))
             incomplete_tracks = self.n_tracks - len(paths)
-            remaining_nodes = set(
-                self._mapping_inv[node]
-                for node in self.G
-                if node not in ("source", "sink")
-            )
+            remaining_nodes = set(self._mapping_inv[node] for node in self.G if node not in ("source", "sink"))
             if len(remaining_nodes) > 0:
-                if (
-                    incomplete_tracks == 1
-                ):  # All remaining nodes must belong to the same track
+                if incomplete_tracks == 1:  # All remaining nodes must belong to the same track
                     # Verify whether there are overlapping tracklets
                     for t1, t2 in combinations(remaining_nodes, 2):
                         if t1 in t2:
@@ -776,13 +712,11 @@ class TrackletStitcher:
                     paths += self.reconstruct_paths()
             self.paths = paths
             if len(self.paths) != self.n_tracks:
-                warnings.warn(f"Only {len(self.paths)} tracks could be reconstructed.")
+                warnings.warn(f"Only {len(self.paths)} tracks could be reconstructed.", stacklevel=2)
 
         finally:
             if self.paths is None:
-                raise ValueError(
-                    f"Could not reconstruct {self.n_tracks} tracks from the tracklets given."
-                )
+                raise ValueError(f"Could not reconstruct {self.n_tracks} tracks from the tracklets given.")
 
             self.tracks = np.asarray([sum(path) for path in self.paths if path])
             if add_back_residuals:
@@ -796,9 +730,7 @@ class TrackletStitcher:
         n_max = len(residuals)
         while n_attemps < n_max and residuals:
             for res in residuals[::-1]:
-                easy_fit = [
-                    i for i, track in enumerate(self.tracks) if res not in track
-                ]
+                easy_fit = [i for i, track in enumerate(self.tracks) if res not in track]
                 if not easy_fit:
                     residuals.remove(res)
                     continue
@@ -830,9 +762,7 @@ class TrackletStitcher:
                 elif right_gap <= 3:
                     dist = np.linalg.norm(track.centroid[e] - c1[1])
                 else:
-                    dist = np.linalg.norm(track.centroid[s] - c1[0]) + np.linalg.norm(
-                        track.centroid[e] - c1[1]
-                    )
+                    dist = np.linalg.norm(track.centroid[s] - c1[0]) + np.linalg.norm(track.centroid[e] - c1[1])
                 dists.append((n, dist))
             if not dists:
                 continue
@@ -924,15 +854,11 @@ class TrackletStitcher:
                 [scorer, ["single"], bpts[-n_unique_bpts:], coords],
                 names=["scorer", "individuals", "bodyparts", "coords"],
             )
-            df2 = pd.DataFrame(
-                self.single.flat_data, columns=columns, index=self.single.inds
-            )
+            df2 = pd.DataFrame(self.single.flat_data, columns=columns, index=self.single.inds)
             df = df.join(df2, how="outer")
         return df
 
-    def write_tracks(
-        self, output_name="", suffix="", animal_names=None, save_as_csv=False
-    ):
+    def write_tracks(self, output_name="", suffix="", animal_names=None, save_as_csv=False):
         df = self.format_df(animal_names)
         if not output_name:
             if suffix:
@@ -975,7 +901,7 @@ class TrackletStitcher:
         for path in self.paths:
             length = len(path)
             colors = plt.get_cmap(colormap, length)(range(length))
-            for tracklet, color in zip(path, colors):
+            for tracklet, color in zip(path, colors, strict=False):
                 tracklet.plot(color=color, ax=ax)
 
     def plot_tracks(self, colormap="viridis"):
@@ -988,7 +914,7 @@ class TrackletStitcher:
             if loc != "bottom":
                 spine.set_visible(False)
         colors = plt.get_cmap(colormap, self.n_tracks)(range(self.n_tracks))
-        for track, color in zip(self.tracks, colors):
+        for track, color in zip(self.tracks, colors, strict=False):
             track.plot(color=color, ax=ax)
 
     def plot_tracklets(self, colormap="Paired"):
@@ -1010,7 +936,7 @@ class TrackletStitcher:
             tracklet2lines[tracklet] = lines
             for line in lines:
                 line2tracklet[line] = tracklet
-            for i, (x, y) in zip(tracklet.inds, tracklet.centroid):
+            for i, (x, y) in zip(tracklet.inds, tracklet.centroid, strict=False):
                 all_points[i][(x, y)] = color
 
     def reconstruct_paths(self):
@@ -1038,7 +964,7 @@ def stitch_tracklets(
     shuffle=1,
     trainingsetindex=0,
     n_tracks=None,
-    animal_names: Optional[List[str]] = None,
+    animal_names: list[str] | None = None,
     min_length=10,
     split_tracklets=True,
     prestitch_residuals=True,
@@ -1052,9 +978,8 @@ def stitch_tracklets(
     save_as_csv=False,
     **kwargs,
 ):
-    """
-    Stitch sparse tracklets into full tracks via a graph-based,
-    minimum-cost flow optimization problem.
+    """Stitch sparse tracklets into full tracks via a graph-based, minimum-cost flow
+    optimization problem.
 
     Parameters
     ----------
@@ -1062,17 +987,20 @@ def stitch_tracklets(
         Path to the main project config.yaml file.
 
     videos : list
-        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the videos with same extension are stored.
+        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the
+        videos with same extension are stored.
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this
+        extension are analyzed.
         If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
     shuffle: int, optional
         An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list
+        in config.yaml).
 
     n_tracks : int, optional
         Number of tracks to reconstruct. By default, taken as the number
@@ -1206,6 +1134,7 @@ def stitch_tracklets(
 
         return -dist
 
+    base_weight_func = weight_func
     for video in vids:
         print("Processing... ", video)
         nframe = len(VideoWriter(video))
@@ -1214,19 +1143,15 @@ def stitch_tracklets(
         deeplabcut.utils.auxiliaryfunctions.attempt_to_make_folder(dest)
         vname = Path(video).stem
 
-        feature_dict_path = os.path.join(
-            dest, vname + DLCscorer + "_bpt_features.pickle"
-        )
+        feature_dict_path = os.path.join(dest, vname + DLCscorer + "_bpt_features.pickle")
         # should only exist one
         if transformer_checkpoint:
             import dbm
 
             try:
                 feature_dict = shelve.open(feature_dict_path, flag="r")
-            except dbm.error:
-                raise FileNotFoundError(
-                    f"{feature_dict_path} does not exist. Did you run transformer_reID()?"
-                )
+            except dbm.error as err:
+                raise FileNotFoundError(f"{feature_dict_path} does not exist. Did you run transformer_reID()?") from err
 
         dataname = os.path.join(dest, vname + DLCscorer + ".h5")
 
@@ -1236,22 +1161,21 @@ def stitch_tracklets(
             stitcher = TrackletStitcher.from_pickle(
                 pickle_file, n_tracks, min_length, split_tracklets, prestitch_residuals
             )
+            current_weight_func = base_weight_func
             with_id = any(tracklet.identity != -1 for tracklet in stitcher)
             if with_id and weight_func is None:
                 # Add in identity weighing before building the graph
-                def weight_func(t1, t2):
+                def current_weight_func(t1, t2, stitcher=stitcher):
                     w = 0.01 if t1.identity == t2.identity else 1
                     return w * stitcher.calculate_edge_weight(t1, t2)
 
             if transformer_checkpoint:
                 stitcher.build_graph(
                     max_gap=max_gap,
-                    weight_func=partial(
-                        trans_weight_func, nframe=nframe, feature_dict=feature_dict
-                    ),
+                    weight_func=partial(trans_weight_func, nframe=nframe, feature_dict=feature_dict),
                 )
             else:
-                stitcher.build_graph(max_gap=max_gap, weight_func=weight_func)
+                stitcher.build_graph(max_gap=max_gap, weight_func=current_weight_func)
 
             stitcher.stitch()
             if transformer_checkpoint:

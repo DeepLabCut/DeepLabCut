@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Implementations of methods to compute identity prediction accuracy"""
+"""Implementations of methods to compute identity prediction accuracy."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -63,7 +64,7 @@ def compute_identity_scores(
         gt = gt.transpose((1, 0, 2))
         pred = pred.transpose((1, 0, 2))[..., :2]
         id_scores = id_scores.transpose((1, 0, 2))
-        for bpt, bpt_gt, bpt_pred, bpt_id_scores in zip(bodyparts, gt, pred, id_scores):
+        for bpt, bpt_gt, bpt_pred, bpt_id_scores in zip(bodyparts, gt, pred, id_scores, strict=True):
             # assign ground truth keypoints to the closest prediction, so the ID score
             # is the closest possible to the ID score computed with "ground truth"
             indices_gt = np.flatnonzero(np.all(~np.isnan(bpt_gt), axis=1))
@@ -77,9 +78,7 @@ def compute_identity_scores(
             found = neighbors != -1
             indices = np.flatnonzero(all_bpts == bpt)
             # Get the predicted identity of each bodypart by taking the argmax
-            ids[i, indices[indices_gt[found]], 1] = np.argmax(
-                bpt_id_scores[neighbors[found]], axis=1
-            )
+            ids[i, indices[indices_gt[found]], 1] = np.argmax(bpt_id_scores[neighbors[found]], axis=1)
 
     ids = ids.reshape((len(predictions), len(individuals), len(bodyparts), 2))
     results = {}

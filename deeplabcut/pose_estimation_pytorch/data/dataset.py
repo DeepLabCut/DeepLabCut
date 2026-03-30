@@ -38,7 +38,7 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 
 @dataclass(frozen=True)
 class PoseDatasetParameters:
-    """Parameters for a pose dataset
+    """Parameters for a pose dataset.
 
     Attributes:
         bodyparts: the names of bodyparts in the dataset
@@ -76,7 +76,7 @@ class PoseDatasetParameters:
 
 @dataclass
 class PoseDataset(Dataset):
-    """A pose dataset"""
+    """A pose dataset."""
 
     images: list[dict]
     annotations: list[dict]
@@ -89,12 +89,9 @@ class PoseDataset(Dataset):
     def __post_init__(self):
         self.image_path_id_map = map_image_path_to_id(self.images)
         self.annotation_idx_map = map_id_to_annotations(self.annotations)
-        self.img_id_to_index = {
-            img["id"]: index for index, img in enumerate(self.images)
-        }
+        self.img_id_to_index = {img["id"]: index for index, img in enumerate(self.images)}
         if self.task == Task.TOP_DOWN and (
-            self.parameters.top_down_crop_size is None
-            or self.parameters.top_down_crop_margin is None
+            self.parameters.top_down_crop_size is None or self.parameters.top_down_crop_margin is None
         ):
             raise ValueError(
                 "You must specify a ``top_down_crop_size`` and ``top_down_crop_margin``"
@@ -106,10 +103,7 @@ class PoseDataset(Dataset):
 
         if self.task == Task.COND_TOP_DOWN:
             if self.ctd_config is None:
-                raise ValueError(
-                    "Must specify a ``ctd_config`` in your PoseDatasetParameters for "
-                    "CTD models."
-                )
+                raise ValueError("Must specify a ``ctd_config`` in your PoseDatasetParameters for CTD models.")
 
             self.generative_sampler = GenerativeSampler(
                 self.parameters.num_joints,
@@ -124,8 +118,7 @@ class PoseDataset(Dataset):
         return len(self.annotations)
 
     def _get_raw_item(self, index: int) -> tuple[str, list[dict], int]:
-        """
-        Retrieve the image path and annotations for the specified index.
+        """Retrieve the image path and annotations for the specified index.
 
         Args:
             index (int): The index of the item to retrieve.
@@ -148,9 +141,7 @@ class PoseDataset(Dataset):
         return img["file_name"], [ann], img["id"]
 
     def _get_raw_item_crop_context(self, index: int) -> tuple[str, list[dict], int]:
-        """
-        Includes keypoints from other individuals in the image ("context").
-        """
+        """Includes keypoints from other individuals in the image ("context")."""
         ann = self.annotations[index]
         img = self.images[self.img_id_to_index[ann["image_id"]]]
         near_anns = []
@@ -163,8 +154,7 @@ class PoseDataset(Dataset):
         return img["file_name"], [ann] + near_anns, img["id"]
 
     def __getitem__(self, index: int) -> dict:
-        """
-        Gets the item at the specified index from the dataset.
+        """Gets the item at the specified index from the dataset.
 
         Args:
             index: ordered number of the items in the dataset
@@ -200,9 +190,7 @@ class PoseDataset(Dataset):
 
         # this is applying data augmentations before the cropping
         # though normalization should be applied after the cropping
-        transformed = self.apply_transform_all_keypoints(
-            image, keypoints, keypoints_unique, bboxes
-        )
+        transformed = self.apply_transform_all_keypoints(image, keypoints, keypoints_unique, bboxes)
         image = transformed["image"]
         keypoints = transformed["keypoints"]
         keypoints_unique = transformed["keypoints_unique"]
@@ -212,9 +200,7 @@ class PoseDataset(Dataset):
 
         if self.task in (Task.TOP_DOWN, Task.COND_TOP_DOWN):
             if self.parameters.top_down_crop_size is None:
-                raise ValueError(
-                    "You must specify a cropped image size for top-down models"
-                )
+                raise ValueError("You must specify a cropped image size for top-down models")
             if len(bboxes) > 1 and self.task == Task.TOP_DOWN:
                 raise ValueError(
                     "There can only be one bbox per item in TD datasets, found "
@@ -266,12 +252,8 @@ class PoseDataset(Dataset):
                 keypoints[:, :, 0] = (keypoints[:, :, 0] - offsets[0]) / scales[0]
                 keypoints[:, :, 1] = (keypoints[:, :, 1] - offsets[1]) / scales[1]
                 if self.task == Task.COND_TOP_DOWN:
-                    synthesized_keypoints[:, 0] = (
-                        synthesized_keypoints[:, 0] - offsets[0]
-                    ) / scales[0]
-                    synthesized_keypoints[:, 1] = (
-                        synthesized_keypoints[:, 1] - offsets[1]
-                    ) / scales[1]
+                    synthesized_keypoints[:, 0] = (synthesized_keypoints[:, 0] - offsets[0]) / scales[0]
+                    synthesized_keypoints[:, 1] = (synthesized_keypoints[:, 1] - offsets[1]) / scales[1]
                     keypoints = safe_stack(
                         [keypoints, synthesized_keypoints[None, ...]],
                         (2, 1, self.parameters.num_joints, 3),
@@ -282,9 +264,7 @@ class PoseDataset(Dataset):
                 bboxes[..., 1] = (bboxes[..., 1] - offsets[1]) / scales[1]
                 bboxes[..., 2] = bboxes[..., 2] / scales[0]
                 bboxes[..., 3] = bboxes[..., 3] / scales[1]
-                bboxes = np.clip(
-                    bboxes, 0, self.parameters.top_down_crop_size[0] - 1
-                )  # TODO: clip based on [x,y,x,y]?
+                bboxes = np.clip(bboxes, 0, self.parameters.top_down_crop_size[0] - 1)  # TODO: clip based on [x,y,x,y]?
 
                 # RandomBBoxTransform may move keypoints outside the cropped image
                 oob_mask = out_of_bounds_keypoints(keypoints, self.td_crop_size)
@@ -331,9 +311,7 @@ class PoseDataset(Dataset):
             "original_size": np.array(original_size),
             "offsets": np.array(offsets, dtype=int),
             "scales": np.array(scales, dtype=float),
-            "annotations": self._prepare_final_annotation_dict(
-                keypoints, keypoints_unique, bboxes, annotations_merged
-            ),
+            "annotations": self._prepare_final_annotation_dict(keypoints, keypoints_unique, bboxes, annotations_merged),
             "context": context,
         }
 
@@ -367,23 +345,18 @@ class PoseDataset(Dataset):
 
         # we use ..., :3 to pass the visibility flag along
         return {
-            "keypoints": pad_to_length(keypoints[..., :3], num_animals, 0).astype(
-                np.single
-            ),
+            "keypoints": pad_to_length(keypoints[..., :3], num_animals, 0).astype(np.single),
             "keypoints_unique": keypoints_unique[..., :3].astype(np.single),
             "with_center_keypoints": self.parameters.with_center_keypoints,
             "area": pad_to_length(area, num_animals, 0).astype(np.single),
             "boxes": pad_to_length(bboxes, num_animals, 0).astype(np.single),
             "is_crowd": pad_to_length(is_crowd, num_animals, 0).astype(int),
             "labels": pad_to_length(labels, num_animals, -1).astype(int),
-            "individual_ids": pad_to_length(individual_ids, num_animals, -1).astype(
-                int
-            ),
+            "individual_ids": pad_to_length(individual_ids, num_animals, -1).astype(int),
         }
 
     def _get_data_based_on_task(self, index: int) -> tuple[str, list[dict], int]:
-        """
-        Retrieve data based on the specified task.
+        """Retrieve data based on the specified task.
 
         For the 'TD' (top-down pose estimation) task:
         - Provides a cropped image and its annotations.
@@ -415,7 +388,7 @@ class PoseDataset(Dataset):
         keypoints_unique: np.ndarray,
         bboxes: np.ndarray,
     ) -> dict[str, np.ndarray]:
-        """Transforms the image using this class's transform
+        """Transforms the image using this class's transform.
 
         Args:
             image: the image to transform
@@ -434,29 +407,19 @@ class PoseDataset(Dataset):
                 "bboxes": (4,),
             }
         """
-        class_labels = [
-            f"individual{i}_{bpt}"
-            for i in range(len(keypoints))
-            for bpt in self.parameters.bodyparts
-        ] + [f"unique_{bpt}" for bpt in self.parameters.unique_bpts]
+        class_labels = [f"individual{i}_{bpt}" for i in range(len(keypoints)) for bpt in self.parameters.bodyparts] + [
+            f"unique_{bpt}" for bpt in self.parameters.unique_bpts
+        ]
 
         all_keypoints = keypoints.reshape(-1, 3)
         if self.parameters.num_unique_bpts > 0:
             all_keypoints = np.concatenate([all_keypoints, keypoints_unique], axis=0)
 
-        transformed = apply_transform(
-            self.transform, image, all_keypoints, bboxes, class_labels=class_labels
-        )
+        transformed = apply_transform(self.transform, image, all_keypoints, bboxes, class_labels=class_labels)
         if self.parameters.num_unique_bpts > 0:
-            keypoints = transformed["keypoints"][
-                : -self.parameters.num_unique_bpts
-            ].reshape(*keypoints.shape)
-            keypoints_unique = transformed["keypoints"][
-                -self.parameters.num_unique_bpts :
-            ]
-            keypoints_unique = keypoints_unique.reshape(
-                self.parameters.num_unique_bpts, 3
-            )
+            keypoints = transformed["keypoints"][: -self.parameters.num_unique_bpts].reshape(*keypoints.shape)
+            keypoints_unique = transformed["keypoints"][-self.parameters.num_unique_bpts :]
+            keypoints_unique = keypoints_unique.reshape(self.parameters.num_unique_bpts, 3)
         else:
             keypoints = transformed["keypoints"].reshape(*keypoints.shape)
             keypoints_unique = np.zeros((0,))
@@ -476,8 +439,8 @@ class PoseDataset(Dataset):
         coords: tuple[tuple[int, int], tuple[int, int]],
         output_size: tuple[int, int],
     ) -> tuple[np.ndarray, np.ndarray, tuple[int, int], tuple[int, int]]:
-        """
-        Crop the image based on a given bounding box and resize it to the desired output size.
+        """Crop the image based on a given bounding box and resize it to the desired
+        output size.
 
         Args:
             image: the image to transform
@@ -517,7 +480,7 @@ class PoseDataset(Dataset):
 
     @staticmethod
     def add_center_keypoints(keypoints: np.ndarray) -> np.ndarray:
-        """Adds a keypoint in the mean of each individual
+        """Adds a keypoint in the mean of each individual.
 
         Args:
             keypoints: shape (num_idv, num_kpts, 3)

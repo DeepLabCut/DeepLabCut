@@ -8,26 +8,25 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import numpy as np
 import os
+
+import numpy as np
 import pandas as pd
 import pytest
-from typing import List
-
 from conftest import TEST_DATA_DIR
+from skimage import color, io
+
 from deeplabcut.generate_training_dataset import (
-    read_image_shape_fast,
     SplitTrials,
-    format_training_data,
     format_multianimal_training_data,
-    trainingsetmanipulation,
+    format_training_data,
     multiple_individuals_trainingsetmanipulation,
     parse_video_filenames,
+    read_image_shape_fast,
+    trainingsetmanipulation,
 )
-
 from deeplabcut.utils.auxfun_videos import imread
 from deeplabcut.utils.conversioncode import guarantee_multiindex_rows
-from skimage import color, io
 
 
 def test_read_image_shape_fast(tmp_path):
@@ -62,23 +61,16 @@ def test_format_training_data(monkeypatch):
         "read_image_shape_fast",
         lambda _: fake_shape,
     )
-    df = pd.read_hdf(os.path.join(TEST_DATA_DIR, "trimouse_calib.h5")).xs(
-        "mus1", level="individuals", axis=1
-    )
+    df = pd.read_hdf(os.path.join(TEST_DATA_DIR, "trimouse_calib.h5")).xs("mus1", level="individuals", axis=1)
     guarantee_multiindex_rows(df)
     train_inds = list(range(10))
     _, data = format_training_data(df, train_inds, 12, "")
     assert len(data) == len(train_inds)
     # Check data comprise path, shape, and xy coordinates
     assert all(len(d) == 3 for d in data)
-    assert all(
-        (d[0].size == 3 and d[0].dtype.char == "U" and d[0][0, -1].endswith(".png"))
-        for d in data
-    )
+    assert all((d[0].size == 3 and d[0].dtype.char == "U" and d[0][0, -1].endswith(".png")) for d in data)
     assert all(np.all(d[1] == np.array(fake_shape)[None]) for d in data)
-    assert all(
-        (d[2][0, 0].shape[1] == 3 and d[2][0, 0].dtype == np.int64) for d in data
-    )
+    assert all((d[2][0, 0].shape[1] == 3 and d[2][0, 0].dtype == np.int64) for d in data)
 
 
 def test_format_multianimal_training_data(monkeypatch):
@@ -97,11 +89,7 @@ def test_format_multianimal_training_data(monkeypatch):
     assert all(isinstance(d, dict) for d in data)
     assert all(len(d["image"]) == 3 for d in data)
     assert all(np.all(d["size"] == np.array(fake_shape)) for d in data)
-    assert all(
-        (xy.shape[1] == 3 and np.isfinite(xy).all())
-        for d in data
-        for xy in d["joints"].values()
-    )
+    assert all((xy.shape[1] == 3 and np.isfinite(xy).all()) for d in data for xy in d["joints"].values())
 
 
 @pytest.mark.parametrize(
@@ -117,6 +105,6 @@ def test_format_multianimal_training_data(monkeypatch):
         (["/a/v1.mp4", "/a/v2.mov", "/b/v2.mov", "/b/v3.mp4"], ["v1", "v2", "v3"]),
     ],
 )
-def test_parse_video_filenames(videos: List[str], expected_filenames: List[str]):
+def test_parse_video_filenames(videos: list[str], expected_filenames: list[str]):
     filenames = parse_video_filenames(videos)
     assert filenames == expected_filenames

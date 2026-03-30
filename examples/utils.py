@@ -22,13 +22,14 @@ import matplotlib
 matplotlib.use("Agg")  # Non-interactive backend, for CI/CD on Windows
 
 import cv2
-import deeplabcut
-import deeplabcut.utils.auxiliaryfunctions as af
 import numpy as np
 import pandas as pd
+from PIL import Image
+
+import deeplabcut
+import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.compat import Engine
 from deeplabcut.generate_training_dataset import get_existing_shuffle_indices
-from PIL import Image
 
 
 def log_step(message: Any) -> None:
@@ -70,7 +71,7 @@ def sample_pose_random(
     img_h: int,
     img_w: int,
 ) -> np.ndarray:
-    """Fully random pose sampling"""
+    """Fully random pose sampling."""
     xs = gen.choice(img_w, size=(num_individuals, num_bodyparts), replace=False)
     ys = gen.choice(img_h, size=(num_individuals, num_bodyparts), replace=False)
     pose = np.stack([xs, ys], axis=-1)
@@ -96,9 +97,9 @@ def sample_pose_from_center(
     num_unique: int,
     radius: int = 25,
 ) -> np.ndarray:
-    """Sample keypoints from the center of each individual"""
+    """Sample keypoints from the center of each individual."""
     pose = np.zeros((num_individuals, num_bodyparts, 2))
-    for i, (xc, yc) in enumerate(zip(center_xs, center_ys)):
+    for i, (xc, yc) in enumerate(zip(center_xs, center_ys, strict=False)):
         if i < num_individuals:
             x_start, x_end = xc - radius + 1, xc + radius - 1
             y_start, y_end = yc - radius + 1, yc + radius - 1
@@ -232,9 +233,7 @@ def gen_fake_image(
                 x, y = int(bpt_data.x), int(bpt_data.y)
                 xmin, xmax = max(0, x - radius), min(img_w - 1, x + radius)
                 ymin, ymax = max(0, y - radius), min(img_h - 1, y + radius)
-                image_array[ymin:ymax, xmin:xmax, 2] = int(
-                    255 * (i + 1) / params.num_unique
-                )
+                image_array[ymin:ymax, xmin:xmax, 2] = int(255 * (i + 1) / params.num_unique)
 
     img = Image.fromarray(image_array)
     img.save(project_root / Path(*row.name))
@@ -257,7 +256,7 @@ def generate_video_from_images(image_dir: Path, output_video: Path) -> None:
 
 def create_fake_project(path: Path, params: SyntheticProjectParameters) -> None:
     if path.exists():
-        raise ValueError(f"Cannot create a fake project at an existing path")
+        raise ValueError("Cannot create a fake project at an existing path")
 
     scorer = "synthetic"
     video_name = "cat"
@@ -354,17 +353,11 @@ def run(
     times = [time.time()]
     log_step(f"Testing with net type {net_type}")
     log_step("Creating the training dataset")
-    deeplabcut.create_training_dataset(
-        str(config_path), net_type=net_type, engine=engine
-    )
-    existing_shuffles = get_existing_shuffle_indices(
-        config_path, train_fraction=train_fraction, engine=engine
-    )
+    deeplabcut.create_training_dataset(str(config_path), net_type=net_type, engine=engine)
+    existing_shuffles = get_existing_shuffle_indices(config_path, train_fraction=train_fraction, engine=engine)
     shuffle_index = existing_shuffles[-1]
 
-    log_step(
-        f"Starting training for train_frac {train_fraction}, shuffle {shuffle_index}"
-    )
+    log_step(f"Starting training for train_frac {train_fraction}, shuffle {shuffle_index}")
     deeplabcut.train_network(
         config=str(config_path),
         shuffle=shuffle_index,
@@ -375,9 +368,7 @@ def run(
     times.append(time.time())
     log_step(f"Train time: {times[-1] - times[-2]} seconds")
 
-    log_step(
-        f"Starting evaluation for train_frac {train_fraction}, shuffle {shuffle_index}"
-    )
+    log_step(f"Starting evaluation for train_frac {train_fraction}, shuffle {shuffle_index}")
     deeplabcut.evaluate_network(
         config=str(config_path),
         Shuffles=[shuffle_index],
@@ -391,12 +382,8 @@ def run(
 
     if len(videos) > 0:
         log_step(f"Analyzing videos for {train_fraction}, shuffle {shuffle_index}")
-        video_kwargs = dict(
-            videos=videos, shuffle=shuffle_index, trainingsetindex=trainset_index
-        )
-        deeplabcut.analyze_videos(
-            str(config_path), **video_kwargs, device=device, auto_track=False
-        )
+        video_kwargs = dict(videos=videos, shuffle=shuffle_index, trainingsetindex=trainset_index)
+        deeplabcut.analyze_videos(str(config_path), **video_kwargs, device=device, auto_track=False)
         times.append(time.time())
         log_step(f"Video analysis time: {times[-1] - times[-2]} seconds")
         log_step(f"Total test time: {times[-1] - times[0]} seconds")
@@ -404,9 +391,7 @@ def run(
         cfg = af.read_config(config_path)
         if cfg.get("multianimalproject"):
             if create_labeled_videos:
-                deeplabcut.create_video_with_all_detections(
-                    str(config_path), **video_kwargs
-                )
+                deeplabcut.create_video_with_all_detections(str(config_path), **video_kwargs)
 
             # relaxed tracking parameters
             deeplabcut.convert_detections2tracklets(

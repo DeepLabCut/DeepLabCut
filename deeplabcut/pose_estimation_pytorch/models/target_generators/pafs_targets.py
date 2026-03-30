@@ -16,17 +16,15 @@ import numpy as np
 import torch
 
 from deeplabcut.pose_estimation_pytorch.models.target_generators.base import (
-    BaseGenerator,
     TARGET_GENERATORS,
+    BaseGenerator,
 )
 
 
 @TARGET_GENERATORS.register_module
 class PartAffinityFieldGenerator(BaseGenerator):
-    """
-    Generate part affinity field targets from ground truth keypoints in order
-    to train baseline multi-animal deeplabcut model (ResNet + Deconv)
-    """
+    """Generate part affinity field targets from ground truth keypoints in order to
+    train baseline multi-animal deeplabcut model (ResNet + Deconv)"""
 
     def __init__(self, graph: list[list[int, int]], width: float):
         """
@@ -52,9 +50,7 @@ class PartAffinityFieldGenerator(BaseGenerator):
         batch_size, _, height, width = outputs["heatmap"].shape
         coords = labels[self.label_keypoint_key].cpu().numpy()
 
-        paf_map = np.zeros(
-            (batch_size, height, width, self.num_limbs * 2), dtype=np.float32
-        )
+        paf_map = np.zeros((batch_size, height, width, self.num_limbs * 2), dtype=np.float32)
         grid = np.mgrid[:height, :width].transpose((1, 2, 0))
         grid[:, :, 0] = grid[:, :, 0] * stride_y + stride_y / 2
         grid[:, :, 1] = grid[:, :, 1] * stride_x + stride_x / 2
@@ -72,7 +68,7 @@ class PartAffinityFieldGenerator(BaseGenerator):
                     j2_x, j2_y = kpts_animal[bp2]
                     vec_x = j2_x - j1_x
                     vec_y = j2_y - j1_y
-                    dist = sqrt(vec_x ** 2 + vec_y ** 2)
+                    dist = sqrt(vec_x**2 + vec_y**2)
                     if dist > 0:
                         vec_x_norm = vec_x / dist
                         vec_y_norm = vec_y / dist
@@ -83,15 +79,9 @@ class PartAffinityFieldGenerator(BaseGenerator):
                         vec_ortho = j1_y * vec_x_norm - j1_x * vec_y_norm
 
                         distance_along = vec_x_norm * x + vec_y_norm * y
-                        distance_across = (
-                            ((y * vec_x_norm - x * vec_y_norm) - vec_ortho)
-                            * 1.0
-                            / self.width
-                        )
+                        distance_across = ((y * vec_x_norm - x * vec_y_norm) - vec_ortho) * 1.0 / self.width
 
-                        mask1 = (distance_along >= min(vec)) & (
-                            distance_along <= max(vec)
-                        )
+                        mask1 = (distance_along >= min(vec)) & (distance_along <= max(vec))
                         distance_across_abs = np.abs(distance_across)
                         mask2 = distance_across_abs <= 1
                         mask = mask1 & mask2
@@ -100,10 +90,4 @@ class PartAffinityFieldGenerator(BaseGenerator):
                         paf_map[b, mask, l * 2 + 1] = vec_y_norm * temp
 
         paf_map = paf_map.transpose((0, 3, 1, 2))
-        return {
-            "paf": {
-                "target": torch.tensor(
-                    paf_map, device=outputs["paf"].device
-                )
-            }
-        }
+        return {"paf": {"target": torch.tensor(paf_map, device=outputs["paf"].device)}}

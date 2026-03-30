@@ -13,10 +13,10 @@ and it is here to support the scientific advances presented in [Lauer et al. 202
 Note, we strongly encourage you to use the [Project Manager GUI](project-manager-gui) when you first start using multi-animal mode. Each tab is customized for multi-animal when you create or load a multi-animal project. As long as you follow the recommendations within the GUI, you should be good to go!
 
 ````{versionadded} 3.0.0
-PyTorch is now available as a deep learning engine for pose estimation models, along 
+PyTorch is now available as a deep learning engine for pose estimation models, along
 with new model architectures! For more information about moving from TensorFlow to
-PyTorch (if you're already familiar with DeepLabCut & the TensorFlow engine), 
-check out [the PyTorch user guide](dlc3-user-guide). If you're just starting 
+PyTorch (if you're already familiar with DeepLabCut & the TensorFlow engine),
+check out [the PyTorch user guide](dlc3-user-guide). If you're just starting
 out with DeepLabCut, we suggest you use the PyTorch backend.
 ````
 
@@ -84,7 +84,7 @@ config_path = '/thefulloutputpath/config.yaml'
 
 This set of arguments will create a project directory with the name **Name of the project+name of the experimenter+date of creation of the project** in the **Working directory** and creates the symbolic links to videos in the **videos** directory. The project directory will have subdirectories: **dlc-models**, **dlc-models-pytorch**, **labeled-data**, **training-datasets**, and **videos**.  All the outputs generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be curated in separation from other projects. The purpose of the subdirectories is as follows:
 
-**dlc-models** and **dlc-models-pytorch** have a similar structure: the first contains 
+**dlc-models** and **dlc-models-pytorch** have a similar structure: the first contains
 files for the TensorFlow engine while the second contains files for the PyTorch engine.
 At the top level in these directories, there are
 directories referring to different iterations of labels refinement (see below): **iteration-0**, **iteration-1**, etc.
@@ -221,7 +221,7 @@ parameters in the config.yaml file. Also, the user can change the number of fram
 the numframes2extract in the config.yaml file.
 
 ```{TIP}
-For maDLC,  **be sure you have labeled frames with closely interacting animals**! 
+For maDLC,  **be sure you have labeled frames with closely interacting animals**!
 Therefore, manually selecting some frames is a good idea if interactions are not highly
 frequent in the video.
 ```
@@ -238,7 +238,7 @@ deeplabcut.extract_frames(config_path, 'manual')
 
 // FIXME(niels) - add a napari frame extractor description.
 The user can use the *Load Video* button to load one of the videos in the project
-configuration file, use the scroll bar to navigate across the video and *Grab a Frame*. 
+configuration file, use the scroll bar to navigate across the video and *Grab a Frame*.
 The user can also look at the extracted frames and e.g. delete frames (from the
 directory) that are too similar before reloading the set and then manually annotating
 them.
@@ -258,8 +258,8 @@ deeplabcut.label_frames(config_path)
 
 The toolbox provides a function **label_frames** which helps the user to easily label
 all the extracted frames using an interactive graphical user interface (GUI). The user
-should have already named the bodyparts to label (points of interest) in the 
-project’s configuration file by providing a list. The following command invokes the 
+should have already named the bodyparts to label (points of interest) in the
+project’s configuration file by providing a list. The following command invokes the
 napari-deeplabcut labelling GUI.
 
 [🎥 DEMO](https://youtu.be/hsA9IB5r73E)
@@ -280,7 +280,7 @@ occluded points should not be labeled by the user, unless you want to teach the 
 to "guess" - this is possible, but could affect accuracy. If you don't want/or don't see
 a bodypart, they can simply be skipped by not applying the label anywhere on the frame.
 
-OPTIONAL: In the event of adding more labels to the existing labeled dataset, the user 
+OPTIONAL: In the event of adding more labels to the existing labeled dataset, the user
 needs to append the new labels to the bodyparts in the config.yaml file. Thereafter, the
 user can call the function **label_frames**. A box will pop up and ask the user if they
 wish to display all parts, or only add in the new labels. Saving the labels after all
@@ -289,10 +289,10 @@ the images are labelled will append the new labels to the existing labeled datas
 **maDeepLabCut CRITICAL POINT:** For multi-animal labeling, unless you can tell apart
 the animals, you do not need to worry about the "ID" of each animal. For example: if you
 have a white and black mouse label the white mouse as animal 1, and black as animal 2
-across all frames. If two black mice, then the ID label 1 or 2 can switch between 
+across all frames. If two black mice, then the ID label 1 or 2 can switch between
 frames - no need for you to try to identify them (but always label consistently within a
 frame). If you have 2 black mice but one always has an optical fiber (for example), then
-DO label them consistently as animal1 and animal_fiber (for example). The point of 
+DO label them consistently as animal1 and animal_fiber (for example). The point of
 multi-animal DLC is to train models that can first group the correct bodyparts to
 individuals, then associate those points in a given video to a specific individual,
 which then also uses temporal information to link across the video frames.
@@ -300,7 +300,7 @@ which then also uses temporal information to link across the video frames.
 Note, we also highly recommend that you use more bodyparts that you might otherwise have
 (see the example below).
 
-For more information, checkout the [napari-deeplabcut docs](napari-gui) for 
+For more information, checkout the [napari-deeplabcut docs](napari-gui) for
 more information about the labelling workflow.
 
 ### (E) Check Annotated Frames
@@ -369,13 +369,13 @@ files contain meta information with regard to the parameters of the feature dete
 Key parameters are listed in Box 2.
 
 **DATA AUGMENTATION:** At this stage you can also decide what type of augmentation to
-use. Once you've called `create_training_dataset`, you can edit the 
+use. Once you've called `create_training_dataset`, you can edit the
 [**pytorch_config.yaml**](dlc3-pytorch-config) file that was created (or for the
 TensorFlow engine, the [**pose_cfg.yaml**](
 https://github.com/DeepLabCut/DeepLabCut/blob/master/deeplabcut/pose_cfg.yaml) file).
 
 - PyTorch Engine: [Albumentations](https://albumentations.ai/docs/) is used for data
-augmentation. Look at the [**pytorch_config.yaml**](dlc3-pytorch-config) for more 
+augmentation. Look at the [**pytorch_config.yaml**](dlc3-pytorch-config) for more
 information about image augmentation options.
 - TensorFlow Engine: The default augmentation works well for most tasks (as shown on
 www.deeplabcut.org), but there are many options, more data augmentation, intermediate
@@ -396,11 +396,11 @@ allows the use of batch processing even on small GPUs that could not otherwise a
 
 **MODEL COMPARISON**: You can also test several models by creating the same train/test
 split for different networks.
-You can easily do this in the Project Manager GUI (by selecting the "Use an existing 
+You can easily do this in the Project Manager GUI (by selecting the "Use an existing
 data split" option), which also lets you compare PyTorch and TensorFlow models.
 
 ````{versionadded} 3.0.0
-You can now create new shuffles using the same train/test split as 
+You can now create new shuffles using the same train/test split as
 existing shuffles with `create_training_dataset_from_existing_split`. This allows you to
 compare model performance (between different architectures or when using different
 training hyper-parameters) as the shuffles were trained on the same data, and evaluated
@@ -447,11 +447,11 @@ deeplabcut.train_network(config_path, shuffle=1)
 ```
 
 The set of arguments in the function starts training the network for the dataset created
-for one specific shuffle. Note that you can change training parameters in the 
+for one specific shuffle. Note that you can change training parameters in the
 [**pytorch_config.yaml**](dlc3-pytorch-config) file (or **pose_cfg.yaml** for TensorFlow
 models) of the model that you want to train (before you start training).
 
-At user specified iterations during training checkpoints are stored in the subdirectory 
+At user specified iterations during training checkpoints are stored in the subdirectory
 *train* under the respective iteration & shuffle directory.
 
 ````{admonition} Tips on training models with the PyTorch Engine
@@ -479,7 +479,7 @@ training image exactly once. So if you have 64 training images for your network,
 epoch is 64 iterations with batch size 1 (or 32 iterations with batch size 2, 16 with
 batch size 4, etc.).
 
-By default, the pretrained networks are not in the DeepLabCut toolbox (as they can be 
+By default, the pretrained networks are not in the DeepLabCut toolbox (as they can be
 more than 100MB), but they get downloaded automatically before you train.
 
 If the user wishes to restart the training at a specific checkpoint they can specify the
@@ -488,7 +488,7 @@ full path of the checkpoint to the variable ``resume_training_from`` in the [
 dlc3-pytorch-config) file (checkout the "Restarting Training at a Specific Checkpoint"
 section of the docs) under the *train* subdirectory.
 
-**CRITICAL POINT:** It is recommended to train the networks **until the loss plateaus** 
+**CRITICAL POINT:** It is recommended to train the networks **until the loss plateaus**
 (depending on the dataset, model architecture and training hyper-parameters this happens
 after 100 to 250 epochs of training).
 
@@ -497,7 +497,7 @@ dlc3-pytorch-config) file allows the user to alter how often the loss is display
 and how often the weights are stored. We suggest saving every 5 to 25 epochs.
 ````
 
-````{admonition} Tips on training models with the TensorFlow Engine 
+````{admonition} Tips on training models with the TensorFlow Engine
 :class: dropdown
 
 Example parameters that one can call:
@@ -517,10 +517,10 @@ deeplabcut.train_network(
 )
 ```
 
-By default, the pretrained networks are not in the DeepLabCut toolbox (as they are 
+By default, the pretrained networks are not in the DeepLabCut toolbox (as they are
 around 100MB each), but they get downloaded before you train. However, if not previously
 downloaded from the TensorFlow model weights, it will be downloaded and stored in a
-subdirectory *pre-trained* under the subdirectory *models* in 
+subdirectory *pre-trained* under the subdirectory *models* in
 *Pose_Estimation_Tensorflow*. At user specified iterations during training checkpoints
 are stored in the subdirectory *train* under the respective iteration directory.
 
@@ -532,7 +532,7 @@ file under the *train* subdirectory (see Box 2).
 until the loss plateaus (typically around **500,000**) if you use batch size 1, and
 **50-100K** if you use batchsize 8 (the default).
 
-If you use **maDeepLabCut** the recommended training iterations is **20K-100K** 
+If you use **maDeepLabCut** the recommended training iterations is **20K-100K**
 (it automatically stops at 200K!), as we use Adam and batchsize 8; if you have to reduce
  the batchsize for memory reasons then the number of iterations needs to be increased.
 
@@ -556,15 +556,15 @@ data. The bonus, training time is much less!!!
 
 ### (H) Evaluate the Trained Network
 
-It is important to evaluate the performance of the trained network. This performance is 
+It is important to evaluate the performance of the trained network. This performance is
 measured by computing two metrics:
 
 - **Average root mean square error** (RMSE) between the manual labels and the ones
 predicted by your trained DeepLabCut model. The RMSE is proportional to the mean average
-Euclidean error (MAE) between the manual labels and the ones predicted by DeepLabCut. 
+Euclidean error (MAE) between the manual labels and the ones predicted by DeepLabCut.
 The MAE is displayed for all pairs and only likely pairs (>p-cutoff). This helps to
 exclude, for example, occluded body parts. One of the strengths of DeepLabCut is that
-due to the probabilistic output of the scoremap, it can, if sufficiently trained, also 
+due to the probabilistic output of the scoremap, it can, if sufficiently trained, also
 reliably report if a body part is visible in a given frame. (see discussions of finger
 tips in reaching and the Drosophila legs during 3D behavior in [Mathis et al, 2018]).
 - **Mean Average Precision** (mAP) and **Mean Average Recall** (mAR) for the individuals
@@ -583,17 +583,17 @@ However, the notion of "correct prediction" for pose estimation is not straightf
 is a prediction correct if all predicted keypoints are within 5 pixels of the ground
 truth? Within 2 pixels of the ground truth? What if all pixels but one match the ground
 truth perfectly, but the wrong prediction is 50 pixels away? Mean average precision (
-and mean average recall) estimate the precision/recall of your models by setting 
+and mean average recall) estimate the precision/recall of your models by setting
 different "thresholds of correctness" and averaging results. How "correct" a
 prediction is can be evaluated through [object-keypoint similarity](
 https://cocodataset.org/#keypoints-eval).
 
 A good resource to get a deeper understanding of mAP is the [Stanford CS230 course](
-https://cs230.stanford.edu/section/8/#object-detection-iou-ap-and-map). While it 
-describes mAP for object detection (where bounding boxes are predicted instead of 
-keypoints), the same metric can be computed for pose estimation, where similarity 
+https://cs230.stanford.edu/section/8/#object-detection-iou-ap-and-map). While it
+describes mAP for object detection (where bounding boxes are predicted instead of
+keypoints), the same metric can be computed for pose estimation, where similarity
 between predictions and ground truth is computed through [object-keypoint similarity](
-https://cocodataset.org/#keypoints-eval) instead of intersection-over-union (IoU). 
+https://cocodataset.org/#keypoints-eval) instead of intersection-over-union (IoU).
 ```
 
 It's also important to visually inspect predictions on individual frames to assess the
@@ -647,11 +647,11 @@ plotted as plus (‘+’), DeepLabCut’s predictions either as ‘.’ (for con
 ’x’ for (likelihood <= `pcutoff`).
 
 The evaluation results for each shuffle of the training dataset are stored in a unique
-subdirectory in a newly created directory ‘evaluation-results-pytorch’ (or 
+subdirectory in a newly created directory ‘evaluation-results-pytorch’ (or
 ‘evaluation-results’ for TensorFlow models) in the project directory.
 The user can visually inspect if the distance between the labeled and the predicted body
 parts are acceptable. In the event of benchmarking with different shuffles of same training
-dataset, the user can provide multiple shuffle indices to evaluate the corresponding 
+dataset, the user can provide multiple shuffle indices to evaluate the corresponding
 network. If the generalization is not sufficient, the user might want to:
 
 • check if the labels were imported correctly; i.e., invisible points are not labeled
@@ -698,7 +698,7 @@ COLAB notebook.
 **-------------------- DECISION POINT -------------------**
 
 **ATTENTION!**
-**Pose estimation and tracking should be thought of as separate steps.** If you do not 
+**Pose estimation and tracking should be thought of as separate steps.** If you do not
 have good pose estimation evaluation metrics at this point, stop, check original labels,
 add more data, etc --> don't move forward with this model. If you think you have a good
 model, please test the "raw" pose estimation performance on a video to validate
@@ -716,14 +716,14 @@ Please note that you do **not** get the .h5/csv file you might be used to gettin
 comes after tracking). You will get a `pickle` file that is used in
 `create_video_with_all_detections`.
 
-For models predicting part-affinity fields, another sanity check may be to 
+For models predicting part-affinity fields, another sanity check may be to
 examine the distributions of edge affinity costs using `deeplabcut.utils.plot_edge_affinity_distributions`. Easily separable distributions
 indicate that the model has learned strong links to group keypoints into distinct
 individuals — likely a necessary feature for the assembly stage (note that the amount of
 overlap will also depend on the amount of interactions between your animals in the
 dataset). All TensorFlow multi-animal models use part-affinity fields and PyTorch models
 consisting of just a backbone name (e.g. `resnet_50`, `resnet_101`) use part-affinity
-fields. If you're unsure whether your PyTorch model has a one, check 
+fields. If you're unsure whether your PyTorch model has a one, check
 the **pytorch_config.yaml** for a `DLCRNetHead`.
 
 IF you have good clean out video, ending in `....full.mp4` (and the evaluation metrics
@@ -779,7 +779,7 @@ the workflow (ideal for advanced users).
 ### IF auto_track = False:
 
 You can validate the tracking parameters. Namely, you can iteratively change the
-parameters, run `convert_detections2tracklets` then load them in the GUI 
+parameters, run `convert_detections2tracklets` then load them in the GUI
 (`refine_tracklets`) if you want to look at the performance. If you want to edit these,
 you will need to open the `inference_cfg.yaml` file (or click button in GUI). The
 options are:

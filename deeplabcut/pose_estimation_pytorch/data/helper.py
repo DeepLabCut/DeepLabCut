@@ -21,8 +21,7 @@ def cfg_getter(key, default=None):
 
 
 def class_property(func, arg_func):
-    """
-    Decorator to create a class property.
+    """Decorator to create a class property.
 
     Parameters:
     - func: Callable that represents the logic of the property.
@@ -42,8 +41,8 @@ def class_property(func, arg_func):
 
 
 class PropertyMeta(type):
-    """
-    Metaclass for creating class properties in a more organized and systematic manner.
+    """Metaclass for creating class properties in a more organized and systematic
+    manner.
 
     This metaclass allows a class to define its properties using a simple dictionary
     structure (`properties`). The dictionary keys represent the property names,
@@ -77,8 +76,8 @@ class PropertyMeta(type):
 
 
 class CombinedPropertyMeta(ABCMeta, PropertyMeta):
-    """
-    Combined metaclass that integrates the functionalities of both `ABCMeta` and `BasePropertyMeta`.
+    """Combined metaclass that integrates the functionalities of both `ABCMeta` and
+    `BasePropertyMeta`.
 
     This metaclass is useful in scenarios where a class needs to use both abstract methods (from `ABCMeta`)
     and the property definition utilities provided by `BasePropertyMeta`.

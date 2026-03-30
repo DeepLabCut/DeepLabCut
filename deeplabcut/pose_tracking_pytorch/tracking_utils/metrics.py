@@ -8,8 +8,9 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import torch
 import numpy as np
+import torch
+
 from ..tracking_utils.reranking import re_ranking
 
 
@@ -47,7 +48,7 @@ def eval_func(distmat, q_pids, g_pids, q_camids, g_camids, max_rank=50):
     #         4 1 2 3
     if num_g < max_rank:
         max_rank = num_g
-        print("Note: number of gallery samples is quite small, got {}".format(num_g))
+        print(f"Note: number of gallery samples is quite small, got {num_g}")
     indices = np.argsort(distmat, axis=1)
     #  0, 2, 1, 3
     #  1, 2, 3, 0
@@ -101,7 +102,7 @@ def eval_func(distmat, q_pids, g_pids, q_camids, g_camids, max_rank=50):
 
 class R1_mAP_eval:
     def __init__(self, num_query, max_rank=50, feat_norm=True, reranking=False):
-        super(R1_mAP_eval, self).__init__()
+        super().__init__()
         self.num_query = num_query
         self.max_rank = max_rank
         self.feat_norm = feat_norm

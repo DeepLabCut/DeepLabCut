@@ -1,9 +1,10 @@
 """Test selector configuration."""
+
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from pathlib import PurePosixPath
-from typing import Callable
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -57,9 +58,7 @@ def _validate_relpath_string(value: str, field_name: str) -> str:
     value = value.replace("\\", "/")
 
     if value.startswith("/"):
-        raise ValueError(
-            f"{field_name} must be repo-relative, got absolute path: {value!r}"
-        )
+        raise ValueError(f"{field_name} must be repo-relative, got absolute path: {value!r}")
 
     if re.match(r"^[A-Za-z]:/", value):
         raise ValueError(f"{field_name} must not be a Windows absolute path: {value!r}")
@@ -82,10 +81,7 @@ class CategoryRule(BaseModel):
     name: str
     match_any: list[PathPred] = Field(
         min_length=1,
-        description=(
-            "List of predicates; if any predicate matches any changed file, "
-            "the rule is triggered."
-        ),
+        description=("List of predicates; if any predicate matches any changed file, the rule is triggered."),
     )
     pytest_paths: list[str] = Field(
         default_factory=list,
@@ -103,7 +99,7 @@ class CategoryRule(BaseModel):
         if not value:
             raise ValueError("Rule name must not be empty")
         if not _RULE_NAME_RE.match(value):
-            raise ValueError("Rule name must match ^[a-z0-9_]+$ " f"(got {value!r})")
+            raise ValueError(f"Rule name must match ^[a-z0-9_]+$ (got {value!r})")
         return value
 
     @field_validator("match_any")
@@ -113,9 +109,7 @@ class CategoryRule(BaseModel):
             raise ValueError("match_any must contain at least one predicate")
         for i, pred in enumerate(preds):
             if not callable(pred):
-                raise TypeError(
-                    f"match_any[{i}] must be callable, got {type(pred).__name__}"
-                )
+                raise TypeError(f"match_any[{i}] must be callable, got {type(pred).__name__}")
         return preds
 
     @field_validator("pytest_paths")
@@ -136,10 +130,7 @@ def validate_category_rules(rules: list[CategoryRule]) -> list[CategoryRule]:
     for idx, rule in enumerate(rules):
         if rule.name in seen:
             first_idx = seen[rule.name]
-            raise ValueError(
-                f"Duplicate CategoryRule name {rule.name!r} "
-                f"at indexes {first_idx} and {idx}"
-            )
+            raise ValueError(f"Duplicate CategoryRule name {rule.name!r} at indexes {first_idx} and {idx}")
         seen[rule.name] = idx
 
     return rules
@@ -221,14 +212,14 @@ CATEGORY_RULES = validate_category_rules(
             pytest_paths=[
                 "tests/test_predict_supermodel.py",
                 "tests/pose_estimation_pytorch/modelzoo/",
-                "tests/pose_estimation_pytorch/other/test_modelzoo.py",  # (currently all tests are skipped in this file..)
+                "tests/pose_estimation_pytorch/other/test_modelzoo.py",  # (currently all tests are skipped in this file..) # noqa: E501
             ],
             functional_scripts=[
-                # TODO: decide which of these functional testscripts are useful and not too heavy
-                "examples/testscript_superanimal_adaptation.py",  # (runs inference + video adaptation training on shortened video)
-                # "examples/testscript_superanimal_create_pretrained_project.py", # (runs inference on example videos)
-                # "examples/testscript_superanimal_inference.py", # (runs inference on multiple videos with multiple models)
-                # "examples/testscript_superanimal_transfer_learning.py", # (runs full standard training pipeline after weight init)
+                # TODO: decide which of these functional testscripts are useful and not too heavy # noqa: E501
+                "examples/testscript_superanimal_adaptation.py",  # (runs inference + video adaptation training on shortened video) # noqa: E501
+                # "examples/testscript_superanimal_create_pretrained_project.py", # (runs inference on example videos) # noqa: E501
+                # "examples/testscript_superanimal_inference.py", # (runs inference on multiple videos with multiple models) # noqa: E501
+                # "examples/testscript_superanimal_transfer_learning.py", # (runs full standard training pipeline after weight init) # noqa: E501
             ],
         ),
         CategoryRule(

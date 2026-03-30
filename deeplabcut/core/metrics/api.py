@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""API methods to get metrics for deep learning models"""
+"""API methods to get metrics for deep learning models."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -28,7 +29,7 @@ def compute_metrics(
     per_keypoint_rmse: bool = False,
     compute_detection_rmse: bool = True,
 ) -> dict:
-    """Computes pose estimation performance metrics
+    """Computes pose estimation performance metrics.
 
     Given ground truth pose labels and predictions on a dataset, computes RMSE and pose
     mAP/mAR using OKS.
@@ -125,7 +126,9 @@ def compute_metrics(
 
     if compute_detection_rmse and not single_animal:
         det_rmse, det_rmse_p = distance_metrics.compute_detection_rmse(
-            data, pcutoff, data_unique=data_unique,
+            data,
+            pcutoff,
+            data_unique=data_unique,
         )
         results["rmse_detections"] = det_rmse
         results["rmse_detections_pcutoff"] = det_rmse_p

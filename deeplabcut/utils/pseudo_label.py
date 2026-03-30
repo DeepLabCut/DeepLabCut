@@ -50,16 +50,13 @@ def xywh2xyxy(bbox):
 
 
 def optimal_match(gts_list, preds_list):
-    arranged_preds_list = []
     num_gts = len(gts_list)
     num_preds = len(preds_list)
     cost_matrix = np.zeros((num_gts, num_preds))
 
     for i in range(num_gts):
         for j in range(num_preds):
-            cost_matrix[i, j] = distance.euclidean(
-                gts_list[i][..., :2].flatten(), preds_list[j][..., :2].flatten()
-            )
+            cost_matrix[i, j] = distance.euclidean(gts_list[i][..., :2].flatten(), preds_list[j][..., :2].flatten())
     row_ind, col_ind = linear_sum_assignment(cost_matrix)
 
     return col_ind
@@ -100,7 +97,7 @@ def video_to_frames(input_video, output_folder, cropping: list[int] | None = Non
     # Create the output folder if it doesn't exist
     video = cv2.VideoCapture(str(input_video))
     # Get the frames per second (fps) of the video
-    fps = int(video.get(cv2.CAP_PROP_FPS))
+    int(video.get(cv2.CAP_PROP_FPS))
     # Initialize a frame counter
     frame_count = 0
     while True:
@@ -125,13 +122,11 @@ def video_to_frames(input_video, output_folder, cropping: list[int] | None = Non
     # cv2.destroyAllWindows()
 
 
-def plot_cost_matrix(
-    matrix, gt_keypoint_names, pred_keypoint_names, conversion_plot_out_path
-):
+def plot_cost_matrix(matrix, gt_keypoint_names, pred_keypoint_names, conversion_plot_out_path):
 
     matrix /= np.max(matrix)
     fig, ax = plt.subplots()
-    heatmap = ax.pcolor(matrix, cmap=plt.cm.Blues, vmin=0, vmax=1)
+    ax.pcolor(matrix, cmap=plt.cm.Blues, vmin=0, vmax=1)
     ax.set_xticks(np.arange(matrix.shape[1]) + 0.5, minor=False)
     ax.set_yticks(np.arange(matrix.shape[0]) + 0.5, minor=False)
     ax.set_xlim(0, int(matrix.shape[1]))
@@ -155,7 +150,7 @@ def keypoint_matching(
     device: str | None = None,
     train_file: str = "train.json",
 ):
-    """Runs the keypoint matching algorithm for a DeepLabCut project
+    """Runs the keypoint matching algorithm for a DeepLabCut project.
 
     Matches project keypoints to SuperAnimal keypoints automatically, by running
     SuperAnimal inference on all images in the dataset
@@ -185,9 +180,7 @@ def keypoint_matching(
         max_individuals = 1
 
     memory_replay_folder = dlc_proj_root / "memory_replay"
-    temp_dataset.materialize(
-        str(memory_replay_folder), framework="coco", deepcopy=copy_images
-    )
+    temp_dataset.materialize(str(memory_replay_folder), framework="coco", deepcopy=copy_images)
 
     # run inference on the train set
     config = modelzoo.load_super_animal_config(
@@ -200,10 +193,12 @@ def keypoint_matching(
 
     # get the SuperAnimal detector and pose model snapshot paths
     pose_model_path = modelzoo.get_super_animal_snapshot_path(
-        dataset=superanimal_name, model_name=model_name,
+        dataset=superanimal_name,
+        model_name=model_name,
     )
     detector_path = modelzoo.get_super_animal_snapshot_path(
-        dataset=superanimal_name, model_name=detector_name,
+        dataset=superanimal_name,
+        model_name=detector_name,
     )
 
     config = update_config(config, max_individuals, device)
@@ -220,7 +215,7 @@ def keypoint_matching(
         detector_path=detector_path,
     )
 
-    with open(train_file_path, "r") as f:
+    with open(train_file_path) as f:
         train_obj = json.load(f)
 
     images = train_obj["images"]
@@ -254,9 +249,7 @@ def keypoint_matching(
     image_extensions = ["*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif", "*.tiff"]
     images_in_folder = []
     for ext in image_extensions:
-        images_in_folder.extend(
-            glob.glob(os.path.join(memory_replay_folder, "images", ext))
-        )
+        images_in_folder.extend(glob.glob(os.path.join(memory_replay_folder, "images", ext)))
 
     corresponded_images = []
     for image in images_in_folder:
@@ -266,12 +259,9 @@ def keypoint_matching(
             corresponded_images.append(image_path)
 
     images = corresponded_images
-    bbox_gts = [
-        {"bboxes": np.array(image_name_to_bbox[image.split(os.sep)[-1]])}
-        for image in images
-    ]
+    bbox_gts = [{"bboxes": np.array(image_name_to_bbox[image.split(os.sep)[-1]])} for image in images]
 
-    pose_inputs = list(zip(images, bbox_gts))
+    pose_inputs = list(zip(images, bbox_gts, strict=False))
 
     # pose inference should return meta data for pseudo labeling
     predictions = pose_runner.inference(pose_inputs)
@@ -282,7 +272,7 @@ def keypoint_matching(
     assert len(images) == len(predictions)
 
     image_name_to_pred = {}
-    for image_path, prediction in zip(images, predictions):
+    for image_path, prediction in zip(images, predictions, strict=False):
         name = image_path.split(os.sep)[-1]
         image_name_to_pred[name] = prediction
 
@@ -313,7 +303,7 @@ def keypoint_matching(
 
             pair_distance = cdist(matched_pred, matched_gt)
             row_ind, column_ind = linear_sum_assignment(pair_distance)
-            for row, column in zip(row_ind, column_ind):
+            for row, column in zip(row_ind, column_ind, strict=False):
                 pred_kpt_name = pred_keypoint_names[row]
                 anno_kpt_name = gt_keypoint_names[column]
                 match_matrix[row][column] += 1
@@ -322,32 +312,24 @@ def keypoint_matching(
     row_ind, column_ind = linear_sum_assignment(match_matrix * -1)
     keypoint_mapping_list = []
 
-    conversion_matrix_out_path = os.path.join(
-        memory_replay_folder, "confusion_matrix.png"
-    )
+    conversion_matrix_out_path = os.path.join(memory_replay_folder, "confusion_matrix.png")
 
-    plot_cost_matrix(
-        match_matrix, gt_keypoint_names, pred_keypoint_names, conversion_matrix_out_path
-    )
+    plot_cost_matrix(match_matrix, gt_keypoint_names, pred_keypoint_names, conversion_matrix_out_path)
 
-    for row, column in zip(row_ind, column_ind):
+    for row, column in zip(row_ind, column_ind, strict=False):
         pred_kpt_name = pred_keypoint_names[row]
         anno_kpt_name = gt_keypoint_names[column]
         count = match_dict[pred_kpt_name][anno_kpt_name]
         keypoint_mapping_list.append((pred_kpt_name, anno_kpt_name, count))
 
-    keypoint_mapping_list = sorted(
-        keypoint_mapping_list, key=lambda x: x[2], reverse=True
-    )
+    keypoint_mapping_list = sorted(keypoint_mapping_list, key=lambda x: x[2], reverse=True)
 
     names = [e[:2] for e in keypoint_mapping_list]
     conversion_table = {}
     for pred, anno in names:
         conversion_table[pred] = anno
 
-    conversion_table_out_path = os.path.join(
-        memory_replay_folder, "conversion_table.csv"
-    )
+    conversion_table_out_path = os.path.join(memory_replay_folder, "conversion_table.csv")
     with open(conversion_table_out_path, "w") as f:
         out = "gt, MasterName\n"
         for name in pred_keypoint_names:
@@ -411,18 +393,19 @@ def dlc3predictions_2_annotation_from_video(
     # skipping every 10 frames should speed up and not impact the performance
     predictions, image_paths = predictions[::10], image_paths[::10]
 
-    # Since the inference API does not return the image path, I assume the predictions are provided in the same order as the frames in the video.
-    assert len(image_paths) == len(
-        predictions
-    ), f"number of images must be equal to number of predictions. image_paths: {len(image_paths)} , predictions: {len(predictions)}"
-    new_predictions = []
+    # Since the inference API does not return the image path, I assume the
+    # predictions are provided in the same order as the frames in the video.
+    assert len(image_paths) == len(predictions), (
+        f"number of images must be equal to number of predictions. image_paths: {len(image_paths)} , predictions:"
+        f"{len(predictions)}"
+    )
 
-    num_kpts = len(bodyparts)
+    len(bodyparts)
 
     if not superanimal_name.startswith("superanimal_"):
         raise ValueError("not supporting non superanimal model video adaptation yet")
 
-    category_name = superanimal_name[len("superanimal_"):]
+    category_name = superanimal_name[len("superanimal_") :]
     categories = [
         {
             "name": category_name,
@@ -434,7 +417,7 @@ def dlc3predictions_2_annotation_from_video(
 
     assert len(predictions) == len(image_paths)
     imageid2annotations = defaultdict(list)
-    for image_id, (prediction, image_path) in enumerate(zip(predictions, image_paths)):
+    for image_id, (prediction, image_path) in enumerate(zip(predictions, image_paths, strict=False)):
         image_obj = cv2.imread(image_path)
         height, width, channels = image_obj.shape
         imagename = image_path.split(os.sep)[-1]
@@ -447,19 +430,11 @@ def dlc3predictions_2_annotation_from_video(
 
         # iterate through individuals if there are many
 
-        assert (
-            len(prediction["bodyparts"])
-            == len(prediction["bboxes"])
-            == len(prediction["bbox_scores"])
-        )
+        assert len(prediction["bodyparts"]) == len(prediction["bboxes"]) == len(prediction["bbox_scores"])
         for pose, bbox, bbox_score in zip(
-            prediction["bodyparts"], prediction["bboxes"], prediction["bbox_scores"]
+            prediction["bodyparts"], prediction["bboxes"], prediction["bbox_scores"], strict=False
         ):
-            if (
-                np.all(np.array(pose) <= 0)
-                or len(bbox) == 0
-                or bbox_score < bbox_threshold
-            ):
+            if np.all(np.array(pose) <= 0) or len(bbox) == 0 or bbox_score < bbox_threshold:
                 continue
             imageid2annotations[image_id].append(pose)
             pose = np.array(pose)
@@ -471,7 +446,7 @@ def dlc3predictions_2_annotation_from_video(
 
             # by default all visible
             pose[:, -1] = 2
-            bbox_confidence = bbox[-1]
+            bbox[-1]
 
             keypoints = list(pose.reshape(-1))
             keypoints = [float(num) for num in keypoints]
@@ -497,8 +472,6 @@ def dlc3predictions_2_annotation_from_video(
             images.append(image)
 
     train_obj = {"images": images, "annotations": annotations, "categories": categories}
-
-    test_annotations = []
 
     # just use the first 10 image annotations for test
     test_obj = {

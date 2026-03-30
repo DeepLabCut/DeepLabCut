@@ -11,32 +11,33 @@
 
 
 import logging
-import numpy as np
 import os
+
+import numpy as np
 import scipy.io as sio
+
 from deeplabcut.utils.auxfun_videos import imread, imresize
 from deeplabcut.utils.conversioncode import robust_split_path
+
 from .factory import PoseDatasetFactory
 from .pose_base import BasePoseDataset
 from .utils import (
-    DataItem,
-    mirror_joints_map,
-    crop_image,
     Batch,
+    DataItem,
+    crop_image,
     data_to_input,
+    mirror_joints_map,
 )
 
 
 @PoseDatasetFactory.register("deterministic")
 class DeterministicPoseDataset(BasePoseDataset):
     def __init__(self, cfg):
-        super(DeterministicPoseDataset, self).__init__(cfg)
+        super().__init__(cfg)
         self.data = self.load_dataset()
         self.num_images = len(self.data)
         if self.cfg["mirror"]:
-            self.symmetric_joints = mirror_joints_map(
-                cfg["all_joints"], cfg["num_joints"]
-            )
+            self.symmetric_joints = mirror_joints_map(cfg["all_joints"], cfg["num_joints"])
         self.curr_img = 0
         self.scale = cfg["global_scale"]
         self.locref_scale = 1.0 / cfg["locref_stdev"]
@@ -156,10 +157,7 @@ class DeterministicPoseDataset(BasePoseDataset):
         if "min_input_size" in self.cfg and "max_input_size" in self.cfg:
             input_width = image_size[2] * scale
             input_height = image_size[1] * scale
-            if (
-                input_height < self.cfg["min_input_size"]
-                or input_width < self.cfg["min_input_size"]
-            ):
+            if input_height < self.cfg["min_input_size"] or input_width < self.cfg["min_input_size"]:
                 return False
             if input_height * input_width > self.cfg["max_input_size"] ** 2:
                 return False
@@ -178,9 +176,7 @@ class DeterministicPoseDataset(BasePoseDataset):
         if self.cfg["crop"]:  # adapted cropping for DLC
             if np.random.rand() < self.cfg["cropratio"]:
                 j = np.random.randint(np.shape(joints)[1])
-                joints, image = crop_image(
-                    joints, image, joints[0, j, 1], joints[0, j, 2], self.cfg
-                )
+                joints, image = crop_image(joints, image, joints[0, j, 1], joints[0, j, 2], self.cfg)
 
         img = imresize(image, scale) if scale != 1 else image
         scaled_img_size = np.array(img.shape[0:2])
@@ -194,10 +190,7 @@ class DeterministicPoseDataset(BasePoseDataset):
             stride = self.cfg["stride"]
             if mirror:
                 joints = [
-                    self.mirror_joints(
-                        person_joints, self.symmetric_joints, image.shape[1]
-                    )
-                    for person_joints in joints
+                    self.mirror_joints(person_joints, self.symmetric_joints, image.shape[1]) for person_joints in joints
                 ]
             sm_size = np.ceil(scaled_img_size / (stride * 2)).astype(int) * 2
             scaled_joints = [person_joints[:, 1:3] * scale for person_joints in joints]
@@ -207,9 +200,7 @@ class DeterministicPoseDataset(BasePoseDataset):
                 part_score_weights,
                 locref_targets,
                 locref_mask,
-            ) = self.compute_target_part_scoremap(
-                joint_id, scaled_joints, data_item, sm_size, scale
-            )
+            ) = self.compute_target_part_scoremap(joint_id, scaled_joints, data_item, sm_size, scale)
 
             batch.update(
                 {

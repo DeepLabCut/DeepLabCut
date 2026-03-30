@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Functions to build weight initialization parameters for SuperAnimal models"""
+"""Functions to build weight initialization parameters for SuperAnimal models."""
+
 from pathlib import Path
 
 import deeplabcut.modelzoo.utils as utils
@@ -29,7 +30,7 @@ def build_weight_init(
     customized_pose_checkpoint: str | Path | None = None,
     customized_detector_checkpoint: str | Path | None = None,
 ) -> WeightInitialization:
-    """Builds the WeightInitialization from a SuperAnimal model for a project
+    """Builds the WeightInitialization from a SuperAnimal model for a project.
 
     Args:
         cfg: The project's configuration, or the path to the project configuration file.
@@ -73,7 +74,8 @@ def build_weight_init(
     """
     if super_animal == "superanimal_humanbody":
         raise NotImplementedError(
-            "Weight Initialization, Transfer-Learning and Finetuning is currently not supported for superanimal_humanbody"
+            "Weight Initialization, Transfer-Learning and Finetuning is currently not supported for"
+            "superanimal_humanbody"
         )
 
     if isinstance(cfg, (str, Path)):

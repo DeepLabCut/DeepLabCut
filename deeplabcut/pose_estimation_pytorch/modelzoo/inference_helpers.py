@@ -16,8 +16,6 @@ import copy
 import logging
 from pathlib import Path
 
-import torch
-
 import deeplabcut.modelzoo.weight_initialization as weight_initialization
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
@@ -51,11 +49,7 @@ def _build_humanbody_inference_runners(
             "A filtered torchvision detector runner is used instead."
         )
 
-    torchvision_detector_name = (
-        detector_name
-        if detector_name is not None
-        else "fasterrcnn_mobilenet_v3_large_fpn"
-    )
+    torchvision_detector_name = detector_name if detector_name is not None else "fasterrcnn_mobilenet_v3_large_fpn"
 
     pose_snapshot_path = customized_pose_checkpoint
     if pose_snapshot_path is None:
@@ -157,9 +151,7 @@ def create_superanimal_inference_runners(
         >>> print(len(pose_preds))
     """
     if model_name.lower().startswith("fmpose3d"):
-        raise NotImplementedError(
-            "FMPose3D is not supported in this helper. Use the FMPose3D inference API."
-        )
+        raise NotImplementedError("FMPose3D is not supported in this helper. Use the FMPose3D inference API.")
 
     if device is None:
         device = "auto"
@@ -192,11 +184,7 @@ def create_superanimal_inference_runners(
     # Top-down models typically need a detector for bbox generation. If no detector
     # is configured, the returned detector_runner will be None and callers should
     # provide bboxes in the pose input context.
-    if (
-        Task(model_cfg["method"]) == Task.TOP_DOWN
-        and detector_name is None
-        and customized_detector_checkpoint is None
-    ):
+    if Task(model_cfg["method"]) == Task.TOP_DOWN and detector_name is None and customized_detector_checkpoint is None:
         logging.warning(
             "Top-down model configured without a detector. "
             "Returning detector_runner=None; pass bboxes in pose input context."

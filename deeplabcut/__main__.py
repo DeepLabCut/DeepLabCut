@@ -8,10 +8,12 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from importlib import import_module
+
 
 def main():
     try:
-        import PySide6
+        import_module("PySide6")
 
         lite = False
     except ModuleNotFoundError:
@@ -25,7 +27,8 @@ def main():
         launch_dlc()
     else:
         print(
-            "You installed DLC lite, thus GUI's cannot be used. If you need GUI support please: pip install 'deeplabcut[gui]''"
+            "You installed DLC lite, thus GUI's cannot be used. If you need GUI support please: pip install"
+            "'deeplabcut[gui]''"
         )
 
 

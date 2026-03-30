@@ -9,17 +9,17 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
+
 from deeplabcut.pose_tracking_pytorch.config import cfg
 from deeplabcut.pose_tracking_pytorch.model import build_dlc_transformer
 from deeplabcut.pose_tracking_pytorch.model.backbones import dlc_base_kpt_TransReID
+from deeplabcut.pose_tracking_pytorch.processor import default_device
 from deeplabcut.pose_tracking_pytorch.tracking_utils import (
     query_feature_by_coord_in_img_space,
 )
-
-from deeplabcut.pose_tracking_pytorch.processor import default_device
 
 inference_factory = {"dlc_transreid": dlc_base_kpt_TransReID}
 
@@ -30,9 +30,7 @@ class DLCTrans:
 
         ckpt_dict = torch.load(self.checkpoint)
 
-        self.model = build_dlc_transformer(
-            cfg, ckpt_dict["feature_dim"], ckpt_dict["num_kpts"], inference_factory
-        )
+        self.model = build_dlc_transformer(cfg, ckpt_dict["feature_dim"], ckpt_dict["num_kpts"], inference_factory)
 
         self.cos = nn.CosineSimilarity(dim=1, eps=1e-6)
 

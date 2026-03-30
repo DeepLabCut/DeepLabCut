@@ -9,7 +9,7 @@ deeplabcut:
 
 ## Using DeepLabCut 3.0
 
-**DeepLabCut 3.0 keeps the same high-level API that you know, but has a full new PyTorch backend. 
+**DeepLabCut 3.0 keeps the same high-level API that you know, but has a full new PyTorch backend.
 Moreover, it is a rewrite that is more developer friendly, more powerful, and built for modern deep
 learning-based computer vision applications.**
 
@@ -38,18 +38,18 @@ and TensorFlow engine through the drop-down menu in the top right corner.
 
 ### Quick guide (standard API)
 
-The standard use of DLC does not change (via the high-level API), as you can see in the standard guide: for [single](https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide) and [multiple individuals](https://deeplabcut.github.io/DeepLabCut/docs/maDLC_UserGuide). 
+The standard use of DLC does not change (via the high-level API), as you can see in the standard guide: for [single](https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide) and [multiple individuals](https://deeplabcut.github.io/DeepLabCut/docs/maDLC_UserGuide).
 
-Also check out several COLAB notebooks on how you can use the code. 
+Also check out several COLAB notebooks on how you can use the code.
 
-For the 
+For the
 
 ## Major changes
 
 ### From iterations to epochs
 
-Pytorch models in DeepLabCut 3.0 are trained for a set number of `epochs`, instead of a 
-maximum number of `iterations`. An epoch is a single pass through the training dataset, 
+Pytorch models in DeepLabCut 3.0 are trained for a set number of `epochs`, instead of a
+maximum number of `iterations`. An epoch is a single pass through the training dataset,
 which means your model has seen each training image exactly once.
 
 - So if you have 64 training images for your network, an epoch is 64 iterations with batch
@@ -60,12 +60,12 @@ size 1 (or 32 iterations with batch size 2, 16 with batch size 4, etc.).
 ### Creating Shuffles and Model Configuration
 
 You can configure models using the `pytorch_config.yaml` file, as described
-[here](dlc3-pytorch-config). You can use the same methods to create new shuffles in 
+[here](dlc3-pytorch-config). You can use the same methods to create new shuffles in
 DeepLabCut 3.0 as you did for Tensorflow models (`deeplabcut.create_training_dataset`
 and `deeplabcut.create_training_model_comparison`).
 
 More information about the different PyTorch model architectures available in DeepLabCut
-is available [here](architectures). You can see a list of supported 
+is available [here](architectures). You can see a list of supported
 architectures/variants by using:
 
 ```python

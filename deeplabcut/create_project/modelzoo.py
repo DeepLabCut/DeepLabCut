@@ -15,8 +15,8 @@ from pathlib import Path
 import yaml
 from dlclibrary import get_available_detectors
 from dlclibrary.dlcmodelzoo.modelzoo_download import (
-    download_huggingface_model,
     MODELOPTIONS,
+    download_huggingface_model,
     get_available_datasets,
     get_available_models,
 )
@@ -25,9 +25,9 @@ import deeplabcut
 from deeplabcut.core.config import read_config_as_dict, write_config
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import (
-    TrainingDatasetMetadata,
-    ShuffleMetadata,
     DataSplit,
+    ShuffleMetadata,
+    TrainingDatasetMetadata,
 )
 from deeplabcut.generate_training_dataset.trainingsetmanipulation import (
     MakeInference_yaml,
@@ -87,8 +87,7 @@ def create_pretrained_human_project(
     createlabeledvideo=True,
     analyzevideo=True,
 ):
-    """
-    LEGACY FUNCTION will be deprecated.
+    """LEGACY FUNCTION will be deprecated.
 
     Use deeplabcut.create_pretrained_project(project, experimenter, videos, model='full_human', ..)
 
@@ -99,7 +98,9 @@ def create_pretrained_human_project(
     Please make sure to cite it too if you use this code!
     """
     print(
-        "LEGACY FUNCTION will be deprecated.... use  deeplabcut.create_pretrained_project(project, experimenter, videos, model='full_human', ..) in the future!"
+        "LEGACY FUNCTION will be deprecated.... "
+        "use deeplabcut.create_pretrained_project(project, experimenter, videos, model='full_human', ..) "
+        "in the future!"
     )
     create_pretrained_project(
         project,
@@ -133,8 +134,7 @@ def create_pretrained_project(
     net_name: str | None = None,
     detector_name: str | None = None,
 ):
-    r"""
-    Creates a new project directory, sub-directories and a basic configuration file.
+    r"""Creates a new project directory, sub-directories and a basic configuration file.
     Change its parameters to your projects need.
 
     The project will also be initialized with a pre-trained model from the DeepLabCut model zoo!
@@ -203,13 +203,17 @@ def create_pretrained_project(
     Example
     --------
     Linux/MacOs loading full_human model and analyzing video /homosapiens1.avi
-    >>> deeplabcut.create_pretrained_project("humanstrokestudy", "Linus", ["/data/videos/homosapiens1.avi"], copy_videos=False)
+    >>> deeplabcut.create_pretrained_project("humanstrokestudy", "Linus",
+    ...     ["/data/videos/homosapiens1.avi"], copy_videos=False)
 
     Loading full_cat model and analyzing video "felixfeliscatus3.avi"
-    >>> deeplabcut.create_pretrained_project("humanstrokestudy", "Linus", ["/data/videos/felixfeliscatus3.avi"], model="full_cat", engine=Engine.TF)
+    >>> deeplabcut.create_pretrained_project("humanstrokestudy", "Linus",
+    ...     ["/data/videos/felixfeliscatus3.avi"], model="full_cat", engine=Engine.TF)
 
     Windows:
-    >>> deeplabcut.create_pretrained_project("humanstrokestudy", "Bill", [r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'], r'C:\yourusername\analysis\project', copy_videos=True)
+    >>> deeplabcut.create_pretrained_project("humanstrokestudy", "Bill",
+    ...     [r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'],
+    ...     r'C:\yourusername\analysis\project', copy_videos=True)
     Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
     """
     if engine == Engine.TF:
@@ -265,8 +269,7 @@ def create_pretrained_project_pytorch(
     net_name: str | None = None,
     detector_name: str | None = None,
 ):
-    r"""
-    Method used specifically for Pytorch-based ModelZoo models.
+    r"""Method used specifically for Pytorch-based ModelZoo models.
 
     Creates a new project directory, sub-directories and a basic configuration file.
     Change its parameters to your projects need.
@@ -333,13 +336,17 @@ def create_pretrained_project_pytorch(
     Example
     --------
     Linux/MacOs loading full_human model and analyzing video /homosapiens1.avi
-    >>> deeplabcut.create_pretrained_project_pytorch("humanstrokestudy", "Linus", ["/data/videos/homosapiens1.avi"], copy_videos=False)
+    >>> deeplabcut.create_pretrained_project_pytorch("humanstrokestudy", "Linus",
+    ...     ["/data/videos/homosapiens1.avi"], copy_videos=False)
 
     Loading full_cat model and analyzing video "felixfeliscatus3.avi"
-    >>> deeplabcut.create_pretrained_project_pytorch("humanstrokestudy", "Linus", ["/data/videos/felixfeliscatus3.avi"], model="full_cat", engine=Engine.TF)
+    >>> deeplabcut.create_pretrained_project_pytorch("humanstrokestudy", "Linus",
+    ...     ["/data/videos/felixfeliscatus3.avi"], model="full_cat", engine=Engine.TF)
 
     Windows:
-    >>> deeplabcut.create_pretrained_project_pytorch("humanstrokestudy", "Bill", [r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'], r'C:\yourusername\analysis\project', copy_videos=True)
+    >>> deeplabcut.create_pretrained_project_pytorch("humanstrokestudy",
+    ...     "Bill", [r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'],
+    ...     r'C:\yourusername\analysis\project', copy_videos=True)
     Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
     """
     # Check arguments
@@ -354,18 +361,18 @@ def create_pretrained_project_pytorch(
         detector_name = "fasterrcnn_resnet50_fpn_v2"
 
     if dataset not in get_available_datasets():
-        raise ValueError(
-            f"Invalid dataset '{dataset}'. Available datasets are: {get_available_datasets()}"
-        )
+        raise ValueError(f"Invalid dataset '{dataset}'. Available datasets are: {get_available_datasets()}")
 
     if net_name not in get_available_models(dataset):
         raise ValueError(
-            f"Invalid net_name '{net_name}' for dataset {dataset}. The following net types are available: {get_available_models(dataset)}"
+            f"Invalid net_name '{net_name}' for dataset {dataset}. "
+            f"The following net types are available: {get_available_models(dataset)}"
         )
 
     if detector_name not in get_available_detectors(dataset):
         raise ValueError(
-            f"Invalid detector_name '{detector_name}' for dataset {dataset}. The following detectors are available: {get_available_detectors(dataset)}"
+            f"Invalid detector_name '{detector_name}' for dataset {dataset}. "
+            f"The following detectors are available: {get_available_detectors(dataset)}"
         )
 
     # Create project
@@ -433,16 +440,12 @@ def create_pretrained_project_pytorch(
     )
     pytorch_config = add_metadata(config, pytorch_config, train_cfg_path)
     pytorch_config["resume_training_from"] = str(train_dir / new_snapshot_name)
-    pytorch_config["detector"]["resume_training_from"] = str(
-        train_dir / new_detector_name
-    )
+    pytorch_config["detector"]["resume_training_from"] = str(train_dir / new_detector_name)
     write_config(train_cfg_path, pytorch_config)
 
     # Create test pose_cfg.yaml
     test_cfg_path = test_dir / "pose_cfg.yaml"
-    make_pytorch_test_config(
-        model_config=pytorch_config, test_config_path=test_cfg_path, save=True
-    )
+    make_pytorch_test_config(model_config=pytorch_config, test_config_path=test_cfg_path, save=True)
 
     # Create inference_cfg.yaml if needed
     if multi_animal:
@@ -469,9 +472,7 @@ def _create_inference_config(inference_cfg_path: str | Path, project_cfg: dict):
         topktoretain=len(project_cfg["individuals"]),
         withid=project_cfg.get("identity", False),
     )
-    default_inf_path = (
-        Path(auxiliaryfunctions.get_deeplabcut_path()) / "inference_cfg.yaml"
-    )
+    default_inf_path = Path(auxiliaryfunctions.get_deeplabcut_path()) / "inference_cfg.yaml"
     MakeInference_yaml(inf_updates, inference_cfg_path, default_inf_path)
 
 
@@ -488,8 +489,7 @@ def create_pretrained_project_tensorflow(
     createlabeledvideo: bool = True,
     trainFraction: float | None = None,
 ):
-    r"""
-    Method used specifically for Tensorflow-based ModelZoo models.
+    r"""Method used specifically for Tensorflow-based ModelZoo models.
 
     Creates a new project directory, sub-directories and a basic configuration file.
     Change its parameters to your projects need.
@@ -539,13 +539,17 @@ def create_pretrained_project_tensorflow(
     Example
     --------
     Linux/MacOs loading full_human model and analyzing video /homosapiens1.avi
-    >>> deeplabcut.create_pretrained_project_tensorflow("humanstrokestudy", "Linus", ["/data/videos/homosapiens1.avi"], copy_videos=False)
+    >>> deeplabcut.create_pretrained_project_tensorflow("humanstrokestudy",
+    ...  "Linus", ["/data/videos/homosapiens1.avi"], copy_videos=False)
 
     Loading full_cat model and analyzing video "felixfeliscatus3.avi"
-    >>> deeplabcut.create_pretrained_project_tensorflow("humanstrokestudy", "Linus", ["/data/videos/felixfeliscatus3.avi"], model="full_cat", engine=Engine.TF)
+    >>> deeplabcut.create_pretrained_project_tensorflow("humanstrokestudy",
+    ...  "Linus", ["/data/videos/felixfeliscatus3.avi"], model="full_cat", engine=Engine.TF)
 
     Windows:
-    >>> deeplabcut.create_pretrained_project_tensorflow("humanstrokestudy", "Bill", [r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'], r'C:\yourusername\analysis\project', copy_videos=True)
+    >>> deeplabcut.create_pretrained_project_tensorflow("humanstrokestudy",
+    ...  "Bill", [r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'],
+    ...  r'C:\yourusername\analysis\project', copy_videos=True)
     Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
     """
     if not model:
@@ -554,9 +558,7 @@ def create_pretrained_project_tensorflow(
     if model in MODELOPTIONS:
         cwd = os.getcwd()
 
-        cfg = deeplabcut.create_new_project(
-            project, experimenter, videos, working_directory, copy_videos, videotype
-        )
+        cfg = deeplabcut.create_new_project(project, experimenter, videos, working_directory, copy_videos, videotype)
         if trainFraction is not None:
             auxiliaryfunctions.edit_config(cfg, {"TrainingFraction": [trainFraction]})
 
@@ -635,16 +637,8 @@ def create_pretrained_project_tensorflow(
         modelfoldername = auxiliaryfunctions.get_model_folder(
             trainFraction=config["TrainingFraction"][0], shuffle=1, cfg=config
         )
-        path_train_config = str(
-            os.path.join(
-                config["project_path"], Path(modelfoldername), "train", "pose_cfg.yaml"
-            )
-        )
-        path_test_config = str(
-            os.path.join(
-                config["project_path"], Path(modelfoldername), "test", "pose_cfg.yaml"
-            )
-        )
+        path_train_config = str(os.path.join(config["project_path"], Path(modelfoldername), "train", "pose_cfg.yaml"))
+        path_test_config = str(os.path.join(config["project_path"], Path(modelfoldername), "test", "pose_cfg.yaml"))
 
         # Download the weights and put then in appropriate directory
         print("Downloading weights...")
@@ -662,13 +656,12 @@ def create_pretrained_project_tensorflow(
         }
         auxiliaryfunctions.edit_config(cfg, dict_)
 
-        # downloading base encoder / not required unless on re-trains (but when a training set is created this happens anyway)
+        # downloading base encoder / not required unless on re-trains
+        # (but when a training set is created this happens anyway)
         # model_path = auxfun_models.check_for_weights(pose_cfg['net_type'], parent_path)
 
         # Updating training and test pose_cfg:
-        snapshotname = [fn for fn in os.listdir(train_dir) if ".meta" in fn][0].split(
-            ".meta"
-        )[0]
+        snapshotname = [fn for fn in os.listdir(train_dir) if ".meta" in fn][0].split(".meta")[0]
         dict2change = {
             "init_weights": str(os.path.join(train_dir, snapshotname)),
             "project_path": str(config["project_path"]),
@@ -707,9 +700,7 @@ def create_pretrained_project_tensorflow(
         return "N/A", "N/A"
 
 
-def _create_training_datasets_metadata(
-    config: dict, shuffle_dir_name: str, engine: Engine
-):
+def _create_training_datasets_metadata(config: dict, shuffle_dir_name: str, engine: Engine):
     # First create the metadata object
     metadata = TrainingDatasetMetadata.create(config)
 
@@ -743,18 +734,12 @@ def _process_videos(
 
     if analyze_video:
         print("Analyzing video...")
-        deeplabcut.analyze_videos(
-            cfg_path, [video_dir], videotype=video_type, save_as_csv=True
-        )
+        deeplabcut.analyze_videos(cfg_path, [video_dir], videotype=video_type, save_as_csv=True)
 
     if create_labeled_video:
         if filtered:
             deeplabcut.filterpredictions(cfg_path, [video_dir], video_type)
 
         print("Plotting results...")
-        deeplabcut.create_labeled_video(
-            cfg_path, [video_dir], video_type, draw_skeleton=True, filtered=filtered
-        )
-        deeplabcut.plot_trajectories(
-            cfg_path, [video_dir], video_type, filtered=filtered
-        )
+        deeplabcut.create_labeled_video(cfg_path, [video_dir], video_type, draw_skeleton=True, filtered=filtered)
+        deeplabcut.plot_trajectories(cfg_path, [video_dir], video_type, filtered=filtered)

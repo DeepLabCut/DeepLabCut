@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests the pre-processors"""
+"""Tests the pre-processors."""
+
 import numpy as np
 import pytest
 
@@ -57,7 +58,7 @@ from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
     ],
 )
 def test_rescale_topdown(data):
-    """expects x_processed = x * scale + offset"""
+    """Expects x_processed = x * scale + offset."""
     postprocessor = RescaleAndOffset(
         keys_to_rescale=["bodyparts"],
         mode=RescaleAndOffset.Mode.KEYPOINT_TD,
@@ -86,7 +87,7 @@ def test_rescale_topdown(data):
     ],
 )
 def test_trim_outputs(data):
-    """expects x_processed = x * scale + offset"""
+    """Expects x_processed = x * scale + offset."""
     postprocessor = TrimOutputs(max_individuals=data["max_individuals"])
     context = {}
     predictions = {"bboxes": np.array(data["bboxes"]), "bbox_scores": np.array(data["bbox_scores"])}
@@ -121,7 +122,7 @@ def test_trim_outputs(data):
     ],
 )
 def test_rescale_bottom_up(data):
-    """expects x_processed = x * scale + offset"""
+    """Expects x_processed = x * scale + offset."""
     postprocessor = RescaleAndOffset(
         keys_to_rescale=["bodyparts"],
         mode=RescaleAndOffset.Mode.KEYPOINT,
@@ -166,7 +167,7 @@ def test_rescale_bottom_up(data):
     ],
 )
 def test_rescale_detector(data):
-    """expects x_processed = x * scale + offset"""
+    """Expects x_processed = x * scale + offset."""
     postprocessor = RescaleAndOffset(
         keys_to_rescale=["bboxes"],
         mode=RescaleAndOffset.Mode.BBOX_XYWH,
@@ -232,13 +233,15 @@ def test_prepare_backbone_features():
     features[0, 25, 20] = 2
     features[0, 35, 30] = 3
 
-    pose = np.array([
+    pose = np.array(
         [
-            [10.1, 15.1, 0.95],
-            [20.1, 25.1, 0.95],
-            [29.9, 34.9, 0.95],
-        ],
-    ])
+            [
+                [10.1, 15.1, 0.95],
+                [20.1, 25.1, 0.95],
+                [29.9, 34.9, 0.95],
+            ],
+        ]
+    )
 
     predictions = [dict(backbone=dict(features=features), bodypart=dict(poses=pose))]
     context = dict(image_size=(img_w, img_h))
@@ -270,13 +273,15 @@ def test_prepare_top_down_backbone_features():
     features[1, 0, 85, 20] = 12
     features[1, 0, 75, 30] = 13
 
-    pose_idv0 = np.array([
+    pose_idv0 = np.array(
         [
-            [10.1, 15.1, 0.95],
-            [20.1, 25.1, 0.95],
-            [29.9, 34.9, 0.95],
-        ],
-    ])
+            [
+                [10.1, 15.1, 0.95],
+                [20.1, 25.1, 0.95],
+                [29.9, 34.9, 0.95],
+            ],
+        ]
+    )
     pose_idv1 = np.array(
         [
             [
@@ -296,7 +301,7 @@ def test_prepare_top_down_backbone_features():
 
     assert len(predictions_out) == 2
     assert len(context_out) == 1
-    for preds, expected in zip(predictions_out, [[1, 2, 3], [11, 12, 13]]):
+    for preds, expected in zip(predictions_out, [[1, 2, 3], [11, 12, 13]], strict=True):
         assert "backbone" in preds
         assert "bodypart_features" in preds["backbone"]
         bodypart_features = preds["backbone"]["bodypart_features"]
@@ -340,37 +345,37 @@ def test_prepare_top_down_backbone_features():
     ],
 )
 def test_remove_low_confidence_boxes(data):
-    """Tests that RemoveLowConfidenceBoxes filters boxes below threshold"""
+    """Tests that RemoveLowConfidenceBoxes filters boxes below threshold."""
     postprocessor = RemoveLowConfidenceBoxes(bbox_score_thresh=data["threshold"])
     context = {}
-    
+
     # Handle empty input arrays with proper shape
     if len(data["bboxes"]) == 0:
         bboxes = np.empty((0, 4))
     else:
         bboxes = np.array(data["bboxes"])
-    
+
     if len(data["bbox_scores"]) == 0:
         bbox_scores = np.empty((0,))
     else:
         bbox_scores = np.array(data["bbox_scores"])
-    
+
     predictions = {
         "bboxes": bboxes,
         "bbox_scores": bbox_scores,
     }
     predictions, context = postprocessor(predictions, context=context)
-    
+
     # Handle empty expected arrays with proper shape
     if len(data["expected_bboxes"]) == 0:
         expected_bboxes = np.empty((0, 4))
     else:
         expected_bboxes = np.array(data["expected_bboxes"])
-    
+
     if len(data["expected_scores"]) == 0:
         expected_scores = np.empty((0,))
     else:
         expected_scores = np.array(data["expected_scores"])
-    
+
     np.testing.assert_array_equal(predictions["bboxes"], expected_bboxes)
     np.testing.assert_array_equal(predictions["bbox_scores"], expected_scores)

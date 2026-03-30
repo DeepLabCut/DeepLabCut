@@ -37,7 +37,7 @@ DOIs (#ProTip, for helping you find citations for software, check out [CiteAs.or
         journal = {Nature Protocols},
         year = {2019},
         url = {https://doi.org/10.1038/s41596-019-0176-0}}
-        
+
     @InProceedings{Mathis_2021_WACV,
         author    = {Mathis, Alexander and Biasi, Thomas and Schneider, Steffen and Yuksekgonul, Mert and Rogers, Byron and Bethge, Matthias and Mathis, Mackenzie W.},
         title     = {Pretraining Boosts Out-of-Domain Robustness for Pose Estimation},
@@ -45,7 +45,7 @@ DOIs (#ProTip, for helping you find citations for software, check out [CiteAs.or
         month     = {January},
         year      = {2021},
         pages     = {1859-1868}}
-        
+
     @article{Lauer2022MultianimalPE,
         title={Multi-animal pose estimation, identification and tracking with DeepLabCut},
         author={Jessy Lauer and Mu Zhou and Shaokai Ye and William Menegas and Steffen Schneider and Tanmay Nath and Mohammed Mostafizur Rahman and     Valentina Di Santo and Daniel Soberanes and Guoping Feng and Venkatesh N. Murthy and George Lauder and Catherine Dulac and M. Mathis and Alexander Mathis},
@@ -96,7 +96,7 @@ DOIs (#ProTip, for helping you find citations for software, check out [CiteAs.or
 
 ## Methods Suggestion:
 
-For body part tracking we used DeepLabCut (version 2.X.X)* [Mathis et al, 2018, Nath et al, 2019, Lauer et al. 2022]. Specifically, we labeled X number of frames taken from X videos/animals (then X% was used for training (default is 95%). We used a X-based neural network (i.e. X = ResNet-50, ResNet-101, MobileNetV2-0.35, MobileNetV2-0.5, MobileNetV2-0.75, MobileNetV2-1***) with default parameters* for X number of training iterations. We validated with X number of shuffles, and found the test error was: X pixels, train: X pixels (image size was X by X). We then used a p-cutoff of X (i.e. 0.9) to condition the X,Y coordinates for future analysis. This network was then used to analyze videos from similar experimental settings. 
+For body part tracking we used DeepLabCut (version 2.X.X)* [Mathis et al, 2018, Nath et al, 2019, Lauer et al. 2022]. Specifically, we labeled X number of frames taken from X videos/animals (then X% was used for training (default is 95%). We used a X-based neural network (i.e. X = ResNet-50, ResNet-101, MobileNetV2-0.35, MobileNetV2-0.5, MobileNetV2-0.75, MobileNetV2-1***) with default parameters* for X number of training iterations. We validated with X number of shuffles, and found the test error was: X pixels, train: X pixels (image size was X by X). We then used a p-cutoff of X (i.e. 0.9) to condition the X,Y coordinates for future analysis. This network was then used to analyze videos from similar experimental settings.
 
 > Mathis, A. et al. Deeplabcut: markerless pose estimation
 > of user-defined body parts with deep learning. Nature
@@ -106,14 +106,14 @@ For body part tracking we used DeepLabCut (version 2.X.X)* [Mathis et al, 2018, 
 > estimation across species and behaviors. Nature Protocols
 > 14, 2152–2176 (2019).
 
-*If any defaults were changed in *`pose_config.yaml`*, mention them here. 
+*If any defaults were changed in *`pose_config.yaml`*, mention them here.
 
-i.e. common things one might change: 
-* the loader (options are `default`, `imgaug`, `tensorpack`, `deterministic`). 
+i.e. common things one might change:
+* the loader (options are `default`, `imgaug`, `tensorpack`, `deterministic`).
 * the `post_dist_threshold` (default is 17 and determines training resolution).
-* optimizer: do you use the default `SGD` or `ADAM`? 
+* optimizer: do you use the default `SGD` or `ADAM`?
 
-*** here, you could add additional citations. 
+*** here, you could add additional citations.
 If you use ResNets, consider citing Insafutdinov et al 2016 & He et al 2016. If you use the MobileNetV2s consider citing Mathis et al 2019, and Sandler et al, 2018.
 
 
@@ -137,7 +137,7 @@ If you use ResNets, consider citing Insafutdinov et al 2016 & He et al 2016. If 
 > 770–778 (2016). URL https://arxiv.org/abs/
 > 1512.03385.
 
-## Graphics 
+## Graphics
 
 We also have the network graphic freely available on SciDraw.io if you'd like to use it! https://scidraw.io/drawing/290
 

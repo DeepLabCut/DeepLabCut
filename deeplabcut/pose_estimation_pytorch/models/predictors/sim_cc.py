@@ -8,25 +8,26 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""SimCC predictor for the RTMPose model
+"""SimCC predictor for the RTMPose model.
 
 Based on the official ``mmpose`` SimCC codec and RTMCC head implementation. For more
 information, see <https://github.com/open-mmlab/mmpose>.
 """
+
 from __future__ import annotations
 
 import numpy as np
 import torch
 
 from deeplabcut.pose_estimation_pytorch.models.predictors.base import (
-    BasePredictor,
     PREDICTORS,
+    BasePredictor,
 )
 
 
 @PREDICTORS.register_module
 class SimCCPredictor(BasePredictor):
-    """Class used to make pose predictions from RTMPose head outputs
+    """Class used to make pose predictions from RTMPose head outputs.
 
     The RTMPose model uses coordinate classification for pose estimation. For more
     information, see "SimCC: a Simple Coordinate Classification Perspective for Human
@@ -58,9 +59,7 @@ class SimCCPredictor(BasePredictor):
             self.sigma = np.array(sigma)
         self.decode_beta = decode_beta
 
-    def forward(
-        self, stride: float, outputs: dict[str, torch.Tensor]
-    ) -> dict[str, torch.Tensor]:
+    def forward(self, stride: float, outputs: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
         x, y = outputs["x"].detach(), outputs["y"].detach()
 
         if self.normalize_outputs:
@@ -70,9 +69,7 @@ class SimCCPredictor(BasePredictor):
             x = x * (self.sigma[0] * self.decode_beta)
             y = y * (self.sigma[1] * self.decode_beta)
 
-        keypoints, scores = get_simcc_maximum(
-            x.cpu().numpy(), y.cpu().numpy(), self.apply_softmax
-        )
+        keypoints, scores = get_simcc_maximum(x.cpu().numpy(), y.cpu().numpy(), self.apply_softmax)
 
         if keypoints.ndim == 2:
             keypoints = keypoints[None, :]
@@ -169,7 +166,7 @@ def get_simcc_normalized(pred: torch.Tensor) -> torch.Tensor:
     mask = (pred.amax(dim=-1) > 1).reshape(b, k, 1)
 
     # Normalize the tensor using the maximum value
-    norm = (pred / pred.amax(dim=-1).reshape(b, k, 1))
+    norm = pred / pred.amax(dim=-1).reshape(b, k, 1)
 
     # return the normalized tensor
     return torch.where(mask, norm, pred)

@@ -8,61 +8,74 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
 import logging
+import os
 import subprocess
 import sys
-from functools import cached_property
-from pathlib import Path
-from typing import List
-from urllib.error import URLError
 import warnings
-import qdarkstyle
+from functools import cached_property
+from importlib import import_module
 from importlib.resources import files
+from pathlib import Path
+from urllib.error import URLError
 
-import deeplabcut
-from deeplabcut import auxiliaryfunctions, VERSION, compat
-from deeplabcut.core.engine import Engine
-from deeplabcut.gui import BASE_DIR, components, utils
-from deeplabcut.gui.tabs import *
-from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
-from deeplabcut.utils.multiprocessing import call_with_timeout
+import qdarkstyle
 from napari_deeplabcut import misc
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QAction, QIcon, QPixmap
 from PySide6.QtWidgets import (
-    QMessageBox,
-    QMenu,
-    QWidget,
-    QMainWindow,
     QComboBox,
     QLabel,
+    QMainWindow,
+    QMenu,
+    QMessageBox,
     QSizePolicy,
+    QWidget,
 )
-from PySide6 import QtCore
-from PySide6.QtGui import QIcon, QAction, QPixmap
-from PySide6 import QtWidgets, QtGui
-from PySide6.QtCore import Qt, QTimer
+
+import deeplabcut
+from deeplabcut import VERSION, auxiliaryfunctions, compat
+from deeplabcut.core.engine import Engine
+from deeplabcut.gui import BASE_DIR, components, utils
+from deeplabcut.gui.tabs import (
+    AnalyzeVideos,
+    CreateTrainingDataset,
+    CreateVideos,
+    EvaluateNetwork,
+    ExtractFrames,
+    ExtractOutlierFrames,
+    LabelFrames,
+    ManageProject,
+    ModelZoo,
+    OpenProject,
+    ProjectCreator,
+    RefineTracklets,
+    TrainNetwork,
+    UnsupervizedIdTracking,
+    VideoEditor,
+)
+from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
+from deeplabcut.utils.multiprocessing import call_with_timeout
 
 warnings.filterwarnings(
     "ignore",
     message=r".*shibokensupport/signature/parser.py:269: RuntimeWarning: pyside_type_init:_resolve_value.*",
-    category=RuntimeWarning
+    category=RuntimeWarning,
 )
+
 
 def _check_for_updates(silent=True):
     try:
-        is_latest, latest_version = call_with_timeout(
-            utils.is_latest_deeplabcut_version, 5
-        )
-        is_latest_plugin, latest_plugin_version = call_with_timeout(
-            misc.is_latest_version, 5
-        )
+        is_latest, latest_version = call_with_timeout(utils.is_latest_deeplabcut_version, 5)
+        is_latest_plugin, latest_plugin_version = call_with_timeout(misc.is_latest_version, 5)
     except (URLError, TimeoutError):  # Handle internet connectivity issues
         is_latest = is_latest_plugin = True
 
     if is_latest and is_latest_plugin:
         if not silent:
             msg = QtWidgets.QMessageBox(
-                text=f"DeepLabCut is up-to-date",
+                text="DeepLabCut is up-to-date",
             )
             msg.exec_()
     else:
@@ -97,7 +110,7 @@ class MainWindow(QMainWindow):
     shuffle_created = QtCore.Signal(int)
 
     def __init__(self, app):
-        super(MainWindow, self).__init__()
+        super().__init__()
         self.app = app
         screen_size = app.screens()[0].size()
         self.screen_width = screen_size.width()
@@ -197,7 +210,7 @@ class MainWindow(QMainWindow):
 
         if e == e.TF:
             try:
-                import tensorflow
+                import_module("tensorflow")
             except ModuleNotFoundError as err:
                 msg = QtWidgets.QMessageBox()
                 msg.setIcon(QtWidgets.QMessageBox.Warning)
@@ -232,14 +245,14 @@ class MainWindow(QMainWindow):
         return bool(self.cfg.get("multianimalproject"))
 
     @property
-    def all_bodyparts(self) -> List:
+    def all_bodyparts(self) -> list:
         if self.is_multianimal:
             return self.cfg.get("multianimalbodyparts")
         else:
             return self.cfg["bodyparts"]
 
     @property
-    def all_individuals(self) -> List:
+    def all_individuals(self) -> list:
         if self.is_multianimal:
             return self.cfg.get("individuals")
         else:
@@ -310,27 +323,29 @@ class MainWindow(QMainWindow):
         return self.files
 
     def add_video_files(self, new_video_files):
-        """
-        Add new video files to the existing set of files. This method ensures no duplicates are added.
-        Emits a signal to notify about the updated set of files.
+        """Add new video files to the existing set of files.
+
+        This method ensures no duplicates are added. Emits a signal to notify about the
+        updated set of files.
         """
         new_video_files = set(new_video_files)
-        self.files.update(new_video_files) # Add new items to the existing set
-        self.video_files_.emit(self.files) # Emit the updated set of files
+        self.files.update(new_video_files)  # Add new items to the existing set
+        self.video_files_.emit(self.files)  # Emit the updated set of files
         self.logger.info(f"Videos added to analyze:\n{new_video_files}\nCurrent video files:\n{self.files}")
 
     def clear_video_files(self):
-        """
-        Clear all video files from the existing set. Emits a signal to notify the change.
+        """Clear all video files from the existing set.
+
+        Emits a signal to notify the change.
         """
         self.files.clear()  # Reset the set to be empty
         self.video_files_.emit(self.files)  # Emit the empty set
         self.logger.info("All video files have been cleared.")
 
     def window_set(self):
-        WINDOW_RESIZE_FACTOR=.8
+        WINDOW_RESIZE_FACTOR = 0.8
         DEFAULT_MINIMUM_WIDTH, DEFAULT_MINIMUM_HEIGHT = 800, 600
-        
+
         self.setWindowTitle("DeepLabCut")
 
         palette = QtGui.QPalette()
@@ -370,12 +385,16 @@ class MainWindow(QMainWindow):
         image_widget.setContentsMargins(0, 0, 0, 0)
         logo = os.path.join(BASE_DIR, "assets", "logo_transparent.png")
         pixmap = QtGui.QPixmap(logo)
-        image_widget.setPixmap(
-            pixmap.scaledToHeight(400, QtCore.Qt.SmoothTransformation)
-        )
+        image_widget.setPixmap(pixmap.scaledToHeight(400, QtCore.Qt.SmoothTransformation))
         self.layout.addWidget(image_widget)
 
-        description = "DeepLabCut™ is an open source tool for markerless pose estimation of user-defined body parts with deep learning.\nA.  and M.W.  Mathis Labs | http://www.deeplabcut.org\n\n To get started,  create a new project, load an existing one, or try one of our pretrained models from the Model Zoo."
+        description = str(
+            "DeepLabCut™ is an open source tool for markerless "
+            "pose estimation of user-defined body parts with deep learning.\n"
+            "A. and M.W. Mathis Labs | http://www.deeplabcut.org\n\n "
+            "To get started, create a new project, load an existing one, "
+            "or try one of our pretrained models from the Model Zoo."
+        )
         label = components._create_label_widget(
             description,
             "font-size:12px; text-align: center;",
@@ -423,9 +442,7 @@ class MainWindow(QMainWindow):
         self.newAction = QAction(self)
         self.newAction.setText("&New Project...")
 
-        self.newAction.setIcon(
-            QIcon(os.path.join(BASE_DIR, "assets", "icons", names[0]))
-        )
+        self.newAction.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", names[0])))
         self.newAction.setShortcut("Ctrl+N")
         self.newAction.setStatusTip("Create a new project...")
 
@@ -433,9 +450,7 @@ class MainWindow(QMainWindow):
 
         # Creating actions using the second constructor
         self.openAction = QAction("&Open...", self)
-        self.openAction.setIcon(
-            QIcon(os.path.join(BASE_DIR, "assets", "icons", names[1]))
-        )
+        self.openAction.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", names[1])))
         self.openAction.setShortcut("Ctrl+O")
         self.openAction.setStatusTip("Open a project...")
         self.openAction.triggered.connect(self._open_project)
@@ -449,9 +464,7 @@ class MainWindow(QMainWindow):
         self.darkmodeAction.triggered.connect(self.darkmode)
 
         self.helpAction = QAction("&Help", self)
-        self.helpAction.setIcon(
-            QIcon(os.path.join(BASE_DIR, "assets", "icons", names[2]))
-        )
+        self.helpAction.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", names[2])))
         self.helpAction.setStatusTip("Ask for help...")
         self.helpAction.triggered.connect(self._ask_for_help)
 
@@ -472,9 +485,7 @@ class MainWindow(QMainWindow):
         self.file_menu.addAction(self.openAction)
 
         self.recentfiles_menu = self.file_menu.addMenu("Open Recent")
-        self.recentfiles_menu.triggered.connect(
-            lambda a: self._update_project_state(a.text(), True)
-        )
+        self.recentfiles_menu.triggered.connect(lambda a: self._update_project_state(a.text(), True))
         self.file_menu.addAction(self.saveAction)
         self.file_menu.addAction(self.exitAction)
 
@@ -521,9 +532,7 @@ class MainWindow(QMainWindow):
             file = files("deeplabcut.gui.media") / f"dlc-{engine}.png"
             pixmap = QPixmap(str(file))
             if not pixmap.isNull():
-                engine_icon.setPixmap(
-                    pixmap.scaled(56, 56, Qt.AspectRatioMode.KeepAspectRatio)
-                )
+                engine_icon.setPixmap(pixmap.scaled(56, 56, Qt.AspectRatioMode.KeepAspectRatio))
 
         _update_icon("pt" if self.engine == Engine.PYTORCH else "tf")
 
@@ -560,16 +569,16 @@ class MainWindow(QMainWindow):
     def _ask_for_help(self):
         dlg = QMessageBox(self)
         dlg.setWindowTitle("Ask for help")
-        dlg.setText(
-            """Ask our community for help on <a href='https://forum.image.sc/tag/deeplabcut'>the forum</a>!"""
-        )
+        dlg.setText("""Ask our community for help on <a href='https://forum.image.sc/tag/deeplabcut'>the forum</a>!""")
         _ = dlg.exec()
 
     def _learn_dlc(self):
         dlg = QMessageBox(self)
         dlg.setWindowTitle("Learn DLC")
         dlg.setText(
-            """Learn DLC with <a href='https://deeplabcut.github.io/DeepLabCut/docs/UseOverviewGuide.html'>our docs and how-to guides</a>!"""
+            """Learn DLC with
+            <a href='https://deeplabcut.github.io/DeepLabCut/docs/UseOverviewGuide.html'>
+            our docs and how-to guides</a>!"""
         )
         _ = dlg.exec()
 
@@ -592,9 +601,7 @@ class MainWindow(QMainWindow):
     def _goto_superanimal(self):
         self.tab_widget = QtWidgets.QTabWidget()
         self.tab_widget.setContentsMargins(0, 20, 0, 0)
-        self.modelzoo = ModelZoo(
-            root=self, parent=None, h1_description="DeepLabCut - Model Zoo"
-        )
+        self.modelzoo = ModelZoo(root=self, parent=None, h1_description="DeepLabCut - Model Zoo")
         self.tab_widget.addTab(self.modelzoo, "Model Zoo")
         self.setCentralWidget(self.tab_widget)
 
@@ -628,15 +635,9 @@ class MainWindow(QMainWindow):
     def add_tabs(self):
         self.tab_widget = QtWidgets.QTabWidget()
         self.tab_widget.setContentsMargins(0, 20, 0, 0)
-        self.manage_project = ManageProject(
-            root=self, parent=None, h1_description="DeepLabCut - Manage Project"
-        )
-        self.extract_frames = ExtractFrames(
-            root=self, parent=None, h1_description="DeepLabCut - Extract Frames"
-        )
-        self.label_frames = LabelFrames(
-            root=self, parent=None, h1_description="DeepLabCut - Label Frames"
-        )
+        self.manage_project = ManageProject(root=self, parent=None, h1_description="DeepLabCut - Manage Project")
+        self.extract_frames = ExtractFrames(root=self, parent=None, h1_description="DeepLabCut - Extract Frames")
+        self.label_frames = LabelFrames(root=self, parent=None, h1_description="DeepLabCut - Label Frames")
         self.create_training_dataset = CreateTrainingDataset(
             root=self,
             parent=None,
@@ -652,9 +653,7 @@ class MainWindow(QMainWindow):
             parent=None,
             h1_description="DeepLabCut - Evaluate Network",
         )
-        self.analyze_videos = AnalyzeVideos(
-            root=self, parent=None, h1_description="DeepLabCut - Analyze Videos"
-        )
+        self.analyze_videos = AnalyzeVideos(root=self, parent=None, h1_description="DeepLabCut - Analyze Videos")
         self.unsupervised_id_tracking = UnsupervizedIdTracking(
             root=self,
             parent=None,
@@ -670,15 +669,9 @@ class MainWindow(QMainWindow):
             parent=None,
             h1_description="DeepLabCut - Step 8. Extract outlier frames",
         )
-        self.refine_tracklets = RefineTracklets(
-            root=self, parent=None, h1_description="DeepLabCut - Refine labels"
-        )
-        self.modelzoo = ModelZoo(
-            root=self, parent=None, h1_description="DeepLabCut - Model Zoo"
-        )
-        self.video_editor = VideoEditor(
-            root=self, parent=None, h1_description="DeepLabCut - Optional Video Editor"
-        )
+        self.refine_tracklets = RefineTracklets(root=self, parent=None, h1_description="DeepLabCut - Refine labels")
+        self.modelzoo = ModelZoo(root=self, parent=None, h1_description="DeepLabCut - Model Zoo")
+        self.video_editor = VideoEditor(root=self, parent=None, h1_description="DeepLabCut - Optional Video Editor")
 
         self.tab_widget.addTab(self.manage_project, "Manage project")
         self.tab_widget.addTab(self.extract_frames, "Extract frames")
@@ -687,21 +680,15 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self.train_network, "Train network")
         self.tab_widget.addTab(self.evaluate_network, "Evaluate network")
         self.tab_widget.addTab(self.analyze_videos, "Analyze videos")
-        self.tab_widget.addTab(
-            self.unsupervised_id_tracking, "Unsupervised ID Tracking (*)"
-        )
+        self.tab_widget.addTab(self.unsupervised_id_tracking, "Unsupervised ID Tracking (*)")
         self.tab_widget.addTab(self.create_videos, "Create videos")
-        self.tab_widget.addTab(
-            self.extract_outlier_frames, "Extract outlier frames (*)"
-        )
+        self.tab_widget.addTab(self.extract_outlier_frames, "Extract outlier frames (*)")
         self.tab_widget.addTab(self.refine_tracklets, "Refine tracklets (*)")
         self.tab_widget.addTab(self.modelzoo, "Model Zoo")
         self.tab_widget.addTab(self.video_editor, "Video editor (*)")
 
         if not self.is_multianimal:
-            self.tab_widget.removeTab(
-                self.tab_widget.indexOf(self.unsupervised_id_tracking)
-            )
+            self.tab_widget.removeTab(self.tab_widget.indexOf(self.unsupervised_id_tracking))
             self.tab_widget.removeTab(self.tab_widget.indexOf(self.refine_tracklets))
 
         self.setCentralWidget(self.tab_widget)
@@ -722,9 +709,7 @@ class MainWindow(QMainWindow):
             try:
                 widget = getattr(active_tab, widget_name)
                 method = getattr(widget, widget_to_attribute_map[type(widget)])
-                self.logger.debug(
-                    f"Setting {widget_name}={updated_value} in tab '{tab_label}'"
-                )
+                self.logger.debug(f"Setting {widget_name}={updated_value} in tab '{tab_label}'")
                 method(updated_value)
             except AttributeError:
                 pass
@@ -735,8 +720,7 @@ class MainWindow(QMainWindow):
     def is_transreid_available(self):
         if self.is_multianimal:
             try:
-                from deeplabcut.pose_tracking_pytorch import transformer_reID
-
+                import_module("deeplabcut.pose_tracking_pytorch.transformer_reID")
                 return True
             except ModuleNotFoundError:
                 return False

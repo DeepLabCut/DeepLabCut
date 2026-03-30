@@ -9,13 +9,14 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import os
+
 import matplotlib.pyplot as plt
 from skimage.transform import resize
+
 from deeplabcut.core.visualization import (
-    form_figure,  # for backwards compatibility
-    visualize_scoremaps,
     visualize_locrefs,
     visualize_paf,
+    visualize_scoremaps,
 )
 
 
@@ -28,11 +29,11 @@ def extract_maps(
     Indices=None,
     modelprefix="",
 ):
-    """
-    Extracts the scoremap, locref, partaffinityfields (if available).
+    """Extracts the scoremap, locref, partaffinityfields (if available).
 
     Returns a dictionary indexed by: trainingsetfraction, snapshotindex, and imageindex
-    for those keys, each item contains: (image,scmap,locref,paf,bpt names,partaffinity graph, imagename, True/False if this image was in trainingset)
+    for those keys, each item contains: (image,scmap,locref,paf,bpt names,partaffinity graph,
+    imagename, True/False if this image was in trainingset)
     ----------
     config : string
         Full path of the config.yaml file as a string.
@@ -41,36 +42,42 @@ def extract_maps(
         integers specifying shuffle index of the training dataset. The default is 0.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
-        variable can also be set to "all".
+        Integer specifying which TrainingsetFraction to use. By default the first
+        (note that TrainingFraction is a list in config.yaml).
+        This variable can also be set to "all".
 
     rescale: bool, default False
-        Evaluate the model at the 'global_scale' variable (as set in the test/pose_config.yaml file for a particular project). I.e. every
-        image will be resized according to that scale and prediction will be compared to the resized ground truth. The error will be reported
-        in pixels at rescaled to the *original* size. I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
-        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!. The evaluation images are also shown for the
-        original size!
+        Evaluate the model at the 'global_scale' variable
+        (as set in the test/pose_config.yaml file for a particular project).
+        I.e. every image will be resized according to that scale
+        and prediction will be compared to the resized ground truth.
+        The error will be reported in pixels at rescaled to the *original* size.
+        I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
+        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!.
+        The evaluation images are also shown for the original size!
 
     Examples
     --------
     If you want to extract the data for image 0 and 103 (of the training set) for model trained with shuffle 0.
     >>> deeplabcut.extract_maps(configfile,0,Indices=[0,103])
-
     """
-    from deeplabcut.utils.auxfun_videos import imread, imresize
+    from pathlib import Path
+
+    import numpy as np
+    import pandas as pd
+    import tensorflow as tf
+    from tqdm import tqdm
+
+    from deeplabcut.pose_estimation_tensorflow.config import load_config
     from deeplabcut.pose_estimation_tensorflow.core import (
         predict,
+    )
+    from deeplabcut.pose_estimation_tensorflow.core import (
         predict_multianimal as predictma,
     )
-    from deeplabcut.pose_estimation_tensorflow.config import load_config
     from deeplabcut.pose_estimation_tensorflow.datasets.utils import data_to_input
     from deeplabcut.utils import auxiliaryfunctions
-    from tqdm import tqdm
-    import tensorflow as tf
-
-    import pandas as pd
-    from pathlib import Path
-    import numpy as np
+    from deeplabcut.utils.auxfun_videos import imread, imresize
 
     tf.compat.v1.reset_default_graph()
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  #
@@ -107,9 +114,7 @@ def extract_maps(
     )
 
     # Make folder for evaluation
-    auxiliaryfunctions.attempt_to_make_folder(
-        str(cfg["project_path"] + "/evaluation-results/")
-    )
+    auxiliaryfunctions.attempt_to_make_folder(str(cfg["project_path"] + "/evaluation-results/"))
 
     Maps = {}
     for trainFraction in TrainingFractions:
@@ -123,11 +128,7 @@ def extract_maps(
 
         modelfolder = os.path.join(
             cfg["project_path"],
-            str(
-                auxiliaryfunctions.get_model_folder(
-                    trainFraction, shuffle, cfg, modelprefix=modelprefix
-                )
-            ),
+            str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
         )
         path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
         # Load meta data
@@ -136,16 +137,13 @@ def extract_maps(
             trainIndices,
             testIndices,
             trainFraction,
-        ) = auxiliaryfunctions.load_metadata(
-            os.path.join(cfg["project_path"], metadatafn)
-        )
+        ) = auxiliaryfunctions.load_metadata(os.path.join(cfg["project_path"], metadatafn))
         try:
             dlc_cfg = load_config(str(path_test_config))
-        except FileNotFoundError:
+        except FileNotFoundError as e:
             raise FileNotFoundError(
-                "It seems the model for shuffle %s and trainFraction %s does not exist."
-                % (shuffle, trainFraction)
-            )
+                f"It seems the model for shuffle {shuffle} and trainFraction {trainFraction} does not exist."
+            ) from e
 
         # change batch size, if it was edited during analysis!
         dlc_cfg["batch_size"] = 1  # in case this was edited for analysis.
@@ -153,11 +151,7 @@ def extract_maps(
         # Create folder structure to store results.
         evaluationfolder = os.path.join(
             cfg["project_path"],
-            str(
-                auxiliaryfunctions.get_evaluation_folder(
-                    trainFraction, shuffle, cfg, modelprefix=modelprefix
-                )
-            ),
+            str(auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
         )
         auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
 
@@ -172,38 +166,35 @@ def extract_maps(
         elif cfg["snapshotindex"] < len(Snapshots):
             snapindices = [cfg["snapshotindex"]]
         else:
-            print(
-                "Invalid choice, only -1 (last), any integer up to last, or all (as string)!"
-            )
+            print("Invalid choice, only -1 (last), any integer up to last, or all (as string)!")
 
         ########################### RESCALING (to global scale)
         scale = dlc_cfg["global_scale"] if rescale else 1
         Data *= scale
 
-        bptnames = [
-            dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
-        ]
+        bptnames = [dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))]
 
         for snapindex in snapindices:
             dlc_cfg["init_weights"] = os.path.join(
                 str(modelfolder), "train", Snapshots[snapindex]
             )  # setting weights to corresponding snapshot.
-            trainingsiterations = (dlc_cfg["init_weights"].split(os.sep)[-1]).split(
-                "-"
-            )[
+            (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[
                 -1
             ]  # read how many training siterations that corresponds to.
 
             # Name for deeplabcut net (based on its parameters)
-            # DLCscorer,DLCscorerlegacy = auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations)
-            # notanalyzed, resultsfilename, DLCscorer=auxiliaryfunctions.CheckifNotEvaluated(str(evaluationfolder),DLCscorer,DLCscorerlegacy,Snapshots[snapindex])
+            # DLCscorer,DLCscorerlegacy =
+            # auxiliaryfunctions.GetScorerName(cfg,shuffle,trainFraction,trainingsiterations)
+            # notanalyzed, resultsfilename,
+            # DLCscorer=auxiliaryfunctions.CheckifNotEvaluated(str(evaluationfolder),
+            # DLCscorer,DLCscorerlegacy,Snapshots[snapindex])
             # print("Extracting maps for ", DLCscorer, " with # of trainingiterations:", trainingsiterations)
             # if notanalyzed: #this only applies to ask if h5 exists...
 
             # Specifying state of model (snapshot / training state)
             sess, inputs, outputs = predict.setup_pose_prediction(dlc_cfg)
             Numimages = len(Data.index)
-            PredicteData = np.zeros((Numimages, 3 * len(dlc_cfg["all_joints_names"])))
+            np.zeros((Numimages, 3 * len(dlc_cfg["all_joints_names"])))
             print("Analyzing data...")
             if Indices is None:
                 Indices = enumerate(Data.index)
@@ -213,9 +204,7 @@ def extract_maps(
 
             DATA = {}
             for imageindex, imagename in tqdm(Indices):
-                image = imread(
-                    os.path.join(cfg["project_path"], *imagename), mode="skimage"
-                )
+                image = imread(os.path.join(cfg["project_path"], *imagename), mode="skimage")
 
                 if scale != 1:
                     image = imresize(image, scale)
@@ -226,9 +215,7 @@ def extract_maps(
                 outputs_np = sess.run(outputs, feed_dict={inputs: image_batch})
 
                 if cfg.get("multianimalproject", False):
-                    scmap, locref, paf = predictma.extract_cnn_output(
-                        outputs_np, dlc_cfg
-                    )
+                    scmap, locref, paf = predictma.extract_cnn_output(outputs_np, dlc_cfg)
                     pagraph = dlc_cfg["partaffinityfield_graph"]
                 else:
                     scmap, locref = predict.extract_cnn_output(outputs_np, dlc_cfg)
@@ -272,10 +259,8 @@ def resize_all_maps(image, scmap, locref, paf):
 
 
 def _save_individual_subplots(fig, axes, labels, output_path):
-    for ax, label in zip(axes, labels):
-        extent = ax.get_tightbbox(fig.canvas.renderer).transformed(
-            fig.dpi_scale_trans.inverted()
-        )
+    for ax, label in zip(axes, labels, strict=False):
+        extent = ax.get_tightbbox(fig.canvas.renderer).transformed(fig.dpi_scale_trans.inverted())
         fig.savefig(output_path.format(bp=label), bbox_inches=extent)
 
 
@@ -304,8 +289,9 @@ def extract_save_all_maps(
         integers specifying shuffle index of the training dataset. The default is 1.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
-        variable can also be set to "all".
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml).
+        This variable can also be set to "all".
 
     comparisonbodyparts: list of bodyparts, Default is "all".
         The average error will be computed for those body parts only (Has to be a subset of the body parts).
@@ -331,22 +317,19 @@ def extract_save_all_maps(
 
     """
 
+    from tqdm import tqdm
+
     from deeplabcut.utils.auxiliaryfunctions import (
-        read_config,
         attempt_to_make_folder,
         get_evaluation_folder,
         intersection_of_body_parts_and_ones_given_by_user,
+        read_config,
     )
-    from tqdm import tqdm
 
     cfg = read_config(config)
-    data = extract_maps(
-        config, shuffle, trainingsetindex, gputouse, rescale, Indices, modelprefix
-    )
+    data = extract_maps(config, shuffle, trainingsetindex, gputouse, rescale, Indices, modelprefix)
 
-    comparisonbodyparts = intersection_of_body_parts_and_ones_given_by_user(
-        cfg, comparisonbodyparts
-    )
+    comparisonbodyparts = intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts)
 
     print("Saving plots...")
     for frac, values in data.items():
@@ -376,18 +359,12 @@ def extract_save_all_maps(
                     paf = None
                 label = "train" if trainingframe else "test"
                 imname = impath[-1]
-                scmap, (locref_x, locref_y), paf = resize_all_maps(
-                    image, scmap, locref, paf
-                )
-                to_plot = [
-                    i for i, bpt in enumerate(bptnames) if bpt in comparisonbodyparts
-                ]
+                scmap, (locref_x, locref_y), paf = resize_all_maps(image, scmap, locref, paf)
+                to_plot = [i for i, bpt in enumerate(bptnames) if bpt in comparisonbodyparts]
                 list_of_inds = []
                 for n, edge in enumerate(pafgraph):
                     if any(ind in to_plot for ind in edge):
-                        list_of_inds.append(
-                            [(2 * n, 2 * n + 1), (bptnames[edge[0]], bptnames[edge[1]])]
-                        )
+                        list_of_inds.append([(2 * n, 2 * n + 1), (bptnames[edge[0]], bptnames[edge[1]])])
                 if len(to_plot) > 1:
                     map_ = scmap[:, :, to_plot].sum(axis=2)
                     locref_x_ = locref_x[:, :, to_plot].sum(axis=2)
@@ -428,7 +405,7 @@ def extract_save_all_maps(
                             fig3, _ = visualize_paf(image, paf[:, :, [inds]])
                             temp = dest_path.format(
                                 imname=imname,
-                                map=f'paf_{"_".join(names)}',
+                                map=f"paf_{'_'.join(names)}",
                                 label=label,
                                 shuffle=shuffle,
                                 frac=frac,
@@ -443,7 +420,7 @@ def extract_save_all_maps(
                         fig3, _ = visualize_paf(image, paf[:, :, inds], colors=colors)
                         temp = dest_path.format(
                             imname=imname,
-                            map=f"paf",
+                            map="paf",
                             label=label,
                             shuffle=shuffle,
                             frac=frac,

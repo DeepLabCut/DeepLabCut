@@ -39,11 +39,7 @@ def test_sequential_generator():
     }
     gen = TARGET_GENERATORS.build(cfg)
 
-    annotations = {
-        "keypoints": torch.randint(
-            1, min(image_size), (batch_size, num_animals, num_keypoints, 2)
-        )
-    }
+    annotations = {"keypoints": torch.randint(1, min(image_size), (batch_size, num_animals, num_keypoints, 2))}
     head_outputs = {
         "heatmap": torch.rand(batch_size, num_keypoints, 32, 32),
         "locref": torch.rand(batch_size, num_keypoints * 2, 32, 32),

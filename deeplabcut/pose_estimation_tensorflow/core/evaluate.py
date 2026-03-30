@@ -13,7 +13,6 @@
 import argparse
 import os
 from pathlib import Path
-from typing import List, Union
 
 import numpy as np
 import pandas as pd
@@ -23,29 +22,26 @@ from deeplabcut.pose_estimation_tensorflow.training import return_train_network_
 
 
 def pairwisedistances(DataCombined, scorer1, scorer2, pcutoff=-1, bodyparts=None):
-    """Calculates the pairwise Euclidean distance metric over body parts vs. images"""
+    """Calculates the pairwise Euclidean distance metric over body parts vs.
+
+    images
+    """
     mask = DataCombined[scorer2].xs("likelihood", level=1, axis=1) >= pcutoff
     if bodyparts is None:
         Pointwisesquareddistance = (DataCombined[scorer1] - DataCombined[scorer2]) ** 2
         RMSE = np.sqrt(
-            Pointwisesquareddistance.xs("x", level=1, axis=1)
-            + Pointwisesquareddistance.xs("y", level=1, axis=1)
+            Pointwisesquareddistance.xs("x", level=1, axis=1) + Pointwisesquareddistance.xs("y", level=1, axis=1)
         )  # Euclidean distance (proportional to RMSE)
         return RMSE, RMSE[mask]
     else:
-        Pointwisesquareddistance = (
-            DataCombined[scorer1][bodyparts] - DataCombined[scorer2][bodyparts]
-        ) ** 2
+        Pointwisesquareddistance = (DataCombined[scorer1][bodyparts] - DataCombined[scorer2][bodyparts]) ** 2
         RMSE = np.sqrt(
-            Pointwisesquareddistance.xs("x", level=1, axis=1)
-            + Pointwisesquareddistance.xs("y", level=1, axis=1)
+            Pointwisesquareddistance.xs("x", level=1, axis=1) + Pointwisesquareddistance.xs("y", level=1, axis=1)
         )  # Euclidean distance (proportional to RMSE)
         return RMSE, RMSE[mask]
 
 
-def calculatepafdistancebounds(
-    config, shuffle=0, trainingsetindex=0, modelprefix="", numdigits=0, onlytrain=False
-):
+def calculatepafdistancebounds(config, shuffle=0, trainingsetindex=0, modelprefix="", numdigits=0, onlytrain=False):
     """
     Returns distances along paf edges in train/test data
 
@@ -57,15 +53,17 @@ def calculatepafdistancebounds(
         integers specifying shuffle index of the training dataset. The default is 0.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml). This
         variable can also be set to "all".
 
     numdigits: number of digits to round for distances.
 
     """
     import os
-    from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+
     from deeplabcut.pose_estimation_tensorflow.config import load_config
+    from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
     # Read file path for pose_config file. >> pass it on
     cfg = auxiliaryfunctions.read_config(config)
@@ -82,11 +80,7 @@ def calculatepafdistancebounds(
         trainFraction = cfg["TrainingFraction"][trainingsetindex]
         modelfolder = os.path.join(
             cfg["project_path"],
-            str(
-                auxiliaryfunctions.get_model_folder(
-                    trainFraction, shuffle, cfg, modelprefix=modelprefix
-                )
-            ),
+            str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
         )
 
         # Load meta data & annotations
@@ -113,15 +107,10 @@ def calculatepafdistancebounds(
 
         # get the graph!
         partaffinityfield_graph = test_pose_cfg["partaffinityfield_graph"]
-        jointnames = [
-            test_pose_cfg["all_joints_names"][i]
-            for i in range(len(test_pose_cfg["all_joints"]))
-        ]
-        path_inferencebounds_config = (
-            Path(modelfolder) / "test" / "inferencebounds.yaml"
-        )
+        jointnames = [test_pose_cfg["all_joints_names"][i] for i in range(len(test_pose_cfg["all_joints"]))]
+        path_inferencebounds_config = Path(modelfolder) / "test" / "inferencebounds.yaml"
         inferenceboundscfg = {}
-        for pi, edge in enumerate(partaffinityfield_graph):
+        for _pi, edge in enumerate(partaffinityfield_graph):
             j1, j2 = jointnames[edge[0]], jointnames[edge[1]]
             ds_within = []
             ds_across = []
@@ -154,12 +143,8 @@ def calculatepafdistancebounds(
             edgeencoding = str(edge[0]) + "_" + str(edge[1])
             inferenceboundscfg[edgeencoding] = {}
             if len(ds_within) > 0:
-                inferenceboundscfg[edgeencoding]["intra_max"] = str(
-                    round(np.nanmax(ds_within), numdigits)
-                )
-                inferenceboundscfg[edgeencoding]["intra_min"] = str(
-                    round(np.nanmin(ds_within), numdigits)
-                )
+                inferenceboundscfg[edgeencoding]["intra_max"] = str(round(np.nanmax(ds_within), numdigits))
+                inferenceboundscfg[edgeencoding]["intra_min"] = str(round(np.nanmin(ds_within), numdigits))
             else:
                 inferenceboundscfg[edgeencoding]["intra_max"] = str(
                     1e5
@@ -168,31 +153,23 @@ def calculatepafdistancebounds(
 
             # NOTE: the inter-animal distances are currently not used, but are interesting to compare to intra_*
             if len(ds_across) > 0:
-                inferenceboundscfg[edgeencoding]["inter_max"] = str(
-                    round(np.nanmax(ds_across), numdigits)
-                )
-                inferenceboundscfg[edgeencoding]["inter_min"] = str(
-                    round(np.nanmin(ds_across), numdigits)
-                )
+                inferenceboundscfg[edgeencoding]["inter_max"] = str(round(np.nanmax(ds_across), numdigits))
+                inferenceboundscfg[edgeencoding]["inter_min"] = str(round(np.nanmin(ds_across), numdigits))
             else:
                 inferenceboundscfg[edgeencoding]["inter_max"] = str(
                     1e5
                 )  # large number (larger than image diameters in typical experiments)
                 inferenceboundscfg[edgeencoding]["inter_min"] = str(0)
 
-        auxiliaryfunctions.write_plainconfig(
-            str(path_inferencebounds_config), dict(inferenceboundscfg)
-        )
+        auxiliaryfunctions.write_plainconfig(str(path_inferencebounds_config), dict(inferenceboundscfg))
         return inferenceboundscfg
     else:
         print("You might as well bring owls to Athens.")
         return {}
 
 
-def Plotting(
-    cfg, comparisonbodyparts, DLCscorer, trainIndices, DataCombined, foldername
-):
-    """Function used for plotting GT and predictions"""
+def Plotting(cfg, comparisonbodyparts, DLCscorer, trainIndices, DataCombined, foldername):
+    """Function used for plotting GT and predictions."""
     from deeplabcut.utils import visualization
 
     colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
@@ -226,12 +203,15 @@ def return_evaluate_network_data(
     modelprefix="",
     returnjustfns=True,
 ):
-    """
-    Returns the results for (previously evaluated) network. deeplabcut.evaluate_network(..)
-    Returns list of (per model): [trainingsiterations,trainfraction,shuffle,trainerror,testerror,pcutoff,trainerrorpcutoff,testerrorpcutoff,Snapshots[snapindex],scale,net_type]
+    """Returns the results for (previously evaluated) network.
+    deeplabcut.evaluate_network(..) Returns list of (per model): [trainingsiterations,tr
+    ainfraction,shuffle,trainerror,testerror,pcutoff,trainerrorpcutoff,testerrorpcutoff,
+    Snapshots[snapindex],scale,net_type]
 
     If fulldata=True, also returns (the complete annotation and prediction array)
-    Returns list of: (DataMachine, Data, data, trainIndices, testIndices, trainFraction, DLCscorer,comparisonbodyparts, cfg, Snapshots[snapindex])
+    Returns list of:
+    (DataMachine, Data, data, trainIndices, testIndices, trainFraction,
+    DLCscorer,comparisonbodyparts, cfg, Snapshots[snapindex])
     ----------
     config : string
         Full path of the config.yaml file as a string.
@@ -240,18 +220,22 @@ def return_evaluate_network_data(
         integers specifying shuffle index of the training dataset. The default is 0.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml). This
-        variable can also be set to "all".
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml).
+        This variable can also be set to "all".
 
     comparisonbodyparts: list of bodyparts, Default is "all".
         The average error will be computed for those body parts only (Has to be a subset of the body parts).
 
     rescale: bool, default False
-        Evaluate the model at the 'global_scale' variable (as set in the test/pose_config.yaml file for a particular project). I.e. every
-        image will be resized according to that scale and prediction will be compared to the resized ground truth. The error will be reported
-        in pixels at rescaled to the *original* size. I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
-        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!. The evaluation images are also shown for the
-        original size!
+        Evaluate the model at the 'global_scale' variable
+        (as set in the test/pose_config.yaml file for a particular project).
+        I.e. every image will be resized according to that scale and
+        prediction will be compared to the resized ground truth. The error will be reported
+        in pixels at rescaled to the *original* size.
+        I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
+        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!.
+        The evaluation images are also shown for the original size!
 
     Examples
     --------
@@ -273,25 +257,22 @@ def return_evaluate_network_data(
 
     # Loading human annotatated data
     trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
-    # Data=pd.read_hdf(os.path.join(cfg["project_path"],str(trainingsetfolder),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing')
+    # Data=pd.read_hdf(
+    # os.path.join(
+    # cfg["project_path"],
+    # str(trainingsetfolder
+    # ),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing'
+    # )
 
     # Get list of body parts to evaluate network for
-    comparisonbodyparts = (
-        auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-            cfg, comparisonbodyparts
-        )
-    )
+    comparisonbodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts)
     ##################################################
     # Load data...
     ##################################################
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
     modelfolder = os.path.join(
         cfg["project_path"],
-        str(
-            auxiliaryfunctions.get_model_folder(
-                trainFraction, shuffle, cfg, modelprefix=modelprefix
-            )
-        ),
+        str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
     )
     path_train_config, path_test_config, _ = return_train_network_path(
         config=config,
@@ -302,11 +283,10 @@ def return_evaluate_network_data(
 
     try:
         test_pose_cfg = load_config(str(path_test_config))
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         raise FileNotFoundError(
-            "It seems the model for shuffle %s and trainFraction %s does not exist."
-            % (shuffle, trainFraction)
-        )
+            f"It seems the model for shuffle {shuffle} and trainFraction {trainFraction} does not exist."
+        ) from e
 
     train_pose_cfg = load_config(str(path_train_config))
     # Load meta data
@@ -315,7 +295,7 @@ def return_evaluate_network_data(
     )
 
     ########################### RESCALING (to global scale)
-    if rescale == True:
+    if rescale:
         scale = test_pose_cfg["global_scale"]
         print("Rescaling Data to ", scale)
         Data = (
@@ -340,11 +320,7 @@ def return_evaluate_network_data(
 
     evaluationfolder = os.path.join(
         cfg["project_path"],
-        str(
-            auxiliaryfunctions.get_evaluation_folder(
-                trainFraction, shuffle, cfg, modelprefix=modelprefix
-            )
-        ),
+        str(auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
     )
 
     Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
@@ -366,9 +342,7 @@ def return_evaluate_network_data(
         test_pose_cfg["init_weights"] = os.path.join(
             str(modelfolder), "train", snapshot_name
         )  # setting weights to corresponding snapshot.
-        trainingsiterations = (test_pose_cfg["init_weights"].split(os.sep)[-1]).split(
-            "-"
-        )[
+        trainingsiterations = (test_pose_cfg["init_weights"].split(os.sep)[-1]).split("-")[
             -1
         ]  # read how many training siterations that corresponds to.
 
@@ -388,10 +362,10 @@ def return_evaluate_network_data(
             notanalyzed,
             resultsfilename,
             DLCscorer,
-        ) = auxiliaryfunctions.check_if_not_evaluated(
-            str(evaluationfolder), DLCscorer, DLCscorerlegacy, snapshot_name
-        )
-        # resultsfilename=os.path.join(str(evaluationfolder),DLCscorer + '-' + str(Snapshots[snapindex])+  '.h5') # + '-' + str(snapshot)+  ' #'-' + Snapshots[snapindex]+  '.h5')
+        ) = auxiliaryfunctions.check_if_not_evaluated(str(evaluationfolder), DLCscorer, DLCscorerlegacy, snapshot_name)
+        # resultsfilename=os.path.join(str(evaluationfolder),DLCscorer + '-' +
+        # str(Snapshots[snapindex])+  '.h5') # + '-' + str(snapshot)+  ' #'-' +
+        # Snapshots[snapindex]+  '.h5')
         print(resultsfilename)
         resultsfns.append(resultsfilename)
         if not returnjustfns:
@@ -408,13 +382,9 @@ def return_evaluate_network_data(
 
                 testerror = np.nanmean(RMSE.iloc[testIndices].values.flatten())
                 trainerror = np.nanmean(RMSE.iloc[trainIndices].values.flatten())
-                testerrorpcutoff = np.nanmean(
-                    RMSEpcutoff.iloc[testIndices].values.flatten()
-                )
-                trainerrorpcutoff = np.nanmean(
-                    RMSEpcutoff.iloc[trainIndices].values.flatten()
-                )
-                if show_errors == True:
+                testerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[testIndices].values.flatten())
+                trainerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[trainIndices].values.flatten())
+                if show_errors:
                     print(
                         "Results for",
                         trainingsiterations,
@@ -454,7 +424,7 @@ def return_evaluate_network_data(
                 results.append(r)
             else:
                 print("Model not trained/evaluated!")
-            if fulldata == True:
+            if fulldata:
                 DATA.append(
                     [
                         DataMachine,
@@ -475,7 +445,7 @@ def return_evaluate_network_data(
     if returnjustfns:
         return resultsfns
     else:
-        if fulldata == True:
+        if fulldata:
             return DATA, results
         else:
             return results
@@ -484,10 +454,10 @@ def return_evaluate_network_data(
 def keypoint_error(
     df_error: pd.DataFrame,
     df_error_p_cutoff: pd.DataFrame,
-    train_indices: List[int],
-    test_indices: List[int],
+    train_indices: list[int],
+    test_indices: list[int],
 ) -> pd.DataFrame:
-    """Computes the RMSE error for each bodypart
+    """Computes the RMSE error for each bodypart.
 
     The error dataframes can be in single animal format (non-hierarchical columns, one
     column for each bodypart) or multi-animal format (hierarchical columns with 3
@@ -532,7 +502,7 @@ def keypoint_error(
 
 def evaluate_network(
     config,
-    Shuffles=[1],
+    Shuffles=None,
     trainingsetindex=0,
     plotting=False,
     show_errors=True,
@@ -541,7 +511,7 @@ def evaluate_network(
     rescale=False,
     modelprefix="",
     per_keypoint_evaluation: bool = False,
-    snapshots_to_evaluate: List[str] = None,
+    snapshots_to_evaluate: list[str] = None,
 ):
     """Evaluates the network.
 
@@ -632,6 +602,8 @@ def evaluate_network(
 
     Note: This defaults to standard plotting for single-animal projects.
     """
+    if Shuffles is None:
+        Shuffles = [1]
     if plotting not in (True, False, "bodypart", "individual"):
         raise ValueError(f"Unknown value for `plotting`={plotting}")
 
@@ -658,20 +630,19 @@ def evaluate_network(
             snapshots_to_evaluate=snapshots_to_evaluate,
         )
     else:
-        from deeplabcut.utils.auxfun_videos import imread, imresize
-        from deeplabcut.pose_estimation_tensorflow.core import predict
+        import tensorflow as tf
+
         from deeplabcut.pose_estimation_tensorflow.config import load_config
+        from deeplabcut.pose_estimation_tensorflow.core import predict
         from deeplabcut.pose_estimation_tensorflow.datasets.utils import data_to_input
         from deeplabcut.utils import auxiliaryfunctions, conversioncode
-        import tensorflow as tf
+        from deeplabcut.utils.auxfun_videos import imread, imresize
 
         # If a string was passed in, auto-convert to True for backward compatibility
         plotting = bool(plotting)
 
         if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
-            del os.environ[
-                "TF_CUDNN_USE_AUTOTUNE"
-            ]  # was potentially set during training
+            del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
 
         tf.compat.v1.reset_default_graph()
         os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  #
@@ -707,15 +678,11 @@ def evaluate_network(
         )
 
         # Get list of body parts to evaluate network for
-        comparisonbodyparts = (
-            auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-                cfg, comparisonbodyparts
-            )
+        comparisonbodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+            cfg, comparisonbodyparts
         )
         # Make folder for evaluation
-        auxiliaryfunctions.attempt_to_make_folder(
-            str(cfg["project_path"] + "/evaluation-results/")
-        )
+        auxiliaryfunctions.attempt_to_make_folder(str(cfg["project_path"] + "/evaluation-results/"))
         for shuffle in Shuffles:
             for trainFraction in TrainingFractions:
                 ##################################################
@@ -727,7 +694,8 @@ def evaluate_network(
                 )
                 modelfolder = Path(cfg["project_path"]) / modelfolder_rel_path
 
-                # TODO: Unlike using create_training_dataset() If create_training_model_comparison() is used there won't
+                # TODO: Unlike using create_training_dataset()
+                # If create_training_model_comparison() is used there won't
                 #  necessarily be training fractions for every shuffle which will raise the FileNotFoundError..
                 #  Not sure if this should throw an exception or just be a warning...
                 if not modelfolder.exists():
@@ -760,15 +728,9 @@ def evaluate_network(
                 # Create folder structure to store results.
                 evaluationfolder = os.path.join(
                     cfg["project_path"],
-                    str(
-                        auxiliaryfunctions.get_evaluation_folder(
-                            trainFraction, shuffle, cfg, modelprefix=modelprefix
-                        )
-                    ),
+                    str(auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
                 )
-                auxiliaryfunctions.attempt_to_make_folder(
-                    evaluationfolder, recursive=True
-                )
+                auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
 
                 Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
                     train_folder=Path(modelfolder) / "train",
@@ -839,13 +801,9 @@ def evaluate_network(
                     )
                     if notanalyzed:
                         # Specifying state of model (snapshot / training state)
-                        sess, inputs, outputs = predict.setup_pose_prediction(
-                            test_pose_cfg
-                        )
+                        sess, inputs, outputs = predict.setup_pose_prediction(test_pose_cfg)
                         Numimages = len(Data.index)
-                        PredicteData = np.zeros(
-                            (Numimages, 3 * len(test_pose_cfg["all_joints_names"]))
-                        )
+                        PredicteData = np.zeros((Numimages, 3 * len(test_pose_cfg["all_joints_names"])))
                         print("Running evaluation ...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image = imread(
@@ -857,17 +815,11 @@ def evaluate_network(
 
                             image_batch = data_to_input(image)
                             # Compute prediction with the CNN
-                            outputs_np = sess.run(
-                                outputs, feed_dict={inputs: image_batch}
-                            )
-                            scmap, locref = predict.extract_cnn_output(
-                                outputs_np, test_pose_cfg
-                            )
+                            outputs_np = sess.run(outputs, feed_dict={inputs: image_batch})
+                            scmap, locref = predict.extract_cnn_output(outputs_np, test_pose_cfg)
 
                             # Extract maximum scoring location from the heatmap, assume 1 person
-                            pose = predict.argmax_pose_predict(
-                                scmap, locref, test_pose_cfg["stride"]
-                            )
+                            pose = predict.argmax_pose_predict(scmap, locref, test_pose_cfg["stride"])
                             PredicteData[imageindex, :] = (
                                 pose.flatten()
                             )  # NOTE: thereby     cfg_test['all_joints_names'] should be same order as bodyparts!
@@ -884,18 +836,14 @@ def evaluate_network(
                         )
 
                         # Saving results
-                        DataMachine = pd.DataFrame(
-                            PredicteData, columns=index, index=Data.index
-                        )
+                        DataMachine = pd.DataFrame(PredicteData, columns=index, index=Data.index)
                         DataMachine.to_hdf(resultsfilename, key="df_with_missing")
 
                         print(
                             "Analysis is done and the results are stored (see evaluation-results) for snapshot: ",
                             snapshot_name,
                         )
-                        DataCombined = pd.concat(
-                            [Data.T, DataMachine.T], axis=0, sort=False
-                        ).T
+                        DataCombined = pd.concat([Data.T, DataMachine.T], axis=0, sort=False).T
 
                         RMSE, RMSEpcutoff = pairwisedistances(
                             DataCombined,
@@ -905,15 +853,9 @@ def evaluate_network(
                             comparisonbodyparts,
                         )
                         testerror = np.nanmean(RMSE.iloc[testIndices].values.flatten())
-                        trainerror = np.nanmean(
-                            RMSE.iloc[trainIndices].values.flatten()
-                        )
-                        testerrorpcutoff = np.nanmean(
-                            RMSEpcutoff.iloc[testIndices].values.flatten()
-                        )
-                        trainerrorpcutoff = np.nanmean(
-                            RMSEpcutoff.iloc[trainIndices].values.flatten()
-                        )
+                        trainerror = np.nanmean(RMSE.iloc[trainIndices].values.flatten())
+                        testerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[testIndices].values.flatten())
+                        trainerrorpcutoff = np.nanmean(RMSEpcutoff.iloc[trainIndices].values.flatten())
                         results = [
                             training_iterations,
                             int(100 * trainFraction),
@@ -927,13 +869,9 @@ def evaluate_network(
                         final_result.append(results)
 
                         if per_keypoint_evaluation:
-                            df_keypoint_error = keypoint_error(
-                                RMSE, RMSEpcutoff, trainIndices, testIndices
-                            )
+                            df_keypoint_error = keypoint_error(RMSE, RMSEpcutoff, trainIndices, testIndices)
                             kpt_filename = DLCscorer + "-keypoint-results.csv"
-                            df_keypoint_error.to_csv(
-                                Path(evaluationfolder) / kpt_filename
-                            )
+                            df_keypoint_error.to_csv(Path(evaluationfolder) / kpt_filename)
 
                         if show_errors:
                             print(
@@ -959,11 +897,12 @@ def evaluate_network(
                             )
                             if scale != 1:
                                 print(
-                                    "The predictions have been calculated for rescaled images (and rescaled ground truth). Scale:",
-                                    scale,
+                                    "The predictions have been calculated for"
+                                    f" rescaled images (and rescaled ground truth). Scale: {scale}"
                                 )
                             print(
-                                "Thereby, the errors are given by the average distances between the labels by DLC and the scorer."
+                                "Thereby, the errors are given by the average distances "
+                                "between the labels by DLC and the scorer."
                             )
 
                         if plotting:
@@ -988,16 +927,16 @@ def evaluate_network(
                         DataMachine = pd.read_hdf(resultsfilename)
                         conversioncode.guarantee_multiindex_rows(DataMachine)
                         if plotting:
-                            DataCombined = pd.concat(
-                                [Data.T, DataMachine.T], axis=0, sort=False
-                            ).T
+                            DataCombined = pd.concat([Data.T, DataMachine.T], axis=0, sort=False).T
                             foldername = os.path.join(
                                 str(evaluationfolder),
                                 "LabeledImages_" + DLCscorer + "_" + snapshot_name,
                             )
                             if not os.path.exists(foldername):
                                 print(
-                                    "Plotting...(attention scale might be inconsistent in comparison to when data was analyzed; i.e. if you used rescale)"
+                                    "Plotting..."
+                                    "(warning, scale might be inconsistent in comparison "
+                                    "to when data was analyzed; i.e. if you used rescale)"
                                 )
                                 auxiliaryfunctions.attempt_to_make_folder(foldername)
                                 Plotting(
@@ -1009,9 +948,7 @@ def evaluate_network(
                                     foldername,
                                 )
                             else:
-                                print(
-                                    "Plots already exist for this snapshot... Skipping to the next one."
-                                )
+                                print("Plots already exist for this snapshot... Skipping to the next one.")
 
                 if len(final_result) > 0:  # Only append if results were calculated
                     make_results_file(final_result, evaluationfolder, DLCscorer)
@@ -1019,10 +956,13 @@ def evaluate_network(
                         "The network is evaluated and the results are stored in the subdirectory 'evaluation_results'."
                     )
                     print(
-                        "Please check the results, then choose the best model (snapshot) for prediction. You can update the config.yaml file with the appropriate index for the 'snapshotindex'.\nUse the function 'analyze_video' to make predictions on new videos."
+                        "Please check the results, then choose the best model (snapshot) for prediction. "
+                        "You can update the config.yaml file with the appropriate index for the 'snapshotindex'.\n"
+                        "Use the function 'analyze_video' to make predictions on new videos."
                     )
                     print(
-                        "Otherwise, consider adding more labeled-data and retraining the network (see DeepLabCut workflow Fig 2, Nath 2019)"
+                        "Otherwise, consider adding more labeled-data and retraining the network "
+                        "(see DeepLabCut workflow Fig 2, Nath 2019)"
                     )
 
     # returning to initial folder
@@ -1030,10 +970,10 @@ def evaluate_network(
 
 
 def make_results_file(final_result, evaluationfolder, DLCscorer):
-    """
-    Makes result file in csv format and saves under evaluation_results directory.
-    If the file exists (typically, when the network has already been evaluated),
-    newer results are appended to it.
+    """Makes result file in csv format and saves under evaluation_results directory.
+
+    If the file exists (typically, when the network has already been evaluated), newer
+    results are appended to it.
     """
     col_names = [
         "Training iterations:",
@@ -1056,9 +996,7 @@ def make_results_file(final_result, evaluationfolder, DLCscorer):
     ## Also storing one "large" table with results:
     # note: evaluationfolder.parents[0] to get common folder above all shuffle evaluations.
     df = pd.DataFrame(final_result, columns=col_names)
-    output_path = os.path.join(
-        str(Path(evaluationfolder).parents[0]), "CombinedEvaluation-results.csv"
-    )
+    output_path = os.path.join(str(Path(evaluationfolder).parents[0]), "CombinedEvaluation-results.csv")
     if os.path.exists(output_path):
         temp = pd.read_csv(output_path, index_col=0)
         df = pd.concat((temp, df)).reset_index(drop=True)
@@ -1067,11 +1005,10 @@ def make_results_file(final_result, evaluationfolder, DLCscorer):
 
 
 def get_available_requested_snapshots(
-    requested_snapshots: List[str],
-    available_snapshots: List[str],
-) -> List[str]:
-    """
-    Intersects the requested snapshot names with the available snapshots.
+    requested_snapshots: list[str],
+    available_snapshots: list[str],
+) -> list[str]:
+    """Intersects the requested snapshot names with the available snapshots.
 
     Returns: snapshot names
     """
@@ -1084,28 +1021,22 @@ def get_available_requested_snapshots(
             missing_snapshots.append(snap)
 
     if len(snapshot_names) == 0:
-        raise ValueError(
-            f"None of the requested snapshots were found: \n{missing_snapshots}"
-        )
+        raise ValueError(f"None of the requested snapshots were found: \n{missing_snapshots}")
     elif len(missing_snapshots) > 0:
-        print(
-            f"The following requested snapshots were not found and will be skipped:\n"
-            f"{missing_snapshots}"
-        )
+        print(f"The following requested snapshots were not found and will be skipped:\n{missing_snapshots}")
 
     return snapshot_names
 
 
 def get_snapshots_by_index(
-    idx: Union[int, str],
-    available_snapshots: List[str],
-) -> List[str]:
+    idx: int | str,
+    available_snapshots: list[str],
+) -> list[str]:
+    """Assume available_snapshots is ordered in ascending order.
+
+    Returns snapshot names.
     """
-    Assume available_snapshots is ordered in ascending order. Returns snapshot names.
-    """
-    if isinstance(idx, int) and -len(available_snapshots) <= idx < len(
-        available_snapshots
-    ):
+    if isinstance(idx, int) and -len(available_snapshots) <= idx < len(available_snapshots):
         return [available_snapshots[idx]]
     elif idx == "all":
         return available_snapshots

@@ -11,7 +11,8 @@
 from __future__ import annotations
 
 import warnings
-from typing import Any, Iterable, Sequence
+from collections.abc import Iterable, Sequence
+from typing import Any
 
 import albumentations as A
 import cv2
@@ -49,8 +50,8 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
             transforms.append(HFlip(symmetries=symmetries, p=hflip_proba))
         else:
             warnings.warn(
-                "Be careful! Do not train pose models with horizontal flips if you have"
-                " symmetric keypoints!"
+                "Be careful! Do not train pose models with horizontal flips if you have symmetric keypoints!",
+                stacklevel=2,
             )
             transforms.append(A.HorizontalFlip(p=hflip_proba))
 
@@ -139,18 +140,14 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
         transforms.append(build_auto_padding(**augmentations["auto_padding"]))
 
     if augmentations.get("normalize_images"):
-        transforms.append(
-            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        )
+        transforms.append(A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
 
     if augmentations.get("scale_to_unit_range"):
         transforms.append(ScaleToUnitRange())
 
     return A.Compose(
         transforms,
-        keypoint_params=A.KeypointParams(
-            "xy", remove_invisible=False, label_fields=["class_labels"]
-        ),
+        keypoint_params=A.KeypointParams("xy", remove_invisible=False, label_fields=["class_labels"]),
         bbox_params=A.BboxParams(format="coco", label_fields=["bbox_labels"]),
     )
 
@@ -165,8 +162,7 @@ def build_auto_padding(
     border_value: float | None = None,
     border_mask_value: float | None = None,
 ) -> A.PadIfNeeded:
-    """
-    Create an albumentations PadIfNeeded transform from a config
+    """Create an albumentations PadIfNeeded transform from a config.
 
     Args:
         min_height: the minimum height of the image
@@ -192,8 +188,7 @@ def build_auto_padding(
     }
     if border_mode not in border_modes:
         raise ValueError(
-            f"Unknown border mode for auto_padding: {border_mode} "
-            f"(valid values are: {border_modes.keys()})"
+            f"Unknown border mode for auto_padding: {border_mode} (valid values are: {border_modes.keys()})"
         )
 
     return A.PadIfNeeded(
@@ -228,7 +223,7 @@ def build_resize_transforms(resize_cfg: dict) -> list[A.BasicTransform]:
 
 
 class HFlip(A.HorizontalFlip):
-    """Horizontal Flip which swaps symmetric keypoints"""
+    """Horizontal Flip which swaps symmetric keypoints."""
 
     def __init__(self, symmetries: list[tuple[int, int]], *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -238,15 +233,12 @@ class HFlip(A.HorizontalFlip):
             self._symmetries[j] = i
 
     def apply_to_keypoints(self, keypoints, **params):
-        swapped_keypoints = [
-            keypoints[self._symmetries.get(kpt_idx, kpt_idx)]
-            for kpt_idx in range(len(keypoints))
-        ]
+        swapped_keypoints = [keypoints[self._symmetries.get(kpt_idx, kpt_idx)] for kpt_idx in range(len(keypoints))]
         return super().apply_to_keypoints(swapped_keypoints, **params)
 
 
 class KeypointAwareCrop(A.RandomCrop):
-    """Random crop for an image around keypoints
+    """Random crop for an image around keypoints.
 
     Args:
         width: Crop images down to this maximum width.
@@ -273,8 +265,7 @@ class KeypointAwareCrop(A.RandomCrop):
         self.max_shift = max(0.0, min(max_shift, 0.4))
         if crop_sampling not in ("uniform", "keypoints", "density", "hybrid"):
             raise ValueError(
-                f"Invalid sampling {crop_sampling}. Must be "
-                f"either 'uniform', 'keypoints', 'density', or 'hybrid."
+                f"Invalid sampling {crop_sampling}. Must be either 'uniform', 'keypoints', 'density', or 'hybrid."
             )
         self.crop_sampling = crop_sampling
 
@@ -344,15 +335,15 @@ class KeypointAwareCrop(A.RandomCrop):
 
 
 class KeepAspectRatioResize(A.DualTransform):
-    """Resizes images while preserving their aspect ratio
+    """Resizes images while preserving their aspect ratio.
 
-    In 'pad' mode, the image will be rescaled to the largest possible size such that
-    it can be padded to the correct size (with PadIfNeeded). So we'll have:
-        output_width <= width, output_height <= height
+    In 'pad' mode, the image will be rescaled to the largest possible size such that it
+    can be padded to the correct size (with PadIfNeeded). So we'll have: output_width <=
+    width, output_height <= height
 
     In 'crop' mode, the image will be rescaled to the smallest possible size such that
     it can be cropped to the correct size (with any random crop you want), so:
-        output_width >= width, output_height >= height
+    output_width >= width, output_height >= height
     """
 
     def __init__(
@@ -430,7 +421,7 @@ class Grayscale(A.ToGray):
     @staticmethod
     def _validate_alpha(val: float) -> float:
         if not 0.0 <= val <= 1.0:
-            warnings.warn("`alpha` will be clipped to the interval [0.0, 1.0].")
+            warnings.warn("`alpha` will be clipped to the interval [0.0, 1.0].", stacklevel=2)
         return min(1.0, max(0.0, val))
 
     @property
@@ -477,12 +468,8 @@ class ElasticTransform(A.ElasticTransform):
         self._neighbor_dist = 3
         self._neighbor_dist_square = self._neighbor_dist**2
 
-    def apply_to_keypoints(
-        self, keypoints: Sequence[float], random_state: int | None = None, **params
-    ) -> list[float]:
-        heatmaps = np.zeros(
-            (params["rows"], params["cols"], len(keypoints)), dtype=np.float32
-        )
+    def apply_to_keypoints(self, keypoints: Sequence[float], random_state: int | None = None, **params) -> list[float]:
+        heatmaps = np.zeros((params["rows"], params["cols"], len(keypoints)), dtype=np.float32)
         grid = np.mgrid[: params["rows"], : params["cols"]].transpose((1, 2, 0))
         kpts = np.array([(k[1], k[0]) for k in keypoints])
         valid_kpts = np.all(kpts > 0.0, axis=1)
@@ -510,7 +497,7 @@ class ElasticTransform(A.ElasticTransform):
         sum_indices = np.sum(inds[:, None] * mask[None], axis=(2, 3)).T
         xy = sum_indices / div[:, None]
         new_keypoints = []
-        for kp, new_coords in zip(keypoints, xy):
+        for kp, new_coords in zip(keypoints, xy, strict=False):
             kp = list(kp)
             kp[:2] = new_coords
             new_keypoints.append(tuple(kp))
@@ -568,7 +555,7 @@ class CoarseDropout(A.CoarseDropout):
         return new_keypoints
 
     def _keypoint_in_hole(self, keypoint, hole: tuple[int, int, int, int]) -> bool:
-        """Reimplemented from Albumentations as was removed in v1.4.0"""
+        """Reimplemented from Albumentations as was removed in v1.4.0."""
         x1, y1, x2, y2 = hole
         x, y = keypoint[:2]
         return x1 <= x < x2 and y1 <= y < y2
@@ -653,7 +640,7 @@ class RandomBBoxTransform(A.DualTransform):
         # add the extra information back; tuples for albumentations<=1.4.3
         bboxes_out = [tuple(bbox) for bbox in bbox_xyxy]
         if bboxes_extra is not None:
-            bboxes_out = [bbox + extra for bbox, extra in zip(bboxes_out, bboxes_extra)]
+            bboxes_out = [bbox + extra for bbox, extra in zip(bboxes_out, bboxes_extra, strict=False)]
         return bboxes_out
 
     def get_transform_init_args_names(self):

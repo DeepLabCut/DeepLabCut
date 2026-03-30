@@ -8,12 +8,14 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Helpers to run preprocess data before running inference"""
+"""Helpers to run preprocess data before running inference."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, TypeVar, Callable
+from typing import Any, TypeVar
 
 import albumentations as A
 import numpy as np
@@ -22,24 +24,22 @@ import torch
 from deeplabcut.pose_estimation_pytorch.data.image import load_image, top_down_crop
 from deeplabcut.pose_estimation_pytorch.data.utils import bbox_from_keypoints
 
-
 Image = TypeVar("Image", torch.Tensor, np.ndarray, str, Path)
 Context = TypeVar("Context", dict[str, Any], None)
 
 
 class Preprocessor(ABC):
-    """
-    Class to preprocess an image and turn it into a batch of inputs before running
+    """Class to preprocess an image and turn it into a batch of inputs before running
     inference.
 
-    As an example, a pre-processor can load an image, use a "bboxes" key from context
-    to crop bounding boxes for individuals (going from a (h, w, 3) array to a
+    As an example, a pre-processor can load an image, use a "bboxes" key from context to
+    crop bounding boxes for individuals (going from a (h, w, 3) array to a
     (num_individuals, h, w, 3) array), and convert it into a tensor ready for inference.
     """
 
     @abstractmethod
     def __call__(self, image: Image, context: Context) -> tuple[Image, Context]:
-        """Pre-processes an image
+        """Pre-processes an image.
 
         Args:
             image: an image (containing height, width and channel dimensions) or a
@@ -54,9 +54,7 @@ class Preprocessor(ABC):
         pass
 
 
-def build_bottom_up_preprocessor(
-    color_mode: str, transform: A.BaseCompose
-) -> Preprocessor:
+def build_bottom_up_preprocessor(color_mode: str, transform: A.BaseCompose) -> Preprocessor:
     """Creates a preprocessor for bottom-up pose estimation (or object detection)
 
     Creates a preprocessor that loads an image, runs some transform on it (such as
@@ -87,7 +85,7 @@ def build_top_down_preprocessor(
     top_down_crop_margin: int = 0,
     top_down_crop_with_context: bool = True,
 ) -> Preprocessor:
-    """Creates a preprocessor for top-down pose estimation
+    """Creates a preprocessor for top-down pose estimation.
 
     Creates a preprocessor that loads an image, crops all bounding boxes given as a
     context (through a "bboxes" key), runs some transforms on each cropped image (such
@@ -126,7 +124,7 @@ def build_conditional_top_down_preprocessor(
     top_down_crop_margin: int = 0,
     top_down_crop_with_context: bool = False,
 ) -> Preprocessor:
-    """Creates a preprocessor for conditional top-down pose estimation
+    """Creates a preprocessor for conditional top-down pose estimation.
 
     Creates a preprocessor that loads an image, computes bounding boxes from conditional
     keypoints (given as a context (through a "cond_kpts" key), crops all bounding boxes,
@@ -164,10 +162,8 @@ def build_conditional_top_down_preprocessor(
 
 
 class ComposePreprocessor(Preprocessor):
-    """
-    Class to preprocess an image and turn it into a batch of
-    inputs before running inference
-    """
+    """Class to preprocess an image and turn it into a batch of inputs before running
+    inference."""
 
     def __init__(self, components: list[Preprocessor]) -> None:
         self.components = components
@@ -179,7 +175,7 @@ class ComposePreprocessor(Preprocessor):
 
 
 class LoadImage(Preprocessor):
-    """Loads an image from a file, if not yet loaded"""
+    """Loads an image from a file, if not yet loaded."""
 
     def __init__(self, color_mode: str = "RGB") -> None:
         self.color_mode = color_mode
@@ -239,15 +235,13 @@ class AugmentImage(Preprocessor):
         )
 
     @staticmethod
-    def update_scale(
-        scale: tuple[float, float], new_scale: tuple[float, float]
-    ) -> tuple[float, float]:
+    def update_scale(scale: tuple[float, float], new_scale: tuple[float, float]) -> tuple[float, float]:
         return scale[0] * new_scale[0], scale[1] * new_scale[1]
 
     @staticmethod
     def update_offsets_and_scales(context, new_offsets, new_scales) -> tuple:
-        """
-        x = x' * scale' + offset'
+        """X = x' * scale' + offset'.
+
         x' = x'' * scale'' + offset''
         -> x = x'' * (scale' * scale'') + (scale' * offset'' + offset')
         """
@@ -257,20 +251,14 @@ class AugmentImage(Preprocessor):
         if isinstance(offsets, tuple):
             if isinstance(new_offsets, list):
                 updated_offsets = [
-                    AugmentImage.update_offset(offsets, scales, new_offset)
-                    for new_offset in new_offsets
+                    AugmentImage.update_offset(offsets, scales, new_offset) for new_offset in new_offsets
                 ]
-                updated_scales = [
-                    AugmentImage.update_scale(scales, new_scale)
-                    for new_scale in new_scales
-                ]
+                updated_scales = [AugmentImage.update_scale(scales, new_scale) for new_scale in new_scales]
             else:
                 if not len(offsets) == len(new_offsets):
                     raise ValueError("Cannot rescale lists when not same length")
 
-                updated_offsets = AugmentImage.update_offset(
-                    offsets, scales, new_offsets
-                )
+                updated_offsets = AugmentImage.update_offset(offsets, scales, new_offsets)
                 updated_scales = AugmentImage.update_scale(scales, new_scales)
         else:
             if isinstance(new_offsets, list):
@@ -279,20 +267,18 @@ class AugmentImage(Preprocessor):
 
                 updated_offsets = [
                     AugmentImage.update_offset(offset, scale, new_offset)
-                    for offset, scale, new_offset in zip(offsets, scales, new_offsets)
+                    for offset, scale, new_offset in zip(offsets, scales, new_offsets, strict=False)
                 ]
                 updated_scales = [
                     AugmentImage.update_scale(scale, new_scale)
-                    for scale, new_scale in zip(scales, new_scales)
+                    for scale, new_scale in zip(scales, new_scales, strict=False)
                 ]
             else:
                 updated_offsets = [
                     AugmentImage.update_offset(offset, scale, new_offsets)
-                    for offset, scale in zip(offsets, scales)
+                    for offset, scale in zip(offsets, scales, strict=False)
                 ]
-                updated_scales = [
-                    AugmentImage.update_scale(scale, new_scales) for scale in scales
-                ]
+                updated_scales = [AugmentImage.update_scale(scale, new_scales) for scale in scales]
         return updated_offsets, updated_scales
 
     def __call__(self, image: Image, context: Context) -> tuple[np.ndarray, Context]:
@@ -338,7 +324,7 @@ class AugmentImage(Preprocessor):
 
 
 class ToTensor(Preprocessor):
-    """Transforms lists and numpy arrays into tensors"""
+    """Transforms lists and numpy arrays into tensors."""
 
     def __call__(self, image: Image, context: Context) -> tuple[np.ndarray, Context]:
         image = torch.tensor(image, dtype=torch.float)
@@ -352,9 +338,9 @@ class ToTensor(Preprocessor):
 class ToBatch(Preprocessor):
     """Adds a batch dimension to the image tensor.
 
-    This preprocessor is used to convert a single image tensor into a batched format
-    by unsqueezing along the 0th dimension. This is typically required before passing
-    the image to models that expect batched input (i.e., shape `[B, C, H, W]`).
+    This preprocessor is used to convert a single image tensor into a batched format by
+    unsqueezing along the 0th dimension. This is typically required before passing the
+    image to models that expect batched input (i.e., shape `[B, C, H, W]`).
     """
 
     def __call__(self, image: Image, context: Context) -> tuple[np.ndarray, Context]:
@@ -362,8 +348,8 @@ class ToBatch(Preprocessor):
 
 
 class FilterLowConfidencePoses(Preprocessor):
-    """
-    Filters out poses with low confidence scores.
+    """Filters out poses with low confidence scores.
+
     By default, the confidence associated to the pose is the max confidence value.
     """
 
@@ -375,9 +361,7 @@ class FilterLowConfidencePoses(Preprocessor):
         self.confidence_threshold = confidence_threshold
         self.aggregate_func = aggregate_func
 
-    def __call__(
-        self, image: np.ndarray, context: Context
-    ) -> tuple[np.ndarray, Context]:
+    def __call__(self, image: np.ndarray, context: Context) -> tuple[np.ndarray, Context]:
         if "cond_kpts" not in context:
             raise ValueError(f"Must include cond_kpts, found {context}")
 
@@ -401,9 +385,7 @@ class FilterInvalidBoundingBoxes(Preprocessor):
     def __init__(self, min_area: int = 1) -> None:
         self.min_area = min_area
 
-    def __call__(
-        self, image: np.ndarray, context: Context
-    ) -> tuple[np.ndarray, Context]:
+    def __call__(self, image: np.ndarray, context: Context) -> tuple[np.ndarray, Context]:
         bboxes = context.get("bboxes", [])
         keypoints = context.get("cond_kpts", [])
 
@@ -423,7 +405,7 @@ class FilterInvalidBoundingBoxes(Preprocessor):
 
 
 class TopDownCrop(Preprocessor):
-    """Crops bounding boxes out of images for top-down pose estimation
+    """Crops bounding boxes out of images for top-down pose estimation.
 
     Args:
         output_size: The (width, height) of crops to output
@@ -444,9 +426,7 @@ class TopDownCrop(Preprocessor):
         self.margin = margin
         self.with_context = with_context
 
-    def __call__(
-        self, image: np.ndarray, context: Context
-    ) -> tuple[np.ndarray, Context]:
+    def __call__(self, image: np.ndarray, context: Context) -> tuple[np.ndarray, Context]:
         """TODO: numpy implementation"""
         if "bboxes" not in context:
             raise ValueError(f"Must include bboxes to CropDetections, found {context}")
@@ -480,7 +460,7 @@ class TopDownCrop(Preprocessor):
 
 
 class ComputeBoundingBoxesFromCondKeypoints(Preprocessor):
-    """Generates bounding boxes from predicted keypoints
+    """Generates bounding boxes from predicted keypoints.
 
     Args:
         cond_kpt_key: The key under which cond. keypoints are stored in the context.
@@ -491,37 +471,29 @@ class ComputeBoundingBoxesFromCondKeypoints(Preprocessor):
         self.cond_kpt_key = cond_kpt_key
         self.bbox_margin = bbox_margin
 
-    def __call__(
-        self, image: np.ndarray, context: Context
-    ) -> tuple[np.ndarray, Context]:
+    def __call__(self, image: np.ndarray, context: Context) -> tuple[np.ndarray, Context]:
         """TODO: numpy implementation"""
         if "cond_kpts" not in context:
-            raise ValueError(
-                f"Must include cond kpts to ComputeBBoxes, found {context}"
-            )
+            raise ValueError(f"Must include cond kpts to ComputeBBoxes, found {context}")
 
         h, w = image.shape[:2]
         context["bboxes"] = [
-            bbox_from_keypoints(cond_kpts, h, w, self.bbox_margin)
-            for cond_kpts in context[self.cond_kpt_key]
+            bbox_from_keypoints(cond_kpts, h, w, self.bbox_margin) for cond_kpts in context[self.cond_kpt_key]
         ]
         return image, context
 
 
 class ConditionalKeypointsToModelInputs(Preprocessor):
-
     def __init__(self, cond_kpt_key: str = "cond_kpts") -> None:
         self.cond_kpt_key = cond_kpt_key
 
-    def __call__(
-        self, image: np.ndarray, context: Context
-    ) -> tuple[np.ndarray, Context]:
+    def __call__(self, image: np.ndarray, context: Context) -> tuple[np.ndarray, Context]:
         cond_keypoints = context[self.cond_kpt_key]
 
         rescaled = cond_keypoints.copy()
         if rescaled.size > 0:  # only rescale if non-empty
-            rescaled[..., :2] = (
-                rescaled[..., :2] - np.array(context["offsets"])[:, None]
-            ) / np.array(context["scales"])[:, None]
+            rescaled[..., :2] = (rescaled[..., :2] - np.array(context["offsets"])[:, None]) / np.array(
+                context["scales"]
+            )[:, None]
         context["model_kwargs"] = {"cond_kpts": np.expand_dims(rescaled, axis=1)}
         return image, context

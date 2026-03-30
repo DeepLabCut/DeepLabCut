@@ -17,8 +17,9 @@ from deeplabcut import DEBUG
 
 
 def create_new_project_3d(project, experimenter, num_cameras=2, working_directory=None):
-    r"""Creates a new project directory, sub-directories and a basic configuration file for 3d project.
-    The configuration file is loaded with the default values. Adjust the parameters to your project's needs.
+    r"""Creates a new project directory, sub-directories and a basic configuration file
+    for 3d project. The configuration file is loaded with the default values. Adjust the
+    parameters to your project's needs.
 
     Parameters
     ----------
@@ -32,7 +33,8 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
         An integer value specifying the number of cameras.
 
     working_directory : string, optional
-        The directory where the project will be created. The default is the ``current working directory``; if provided, it must be a string.
+        The directory where the project will be created. The default is the ``current working directory``; if provided,
+        it must be a string.
 
 
     Example
@@ -43,9 +45,9 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
     Windows:
     >>> deeplabcut.create_new_project('reaching-task','Bill',2)
     Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \\ )
-
     """
     from datetime import datetime as dt
+
     from deeplabcut.utils import auxiliaryfunctions
 
     date = dt.today()
@@ -58,13 +60,11 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
         working_directory = "."
 
     wd = Path(working_directory).resolve()
-    project_name = "{pn}-{exp}-{date}-{triangulate}".format(
-        pn=project, exp=experimenter, date=date, triangulate="3d"
-    )
+    project_name = "{pn}-{exp}-{date}-{triangulate}".format(pn=project, exp=experimenter, date=date, triangulate="3d")
     project_path = wd / project_name
     # Create project and sub-directories
     if not DEBUG and project_path.exists():
-        print('Project "{}" already exists!'.format(project_path))
+        print(f'Project "{project_path}" already exists!')
         return
 
     camera_matrix_path = project_path / "camera_matrix"
@@ -81,7 +81,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
         path_removed_images,
     ]:
         p.mkdir(parents=True, exist_ok=DEBUG)
-        print('Created "{}"'.format(p))
+        print(f'Created "{p}"')
 
     # Create config file
     cfg_file_3d, ruamelFile_3d = auxiliaryfunctions.create_config_template_3d()
@@ -89,7 +89,10 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
     cfg_file_3d["scorer"] = experimenter
     cfg_file_3d["date"] = d
     cfg_file_3d["project_path"] = str(project_path)
-    #    cfg_file_3d['config_files']= [str('Enter the path of the config file ')+str(i)+ ' to include' for i in range(1,3)]
+    #    cfg_file_3d['config_files']= [
+    #        str('Enter the path of the config file ') + str(i) + ' to include'
+    #        for i in range(1, 3)
+    #    ]
     #    cfg_file_3d['config_files']= ['Enter the path of the config file 1']
     cfg_file_3d["colormap"] = "jet"
     cfg_file_3d["dotsize"] = 15
@@ -98,9 +101,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
     cfg_file_3d["markerColor"] = "r"
     cfg_file_3d["pcutoff"] = 0.4
     cfg_file_3d["num_cameras"] = num_cameras
-    cfg_file_3d["camera_names"] = [
-        str("camera-" + str(i)) for i in range(1, num_cameras + 1)
-    ]
+    cfg_file_3d["camera_names"] = [str("camera-" + str(i)) for i in range(1, num_cameras + 1)]
     cfg_file_3d["scorername_3d"] = "DLC_3D"
 
     cfg_file_3d["skeleton"] = [
@@ -113,26 +114,21 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
 
     for i in range(num_cameras):
         path = str(
-            "/home/mackenzie/DEEPLABCUT/DeepLabCut/2DprojectCam"
-            + str(i + 1)
-            + "-Mackenzie-2019-06-05/config.yaml"
+            "/home/mackenzie/DEEPLABCUT/DeepLabCut/2DprojectCam" + str(i + 1) + "-Mackenzie-2019-06-05/config.yaml"
         )
-        cfg_file_3d.insert(
-            len(cfg_file_3d), str("config_file_camera-" + str(i + 1)), path
-        )
+        cfg_file_3d.insert(len(cfg_file_3d), str("config_file_camera-" + str(i + 1)), path)
 
     for i in range(num_cameras):
         cfg_file_3d.insert(len(cfg_file_3d), str("shuffle_camera-" + str(i + 1)), 1)
-        cfg_file_3d.insert(
-            len(cfg_file_3d), str("trainingsetindex_camera-" + str(i + 1)), 0
-        )
+        cfg_file_3d.insert(len(cfg_file_3d), str("trainingsetindex_camera-" + str(i + 1)), 0)
 
     projconfigfile = os.path.join(str(project_path), "config.yaml")
     auxiliaryfunctions.write_config_3d(projconfigfile, cfg_file_3d)
 
     print('Generated "{}"'.format(project_path / "config.yaml"))
     print(
-        "\nA new project with name %s is created at %s and a configurable file (config.yaml) is stored there. If you have not calibrated the cameras, then use the function 'calibrate_camera' to start calibrating the camera otherwise use the function ``triangulate`` to triangulate the dataframe"
-        % (project_name, wd)
+        f"\nA new project with name {project_name} is created at {wd} and a configurable file (config.yaml) is stored"
+        f"there. If you have not calibrated the cameras, then use the function 'calibrate_camera' to start calibrating"
+        f"the camera otherwise use the function ``triangulate`` to triangulate the dataframe"
     )
     return projconfigfile

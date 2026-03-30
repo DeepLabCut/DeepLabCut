@@ -42,12 +42,7 @@ requires_network = pytest.mark.skipif(
 
 _REPO_ROOT = pathlib.Path(__file__).resolve().parents[3]
 _EXAMPLE_IMAGE = (
-    _REPO_ROOT
-    / "examples"
-    / "Reaching-Mackenzie-2018-08-30"
-    / "labeled-data"
-    / "reachingvideo1"
-    / "img005.png"
+    _REPO_ROOT / "examples" / "Reaching-Mackenzie-2018-08-30" / "labeled-data" / "reachingvideo1" / "img005.png"
 )
 
 
@@ -163,9 +158,7 @@ def test_video_inference_fmpose3d_include_3d_return(tmp_path, monkeypatch):
                 poses_3d=np.zeros((n_frames, 26, 3), dtype=np.float32),
             )
 
-    def _fake_create_df_from_prediction(
-        predictions, dlc_scorer, multi_animal, model_cfg, output_path, output_prefix
-    ):
+    def _fake_create_df_from_prediction(predictions, dlc_scorer, multi_animal, model_cfg, output_path, output_prefix):
         bodyparts = model_cfg["metadata"]["bodyparts"]
         individuals = model_cfg["metadata"]["individuals"]
         columns = pd.MultiIndex.from_product(
@@ -180,9 +173,7 @@ def test_video_inference_fmpose3d_include_3d_return(tmp_path, monkeypatch):
         "get_fmpose3d_inference_api",
         lambda model_type, device: FakeAPI(),
     )
-    monkeypatch.setattr(
-        fmp_inf, "create_df_from_prediction", _fake_create_df_from_prediction
-    )
+    monkeypatch.setattr(fmp_inf, "create_df_from_prediction", _fake_create_df_from_prediction)
     monkeypatch.setattr(
         fmp_inf,
         "get_superanimal_colormaps",

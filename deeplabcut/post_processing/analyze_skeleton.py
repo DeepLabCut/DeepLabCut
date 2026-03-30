@@ -14,19 +14,21 @@ Contributed by Federico Claudi - https://github.com/FedeClaudi
 """
 
 import argparse
+import os
 from math import atan2, degrees
 from pathlib import Path
-import os
+
 import numpy as np
 import pandas as pd
 from scipy.spatial import distance
 
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 
 # utility functions
 def calc_distance_between_points_two_vectors_2d(v1, v2):
-    """calc_distance_between_points_two_vectors_2d [pairwise distance between vectors points]
+    """calc_distance_between_points_two_vectors_2d [pairwise distance between vectors
+    points]
 
     Arguments:
         v1 {[np.array]} -- [description]
@@ -56,14 +58,15 @@ def calc_distance_between_points_two_vectors_2d(v1, v2):
         raise ValueError("Error: input arrays should have the same length")
 
     # Calculate distance
-    dist = [distance.euclidean(p1, p2) for p1, p2 in zip(v1, v2)]
+    dist = [distance.euclidean(p1, p2) for p1, p2 in zip(v1, v2, strict=False)]
     return dist
 
 
 def angle_between_points_2d_anticlockwise(p1, p2):
-    """angle_between_points_2d_clockwise [Determines the angle of a straight line drawn between point one and two.
-        The number returned, which is a double in degrees, tells us how much we have to rotate
-        a horizontal line anti-clockwise for it to match the line between the two points.]
+    """angle_between_points_2d_clockwise [Determines the angle of a straight line drawn
+    between point one and two. The number returned, which is a double in degrees, tells
+    us how much we have to rotate a horizontal line anti-clockwise for it to match the
+    line between the two points.]
 
     Arguments:
         p1 {[np.ndarray, list]} -- np.array or list [ with the X and Y coordinates of the point]
@@ -97,7 +100,8 @@ def angle_between_points_2d_anticlockwise(p1, p2):
 
 
 def calc_angle_between_vectors_of_points_2d(v1, v2):
-    """calc_angle_between_vectors_of_points_2d [calculates the clockwise angle between each set of point for two 2d arrays of points]
+    """calc_angle_between_vectors_of_points_2d [calculates the clockwise angle between
+    each set of point for two 2d arrays of points]
 
     Arguments:
         v1 {[np.ndarray]} -- [2d array with X,Y position at each timepoint]
@@ -116,17 +120,10 @@ def calc_angle_between_vectors_of_points_2d(v1, v2):
     """
 
     # Check data format
-    if (
-        v1 is None
-        or v2 is None
-        or not isinstance(v1, np.ndarray)
-        or not isinstance(v2, np.ndarray)
-    ):
+    if v1 is None or v2 is None or not isinstance(v1, np.ndarray) or not isinstance(v2, np.ndarray):
         raise ValueError("Invalid format for input arguments")
     if len(v1) != len(v2):
-        raise ValueError(
-            "Input arrays should have the same length, instead: ", len(v1), len(v2)
-        )
+        raise ValueError("Input arrays should have the same length, instead: ", len(v1), len(v2))
     if not v1.shape[0] == 2 or not v2.shape[0] == 2:
         raise ValueError("Invalid shape for input arrays: ", v1.shape, v2.shape)
 
@@ -160,9 +157,7 @@ def analyzebone(bp1, bp2):
     likelihood = np.min(likelihoods, 1)
 
     # Create dataframe and return
-    df = pd.DataFrame.from_dict(
-        dict(length=bone_length, orientation=bone_orientation, likelihood=likelihood)
-    )
+    df = pd.DataFrame.from_dict(dict(length=bone_length, orientation=bone_orientation, likelihood=likelihood))
     # df.index.name=name
 
     return df
@@ -268,7 +263,7 @@ def analyzeskeleton(
 
     Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
     for video in Videos:
-        print("Processing %s" % (video))
+        print(f"Processing {video}")
         if destfolder is None:
             destfolder = str(Path(video).parents[0])
 
@@ -282,7 +277,7 @@ def analyzeskeleton(
             video_to_skeleton_df[video] = None
             continue
 
-        output_name = filepath.replace(".h5", f"_skeleton.h5")
+        output_name = filepath.replace(".h5", "_skeleton.h5")
         if os.path.isfile(output_name):
             print(f"Skeleton in video {vname} already processed. Skipping...")
             video_to_skeleton_df[video] = pd.read_hdf(output_name, "df_with_missing")
@@ -294,11 +289,11 @@ def analyzeskeleton(
                 temp = df_.droplevel(["scorer", "individuals"], axis=1)
                 if animal_name != "single":
                     for bp1, bp2 in cfg["skeleton"]:
-                        name = "{}_{}_{}".format(animal_name, bp1, bp2)
+                        name = f"{animal_name}_{bp1}_{bp2}"
                         bones[name] = analyzebone(temp[bp1], temp[bp2])
         else:
             for bp1, bp2 in cfg["skeleton"]:
-                name = "{}_{}".format(bp1, bp2)
+                name = f"{bp1}_{bp2}"
                 bones[name] = analyzebone(df[scorer][bp1], df[scorer][bp2])
 
         skeleton = pd.concat(bones, axis=1)

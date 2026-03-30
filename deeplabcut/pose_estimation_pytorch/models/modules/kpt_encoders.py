@@ -13,20 +13,17 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 import cv2
-import numpy as np
-import torch
-import torchvision.transforms.functional as TF
 import matplotlib.pyplot as plt
+import numpy as np
 
-from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 from deeplabcut.pose_estimation_pytorch.data.utils import out_of_bounds_keypoints
-
+from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 KEYPOINT_ENCODERS = Registry("kpt_encoders", build_func=build_from_cfg)
 
 
 class BaseKeypointEncoder(ABC):
-    """Encodes keypoints into heatmaps
+    """Encodes keypoints into heatmaps.
 
     Modified from BUCTD/data/JointsDataset
     """
@@ -48,6 +45,7 @@ class BaseKeypointEncoder(ABC):
         self.img_size = img_size
 
     @property
+    @abstractmethod
     def num_channels(self):
         pass
 
@@ -65,7 +63,7 @@ class BaseKeypointEncoder(ABC):
         raise NotImplementedError
 
     def blur_heatmap(self, heatmap: np.ndarray) -> np.ndarray:
-        """Applies a Gaussian blur to a heatmap
+        """Applies a Gaussian blur to a heatmap.
 
         Taken from BUCTD/data/JointsDataset, generate_heatmap
 
@@ -93,7 +91,7 @@ class BaseKeypointEncoder(ABC):
 
 @KEYPOINT_ENCODERS.register_module
 class StackedKeypointEncoder(BaseKeypointEncoder):
-    """Encodes keypoints into heatmaps, where each
+    """Encodes keypoints into heatmaps, where each.
 
     Modified from BUCTD/data/JointsDataset, get_stacked_condition
     """
@@ -155,14 +153,12 @@ class StackedKeypointEncoder(BaseKeypointEncoder):
 
 @KEYPOINT_ENCODERS.register_module
 class ColoredKeypointEncoder(BaseKeypointEncoder):
-    """Encodes keypoints into a given number of color channels
+    """Encodes keypoints into a given number of color channels.
 
     Modified from BUCTD/data/JointsDataset, get_condition_image_colored
     """
 
-    def __init__(
-        self, colors: list[tuple[int, int, int]] | None = None, **kwargs
-    ) -> None:
+    def __init__(self, colors: list[tuple[int, int, int]] | None = None, **kwargs) -> None:
         """
         Args:
             colors: the color to use for each keypoint
@@ -219,23 +215,14 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
 
         def _get_condition_matrix_optim(zero_matrix, kpts):
             x, y = np.array(kpts).T
-            mask = (
-                (0 < x)
-                & (x < zero_matrix.shape[2])
-                & (0 < y)
-                & (y < zero_matrix.shape[1])
-            )
-            colors_masked = np.repeat(
-                self.colors[:, None, :], len(zero_matrix), 1
-            ) * np.repeat(mask[:, :, None], 3, 2)
+            mask = (0 < x) & (x < zero_matrix.shape[2]) & (0 < y) & (y < zero_matrix.shape[1])
+            colors_masked = np.repeat(self.colors[:, None, :], len(zero_matrix), 1) * np.repeat(mask[:, :, None], 3, 2)
             kpt_indices = np.stack([x.T, y.T]).transpose(1, 2, 0)
-            batch_indices = np.repeat(
-                np.arange(len(zero_matrix))[:, None, None], self.num_joints, axis=1
-            )
+            batch_indices = np.repeat(np.arange(len(zero_matrix))[:, None, None], self.num_joints, axis=1)
             kpt_input = np.concatenate([batch_indices, kpt_indices], dtype=int, axis=2)
-            zero_matrix[
-                kpt_input[..., 0], kpt_input[..., 2] - 1, kpt_input[..., 1] - 1
-            ] = colors_masked.transpose(1, 0, 2)
+            zero_matrix[kpt_input[..., 0], kpt_input[..., 2] - 1, kpt_input[..., 1] - 1] = colors_masked.transpose(
+                1, 0, 2
+            )
             return zero_matrix
 
         condition = _get_condition_matrix(zero_matrix, kpts)
@@ -251,7 +238,5 @@ class ColoredKeypointEncoder(BaseKeypointEncoder):
     def get_colors_from_cmap(self, cmap_name, num_colors):
         cmap = plt.get_cmap(cmap_name)
         colors_float = [cmap(i) for i in np.linspace(0, 256, num_colors, dtype=int)]
-        colors = [
-            (int(r * 255), int(g * 255), int(b * 255)) for r, g, b, _ in colors_float
-        ]
+        colors = [(int(r * 255), int(g * 255), int(b * 255)) for r, g, b, _ in colors_float]
         return colors

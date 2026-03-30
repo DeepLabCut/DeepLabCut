@@ -10,14 +10,15 @@
 #
 
 import os
+import warnings
 from pathlib import Path
+
 import cv2
 import numpy as np
 import pandas as pd
 
-from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
-from deeplabcut.utils import auxiliaryfunctions_3d
 from deeplabcut.core.trackingutils import TRACK_METHODS
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, auxiliaryfunctions_3d
 
 
 def triangulate(
@@ -31,8 +32,7 @@ def triangulate(
     save_as_csv=False,
     track_method="",
 ):
-    """
-    This function triangulates the detected DLC-keypoints from the two camera views
+    """This function triangulates the detected DLC-keypoints from the two camera views
     using the camera matrices (derived from calibration) to calculate 3D predictions.
 
     Parameters
@@ -46,7 +46,8 @@ def triangulate(
         i.e. [['video1-camera-1.avi','video1-camera-2.avi']]
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        Checks for the extension of the video in case the input to the video is a directory.\n
+        Only videos with this extension are analyzed.
         If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
 
@@ -74,7 +75,9 @@ def triangulate(
     >>> deeplabcut.triangulate(config,'/data/project1/videos/')
 
     To analyze only a few pairs of videos:
-    >>> deeplabcut.triangulate(config,[['/data/project1/videos/video1-camera-1.avi','/data/project1/videos/video1-camera-2.avi'],['/data/project1/videos/video2-camera-1.avi','/data/project1/videos/video2-camera-2.avi']])
+    >>> deeplabcut.triangulate(config,[['/data/project1/videos/video1-camera-1.avi',
+    ... '/data/project1/videos/video1-camera-2.avi'],['/data/project1/videos/video2-camera-1.avi',
+    ... '/data/project1/videos/video2-camera-2.avi']])
 
 
     Windows
@@ -82,7 +85,10 @@ def triangulate(
     >>> deeplabcut.triangulate(config,'C:\\yourusername\\rig-95\\Videos')
 
     To analyze only a few pair of videos:
-    >>> deeplabcut.triangulate(config,[['C:\\yourusername\\rig-95\\Videos\\video1-camera-1.avi','C:\\yourusername\\rig-95\\Videos\\video1-camera-2.avi'],['C:\\yourusername\\rig-95\\Videos\\video2-camera-1.avi','C:\\yourusername\\rig-95\\Videos\\video2-camera-2.avi']])
+    >>> deeplabcut.triangulate(config,[['C:\\yourusername\\rig-95\\Videos\\video1-camera-1.avi',
+    ... 'C:\\yourusername\\rig-95\\Videos\\video1-camera-2.avi'],
+    ... ['C:\\yourusername\\rig-95\\Videos\\video2-camera-1.avi',
+    ... 'C:\\yourusername\\rig-95\\Videos\\video2-camera-2.avi']])
     """
     from deeplabcut.compat import analyze_videos
     from deeplabcut.post_processing import filtering
@@ -98,27 +104,23 @@ def triangulate(
         # Check if the config file exists
         if not os.path.exists(snapshots[cam]):
             raise Exception(
-                str(
-                    "It seems the file specified in the variable config_file_"
-                    + str(cam)
-                )
+                str("It seems the file specified in the variable config_file_" + str(cam))
                 + " does not exist. Please edit the config file with correct file path and retry."
             )
 
     # flag to check if the video_path variable is a string or a list of list
     flag = False  # assumes that video path is a list
-    if isinstance(video_path, str) == True:
+    if isinstance(video_path, str):
         flag = True
-        video_list = auxiliaryfunctions_3d.get_camerawise_videos(
-            video_path, cam_names, videotype=videotype
-        )
+        video_list = auxiliaryfunctions_3d.get_camerawise_videos(video_path, cam_names, videotype=videotype)
     else:
         video_list = video_path
 
     if video_list == []:
         print("No videos found in the specified video path.", video_path)
         print(
-            "Please make sure that the video names are specified with correct camera names as entered in the config file or"
+            "Please make sure that the video names are specified with"
+            " correct camera names as entered in the config file or"
         )
         print(
             "perhaps the videotype is distinct from the videos in the path, I was looking for:",
@@ -132,30 +134,17 @@ def triangulate(
         dataname = []
         for j in range(len(video_list[i])):  # looping over cameras
             if cam_names[j] not in video_list[i][j]:
-                raise ValueError(
-                    f"Camera name '{cam_names[j]}' "
-                    f"not found in video list '{video_list[i][j]}'."
-                )
+                raise ValueError(f"Camera name '{cam_names[j]}' not found in video list '{video_list[i][j]}'.")
             else:
-                print(
-                    "Analyzing video %s using %s"
-                    % (video_list[i][j], str("config_file_" + cam_names[j]))
-                )
+                print("Analyzing video {} using {}".format(video_list[i][j], str("config_file_" + cam_names[j])))
 
                 config_2d = snapshots[cam_names[j]]
                 cfg = auxiliaryfunctions.read_config(config_2d)
 
                 # Get track_method and do related checks
-                track_method = auxfun_multianimal.get_track_method(
-                    cfg, track_method=track_method
-                )
-                if (
-                    len(cfg.get("multianimalbodyparts", [])) == 1
-                    and track_method != "box"
-                ):
-                    warnings.warn(
-                        "Switching to `box` tracker for single point tracking..."
-                    )
+                track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
+                if len(cfg.get("multianimalbodyparts", [])) == 1 and track_method != "box":
+                    warnings.warn("Switching to `box` tracker for single point tracking...", stacklevel=2)
                     track_method = "box"
 
                 # Get track method suffix
@@ -164,7 +153,7 @@ def triangulate(
                 shuffle = cfg_3d[str("shuffle_" + cam_names[j])]
                 trainingsetindex = cfg_3d[str("trainingsetindex_" + cam_names[j])]
                 trainFraction = cfg["TrainingFraction"][trainingsetindex]
-                if flag == True:
+                if flag:
                     video = os.path.join(video_path, video_list[i][j])
                 else:
                     video_path = str(Path(video_list[i][j]).parents[0])
@@ -198,16 +187,13 @@ def triangulate(
                     output_file + "_" + scorer_3d
                 )  # Check if the videos are already analyzed for 3d
                 if os.path.isfile(output_filename + ".h5"):
-                    if save_as_csv is True and not os.path.exists(
-                        output_filename + ".csv"
-                    ):
+                    if save_as_csv is True and not os.path.exists(output_filename + ".csv"):
                         # In case user adds save_as_csv is True after triangulating
-                        pd.read_hdf(output_filename + ".h5").to_csv(
-                            str(output_filename + ".csv")
-                        )
+                        pd.read_hdf(output_filename + ".h5").to_csv(str(output_filename + ".csv"))
 
                     print(
-                        "Already analyzed...Checking the meta data for any change in the camera matrices and/or scorer names",
+                        "Already analyzed..."
+                        "Checking the meta data for any change in the camera matrices and/or scorer names",
                         vname,
                     )
                     pickle_file = str(output_filename + "_meta.pickle")
@@ -219,17 +205,13 @@ def triangulate(
                         path_undistort,
                         _,
                     ) = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)
-                    path_stereo_file = os.path.join(
-                        path_camera_matrix, "stereo_params.pickle"
-                    )
+                    path_stereo_file = os.path.join(path_camera_matrix, "stereo_params.pickle")
                     stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
                     cam_pair = str(cam_names[0] + "-" + cam_names[1])
                     is_video_analyzed = False  # variable to keep track if the video was already analyzed
                     # Check for the camera matrix
                     for k in metadata_["stereo_matrix"].keys():
-                        if np.all(
-                            metadata_["stereo_matrix"][k] == stereo_file[cam_pair][k]
-                        ):
+                        if np.all(metadata_["stereo_matrix"][k] == stereo_file[cam_pair][k]):
                             pass
                         else:
                             run_triangulate = True
@@ -239,9 +221,7 @@ def triangulate(
                         cfg, shuffle, trainFraction, trainingsiterations="unknown"
                     )
 
-                    if (
-                        metadata_["scorer_name"][cam_names[j]] == DLCscorer
-                    ):  # TODO: CHECK FOR BOTH?
+                    if metadata_["scorer_name"][cam_names[j]] == DLCscorer:  # TODO: CHECK FOR BOTH?
                         is_video_analyzed = True
                     elif metadata_["scorer_name"][cam_names[j]] == DLCscorerlegacy:
                         is_video_analyzed = True
@@ -251,11 +231,7 @@ def triangulate(
 
                     if is_video_analyzed:
                         print("This file is already analyzed!")
-                        dataname.append(
-                            os.path.join(
-                                destfolder, vname + DLCscorer + tr_method_suffix + ".h5"
-                            )
-                        )
+                        dataname.append(os.path.join(destfolder, vname + DLCscorer + tr_method_suffix + ".h5"))
                         scorer_name[cam_names[j]] = DLCscorer
                     else:
                         # Analyze video if score name is different
@@ -284,9 +260,7 @@ def triangulate(
                             )
                             suffix += "_filtered"
 
-                        dataname.append(
-                            os.path.join(destfolder, vname + DLCscorer + suffix + ".h5")
-                        )
+                        dataname.append(os.path.join(destfolder, vname + DLCscorer + suffix + ".h5"))
 
                 else:  # need to do the whole jam.
                     DLCscorer = analyze_videos(
@@ -313,9 +287,7 @@ def triangulate(
                             destfolder=destfolder,
                         )
                         suffix += "_filtered"
-                    dataname.append(
-                        os.path.join(destfolder, vname + DLCscorer + suffix + ".h5")
-                    )
+                    dataname.append(os.path.join(destfolder, vname + DLCscorer + suffix + ".h5"))
 
         if run_triangulate:
             #        if len(dataname)>0:
@@ -326,30 +298,24 @@ def triangulate(
                 dataFrame_camera2_undistort,
                 stereomatrix,
                 path_stereo_file,
-            ) = undistort_points(
-                config, dataname, str(cam_names[0] + "-" + cam_names[1])
-            )
+            ) = undistort_points(config, dataname, str(cam_names[0] + "-" + cam_names[1]))
             if len(dataFrame_camera1_undistort) != len(dataFrame_camera2_undistort):
-                import warnings
-
                 warnings.warn(
-                    "The number of frames do not match in the two videos. Please make sure that your videos have same number of frames and then retry! Excluding the extra frames from the longer video."
+                    "The number of frames do not match in the two videos. "
+                    "Please make sure that your videos have same number of frames and then retry! "
+                    "Excluding the extra frames from the longer video.",
+                    stacklevel=2,
                 )
                 if len(dataFrame_camera1_undistort) > len(dataFrame_camera2_undistort):
-                    dataFrame_camera1_undistort = dataFrame_camera1_undistort[
-                        : len(dataFrame_camera2_undistort)
-                    ]
+                    dataFrame_camera1_undistort = dataFrame_camera1_undistort[: len(dataFrame_camera2_undistort)]
                 if len(dataFrame_camera2_undistort) > len(dataFrame_camera1_undistort):
-                    dataFrame_camera2_undistort = dataFrame_camera2_undistort[
-                        : len(dataFrame_camera1_undistort)
-                    ]
-            #                raise Exception("The number of frames do not match in the two videos. Please make sure that your videos have same number of frames and then retry!")
-            scorer_cam1 = dataFrame_camera1_undistort.columns.get_level_values(0)[0]
-            scorer_cam2 = dataFrame_camera2_undistort.columns.get_level_values(0)[0]
+                    dataFrame_camera2_undistort = dataFrame_camera2_undistort[: len(dataFrame_camera1_undistort)]
+                    # raise Exception("The number of frames do not match in the two videos.
+                    # Please make sure that your videos have same number of frames and then retry!")
+            dataFrame_camera1_undistort.columns.get_level_values(0)[0]
+            dataFrame_camera2_undistort.columns.get_level_values(0)[0]
 
-            bodyparts = dataFrame_camera1_undistort.columns.get_level_values(
-                "bodyparts"
-            ).unique()
+            dataFrame_camera1_undistort.columns.get_level_values("bodyparts").unique()
 
             P1 = stereomatrix["P1"]
             P2 = stereomatrix["P2"]
@@ -360,12 +326,8 @@ def triangulate(
             num_frames = dataFrame_camera1_undistort.shape[0]
             ### Assign nan to [X,Y] of low likelihood predictions ###
             # Convert the data to a np array to easily mask out the low likelihood predictions
-            data_cam1_tmp = dataFrame_camera1_undistort.to_numpy().reshape(
-                (num_frames, -1, 3)
-            )
-            data_cam2_tmp = dataFrame_camera2_undistort.to_numpy().reshape(
-                (num_frames, -1, 3)
-            )
+            data_cam1_tmp = dataFrame_camera1_undistort.to_numpy().reshape((num_frames, -1, 3))
+            data_cam2_tmp = dataFrame_camera2_undistort.to_numpy().reshape((num_frames, -1, 3))
             # Assign [X,Y] = nan to low likelihood predictions
             data_cam1_tmp[data_cam1_tmp[..., 2] < pcutoff, :2] = np.nan
             data_cam2_tmp[data_cam2_tmp[..., 2] < pcutoff, :2] = np.nan
@@ -381,19 +343,13 @@ def triangulate(
             if cfg.get("multianimalproject"):
                 # Check individuals are the same in both views
                 individuals_view1 = (
-                    dataFrame_camera1_undistort.columns.get_level_values("individuals")
-                    .unique()
-                    .to_list()
+                    dataFrame_camera1_undistort.columns.get_level_values("individuals").unique().to_list()
                 )
                 individuals_view2 = (
-                    dataFrame_camera2_undistort.columns.get_level_values("individuals")
-                    .unique()
-                    .to_list()
+                    dataFrame_camera2_undistort.columns.get_level_values("individuals").unique().to_list()
                 )
                 if individuals_view1 != individuals_view2:
-                    raise ValueError(
-                        "The individuals do not match between the two DataFrames"
-                    )
+                    raise ValueError("The individuals do not match between the two DataFrames")
 
                 # Cross-view match individuals
                 _, voting = auxiliaryfunctions_3d.cross_view_match_dataframes(
@@ -408,12 +364,12 @@ def triangulate(
             individuals = individuals_view1
 
             # Reshape: (num_framex, num_individuals, num_bodyparts , 2)
-            all_points_cam1 = dataFrame_camera1_undistort.to_numpy().reshape(
-                (num_frames, len(individuals), -1, 3)
-            )[..., :2]
-            all_points_cam2 = dataFrame_camera2_undistort.to_numpy().reshape(
-                (num_frames, len(individuals), -1, 3)
-            )[..., :2]
+            all_points_cam1 = dataFrame_camera1_undistort.to_numpy().reshape((num_frames, len(individuals), -1, 3))[
+                ..., :2
+            ]
+            all_points_cam2 = dataFrame_camera2_undistort.to_numpy().reshape((num_frames, len(individuals), -1, 3))[
+                ..., :2
+            ]
 
             # Triangulate data
             triangulate = []
@@ -424,9 +380,7 @@ def triangulate(
                 pts_indv_cam1 = all_points_cam1[:, i].reshape((-1, 2)).T
                 pts_indv_cam2 = all_points_cam2[:, voting[i]].reshape((-1, 2)).T
 
-                indv_points_3d = auxiliaryfunctions_3d.triangulatePoints(
-                    P1, P2, pts_indv_cam1, pts_indv_cam2
-                )
+                indv_points_3d = auxiliaryfunctions_3d.triangulatePoints(P1, P2, pts_indv_cam1, pts_indv_cam2)
 
                 indv_points_3d = indv_points_3d[:3].T.reshape((num_frames, -1, 3))
 
@@ -488,9 +442,7 @@ def triangulate(
             if cfg.get("multianimalproject"):
                 df_2d_view2 = pd.read_hdf(dataname[1])
                 individuals_order = [individuals[i] for i in list(voting.values())]
-                df_2d_view2 = auxfun_multianimal.reorder_individuals_in_df(
-                    df_2d_view2, individuals_order
-                )
+                df_2d_view2 = auxfun_multianimal.reorder_individuals_in_df(df_2d_view2, individuals_order)
                 df_2d_view2.to_hdf(
                     dataname[1],
                     key="tracks",
@@ -498,9 +450,7 @@ def triangulate(
                     mode="w",
                 )
 
-            auxiliaryfunctions_3d.SaveMetadata3d(
-                str(output_filename) + "_meta.pickle", metadata
-            )
+            auxiliaryfunctions_3d.SaveMetadata3d(str(output_filename) + "_meta.pickle", metadata)
 
             if save_as_csv:
                 df_3d.to_csv(str(output_filename) + ".csv")
@@ -531,7 +481,7 @@ def _undistort_points(points, mat, coeffs, p, r):
 
 def _undistort_views(df_view_pairs, stereo_params):
     df_views_undist = []
-    for df_view_pair, camera_pair in zip(df_view_pairs, stereo_params):
+    for df_view_pair, camera_pair in zip(df_view_pairs, stereo_params, strict=False):
         params = stereo_params[camera_pair]
         dfs = []
         for i, df_view in enumerate(df_view_pair, start=1):
@@ -551,14 +501,13 @@ def _undistort_views(df_view_pairs, stereo_params):
 def undistort_points(config, dataframe, camera_pair):
     cfg_3d = auxiliaryfunctions.read_config(config)
     path_camera_matrix = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)[2]
-    """
-    path_undistort = destfolder
-    filename_cam1 = Path(dataframe[0]).stem
-    filename_cam2 = Path(dataframe[1]).stem
+    """path_undistort = destfolder filename_cam1 = Path(dataframe[0]).stem filename_cam2
+    = Path(dataframe[1]).stem.
 
     #currently no intermediate saving of this due to high speed.
     # check if the undistorted files are already present
-    if os.path.exists(os.path.join(path_undistort,filename_cam1 + '_undistort.h5')) and os.path.exists(os.path.join(path_undistort,filename_cam2 + '_undistort.h5')):
+    if os.path.exists(os.path.join(path_undistort,filename_cam1 + \
+    '_undistort.h5')) and os.path.exists(os.path.join(path_undistort,filename_cam2 + '_undistort.h5')):
         print("The undistorted files are already present at %s" % os.path.join(path_undistort,filename_cam1))
         dataFrame_cam1_undistort = pd.read_hdf(os.path.join(path_undistort,filename_cam1 + '_undistort.h5'))
         dataFrame_cam2_undistort = pd.read_hdf(os.path.join(path_undistort,filename_cam2 + '_undistort.h5'))
@@ -566,17 +515,14 @@ def undistort_points(config, dataframe, camera_pair):
     """
     if len(dataframe) != 2:
         raise ValueError(
-            f"undistort_points(config, dataframe, camera_pair) needs filenames to two data frames, but got dataframe={dataframe}."
+            "undistort_points(config, dataframe, camera_pair) "
+            f"needs filenames to two data frames, but got dataframe={dataframe}."
         )
     for filename in dataframe:
         if not os.path.exists(filename):
-            raise FileNotFoundError(
-                f"Dataframe path '{filename}' could not be found in the filesystem."
-            )
+            raise FileNotFoundError(f"Dataframe path '{filename}' could not be found in the filesystem.")
     if not os.path.exists(path_camera_matrix):
-        raise FileNotFoundError(
-            f"Camera matrix file '{path_camera_matrix}' could not be found in the filesystem."
-        )
+        raise FileNotFoundError(f"Camera matrix file '{path_camera_matrix}' could not be found in the filesystem.")
     # Create an empty dataFrame to store the undistorted 2d coordinates and likelihood
     dataframe_cam1 = pd.read_hdf(dataframe[0])
     dataframe_cam2 = pd.read_hdf(dataframe[1])

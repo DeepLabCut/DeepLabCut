@@ -21,6 +21,7 @@ examples_folder = os.path.join(
     "examples",
 )
 
+
 # requires videos to be in the examples folder
 @pytest.mark.skip
 @pytest.mark.parametrize(
@@ -43,7 +44,7 @@ def test_video_inference_saves_file(video_paths, superanimal_name):
     if isinstance(video_paths, str):
         video_paths = [video_paths]
     for video_path in video_paths:
-        output_path = video_path.replace(".mp4", f"_labeled.mp4")
+        output_path = video_path.replace(".mp4", "_labeled.mp4")
         assert os.path.exists(output_path), "Output video file does not exist"
 
         assert os.stat(output_path).st_size > 0, "Output video file is empty"

@@ -8,8 +8,10 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import numpy as np
 import pickle
+
+import numpy as np
+
 from deeplabcut.core import crossvalutils
 
 BEST_GRAPH = [14, 15, 16, 11, 22, 31, 61, 7, 59, 62, 64]
@@ -20,9 +22,7 @@ def test_get_n_best_paf_graphs(evaluation_data_and_metadata):
     data, metadata = evaluation_data_and_metadata
     params = crossvalutils._set_up_evaluation(data)
     n_graphs = 5
-    paf_inds, dict_ = crossvalutils._get_n_best_paf_graphs(
-        data, metadata, params["paf_graph"], n_graphs=n_graphs
-    )
+    paf_inds, dict_ = crossvalutils._get_n_best_paf_graphs(data, metadata, params["paf_graph"], n_graphs=n_graphs)
     assert len(paf_inds) == n_graphs
     assert len(dict_) == len(params["paf_graph"])
     assert len(paf_inds[0]) == 11
@@ -66,9 +66,7 @@ def test_benchmark_paf_graphs(evaluation_data_and_metadata):
         ],
     }
     inference_cfg = {"topktoretain": 3, "pcutoff": 0.1, "pafthreshold": 0.1}
-    results = crossvalutils._benchmark_paf_graphs(
-        cfg, inference_cfg, data, [BEST_GRAPH]
-    )
+    results = crossvalutils._benchmark_paf_graphs(cfg, inference_cfg, data, [BEST_GRAPH])
     all_scores = results[0]
     assert len(all_scores) == 1
     assert all_scores[0][1] == BEST_GRAPH

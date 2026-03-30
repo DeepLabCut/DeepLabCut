@@ -12,18 +12,19 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-from . import _tf_legacy
-
 # Suppress tensorflow warning messages
 import tensorflow as tf
+
+from . import _tf_legacy
+
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 from deeplabcut.pose_estimation_tensorflow.config import *
+from deeplabcut.pose_estimation_tensorflow.core.evaluate import *
+from deeplabcut.pose_estimation_tensorflow.core.test import *
+from deeplabcut.pose_estimation_tensorflow.core.train import *
 from deeplabcut.pose_estimation_tensorflow.datasets import *
 from deeplabcut.pose_estimation_tensorflow.default_config import *
-from deeplabcut.pose_estimation_tensorflow.core.evaluate import *
-from deeplabcut.pose_estimation_tensorflow.core.train import *
-from deeplabcut.pose_estimation_tensorflow.core.test import *
 from deeplabcut.pose_estimation_tensorflow.export import export_model
 from deeplabcut.pose_estimation_tensorflow.models import *
 from deeplabcut.pose_estimation_tensorflow.nnets import *

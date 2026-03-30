@@ -21,7 +21,7 @@ from deeplabcut.pose_estimation_pytorch.models.criterions.base import (
 
 
 class WeightedCriterion(BaseCriterion):
-    """Base class for weighted criterions"""
+    """Base class for weighted criterions."""
 
     def __init__(self, criterion: nn.Module):
         super().__init__()
@@ -55,13 +55,12 @@ class WeightedCriterion(BaseCriterion):
 
 @CRITERIONS.register_module
 class WeightedMSECriterion(WeightedCriterion):
-    """
-    Weighted Mean Squared Error (MSE) Loss.
+    """Weighted Mean Squared Error (MSE) Loss.
 
     This loss computes the Mean Squared Error between the prediction and target tensors,
-    but it also incorporates weights to adjust the contribution of each element in the loss
-    calculation. The loss is computed element-wise, and elements with a weight of 0 (masked items)
-    are excluded from the loss calculation.
+    but it also incorporates weights to adjust the contribution of each element in the
+    loss calculation. The loss is computed element-wise, and elements with a weight of 0
+    (masked items) are excluded from the loss calculation.
     """
 
     def __init__(self) -> None:
@@ -95,11 +94,10 @@ class WeightedMSECriterion(WeightedCriterion):
 
 @CRITERIONS.register_module
 class WeightedHuberCriterion(WeightedCriterion):
-    """
-    Weighted Huber Loss.
+    """Weighted Huber Loss.
 
-    This loss computes the Huber loss between the prediction and target tensors,
-    but it also incorporates weights to adjust the contribution of each element in the loss
+    This loss computes the Huber loss between the prediction and target tensors, but it
+    also incorporates weights to adjust the contribution of each element in the loss
     calculation. The loss is computed element-wise, and elements with a weight of 0 are
     excluded from the loss calculation.
     """
@@ -110,13 +108,12 @@ class WeightedHuberCriterion(WeightedCriterion):
 
 @CRITERIONS.register_module
 class WeightedBCECriterion(WeightedCriterion):
-    """
-    Weighted Binary Cross Entropy (BCE) Loss.
+    """Weighted Binary Cross Entropy (BCE) Loss.
 
-    This loss computes the Binary Cross Entropy loss between the prediction and target tensors,
-    but it also incorporates weights to adjust the contribution of each element in the loss
-    calculation. The loss is computed element-wise, and elements with a weight of 0 are
-    excluded from the loss calculation.
+    This loss computes the Binary Cross Entropy loss between the prediction and target
+    tensors, but it also incorporates weights to adjust the contribution of each element
+    in the loss calculation. The loss is computed element-wise, and elements with a
+    weight of 0 are excluded from the loss calculation.
     """
 
     def __init__(self) -> None:

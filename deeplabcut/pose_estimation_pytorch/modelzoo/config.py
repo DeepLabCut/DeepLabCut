@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Methods to create the configuration files to fine-tune SuperAnimal models"""
+"""Methods to create the configuration files to fine-tune SuperAnimal models."""
+
 from __future__ import annotations
 
 import os
@@ -40,8 +41,7 @@ def make_super_animal_finetune_config(
     detector_name: str | None,
     save: bool = False,
 ) -> dict:
-    """
-    Creates a PyTorch pose configuration file to finetune a SuperAnimal model on a
+    """Creates a PyTorch pose configuration file to finetune a SuperAnimal model on a
     downstream project.
 
     Args:
@@ -63,10 +63,7 @@ def make_super_animal_finetune_config(
     """
     bodyparts = af.get_bodyparts(project_config)
     if weight_init.dataset is None:
-        raise ValueError(
-            "You must set the ``WeightInitialization.dataset`` when fine-tuning "
-            "SuperAnimal models."
-        )
+        raise ValueError("You must set the ``WeightInitialization.dataset`` when fine-tuning SuperAnimal models.")
 
     if not weight_init.with_decoder:
         raise ValueError(
@@ -117,7 +114,7 @@ def create_config_from_modelzoo(
     project_config: dict,
     pose_config_path: str | Path,
 ) -> dict:
-    """Creates a model configuration file to fine-tune a SuperAnimal model
+    """Creates a model configuration file to fine-tune a SuperAnimal model.
 
     Args:
         super_animal: The SuperAnimal dataset on which the model was trained.
@@ -133,9 +130,7 @@ def create_config_from_modelzoo(
         The generated pose configuration file.
     """
     # load the model configuration
-    model_cfg = read_config_as_dict(
-        get_super_animal_model_config_path(model_name)
-    )
+    model_cfg = read_config_as_dict(get_super_animal_model_config_path(model_name))
     if detector_name is None:
         model_cfg["method"] = Task.BOTTOM_UP.aliases[0].lower()
         # Use default bottom-up image augmentation if no detector is given (the collate
@@ -145,15 +140,11 @@ def create_config_from_modelzoo(
         model_cfg["data"]["train"] = aug["train"]
     else:
         model_cfg["method"] = Task.TOP_DOWN.aliases[0].lower()
-        model_cfg["detector"] = read_config_as_dict(
-            get_super_animal_model_config_path(detector_name)
-        )
+        model_cfg["detector"] = read_config_as_dict(get_super_animal_model_config_path(detector_name))
 
     # use SuperAnimal bodyparts
     if weight_init.memory_replay:
-        super_animal_project_config = read_config_as_dict(
-            get_super_animal_project_config_path(super_animal)
-        )
+        super_animal_project_config = read_config_as_dict(get_super_animal_project_config_path(super_animal))
         converted_bodyparts = super_animal_project_config["bodyparts"]
 
     model_cfg["net_type"] = model_name
@@ -166,9 +157,7 @@ def create_config_from_modelzoo(
         "with_identity": False,
     }
 
-    model_cfg["model"] = config_utils.replace_default_values(
-        model_cfg["model"], num_bodyparts=len(converted_bodyparts)
-    )
+    model_cfg["model"] = config_utils.replace_default_values(model_cfg["model"], num_bodyparts=len(converted_bodyparts))
     model_cfg["train_settings"]["weight_init"] = weight_init.to_dict()
 
     model_cfg["inference"] = InferenceConfig().to_dict()

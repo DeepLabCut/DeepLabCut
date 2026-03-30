@@ -13,19 +13,20 @@
 Can be used for SimCC-type heads. Modified from the `mmpose` implementation. For more
 details, see <https://github.com/open-mmlab/mmpose>.
 """
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 from deeplabcut.pose_estimation_pytorch.models.criterions.base import (
-    BaseCriterion,
     CRITERIONS,
+    BaseCriterion,
 )
 
 
 @CRITERIONS.register_module
 class KLDiscreteLoss(BaseCriterion):
-    """KLDiscrete loss
+    """KLDiscrete loss.
 
     Args:
         beta: Temperature for the softmax.

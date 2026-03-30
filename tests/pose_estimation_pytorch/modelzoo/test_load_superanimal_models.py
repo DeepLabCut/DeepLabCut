@@ -23,9 +23,9 @@ def test_load_superanimal_models_weights_only():
         for detector in dlclibrary.get_available_detectors(super_animal):
             print(super_animal, detector)
             path = get_super_animal_snapshot_path(super_animal, detector)
-            snapshot = torch.load(path, map_location="cpu", weights_only=True)
+            _snapshot = torch.load(path, map_location="cpu", weights_only=True)
 
         for pose_model in dlclibrary.get_available_models(super_animal):
             print(super_animal, pose_model)
             path = get_super_animal_snapshot_path(super_animal, pose_model)
-            snapshot = torch.load(path, map_location="cpu", weights_only=True)
+            _snapshot = torch.load(path, map_location="cpu", weights_only=True)

@@ -22,9 +22,9 @@ Hey there, DLC enthusiast! 🌟 Ready to sprinkle your magic into the main DLC c
 ## Structure of a Recipe
    When crafting your recipe, adhere to the following structure:
    - **Introduction**: Begin with an introductory paragraph that highlights the importance and relevance of the recipe. This sets the stage and gives readers context.
-    
+
    - **Examples/Workflow**: Provide step-by-step instructions or a workflow, supported by examples. This makes it easy for readers to understand and follow along.
-    
+
    - **Conclusion**: Conclude with a summary or highlight the key takeaways of your recipe. You can also provide references or further reading.
 
 
@@ -33,7 +33,7 @@ Now, let's dive into the process of contributing your content to the DLC Jupyter
 
 1. **Set-up your local environment.** You need `deeplabcut[docs]` installed:
    You can do this by running the following command:
-   ```    
+   ```
    pip install deeplabcut[docs]
    ```
 
@@ -63,9 +63,9 @@ This command installs DeepLabCut along with the dependencies required to build t
       - **Craft with Care:** Remember, your notebook will be a reference for many. Begin with an engaging introduction, followed by well-structured content, and wrap it up with a conclusion.
       - **Interactive Elements:** One of the strengths of Jupyter notebooks is the ability to combine code, visuals, and narrative. Use interactive plots, widgets, or any other tools that enhance the content and make it engaging.
       - **Save Regularly:** Jupyter auto-saves your work, but it's a good habit to manually save your notebook frequently, especially after making significant changes.
-      - **Naming Convention:** Name your notebook in a way that reflects its content and is consistent with other notebook titles in the DLC Jupyter book. This makes it easier for readers to understand the topic at a glance.      
-   - **Updating an existing notebook** 
-      - Navigate to the location of the existing recipe within the directory: 
+      - **Naming Convention:** Name your notebook in a way that reflects its content and is consistent with other notebook titles in the DLC Jupyter book. This makes it easier for readers to understand the topic at a glance.
+   - **Updating an existing notebook**
+      - Navigate to the location of the existing recipe within the directory:
           ```
           [YOUR_REPO_DIRECTORY]/docs/recipes/
           ```
@@ -82,15 +82,15 @@ This command installs DeepLabCut along with the dependencies required to build t
 
     - Navigate to the appropriate directory where the Jupyter notebooks are stored for the Jupyter book.
     - Add your Jupyter notebook (.ipynb file) to this directory.
-    
+
     To copy via terminal:
-    
+
     - Unix-based OS users
-    
+
       ```
       cp [YOUR_NOTEBOOK_FILENAME].ipynb [YOUR_REPO_DIRECTORY]/docs/recipes
       ```
-    
+
     - WinOS users:
       ```
       copy new_recipe.ipynb [YOUR_REPO_DIRECTORY]\docs\recipes
@@ -100,7 +100,7 @@ This command installs DeepLabCut along with the dependencies required to build t
 8. **Update `[YOUR_REPO_DIRECTORY]/_toc.yml`** by adding under the *Tutorials & Cookbook* section a **new line** containing the path to your notebook. This creates a link to your notebook on the main DLC book sidebar.
 
     * For example:
-      ```      
+      ```
       - file: docs/recipes/[YOUR_NOTEBOOK_FILENAME]
       ```
 
@@ -115,7 +115,7 @@ This command installs DeepLabCut along with the dependencies required to build t
 
 10. **Commit your changes:**
    When everything is a-okay, commit your changes to your branch. If not, edit your file and go to back to step 1.
-    
+
     ```
     git add [YOUR_NOTEBOOK_FILENAME]
     git commit -m "Added a new notebook about [YOUR_TOPIC]"

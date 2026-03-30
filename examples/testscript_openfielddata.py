@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # DeepLabCut Toolbox (deeplabcut.org)
 # © A. & M.W. Mathis Labs
@@ -10,8 +9,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""
-Created on Mon Nov 5 18:06:13 2018
+"""Created on Mon Nov 5 18:06:13 2018.
 
 @author: alex
 
@@ -27,17 +25,17 @@ The results will be something like this:
 Results for 15001  training iterations: 95 1 train error: 2.89 pixels. Test error: 2.81  pixels.
 With pcutoff of 0.1  train error: 2.89 pixels. Test error: 2.81 pixels
 
-The analysis of the video takes 41 seconds (batch size 32) and creating the frames 8 seconds (+ a few seconds for ffmpeg) to create the video.
+The analysis of the video takes 41 seconds (batch size 32) and creating the frames 8 seconds (+ a few seconds for
+ffmpeg) to create the video.
 """
-import deeplabcut
+
 import os
 
+import deeplabcut
 
 if __name__ == "__main__":
     # Loading example data set
-    path_config_file = os.path.join(
-        os.getcwd(), "openfield-Pranav-2018-10-30/config.yaml"
-    )
+    path_config_file = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30/config.yaml")
     deeplabcut.load_demo_data(path_config_file)
     shuffle = 13
 
@@ -45,9 +43,7 @@ if __name__ == "__main__":
     cfg = deeplabcut.auxiliaryfunctions.read_config(path_config_file)
 
     # example how to set pose config variables:
-    posefile, _, _ = deeplabcut.return_train_network_path(
-        path_config_file, shuffle=shuffle
-    )
+    posefile, _, _ = deeplabcut.return_train_network_path(path_config_file, shuffle=shuffle)
     edits = {"save_iters": 15000, "display_iters": 1000, "multi_step": [[0.005, 15001]]}
     DLC_config = deeplabcut.auxiliaryfunctions.edit_config(posefile, edits)
 
@@ -58,12 +54,8 @@ if __name__ == "__main__":
     deeplabcut.evaluate_network(path_config_file, Shuffles=[shuffle], plotting=True)
 
     print("Analyze Video")
-    videofile_path = os.path.join(
-        os.getcwd(), "openfield-Pranav-2018-10-30", "videos", "m3v1mp4.mp4"
-    )
-    deeplabcut.analyze_videos(
-        path_config_file, [videofile_path], shuffle=shuffle
-    )  # ,videotype='.mp4')
+    videofile_path = os.path.join(os.getcwd(), "openfield-Pranav-2018-10-30", "videos", "m3v1mp4.mp4")
+    deeplabcut.analyze_videos(path_config_file, [videofile_path], shuffle=shuffle)  # ,videotype='.mp4')
 
     print("Create Labeled Video")
     deeplabcut.create_labeled_video(

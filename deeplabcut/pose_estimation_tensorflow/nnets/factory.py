@@ -18,7 +18,7 @@ class PoseNetFactory:
     def register(cls, type_):
         def wrapper(net):
             if type_ in cls._nets:
-                warnings.warn("Overwriting existing network {}.")
+                warnings.warn(f"Overwriting existing network {type_}.", stacklevel=2)
             cls._nets[type_] = net
             return net
 

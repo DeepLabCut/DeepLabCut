@@ -9,9 +9,11 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 from functools import partial
+
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
+import deeplabcut
 from deeplabcut.gui.components import (
     DefaultTab,
     ShuffleSpinBox,
@@ -21,12 +23,10 @@ from deeplabcut.gui.components import (
 )
 from deeplabcut.gui.utils import move_to_separate_thread
 
-import deeplabcut
-
 
 class UnsupervizedIdTracking(DefaultTab):
     def __init__(self, root, parent, h1_description):
-        super(UnsupervizedIdTracking, self).__init__(root, parent, h1_description)
+        super().__init__(root, parent, h1_description)
 
         self._set_page()
 
@@ -128,9 +128,7 @@ class UnsupervizedIdTracking(DefaultTab):
             track_method=track_method,
         )
         self.worker, self.thread = move_to_separate_thread(func)
-        self.worker.finished.connect(
-            lambda: self.run_transformer_button.setEnabled(True)
-        )
+        self.worker.finished.connect(lambda: self.run_transformer_button.setEnabled(True))
         self.worker.finished.connect(lambda: self.root._progress_bar.hide())
         self.thread.start()
         self.run_transformer_button.setEnabled(False)

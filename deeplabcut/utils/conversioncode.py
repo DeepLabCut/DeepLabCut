@@ -8,21 +8,17 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""
-DeepLabCut2.0 Toolbox (deeplabcut.org)
-© A. & M. Mathis Labs
-https://github.com/DeepLabCut/DeepLabCut
-Please see AUTHORS for contributors.
 
-https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
-Licensed under GNU Lesser General Public License v3.0
-"""
 import os
-import pandas as pd
-from deeplabcut.utils import auxiliaryfunctions
 from itertools import islice
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
+from tqdm import tqdm
+
+import deeplabcut as dlc
+from deeplabcut.utils import auxiliaryfunctions
 
 SUPPORTED_FILETYPES = "csv", "nwb"
 
@@ -30,17 +26,20 @@ SUPPORTED_FILETYPES = "csv", "nwb"
 def convertcsv2h5(config, userfeedback=True, scorer=None):
     """
     Convert (image) annotation files in folder labeled-data from csv to h5.
-    This function allows the user to manually edit the csv (e.g. to correct the scorer name and then convert it into hdf format).
+    This function allows the user to manually edit the csv
+    (e.g. to correct the scorer name and then convert it into hdf format).
     WARNING: conversion might corrupt the data.
 
     config : string
         Full path of the config.yaml file as a string.
 
     userfeedback: bool, optional
-        If true the user will be asked specifically for each folder in labeled-data if the containing csv shall be converted to hdf format.
+        If true the user will be asked specifically
+        for each folder in labeled-data if the containing csv shall be converted to hdf format.
 
     scorer: string, optional
-        If a string is given, then the scorer/annotator in all csv and hdf files that are changed, will be overwritten with this name.
+        If a string is given, then the scorer/annotator
+        in all csv and hdf files that are changed, will be overwritten with this name.
 
     Examples
     --------
@@ -48,7 +47,8 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
     >>> deeplabcut.convertcsv2h5('/analysis/project/reaching-task/config.yaml')
 
     --------
-    Convert csv annotation files for reaching-task project into hdf while changing the scorer/annotator in all annotation files to Albert!
+    Convert csv annotation files for reaching-task project into hdf
+    while changing the scorer/annotator in all annotation files to Albert!
     >>> deeplabcut.convertcsv2h5('/analysis/project/reaching-task/config.yaml',scorer='Albert')
     --------
     """
@@ -68,9 +68,7 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
                 askuser = "yes"
 
             if askuser in ("y", "yes", "Ja", "ha", "oui"):  # multilanguage support :)
-                fn = os.path.join(
-                    str(folder), "CollectedData_" + cfg["scorer"] + ".csv"
-                )
+                fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv")
                 # Determine whether the data are single- or multi-animal without loading into memory
                 # simply by checking whether 'individuals' is in the second line of the CSV.
                 with open(fn) as datafile:
@@ -92,11 +90,11 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
             print("Attention:", folder, "does not appear to have labeled data!")
 
 
-def adapt_labeled_data_to_new_project(
-    config_path, remove_old_bodyparts=False, other_scorer=False, userfeedback=False
-):
-    """Given the config.yaml file, this function will convert the labels of an ancient project to a new project.
-        For this, the labeled data must be in the project folder, under the labeled-data folder and with the same configuration as all deeplabcut projects.
+def adapt_labeled_data_to_new_project(config_path, remove_old_bodyparts=False, other_scorer=False, userfeedback=False):
+    """Given the config.yaml file, this function will convert the labels of an ancient
+    project to a new project. For this, the labeled data must be in the project folder,
+    under the labeled-data folder and with the same configuration as all deeplabcut
+    projects.
 
     Parameters
     ----------
@@ -107,7 +105,9 @@ def adapt_labeled_data_to_new_project(
     other_scorer : bool (default = False)
         If True, the labels will be converted to the new scorer.
     userfeedback : bool (default = True)
-        If true the user will be asked specifically for each folder in labeled-data if the containing csv shall be converted to hdf format.
+        If true the user will be asked specifically
+        for each folder in labeled-data if the containing csv
+        shall be converted to hdf format.
     """
 
     # Load the config file
@@ -214,11 +214,13 @@ def adapt_labeled_data_to_new_project(
 
 
 def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos=False):
-    """
-    By default the output poses (when running analyze_videos) are stored as MultiIndex Pandas Array, which contains the name of the network, body part name, (x, y) label position \n
-    in pixels, and the likelihood for each frame per body part. These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
-    in the same directory, where the video is stored. This functions converts hdf (h5) files to the comma-separated values format (.csv),
-    which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.
+    """By default the output poses (when running analyze_videos) are stored as
+    MultiIndex Pandas Array, which contains the name of the network, body part name, (x,
+    y) label position \n in pixels, and the likelihood for each frame per body part.
+    These arrays are stored in an efficient Hierarchical Data Format (HDF) \n in the
+    same directory, where the video is stored. This functions converts hdf (h5) files to
+    the comma-separated values format (.csv), which in turn can be imported in many
+    programs, such as MATLAB, R, Prism, etc.
 
     Parameters
     ----------
@@ -232,28 +234,20 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
     Examples
     --------
 
-    Converts all pose-output files belonging to mp4 videos in the folder '/media/alex/experimentaldata/cheetahvideos' to csv files.
+    Converts all pose-output files belonging to mp4 videos
+    in the folder '/media/alex/experimentaldata/cheetahvideos' to csv files.
     deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
-
     """
 
     if listofvideos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos
         if len(videos) > 0:
-            h5_files = list(
-                auxiliaryfunctions.grab_files_in_folder(
-                    Path(videos[0]).parent, "h5", relative=False
-                )
-            )
+            h5_files = list(auxiliaryfunctions.grab_files_in_folder(Path(videos[0]).parent, "h5", relative=False))
         else:
             h5_files = []
     else:
-        h5_files = list(
-            auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False)
-        )
-        videos = auxiliaryfunctions.grab_files_in_folder(
-            video_folder, videotype, relative=False
-        )
+        h5_files = list(auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False))
+        videos = auxiliaryfunctions.grab_files_in_folder(video_folder, videotype, relative=False)
 
     _convert_h5_files_to("csv", None, h5_files, videos)
 
@@ -264,8 +258,7 @@ def analyze_videos_converth5_to_nwb(
     videotype=".mp4",
     listofvideos=False,
 ):
-    """
-    Convert all h5 output data files in `video_folder` to NWB format.
+    """Convert all h5 output data files in `video_folder` to NWB format.
 
     Parameters
     ----------
@@ -281,27 +274,19 @@ def analyze_videos_converth5_to_nwb(
     Examples
     --------
 
-    Converts all pose-output files belonging to mp4 videos in the folder '/media/alex/experimentaldata/cheetahvideos' to csv files.
+    Converts all pose-output files belonging to mp4 videos in the folder
+    '/media/alex/experimentaldata/cheetahvideos' to csv files.
     deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
-
     """
     if listofvideos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos
         if len(videos) > 0:
-            h5_files = list(
-                auxiliaryfunctions.grab_files_in_folder(
-                    Path(videos[0]).parent, "h5", relative=False
-                )
-            )
+            h5_files = list(auxiliaryfunctions.grab_files_in_folder(Path(videos[0]).parent, "h5", relative=False))
         else:
             h5_files = []
     else:
-        h5_files = list(
-            auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False)
-        )
-        videos = auxiliaryfunctions.grab_files_in_folder(
-            video_folder, videotype, relative=False
-        )
+        h5_files = list(auxiliaryfunctions.grab_files_in_folder(video_folder, "h5", relative=False))
+        videos = auxiliaryfunctions.grab_files_in_folder(video_folder, videotype, relative=False)
 
     _convert_h5_files_to("nwb", config, h5_files, videos)
 
@@ -317,10 +302,8 @@ def _convert_h5_files_to(filetype, config, h5_files, videos):
     if filetype == "nwb":
         try:
             from dlc2nwb.utils import convert_h5_to_nwb
-        except ImportError:
-            raise ImportError(
-                "The package `dlc2nwb` is missing. Please run `pip install dlc2nwb`."
-            )
+        except ImportError as e:
+            raise ImportError("The package `dlc2nwb` is missing. Please run `pip install dlc2nwb`.") from e
 
     for video in videos:
         if "_labeled" in video:
@@ -342,9 +325,11 @@ def _convert_h5_files_to(filetype, config, h5_files, videos):
 
 
 def merge_windowsannotationdataONlinuxsystem(cfg):
-    """If a project was created on Windows (and labeled there,) but ran on unix then the data folders
-    corresponding in the keys in cfg['video_sets'] are not found. This function gets them directly by
-    looping over all folders in labeled-data"""
+    """If a project was created on Windows (and labeled there,) but ran on unix then the
+    data folders corresponding in the keys in cfg['video_sets'] are not found.
+
+    This function gets them directly by looping over all folders in labeled-data
+    """
 
     AnnotationData = []
     data_path = Path(cfg["project_path"], "labeled-data")

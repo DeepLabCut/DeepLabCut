@@ -18,16 +18,16 @@ import tensorflow as tf
 import tf_slim as slim
 
 from deeplabcut.pose_estimation_tensorflow.config import load_config
+from deeplabcut.pose_estimation_tensorflow.core.train import (
+    LearningRate,
+    get_optimizer,
+    setup_preloading,
+    start_preloading,
+)
 from deeplabcut.pose_estimation_tensorflow.datasets import PoseDatasetFactory
 from deeplabcut.pose_estimation_tensorflow.nnets import PoseNetFactory
 from deeplabcut.pose_estimation_tensorflow.nnets.utils import get_batch_spec
 from deeplabcut.pose_estimation_tensorflow.util.logging import setup_logging
-from deeplabcut.pose_estimation_tensorflow.core.train import (
-    setup_preloading,
-    start_preloading,
-    get_optimizer,
-    LearningRate,
-)
 from deeplabcut.utils import auxfun_models
 
 
@@ -53,9 +53,7 @@ def train(
 
     start_path = os.getcwd()
     if modelfolder == "":
-        os.chdir(
-            str(Path(config_yaml).parents[0])
-        )  # switch to folder of config_yaml (for logging)
+        os.chdir(str(Path(config_yaml).parents[0]))  # switch to folder of config_yaml (for logging)
     else:
         os.chdir(modelfolder)
 
@@ -91,7 +89,9 @@ def train(
 
     if (
         cfg["partaffinityfield_predict"] and "multi-animal" in cfg["dataset_type"]
-    ):  # the PAF code currently just hijacks the pairwise net stuff (for the batch feeding via Batch.pairwise_targets: 5)
+        # the PAF code currently just hijacks the pairwise net stuff (for the batch feeding via Batch.pairwise_targets:
+        # 5)
+    ):
         print("Activating limb prediction...")
         cfg["pairwise_predict"] = True
 
@@ -136,16 +136,11 @@ def train(
         if "resnet" in net_type:
             variables_to_restore = slim.get_variables_to_restore(include=["resnet_v1"])
         elif "mobilenet" in net_type:
-            variables_to_restore = slim.get_variables_to_restore(
-                include=["MobilenetV2"]
-            )
+            variables_to_restore = slim.get_variables_to_restore(include=["MobilenetV2"])
         elif "efficientnet" in net_type:
-            variables_to_restore = slim.get_variables_to_restore(
-                include=["efficientnet"]
-            )
+            variables_to_restore = slim.get_variables_to_restore(include=["efficientnet"])
             variables_to_restore = {
-                var.op.name.replace("efficientnet/", "")
-                + "/ExponentialMovingAverage": var
+                var.op.name.replace("efficientnet/", "") + "/ExponentialMovingAverage": var
                 for var in variables_to_restore
             }
         else:
@@ -212,7 +207,8 @@ def train(
             current_lr = lr_gen.get_lr(it - start_iter)
             lr_dict = {learning_rate: current_lr}
 
-        # [_, loss_val, summary] = sess.run([train_op, total_loss, merged_summaries],feed_dict={learning_rate: current_lr})
+        # [_, loss_val, summary] = sess.run([train_op, total_loss, merged_summaries],feed_dict={learning_rate:
+        # current_lr})
         [_, alllosses, loss_val, summary] = sess.run(
             [train_op, losses, total_loss, merged_summaries], feed_dict=lr_dict
         )
@@ -229,10 +225,10 @@ def train(
             logging.info(
                 "iteration: {} loss: {} scmap loss: {} locref loss: {} limb loss: {} lr: {}".format(
                     it,
-                    "{0:.4f}".format(cumloss / display_iters),
-                    "{0:.4f}".format(partloss / display_iters),
-                    "{0:.4f}".format(locrefloss / display_iters),
-                    "{0:.4f}".format(pwloss / display_iters),
+                    f"{cumloss / display_iters:.4f}",
+                    f"{partloss / display_iters:.4f}",
+                    f"{locrefloss / display_iters:.4f}",
+                    f"{pwloss / display_iters:.4f}",
                     current_lr,
                 )
             )
@@ -241,10 +237,10 @@ def train(
                 lrf.write(
                     "iteration: {}, loss: {}, scmap loss: {}, locref loss: {}, limb loss: {}, lr: {}\n".format(
                         it,
-                        "{0:.4f}".format(cumloss / display_iters),
-                        "{0:.4f}".format(partloss / display_iters),
-                        "{0:.4f}".format(locrefloss / display_iters),
-                        "{0:.4f}".format(pwloss / display_iters),
+                        f"{cumloss / display_iters:.4f}",
+                        f"{partloss / display_iters:.4f}",
+                        f"{locrefloss / display_iters:.4f}",
+                        f"{pwloss / display_iters:.4f}",
                         current_lr,
                     )
                 )

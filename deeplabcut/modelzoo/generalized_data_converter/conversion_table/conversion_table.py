@@ -21,18 +21,14 @@ class ConversionTableFromDict:
 
     def convert(self, kpt):
         if kpt not in self.table_dict:
-            warnings.warn(
-                f"{kpt} is defined in src space but not appeared in the conversion table"
-            )
+            warnings.warn(f"{kpt} is defined in src space but not appeared in the conversion table", stacklevel=2)
             return None
         else:
             return self.table_dict[kpt]
 
 
 class ConversionTableFromCSV:
-    """
-    Base class only reads the table
-    """
+    """Base class only reads the table."""
 
     def __init__(self, src_keypoints, table_path):
         self.table_path = table_path
@@ -59,7 +55,7 @@ class ConversionTableFromCSV:
             kpt_alias = set(kpts)
 
             for k in list(kpt_alias):
-                if type(k) != str:
+                if not isinstance(k, str):
                     kpt_alias.remove(k)
 
             self.lookup_set.append(kpt_alias)
@@ -78,7 +74,6 @@ class ConversionTableFromCSV:
         self.table = {}
         for src_kpt in src_keypoints:
             for target_kpt in target_keypoints:
-
                 src_kpt_id = self._search(src_kpt)
                 target_kpt_id = self._search(target_kpt)
 
@@ -92,11 +87,7 @@ class ConversionTableFromCSV:
         self.check_inclusion()
 
     def _search(self, key):
-        """
-        return -1 if not found
-        return kpt id if found
-
-        """
+        """Return -1 if not found return kpt id if found."""
         # [TODO] if it can be mapped to two, I can randomly return one
         for kpt_id in range(len(self.lookup_set)):
             if key in self.lookup_set[kpt_id]:
@@ -104,11 +95,7 @@ class ConversionTableFromCSV:
         return -1
 
     def check_inclusion(self):
-        """
-        check if conversion table covers
-        every keypoint contained in src proj
-
-        """
+        """Check if conversion table covers every keypoint contained in src proj."""
         count = 0
         print("src keypoints")
         print(self.src_keypoints)
@@ -122,9 +109,7 @@ class ConversionTableFromCSV:
 
     def convert(self, kpt):
         if kpt not in self.table:
-            warnings.warn(
-                f"{kpt} is defined in src space but not appeared in the conversion table"
-            )
+            warnings.warn(f"{kpt} is defined in src space but not appeared in the conversion table", stacklevel=2)
             return None
         else:
             return self.table[kpt]
@@ -133,7 +118,7 @@ class ConversionTableFromCSV:
 
         bodyparts = self.df[labname]
 
-        super_bodyparts = self.df["MasterName"]
+        self.df["MasterName"]
 
         ret = []
 

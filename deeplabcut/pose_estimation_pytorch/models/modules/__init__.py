@@ -8,6 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from deeplabcut.pose_estimation_pytorch.models.modules.coam_module import CoAMBlock, SelfAttentionModule_CoAM
 from deeplabcut.pose_estimation_pytorch.models.modules.conv_block import (
     AdaptBlock,
     BasicBlock,
@@ -16,18 +17,14 @@ from deeplabcut.pose_estimation_pytorch.models.modules.conv_block import (
 from deeplabcut.pose_estimation_pytorch.models.modules.conv_module import (
     HighResolutionModule,
 )
-from deeplabcut.pose_estimation_pytorch.models.modules.coam_module import (
-    CoAMBlock,
-    SelfAttentionModule_CoAM
+from deeplabcut.pose_estimation_pytorch.models.modules.gated_attention_unit import (
+    GatedAttentionUnit,
 )
 from deeplabcut.pose_estimation_pytorch.models.modules.kpt_encoders import (
+    KEYPOINT_ENCODERS,
     BaseKeypointEncoder,
     ColoredKeypointEncoder,
     StackedKeypointEncoder,
-    KEYPOINT_ENCODERS
-)
-from deeplabcut.pose_estimation_pytorch.models.modules.gated_attention_unit import (
-    GatedAttentionUnit,
 )
 from deeplabcut.pose_estimation_pytorch.models.modules.norm import (
     ScaleNorm,

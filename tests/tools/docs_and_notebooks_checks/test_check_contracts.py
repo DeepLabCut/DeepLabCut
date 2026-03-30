@@ -34,12 +34,8 @@ def tool() -> ModuleType:
 # -----------------------------
 # Git helpers for a temp repo
 # -----------------------------
-def _run(
-    cmd: list[str], cwd: Path, env: dict | None = None
-) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        cmd, cwd=str(cwd), env=env, capture_output=True, text=True, check=True
-    )
+def _run(cmd: list[str], cwd: Path, env: dict | None = None) -> subprocess.CompletedProcess:
+    return subprocess.run(cmd, cwd=str(cwd), env=env, capture_output=True, text=True, check=True)
 
 
 def _git_init(repo: Path) -> None:
@@ -201,7 +197,8 @@ def test_update_requires_ack_when_write(tool, tmp_path: Path):
 
 def test_update_set_content_date_from_git_only_changes_that_field(tool, tmp_path: Path):
     """
-    Contract: update --set-content-date-from-git only sets last_content_updated (plus last_metadata_updated when writing),
+    Contract: update --set-content-date-from-git only sets last_content_updated
+    (plus last_metadata_updated when writing),
     does NOT override last_verified/verified_for unless explicitly provided.
     """
     repo = tmp_path / "repo"
@@ -209,14 +206,7 @@ def test_update_set_content_date_from_git_only_changes_that_field(tool, tmp_path
     _git_init(repo)
 
     rel = "docs/page.md"
-    initial = (
-        "---\n"
-        "deeplabcut:\n"
-        "  last_verified: 2020-02-02\n"
-        "  verified_for: 3.0.0rc1\n"
-        "---\n"
-        "# hello\n"
-    )
+    initial = "---\ndeeplabcut:\n  last_verified: 2020-02-02\n  verified_for: 3.0.0rc1\n---\n# hello\n"
     _write(repo, rel, initial)
     _git_commit(repo, "docs: initial content", "2020-01-01T12:00:00+00:00")
 
@@ -309,14 +299,7 @@ def test_normalize_is_explicit_and_marks_would_change(tool, tmp_path: Path):
 
     rel = "docs/nbs/nb.ipynb"
     # Minimal notebook JSON but not in nbformat canonical formatting (indent/newline differences)
-    raw = (
-        "{\n"
-        '  "cells": [],\n'
-        '  "metadata": {},\n'
-        '  "nbformat": 4,\n'
-        '  "nbformat_minor": 5\n'
-        "}\n"
-    )
+    raw = '{\n  "cells": [],\n  "metadata": {},\n  "nbformat": 4,\n  "nbformat_minor": 5\n}\n'
     _write(repo, rel, raw)
     _git_commit(repo, "docs: add notebook", "2020-01-01T12:00:00+00:00")
 
@@ -386,14 +369,7 @@ def test_notebook_missing_dlc_namespace_warns_missing_metadata(tool, tmp_path: P
 
     rel = "docs/nbs/nb.ipynb"
     # Valid minimal notebook, but no "deeplabcut" namespace under metadata
-    nb = (
-        "{\n"
-        '  "cells": [],\n'
-        '  "metadata": {},\n'
-        '  "nbformat": 4,\n'
-        '  "nbformat_minor": 5\n'
-        "}\n"
-    )
+    nb = '{\n  "cells": [],\n  "metadata": {},\n  "nbformat": 4,\n  "nbformat_minor": 5\n}\n'
     _write(repo, rel, nb)
     _git_commit(repo, "docs: add notebook", "2020-01-01T12:00:00+00:00")
 

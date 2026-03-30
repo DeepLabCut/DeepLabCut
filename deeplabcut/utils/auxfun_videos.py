@@ -19,16 +19,16 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import skimage.color
-from skimage import io
-from skimage.util import img_as_ubyte
-import cv2
 import datetime
-import numpy as np
 import os
 import subprocess
 import warnings
 
+import cv2
+import numpy as np
+import skimage.color
+from skimage import io
+from skimage.util import img_as_ubyte
 
 # more videos are in principle covered, as OpenCV is used and allows many formats.
 SUPPORTED_VIDEOS = "avi", "mp4", "mov", "mpeg", "mpg", "mpv", "mkv", "flv", "qt", "yuv"
@@ -41,7 +41,7 @@ class VideoReader:
         self.video_path = video_path
         self.video = cv2.VideoCapture(video_path)
         if not self.video.isOpened():
-            raise IOError("Video could not be opened; it may be corrupted.")
+            raise OSError("Video could not be opened; it may be corrupted.")
         self.parse_metadata()
         self._bbox = 0, 1, 0, 1
         self._n_frames_robust = None
@@ -58,7 +58,7 @@ class VideoReader:
         command = f'ffmpeg -v error -i "{self.video_path}" -f null - 2>"{dest}"'
         subprocess.call(command, shell=True)
         if os.path.getsize(dest) != 0:
-            warnings.warn(f'Video contains errors. See "{dest}" for a detailed report.')
+            warnings.warn(f'Video contains errors. See "{dest}" for a detailed report.', stacklevel=2)
 
     def check_integrity_robust(self):
         numframes = self.video.get(cv2.CAP_PROP_FRAME_COUNT)
@@ -66,9 +66,7 @@ class VideoReader:
         while fr < numframes:
             success, frame = self.video.read()
             if not success or frame is None:
-                warnings.warn(
-                    f"Opencv failed to load frame {fr}. Use ffmpeg to re-encode video file"
-                )
+                warnings.warn(f"Opencv failed to load frame {fr}. Use ffmpeg to re-encode video file", stacklevel=2)
             fr += 1
 
     @property
@@ -85,9 +83,7 @@ class VideoReader:
 
     @property
     def metadata(self):
-        return dict(
-            n_frames=len(self), fps=self.fps, width=self.width, height=self.height
-        )
+        return dict(n_frames=len(self), fps=self.fps, width=self.width, height=self.height)
 
     def get_n_frames(self, robust=False):
         if not robust:
@@ -98,21 +94,14 @@ class VideoReader:
                 f"-select_streams v:0 -show_entries stream=nb_read_frames "
                 f"-of default=nokey=1:noprint_wrappers=1"
             )
-            output = subprocess.check_output(
-                command, shell=True, stderr=subprocess.STDOUT
-            )
+            output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
             self._n_frames_robust = int(output)
         return self._n_frames_robust
 
     def calc_duration(self, robust=False):
         if robust:
-            command = (
-                f'ffprobe -i "{self.video_path}" -show_entries '
-                f'format=duration -v quiet -of csv="p=0"'
-            )
-            output = subprocess.check_output(
-                command, shell=True, stderr=subprocess.STDOUT
-            )
+            command = f'ffprobe -i "{self.video_path}" -show_entries format=duration -v quiet -of csv="p=0"'
+            output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
             return float(output)
         return len(self) / self.fps
 
@@ -121,10 +110,7 @@ class VideoReader:
             raise ValueError("Index must be a positive integer.")
         last_frame = len(self) - 1
         if ind > last_frame:
-            warnings.warn(
-                "Index exceeds the total number of frames. "
-                "Setting to last frame instead."
-            )
+            warnings.warn("Index exceeds the total number of frames. Setting to last frame instead.", stacklevel=2)
             ind = last_frame
         self.video.set(cv2.CAP_PROP_POS_FRAMES, ind)
 
@@ -161,9 +147,7 @@ class VideoReader:
 
     def set_bbox(self, x1, x2, y1, y2, relative=False):
         if x2 <= x1 or y2 <= y1:
-            raise ValueError(
-                f"Coordinates look wrong... " f"Ensure {x1} < {x2} and {y1} < {y2}."
-            )
+            raise ValueError(f"Coordinates look wrong... Ensure {x1} < {x2} and {y1} < {y2}.")
         if not relative:
             x1 /= self._width
             x2 /= self._width
@@ -171,9 +155,7 @@ class VideoReader:
             y2 /= self._height
         bbox = x1, x2, y1, y2
         if any(coord > 1 for coord in bbox):
-            warnings.warn(
-                "Bounding box larger than the video... " "Clipping to video dimensions."
-            )
+            warnings.warn("Bounding box larger than the video... Clipping to video dimensions.", stacklevel=2)
             bbox = tuple(map(lambda x: min(x, 1), bbox))
         self._bbox = bbox
 
@@ -204,9 +186,7 @@ class VideoReader:
     def parse_metadata(self):
         self._n_frames = int(self.video.get(cv2.CAP_PROP_FRAME_COUNT))
         if self._n_frames >= 1e9:
-            warnings.warn(
-                "The video has more than 10^9 frames, we recommend chopping it up."
-            )
+            warnings.warn("The video has more than 10^9 frames, we recommend chopping it up.", stacklevel=2)
         self._width = int(self.video.get(cv2.CAP_PROP_FRAME_WIDTH))
         self._height = int(self.video.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self._fps = round(self.video.get(cv2.CAP_PROP_FPS), 2)
@@ -217,17 +197,14 @@ class VideoReader:
 
 class VideoWriter(VideoReader):
     def __init__(self, video_path, codec="h264", dpi=100, fps=None):
-        super(VideoWriter, self).__init__(video_path)
+        super().__init__(video_path)
         self.codec = codec
         self.dpi = dpi
         if fps:
             self.fps = fps
 
-    def shorten(
-        self, start, end, suffix="short", dest_folder=None, validate_inputs=True
-    ):
-        """
-        Shorten the video from start to end.
+    def shorten(self, start, end, suffix="short", dest_folder=None, validate_inputs=True):
+        """Shorten the video from start to end.
 
         Parameter
         ----------
@@ -251,10 +228,7 @@ class VideoWriter(VideoReader):
 
         def validate_timestamp(stamp):
             if not isinstance(stamp, str):
-                raise ValueError(
-                    "Timestamp should be a string formatted "
-                    "as hours:minutes:seconds."
-                )
+                raise ValueError("Timestamp should be a string formatted as hours:minutes:seconds.")
             time = datetime.datetime.strptime(stamp, "%H:%M:%S").time()
             # The above already raises a ValueError if formatting is wrong
             seconds = (time.hour * 60 + time.minute) * 60 + time.second
@@ -266,16 +240,12 @@ class VideoWriter(VideoReader):
                 validate_timestamp(stamp)
 
         output_path = self.make_output_path(suffix, dest_folder)
-        command = (
-            f'ffmpeg -n -i "{self.video_path}" -ss {start} -to {end} '
-            f'-c:a copy "{output_path}"'
-        )
+        command = f'ffmpeg -n -i "{self.video_path}" -ss {start} -to {end} -c:a copy "{output_path}"'
         subprocess.call(command, shell=True)
         return output_path
 
     def split(self, n_splits, suffix="split", dest_folder=None):
-        """
-        Split a video into several shorter ones of equal duration.
+        """Split a video into several shorter ones of equal duration.
 
         Parameters
         ----------
@@ -297,9 +267,12 @@ class VideoWriter(VideoReader):
             raise ValueError("The video should at least be split in half.")
         chunk_dur = self.calc_duration() / n_splits
         splits = np.arange(n_splits + 1) * chunk_dur
-        time_formatter = lambda val: str(datetime.timedelta(seconds=val))
+
+        def time_formatter(val):
+            return str(datetime.timedelta(seconds=val))
+
         clips = []
-        for n, (start, end) in enumerate(zip(splits, splits[1:]), start=1):
+        for n, (start, end) in enumerate(zip(splits, splits[1:], strict=False), start=1):
             clips.append(
                 self.shorten(
                     time_formatter(start),
@@ -327,9 +300,9 @@ class VideoWriter(VideoReader):
         command = f'ffmpeg -n -i "{self.video_path}" -vf '
         if rotatecw == "Arbitrary":
             angle = np.deg2rad(angle)
-            command += f'rotate={angle} '
+            command += f"rotate={angle} "
         elif rotatecw == "Yes":
-            command += 'transpose=1 '
+            command += "transpose=1 "
         else:
             raise ValueError("Unknown rotation direction.")
 
@@ -347,17 +320,14 @@ class VideoWriter(VideoReader):
         dest_folder=None,
     ):
         output_path = self.make_output_path(suffix, dest_folder)
-        command = (
-            f'ffmpeg -n -i "{self.video_path}" -filter:v '
-            f'"scale={width}:{height}{{}}" -c:a copy "{output_path}"'
-        )
+        command = f'ffmpeg -n -i "{self.video_path}" -filter:v "scale={width}:{height}{{}}" -c:a copy "{output_path}"'
         # Rotate, see: https://stackoverflow.com/questions/3937387/rotating-videos-with-ffmpeg
         # interesting option to just update metadata.
         if rotatecw == "Arbitrary":
             angle = np.deg2rad(angle)
             command = command.format(f", rotate={angle}")
         elif rotatecw == "Yes":
-            command = command.format(f", transpose=1")
+            command = command.format(", transpose=1")
         else:
             command = command.format("")
         subprocess.call(command, shell=True)
@@ -381,7 +351,9 @@ def check_video_integrity(video_path):
 
 def imread(image_path, mode="skimage"):
     """Read image either with skimage or cv2.
-    Returns frame in uint with 3 color channels."""
+
+    Returns frame in uint with 3 color channels.
+    """
     if mode == "skimage":
         image = io.imread(image_path)
         if image.ndim == 2 or image.shape[-1] == 1:
@@ -392,9 +364,7 @@ def imread(image_path, mode="skimage"):
         return img_as_ubyte(image)
 
     elif mode == "cv2":
-        return cv2.imread(image_path, cv2.IMREAD_UNCHANGED)[
-            ..., ::-1
-        ]  # ~10% faster than using cv2.cvtColor
+        return cv2.imread(image_path, cv2.IMREAD_UNCHANGED)[..., ::-1]  # ~10% faster than using cv2.cvtColor
 
 
 # https://docs.opencv.org/3.4.0/da/d54/group__imgproc__transform.html#ga5bb5a1fea74ea38e1a5445ca803ff121
@@ -407,12 +377,9 @@ def imresize(img, size=1.0, interpolationmethod=cv2.INTER_AREA):
         return img
 
 
-def ShortenVideo(
-    vname, start="00:00:01", stop="00:01:00", outsuffix="short", outpath=None
-):
-    """
-    Auxiliary function to shorten video and output with outsuffix appended.
-    to the same folder from start (hours:minutes:seconds) to stop (hours:minutes:seconds).
+def ShortenVideo(vname, start="00:00:01", stop="00:01:00", outsuffix="short", outpath=None):
+    """Auxiliary function to shorten video and output with outsuffix appended. to the
+    same folder from start (hours:minutes:seconds) to stop (hours:minutes:seconds).
 
     Returns the full path to the shortened video!
 
@@ -442,9 +409,11 @@ def ShortenVideo(
     Extracts (sub)video from 1st second to 1st minutes (default values) and saves it in /data/videos as mouse1short.avi
 
     Windows:
-    >>> deeplabcut.ShortenVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi', start='00:17:00',stop='00:22:00',outsuffix='brief')
+    >>> deeplabcut.ShortenVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi',
+    ... start='00:17:00',stop='00:22:00',outsuffix='brief')
 
-    Extracts (sub)video from minute 17 to 22 and and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1brief.avi
+    Extracts (sub)video from minute 17 to 22 and and saves it in
+    C:\\yourusername\\rig-95\\Videos as reachingvideo1brief.avi
     """
     writer = VideoWriter(vname)
     return writer.shorten(start, stop, outsuffix, outpath)
@@ -460,9 +429,8 @@ def CropVideo(
     outpath=None,
     useGUI=False,
 ):
-    """
-    Auxiliary function to crop a video and output it to the same folder with "outsuffix" appended in its name.
-    Width and height will control the new dimensions.
+    """Auxiliary function to crop a video and output it to the same folder with
+    "outsuffix" appended in its name. Width and height will control the new dimensions.
 
     Returns the full path to the downsampled video!
 
@@ -497,16 +465,16 @@ def CropVideo(
     Crops the video using default values and saves it in /data/videos as mouse1cropped.avi
 
     Windows:
-    >>> =deeplabcut.CropVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi', width=220,height=320,outsuffix='cropped')
+    >>> =deeplabcut.CropVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi',
+    ... width=220,height=320,outsuffix='cropped')
 
-    Crops the video to a width of 220 and height of 320 starting at the origin (top left) and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
+    Crops the video to a width of 220 and height of 320 starting at the origin (top left)
+    and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
     """
     writer = VideoWriter(vname)
 
     if useGUI:
-        print(
-            "Please, select your coordinates (draw from top left to bottom right ...)"
-        )
+        print("Please, select your coordinates (draw from top left to bottom right ...)")
         coords = draw_bbox(vname)
 
         if not coords:
@@ -528,10 +496,10 @@ def DownSampleVideo(
     rotatecw="No",
     angle=0.0,
 ):
-    """
-    Auxiliary function to downsample a video and output it to the same folder with "outsuffix" appended in its name.
-    Width and height will control the new dimensions. You can also pass only height or width and set the other one to -1,
-    this will keep the aspect ratio identical.
+    """Auxiliary function to downsample a video and output it to the same folder with
+    "outsuffix" appended in its name. Width and height will control the new dimensions.
+    You can also pass only height or width and set the other one to -1, this will keep
+    the aspect ratio identical.
 
     Returns the full path to the downsampled video!
 
@@ -567,18 +535,19 @@ def DownSampleVideo(
     Downsamples the video using default values and saves it in /data/videos as mouse1cropped.avi
 
     Windows:
-    >>> shortenedvideoname=deeplabcut.DownSampleVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi', width=220,height=320,outsuffix='cropped')
+    >>> shortenedvideoname=deeplabcut.DownSampleVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi',
+    ... width=220,height=320,outsuffix='cropped')
 
-    Downsamples the video to a width of 220 and height of 320 and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
+    Downsamples the video to a width of 220 and height of 320 and
+    saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
     """
     writer = VideoWriter(vname)
     return writer.rescale(width, height, rotatecw, angle, outsuffix, outpath)
 
 
 def rotate_video(vname, angle, rotatecw="Arbitrary", outsuffix="rotated", outpath=None):
-    """
-    Auxiliary function to rotate a video and output it to the same folder with "outsuffix" appended in its name.
-    Angle is in degrees.
+    """Auxiliary function to rotate a video and output it to the same folder with
+    "outsuffix" appended in its name. Angle is in degrees.
 
     Returns the full path to the rotated video!
 
@@ -608,9 +577,11 @@ def rotate_video(vname, angle, rotatecw="Arbitrary", outsuffix="rotated", outpat
     Rotates the video by 90 degrees and saves it in /data/videos as mouse1rotated.avi
 
     Windows:
-    >>> shortenedvideoname=deeplabcut.rotate_video('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi', angle=180,rotatecw='Yes')
+    >>> shortenedvideoname=deeplabcut.rotate_video('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi',
+    ... angle=180,rotatecw='Yes')
 
-    Rotates the video by 180 degrees and saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1rotated.avi
+    Rotates the video by 180 degrees and
+    saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1rotated.avi
     """
     writer = VideoWriter(vname)
     return writer.rotate(angle, rotatecw, outsuffix, outpath)
@@ -618,7 +589,7 @@ def rotate_video(vname, angle, rotatecw="Arbitrary", outsuffix="rotated", outpat
 
 def draw_bbox(video):
     import matplotlib.pyplot as plt
-    from matplotlib.widgets import RectangleSelector, Button
+    from matplotlib.widgets import Button, RectangleSelector
 
     clip = VideoWriter(video)
     frame = None
@@ -637,7 +608,10 @@ def draw_bbox(video):
 
     def display_help(*args):
         print(
-            "1. Use left click to select the region of interest. A red box will be drawn around the selected region. \n\n2. Use the corner points to expand the box and center to move the box around the image. \n\n3. Click "
+            "1. Use left click to select the region of interest. "
+            "A red box will be drawn around the selected region. \n\n"
+            "2. Use the corner points to expand the box and center to move the box around the image. \n\n"
+            "3. Click "
         )
 
     fig = plt.figure()
@@ -650,7 +624,7 @@ def draw_bbox(video):
     help_button = Button(ax_help, "Help")
     help_button.on_clicked(display_help)
 
-    rs = RectangleSelector(
+    RectangleSelector(
         ax,
         line_select_callback,
         minspanx=5,

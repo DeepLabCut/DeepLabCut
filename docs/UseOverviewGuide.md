@@ -5,7 +5,7 @@ deeplabcut:
   ignore: false
 ---
 (overview)=
-# 🥳 Get started with DeepLabCut: our key recommendations 
+# 🥳 Get started with DeepLabCut: our key recommendations
 
 Below we will first outline what you need to get started, the different ways you can use DeepLabCut, and then the full workflow. Note, we highly recommend you also read and follow our [Nature Protocols paper](https://www.nature.com/articles/s41596-019-0176-0), which is (still) fully relevant to standard DeepLabCut.
 
@@ -38,7 +38,7 @@ We are primarily a package that enables deep learning-based pose estimation. We 
 <p align="center">
 <img src= https://github.com/amathislab/BUCTD/raw/main/media/BUCTD_fig1.png?format=1000w width="50%">
  </p>
- 
+
  **Additional Learning Resources:**
 
  - [TUTORIALS:](https://www.youtube.com/channel/UC2HEbWpC_1v6i9RnDMy-dfA?view_as=subscriber) video tutorials that demonstrate various aspects of using the code base.

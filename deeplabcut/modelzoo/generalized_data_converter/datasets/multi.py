@@ -10,6 +10,11 @@
 #
 import warnings
 
+from deeplabcut.modelzoo.generalized_data_converter.datasets.base import (
+    BasePoseDataset,
+    raw_2_imagename,
+    raw_2_imagename_with_id,
+)
 from deeplabcut.modelzoo.generalized_data_converter.datasets.materialize import (
     mat_func_factory,
 )
@@ -39,9 +44,8 @@ class MultiSourceDataset:
 
         names = []
         for dataset in datasets:
-
             # Must project datasets to same keypoint space before merging
-            if table_path != None:
+            if table_path is not None:
                 dataset.project_with_conversion_table(table_path)
             name = dataset.meta["dataset_name"]
             names.append(name)
@@ -70,12 +74,8 @@ class MultiSourceDataset:
         print(f"Summary of dataset {self.dataset_name}")
         print("Decomposition of multi source datasets:")
         for dataset_name, dataset in self.name2genericdataset.items():
-            n_images = len(dataset.generic_train_images) + len(
-                dataset.generic_test_images
-            )
-            n_annotations = len(dataset.generic_train_annotations) + len(
-                dataset.generic_test_annotations
-            )
+            n_images = len(dataset.generic_train_images) + len(dataset.generic_test_images)
+            n_annotations = len(dataset.generic_train_annotations) + len(dataset.generic_test_annotations)
             print(f"{dataset_name} has {n_images} images, {n_annotations} annotations")
 
         print(f"total train images : {len(self.train_images)}")
@@ -87,7 +87,8 @@ class MultiSourceDataset:
 
         species_set = set()
         for dataset_name, dataset in self.name2genericdataset.items():
-            # I could of course do this during merge to save compute, but doing it here makes the logic cleaner to understand
+            # I could of course do this during merge to save compute, but doing it
+            # here makes the logic cleaner to understand
             total_images = dataset.generic_train_images + dataset.generic_test_images
 
             for image in total_images:
@@ -102,18 +103,16 @@ class MultiSourceDataset:
         self.meta["imageid2datasetname"] = self.imageid2datasetname
 
         max_num = 0
-        for dataset_name, dataset in self.name2genericdataset.items():
+        for _dataset_name, dataset in self.name2genericdataset.items():
             max_num = max(max_num, dataset.meta["max_individuals"])
         self.meta["max_individuals"] = max_num
         dataset_name = self.meta["dataset_name"]
         print(f"Max individual in {dataset_name} is {max_num}")
 
     def whether_anno_image_match(self, images, annotations):
-        """
-        Every image id should be annotated at least once
-        There should not be any image that is not being annotated
-        There should not be any annotation for beyond the set of given images
-        """
+        """Every image id should be annotated at least once There should not be any
+        image that is not being annotated There should not be any annotation for beyond
+        the set of given images."""
 
         image_ids = set([image["id"] for image in images])
 
@@ -123,17 +122,17 @@ class MultiSourceDataset:
             print("images-annotations", image_ids - annotation_image_ids)
             print("annotations-images", annotation_image_ids - image_ids)
 
-            warnings.warn("annotation and image ids do not match")
+            warnings.warn("annotation and image ids do not match", stacklevel=2)
 
             # This is constrain is too hard
             # assert len(annotation_image_ids - image_ids) == 0, "You can't have annotation on non-existed images"
 
     def _update_imgids(self):
-        """
-        update image ids for both image and annotation
+        """Update image ids for both image and annotation.
 
-        If datasets are merged, their image id, annotation id will conflict because they are defined within their own local scope. Therefore, we will need to put these ids in the global scope
-
+        If datasets are merged, their image id, annotation id will conflict because they
+        are defined within their own local scope. Therefore, we will need to put these
+        ids in the global scope
         """
 
         from collections import defaultdict
@@ -144,30 +143,20 @@ class MultiSourceDataset:
         total_number_images = 0
         total_number_annotations = 0
         for dataset in all_datasets:
-            total_number_images += len(dataset.generic_train_images) + len(
-                dataset.generic_test_images
-            )
-            total_number_annotations += len(dataset.generic_train_annotations) + len(
-                dataset.generic_test_annotations
-            )
+            total_number_images += len(dataset.generic_train_images) + len(dataset.generic_test_images)
+            total_number_annotations += len(dataset.generic_train_annotations) + len(dataset.generic_test_annotations)
 
         global_image_id_pool = set(range(total_number_images))
         global_annotation_id_pool = set(range(total_number_annotations))
 
         for dataset_name, dataset in self.name2genericdataset.items():
-
             local_image_id_map = defaultdict(int)
             local_anno_id_map = defaultdict(int)
 
-            traintest_images = (
-                dataset.generic_train_images + dataset.generic_test_images
-            )
-            traintest_annotations = (
-                dataset.generic_train_annotations + dataset.generic_test_annotations
-            )
+            traintest_images = dataset.generic_train_images + dataset.generic_test_images
+            traintest_annotations = dataset.generic_train_annotations + dataset.generic_test_annotations
 
             for img in traintest_images:
-
                 new_image_id = global_image_id_pool.pop()
                 local_image_id_map[img["id"]] = new_image_id
                 img["id"] = new_image_id
@@ -184,18 +173,16 @@ class MultiSourceDataset:
         from functools import reduce
 
         count = 0
-        for k, v in dataset_id_pool.items():
+        for _k, v in dataset_id_pool.items():
             count += len(v)
         print("size of the summation", count)
         union = reduce(set.union, dataset_id_pool.values())
         print("size of the union", len(union))
 
     def _merge_datasets(self, name2dataset):
-        """
-        Merged datasets into common list
+        """Merged datasets into common list.
 
         # only do this when iid/ood split is done
-
         """
 
         merged_train_images = []
@@ -203,8 +190,7 @@ class MultiSourceDataset:
         merged_train_annotations = []
         merged_test_annotations = []
 
-        for dataset_name, dataset in name2dataset.items():
-
+        for _dataset_name, dataset in name2dataset.items():
             train_images = dataset.generic_train_images
             test_images = dataset.generic_test_images
             train_annotations = dataset.generic_train_annotations
@@ -218,13 +204,9 @@ class MultiSourceDataset:
         print("Checking merged dataset")
 
         merged_traintest_images = merged_train_images + merged_test_images
-        merged_traintest_annotations = (
-            merged_train_annotations + merged_test_annotations
-        )
+        merged_traintest_annotations = merged_train_annotations + merged_test_annotations
 
-        self.whether_anno_image_match(
-            merged_traintest_images, merged_traintest_annotations
-        )
+        self.whether_anno_image_match(merged_traintest_images, merged_traintest_annotations)
 
         return (
             merged_train_images,
@@ -236,22 +218,17 @@ class MultiSourceDataset:
     def __eq__(self, other_dataset):
 
         if isinstance(other_dataset, BasePoseDataset):
-
             train_images1 = set(map(raw_2_imagename_with_id, self.train_images))
-            train_images2 = set(
-                map(raw_2_imagename, other_dataset.generic_train_images)
-            )
+            train_images2 = set(map(raw_2_imagename, other_dataset.generic_train_images))
 
             test_images1 = set(map(raw_2_imagename_with_id, self.test_images))
             test_images2 = set(map(raw_2_imagename, other_dataset.generic_test_images))
             if train_images1 == train_images2 and test_images1 == test_images2:
-                print(
-                    f'dataset {self.meta["dataset_name"]} and {other_dataset.meta["dataset_name"]} are equivalent'
-                )
+                print(f"dataset {self.meta['dataset_name']} and {other_dataset.meta['dataset_name']} are equivalent")
                 return True
             else:
                 print(
-                    f'dataset {self.meta["dataset_name"]} and {other_dataset.meta["dataset_name"]} are NOT equivalent'
+                    f"dataset {self.meta['dataset_name']} and {other_dataset.meta['dataset_name']} are NOT equivalent"
                 )
                 return False
 

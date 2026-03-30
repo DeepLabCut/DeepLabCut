@@ -15,9 +15,8 @@ import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
 
 # TODO: make a proper test incl. human model, bird model and that skips the require... at least once per week.
 
-@pytest.mark.parametrize(
-    "super_animal", ["superanimal_quadruped", "superanimal_topviewmouse"]
-)
+
+@pytest.mark.parametrize("super_animal", ["superanimal_quadruped", "superanimal_topviewmouse"])
 @pytest.mark.parametrize("model_name", ["hrnet_w32"])
 @pytest.mark.parametrize("detector_name", [None, "fasterrcnn_resnet50_fpn_v2"])
 def test_get_config_model_paths(super_animal, model_name, detector_name):

@@ -9,23 +9,23 @@ deeplabcut:
 ## Modules
 
 - [data](https://github.com/nastya236/DLCdev/blob/69005057eeac3c1492712863303f8268cee776e6/deeplabcut/pose_estimation_pytorch/data/project.py#L7):
-The `deeplabcut.pose_estimations_pytorch.data` package contains all code for pytorch 
+The `deeplabcut.pose_estimations_pytorch.data` package contains all code for pytorch
 dataset creation and test/train splitting.
   - `Project` class provides train and test splitting and converts dataset to required
   format. For instance, to [COCO]() format.
-  - `PoseTrainDataset` class is a [torch.utils.Dataset](https://pytorch.org/docs/stable/data.html) class, which converts raw 
+  - `PoseTrainDataset` class is a [torch.utils.Dataset](https://pytorch.org/docs/stable/data.html) class, which converts raw
   images and keypoints to a tensor dataset for training and evaluation.
 - [models](https://github.com/nastya236/DLCdev/blob/69005057eeac3c1492712863303f8268cee776e6/deeplabcut/pose_estimation_pytorch/data/models):
-The `deeplabcut.pose_estimations_pytorch.models` package contains all related to 
+The `deeplabcut.pose_estimations_pytorch.models` package contains all related to
 building a model with `backbone`, `neck` (optional) and `head`.
 - [train_module](https://github.com/nastya236/DLCdev/blob/69005057eeac3c1492712863303f8268cee776e6/deeplabcut/pose_estimation_pytorch/data/models):
-The `deeplabcut.pose_estimations_pytorch.train_module` contains all classes for model 
+The `deeplabcut.pose_estimations_pytorch.train_module` contains all classes for model
 training and validation.
 
 ## API
 
 The PyTorch implementation of DeepLabCut is very similar to the Tensorflow multi-animal
-implementation: the same steps need to be followed, just with slightly different API 
+implementation: the same steps need to be followed, just with slightly different API
 calls (and different model names).
 
 Up until it's time to create the training dataset, there are no changes to the way a
@@ -43,15 +43,15 @@ deeplabcut.create_training_dataset(
 ```
 
 This will create folders for the training dataset in the same way as the Tensorflow
-version, with an addition configuration file in the `train` folder: 
-`pytorch_config.yaml`. This is the file that can be edited to modify the model 
+version, with an addition configuration file in the `train` folder:
+`pytorch_config.yaml`. This is the file that can be edited to modify the model
 architecture or training parameters.
 
 There are currently two "families" of models implemented in PyTorch: DEKR (Geng, Zigang,
-et al. "Bottom-up human pose estimation via disentangled keypoint regression." 
-Proceedings of the IEEE/CVF conference on computer vision and pattern recognition. 
+et al. "Bottom-up human pose estimation via disentangled keypoint regression."
+Proceedings of the IEEE/CVF conference on computer vision and pattern recognition.
 2021.) and Tokenpose (Li, Yanjie, et al. "Tokenpose: Learning keypoint tokens for human
-pose estimation." Proceedings of the IEEE/CVF International conference on computer 
+pose estimation." Proceedings of the IEEE/CVF International conference on computer
 vision. 2021.). The choices of `net_type` that will create PyTorch training sets are:
 - `"dekr_16"`
 - `"dekr_32"`
@@ -60,11 +60,11 @@ vision. 2021.). The choices of `net_type` that will create PyTorch training sets
 - `"token_pose_w32"`
 - `"token_pose_w48"`
 
-Note that Tokenpose models cannot currently be used with projects that contain unique 
-keypoints. 
+Note that Tokenpose models cannot currently be used with projects that contain unique
+keypoints.
 
 ### Training the network
-Training a PyTorch model is done in a very similar manner as a tensorflow model, though 
+Training a PyTorch model is done in a very similar manner as a tensorflow model, though
 currently the PyTorch API needs to be called directly:
 ```python
 import deeplabcut.pose_estimation_pytorch.apis as api
@@ -135,10 +135,10 @@ batch_size: the batch size to use for evaluation
 ### Analyzing novel videos
 One big difference between the PyTorch and Tensorflow implementations comes in the way
 animal assembly happens (for multi-animal models). While in Tensorflow, assembly was a
-separate step that needed to be done from the keypoints, in the PyTorch version it's 
+separate step that needed to be done from the keypoints, in the PyTorch version it's
 integrated directly into the models. From an API standpoint, that does not change much.
 
-Again, the PyTorch API needs to be invoked directly (it also has the `auto_track` 
+Again, the PyTorch API needs to be invoked directly (it also has the `auto_track`
 option).
 ```python
 import deeplabcut.pose_estimation_pytorch.apis as api
@@ -146,7 +146,7 @@ api.analyze_videos(config_path, ["/fullpath/project/videos/test.mp4"], videotype
 ```
 
 The PyTorch detections need to be converted to tracklets using the PyTorch API, but then
-the original tracklet stitching can be used. 
+the original tracklet stitching can be used.
 ```python
 import deeplabcut
 import deeplabcut.pose_estimation_pytorch.apis as api
@@ -162,7 +162,7 @@ deeplabcut.stitch_tracklets(
 )
 ```
 
-Creating labeled videos can then be called in exactly the same way as before. 
+Creating labeled videos can then be called in exactly the same way as before.
 ```python
 import deeplabcut
 deeplabcut.create_labeled_video(

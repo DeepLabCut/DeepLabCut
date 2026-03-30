@@ -17,7 +17,6 @@ import pytest
 import deeplabcut.pose_estimation_pytorch.apis as apis
 import deeplabcut.pose_estimation_pytorch.data as data
 
-
 PREDICT = Mock()
 
 
@@ -28,7 +27,7 @@ PREDICT = Mock()
     [
         (["nose", "left_ear"], [5, 10]),
         (["nose", "left_ear", "right_ear"], [2, 3, 4]),
-    ]
+    ],
 )
 def test_evaluate_basic(
     num_individuals: int,
@@ -54,14 +53,14 @@ def test_evaluate_basic(
     [
         (["nose", "left_ear"], [5, 10]),
         (["nose", "left_ear", "right_ear"], [2, 3, 4]),
-    ]
+    ],
 )
 @pytest.mark.parametrize(
     "unique_bodyparts, unique_error",
     [
         (["top_left"], [2]),
         (["top_left", "bottom_right"], [2, 3]),
-    ]
+    ],
 )
 def test_evaluate_with_unique_bodyparts(
     num_individuals: int,
@@ -73,18 +72,13 @@ def test_evaluate_with_unique_bodyparts(
     print()
     num_images = 5
     gt, pred = generate_data(num_images, num_individuals, len(bodyparts), error)
-    gt_unique, pred_unique = generate_data(
-        num_images, 1, len(unique_bodyparts), unique_error
-    )
+    gt_unique, pred_unique = generate_data(num_images, 1, len(unique_bodyparts), unique_error)
 
     pose_runner = Mock()
     PREDICT.return_value = {
-        img: {"bodyparts": pose, "unique_bodyparts": pred_unique[img]}
-        for img, pose in pred.items()
+        img: {"bodyparts": pose, "unique_bodyparts": pred_unique[img]} for img, pose in pred.items()
     }
-    loader = build_mock_loader(
-        gt, num_individuals, bodyparts, gt_unique=gt_unique, unique=unique_bodyparts
-    )
+    loader = build_mock_loader(gt, num_individuals, bodyparts, gt_unique=gt_unique, unique=unique_bodyparts)
     results, preds = apis.evaluate(pose_runner, loader, mode="test")
     idv_errors = np.tile(error, (num_individuals, 1)).reshape(-1)
     expected_rmse = np.mean(np.concatenate([idv_errors, unique_error]))
@@ -103,8 +97,8 @@ class CompTestConfig:
     num_individuals: int = 1
     bodyparts: tuple[str, ...] = ("nose", "left_ear")
     error: tuple[float, ...] = (5, 10)
-    unique_bodyparts: tuple[str, ...] = ("top_left", )
-    unique_error: tuple[float, ...] = (2, )
+    unique_bodyparts: tuple[str, ...] = ("top_left",)
+    unique_error: tuple[float, ...] = (2,)
     comparison_bodyparts: str | list[str] | None = None
     expected_error: float = (2 + 5 + 10) / 3
 
@@ -149,7 +143,7 @@ class CompTestConfig:
             comparison_bodyparts=["nose", "left_ear", "a", "b"],
             expected_error=((7 * 5) + (7 * 10) + 3.0 + 4.0) / (7 + 7 + 2),
         ),
-    ]
+    ],
 )
 def test_evaluate_with_comparison_bodyparts(cfg: CompTestConfig) -> None:
     print()
@@ -159,8 +153,7 @@ def test_evaluate_with_comparison_bodyparts(cfg: CompTestConfig) -> None:
 
     pose_runner = Mock()
     PREDICT.return_value = {
-        img: {"bodyparts": pose, "unique_bodyparts": pred_unique[img]}
-        for img, pose in pred.items()
+        img: {"bodyparts": pose, "unique_bodyparts": pred_unique[img]} for img, pose in pred.items()
     }
     loader = build_mock_loader(
         gt,
@@ -170,7 +163,10 @@ def test_evaluate_with_comparison_bodyparts(cfg: CompTestConfig) -> None:
         unique=cfg.unique_bodyparts,
     )
     results, preds = apis.evaluate(
-        pose_runner, loader, mode="test", comparison_bodyparts=cfg.comparison_bodyparts,
+        pose_runner,
+        loader,
+        mode="test",
+        comparison_bodyparts=cfg.comparison_bodyparts,
     )
     print(cfg)
     print("results", results)
@@ -190,17 +186,17 @@ class KeypointData:
         return f"image_{self.img:04d}.png"
 
     def error(self) -> float:
-        return np.linalg.norm(
-            np.asarray(self.gt, dtype=float) - np.asarray(self.pred, dtype=float)
-        ).item()
+        return np.linalg.norm(np.asarray(self.gt, dtype=float) - np.asarray(self.pred, dtype=float)).item()
 
 
 @patch("deeplabcut.pose_estimation_pytorch.apis.evaluation.predict", PREDICT)
 @pytest.mark.parametrize(
-    "pcutoff", [0.4, 0.6, 0.8, [0.3, 0.5, 0.7]],
+    "pcutoff",
+    [0.4, 0.6, 0.8, [0.3, 0.5, 0.7]],
 )
 @pytest.mark.parametrize(
-    "keypoints", [
+    "keypoints",
+    [
         [
             KeypointData(img=0, idv=0, bodypart="a", gt=(10, 10), pred=(11, 10), score=0.7),
             KeypointData(img=0, idv=0, bodypart="b", gt=(20, 20), pred=(21, 20), score=0.7),
@@ -214,7 +210,7 @@ class KeypointData:
             KeypointData(img=0, idv=1, bodypart="b", gt=(50, 20), pred=(49, 20), score=0.5),
             KeypointData(img=0, idv=1, bodypart="c", gt=(60, 20), pred=(58, 20), score=0.2),
         ],
-    ]
+    ],
 )
 def test_evaluate_with_pcutoff(
     pcutoff: float | list[float],
@@ -229,7 +225,7 @@ def test_evaluate_with_pcutoff(
 
     num_idv = len(individuals)
     num_bodyparts = len(bodyparts)
-    num_unique = len(unique_bodyparts)
+    len(unique_bodyparts)
 
     gt, pred = {}, {}
     for img in images:
@@ -267,17 +263,14 @@ def test_evaluate_with_pcutoff(
     np.testing.assert_almost_equal(results["rmse"], np.mean(errors))
     np.testing.assert_almost_equal(results["rmse_pcutoff"], np.mean(errors_cutoff))
     if "rmse_detections" in results:
-        np.testing.assert_almost_equal(
-            results["rmse_detections"], np.mean(errors)
-        )
-        np.testing.assert_almost_equal(
-            results["rmse_detections_pcutoff"], np.mean(errors_cutoff)
-        )
+        np.testing.assert_almost_equal(results["rmse_detections"], np.mean(errors))
+        np.testing.assert_almost_equal(results["rmse_detections_pcutoff"], np.mean(errors_cutoff))
 
 
 @patch("deeplabcut.pose_estimation_pytorch.apis.evaluation.predict", PREDICT)
 @pytest.mark.parametrize(
-    "pcutoff", [
+    "pcutoff",
+    [
         0.4,
         0.6,
         0.8,
@@ -288,7 +281,8 @@ def test_evaluate_with_pcutoff(
     ],
 )
 @pytest.mark.parametrize(
-    "keypoints", [
+    "keypoints",
+    [
         [
             KeypointData(img=0, idv=0, bodypart="a", gt=(10, 10), pred=(11, 10), score=0.7),
             KeypointData(img=0, idv=0, bodypart="b", gt=(20, 20), pred=(21, 20), score=0.7),
@@ -329,8 +323,8 @@ def test_evaluate_with_pcutoff(
             KeypointData(img=1, idv=-1, bodypart="u1", gt=(17, 32), pred=(58, 20), score=0.2),
             KeypointData(img=1, idv=-1, bodypart="u2", gt=(37, 4), pred=(3, 3), score=0.7),
             KeypointData(img=1, idv=-1, bodypart="u3", gt=(12, 6), pred=(20, 22), score=0.9),
-        ]
-    ]
+        ],
+    ],
 )
 def test_evaluate_with_pcutoff_and_unique_bodyparts(
     pcutoff: float | list[float],
@@ -385,8 +379,7 @@ def test_evaluate_with_pcutoff_and_unique_bodyparts(
 
     pose_runner = Mock()
     PREDICT.return_value = {
-        img: {"bodyparts": pose, "unique_bodyparts": pred_unique[img]}
-        for img, pose in pred.items()
+        img: {"bodyparts": pose, "unique_bodyparts": pred_unique[img]} for img, pose in pred.items()
     }
     loader = build_mock_loader(gt, num_idv, bodyparts, gt_unique, unique_bodyparts)
     results, preds = apis.evaluate(pose_runner, loader, mode="test", pcutoff=pcutoff)
@@ -395,12 +388,8 @@ def test_evaluate_with_pcutoff_and_unique_bodyparts(
     np.testing.assert_almost_equal(results["rmse"], np.mean(errors))
     np.testing.assert_almost_equal(results["rmse_pcutoff"], np.mean(errors_cutoff))
     if "rmse_detections" in results:
-        np.testing.assert_almost_equal(
-            results["rmse_detections"], np.mean(errors)
-        )
-        np.testing.assert_almost_equal(
-            results["rmse_detections_pcutoff"], np.mean(errors_cutoff)
-        )
+        np.testing.assert_almost_equal(results["rmse_detections"], np.mean(errors))
+        np.testing.assert_almost_equal(results["rmse_detections_pcutoff"], np.mean(errors_cutoff))
 
 
 def generate_data(

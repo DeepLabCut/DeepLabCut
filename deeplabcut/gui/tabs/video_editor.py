@@ -25,7 +25,7 @@ from deeplabcut.utils import auxfun_videos
 
 class VideoEditor(DefaultTab):
     def __init__(self, root, parent, h1_description):
-        super(VideoEditor, self).__init__(root, parent, h1_description)
+        super().__init__(root, parent, h1_description)
 
         self._set_page()
 
@@ -139,16 +139,11 @@ class VideoEditor(DefaultTab):
         if self.files:
             for video in self.files:
                 if self.video_rotation.currentText() == "specific angle":
-                    auxfun_videos.rotate_video(
-                        video, self.rotation_angle.value(), "Arbitrary"
-                    )
+                    auxfun_videos.rotate_video(video, self.rotation_angle.value(), "Arbitrary")
                 elif self.video_rotation.currentText() == "clockwise":
-                    auxfun_videos.rotate_video(
-                        video, 0, "Yes"
-                    )
+                    auxfun_videos.rotate_video(video, 0, "Yes")
         else:
             self.root.logger.error("No videos selected...")
-
 
     def trim_videos(self):
         start = time.strftime("%H:%M:%S", time.gmtime(self.video_start.value()))

@@ -20,6 +20,7 @@ Licensed under GNU Lesser General Public License v3.0
 Hao Wu, hwu01@g.harvard.edu contributed the original OpenCV class. Thanks!
 You can find the directory for your ffmpeg bindings by: "find / | grep ffmpeg" and then setting it.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -29,10 +30,10 @@ import os
 # Dependencies
 ####################################################
 import os.path
+from collections.abc import Callable, Iterable
 from functools import partial
-from multiprocessing import get_start_method, Pool
+from multiprocessing import Pool, get_start_method
 from pathlib import Path
-from typing import Callable, Iterable, List, Optional, Union
 
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
@@ -41,7 +42,7 @@ import pandas as pd
 from matplotlib import patches
 from matplotlib.animation import FFMpegWriter
 from matplotlib.collections import LineCollection
-from skimage.draw import disk, line_aa, set_color, rectangle_perimeter
+from skimage.draw import disk, line_aa, rectangle_perimeter, set_color
 from skimage.util import img_as_ubyte
 from tqdm import trange
 
@@ -62,7 +63,8 @@ def get_segment_indices(bodyparts2connect, all_bpts):
                     *(
                         np.flatnonzero(all_bpts == bpt1),
                         np.flatnonzero(all_bpts == bpt2),
-                    )
+                    ),
+                    strict=False,
                 )
             )
     return bpts2connect
@@ -92,13 +94,11 @@ def CreateVideo(
     bboxes_pcutoff=0.6,
     bboxes_color: tuple | None = None,
 ):
-    """Creating individual frames with labeled body parts and making a video"""
+    """Creating individual frames with labeled body parts and making a video."""
     bpts = Dataframe.columns.get_level_values("bodyparts")
     all_bpts = bpts.values[::3]
     if draw_skeleton:
-        color_for_skeleton = (
-            np.array(mcolors.to_rgba(skeleton_color))[:3] * 255
-        ).astype(np.uint8)
+        color_for_skeleton = (np.array(mcolors.to_rgba(skeleton_color))[:3] * 255).astype(np.uint8)
         # recode the bodyparts2connect into indices for df_x and df_y for speed
         bpts2connect = get_segment_indices(bodyparts2connect, all_bpts)
 
@@ -114,16 +114,8 @@ def CreateVideo(
     nframes = clip.nframes
     duration = nframes / fps
 
-    print(
-        "Duration of video [s]: {}, recorded with {} fps!".format(
-            round(duration, 2), round(fps, 2)
-        )
-    )
-    print(
-        "Overall # of frames: {} with cropped frame dimensions: {} {}".format(
-            nframes, nx, ny
-        )
-    )
+    print(f"Duration of video [s]: {round(duration, 2)}, recorded with {round(fps, 2)} fps!")
+    print(f"Overall # of frames: {nframes} with cropped frame dimensions: {nx} {ny}")
     print("Generating frames and creating video.")
 
     df_x, df_y, df_likelihood = Dataframe.values.reshape((len(Dataframe), -1, 3)).T
@@ -142,9 +134,7 @@ def CreateVideo(
     else:
         nindividuals = len(Dataframe.columns.get_level_values("individuals").unique())
         map2bp = [bplist.index(bp) for bp in all_bpts]
-        nbpts_per_ind = (
-            Dataframe.groupby(level="individuals", axis=1).size().values // 3
-        )
+        nbpts_per_ind = Dataframe.groupby(level="individuals", axis=1).size().values // 3
         map2id = []
         for i, j in enumerate(nbpts_per_ind):
             map2id.extend([i] * j)
@@ -192,8 +182,7 @@ def CreateVideo(
             if draw_skeleton:
                 for bpt1, bpt2 in bpts2connect:
                     if np.all(df_likelihood[[bpt1, bpt2], index] > pcutoff) and not (
-                        np.any(np.isnan(df_x[[bpt1, bpt2], index]))
-                        or np.any(np.isnan(df_y[[bpt1, bpt2], index]))
+                        np.any(np.isnan(df_x[[bpt1, bpt2], index])) or np.any(np.isnan(df_y[[bpt1, bpt2], index]))
                     ):
                         rr, cc, val = line_aa(
                             int(np.clip(df_y[bpt1, index], 0, ny - 1)),
@@ -217,9 +206,7 @@ def CreateVideo(
                                 shape=(ny, nx),
                             )
                             image[rr, cc] = color
-                    rr, cc = disk(
-                        (df_y[ind, index], df_x[ind, index]), dotsize, shape=(ny, nx)
-                    )
+                    rr, cc = disk((df_y[ind, index], df_x[ind, index]), dotsize, shape=(ny, nx))
                     alpha = 1
                     if confidence_to_alpha is not None:
                         alpha = confidence_to_alpha(df_likelihood[ind, index])
@@ -259,7 +246,7 @@ def CreateVideoSlow(
     bboxes_pcutoff=0.6,
     bboxes_color: str | None = None,
 ):
-    """Creating individual frames with labeled body parts and making a video"""
+    """Creating individual frames with labeled body parts and making a video."""
 
     if displaycropped:
         ny, nx = y2 - y1, x2 - x1
@@ -273,16 +260,8 @@ def CreateVideoSlow(
     nframes = clip.nframes
     duration = nframes / fps
 
-    print(
-        "Duration of video [s]: {}, recorded with {} fps!".format(
-            round(duration, 2), round(fps, 2)
-        )
-    )
-    print(
-        "Overall # of frames: {} with cropped frame dimensions: {} {}".format(
-            nframes, nx, ny
-        )
-    )
+    print(f"Duration of video [s]: {round(duration, 2)}, recorded with {round(fps, 2)} fps!")
+    print(f"Overall # of frames: {nframes} with cropped frame dimensions: {nx} {ny}")
     print("Generating frames and creating video.")
     df_x, df_y, df_likelihood = Dataframe.values.reshape((len(Dataframe), -1, 3)).T
     if cropping and not displaycropped:
@@ -303,9 +282,7 @@ def CreateVideoSlow(
     else:
         nindividuals = len(Dataframe.columns.get_level_values("individuals").unique())
         map2bp = [bplist.index(bp) for bp in all_bpts]
-        nbpts_per_ind = (
-            Dataframe.groupby(level="individuals", axis=1).size().values // 3
-        )
+        nbpts_per_ind = Dataframe.groupby(level="individuals", axis=1).size().values // 3
         map2id = []
         for i, j in enumerate(nbpts_per_ind):
             map2id.extend([i] * j)
@@ -321,9 +298,7 @@ def CreateVideoSlow(
 
     nframes_digits = int(np.ceil(np.log10(nframes)))
     if nframes_digits > 9:
-        raise Exception(
-            "Your video has more than 10**9 frames, we recommend chopping it up."
-        )
+        raise Exception("Your video has more than 10**9 frames, we recommend chopping it up.")
 
     if Frames2plot is None:
         Index = set(range(nframes))
@@ -405,15 +380,13 @@ def CreateVideoSlow(
                 ax.set_ylim(0, ny)
                 ax.axis("off")
                 ax.invert_yaxis()
-                fig.subplots_adjust(
-                    left=0, bottom=0, right=1, top=1, wspace=0, hspace=0
-                )
+                fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
                 if save_frames:
                     fig.savefig(imagename)
                 writer.grab_frame()
                 ax.clear()
 
-    print("Labeled video {} successfully created.".format(videooutname))
+    print(f"Labeled video {videooutname} successfully created.")
     plt.switch_backend(prev_backend)
 
 
@@ -442,16 +415,16 @@ def create_labeled_video(
     track_method: str = "",
     superanimal_name: str = "",
     pcutoff: float | None = None,
-    skeleton: list = [],
+    skeleton: list = None,
     skeleton_color: str = "white",
     dotsize: int = 8,
     colormap: str = "rainbow",
     alphavalue: float = 0.5,
     overwrite: bool = False,
-    confidence_to_alpha: Union[bool, Callable[[float], float]] = False,
+    confidence_to_alpha: bool | Callable[[float], float] = False,
     plot_bboxes: bool = True,
     bboxes_pcutoff: float | None = None,
-    max_workers: Optional[int] = None,
+    max_workers: int | None = None,
     **kwargs,
 ):
     """Labels the bodyparts in a video.
@@ -593,15 +566,18 @@ def create_labeled_video(
         function used when True is f(x) = max(0, (x - pcutoff)/(1 - pcutoff)).
 
     plot_bboxes: bool, optional, default=True
-        If using Pytorch and in Top-Down mode, setting this to true will also plot the bounding boxes
+        If using Pytorch and in Top-Down mode,
+        setting this to true will also plot the bounding boxes
 
     bboxes_pcutoff, float, optional, default=None:
-        If plotting bounding boxes, this overrides the bboxes_pcutoff set in the model configuration.
+        If plotting bounding boxes, this overrides the bboxes_pcutoff
+        set in the model configuration.
 
     max_workers (int | None):
-        Maximum number of processes to use for multiprocessing. Set this parameter to limit the total RAM-usage of
-        simultaneous processes. Default: no maximum (i.e. number of spawned processes is based on the number of 
-        cores and the number of input videos).  
+        Maximum number of processes to use for multiprocessing.
+        Set this parameter to limit the total RAM-usage of simultaneous processes.
+        Default: no maximum (i.e. number of spawned processes is based on the number of
+        cores and the number of input videos).
 
     kwargs: additional arguments.
         For torch-based shuffles, can be used to specify:
@@ -657,6 +633,8 @@ def create_labeled_video(
             videotype='mp4',
         )
     """
+    if skeleton is None:
+        skeleton = []
     if config == "":
         if pcutoff is None:
             pcutoff = 0.6
@@ -668,9 +646,7 @@ def create_labeled_video(
     else:
         cfg = auxiliaryfunctions.read_config(config)
         train_fraction = cfg["TrainingFraction"][trainingsetindex]
-        track_method = auxfun_multianimal.get_track_method(
-            cfg, track_method=track_method
-        )
+        track_method = auxfun_multianimal.get_track_method(cfg, track_method=track_method)
         if pcutoff is None:
             pcutoff = cfg["pcutoff"]
 
@@ -687,25 +663,13 @@ def create_labeled_video(
             modelprefix,
             engine=Engine.PYTORCH,
         )
-        model_config_path = (
-            Path(config).parent / model_folder / "train" / Engine.PYTORCH.pose_cfg_name
-        )
+        model_config_path = Path(config).parent / model_folder / "train" / Engine.PYTORCH.pose_cfg_name
         if model_config_path.exists():
             model_config = auxiliaryfunctions.read_plainconfig(str(model_config_path))
-            if (
-                model_config["train_settings"]
-                .get("weight_init", {})
-                .get("memory_replay", False)
-            ):
-                superanimal_name = model_config["train_settings"]["weight_init"][
-                    "dataset"
-                ]
+            if model_config["train_settings"].get("weight_init", {}).get("memory_replay", False):
+                superanimal_name = model_config["train_settings"]["weight_init"]["dataset"]
             if bboxes_pcutoff is None:
-                bboxes_pcutoff = (
-                    model_config.get("detector", {})
-                    .get("model", {})
-                    .get("box_score_thresh", 0.6)
-                )
+                bboxes_pcutoff = model_config.get("detector", {}).get("model", {}).get("box_score_thresh", 0.6)
         else:
             if bboxes_pcutoff is None:
                 bboxes_pcutoff = 0.6
@@ -755,19 +719,13 @@ def create_labeled_video(
             "uniquebodyparts": uniquebodyparts,
         }
     else:
-        bodyparts = (
-            auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-                cfg, displayedbodyparts
-            )
-        )
+        bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, displayedbodyparts)
 
     if draw_skeleton:
         bodyparts2connect = cfg["skeleton"]
         if displayedbodyparts != "all":
             bodyparts2connect = [
-                pair
-                for pair in bodyparts2connect
-                if all(element in displayedbodyparts for element in pair)
+                pair for pair in bodyparts2connect if all(element in displayedbodyparts for element in pair)
             ]
         skeleton_color = cfg["skeleton_color"]
     else:
@@ -812,7 +770,7 @@ def create_labeled_video(
     )
 
     if get_start_method() == "fork":
-        n_workers = (max_workers or min(os.cpu_count(), len(Videos)))
+        n_workers = max_workers or min(os.cpu_count(), len(Videos))
         with Pool(n_workers) as pool:
             results = pool.map(func, Videos)
     else:
@@ -850,11 +808,11 @@ def proc_video(
     video,
     init_weights="",
     pcutoff: float | None = None,
-    confidence_to_alpha: Optional[Callable[[float], float]] = None,
+    confidence_to_alpha: Callable[[float], float] | None = None,
     plot_bboxes: bool = True,
     bboxes_pcutoff: float = 0.6,
 ):
-    """Helper function for create_videos
+    """Helper function for create_videos.
 
     Parameters
     ----------
@@ -877,7 +835,7 @@ def proc_video(
     auxiliaryfunctions.attempt_to_make_folder(destfolder)
 
     os.chdir(destfolder)  # THE VIDEO IS STILL IN THE VIDEO FOLDER
-    print("Starting to process video: {}".format(video))
+    print(f"Starting to process video: {video}")
     vname = str(Path(video).stem)
 
     if init_weights != "":
@@ -895,22 +853,18 @@ def proc_video(
         print(f"Labeled video {vname} already created.")
         return True
     else:
-        print("Loading {} and data.".format(video))
+        print(f"Loading {video} and data.")
         try:
             df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
                 destfolder, vname, DLCscorer, filtered, track_method
             )
-            metadata = auxiliaryfunctions.load_video_metadata(
-                destfolder, vname, DLCscorer
-            )
+            metadata = auxiliaryfunctions.load_video_metadata(destfolder, vname, DLCscorer)
             if cfg.get("multianimalproject", False):
                 s = "_id" if color_by == "individual" else "_bp"
             else:
                 s = ""
 
-            videooutname = filepath.replace(
-                ".h5", f"{s}_p{int(100 * pcutoff)}_labeled.mp4"
-            )
+            videooutname = filepath.replace(".h5", f"{s}_p{int(100 * pcutoff)}_labeled.mp4")
             if os.path.isfile(videooutname) and not overwrite:
                 print("Labeled video already created. Skipping...")
                 return
@@ -925,17 +879,11 @@ def proc_video(
 
             cropping = metadata["data"]["cropping"]
             [x1, x2, y1, y2] = metadata["data"]["cropping_parameters"]
-            labeled_bpts = [
-                bp
-                for bp in df.columns.get_level_values("bodyparts").unique()
-                if bp in bodyparts
-            ]
+            labeled_bpts = [bp for bp in df.columns.get_level_values("bodyparts").unique() if bp in bodyparts]
 
             # The full data file is not created for single-animal TensorFlow models
             try:
-                full_data = auxiliaryfunctions.load_video_full_data(
-                    destfolder, vname, DLCscorer
-                )
+                full_data = auxiliaryfunctions.load_video_full_data(destfolder, vname, DLCscorer)
                 frames_dict = {
                     int(key.replace("frame", "")): value
                     for key, value in full_data.items()
@@ -943,9 +891,7 @@ def proc_video(
                 }
                 bboxes_list = None
                 if "bboxes" in frames_dict.get(min(frames_dict.keys()), {}):
-                    bboxes_list = [
-                        frames_dict[key] for key in sorted(frames_dict.keys())
-                    ]
+                    bboxes_list = [frames_dict[key] for key in sorted(frames_dict.keys())]
             except FileNotFoundError:
                 bboxes_list = None
 
@@ -1149,19 +1095,17 @@ def create_video_with_keypoints_only(
     xyp = df.values.reshape((n_frames, -1, 3))
 
     if color_by == "bodypart":
-        map_ = bodyparts.map(dict(zip(bodypart_names, range(n_bodyparts))))
+        map_ = bodyparts.map(dict(zip(bodypart_names, range(n_bodyparts), strict=False)))
         cmap = plt.get_cmap(colormap, n_bodyparts)
     elif color_by == "individual":
         try:
             individuals = df.columns.get_level_values("individuals")[::3]
             individual_names = individuals.unique().to_list()
             n_individuals = len(individual_names)
-            map_ = individuals.map(dict(zip(individual_names, range(n_individuals))))
+            map_ = individuals.map(dict(zip(individual_names, range(n_individuals), strict=False)))
             cmap = plt.get_cmap(colormap, n_individuals)
         except KeyError as e:
-            raise Exception(
-                "Coloring by individuals is only valid for multi-animal data"
-            ) from e
+            raise Exception("Coloring by individuals is only valid for multi-animal data") from e
     else:
         raise ValueError(f"Invalid color_by={color_by}")
 
@@ -1175,17 +1119,13 @@ def create_video_with_keypoints_only(
     scat.set_offsets(coords)
     colors = cmap(map_)
     scat.set_color(colors)
-    segs = coords[tuple(zip(*tuple(ind_links))), :].swapaxes(0, 1) if ind_links else []
+    segs = coords[tuple(zip(*tuple(ind_links), strict=False)), :].swapaxes(0, 1) if ind_links else []
     coll = LineCollection(segs, colors=skeleton_color, alpha=alpha)
     ax.add_collection(coll)
     ax.set_xlim(0, nx)
     ax.set_ylim(0, ny)
     ax.axis("off")
-    ax.add_patch(
-        plt.Rectangle(
-            (0, 0), 1, 1, facecolor=background_color, transform=ax.transAxes, zorder=-1
-        )
-    )
+    ax.add_patch(plt.Rectangle((0, 0), 1, 1, facecolor=background_color, transform=ax.transAxes, zorder=-1))
     ax.invert_yaxis()
     plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
 
@@ -1197,7 +1137,7 @@ def create_video_with_keypoints_only(
             coords[xyp[index, :, 2] < pcutoff] = np.nan
             scat.set_offsets(coords)
             if ind_links:
-                segs = coords[tuple(zip(*tuple(ind_links))), :].swapaxes(0, 1)
+                segs = coords[tuple(zip(*tuple(ind_links), strict=False)), :].swapaxes(0, 1)
             coll.set_segments(segs)
             writer.grab_frame()
     plt.close(fig)
@@ -1211,15 +1151,14 @@ def create_video_with_all_detections(
     shuffle=1,
     trainingsetindex=0,
     displayedbodyparts="all",
-    cropping: Optional[List[int]] = None,
+    cropping: list[int] | None = None,
     destfolder=None,
     modelprefix="",
-    confidence_to_alpha: Union[bool, Callable[[float], float]] = False,
+    confidence_to_alpha: bool | Callable[[float], float] = False,
     plot_bboxes: bool = True,
     **kwargs,
 ):
-    """
-    Create a video labeled with all the detections stored in a '*_full.pickle' file.
+    """Create a video labeled with all the detections stored in a '*_full.pickle' file.
 
     Parameters
     ----------
@@ -1231,25 +1170,30 @@ def create_video_with_all_detections(
         where all the videos with same extension are stored.
 
     videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed.
+        Checks for the extension of the video in case the input to the video is a directory.\n
+        Only videos with this extension are analyzed.
         If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
 
     shuffle : int, optional
         Number of shuffles of training dataset. Default is set to 1.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+        Integer specifying which TrainingsetFraction to use.
+        By default the first (note that TrainingFraction is a list in config.yaml).
 
     displayedbodyparts: list of strings, optional
-        This selects the body parts that are plotted in the video. Either ``all``, then all body parts
-        from config.yaml are used orr a list of strings that are a subset of the full list.
-        E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these two body parts.
+        This selects the body parts that are plotted in the video.
+        Either ``all``, then all body parts from config.yaml are used or
+        a list of strings that are a subset of the full list.
+        E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml
+        to select only these two body parts.
 
     cropping: list[int], optional (default=None)
         If passed in, the [x1, x2, y1, y2] crop coordinates are used to shift detections appropriately.
 
     destfolder: string, optional
-        Specifies the destination folder that was used for storing analysis data (default is the path of the video).
+        Specifies the destination folder that was used for storing analysis data
+        (default is the path of the video).
 
     confidence_to_alpha: Union[bool, Callable[[float], float], default=False
         If False, all keypoints will be plot with alpha=1. Otherwise, this can be
@@ -1258,7 +1202,8 @@ def create_video_with_all_detections(
         function used when True is f(x) = x.
 
     plot_bboxes: bool, optional (default=True)
-        If detections were produced using a Pytorch Top-Down model, setting this parameter to True will also plot
+        If detections were produced using a Pytorch Top-Down model,
+        setting this parameter to True will also plot
         the bounding boxes generated by the detector.
 
     kwargs: additional arguments.
@@ -1291,25 +1236,19 @@ def create_video_with_all_detections(
         videofolder = os.path.splitext(video)[0]
 
         if destfolder is None:
-            outputname = "{}_full.mp4".format(videofolder + DLCscorername)
+            outputname = f"{videofolder + DLCscorername}_full.mp4"
             full_pickle = os.path.join(videofolder + DLCscorername + "_full.pickle")
         else:
             auxiliaryfunctions.attempt_to_make_folder(destfolder)
-            outputname = os.path.join(
-                destfolder, str(Path(video).stem) + DLCscorername + "_full.mp4"
-            )
-            full_pickle = os.path.join(
-                destfolder, str(Path(video).stem) + DLCscorername + "_full.pickle"
-            )
+            outputname = os.path.join(destfolder, str(Path(video).stem) + DLCscorername + "_full.mp4")
+            full_pickle = os.path.join(destfolder, str(Path(video).stem) + DLCscorername + "_full.pickle")
 
         if not (os.path.isfile(outputname)):
             video_name = str(Path(video).stem)
             print("Creating labeled video for ", video_name)
             h5file = full_pickle.replace("_full.pickle", ".h5")
             data, metadata = auxfun_multianimal.LoadFullMultiAnimalData(h5file)
-            data = dict(
-                data
-            )  # Cast to dict (making a copy) so items can safely be popped
+            data = dict(data)  # Cast to dict (making a copy) so items can safely be popped
 
             x1, y1 = 0, 0
             if cropping is not None:
@@ -1357,11 +1296,7 @@ def create_video_with_all_detections(
                     ind = frames.index(n)
 
                     # Draw bounding boxes of required and present
-                    if (
-                        plot_bboxes
-                        and "bboxes" in data[frame_names[ind]]
-                        and "bbox_scores" in data[frame_names[ind]]
-                    ):
+                    if plot_bboxes and "bboxes" in data[frame_names[ind]] and "bbox_scores" in data[frame_names[ind]]:
                         bboxes = data[frame_names[ind]]["bboxes"]
                         bbox_scores = data[frame_names[ind]]["bbox_scores"]
                         n_bboxes = bboxes.shape[0]
@@ -1374,9 +1309,7 @@ def create_video_with_all_detections(
                             confidence = bbox_scores[i]
                             if confidence < bboxes_pcutoff:
                                 continue
-                            rect_coords = rectangle_perimeter(
-                                start=(y, x), extent=(h, w)
-                            )
+                            rect_coords = rectangle_perimeter(start=(y, x), extent=(h, w))
 
                             set_color(
                                 frame,
@@ -1408,7 +1341,7 @@ def create_video_with_all_detections(
                     pass
                 try:
                     clip.save_frame(frame)
-                except:
+                except Exception:
                     print(n, "frame writing error.")
                     pass
             clip.close()
@@ -1473,9 +1406,7 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
     [os.remove(image) for image in os.listdir(destfolder) if "frame" in image]
 
 
-def create_video_from_pickled_tracks(
-    video, pickle_file, destfolder="", output_name="", pcutoff=0.6
-):
+def create_video_from_pickled_tracks(video, pickle_file, destfolder="", output_name="", pcutoff=0.6):
     if not destfolder:
         destfolder = os.path.splitext(video)[0]
     if not output_name:
@@ -1488,8 +1419,8 @@ def create_video_from_pickled_tracks(
 def _get_default_conf_to_alpha(
     confidence_to_alpha: bool,
     pcutoff: float,
-) -> Optional[Callable[[float], float]]:
-    """Creates the default confidence_to_alpha function"""
+) -> Callable[[float], float] | None:
+    """Creates the default confidence_to_alpha function."""
     if not confidence_to_alpha:
         return None
 

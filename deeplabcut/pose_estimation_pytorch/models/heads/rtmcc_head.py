@@ -8,11 +8,12 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Modified SimCC head for the RTMPose model
+"""Modified SimCC head for the RTMPose model.
 
 Based on the official ``mmpose`` RTMCC head implementation. For more information, see
 <https://github.com/open-mmlab/mmpose>.
 """
+
 from __future__ import annotations
 
 import torch
@@ -23,8 +24,8 @@ from deeplabcut.pose_estimation_pytorch.models.criterions import (
     BaseLossAggregator,
 )
 from deeplabcut.pose_estimation_pytorch.models.heads.base import (
-    BaseHead,
     HEADS,
+    BaseHead,
 )
 from deeplabcut.pose_estimation_pytorch.models.modules import (
     GatedAttentionUnit,
@@ -37,7 +38,7 @@ from deeplabcut.pose_estimation_pytorch.models.weight_init import BaseWeightInit
 
 @HEADS.register_module
 class RTMCCHead(BaseHead):
-    """RTMPose Coordinate Classification head
+    """RTMPose Coordinate Classification head.
 
     The RTMCC head is itself adapted from the SimCC head. For more information, see
     "SimCC: a Simple Coordinate Classification Perspective for Human Pose Estimation"
@@ -137,7 +138,7 @@ class RTMCCHead(BaseHead):
 
     @staticmethod
     def update_input_size(model_cfg: dict, input_size: tuple[int, int]) -> None:
-        """Updates an RTMPose model configuration file for a new image input size
+        """Updates an RTMPose model configuration file for a new image input size.
 
         Args:
             model_cfg: The model configuration to update in-place.

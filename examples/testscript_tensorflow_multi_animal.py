@@ -49,14 +49,10 @@ if __name__ == "__main__":
     DESTFOLDER = basepath
 
     video = "m3v1mp4"
-    video_path = os.path.join(
-        basepath, "openfield-Pranav-2018-10-30", "videos", video + ".mp4"
-    )
+    video_path = os.path.join(basepath, "openfield-Pranav-2018-10-30", "videos", video + ".mp4")
 
     print("Creating project...")
-    config_path = deeplabcut.create_new_project(
-        TASK, SCORER, [video_path], copy_videos=True, multianimal=True
-    )
+    config_path = deeplabcut.create_new_project(TASK, SCORER, [video_path], copy_videos=True, multianimal=True)
 
     print("Project created.")
 
@@ -85,28 +81,19 @@ if __name__ == "__main__":
         bodyparts_single,
         bodyparts_multi,
     ) = auxfun_multianimal.extractindividualsandbodyparts(cfg)
-    animals_id = [i for i in range(n_animals) for _ in bodyparts_multi] + [
-        n_animals
-    ] * len(bodyparts_single)
-    map_ = dict(zip(range(len(animals)), animals))
+    animals_id = [i for i in range(n_animals) for _ in bodyparts_multi] + [n_animals] * len(bodyparts_single)
+    map_ = dict(zip(range(len(animals)), animals, strict=False))
     individuals = [map_[ind] for ind in animals_id for _ in range(2)]
     scorer = [SCORER] * len(individuals)
     coords = ["x", "y"] * len(animals_id)
-    bodyparts = [
-        bp for _ in range(n_animals) for bp in bodyparts_multi for _ in range(2)
-    ]
+    bodyparts = [bp for _ in range(n_animals) for bp in bodyparts_multi for _ in range(2)]
     bodyparts += [bp for bp in bodyparts_single for _ in range(2)]
     columns = pd.MultiIndex.from_arrays(
         [scorer, individuals, bodyparts, coords],
         names=["scorer", "individuals", "bodyparts", "coords"],
     )
-    index = [
-        os.path.join(rel_folder, image)
-        for image in auxiliaryfunctions.grab_files_in_folder(image_folder, "png")
-    ]
-    fake_data = np.tile(
-        np.repeat(50 * np.arange(len(animals_id)) + 50, 2), (len(index), 1)
-    )
+    index = [os.path.join(rel_folder, image) for image in auxiliaryfunctions.grab_files_in_folder(image_folder, "png")]
+    fake_data = np.tile(np.repeat(50 * np.arange(len(animals_id)) + 50, 2), (len(index), 1))
     df = pd.DataFrame(fake_data, index=index, columns=columns)
     output_path = os.path.join(image_folder, f"CollectedData_{SCORER}.csv")
     df.to_csv(output_path)
@@ -166,9 +153,7 @@ if __name__ == "__main__":
     print("Network trained.")
 
     print("Evaluating network...")
-    deeplabcut.evaluate_network(
-        config_path, plotting=True, per_keypoint_evaluation=True
-    )
+    deeplabcut.evaluate_network(config_path, plotting=True, per_keypoint_evaluation=True)
 
     print("Network evaluated....")
 
@@ -207,9 +192,7 @@ if __name__ == "__main__":
     print("Video created.")
 
     print("Convert detections to tracklets...")
-    deeplabcut.convert_detections2tracklets(
-        config_path, [new_video_path], "mp4", track_method=TESTTRACKER
-    )
+    deeplabcut.convert_detections2tracklets(config_path, [new_video_path], "mp4", track_method=TESTTRACKER)
     print("Tracklets created...")
     h5path = os.path.splitext(new_video_path)[0] + scorer + "_el.h5"
     try:
@@ -226,9 +209,7 @@ if __name__ == "__main__":
         individuals = [map_[ind] for ind in animals_id for _ in range(3)]
         scorer = [SCORER] * len(individuals)
         coords = ["x", "y", "likelihood"] * len(animals_id)
-        bodyparts = [
-            bp for _ in range(n_animals) for bp in bodyparts_multi for _ in range(3)
-        ]
+        bodyparts = [bp for _ in range(n_animals) for bp in bodyparts_multi for _ in range(3)]
         bodyparts += [bp for bp in bodyparts_single for _ in range(3)]
         columns = pd.MultiIndex.from_arrays(
             [scorer, individuals, bodyparts, coords],
@@ -240,9 +221,7 @@ if __name__ == "__main__":
         df.to_hdf(h5path, key="data")
 
     print("Plotting trajectories...")
-    deeplabcut.plot_trajectories(
-        config_path, [new_video_path], "mp4", track_method=TESTTRACKER
-    )
+    deeplabcut.plot_trajectories(config_path, [new_video_path], "mp4", track_method=TESTTRACKER)
     print("Trajectory plotted.")
 
     print("Creating labeled video...")
@@ -257,15 +236,11 @@ if __name__ == "__main__":
     print("Labeled video created.")
 
     print("Filtering predictions...")
-    deeplabcut.filterpredictions(
-        config_path, [new_video_path], "mp4", track_method=TESTTRACKER
-    )
+    deeplabcut.filterpredictions(config_path, [new_video_path], "mp4", track_method=TESTTRACKER)
     print("Predictions filtered.")
 
     print("Extracting outlier frames...")
-    deeplabcut.extract_outlier_frames(
-        config_path, [new_video_path], "mp4", automatic=True, track_method=TESTTRACKER
-    )
+    deeplabcut.extract_outlier_frames(config_path, [new_video_path], "mp4", automatic=True, track_method=TESTTRACKER)
     print("Outlier frames extracted.")
 
     vname = Path(new_video_path).stem
@@ -311,9 +286,7 @@ if __name__ == "__main__":
     print("Network trained.")
 
     print("Evaluating network...")
-    deeplabcut.evaluate_network(
-        config_path, plotting=True, per_keypoint_evaluation=True
-    )
+    deeplabcut.evaluate_network(config_path, plotting=True, per_keypoint_evaluation=True)
 
     print("Network evaluated....")
 
@@ -333,9 +306,7 @@ if __name__ == "__main__":
     deeplabcut.export_model(config_path, shuffle=1, make_tar=False)
 
     print("Merging datasets...")
-    trainIndices, testIndices = deeplabcut.mergeandsplit(
-        config_path, trainindex=0, uniform=True
-    )
+    trainIndices, testIndices = deeplabcut.mergeandsplit(config_path, trainindex=0, uniform=True)
 
     print("Creating two identical splits...")
     deeplabcut.create_multianimaltraining_dataset(

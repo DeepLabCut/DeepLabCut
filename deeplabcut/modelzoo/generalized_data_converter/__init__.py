@@ -8,4 +8,4 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from .utils import add_skeleton, customized_colormap, create_modelprefix
+from .utils import add_skeleton, create_modelprefix, customized_colormap

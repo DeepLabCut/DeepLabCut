@@ -9,7 +9,9 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 from pathlib import Path
+
 import pytest
+
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS
 
@@ -17,7 +19,7 @@ from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS
 def test_find_analyzed_data(tmpdir_factory):
     fake_folder = tmpdir_factory.mktemp("videos")
     SUPPORTED_VIDEOS = ["avi"]
-    n_ext = len(SUPPORTED_VIDEOS)
+    len(SUPPORTED_VIDEOS)
 
     SCORER = "DLC_dlcrnetms5_multi_mouseApr11shuffle1_5"
     WRONG_SCORER = "DLC_dlcrnetms5_multi_mouseApr11shuffle3_5"
@@ -36,20 +38,14 @@ def test_find_analyzed_data(tmpdir_factory):
 
     for ind, ext in enumerate(SUPPORTED_VIDEOS):
         # test if existing models are found:
-        assert auxiliaryfunctions.find_analyzed_data(
-            fake_folder, "video" + str(ind), SCORER
-        )
+        assert auxiliaryfunctions.find_analyzed_data(fake_folder, "video" + str(ind), SCORER)
 
         # Test if nonexisting models are not found
         with pytest.raises(FileNotFoundError):
-            auxiliaryfunctions.find_analyzed_data(
-                fake_folder, "video" + str(ind), WRONG_SCORER
-            )
+            auxiliaryfunctions.find_analyzed_data(fake_folder, "video" + str(ind), WRONG_SCORER)
 
         with pytest.raises(FileNotFoundError):
-            auxiliaryfunctions.find_analyzed_data(
-                fake_folder, "video" + str(ind), SCORER, filtered=True
-            )
+            auxiliaryfunctions.find_analyzed_data(fake_folder, "video" + str(ind), SCORER, filtered=True)
 
 
 def test_get_list_of_videos(tmpdir_factory):
@@ -121,7 +117,7 @@ def test_get_list_of_videos(tmpdir_factory):
 
 
 def test_write_config_has_skeleton(tmpdir_factory):
-    """Required for backward compatibility"""
+    """Required for backward compatibility."""
     fake_folder = tmpdir_factory.mktemp("fakeConfigs")
     fake_config_file = fake_folder / Path("fakeConfig")
     auxiliaryfunctions.write_config(fake_config_file, {})
@@ -165,21 +161,15 @@ def test_intersection_of_body_parts_and_ones_given_by_user(
     else:
         all_bodyparts = bodyparts
 
-    filtered_bpts = (
-        auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-            cfg, comparisonbodyparts="all"
-        )
-    )
+    filtered_bpts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts="all")
     print(all_bodyparts)
     print(filtered_bpts)
     assert len(all_bodyparts) == len(filtered_bpts)
     assert all([bpt in all_bodyparts for bpt in filtered_bpts])
 
-    filtered_bpts = (
-        auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-            cfg,
-            comparisonbodyparts=comparison_bpts,
-        )
+    filtered_bpts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
+        cfg,
+        comparisonbodyparts=comparison_bpts,
     )
     print(filtered_bpts)
     assert len(expected_bpts) == len(filtered_bpts)

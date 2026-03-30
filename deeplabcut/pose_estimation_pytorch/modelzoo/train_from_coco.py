@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""File to train a model on a COCO dataset"""
+"""File to train a model on a COCO dataset."""
 
 from __future__ import annotations
 

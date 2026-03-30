@@ -8,22 +8,16 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""
-Testscript for super animal inference
+"""Testscript for super animal inference."""
 
-"""
-import deeplabcut
 import os
 
+import deeplabcut
 
 if __name__ == "__main__":
     basepath = os.path.dirname(os.path.realpath(__file__))
     videoname = "reachingvideo1"
-    video = [
-        os.path.join(
-            basepath, "Reaching-Mackenzie-2018-08-30", "videos", videoname + ".avi"
-        )
-    ]
+    video = [os.path.join(basepath, "Reaching-Mackenzie-2018-08-30", "videos", videoname + ".avi")]
 
     print("testing superanimal_topviewmouse")
     superanimal_name = "superanimal_topviewmouse"

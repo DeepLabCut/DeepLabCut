@@ -16,16 +16,15 @@ from timm.layers import trunc_normal_
 from torch import nn as nn
 
 from deeplabcut.pose_estimation_pytorch.models.criterions import BaseCriterion
-from deeplabcut.pose_estimation_pytorch.models.heads import BaseHead, HEADS
+from deeplabcut.pose_estimation_pytorch.models.heads import HEADS, BaseHead
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
 from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGenerator
 
 
 @HEADS.register_module
 class TransformerHead(BaseHead):
-    """
-    Transformer Head module to predict heatmaps using a transformer-based approach
-    """
+    """Transformer Head module to predict heatmaps using a transformer-based
+    approach."""
 
     def __init__(
         self,
@@ -86,8 +85,7 @@ class TransformerHead(BaseHead):
         return {"heatmap": x}
 
     def _init_weights(self, m: nn.Module) -> None:
-        """
-        Custom weight initialization for linear and layer normalization layers.
+        """Custom weight initialization for linear and layer normalization layers.
 
         Args:
             m: module to initialize

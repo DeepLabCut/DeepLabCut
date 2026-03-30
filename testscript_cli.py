@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 modified from: https://github.com/DeepLabCut/DeepLabCut-core/testscript_cli.py
 by Mackenzie.
@@ -9,27 +8,23 @@ This script tests various functionalities in an automatic way.
 It produces nothing of interest scientifically.
 """
 
-task = "Testcore"  # Enter the name of your experiment Task
-scorer = "Mackenzie"  # Enter the name of the experimenter/labeler
+import os
+import platform
 
-import os, subprocess, sys
-
-
-# def install(package):
-#    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-# install("tensorflow==1.13.1")
+import numpy as np
+import pandas as pd
 
 import deeplabcut as dlc
 from deeplabcut.core.engine import Engine
 
-from pathlib import Path
-import pandas as pd
-import numpy as np
-import platform
-
+task = "Testcore"  # Enter the name of your experiment Task
+scorer = "Mackenzie"  # Enter the name of the experimenter/labeler
 print("Imported DLC!")
 
 engine = Engine.PYTORCH
+# def install(package):
+#    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+# install("tensorflow==1.13.1")
 
 basepath = os.path.dirname(os.path.abspath("testscript_cli.py"))
 videoname = "reachingvideo1"
@@ -119,7 +114,10 @@ dlc.check_labels(path_config_file)
 
 print("CREATING TRAININGSET")
 dlc.create_training_dataset(
-    path_config_file, net_type=net_type, augmenter_type=augmenter_type, engine=engine,
+    path_config_file,
+    net_type=net_type,
+    augmenter_type=augmenter_type,
+    engine=engine,
 )
 
 print("TRAIN")
@@ -147,7 +145,8 @@ print("CREATING TRAININGSET 2")
 dlc.create_training_dataset(path_config_file, Shuffles=[2],net_type=net_type,augmenter_type=augmenter_type2)
 
 cfg=dlc.auxiliaryfunctions.read_config(path_config_file)
-posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] + '-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(2),'train/pose_cfg.yaml')
+posefile=os.path.join(cfg['project_path'],'dlc-models/iteration-'+str(cfg['iteration'])+'/'+ cfg['Task'] + cfg['date'] +
+'-trainset' + str(int(cfg['TrainingFraction'][0] * 100)) + 'shuffle' + str(2),'train/pose_cfg.yaml')
 DLC_config=dlc.auxiliaryfunctions.read_plainconfig(posefile)
 DLC_config['save_iters']=numiter
 DLC_config['display_iters']=1
@@ -171,5 +170,6 @@ print("Export model...")
 dlc.export_model(path_config_file, shuffle=1, make_tar=False)
 
 print(
-    "ALL DONE!!! - default/imgaug cases of DLCcore training and evaluation are functional (no extract outlier or refinement tested)."
+    "ALL DONE!!! - default/imgaug cases of DLCcore training and evaluation are functional (no extract outlier or"
+    "refinement tested)."
 )

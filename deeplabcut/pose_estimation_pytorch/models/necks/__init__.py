@@ -8,5 +8,5 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from deeplabcut.pose_estimation_pytorch.models.necks.base import BaseNeck, NECKS
+from deeplabcut.pose_estimation_pytorch.models.necks.base import NECKS, BaseNeck
 from deeplabcut.pose_estimation_pytorch.models.necks.transformer import Transformer

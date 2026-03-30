@@ -11,7 +11,7 @@
 
 import torch
 import torch.nn.functional as F
-from einops import rearrange, repeat
+from einops import rearrange
 
 
 class Residual(torch.nn.Module):
@@ -157,12 +157,10 @@ class Attention(torch.nn.Module):
         """
         super().__init__()
         self.heads = heads
-        self.scale = (dim // heads) ** -0.5 if scale_with_head else dim ** -0.5
+        self.scale = (dim // heads) ** -0.5 if scale_with_head else dim**-0.5
 
         self.to_qkv = torch.nn.Linear(dim, dim * 3, bias=False)
-        self.to_out = torch.nn.Sequential(
-            torch.nn.Linear(dim, dim), torch.nn.Dropout(dropout)
-        )
+        self.to_out = torch.nn.Sequential(torch.nn.Linear(dim, dim), torch.nn.Dropout(dropout))
         self.num_keypoints = num_keypoints
 
     def forward(self, x: torch.Tensor, mask: torch.Tensor = None):
@@ -175,7 +173,7 @@ class Attention(torch.nn.Module):
         Returns:
             Output tensor.
         """
-        b, n, _, h = *x.shape, self.heads
+        _b, _n, _, h = *x.shape, self.heads
         qkv = self.to_qkv(x).chunk(3, dim=-1)
         q, k, v = map(lambda t: rearrange(t, "b n (h d) -> b h n d", h=h), qkv)
 
@@ -259,16 +257,12 @@ class TransformerLayer(torch.nn.Module):
                                 ),
                             )
                         ),
-                        Residual(
-                            PreNorm(dim, FeedForward(dim, mlp_dim, dropout=dropout))
-                        ),
+                        Residual(PreNorm(dim, FeedForward(dim, mlp_dim, dropout=dropout))),
                     ]
                 )
             )
 
-    def forward(
-        self, x: torch.Tensor, mask: torch.Tensor = None, pos: torch.Tensor = None
-    ):
+    def forward(self, x: torch.Tensor, mask: torch.Tensor = None, pos: torch.Tensor = None):
         """Forward pass through the TransformerLayer block.
 
         Args:

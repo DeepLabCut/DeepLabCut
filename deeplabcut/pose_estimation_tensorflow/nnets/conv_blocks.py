@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 """Convolution blocks for mobilenet."""
+
 import contextlib
 import functools
 
@@ -80,9 +81,10 @@ def _split_divisible(num, num_ways, divisible_by=8):
 @contextlib.contextmanager
 def _v1_compatible_scope_naming(scope):
     if scope is None:  # Create uniqified separable blocks.
-        with tf.compat.v1.variable_scope(
-            None, default_name="separable"
-        ) as s, tf.compat.v1.name_scope(s.original_name_scope):
+        with (
+            tf.compat.v1.variable_scope(None, default_name="separable") as s,
+            tf.compat.v1.name_scope(s.original_name_scope),
+        ):
             yield ""
     else:
         # We use scope_depthwise, scope_pointwise for compatibility with V1 ckpts.
@@ -171,7 +173,7 @@ def expand_input_by_factor(n, divisible_by=8):
 def expanded_conv(
     input_tensor,
     num_outputs,
-    expansion_size=expand_input_by_factor(6),
+    expansion_size=None,
     stride=1,
     rate=1,
     kernel_size=(3, 3),
@@ -238,19 +240,18 @@ def expanded_conv(
     Raises:
       TypeError: on inval
     """
-    with tf.compat.v1.variable_scope(
-        scope, default_name="expanded_conv"
-    ) as s, tf.compat.v1.name_scope(s.original_name_scope):
+    with (
+        tf.compat.v1.variable_scope(scope, default_name="expanded_conv") as s,
+        tf.compat.v1.name_scope(s.original_name_scope),
+    ):
+        if expansion_size is None:
+            expansion_size = expand_input_by_factor(6)
         prev_depth = input_tensor.get_shape().as_list()[3]
         if depthwise_location not in [None, "input", "output", "expansion"]:
-            raise TypeError(
-                "%r is unknown value for depthwise_location" % depthwise_location
-            )
+            raise TypeError(f"{depthwise_location!r} is unknown value for depthwise_location")
         if use_explicit_padding:
             if padding != "SAME":
-                raise TypeError(
-                    "`use_explicit_padding` should only be used with " '"SAME" padding.'
-                )
+                raise TypeError('`use_explicit_padding` should only be used with "SAME" padding.')
             padding = "VALID"
         depthwise_func = functools.partial(
             slim.separable_conv2d,
@@ -366,8 +367,8 @@ def split_conv(input_tensor, num_outputs, num_ways, scope, divisible_by=8, **kwa
     output_splits = _split_divisible(num_outputs, num_ways, divisible_by=divisible_by)
     inputs = tf.split(input_tensor, input_splits, axis=3, name="split_" + scope)
     base = scope
-    for i, (input_tensor, out_size) in enumerate(zip(inputs, output_splits)):
-        scope = base + "_part_%d" % (i,)
+    for i, (input_tensor, out_size) in enumerate(zip(inputs, output_splits, strict=False)):
+        scope = base + f"_part_{i}"
         n = slim.conv2d(input_tensor, out_size, [1, 1], scope=scope, **kwargs)
         n = tf.identity(n, scope + "_output")
         outs.append(n)

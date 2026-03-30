@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Classes to configure how to initialize model weights"""
+"""Classes to configure how to initialize model weights."""
+
 from __future__ import annotations
 
 import warnings
@@ -20,7 +21,7 @@ import numpy as np
 
 @dataclass
 class WeightInitialization:
-    """Configures weights initialization when transfer learning or fine-tuning models
+    """Configures weights initialization when transfer learning or fine-tuning models.
 
     Args:
         snapshot_path: The path to the snapshot used to initialize pose model weights
@@ -61,20 +62,19 @@ class WeightInitialization:
 
         if self.with_decoder and self.conversion_array is None:
             raise ValueError(
-                f"You must specify a conversion_array to initialize decoder weights "
-                f"(``with_decoder=True``)."
+                "You must specify a conversion_array to initialize decoder weights (``with_decoder=True``)."
             )
 
         if self.bodyparts is not None and self.conversion_array is None:
             raise ValueError(
-                f"Specifying bodyparts should only be done when `with_decoder=True` and"
-                f" the conversion array is specified."
+                "Specifying bodyparts should only be done when `with_decoder=True` and"
+                " the conversion array is specified."
             )
 
         if self.conversion_array is not None and self.bodyparts is not None:
             if not len(self.conversion_array) == len(self.bodyparts):
                 raise ValueError(
-                    f"There must be the same number of elements in the bodyparts list "
+                    "There must be the same number of elements in the bodyparts list "
                     "and conv. array; found {self.bodyparts}, {self.conversion_array}"
                 )
 
@@ -100,7 +100,7 @@ class WeightInitialization:
         return data
 
     @staticmethod
-    def from_dict(data: dict) -> "WeightInitialization":
+    def from_dict(data: dict) -> WeightInitialization:
         if "snapshot_path" not in data:
             return WeightInitialization.from_dict_legacy(data)
 
@@ -123,8 +123,8 @@ class WeightInitialization:
         )
 
     @staticmethod
-    def from_dict_legacy(data: dict) -> "WeightInitialization":
-        """Deals with weight initialization that were created before 3.0.0rc5"""
+    def from_dict_legacy(data: dict) -> WeightInitialization:
+        """Deals with weight initialization that were created before 3.0.0rc5."""
         import deeplabcut.pose_estimation_pytorch.modelzoo.utils as utils
 
         conversion_array = data.get("conversion_array")
@@ -156,8 +156,8 @@ class WeightInitialization:
         memory_replay: bool = False,
         customized_pose_checkpoint: str | None = None,
         customized_detector_checkpoint: str | None = None,
-    ) -> "WeightInitialization":
-        """Builds a WeightInitialization for a project
+    ) -> WeightInitialization:
+        """Builds a WeightInitialization for a project.
 
         `WeightInitialization.build` is deprecated and will be removed in a future
         version of DeepLabCut. Please use `build_weight_init` from `deeplabcut.modelzoo`
@@ -187,12 +187,13 @@ class WeightInitialization:
             The built WeightInitialization.
         """
         from deeplabcut.modelzoo import build_weight_init
+
         deprecation_warning = (
             "The `WeightInitialization.build` is deprecated and will be removed in a "
             "future version of DeepLabCut. Please use `build_weight_init` from "
             "`deeplabcut.modelzoo` instead."
         )
-        warnings.warn(deprecation_warning, DeprecationWarning)
+        warnings.warn(deprecation_warning, DeprecationWarning, stacklevel=2)
 
         return build_weight_init(
             cfg,

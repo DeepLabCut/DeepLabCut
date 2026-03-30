@@ -21,9 +21,8 @@ from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal as predict
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter
-import pickle
 
 
 def extract_bpt_feature_from_video(
@@ -82,7 +81,7 @@ def extract_bpt_feature_from_video(
             nx,
             ny,
         )
-        start = time.time()
+        time.time()
 
         print("Starting to extract posture")
         if int(dlc_cfg["batch_size"]) > 1:
@@ -101,9 +100,7 @@ def extract_bpt_feature_from_video(
                 extra_dict,
             )
         else:
-            raise NotImplementedError(
-                "Not implemented yet, please raise an GitHub issue if you need this."
-            )
+            raise NotImplementedError("Not implemented yet, please raise an GitHub issue if you need this.")
 
 
 def AnalyzeMultiAnimalVideo(
@@ -119,7 +116,7 @@ def AnalyzeMultiAnimalVideo(
     robust_nframes=False,
     use_shelve=False,
 ):
-    """Helper function for analyzing a video with multiple individuals"""
+    """Helper function for analyzing a video with multiple individuals."""
 
     print("Starting to analyze % ", video)
     vname = Path(video).stem
@@ -194,7 +191,7 @@ def AnalyzeMultiAnimalVideo(
 
         stop = time.time()
 
-        if cfg["cropping"] == True:
+        if cfg["cropping"]:
             coords = [cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"]]
         else:
             coords = [0, nx, 0, ny]
@@ -215,36 +212,30 @@ def AnalyzeMultiAnimalVideo(
             "cropping_parameters": coords,
         }
         metadata = {"data": dictionary}
-        print("Video Analyzed. Saving results in %s..." % (destfolder))
+        print(f"Video Analyzed. Saving results in {destfolder}...")
 
         if use_shelve:
             metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
             with open(metadata_path, "wb") as f:
                 pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
         else:
-            _ = auxfun_multianimal.SaveFullMultiAnimalData(
-                PredicteData, metadata, dataname
-            )
+            _ = auxfun_multianimal.SaveFullMultiAnimalData(PredicteData, metadata, dataname)
 
 
 def _get_features_dict(raw_coords, features, stride):
     from deeplabcut.pose_tracking_pytorch import (
-        load_features_from_coord,
         convert_coord_from_img_space_to_feature_space,
+        load_features_from_coord,
     )
 
-    coords_img_space = np.array(
-        [coord[:, :2] for coord in raw_coords]
-    )  # only first two columns are useful
+    coords_img_space = np.array([coord[:, :2] for coord in raw_coords])  # only first two columns are useful
 
     coords_feature_space = convert_coord_from_img_space_to_feature_space(
         coords_img_space,
         stride,
     )
 
-    bpt_features = load_features_from_coord(
-        features.astype(np.float16), coords_feature_space
-    )
+    bpt_features = load_features_from_coord(features.astype(np.float16), coords_feature_space)
     return {"features": bpt_features, "coordinates": coords_img_space}
 
 
@@ -261,7 +252,7 @@ def GetPoseandCostsF_from_assemblies(
     feature_dict,
     extra_dict,
 ):
-    """Batchwise prediction of pose"""
+    """Batchwise prediction of pose."""
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
     batch_ind = 0  # keeps track of which image within a batch should be written to
     batch_num = 0  # keeps track of which batch you are at
@@ -269,9 +260,7 @@ def GetPoseandCostsF_from_assemblies(
         cap.set_bbox(cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"])
     nx, ny = cap.dimensions
 
-    frames = np.empty(
-        (batchsize, ny, nx, 3), dtype="ubyte"
-    )  # this keeps all frames in a batch
+    frames = np.empty((batchsize, ny, nx, 3), dtype="ubyte")  # this keeps all frames in a batch
     pbar = tqdm(total=nframes)
     counter = 0
     inds = []
@@ -300,7 +289,7 @@ def GetPoseandCostsF_from_assemblies(
                     continue
 
                 D, features = preds
-                for i, (ind, data) in enumerate(zip(inds, D)):
+                for i, (ind, data) in enumerate(zip(inds, D, strict=False)):
                     PredicteData["frame" + str(ind).zfill(strwidth)] = data
                     raw_coords = assemblies.get(ind)
                     if raw_coords is None:
@@ -326,7 +315,7 @@ def GetPoseandCostsF_from_assemblies(
                     continue
 
                 D, features = preds
-                for i, (ind, data) in enumerate(zip(inds, D)):
+                for i, (ind, data) in enumerate(zip(inds, D, strict=False)):
                     PredicteData["frame" + str(ind).zfill(strwidth)] = data
                     raw_coords = assemblies.get(ind)
                     if raw_coords is None:
@@ -350,13 +339,9 @@ def GetPoseandCostsF_from_assemblies(
         "minimal confidence": dlc_cfg["minconfidence"],
         "sigma": dlc_cfg.get("sigma", 1),
         "PAFgraph": dlc_cfg["partaffinityfield_graph"],
-        "PAFinds": dlc_cfg.get(
-            "paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))
-        ),
+        "PAFinds": dlc_cfg.get("paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))),
         "all_joints": [[i] for i in range(len(dlc_cfg["all_joints"]))],
-        "all_joints_names": [
-            dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
-        ],
+        "all_joints_names": [dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))],
         "nframes": nframes,
     }
     return PredicteData, nframes
@@ -373,7 +358,7 @@ def GetPoseandCostsF(
     batchsize,
     shelf_path,
 ):
-    """Batchwise prediction of pose"""
+    """Batchwise prediction of pose."""
     strwidth = int(np.ceil(np.log10(nframes)))  # width for strings
     batch_ind = 0  # keeps track of which image within a batch should be written to
     batch_num = 0  # keeps track of which batch you are at
@@ -381,9 +366,7 @@ def GetPoseandCostsF(
         cap.set_bbox(cfg["x1"], cfg["x2"], cfg["y1"], cfg["y2"])
     nx, ny = cap.dimensions
 
-    frames = np.empty(
-        (batchsize, ny, nx, 3), dtype="ubyte"
-    )  # this keeps all frames in a batch
+    frames = np.empty((batchsize, ny, nx, 3), dtype="ubyte")  # this keeps all frames in a batch
     pbar = tqdm(total=nframes)
     counter = 0
     inds = []
@@ -400,13 +383,9 @@ def GetPoseandCostsF(
         "minimal confidence": dlc_cfg["minconfidence"],
         "sigma": dlc_cfg.get("sigma", 1),
         "PAFgraph": dlc_cfg["partaffinityfield_graph"],
-        "PAFinds": dlc_cfg.get(
-            "paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))
-        ),
+        "PAFinds": dlc_cfg.get("paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))),
         "all_joints": [[i] for i in range(len(dlc_cfg["all_joints"]))],
-        "all_joints_names": [
-            dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
-        ],
+        "all_joints_names": [dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))],
         "nframes": nframes,
     }
     while cap.video.isOpened():
@@ -429,7 +408,7 @@ def GetPoseandCostsF(
                     inputs,
                     outputs,
                 )
-                for ind, data in zip(inds, D):
+                for ind, data in zip(inds, D, strict=False):
                     db["frame" + str(ind).zfill(strwidth)] = data
                 del D
                 batch_ind = 0
@@ -446,7 +425,7 @@ def GetPoseandCostsF(
                     inputs,
                     outputs,
                 )
-                for ind, data in zip(inds, D):
+                for ind, data in zip(inds, D, strict=False):
                     db["frame" + str(ind).zfill(strwidth)] = data
                 del D
             break
@@ -480,13 +459,9 @@ def GetPoseandCostsS(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, shelf_pa
         "minimal confidence": dlc_cfg["minconfidence"],
         "sigma": dlc_cfg.get("sigma", 1),
         "PAFgraph": dlc_cfg["partaffinityfield_graph"],
-        "PAFinds": dlc_cfg.get(
-            "paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))
-        ),
+        "PAFinds": dlc_cfg.get("paf_best", np.arange(len(dlc_cfg["partaffinityfield_graph"]))),
         "all_joints": [[i] for i in range(len(dlc_cfg["all_joints"]))],
-        "all_joints_names": [
-            dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))
-        ],
+        "all_joints_names": [dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))],
         "nframes": nframes,
     }
     pbar = tqdm(total=nframes)

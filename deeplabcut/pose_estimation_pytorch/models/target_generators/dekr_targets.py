@@ -14,8 +14,8 @@ import numpy as np
 import torch
 
 from deeplabcut.pose_estimation_pytorch.models.target_generators.base import (
-    BaseGenerator,
     TARGET_GENERATORS,
+    BaseGenerator,
 )
 
 
@@ -29,9 +29,7 @@ class DEKRGenerator(BaseGenerator):
         https://github.com/HRNet/DEKR
     """
 
-    def __init__(
-        self, num_joints: int, pos_dist_thresh: int, bg_weight: float = 0.1, **kwargs
-    ):
+    def __init__(self, num_joints: int, pos_dist_thresh: int, bg_weight: float = 0.1, **kwargs):
         """
         Args:
             num_joints: number of keypoints
@@ -85,9 +83,7 @@ class DEKRGenerator(BaseGenerator):
         coords = labels[self.label_keypoint_key].cpu().numpy()
         area = labels["area"].cpu().numpy()
 
-        assert (
-            self.num_joints + 1 == coords.shape[2]
-        ), f"the number of joints should be {coords.shape}"
+        assert self.num_joints + 1 == coords.shape[2], f"the number of joints should be {coords.shape}"
 
         # TODO make it possible to differentiate between center sigma and other sigmas
         scale = max(1 / stride_x, 1 / stride_y)
@@ -149,13 +145,9 @@ class DEKRGenerator(BaseGenerator):
                     joint_rg = np.zeros((bb - aa, dd - cc))
                     for sy in range(aa, bb):
                         for sx in range(cc, dd):
-                            joint_rg[sy - aa, sx - cc] = dekr_heatmap_val(
-                                sigma, sx, sy, x_sm, y_sm
-                            )
+                            joint_rg[sy - aa, sx - cc] = dekr_heatmap_val(sigma, sx, sy, x_sm, y_sm)
 
-                    heatmaps[b, idx, aa:bb, cc:dd] = np.maximum(
-                        heatmaps[b, idx, aa:bb, cc:dd], joint_rg
-                    )
+                    heatmaps[b, idx, aa:bb, cc:dd] = np.maximum(heatmaps[b, idx, aa:bb, cc:dd], joint_rg)
                     heatmap_weights[b, idx, aa:bb, cc:dd] = 1.0
 
                     # OFFSET COMPUTATION
@@ -178,21 +170,15 @@ class DEKRGenerator(BaseGenerator):
                                 offset_map[b, idx * 2, pos_y, pos_x] = offset_x
                                 offset_map[b, idx * 2 + 1, pos_y, pos_x] = offset_y
                                 # TODO find a decent constant make weights vary giving animal area
-                                weight_map[b, idx * 2, pos_y, pos_x] = 1.0 / np.sqrt(
-                                    area[b, person_id]
-                                )
-                                weight_map[
-                                    b, idx * 2 + 1, pos_y, pos_x
-                                ] = 1.0 / np.sqrt(area[b, person_id])
+                                weight_map[b, idx * 2, pos_y, pos_x] = 1.0 / np.sqrt(area[b, person_id])
+                                weight_map[b, idx * 2 + 1, pos_y, pos_x] = 1.0 / np.sqrt(area[b, person_id])
                                 area_map[b, pos_y, pos_x] = area[b, person_id]
 
         heatmap_weights[heatmap_weights == 2] = self.bg_weight
         return {
             "heatmap": {
                 "target": torch.tensor(heatmaps, device=outputs["heatmap"].device),
-                "weights": torch.tensor(
-                    heatmap_weights, device=outputs["heatmap"].device
-                ),
+                "weights": torch.tensor(heatmap_weights, device=outputs["heatmap"].device),
             },
             "offset": {
                 "target": torch.tensor(offset_map, device=outputs["offset"].device),
@@ -202,9 +188,8 @@ class DEKRGenerator(BaseGenerator):
 
 
 def dekr_heatmap_val(sigma: float, x: float, y: float, x0: float, y0: float) -> float:
-    """
-    Calculates the corresponding heat value of point (x,y) given the heat distribution centered
-    at (x0,y0) and spread value of sigma.
+    """Calculates the corresponding heat value of point (x,y) given the heat
+    distribution centered at (x0,y0) and spread value of sigma.
 
     Args:
         sigma: controls the spread or width of the heat distribution
@@ -216,4 +201,4 @@ def dekr_heatmap_val(sigma: float, x: float, y: float, x0: float, y0: float) -> 
     Returns:
         g: calculated heat value represents the intensity of the heat at a given position
     """
-    return np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma ** 2))
+    return np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma**2))

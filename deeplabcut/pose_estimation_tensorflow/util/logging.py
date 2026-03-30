@@ -15,6 +15,7 @@
 Adapted from DeeperCut by Eldar Insafutdinov
 https://github.com/eldar/pose-tensorflow
 """
+
 import logging
 import os
 

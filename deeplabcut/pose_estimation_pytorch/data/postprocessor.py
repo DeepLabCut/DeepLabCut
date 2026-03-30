@@ -8,13 +8,14 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Post-process predictions made by models"""
+"""Post-process predictions made by models."""
+
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any
-import logging
 
 import numpy as np
 
@@ -29,8 +30,7 @@ class Postprocessor(ABC):
 
     @abstractmethod
     def __call__(self, predictions: Any, context: Context) -> Any:
-        """
-        Post-processes the outputs of a model into a single prediction.
+        """Post-processes the outputs of a model into a single prediction.
 
         Args:
             predictions: the predictions made by the model on a single image
@@ -133,7 +133,7 @@ def build_top_down_postprocessor(
     num_unique_bodyparts: int,
     with_backbone_features: bool = False,
 ) -> Postprocessor:
-    """Creates a postprocessor for top-down pose estimation
+    """Creates a postprocessor for top-down pose estimation.
 
     Args:
         max_individuals: the maximum number of individuals in a single image
@@ -191,7 +191,7 @@ def build_detector_postprocessor(
     max_individuals: int,
     min_bbox_score: float | None = None,
 ) -> Postprocessor:
-    """Creates a postprocessor for top-down pose estimation
+    """Creates a postprocessor for top-down pose estimation.
 
     Args:
         max_individuals: the maximum number of detections to keep in a single image
@@ -202,23 +202,23 @@ def build_detector_postprocessor(
         A default top-down Postprocessor
     """
     components = [
-            ConcatenateOutputs(
-                keys_to_concatenate={
-                    "bboxes": ("detection", "bboxes"),
-                    "bbox_scores": ("detection", "scores"),
-                }
-            ),
-            TrimOutputs(
-                max_individuals={
-                    "bboxes": max_individuals,
-                    "bbox_scores": max_individuals,
-                },
-            ),
-            BboxToCoco(bounding_box_keys=["bboxes"]),
-            RescaleAndOffset(
-                keys_to_rescale=["bboxes"],
-                mode=RescaleAndOffset.Mode.BBOX_XYWH,
-            )
+        ConcatenateOutputs(
+            keys_to_concatenate={
+                "bboxes": ("detection", "bboxes"),
+                "bbox_scores": ("detection", "scores"),
+            }
+        ),
+        TrimOutputs(
+            max_individuals={
+                "bboxes": max_individuals,
+                "bbox_scores": max_individuals,
+            },
+        ),
+        BboxToCoco(bounding_box_keys=["bboxes"]),
+        RescaleAndOffset(
+            keys_to_rescale=["bboxes"],
+            mode=RescaleAndOffset.Mode.BBOX_XYWH,
+        ),
     ]
     if min_bbox_score is not None:
         components.append(RemoveLowConfidenceBoxes(min_bbox_score))
@@ -226,10 +226,8 @@ def build_detector_postprocessor(
 
 
 class ComposePostprocessor(Postprocessor):
-    """
-    Class to preprocess an image and turn it into a batch of
-    inputs before running inference
-    """
+    """Class to preprocess an image and turn it into a batch of inputs before running
+    inference."""
 
     def __init__(self, components: list[Postprocessor]) -> None:
         self.components = components
@@ -241,7 +239,7 @@ class ComposePostprocessor(Postprocessor):
 
 
 class ConcatenateOutputs(Postprocessor):
-    """Checks that there is a single prediction for the image and returns it"""
+    """Checks that there is a single prediction for the image and returns it."""
 
     def __init__(
         self,
@@ -260,28 +258,21 @@ class ConcatenateOutputs(Postprocessor):
                     f" when create_empty_outputs is true, found {self.empty_shapes}"
                 )
 
-    def __call__(
-        self, predictions: Any, context: Context
-    ) -> tuple[dict[str, np.ndarray], Context]:
+    def __call__(self, predictions: Any, context: Context) -> tuple[dict[str, np.ndarray], Context]:
         if len(predictions) == 0:
-            outputs = {
-                name: np.zeros((0, *self.empty_shapes[name]))
-                for name in self.keys_to_concatenate.keys()
-            }
+            outputs = {name: np.zeros((0, *self.empty_shapes[name])) for name in self.keys_to_concatenate.keys()}
             return outputs, context
 
         outputs = {}
         for output_name, head_key in self.keys_to_concatenate.items():
             head_name, val_name = head_key
-            outputs[output_name] = np.concatenate(
-                [p[head_name][val_name] for p in predictions]
-            )
+            outputs[output_name] = np.concatenate([p[head_name][val_name] for p in predictions])
 
         return outputs, context
 
 
 class PadOutputs(Postprocessor):
-    """Pads the outputs to have the maximum number of individuals"""
+    """Pads the outputs to have the maximum number of individuals."""
 
     def __init__(
         self,
@@ -293,17 +284,13 @@ class PadOutputs(Postprocessor):
         self.pad_value = pad_value
         self.expected_shapes = expected_shapes
 
-    def __call__(
-        self, predictions: dict[str, np.ndarray], context: Context
-    ) -> tuple[dict[str, np.ndarray], Context]:
+    def __call__(self, predictions: dict[str, np.ndarray], context: Context) -> tuple[dict[str, np.ndarray], Context]:
         for name in predictions:
             output = predictions[name]
             output = np.array(output)  # Normalize all inputs to np.ndarray
 
             expected_shape = self.expected_shapes.get(name, ())
-            expected_ndim = 1 + len(
-                expected_shape
-            )  # individuals_dimension + expected shape for single individual
+            expected_ndim = 1 + len(expected_shape)  # individuals_dimension + expected shape for single individual
 
             # Special handling for empty arrays
             if len(output) == 0:
@@ -311,15 +298,10 @@ class PadOutputs(Postprocessor):
             elif output.ndim < expected_ndim:
                 output = np.reshape(output, (len(output), *expected_shape))
 
-            if (
-                name in self.max_individuals
-                and len(output) < self.max_individuals[name]
-            ):
+            if name in self.max_individuals and len(output) < self.max_individuals[name]:
                 pad_size = self.max_individuals[name] - len(output)
                 tail_shape = output.shape[1:]
-                padding = self.pad_value * np.ones(
-                    (pad_size, *tail_shape), dtype=output.dtype
-                )
+                padding = self.pad_value * np.ones((pad_size, *tail_shape), dtype=output.dtype)
                 output = np.concatenate([output, padding], axis=0)
 
             predictions[name] = output
@@ -328,7 +310,7 @@ class PadOutputs(Postprocessor):
 
 
 class TrimOutputs(Postprocessor):
-    """Ensures all outputs have at most `max_individuals` detections
+    """Ensures all outputs have at most `max_individuals` detections.
 
     Assumes that the outputs are sorted by decreasing score, such that the first
     `max_individuals` predictions are the ones to keep.
@@ -337,9 +319,7 @@ class TrimOutputs(Postprocessor):
     def __init__(self, max_individuals: dict[str, int]):
         self.max_individuals = max_individuals
 
-    def __call__(
-        self, predictions: dict[str, np.ndarray], context: Context
-    ) -> tuple[dict[str, np.ndarray], Context]:
+    def __call__(self, predictions: dict[str, np.ndarray], context: Context) -> tuple[dict[str, np.ndarray], Context]:
         for name in predictions:
             output = predictions[name]
             if len(output) > self.max_individuals[name]:
@@ -349,7 +329,7 @@ class TrimOutputs(Postprocessor):
 
 
 class RescaleAndOffset(Postprocessor):
-    """Rescales and offsets predictions back to their position in the original image
+    """Rescales and offsets predictions back to their position in the original image.
 
     This can be done in 3 ways:
         BBOX_XYWH: the data has shape (num_individuals, 4), in xywh format, and there
@@ -380,9 +360,7 @@ class RescaleAndOffset(Postprocessor):
         self.keys_to_rescale = keys_to_rescale
         self.mode = mode
 
-    def __call__(
-        self, predictions: dict[str, np.ndarray], context: Context
-    ) -> tuple[dict[str, np.ndarray], Context]:
+    def __call__(self, predictions: dict[str, np.ndarray], context: Context) -> tuple[dict[str, np.ndarray], Context]:
         if "scales" not in context and "offsets" not in context:
             # no rescaling needed
             return predictions, context
@@ -411,7 +389,7 @@ class RescaleAndOffset(Postprocessor):
                         rescaled = outputs
                     else:
                         rescaled_individuals = []
-                        for output, scale, offset in zip(outputs, scales, offsets):
+                        for output, scale, offset in zip(outputs, scales, offsets, strict=False):
                             output_rescaled = output.copy()
                             output_rescaled[:, :2] = output[:, :2] * scale + offset
                             rescaled_individuals.append(output_rescaled)
@@ -428,13 +406,9 @@ class RescaleAndOffset(Postprocessor):
                             kpt_score_sums = np.sum(kpt_scores, axis=1)
                             idv_scores = kpt_score_sums / num_valid_kpts
 
-                            cond_kpt_scores = np.mean(
-                                context["cond_kpts"][:, :, 2], axis=1
-                            )
+                            cond_kpt_scores = np.mean(context["cond_kpts"][:, :, 2], axis=1)
 
-                            rescaled[:, :, 2] = (cond_kpt_scores * idv_scores).reshape(
-                                -1, 1
-                            )
+                            rescaled[:, :, 2] = (cond_kpt_scores * idv_scores).reshape(-1, 1)
 
                 updated_predictions[name] = rescaled
             else:
@@ -444,18 +418,15 @@ class RescaleAndOffset(Postprocessor):
 
 
 class RemoveLowConfidenceBoxes(Postprocessor):
-    """
-    Removes low confidence bounding boxes from detector output before they reach the pose estimator
-    """
+    """Removes low confidence bounding boxes from detector output before they reach the
+    pose estimator."""
 
     def __init__(self, bbox_score_thresh: float):
         super().__init__()
         logging.info("utilizing low confidence bbox filtering")
         self.bbox_score_thresh = bbox_score_thresh
 
-    def __call__(
-        self, predictions: dict[str, np.ndarray], context: Context
-    ) -> tuple[dict[str, np.ndarray], Context]:
+    def __call__(self, predictions: dict[str, np.ndarray], context: Context) -> tuple[dict[str, np.ndarray], Context]:
         above_threshold = predictions["bbox_scores"] >= self.bbox_score_thresh
         keepers = np.where(above_threshold)
         if any(~above_threshold):
@@ -471,9 +442,7 @@ class BboxToCoco(Postprocessor):
         super().__init__()
         self.bounding_box_keys = bounding_box_keys
 
-    def __call__(
-        self, predictions: dict[str, np.ndarray], context: Context
-    ) -> tuple[dict[str, np.ndarray], Context]:
+    def __call__(self, predictions: dict[str, np.ndarray], context: Context) -> tuple[dict[str, np.ndarray], Context]:
         for bbox_key in self.bounding_box_keys:
             predictions[bbox_key][:, 2] -= predictions[bbox_key][:, 0]
             predictions[bbox_key][:, 3] -= predictions[bbox_key][:, 1]
@@ -482,10 +451,8 @@ class BboxToCoco(Postprocessor):
 
 
 class AddContextToOutput(Postprocessor):
-    """
-    Adds items from the context to the output, such as the bounding boxes contained
-    during top-down inference.
-    """
+    """Adds items from the context to the output, such as the bounding boxes contained
+    during top-down inference."""
 
     def __init__(self, keys: list[str]) -> None:
         super().__init__()
@@ -503,7 +470,7 @@ class AddContextToOutput(Postprocessor):
 
 
 class PredictKeypointIdentities(Postprocessor):
-    """Assigns predicted identities to keypoints
+    """Assigns predicted identities to keypoints.
 
     The identity maps have shape (h, w, num_ids).
 
@@ -528,9 +495,7 @@ class PredictKeypointIdentities(Postprocessor):
         self.pose_key = pose_key
         self.keep_id_maps = keep_id_maps
 
-    def __call__(
-        self, predictions: dict[str, np.ndarray], context: Context
-    ) -> tuple[dict[str, np.ndarray], Context]:
+    def __call__(self, predictions: dict[str, np.ndarray], context: Context) -> tuple[dict[str, np.ndarray], Context]:
         pose = predictions[self.pose_key]
         num_preds, num_keypoints, _ = pose.shape
 
@@ -544,7 +509,7 @@ class PredictKeypointIdentities(Postprocessor):
             ys = np.clip(heatmap_indices[:, 1], 0, h - 1)
 
             # get the score from each identity heatmap at each predicted keypoint
-            for kpt_idx, (x, y) in enumerate(zip(xs, ys)):
+            for kpt_idx, (x, y) in enumerate(zip(xs, ys, strict=False)):
                 id_score_matrix[pred_idx, kpt_idx] = identity_heatmap[y, x, :]
 
         predictions[self.identity_key] = id_score_matrix
@@ -557,7 +522,7 @@ class PredictKeypointIdentities(Postprocessor):
 
 
 class AssignIndividualIdentities(Postprocessor):
-    """Assigns predicted identities to individuals
+    """Assigns predicted identities to individuals.
 
     Attributes:
         identity_key: Key with which to add predicted identities in the predictions dict
@@ -568,9 +533,7 @@ class AssignIndividualIdentities(Postprocessor):
         self.identity_key = identity_key
         self.pose_key = pose_key
 
-    def __call__(
-        self, predictions: dict[str, np.ndarray], context: Context
-    ) -> tuple[dict[str, np.ndarray], Context]:
+    def __call__(self, predictions: dict[str, np.ndarray], context: Context) -> tuple[dict[str, np.ndarray], Context]:
         map_ = assign_identity(predictions["bodyparts"], predictions["identity_scores"])
         predictions["bodyparts"] = predictions["bodyparts"][map_]
         predictions["identity_scores"] = predictions["identity_scores"][map_]
@@ -578,7 +541,7 @@ class AssignIndividualIdentities(Postprocessor):
 
 
 class PrepareBackboneFeatures(Postprocessor):
-    """Adds backbone features for each individual and keypoint to the outputs
+    """Adds backbone features for each individual and keypoint to the outputs.
 
     Attributes:
         top_down: Whether the model is a top-down model.

@@ -41,12 +41,12 @@ After training, it's time to see how well your model performs.
    - **Compare Bodyparts:** Opt to compare all the bodyparts for a comprehensive evaluation.
 3. Click the **`Evaluate Network`** button, located on the right side of the main window.
 
->💡 Tip: If you wish to evaluate all saved snapshots, go to the configuration file and change the `snapshotindex` parameter to `all`. 
+>💡 Tip: If you wish to evaluate all saved snapshots, go to the configuration file and change the `snapshotindex` parameter to `all`.
 
 
 ### Understanding the Evaluation Results
 
-- **Performance Metrics:** DLC will assess the latest snapshot of your model, generating a `.CSV` file with performance 
+- **Performance Metrics:** DLC will assess the latest snapshot of your model, generating a `.CSV` file with performance
 metrics. This file is stored in the **`evaluation-results`** (for TensorFlow models) or the
 **`evaluation-results-pytorch`** (for PyTorch models) folder within your project.
 

@@ -10,11 +10,8 @@
 #
 
 
-def add_new_videos(
-    config, videos, copy_videos=False, coords=None, extract_frames=False
-):
-    """
-    Add new videos to the config file at any stage of the project.
+def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frames=False):
+    """Add new videos to the config file at any stage of the project.
 
     Parameters
     ----------
@@ -38,22 +35,29 @@ def add_new_videos(
     Examples
     --------
     Video will be added, with cropping dimensions according to the frame dimensions of mouse5.avi
-    >>> deeplabcut.add_new_videos('/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi'])
+    >>> deeplabcut.add_new_videos(
+        '/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi']
+        )
 
     Video will be added, with cropping dimensions [0,100,0,200]
-    >>> deeplabcut.add_new_videos('/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi'],copy_videos=False,coords=[[0,100,0,200]])
+    >>> deeplabcut.add_new_videos(
+        '/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',
+        ['/data/videos/mouse5.avi'],copy_videos=False,coords=[[0,100,0,200]]
+        )
 
     Two videos will be added, with cropping dimensions [0,100,0,200] and [0,100,0,250], respectively.
-    >>> deeplabcut.add_new_videos('/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',['/data/videos/mouse5.avi','/data/videos/mouse6.avi'],copy_videos=False,coords=[[0,100,0,200],[0,100,0,250]])
-
+    >>> deeplabcut.add_new_videos(
+        '/home/project/reaching-task-Tanmay-2018-08-23/config.yaml',
+        ['/data/videos/mouse5.avi','/data/videos/mouse6.avi'],
+        copy_videos=False,coords=[[0,100,0,200],[0,100,0,250]])
     """
     import os
     import shutil
     from pathlib import Path
 
-    from deeplabcut.utils import auxiliaryfunctions
-    from deeplabcut.utils.auxfun_videos import VideoReader
-    from deeplabcut.generate_training_dataset import frame_extraction
+    from ..generate_training_dataset import frame_extraction
+    from ..utils import auxiliaryfunctions
+    from ..utils.auxfun_videos import VideoReader
 
     # Read the config file
     cfg = auxiliaryfunctions.read_config(config)
@@ -69,14 +73,12 @@ def add_new_videos(
     dirs = [data_path / Path(i.stem) for i in videos]
 
     for p in dirs:
-        """
-        Creates directory under data & perhaps copies videos (to /video)
-        """
+        """Creates directory under data & perhaps copies videos (to /video)"""
         p.mkdir(parents=True, exist_ok=True)
 
     destinations = [video_path.joinpath(vp.name) for vp in videos]
     if copy_videos:
-        for src, dst in zip(videos, destinations):
+        for src, dst in zip(videos, destinations, strict=False):
             if dst.exists():
                 pass
             else:
@@ -86,7 +88,7 @@ def add_new_videos(
     else:
         # creates the symlinks of the video and puts it in the videos directory.
         print("Attempting to create a symbolic link of the video ...")
-        for src, dst in zip(videos, destinations):
+        for src, dst in zip(videos, destinations, strict=False):
             if dst.exists():
                 print(f"Video {dst} already exists. Skipping...")
                 continue
@@ -94,19 +96,16 @@ def add_new_videos(
                 src = str(src)
                 dst = str(dst)
                 os.symlink(src, dst)
-                print("Created the symlink of {} to {}".format(src, dst))
+                print(f"Created the symlink of {src} to {dst}")
             except OSError:
                 try:
                     import subprocess
 
-                    subprocess.check_call("mklink %s %s" % (dst, src), shell=True)
+                    subprocess.check_call(f"mklink {dst} {src}", shell=True)
                 except (OSError, subprocess.CalledProcessError):
-                    print(
-                        "Symlink creation impossible (exFat architecture?): "
-                        "copying the video instead."
-                    )
+                    print("Symlink creation impossible (exFat architecture?): copying the video instead.")
                     shutil.copy(os.fspath(src), os.fspath(dst))
-                    print("{} copied to {}".format(src, dst))
+                    print(f"{src} copied to {dst}")
             videos = destinations
 
     if copy_videos:
@@ -117,7 +116,7 @@ def add_new_videos(
             # For windows os.path.realpath does not work and does not link to the real video.
             video_path = str(Path.resolve(Path(video)))
         #           video_path = os.path.realpath(video)
-        except:
+        except Exception:
             video_path = os.readlink(video)
 
         vid = VideoReader(video_path)
@@ -133,13 +132,7 @@ def add_new_videos(
     videos_str = [str(video) for video in videos]
     auxiliaryfunctions.write_config(config, cfg)
     if extract_frames:
-        frame_extraction.extract_frames(
-            config, userfeedback=False, videos_list=videos_str
-        )
-        print(
-            "New videos were added to the project and frames have been extracted for labeling!"
-        )
+        frame_extraction.extract_frames(config, userfeedback=False, videos_list=videos_str)
+        print("New videos were added to the project and frames have been extracted for labeling!")
     else:
-        print(
-            "New videos were added to the project! Use the function 'extract_frames' to select frames for labeling."
-        )
+        print("New videos were added to the project! Use the function 'extract_frames' to select frames for labeling.")

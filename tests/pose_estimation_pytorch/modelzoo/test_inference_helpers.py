@@ -32,9 +32,7 @@ def test_create_superanimal_inference_runners_uses_custom_config_path(monkeypatc
         return cfg
 
     monkeypatch.setattr(helpers, "read_config_as_dict", fake_read_config_as_dict)
-    monkeypatch.setattr(
-        helpers, "update_config", lambda config, max_individuals, device: config
-    )
+    monkeypatch.setattr(helpers, "update_config", lambda config, max_individuals, device: config)
     monkeypatch.setattr(
         helpers,
         "get_inference_runners",
@@ -108,9 +106,7 @@ def test_create_superanimal_inference_runners_uses_deepcopy_for_custom_dict(monk
 
 
 @pytest.mark.parametrize("input_device", ["auto", None])
-def test_create_superanimal_inference_runners_auto_device_selection(
-    monkeypatch, input_device
-):
+def test_create_superanimal_inference_runners_auto_device_selection(monkeypatch, input_device):
     cfg = _dummy_cfg("TD")
     captured = {}
 
@@ -164,9 +160,7 @@ def test_create_superanimal_inference_runners_propagates_unsupported_dataset_err
     monkeypatch.setattr(
         helpers,
         "load_super_animal_config",
-        lambda **kwargs: (_ for _ in ()).throw(
-            ValueError("Unsupported dataset for model zoo config")
-        ),
+        lambda **kwargs: (_ for _ in ()).throw(ValueError("Unsupported dataset for model zoo config")),
     )
 
     with pytest.raises(ValueError, match="Unsupported dataset"):

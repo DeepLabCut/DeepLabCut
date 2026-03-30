@@ -8,10 +8,13 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-""" Tests for frame selection tools """
+"""Tests for frame selection tools."""
+
 import math
 from unittest.mock import Mock
+
 import pytest
+
 import deeplabcut.utils.frameselectiontools as fst
 
 

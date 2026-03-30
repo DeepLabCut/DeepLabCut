@@ -16,10 +16,10 @@ policy:
   warn_if_verified_older_than_days: 365
   missing_last_verified_is_warning: true
 
-  # Ratchet lists for tiered verification requirements. 
+  # Ratchet lists for tiered verification requirements.
   # Tiers have to be determined, and crucial targets identified.
-  # Then specific policies can be set for each tier, 
-  # e.g. requiring more recent verification for higher tiers, 
+  # Then specific policies can be set for each tier,
+  # e.g. requiring more recent verification for higher tiers,
   # or requiring verification for more recent versions.
   require_metadata: []
   require_recent_verification: []

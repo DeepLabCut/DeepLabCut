@@ -8,9 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
 
-import cv2
 import numpy as np
 import pytest
 
@@ -19,15 +17,12 @@ from deeplabcut.utils import auxiliaryfunctions
 
 # TODO: make a proper test incl. human model, bird model and that skips the require... at least once per week.
 
+
 @pytest.mark.parametrize("max_individuals", [1, 3])
-@pytest.mark.parametrize(
-    "project_name", ["superanimal_quadruped", "superanimal_topviewmouse"]
-)
+@pytest.mark.parametrize("project_name", ["superanimal_quadruped", "superanimal_topviewmouse"])
 @pytest.mark.parametrize("pose_model_type", ["hrnet_w32"])
 def test_class_init(project_name, pose_model_type, max_individuals):
-    inference_pipeline = SuperanimalPyTorchInference(
-        project_name, pose_model_type, max_individuals=max_individuals
-    )
+    inference_pipeline = SuperanimalPyTorchInference(project_name, pose_model_type, max_individuals=max_individuals)
 
     assert isinstance(inference_pipeline.config, dict)
     assert inference_pipeline.config["metadata"]["bodyparts"]
@@ -35,14 +30,10 @@ def test_class_init(project_name, pose_model_type, max_individuals):
 
 
 @pytest.mark.skip(reason="require-models")
-@pytest.mark.parametrize(
-    "project_name", ["superanimal_quadruped", "superanimal_topviewmouse"]
-)
+@pytest.mark.parametrize("project_name", ["superanimal_quadruped", "superanimal_topviewmouse"])
 @pytest.mark.parametrize("pose_model_type", ["hrnet_w32"])
 def test_runner_init(project_name, pose_model_type):
-    inference_pipeline = SuperanimalPyTorchInference(
-        project_name, pose_model_type, max_individuals=1
-    )
+    inference_pipeline = SuperanimalPyTorchInference(project_name, pose_model_type, max_individuals=1)
     weight_folder = f"{auxiliaryfunctions.get_deeplabcut_path()}/modelzoo/checkpoints"
     snapshot_path = f"{weight_folder}/{project_name}_{pose_model_type}.pth"
     detector_path = f"{weight_folder}/{project_name}_fasterrcnn.pt"
@@ -55,14 +46,10 @@ def test_runner_init(project_name, pose_model_type):
 
 @pytest.mark.skip(reason="require-models")
 @pytest.mark.parametrize("max_individuals", [10, 4, 1])
-@pytest.mark.parametrize(
-    "project_name", ["superanimal_quadruped", "superanimal_topviewmouse", "superanimal_humanbody"]
-)
+@pytest.mark.parametrize("project_name", ["superanimal_quadruped", "superanimal_topviewmouse", "superanimal_humanbody"])
 @pytest.mark.parametrize("pose_model_type", ["hrnet_w32"])
 def test_predict(project_name, pose_model_type, max_individuals):
-    inference_pipeline = SuperanimalPyTorchInference(
-        project_name, pose_model_type, max_individuals=max_individuals
-    )
+    inference_pipeline = SuperanimalPyTorchInference(project_name, pose_model_type, max_individuals=max_individuals)
     image_path = "img0001.png"
     weight_folder = f"{auxiliaryfunctions.get_deeplabcut_path()}/modelzoo/checkpoints"
     snapshot_path = f"{weight_folder}/{project_name}_{pose_model_type}.pth"

@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-""" Vision Transformer (ViT) in PyTorch
+"""Vision Transformer (ViT) in PyTorch.
 
 A PyTorch implement of Vision Transformers as described in
 'An Image Is Worth 16 x 16 Words: Transformers for Image Recognition at Scale' - https://arxiv.org/abs/2010.11929
@@ -30,6 +30,7 @@ for some einops/einsum fun
 
 Hacked together by / Copyright 2020 Ross Wightman
 """
+
 import math
 from functools import partial
 
@@ -39,21 +40,19 @@ import torch.nn.functional as F
 
 
 def drop_path(x, drop_prob: float = 0.0, training: bool = False):
-    """Drop paths (Stochastic Depth) per sample (when applied in main path of residual blocks).
+    """Drop paths (Stochastic Depth) per sample (when applied in main path of residual
+    blocks).
 
     This is the same as the DropConnect impl I created for EfficientNet, etc networks, however,
     the original name is misleading as 'Drop Connect' is a different form of dropout in a separate paper...
     See discussion: https://github.com/tensorflow/tpu/issues/494#issuecomment-532968956 ... I've opted for
     changing the layer and argument names to 'drop path' rather than mix DropConnect as a layer name and use
     'survival rate' as the argument.
-
     """
     if drop_prob == 0.0 or not training:
         return x
     keep_prob = 1 - drop_prob
-    shape = (x.shape[0],) + (1,) * (
-        x.ndim - 1
-    )  # work with diff dim tensors, not just 2D ConvNets
+    shape = (x.shape[0],) + (1,) * (x.ndim - 1)  # work with diff dim tensors, not just 2D ConvNets
     random_tensor = keep_prob + torch.rand(shape, dtype=x.dtype, device=x.device)
     random_tensor.floor_()  # binarize
     output = x.div(keep_prob) * random_tensor
@@ -61,10 +60,11 @@ def drop_path(x, drop_prob: float = 0.0, training: bool = False):
 
 
 class DropPath(nn.Module):
-    """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual blocks)."""
+    """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual
+    blocks)."""
 
     def __init__(self, drop_prob=None):
-        super(DropPath, self).__init__()
+        super().__init__()
         self.drop_prob = drop_prob
 
     def forward(self, x):
@@ -120,11 +120,7 @@ class Attention(nn.Module):
 
     def forward(self, x):
         B, N, C = x.shape
-        qkv = (
-            self.qkv(x)
-            .reshape(B, N, 3, self.num_heads, C // self.num_heads)
-            .permute(2, 0, 3, 1, 4)
-        )
+        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
         q, k, v = (
             qkv[0],
             qkv[1],
@@ -273,13 +269,11 @@ class DLCTransReID(nn.Module):
 
     def reset_classifier(self, num_classes, global_pool=""):
         self.num_classes = num_classes
-        self.fc = (
-            nn.Linear(self.embed_dim, num_classes) if num_classes > 0 else nn.Identity()
-        )
+        self.fc = nn.Linear(self.embed_dim, num_classes) if num_classes > 0 else nn.Identity()
 
     def forward_features(self, x):
         # x: inputs
-        B = x.shape[0]
+        x.shape[0]
         # (B, 12, 768)
         x = self.kpt_embed(x)
 
@@ -330,17 +324,13 @@ class DLCTransReID(nn.Module):
                 if "distilled" in model_path:
                     print("distill need to choose right cls token in the pth")
                     v = torch.cat([v[:, 0:1], v[:, 2:]], dim=1)
-                v = resize_pos_embed(
-                    v, self.pos_embed, self.patch_embed.num_y, self.patch_embed.num_x
-                )
+                v = resize_pos_embed(v, self.pos_embed, self.patch_embed.num_y, self.patch_embed.num_x)
             try:
                 self.state_dict()[k].copy_(v)
-            except:
+            except Exception:
                 print("===========================ERROR=========================")
                 print(
-                    "shape do not match in k :{}: param_dict{} vs self.state_dict(){}".format(
-                        k, v.shape, self.state_dict()[k].shape
-                    )
+                    f"shape do not match in k :{k}: param_dict{v.shape} vsself.state_dict(){self.state_dict()[k].shape}"
                 )
 
 
@@ -354,9 +344,8 @@ def resize_pos_embed(posemb, posemb_new, height, width):
 
     gs_old = int(math.sqrt(len(posemb_grid)))
     print(
-        "Resized position embedding from size:{} to size: {} with height:{} width: {}".format(
-            posemb.shape, posemb_new.shape, height, width
-        )
+        f"Resized position embedding from size:{posemb.shape} to size: {posemb_new.shape} with height:{height} width:"
+        f"{width}"
     )
     posemb_grid = posemb_grid.reshape(1, gs_old, gs_old, -1).permute(0, 3, 1, 2)
     posemb_grid = F.interpolate(posemb_grid, size=(height, width), mode="bilinear")
@@ -438,8 +427,9 @@ def _no_grad_trunc_normal_(tensor, mean, std, a, b):
 
 def trunc_normal_(tensor, mean=0.0, std=1.0, a=-2.0, b=2.0):
     # type: (Tensor, float, float, float, float) -> Tensor
-    r"""Fills the input Tensor with values drawn from a truncated
-    normal distribution. The values are effectively drawn from the
+    r"""Fills the input Tensor with values drawn from a truncated normal distribution.
+
+    The values are effectively drawn from the
     normal distribution :math:`\mathcal{N}(\text{mean}, \text{std}^2)`
     with values outside :math:`[a, b]` redrawn until they are within
     the bounds. The method used for generating the random values works

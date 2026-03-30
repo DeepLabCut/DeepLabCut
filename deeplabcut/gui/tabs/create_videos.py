@@ -11,6 +11,7 @@
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
+import deeplabcut
 from deeplabcut.gui.components import (
     BodypartListWidget,
     DefaultTab,
@@ -21,12 +22,10 @@ from deeplabcut.gui.components import (
     _create_vertical_layout,
 )
 
-import deeplabcut
-
 
 class CreateVideos(DefaultTab):
     def __init__(self, root, parent, h1_description):
-        super(CreateVideos, self).__init__(root, parent, h1_description)
+        super().__init__(root, parent, h1_description)
 
         self.bodyparts_to_use = self.root.all_bodyparts
         self._set_page()
@@ -55,9 +54,7 @@ class CreateVideos(DefaultTab):
 
         self.main_layout.addLayout(tmp_layout)
 
-        self.main_layout.addWidget(
-            _create_label_widget("Video Parameters", "font:bold")
-        )
+        self.main_layout.addWidget(_create_label_widget("Video Parameters", "font:bold"))
         self.layout_video_parameters = _create_vertical_layout()
         self._generate_layout_video_parameters(self.layout_video_parameters)
         self.main_layout.addLayout(self.layout_video_parameters)
@@ -141,9 +138,7 @@ class CreateVideos(DefaultTab):
         # Filtered data
         self.use_filtered_data_checkbox = QtWidgets.QCheckBox("Use filtered data")
         self.use_filtered_data_checkbox.setCheckState(Qt.Unchecked)
-        self.use_filtered_data_checkbox.stateChanged.connect(
-            self.update_use_filtered_data
-        )
+        self.use_filtered_data_checkbox.stateChanged.connect(self.update_use_filtered_data)
         tmp_layout.addWidget(self.use_filtered_data_checkbox)
 
         # Selector for p-cutoff
@@ -159,8 +154,7 @@ class CreateVideos(DefaultTab):
         pcutoff_layout.addWidget(self.pcutoff_selector)
         pcutoff_widget.setLayout(pcutoff_layout)
         pcutoff_widget.setToolTip(
-            "This value sets the confidence threshold, above which predictions are "
-            "shown in the labeled videos."
+            "This value sets the confidence threshold, above which predictions are shown in the labeled videos."
         )
         tmp_layout.addWidget(pcutoff_widget)
 
@@ -171,13 +165,9 @@ class CreateVideos(DefaultTab):
         tmp_layout.addWidget(self.plot_trajectories)
 
         # High quality video
-        self.create_high_quality_video = QtWidgets.QCheckBox(
-            "High quality video (slow)"
-        )
+        self.create_high_quality_video = QtWidgets.QCheckBox("High quality video (slow)")
         self.create_high_quality_video.setCheckState(Qt.Unchecked)
-        self.create_high_quality_video.stateChanged.connect(
-            self.update_high_quality_video
-        )
+        self.create_high_quality_video.stateChanged.connect(self.update_high_quality_video)
         tmp_layout.addWidget(self.create_high_quality_video)
 
         nested_tmp_layout = _create_horizontal_layout(margins=(0, 0, 0, 0))
@@ -205,12 +195,8 @@ class CreateVideos(DefaultTab):
         self.root.logger.info(f"Plot trajectories {s}.")
 
     def update_selected_bodyparts(self):
-        selected_bodyparts = [
-            item.text() for item in self.bodyparts_list_widget.selectedItems()
-        ]
-        self.root.logger.info(
-            f"Selected bodyparts for plotting:\n\t{selected_bodyparts}"
-        )
+        selected_bodyparts = [item.text() for item in self.bodyparts_list_widget.selectedItems()]
+        self.root.logger.info(f"Selected bodyparts for plotting:\n\t{selected_bodyparts}")
         self.bodyparts_to_use = selected_bodyparts
 
     def update_use_all_bodyparts(self, s):
@@ -264,10 +250,7 @@ class CreateVideos(DefaultTab):
         filtered = self.use_filtered_data_checkbox.isChecked()
 
         bodyparts = "all"
-        if (
-            len(self.bodyparts_to_use) != 0
-            and not self.plot_all_bodyparts.isChecked()
-        ):
+        if len(self.bodyparts_to_use) != 0 and not self.plot_all_bodyparts.isChecked():
             self.update_selected_bodyparts()
             bodyparts = self.bodyparts_to_use
 
@@ -287,9 +270,7 @@ class CreateVideos(DefaultTab):
         if all(videos_created):
             self.root.writer.write("Labeled videos created.")
         else:
-            failed_videos = [
-                video for success, video in zip(videos_created, videos) if not success
-            ]
+            failed_videos = [video for success, video in zip(videos_created, videos, strict=False) if not success]
             failed_videos_str = ", ".join(failed_videos)
             self.root.writer.write(f"Failed to create videos from {failed_videos_str}.")
 
