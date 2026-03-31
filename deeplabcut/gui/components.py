@@ -177,7 +177,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         self.videotype_widget = QtWidgets.QComboBox()
         self.videotype_widget.setMinimumWidth(100)
         self.videotype_widget.addItems(DLCParams.VIDEOTYPES)
-        self.videotype_widget.setCurrentText(self.root.video_type)
+        self.videotype_widget.setCurrentText(self._normalize_videotype(self.root.video_type))
         self.root.video_type_.connect(self.videotype_widget.setCurrentText)
         self.videotype_widget.currentTextChanged.connect(self.update_videotype)
 
@@ -206,8 +206,11 @@ class VideoSelectionWidget(QtWidgets.QWidget):
     def files(self):
         return self.root.video_files
 
+    def _normalize_videotype(self, vtype: str) -> str:
+        return (vtype or "").lower().lstrip(".")
+
     @property
-    def selected_suffixes(self):
+    def selected_suffixes(self) -> set[str]:
         """Return normalized suffixes (without leading dot) of currently selected files."""
         suffixes = set()
         for f in self.files:
@@ -216,7 +219,11 @@ class VideoSelectionWidget(QtWidgets.QWidget):
                 suffixes.add(suffix)
         return suffixes
 
-    def get_effective_videotype(self, prefer_selected_files: bool = False, with_dot: bool = True):
+    def get_effective_videotype(
+        self,
+        prefer_selected_files: bool = False,
+        with_dot: bool = True,
+    ) -> str:
         """
         Return the videotype to use.
 
@@ -224,21 +231,20 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         If prefer_selected_files=True and the selected files all share one suffix,
         that suffix is used instead.
         """
-        videotype = self.videotype_widget.currentText()
+        videotype = self._normalize_videotype(self.videotype_widget.currentText())
 
         if prefer_selected_files:
             suffixes = self.selected_suffixes
             if len(suffixes) == 1:
                 videotype = next(iter(suffixes))
 
-        videotype = (videotype or "").lower().lstrip(".")
         if with_dot and videotype:
             return f".{videotype}"
         return videotype
 
     def get_files_grouped_by_suffix(self, keep_dot: bool = False) -> dict[str, list[str]]:
-        """Return a dict grouping selected files by their suffixes"""
-        groups = {}
+        """Return a dict grouping selected files by their suffixes."""
+        groups: dict[str, list[str]] = {}
         for f in self.files:
             suffix = Path(f).suffix.lower()
             if not keep_dot:
@@ -246,17 +252,49 @@ class VideoSelectionWidget(QtWidgets.QWidget):
             groups.setdefault(suffix, []).append(f)
         return groups
 
+    def _all_supported_video_patterns(self) -> list[str]:
+        """Return all supported video patterns in both lower and upper case."""
+        return [f"*.{ext.lower()}" for ext in DLCParams.VIDEOTYPES[1:]] + [
+            f"*.{ext.upper()}" for ext in DLCParams.VIDEOTYPES[1:]
+        ]
+
+    def _build_video_filter(self) -> str:
+        """
+        Build the file dialog filter.
+
+        By default, preserve current behavior: show all supported video types.
+        If strict_videotype_filter is enabled, restrict to the currently selected
+        videotype when it is non-empty. If the current dropdown value is empty
+        (the "all types" option), fall back to the full supported-extension filter.
+        """
+        all_video_types = self._all_supported_video_patterns()
+
+        if self.strict_videotype_filter:
+            current = self.get_effective_videotype(
+                prefer_selected_files=False,
+                with_dot=False,
+            )
+
+            if current:
+                video_types = [f"*.{current.lower()}", f"*.{current.upper()}"]
+            else:
+                # "All types" entry selected: keep the dialog usable
+                video_types = all_video_types
+        else:
+            video_types = all_video_types
+
+        return f"Videos ({' '.join(video_types)})"
+
     def _set_videotype_silently(self, vtype: str):
         """
         Update the dropdown/root videotype without triggering update_videotype(),
         because that method clears the current selection.
 
-        Only updates the underlying state if the videotype is supported by the
-        current QComboBox items. Otherwise, leaves the current state unchanged and
-        logs a warning.
+        Only updates state if the videotype is supported by the combo box.
+        Otherwise, leaves the current state unchanged.
         """
-        normalized = (vtype or "").lower().lstrip(".")
-        current = (self.videotype_widget.currentText() or "").lower().lstrip(".")
+        normalized = self._normalize_videotype(vtype)
+        current = self._normalize_videotype(self.videotype_widget.currentText())
 
         if not normalized:
             self.root.logger.warning("Attempted to set an empty videotype silently; keeping current selection.")
@@ -277,37 +315,33 @@ class VideoSelectionWidget(QtWidgets.QWidget):
 
         self.root.video_type = normalized
 
-    def update_videotype(self, vtype):
+    def update_videotype(self, vtype: str):
+        normalized = self._normalize_videotype(vtype)
         self.clear_selected_videos()
-        self.root.video_type = vtype
+        self.root.video_type = normalized
 
     def _update_video_selection(self, videopaths):
         n_videos = len(self.root.video_files)
         if n_videos:
-            self.selected_videos_text.setText(f"{n_videos} videos selected")
+            suffixes = self.selected_suffixes
+            if len(suffixes) == 1:
+                suffix = next(iter(suffixes))
+                self.selected_videos_text.setText(f"{n_videos} videos selected (.{suffix})")
+            elif len(suffixes) > 1:
+                counts = {
+                    suffix: len(files) for suffix, files in self.get_files_grouped_by_suffix(keep_dot=False).items()
+                }
+                summary = ", ".join(f"{count} .{suffix}" for suffix, count in sorted(counts.items()))
+                self.selected_videos_text.setText(
+                    f"{n_videos} videos selected ({summary}; will run in separate batches)"
+                )
+            else:
+                self.selected_videos_text.setText(f"{n_videos} videos selected")
+
             self.select_video_button.setText("Add more videos")
         else:
             self.selected_videos_text.setText("")
             self.select_video_button.setText("Select videos")
-
-    def _build_video_filter(self):
-        """
-        Build the file dialog filter.
-        By default, preserve current behavior: show all supported video types.
-        Optionally, restrict to the current dropdown videotype.
-        """
-        if self.strict_videotype_filter:
-            current = self.get_effective_videotype(prefer_selected_files=False, with_dot=False)
-            if current:
-                video_types = [f"*.{current.lower()}", f"*.{current.upper()}"]
-            else:
-                video_types = []
-        else:
-            video_types = [f"*.{ext.lower()}" for ext in DLCParams.VIDEOTYPES[1:]] + [
-                f"*.{ext.upper()}" for ext in DLCParams.VIDEOTYPES[1:]
-            ]
-
-        return f"Videos ({' '.join(video_types)})"
 
     def update_videos(self):
         directory_to_open = self.root.project_folder
@@ -327,6 +361,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
             # Optional safety: sync dropdown to selected file suffix
             if self.sync_videotype_with_selection:
                 suffixes = {Path(v).suffix.lower().lstrip(".") for v in abs_files if Path(v).suffix}
+
                 if len(suffixes) == 1:
                     inferred = next(iter(suffixes))
                     self._set_videotype_silently(inferred)
