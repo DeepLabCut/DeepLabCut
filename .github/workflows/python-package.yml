@@ -128,6 +128,10 @@ jobs:
       - name: Install ffmpeg (Windows, BtbN build)
         if: runner.os == 'Windows'
         shell: pwsh
+        env:
+          FFMPEG_TAG: autobuild-2026-03-31-13-11
+          FFMPEG_ASSET: ffmpeg-master-latest-win64-gpl-shared.zip
+          FFMPEG_SHA256: 084537f4fc8f4a6c6509fc7d25b74df715994107e635a7aee94cdeee054dcac4
         run: |
           $ErrorActionPreference = "Stop"
           $url = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"
