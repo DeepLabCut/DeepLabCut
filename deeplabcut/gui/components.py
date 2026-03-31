@@ -250,9 +250,25 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         """
         Update the dropdown/root videotype without triggering update_videotype(),
         because that method clears the current selection.
+
+        Only updates the underlying state if the videotype is supported by the
+        current QComboBox items. Otherwise, leaves the current state unchanged and
+        logs a warning.
         """
         normalized = (vtype or "").lower().lstrip(".")
         current = (self.videotype_widget.currentText() or "").lower().lstrip(".")
+
+        if not normalized:
+            self.root.logger.warning("Attempted to set an empty videotype silently; keeping current selection.")
+            return
+
+        # Validate against actual combo-box items
+        if self.videotype_widget.findText(normalized) == -1:
+            self.root.logger.warning(
+                f"Attempted to set unsupported videotype '{normalized}' silently; "
+                f"keeping current videotype '{current}'."
+            )
+            return
 
         if normalized != current:
             self.videotype_widget.blockSignals(True)
