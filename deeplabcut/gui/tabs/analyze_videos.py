@@ -10,6 +10,7 @@
 #
 from dataclasses import dataclass
 from functools import partial
+from pathlib import Path
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
@@ -330,6 +331,19 @@ class AnalyzeVideos(DefaultTab):
         batches = [(suffix, videos) for suffix, videos in sorted(groups.items()) if suffix]
         return batches
 
+    def _get_unique_video_parent_folders(self, batches: list[tuple[str, list[str]]]) -> list[str]:
+        folders = []
+        seen = set()
+
+        for _, videos in batches:
+            for video in videos:
+                parent = str(Path(video).parent.resolve())
+                if parent not in seen:
+                    seen.add(parent)
+                    folders.append(parent)
+
+        return folders
+
     def _run_pipeline(self, options: AnalyzeVideosOptions, batches: list[tuple[str, list[str]]]):
         for videotype, videos in batches:
             try:
@@ -354,6 +368,10 @@ class AnalyzeVideos(DefaultTab):
                 exc = f"Error analyzing videos {videos} with extension {videotype}: {e}"
                 self.root.logger.error(exc, exc_info=True)
                 raise RuntimeError(exc) from e
+
+        # Run CSV conversion once per unique folder, after all batches
+        if options.auto_track and options.save_as_csv:
+            self._convert_outputs_to_csv_once_per_folder(batches)
 
     def _run_postprocessing_for_group(
         self,
@@ -393,10 +411,14 @@ class AnalyzeVideos(DefaultTab):
                 track_method=options.track_method,
             )
 
-        if options.auto_track and options.save_as_csv:
+    def _convert_outputs_to_csv_once_per_folder(self, batches: list[tuple[str, list[str]]]):
+        folders = self._get_unique_video_parent_folders(batches)
+
+        for folder in folders:
+            self.root.logger.info(f"Converting H5 outputs to CSV in folder: {folder}")
             deeplabcut.analyze_videos_converth5_to_csv(
-                videos,
-                listofvideos=True,
+                folder,
+                listofvideos=False,
             )
 
     def analyze_videos(self):
