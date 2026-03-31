@@ -134,10 +134,18 @@ jobs:
           FFMPEG_SHA256: 084537f4fc8f4a6c6509fc7d25b74df715994107e635a7aee94cdeee054dcac4
         run: |
           $ErrorActionPreference = "Stop"
-          $url = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"
-          $out = "$env:RUNNER_TEMP\ffmpeg.zip"
-          Invoke-WebRequest -Uri $url -OutFile $out
-          $dest = "$env:RUNNER_TEMP\ffmpeg"
+          $url = "https://github.com/BtbN/FFmpeg-Builds/releases/download/$env:FFMPEG_TAG/$env:FFMPEG_ASSET"
+          $zip = Join-Path $env:RUNNER_TEMP $env:FFMPEG_ASSET
+          $dest = Join-Path $env:RUNNER_TEMP "ffmpeg"
+
+          Invoke-WebRequest -Uri $url -OutFile $zip
+
+          $actual = (Get-FileHash -Path $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          $expected = $env:FFMPEG_SHA256.ToLowerInvariant()
+
+          if ($actual -ne $expected) {
+            throw "FFmpeg checksum mismatch. Expected $expected but got $actual"
+          }
           if (Test-Path $dest) { Remove-Item -Recurse -Force $dest }
           Expand-Archive -Path $out -DestinationPath $dest -Force
           $ffdir = Get-ChildItem $dest -Directory | Select-Object -First 1
