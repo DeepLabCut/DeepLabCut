@@ -114,7 +114,8 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install --no-cache-dir -e . --group dev
 
-      - name: Install ffmpeg
+      - name: Install ffmpeg (Linux/macOS)
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
@@ -122,9 +123,40 @@ jobs:
             sudo apt-get install -y ffmpeg
           elif [ "$RUNNER_OS" == "macOS" ]; then
             brew install ffmpeg || true
-          else
-            choco install ffmpeg -y --no-progress
           fi
+
+      - name: Install ffmpeg (Windows, BtbN build)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          FFMPEG_TAG: autobuild-2026-03-31-13-11
+          FFMPEG_ASSET: ffmpeg-master-latest-win64-gpl-shared.zip
+          FFMPEG_SHA256: 084537f4fc8f4a6c6509fc7d25b74df715994107e635a7aee94cdeee054dcac4
+        run: |
+          $ErrorActionPreference = "Stop"
+          $url = "https://github.com/BtbN/FFmpeg-Builds/releases/download/$env:FFMPEG_TAG/$env:FFMPEG_ASSET"
+          $zip = Join-Path $env:RUNNER_TEMP $env:FFMPEG_ASSET
+          $dest = Join-Path $env:RUNNER_TEMP "ffmpeg"
+
+          Invoke-WebRequest -Uri $url -OutFile $zip
+
+          $actual = (Get-FileHash -Path $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          $expected = $env:FFMPEG_SHA256.ToLowerInvariant()
+
+          if ($actual -ne $expected) {
+            throw "FFmpeg checksum mismatch. Expected $expected but got $actual"
+          }
+          if (Test-Path $dest) { Remove-Item -Recurse -Force $dest }
+          Expand-Archive -Path $zip -DestinationPath $dest -Force
+          $ffdir = Get-ChildItem $dest -Directory | Select-Object -First 1
+          "$($ffdir.FullName)\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Verify ffmpeg/ffprobe available
+        shell: bash -el {0}
+        run: |
+          set -e
+          ffmpeg -version
+          ffprobe -version
 
       - name: Run pytest
         shell: bash -el {0}
