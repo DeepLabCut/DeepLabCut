@@ -154,12 +154,19 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         self,
         root: QtWidgets.QMainWindow,
         parent: QtWidgets.QWidget,
+        *,
         hide_videotype: bool = False,
+        sync_videotype_with_selection: bool = False,
+        strict_videotype_filter: bool = False,
     ):
         super().__init__(parent)
 
         self.root = root
         self.parent = parent
+
+        # Optional safeties; defaults preserve current behavior
+        self.sync_videotype_with_selection = sync_videotype_with_selection
+        self.strict_videotype_filter = strict_videotype_filter
 
         self._init_layout(hide_videotype)
 
@@ -181,7 +188,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         self.root.video_files_.connect(self._update_video_selection)
 
         # Number of selected videos text
-        self.selected_videos_text = QtWidgets.QLabel("")  # updated when videos are selected
+        self.selected_videos_text = QtWidgets.QLabel("")
 
         # Clear video selection
         self.clear_videos = QtWidgets.QPushButton("Clear selection")
@@ -199,6 +206,61 @@ class VideoSelectionWidget(QtWidgets.QWidget):
     def files(self):
         return self.root.video_files
 
+    @property
+    def selected_suffixes(self):
+        """Return normalized suffixes (without leading dot) of currently selected files."""
+        suffixes = set()
+        for f in self.files:
+            suffix = Path(f).suffix.lower().lstrip(".")
+            if suffix:
+                suffixes.add(suffix)
+        return suffixes
+
+    def get_effective_videotype(self, prefer_selected_files: bool = False, with_dot: bool = True):
+        """
+        Return the videotype to use.
+
+        By default, preserves current behavior and uses the dropdown.
+        If prefer_selected_files=True and the selected files all share one suffix,
+        that suffix is used instead.
+        """
+        videotype = self.videotype_widget.currentText()
+
+        if prefer_selected_files:
+            suffixes = self.selected_suffixes
+            if len(suffixes) == 1:
+                videotype = next(iter(suffixes))
+
+        videotype = (videotype or "").lower().lstrip(".")
+        if with_dot and videotype:
+            return f".{videotype}"
+        return videotype
+
+    def get_files_grouped_by_suffix(self, keep_dot: bool = False) -> dict[str, list[str]]:
+        """Return a dict grouping selected files by their suffixes"""
+        groups = {}
+        for f in self.files:
+            suffix = Path(f).suffix.lower()
+            if not keep_dot:
+                suffix = suffix.lstrip(".")
+            groups.setdefault(suffix, []).append(f)
+        return groups
+
+    def _set_videotype_silently(self, vtype: str):
+        """
+        Update the dropdown/root videotype without triggering update_videotype(),
+        because that method clears the current selection.
+        """
+        normalized = (vtype or "").lower().lstrip(".")
+        current = (self.videotype_widget.currentText() or "").lower().lstrip(".")
+
+        if normalized != current:
+            self.videotype_widget.blockSignals(True)
+            self.videotype_widget.setCurrentText(normalized)
+            self.videotype_widget.blockSignals(False)
+
+        self.root.video_type = normalized
+
     def update_videotype(self, vtype):
         self.clear_selected_videos()
         self.root.video_type = vtype
@@ -212,15 +274,28 @@ class VideoSelectionWidget(QtWidgets.QWidget):
             self.selected_videos_text.setText("")
             self.select_video_button.setText("Select videos")
 
+    def _build_video_filter(self):
+        """
+        Build the file dialog filter.
+        By default, preserve current behavior: show all supported video types.
+        Optionally, restrict to the current dropdown videotype.
+        """
+        if self.strict_videotype_filter:
+            current = self.get_effective_videotype(prefer_selected_files=False, with_dot=False)
+            if current:
+                video_types = [f"*.{current.lower()}", f"*.{current.upper()}"]
+            else:
+                video_types = []
+        else:
+            video_types = [f"*.{ext.lower()}" for ext in DLCParams.VIDEOTYPES[1:]] + [
+                f"*.{ext.upper()}" for ext in DLCParams.VIDEOTYPES[1:]
+            ]
+
+        return f"Videos ({' '.join(video_types)})"
+
     def update_videos(self):
         directory_to_open = self.root.project_folder
-
-        # Create a filter string with both lowercase and uppercase extensions
-
-        video_types = [f"*.{ext.lower()}" for ext in DLCParams.VIDEOTYPES[1:]] + [
-            f"*.{ext.upper()}" for ext in DLCParams.VIDEOTYPES[1:]
-        ]
-        video_filter = f"Videos ({' '.join(video_types)})"
+        video_filter = self._build_video_filter()
 
         filenames = QtWidgets.QFileDialog.getOpenFileNames(
             parent=self,
@@ -230,8 +305,21 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         )
 
         if filenames[0]:
-            # Qt returns a tuple (list of files, filetype)
-            self.root.add_video_files([os.path.abspath(vid) for vid in filenames[0]])
+            abs_files = [os.path.abspath(vid) for vid in filenames[0]]
+            self.root.add_video_files(abs_files)
+
+            # Optional safety: sync dropdown to selected file suffix
+            if self.sync_videotype_with_selection:
+                suffixes = {Path(v).suffix.lower().lstrip(".") for v in abs_files if Path(v).suffix}
+                if len(suffixes) == 1:
+                    inferred = next(iter(suffixes))
+                    self._set_videotype_silently(inferred)
+                    self.root.logger.info(f"Inferred videotype '{inferred}' from selected file(s)")
+                elif len(suffixes) > 1:
+                    self.root.logger.warning(
+                        f"Selected videos have mixed suffixes {sorted(suffixes)}; "
+                        "keeping current videotype dropdown unchanged."
+                    )
 
     def clear_selected_videos(self):
         self.root.clear_video_files()
