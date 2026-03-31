@@ -351,7 +351,9 @@ class AnalyzeVideos(DefaultTab):
 
                 self._run_postprocessing_for_group(options, videotype, videos)
             except Exception as e:
-                self.root.logger.error(f"Error analyzing videos {videos} with extension {videotype}: {e}")
+                self.root.logger.error(
+                    f"Error analyzing videos {videos} with extension {videotype}: {e}", exc_info=True
+                )
 
     def _run_postprocessing_for_group(
         self,
