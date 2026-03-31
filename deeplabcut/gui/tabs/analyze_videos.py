@@ -38,14 +38,14 @@ class AnalyzeVideosOptions:
     filter_data: bool
     plot_trajectories: bool
     show_trajectory_plots: bool
-    displayed_bodyparts: list[str]
+    displayed_bodyparts: tuple[str, ...]
     create_video_all_detections: bool
     auto_track: bool
     calibrate_assembly: bool
     assemble_with_ID_only: bool
     num_animals_in_videos: int | None
-    cropping: tuple | None
-    dynamic_cropping_params: tuple
+    cropping: tuple[int, int, int, int] | None
+    dynamic_cropping_params: tuple[bool, float, int]
     track_method: str | None
 
 
