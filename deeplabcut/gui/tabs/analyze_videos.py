@@ -274,7 +274,7 @@ class AnalyzeVideos(DefaultTab):
         filter_data = self.filter_predictions.isChecked()
         plot_trajectories = self.plot_trajectories.isChecked()
         show_trajectory_plots = self.show_trajectory_plots.isChecked()
-        displayed_bodyparts = self.bodyparts_list_widget.selected_bodyparts if plot_trajectories else []
+        displayed_bodyparts = tuple(self.bodyparts_list_widget.selected_bodyparts) if plot_trajectories else ()
 
         if self.root.is_multianimal:
             calibrate_assembly = self.calibrate_assembly_checkbox.isChecked()
@@ -351,9 +351,9 @@ class AnalyzeVideos(DefaultTab):
 
                 self._run_postprocessing_for_group(options, videotype, videos)
             except Exception as e:
-                self.root.logger.error(
-                    f"Error analyzing videos {videos} with extension {videotype}: {e}", exc_info=True
-                )
+                exc = f"Error analyzing videos {videos} with extension {videotype}: {e}"
+                self.root.logger.error(exc, exc_info=True)
+                raise RuntimeError(exc) from e
 
     def _run_postprocessing_for_group(
         self,
