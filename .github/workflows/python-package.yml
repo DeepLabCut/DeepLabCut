@@ -147,7 +147,7 @@ jobs:
             throw "FFmpeg checksum mismatch. Expected $expected but got $actual"
           }
           if (Test-Path $dest) { Remove-Item -Recurse -Force $dest }
-          Expand-Archive -Path $out -DestinationPath $dest -Force
+          Expand-Archive -Path $zip -DestinationPath $dest -Force
           $ffdir = Get-ChildItem $dest -Directory | Select-Object -First 1
           "$($ffdir.FullName)\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
