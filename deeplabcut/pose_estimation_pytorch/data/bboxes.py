@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum, auto
+from enum import Enum
 from pathlib import Path
 from typing import Any, Literal, TypeAlias, TypedDict
 
@@ -16,10 +16,10 @@ EvalMode: TypeAlias = Literal["train", "test"]
 
 
 class BBoxComputationMethod(Enum):
-    GT = auto()
-    KEYPOINTS = auto()
-    DETECTION_BBOX = auto()
-    SEGMENTATION_MASK = auto()
+    GT = "gt"
+    KEYPOINTS = "keypoints"
+    DETECTION_BBOX = "detection_bbox"
+    SEGMENTATION_MASK = "segmentation_mask"
 
 
 class DetectorContext(TypedDict):

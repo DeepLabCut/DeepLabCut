@@ -175,7 +175,7 @@ class DLCLoader(Loader):
             top_down_crop_with_context=crop_with_context,
         )
 
-    def default_bbox_method(self, task: Task) -> str | None:
+    def default_bbox_method(self, task: Task) -> BBoxComputationMethod | None:
         """
         Preserve historical DLCLoader behavior:
         for detector and top-down tasks, derive boxes from keypoints unless explicitly overridden.

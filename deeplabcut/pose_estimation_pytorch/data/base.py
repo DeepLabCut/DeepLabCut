@@ -147,7 +147,7 @@ class Loader(ABC):
         data = self._loaded_data[mode]
         return [image["file_name"] for image in data["images"]]
 
-    def default_bbox_method(self, task: Task) -> str | None:
+    def default_bbox_method(self, task: Task) -> BBoxComputationMethod | None:
         """
         Returns the default bbox source for this loader/task.
         Subclasses may override this to preserve legacy behavior.
@@ -268,18 +268,12 @@ class Loader(ABC):
         parameters = self.get_dataset_parameters()
         data = self.load_data(mode)
 
-        # IMPORTANT:
-        # load_data() is cached. Never mutate cached annotations in-place.
+        # load_data() is cached -> never mutate cached annotations
         images = data["images"]
         annotations = copy.deepcopy(data["annotations"])
 
-        bbox_method = self.model_cfg["data"].get("bbox_source")
-        if bbox_method is None:
-            bbox_method = self.default_bbox_method(task)
-
-        # Resolve bbox source only for top-down tasks
-        if task == Task.TOP_DOWN:
-            bbox_method = self._resolve_bbox_method(detector_runner)
+        if task in (Task.TOP_DOWN, Task.DETECT):
+            bbox_method = self._resolve_bbox_method(task=task, detector_runner=detector_runner)
             annotations = self._compute_bboxes(
                 images=images,
                 annotations=annotations,
@@ -345,19 +339,51 @@ class Loader(ABC):
 
         return filtered_annotations
 
-    def _resolve_bbox_method(self, detector_runner: DetectorRunnerLike | None) -> BBoxComputationMethod:
+    def _resolve_bbox_method(
+        self,
+        task: Task,
+        detector_runner: DetectorRunnerLike | None,
+    ) -> BBoxComputationMethod | None:
         """
-        Decide where top-down boxes should come from.
-
         Priority:
-        1. If a detector_runner is explicitly provided -> use detector boxes
-        2. Otherwise use config value from model_cfg["data"]["bbox_source"]
-        3. Fallback to "gt"
+        1. detector_runner provided -> detector boxes
+        2. explicit config bbox_source
+        3. loader/task default
         """
         if detector_runner is not None:
             return BBoxComputationMethod.DETECTION_BBOX
 
-        return self.model_cfg["data"].get("bbox_source", BBoxComputationMethod.GT)
+        configured = self.model_cfg["data"].get("bbox_source")
+        if configured is not None:
+            return self._coerce_bbox_method(configured)
+
+        default = self.default_bbox_method(task)
+        if default is not None:
+            return self._coerce_bbox_method(default)
+
+        return None
+
+    @staticmethod
+    def _coerce_bbox_method(
+        method: BBoxComputationMethod | str | None,
+    ) -> BBoxComputationMethod | None:
+        if method is None:
+            return None
+        if isinstance(method, BBoxComputationMethod):
+            return method
+
+        normalized = method.strip().lower().replace(" ", "_")
+        aliases = {
+            "gt": BBoxComputationMethod.GT,
+            "keypoints": BBoxComputationMethod.KEYPOINTS,
+            "detection_bbox": BBoxComputationMethod.DETECTION_BBOX,
+            "detector": BBoxComputationMethod.DETECTION_BBOX,
+            "segmentation_mask": BBoxComputationMethod.SEGMENTATION_MASK,
+        }
+        try:
+            return aliases[normalized]
+        except KeyError as e:
+            raise ValueError(f"Invalid bbox computation method: {method}") from e
 
     @staticmethod
     def _compute_bboxes(

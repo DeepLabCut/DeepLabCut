@@ -113,7 +113,7 @@ def _get_export_model_data(
 
     detector_snapshots = []
     detector_data = []
-    if task == Task.TOP_DOWN:
+    if task == (Task.TOP_DOWN, Task.DETECT):
         for i in range(num_snapshots):
             snapshot = dict(model=dict(idx=i))
             snapshot_path = model_dir / f"snapshot-detector-{i:03}.pt"
@@ -173,7 +173,7 @@ def test_export_model(
         # check that the correct snapshot was exported
         snapshot = snapshots[idx]
         detector = None
-        if task == Task.TOP_DOWN:
+        if task == (Task.TOP_DOWN, Task.DETECT):
             detector = detector_snapshots[detector_idx]
 
         dir_name = export.get_export_folder_name(mock_loader)
@@ -190,7 +190,7 @@ def test_export_model(
         assert "pose" in exported_data
         assert exported_data["pose"] == snapshot_data[idx]["model"]
 
-        if task == Task.TOP_DOWN:
+        if task == (Task.TOP_DOWN, Task.DETECT):
             assert "detector" in exported_data
             assert exported_data["detector"] == detector_data[detector_idx]["model"]
 
