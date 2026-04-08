@@ -17,7 +17,8 @@ from pathlib import Path
 
 import numpy as np
 
-from deeplabcut.pose_estimation_pytorch.data.base import BBoxComputationMethod, Loader
+from deeplabcut.pose_estimation_pytorch.data.base import Loader
+from deeplabcut.pose_estimation_pytorch.data.bboxes import BBoxComputationMethod
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.utils import (
     map_id_to_annotations,

@@ -23,7 +23,8 @@ import scipy.io as sio
 
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.core.engine import Engine
-from deeplabcut.pose_estimation_pytorch.data.base import BBoxComputationMethod, Loader
+from deeplabcut.pose_estimation_pytorch.data.base import Loader
+from deeplabcut.pose_estimation_pytorch.data.bboxes import BBoxComputationMethod
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.data.utils import bbox_from_keypoints, read_image_shape_fast

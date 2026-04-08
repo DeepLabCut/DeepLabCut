@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import Enum, auto
 from pathlib import Path
 from typing import Any, Literal, TypeAlias, TypedDict
 
@@ -12,6 +13,13 @@ from pydantic import BaseModel, ConfigDict, Field
 
 BBoxFormat = Literal["xywh", "xyxy"]
 EvalMode: TypeAlias = Literal["train", "test"]
+
+
+class BBoxComputationMethod(Enum):
+    GT = auto()
+    KEYPOINTS = auto()
+    DETECTION_BBOX = auto()
+    SEGMENTATION_MASK = auto()
 
 
 class DetectorContext(TypedDict):

@@ -13,7 +13,6 @@ from __future__ import annotations
 import copy
 import logging
 from abc import ABC, abstractmethod
-from enum import Enum, auto
 from pathlib import Path
 from typing import Protocol
 
@@ -23,6 +22,7 @@ from scipy.optimize import linear_sum_assignment
 
 import deeplabcut.core.config as config_utils
 import deeplabcut.pose_estimation_pytorch.config as config
+from deeplabcut.pose_estimation_pytorch.data.bboxes import BBoxComputationMethod
 from deeplabcut.pose_estimation_pytorch.data.dataset import (
     PoseDataset,
     PoseDatasetParameters,
@@ -39,13 +39,6 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 logger = logging.getLogger(__name__)
-
-
-class BBoxComputationMethod(Enum):
-    GT = auto()
-    KEYPOINTS = auto()
-    DETECTION_BBOX = auto()
-    SEGMENTATION_MASK = auto()
 
 
 class DetectorRunnerLike(Protocol):
