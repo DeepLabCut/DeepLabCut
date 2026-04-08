@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import copy
+from enum import Enum
 from pathlib import Path
 
 from deeplabcut.core.config import read_config_as_dict, write_config
@@ -24,9 +25,30 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     replace_default_values,
     update_config,
 )
+from deeplabcut.pose_estimation_pytorch.data.bboxes import BBoxComputationMethod
 from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+
+
+def _yaml_safe_value(value):
+    """
+    Convert config values to YAML-safe built-in Python types.
+    - Enum -> enum.value
+    - Path -> POSIX string
+    - dict/list/tuple -> recurse
+    """
+    if isinstance(value, Enum):
+        return value.value
+    if isinstance(value, Path):
+        return value.as_posix()
+    if isinstance(value, dict):
+        return {k: _yaml_safe_value(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_yaml_safe_value(v) for v in value]
+    if isinstance(value, tuple):
+        return [_yaml_safe_value(v) for v in value]
+    return value
 
 
 def make_pytorch_pose_config(
@@ -38,6 +60,9 @@ def make_pytorch_pose_config(
     weight_init: WeightInitialization | None = None,
     save: bool = False,
     ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
+    precomputed_bboxes: str | Path | None = None,
+    bbox_source: str | BBoxComputationMethod | None = None,
+    external_detector_metadata: dict | None = None,
 ) -> dict:
     """Creates a PyTorch pose configuration file for a DeepLabCut project.
 
@@ -149,6 +174,31 @@ def make_pytorch_pose_config(
     # add the model to the config
     pose_config = update_config(pose_config, model_cfg)
 
+    # ------------------------------------------------------------------
+    # Configure bbox source / offline precomputed detector boxes
+    # ------------------------------------------------------------------
+    if "data" not in pose_config:
+        pose_config["data"] = {}
+
+    if precomputed_bboxes is not None:
+        if task != Task.TOP_DOWN:
+            raise ValueError("precomputed_bboxes can only be used with top-down pose models.")
+
+        pose_config["data"]["bbox_source"] = BBoxComputationMethod.DETECTION_BBOX.value
+        pose_config["data"]["precomputed_bboxes"] = Path(precomputed_bboxes).as_posix()
+
+        # Safe defaults for offline / precomputed detector matching
+        pose_config["data"].setdefault("bbox_match_iou_threshold", 0.1)
+        pose_config["data"].setdefault("bbox_fallback_to_gt", True)
+        pose_config["data"].setdefault("bbox_validate_image_paths", False)
+
+    elif bbox_source is not None:
+        pose_config["data"]["bbox_source"] = bbox_source
+
+    if external_detector_metadata is not None:
+        pose_config.setdefault("metadata", {})
+        pose_config["metadata"]["external_detector"] = _yaml_safe_value(external_detector_metadata)
+
     # set the dataset from which to load weights
     if weight_init is not None:
         pose_config["train_settings"]["weight_init"] = weight_init.to_dict()
@@ -194,6 +244,7 @@ def make_pytorch_pose_config(
 
     # sort first-level keys to make it prettier
     pose_config = dict(sorted(pose_config.items()))
+    pose_config = _yaml_safe_value(pose_config)
 
     if save:
         write_config(pose_config_path, pose_config, overwrite=True)
