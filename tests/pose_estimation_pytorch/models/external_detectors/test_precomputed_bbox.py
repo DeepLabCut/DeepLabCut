@@ -22,13 +22,12 @@ from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.pose_estimation_pytorch.data.bboxes import (
     BBoxEntry,
     BBoxes,
-    PrecomputedDetectorRunner,
 )
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import build_detector_postprocessor
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import build_bottom_up_preprocessor
 from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
-from deeplabcut.pose_estimation_pytorch.models.detectors.external import EXTERNAL_DETECTORS
+from deeplabcut.pose_estimation_pytorch.models.detectors.external import EXTERNAL_DETECTORS, PrecomputedDetectorRunner
 
 # Important: ensure the mock detector module is imported so registry population happens
 from deeplabcut.pose_estimation_pytorch.runners.inference import build_inference_runner
