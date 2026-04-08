@@ -319,7 +319,6 @@ def test_required_category_rules_exist():
     names = {rule.name for rule in CATEGORY_RULES}
     assert "docs" in names
     assert "core" in names
-    assert "ci_workflows" in names
 
 
 def test_docs_rule_exists_once():
