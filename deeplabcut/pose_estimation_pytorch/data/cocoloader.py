@@ -17,7 +17,7 @@ from pathlib import Path
 
 import numpy as np
 
-from deeplabcut.pose_estimation_pytorch.data.base import Loader
+from deeplabcut.pose_estimation_pytorch.data.base import BBoxComputationMethod, Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.utils import (
     map_id_to_annotations,
@@ -274,7 +274,7 @@ class COCOLoader(Loader):
         annotations_with_bbox = self._compute_bboxes(
             data["images"],
             data["annotations"],
-            method="gt",
+            method=BBoxComputationMethod.GT,
         )
         data["annotations"] = annotations_with_bbox
         return data

@@ -197,13 +197,11 @@ class DLCLoader(Loader):
 
         params = self.get_dataset_parameters()
         data = self.to_coco(str(self._project_root), self._dfs[mode], params)
-        with_bbox = self._compute_bboxes(
-            data["images"],
-            data["annotations"],
-            method="keypoints",
-            bbox_margin=self.model_cfg["data"].get("bbox_margin", 20),
-        )
-        data["annotations"] = with_bbox
+
+        # IMPORTANT:
+        # Do not recompute / overwrite bboxes here.
+        # `create_dataset(...)` now owns bbox source selection ("gt", "keypoints",
+        # "detection bbox", ...), which keeps dataset construction explicit and safe.
         return data
 
     def load_ground_truth(
