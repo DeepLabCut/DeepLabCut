@@ -8,7 +8,9 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from dataclasses import dataclass
 from functools import partial
+from pathlib import Path
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
@@ -26,8 +28,26 @@ from deeplabcut.gui.components import (
 )
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.gui.widgets import ConfigEditor
-from deeplabcut.utils import auxfun_multianimal
 from deeplabcut.utils.auxiliaryfunctions import edit_config
+
+
+@dataclass(frozen=True)
+class AnalyzeVideosOptions:
+    config: str
+    shuffle: int
+    save_as_csv: bool
+    filter_data: bool
+    plot_trajectories: bool
+    show_trajectory_plots: bool
+    displayed_bodyparts: tuple[str, ...]
+    create_video_all_detections: bool
+    auto_track: bool
+    calibrate_assembly: bool
+    assemble_with_ID_only: bool
+    num_animals_in_videos: int | None
+    cropping: tuple[int, int, int, int] | None
+    dynamic_cropping_params: tuple[bool, float, int]
+    track_method: str | None
 
 
 class AnalyzeVideos(DefaultTab):
@@ -42,7 +62,9 @@ class AnalyzeVideos(DefaultTab):
 
     def _set_page(self):
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
-        self.video_selection_widget = VideoSelectionWidget(self.root, self)
+        self.video_selection_widget = VideoSelectionWidget(
+            self.root, self, hide_videotype=True, sync_videotype_with_selection=True
+        )
         self.main_layout.addWidget(self.video_selection_widget)
 
         tmp_layout = _create_horizontal_layout()
@@ -246,28 +268,31 @@ class AnalyzeVideos(DefaultTab):
         editor = ConfigEditor(self.root.config)
         editor.show()
 
-    def analyze_videos(self):
+    def _collect_options(self) -> AnalyzeVideosOptions:
         config = self.root.config
         shuffle = self.root.shuffle_value
-
-        videos = list(self.files)
         save_as_csv = self.save_as_csv.isChecked()
-        videotype = self.video_selection_widget.videotype_widget.currentText()
+        filter_data = self.filter_predictions.isChecked()
+        plot_trajectories = self.plot_trajectories.isChecked()
+        show_trajectory_plots = self.show_trajectory_plots.isChecked()
+        displayed_bodyparts = tuple(self.bodyparts_list_widget.selected_bodyparts) if plot_trajectories else ()
 
         if self.root.is_multianimal:
             calibrate_assembly = self.calibrate_assembly_checkbox.isChecked()
             assemble_with_ID_only = self.assemble_with_ID_only_checkbox.isChecked()
             track_method = self.tracker_type_widget.currentText()
-            edit_config(self.root.config, {"default_track_method": track_method})
             num_animals_in_videos = self.num_animals_in_videos.value()
+            create_video_all_detections = self.create_detections_video_checkbox.isChecked()
         else:
             calibrate_assembly = False
-            num_animals_in_videos = None
             assemble_with_ID_only = False
+            track_method = None
+            num_animals_in_videos = None
+            create_video_all_detections = False
 
         cropping = None
-
-        if self.root.cfg["cropping"] == "True":
+        crop_flag = self.root.cfg.get("cropping", False)
+        if str(crop_flag).lower() == "true":
             cropping = (
                 self.root.cfg["x1"],
                 self.root.cfg["x2"],
@@ -276,84 +301,143 @@ class AnalyzeVideos(DefaultTab):
             )
 
         dynamic_cropping_params = (False, 0.5, 10)
-        try:
-            if self.dynamic_cropping:
-                dynamic_cropping_params = (True, 0.5, 10)
-        except AttributeError:
-            pass
+        if getattr(self, "dynamic_cropping", False):
+            dynamic_cropping_params = (True, 0.5, 10)
 
-        func = partial(
-            deeplabcut.analyze_videos,
-            config,
-            videos=videos,
-            videotype=videotype,
+        return AnalyzeVideosOptions(
+            config=config,
             shuffle=shuffle,
             save_as_csv=save_as_csv,
-            cropping=cropping,
-            dynamic=dynamic_cropping_params,
+            filter_data=filter_data,
+            plot_trajectories=plot_trajectories,
+            show_trajectory_plots=show_trajectory_plots,
+            displayed_bodyparts=displayed_bodyparts,
+            create_video_all_detections=create_video_all_detections,
             auto_track=self.root.is_multianimal,
-            n_tracks=num_animals_in_videos,
-            calibrate=calibrate_assembly,
-            identity_only=assemble_with_ID_only,
+            calibrate_assembly=calibrate_assembly,
+            assemble_with_ID_only=assemble_with_ID_only,
+            num_animals_in_videos=num_animals_in_videos,
+            cropping=cropping,
+            dynamic_cropping_params=dynamic_cropping_params,
+            track_method=track_method,
         )
+
+    def _get_video_batches(self):
+        """
+        Returns a list of (videotype, videos) pairs.
+        videotype should include the leading dot, e.g. '.avi'.
+        """
+        groups = self.video_selection_widget.get_files_grouped_by_suffix(keep_dot=True)
+        batches = [(suffix, videos) for suffix, videos in sorted(groups.items()) if suffix]
+        return batches
+
+    def _get_unique_video_parent_folders(self, batches: list[tuple[str, list[str]]]) -> list[str]:
+        folders = []
+        seen = set()
+
+        for _, videos in batches:
+            for video in videos:
+                parent = str(Path(video).parent.resolve())
+                if parent not in seen:
+                    seen.add(parent)
+                    folders.append(parent)
+
+        return folders
+
+    def _run_pipeline(self, options: AnalyzeVideosOptions, batches: list[tuple[str, list[str]]]):
+        for videotype, videos in batches:
+            try:
+                self.root.logger.info(f"Analyzing {len(videos)} video(s) with extension {videotype}")
+
+                deeplabcut.analyze_videos(
+                    options.config,
+                    videos=videos,
+                    videotype=videotype,
+                    shuffle=options.shuffle,
+                    save_as_csv=options.save_as_csv,
+                    cropping=options.cropping,
+                    dynamic=options.dynamic_cropping_params,
+                    auto_track=options.auto_track,
+                    n_tracks=options.num_animals_in_videos,
+                    calibrate=options.calibrate_assembly,
+                    identity_only=options.assemble_with_ID_only,
+                )
+
+                self._run_postprocessing_for_group(options, videotype, videos)
+            except Exception as e:
+                exc = f"Error analyzing videos {videos} with extension {videotype}: {e}"
+                self.root.logger.error(exc, exc_info=True)
+                raise RuntimeError(exc) from e
+
+        # Run CSV conversion once per unique folder, after all batches
+        if options.auto_track and options.save_as_csv:
+            self._convert_outputs_to_csv_once_per_folder(batches)
+
+    def _run_postprocessing_for_group(
+        self,
+        options: AnalyzeVideosOptions,
+        videotype: str,
+        videos: list[str],
+    ):
+        if options.create_video_all_detections:
+            deeplabcut.create_video_with_all_detections(
+                options.config,
+                videos=videos,
+                videotype=videotype,
+                shuffle=options.shuffle,
+            )
+
+        if options.filter_data:
+            deeplabcut.filterpredictions(
+                options.config,
+                video=videos,
+                videotype=videotype,
+                shuffle=options.shuffle,
+                filtertype="median",
+                windowlength=5,
+                save_as_csv=options.save_as_csv,
+                track_method=options.track_method,
+            )
+
+        if options.plot_trajectories:
+            deeplabcut.plot_trajectories(
+                options.config,
+                videos=videos,
+                displayedbodyparts=options.displayed_bodyparts,
+                videotype=videotype,
+                shuffle=options.shuffle,
+                filtered=options.filter_data,
+                showfigures=options.show_trajectory_plots,
+                track_method=options.track_method,
+            )
+
+    def _convert_outputs_to_csv_once_per_folder(self, batches: list[tuple[str, list[str]]]):
+        folders = self._get_unique_video_parent_folders(batches)
+
+        for folder in folders:
+            self.root.logger.info(f"Converting H5 outputs to CSV in folder: {folder}")
+            deeplabcut.analyze_videos_converth5_to_csv(
+                folder,
+                listofvideos=False,
+            )
+
+    def analyze_videos(self):
+        options = self._collect_options()
+        batches = self._get_video_batches()
+
+        if not batches:
+            self.root.logger.warning("No videos selected.")
+            return
+
+        # Keep config in sync with GUI choice before launching worker
+        if self.root.is_multianimal and options.track_method is not None:
+            edit_config(self.root.config, {"default_track_method": options.track_method})
+
+        func = partial(self._run_pipeline, options, batches)
 
         self.worker, self.thread = move_to_separate_thread(func)
         self.worker.finished.connect(lambda: self.analyze_videos_btn.setEnabled(True))
         self.worker.finished.connect(lambda: self.root._progress_bar.hide())
-        self.worker.finished.connect(lambda: self.run_enabled())
         self.thread.start()
         self.analyze_videos_btn.setEnabled(False)
         self.root._progress_bar.show()
-
-    def run_enabled(self):
-        config = self.root.config
-        shuffle = self.root.shuffle_value
-
-        videos = list(self.files)
-        save_as_csv = self.save_as_csv.isChecked()
-        filter_data = self.filter_predictions.isChecked()
-        videotype = self.video_selection_widget.videotype_widget.currentText()
-        try:
-            create_video_all_detections = self.create_detections_video_checkbox.isChecked()
-        except AttributeError:
-            create_video_all_detections = False
-        if create_video_all_detections:
-            deeplabcut.create_video_with_all_detections(
-                config,
-                videos=videos,
-                videotype=videotype,
-                shuffle=shuffle,
-            )
-
-        track_method = auxfun_multianimal.get_track_method(self.root.cfg)
-        if filter_data:
-            deeplabcut.filterpredictions(
-                config,
-                video=videos,
-                videotype=videotype,
-                shuffle=shuffle,
-                filtertype="median",
-                windowlength=5,
-                save_as_csv=save_as_csv,
-                track_method=track_method,
-            )
-
-        if self.plot_trajectories.isChecked():
-            bdpts = self.bodyparts_list_widget.selected_bodyparts
-            self.root.logger.debug(f"Selected body parts for plot_trajectories: {bdpts}")
-            deeplabcut.plot_trajectories(
-                config,
-                videos=videos,
-                displayedbodyparts=bdpts,
-                videotype=videotype,
-                shuffle=shuffle,
-                filtered=filter_data,
-                showfigures=self.show_trajectory_plots.isChecked(),
-                track_method=track_method,
-            )
-
-        if self.root.is_multianimal and save_as_csv:
-            deeplabcut.analyze_videos_converth5_to_csv(
-                videos,
-                listofvideos=True,
-            )
