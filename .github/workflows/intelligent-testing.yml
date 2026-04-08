@@ -91,50 +91,14 @@ jobs:
     name: Fast lane (targeted pytest + selected functional)
     needs: intelligent-test-selection
     if: needs.intelligent-test-selection.outputs.run_fast == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-
-      - name: Install test deps
-        run: |
-          python -m pip install --upgrade pip
-          pip install pytest
-          pip install -e ".[tf]" --group dev
-
-      - name: Run targeted pytest (paths selected by selector)
-        env:
-          PYTEST_PATHS: ${{ needs.intelligent-test-selection.outputs.pytest_paths }}
-        run: |
-          python - << 'PY'
-          import json, os, subprocess, sys
-          paths = json.loads(os.environ.get("PYTEST_PATHS", "[]"))
-          if not paths:
-            print("No pytest paths selected; skipping targeted pytest.")
-            sys.exit(0)
-          cmd = ["python", "-m", "pytest"] + paths
-          print("Running:", " ".join(cmd))
-          sys.exit(subprocess.call(cmd))
-          PY
-
-      - name: Run selected functional scripts
-        env:
-          FUN_SCRIPTS: ${{ needs.intelligent-test-selection.outputs.functional_scripts }}
-        run: |
-          python - << 'PY'
-          import json, os, subprocess, sys
-          scripts = json.loads(os.environ.get("FUN_SCRIPTS", "[]"))
-          for s in scripts:
-              print("Running:", s)
-              rc = subprocess.call(["python", s])
-              if rc != 0:
-                  sys.exit(rc)
-          PY
+    uses: ./.github/workflows/python-package.yml
+    with:
+      concurrency_key: ${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || '' }}
+      matrix_json: >-
+        {"include":[{"os":"ubuntu-latest","python-version":"3.12"}]}
+      pytest_paths_json: ${{ needs.intelligent-test-selection.outputs.pytest_paths }}
+      functional_scripts_json: ${{ needs.intelligent-test-selection.outputs.functional_scripts }}
+      full_suite: false
 
   full-tests:
     name: Full matrix tests
@@ -143,3 +107,18 @@ jobs:
     uses: ./.github/workflows/python-package.yml
     with:
       concurrency_key: ${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || '' }}
+      matrix_json: >-
+        {
+          "include": [
+            {"os":"ubuntu-latest","python-version":"3.10"},
+            {"os":"ubuntu-latest","python-version":"3.11"},
+            {"os":"ubuntu-latest","python-version":"3.12"},
+            {"os":"macos-latest","python-version":"3.10"},
+            {"os":"macos-latest","python-version":"3.11"},
+            {"os":"macos-latest","python-version":"3.12"},
+            {"os":"windows-latest","python-version":"3.10"},
+            {"os":"windows-latest","python-version":"3.11"},
+            {"os":"windows-latest","python-version":"3.12"}
+          ]
+        }
+      full_suite: true
