@@ -17,6 +17,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 import torch
+from ruamel.yaml.scalarstring import SingleQuotedScalarString as SQS
 
 import deeplabcut.pose_estimation_pytorch.apis.export as export
 import deeplabcut.utils.auxiliaryfunctions as af
@@ -39,16 +40,18 @@ def _mock_multianimal_project(project_dir: Path):
     video_dir.mkdir(exist_ok=True)
 
     cfg_file, yaml_file = af.create_config_template(multianimal=True)
+    yaml_file.width = 10_000
+
     cfg_file["Task"] = "mock"
     cfg_file["scorer"] = "mock"
-    cfg_file["video_sets"] = {str(video_dir / "vid.mp4"): dict(crop="0, 640, 0, 480")}
-    cfg_file["project_path"] = str(project_dir)
+    cfg_file["video_sets"] = {SQS((video_dir / "vid.mp4").as_posix()): {"crop": "0, 640, 0, 480"}}
+    cfg_file["project_path"] = project_dir.as_posix()
     cfg_file["individuals"] = ["a", "b"]
     cfg_file["uniquebodyparts"] = []
     cfg_file["multianimalbodyparts"] = ["k1", "k2", "k3"]
     cfg_file["bodyparts"] = "MULTI!"
 
-    with open(project_dir / "config.yaml", "w") as f:
+    with open(project_dir / "config.yaml", "w", encoding="utf-8") as f:
         yaml_file.dump(cfg_file, f)
 
 
