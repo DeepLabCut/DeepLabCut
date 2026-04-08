@@ -125,6 +125,8 @@ jobs:
             brew install ffmpeg || true
           fi
       - name: Install ffmpeg (Windows, pinned monthly BtbN build)
+      # NOTE: The pinned version should be retained for ~2 years. This WILL fail if the BtbN release is removed,
+      # so if you are two years in the future and this step fails, please check the builds. Thanks.
         if: runner.os == 'Windows'
         shell: pwsh
         env:
