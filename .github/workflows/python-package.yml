@@ -7,13 +7,48 @@ on:
       concurrency_key:
         required: false
         type: string
+      matrix_json:
+        required: true
+        type: string
+      pytest_paths_json:
+        required: false
+        type: string
+        default: "[]"
+      functional_scripts_json:
+        required: false
+        type: string
+        default: "[]"
+      full_suite:
+        required: false
+        type: boolean
+        default: false
+
   workflow_dispatch:
     inputs:
       concurrency_key:
         description: "Optional stable key to dedupe manual runs (for example: pr-123)"
         required: false
         type: string
-
+      matrix_json:
+        description: "JSON matrix definition"
+        required: true
+        type: string
+        default: '{"include":[{"os":"ubuntu-latest","python-version":"3.12"}]}'
+      pytest_paths_json:
+        description: "JSON array of pytest paths"
+        required: false
+        type: string
+        default: "[]"
+      functional_scripts_json:
+        description: "JSON array of functional scripts"
+        required: false
+        type: string
+        default: "[]"
+      full_suite:
+        description: "Run full pytest and default functional suite"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -32,19 +67,9 @@ jobs:
         ${{ matrix.os }}-${{ matrix.python-version }}
       cancel-in-progress: true
 
-
     strategy:
       fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.10", "3.11", "3.12"]
-        include:
-          - os: ubuntu-latest
-            path: ~/.cache/pip
-          - os: macos-latest
-            path: ~/Library/Caches/pip
-          - os: windows-latest
-            path: ~\AppData\Local\pip\Cache
+      matrix: ${{ fromJson(inputs.matrix_json) }}
 
     steps:
       - name: Checkout code
@@ -72,48 +97,144 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install TensorFlow
-        shell: bash -el {0}  # Important: activates the conda environment
         if: runner.os != 'macOS'
+        shell: bash -el {0} # Important to enable conda env
         run: |
           pip install --no-cache-dir tensorflow tensorpack==0.11 tf_slim==1.1.0 tf-keras
 
       - name: Install TensorFlow on macOS
-        shell: bash -el {0}  # Important: activates the conda environment
         if: runner.os == 'macOS'
+        shell: bash -el {0}
         run: |
           pip install --no-cache-dir tensorflow-macos tensorpack==0.11 tf_slim==1.1.0 tf-keras
 
       - name: Install dependencies
-        shell: bash -el {0}  # Important: activates the conda environment
+        shell: bash -el {0}
         run: |
           python -m pip install --upgrade pip setuptools wheel
           pip install --no-cache-dir -e . --group dev
 
-      - name: Install ffmpeg
+      - name: Install ffmpeg (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
             sudo apt-get update
-            sudo apt-get install ffmpeg
+            sudo apt-get install -y ffmpeg
           elif [ "$RUNNER_OS" == "macOS" ]; then
             brew install ffmpeg || true
-          else
-            choco install ffmpeg
           fi
-        shell: bash
 
-      - name: Run pytest tests
-        shell: bash -el {0}  # Important: activates the conda environment
+      - name: Install ffmpeg (Windows, BtbN build)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          FFMPEG_TAG: autobuild-2026-03-31-13-11
+          FFMPEG_ASSET: ffmpeg-master-latest-win64-gpl-shared.zip
+          FFMPEG_SHA256: 084537f4fc8f4a6c6509fc7d25b74df715994107e635a7aee94cdeee054dcac4
         run: |
-          pip install --no-cache-dir -e . --group dev
-          python -m pytest
+          $ErrorActionPreference = "Stop"
+          $url = "https://github.com/BtbN/FFmpeg-Builds/releases/download/$env:FFMPEG_TAG/$env:FFMPEG_ASSET"
+          $zip = Join-Path $env:RUNNER_TEMP $env:FFMPEG_ASSET
+          $dest = Join-Path $env:RUNNER_TEMP "ffmpeg"
 
-      - name: Run functional tests
-        shell: bash -el {0}  # Important: activates the conda environment
+          Invoke-WebRequest -Uri $url -OutFile $zip
+
+          $actual = (Get-FileHash -Path $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          $expected = $env:FFMPEG_SHA256.ToLowerInvariant()
+
+          if ($actual -ne $expected) {
+            throw "FFmpeg checksum mismatch. Expected $expected but got $actual"
+          }
+          if (Test-Path $dest) { Remove-Item -Recurse -Force $dest }
+          Expand-Archive -Path $zip -DestinationPath $dest -Force
+          $ffdir = Get-ChildItem $dest -Directory | Select-Object -First 1
+          "$($ffdir.FullName)\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Verify ffmpeg/ffprobe available
+        shell: bash -el {0}
         run: |
-          pip install -c "$GITHUB_WORKSPACE/.github/versioning/tf-ci-constraints.txt" \
-          tensorflow tensorpack==0.11 tf_slim==1.1.0 tf-keras
-          pip install --no-cache-dir -c "$GITHUB_WORKSPACE/.github/versioning/tf-ci-constraints.txt" -e .
-          python examples/testscript_tensorflow_single_animal.py
-          python examples/testscript_tensorflow_multi_animal.py
-          python examples/testscript_pytorch_single_animal.py
-          python examples/testscript_pytorch_multi_animal.py
+          set -e
+          ffmpeg -version
+          ffprobe -version
+
+      - name: Run pytest
+        shell: bash -el {0}
+        env:
+          FULL_SUITE: ${{ inputs.full_suite }}
+          PYTEST_PATHS_JSON: ${{ inputs.pytest_paths_json }}
+        run: |
+          python - << 'PY'
+          import json
+          import os
+          import subprocess
+          import sys
+
+          full_suite = os.environ["FULL_SUITE"].lower() == "true"
+
+          if full_suite:
+              cmd = [sys.executable, "-m", "pytest"]
+              print("Running full pytest suite")
+          else:
+              paths = json.loads(os.environ.get("PYTEST_PATHS_JSON", "[]"))
+              if not paths:
+                  print("No pytest paths selected; skipping pytest.")
+                  raise SystemExit(0)
+              cmd = [sys.executable, "-m", "pytest", *paths]
+              print("Running targeted pytest:", " ".join(paths))
+
+          raise SystemExit(subprocess.call(cmd))
+          PY
+
+      - name: Run functional scripts
+        shell: bash -el {0}
+        env:
+          FULL_SUITE: ${{ inputs.full_suite }}
+          FUNCTIONAL_SCRIPTS_JSON: ${{ inputs.functional_scripts_json }}
+          RUNNER_OS: ${{ runner.os }}
+          PYTHON_VERSION: ${{ matrix.python-version }}
+        run: |
+          python - << 'PY'
+          import json
+          import os
+          import subprocess
+          import sys
+
+          full_suite = os.environ["FULL_SUITE"].lower() == "true"
+          runner_os = os.environ["RUNNER_OS"]
+          python_version = os.environ["PYTHON_VERSION"]
+
+          if full_suite:
+              scripts = [
+                  "examples/testscript_tensorflow_single_animal.py",
+                  "examples/testscript_tensorflow_multi_animal.py",
+                  "examples/testscript_pytorch_single_animal.py",
+                  "examples/testscript_pytorch_multi_animal.py",
+              ]
+          else:
+              scripts = json.loads(os.environ.get("FUNCTIONAL_SCRIPTS_JSON", "[]"))
+              if not scripts:
+                  print("No functional scripts selected; skipping functional tests.")
+                  raise SystemExit(0)
+
+          # Respect current TensorFlow support expectations on Windows
+          tf_allowed = not (runner_os == "Windows" and python_version in {"3.11", "3.12"})
+
+          filtered = []
+          for script in scripts:
+              is_tf = "tensorflow" in script
+              if is_tf and not tf_allowed:
+                  print(f"Skipping unsupported TensorFlow script on {runner_os} Python {python_version}: {script}")
+                  continue
+              filtered.append(script)
+
+          if not filtered:
+              print("No functional scripts remain after platform filtering; skipping.")
+              raise SystemExit(0)
+
+          for script in filtered:
+              print("Running:", script)
+              rc = subprocess.call([sys.executable, script])
+              if rc != 0:
+                  raise SystemExit(rc)
+          PY
