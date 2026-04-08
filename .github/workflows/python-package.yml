@@ -131,7 +131,7 @@ jobs:
         shell: pwsh
         env:
           FFMPEG_TAG: autobuild-2026-03-31-13-11
-          FFMPEG_ASSET: ffmpeg-master-latest-win64-gpl-shared.zip
+          FFMPEG_ASSET: ffmpeg-N-123777-g53537f6cf5-win64-gpl-shared.zip
         run: |
           $ErrorActionPreference = "Stop"
 
