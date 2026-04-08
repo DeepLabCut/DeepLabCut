@@ -737,15 +737,12 @@ def build_optimizer(
     model: nn.Module,
     optimizer_config: dict,
 ) -> torch.optim.Optimizer:
-    """Builds an optimizer from a configuration.
-
-    Args:
-        model: The model to optimize.
-        optimizer_config: The configuration for the optimizer.
-
-    Returns:
-        The optimizer for the model built according to the given configuration.
-    """
+    """Builds an optimizer from a configuration."""
     optim_cls = getattr(torch.optim, optimizer_config["type"])
-    optimizer = optim_cls(params=model.parameters(), **optimizer_config["params"])
+
+    params = [p for p in model.parameters() if p.requires_grad]
+    if len(params) == 0:
+        raise ValueError("Cannot build optimizer: model has no trainable parameters.")
+
+    optimizer = optim_cls(params=params, **optimizer_config["params"])
     return optimizer

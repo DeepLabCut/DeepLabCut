@@ -29,6 +29,9 @@ from deeplabcut.pose_estimation_pytorch.data import (
 )
 from deeplabcut.pose_estimation_pytorch.data.collate import COLLATE_FUNCTIONS
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
+from deeplabcut.pose_estimation_pytorch.models.detectors.external.base import (
+    build_precomputed_detector_runner_from_config,
+)
 from deeplabcut.pose_estimation_pytorch.modelzoo.memory_replay import (
     prepare_memory_replay,
 )
@@ -142,8 +145,36 @@ def train(
     logging.info(f"  Training:   {transform}")
     logging.info(f"  Validation: {inference_transform}")
 
-    train_dataset = loader.create_dataset(transform=transform, mode="train", task=task)
-    valid_dataset = loader.create_dataset(transform=inference_transform, mode="test", task=task)
+    train_detector_runner = None
+    valid_detector_runner = None
+
+    if task == Task.TOP_DOWN:
+        train_detector_runner = build_precomputed_detector_runner_from_config(
+            loader.model_cfg,
+            mode="train",
+            target_format="xywh",
+            validate_image_paths=False,
+        )
+        valid_detector_runner = build_precomputed_detector_runner_from_config(
+            loader.model_cfg,
+            mode="test",
+            target_format="xywh",
+            validate_image_paths=False,
+        )
+
+    train_dataset = loader.create_dataset(
+        transform=transform,
+        mode="train",
+        task=task,
+        detector_runner=train_detector_runner,
+    )
+
+    valid_dataset = loader.create_dataset(
+        transform=inference_transform,
+        mode="test",
+        task=task,
+        detector_runner=valid_detector_runner,
+    )
 
     collate_fn = None
     if collate_fn_cfg := run_config["data"]["train"].get("collate"):
