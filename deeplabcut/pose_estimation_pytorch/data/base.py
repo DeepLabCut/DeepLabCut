@@ -386,6 +386,39 @@ class Loader(ABC):
             raise ValueError(f"Invalid bbox computation method: {method}") from e
 
     @staticmethod
+    def _get_reference_bbox_for_matching(
+        annotation: dict,
+        image_h: int,
+        image_w: int,
+        bbox_margin: int,
+    ) -> np.ndarray:
+        """
+        Returns the reference bbox to use when matching detector predictions to annotations.
+
+        Priority:
+        1. derive bbox from keypoints if possible
+        2. fall back to annotation["bbox"] if present
+        3. raise if neither is available
+        """
+        keypoints = annotation.get("keypoints")
+        if keypoints is not None:
+            keypoints = np.asarray(keypoints, dtype=np.float32)
+            if keypoints.size > 0:
+                visible = keypoints[..., 2] > 0
+                if np.any(visible):
+                    return bbox_from_keypoints(
+                        keypoints=keypoints,
+                        image_h=image_h,
+                        image_w=image_w,
+                        margin=bbox_margin,
+                    ).astype(np.float32)
+
+        if "bbox" in annotation:
+            return np.asarray(annotation["bbox"], dtype=np.float32)
+
+        raise ValueError("Cannot build reference bbox for matching: annotation has neither visible keypoints nor bbox.")
+
+    @staticmethod
     def _compute_bboxes(
         images: list[dict],
         annotations: list[dict],
@@ -416,13 +449,9 @@ class Loader(ABC):
             ValueError: If method is not one of 'gt', 'detection bbox', 'keypoints', or 'segmentation mask'.
         """
 
-        if not method:
+        method = Loader._coerce_bbox_method(method)
+        if method is None:
             return annotations
-        if isinstance(method, str):
-            try:
-                method = BBoxComputationMethod[method.upper()]
-            except KeyError as e:
-                raise ValueError(f"Invalid bbox computation method: {method}") from e
 
         if method == BBoxComputationMethod.GT:
             for annotation in annotations:
@@ -478,7 +507,15 @@ class Loader(ABC):
                 ).reshape(-1)
 
                 gt_bboxes = np.stack(
-                    [np.asarray(annotations[idx]["bbox"], dtype=np.float32) for idx in candidate_ann_indices],
+                    [
+                        Loader._get_reference_bbox_for_matching(
+                            annotation=annotations[idx],
+                            image_h=img["height"],
+                            image_w=img["width"],
+                            bbox_margin=bbox_margin,
+                        )
+                        for idx in candidate_ann_indices
+                    ],
                     axis=0,
                 )
 

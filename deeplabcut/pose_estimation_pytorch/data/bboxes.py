@@ -15,7 +15,7 @@ BBoxFormat = Literal["xywh", "xyxy"]
 EvalMode: TypeAlias = Literal["train", "test"]
 
 
-class BBoxComputationMethod(Enum):
+class BBoxComputationMethod(str, Enum):
     GT = "gt"
     KEYPOINTS = "keypoints"
     DETECTION_BBOX = "detection_bbox"
