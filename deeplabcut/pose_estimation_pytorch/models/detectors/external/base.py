@@ -35,7 +35,8 @@ def _build_external_detector(
     Builds an external detector from config.
 
     Unlike native DLC detectors, external detectors are assumed to be
-    inference-oriented and usually do not participate in DLC training,
+    inference-oriented and usually are not trained (but the pose estimation model may be trained on top of them).
+    As such, external detectors are not expected to have a training loop, and may not even have an optimizer or
     snapshot loading, or target generation.
     """
     detector: BaseExternalDetector = build_from_cfg(cfg, **kwargs)
