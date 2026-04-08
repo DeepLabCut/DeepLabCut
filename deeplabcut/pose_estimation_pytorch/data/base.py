@@ -10,11 +10,16 @@
 #
 from __future__ import annotations
 
+import copy
+import logging
 from abc import ABC, abstractmethod
+from enum import Enum, auto
 from pathlib import Path
+from typing import Protocol
 
 import albumentations as A
 import numpy as np
+from scipy.optimize import linear_sum_assignment
 
 import deeplabcut.core.config as config_utils
 import deeplabcut.pose_estimation_pytorch.config as config
@@ -33,6 +38,30 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
 
+logger = logging.getLogger(__name__)
+
+
+class BBoxComputationMethod(Enum):
+    GT = auto()
+    KEYPOINTS = auto()
+    DETECTION_BBOX = auto()
+    SEGMENTATION_MASK = auto()
+
+
+class DetectorRunnerLike(Protocol):
+    """Minimal protocol for any detector inference runner used by the data layer."""
+
+    def inference(
+        self,
+        images,
+        shelf_writer=None,
+    ) -> list[dict[str, np.ndarray]]:
+        """
+        Expected final postprocessed DLC output per image, e.g.
+            {"bboxes": np.ndarray[N, 4], "bbox_scores": np.ndarray[N]}
+        """
+        ...
+
 
 class Loader(ABC):
     """Abstract class that represents a blueprint for loading and processing dataset
@@ -44,7 +73,7 @@ class Loader(ABC):
         create_dataset(images: dict = None, annotations: dict = None, transform: object = None,
             mode: str = "train", task: Task = Task.BOTTOM_UP) -> PoseDataset:
             Creates and returns a PoseDataset given a set of images, annotations, and other parameters.
-        _compute_bboxes(images, annotations, method: str = 'gt') -> dict:
+        _compute_bboxes(images, annotations, method:  BBoxComputationMethod | str = BBoxComputationMethod.GT) -> dict:
             Retrieves all bounding boxes based on the specified method.
         get_dataset_parameters(*args, **kwargs) -> dict:
             Returns a dictionary containing dataset parameters derived from the configuration.
@@ -230,23 +259,33 @@ class Loader(ABC):
         transform: A.BaseCompose | None = None,
         mode: str = "train",
         task: Task = Task.BOTTOM_UP,
+        detector_runner: DetectorRunnerLike | None = None,
     ) -> PoseDataset:
-        """Creates a PoseDataset based on provided arguments.
+        """Creates a PoseDataset based on provided arguments."""
 
-        Args:
-            transform: Transformation to be applied on dataset. Defaults to None.
-            mode: Mode in which dataset is to be used (e.g., 'train', 'test'). Defaults to 'train'.
-            task: Task for which the dataset is being used. Defaults to 'BU'.
-
-        Returns:
-            PoseDataset: An instance of the PoseDataset class.
-
-        Raises:
-            Any exception raised by `get_dataset_parameters` or `load_data` methods.
-        """
         parameters = self.get_dataset_parameters()
         data = self.load_data(mode)
-        data["annotations"] = self.filter_annotations(data["annotations"], task)
+
+        # IMPORTANT:
+        # load_data() is cached. Never mutate cached annotations in-place.
+        images = data["images"]
+        annotations = copy.deepcopy(data["annotations"])
+
+        # Resolve bbox source only for top-down tasks
+        if task == Task.TOP_DOWN:
+            bbox_method = self._resolve_bbox_method(detector_runner)
+            annotations = self._compute_bboxes(
+                images=images,
+                annotations=annotations,
+                method=bbox_method,
+                bbox_margin=self.model_cfg["data"].get("bbox_margin", 20),
+                detector_runner=detector_runner,
+                bbox_iou_threshold=self.model_cfg["data"].get("bbox_match_iou_threshold", 0.1),
+                fallback_to_gt=self.model_cfg["data"].get("bbox_fallback_to_gt", True),
+            )
+
+        annotations = self.filter_annotations(annotations, task)
+
         ctd_config = None
         if self.pose_task == Task.COND_TOP_DOWN:
             ctd_config = GenSamplingConfig(
@@ -255,8 +294,8 @@ class Loader(ABC):
             )
 
         dataset = PoseDataset(
-            images=data["images"],
-            annotations=data["annotations"],
+            images=images,
+            annotations=annotations,
             transform=transform,
             mode=mode,
             task=task,
@@ -300,12 +339,29 @@ class Loader(ABC):
 
         return filtered_annotations
 
+    def _resolve_bbox_method(self, detector_runner: DetectorRunnerLike | None) -> str:
+        """
+        Decide where top-down boxes should come from.
+
+        Priority:
+        1. If a detector_runner is explicitly provided -> use detector boxes
+        2. Otherwise use config value from model_cfg["data"]["bbox_source"]
+        3. Fallback to "gt"
+        """
+        if detector_runner is not None:
+            return "detection bbox"
+
+        return self.model_cfg["data"].get("bbox_source", "gt")
+
     @staticmethod
     def _compute_bboxes(
         images: list[dict],
         annotations: list[dict],
-        method: str = "gt",
+        method: BBoxComputationMethod | str = BBoxComputationMethod.GT,
         bbox_margin: int = 20,
+        detector_runner: DetectorRunnerLike | None = None,
+        bbox_iou_threshold: float = 0.1,
+        fallback_to_gt: bool = True,
     ):
         """TODO: Nastya method of bbox computation (detection bbox, seg. mask, ...)
         Retrieves all bounding boxes based on the given method.
@@ -330,22 +386,23 @@ class Loader(ABC):
 
         if not method:
             return annotations
+        if isinstance(method, str):
+            try:
+                method = BBoxComputationMethod[method.upper()]
+            except KeyError as e:
+                raise ValueError(f"Invalid bbox computation method: {method}") from e
 
-        elif method == "gt":
-            for _i, annotation in enumerate(annotations):
+        if method == BBoxComputationMethod.GT:
+            for annotation in annotations:
                 if "bbox" not in annotation:
-                    # or do something else?
                     raise ValueError(
-                        f"Bounding box not found in annotation {annotation}, please "
-                        "chose another bbox computation method"
+                        f"Bounding box not found in annotation {annotation}, "
+                        "please choose another bbox computation method"
                     )
             return annotations
 
-        elif method == "detection bbox":
-            raise NotImplementedError
-
-        elif method == "keypoints":
-            min_area = 1  # TODO: should not be hardcoded
+        elif method == BBoxComputationMethod.KEYPOINTS:
+            min_area = 1
             img_id_to_annotations = map_id_to_annotations(annotations)
             for img in images:
                 anns = [annotations[idx] for idx in img_id_to_annotations[img["id"]]]
@@ -359,8 +416,151 @@ class Loader(ABC):
                     a["area"] = max(min_area, (a["bbox"][2] * a["bbox"][3]).item())
             return annotations
 
-        elif method == "segmentation mask":
+        elif method == BBoxComputationMethod.DETECTION_BBOX:
+            if detector_runner is None:
+                raise ValueError("detector_runner must be provided when method='detection bbox'")
+
+            img_id_to_annotations = map_id_to_annotations(annotations)
+            image_inputs = [img["file_name"] for img in images]
+            predictions = detector_runner.inference(image_inputs)
+
+            if len(predictions) != len(images):
+                raise ValueError(f"Detector returned {len(predictions)} predictions for {len(images)} images")
+
+            num_unmatched = 0
+            num_total = 0
+
+            for img, pred in zip(images, predictions, strict=False):
+                ann_indices = img_id_to_annotations[img["id"]]
+
+                # Only match real individuals, not unique-bodypart-only annotations
+                candidate_ann_indices = [idx for idx in ann_indices if annotations[idx].get("category_id", 1) == 1]
+
+                if len(candidate_ann_indices) == 0:
+                    continue
+
+                pred_bboxes = np.asarray(pred.get("bboxes", np.zeros((0, 4))), dtype=np.float32).reshape(-1, 4)
+                pred_scores = np.asarray(
+                    pred.get("bbox_scores", np.ones((len(pred_bboxes),), dtype=np.float32)),
+                    dtype=np.float32,
+                ).reshape(-1)
+
+                gt_bboxes = np.stack(
+                    [np.asarray(annotations[idx]["bbox"], dtype=np.float32) for idx in candidate_ann_indices],
+                    axis=0,
+                )
+
+                matches = Loader._match_bboxes_iou(
+                    gt_bboxes=gt_bboxes,
+                    pred_bboxes=pred_bboxes,
+                    pred_scores=pred_scores,
+                    iou_threshold=bbox_iou_threshold,
+                )
+
+                num_total += len(candidate_ann_indices)
+
+                for local_gt_idx, ann_idx in enumerate(candidate_ann_indices):
+                    pred_idx = matches.get(local_gt_idx, None)
+
+                    if pred_idx is None:
+                        num_unmatched += 1
+                        if not fallback_to_gt:
+                            annotations[ann_idx]["bbox"] = np.zeros((4,), dtype=np.float32)
+                            annotations[ann_idx]["area"] = 0.0
+                        continue
+
+                    matched_bbox = pred_bboxes[pred_idx].astype(np.float32, copy=True)
+                    annotations[ann_idx]["bbox"] = matched_bbox
+                    annotations[ann_idx]["area"] = max(1.0, float(matched_bbox[2] * matched_bbox[3]))
+
+            if num_total > 0 and num_unmatched > 0:
+                logging.info(
+                    f"Detector bbox matching: {num_total - num_unmatched}/{num_total} annotations matched "
+                    f"(fallback_to_gt={fallback_to_gt})"
+                )
+
+            return annotations
+
+        if method == "segmentation mask":
             raise NotImplementedError
 
-        else:
-            raise ValueError(f"Unknown method: {method}")
+        raise ValueError(f"Unknown method: {method}")
+
+    @staticmethod
+    def _xywh_to_xyxy(boxes: np.ndarray) -> np.ndarray:
+        """Convert boxes from xywh -> xyxy."""
+        boxes = np.asarray(boxes, dtype=np.float32).copy()
+        if boxes.size == 0:
+            return boxes.reshape(0, 4)
+        boxes[:, 2] = boxes[:, 0] + boxes[:, 2]
+        boxes[:, 3] = boxes[:, 1] + boxes[:, 3]
+        return boxes
+
+    @staticmethod
+    def _bbox_iou_xywh(boxes_a: np.ndarray, boxes_b: np.ndarray) -> np.ndarray:
+        """
+        Compute pairwise IoU between two sets of boxes in xywh format.
+        Returns matrix of shape [len(boxes_a), len(boxes_b)].
+        """
+        boxes_a = Loader._xywh_to_xyxy(boxes_a)
+        boxes_b = Loader._xywh_to_xyxy(boxes_b)
+
+        if len(boxes_a) == 0 or len(boxes_b) == 0:
+            return np.zeros((len(boxes_a), len(boxes_b)), dtype=np.float32)
+
+        ious = np.zeros((len(boxes_a), len(boxes_b)), dtype=np.float32)
+        for i, a in enumerate(boxes_a):
+            ax1, ay1, ax2, ay2 = a
+            a_area = max(0.0, ax2 - ax1) * max(0.0, ay2 - ay1)
+
+            for j, b in enumerate(boxes_b):
+                bx1, by1, bx2, by2 = b
+                b_area = max(0.0, bx2 - bx1) * max(0.0, by2 - by1)
+
+                ix1 = max(ax1, bx1)
+                iy1 = max(ay1, by1)
+                ix2 = min(ax2, bx2)
+                iy2 = min(ay2, by2)
+
+                iw = max(0.0, ix2 - ix1)
+                ih = max(0.0, iy2 - iy1)
+                inter = iw * ih
+
+                union = a_area + b_area - inter
+                if union > 0:
+                    ious[i, j] = inter / union
+
+        return ious
+
+    @staticmethod
+    def _match_bboxes_iou(
+        gt_bboxes: np.ndarray,
+        pred_bboxes: np.ndarray,
+        pred_scores: np.ndarray | None = None,
+        iou_threshold: float = 0.1,
+    ) -> dict[int, int]:
+        """
+        Match predicted boxes to GT boxes using Hungarian assignment on IoU cost.
+
+        Returns:
+            dict mapping local_gt_index -> pred_index
+        """
+        if len(gt_bboxes) == 0 or len(pred_bboxes) == 0:
+            return {}
+
+        iou = Loader._bbox_iou_xywh(gt_bboxes, pred_bboxes)
+
+        # Prefer higher score very slightly when IoUs are tied
+        cost = 1.0 - iou
+        if pred_scores is not None and len(pred_scores) == pred_bboxes.shape[0]:
+            score_penalty = (1.0 - pred_scores.reshape(1, -1)) * 1e-6
+            cost = cost + score_penalty
+
+        gt_idx, pred_idx = linear_sum_assignment(cost)
+
+        matches: dict[int, int] = {}
+        for g, p in zip(gt_idx, pred_idx, strict=False):
+            if iou[g, p] >= iou_threshold:
+                matches[int(g)] = int(p)
+
+        return matches
