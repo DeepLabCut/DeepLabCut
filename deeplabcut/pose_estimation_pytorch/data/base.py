@@ -482,6 +482,21 @@ class Loader(ABC):
                     axis=0,
                 )
 
+                # Simple / common case: one candidate annotation only (single animal).
+                # In this case, trust the detector and assign directly the highest scoring bbox rather than trying
+                # to IoU-match against a potentially stale placeholder bbox.
+                if len(candidate_ann_indices) == 1 and len(pred_bboxes) > 0:
+                    ann_idx = candidate_ann_indices[0]
+                    if len(pred_scores) == len(pred_bboxes):
+                        pred_idx = int(np.argmax(pred_scores))
+                    else:
+                        pred_idx = 0
+                    matched_bbox = pred_bboxes[pred_idx].astype(np.float32, copy=True)
+                    annotations[ann_idx]["bbox"] = matched_bbox
+                    annotations[ann_idx]["area"] = max(1.0, float(matched_bbox[2] * matched_bbox[3]))
+                    num_total += 1
+                    continue
+
                 matches = Loader._match_bboxes_iou(
                     gt_bboxes=gt_bboxes,
                     pred_bboxes=pred_bboxes,
