@@ -1,9 +1,13 @@
+import logging
+
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import build_detector_postprocessor
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import build_bottom_up_preprocessor
 from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
 from deeplabcut.pose_estimation_pytorch.models.detectors.external import EXTERNAL_DETECTORS
 from deeplabcut.pose_estimation_pytorch.runners import build_inference_runner
 from deeplabcut.pose_estimation_pytorch.task import Task
+
+logger = logging.getLogger(__name__)
 
 
 def get_external_detector_inference_runner(
@@ -19,7 +23,23 @@ def get_external_detector_inference_runner(
     if transform is None:
         transform = build_transforms({"scale_to_unit_range": True})
 
-    detector = EXTERNAL_DETECTORS.build(detector_cfg).to(device).eval()
+    detector = EXTERNAL_DETECTORS.build(detector_cfg)
+    # to_device ?
+    try:
+        for param in detector.parameters():
+            param.requires_grad = False
+    except (AttributeError, RuntimeError):
+        logger.warning(
+            "External detector does not have parameters that can be frozen. "
+            "Please review whether this is expected behavior for your detector."
+        )
+    try:
+        detector.eval()
+    except AttributeError:
+        logger.warning(
+            "External detector does not have an eval() method. "
+            "Please review whether this is expected behavior for your detector."
+        )
 
     runner = build_inference_runner(
         task=Task.DETECT,
