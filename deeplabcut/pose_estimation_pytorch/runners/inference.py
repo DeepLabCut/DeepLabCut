@@ -31,6 +31,7 @@ from deeplabcut.pose_estimation_pytorch.config.utils import update_config_by_dot
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import Postprocessor
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import LoadImage, Preprocessor
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
+from deeplabcut.pose_estimation_pytorch.models.detectors.external import BaseExternalDetector
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.runners.base import ModelType, Runner
 from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (
@@ -38,6 +39,8 @@ from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (
     TopDownDynamicCropper,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
+
+DetectorModel = BaseDetector | BaseExternalDetector
 
 
 def _merge_defaults(cls, data: dict[str, Any]):
@@ -938,10 +941,10 @@ class CTDInferenceRunner(PoseInferenceRunner):
         return cond_pose[: len(self._idx_to_id)]
 
 
-class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
+class DetectorInferenceRunner(InferenceRunner[DetectorModel]):
     """Runner for object detection inference."""
 
-    def __init__(self, model: BaseDetector, **kwargs):
+    def __init__(self, model: DetectorModel, **kwargs):
         """
         Args:
             model: The detector to use for inference.
