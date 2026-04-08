@@ -23,10 +23,11 @@ import scipy.io as sio
 
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.core.engine import Engine
-from deeplabcut.pose_estimation_pytorch.data.base import Loader
+from deeplabcut.pose_estimation_pytorch.data.base import BBoxComputationMethod, Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.data.utils import bbox_from_keypoints, read_image_shape_fast
+from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 class DLCLoader(Loader):
@@ -172,6 +173,15 @@ class DLCLoader(Loader):
             top_down_crop_margin=crop_margin,
             top_down_crop_with_context=crop_with_context,
         )
+
+    def default_bbox_method(self, task: Task) -> str | None:
+        """
+        Preserve historical DLCLoader behavior:
+        for detector and top-down tasks, derive boxes from keypoints unless explicitly overridden.
+        """
+        if task in (Task.TOP_DOWN, Task.DETECT):
+            return BBoxComputationMethod.KEYPOINTS
+        return None
 
     def load_data(self, mode: str = "train") -> dict:
         """Loads DeepLabCut data into COCO-style annotations.

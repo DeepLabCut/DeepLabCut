@@ -154,6 +154,15 @@ class Loader(ABC):
         data = self._loaded_data[mode]
         return [image["file_name"] for image in data["images"]]
 
+    def default_bbox_method(self, task: Task) -> str | None:
+        """
+        Returns the default bbox source for this loader/task.
+        Subclasses may override this to preserve legacy behavior.
+        """
+        if task in (Task.TOP_DOWN, Task.DETECT):
+            return BBoxComputationMethod.GT
+        return None
+
     def ground_truth_keypoints(self, mode: str = "train", unique_bodypart: bool = False) -> dict[str, np.ndarray]:
         """Creates a dictionary containing the ground truth data.
 
@@ -271,6 +280,10 @@ class Loader(ABC):
         images = data["images"]
         annotations = copy.deepcopy(data["annotations"])
 
+        bbox_method = self.model_cfg["data"].get("bbox_source")
+        if bbox_method is None:
+            bbox_method = self.default_bbox_method(task)
+
         # Resolve bbox source only for top-down tasks
         if task == Task.TOP_DOWN:
             bbox_method = self._resolve_bbox_method(detector_runner)
@@ -339,7 +352,7 @@ class Loader(ABC):
 
         return filtered_annotations
 
-    def _resolve_bbox_method(self, detector_runner: DetectorRunnerLike | None) -> str:
+    def _resolve_bbox_method(self, detector_runner: DetectorRunnerLike | None) -> BBoxComputationMethod:
         """
         Decide where top-down boxes should come from.
 
@@ -349,9 +362,9 @@ class Loader(ABC):
         3. Fallback to "gt"
         """
         if detector_runner is not None:
-            return "detection bbox"
+            return BBoxComputationMethod.DETECTION_BBOX
 
-        return self.model_cfg["data"].get("bbox_source", "gt")
+        return self.model_cfg["data"].get("bbox_source", BBoxComputationMethod.GT)
 
     @staticmethod
     def _compute_bboxes(
