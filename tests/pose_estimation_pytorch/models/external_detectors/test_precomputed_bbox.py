@@ -168,7 +168,7 @@ def test_bbox_entry_from_detector_context_roundtrip_xywh():
 
     assert entry.image_path == Path("img0.png")
     assert entry.bbox_format == "xywh"
-    assert entry.bbox_scores == [0.9]
+    assert np.allclose(entry.bbox_scores, [0.9])
 
     restored = entry.to_detector_context(target_format="xywh")
     np.testing.assert_allclose(restored["bboxes"], context["bboxes"])
