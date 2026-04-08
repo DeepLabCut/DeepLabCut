@@ -7,6 +7,7 @@ from typing import Protocol, TypedDict
 import torch
 import torch.nn as nn
 
+from deeplabcut.pose_estimation_pytorch.data.base import DetectorRunnerLike, Loader
 from deeplabcut.pose_estimation_pytorch.data.bboxes import BBoxEntry, BBoxes, BBoxFormat, DetectorContext, EvalMode
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
@@ -129,6 +130,10 @@ class PrecomputedDetectorRunner:
         self.target_format = target_format
         self.validate_image_paths = validate_image_paths
 
+    @staticmethod
+    def _normalize_path_for_compare(path: Path | str) -> str:
+        return Path(path).as_posix()
+
     @classmethod
     def from_bboxes(
         cls,
@@ -184,7 +189,9 @@ class PrecomputedDetectorRunner:
 
         for requested_path, entry in zip(requested_paths, self.entries, strict=False):
             if self.validate_image_paths and requested_path is not None and entry.image_path is not None:
-                if Path(entry.image_path) != requested_path:
+                if self._normalize_path_for_compare(entry.image_path) != self._normalize_path_for_compare(
+                    requested_path
+                ):
                     raise ValueError(
                         f"Precomputed bbox entry path mismatch: expected {requested_path}, got {entry.image_path}"
                     )
@@ -192,3 +199,67 @@ class PrecomputedDetectorRunner:
             outputs.append(entry.to_detector_context(target_format=self.target_format))
 
         return outputs
+
+
+def precompute_detector_bboxes(
+    loader: Loader,
+    detector_runner: DetectorRunnerLike,
+    output_file: str | Path,
+    modes: tuple[str, ...] = ("train", "test"),
+    *,
+    bbox_format: str = "xywh",
+) -> BBoxes:
+    """
+    Run a detector runner on all images for the requested modes and save the results
+    to a BBoxes JSON artifact.
+
+    The saved artifact is intended to be reused later for training a top-down pose
+    model without rerunning the detector.
+    """
+    output_file = Path(output_file)
+
+    result = {}
+    for mode in modes:
+        image_paths = [Path(p) for p in loader.get_image_paths(mode)]
+        outputs = detector_runner.inference(image_paths)
+
+        if len(outputs) != len(image_paths):
+            raise ValueError(f"Detector returned {len(outputs)} outputs for {len(image_paths)} {mode} images.")
+
+        result[mode] = [
+            BBoxEntry.from_detector_context(
+                out,
+                image_path=img_path,
+                bbox_format=bbox_format,
+            )
+            for img_path, out in zip(image_paths, outputs, strict=False)
+        ]
+
+    bboxes = BBoxes(**result)
+    bboxes.dump_json(output_file)
+    return bboxes
+
+
+def build_precomputed_detector_runner_from_config(
+    model_cfg: dict,
+    mode: str,
+    *,
+    target_format: str = "xywh",
+    validate_image_paths: bool = False,
+) -> PrecomputedDetectorRunner | None:
+    """
+    Build a precomputed detector runner from model_cfg["data"]["precomputed_bboxes"].
+    Returns None if no precomputed bbox file is configured.
+    """
+    data_cfg = model_cfg.get("data", {})
+    bbox_file = data_cfg.get("precomputed_bboxes")
+    if bbox_file is None:
+        return None
+
+    bboxes = BBoxes.from_file(Path(bbox_file))
+    return PrecomputedDetectorRunner.from_bboxes(
+        bboxes,
+        mode=mode,
+        target_format=target_format,
+        validate_image_paths=validate_image_paths,
+    )
