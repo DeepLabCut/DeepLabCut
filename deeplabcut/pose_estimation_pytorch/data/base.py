@@ -565,7 +565,7 @@ class Loader(ABC):
 
             return annotations
 
-        if method == "segmentation mask":
+        if method == BBoxComputationMethod.SEGMENTATION_MASK:
             raise NotImplementedError
 
         raise ValueError(f"Unknown method: {method}")
