@@ -28,6 +28,7 @@ import deeplabcut.pose_estimation_pytorch.runners.ctd as ctd
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.core.inferenceutils import calc_object_keypoint_similarity
 from deeplabcut.pose_estimation_pytorch.config.utils import update_config_by_dotpath
+from deeplabcut.pose_estimation_pytorch.data.base import DetectorRunnerLike
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import Postprocessor
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import LoadImage, Preprocessor
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
@@ -984,6 +985,117 @@ class DetectorInferenceRunner(InferenceRunner[DetectorModel]):
         return predictions
 
 
+class DetectorToPoseInferenceRunner:
+    """
+    Compose a detector runner with a top-down pose runner.
+
+    Expected flow:
+        input image(s)
+          -> detector_runner.inference(...)
+          -> inject detector boxes into context["bboxes"]
+          -> pose_runner.inference(...)
+
+    This is intentionally simple:
+    - it does not modify the pose runner internals
+    - it works with any detector_runner that satisfies DetectorRunnerLike
+    - it works with live detector runners and precomputed detector runners
+    """
+
+    def __init__(
+        self,
+        pose_runner,
+        detector_runner: DetectorRunnerLike,
+    ) -> None:
+        self.pose_runner = pose_runner
+        self.detector_runner = detector_runner
+
+    @staticmethod
+    def _split_input_and_context(
+        item: str | Path | np.ndarray | tuple[str | Path | np.ndarray, dict[str, Any]],
+    ) -> tuple[str | Path | np.ndarray, dict[str, Any]]:
+        """
+        Normalize an inference item into (image, context).
+
+        Supported inputs:
+          - "path/to/image.png"
+          - Path("path/to/image.png")
+          - np.ndarray image
+          - (image, context_dict)
+        """
+        if isinstance(item, tuple):
+            image, context = item
+            return image, dict(context)
+        return item, {}
+
+    @staticmethod
+    def _normalize_detector_output(det: dict[str, Any]) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Convert detector output into the context format expected by TopDownCrop.
+
+        Required:
+          - det["bboxes"] shaped [N, 4] in xywh format
+
+        Optional:
+          - det["bbox_scores"] shaped [N]
+        """
+        bboxes = np.asarray(det.get("bboxes", np.zeros((0, 4), dtype=np.float32)), dtype=np.float32).reshape(-1, 4)
+
+        bbox_scores = np.asarray(
+            det.get("bbox_scores", np.ones((len(bboxes),), dtype=np.float32)),
+            dtype=np.float32,
+        ).reshape(-1)
+
+        if len(bbox_scores) != len(bboxes):
+            raise ValueError(
+                f"Expected one bbox score per bbox, but got {len(bbox_scores)} scores for {len(bboxes)} boxes."
+            )
+
+        return bboxes, bbox_scores
+
+    @torch.inference_mode()
+    def inference(
+        self,
+        images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
+        shelf_writer: shelving.ShelfWriter | None = None,
+    ):
+        """
+        Run detector-first, then pose inference.
+
+        For each input image:
+          1. run detector_runner.inference(...)
+          2. inject context["bboxes"] and context["bbox_scores"]
+          3. call pose_runner.inference(...) on the enriched inputs
+
+        Notes:
+        - The detector runner is expected to return one detection dict per input image.
+        - Bounding boxes should already be in the format expected by the top-down
+          preprocessor, i.e. xywh.
+        """
+        images = list(images)
+        detections = self.detector_runner.inference(images)
+
+        if len(detections) != len(images):
+            raise ValueError(f"Detector returned {len(detections)} outputs for {len(images)} input images.")
+
+        enriched_inputs = []
+        for item, det in zip(images, detections, strict=False):
+            image, context = self._split_input_and_context(item)
+            bboxes, bbox_scores = self._normalize_detector_output(det)
+
+            # TopDownCrop requires "bboxes" in context.
+            context["bboxes"] = bboxes
+
+            # Not required by the cropper today, but useful to preserve.
+            context["bbox_scores"] = bbox_scores
+
+            # Optional: keep the raw detector output for debugging / future use.
+            context["detector_output"] = det
+
+            enriched_inputs.append((image, context))
+
+        return self.pose_runner.inference(enriched_inputs, shelf_writer=shelf_writer)
+
+
 def build_inference_runner(
     task: Task,
     model: nn.Module,
@@ -995,6 +1107,7 @@ def build_inference_runner(
     dynamic: DynamicCropper | None = None,
     load_weights_only: bool | None = None,
     inference_cfg: InferenceConfig | dict | None = None,
+    detector_runner: DetectorRunnerLike | None = None,
     **kwargs,
 ) -> InferenceRunner:
     """Build a runner object according to a pytorch configuration file.
@@ -1054,6 +1167,14 @@ def build_inference_runner(
             dynamic = None
 
     if task == Task.COND_TOP_DOWN:
-        return CTDInferenceRunner(**kwargs)
+        runner = CTDInferenceRunner(**kwargs)
+    else:
+        runner = PoseInferenceRunner(dynamic=dynamic, **kwargs)
 
-    return PoseInferenceRunner(dynamic=dynamic, **kwargs)
+    if detector_runner is not None and task == Task.TOP_DOWN:
+        return DetectorToPoseInferenceRunner(
+            pose_runner=runner,
+            detector_runner=detector_runner,
+        )
+
+    return runner
