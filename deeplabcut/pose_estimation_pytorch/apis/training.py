@@ -149,17 +149,20 @@ def train(
     valid_detector_runner = None
 
     if task == Task.TOP_DOWN:
+        validate_image_paths = loader.model_cfg["data"].get(
+            "bbox_validate_image_paths", False
+        )
         train_detector_runner = build_precomputed_detector_runner_from_config(
             loader.model_cfg,
             mode="train",
             target_format="xywh",
-            validate_image_paths=False,
+            validate_image_paths=validate_image_paths,
         )
         valid_detector_runner = build_precomputed_detector_runner_from_config(
             loader.model_cfg,
             mode="test",
             target_format="xywh",
-            validate_image_paths=False,
+            validate_image_paths=validate_image_paths,
         )
 
     train_dataset = loader.create_dataset(
