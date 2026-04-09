@@ -91,7 +91,7 @@ import yaml
 from nbformat.validator import NotebookValidationError
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION: Literal[1, 2] = 2
 GLOB_CHARS = set("*?[")
 DLC_NAMESPACE = "deeplabcut"
 OUTPUT_FILENAME = "docs_nb_checks"
@@ -147,6 +147,7 @@ class PolicyConfig(BaseModel):
 
     # Strict-mode toggle: if true, scan/parsing errors also fail `check`
     fail_on_scan_errors: bool = False
+    fail_if_metadata_sync_needed: bool = False
 
     # Allowlists for strict checks (start empty; ratchet later)
     require_metadata: list[str] = Field(default_factory=list)
@@ -156,7 +157,7 @@ class PolicyConfig(BaseModel):
 
 
 class ToolConfig(BaseModel):
-    version: int = 1
+    version: Literal[1, 2] = SCHEMA_VERSION
     scan: ScanConfig
     policy: PolicyConfig
 
@@ -575,6 +576,45 @@ def compute_days_since(d: date | None, today: date) -> int | None:
 def match_allowlist(rel_path: str, allowlist: list[str]) -> bool:
     # Support exact matches or glob patterns
     return any(pat == rel_path or fnmatch.fnmatch(rel_path, pat) for pat in allowlist)
+
+
+# -----------------------------
+#  CI enforcement utils
+# -----------------------------
+def record_needs_metadata_sync(rec: FileRecord) -> bool:
+    if rec.kind not in {"md", "ipynb"}:
+        return False
+    if rec.meta and rec.meta.ignore:
+        return False
+
+    embedded = rec.meta.last_content_updated if rec.meta else None
+    computed = rec.last_content_updated
+    return embedded != computed
+
+
+def collect_metadata_sync_targets(records: list[FileRecord]) -> list[str]:
+    paths: list[str] = []
+    for rec in records:
+        if record_needs_metadata_sync(rec):
+            paths.append(rec.path)
+    return sorted(set(paths))
+
+
+def build_metadata_sync_command(config_path: str, paths: list[str]) -> str | None:
+    if not paths:
+        return None
+
+    target_lines = " \\\n  ".join(paths)
+    return (
+        "python tools/docs_and_notebooks_check.py \\\n"
+        f"  --config {config_path} \\\n"
+        "  update \\\n"
+        "  --write \\\n"
+        "  --set-content-date-from-git \\\n"
+        "  --targets \\\n"
+        f"  {target_lines} \\\n"
+        "  --ack-meta-commit-marker"
+    )
 
 
 # -----------------------------
@@ -1006,6 +1046,9 @@ def enforce(cfg: ToolConfig, records: list[FileRecord]) -> list[str]:
                         violations.append(
                             f"{r.path}: last_verified is {days}d old (> {pol.warn_if_verified_older_than_days}d)"
                         )
+
+        if pol.fail_if_metadata_sync_needed and record_needs_metadata_sync(r):
+            violations.append(f"{r.path}: embedded metadata is out of sync with git content date")
 
         if r.kind == "ipynb" and match_allowlist(r.path, pol.require_notebook_normalized):
             if "notebook_not_normalized" in (r.warnings or []):
