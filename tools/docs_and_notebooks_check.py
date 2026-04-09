@@ -83,7 +83,7 @@ import re
 import subprocess
 from collections.abc import Sequence
 from datetime import date, datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, Literal
 
 import nbformat
@@ -92,6 +92,7 @@ from nbformat.validator import NotebookValidationError
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 SCHEMA_VERSION = 1
+GLOB_CHARS = set("*?[")
 DLC_NAMESPACE = "deeplabcut"
 OUTPUT_FILENAME = "docs_nb_checks"
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -200,9 +201,173 @@ PolicyConfig.model_rebuild()
 ToolConfig.model_rebuild()
 FileRecord.model_rebuild()
 Report.model_rebuild()
+
+
 # -----------------------------
 # Helpers
 # -----------------------------
+def normalize_target_spec(spec: str, repo_root: Path) -> str:
+    """
+    Normalize a CLI target into a repo-relative POSIX-style path/pattern.
+
+    Examples
+    --------
+    .\\docs\\a.md          -> docs/a.md
+    ./docs/a.md            -> docs/a.md
+    docs\\gui\\            -> docs/gui
+    /abs/path/in/repo/a.md -> docs/a.md   (if inside repo)
+    """
+    s = spec.strip()
+    if not s:
+        return s
+
+    # Normalize slashes first so Windows-style input works everywhere
+    s = s.replace("\\", "/")
+
+    # Strip leading ./ repeatedly
+    while s.startswith("./"):
+        s = s[2:]
+
+    # If absolute and inside repo, make it repo-relative
+    p = Path(s)
+    if p.is_absolute():
+        try:
+            s = str(p.resolve().relative_to(repo_root)).replace(os.sep, "/")
+        except ValueError:
+            # Outside repo: keep normalized absolute text so it can fail validation cleanly
+            s = str(p).replace(os.sep, "/")
+
+    # Collapse repeated slashes
+    s = re.sub(r"/+", "/", s)
+
+    # Remove trailing slash for canonical matching
+    if len(s) > 1:
+        s = s.rstrip("/")
+
+    return s
+
+
+def compile_target_specs(targets: list[str] | None, repo_root: Path) -> list[dict[str, str]] | None:
+    """
+    Convert raw CLI targets into normalized selector specs.
+
+    Each spec is a dict with:
+      - raw: original user input
+      - normalized: normalized repo-relative selector
+      - kind: file | dir | glob
+    """
+    if not targets:
+        return None
+
+    specs: list[dict[str, str]] = []
+
+    for raw in targets:
+        normalized = normalize_target_spec(raw, repo_root)
+        if not normalized:
+            continue
+
+        if any(ch in normalized for ch in GLOB_CHARS):
+            specs.append({"raw": raw, "normalized": normalized, "kind": "glob"})
+            continue
+
+        # Treat explicit trailing slash/backslash as directory intent
+        if raw.endswith(("/", "\\")):
+            specs.append({"raw": raw, "normalized": normalized, "kind": "dir"})
+            continue
+
+        candidate = Path(normalized)
+        abs_candidate = candidate if candidate.is_absolute() else (repo_root / candidate)
+        if abs_candidate.exists() and abs_candidate.is_dir():
+            specs.append({"raw": raw, "normalized": normalized, "kind": "dir"})
+        else:
+            specs.append({"raw": raw, "normalized": normalized, "kind": "file"})
+
+    return specs
+
+
+def target_spec_matches_path(rel_path: str, spec: dict[str, str]) -> bool:
+    rel_path = rel_path.replace("\\", "/")
+    rel_pure = PurePosixPath(rel_path)
+
+    kind = spec["kind"]
+    normalized = spec["normalized"]
+
+    if kind == "file":
+        return rel_path == normalized
+
+    if kind == "dir":
+        return rel_path == normalized or rel_path.startswith(normalized + "/")
+
+    if kind == "glob":
+        # Support both classic glob matching and ** recursive patterns
+        return fnmatch.fnmatchcase(rel_path, normalized) or rel_pure.match(normalized)
+
+    return False
+
+
+def target_matches(rel_path: str, specs: list[dict[str, str]] | None) -> bool:
+    if specs is None:
+        return True
+    return any(target_spec_matches_path(rel_path, spec) for spec in specs)
+
+
+def iter_scan_candidate_paths(repo_root: Path, cfg: ToolConfig) -> list[str]:
+    """
+    Return all repo-relative paths that are in scope for scanning, before applying --targets.
+    """
+    rels: list[str] = []
+    for p in glob_paths(repo_root, cfg.scan.include):
+        rel = str(p.resolve().relative_to(repo_root)).replace(os.sep, "/")
+        if is_excluded(rel, cfg.scan.exclude):
+            continue
+        rels.append(rel)
+    return sorted(set(rels))
+
+
+def validate_requested_targets(
+    repo_root: Path,
+    cfg: ToolConfig,
+    targets: list[str] | None,
+) -> tuple[list[str], list[str]]:
+    """
+    Validate CLI target selectors against the current scan universe.
+
+    Returns:
+      matched_paths: repo-relative file paths matched by any selector
+      unmatched_targets: raw target strings that matched nothing
+    """
+    if not targets:
+        return [], []
+
+    specs = compile_target_specs(targets, repo_root)
+    if not specs:
+        return [], []
+
+    candidates = iter_scan_candidate_paths(repo_root, cfg)
+
+    matched_paths = sorted({rel for rel in candidates if target_matches(rel, specs)})
+
+    unmatched_targets: list[str] = []
+    for spec in specs:
+        if not any(target_spec_matches_path(rel, spec) for rel in candidates):
+            unmatched_targets.append(spec["raw"])
+
+    return matched_paths, unmatched_targets
+
+
+def print_target_match_summary(matched_paths: list[str], requested_targets: list[str] | None) -> None:
+    """
+    Print a small CLI summary whenever --targets is used.
+    """
+    if not requested_targets:
+        return
+
+    print(f"\nMatched {len(matched_paths)} file(s) from --targets:")
+    preview_limit = 50
+    for rel in matched_paths[:preview_limit]:
+        print(f"- {rel}")
+    if len(matched_paths) > preview_limit:
+        print(f"... and {len(matched_paths) - preview_limit} more")
 
 
 def _iso_today() -> date:
@@ -428,15 +593,13 @@ def scan_files(repo_root: Path, cfg: ToolConfig, targets: list[str] | None = Non
     today = _iso_today()
     paths = glob_paths(repo_root, cfg.scan.include)
     records: list[FileRecord] = []
-    target_set = None
-    if targets:
-        target_set = set(t.replace(os.sep, "/") for t in targets)
+    target_specs = compile_target_specs(targets, repo_root)
 
     for p in paths:
         rel = str(p.resolve().relative_to(repo_root)).replace(os.sep, "/")
         if is_excluded(rel, cfg.scan.exclude):
             continue
-        if target_set is not None and rel not in target_set:
+        if not target_matches(rel, target_specs):
             continue
         kind = file_kind(p)
         rec = FileRecord(path=rel, kind=kind)
@@ -565,14 +728,11 @@ def update_files(
 ) -> list[FileRecord]:
     today = _iso_today()
     records = scan_files(repo_root, cfg, targets=targets)
-    target_set = set(t.replace(os.sep, "/") for t in targets) if targets else None
 
     for rec in records:
         if rec.kind not in {"ipynb", "md"}:
             continue
         if rec.meta and rec.meta.ignore:
-            continue
-        if target_set is not None and rec.path not in target_set:
             continue
 
         meta = rec.meta or DLCMeta()
@@ -889,7 +1049,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     rep.add_argument(
         "--targets",
         nargs="*",
-        help="Optional list of relative file paths to scan (limits scan to these files)",
+        help=(
+            "Optional repo-relative targets to limit the operation. "
+            "Supports exact files, directories, and glob patterns "
+            "(e.g. docs/page.md, docs/gui/, 'docs/**/*.md'). "
+            "Both '/' and '\\' are accepted."
+        ),
     )
 
     chk = sub.add_parser(
@@ -956,6 +1121,23 @@ def main(argv: Sequence[str] | None = None) -> int:
     repo_root = find_repo_root(Path.cwd())
     cfg = load_config(config_path)
     out_dir = Path(args.out_dir)
+
+    requested_targets = getattr(args, "targets", None)
+
+    if requested_targets:
+        matched_paths, unmatched_targets = validate_requested_targets(repo_root, cfg, requested_targets)
+        print_target_match_summary(matched_paths, requested_targets)
+
+        if unmatched_targets:
+            print("\nUnmatched --targets:")
+            for raw in unmatched_targets:
+                print(f"- {raw}")
+            print(
+                "\nEach --targets selector must match at least one file in the configured scan set. "
+                "Use repo-relative paths, directories, or glob patterns "
+                "(for example: docs/page.md, docs/gui/, 'docs/**/*.md')."
+            )
+            return 2
 
     if args.cmd in {"report", "check"}:
         records = scan_files(repo_root, cfg, targets=getattr(args, "targets", None))

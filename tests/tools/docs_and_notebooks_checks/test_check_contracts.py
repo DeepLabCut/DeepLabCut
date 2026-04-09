@@ -31,6 +31,26 @@ def tool() -> ModuleType:
     return load_tool_module()
 
 
+def _write_default_cfg(repo: Path, include: list[str]) -> Path:
+    cfg_path = repo / "tools" / "docs_and_notebooks_report_config.yml"
+    cfg_path.parent.mkdir(parents=True, exist_ok=True)
+    cfg_path.write_text(
+        "version: 1\n"
+        "scan:\n"
+        "  include:\n" + "".join(f"    - {pat}\n" for pat in include) + "  exclude: []\n"
+        "policy:\n"
+        "  warn_if_content_older_than_days: 365\n"
+        "  warn_if_verified_older_than_days: 365\n"
+        "  missing_last_verified_is_warning: true\n"
+        "  fail_on_scan_errors: false\n"
+        "  require_metadata: []\n"
+        "  require_recent_verification: []\n"
+        "  require_notebook_normalized: []\n",
+        encoding="utf-8",
+    )
+    return cfg_path
+
+
 # -----------------------------
 # Git helpers for a temp repo
 # -----------------------------
@@ -154,13 +174,83 @@ def test_scan_is_read_only(tool, tmp_path: Path, monkeypatch):
     )
 
     before = (repo / rel).read_text(encoding="utf-8")
-    records = tool.scan_files(repo, cfg, targets=[rel])
+    records = tool.scan_files(repo, cfg, targets=[r".\docs\page.md"])
     after = (repo / rel).read_text(encoding="utf-8")
 
     assert before == after
     assert len(records) == 1
     assert records[0].path == rel
     assert records[0].kind == "md"
+
+
+def test_scan_targets_support_directory_and_glob(tool, tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git_init(repo)
+
+    rel_a = "docs/gui/napari/basic_usage.md"
+    rel_b = "docs/gui/napari/advanced_usage.md"
+    rel_c = "docs/other/overview.md"
+
+    _write(repo, rel_a, "# a\n")
+    _write(repo, rel_b, "# b\n")
+    _write(repo, rel_c, "# c\n")
+    _git_commit(repo, "docs: add pages", "2020-01-01T12:00:00+00:00")
+
+    cfg = tool.ToolConfig(
+        version=1,
+        scan=tool.ScanConfig(include=["docs/**/*.md"], exclude=[]),
+        policy=tool.PolicyConfig(),
+    )
+
+    # Directory selector
+    recs_dir = tool.scan_files(repo, cfg, targets=["docs/gui/napari/"])
+    paths_dir = sorted(r.path for r in recs_dir)
+    assert set(paths_dir) == {rel_a, rel_b}
+
+    # Glob selector
+    recs_glob = tool.scan_files(repo, cfg, targets=["docs/gui/napari/*.md"])
+    paths_glob = sorted(r.path for r in recs_glob)
+    assert set(paths_glob) == {rel_a, rel_b}
+
+    # Recursive glob selector
+    recs_recursive = tool.scan_files(repo, cfg, targets=["docs/**/*.md"])
+    paths_recursive = sorted(r.path for r in recs_recursive)
+    assert set(paths_recursive) == {rel_a, rel_b, rel_c}
+
+
+def test_validate_requested_targets_reports_unmatched(tool, tmp_path: Path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git_init(repo)
+
+    rel_a = "docs/gui/napari/basic_usage.md"
+    rel_b = "docs/gui/napari/advanced_usage.md"
+
+    _write(repo, rel_a, "# a\n")
+    _write(repo, rel_b, "# b\n")
+    _git_commit(repo, "docs: add pages", "2020-01-01T12:00:00+00:00")
+
+    cfg = tool.ToolConfig(
+        version=1,
+        scan=tool.ScanConfig(include=["docs/**/*.md"], exclude=[]),
+        policy=tool.PolicyConfig(),
+    )
+
+    matched, unmatched = tool.validate_requested_targets(
+        repo,
+        cfg,
+        targets=[
+            r".\docs\gui\napari\basic_usage.md",
+            "docs/gui/napari/",
+            "docs/**/*.md",
+            "docs/missing/",
+            "examples/**/*.ipynb",
+        ],
+    )
+
+    assert matched == sorted([rel_a, rel_b])
+    assert unmatched == ["docs/missing/", "examples/**/*.ipynb"]
 
 
 def test_update_requires_ack_when_write(tool, tmp_path: Path):
@@ -421,3 +511,64 @@ def test_notebook_invalid_dlc_namespace_warns_invalid_metadata(tool, tmp_path: P
     assert r.kind == "ipynb"
     assert "invalid_metadata" in r.warnings
     assert r.meta is None
+
+
+def test_main_prints_matched_files_and_fails_on_unmatched_targets(tool, tmp_path: Path, monkeypatch, capsys):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git_init(repo)
+
+    rel = "docs/gui/napari/basic_usage.md"
+    _write(repo, rel, "# hello\n")
+    _git_commit(repo, "docs: add page", "2020-01-01T12:00:00+00:00")
+
+    cfg_path = _write_default_cfg(repo, include=["docs/**/*.md"])
+
+    monkeypatch.chdir(repo)
+
+    rc = tool.main(
+        [
+            "--config",
+            str(cfg_path),
+            "report",
+            "--targets",
+            r".\docs\gui\napari\basic_usage.md",
+            "docs/missing/",
+        ]
+    )
+
+    out = capsys.readouterr().out
+    assert rc == 2
+    assert "Matched 1 file(s) from --targets:" in out
+    assert f"- {rel}" in out
+    assert "Unmatched --targets:" in out
+    assert "- docs/missing/" in out
+
+
+def test_main_prints_matched_files_for_valid_targets(tool, tmp_path: Path, monkeypatch, capsys):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git_init(repo)
+
+    rel = "docs/gui/napari/basic_usage.md"
+    _write(repo, rel, "# hello\n")
+    _git_commit(repo, "docs: add page", "2020-01-01T12:00:00+00:00")
+    cfg_path = _write_default_cfg(repo, include=["docs/**/*.md"])
+
+    monkeypatch.chdir(repo)
+
+    rc = tool.main(
+        [
+            "--config",
+            str(cfg_path),
+            "report",
+            "--targets",
+            "docs/gui/napari/",
+        ]
+    )
+
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "Matched 1 file(s) from --targets:" in out
+    assert f"- {rel}" in out
+    assert "Report generated:" in out
