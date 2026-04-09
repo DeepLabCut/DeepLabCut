@@ -26,6 +26,7 @@ parts:
   - file: docs/gui/napari_GUI
     sections:
       - file: docs/gui/napari/basic_usage
+      - file: docs/gui/napari/advanced_usage
 
 - caption: DLC3 PyTorch Specific Docs
   chapters:

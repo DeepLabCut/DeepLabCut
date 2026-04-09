@@ -4,6 +4,7 @@ deeplabcut:
   last_metadata_updated: '2026-04-09'
   ignore: false
 ---
+(file:napari-dlc-advanced-features)=
 # napari-DLC - Advanced features
 
 napari-DLC provides several additional features to enhance the annotation experience.
