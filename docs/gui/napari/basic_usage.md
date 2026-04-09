@@ -156,7 +156,7 @@ Use the **View shortcuts** button in the dock widget for a quick reference of na
 
 ### More quality-of-life features
 
-See the [advanced features section](file:napari-dlc-advanced-features) for useful features such as copy-pasting annotations, quick body part selection, and more.
+See the {ref}`Advanced features <file:napari-dlc-advanced-features>` for useful features such as copy-pasting annotations, quick body part selection, and more.
 
 ## Labeling workflows
 

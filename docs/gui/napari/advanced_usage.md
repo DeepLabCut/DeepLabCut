@@ -12,7 +12,7 @@ deeplabcut:
 napari-DLC provides several additional features to enhance the annotation experience.
 
 This section covers some of these features in more detail.
-For more basic features and workflows, see the [basic usage section](file:napari-dlc-basic-usage).
+For more basic features and workflows, see the {ref}`basic usage section <file:napari-dlc-basic-usage>`.
 
 ## Layer status panel
 

@@ -14,5 +14,5 @@ Welcome to the documentation for napari-DLC, the napari plugin for keypoint anno
 ## Table of contents
 
 - [Installation (on GitHub)](https://github.com/DeepLabCut/napari-deeplabcut?tab=readme-ov-file#installation)
-- [Basic usage](file:napari-dlc-basic-usage)
-- [Advanced features](file:napari-dlc-advanced-features)
+- {ref}`Basic usage <file:napari-dlc-basic-usage>`
+- {ref}`Advanced features <file:napari-dlc-advanced-features>`
