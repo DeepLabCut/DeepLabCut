@@ -177,13 +177,13 @@ class TinyCornerPoseModel(nn.Module):
     """
     Minimal trainable pose model for one individual with four keypoints.
 
-    This model is deliberately tiny. It is *not* intended as a meaningful production
-    architecture; it only serves to make the high-level training path run with a
+    This model is deliberately tiny;
+    it only serves to make the high-level training path run with a
     lightweight, deterministic model while still exercising:
-      - the real DLCLoader
-      - the real create_dataset(..., detector_runner=...)
-      - the real train_network(...) API
-      - the real training runner / optimizer / snapshot machinery
+      - DLCLoader
+      - create_dataset(..., detector_runner=...)
+      - train_network(...) API
+      - training runner / optimizer / snapshot machinery
     """
 
     def __init__(self):
@@ -376,9 +376,8 @@ def _write_or_update_pose_config(
     pose_cfg = make_pytorch_pose_config(
         project_config=project_cfg,
         pose_config_path=pose_config_path,
-        # method=Task.TOP_DOWN,
-        net_type="resnet_50",  # only used for metadata here since we patch the model builder later
         top_down=True,
+        detector_mode="external",
         save=True,
         precomputed_bboxes=precomputed_bboxes,
         bbox_source="detection_bbox",
@@ -447,7 +446,7 @@ def _write_or_update_pose_config(
         "type": "SGD",
         "params": {"lr": 0.1},
     }
-    pose_cfg["runner"]["eval_interval"] = 999  # keep demo focused on training path
+    pose_cfg["runner"]["eval_interval"] = 1
     pose_cfg["runner"]["snapshots"] = {
         "max_snapshots": 1,
         "save_epochs": 1,
@@ -618,6 +617,11 @@ def verify_loader_uses_precomputed_boxes(project: SyntheticProject, shuffle: int
     np.testing.assert_allclose(found, expected, atol=1e-5)
 
 
+# -----------------------------------------------------------------------------
+# TRAINING
+# -----------------------------------------------------------------------------
+
+
 def run_train_network_demo(project: SyntheticProject, shuffle: int = 1) -> TinyCornerPoseModel:
     """
     Run the actual high-level train_network(...) API while patching only:
@@ -632,7 +636,7 @@ def run_train_network_demo(project: SyntheticProject, shuffle: int = 1) -> TinyC
     before = {name: p.detach().cpu().clone() for name, p in tiny_model.named_parameters()}
 
     with (
-        patch.object(
+        patch.object(  # usually one would supply an actual Pose model here.
             training_api.PoseModel,
             "build",
             side_effect=lambda *args, **kwargs: tiny_model,
@@ -658,33 +662,155 @@ def run_train_network_demo(project: SyntheticProject, shuffle: int = 1) -> TinyC
 
 
 # -----------------------------------------------------------------------------
+# INFERENCE
+# -----------------------------------------------------------------------------
+
+
+def write_synthetic_video(
+    project: SyntheticProject,
+    *,
+    video_name: str = "synthetic_video.mp4",
+    fps: int = 5,
+) -> Path:
+    import cv2
+
+    video_path = project.project_root / video_name
+    h, w = project.frames[0].image.shape[:2]
+
+    writer = cv2.VideoWriter(
+        str(video_path),
+        cv2.VideoWriter_fourcc(*"mp4v"),
+        fps,
+        (w, h),
+    )
+    if not writer.isOpened():
+        raise RuntimeError(f"Failed to open video writer for {video_path}")
+
+    for frame in project.frames:
+        # OpenCV expects BGR
+        bgr = frame.image[..., ::-1].copy()
+        writer.write(bgr)
+
+    writer.release()
+    return video_path
+
+
+def build_video_context_from_detector(project: SyntheticProject) -> list[dict[str, np.ndarray]]:
+    detector = SquareThresholdDetectorRunner()
+    outputs = detector.inference([f.image for f in project.frames])
+    return outputs
+
+
+def run_video_inference_demo(project: SyntheticProject, shuffle: int = 1):
+    import deeplabcut.pose_estimation_pytorch.apis.utils as api_utils
+    import deeplabcut.pose_estimation_pytorch.apis.videos as inference_api
+
+    loader = DLCLoader(config=project.config_path, shuffle=shuffle, trainset_index=0)
+
+    snapshots = loader.snapshots(detector=False, best_in_last=True)
+    if len(snapshots) == 0:
+        raise RuntimeError("No pose snapshot found after training.")
+    snapshot = snapshots[-1]
+
+    video_path = write_synthetic_video(project)
+    contexts = build_video_context_from_detector(project)
+
+    video_iterator = inference_api.VideoIterator(video_path)
+    video_iterator.set_context(contexts)
+
+    with (
+        patch.object(
+            api_utils.PoseModel,
+            "build",
+            side_effect=lambda *args, **kwargs: TinyCornerPoseModel(),
+        ),
+        patch.object(
+            api_utils,
+            "build_transforms",
+            side_effect=lambda cfg: IdentityTopDownTransform(),
+        ),
+    ):
+        pose_runner = api_utils.get_pose_inference_runner(
+            model_config=loader.model_cfg,
+            snapshot_path=snapshot.path,
+            max_individuals=len(loader.model_cfg["metadata"]["individuals"]),
+            batch_size=1,
+            transform=None,
+            dynamic=None,
+            cond_provider=None,
+            ctd_tracking=False,
+            inference_cfg=None,
+        )
+
+        predictions = inference_api.video_inference(
+            video=video_iterator,
+            pose_runner=pose_runner,
+            detector_runner=None,  # contexts already contain bboxes
+            shelf_writer=None,
+            robust_nframes=False,
+            show_gpu_memory=False,
+        )
+
+    # Basic sanity checks
+    assert len(predictions) == len(project.frames), (
+        f"Expected {len(project.frames)} frame predictions, got {len(predictions)}"
+    )
+
+    for pred in predictions:
+        assert "bodyparts" in pred
+        bodyparts = pred["bodyparts"]
+
+        # Expect one individual, four keypoints, xyz/conf
+        assert bodyparts.ndim == 3
+        assert bodyparts.shape[1] == 4
+        assert bodyparts.shape[2] >= 3
+
+    inference_api.create_df_from_prediction(
+        predictions=predictions,
+        dlc_scorer="synthetic_demo",
+        multi_animal=True,
+        model_cfg=loader.model_cfg,
+        output_path=project.project_root,
+        output_prefix="synthetic_video_demo",
+        save_as_csv=False,
+    )
+
+    return predictions
+
+
+# -----------------------------------------------------------------------------
 # Main entry point
 # -----------------------------------------------------------------------------
 
 
-def main(output_dir: str | Path | None = None) -> SyntheticProject:
+def main(output_dir: str | Path | None = None, run_inference: bool = True) -> SyntheticProject:
     owns_tmp = False
     if output_dir is None:
         output_dir = Path(tempfile.mkdtemp(prefix="dlc_synth_square_demo_"))
         owns_tmp = True
     else:
         output_dir = Path(output_dir)
+    max_step = 4 if not run_inference else 5
 
     project = make_synthetic_square_dlc_project(output_dir)
-    print(f"[1/4] Synthetic DLC project created at: {project.project_root}")
+    print(f"[1/{max_step}] Synthetic DLC project created at: {project.project_root}")
     print(f"       config.yaml:        {project.config_path}")
     print(f"       pytorch_config.yaml:{project.pose_config_path}")
 
     bboxes = generate_precomputed_detector_boxes(project)
-    print(f"[2/4] Precomputed detector boxes written to: {project.precomputed_bboxes_path}")
+    print(f"[2/{max_step}] Precomputed detector boxes written to: {project.precomputed_bboxes_path}")
     print(f"       train entries: {len(bboxes.train)}, test entries: {len(bboxes.test)}")
 
     verify_loader_uses_precomputed_boxes(project)
-    print("[3/4] Verified: real DLCLoader.create_dataset(...) uses the saved detector boxes.")
+    print(f"[3/{max_step}] Verified: real DLCLoader.create_dataset(...) uses the saved detector boxes.")
 
     model = run_train_network_demo(project)
-    print("[4/4] train_network(...) completed successfully using the real DLCLoader and precomputed detector boxes.")
+    print(f"[4/{max_step}] train_network(...) completed successfully.")
     print(f"       tiny model trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
+
+    if run_inference:
+        predictions = run_video_inference_demo(project)
+        print(f"[5/{max_step}] video_inference(...) completed successfully on {len(predictions)} synthetic frames.")
 
     if owns_tmp:
         print("\nNote: a temporary project directory was created automatically.")
@@ -703,5 +829,11 @@ if __name__ == "__main__":
         default=None,
         help="Directory in which to create the synthetic project. If omitted, a temporary directory is used.",
     )
+    parser.add_argument(
+        "--no-inference",
+        action="store_false",
+        dest="run_inference",
+        help="Whether to run the video inference demo after training. Default: True.",
+    )
     args = parser.parse_args()
-    main(args.output_dir)
+    main(args.output_dir, run_inference=args.run_inference)

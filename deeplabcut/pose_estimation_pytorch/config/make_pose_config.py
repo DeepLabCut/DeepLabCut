@@ -13,8 +13,10 @@
 from __future__ import annotations
 
 import copy
+import logging
 from enum import Enum
 from pathlib import Path
+from typing import Literal
 
 from deeplabcut.core.config import read_config_as_dict, write_config
 from deeplabcut.core.weight_init import WeightInitialization
@@ -29,6 +31,8 @@ from deeplabcut.pose_estimation_pytorch.data.bboxes import BBoxComputationMethod
 from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+
+logger = logging.getLogger(__name__)
 
 
 def _yaml_safe_value(value):
@@ -51,12 +55,34 @@ def _yaml_safe_value(value):
     return value
 
 
+class DetectorMode(Enum):
+    NATIVE = "native"
+    EXTERNAL = "external"
+
+    @classmethod
+    def coerce_mode(
+        cls,
+        detector_mode: str | DetectorMode | None,
+    ) -> DetectorMode | None:
+        if detector_mode is None:
+            return None
+        if isinstance(detector_mode, cls):
+            return detector_mode
+        norm = str(detector_mode).strip().lower()
+        if norm == "native":
+            return cls.NATIVE
+        if norm == "external":
+            return cls.EXTERNAL
+        raise ValueError(f"Unknown detector_mode: {detector_mode}")
+
+
 def make_pytorch_pose_config(
     project_config: dict,
     pose_config_path: str | Path,
     net_type: str | None = None,
     top_down: bool = False,
     detector_type: str | None = None,
+    detector_mode: Literal["native", "external"] | DetectorMode | None = None,
     weight_init: WeightInitialization | None = None,
     save: bool = False,
     ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
@@ -90,8 +116,17 @@ def make_pytorch_pose_config(
             by associating a detector to the pose model. Required for multi-animal
             projects when net_type is a backbone (as a backbone + heatmap head can only
             predict pose for single individuals).
-        detector_type: for top-down pose models, the architecture of the desired object
+        detector_type: for native top-down pose models, the architecture of the desired object
             detection model
+        detector_mode:
+            Controls how top-down detector information is represented in the config.
+            - None: preserves legacy behavior
+                * if precomputed_bboxes is given -> external mode
+                * otherwise -> native detector mode
+            - "native": include a native DLC detector configuration
+            - "external": configure top-down pose training/inference to use external /
+            precomputed detector boxes instead of a native detector model.
+            If external, detector_type must be None and precomputed_bboxes must be provided.
         weight_init: Specify how model weights should be initialized. If None, ImageNet
             pretrained weights from Timm will be loaded when training.
         save: Whether to save the model configuration file to the ``pose_config_path``.
@@ -104,7 +139,9 @@ def make_pytorch_pose_config(
                 predictions file.
                 * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which
                 respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
-
+        precomputed_bboxes: str | Path, optional, default = None,
+            Path to a JSON artifact containing precomputed detector bounding boxes.
+            When provided with detector_mode=None, external detector mode is inferred.
 
     Returns:
         the PyTorch pose configuration file
@@ -115,13 +152,30 @@ def make_pytorch_pose_config(
     bodyparts = auxiliaryfunctions.get_bodyparts(project_config)
     unique_bpts = auxiliaryfunctions.get_unique_bodyparts(project_config)
 
-    if net_type is None:
-        net_type = project_config.get("default_net_type", "resnet_50")
+    if not net_type:
+        net_type = project_config.get("default_net_type")
+    if not net_type:
+        net_type = "resnet_50"  # default backbone if net_type is not specified
+        logger.warning(f"No net_type specified in project config or as argument. Defaulting to {net_type}.")
+    if not isinstance(net_type, str):
+        raise TypeError(f"net_type must be a string, got {type(net_type)}")
 
     configs_dir = get_config_folder_path()
     pose_config = load_base_config(configs_dir)
     pose_config = add_metadata(project_config, pose_config, pose_config_path)
     pose_config["net_type"] = net_type
+
+    detector_mode = DetectorMode.coerce_mode(detector_mode)
+    if detector_mode is None:
+        if precomputed_bboxes is not None:
+            detector_mode = DetectorMode.EXTERNAL
+        else:
+            detector_mode = DetectorMode.NATIVE
+
+    if detector_mode == DetectorMode.EXTERNAL and not top_down and net_type in load_backbones(get_config_folder_path()):
+        raise ValueError(
+            "detector_mode='external' requires a top-down pose model. If using a backbone net_type, pass top_down=True."
+        )
 
     backbones = load_backbones(configs_dir)
     if net_type in backbones:
@@ -157,13 +211,47 @@ def make_pytorch_pose_config(
         )
 
     task = Task(model_cfg.get("method", "BU").upper())
-    if task == Task.TOP_DOWN:
-        model_cfg = add_detector(
-            configs_dir,
-            model_cfg,
-            len(individuals),
-            detector_type=detector_type,
+    if detector_mode == DetectorMode.EXTERNAL and task != Task.TOP_DOWN:
+        raise ValueError("detector_mode='external' can only be used with top-down pose models.")
+
+    if precomputed_bboxes is not None and task != Task.TOP_DOWN:
+        raise ValueError("precomputed_bboxes can only be used with top-down pose models.")
+    if detector_mode == DetectorMode.NATIVE and precomputed_bboxes is not None:
+        raise ValueError(
+            "precomputed_bboxes cannot be used with native detectors. If you want to use"
+            " precomputed boxes from an external detector, set detector_mode='external'."
         )
+    if detector_mode == DetectorMode.EXTERNAL and detector_type is not None:
+        raise ValueError("detector_type cannot be used with detector_mode='external'.")
+    if (
+        task == Task.TOP_DOWN
+        and detector_mode == DetectorMode.NATIVE
+        and bbox_source == BBoxComputationMethod.DETECTION_BBOX.value
+        and precomputed_bboxes is None
+    ):
+        raise ValueError(
+            "bbox_source='detection_bbox' requires precomputed_bboxes when using "
+            "detector_mode='native'. If you want to train from external/offline detector "
+            "boxes, use detector_mode='external'."
+        )
+    if detector_mode != DetectorMode.EXTERNAL and external_detector_metadata is not None:
+        raise ValueError("external_detector_metadata can only be used with detector_mode='external'.")
+
+    if task == Task.TOP_DOWN:
+        if detector_mode == DetectorMode.NATIVE:
+            model_cfg = add_detector(
+                configs_dir,
+                model_cfg,
+                len(individuals),
+                detector_type=detector_type,
+            )
+        elif detector_mode == DetectorMode.EXTERNAL:
+            # Explicitly do NOT add a native detector model
+            model_cfg.setdefault("detector", {})
+            model_cfg["detector"].setdefault("train_settings", {})
+            model_cfg["detector"]["train_settings"]["epochs"] = 0
+        else:
+            raise ValueError(f"Unknown detector_mode: {detector_mode}")
 
     # add the default augmentations to the config
     aug_filename = "aug_default.yaml" if task == Task.BOTTOM_UP else "aug_top_down.yaml"
@@ -180,9 +268,14 @@ def make_pytorch_pose_config(
     if "data" not in pose_config:
         pose_config["data"] = {}
 
-    if precomputed_bboxes is not None:
-        if task != Task.TOP_DOWN:
-            raise ValueError("precomputed_bboxes can only be used with top-down pose models.")
+    if detector_mode == DetectorMode.EXTERNAL and bbox_source is not None:
+        normalized_bbox_source = _yaml_safe_value(bbox_source)
+        if normalized_bbox_source != BBoxComputationMethod.DETECTION_BBOX.value:
+            raise ValueError("bbox_source must be 'detection_bbox' when detector_mode='external'.")
+
+    if detector_mode == DetectorMode.EXTERNAL:
+        if precomputed_bboxes is None:
+            raise ValueError("precomputed_bboxes is mandatory for external detector mode.")
 
         pose_config["data"]["bbox_source"] = BBoxComputationMethod.DETECTION_BBOX.value
         pose_config["data"]["precomputed_bboxes"] = Path(precomputed_bboxes).as_posix()
@@ -195,9 +288,12 @@ def make_pytorch_pose_config(
     elif bbox_source is not None:
         pose_config["data"]["bbox_source"] = bbox_source
 
-    if external_detector_metadata is not None:
+    if detector_mode == DetectorMode.EXTERNAL:
         pose_config.setdefault("metadata", {})
-        pose_config["metadata"]["external_detector"] = _yaml_safe_value(external_detector_metadata)
+        pose_config["metadata"]["detector"] = {
+            "mode": DetectorMode.EXTERNAL.value,
+            "info": _yaml_safe_value(external_detector_metadata or {}),
+        }
 
     # set the dataset from which to load weights
     if weight_init is not None:
