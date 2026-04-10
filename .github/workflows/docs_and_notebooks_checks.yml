@@ -47,7 +47,7 @@ jobs:
           fi
 
           git diff --name-only --diff-filter=ACMR "$base" "$head" \
-            | grep -E '\.(md|markdown|ipynb)$' \
+            | grep -E '\.(md|ipynb)$' \
             | sort -u > tmp/docs_nb_checks/changed_docs.txt || true
 
           count=$(wc -l < tmp/docs_nb_checks/changed_docs.txt | tr -d ' ')
@@ -90,7 +90,7 @@ jobs:
 
       - name: No changed docs to scan
         if: steps.changed_docs.outputs.count == '0'
-        run: echo "No changed docs files under docs/. Skipping scan."
+        run: echo "No changed .md or .ipynb files found in the repo. Skipping scan."
 
       - name: Upload staleness artifacts
         if: steps.changed_docs.outputs.count != '0'
