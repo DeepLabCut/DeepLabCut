@@ -633,6 +633,7 @@ def build_metadata_sync_command(config_path: str, paths: list[str]) -> str | Non
 def build_git_add_command(paths: list[str]) -> str | None:
     if not paths:
         return None
+    paths = [shlex.quote(p) for p in paths]
 
     path_lines = " \\\n  ".join(paths)
     return f"git add \\\n  {path_lines}"
