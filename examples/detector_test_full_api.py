@@ -1,41 +1,50 @@
 """
-Synthetic end-to-end training demo for the external-detector / precomputed-bbox
-workflow in DeepLabCut PyTorch top-down pose estimation.
+Synthetic end-to-end example for the external-detector / precomputed-bbox workflow
+in DeepLabCut PyTorch top-down pose estimation.
+
+If you are mostly interested in the process of using a detec
+
+This example is intentionally focused and highly documented. It demonstrates the
+"offline boxes" workflow, which is typically the easiest path to integrate custom
+external detectors and curate their outputs before training a DLC pose model.
 
 What this script does
 ---------------------
-1. Creates a minimal, valid DeepLabCut-style project on disk with synthetic data:
+1. Creates a minimal, valid DLC-style multi-animal project on disk with synthetic data:
    - black RGB frames
    - one white square per frame
-   - four annotated keypoints, one at each corner of the square
+   - four annotated keypoints (one at each corner)
 2. Builds a real ``DLCLoader`` on top of that project.
-3. Runs a simple external-style detector runner to generate detector boxes.
-4. Saves those boxes via ``precompute_detector_bboxes(...)``.
-5. Writes / updates the PyTorch pose config so training uses those precomputed boxes.
+3. Runs a tiny detector adapter to generate per-image bounding boxes.
+4. Saves those boxes via ``precompute_detector_bboxes(...)`` as a JSON artifact.
+5. Creates/updates the PyTorch pose config so training uses those precomputed boxes.
 6. Verifies that ``DLCLoader.create_dataset(..., detector_runner=...)`` picks up the
    detector boxes before training.
-7. Calls the real high-level ``train_network(...)`` API while patching only the pose
-   model builder and transforms, keeping the rest of the training workflow canonical.
+7. Calls the real high-level ``train_network(...)`` API while patching only:
+   - the pose-model builder (to use a tiny demo model), and
+   - the transform builder (to keep the example deterministic and lightweight).
+8. Optionally writes the synthetic frames into a short video and runs
+   ``video_inference(...)`` using per-frame precomputed bounding-box context.
 
-This file is intended both as:
-- a runnable demo script for hackathon participants, and
-- a blueprint for an integration test.
+Important scope note
+--------------------
+This script is intended as:
+- a runnable proof-of-concept for the new external / precomputed detector path,
+- a clearly documented example for hackathon participants,
+- and a strong integration test blueprint.
+
+It is *not* intended as a realistic training recipe for production-quality models.
+The tiny pose model used here is only meant to prove that the end-to-end plumbing
+works with the real DLC APIs.
 
 Usage
 -----
 Run as a script:
 
-    python synthetic_square_topdown_train_network_demo.py --output-dir /tmp/dlc_synth_demo
+    python detector_test_full_api.py --output-dir /tmp/dlc_external_demo
 
 If ``--output-dir`` is omitted, a temporary directory is created automatically.
-
-Notes
------
-- The only intentionally patched parts are the pose-model construction and the
-  transform builder. This keeps the focus on the detector-bbox -> DLCLoader ->
-  train_network plumbing.
-- The detector runner here is deliberately simple: it thresholds the white square
-  on a black background and returns the enclosing bbox in ``xywh`` format.
+Add ``--no-inference`` to skip the video inference step.
 """
 
 from __future__ import annotations
@@ -59,7 +68,10 @@ import deeplabcut.core.config as config_utils
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.apis.training import train_network
-from deeplabcut.pose_estimation_pytorch.config.make_pose_config import _yaml_safe_value, make_pytorch_pose_config
+from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
+    _yaml_safe_value,
+    make_pytorch_pose_config,
+)
 from deeplabcut.pose_estimation_pytorch.data.bboxes import BBoxes
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import (
     DLCLoader,
@@ -71,23 +83,24 @@ from deeplabcut.pose_estimation_pytorch.models.detectors.external.base import (
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
 
+# -----------------------------------------------------------------------------
+# Lightweight helpers used to keep the demo deterministic and robust
+# -----------------------------------------------------------------------------
+
 
 class IdentityTopDownTransform:
     """
     Minimal transform object matching the contract expected by PoseDataset.
 
-    It preserves image / keypoints / bboxes exactly as given, and always returns
-    a dict containing those keys so dataset.py does not fail on missing 'bboxes'.
+    It preserves image / keypoints / bboxes exactly as given, and always returns a
+    dict containing those keys so dataset.py does not fail on missing 'bboxes'.
     """
 
     def __call__(self, **kwargs):
         transformed = dict(kwargs)
-
-        # Ensure keys expected downstream always exist
         transformed.setdefault("image", None)
         transformed.setdefault("keypoints", [])
         transformed.setdefault("bboxes", [])
-
         return transformed
 
     def __repr__(self):
@@ -125,8 +138,11 @@ class SquareThresholdDetectorRunner:
     """
     Tiny stand-in for an external detector runner.
 
-    It implements the minimal detector-runner contract:
-        inference(images, shelf_writer=None) -> list[{"bboxes": ..., "bbox_scores": ...}]
+    It implements the minimal detector-runner contract expected by the external
+    detector / precomputed bbox workflow:
+
+        inference(images, shelf_writer=None)
+            -> list[{"bboxes": ..., "bbox_scores": ...}]
 
     The detector simply thresholds non-zero pixels and returns one enclosing bbox per
     image in ``xywh`` format.
@@ -177,13 +193,14 @@ class TinyCornerPoseModel(nn.Module):
     """
     Minimal trainable pose model for one individual with four keypoints.
 
-    This model is deliberately tiny;
-    it only serves to make the high-level training path run with a
-    lightweight, deterministic model while still exercising:
-      - DLCLoader
-      - create_dataset(..., detector_runner=...)
-      - train_network(...) API
-      - training runner / optimizer / snapshot machinery
+    This model is deliberately tiny. It only serves to make the high-level training
+    and inference paths run with a lightweight, deterministic model while still
+    exercising:
+      - the real DLCLoader,
+      - the real create_dataset(..., detector_runner=...),
+      - the real train_network(...) API,
+      - snapshot saving/loading,
+      - and video_inference(...) with precomputed bbox context.
     """
 
     def __init__(self):
@@ -358,6 +375,11 @@ def _ensure_loader_get_image_paths() -> None:
         DLCLoader.get_image_paths = DLCLoader.image_filenames
 
 
+# -----------------------------------------------------------------------------
+# POSE CONFIG
+# -----------------------------------------------------------------------------
+
+
 def _write_or_update_pose_config(
     project_cfg: dict,
     pose_config_path: Path,
@@ -368,8 +390,8 @@ def _write_or_update_pose_config(
     batch_size: int = 1,
 ) -> dict:
     """
-    Prefer the canonical make_pytorch_pose_config(...) path when available, then patch
-    the resulting config to keep the demo lightweight and deterministic.
+    Create a PyTorch pose config for the external / precomputed detector workflow,
+    then patch it down to a tiny, CPU-friendly demo setup.
     """
     pose_config_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -394,7 +416,7 @@ def _write_or_update_pose_config(
     pose_cfg["metadata"]["individuals"] = copy.deepcopy(INDIVIDUALS)
 
     pose_cfg["method"] = "td"
-    pose_cfg["net_type"] = pose_cfg.get("net_type", "synthetic_demo")
+    pose_cfg["net_type"] = pose_cfg.get("net_type", "resnet_50")
     pose_cfg["color_mode"] = "RGB"
     pose_cfg["with_center_keypoints"] = False
 
@@ -408,6 +430,7 @@ def _write_or_update_pose_config(
     pose_cfg["data"].setdefault("bbox_match_iou_threshold", 0.1)
     pose_cfg["data"].setdefault("bbox_fallback_to_gt", True)
     pose_cfg["data"].setdefault("bbox_margin", 0)
+    pose_cfg["data"]["colormode"] = "RGB"
     pose_cfg["data"].setdefault("train", {})
     pose_cfg["data"].setdefault("inference", {})
     pose_cfg["data"]["train"].setdefault("top_down_crop", {})
@@ -446,13 +469,15 @@ def _write_or_update_pose_config(
         "type": "SGD",
         "params": {"lr": 0.1},
     }
-    pose_cfg["runner"]["eval_interval"] = 1
+    # Skip evaluation in this demo to keep it focused on the training path.
+    pose_cfg["runner"]["eval_interval"] = 999
     pose_cfg["runner"]["snapshots"] = {
         "max_snapshots": 1,
         "save_epochs": 1,
         "save_optimizer_state": True,
     }
 
+    # Compatibility stub: current train_network() still expects detector.train_settings.epochs
     pose_cfg.setdefault("detector", {})
     pose_cfg["detector"].setdefault("train_settings", {})
     pose_cfg["detector"]["train_settings"]["epochs"] = 0
@@ -484,9 +509,7 @@ def make_synthetic_square_dlc_project(
         yaml_file.dump(project_cfg, f)
 
     # 2) synthetic frames on disk
-    output_dir / "labeled-data" / "synthetic-square"
     frames: list[SyntheticFrame] = []
-
     placements = [
         (24, 24, 20, 20),
         (64, 16, 24, 24),
@@ -624,9 +647,9 @@ def verify_loader_uses_precomputed_boxes(project: SyntheticProject, shuffle: int
 
 def run_train_network_demo(project: SyntheticProject, shuffle: int = 1) -> TinyCornerPoseModel:
     """
-    Run the actual high-level train_network(...) API while patching only:
+    Run the real high-level train_network(...) API while patching only:
       - PoseModel.build(...) -> tiny trainable demo model
-      - build_transforms(...) -> None (to keep the demo focused on bbox/crop plumbing)
+      - build_transforms(...) -> identity transform preserving bbox/keypoint contract
 
     Returns the trained tiny model instance so callers can inspect parameter changes.
     """
@@ -636,7 +659,7 @@ def run_train_network_demo(project: SyntheticProject, shuffle: int = 1) -> TinyC
     before = {name: p.detach().cpu().clone() for name, p in tiny_model.named_parameters()}
 
     with (
-        patch.object(  # usually one would supply an actual Pose model here.
+        patch.object(
             training_api.PoseModel,
             "build",
             side_effect=lambda *args, **kwargs: tiny_model,
@@ -696,18 +719,28 @@ def write_synthetic_video(
 
 
 def build_video_context_from_detector(project: SyntheticProject) -> list[dict[str, np.ndarray]]:
+    """
+    Run the same tiny detector on the synthetic frame arrays and build per-frame
+    context compatible with VideoIterator / video_inference.
+    """
     detector = SquareThresholdDetectorRunner()
     outputs = detector.inference([f.image for f in project.frames])
     return outputs
 
 
 def run_video_inference_demo(project: SyntheticProject, shuffle: int = 1):
+    """
+    Run video_inference(...) on a synthetic video using per-frame precomputed bbox
+    context. This demonstrates the cleanest current inference story for the external /
+    offline boxes workflow.
+    """
     import deeplabcut.pose_estimation_pytorch.apis.utils as api_utils
-    import deeplabcut.pose_estimation_pytorch.apis.videos as inference_api
+    import deeplabcut.pose_estimation_pytorch.apis.videos as videos_api
 
     loader = DLCLoader(config=project.config_path, shuffle=shuffle, trainset_index=0)
 
-    snapshots = loader.snapshots(detector=False, best_in_last=True)
+    # Get the most recent pose snapshot
+    snapshots = api_utils.get_model_snapshots(-1, loader.model_folder, loader.pose_task)
     if len(snapshots) == 0:
         raise RuntimeError("No pose snapshot found after training.")
     snapshot = snapshots[-1]
@@ -715,7 +748,7 @@ def run_video_inference_demo(project: SyntheticProject, shuffle: int = 1):
     video_path = write_synthetic_video(project)
     contexts = build_video_context_from_detector(project)
 
-    video_iterator = inference_api.VideoIterator(video_path)
+    video_iterator = videos_api.VideoIterator(video_path)
     video_iterator.set_context(contexts)
 
     with (
@@ -742,7 +775,7 @@ def run_video_inference_demo(project: SyntheticProject, shuffle: int = 1):
             inference_cfg=None,
         )
 
-        predictions = inference_api.video_inference(
+        predictions = videos_api.video_inference(
             video=video_iterator,
             pose_runner=pose_runner,
             detector_runner=None,  # contexts already contain bboxes
@@ -765,7 +798,8 @@ def run_video_inference_demo(project: SyntheticProject, shuffle: int = 1):
         assert bodyparts.shape[1] == 4
         assert bodyparts.shape[2] >= 3
 
-    inference_api.create_df_from_prediction(
+    # Optionally also serialize a DLC-style H5 for the synthetic video
+    videos_api.create_df_from_prediction(
         predictions=predictions,
         dlc_scorer="synthetic_demo",
         multi_animal=True,
@@ -821,7 +855,7 @@ def main(output_dir: str | Path | None = None, run_inference: bool = True) -> Sy
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Synthetic DLC top-down training demo with precomputed detector boxes."
+        description="Synthetic DLC top-down training + inference demo with precomputed detector boxes."
     )
     parser.add_argument(
         "--output-dir",
@@ -833,7 +867,7 @@ if __name__ == "__main__":
         "--no-inference",
         action="store_false",
         dest="run_inference",
-        help="Whether to run the video inference demo after training. Default: True.",
+        help="Skip the video inference demo after training.",
     )
     args = parser.parse_args()
     main(args.output_dir, run_inference=args.run_inference)
