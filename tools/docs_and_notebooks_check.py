@@ -303,8 +303,9 @@ def target_spec_matches_path(rel_path: str, spec: dict[str, str]) -> bool:
         return rel_path == normalized or rel_path.startswith(normalized + "/")
 
     if kind == "glob":
-        # Support both classic glob matching and ** recursive patterns
-        return fnmatch.fnmatchcase(rel_path, normalized) or rel_pure.match(normalized)
+        # Use path-aware matching so '*' does not span directories, while
+        # still supporting recursive '**' patterns.
+        return rel_pure.match(normalized)
 
     return False
 
