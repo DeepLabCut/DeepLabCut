@@ -1089,7 +1089,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         action="store_true",
         help="Set embedded last_content_updated from computed git content date",
     )
-    up.add_argument("--targets", nargs="*", help="Optional list of relative file paths to update")
+    up.add_argument(
+        "--targets",
+        nargs="*",
+        help=(
+            "Optional list of relative file paths to update. "
+            "Supports exact files, directories, and glob patterns (e.g. docs/page.md, docs/gui/, 'docs/**/*.md'). "
+            "Both '/' and '\\' are accepted."
+        ),
+    )
     up.add_argument("--set-last-verified", default=None, help="YYYY-MM-DD or 'today'")
     up.add_argument("--set-verified-for", default=None, help="String like 3.0.0rc13")
     up.add_argument(
@@ -1110,7 +1118,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     norm.add_argument(
         "--targets",
         nargs="*",
-        help="Optional list of relative notebook paths to normalize",
+        help=(
+            "Optional list of relative notebook paths to normalize. "
+            "Supports exact files, directories, and glob patterns "
+            "(e.g. notebooks/example.ipynb, notebooks/, 'notebooks/**/*.ipynb'). "
+            "Both '/' and '\\' are accepted."
+        ),
     )
     norm.add_argument(
         "--ack-meta-commit-marker",
