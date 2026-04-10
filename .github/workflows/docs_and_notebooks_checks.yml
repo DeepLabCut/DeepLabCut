@@ -47,8 +47,8 @@ jobs:
           fi
 
           git diff --name-only --diff-filter=ACMR "$base" "$head" \
-            | grep -E '\.(md|ipynb)$' \
-            | sort -u > tmp/docs_nb_checks/changed_docs.txt || true
+            | { grep -E '\.(md|ipynb)$' || true; } \
+            | sort -u > tmp/docs_nb_checks/changed_docs.txt
 
           count=$(wc -l < tmp/docs_nb_checks/changed_docs.txt | tr -d ' ')
           echo "count=$count" >> "$GITHUB_OUTPUT"
