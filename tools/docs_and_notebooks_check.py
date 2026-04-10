@@ -615,6 +615,7 @@ def collect_metadata_sync_targets(records: list[FileRecord]) -> list[str]:
 def build_metadata_sync_command(config_path: str, paths: list[str]) -> str | None:
     if not paths:
         return None
+    config_path = shlex.quote(config_path)
     paths = [shlex.quote(p) for p in paths]
 
     target_lines = " \\\n  ".join(paths)
