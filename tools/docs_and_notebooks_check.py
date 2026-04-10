@@ -83,8 +83,8 @@ import re
 import subprocess
 from collections.abc import Sequence
 from datetime import date, datetime, timezone
-from pathlib import Path, PurePosixPath
-from typing import Any, Literal
+from pathlib import Path
+from typing import Any, Literal, TypedDict
 
 import nbformat
 import yaml
@@ -161,9 +161,12 @@ class ToolConfig(BaseModel):
     policy: PolicyConfig
 
 
+FileKind = Literal["ipynb", "md", "other"]
+
+
 class FileRecord(BaseModel):
     path: str
-    kind: str  # ipynb | md | other
+    kind: FileKind
 
     # Computed from git (excluding metadata-only commits)
     last_content_updated: date | None = None
@@ -201,6 +204,14 @@ PolicyConfig.model_rebuild()
 ToolConfig.model_rebuild()
 FileRecord.model_rebuild()
 Report.model_rebuild()
+
+TargetKind = Literal["invalid", "file", "dir", "glob"]
+
+
+class TargetSpec(TypedDict):
+    raw: str
+    normalized: str
+    kind: TargetKind
 
 
 # -----------------------------
@@ -247,7 +258,7 @@ def normalize_target_spec(spec: str, repo_root: Path) -> str:
     return s
 
 
-def compile_target_specs(targets: list[str] | None, repo_root: Path) -> list[dict[str, str]] | None:
+def compile_target_specs(targets: list[str] | None, repo_root: Path) -> list[TargetSpec] | None:
     """
     Convert raw CLI targets into normalized selector specs.
 
@@ -259,7 +270,7 @@ def compile_target_specs(targets: list[str] | None, repo_root: Path) -> list[dic
     if not targets:
         return None
 
-    specs: list[dict[str, str]] = []
+    specs: list[TargetSpec] = []
 
     for raw in targets:
         normalized = normalize_target_spec(raw, repo_root)
@@ -286,9 +297,8 @@ def compile_target_specs(targets: list[str] | None, repo_root: Path) -> list[dic
     return specs
 
 
-def target_spec_matches_path(rel_path: str, spec: dict[str, str]) -> bool:
+def target_spec_matches_path(rel_path: str, spec: TargetSpec) -> bool:
     rel_path = rel_path.replace("\\", "/")
-    rel_pure = PurePosixPath(rel_path)
 
     kind = spec["kind"]
     normalized = spec["normalized"]
@@ -303,13 +313,14 @@ def target_spec_matches_path(rel_path: str, spec: dict[str, str]) -> bool:
         return rel_path == normalized or rel_path.startswith(normalized + "/")
 
     if kind == "glob":
-        # Support both classic glob matching and ** recursive patterns
-        return fnmatch.fnmatchcase(rel_path, normalized) or rel_pure.match(normalized)
+        # Intentionally use simple shell-style matching here so patterns like
+        # docs/**/*.md behave the way users generally expect across platforms.
+        return fnmatch.fnmatchcase(rel_path, normalized)
 
     return False
 
 
-def target_matches(rel_path: str, specs: list[dict[str, str]] | None) -> bool:
+def target_matches(rel_path: str, specs: list[TargetSpec] | None) -> bool:
     if specs is None:
         return True
     return any(target_spec_matches_path(rel_path, spec) for spec in specs)
