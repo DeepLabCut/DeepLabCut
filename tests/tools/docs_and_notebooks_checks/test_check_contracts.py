@@ -447,7 +447,7 @@ def test_write_outputs_contract(tool, tmp_path: Path):
     assert md_path.exists()
 
     payload = json.loads(json_path.read_text(encoding="utf-8"))
-    assert payload["schema_version"] == tool.SCHEMA_VERSION
+    assert payload["schema_version"] == tool.REPORT_SCHEMA_VERSION
     assert "records" in payload and isinstance(payload["records"], list)
     assert md_path.read_text(encoding="utf-8").startswith("#")
 
