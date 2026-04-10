@@ -32,7 +32,7 @@ Since visibility cannot be accounted for, it should be considered an estimate of
 
 ### Point size slider
 
-The dock widget includes a slider to adjust the size of all keypoints in the viewer; the selected dot size will be saved in `config.yaml` for convenience, meaning DLC will re-use it for future sessions.
+The dock widget includes a slider to adjust the size of all keypoints in the viewer; the selected dot size will be saved in `config.yaml` for convenience, meaning DLC will reuse it for future sessions.
 
 ## Copy-paste annotations
 
