@@ -1070,7 +1070,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     chk.add_argument(
         "--targets",
         nargs="*",
-        help="Optional list of relative file paths to scan (limits scan to these files)",
+        help=(
+            "Optional list of relative file paths to scan (limits scan to these files). "
+            "Supports exact files, directories, and glob patterns (e.g. docs/page.md, docs/gui/, 'docs/**/*.md'). "
+            "Both '/' and '\\' are accepted."
+        ),
     )
     chk.add_argument(
         "--strict-mode",
