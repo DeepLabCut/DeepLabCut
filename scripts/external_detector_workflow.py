@@ -1,7 +1,7 @@
 """
-Realistic external-detector workflow example for DeepLabCut PyTorch top-down pose estimation.
+External-detector workflow example for DeepLabCut PyTorch top-down pose estimation.
 
-This example is intended for participants who already have a *real* DeepLabCut project
+This example is intended for those who already have a *real* DeepLabCut project
 with labeled data and a created shuffle / PyTorch model folder.
 
 What this script demonstrates
@@ -40,7 +40,7 @@ This script does *not* create a DLC project for you. It assumes you already have
 
 What you should edit
 --------------------
-Participants should mainly edit:
+Users should mainly edit:
 - ``CONFIG``                -> path to their DLC ``config.yaml``
 - ``POSE_MODEL``            -> which DLC pose model to use
 - ``MyExternalDetector``    -> their detector adapter
@@ -102,15 +102,17 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 # -----------------------------------------------------------------------------
 
 RECOMMENDED_POSE_MODELS = [
+    "hrnet_w32",
     "resnet_50",
-    "top_down_resnet_50",
+    "rtmpose_x",
+    "rtmpose_s",
     "rtmpose_m",
 ]
 
 
 @dataclass
 class UserSettings:
-    pose_model: str = "top_down_resnet_50"
+    pose_model: str = "resnet_50"
     shuffle: int = 1
     trainingsetindex: int = 0
     batch_size: int = 4
@@ -195,10 +197,10 @@ def infer_top_down_flag(pose_model_name: str) -> bool:
     """
     Heuristic for the config builder.
 
-    - Backbone names like `resnet_50` need `top_down=True` to become TD pose models.
-    - Explicit top-down configs like `top_down_resnet_50` are already TD, but passing
+    - Backbone names need `top_down=True` to become TD pose models.
+    - Explicit top-down configs like `resnet_50` are already TD, but passing
       `top_down=True` is harmless for the config-builder path.
-    - This realistic example is specifically for top-down detector-driven workflows.
+    - This example is specifically for top-down detector-driven workflows.
     """
     return True
 
@@ -606,9 +608,7 @@ def main(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Realistic external detector + DLC top-down workflow example (offline boxes)."
-    )
+    parser = argparse.ArgumentParser(description="External detector + DLC top-down workflow example (offline boxes).")
     parser.add_argument(
         "--config",
         type=str,
