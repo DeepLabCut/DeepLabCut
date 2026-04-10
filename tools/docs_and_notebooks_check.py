@@ -260,7 +260,7 @@ def compile_target_specs(targets: list[str] | None, repo_root: Path) -> list[dic
     Each spec is a dict with:
       - raw: original user input
       - normalized: normalized repo-relative selector
-      - kind: file | dir | glob
+      - kind: file | dir | glob | invalid
     """
     if not targets:
         return None
@@ -270,6 +270,7 @@ def compile_target_specs(targets: list[str] | None, repo_root: Path) -> list[dic
     for raw in targets:
         normalized = normalize_target_spec(raw, repo_root)
         if not normalized:
+            specs.append({"raw": raw, "normalized": "", "kind": "invalid"})
             continue
 
         if any(ch in normalized for ch in GLOB_CHARS):
@@ -297,6 +298,9 @@ def target_spec_matches_path(rel_path: str, spec: dict[str, str]) -> bool:
 
     kind = spec["kind"]
     normalized = spec["normalized"]
+
+    if kind == "invalid":
+        return False
 
     if kind == "file":
         return rel_path == normalized
@@ -346,16 +350,15 @@ def validate_requested_targets(
         return [], []
 
     specs = compile_target_specs(targets, repo_root)
-    if not specs:
-        return [], []
-
     candidates = iter_scan_candidate_paths(repo_root, cfg)
 
     matched_paths = sorted({rel for rel in candidates if target_matches(rel, specs)})
 
     unmatched_targets: list[str] = []
-    for spec in specs:
-        if not any(target_spec_matches_path(rel, spec) for rel in candidates):
+    for spec in specs or []:
+        if spec["kind"] == "invalid":
+            unmatched_targets.append(spec["raw"])
+        elif not any(target_spec_matches_path(rel, spec) for rel in candidates):
             unmatched_targets.append(spec["raw"])
 
     return matched_paths, unmatched_targets
@@ -1176,7 +1179,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         action="store_true",
         help="Set embedded last_content_updated from computed git content date",
     )
-    up.add_argument("--targets", nargs="*", help="Optional list of relative file paths to update")
+    up.add_argument(
+        "--targets",
+        nargs="*",
+        help=(
+            "Optional list of relative file paths to update. "
+            "Supports exact files, directories, and glob patterns (e.g. docs/page.md, docs/gui/, 'docs/**/*.md'). "
+            "Both '/' and '\\' are accepted."
+        ),
+    )
     up.add_argument("--set-last-verified", default=None, help="YYYY-MM-DD or 'today'")
     up.add_argument("--set-verified-for", default=None, help="String like 3.0.0rc13")
     up.add_argument(
@@ -1197,7 +1208,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     norm.add_argument(
         "--targets",
         nargs="*",
-        help="Optional list of relative notebook paths to normalize",
+        help=(
+            "Optional list of relative notebook paths to normalize. "
+            "Supports exact files, directories, and glob patterns "
+            "(e.g. notebooks/example.ipynb, notebooks/, 'notebooks/**/*.ipynb'). "
+            "Both '/' and '\\' are accepted."
+        ),
     )
     norm.add_argument(
         "--ack-meta-commit-marker",
