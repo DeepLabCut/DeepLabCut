@@ -80,6 +80,7 @@ import fnmatch
 import json
 import os
 import re
+import shlex
 import subprocess
 from collections.abc import Sequence
 from datetime import date, datetime, timezone
@@ -593,6 +594,10 @@ def record_needs_metadata_sync(rec: FileRecord) -> bool:
 
     embedded = rec.meta.last_content_updated if rec.meta else None
     computed = rec.last_content_updated
+
+    if computed is None:
+        return False
+
     return embedded != computed
 
 
@@ -607,6 +612,7 @@ def collect_metadata_sync_targets(records: list[FileRecord]) -> list[str]:
 def build_metadata_sync_command(config_path: str, paths: list[str]) -> str | None:
     if not paths:
         return None
+    paths = [shlex.quote(p) for p in paths]
 
     target_lines = " \\\n  ".join(paths)
     return (
