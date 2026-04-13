@@ -80,6 +80,7 @@ docs = [
 ]
 fmpose3d = [ "fmpose3d>=0.0.8" ]
 tf = [
+  "protobuf<7",
   # !!! TensorFlow is not supported on Windows with Python >= 3.11
   "tensorflow>=2,<=2.10; platform_system=='Windows' and python_version<'3.11'",
   "tensorflow>=2,<2.12; platform_system=='Linux' and python_version<'3.11'",

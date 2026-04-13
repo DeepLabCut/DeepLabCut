@@ -97,16 +97,11 @@ def test_fast_multianimal_includes_functional(selector):
     assert "multianimal" in res.provenance.scripts["examples/testscript_tensorflow_multi_animal.py"]
 
 
-def test_fast_ci_workflows_uses_minimal_pytest(selector):
+def test_fast_ci_workflows_uses_full_suite(selector):
     files = [".github/workflows/ci.yml"]
     res = selector.decide(files)
 
-    assert_lanes(res, fast=True)
-
-    # ci_workflows explicitly maps to the minimal pytest path
-    assert selector.MINIMAL_PYTEST[0] in res.pytest_paths
-    assert res.lane_reasons["fast"] == ["category:ci_workflows"]
-    assert res.provenance.pytest[selector.MINIMAL_PYTEST[0]] == ["ci_workflows"]
+    assert_lanes(res, full=True)
 
 
 def test_no_category_matched_is_full(selector):
@@ -324,7 +319,6 @@ def test_required_category_rules_exist():
     names = {rule.name for rule in CATEGORY_RULES}
     assert "docs" in names
     assert "core" in names
-    assert "ci_workflows" in names
 
 
 def test_docs_rule_exists_once():

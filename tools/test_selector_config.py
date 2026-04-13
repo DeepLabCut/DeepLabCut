@@ -151,6 +151,7 @@ FULL_SUITE_TRIGGERS = [
     ("pyproject.toml changed", equals("pyproject.toml")),
     ("lockfile changed", suffix(".lock")),
     ("DEEPLABCUT.yaml changed", suffix("DEEPLABCUT.yaml")),
+    ("CI workflow changed", prefix(".github/workflows/")),
 ]
 
 
@@ -318,14 +319,14 @@ CATEGORY_RULES = validate_category_rules(
             functional_scripts=[],
         ),
         # CI & TOOLING #
-        CategoryRule(
-            name="ci_workflows",
-            match_any=[
-                prefix(".github/workflows/"),
-            ],
-            pytest_paths=MINIMAL_PYTEST,
-            functional_scripts=[],
-        ),
+        # CategoryRule(
+        #     name="ci_workflows",
+        #     match_any=[
+        #         prefix(".github/workflows/"),
+        #     ],
+        #     pytest_paths=MINIMAL_PYTEST,
+        #     functional_scripts=[],
+        # ),
         CategoryRule(
             name="ci_tools",
             match_any=[
