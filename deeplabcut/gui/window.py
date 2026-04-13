@@ -369,14 +369,6 @@ class MainWindow(QMainWindow):
         self._progress_bar.hide()
         self.status_bar.showMessage("www.deeplabcut.org")
 
-    def _cleanup_update_process(self):
-        if self._update_process is not None:
-            self._update_process.deleteLater()
-            self._update_process = None
-        self._update_process_output = []
-        self._progress_bar.hide()
-        self.status_bar.showMessage("www.deeplabcut.org")
-
     def _on_update_process_error(self, error):
         if self._closing:
             self._cleanup_update_process()
