@@ -527,8 +527,8 @@ def main(
     if not config.exists():
         raise FileNotFoundError(f"Config file not found: {config}")
 
-    # Participants should replace this with their own detector implementation.
-    detector = PretrainedDetectorModel()
+    # Update the detector args
+    detector = PretrainedDetectorModel(...)
 
     # Build loader once to resolve the canonical model folder.
     loader = DLCLoader(
