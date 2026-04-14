@@ -8,13 +8,14 @@ Description
 -----------------------------
 1. Open a normal DLC project with a real ``config.yaml``.
 2. Choose a DLC pose model.
-3. Plug in your own external detector by implementing a tiny adapter class.
-4. Run the detector offline on the train/test images and save the results as
+3. Remember to create  a training shuffle using DLC !
+4. Plug in your own external detector by implementing a tiny adapter class.
+5. Run the detector offline on the train/test images and save the results as
    ``precomputed_bboxes.json``.
-5. Create/update the project's ``pytorch_config.yaml`` so the pose model trains in
+6. Create/update the project's ``pytorch_config.yaml`` so the pose model trains in
    top-down mode using those precomputed boxes.
-6. Train the DLC pose model via the ``train_network(...)`` API.
-7. Run inference either on:
+7. Train the DLC pose model via the ``train_network(...)`` API.
+8. Run inference either on:
    - a video (using per-frame bbox context, optionally cached to disk), or
    - a folder of image frames.
 
