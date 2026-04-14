@@ -600,10 +600,7 @@ def main(
 
     print()
     print("Workflow complete.")
-    print("What to do next:")
-    print("  - Replace `MyExternalDetector` with your own detector adapter.")
-    print("  - Adjust POSE_MODEL / crop size / epochs / batch size to your real project.")
-    print("  - Inspect the saved `precomputed_bboxes.json` for box quality and curation.")
+    print("Benchmark time :3")
 
 
 # -----------------------------------------------------------------------------
