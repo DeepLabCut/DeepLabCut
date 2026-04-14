@@ -276,27 +276,25 @@ def _compute_crop_bounds(
 
 
 def _extract_keypoints_and_bboxes(
-    anns: list[dict],
-    image_shape: tuple[int, int, int],
-    num_joints: int,
-    num_unique_bodyparts: int,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, np.ndarray]]:
+    anns,
+    image_shape,
+    num_joints,
+    num_unique_bodyparts,
+):
     """
-    Args:
-        anns: COCO-style annotations
-        image_shape: the (h, w, c) shape of the image for which to get annotations
-        num_joints: the number of joints in the annotations
-
-    Returns:
-        keypoints, unique_keypoints, bboxes in xywh format, annotations_merged
+    Patch for DLC training when annotations are missing COCO metadata like:
+    area, category_id, iscrowd, individual_id.
     """
     keypoints = []
     original_bboxes = []
     anns_to_merge = []
     unique_keypoints = None
+
     h, w = image_shape[:2]
-    for _i, annotation in enumerate(anns):
+
+    for i, annotation in enumerate(anns):
         keypoints_individual = _annotation_to_keypoints(annotation, h, w)
+
         if annotation["individual"] != "single":
             bbox_individual = annotation["bbox"]
             original_bboxes.append(bbox_individual)
@@ -312,19 +310,42 @@ def _extract_keypoints_and_bboxes(
     original_bboxes = safe_stack(original_bboxes, (0, 4))
     bboxes = _compute_crop_bounds(original_bboxes, image_shape, remove_empty=False)
 
-    # at least 1 visible joint to keep individuals
+    # Keep only individuals with at least one visible joint
     vis_mask = (keypoints[..., 2] > 0).any(axis=1)
     keypoints = keypoints[vis_mask]
     bboxes = bboxes[vis_mask]
 
-    keys_to_merge = ["area", "category_id", "iscrowd", "individual_id"]
-    anns_merged = {k: [] for k in keys_to_merge}
-    if len(anns_to_merge) > 0:
-        anns_merged = merge_list_of_dicts(anns_to_merge, keys_to_include=keys_to_merge)
-    anns_merged = {k: np.array(v)[vis_mask] for k, v in anns_merged.items()}
+    def default_area(annotation):
+        if "area" in annotation:
+            return float(annotation["area"])
 
-    if len(anns_merged["area"]) != len(keypoints):
-        raise ValueError(f"Missing area values! {anns_merged}, {keypoints.shape}")
+        if "bbox" in annotation and len(annotation["bbox"]) == 4:
+            # bbox is assumed xywh
+            return float(annotation["bbox"][2]) * float(annotation["bbox"][3])
+
+        # fallback from visible keypoints
+        kp = np.asarray(annotation["keypoints"], dtype=float).reshape(-1, 3)
+        visible = kp[kp[:, 2] > 0, :2]
+        if len(visible) == 0:
+            return 0.0
+        mins = visible.min(axis=0)
+        maxs = visible.max(axis=0)
+        wh = np.maximum(maxs - mins, 1.0)
+        return float(wh[0] * wh[1])
+
+    len(anns_to_merge)
+
+    area = np.array([default_area(a) for a in anns_to_merge], dtype=float)
+    category_id = np.array([a.get("category_id", 0) for a in anns_to_merge], dtype=int)
+    iscrowd = np.array([a.get("iscrowd", 0) for a in anns_to_merge], dtype=int)
+    individual_id = np.array([a.get("individual_id", i) for i, a in enumerate(anns_to_merge)], dtype=int)
+
+    anns_merged = {
+        "area": area[vis_mask],
+        "category_id": category_id[vis_mask],
+        "iscrowd": iscrowd[vis_mask],
+        "individual_id": individual_id[vis_mask],
+    }
 
     return keypoints, unique_keypoints, bboxes, anns_merged
 

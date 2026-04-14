@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 # Types
 # -----------------------------------------------------------------------------
 
-BBoxFormat = Literal["xywh", "xyxy"]
+BBoxFormat = Literal["xywh", "xyxy", "cxcywh"]
 EvalMode: TypeAlias = Literal["train", "test"]
 
 
@@ -47,6 +47,7 @@ def _numpy_to_jsonable(obj: Any) -> Any:
 
 
 def _xyxy_to_xywh(boxes: np.ndarray) -> np.ndarray:
+    """Assumes top-left origin. Converts [x_min, y_min, x_max, y_max] to [x_min, y_min, width, height]."""
     boxes = np.asarray(boxes, dtype=np.float32).copy().reshape(-1, 4)
     if len(boxes) == 0:
         return boxes
@@ -56,11 +57,25 @@ def _xyxy_to_xywh(boxes: np.ndarray) -> np.ndarray:
 
 
 def _xywh_to_xyxy(boxes: np.ndarray) -> np.ndarray:
+    """Assumes top-left origin. Converts [x_min, y_min, width, height] to [x_min, y_min, x_max, y_max]."""
     boxes = np.asarray(boxes, dtype=np.float32).copy().reshape(-1, 4)
     if len(boxes) == 0:
         return boxes
     boxes[:, 2] = boxes[:, 0] + boxes[:, 2]
     boxes[:, 3] = boxes[:, 1] + boxes[:, 3]
+    return boxes
+
+
+def _cxcywh_to_xyxy(boxes):
+    """Converts [center_x, center_y, width, height] to [x_min, y_min, x_max, y_max]."""
+    boxes = np.asarray(boxes, dtype=np.float32).copy().reshape(-1, 4)
+    if len(boxes) == 0:
+        return boxes
+    x, y, w, h = boxes[:, 0], boxes[:, 1], boxes[:, 2], boxes[:, 3]
+    boxes[:, 0] = x - w / 2
+    boxes[:, 1] = y - h / 2
+    boxes[:, 2] = x + w / 2
+    boxes[:, 3] = y + h / 2
     return boxes
 
 
