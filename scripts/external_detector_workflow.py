@@ -97,6 +97,7 @@ from deeplabcut.pose_estimation_pytorch.data import DLCLoader
 from deeplabcut.pose_estimation_pytorch.models.detectors.external.base import (
     precompute_detector_bboxes,
 )
+from deeplabcut.pose_estimation_pytorch.runners.inference import DetectorToPoseInferenceRunner
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 # -----------------------------------------------------------------------------
@@ -480,10 +481,16 @@ def analyze_image_folder_with_external_boxes(
     )
 
     image_paths = list_images_in_folder(images_dir)
-    contexts = detector_runner.inference(image_paths)
-    image_inputs = [(img_path, ctx) for img_path, ctx in zip(image_paths, contexts, strict=False)]
 
-    predictions = pose_runner.inference(image_inputs)
+    composite_runner = DetectorToPoseInferenceRunner(
+        pose_runner=pose_runner,
+        detector_runner=detector_runner,
+        max_individuals=len(loader.model_cfg["metadata"]["individuals"]),
+        num_joints=len(loader.model_cfg["metadata"]["bodyparts"]),
+        num_unique_bodyparts=len(loader.model_cfg["metadata"].get("unique_bodyparts", [])),
+    )
+
+    predictions = composite_runner.inference(image_paths)
 
     dlc_scorer = loader.scorer(snapshot)
     output_path = Path(images_dir)

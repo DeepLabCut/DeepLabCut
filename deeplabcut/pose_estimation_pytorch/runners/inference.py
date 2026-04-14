@@ -1005,9 +1005,18 @@ class DetectorToPoseInferenceRunner:
         self,
         pose_runner,
         detector_runner: DetectorRunnerLike,
+        *,
+        max_individuals: int = 1,
+        num_joints: int = 17,
+        num_unique_bodyparts: int = 0,
+        fill_value: float = np.nan,
     ) -> None:
         self.pose_runner = pose_runner
         self.detector_runner = detector_runner
+        self.max_individuals = max(1, max_individuals)
+        self.num_joints = max(1, num_joints)
+        self.num_unique_bodyparts = max(0, num_unique_bodyparts)
+        self.fill_value = fill_value
 
     @staticmethod
     def _split_input_and_context(
@@ -1052,48 +1061,163 @@ class DetectorToPoseInferenceRunner:
 
         return bboxes, bbox_scores
 
+    def _select_and_order_boxes(
+        self,
+        det: dict[str, Any],
+        context: dict[str, Any] | None = None,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Default strategy:
+        - sort by descending score
+        - keep at most max_individuals
+
+        Future extension:
+        - if context contains reference boxes, reorder using IoU matching
+        """
+        bboxes, bbox_scores = self._normalize_detector_output(det)
+
+        if len(bboxes) == 0:
+            return (
+                np.zeros((0, 4), dtype=np.float32),
+                np.zeros((0,), dtype=np.float32),
+            )
+
+        order = np.argsort(-bbox_scores)
+        order = order[: self.max_individuals]
+
+        return bboxes[order], bbox_scores[order]
+
+    @staticmethod
+    def _pad_first_dim(arr: np.ndarray, target_n: int, fill_value=np.nan) -> np.ndarray:
+        arr = np.asarray(arr)
+
+        if arr.shape[0] == target_n:
+            return arr
+
+        if arr.shape[0] > target_n:
+            return arr[:target_n]
+
+        if not np.issubdtype(arr.dtype, np.floating):
+            arr = arr.astype(np.float32)
+
+        pad_shape = (target_n - arr.shape[0],) + arr.shape[1:]
+        pad = np.full(pad_shape, fill_value, dtype=arr.dtype)
+        return np.concatenate([arr, pad], axis=0)
+
+    def _empty_prediction(self, last_dim: int = 3) -> dict[str, np.ndarray]:
+        pred = {
+            "bodyparts": np.full(
+                (self.max_individuals, self.num_joints, last_dim),
+                self.fill_value,
+                dtype=np.float32,
+            )
+        }
+        if self.num_unique_bodyparts > 0:
+            pred["unique_bodyparts"] = np.full(
+                (1, self.num_unique_bodyparts, last_dim),
+                self.fill_value,
+                dtype=np.float32,
+            )
+        return pred
+
+    def _normalize_prediction(
+        self,
+        pred: dict[str, Any] | None,
+        *,
+        last_dim_hint: int = 3,
+    ) -> dict[str, np.ndarray]:
+        if pred is None or "bodyparts" not in pred:
+            return self._empty_prediction(last_dim=last_dim_hint)
+
+        pred = dict(pred)
+
+        bodyparts = np.asarray(pred["bodyparts"])
+        if bodyparts.ndim != 3:
+            raise ValueError(f"Unexpected bodyparts shape: {bodyparts.shape}")
+
+        last_dim = bodyparts.shape[-1]
+        pred["bodyparts"] = self._pad_first_dim(bodyparts, self.max_individuals, fill_value=self.fill_value)
+
+        if self.num_unique_bodyparts > 0:
+            if "unique_bodyparts" in pred:
+                ub = np.asarray(pred["unique_bodyparts"])
+                if ub.ndim == 2:
+                    ub = ub[None, ...]
+                pred["unique_bodyparts"] = self._pad_first_dim(ub, 1, fill_value=self.fill_value)
+            else:
+                pred["unique_bodyparts"] = np.full(
+                    (1, self.num_unique_bodyparts, last_dim),
+                    self.fill_value,
+                    dtype=np.float32,
+                )
+
+        return pred
+
     @torch.inference_mode()
     def inference(
         self,
         images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
         shelf_writer: shelving.ShelfWriter | None = None,
     ):
-        """
-        Run detector-first, then pose inference.
-
-        For each input image:
-          1. run detector_runner.inference(...)
-          2. inject context["bboxes"] and context["bbox_scores"]
-          3. call pose_runner.inference(...) on the enriched inputs
-
-        Notes:
-        - The detector runner is expected to return one detection dict per input image.
-        - Bounding boxes should already be in the format expected by the top-down
-          preprocessor, i.e. xywh.
-        """
         images = list(images)
-        detections = self.detector_runner.inference(images)
 
-        if len(detections) != len(images):
-            raise ValueError(f"Detector returned {len(detections)} outputs for {len(images)} input images.")
+        # Split once so we can preserve/extend incoming contexts
+        split_items = [self._split_input_and_context(item) for item in images]
+        raw_images = [x[0] for x in split_items]
+        incoming_contexts = [x[1] for x in split_items]
+
+        detections = self.detector_runner.inference(raw_images)
+        if len(detections) != len(raw_images):
+            raise ValueError(f"Detector returned {len(detections)} outputs for {len(raw_images)} input images.")
 
         enriched_inputs = []
-        for item, det in zip(images, detections, strict=False):
-            image, context = self._split_input_and_context(item)
-            bboxes, bbox_scores = self._normalize_detector_output(det)
+        normalized_contexts = []
 
-            # TopDownCrop requires "bboxes" in context.
+        for image, context, det in zip(raw_images, incoming_contexts, detections, strict=False):
+            context = dict(context)
+
+            bboxes, bbox_scores = self._select_and_order_boxes(det, context=context)
+
             context["bboxes"] = bboxes
-
-            # Not required by the cropper today, but useful to preserve.
             context["bbox_scores"] = bbox_scores
-
-            # Optional: keep the raw detector output for debugging / future use.
             context["detector_output"] = det
 
+            normalized_contexts.append(context)
             enriched_inputs.append((image, context))
 
-        return self.pose_runner.inference(enriched_inputs, shelf_writer=shelf_writer)
+        raw_predictions = self.pose_runner.inference(enriched_inputs, shelf_writer=None)
+
+        # infer last dim from first valid prediction
+        last_dim_hint = 3
+        for pred in raw_predictions:
+            if isinstance(pred, dict) and "bodyparts" in pred:
+                arr = np.asarray(pred["bodyparts"])
+                if arr.ndim == 3 and arr.shape[-1] > 0:
+                    last_dim_hint = arr.shape[-1]
+                    break
+
+        predictions = []
+        for context, pred in zip(normalized_contexts, raw_predictions, strict=False):
+            n_boxes = len(np.asarray(context["bboxes"]).reshape(-1, 4))
+
+            if n_boxes == 0:
+                pred_norm = self._empty_prediction(last_dim=last_dim_hint)
+            else:
+                pred_norm = self._normalize_prediction(pred, last_dim_hint=last_dim_hint)
+
+            predictions.append(pred_norm)
+
+        if shelf_writer is not None:
+            for pred in predictions:
+                shelf_writer.add_prediction(
+                    bodyparts=pred["bodyparts"],
+                    unique_bodyparts=pred.get("unique_bodyparts"),
+                    identity_scores=pred.get("identity_scores"),
+                    features=pred.get("features"),
+                )
+            return []
+
+        return predictions
 
 
 def build_inference_runner(
@@ -1175,6 +1299,9 @@ def build_inference_runner(
         return DetectorToPoseInferenceRunner(
             pose_runner=runner,
             detector_runner=detector_runner,
+            max_individuals=kwargs.get("max_individuals", 1),
+            num_joints=kwargs.get("num_joints"),
+            num_unique_bodyparts=kwargs.get("num_unique_bodyparts", 0),
         )
 
     return runner

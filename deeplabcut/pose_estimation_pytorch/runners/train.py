@@ -173,11 +173,14 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         raise NotImplementedError
 
     def _gpu_usage_str(self) -> str:
-        if not torch.cuda.is_available():
-            return ""
-        used = torch.cuda.memory_reserved() / 1024**2
-        total = torch.cuda.get_device_properties(0).total_memory / 1024**2
-        return f", GPU: {used:.1f}/{total:.1f} MiB"
+        # if not torch.cuda.is_available():
+        # This is not exactly a safe check...
+        # return ""
+        if "cuda" in str(self.device).lower():
+            used = torch.cuda.memory_reserved() / 1024**2
+            total = torch.cuda.get_device_properties(0).total_memory / 1024**2
+            return f", GPU: {used:.1f}/{total:.1f} MiB"
+        return ""
 
     def fit(
         self,
