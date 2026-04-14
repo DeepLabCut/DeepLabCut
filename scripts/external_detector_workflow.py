@@ -4,24 +4,25 @@ External-detector workflow example for DeepLabCut PyTorch top-down pose estimati
 This example is intended for those who already have a *real* DeepLabCut project
 with labeled data and a created shuffle / PyTorch model folder.
 
-What this script demonstrates
+Description
 -----------------------------
 1. Open a normal DLC project with a real ``config.yaml``.
-2. Choose a real DLC pose model (e.g. ``resnet_50``, ``top_down_resnet_50``, ``rtmpose_m``).
+2. Choose a DLC pose model.
 3. Plug in your own external detector by implementing a tiny adapter class.
 4. Run the detector offline on the train/test images and save the results as
    ``precomputed_bboxes.json``.
 5. Create/update the project's ``pytorch_config.yaml`` so the pose model trains in
    top-down mode using those precomputed boxes.
-6. Train the DLC pose model via the real ``train_network(...)`` API.
+6. Train the DLC pose model via the ``train_network(...)`` API.
 7. Run inference either on:
    - a video (using per-frame bbox context, optionally cached to disk), or
    - a folder of image frames.
 
-Why this example exists
+Purpose
 -----------------------
 The goal is to make it easy to use *your own detector* while keeping *DLC pose models*
-for training and inference. In this workflow, the detector is responsible only for
+for training and inference.
+In this workflow, the detector is responsible only for
 providing bounding boxes (proposals / crops), and DeepLabCut still handles:
 - dataset loading,
 - crop generation,
@@ -32,21 +33,20 @@ providing bounding boxes (proposals / crops), and DeepLabCut still handles:
 Important prerequisites
 -----------------------
 Before using this script, you should already have:
-1. a normal DeepLabCut project with labeled data,
-2. a created training dataset / shuffle for the PyTorch engine,
+1. a normal DeepLabCut project with labeled data (from RCP),
+2. a created training dataset / shuffle for the PyTorch engine (provided or your own),
 3. and a valid ``config.yaml``.
 
-This script does *not* create a DLC project for you. It assumes you already have one.
 
 What you should edit
 --------------------
 Users should mainly edit:
 - ``CONFIG``                -> path to their DLC ``config.yaml``
 - ``POSE_MODEL``            -> which DLC pose model to use
-- ``MyExternalDetector``    -> their detector adapter
+- ``MyExternalDetector``    -> the detector adapter, where most of the work will happen
 - a few curated training / crop settings in ``USER_SETTINGS``
 
-What you usually should *not* edit
+What you usually should *not* edit (unless you want/have to)
 ----------------------------------
 - ``DLCLoader`` internals
 - bbox artifact schema internals
@@ -55,6 +55,8 @@ What you usually should *not* edit
 - pose-model internals
 
 Example usage
+(CLI if needed, but I'd suggest using a notebook for dev and debug.
+RCP makes this easy, just import the script from your notebook and use the functions directly):
 -------------
 Train only:
 
@@ -101,7 +103,7 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 # User-facing settings
 # -----------------------------------------------------------------------------
 
-RECOMMENDED_POSE_MODELS = [
+EXAMPLE_POSE_MODELS = [
     "hrnet_w32",
     "resnet_50",
     "rtmpose_x",
@@ -131,9 +133,9 @@ class UserSettings:
 # -----------------------------------------------------------------------------
 
 
-class MyExternalDetector:
+class PretrainedDetectorModel:
     """
-    Replace this class with your own detector.
+    Replace the internals of this class with your own detector.
 
     Required contract:
         inference(images, shelf_writer=None) -> list[dict]
@@ -160,6 +162,8 @@ class MyExternalDetector:
     - Boxes must be in ``xywh`` format because the current DLC top-down crop path
       expects that downstream.
     - If your detector naturally returns ``xyxy`` boxes, convert them before returning.
+      The pose_estimation_pytorch.data.bboxes.BBoxEntry schemas
+      already have converter functions in place, feel free to extend them.
     """
 
     def inference(self, images, shelf_writer=None):
@@ -248,7 +252,7 @@ def prepare_external_topdown_pose_config(
     if Task(pose_cfg["method"]) != Task.TOP_DOWN:
         raise ValueError(
             f"The selected pose model '{settings.pose_model}' did not resolve to a top-down model. "
-            f"Choose a top-down-capable model. Recommended examples: {RECOMMENDED_POSE_MODELS}"
+            f"Choose a top-down-capable model. Recommended examples: {EXAMPLE_POSE_MODELS}"
         )
 
     # Apply curated configuration updates via the canonical loader.update_model_cfg(...) path.
@@ -517,7 +521,7 @@ def main(
         raise FileNotFoundError(f"Config file not found: {config}")
 
     # Participants should replace this with their own detector implementation.
-    detector = MyExternalDetector()
+    detector = PretrainedDetectorModel()
 
     # Build loader once to resolve the canonical model folder.
     loader = DLCLoader(
@@ -619,9 +623,7 @@ if __name__ == "__main__":
         "--pose-model",
         type=str,
         default="top_down_resnet_50",
-        help=(
-            f"DLC pose model to use. You can pass a raw DLC net_type. Recommended examples: {RECOMMENDED_POSE_MODELS}"
-        ),
+        help=(f"DLC pose model to use. You can pass a raw DLC net_type. Recommended examples: {EXAMPLE_POSE_MODELS}"),
     )
     parser.add_argument("--shuffle", type=int, default=1, help="Shuffle index")
     parser.add_argument("--trainingsetindex", type=int, default=0, help="TrainingFraction index")
