@@ -91,6 +91,7 @@ repos:
         language: python
         pass_filenames: true
         files: ^(docs/|examples/(JUPYTER|COLAB)/|tools/).*(\.md|\.ipynb)$
+        exclude: ^tools/docs_audits/
         args:
           - --config
           - tools/docs_and_notebooks_report_config.yml

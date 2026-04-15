@@ -6,6 +6,7 @@ scan:
     - "examples/JUPYTER/**/*.ipynb"
     - "docs/**/*.md"
     - "docs/**/*.ipynb"  # if notebooks get added to docs (Jupyter Book supports this)
+    - "tools/**/*.md"
   exclude:
     - "**/.ipynb_checkpoints/**"
     - "**/_build/**"
