@@ -10,6 +10,7 @@ scan:
     - "**/.ipynb_checkpoints/**"
     - "**/_build/**"
     - "**/build/**"
+    - "tools/docs_audits/**"
 
 policy:
   warn_if_content_older_than_days: 365
