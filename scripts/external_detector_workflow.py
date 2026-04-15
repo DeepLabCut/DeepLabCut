@@ -124,7 +124,7 @@ class UserSettings:
     crop_width: int = 256
     crop_height: int = 256
     bbox_match_iou_threshold: float = 0.1
-    bbox_fallback_to_gt: bool = True
+    bbox_fallback_to_gt: bool = False
     bbox_validate_image_paths: bool = False
     display_iters: int = 50
     device: str | None = None

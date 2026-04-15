@@ -281,7 +281,7 @@ class Loader(ABC):
                 bbox_margin=self.model_cfg["data"].get("bbox_margin", 20),
                 detector_runner=detector_runner,
                 bbox_iou_threshold=self.model_cfg["data"].get("bbox_match_iou_threshold", 0.1),
-                fallback_to_gt=self.model_cfg["data"].get("bbox_fallback_to_gt", True),
+                fallback_to_gt=self.model_cfg["data"].get("bbox_fallback_to_gt", False),
             )
 
         annotations = self.filter_annotations(annotations, task)
@@ -426,7 +426,7 @@ class Loader(ABC):
         bbox_margin: int = 20,
         detector_runner: DetectorRunnerLike | None = None,
         bbox_iou_threshold: float = 0.1,
-        fallback_to_gt: bool = True,
+        fallback_to_gt: bool = False,
     ):
         """TODO: Nastya method of bbox computation (detection bbox, seg. mask, ...)
         Retrieves all bounding boxes based on the given method.
@@ -453,6 +453,10 @@ class Loader(ABC):
         if method is None:
             return annotations
 
+        if fallback_to_gt and method != BBoxComputationMethod.DETECTION_BBOX:
+            logger.warning(
+                "bbox_fallback_to_gt is only applicable when method='detection bbox'. Ignoring fallback_to_gt."
+            )
         if method == BBoxComputationMethod.GT:
             for annotation in annotations:
                 if "bbox" not in annotation:
@@ -562,6 +566,15 @@ class Loader(ABC):
                     f"Detector bbox matching: {num_total - num_unmatched}/{num_total} annotations matched "
                     f"(fallback_to_gt={fallback_to_gt})"
                 )
+                if not fallback_to_gt:
+                    logging.error(
+                        f"{num_unmatched} annotations were not matched to any detection bbox "
+                        "and were assigned empty bounding boxes. "
+                        "Please review the detector performance!"
+                        "If this is expected and/or gt fallback is reasonable in your case, "
+                        "consider setting bbox_fallback_to_gt=True in the config to use gt bboxes "
+                        "for unmatched annotations instead of empty bboxes."
+                    )
 
             return annotations
 

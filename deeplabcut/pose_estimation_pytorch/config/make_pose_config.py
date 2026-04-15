@@ -282,7 +282,7 @@ def make_pytorch_pose_config(
 
         # Safe defaults for offline / precomputed detector matching
         pose_config["data"].setdefault("bbox_match_iou_threshold", 0.1)
-        pose_config["data"].setdefault("bbox_fallback_to_gt", True)
+        pose_config["data"].setdefault("bbox_fallback_to_gt", False)
         pose_config["data"].setdefault("bbox_validate_image_paths", False)
 
     elif bbox_source is not None:

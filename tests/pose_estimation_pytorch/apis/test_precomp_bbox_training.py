@@ -71,7 +71,7 @@ class FakeMultiAnimalDLCLoader(Loader):
                 "precomputed_bboxes": precomputed_bboxes_path.as_posix(),
                 "bbox_margin": 5,
                 "bbox_match_iou_threshold": 0.1,
-                "bbox_fallback_to_gt": True,
+                "bbox_fallback_to_gt": False,
             },
             "runner": {},
             "train_settings": {},

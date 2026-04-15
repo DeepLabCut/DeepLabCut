@@ -428,7 +428,7 @@ def _write_or_update_pose_config(
     pose_cfg["data"]["precomputed_bboxes"] = Path(precomputed_bboxes).as_posix()
     pose_cfg["data"]["bbox_validate_image_paths"] = False
     pose_cfg["data"].setdefault("bbox_match_iou_threshold", 0.1)
-    pose_cfg["data"].setdefault("bbox_fallback_to_gt", True)
+    pose_cfg["data"].setdefault("bbox_fallback_to_gt", False)
     pose_cfg["data"].setdefault("bbox_margin", 0)
     pose_cfg["data"]["colormode"] = "RGB"
     pose_cfg["data"].setdefault("train", {})
