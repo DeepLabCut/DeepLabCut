@@ -124,16 +124,21 @@ jobs:
           elif [ "$RUNNER_OS" == "macOS" ]; then
             brew install ffmpeg || true
           fi
-      - name: Install ffmpeg (Windows, BtbN latest)
+      - name: Install ffmpeg (Windows, pinned monthly BtbN build)
+      # NOTE: The pinned version should be retained for ~2 years. This WILL fail if the BtbN release is removed,
+      # so if you are two years in the future and this step fails, please check the builds. Thanks.
         if: runner.os == 'Windows'
         shell: pwsh
         env:
-          FFMPEG_ASSET: ffmpeg-master-latest-win64-gpl-shared.zip
+          FFMPEG_TAG: autobuild-2026-03-31-13-11
+          FFMPEG_ASSET: ffmpeg-N-123777-g53537f6cf5-win64-gpl-shared.zip
         run: |
           $ErrorActionPreference = "Stop"
 
+          $tag = $env:FFMPEG_TAG
           $asset = $env:FFMPEG_ASSET
-          $baseUrl = "https://github.com/BtbN/FFmpeg-Builds/releases/latest/download"
+
+          $baseUrl = "https://github.com/BtbN/FFmpeg-Builds/releases/download/$tag"
           $url = "$baseUrl/$asset"
           $checksumsUrl = "$baseUrl/checksums.sha256"
 
@@ -142,13 +147,15 @@ jobs:
           $checksums = Join-Path $tmpRoot "checksums.sha256"
           $dest = Join-Path $tmpRoot "ffmpeg"
 
-          if (Test-Path $tmpRoot) { Remove-Item -Recurse -Force $tmpRoot }
+          if (Test-Path -LiteralPath $tmpRoot) {
+            Remove-Item -LiteralPath $tmpRoot -Recurse -Force
+          }
           New-Item -ItemType Directory -Path $tmpRoot | Out-Null
 
           Invoke-WebRequest -Uri $url -OutFile $zip
           Invoke-WebRequest -Uri $checksumsUrl -OutFile $checksums
 
-          $expected = Get-Content -Path $checksums |
+          $expected = Get-Content -LiteralPath $checksums |
             ForEach-Object {
               if ($_ -match '^(?<sha>[0-9A-Fa-f]{64})\s+\*?(?<name>.+)$' -and $matches.name.Trim() -eq $asset) {
                 $matches.sha.ToLowerInvariant()
@@ -160,14 +167,16 @@ jobs:
             throw "Could not find checksum for $asset in $checksums"
           }
 
-          $actual = (Get-FileHash -Path $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          $actual = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
           if ($actual -ne $expected) {
             throw "FFmpeg checksum mismatch. Expected $expected but got $actual"
           }
 
-          Expand-Archive -Path $zip -DestinationPath $dest -Force
-          $ffdir = Get-ChildItem -Path $dest -Directory | Select-Object -First 1
-          if (-not $ffdir) { throw "Could not find extracted FFmpeg directory." }
+          Expand-Archive -LiteralPath $zip -DestinationPath $dest -Force
+          $ffdir = Get-ChildItem -LiteralPath $dest -Directory | Select-Object -First 1
+          if (-not $ffdir) {
+            throw "Could not find extracted FFmpeg directory."
+          }
 
           $binDir = Join-Path $ffdir.FullName "bin"
           $binDir | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
