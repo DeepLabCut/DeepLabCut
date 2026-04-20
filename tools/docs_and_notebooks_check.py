@@ -601,6 +601,10 @@ def match_allowlist(rel_path: str, allowlist: list[str]) -> bool:
 #  CI enforcement utils
 # -----------------------------
 def record_needs_metadata_sync(rec: FileRecord) -> bool:
+    if "invalid_metadata" in rec.warnings:
+        # avoid mixing "invalid metadata" issues with "metadata sync needed" guidance,
+        # since the former may require manual fixes
+        return False
     if rec.kind not in {"md", "ipynb"}:
         return False
     if rec.meta and rec.meta.ignore:
