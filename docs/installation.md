@@ -16,11 +16,11 @@ deeplabcut:
 
 - **DeepLabCut can be run on Windows, Linux, or MacOS as long as you have Python 3.10-3.12 installed**
   - See also [technical considerations](sec:hardware-considerations-during-install) and if you run into issues also check out the [installation tips](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html).
-- 🚧 Please note, there are **several equally valid modes of installation**:
-  - Install in a [**conda environment**](https://deeplabcut.github.io/DeepLabCut/docs/installation.html#conda-the-installation-process-is-as-easy-as-this-figure) (**recommended**)
+- 🚧 Please note, there are several possibilities for installation:
+  - **Recommended for most users**: Install in a [**conda environment**](https://deeplabcut.github.io/DeepLabCut/docs/installation.html#conda-the-installation-process-is-as-easy-as-this-figure)
   - Install with [**uv**](sec:uv-install) (recommended for developers)
-  - In the supplied [**Docker container**](docker-containers) (recommended for Ubuntu advanced users).
-- 🚀 Please note, you will get the best performance when using a **GPU**!
+  - In the supplied [**Docker container**](docker-containers) (recommended for Ubuntu advanced users and reproducibility).
+- 🚀 You will get the best performance when using a **GPU**!
   - Please see the section on [GPU support](sec:install-gpu-support) to install your GPU driver and CUDA.
 
 ````{hint}
@@ -52,14 +52,13 @@ python -c "import torch; print(torch.cuda.is_available())"
 ```
 ````
 
-- If you're familiar with the command line and want TensorFlow support, look [below](deeplabcut-with-tf-install) for a fresh installation that has worked for us (on Linux)
-  and makes it possible to use the GPU with both PyTorch and TensorFlow.
+- If you're familiar with the command line and want TensorFlow support, look [below](deeplabcut-with-tf-install) for a fresh installation on Linux and makes it possible to use the GPU with both PyTorch and TensorFlow.
 
 ## Using Conda
 
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/71e5d954-75a0-4534-9fa6-7ecc4bf1b76d/installDLC.png?format=1500w" width="250" title="DLC" alt="DLC" align="right" vspace = "50">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/71e5d954-75a0-4534-9fa6-7ecc4bf1b76d/installDLC.png?format=1500w" width="250" title="DLC" alt="DLC" align="right" />
 
-**The installation process is as easy as the figure below!**
+**The installation process is as easy as the figure on the right!↘️**
 
 ### 🚨 Before you start...
 
@@ -67,23 +66,29 @@ Do you have a GPU? If yes, see the [GPU support section](sec:install-gpu-support
 
 If not, you can still install DeepLabCut and use it on your CPU, but it will be much slower for training and evaluation (but not for labeling or project management).
 
-```{admonition} 🚨 Click here for more information!
+`````{admonition} 🚨 Hardware information!
 ---
 class: dropdown
 ---
 - We recommend having a GPU if possible!
 - You **need to decide if you want to use a CPU or GPU for your models**
 
-  - **CPU?** Great, jump to the next section below!
-
-  - **NVIDIA GPU?**  If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatible GPU, CUDA, and cuDNN installed.
+  ````{tab-set}
+  ```{tab-item} CPU
+  Great, jump to the next section below!
+  ```
+  ```{tab-item} NVIDIA GPU
+  If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatible GPU, CUDA, and cuDNN installed.
   Please note, which CUDA you install depends on what version of PyTorch you want to use. So, please check [](sec:install-gpu-support) below carefully. **Note, DeepLabCut is up to date with the latest CUDA and PyTorch!**
-
-  - **Apple M-chip GPU?** Be sure to install miniconda, and your GPU will be used by default.
+  ```
+  ```{tab-item} Apple M-chip GPU
+  Be sure to install miniconda, and your GPU will be used by default.
+  ```
+  ````
 
 - Note, you can also use the CPU-only install for project management and labeling the data!
 Then, for example, use Google Colaboratory GPUs for free (read more [here](https://github.com/DeepLabCut/DeepLabCut/tree/master/examples#demo-4-deeplabcut-training-and-analysis-on-google-colaboratory-with-googles-gpus) and there are a lot of helper videos on [our YouTube channel!](https://www.youtube.com/playlist?list=PLjpMSEOb9vRFwwgIkLLN1NmJxFprkO_zi)).
-```
+`````
 
 ### Step 1: Install miniconda
 
