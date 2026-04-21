@@ -23,8 +23,11 @@ RUN apt-get update -yy && \
 RUN pip install --upgrade pip && \
     pip install "deeplabcut[modelzoo,wandb]==${DEEPLABCUT_VERSION}"
 
-RUN chmod a+rwx -R \
-    /opt/conda/lib/python3.11/site-packages/deeplabcut/pose_estimation_pytorch/models/backbones/pretrained_weights
+# Create pretrained weights directory and make it writable
+# (same default as HuggingFaceWeightsMixin in backbones/base.py: Path(__file__).parent / "pretrained_weights")
+RUN PRETRAINED=$(python -c "from pathlib import Path; import deeplabcut.pose_estimation_pytorch.models.backbones.base as b; print(Path(b.__file__).parent / 'pretrained_weights')") && \
+    mkdir -p "$PRETRAINED" && \
+    chmod a+rwx -R "$PRETRAINED"
 
 RUN mkdir -p /app && chmod a+rwx /app
 
