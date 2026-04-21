@@ -82,6 +82,15 @@ repos:
         args: [--check, --diff]
         stages: [manual]
 
+  - repo: https://github.com/hukkin/mdformat
+    rev: 1.0.0
+    hooks:
+      - id: mdformat
+        additional_dependencies:
+        - mdformat-myst
+        files: ^docs/.*\.md$
+        stages: [pre-commit]
+
   # check only, no modifications
   - repo: local
     hooks:
