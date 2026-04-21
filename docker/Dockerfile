@@ -40,7 +40,7 @@ WORKDIR /app
 # ── jupyter ───────────────────────────────────────────────────────────────────
 FROM core AS jupyter
 
-RUN pip install notebook
+RUN pip install "notebook<7"
 EXPOSE 8888
 ENTRYPOINT ["jupyter", "notebook", \
     "--no-browser", "--NotebookApp.token=deeplabcut", "--ip", "0.0.0.0"]
