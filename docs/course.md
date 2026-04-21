@@ -3,6 +3,9 @@ deeplabcut:
   last_content_updated: '2025-06-30'
   last_metadata_updated: '2026-03-06'
   ignore: false
+  visibility: online
+  status: outdated
+  recommendation: archive
 ---
 # DeepLabCut Self-paced Course
 
