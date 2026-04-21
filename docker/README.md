@@ -163,8 +163,9 @@ docker buildx bake --push
 
 Note that this assumes that you have rights to execute `docker build` and `docker run`
 commands which requires either `sudo` access or membership in the `docker` group on
-your local machine. If you are not in the `docker` group, run the bake with
-`DOCKER="sudo docker"` or add your user to the `docker` group.
+your local machine. If you are not in the `docker` group, run `sudo docker buildx bake`
+(and `sudo docker buildx bake --push` when pushing) or add your user to the `docker`
+group.
 
 ## Prerequisites (if you don't have Docker installed already)
 
