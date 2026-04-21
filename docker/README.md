@@ -4,9 +4,9 @@
 documentation contains its own user documentation on the provided docker images.**
 
 This repo contains build routines for the following official DeepLabCut docker images:
-- `deeplabcut/deeplabcut:${DLC_VERSION}-base-cuda${CUDA_VERSION}-cudnn9`: Base image with DLC
-- `deeplabcut/deeplabcut:${DLC_VERSION}-core-cuda${CUDA_VERSION}-cudnn9`: DLC in light mode
-- `deeplabcut/deeplabcut:${DLC_VERSION}-jupyter-cuda${CUDA_VERSION}-cudnn9`: DLC with jupyter installed
+- `deeplabcut/deeplabcut:latest` — default runtime image (same as the former “core” image)
+- `deeplabcut/deeplabcut:latest-jupyter` — Jupyter Notebook server
+- `deeplabcut/deeplabcut:${DLC_VERSION}-core-cuda${CUDA_VERSION}` and `...-jupyter-cuda...` — versioned tags
 
 All images come with Python 3.11 installed.
 The images are synced to DockerHub: https://hub.docker.com/r/deeplabcut/deeplabcut
@@ -99,20 +99,20 @@ the container with the current user instead of root) won't be there.
 The `core` image can simply be run by pulling the image and using `docker run`:
 
 ```bash
-docker pull deeplabcut/deeplabcut:3.0.0-core-cuda11.8-cudnn9
-docker run -it --rm --gpus all deeplabcut/deeplabcut:3.0.0-core-cuda11.8-cudnn9
+docker pull deeplabcut/deeplabcut:latest
+docker run -it --rm --gpus all deeplabcut/deeplabcut:latest
 ```
 
 The `jupyter` image cannot be run in the same way. Notebook servers cannot be run as
 the root user (which can be dangerous) without passing the `--allow-root` option, so
-running `docker run deeplabcut/deeplabcut:3.0.0-jupyter-cuda11.8-cudnn9` will lead to an
+running `docker run deeplabcut/deeplabcut:latest-jupyter` will lead to an
 error (`Running as root is not recommended. Use --allow-root to bypass`). What you can
 do (and we do in the `deeplabcut-docker` package) is to build a docker image with the
 `jupyter` image as a base. We would recommend doing this for the `core` images as well.
 You can create the `Dockerfile`:
 
 ```dockerfile
-FROM deeplabcut/deeplabcut:3.0.0-jupyter-cuda11.8-cudnn9
+FROM deeplabcut/deeplabcut:latest-jupyter
 ARG UID
 ARG GID
 ARG UNAME
@@ -146,26 +146,25 @@ docker run -p 127.0.0.1:8889:8888 -it --rm --gpus all my-dlc-image
 
 ## For developers
 
-Make sure your docker daemon is running and navigate to the repository root directory.
-You can build the images by running
+Make sure your Docker daemon is running. From the `docker/` directory, build with
+Buildx bake (see `docker-bake.hcl`):
 
-```
-docker/build.sh build
-```
-
-Note that this assumes that you have rights to execute `docker build` and `docker run` commands which requires either `sudo` access or membership in the `docker` group on your local machine. If you are not in the `docker` group, run the script with the environment variable `DOCKER="sudo docker"` set to override the default docker command.
-
-Images can be verified by running
-
-```
-docker/build.sh test
+```bash
+cd docker
+docker buildx bake
 ```
 
-Built images can be pushed to DockerHub by running
+Set `MARK_LATEST=true` when building the primary CUDA variant if you want `latest` /
+`latest-jupyter` tags included. Push to Docker Hub (after `docker login`):
 
+```bash
+docker buildx bake --push
 ```
-docker/build.sh push
-```
+
+Note that this assumes that you have rights to execute `docker build` and `docker run`
+commands which requires either `sudo` access or membership in the `docker` group on
+your local machine. If you are not in the `docker` group, run the bake with
+`DOCKER="sudo docker"` or add your user to the `docker` group.
 
 ## Prerequisites (if you don't have Docker installed already)
 
