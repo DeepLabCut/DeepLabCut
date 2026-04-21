@@ -117,31 +117,43 @@ We recommend first using **DeepLabCut for a single animal scenario** to understa
 
 ### First project: single or multi-animal?
 
-*What scenario do you have?*
+*Which scenario do you have?*
 
 - **I have single animal videos:**
 
-  - quick start: when you `create_new_project` (and leave the default flag to False in `multianimal=False`). This is the typical work path for many of you.
+  - Quick start: when you `create_new_project` (and leave the default flag to False in `multianimal=False`). This is the typical work path for a single animal project.
 
 - **I have single animal videos, but I want to use the updated network capabilities introduced for multi-animal projects:**
 
-  - quick start: when you `create_new_project` just set the flag `multianimal=True`. This enables you to use maDLC features even though you have only one animal. To note, this is rarely required for single animal projects, and not the recommended path. Some tips for when you might want to use this: this is good for say, a hand or a mouse if you feel the "skeleton" during training would increase performance. DON'T do this for things that could be identified an individual objects. i.e., don't do whisker 1, whisker 2, whisker 3 as 3 individuals. Each whisker always has a specific spatial location, and by calling them individuals you will do WORSE than in single animal mode.
+  - Quick start: when you `create_new_project` just set the flag `multianimal=True`.
 
-[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/JDsa8R5J0nQ)
+    - This enables you to use maDLC features even though you have only one animal. To note, this is rarely required for single animal projects, and not the recommended path.
+    - Some tips for when you might want to use this:
+      - This is good for e.g. a hand or a mouse if you feel the "skeleton" during training would increase performance.
+      - Do not do this for things that could be identified as an individual objects. i.e., don't do whisker 1, whisker 2, whisker 3 as 3 individuals.
+        Each whisker always has a specific spatial location, and by calling them individuals the network will perform worse than in single animal mode.
+
+  - [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/JDsa8R5J0nQ)
 
 - **I have multiple *identical-looking animals* in my videos:**
-  - quick start: when you `create_new_project` set the flag `multianimal=True`. If you can't tell them apart, you can assign the "individual" ID to any animal in each frame. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
 
-[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/Kp-stcTm77g)
+  - Quick start: when you `create_new_project` set the flag `multianimal=True`.
+  - If you can't tell them apart, you can assign the "individual" ID to any animal in each frame. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI)
+  - [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/Kp-stcTm77g)
 
 - **I have multiple animals, *but I can tell them apart,* in my videos and want to use DLC2.2:**
-  - quick start: when you `create_new_project` set the flag `multianimal=True`. And always label the "individual" ID name the same; i.e. if you have mouse1 and mouse2 but mouse2 always has a miniscope, in every frame label mouse2 consistently. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI). Then, you MUST put the following in the config.yaml file: `identity: true`
 
-[VIDEO TUTORIAL AVAILABLE!](https://youtu.be/Kp-stcTm77g) - ALSO, if you can tell them apart, label animals them consistently!
+  - Quick start: when you `create_new_project` set the flag `multianimal=True`.
+    - Always label the "individual" ID name the same; i.e. if you have mouse1 and mouse2 but mouse2 always has a miniscope, in every frame label mouse2 consistently. See this [labeling w/2.2 demo video](https://www.youtube.com/watch?v=_qbEqNKApsI).
+    - Then, you MUST put the following in the config.yaml file: `identity: true`
+  - [VIDEO TUTORIAL AVAILABLE!](https://youtu.be/Kp-stcTm77g)
+
+```{important}
+If you can tell them apart, label your animals consistently!
+```
 
 - **I have a pre-2.2 single animal project, but I want to use 2.2:**
-
-Please read [this convert 2 maDLC guide](convert-maDLC)
+  - Please read [the conversion to maDLC guide](convert-maDLC)
 
 ### Getting started with multi-animal (ma) DeepLabCut
 
@@ -185,7 +197,8 @@ Please note that GUIs are not easily supported in Jupyter in MacOS, as you need 
 If you are using DeepLabCut on the cloud, you cannot use the GUIs.
 
 ```{warning}
-On **Windows**: Open the terminal/cmd/anaconda prompt as **Administrator** (right click and select "Run as administrator") to avoid permission issues when downloading models, and for symlink support when videos are not copied into the project folder.
+On **Windows**: Open the terminal/cmd/anaconda prompt as **Administrator** (right click and select "Run as administrator") to avoid permission issues during usage when downloading models, and for symlink support when videos are not copied into the project folder.
+Admin mode is not required for installation.
 ```
 
 Simply open the terminal and type:
