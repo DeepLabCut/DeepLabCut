@@ -15,21 +15,20 @@ deeplabcut:
 # Installing DeepLabCut
 
 - **DeepLabCut can be run on Windows, Linux, or MacOS as long as you have Python 3.10-3.12 installed**
-  - See also [technical considerations](sec:hardware-considerations-during-install) and if you run into issues also check out the [installation tips](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html).
+  - See also {ref}`technical considerations <sec:hardware-considerations-during-install>` and if you run into issues also check out the [installation tips](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html).
 - 🚧 Please note, there are several possibilities for installation:
   - **Recommended for most users**: Install in a [**conda environment**](https://deeplabcut.github.io/DeepLabCut/docs/installation.html#conda-the-installation-process-is-as-easy-as-this-figure)
-  - Install with [**uv**](sec:uv-install) (recommended for developers)
-  - In the supplied [**Docker container**](docker-containers) (recommended for Ubuntu advanced users and reproducibility).
+  - Install with **{ref}`uv <sec:uv-install>`** (recommended for developers)
+  - In the supplied **{ref}`Docker container <docker-containers>`** (recommended for Ubuntu advanced users and reproducibility).
 - 🚀 You will get the best performance when using a **GPU**!
-  - Please see the section on [GPU support](sec:install-gpu-support) to install your GPU driver and CUDA.
+  - Please see the section on {ref}`GPU support <sec:install-gpu-support>` to install your GPU driver and CUDA.
 
 ````{hint}
 Familiar with python packages and conda?
 
 This assumes you have `conda`/`mamba` installed and this will install DeepLabCut in a fresh
 environment.
-If you have an NVIDIA GPU, install PyTorch according to [their instructions
-](https://pytorch.org/get-started/locally/) (with your desired CUDA version) - you just need your GPU drivers installed.
+If you have an NVIDIA GPU, install PyTorch according to [their instructions](https://pytorch.org/get-started/locally/) (with your desired CUDA version) - you just need your GPU drivers installed.
 
 ```bash
 conda create -n DEEPLABCUT python=3.12
@@ -39,7 +38,6 @@ conda activate DEEPLABCUT
 ](https://pytorch.org/get-started/locally/) website:
 # GPU version of pytorch for CUDA 11.3
 conda install pytorch cudatoolkit=11.3 -c pytorch
-
 
 # install the latest version of DeepLabCut
 pip install --pre deeplabcut
@@ -52,7 +50,7 @@ python -c "import torch; print(torch.cuda.is_available())"
 ```
 ````
 
-- If you're familiar with the command line and want TensorFlow support, look [below](deeplabcut-with-tf-install) for a fresh installation on Linux and makes it possible to use the GPU with both PyTorch and TensorFlow.
+- If you're familiar with the command line and want TensorFlow support, look {ref}`below <deeplabcut-with-tf-install>` for a fresh installation on Linux and makes it possible to use the GPU with both PyTorch and TensorFlow.
 
 ## Using Conda
 
@@ -62,7 +60,7 @@ python -c "import torch; print(torch.cuda.is_available())"
 
 ### 🚨 Before you start...
 
-Do you have a GPU? If yes, see the [GPU support section](sec:install-gpu-support) below for installation instructions.
+Do you have a GPU? If yes, see the {ref}`GPU support section <sec:install-gpu-support>` below for installation instructions.
 
 If not, you can still install DeepLabCut and use it on your CPU, but it will be much slower for training and evaluation (but not for labeling or project management).
 
@@ -79,7 +77,7 @@ class: dropdown
   ```
   ```{tab-item} NVIDIA GPU
   If you want to use your own GPU (i.e., a GPU is in your workstation), then you need to be sure you have a CUDA compatible GPU, CUDA, and cuDNN installed.
-  Please note, which CUDA you install depends on what version of PyTorch you want to use. So, please check [](sec:install-gpu-support) below carefully. **Note, DeepLabCut is up to date with the latest CUDA and PyTorch!**
+  Please note, which CUDA you install depends on what version of PyTorch you want to use. So, please check {ref}`sec:install-gpu-support` below carefully. **Note, DeepLabCut is up to date with the latest CUDA and PyTorch!**
   ```
   ```{tab-item} Apple M-chip GPU
   Be sure to install miniconda, and your GPU will be used by default.
@@ -87,7 +85,7 @@ class: dropdown
   ````
 
 - Note, you can also use the CPU-only install for project management and labeling the data!
-Then, for example, use Google Colaboratory GPUs for free (read more [here](https://github.com/DeepLabCut/DeepLabCut/tree/master/examples#demo-4-deeplabcut-training-and-analysis-on-google-colaboratory-with-googles-gpus) and there are a lot of helper videos on [our YouTube channel!](https://www.youtube.com/playlist?list=PLjpMSEOb9vRFwwgIkLLN1NmJxFprkO_zi)).
+  Then, for example, use Google Colaboratory GPUs for free (read more [here](https://github.com/DeepLabCut/DeepLabCut/tree/master/examples#demo-4-deeplabcut-training-and-analysis-on-google-colaboratory-with-googles-gpus) and there are a lot of helper videos on [our YouTube channel!](https://www.youtube.com/playlist?list=PLjpMSEOb9vRFwwgIkLLN1NmJxFprkO_zi)).
 `````
 
 ### Step 1: Install miniconda
@@ -124,12 +122,15 @@ On **Windows**, make sure you have `git` installed: [Git for Windows](https://gi
 ```
 
 - Follow the link ➡️ for the [conda file](https://github.com/DeepLabCut/DeepLabCut/blob/main/conda-environments/DEEPLABCUT.yaml#:~:text=Raw%20file%20content-,Download,-%E2%8C%98) and then click "..." and select Download
+
   <img width="274" alt="Screen Shot 2023-09-13 at 10 33 32 PM" src="https://github.com/DeepLabCut/DeepLabCut/assets/28102185/ec4295a5-e85c-4ce7-8c16-e6517a2cfa22">
 
 - **Now, in Terminal (or Anaconda Command Prompt for Windows users)**:
 
   - If you clicked to download, go to your downloads folder.
+
   - Be sure you are in the folder that has the `.yaml` file, then run:
+
     `conda env create -f DEEPLABCUT.yaml`
 
 - You can now use this environment from anywhere on your computer.
@@ -209,7 +210,7 @@ Here are some conda environment management tips: [kapeli.com: Conda Cheat Sheet]
 
 **Pro Tip:** If you want to modify code and then test it, you can use our provided
 test scripts. This would mean you need to be up-to-date with the latest GitHub-based code
-though! Please see [here](installation-tips) on how to get the latest GitHub code, and
+though! Please see {ref}`here <installation-tips>` on how to get the latest GitHub code, and
 how to test your installation by following [this video](https://www.youtube.com/watch?v=IOWtKn3l33s).
 
 ## Other ways to install DeepLabCut
@@ -231,9 +232,9 @@ Recommended for users who want to modify the code, or want to be up-to-date with
 - Run in the cloned repo:
 
 ```bash
-  uv venv -p 3.12
-  uv pip install -e .[gui,modelzoo,tf] # Change optional install as needed
-  source .venv/bin/activate # or & .venv\Scripts\activate.ps1 on Windows
+uv venv -p 3.12
+uv pip install -e .[gui,modelzoo,tf] # Change optional install as needed
+source .venv/bin/activate # or & .venv\Scriptsctivate.ps1 on Windows
 ```
 
 ### `pip`
@@ -254,7 +255,7 @@ If you already have a local environment, everything you need to use the project 
 <!-- This is the recommended route for Linux: Ubuntu, CentOS, Mint, etc -->
 
 ```{tip}
-In a fresh ubuntu install, you will often have to run: ``sudo apt-get install gcc python3-dev`` to install the GNU Compiler Collection and the python developing environment.
+In a fresh ubuntu install, you will often have to run: `sudo apt-get install gcc python3-dev` to install the GNU Compiler Collection and the python developing environment.
 ```
 
 Create a new conda environment with Python 3.10 (or 3.11, 3.12) by running:
@@ -299,10 +300,9 @@ your specific GPU**, then you can use the supplied conda file.
 
 You will need an NVIDIA GPU that is compatible with CUDA.
 
-To see a list of CUDA-enabled NVIDIA GPUs, please [see
-their website](https://developer.nvidia.com/cuda-gpus).
+To see a list of CUDA-enabled NVIDIA GPUs, please [see their website](https://developer.nvidia.com/cuda-gpus).
 
-Here we provide notes on how to install and check your GPU use with TensorFlow , which is used by DeepLabCut and will be installed with the Anaconda files above.
+Here we provide notes on how to install and check your GPU use with TensorFlow, which is used by DeepLabCut and will be installed with the Anaconda files above.
 Thus, you do not need to independently install tensorflow.
 
 1. Install a driver for your GPU, using the NVIDIA Drivers link above.
@@ -314,18 +314,23 @@ Thus, you do not need to independently install tensorflow.
 
 - **As of version 3.0+ we moved to PyTorch. The Last supported version of TensorFlow is
   2.10 (window users) and 2.12 for others** (We will not be testing beyond this)
+
 - Please be mindful different versions of TensorFlow require different CUDA versions.
+
 - As the combination of TensorFlow and CUDA matters, we strongly encourage you to
   **check your driver/cuDNN/CUDA/TensorFlow versions** [on this StackOverflow post](https://stackoverflow.com/questions/30820513/what-is-version-of-cuda-for-nvidia-304-125/30820690#30820690).
+
 - To check your GPU is working, in the terminal, run:
 
-`nvcc -V` to check your installed version(s).
+  `nvcc -V` to check your installed version(s).
 
 - The best practice is to then run the supplied `testscript_pytorch_single_animal.py`
   (or `testscript_tensorflow_single_animal.py` for the TensorFlow engine); this is inside the examples folder you
   acquired when you git cloned the repo. Here is more information/a short
   [video on running the test scripts](https://www.youtube.com/watch?v=IOWtKn3l33s).
+
 - You can test that your GPU is being properly used with these additional [tips](https://www.tensorflow.org/programmers_guide/using_gpu).
+
 - Ubuntu users might find this [installation guide](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html#installation-on-ubuntu-20-04-lts) for a fresh DLC install on Ubuntu useful as well.
 
 ## Troubleshooting
@@ -337,7 +342,7 @@ Here are some additional resources users have found helpful (posted without endo
 - https://stackoverflow.com/questions/30820513/what-is-the-correct-version-of-cuda-for-my-nvidia-driver/30820690
 
 <p align="center">
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e46ca1ae6cfbb5c5d1ee0/1547585235033/cuda_driver.png?format=750w" width="50%">
+  <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c3e46ca1ae6cfbb5c5d1ee0/1547585235033/cuda_driver.png?format=750w" width="50%">
 </p>
 
 - https://www.tensorflow.org/install/source#gpu
@@ -350,7 +355,7 @@ Here are some additional resources users have found helpful (posted without endo
 
 - A few Windows users report needing to install re-install ffmpeg (after windows updates) as described here: https://video.stackexchange.com/questions/20495/how-do-i-set-up-and-use-ffmpeg-in-windows (A potential error could occur when making new videos). On Ubuntu, the command is: `sudo apt install ffmpeg`
 
-### DEEPLABCUT
+### DeepLabCut
 
 - If you git clone or download this folder, and are inside of it then `import deeplabcut` will import the package from the local folder rather than from the latest on PyPi!
 
@@ -394,7 +399,7 @@ An environment is a self-contained directory that contains a Python installation
 
 - **Software**:
 
-  - Operating System: Linux (Ubuntu), MacOS\* (Mojave), or Windows 10. However, we the authors strongly recommend Ubuntu! \*MacOS does not support NVIDIA GPUs (easily), so we only suggest this option for CPU use or a case where the user wants to label data, refine data, etc and then push the project to a cloud resource for GPU computing steps, or use MobileNets.
+  - Operating System: Linux (Ubuntu), MacOS[^1] (Mojave), or Windows 10. However, we the authors strongly recommend Ubuntu!
   - DeepLabCut is written in Python 3 (https://www.python.org/) and not compatible with Python 2.
 
   <!-- - If you want to use a pre3.0 version, you will need [TensorFlow](https://www.tensorflow.org/) (we used version 1.0 in the Nature Neuroscience paper, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.15, and 2.0 to 2.10**; we recommend TF2.10 now) for Python 3.8, 3.9, 3.10 with GPU support.
@@ -403,4 +408,6 @@ An environment is a self-contained directory that contains a Python installation
 
 ## Additional tips
 
-More [installation tips](installation-tips) are also available.
+More {ref}`installation tips <installation-tips>` are also available.
+
+[^1]: MacOS does not support NVIDIA GPUs (easily), so we only suggest this option for CPU use or a case where the user wants to label data, refine data, etc, and then push the project to a cloud resource for GPU computing steps, or use MobileNets
