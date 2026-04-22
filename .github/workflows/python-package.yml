@@ -33,7 +33,7 @@ on:
         description: "JSON matrix definition"
         required: true
         type: string
-        default: '{"include":[{"os":"ubuntu-latest","python-version":"3.12"}]}'
+        default: '{"include":[{"os":"ubuntu-latest","python-version":"3.12","extras": ""}]}'
       pytest_paths_json:
         description: "JSON array of pytest paths"
         required: false
