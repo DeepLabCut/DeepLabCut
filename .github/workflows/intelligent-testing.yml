@@ -95,7 +95,7 @@ jobs:
     with:
       concurrency_key: ${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || '' }}
       matrix_json: >-
-        {"include":[{"os":"ubuntu-latest","python-version":"3.12"}]}
+        {"include":[{"os":"ubuntu-latest","python-version":"3.12", "extras": "[tf]"}]}
       pytest_paths_json: ${{ needs.intelligent-test-selection.outputs.pytest_paths }}
       functional_scripts_json: ${{ needs.intelligent-test-selection.outputs.functional_scripts }}
       full_suite: false
@@ -110,15 +110,15 @@ jobs:
       matrix_json: >-
         {
           "include": [
-            {"os":"ubuntu-latest","python-version":"3.10"},
-            {"os":"ubuntu-latest","python-version":"3.11"},
-            {"os":"ubuntu-latest","python-version":"3.12"},
-            {"os":"macos-latest","python-version":"3.10"},
-            {"os":"macos-latest","python-version":"3.11"},
-            {"os":"macos-latest","python-version":"3.12"},
-            {"os":"windows-latest","python-version":"3.10"},
-            {"os":"windows-latest","python-version":"3.11"},
-            {"os":"windows-latest","python-version":"3.12"}
+            {"os":"ubuntu-latest","python-version":"3.10", "extras": "[tf]"},
+            {"os":"ubuntu-latest","python-version":"3.11", "extras": "[tf]"},
+            {"os":"ubuntu-latest","python-version":"3.12", "extras": "[tf]"},
+            {"os":"macos-latest","python-version":"3.10", "extras": "[tf]"},
+            {"os":"macos-latest","python-version":"3.11", "extras": "[tf]"},
+            {"os":"macos-latest","python-version":"3.12", "extras": "[tf]"},
+            {"os":"windows-latest","python-version":"3.10", "extras": "[tf]"},
+            {"os":"windows-latest","python-version":"3.11", "extras": "[tf]"},
+            {"os":"windows-latest","python-version":"3.12", "extras": "[tf]"}
           ]
         }
       full_suite: true

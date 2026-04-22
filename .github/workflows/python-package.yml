@@ -100,8 +100,7 @@ jobs:
         shell: bash -el {0} # Important to enable conda env
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          # Must match optional-dependencies [tf] in pyproject.toml (not bare tensorflow)
-          pip install --no-cache-dir -e ".[tf]" --group dev
+          pip install --no-cache-dir -e ".${{ matrix.extras }}" --group dev
 
       - name: Install ffmpeg (Linux/macOS)
         if: runner.os != 'Windows'
