@@ -234,7 +234,7 @@ Recommended for users who want to modify the code, or want to be up-to-date with
 ```bash
 uv venv -p 3.12
 uv pip install -e .[gui,modelzoo,tf] # Change optional install as needed
-source .venv/bin/activate # or & .venv\Scriptsctivate.ps1 on Windows
+source .venv/bin/activate # or & .venv\Scripts\activate.ps1 on Windows
 ```
 
 ### `pip`
@@ -271,7 +271,11 @@ GUI.
 If you ever want to update your DLC, just run `pip install --upgrade deeplabcut` inside your env.
 If you want to use a specific release, then specify the version you want, such as `pip install deeplabcut==3.0`.
 Once installed, you can
-check the version by running `import deeplabcut` `deeplabcut.__version__`. Don't be afraid to update, DLC is backwards compatible with your 2.0+ projects and performance continues to get better and new features are added often.
+check the version by running `import deeplabcut` `deeplabcut.__version__`.
+
+Don't be afraid to update, DLC is backwards compatible with your 2.0+ projects and performance continues to get better and new features are added often.
+
+### Data compatibility
 
 **All of the data you labelled in version 2.X is also compatible with version 3+ and the
 PyTorch engine**!
@@ -361,7 +365,7 @@ Here are some additional resources users have found helpful (posted without endo
 
 (sec:system-wide-considerations-during-install)=
 
-## System-wide considerations:
+## System-wide installation considerations
 
 ```{note}
 **What is a system-wide installation?**
@@ -374,8 +378,11 @@ To avoid this, we recommend using a virtual environment (e.g., conda or uv manag
 ```
 
 If you perform a system-wide/base environment installation, and the computer has other Python packages or TensorFlow versions installed that conflict, this will overwrite them.
-If you have a dedicated machine for DeepLabCut, this may be temporarily fine, but will degrade over time as you try to install or update other packages.
-Indeed, if there are other applications that require different versions of libraries, then one would potentially break those applications.
+
+If you have a dedicated machine for DeepLabCut, this may be *temporarily* fine, but will degrade over time as you try to install or update other packages.
+
+Indeed, if there are other applications that require different versions of libraries, then installing/updating anything would potentially break those applications.
+
 One way to manage virtual environments is to use conda environments (for which you need Anaconda/miniconda installed).
 An environment is a self-contained directory that contains a Python installation for a particular version of Python, plus additional packages, without any cross-talk with other environments (NVIDIA drivers being a notable exception, as they are system-wide by nature).
 
@@ -403,7 +410,7 @@ An environment is a self-contained directory that contains a Python installation
   - DeepLabCut is written in Python 3 (https://www.python.org/) and not compatible with Python 2.
 
   <!-- - If you want to use a pre3.0 version, you will need [TensorFlow](https://www.tensorflow.org/) (we used version 1.0 in the Nature Neuroscience paper, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.15, and 2.0 to 2.10**; we recommend TF2.10 now) for Python 3.8, 3.9, 3.10 with GPU support.
-    - As noted, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see: [Mathis & Warren](https://www.biorxiv.org/content/early/2018/10/30/457242)). However, this is the preferred path if you want to test DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for testing.
+    - As noted, is it possible to run DeepLabCut on your CPU, but it will be very slow (see: [Mathis & Warren](https://www.biorxiv.org/content/early/2018/10/30/457242)). However, this is the preferred path if you want to test DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for testing.
      - Docker: We highly recommend advanced users use the supplied [Docker container](docker-containers) -->
 
 ## Additional tips
