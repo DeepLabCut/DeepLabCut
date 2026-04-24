@@ -7,7 +7,7 @@ deeplabcut:
 (how-to-install)=
 # How To Install DeepLabCut
 
-- **DeepLabCut can be run on Windows, Linux, or MacOS as long as you have Python 3.10 installed**
+- **DeepLabCut can be run on Windows, Linux, or MacOS as long as you have Python 3.10-3.12 installed**
   - (see also [technical considerations](tech-considerations-during-install) and if you run into issues also check out the [Installation Tips](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html) page).
 - 🚧 Please note, there are several modes of installation:
   -  please decide to either use a [**conda environment**](https://deeplabcut.github.io/DeepLabCut/docs/installation.html#conda-the-installation-process-is-as-easy-as-this-figure) based installation (**recommended**),
@@ -42,9 +42,9 @@ pip install --pre deeplabcut[gui]
 python -c "import torch; print(torch.cuda.is_available())"
 ```
 
-- If you're familiar with the command line and want TensorFlow support, look [below](
-deeplabcut-with-tf-install) for a fresh installation that has worked for us (on Linux)
-and makes it possible to use the GPU with both PyTorch and TensorFlow.
+- If you're familiar with the command line and want **TensorFlow** support, see [TensorFlow Support](
+deeplabcut-with-tf-install) for optional extras (`deeplabcut[tf]`, `tf-cu11`, `tf-cu12`, etc.)
+and notes on Linux, Windows, WSL2, and Apple Silicon.
 
 
 ## CONDA: The installation process is as easy as this figure! -->
@@ -132,9 +132,47 @@ As of June 2024 we have a PyTorch Engine backend and we will be depreciating the
 TensorFlow backend by the end of 2024. Currently, if you want to use TensorFlow, you
 need to run `pip install deeplabcut[tf]` in order to install the correct version of
 TensorFlow in your conda env. Please note, we will be providing bug fixes, but we will
-not be supporting new TensorFlow versions beyond 2.10 (Windows), and 2.12 for other OS.
+not be supporting new TensorFlow versions beyond version 2.18.
 
-Installing TensorFlow and getting it to have access to the GPU can be a bit tricky.
+Installing TensorFlow manually and getting it to have access to the GPU can be a bit tricky.
+However, we try to simplify the installation procedure via optional dependencies.
+
+A specific note for **Windows users**: TensorFlow’s own docs state that **native Windows GPU** support
+ended after **2.10**. We recommend Windows users to install [The Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install)
+if they want GPU support.
+
+**Installation via the `tf` optional dependencies**
+We recommend installing DeepLabCut with TensorFlow by specifying one of the 'extra's': `tf`, `tf-cu11` or `tf-cu12`. E.g,
+
+```
+pip install deeplabcut[tf]
+```
+
+This table provides a more detailed summary on the available extras
+| Extra        | Version        | Python      | CUDA        | Role (summary)                                                     |
+|--------------|----------------|-------------|-------------|--------------------------------------------------------------------|
+| tf           | 2.12 - 2.18    | 3.10-3.12   | 11.8 - 12.5 | Default TensorFlow stack for most users.                           |
+| tf-cu11      | 2.14           | 3.10 / 3.11 | 11.8        | Pinned TF for CUDA 11.x-era stack                                  |
+| tf-cu12      | 2.18           | 3.10-3.12   | 12.5        | Pinned TF for CUDA 12.x-era stack                                  |
+| tf-latest    | 2.18+          | 3.10-3.12   | 12.5+       | (Not recommended!) Newest TensorFlow ≥ 2.18                        |
+| apple_mchips | 2.12 - 2.18    | 3.10-3.12   | 11.8 - 12.5 | (Not recommended!) Legacy `tensorflow-macos`. Prefer `tf` instead. |
+
+
+Note that TensorFlow and PyTorch may try to install competing CUDA-toolkit dependencies.
+This is addressed in the listed extras by capping the PyTorch version to match the CUDA requirements.
+In case you experience problems with the above installation, you can try to let TensorFlow install their own CUDA-toolkit libraries.
+Please run the following installation command (in Linux), replacing <tf-version> with your TensorFlow version (see table above).
+Note that this may break PyTorch functionality.
+```
+pip install "tensorflow[and-cuda]==<tf-version>"
+```
+
+
+**Advanced manual setup (Linux):**
+if you do **not** use `deeplabcut[tf]`, you must align the following dependencies yourself:
+`tensorflow`, `tensorpack`, `tf-keras` / Keras, `tf-slim`, CUDA, the NVIDIA **driver**,
+and **PyTorch** yourself.
+
 Check TensorFlow's [compatibility matrix](https://www.tensorflow.org/install/source#gpu)
 to know which version of CUDA and cuDNN you should install.
 
@@ -185,7 +223,8 @@ To git clone type: ``git clone https://github.com/DeepLabCut/DeepLabCut.git``). 
 ### PIP:
 
 - Everything you need to build custom models within DeepLabCut (i.e., use our source code and our dependencies) can be installed with `pip install 'deeplabcut[gui]'` (for GUI support w/PyTorch) or without the gui: `pip install 'deeplabcut'`.
-- If you want to use the SuperAnimal models, then please use `pip install 'deeplabcut[gui,modelzoo]'`.
+- If you want to use the **SuperAnimal** models, then please use `pip install 'deeplabcut[gui,modelzoo]'`.
+- If you need the **TensorFlow** training engine, add the **`tf`** extra (or `tf-cu11` / `tf-cu12` as appropriate): `pip install 'deeplabcut[tf]'` — see [TensorFlow Support](deeplabcut-with-tf-install).
 
 ## DOCKER:
 
@@ -260,8 +299,10 @@ https://www.nvidia.com/download/index.aspx
 
 ### Notes:
 
-- **As of version 3.0+ we moved to PyTorch. The Last supported version of TensorFlow is
-2.10  (window users) and 2.12 for others (we have not tested beyond this).**
+- **As of version 3.0+ the default engine is PyTorch.** TensorFlow remains optional via
+`pip install "deeplabcut[tf]"` and related extras; **version ranges are defined in
+`pyproject.toml`** (typically TensorFlow **2.12+** on supported Python versions). Upstream, **native
+Windows GPU** for TensorFlow stopped after **2.10**. We advise Windows users to install [WSL](https://learn.microsoft.com/en-us/windows/wsl/install). We do not guarantee every future TensorFlow release for all platforms.
 - Please be mindful different versions of TensorFlow require different CUDA versions.
 - As the combination of TensorFlow and CUDA matters, we strongly encourage you to
 **check your driver/cuDNN/CUDA/TensorFlow versions** [on this StackOverflow post](
@@ -331,8 +372,8 @@ If you perform the system-wide installation, and the computer has other Python p
 - Software:
      - Operating System: Linux (Ubuntu), MacOS* (Mojave), or Windows 10. However, the authors strongly recommend Ubuntu! *MacOS does not support NVIDIA GPUs (easily), so we only suggest this option for CPU use or a case where the user wants to label data, refine data, etc and then push the project to a cloud resource for GPU computing steps, or use MobileNets.
      - Anaconda/Python3: Anaconda: a free and open source distribution of the Python programming language (download from https://www.anaconda.com/). DeepLabCut is written in Python 3 (https://www.python.org/) and not compatible with Python 2.
-     - `pip install deeplabcut`
+     - `pip install deeplabcut` (PyTorch-based workflow) or `pip install "deeplabcut[tf]"` for the legacy TensorFlow engine; see [TensorFlow Support](deeplabcut-with-tf-install).
      - TensorFlow
-       - If you want to use a pre3.0 version, you will need [TensorFlow](https://www.tensorflow.org/) (we used version 1.0 in the Nature Neuroscience paper, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.15, and 2.0 to 2.10**; we recommend TF2.10 now) for Python 3.8, 3.9, 3.10 with GPU support.
+       - If you want to use a pre3.0 version, you will need [TensorFlow](https://www.tensorflow.org/) (we used version 1.0 in the Nature Neuroscience paper, later versions also work with the provided code (we tested **TensorFlow versions 1.0 to 1.15, and 2.0 to 2.18**) for Python 3.10-3.12 with GPU support.
         - To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see: [Mathis & Warren](https://www.biorxiv.org/content/early/2018/10/30/457242)). However, this is the preferred path if you want to test DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for testing.
      - Docker: We highly recommend advanced users use the supplied [Docker container](docker-containers)
