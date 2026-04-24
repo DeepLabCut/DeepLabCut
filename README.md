@@ -74,10 +74,9 @@ pip install --pre  "deeplabcut[gui]"
 or `pip install  --pre "deeplabcut"` (headless
 version with PyTorch)!
 
-To use the TensorFlow (TF) engine: you'll need to run `pip install "deeplabcut[gui,tf]"` or `pip install "deeplabcut[tf]"` (headless version with TF).
-We aim to deprecate the tensorflow backend in version 3.2 (release date TBD).
+To use the TensorFlow (TF) engine: you'll need to run `pip install "deeplabcut[gui,tf]"` or `pip install "deeplabcut[tf]"` (headless version with TF). Alternatively, we also offer more targeted optional TensorFlow installs for specific CUDA setups, e.g. `deeplabcut[tf-cu11]` or `deeplabcut[tf-cu12]`. Please refer to our [installation instructions](https://deeplabcut.github.io/DeepLabCut/docs/installation.html) for more detailed information on Python version, CUDA compatibility, etc.
+We aim to **deprecate the tensorflow backend** in version 3.2 (release date TBD).
 
-We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/main/conda-environments/README.md) or the [`deeplabcut-docker` package](https://github.com/DeepLabCut/DeepLabCut/tree/main/docker).
 
 <!-- Link below just returns to the top of the README -->
 # Documentation: The DeepLabCut Process
