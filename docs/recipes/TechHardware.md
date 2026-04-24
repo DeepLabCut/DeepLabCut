@@ -15,7 +15,7 @@ deeplabcut:
 
 ## Quick summary
 
-[On our install page](tech-considerations-during-install)
+On our {ref}`install page <sec:hardware-considerations-during-install>`
 we highlight that for GPU computing through standard installation you need a NVIDIA GPU, with at least 8 GB of memory. If you have an Intel or AMD GPU, and are on windows, there is an alternative method of installation available which is shown on the [installation tips page](installation-tips) under "How to install Deeplabcut for Intel and AMD GPUs".
 Note, some info is repeated here, and will be updated as systems and hardware changes.
 
@@ -48,7 +48,6 @@ The software is very robust to track data from any camera (cell phone cameras, g
 We used version 1.0 in the paper, later versions also work with the provided code (we
 tested **TensorFlow versions 1.0 to 1.15, and 2.0 to 2.18**); we
 recommend TF2.12 for Python 3.10 with GPU support. Note that native GPU support for Windows was dropped after TF version 2.10. We recommend Windows users to install [the Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install) if they want to keep GPU support with TensorFlow.
-
 
 To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see:
 [Mathis & Warren](https://www.biorxiv.org/content/early/2018/10/30/457242)). However, this is the preferred path if you want to test
