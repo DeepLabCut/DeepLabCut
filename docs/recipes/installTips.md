@@ -1,8 +1,13 @@
 ---
 deeplabcut:
   last_content_updated: '2025-02-28'
-  last_metadata_updated: '2026-03-06'
+  last_metadata_updated: '2026-04-27'
   ignore: false
+  visibility: online
+  status: outdated
+  recommendation: archive
+  last_verified: '2026-04-27'
+  verified_for: 3.0.0rc14
 ---
 (installation-tips)=
 # Installation Tips
