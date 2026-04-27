@@ -15,7 +15,12 @@ deeplabcut:
 # Installing DeepLabCut
 
 - **DeepLabCut can be run on Windows, Linux, or MacOS as long as you have Python 3.10-3.12 installed**
-  - See also {ref}`technical considerations <sec:hardware-considerations-during-install>` and if you run into issues also check out the [installation tips](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html).
+  - See also {ref}`technical considerations <sec:hardware-considerations-during-install>`.
+
+<!-- and if you run into issues also check out the [installation tips](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html). -->
+
+<!-- Tips page is outdated -->
+
 - 🚧 Please note, there are several possibilities for installation:
   - **Recommended for most users**: Install in a [**conda environment**](https://deeplabcut.github.io/DeepLabCut/docs/installation.html#conda-the-installation-process-is-as-easy-as-this-figure)
   - Install with **{ref}`uv <sec:uv-install>`** (recommended for developers)
@@ -208,10 +213,15 @@ On **Windows**: Open the terminal/cmd/anaconda prompt as **Administrator** (righ
 
 Here are some conda environment management tips: [kapeli.com: Conda Cheat Sheet](https://kapeli.com/cheat_sheets/Conda.docset/Contents/Resources/Documents/index)
 
-**Pro Tip:** If you want to modify code and then test it, you can use our provided
+<!-- git clone section below should be the place for editable install -->
+
+<!-- **Pro Tip:** If you want to modify code and then test it, you can use our provided
 test scripts. This would mean you need to be up-to-date with the latest GitHub-based code
-though! Please see {ref}`here <installation-tips>` on how to get the latest GitHub code, and
-how to test your installation by following [this video](https://www.youtube.com/watch?v=IOWtKn3l33s).
+though!  -->
+
+Please see how to test your installation by following [this video](https://www.youtube.com/watch?v=IOWtKn3l33s).
+
+<!-- {ref}`here <installation-tips>` on how to get the latest GitHub code, and -->
 
 ## Other ways to install DeepLabCut
 
@@ -413,8 +423,8 @@ An environment is a self-contained directory that contains a Python installation
     - As noted, is it possible to run DeepLabCut on your CPU, but it will be very slow (see: [Mathis & Warren](https://www.biorxiv.org/content/early/2018/10/30/457242)). However, this is the preferred path if you want to test DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for testing.
      - Docker: We highly recommend advanced users use the supplied [Docker container](docker-containers) -->
 
-## Additional tips
+<!-- ## Additional tips
 
-More {ref}`installation tips <installation-tips>` are also available.
+More {ref}`installation tips <installation-tips>` are also available. -->
 
 [^1]: MacOS does not support NVIDIA GPUs (easily), so we only suggest this option for CPU use or a case where the user wants to label data, refine data, etc, and then push the project to a cloud resource for GPU computing steps, or use MobileNets
