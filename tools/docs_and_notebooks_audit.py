@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 DeepLabCut docs audit export tool (validated / extensible).
 
@@ -148,6 +147,7 @@ class Recommendation(str, Enum):
     KEEP = "keep"
     VERIFY = "verify"
     UPDATE = "update"
+    MOVE = "move"
     MERGE = "merge"
     ARCHIVE = "archive"
     REMOVE = "remove"
@@ -167,6 +167,7 @@ class AuditMetadata(BaseModel):
     status: Status | None = None
     recommendation: Recommendation | None = None
     last_verified: str | None = None
+    notes: str | None = None
 
 
 class TargetSpec(TypedDict):
@@ -188,9 +189,9 @@ class FieldSpec(BaseModel):
 FIELD_SPECS: list[FieldSpec] = [
     FieldSpec(column="visibility", source_keys=["visibility"]),
     FieldSpec(column="status", source_keys=["status"]),
-    # Support both recommendation and the older/alternate review_decision name.
     FieldSpec(column="recommendation", source_keys=["recommendation", "review_decision"]),
     FieldSpec(column="last_verified", source_keys=["last_verified"]),
+    FieldSpec(column="notes", source_keys=["notes"]),
 ]
 
 
@@ -454,10 +455,21 @@ def load_existing_rows(csv_path: Path) -> tuple[dict[str, dict[str, str]], list[
 
 def merged_row(base: dict[str, Any], previous: dict[str, str] | None, extra_columns: Iterable[str]) -> dict[str, Any]:
     row = dict(base)
-    if previous and previous.get("notes") is not None:
-        row["notes"] = previous.get("notes", "")
+
+    if previous:
+        prev_notes = (previous.get("notes") or "").strip()
+        scanned_notes = (row.get("notes") or "").strip()
+        if prev_notes and scanned_notes and prev_notes != scanned_notes:
+            print(f"WARNING: Notes conflict for {row['path']}:")
+            print(f"-  Previous: {prev_notes}")
+            print(f"-  Scanned:  {scanned_notes}")
+            print("Preserving previous notes and ignoring scanned notes.")
+        # Preserve human notes if present, otherwise keep scanned notes
+        row["notes"] = prev_notes if prev_notes else scanned_notes
+
     for col in extra_columns:
         row[col] = previous.get(col, "") if previous else ""
+
     return row
 
 
@@ -478,7 +490,7 @@ def build_row(repo_root: Path, path: Path) -> dict[str, Any]:
         "metadata_present": "true" if metadata_present else "false",
         "parse_error": parse_error or "",
         "validation_error": validation_error or "",
-        "notes": "",
+        # "notes": "",
     }
 
     for spec in FIELD_SPECS:
