@@ -215,17 +215,17 @@ That's it! Follow the GUI for details
 
 1. Start iPython:
 
-```bash
-ipython
-```
+   ```bash
+   ipython
+   ```
 
-2. Import DeepLabCut:
+1. Import DeepLabCut:
 
-```python
-import deeplabcut
-```
+   ```python
+   import deeplabcut
+   ```
 
-3. Follow the instructions in the user guides for either standard or multi-animal DeepLabCut (see below).
+1. Follow the instructions in the user guides for either standard or multi-animal DeepLabCut (see below).
 
 [VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=7xwOhUcIGio)
 
