@@ -167,7 +167,8 @@ def main() -> None:
         port = os.environ.get("DLC_NOTEBOOK_PORT", "8888")
         _log("Starting the notebook server.")
         _log(f"Open your browser at http://127.0.0.1:{port}")
-        _log("If prompted for a password, enter 'deeplabcut'.")
+        _log("If prompted for a token, enter 'deeplabcut' (default).")
+        _log("To use a custom token: add -e NOTEBOOK_TOKEN=<your-token> to your arguments.")
         run += ["-p", f"127.0.0.1:{port}:8888"]
     run += docker_run_args + [local] + ([] if mode == "notebook" else ["bash"])
     sys.exit(subprocess.run(run).returncode)
