@@ -61,8 +61,8 @@ def _remote_tag(mode: str) -> str:
     return f"{_IMAGE}:latest"
 
 
-def _assert_jupyter_image(ref: str) -> None:
-    """Verify remote img supports Jupyter: exit otherwise."""
+def _warn_if_not_jupyter_image(ref: str) -> None:
+    """Warn if the image does not appear to have a Jupyter entrypoint."""
     r = subprocess.run(
         _docker()
         + [
@@ -78,11 +78,11 @@ def _assert_jupyter_image(ref: str) -> None:
     if r.returncode != 0:
         sys.exit(f"Could not inspect image {ref!r} after pull.\n{r.stderr.strip()}")
     blob = (r.stdout or "").lower()
-    if "jupyter" not in blob or "notebook" not in blob:
-        sys.exit(
-            f"Image {ref!r} does not look like a Jupyter Notebook image "
-            "(entrypoint/cmd should reference jupyter and notebook). "
-            "Use an official *jupyter* tag or `bash` with --image."
+    if "jupyter" not in blob:
+        _log(
+            f"Warning: image {ref!r} does not appear to have a Jupyter entrypoint. "
+            "Proceeding anyway — if the server fails to start, ensure the image "
+            "exposes a Jupyter-compatible entrypoint on port 8888."
         )
 
 
@@ -99,10 +99,10 @@ def _build_user_image(remote: str, local: str) -> None:
         "\n".join(
             (
                 f"FROM {remote}",
-                "RUN mkdir -p /home /app",
+                f"RUN mkdir -p /home/{user} /app",
                 f"RUN groupadd -g {gid} {group} || groupmod -o -g {gid} {group}",
-                f"RUN useradd -d /home -s /bin/bash -u {uid} -g {gid} {user}",
-                f"RUN chown -R {user}:{group} /home /app",
+                f"RUN useradd -d /home/{user} -s /bin/bash -u {uid} -g {gid} {user}",
+                f"RUN chown -R {user}:{group} /home/{user} /app",
                 f"USER {user}",
             )
         )
@@ -159,7 +159,7 @@ def main() -> None:
     local = f"deeplabcut-local-{mode}"
     subprocess.run(_docker() + ["pull", remote], check=True)
     if mode == "notebook" and args.image:
-        _assert_jupyter_image(remote)
+        _warn_if_not_jupyter_image(remote)
     _build_user_image(remote, local)
 
     run = _docker() + ["run", "-it", "--rm", "-v", f"{os.getcwd()}:/app", "-w", "/app"]

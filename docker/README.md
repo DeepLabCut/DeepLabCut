@@ -128,11 +128,11 @@ ARG UNAME
 ARG GNAME
 
 # Create same user as on the host system
-RUN mkdir -p /home
+RUN mkdir -p /home/${UNAME}
 RUN mkdir -p /app
 RUN groupadd -g ${GID} ${GNAME} || groupmod -o -g ${GID} ${GNAME}
-RUN useradd -d /home -s /bin/bash -u ${UID} -g ${GID} ${UNAME}
-RUN chown -R ${UNAME}:${GNAME} /home
+RUN useradd -d /home/${UNAME} -s /bin/bash -u ${UID} -g ${GID} ${UNAME}
+RUN chown -R ${UNAME}:${GNAME} /home/${UNAME}
 RUN chown -R ${UNAME}:${GNAME} /app
 WORKDIR /app
 
