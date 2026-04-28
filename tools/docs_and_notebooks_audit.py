@@ -144,13 +144,13 @@ class Status(str, Enum):
 class Recommendation(str, Enum):
     """Recommended next action for the page."""
 
-    KEEP = "keep"
-    VERIFY = "verify"
-    UPDATE = "update"
-    MOVE = "move"
-    MERGE = "merge"
-    ARCHIVE = "archive"
-    REMOVE = "remove"
+    KEEP = "keep"  # content is fine as-is; no action needed
+    VERIFY = "verify"  # content and/or formatting could use verification
+    UPDATE = "update"  # requires content update to be considered viable
+    MOVE = "move"  # move to a more appropriate location
+    MERGE = "merge"  # merge into another page
+    ARCHIVE = "archive"  # if deprecated, archive before removal
+    REMOVE = "remove"  # remove from repository (can be resurrected from git history if needed)
 
 
 class AuditMetadata(BaseModel):
