@@ -70,6 +70,16 @@ This is straightforward, and there are many resources you can explore on how to 
 such as [this StackOverflow post](https://stackoverflow.com/a/69244262) or the [Jupyter
 Notebook docs](https://jupyter-notebook.readthedocs.io/en/4.x/public_server.html)).
 
+```{warning}
+The Jupyter image uses a fixed default access token (deeplabcut) that is publicly
+known. Anyone who can reach port 8888 on your machine can execute arbitrary
+code in the container. Do not expose port 8888 to the internet (e.g. via
+a cloud VM's firewall or a public 0.0.0.0 binding without a reverse proxy).
+For local use, bind the port to localhost only (e.g. -p 127.0.0.1:8888:8888)
+and use SSH port forwarding to access the server remotely, as described below.
+To use a custom token, pass -e NOTEBOOK_TOKEN=<your-token> to docker run
+```
+
 This can easily be done with `deeplabcut-docker`. To run a DeepLabCut notebook on a
 remote server:
 
