@@ -3,7 +3,9 @@ deeplabcut:
   last_metadata_updated: '2026-03-17'
   ignore: false
 ---
+
 (file:dlclivegui-camera-aravis-backend)=
+
 # Aravis backend
 
 The Aravis backend provides support for GenICam-compatible cameras using the
@@ -14,7 +16,7 @@ Support for Aravis in the GUI is currently experimental.
 Please report issues on GitHub to help improve this backend.
 ```
 
----
+______________________________________________________________________
 
 ## Features
 
@@ -61,7 +63,7 @@ dependencies such as `gobject-introspection` and `cairo`.
 ````
 `````
 
----
+______________________________________________________________________
 
 ## Basic configuration
 
@@ -79,7 +81,7 @@ Select the Aravis backend either in the GUI or via configuration:
 }
 ```
 
----
+______________________________________________________________________
 
 ## Camera selection
 
@@ -115,7 +117,7 @@ The backend may automatically populate additional read-only identity fields
 used internally and set by the GUI.
 ```
 
----
+______________________________________________________________________
 
 ## Full properties and advanced configuration
 
@@ -128,13 +130,13 @@ the settings used by the GUI and configuration files.
 These values are accessible directly in the GUI and are shared for all backends.
 ```
 
-| Property | Type | Description |
-|--------|------|-------------|
-| `width` | int | Requested image width (optional) |
-| `height` | int | Requested image height (optional) |
-| `fps` | float | Target acquisition frame rate |
-| `exposure` | float | Exposure time in microseconds |
-| `gain` | float | Camera gain value |
+| Property   | Type  | Description                       |
+| ---------- | ----- | --------------------------------- |
+| `width`    | int   | Requested image width (optional)  |
+| `height`   | int   | Requested image height (optional) |
+| `fps`      | float | Target acquisition frame rate     |
+| `exposure` | float | Exposure time in microseconds     |
+| `gain`     | float | Camera gain value                 |
 
 ### Common Aravis properties
 
@@ -142,12 +144,12 @@ These values are accessible directly in the GUI and are shared for all backends.
 These properties are specific to the Aravis backend and must be set manually in the configuration file.
 ```
 
-| Property | Type | Default | Description |
-|--------|------|---------|-------------|
-| `device_id` | string | — | Explicit Aravis device ID (overrides index) |
-| `pixel_format` | string | `Mono8` | Requested pixel format |
-| `timeout` | int | `2000000` | Frame timeout in microseconds |
-| `n_buffers` | int | `10` | Number of streaming buffers |
+| Property       | Type   | Default   | Description                                 |
+| -------------- | ------ | --------- | ------------------------------------------- |
+| `device_id`    | string | —         | Explicit Aravis device ID (overrides index) |
+| `pixel_format` | string | `Mono8`   | Requested pixel format                      |
+| `timeout`      | int    | `2000000` | Frame timeout in microseconds               |
+| `n_buffers`    | int    | `10`      | Number of streaming buffers                 |
 
 ### Pixel format
 
@@ -277,7 +279,7 @@ Adjust frame timeout for slower cameras or congested networks:
 
 (5 seconds = 5,000,000 microseconds)
 
----
+______________________________________________________________________
 
 ## Troubleshooting
 
@@ -287,8 +289,8 @@ Adjust frame timeout for slower cameras or congested networks:
    ```bash
    arv-tool-0.8 -l
    ```
-2. Check power, cabling, and network configuration
-3. Ensure sufficient permissions for USB or network devices
+1. Check power, cabling, and network configuration
+1. Ensure sufficient permissions for USB or network devices
 
 ### Timeout errors
 
@@ -304,19 +306,19 @@ Adjust frame timeout for slower cameras or congested networks:
   ```
 - Try a simpler format such as `Mono8`
 
----
+______________________________________________________________________
 
 ## Comparison with GenTL backend
 
-| Feature | Aravis | GenTL |
-| ------- | ------ | ----- |
-| Best Platform | Linux | Windows |
-| Camera Support | GenICam / GigE | Vendor GenTL |
-| Installation | System packages | Vendor CTI files |
-| Auto-detection | Yes | Yes |
-| Performance | Excellent | Excellent |
+| Feature        | Aravis          | GenTL            |
+| -------------- | --------------- | ---------------- |
+| Best Platform  | Linux           | Windows          |
+| Camera Support | GenICam / GigE  | Vendor GenTL     |
+| Installation   | System packages | Vendor CTI files |
+| Auto-detection | Yes             | Yes              |
+| Performance    | Excellent       | Excellent        |
 
----
+______________________________________________________________________
 
 ## Example configuration
 
@@ -339,7 +341,7 @@ Adjust frame timeout for slower cameras or congested networks:
 }
 ```
 
----
+______________________________________________________________________
 
 ## Resources
 
