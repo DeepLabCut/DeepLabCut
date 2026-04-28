@@ -113,6 +113,7 @@ Documentation = "https://deeplabcut.github.io/DeepLabCut/README.html"
 [dependency-groups]
 dev = [
   "coverage",
+  "importlib",
   "nbformat>5",
   "pre-commit",
   "pytest",
