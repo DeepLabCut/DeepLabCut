@@ -10,6 +10,7 @@
 #
 from __future__ import annotations
 
+import os
 import threading
 import warnings
 from abc import ABCMeta, abstractmethod
@@ -38,6 +39,22 @@ from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (
     TopDownDynamicCropper,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
+
+# NOTE: JR 2026-04-28: AMD GPUs with DirectML inference mode currently do not
+# support torch.inference_mode, which is stricter than torch.no_grad. The ENV
+# variable is used to conditionally use torch.no_grad instead.
+_directml_no_grad: bool = os.getenv("DLC_DIRECTML_NO_GRAD", "false").lower() in (
+    "true",
+    "1",
+)
+
+
+def _no_grad_decorator(fn):
+    """
+    Conditional decorator for inference mode, controlled by the DLC_DIRECTML_NO_GRAD ENV variable.
+    Uses @torch.no_grad if set to "true", otherwise defaults to @torch.inference_mode.
+    """
+    return torch.no_grad()(fn) if _directml_no_grad else torch.inference_mode()(fn)
 
 
 def _merge_defaults(cls, data: dict[str, Any]):
@@ -268,7 +285,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             the predictions for each of the 'batch_size' inputs
         """
 
-    @torch.inference_mode()
+    @_no_grad_decorator
     def inference(
         self,
         images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
@@ -648,7 +665,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
         self._idx_to_id = None
         self._ctd_track_ages = None  # the age of each CTD tracklet
 
-    @torch.inference_mode()
+    @_no_grad_decorator
     def inference(
         self,
         images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
