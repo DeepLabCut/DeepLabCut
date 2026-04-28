@@ -3,6 +3,9 @@ deeplabcut:
   last_content_updated: '2026-02-10'
   last_metadata_updated: '2026-03-06'
   ignore: false
+  visibility: orphaned
+  status: outdated
+  recommendation: archive
 ---
 # 💚 MegaDetector+DeepLabCut 💜
 
