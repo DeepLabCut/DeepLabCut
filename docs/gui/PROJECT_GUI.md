@@ -6,7 +6,7 @@ deeplabcut:
   visibility: online
   status: review_needed
   recommendation: update
-  notes: While the content is generally accurate, repeating installation instructions is not ideal. I would suggest linking to the installation guide instead. Also, the GUI is likely sed by the majority of users, so I would even consider making this a full section in the TOC, and maybe even having one file per GUI tab, which would make tracking code/docs sync easier.
+  notes: "While the content is generally accurate, repeating installation instructions is not ideal. I would suggest linking to the installation guide instead of re-suggesting commmands but then still saying to read the install page... Also, the GUI is likely used by the majority of users, so I would even consider making this a full section in the TOC, and maybe even having one file per GUI tab, which would make tracking code/docs sync easier. Addendum: it seems the beginner guide section is more of a GUI step-by-step, as mentioned earlier in this comment. I would suggest merging/moving and adding links in the present doc, which would make it less of a video list and more of a proper GUI guide."
 ---
 (project-manager-gui)=
 # Interactive Project Manager GUI

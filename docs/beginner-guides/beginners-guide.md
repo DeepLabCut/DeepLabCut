@@ -3,6 +3,10 @@ deeplabcut:
   last_content_updated: '2026-03-03'
   last_metadata_updated: '2026-03-06'
   ignore: false
+  visibility: online
+  status: outdated
+  recommendation: update
+  notes: "While it could seem like a useful page for beginners, duplicating installation instructions is not ideal for maintenance. This is also mixing installation/setup with a GUI guide, which should be in its own section/page. This puts into question the reason of existence of this page, as it would end up being two links to different sections. I would rather have well-made, accurate installation and GUI guides, and if there are beginner-relevant information that really cannot fit into those, then we can have a 'beginner's guide' that links to those and has the extra info. I would suggest reviewing whether this style of docs should remain at all, but if we want to keep them revising the approach may be needed."
 ---
 (beginners-guide)=
 # Using DeepLabCut

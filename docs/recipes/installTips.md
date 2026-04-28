@@ -6,8 +6,7 @@ deeplabcut:
   visibility: online
   status: outdated
   recommendation: archive
-  last_verified: '2026-04-27'
-  verified_for: 3.0.0rc14
+  notes: "Should be removed in favor of the main installation guide." 
 ---
 (installation-tips)=
 # Installation Tips
