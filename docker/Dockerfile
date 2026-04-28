@@ -41,12 +41,17 @@ ENV DEEPLABCUT_VERSION=${DEEPLABCUT_VERSION}
 WORKDIR /app
 
 # ── jupyter ───────────────────────────────────────────────────────────────────
+# (runs as root intentionally; deeplabcut-docker adds a host-matched user at runtime)
 FROM core AS jupyter
+
+ENV NOTEBOOK_TOKEN=deeplabcut
 
 RUN pip install "notebook<7"
 EXPOSE 8888
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8888/api/', timeout=3).read()" || exit 1
 ENTRYPOINT ["jupyter", "notebook", \
-    "--no-browser", "--NotebookApp.token=deeplabcut", "--ip", "0.0.0.0"]
+    "--no-browser", "--NotebookApp.token=${NOTEBOOK_TOKEN}", "--ip", "0.0.0.0"]
 
 # ── test (CI only, not published to Hub) ─────────────────────────────────────
 FROM core AS test
