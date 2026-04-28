@@ -40,7 +40,7 @@ from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
 
-# NOTE 2026, April: AMD GPUs with DirectML inference mode currently do not
+# NOTE @deruyter92 2026-04-28: AMD GPUs with DirectML inference mode currently do not
 # support torch.inference_mode, which is stricter than torch.no_grad. The ENV
 # variable is used to conditionally use torch.no_grad instead. See PR #3295.
 _directml_no_grad: bool = os.getenv("DLC_DIRECTML_NO_GRAD", "false").lower() in (
