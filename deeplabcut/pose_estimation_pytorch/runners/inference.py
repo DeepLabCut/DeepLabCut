@@ -49,7 +49,7 @@ _directml_no_grad: bool = os.getenv("DLC_DIRECTML_NO_GRAD", "false").lower() in 
 )
 
 
-def _no_grad_decorator(fn):
+def _inference_mode_decorator(fn):
     """
     Conditional decorator for inference mode, controlled by the DLC_DIRECTML_NO_GRAD ENV variable.
     Uses @torch.no_grad if set to "true", otherwise defaults to @torch.inference_mode.
@@ -285,7 +285,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             the predictions for each of the 'batch_size' inputs
         """
 
-    @_no_grad_decorator
+    @_inference_mode_decorator
     def inference(
         self,
         images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
@@ -665,7 +665,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
         self._idx_to_id = None
         self._ctd_track_ages = None  # the age of each CTD tracklet
 
-    @_no_grad_decorator
+    @_inference_mode_decorator
     def inference(
         self,
         images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
