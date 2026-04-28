@@ -41,6 +41,7 @@ ENV DEEPLABCUT_VERSION=${DEEPLABCUT_VERSION}
 WORKDIR /app
 
 # ── jupyter ───────────────────────────────────────────────────────────────────
+# (runs as root intentionally; deeplabcut-docker adds a host-matched user at runtime)
 FROM core AS jupyter
 
 ENV NOTEBOOK_TOKEN=deeplabcut
