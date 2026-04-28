@@ -3,6 +3,10 @@ deeplabcut:
   last_content_updated: '2026-02-10'
   last_metadata_updated: '2026-03-06'
   ignore: false
+  visibility: online
+  status: outdated
+  recommendation: archive
+  notes: Being updated in a separate PR (#3280)
 ---
 (napari-gui)=
 # napari labeling GUI

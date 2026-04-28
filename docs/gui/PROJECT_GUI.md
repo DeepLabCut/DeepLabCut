@@ -3,6 +3,10 @@ deeplabcut:
   last_content_updated: '2025-02-28'
   last_metadata_updated: '2026-03-06'
   ignore: false
+  visibility: online
+  status: review_needed
+  recommendation: update
+  notes: While the content is generally accurate, repeating installation instructions is not ideal. I would suggest linking to the installation guide instead. Also, the GUI is likely sed by the majority of users, so I would even consider making this a full section in the TOC, and maybe even having one file per GUI tab, which would make tracking code/docs sync easier.
 ---
 (project-manager-gui)=
 # Interactive Project Manager GUI

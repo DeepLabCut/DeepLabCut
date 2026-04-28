@@ -3,6 +3,10 @@ deeplabcut:
   last_content_updated: '2025-06-30'
   last_metadata_updated: '2026-03-06'
   ignore: false
+  visibility: online
+  status: outdated
+  recommendation: archive
+  notes: I would suggest using API docs over pages like this to avoid drift. The advice below promises updates that are not being made, and the content is already quite outdated. Automating API docs generation and putting usage info for obtaining commands info in ipython in a basic 'evergreen' page would be more sustainable than trying to maintain this page.
 ---
 (helper-functions)=
 # Helper & Advanced Optional Function Documentation
