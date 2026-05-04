@@ -6,7 +6,9 @@ deeplabcut:
   last_verified: '2026-04-09'
   verified_for: 3.0.0rc14
 ---
+
 (file:napari-dlc-advanced-features)=
+
 # napari-DLC - Advanced features
 
 napari-DLC provides several additional features to enhance the annotation experience.
