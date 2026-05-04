@@ -1,0 +1,977 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>napari-DLC - Basic usage &#8212; DeepLabCut</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=d0fcb2aa" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../_static/togglebutton.js?v=b8b12719"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/gui/napari/basic_usage';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="napari-DLC - Advanced features" href="advanced_usage.html" />
+    <link rel="prev" title="napari GUI" href="../napari_GUI.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../README.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.png" class="logo__image only-light" alt="DeepLabCut - Home"/>
+    <script>document.write(`<img src="../../../_static/logo.png" class="logo__image only-dark" alt="DeepLabCut - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../../README.html">
+                    Welcome! 👋
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../UseOverviewGuide.html">🥳 Get started with DeepLabCut: our key recommendations</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../course.html">DeepLabCut Self-paced Course</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Installation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">How To Install DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../recipes/installTips.html">Installation Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../docker.html">DeepLabCut Docker containers</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Main User Guides</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../standardDeepLabCut_UserGuide.html">DeepLabCut User Guide (for single animal projects)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../maDLC_UserGuide.html">DeepLabCut for Multi-Animal Projects</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../../Overviewof3D.html">3D DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../HelperFunctions.html">Helper &amp; Advanced Optional Function Documentation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Graphical User Interfaces (GUIs)</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../PROJECT_GUI.html">Interactive Project Manager GUI</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../napari_GUI.html">napari GUI</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">napari-DLC - Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced_usage.html">napari-DLC - Advanced features</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../pytorch/user_guide.html">DeepLabCut 3.0 - PyTorch User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pytorch/pytorch_config.html">The PyTorch Configuration file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pytorch/architectures.html">DeepLabCut 3.0 - PyTorch Model Architectures</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Quick Start Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../quick-start/single_animal_quick_guide.html">QUICK GUIDE to single Animal Training:</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick-start/tutorial_maDLC.html">Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Beginner's Guide to DeepLabCut</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../beginner-guides/beginners-guide.html">Using DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../beginner-guides/manage-project.html">Setting up what keypoints to track</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../beginner-guides/labeling.html">Labeling GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../beginner-guides/Training-Evaluation.html">Neural Network training and evaluation in the GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../beginner-guides/video-analysis.html">Video Analysis with DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Main Demo Notebooks</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/COLAB/COLAB_DEMO_SuperAnimal.html">DeepLabCut SuperAnimal models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/COLAB/COLAB_DEMO_mouse_openfield.html">DeepLabCut on Single Mouse Data Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/COLAB/COLAB_3miceDemo.html">DeepLabCut MultiMouse Data Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/COLAB/COLAB_HumanPose_with_RTMPose.html">DeepLabCut RTMPose human pose estimation demo</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Notebooks For Your Data</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/COLAB/COLAB_YOURDATA_SuperAnimal.html">DeepLabCut Model Zoo: SuperAnimal models</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis.html">DeepLabCut for your standard (single animal) projects!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis.html">DeepLabCut for your multi-animal projects!</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🚀 Special Feature Demos</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/COLAB/COLAB_transformer_reID.html">Demo: How to use our Pose Transformer for unsupervised identity tracking of animals</a></li>
+
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/COLAB/COLAB_BUCTD_and_CTD_tracking.html">DeepLabCut - Tutorial for BUCTD models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/JUPYTER/Demo_3D_DeepLabCut.html">3D DeepLabCut Toolbox</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/COLAB/COLAB_DLC_ModelZoo.html">DeepLabCut Model Zoo user-contributed models</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🧑‍🍳 Cookbook (detailed helper guides)</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../convert_maDLC.html">How to convert a pre-2.2 project for use with DeepLabCut 2.2 or later</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../recipes/OtherData.html">How to use data labeled outside of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../recipes/io.html">Input/output manipulations with DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../recipes/nn.html">Model training tips &amp; tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../recipes/post.html">Some data processing recipes!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../recipes/BatchProcessing.html">Automate training and video analysis: Batch Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../recipes/DLCMethods.html">How to write a DLC Methods Section</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../recipes/ClusteringNapari.html">Clustering in the napari-DeepLabCut GUI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../recipes/OpenVINO.html">Intel OpenVINO backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../recipes/flip_and_rotate.html">Improving network performance on unbalanced data via augmentation 🦇</a></li>
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../recipes/pose_cfg_file_breakdown.html">The <code class="docutils literal notranslate"><span class="pre">pose_cfg.yaml</span></code> Guideline Handbook</a></li>
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="../../recipes/publishing_notebooks_into_the_DLC_main_cookbook.html">Publishing Notebooks into the Main DLC Cookbook</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Hardware Tips</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../recipes/TechHardware.html">Technical (Hardware) Considerations</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut-Live!</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../dlc-live/deeplabcutlive.html">Running DeepLabCut models in real-time</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../dlc-live/dlc-live-gui/index.html">DeepLabCut-live-GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../dlc-live/dlc-live-gui/quickstart/install.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/overview.html">GUI overview</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/cameras_backends/camera_support.html">Camera support</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/cameras_backends/opencv_backend.html">OpenCV backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/cameras_backends/basler_backend.html">Basler backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/cameras_backends/aravis_backend.html">Aravis backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend.html">GenTL backend</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/misc/misc_landing.html">Additional resources</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads.html">Pre-trained models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dlc-live/dlc-live-gui/user_guide/misc/timestamp_format.html">Video timestamp format</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">🦄 DeepLabCut Model Zoo</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../ModelZoo.html">The DeepLabCut Model Zoo!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../recipes/UsingModelZooPupil.html">Using ModelZoo models on your own datasets</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">DeepLabCut Benchmarking</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../benchmark.html">DeepLabCut benchmark</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pytorch/Benchmarking_shuffle_guide.html">DeepLabCut Benchmarking - User Guide</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Mission &amp; Contribute</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../MISSION_AND_VALUES.html">Mission and Values of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../roadmap.html">A development roadmap for DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Governance.html">Governance Model of DeepLabCut</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../CONTRIBUTING.html">Contributing to DeepLabCut</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Citations for DeepLabCut</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../citation.html">How to Cite DeepLabCut</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/DeepLabCut/DeepLabCut/issues/new?title=Issue%20on%20page%20%2Fdocs/gui/napari/basic_usage.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../../_sources/docs/gui/napari/basic_usage.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>napari-DLC - Basic usage</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#before-you-start">Before you start</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#in-the-deeplabcut-gui">In the DeepLabCut GUI</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#as-a-standalone-plugin">As a standalone plugin</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#supported-inputs">Supported inputs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#recommended-basic-labeling-workflow">Recommended basic labeling workflow</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling">Labeling</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#widget-options">Widget options</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling-mode">Labeling mode</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-annotations">Saving annotations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#save-behavior-and-notes">Save behavior and notes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#useful-shortcuts">Useful shortcuts</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#more-quality-of-life-features">More quality-of-life features</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling-workflows">Labeling workflows</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling-from-scratch">Labeling from scratch</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resuming-labeling">Resuming labeling</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#refining-machine-labels">Refining machine labels</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#video-workflow-crop-and-frame-extraction">Video workflow (crop and frame extraction)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#working-with-multiple-folders">Working with multiple folders</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demo">Demo</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="napari-dlc-basic-usage">
+<span id="file-napari-dlc-basic-usage"></span><h1>napari-DLC - Basic usage<a class="headerlink" href="#napari-dlc-basic-usage" title="Link to this heading">#</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">napari-deeplabcut</span></code> is a napari plugin for keypoint annotation and label refinement. It can be used either as part of the DeepLabCut GUI or as a standalone annotation tool.</p>
+<section id="before-you-start">
+<h2>Before you start<a class="headerlink" href="#before-you-start" title="Link to this heading">#</a></h2>
+<p>If you installed <code class="docutils literal notranslate"><span class="pre">DeepLabCut[gui]</span></code>, <code class="docutils literal notranslate"><span class="pre">napari-deeplabcut</span></code> is already included.</p>
+<section id="in-the-deeplabcut-gui">
+<h3>In the DeepLabCut GUI<a class="headerlink" href="#in-the-deeplabcut-gui" title="Link to this heading">#</a></h3>
+<p>When labeling frames, checking labels, or manually extracting frames from videos, the napari plugin will open automatically.</p>
+</section>
+<section id="as-a-standalone-plugin">
+<h3>As a standalone plugin<a class="headerlink" href="#as-a-standalone-plugin" title="Link to this heading">#</a></h3>
+<p>You can also install it as a standalone plugin:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>napari-deeplabcut
+</pre></div>
+</div>
+<p>Start napari from a terminal:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>napari
+</pre></div>
+</div>
+<p>Then open the plugin from:</p>
+<p><strong>Plugins -&gt; napari-deeplabcut: Keypoint controls</strong></p>
+</section>
+</section>
+<section id="supported-inputs">
+<h2>Supported inputs<a class="headerlink" href="#supported-inputs" title="Link to this heading">#</a></h2>
+<p>The plugin reader can open the following inputs:</p>
+<ul class="simple">
+<li><p>DeepLabCut <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code></p></li>
+<li><p>Image folders (supports <code class="docutils literal notranslate"><span class="pre">.png</span></code>, <code class="docutils literal notranslate"><span class="pre">.jpg</span></code>, extracted frames from DLC, as well as folders of mixed formats)</p></li>
+<li><p>Videos (<code class="docutils literal notranslate"><span class="pre">.mp4</span></code>, <code class="docutils literal notranslate"><span class="pre">.avi</span></code>, <code class="docutils literal notranslate"><span class="pre">.mov</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.h5</span></code> annotation files</p></li>
+</ul>
+<p>You can load files either by:</p>
+<ul class="simple">
+<li><p>dragging and dropping them onto the napari viewer, or</p></li>
+<li><p>using the <strong>File</strong> menu</p></li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If you drag and drop a compatible labeled-data folder, the widget opens automatically.</p>
+</div>
+</section>
+<section id="recommended-basic-labeling-workflow">
+<h2>Recommended basic labeling workflow<a class="headerlink" href="#recommended-basic-labeling-workflow" title="Link to this heading">#</a></h2>
+<p>The simplest way to <strong>start labeling</strong> is:</p>
+<ol class="arabic simple">
+<li><p>Open an image-only folder</p></li>
+<li><p>Open the corresponding <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> from your DeepLabCut project</p></li>
+</ol>
+<p><strong>OR</strong></p>
+<ol class="arabic simple">
+<li><p>Open a folder inside a DeepLabCut project’s <code class="docutils literal notranslate"><span class="pre">labeled-data</span></code> directory with a <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;.h5</span></code> file already present</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In this case, you do not have to load in the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> as the plugin will automatically read the project config from the expected location relative to the <code class="docutils literal notranslate"><span class="pre">CollectedData...</span></code> file.</p>
+</div>
+<p>This creates:</p>
+<ul class="simple">
+<li><p>an <strong>Image</strong> layer containing the images (or video frames)</p></li>
+<li><p>a <strong>Points</strong> layer initialized with the keypoints defined in the project config</p>
+<ul>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;.h5</span></code> contains your ground truth annotations</p></li>
+<li><p>Any <code class="docutils literal notranslate"><span class="pre">machinelabels-iter&lt;...&gt;.h5</span></code> files contain machine predictions that can be refined and saved into <code class="docutils literal notranslate"><span class="pre">CollectedData...</span></code></p></li>
+</ul>
+</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>When machine labels are present, you will see keypoints from ALL current layers.
+Before editing, make sure to hide other layers to avoid confusion, and select the correct layer to edit (e.g. the <code class="docutils literal notranslate"><span class="pre">machinelabels...</span></code> layer if you want to refine machine predictions).</p>
+</div>
+<p>You can then start annotating directly in the <strong>Points</strong> layer.
+To do so, make sure the correct <strong>Points</strong> layer is selected in the layer list (left panel of the viewer). Click on the <strong>+</strong> icon to start adding keypoints; the selection tool to edit existing keypoints; and the pan/zoom tool to navigate the viewer.</p>
+</section>
+<section id="labeling">
+<h2>Labeling<a class="headerlink" href="#labeling" title="Link to this heading">#</a></h2>
+<p>Once the <strong>Points</strong> layer is active, you can place and edit keypoints in the viewer.</p>
+<section id="widget-options">
+<h3>Widget options<a class="headerlink" href="#widget-options" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>Keypoint selection</strong>: The dropdown shows which bodypart will be added when placing a new keypoint in the Points layer. It can be changed manually, and will be updated according to the active labeling mode (see below).</p></li>
+<li><p><strong>View shortcuts</strong>: opens a reference of napari-deeplabcut shortcuts and their context (i.e. when they are active).</p></li>
+<li><p><strong>Show tutorial</strong>: opens the napari-DLC tutorial panels.</p></li>
+</ul>
+<section id="labeling-mode">
+<h4>Labeling mode<a class="headerlink" href="#labeling-mode" title="Link to this heading">#</a></h4>
+<ul class="simple">
+<li><p><strong>Sequential</strong>: when a keypoint is placed, the next keypoint in the config list is automatically selected. This is useful for labeling frames in order. Adding an already present keypoint in the frame does nothing.</p></li>
+<li><p><strong>Quick</strong>: As sequential, but adding an already present keypoint in the frame will move it to the new location.</p></li>
+<li><p><strong>Loop</strong>: The currently selected bodypart is retained and the viewer advances to the next frame. This is useful for labeling a specific body part across many frames in a row. If the end of the video is reached, the viewer will loop back to the beginning.</p></li>
+</ul>
+<p>The dock widget also provides additional controls, including:</p>
+<ul class="simple">
+<li><p><strong>Warn on overwrite</strong>: enable or disable overwrite confirmation</p></li>
+<li><p><strong>Show trails</strong>: display keypoint trails over time</p></li>
+<li><p><strong>Show trajectories</strong>: open a trajectory plot in a separate dock widget</p></li>
+<li><p><strong>Show color scheme</strong>: display the active color mapping</p></li>
+<li><p><strong>Video tools</strong>: extract frames and store crop coordinates when a video is loaded</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="saving-annotations">
+<h2>Saving annotations<a class="headerlink" href="#saving-annotations" title="Link to this heading">#</a></h2>
+<p>To save annotations, select the <strong>Points</strong> layer you want to save and use:</p>
+<p><strong>File -&gt; Save Selected Layer(s)…</strong></p>
+<p>or press:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Ctrl+S
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you open a folder that is outside a DeepLabCut project and then save a Points layer, you will be prompted to provide the corresponding <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>. After saving, you can move the labeled-data folder into your project for downstream DeepLabCut workflows.</p>
+</div>
+<p>Annotations are saved into the dataset folder as:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>CollectedData_&lt;ScorerName&gt;.h5
+</pre></div>
+</div>
+<p>These are the ground truth annotations that DeepLabCut will use for training and evaluation.
+A companion CSV file is also written:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>CollectedData_&lt;ScorerName&gt;.csv
+</pre></div>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>DeepLabCut uses the <code class="docutils literal notranslate"><span class="pre">.h5</span></code> file as the authoritative annotation file. CSVs and machine labels will not be taken into account for training.</p>
+</div>
+<section id="save-behavior-and-notes">
+<h3>Save behavior and notes<a class="headerlink" href="#save-behavior-and-notes" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Make sure the correct <strong>Points</strong> layer is selected before saving.</p></li>
+<li><p>If several Points layers are selected at the same time, the plugin will not save them in order to avoid ambiguity.</p></li>
+<li><p>If saving would overwrite existing annotations, the plugin will ask for confirmation.</p>
+<ul>
+<li><p>This confirmation can be disabled by unchecking <strong>Warn on overwrite</strong> in the dock widget.</p></li>
+</ul>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Several plugin functions expect <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> to be located two folders above the saved <code class="docutils literal notranslate"><span class="pre">CollectedData...</span></code> file, matching the standard DeepLabCut project structure.<br>
+Keeping data inside the project directory is recommended for best compatibility. Fallbacks asking for the config file location are provided when this structure is not respected, but some features may be disabled or limited in that case.</p>
+</div>
+</section>
+<section id="useful-shortcuts">
+<h3>Useful shortcuts<a class="headerlink" href="#useful-shortcuts" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>napari native:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">2</span></code> / <code class="docutils literal notranslate"><span class="pre">3</span></code>: switch between labeling and selection mode</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">4</span></code>: pan and zoom mode</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Ctrl+R</span></code>: reset the viewer to the default zoom and position</p></li>
+</ul>
+</li>
+<li><p>napari-deeplabcut specific:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">M</span></code>: cycle through annotation modes</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">E</span></code>: toggle edge coloring</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">F</span></code>: toggle between individual and body-part coloring modes</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">V</span></code>: toggle visibility of the selected layer</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Backspace</span></code>: delete selected point(s)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Ctrl+C</span></code> / <code class="docutils literal notranslate"><span class="pre">Ctrl+V</span></code>: copy and paste selected points</p></li>
+</ul>
+</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Use the <strong>View shortcuts</strong> button in the dock widget for a quick reference of napari-deeplabcut shortcuts and their context (i.e. when they are active).</p>
+</div>
+</section>
+<section id="more-quality-of-life-features">
+<h3>More quality-of-life features<a class="headerlink" href="#more-quality-of-life-features" title="Link to this heading">#</a></h3>
+<p>See the <a class="reference internal" href="advanced_usage.html#file-napari-dlc-advanced-features"><span class="std std-ref">Advanced features</span></a> for useful features such as copy-pasting annotations, quick body part selection, and more.</p>
+</section>
+</section>
+<section id="labeling-workflows">
+<h2>Labeling workflows<a class="headerlink" href="#labeling-workflows" title="Link to this heading">#</a></h2>
+<section id="labeling-from-scratch">
+<h3>Labeling from scratch<a class="headerlink" href="#labeling-from-scratch" title="Link to this heading">#</a></h3>
+<p>Use this when the image folder does <strong>not</strong> yet contain a <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;.h5</span></code> file.</p>
+<ol class="arabic simple">
+<li><p>Open a folder of extracted images</p></li>
+<li><p>Open the corresponding DeepLabCut <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code></p></li>
+<li><p>Select the created <strong>Points</strong> layer</p></li>
+<li><p>Label keypoints</p></li>
+<li><p>Save with <code class="docutils literal notranslate"><span class="pre">Ctrl+S</span></code></p></li>
+</ol>
+<p>After saving, the folder will contain:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>CollectedData_&lt;ScorerName&gt;.h5
+CollectedData_&lt;ScorerName&gt;.csv
+</pre></div>
+</div>
+</section>
+<section id="resuming-labeling">
+<h3>Resuming labeling<a class="headerlink" href="#resuming-labeling" title="Link to this heading">#</a></h3>
+<p>Use this when the folder already contains a <code class="docutils literal notranslate"><span class="pre">CollectedData_&lt;ScorerName&gt;.h5</span></code> file.</p>
+<ul class="simple">
+<li><p>Open (or drag and drop) the folder in napari.</p></li>
+</ul>
+<p>Existing annotations and keypoint metadata will be loaded automatically from the H5 file.
+In this case, loading <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> is usually <strong>not needed</strong> unless :</p>
+<ul class="simple">
+<li><p>The project’s body parts have changed or</p></li>
+<li><p>You want to refresh the configured color scheme</p></li>
+</ul>
+</section>
+<section id="refining-machine-labels">
+<h3>Refining machine labels<a class="headerlink" href="#refining-machine-labels" title="Link to this heading">#</a></h3>
+<p>Use this when the folder contains a machine predictions file such as:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>machinelabels-iter&lt;...&gt;.h5
+</pre></div>
+</div>
+<p>Open the folder in napari.</p>
+<p>If both a <code class="docutils literal notranslate"><span class="pre">CollectedData...</span></code> file and a <code class="docutils literal notranslate"><span class="pre">machinelabels...</span></code> file are present:</p>
+<ol class="arabic simple">
+<li><p>Edit the <code class="docutils literal notranslate"><span class="pre">machinelabels</span></code> layer</p></li>
+<li><p>Optionally press <code class="docutils literal notranslate"><span class="pre">E</span></code> to show edge coloring (red edges indicate confidence below the threshold defined in <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>)</p></li>
+<li><p>Hide other layers to avoid confusion while editing</p></li>
+<li><p>Edit keypoints in the <code class="docutils literal notranslate"><span class="pre">machinelabels</span></code> layer to refine machine predictions</p></li>
+<li><p>Save the selected <code class="docutils literal notranslate"><span class="pre">machinelabels</span></code> layer</p></li>
+</ol>
+<p>The refined annotations will be merged into <code class="docutils literal notranslate"><span class="pre">CollectedData...</span></code>.</p>
+<p>If only <code class="docutils literal notranslate"><span class="pre">machinelabels...</span></code> is present, saving refinements will still create a new <code class="docutils literal notranslate"><span class="pre">CollectedData...</span></code> target.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Saving a <code class="docutils literal notranslate"><span class="pre">machinelabels...</span></code> layer does <strong>not</strong> overwrite the machine labels file itself.
+Refinements are written into the appropriate <code class="docutils literal notranslate"><span class="pre">CollectedData...</span></code> file.<br>
+Make sure overwrite confirmation is enabled if you want to avoid accidentally overwriting existing <code class="docutils literal notranslate"><span class="pre">CollectedData...</span></code> annotations.</p>
+</div>
+</section>
+</section>
+<section id="video-workflow-crop-and-frame-extraction">
+<h2>Video workflow (crop and frame extraction)<a class="headerlink" href="#video-workflow-crop-and-frame-extraction" title="Link to this heading">#</a></h2>
+<p>Videos can also be opened directly in napari.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>This works best by using the main DLC GUI and following steps there for manual frame extraction, which will automatically open the video in napari.
+The workflow is otherwise the same when opening a video directly in napari.</p>
+</div>
+<p>When a video is loaded, the plugin provides a small video action panel that can be used to:</p>
+<ul class="simple">
+<li><p>Extract the current frame into the dataset</p></li>
+<li><p>Optionally export existing machine labels for that frame (load the corresponding h5 file first)</p></li>
+<li><p>Define and save crop coordinates to the DeepLabCut <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code></p></li>
+</ul>
+<p>Keypoints from video-based workflows can be edited and saved in the same way as image-folder workflows.</p>
+</section>
+<section id="working-with-multiple-folders">
+<h2>Working with multiple folders<a class="headerlink" href="#working-with-multiple-folders" title="Link to this heading">#</a></h2>
+<p>We do not currently support working on <strong>more than one dataset folder at a time</strong>.
+If a new folder is opened while another one is already open, the plugin will prevent new frames from being loaded, attempt to load annotations using the current folder context, and show a warning.</p>
+<p>After finishing one folder, simply:</p>
+<ol class="arabic simple">
+<li><p>Save the relevant <strong>Points</strong> layer</p></li>
+<li><p>Remove the current layers from the viewer using the layer list (left panel)</p></li>
+<li><p>Open the next folder (e.g. by dragging and dropping it onto the viewer)</p></li>
+</ol>
+<p>This helps keep saving behavior unambiguous.</p>
+</section>
+<section id="demo">
+<h2>Demo<a class="headerlink" href="#demo" title="Link to this heading">#</a></h2>
+<p>A short demo video is available here:</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This demo may be outdated, but the general annotation workflow remains the same. If you would like an updated video tutorial, please open a feature request issue on GitHub, and we will update it.</p>
+<p><a class="reference external" href="https://youtu.be/hsA9IB5r73E">Link to video</a></p>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./docs/gui/napari"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../napari_GUI.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">napari GUI</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="advanced_usage.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">napari-DLC - Advanced features</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#before-you-start">Before you start</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#in-the-deeplabcut-gui">In the DeepLabCut GUI</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#as-a-standalone-plugin">As a standalone plugin</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#supported-inputs">Supported inputs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#recommended-basic-labeling-workflow">Recommended basic labeling workflow</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling">Labeling</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#widget-options">Widget options</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling-mode">Labeling mode</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-annotations">Saving annotations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#save-behavior-and-notes">Save behavior and notes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#useful-shortcuts">Useful shortcuts</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#more-quality-of-life-features">More quality-of-life features</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling-workflows">Labeling workflows</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#labeling-from-scratch">Labeling from scratch</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resuming-labeling">Resuming labeling</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#refining-machine-labels">Refining machine labels</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#video-workflow-crop-and-frame-extraction">Video workflow (crop and frame extraction)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#working-with-multiple-folders">Working with multiple folders</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demo">Demo</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The DeepLabCut Team
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  <div>Powered by <a href="https://jupyterbook.org/">Jupyter Book</a>.</div>
+
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

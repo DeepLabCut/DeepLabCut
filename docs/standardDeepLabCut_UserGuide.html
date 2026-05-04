@@ -204,7 +204,11 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Graphical User Interfaces (GUIs)</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="gui/PROJECT_GUI.html">Interactive Project Manager GUI</a></li>
-<li class="toctree-l1"><a class="reference internal" href="gui/napari_GUI.html">napari labeling GUI</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="gui/napari_GUI.html">napari GUI</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="gui/napari/basic_usage.html">napari-DLC - Basic usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gui/napari/advanced_usage.html">napari-DLC - Advanced features</a></li>
+</ul>
+</details></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">DLC3 PyTorch Specific Docs</span></p>
 <ul class="nav bd-sidenav">
@@ -1029,7 +1033,7 @@ first</p>
 all the extracted frames using an interactive graphical user interface (GUI). The user
 should have already named the bodyparts to label (points of interest) in the
 project’s configuration file by providing a list. The following command invokes the
-napari-deeplabcut labelling GUI. Checkout the <a class="reference internal" href="gui/napari_GUI.html#napari-gui"><span class="std std-ref">napari-deeplabcut docs</span></a> for
+napari-deeplabcut labelling GUI. Checkout the [napari-deeplabcut docs](file:napari-gui-landing) for
 more information about the labelling workflow.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">label_frames</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
 </pre></div>
@@ -1049,7 +1053,7 @@ simply be skipped by not applying the label anywhere on the frame.</p>
 labels to the bodyparts in the config.yaml file. Thereafter, the user can call the function <strong>label_frames</strong>. As of
 2.0.5+: then a box will pop up and ask the user if they wish to display all parts, or only add in the new labels.
 Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.</p>
-<p>For more information, checkout the <a class="reference internal" href="gui/napari_GUI.html#napari-gui"><span class="std std-ref">napari-deeplabcut docs</span></a> for
+<p>For more information, checkout the [napari-deeplabcut docs](file:napari-gui-landing) for
 more information about the labelling workflow.</p>
 </section>
 <section id="e-check-annotated-frames">
@@ -3133,7 +3137,7 @@ as invalid.</p>
 </pre></div>
 </div>
 <p>This will launch a GUI where the user can refine the labels.</p>
-<p>Please refer to the <a class="reference internal" href="gui/napari_GUI.html#napari-gui"><span class="std std-ref">napari-deeplabcut docs</span></a> for more information about the labelling workflow.</p>
+<p>Please refer to the [napari-deeplabcut docs](file:napari-gui-landing) for more information about the labelling workflow.</p>
 <p>After correcting the labels for all the frames in each of the subdirectories, the users should merge the data set to
 create a new dataset. In this step the iteration parameter in the config.yaml file is automatically updated.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deeplabcut</span><span class="o">.</span><span class="n">merge_datasets</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
