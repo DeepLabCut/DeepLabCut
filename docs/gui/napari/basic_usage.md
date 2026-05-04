@@ -6,6 +6,7 @@ deeplabcut:
   last_verified: '2026-04-09'
   verified_for: 3.0.0rc14
 ---
+
 (file:napari-dlc-basic-usage)=
 # napari-DLC - Basic usage
 
@@ -15,6 +16,7 @@ deeplabcut:
 
 If you installed `DeepLabCut[gui]`, `napari-deeplabcut` is already included.
 
+### In the DeepLabCut GUI
 
 When labeling frames, checking labels, or manually extracting frames from videos, the napari plugin will open automatically.
 
@@ -269,7 +271,7 @@ This helps keep saving behavior unambiguous.
 A short demo video is available here:
 
 ```{warning}
-This demo may be outdated, but the general annotation workflow remains the same. If you would like a video tutorial, please open a feature request issue on GitHub.
+This demo may be outdated, but the general annotation workflow remains the same. If you would like an updated video tutorial, please open a feature request issue on GitHub, and we will update it.
 
 [Link to video](https://youtu.be/hsA9IB5r73E)
 ```
