@@ -302,8 +302,10 @@ def list_videos_in_folder(
     Args:
         data_path: Path or list of paths to folders containing videos, or individual
             video files. Can be a mix of directories and files.
-        video_type: The type of video to filter for (e.g., "mp4", ".mp4"). If None,
-            all supported video types are included.
+        video_type: The type of video to filter for (e.g., "mp4", ".mp4").
+            - If set: filter both directory contents and supplied files.
+            - If ``None``, explicitly-supplied files are used as-is. (Directory
+            contents are filtered using ``SUPPORTED_VIDEOS`` by default).
         shuffle: Whether to shuffle the order of videos. If False, videos are returned
             in sorted order for deterministic behavior.
 
@@ -316,20 +318,29 @@ def list_videos_in_folder(
     if isinstance(data_path, (str, Path)):
         data_path = [data_path]
 
-    if not video_type:
-        video_suffixes = {f".{ext.lower()}" for ext in auxfun_videos.SUPPORTED_VIDEOS}
+    if video_type:
+        explicit_suffixes: set[str] | None = {f".{video_type.lstrip('.').lower()}"}
     else:
-        video_suffixes = {f".{video_type.lstrip('.').lower()}"}
+        explicit_suffixes = None
+    implicit_suffixes = {f".{ext.lower()}" for ext in auxfun_videos.SUPPORTED_VIDEOS}
 
-    videos = []
+    videos: list[Path] = []
     for path in map(Path, data_path):
         if not path.exists():
             raise FileNotFoundError(f"Could not find: {path}. Check access rights.")
 
         if path.is_dir():
-            videos.extend(f for f in path.iterdir() if f.is_file() and f.suffix.lower() in video_suffixes)
-        elif path.is_file() and path.suffix.lower() in video_suffixes:
-            videos.append(path)
+            # Discriminate videos from other files; skip prior DLC outputs.
+            allowed = explicit_suffixes if explicit_suffixes else implicit_suffixes
+            videos.extend(
+                f
+                for f in path.iterdir()
+                if f.is_file() and f.suffix.lower() in allowed and "_labeled." not in f.name and "_full." not in f.name
+            )
+        elif path.is_file():
+            # Accept all caller-supplied files; only filter if video_type set.
+            if explicit_suffixes is None or path.suffix.lower() in explicit_suffixes:
+                videos.append(path)
 
     # Resolve video paths and remove duplicates
     unique_videos = list(dict.fromkeys(v.resolve() for v in videos))
