@@ -10,19 +10,17 @@
 #
 import logging
 import os
-import subprocess
 import sys
 import warnings
 from functools import cached_property
-from importlib import import_module
 from importlib.resources import files
+from importlib.util import find_spec
 from pathlib import Path
-from urllib.error import URLError
 
 import qdarkstyle
-from napari_deeplabcut import misc
+from napari_deeplabcut import __version__ as NAPARI_DLC_VERSION
 from PySide6 import QtCore, QtGui, QtWidgets
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon, QPixmap
 from PySide6.QtWidgets import (
     QComboBox,
@@ -35,9 +33,10 @@ from PySide6.QtWidgets import (
 )
 
 import deeplabcut
-from deeplabcut import VERSION, auxiliaryfunctions, compat
+from deeplabcut import __version__ as DLC_VERSION
+from deeplabcut import auxiliaryfunctions, compat
 from deeplabcut.core.engine import Engine
-from deeplabcut.gui import BASE_DIR, components, utils
+from deeplabcut.gui import BASE_DIR, components
 from deeplabcut.gui.tabs import (
     AnalyzeVideos,
     CreateTrainingDataset,
@@ -55,50 +54,14 @@ from deeplabcut.gui.tabs import (
     UnsupervizedIdTracking,
     VideoEditor,
 )
+from deeplabcut.gui.utils import UpdateChecker
 from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
-from deeplabcut.utils.multiprocessing import call_with_timeout
 
 warnings.filterwarnings(
     "ignore",
     message=r".*shibokensupport/signature/parser.py:269: RuntimeWarning: pyside_type_init:_resolve_value.*",
     category=RuntimeWarning,
 )
-
-
-def _check_for_updates(silent=True):
-    try:
-        is_latest, latest_version = call_with_timeout(utils.is_latest_deeplabcut_version, 5)
-        is_latest_plugin, latest_plugin_version = call_with_timeout(misc.is_latest_version, 5)
-    except (URLError, TimeoutError):  # Handle internet connectivity issues
-        is_latest = is_latest_plugin = True
-
-    if is_latest and is_latest_plugin:
-        if not silent:
-            msg = QtWidgets.QMessageBox(
-                text="DeepLabCut is up-to-date",
-            )
-            msg.exec_()
-    else:
-        if not is_latest and is_latest_plugin:
-            text = f"DeepLabCut {latest_version} available"
-            command = "pip", "install", "-U", "deeplabcut"
-        elif not is_latest_plugin and is_latest:
-            text = f"DeepLabCut labeling plugin {latest_plugin_version} available"
-            command = "pip", "install", "-U", "napari-deeplabcut"
-        else:
-            text = f"DeepLabCut {latest_version}\nand labeling plugin {latest_plugin_version} available"
-            command = "pip", "install", "-U", "deeplabcut", "napari-deeplabcut"
-
-        msg = QtWidgets.QMessageBox(
-            text=text,
-        )
-        msg.setIcon(QtWidgets.QMessageBox.Information)
-        update_btn = msg.addButton("Update", QtWidgets.QMessageBox.AcceptRole)
-        msg.setDefaultButton(update_btn)
-        _ = msg.addButton("Skip", QtWidgets.QMessageBox.RejectRole)
-        msg.exec_()
-        if msg.clickedButton() is update_btn:
-            subprocess.check_call([sys.executable, "-m", *command])
 
 
 class MainWindow(QMainWindow):
@@ -115,6 +78,7 @@ class MainWindow(QMainWindow):
         screen_size = app.screens()[0].size()
         self.screen_width = screen_size.width()
         self.screen_height = screen_size.height()
+        self._closing = False
 
         self.logger = logging.getLogger("GUI")
 
@@ -127,6 +91,22 @@ class MainWindow(QMainWindow):
         self.files = set()
 
         self._engine = Engine.PYTORCH
+
+        # Update checks
+        self._update_process = None
+        self._update_process_output = []
+
+        self._scheduled_update_check_silent = True
+        self._update_check_timer = QtCore.QTimer(self)
+        self._update_check_timer.setSingleShot(True)
+        self._update_check_timer.timeout.connect(self._trigger_scheduled_update_check)
+        self._updater = UpdateChecker(
+            dlc_version=DLC_VERSION,
+            plugin_version=NAPARI_DLC_VERSION,
+            timeout_ms=5000,
+            parent=self,
+        )
+        self._updater.finished.connect(self._on_update_check_finished)
 
         self.default_set()
 
@@ -209,9 +189,8 @@ class MainWindow(QMainWindow):
             return
 
         if e == e.TF:
-            try:
-                import_module("tensorflow")
-            except ModuleNotFoundError as err:
+            if find_spec("tensorflow") is None:
+                err = ModuleNotFoundError("No module named 'tensorflow'")
                 msg = QtWidgets.QMessageBox()
                 msg.setIcon(QtWidgets.QMessageBox.Warning)
                 msg.setText("Cannot use the TensorFlow engine.")
@@ -322,11 +301,185 @@ class MainWindow(QMainWindow):
     def video_files(self):
         return self.files
 
-    def add_video_files(self, new_video_files):
-        """Add new video files to the existing set of files.
+    def check_for_updates(self, *, silent=True, delay_ms=0):
+        """Start an update check immediately or schedule it after a delay."""
+        if self._closing:
+            return
 
-        This method ensures no duplicates are added. Emits a signal to notify about the
-        updated set of files.
+        # supersede old requests
+        if self._update_check_timer.isActive():
+            self._update_check_timer.stop()
+
+        if delay_ms > 0:
+            self._scheduled_update_check_silent = silent
+            self._update_check_timer.start(delay_ms)
+            return
+
+        self._updater.check(silent=silent)
+
+    def _trigger_scheduled_update_check(self):
+        if self._closing:
+            return
+        self._updater.check(silent=self._scheduled_update_check_silent)
+
+    def _run_update_command(self, packages):
+        if not packages:
+            return
+
+        if self._update_process is not None and self._update_process.state() != QtCore.QProcess.NotRunning:
+            return
+
+        self._progress_bar.show()
+        self.status_bar.showMessage("Installing updates...")
+
+        self._update_process_output = []
+        self._update_process = QtCore.QProcess(self)
+        self._update_process.setProgram(sys.executable)
+        self._update_process.setArguments(["-m", "pip", "install", "-U", *packages])
+
+        self._update_process.finished.connect(self._on_update_process_finished)
+        self._update_process.errorOccurred.connect(self._on_update_process_error)
+        self._update_process.readyRead.connect(self._drain_update_process_output)
+        self._update_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
+        self._update_process.start()
+
+    def _drain_update_process_output(self):
+        if self._update_process is None:
+            return
+
+        data = bytes(self._update_process.readAll())
+        if not data:
+            return
+
+        text = data.decode(errors="replace")
+        self._update_process_output.append(text)
+
+        # Optional: surface some live feedback
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
+        if lines:
+            latest_line = lines[-1]
+            self.status_bar.showMessage(latest_line)
+            self.logger.info(latest_line)
+
+    def _cleanup_update_process(self):
+        if self._update_process is not None:
+            self._update_process.deleteLater()
+            self._update_process = None
+        self._update_process_output = []
+        self._progress_bar.hide()
+        self.status_bar.showMessage("www.deeplabcut.org")
+
+    def _on_update_process_error(self, error):
+        if self._closing:
+            self._cleanup_update_process()
+            return
+
+        error_strings = {
+            QtCore.QProcess.FailedToStart: (
+                "Process failed to start. Check that pip is available and you have sufficient permissions."
+            ),
+            QtCore.QProcess.Crashed: "Update process crashed unexpectedly.",
+            QtCore.QProcess.Timedout: "Update process timed out.",
+            QtCore.QProcess.WriteError: "Could not write to update process.",
+            QtCore.QProcess.ReadError: "Could not read from update process.",
+            QtCore.QProcess.UnknownError: "An unknown error occurred.",
+        }
+        message = error_strings.get(error, "An unknown error occurred.")
+        QtWidgets.QMessageBox.warning(self, "Update failed", message)
+
+        self._cleanup_update_process()
+
+    def _on_update_process_finished(self, exit_code, exit_status):
+        if self._closing:
+            self._cleanup_update_process()
+            return
+
+        if self._update_process is None:
+            return
+
+        self._progress_bar.hide()
+        self._drain_update_process_output()
+
+        output = "".join(self._update_process_output).strip()
+
+        if exit_status == QtCore.QProcess.NormalExit and exit_code == 0:
+            QtWidgets.QMessageBox.information(
+                self,
+                "Update complete",
+                "The update completed successfully.\n\nPlease restart DeepLabCut to use the updated packages.",
+            )
+            if output:
+                self.logger.info(output)
+        else:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Update failed",
+                "The update command did not complete successfully.\n\n"
+                f"{output or 'No additional output was captured.'}",
+            )
+            if output:
+                self.logger.error(output)
+
+        self._cleanup_update_process()
+
+    def _on_update_check_finished(self, result):
+        if self._closing:
+            return
+
+        silent = result.get("silent", True)
+        error = result.get("error")
+
+        if error is not None:
+            self.logger.debug(f"Update check failed with error: {error!r}")
+            if not silent:
+                QtWidgets.QMessageBox.warning(
+                    self,
+                    "Update check failed",
+                    f"Could not check for updates.\n\n{error}",
+                )
+            return
+
+        is_latest = result["is_latest"]
+        latest_version = result["latest_version"]
+        is_latest_plugin = result["is_latest_plugin"]
+        latest_plugin_version = result["latest_plugin_version"]
+
+        if is_latest and is_latest_plugin:
+            if not silent:
+                QtWidgets.QMessageBox.information(
+                    self,
+                    "Up to date",
+                    "You are using the latest version of DeepLabCut and the labeling plugin.",
+                )
+            return
+
+        parts = []
+        packages = []
+
+        if not is_latest:
+            parts.append(f"DeepLabCut {latest_version} available")
+            packages.append("deeplabcut")
+
+        if not is_latest_plugin:
+            parts.append(f"DeepLabCut labeling plugin {latest_plugin_version} available")
+            packages.append("napari-deeplabcut")
+
+        msg = QtWidgets.QMessageBox(self)
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setText("\n".join(parts))
+
+        update_btn = msg.addButton("Update", QtWidgets.QMessageBox.AcceptRole)
+        msg.addButton("Skip", QtWidgets.QMessageBox.RejectRole)
+        msg.setDefaultButton(update_btn)
+        msg.exec()
+
+        if msg.clickedButton() is update_btn:
+            self._run_update_command(packages)
+
+    def add_video_files(self, new_video_files):
+        """
+        Add new video files to the existing set of files. This method ensures no duplicates are added.
+        Emits a signal to notify about the updated set of files.
         """
         new_video_files = set(new_video_files)
         self.files.update(new_video_files)  # Add new items to the existing set
@@ -334,9 +487,8 @@ class MainWindow(QMainWindow):
         self.logger.info(f"Videos added to analyze:\n{new_video_files}\nCurrent video files:\n{self.files}")
 
     def clear_video_files(self):
-        """Clear all video files from the existing set.
-
-        Emits a signal to notify the change.
+        """
+        Clear all video files from the existing set. Emits a signal to notify the change.
         """
         self.files.clear()  # Reset the set to be empty
         self.video_files_.emit(self.files)  # Emit the empty set
@@ -356,7 +508,10 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QIcon(icon))
 
         # Set default window size and allow resizing
-        self.resize(int(self.screen_width * WINDOW_RESIZE_FACTOR), int(self.screen_height * WINDOW_RESIZE_FACTOR))
+        self.resize(
+            int(self.screen_width * WINDOW_RESIZE_FACTOR),
+            int(self.screen_height * WINDOW_RESIZE_FACTOR),
+        )
         self.setMinimumSize(DEFAULT_MINIMUM_WIDTH, DEFAULT_MINIMUM_HEIGHT)
         self.setMaximumSize(self.screen_width, self.screen_height)
         self.setWindowFlag(Qt.WindowMaximizeButtonHint, True)
@@ -373,7 +528,7 @@ class MainWindow(QMainWindow):
         self.layout.setSpacing(30)
 
         title = components._create_label_widget(
-            f"Welcome to the DeepLabCut Project Manager GUI {VERSION}!",
+            f"Welcome to the DeepLabCut Project Manager GUI {DLC_VERSION}!",
             "font:bold; font-size:18px;",
             margins=(0, 30, 0, 0),
         )
@@ -387,13 +542,12 @@ class MainWindow(QMainWindow):
         pixmap = QtGui.QPixmap(logo)
         image_widget.setPixmap(pixmap.scaledToHeight(400, QtCore.Qt.SmoothTransformation))
         self.layout.addWidget(image_widget)
-
-        description = str(
-            "DeepLabCut™ is an open source tool for markerless "
-            "pose estimation of user-defined body parts with deep learning.\n"
-            "A. and M.W. Mathis Labs | http://www.deeplabcut.org\n\n "
-            "To get started, create a new project, load an existing one, "
-            "or try one of our pretrained models from the Model Zoo."
+        description = (
+            "DeepLabCut™ is an open source tool for markerless pose estimation of "
+            "user-defined body parts with deep learning.\n"
+            "A. and M.W. Mathis Labs | http://www.deeplabcut.org\n\n"
+            "To get started, create a new project, load an existing one, or try one "
+            "of our pretrained models from the Model Zoo."
         )
         label = components._create_label_widget(
             description,
@@ -428,8 +582,7 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(self.layout)
         self.setCentralWidget(widget)
-
-        QTimer.singleShot(1000, lambda: _check_for_updates(silent=True))
+        self.check_for_updates(silent=True, delay_ms=2000)
 
     def default_set(self):
         self.name_default = ""
@@ -472,7 +625,7 @@ class MainWindow(QMainWindow):
         self.aboutAction.triggered.connect(self._learn_dlc)
 
         self.check_updates = QAction("&Check for Updates...", self)
-        self.check_updates.triggered.connect(lambda: _check_for_updates(silent=False))
+        self.check_updates.triggered.connect(lambda: self.check_for_updates(silent=False))
 
     def create_menu_bar(self):
         menu_bar = self.menuBar()
@@ -576,9 +729,9 @@ class MainWindow(QMainWindow):
         dlg = QMessageBox(self)
         dlg.setWindowTitle("Learn DLC")
         dlg.setText(
-            """Learn DLC with
-            <a href='https://deeplabcut.github.io/DeepLabCut/docs/UseOverviewGuide.html'>
-            our docs and how-to guides</a>!"""
+            "Learn DLC with "
+            "<a href='https://deeplabcut.github.io/DeepLabCut/docs/UseOverviewGuide.html'>"
+            "our docs and how-to guides</a>!"
         )
         _ = dlg.exec()
 
@@ -718,14 +871,9 @@ class MainWindow(QMainWindow):
         _attempt_attribute_update("cfg_line", self.config)
 
     def is_transreid_available(self):
-        if self.is_multianimal:
-            try:
-                import_module("deeplabcut.pose_tracking_pytorch.transformer_reID")
-                return True
-            except ModuleNotFoundError:
-                return False
-        else:
+        if not self.is_multianimal:
             return False
+        return find_spec("deeplabcut.pose_tracking_pytorch.transformer_reID") is not None
 
     def closeEvent(self, event):
         print("Exiting...")
@@ -737,9 +885,21 @@ class MainWindow(QMainWindow):
             QtWidgets.QMessageBox.Cancel,
         )
         if answer == QtWidgets.QMessageBox.Yes:
+            self._closing = True
             self.receiver.terminate()
-            event.accept()
+
+            if self._update_check_timer.isActive():
+                self._update_check_timer.stop()
+
+            if self._updater is not None:
+                self._updater.cancel()
+
+            if self._update_process is not None and self._update_process.state() != QtCore.QProcess.NotRunning:
+                self._update_process.kill()
+                self._update_process.waitForFinished(1000)
+
             self.save_settings()
+            event.accept()
         else:
             event.ignore()
             print("")

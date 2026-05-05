@@ -67,6 +67,7 @@ email = "alexander@deeplabcut.org"
 [project.optional-dependencies]
 gui = [
   "napari-deeplabcut>=0.2.1.6",
+  "packaging>=26",
   "pyside6; platform_system!='Linux' or platform_machine!='x86_64'",
   # Avoid 6.10.0 only on Linux x86_64 (fails for older glib versions)
   "pyside6<6.10; platform_system=='Linux' and platform_machine=='x86_64'",

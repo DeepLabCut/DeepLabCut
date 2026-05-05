@@ -1115,6 +1115,7 @@ fmpose3d = [
 ]
 gui = [
     { name = "napari-deeplabcut" },
+    { name = "packaging" },
     { name = "pyside6" },
     { name = "qdarkstyle" },
 ]
@@ -1178,6 +1179,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=1.18.5,<2" },
     { name = "numpydoc", marker = "extra == 'docs'" },
     { name = "openvino-dev", marker = "extra == 'openvino'", specifier = "==2022.1" },
+    { name = "packaging", marker = "extra == 'gui'", specifier = ">=26.0" },
     { name = "pandas", extras = ["hdf5", "performance"], specifier = ">=2.2,<3" },
     { name = "pillow", specifier = ">=7.1" },
     { name = "protobuf", marker = "extra == 'tf'", specifier = "<7" },
