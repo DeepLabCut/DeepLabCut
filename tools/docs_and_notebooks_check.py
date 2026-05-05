@@ -605,6 +605,17 @@ def record_needs_metadata_sync(rec: FileRecord) -> bool:
         # avoid mixing "invalid metadata" issues with "metadata sync needed" guidance,
         # since the former may require manual fixes
         return False
+
+    # If metadata could not be read/parsed/validated reliably, just return False.
+    # These are scan/repair issues first, not "missing/out-of-sync metadata".
+    metadata_sync_blocking_error_prefixes = (
+        "metadata_read_failed:",
+        "markdown_frontmatter_invalid:",
+        "nbformat_invalid:",
+    )
+    if any(err.startswith(metadata_sync_blocking_error_prefixes) for err in (rec.errors or [])):
+        return False
+
     if rec.kind not in {"md", "ipynb"}:
         return False
     if rec.meta and rec.meta.ignore:
@@ -1115,7 +1126,9 @@ def enforce(cfg: ToolConfig, records: list[FileRecord]) -> list[str]:
                         )
 
         if pol.fail_if_metadata_sync_needed and record_needs_metadata_sync(r):
-            violations.append(f"{r.path}: embedded metadata is out of sync with git content date")
+            violations.append(
+                f"{r.path}: embedded last_content_updated is missing or out of sync with git content update date"
+            )
 
         if r.kind == "ipynb" and match_allowlist(r.path, pol.require_notebook_normalized):
             if "notebook_not_normalized" in (r.warnings or []):
