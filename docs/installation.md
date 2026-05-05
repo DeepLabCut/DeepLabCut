@@ -10,6 +10,7 @@ deeplabcut:
   last_verified: '2026-04-21'
   verified_for: 3.0.0rc14
 ---
+
 (file:how-to-install)=
 
 # Installing DeepLabCut
@@ -55,7 +56,7 @@ python -c "import torch; print(torch.cuda.is_available())"
 ```
 ````
 
-- If you're familiar with the command line and want TensorFlow support, look {ref}`below <deeplabcut-with-tf-install>` for a fresh installation on Linux and makes it possible to use the GPU with both PyTorch and TensorFlow.
+- If you're familiar with the command line and want TensorFlow support, look {ref}`below <sec:deeplabcut-with-tf-install>` for a fresh installation on Linux and makes it possible to use the GPU with both PyTorch and TensorFlow.
 
 ## Using Conda
 
@@ -151,7 +152,9 @@ Now you should see (`DEEPLABCUT`) on the left of your terminal screen:
 No need to run `pip install deeplabcut`, it's already in the conda file!
 ```
 
-(deeplabcut-with-tf-install)=
+(sec:deeplabcut-with-tf-install)=
+
+#### TensorFlow support
 
 ````{admonition} DeepLabCut TensorFlow Support
 ---
