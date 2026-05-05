@@ -662,4 +662,6 @@ def test_enforce_fails_when_metadata_sync_needed_is_configured(tool, repo: Path,
 
     violations = tool.enforce(tool_cfg, records)
 
-    assert violations == [f"{rel}: embedded metadata is out of sync with git content date"]
+    assert violations == [
+        f"{rel}: embedded last_content_updated is missing or out of sync with git content update date"
+    ]
