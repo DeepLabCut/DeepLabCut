@@ -183,6 +183,9 @@ class StreamWriter:
         if text != "\n":
             self.queue.put(text)
 
+    def isatty(self):
+        return False
+
     def flush(self):
         pass
 
