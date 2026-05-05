@@ -12,7 +12,7 @@ deeplabcut:
 Below we will first outline what you need to get started, the different ways you can use DeepLabCut, and then the full workflow. Note, we highly recommend you also read and follow our [Nature Protocols paper](https://www.nature.com/articles/s41596-019-0176-0), which is (still) fully relevant to standard DeepLabCut.
 
 ```{hint}
-💡📚 If you are new to Python and DeepLabCut, you might consider checking our [beginner guide](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html) once you are ready to jump into using the DeepLabCut App!
+💡📚 If you are new to Python and DeepLabCut, you might consider checking our [beginner guide](file:beginners-guide) once you are ready to jump into using the DeepLabCut App!
 ```
 
 ## Introduction
@@ -68,7 +68,7 @@ We are primarily a package that enables deep learning-based pose estimation. We 
 
 - [Explanations:](https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials) resources on understanding how DeepLabCut works
 - [References:](https://github.com/DeepLabCut/DeepLabCut#references) read the science behind DeepLabCut
-- [Beginner Guide to the GUI](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html)
+- \[Beginner Guide to the GUI\](file:beginners-guide)
 
 <!-- Outdated video: uses previous MD files / GitHub Wiki instead of Jupyter Book -->
 
