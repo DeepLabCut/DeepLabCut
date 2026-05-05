@@ -190,7 +190,7 @@ class FileRecord(BaseModel):
 
 
 class Report(BaseModel):
-    schema_version: int = REPORT_SCHEMA_VERSION
+    schema_version: Literal[1, 2] = REPORT_SCHEMA_VERSION
     generated_at: datetime
     repo_root: str
     config_path: str
