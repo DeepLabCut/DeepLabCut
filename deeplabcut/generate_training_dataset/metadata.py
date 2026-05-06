@@ -191,14 +191,24 @@ class TrainingDatasetMetadata:
             the shuffle with the given trainset index and shuffle index
 
         Raises:
-            ValueError if the shuffle is not present in the metadata
+            ValueError if trainset_index is out of bounds or the shuffle is not present
         """
-        train_fraction = self.project_config["TrainingFraction"][trainset_index]
+        fractions = self.project_config["TrainingFraction"]
+        if trainset_index >= len(fractions):
+            raise ValueError(
+                f"trainset_index={trainset_index} is out of bounds for "
+                f"TrainingFraction={fractions} (length {len(fractions)})."
+            )
+        train_fraction = fractions[trainset_index]
         for shuffle in self.shuffles:
             if shuffle.train_fraction == train_fraction and shuffle.index == index:
                 return shuffle
 
-        raise ValueError(f"Could not find a shuffle with trainingset fraction {train_fraction} and index {index}")
+        known = [(s.train_fraction, s.index) for s in self.shuffles] or "none"
+        raise ValueError(
+            f"Could not find a shuffle with train_fraction={train_fraction} and "
+            f"index={index}. Known shuffles (fraction, index): {known}."
+        )
 
     def save(self) -> None:
         """Saves the training dataset metadata to disk."""
@@ -242,6 +252,8 @@ class TrainingDatasetMetadata:
             cfg = config
 
         metadata_path = TrainingDatasetMetadata.path(cfg)
+        if not metadata_path.exists():
+            raise FileNotFoundError(f"No metadata.yaml found at {metadata_path}.")
         with open(metadata_path) as file:
             metadata = YAML(typ="safe", pure=True).load(file)
 
