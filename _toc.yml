@@ -105,6 +105,7 @@ parts:
           - file: docs/recipes/flip_and_rotate
           - file: docs/recipes/pose_cfg_file_breakdown
           # - file: docs/course
+      - file: docs/dlc-utils/index
 
   - caption: Project & Community
     chapters:
