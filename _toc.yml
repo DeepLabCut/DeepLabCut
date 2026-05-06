@@ -24,14 +24,15 @@ parts:
     chapters:
       - file: docs/gui/PROJECT_GUI
       - file: docs/gui/napari_GUI
-      - file: docs/gui/index
         sections:
-          - file: docs/beginner-guides/beginners-guide
-            sections:
-              - file: docs/beginner-guides/manage-project
-              - file: docs/beginner-guides/labeling
-              - file: docs/beginner-guides/Training-Evaluation
-              - file: docs/beginner-guides/video-analysis
+          - file: docs/gui/napari/basic_usage
+          - file: docs/gui/napari/advanced_usage
+      - file: docs/beginner-guides/beginners-guide
+        sections:
+          - file: docs/beginner-guides/manage-project
+          - file: docs/beginner-guides/labeling
+          - file: docs/beginner-guides/Training-Evaluation
+          - file: docs/beginner-guides/video-analysis
 
   - caption: Notebooks & Demos
     chapters:
