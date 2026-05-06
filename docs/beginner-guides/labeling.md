@@ -6,7 +6,7 @@ deeplabcut:
   visibility: online
   status: viable
   recommendation: update
-  notes: Useful content, a note is that this should be better integrated with the napari plugin docs, making the workflow transition from DLC GUI -> napari viewer -> back to DLC GUI more seamless so as to confuse users less. This will need a bit of restructuring, as napari-DLC docs are also standalone from the main GUI. Finding a good linking strategy would help. Perhaps breaking napari-DLC docs into install/setup, basic usage, *labeling workflow* (new) and advanced usage would allow to do this cleanly, as it would separate the standalone plugin operation from the DLC-GUI integrated workflow, yet retaining a single source for napari-DLC labeling workflow.
+  notes: Updated to link directly to the napari plugin docs. Making the link specific to the workflow section of the napari docs could help.
 ---
 
 (file:labeling-gui)=
@@ -18,8 +18,9 @@ deeplabcut:
 In DeepLabCut, choosing the right frames for labeling is a key step.
 
 ```{important}
-Always aim to select the MOST DIVERSE data you can for your model to be trained on. This implies picking a variety of good lighting, bad lighting, partial occlusions, and different poses.
+Always aim to select the **most diverse data** you can for your model to be trained on. This implies picking a variety of good lighting, bad lighting, partial occlusions, and different poses.
 If relevant, label data across several experimental sessions, animals, and conditions.
+**Labeling 10 frames from several different videos is typically more effective than labeling 100 frames from a single video.**
 ```
 
 To help you select "different" frames, DeepLabCut provides two main options:

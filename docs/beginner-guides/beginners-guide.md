@@ -104,7 +104,8 @@ This will open DeepLabCut.
 
 ![DeepLabCut GUI Screenshot](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779625875-5UHPC367I293CBSP8CT6/GUI-screenshot.png?format=500w)
 
-> 💡 **Note:** For a visual guide on navigating through the DeepLabCut GUI, check out our [YouTube tutorial](https://www.youtube.com/watch?v=tr3npnXWoD4).
+```{note} For a visual guide on navigating through the DeepLabCut GUI, check out our [YouTube tutorial](https://www.youtube.com/watch?v=tr3npnXWoD4).
+```
 
 ## Starting a new project
 
@@ -123,13 +124,14 @@ When you first launch the GUI, you'll find three primary main options:
 ### 🐾 New project step-by-step
 
 1. **Launch New Project:**
+
    - When you start a new project, you'll be presented with an empty project window. In DLC3+ you will see a new option "Engine".
 
-![DeepLabCut Engine](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717780414978-17LOVBUJ8JR102QVSFDY/Screen+Shot+2024-06-07+at+7.13.14+PM.png?format=1500w)
+   ![DeepLabCut Engine](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717780414978-17LOVBUJ8JR102QVSFDY/Screen+Shot+2024-06-07+at+7.13.14+PM.png?format=1500w)
 
-```{note}
-For most users, the engine will be PyTorch. See {ref}`sec:deeplabcut-with-tf-install` for TensorFlow support.
-```
+   ```{note}
+   For most users, the engine will be PyTorch. See {ref}`sec:deeplabcut-with-tf-install` for TensorFlow support.
+   ```
 
 1. **Filling in Project Details:**
 
@@ -171,13 +173,13 @@ For most users, the engine will be PyTorch. See {ref}`sec:deeplabcut-with-tf-ins
 1. **Define bodyparts and individuals:**
 
    - Enter all the name, numbers or IDs of bodyparts you wish to track.
-     - Example: "head", "tail", "left paw", "right paw", etc.
+     - **Example:** "head", "tail", "left paw", "right paw", etc.
      - Less recommened: "L1", "L2", "L3", etc.
    - **If you have multiple animals**:
      - Enter the name, numbers or IDs of the individuals in your experiment.
-       - Example: "mouse1", "mouse2", "mouse3", etc.
+       - **Example:** "mouse1", "mouse2", "mouse3", etc.
      - **Unique bodyparts**: If you wish to track "landmark" locations, such as the edges of a maze, or a specific object, you can add these as "unique bodyparts". These are not considered part of an individual, but are still tracked as part of the project.
-       - Example: "maze_left_edge", "maze_right_edge", "reward_port", etc.
+       - **Example**: "maze_left_edge", "maze_right_edge", "reward_port", etc.
      - **Identity labeling**: if and only if you can tell individuals apart by their appearance (not their location), set this to Yes and consistently label your individuals in the same way across videos. This will allow DeepLabCut to learn to tell them apart, and assign consistent identities across frames and videos.
 
 1. **Create your project:**
@@ -193,4 +195,4 @@ For most users, the engine will be PyTorch. See {ref}`sec:deeplabcut-with-tf-ins
 
 ## Next steps
 
-Next, head over to the beginner guide for {ref}`Setting up what keypoints to track <file:manage-project-gui>`, which will show you how to edit the configuration file to edit your bodyparts and skeleton structure.
+Next, head over to the beginner guide for {ref}`editing the configuration and managing the project <file:manage-project-gui>`, which will show you how to edit the configuration file to edit your bodyparts and skeleton structure.

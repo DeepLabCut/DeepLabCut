@@ -6,7 +6,7 @@ deeplabcut:
   visibility: online
   status: viable
   recommendation: move
-  notes: It seems the beginner guide section is more of a GUI step-by-step. As such, it should be moved to the GUI section, and merged/integrated with the contents there. The content is useful, but making it clear that this is for the GUI would reduce the confusion of a beginner guide being in fact rather central GUI use instructions.
+  notes: Making the config edit tool slightly easier to work with and updating the docs below to include additional fields would be helpful.
 ---
 
 (file:manage-project-gui)=
@@ -63,4 +63,4 @@ Spend some time visualizing how the chosen bodyparts can be connected effectivel
 
 ## Next steps
 
-Head over the beginner guide for \[Labeling your data\](file:labeling-gui), which will show you how to label your data using the napari-based labeling GUI, and how to integrate that with the main DLC GUI workflow.
+Head over the guide for the {ref}`file:labeling-gui`, which will show you how to label your data using the napari-based labeling GUI.
