@@ -3,7 +3,9 @@ deeplabcut:
   last_metadata_updated: '2026-03-17'
   ignore: false
 ---
+
 (file:dlclivegui-opencv-backend)=
+
 # OpenCV backend
 
 The OpenCV backend provides camera support via `cv2.VideoCapture`.
@@ -15,7 +17,7 @@ Due to lack of standardization across OpenCV backends, exposure and gain control
 **Other settings may not always behave as expected due to driver and backend limitations.**
 ```
 
----
+______________________________________________________________________
 
 ## Features & design
 
@@ -32,7 +34,7 @@ Due to lack of standardization across OpenCV backends, exposure and gain control
   - Mismatch handling is configurable (warn/strict/accept).
 - Optional MJPG (Windows) and explicit FOURCC requests.
 
----
+______________________________________________________________________
 
 ## Dependencies information
 
@@ -41,7 +43,7 @@ as part of the core DeepLabCut-Live-GUI package, so **no additional installation
 
 `cv2-enumerate-cameras` is also installed by default to provide camera enumeration support for this backend and make device selection more robust.
 
----
+______________________________________________________________________
 
 ## Basic configuration
 
@@ -64,7 +66,7 @@ Notes:
 - If `width`/`height` are omitted or set to `0`, the backend keeps the camera’s default mode.
 - OpenCV may ignore FPS and resolution requests depending on driver/backend.
 
----
+______________________________________________________________________
 
 ## Camera selection configuration
 
@@ -107,11 +109,11 @@ Example:
 Selection priority in `open()`:
 
 1. `properties.opencv.device_id` (stable ID)
-2. `properties.opencv.device_name` (substring match)
-3. `properties.opencv.device_vid` + `device_pid`
-4. `index` fallback
+1. `properties.opencv.device_name` (substring match)
+1. `properties.opencv.device_vid` + `device_pid`
+1. `index` fallback
 
----
+______________________________________________________________________
 
 ## Advanced configuration
 
@@ -165,7 +167,7 @@ Codec policy:
 - `fourcc` (string | null): explicit FOURCC request, overrides `prefer_mjpg`.
   - Examples: `MJPG`, `YUY2`, `NV12`, `H264`, `XRGB`, `BGR3`
 
----
+______________________________________________________________________
 
 ### Resolution and FPS behavior
 
@@ -183,7 +185,7 @@ Codec policy:
 - If `fps > 0`, the backend attempts to set `CAP_PROP_FPS` best-effort.
 - Many drivers return `0.0` for FPS even when streaming successfully; this is normal for some OpenCV backends.
 
----
+______________________________________________________________________
 
 ### Device discovery and rebind
 
@@ -204,7 +206,7 @@ If enumeration is not available, `discover_devices()` returns `None` so the fact
 
 If `properties.opencv.device_id` (or VID/PID/name) exists, `rebind_settings()` attempts to map the saved identity to the current index and refresh stored fields.
 
----
+______________________________________________________________________
 
 ## Troubleshooting
 
@@ -228,7 +230,6 @@ Try:
   }
   ```
 
-
 ### Slow open on Windows (MSMF)
 
 If MSMF is selected and opening is slow, consider setting:
@@ -249,6 +250,7 @@ If you request a resolution that the driver cannot apply, you may see warnings.
 On Windows, MJPG can reduce USB bandwidth and improve FPS for some webcams.
 
 - Enable MJPG attempt:
+
   ```json
   {
     "camera": {
@@ -261,6 +263,7 @@ On Windows, MJPG can reduce USB bandwidth and improve FPS for some webcams.
   ```
 
 - Or force a specific FOURCC:
+
   ```json
   {
     "camera": {
@@ -272,7 +275,7 @@ On Windows, MJPG can reduce USB bandwidth and improve FPS for some webcams.
   }
   ```
 
----
+______________________________________________________________________
 
 ## Example configuration
 
@@ -299,7 +302,7 @@ On Windows, MJPG can reduce USB bandwidth and improve FPS for some webcams.
 }
 ```
 
----
+______________________________________________________________________
 
 ## Notes and limitations
 

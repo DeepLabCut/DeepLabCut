@@ -4,6 +4,7 @@ deeplabcut:
   last_metadata_updated: '2026-03-06'
   ignore: false
 ---
+
 # Using ModelZoo models on your own datasets
 
 <p style='text-align: justify;'>Animal behavior has to be analyzed with painstaking accuracy. Therefore, animal pose estimation has been
@@ -27,22 +28,20 @@ This model was contributed by Jim McBurney-Lin at University of California River
 The model was trained on images of C57/B6J mice eyes, and also then augmented with mouse eye data from the Mathis Lab at
 EPFL.
 
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661439618442-RAACYCYD4RWEND4X1UFU/pupil_one.png?format=500w" width="250" title="DLC" alt="DLC" align="left" vspace = "50">
 
- <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661439618442-RAACYCYD4RWEND4X1UFU/pupil_one.png?format=500w" width="250" title="DLC" alt="DLC" align="left" vspace = "50">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661439618750-97KC2HW8HH6VOJHLMO46/pupil_two.png?format=300w" width="250" title="DLC" alt="DLC" align="right" vspace = "50">
 
-  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661439618750-97KC2HW8HH6VOJHLMO46/pupil_two.png?format=300w" width="250" title="DLC" alt="DLC" align="right" vspace = "50">
-
-| Landmark_Number  | Landmark_Name  | Description|
-| --- | --- | --- |
-| 1 | Lpupil  | Left aspect of pupil |
-| 2 | LDpupil | Left/dorsal aspect of pupil |
-| 3 | Dpupil  | Dorsal aspect of pupil |
-| 4 | DRpupil  | Dorsal/Right aspect of pupil |
-| 5 | Rpupil  | Right aspect of pupil |
-| 6 | RVpupil  | Right/ventral aspect of pupil |
-| 7 | Vpupil  | Ventral aspect of pupil |
-| 8 | VLpupil  | Ventral/left aspect of pupil |
-
+| Landmark_Number | Landmark_Name | Description                   |
+| --------------- | ------------- | ----------------------------- |
+| 1               | Lpupil        | Left aspect of pupil          |
+| 2               | LDpupil       | Left/dorsal aspect of pupil   |
+| 3               | Dpupil        | Dorsal aspect of pupil        |
+| 4               | DRpupil       | Dorsal/Right aspect of pupil  |
+| 5               | Rpupil        | Right aspect of pupil         |
+| 6               | RVpupil       | Right/ventral aspect of pupil |
+| 7               | Vpupil        | Ventral aspect of pupil       |
+| 8               | VLpupil       | Ventral/left aspect of pupil  |
 
 Since we would like to evaluate the models performance on out-of-domain data, we will analyze pigeon pupils. For more
 discussions and work on so-called out-of-domain data, see
@@ -80,14 +79,14 @@ and a video tutorial on how to use the ModelZoo on Google Colab.
   <a href="https://www.youtube.com/watch?v=twHBa1ZvXM8" target= "_blank"><img src="http://img.youtube.com/vi/twHBa1ZvXM8/0.jpg" alt="IMAGE ALT TEXT"></a>
 </div>
 
-```{hint}
+````{hint}
 You are happy with the model and want to go on analyzing further videos on your local machine or you want to refine the model for your specific usecase?
 ```html
 !zip -r /content/file.zip /content/pigeon_modelZoo-nessi-2022-08-22
 from google.colab import files
 files.download("/content/file.zip")
 
-```
+````
 
 ### Analyze Videos at Your Local Machine
 
@@ -101,7 +100,7 @@ Check [here](how-to-install) for the instructions for the DeepLabCut installatio
 
 To initialize a new project directory with a pre-trained model from the DeepLabCut ModelZoo, run the code below.
 
-::::{warning}
+::::\{warning}
 This method is currently implemented for Tensorflow only, Pytorch compatibility is coming soon.
 ::::
 
@@ -124,7 +123,7 @@ deeplabcut.create_pretrained_project(
 )
 ```
 
-::::{important}
+::::\{important}
 Your videos should be cropped around the eye for better model accuracy! 👁🐭
 ::::
 
@@ -156,6 +155,7 @@ deeplabcut.add_new_videos(
     extract_frames=False
 )
 ```
+
 The `deeplabcut.extract_outlier_frames` function will check for outliers and ask your feedback on whether to extract these outliers frames.
 
 ```python
@@ -169,26 +169,29 @@ deeplabcut.extract_outlier_frames(
     automatic=True
 )
 ```
+
 The `deeplabcut.refine_labels` function starts the GUI which allows you to refine the outlier frames manually.
 You should load the outlier frames directory and corresponding `.h5` file from the previous model.
 It will ask you to define the `likelihood` threshold: labels under the threshold should be refined at this stage.
 
 After refining, you should combine these data with your previous model's data set and create a new training data set.
+
 ```python
 deeplabcut.refine_labels("/pathofproject/config.yaml")
 deeplabcut.merge_datasets("/pathofproject/config.yaml")
 deeplabcut.create_training_dataset("/pathofproject/config.yaml")
 ```
+
 Before starting the training of your model, there is one last step left: editing the `init_weights` parameter in your `pose_cfg.yaml` file.
 Go to your project and check the latest snapshot (e.g., `snapshot-610000`) of your model in `dlc-models/train` directory.
 Edit the value of the `init_weights` key in the `pose_cfg.yaml` file and start to re-train your model!
-
 
 `init_weights: pathofyourproject\dlc-models\iteration-0\DLCFeb31-trainset95shuffle1\train\snapshot-610000`
 
 ```python
 deeplabcut.train_network("/pathofproject/config.yaml", shuffle=1, saveiters=25000)
 ```
+
 ```{hint}
 Check this video for model refining!
 <div align="center">
