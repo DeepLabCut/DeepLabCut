@@ -234,7 +234,7 @@ That's it! Follow the GUI for details
 
 Please decide which mode you want to use DeepLabCut with, and follow one of:
 
-- (1) [How to use standard DeepLabCut](single-animal-userguide)
+- (1) \[How to use standard DeepLabCut\](file:single-animal-userguide)
 - (2) [How to use multi-animal DeepLabCut](multi-animal-userguide)
 
 ## Useful links
