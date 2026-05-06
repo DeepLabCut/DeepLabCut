@@ -102,6 +102,7 @@ parts:
           - file: docs/recipes/pose_cfg_file_breakdown
           - file: docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook
           # - file: docs/course
+      - file: docs/dlc-utils/index
 
   - caption: Project & Community
     chapters:
