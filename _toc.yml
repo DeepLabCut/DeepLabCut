@@ -7,7 +7,7 @@ parts:
       - file: docs/UseOverviewGuide
       - file: docs/installation
         sections:
-          - file: docs/recipes/installTips
+          # - file: docs/recipes/installTips
           - file: docs/docker
       - file: docs/quick-start/index
         sections:
