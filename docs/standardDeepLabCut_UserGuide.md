@@ -13,6 +13,13 @@ deeplabcut:
 
 # Single animal projects
 
+```{contents}
+---
+local:
+depth: 2
+---
+```
+
 This document covers single/standard DeepLabCut use. If you have a complicated multi-animal scenario (i.e., they look
 the same), then please see our [maDLC user guide](multi-animal-userguide).
 
@@ -32,9 +39,12 @@ However, advanced users might prefer the additional flexibility that command lin
 If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
 ```
 
-<p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w" width="60%">
-</p>
+```{image} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w
+---
+width: 60%
+align: center
+---
+```
 
 As a reminder, the core functions are described in our
 [Nature Protocols paper](https://www.nature.com/articles/s41596-019-0176-0) (published at the time of 2.0.6).
@@ -54,6 +64,8 @@ import deeplabcut
 ```{important}
 If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
 ```
+
+## Workflow
 
 ### (A) Create a New Project
 
@@ -97,12 +109,13 @@ deeplabcut.create_new_project(
 )
 ```
 
-#### Additional arguments
+#### Output & directory structure
 
-**Important path formatting note**
-
-Windows users, you must input paths as: `r'C:\Users\computername\Videos\reachingvideo1.avi'` or
+```{important}
+On Windows, input paths as:
+`r'C:\Users\computername\Videos\reachingvideo1.avi'` or
 `'C:\\Users\\computername\\Videos\\reachingvideo1.avi'`
+```
 
 ```{tip}
 You can also place `config_path` in front of `deeplabcut.create_new_project` to create a variable that holds
@@ -110,35 +123,63 @@ the path to the config.yaml file, i.e. `config_path=deeplabcut.create_new_projec
 ```
 
 This set of arguments will create a project directory with the name
-**<Name of the project>+<name of the experimenter>+<date of creation of the project>** in the **Working directory** and
-creates the symbolic links to videos in the **videos** directory. The project directory will have subdirectories:
-**dlc-models**, **dlc-models-pytorch**, **labeled-data**, **training-datasets**, and **videos**. All the outputs
-generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be
-curated in separation from other projects. The purpose of the subdirectories is as follows:
+**<Name of the project>+<name of the experimenter>+<date of creation of the project>** in the **Working directory** and creates the symbolic links to videos in the videos directory.
 
-**dlc-models** and **dlc-models-pytorch** have a similar structure; the first contains files for the TensorFlow engine
-while the second contains files for the PyTorch engine. At the top level in these directories, there are directories
-referring to different iterations of label refinement (see below): **iteration-0**, **iteration-1**, etc.
-The iteration directories store shuffle directories, where each shuffle directory stores model data related to a
-particular experiment: trained and tested on a particular training and testing sets, and with a particular model
-architecture. Each shuffle directory contains the subdirectories *test* and *train*, each of which holds the meta
-information with regard to the parameters of the feature detectors in configuration files. The configuration files are
-YAML files, a common human-readable data serialization language. These files can be opened and edited with standard text
-editors. The subdirectory *train* will store checkpoints (called snapshots) during training of the model. These
-snapshots allow the user to reload the trained model without re-training it, or to pick-up training from a particular
-saved checkpoint, in case the training was interrupted.
+The project directory will have subdirectories:
 
-**labeled-data:** This directory will store the frames used to create the training dataset. Frames from different videos
-are stored in separate subdirectories. Each frame has a filename related to the temporal index within the corresponding
-video, which allows the user to trace every frame back to its origin.
+- dlc-models
+- dlc-models-pytorch
+- labeled-data
+- training-datasets
+- videos
+  All the outputs generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be
+  curated in separation from other projects.
 
-**training-datasets:** This directory will contain the training dataset used to train the network and metadata, which
-contains information about how the training dataset was created.
+```
+<Name of the project>+<name of the experimenter>+<date of creation of the project>/
+├── dlc-models/
+│   ├── iteration-0/
+│   ├── iteration-1/
+│   └── ...
+├── dlc-models-pytorch/
+│   ├── iteration-0/
+│   │   └── <shuffle directories>/
+│   │       ├── train/
+│   │       └── test/
+│   ├── iteration-1/
+│   └── ...
+├── labeled-data/
+│   └── <video subdirectories>/
+├── training-datasets/
+├── videos/
+└── config.yaml
+```
 
-**videos:** Directory of video links or videos. When **copy_videos** is set to `False`, this directory contains
-symbolic links to the videos. If it is set to `True` then the videos will be copied to this directory. The default is
-`False`. Additionally, if the user wants to add new videos to the project at any stage, the function
-**add_new_videos** can be used. This will update the list of videos in the project's configuration file.
+The purpose of the subdirectories is as follows:
+
+1. **dlc-models** and **dlc-models-pytorch** have a similar structure; the first contains files for the TensorFlow engine
+   while the second contains files for the PyTorch engine. At the top level in these directories, there are directories
+   referring to different iterations of label refinement (see below): **iteration-0**, **iteration-1**, etc.
+   The iteration directories store shuffle directories, where each shuffle directory stores model data related to a
+   particular experiment: trained and tested on a particular training and testing sets, and with a particular model
+   architecture. Each shuffle directory contains the subdirectories *test* and *train*, each of which holds the meta
+   information with regard to the parameters of the feature detectors in configuration files. The configuration files are
+   YAML files, a common human-readable data serialization language. These files can be opened and edited with standard text
+   editors. The subdirectory *train* will store checkpoints (called snapshots) during training of the model. These
+   snapshots allow the user to reload the trained model without re-training it, or to pick-up training from a particular
+   saved checkpoint, in case the training was interrupted.
+
+1. **labeled-data:** This directory will store the frames used to create the training dataset. Frames from different videos
+   are stored in separate subdirectories. Each frame has a filename related to the temporal index within the corresponding
+   video, which allows the user to trace every frame back to its origin.
+
+1. **training-datasets:** This directory will contain the training dataset used to train the network and metadata, which
+   contains information about how the training dataset was created.
+
+1. **videos:** Directory of video links or videos. When **copy_videos** is set to `False`, this directory contains
+   symbolic links to the videos. If it is set to `True` then the videos will be copied to this directory. The default is
+   `False`. Additionally, if the user wants to add new videos to the project at any stage, the function
+   **add_new_videos** can be used. This will update the list of videos in the project's configuration file.
 
 ```python
 deeplabcut.add_new_videos(
@@ -148,20 +189,38 @@ deeplabcut.add_new_videos(
 )
 ```
 
-\*Please note, *Full path of the project configuration file* will be referenced as `config_path` throughout this
+```{note}
+The *Full path of the project configuration file* will be referenced as `config_path` throughout this
 protocol.
+```
+
+#### Main configuration file (*config.yaml*)
 
 The project directory also contains the main configuration file called *config.yaml*. The *config.yaml* file contains
 many important parameters of the project. A complete list of parameters including their description can be found in
 Box1.
 
-The `create_new_project` step writes the following parameters to the configuration file: *Task*, *scorer*, *date*,
-*project_path* as well as a list of videos *video_sets*. The first three parameters should **not** be changed. The
-list of videos can be changed by adding new videos or manually removing videos.
+The `create_new_project` step writes the following parameters to the configuration file:
 
-![Box 1 - Single Animal Project Configuration File Glossary](images/box1-single.png)
+- *Task*
+- *Scorer*
+- *Date*
+- *Project_path*
+- A list of videos *video_sets*.
 
-### API Docs
+```{caution}
+The first three parameters should **not** be changed.
+The list of videos can be changed by adding new videos or manually removing videos.
+```
+
+```{image} images/box1-single.png
+---
+alt: Box 1 - Single Animal Project Configuration File Glossary
+align: center
+---
+```
+
+#### API Docs
 
 ````{admonition} Click the button to see API Docs
 ---
@@ -174,7 +233,14 @@ class: dropdown
 
 ### (B) Configure the Project
 
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588892210304-EW7WD46PYAU43WWZS4QZ/ke17ZwdGBToddI8pDm48kAXtGtTuS2U1SVcl-tYMBOAUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8PaoYXhp6HxIwZIk7-Mi3Tsic-L2IOPH3Dwrhl-Ne3Z2YjE9w60pqfeJxDohDRZk1jXSVCSSfcEA7WmgMAGpjTehHAH51QaxKq4KdVMVBxpG/1nktc1kdgq2.jpg?format=1000w" width="175" title="colormaps" alt="DLC Utils" align="right" vspace = "50">
+```{image} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588892210304-EW7WD46PYAU43WWZS4QZ/ke17ZwdGBToddI8pDm48kAXtGtTuS2U1SVcl-tYMBOAUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8PaoYXhp6HxIwZIk7-Mi3Tsic-L2IOPH3Dwrhl-Ne3Z2YjE9w60pqfeJxDohDRZk1jXSVCSSfcEA7WmgMAGpjTehHAH51QaxKq4KdVMVBxpG/1nktc1kdgq2.jpg?format=1000w
+---
+width: 175px
+title: colormaps
+alt: DLC Utils
+align: right
+---
+```
 
 Next, open the **config.yaml** file, which was created during **create_new_project**. You can edit this file in any
 text editor. Familiarize yourself with the meaning of the parameters (Box 1). You can edit various parameters, in
@@ -187,6 +253,7 @@ Please DO NOT have spaces in the names of bodyparts.
 
 ### (C) Select Frames to Label
 
+```{important}
 **CRITICAL:** A good training dataset should consist of a sufficient number of frames that capture the breadth of the
 behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and
 different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a
@@ -198,6 +265,7 @@ the required accuracy, the nature of behavior, the video quality (e.g. motion bl
 or less frames might be necessary to create a good network. Ultimately, in order to scale up the analysis to large
 collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see
 refinement below).
+```
 
 The function `extract_frames` extracts frames from all the videos in the project configuration file in order to create
 a training dataset. The extracted frames from all the videos are stored in a separate subdirectory named after the video
@@ -214,10 +282,12 @@ deeplabcut.extract_frames(
 )
 ```
 
+```{important}
 **CRITICAL POINT:** It is advisable to keep the frame size small, as large frames increase the training and
 inference time. The cropping parameters for each video can be provided in the config.yaml file (and see below).
 When running the function extract_frames, if the parameter crop=True, then you will be asked to draw a box within the
 GUI (and this is written to the config.yaml file).
+```
 
 `userfeedback` allows the user to specify which videos they wish to extract frames from. When set to `"True"`, a dialog
 will be initiated, where the user is asked for each video if (additional/any) frames from this video should be
@@ -233,10 +303,12 @@ frames using k-means, where each frame is treated as a vector. Frames from diffe
 procedure makes sure that the frames look different. However, on large and long videos, this code is slow due to
 computational complexity.
 
+```{important}
 **CRITICAL POINT:** It is advisable to extract frames from a period of the video that contains interesting
 behaviors, and not extract the frames across the whole video. This can be achieved by using the start and stop
 parameters in the config.yaml file. Also, the user can change the number of frames to extract from each video using
 the numframes2extract in the config.yaml file.
+```
 
 However, picking frames is highly dependent on the data and the behavior being studied. Therefore, it is hard to
 provide all purpose code that extracts frames to create a good training dataset for every behavior and animal. If the
@@ -252,11 +324,14 @@ bar to navigate across the video and *Grab a Frame* (or a range of frames, as of
 The user can also look at the extracted frames and e.g. delete frames (from the directory) that are too similar before
 reloading the set and then manually annotating them.
 
-<p align="center">
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c71bfbc71c10b4a23d20567/1550958540700/cropMANUAL.gif?format=750w" width="70%">
-</p>
+```{image} https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c71bfbc71c10b4a23d20567/1550958540700/cropMANUAL.gif?format=750w
+---
+width: 70%
+align: center
+---
+```
 
-### API Docs
+#### API Docs
 
 ````{admonition} Click the button to see API Docs
 ---
@@ -290,11 +365,18 @@ Keyboard arrows: advance frames.
 Delete key: delete label.
 ```
 
-![hot keys](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/192345a5-e411-4d56-b718-ef52f91e195e/Qwerty.png?format=2500w)
+```{image} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/192345a5-e411-4d56-b718-ef52f91e195e/Qwerty.png?format=2500w
+---
+alt: hot keys
+align: center
+---
+```
 
+```{important}
 **CRITICAL POINT:** It is advisable to **consistently label similar spots** (e.g., on a wrist that is very large, try
 to label the same location). In general, invisible or occluded points should not be labeled by the user. They can
 simply be skipped by not applying the label anywhere on the frame.
+```
 
 OPTIONAL: In the event of adding more labels to the existing labeled dataset, the user need to append the new
 labels to the bodyparts in the config.yaml file. Thereafter, the user can call the function **label_frames**. As of
@@ -319,7 +401,7 @@ directories contain the frames plotted with the annotated body parts. The user c
 labeled correctly. If they are not correct, the user can reload the frames (i.e. `deeplabcut.label_frames`), move them
 around, and click save again.
 
-### API Docs
+#### API Docs
 
 ````{admonition} Click the button to see API Docs
 ---
@@ -334,10 +416,12 @@ class: dropdown
 
 ### (F) Create Training Dataset
 
+```{important}
 **CRITICAL POINT:** Only run this step **where** you are going to train the network. If you label on your laptop but
 move your project folder to Google Colab or AWS, lab server, etc, then run the step below on that platform! If you
 labeled on a Windows machine but train on Linux, this is fine as of 2.0.4 onwards it will be done automatically (it
 saves file sets as both Linux and Windows for you).
+```
 
 - If you move your project folder, you must only change the `project_path` (which is done automatically) in the main
   config.yaml file - that's it - no need to change the video paths, etc! Your project is fully portable.
@@ -376,7 +460,7 @@ and `augmenter_type` when you call the function.
   suggest seeing our [dedicated documentation on models](dlc3-architectures) for more information (
   or the [this page on selecting models](what-neural-network-should-i-use) for the TensorFlow engine).
 
-```{Hint}
+```{hint}
 🚨 If they do not download (you will see this downloading in the terminal), then you may not have permission to do
 so - be sure to open your terminal "as an admin" (This is only something we have seen with some Windows users - see
 the **[docs for more help!](tf-training-tips-and-tricks)**).
@@ -425,6 +509,8 @@ deeplabcut.create_training_dataset_from_existing_split(
 )
 ```
 ````
+
+#### API Docs
 
 ````{admonition} Click the button to see API Docs for deeplabcut.create_training_dataset
 ---
@@ -561,6 +647,8 @@ rates, and batch training defaults. Thus, please use a lower ``save_iters`` and
 data. The bonus, training time is much less!!!
 ````
 
+#### API Docs
+
 ````{admonition} Click the button to see API Docs for train_network
 ---
 class: dropdown
@@ -634,12 +722,10 @@ Note that with multi-animal projects additional distance statistics aggregated o
 in that directory. This aims at providing a finer quantitative evaluation of multi-animal prediction performance
 before animal tracking. If the generalization is not sufficient, the user might want to:
 
-• check if the labels were imported correctly; i.e., invisible points are not labeled and the points of interest are
-labeled accurately
-
-• make sure that the loss has already converged
-
-• consider labeling additional images and make another iteration of the training data set
+- check if the labels were imported correctly; i.e., invisible points are not labeled and the points of interest are
+  labeled accurately
+- make sure that the loss has already converged
+- consider labeling additional images and make another iteration of the training data set
 
 **OPTIONAL:** You can also plot the scoremaps, locref layers, and PAFs:
 
@@ -649,7 +735,7 @@ deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 
 you can drop "Indices" to run this on all training/testing images (this is slow!)
 
-### API Docs
+#### API Docs
 
 ````{admonition} Click the button to see API Docs
 ---
@@ -699,7 +785,7 @@ However, if the flag `save_as_csv` is set to `True`, the data can also be export
 by default. You can also set a destination folder (`destfolder`) for the output files by passing a path of the folder
 you wish to write to.
 
-### API Docs
+#### API Docs
 
 ````{admonition} Click the button to see API Docs
 ---
@@ -712,7 +798,7 @@ class: dropdown
 
 ### Novel Video Analysis: extra features
 
-### Dynamic-cropping of videos:
+#### Dynamic-cropping of videos:
 
 As of 2.1+ we have a dynamic cropping option. Namely, if you have large frames and the animal/object occupies a smaller
 fraction, you can crop around your animal/object to make processing speeds faster. For example, if you have a large open
@@ -774,11 +860,14 @@ deeplabcut.filterpredictions(
 
 Here is an example of how this can be applied to a video:
 
-<p align="center">
-<img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc8b8ae6e8df000100a995/1556908943893/filter_example-01.png?format=1000w" width="70%">
-</p>
+```{image} https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc8b8ae6e8df000100a995/1556908943893/filter_example-01.png?format=1000w
+---
+width: 70%
+align: center
+---
+```
 
-### API Docs
+#### API Docs
 
 ````{admonition} Click the button to see API Docs
 ---
@@ -795,8 +884,8 @@ The plotting components of this toolbox utilizes matplotlib. Therefore, these pl
 the end user. We also provide a function to plot the trajectory of the extracted poses across the analyzed video, which
 can be called by typing:
 
-```
-deeplabcut.plot_trajectories(config_path, [‘fullpath/analysis/project/videos/reachingvideo1.avi’])
+```python
+deeplabcut.plot_trajectories(config_path, ['fullpath/analysis/project/videos/reachingvideo1.avi'])
 ```
 
 It creates a folder called `plot-poses` (in the directory of the video). The plots display the coordinates of body parts
@@ -805,12 +894,21 @@ coordinate differences. These plots help the user to quickly assess the tracking
 likelihood stays high and the histogram of consecutive coordinate differences has values close to zero (i.e. no jumps in
 body part detections across frames). Here are example plot outputs on a demo video (left):
 
-<p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559946148685-WHDO5IG9MMCHU0T7RC62/ke17ZwdGBToddI8pDm48kEOb1vFO6oRDmR8SXh4iL21Zw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVG1gXK66ltnjKh4U2immgm7AVAdfOWODmXNLQLqbLRZ2DqWIIaSPh2v08GbKqpiV54/file0289.png?format=500w" height="240">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559939762886-CCB0R107I2HXAHZLHECP/ke17ZwdGBToddI8pDm48kNeA8e5AnyMqj80u4_mB0hV7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UcpboONgOQYHLzaUWEI1Ir9fXt7Ehyn7DSgU3GCReAA-ZDqXZYzu2fuaodM4POSZ4w/plot_poses-01.png?format=1000w" height="250">
-</p>
+```{image} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559946148685-WHDO5IG9MMCHU0T7RC62/ke17ZwdGBToddI8pDm48kEOb1vFO6oRDmR8SXh4iL21Zw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVG1gXK66ltnjKh4U2immgm7AVAdfOWODmXNLQLqbLRZ2DqWIIaSPh2v08GbKqpiV54/file0289.png?format=500w
+---
+height: 240px
+align: center
+---
+```
 
-### API Docs
+```{image} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559939762886-CCB0R107I2HXAHZLHECP/ke17ZwdGBToddI8pDm48kNeA8e5AnyMqj80u4_mB0hV7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UcpboONgOQYHLzaUWEI1Ir9fXt7Ehyn7DSgU3GCReAA-ZDqXZYzu2fuaodM4POSZ4w/plot_poses-01.png?format=1000w
+---
+height: 250px
+align: center
+---
+```
+
+#### API Docs
 
 ````{admonition} Click the button to see API Docs
 ---
@@ -906,14 +1004,17 @@ deeplabcut.create_labeled_video(
 **PRO TIP:** that the **best quality videos** are created when `fastmode=False` is passed. Therefore, when
 `trailpoints` and `draw_skeleton` are used, we **highly** recommend you also pass `fastmode=False`!
 
-<p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559935526258-KFYZC8BDHK01ZIDPNVIX/ke17ZwdGBToddI8pDm48kJbosy0LGK_KqcAZRQ_Qph1Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpzkC6kmM1CbNgeHQVxASNv0wiXikHv274BIFe4LR7nd1rKmAka4uxYMJ9FupazBoaU/mouse_skel_trail.gif?format=750w" width="40%">
-</p>
+```{image} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559935526258-KFYZC8BDHK01ZIDPNVIX/ke17ZwdGBToddI8pDm48kJbosy0LGK_KqcAZRQ_Qph1Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpzkC6kmM1CbNgeHQVxASNv0wiXikHv274BIFe4LR7nd1rKmAka4uxYMJ9FupazBoaU/mouse_skel_trail.gif?format=750w
+---
+width: 40%
+align: center
+---
+```
 
 This function has various other parameters, in particular the user can set the `colormap`, the `dotsize`, and
 `alphavalue` of the labels in **config.yaml** file.
 
-### API Docs
+#### API Docs
 
 ````{admonition} Click the button to see API Docs
 ---
@@ -942,7 +1043,7 @@ deeplabcut.analyzeskeleton(
 )
 ```
 
-### API Docs
+#### API Docs
 
 ````{admonition} Click the button to see API Docs
 ---
@@ -980,20 +1081,20 @@ the user can set:
 outlieralgorithm: "fitting", "jump", or "uncertain"
 ```
 
-• `outlieralgorithm="uncertain"`: select frames if the likelihood of a particular or all body parts lies below `p_bound`
-(note this could also be due to occlusions rather than errors).
+- `outlieralgorithm="uncertain"`: select frames if the likelihood of a particular or all body parts lies below `p_bound`
+  (note this could also be due to occlusions rather than errors).
 
-• `outlieralgorithm="jump"`: select frames where a particular body part or all body parts jumped more than `epsilon`
-pixels from the last frame.
+- `outlieralgorithm="jump"`: select frames where a particular body part or all body parts jumped more than `epsilon`
+  pixels from the last frame.
 
-• `outlieralgorithm="fitting"`: select frames if the predicted body part location deviates from a state-space model fit
-to the time series of individual body parts. Specifically, this method fits an Auto Regressive Integrated Moving Average
-(ARIMA) model to the time series for each body part. Thereby each body part detection with a likelihood smaller than
-`p_bound` is treated as missing data. Putative outlier frames are then identified as time points, where the average
-body part estimates are at least `epsilon` pixels away from the fits. The parameters of this method are `epsilon`,
-`p_bound`, the ARIMA parameters as well as the list of body parts to average over (can also be `all`).
+- `outlieralgorithm="fitting"`: select frames if the predicted body part location deviates from a state-space model fit
+  to the time series of individual body parts. Specifically, this method fits an Auto Regressive Integrated Moving Average
+  (ARIMA) model to the time series for each body part. Thereby each body part detection with a likelihood smaller than
+  `p_bound` is treated as missing data. Putative outlier frames are then identified as time points, where the average
+  body part estimates are at least `epsilon` pixels away from the fits. The parameters of this method are `epsilon`,
+  `p_bound`, the ARIMA parameters as well as the list of body parts to average over (can also be `all`).
 
-• `outlieralgorithm="manual"`: manually select outlier frames based on visual inspection from the user.
+- `outlieralgorithm="manual"`: manually select outlier frames based on visual inspection from the user.
 
 As an example:
 
@@ -1013,7 +1114,7 @@ can run the `extract_outlier_frames` method iteratively, and (even) extract addi
 Once enough outlier frames are extracted the refinement GUI can be used to adjust the labels based on user feedback
 (see below).
 
-### API Docs
+#### API Docs
 
 ````{admonition} Click the button to see API Docs
 ---
@@ -1072,7 +1173,7 @@ weights (see Box 2).
 If after training the network generalizes well to the data, proceed to analyze new videos. Otherwise, consider labeling
 more data.
 
-### API Docs for deeplabcut.refine_labels
+#### API Docs for deeplabcut.refine_labels
 
 ````{admonition} Click the button to see API Docs
 ---
@@ -1083,7 +1184,7 @@ class: dropdown
 ```
 ````
 
-### API Docs for deeplabcut.merge_datasets
+#### API Docs for deeplabcut.merge_datasets
 
 ````{admonition} Click the button to see API Docs
 ---
