@@ -9,7 +9,7 @@ deeplabcut:
   notes: This is a crucial piece of the doc, but it is rather long and verbose. Recommend breaking it up into smaller sections, and adding more visuals (e.g. screenshots of the GUI, etc.) to make it more engaging and easier to read. Also, consider adding a table of contents at the beginning for easier navigation.
 ---
 
-(single-animal-userguide)=
+(file:single-animal-userguide)=
 
 # Single animal projects
 
@@ -109,7 +109,7 @@ deeplabcut.create_new_project(
 )
 ```
 
-#### Output & directory structure
+##### Output & directory structure
 
 ```{important}
 On Windows, input paths as:
@@ -194,7 +194,7 @@ The *Full path of the project configuration file* will be referenced as `config_
 protocol.
 ```
 
-#### Main configuration file (*config.yaml*)
+##### Main configuration file (*config.yaml*)
 
 The project directory also contains the main configuration file called *config.yaml*. The *config.yaml* file contains
 many important parameters of the project. A complete list of parameters including their description can be found in
@@ -220,7 +220,7 @@ align: center
 ---
 ```
 
-#### API Docs
+##### API Docs
 
 ````{admonition} Click the button to see API Docs
 ---
@@ -242,6 +242,8 @@ align: right
 ---
 ```
 
+#### Overview
+
 Next, open the **config.yaml** file, which was created during **create_new_project**. You can edit this file in any
 text editor. Familiarize yourself with the meaning of the parameters (Box 1). You can edit various parameters, in
 particular you **must add the list of *bodyparts* (or points of interest)** that you want to track. You can also set the
@@ -249,7 +251,11 @@ particular you **must add the list of *bodyparts* (or points of interest)** that
 Here any [matplotlib colormaps](https://matplotlib.org/tutorials/colors/colormaps.html) will do!
 Please DO NOT have spaces in the names of bodyparts.
 
-**bodyparts:** are the bodyparts of each individual (in the above list).
+#### Key item
+
+- **bodyparts:** are the bodyparts of each individual (in the above list).
+
+______________________________________________________________________
 
 ### (C) Select Frames to Label
 
@@ -267,10 +273,14 @@ collections of videos with perhaps unexpected conditions, one can also refine th
 refinement below).
 ```
 
+#### Overview
+
 The function `extract_frames` extracts frames from all the videos in the project configuration file in order to create
 a training dataset. The extracted frames from all the videos are stored in a separate subdirectory named after the video
 file’s name under the ‘labeled-data’. This function also has various parameters that might be useful based on the user’s
 need.
+
+#### Code example
 
 ```python
 deeplabcut.extract_frames(
@@ -289,9 +299,13 @@ When running the function extract_frames, if the parameter crop=True, then you w
 GUI (and this is written to the config.yaml file).
 ```
 
+#### Parameter note
+
 `userfeedback` allows the user to specify which videos they wish to extract frames from. When set to `"True"`, a dialog
 will be initiated, where the user is asked for each video if (additional/any) frames from this video should be
 extracted. Use this, e.g. if you have already labeled some folders and want to extract data for new videos.
+
+#### Frame selection methods
 
 The provided function either selects frames from the videos that are randomly sampled from a uniform distribution
 (uniform), by clustering based on visual appearance (k-means), or by manual selection. Random uniform selection of
@@ -309,6 +323,8 @@ behaviors, and not extract the frames across the whole video. This can be achiev
 parameters in the config.yaml file. Also, the user can change the number of frames to extract from each video using
 the numframes2extract in the config.yaml file.
 ```
+
+#### Manual frame selection
 
 However, picking frames is highly dependent on the data and the behavior being studied. Therefore, it is hard to
 provide all purpose code that extracts frames to create a good training dataset for every behavior and animal. If the
@@ -342,7 +358,11 @@ class: dropdown
 ```
 ````
 
+______________________________________________________________________
+
 ### (D) Label Frames
+
+#### Overview
 
 The toolbox provides a function **label_frames** which helps the user to easily label
 all the extracted frames using an interactive graphical user interface (GUI). The user
@@ -351,15 +371,19 @@ project’s configuration file by providing a list. The following command invoke
 napari-deeplabcut labelling GUI. Checkout the \[napari-deeplabcut docs\](file:napari-gui-landing) for
 more information about the labelling workflow.
 
+#### Code example
+
 ```python
 deeplabcut.label_frames(config_path)
 ```
 
+#### Demo
+
 [🎥 DEMO](https://youtu.be/hsA9IB5r73E)
 
-HOT KEYS IN THE Labeling GUI (also see "help" in GUI):
+#### HOT KEYS IN THE Labeling GUI (also see "help" in GUI)
 
-```
+```text
 Ctrl + C: Copy labels from previous frame.
 Keyboard arrows: advance frames.
 Delete key: delete label.
@@ -378,6 +402,8 @@ to label the same location). In general, invisible or occluded points should not
 simply be skipped by not applying the label anywhere on the frame.
 ```
 
+#### Optional addition of more labels
+
 OPTIONAL: In the event of adding more labels to the existing labeled dataset, the user need to append the new
 labels to the bodyparts in the config.yaml file. Thereafter, the user can call the function **label_frames**. As of
 2.0.5+: then a box will pop up and ask the user if they wish to display all parts, or only add in the new labels.
@@ -386,15 +412,23 @@ Saving the labels after all the images are labelled will append the new labels t
 For more information, checkout the \[napari-deeplabcut docs\](file:napari-gui-landing) for
 more information about the labelling workflow.
 
+______________________________________________________________________
+
 ### (E) Check Annotated Frames
+
+#### Overview
 
 OPTIONAL: Checking if the labels were created and stored correctly is beneficial for training, since labeling
 is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
 ‘check_labels’ to do so. It is used as follows:
 
+#### Code example
+
 ```python
 deeplabcut.check_labels(config_path, visualizeindividuals=True/False)
 ```
+
+#### What it creates
 
 For each video directory in labeled-data this function creates a subdirectory with **labeled** as a suffix. Those
 directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are
@@ -411,6 +445,8 @@ class: dropdown
 .. include:: ./api/deeplabcut.check_labels.rst
 ```
 ````
+
+______________________________________________________________________
 
 (create-training-dataset)=
 
@@ -429,9 +465,13 @@ saves file sets as both Linux and Windows for you).
 - Be aware you select your neural network backbone at this stage. As of DLC3+ we support PyTorch (and TensorFlow, but
   this will be phased out).
 
+#### Overview
+
 **OVERVIEW:** This function combines the labeled datasets from all the videos and splits them to create train and test
 datasets. The training data will be used to train the network, while the test data set will be used for evaluating the
 network.
+
+#### Code example
 
 ```python
 deeplabcut.create_training_dataset(config_path)
@@ -439,6 +479,8 @@ deeplabcut.create_training_dataset(config_path)
 
 - OPTIONAL: If the user wishes to benchmark the performance of the DeepLabCut, they can create multiple training
   datasets by specifying an integer value to the `num_shuffles`; see the docstring for more details.
+
+#### Output structure and configuration files
 
 The function creates a new shuffle(s) directory in the **dlc-models-pytorch** directory
 (**dlc-models** if using Tensorflow), in the current "iteration" directory.
@@ -450,6 +492,19 @@ before starting the training. These configuration files contain meta information
 of the feature detectors. For more information about the **pytorch_config.yaml** file, see [here](dlc3-pytorch-config)
 (for TensorFlow-based models, see key parameters
 [here](https://github.com/DeepLabCut/DeepLabCut/blob/main/deeplabcut/pose_cfg.yaml)).
+
+A schematic view of the structure described above is:
+
+```text
+<iteration directory>/
+└── <shuffle(s) directory>/
+    ├── train/
+    │   └── pytorch_config.yaml or pose_cfg.yaml
+    └── test/
+        └── pose_cfg.yaml
+```
+
+#### Network and augmentation selection
 
 **CRITICAL POINT:** At this step, for **create_training_dataset** you select the network you want to use, and any
 additional data augmentation (beyond our defaults). You can set `net_type`, `detector_type` (if using a detector)
@@ -484,6 +539,8 @@ TensorFlow engine, the [**pose_cfg.yaml**](https://github.com/DeepLabCut/DeepLab
   - `tensorpack`: a lot of augmentation possibilities, multi CPU support for fast processing, target maps are created
     less efficiently than in imgaug, does not allow batch size>1
   - `deterministic`: only useful for testing, freezes numpy seed; otherwise like default.
+
+#### Model comparison
 
 **MODEL COMPARISON**: You can also test several models by creating the same train/test
 split for different networks.
@@ -539,9 +596,15 @@ class: dropdown
 ```
 ````
 
+______________________________________________________________________
+
 ### (G) Train The Network
 
+#### Overview
+
 The function ‘train_network’ helps the user in training the network. It is used as follows:
+
+#### Code example
 
 ```python
 deeplabcut.train_network(config_path)
@@ -658,7 +721,11 @@ class: dropdown
 ```
 ````
 
+______________________________________________________________________
+
 ### (H) Evaluate the Trained Network
+
+#### Overview
 
 It is important to evaluate the performance of the trained network. This performance is measured by computing
 the average root mean square error (RMSE) between the manual labels and the ones predicted by DeepLabCut.
@@ -667,6 +734,8 @@ This helps to exclude, for example, occluded body parts. One of the strengths of
 probabilistic output of the scoremap, it can, if sufficiently trained, also reliably report if a body part is visible
 in a given frame. (see discussions of finger tips in reaching and the Drosophila legs during 3D behavior in
 [Mathis et al, 2018]). The evaluation results are computed by typing:
+
+#### Code example
 
 ```python
 deeplabcut.evaluate_network(config_path, Shuffles=[1], plotting=True)
@@ -680,7 +749,7 @@ many factors (including the size of the tracked body parts, the labeling variabi
 can also be larger than the training error due to human variability (in labeling, see Figure 2 in Mathis et al, Nature
 Neuroscience 2018).
 
-**Optional parameters:**
+#### Optional parameters
 
 - `Shuffles: list, optional` - List of integers specifying the shuffle indices of the training dataset.
   The default is [1]
@@ -713,6 +782,8 @@ transparency of labels (alphavalue) can be modified). By default each body part 
 plotted as plus (‘+’), DeepLabCut’s predictions either as ‘.’ (for confident predictions with likelihood > p-cutoff) and
 ’x’ for (likelihood \<= `pcutoff`).
 
+#### Output and interpretation
+
 The evaluation results for each shuffle of the training dataset are stored in a unique subdirectory in a newly created
 directory ‘evaluation-results-pytorch’ (‘evaluation-results’ for tensorflow models) in the project directory.
 The user can visually inspect if the distance between the labeled and the predicted body parts are acceptable.
@@ -726,6 +797,8 @@ before animal tracking. If the generalization is not sufficient, the user might 
   labeled accurately
 - make sure that the loss has already converged
 - consider labeling additional images and make another iteration of the training data set
+
+#### Optional maps
 
 **OPTIONAL:** You can also plot the scoremaps, locref layers, and PAFs:
 
@@ -746,10 +819,16 @@ class: dropdown
 ```
 ````
 
+______________________________________________________________________
+
 ### (I) Analyze new Videos
+
+#### Overview
 
 The trained network can be used to analyze new videos. Novel/new videos **DO NOT have to be in the config file!**.
 You can analyze new videos anytime by simply using the following line of code:
+
+#### Code example
 
 ```python
 deeplabcut.analyze_videos(
@@ -774,6 +853,8 @@ deeplabcut.analyze_videos(
 )
 ```
 
+#### Output and storage
+
 The user can choose a checkpoint for analyzing the videos. For this, the user can enter the corresponding index of the
 checkpoint to the variable snapshotindex in the config.yaml file. By default, the most recent checkpoint (i.e. last) is
 used for analyzing the video.
@@ -796,9 +877,9 @@ class: dropdown
 ```
 ````
 
-### Novel Video Analysis: extra features
+#### Novel Video Analysis: extra features
 
-#### Dynamic-cropping of videos:
+##### Dynamic-cropping of videos
 
 As of 2.1+ we have a dynamic cropping option. Namely, if you have large frames and the animal/object occupies a smaller
 fraction, you can crop around your animal/object to make processing speeds faster. For example, if you have a large open
@@ -818,9 +899,15 @@ dynamic: triple containing (state, detectiontreshold, margin)
     given the movement of the animal).
 ```
 
+______________________________________________________________________
+
 ### (J) Filter Pose Data
 
+#### Overview
+
 You can also filter the predictions with a median filter (default) or with a [SARIMAX model](https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html), if you wish. This creates a new .h5 file with the ending *\_filtered* that you can use in create_labeled_data and/or plot trajectories.
+
+#### Code examples
 
 ```python
 deeplabcut.filterpredictions(
@@ -858,6 +945,8 @@ deeplabcut.filterpredictions(
 )
 ```
 
+#### Example output
+
 Here is an example of how this can be applied to a video:
 
 ```{image} https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc8b8ae6e8df000100a995/1556908943893/filter_example-01.png?format=1000w
@@ -878,15 +967,23 @@ class: dropdown
 ```
 ````
 
+______________________________________________________________________
+
 ### (K) Plot Trajectories
+
+#### Overview
 
 The plotting components of this toolbox utilizes matplotlib. Therefore, these plots can easily be customized by
 the end user. We also provide a function to plot the trajectory of the extracted poses across the analyzed video, which
 can be called by typing:
 
+#### Code example
+
 ```python
 deeplabcut.plot_trajectories(config_path, ['fullpath/analysis/project/videos/reachingvideo1.avi'])
 ```
+
+#### Output
 
 It creates a folder called `plot-poses` (in the directory of the video). The plots display the coordinates of body parts
 vs. time, likelihoods vs time, the x- vs. y- coordinate of the body parts, as well as histograms of consecutive
@@ -919,11 +1016,17 @@ class: dropdown
 ```
 ````
 
+______________________________________________________________________
+
 ### (L) Create Labeled Videos
+
+#### Overview
 
 Additionally, the toolbox provides a function to create labeled videos based on the extracted poses by plotting the
 labels on top of the frame and creating a video. There are two modes to create videos: FAST and SLOW (but higher
 quality!). One can use the command as follows to create multiple labeled videos:
+
+#### Code example
 
 ```python
 deeplabcut.create_labeled_video(
@@ -957,6 +1060,8 @@ deeplabcut.create_labeled_video(
     trailpoints=10
 )
 ```
+
+#### Skeleton configuration
 
 To draw a skeleton, you need to first define the pairs of connected nodes (in the `config.yaml` file) and set the
 skeleton color (in the `config.yaml` file). There is also a GUI to help you do this, use by calling
@@ -1025,11 +1130,15 @@ class: dropdown
 ```
 ````
 
-### Extract "Skeleton" Features:
+#### Extract "Skeleton" Features
+
+##### Overview
 
 NEW, as of 2.0.7+: You can save the "skeleton" that was applied in `create_labeled_videos` for more computations.
 Namely, it extracts length and orientation of each "bone" of the skeleton as defined in the **config.yaml** file. You
 can use the function by:
+
+##### Code example
 
 ```python
 deeplabcut.analyzeskeleton(
@@ -1043,7 +1152,7 @@ deeplabcut.analyzeskeleton(
 )
 ```
 
-#### API Docs
+##### API Docs
 
 ````{admonition} Click the button to see API Docs
 ---
@@ -1054,9 +1163,13 @@ class: dropdown
 ```
 ````
 
+______________________________________________________________________
+
 (active-learning)=
 
 ### (M) Optional Active Learning -> Network Refinement: Extract Outlier Frames
+
+#### Overview
 
 While DeepLabCut typically generalizes well across datasets, one might want to optimize its performance in various,
 perhaps unexpected, situations. For generalization to large data sets, images with insufficient labeling performance
@@ -1070,14 +1183,18 @@ where the decoder might make large errors.
 
 All this can be done for a specific video by typing (see other optional inputs below):
 
+#### Code example
+
 ```python
 deeplabcut.extract_outlier_frames(config_path, ["videofile_path"])
 ```
 
+#### Frame-selection methods
+
 We provide various frame-selection methods for this purpose. In particular
 the user can set:
 
-```
+```text
 outlieralgorithm: "fitting", "jump", or "uncertain"
 ```
 
@@ -1102,6 +1219,8 @@ As an example:
 deeplabcut.extract_outlier_frames(config_path, ["videofile_path"], outlieralgorithm="manual")
 ```
 
+#### Selection after detection
+
 In general, depending on the parameters, these methods might return much more frames than the user wants to
 extract (`numframes2pick`). Thus, this list is then used to select outlier frames either by randomly sampling from
 this list (`extractionalgorithm="uniform"`), by performing `extractionalgorithm="kmeans"` clustering on the
@@ -1125,25 +1244,31 @@ class: dropdown
 ```
 ````
 
+______________________________________________________________________
+
 ### (N) Refine Labels: Augmentation of the Training Dataset
+
+#### Overview
 
 Based on the performance of DeepLabCut, four scenarios are possible:
 
-(A) Visible body part with accurate DeepLabCut prediction. These labels do not need any modifications.
+- (A) Visible body part with accurate DeepLabCut prediction. These labels do not need any modifications.
 
-(B) Visible body part but wrong DeepLabCut prediction. Move the label’s location to the actual position of the
-body part.
+- (B) Visible body part but wrong DeepLabCut prediction. Move the label’s location to the actual position of the
+  body part.
 
-(C) Invisible, occluded body part. Remove the predicted label by DeepLabCut with a middle click. Every predicted
-label is shown, even when DeepLabCut is uncertain. This is necessary, so that the user can potentially move
-the predicted label. However, to help the user to remove all invisible body parts the low-likelihood predictions
-are shown as open circles (rather than disks).
+- (C) Invisible, occluded body part. Remove the predicted label by DeepLabCut with a middle click. Every predicted
+  label is shown, even when DeepLabCut is uncertain. This is necessary, so that the user can potentially move
+  the predicted label. However, to help the user to remove all invisible body parts the low-likelihood predictions
+  are shown as open circles (rather than disks).
 
-(D) Invalid images: In the unlikely event that there are any invalid images, the user should remove such an image
-and their corresponding predictions, if any. Here, the GUI will prompt the user to remove an image identified
-as invalid.
+- (D) Invalid images: In the unlikely event that there are any invalid images, the user should remove such an image
+  and their corresponding predictions, if any. Here, the GUI will prompt the user to remove an image identified
+  as invalid.
 
 The labels for extracted putative outlier frames can be refined by opening the GUI:
+
+#### Code example
 
 ```python
 deeplabcut.refine_labels(config_path)
@@ -1152,6 +1277,8 @@ deeplabcut.refine_labels(config_path)
 This will launch a GUI where the user can refine the labels.
 
 Please refer to the \[napari-deeplabcut docs\](file:napari-gui-landing) for more information about the labelling workflow.
+
+#### Merge datasets
 
 After correcting the labels for all the frames in each of the subdirectories, the users should merge the data set to
 create a new dataset. In this step the iteration parameter in the config.yaml file is automatically updated.
@@ -1195,18 +1322,22 @@ class: dropdown
 ```
 ````
 
-### Jupyter Notebooks for Demonstration of the DeepLabCut Workflow
+______________________________________________________________________
+
+## Jupyter notebooks demo
 
 We also provide two Jupyter notebooks for using DeepLabCut on both a pre-labeled dataset, and on the end user’s
-own dataset. Firstly, we prepared an interactive Jupyter notebook called
-[Demo_yourowndata.ipynb](https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/JUPYTER/Demo_yourowndata.ipynb)
-that can serve as a template for the user to develop a project. Furthermore, we provide a notebook for an already
-started project with labeled data. The example project, named as
-[Reaching-Mackenzie-2018-08-30](https://github.com/DeepLabCut/DeepLabCut/tree/main/examples/Reaching-Mackenzie-2018-08-30)
-consists of a project configuration file with default parameters and 20 images, which are cropped around the region of
-interest as an example dataset. These images are extracted from a video, which was recorded in a study of skilled motor
-control in mice. Some example labels for these images are also provided. See more details
-[here](https://github.com/DeepLabCut/DeepLabCut/tree/main/examples).
+own dataset.
+
+- Firstly, we prepared an interactive Jupyter notebook called
+  [Demo_yourowndata.ipynb](https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/JUPYTER/Demo_yourowndata.ipynb)
+  that can serve as a template for the user to develop a project.
+- Furthermore, we provide a notebook for an already started project with labeled data. The example project, named as
+  [Reaching-Mackenzie-2018-08-30](https://github.com/DeepLabCut/DeepLabCut/tree/main/examples/Reaching-Mackenzie-2018-08-30)
+  consists of a project configuration file with default parameters and 20 images, which are cropped around the region of
+  interest as an example dataset. These images are extracted from a video, which was recorded in a study of skilled motor
+  control in mice. Some example labels for these images are also provided. See more details
+  [here](https://github.com/DeepLabCut/DeepLabCut/tree/main/examples).
 
 ## 3D Toolbox
 
