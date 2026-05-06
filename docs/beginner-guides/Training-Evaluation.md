@@ -68,7 +68,7 @@ If you wish to evaluate all saved snapshots, go to the configuration file and ch
 
 - **Visual Feedback:** Additionally, DLC creates subfolders containing your frames overlaid with both the labeled bodyparts and the model's predictions, allowing you to visually gauge the network's performance.
 
-![Evaluation Example in DeepLabCut](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779623162-BFDAW37B9TO94EGME2O5/check-labels.png?format=500w))
+![Evaluation Example in DeepLabCut](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779623162-BFDAW37B9TO94EGME2O5/check-labels.png?format=500w)
 
 ## Next steps
 

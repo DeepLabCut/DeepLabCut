@@ -5,8 +5,8 @@ deeplabcut:
   ignore: false
   visibility: online
   status: viable
-  recommendation: update
-  notes: Updated to link directly to the napari plugin docs. Making the link specific to the workflow section of the napari docs could help.
+  recommendation: move
+  notes: Move to GUI section. Updated to link directly to the napari plugin docs. Making the link specific to the workflow section of the napari docs could help.
 ---
 
 (file:labeling-gui)=
@@ -34,7 +34,7 @@ To help you select "different" frames, DeepLabCut provides two main options:
 
 ### Example workflow
 
-1. Click on **`automatic`** in the frame selection area.
+1. Select **`automatic`** in the frame selection area.
 1. Choose **`k-means`** as a good default option for frame extraction, and set the number of frames you want to extract.
 1. Hit the **`Extract Frames`** button.
 

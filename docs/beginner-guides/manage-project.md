@@ -6,7 +6,7 @@ deeplabcut:
   visibility: online
   status: viable
   recommendation: move
-  notes: Making the config edit tool slightly easier to work with and updating the docs below to include additional fields would be helpful.
+  notes: Move to a dedicated GUI section. Making the config edit tool slightly easier to work with and updating the docs below to include additional fields would be helpful.
 ---
 
 (file:manage-project-gui)=
