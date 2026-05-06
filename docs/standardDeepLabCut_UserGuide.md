@@ -29,7 +29,8 @@ To get started, you can use the GUI, or the terminal. See below.
 
 1. To begin, navigate to Anaconda Prompt Terminal and right-click to "open as admin "(Windows), or simply launch
    "Terminal" (unix/MacOS) on your computer.
-1. We assume you have DeepLabCut installed (if not, see {ref}`file:how-to-install`). Next, launch your conda env (i.e., for example `conda activate DEEPLABCUT`).
+1. We assume you have DeepLabCut installed (if not, see {ref}`file:how-to-install`).
+1. Next, launch your conda env (e.g. `conda activate DEEPLABCUT`).
 1. Then, simply run `python -m deeplabcut`.
 
 Most functions are available to you in the GUI.
@@ -260,7 +261,7 @@ ______________________________________________________________________
 ### (C) Select Frames to Label
 
 ```{important}
-**CRITICAL:** A good training dataset should consist of a sufficient number of frames that capture the breadth of the
+A good training dataset should consist of a sufficient number of frames that capture the breadth of the
 behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and
 different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a
 robust network that you can reuse in the laboratory, a good training dataset should reflect the diversity of the
@@ -293,7 +294,7 @@ deeplabcut.extract_frames(
 ```
 
 ```{important}
-**CRITICAL POINT:** It is advisable to keep the frame size small, as large frames increase the training and
+It is advisable to keep the frame size small, as large frames increase the training and
 inference time. The cropping parameters for each video can be provided in the config.yaml file (and see below).
 When running the function extract_frames, if the parameter crop=True, then you will be asked to draw a box within the
 GUI (and this is written to the config.yaml file).
@@ -318,17 +319,17 @@ procedure makes sure that the frames look different. However, on large and long 
 computational complexity.
 
 ```{important}
-**CRITICAL POINT:** It is advisable to extract frames from a period of the video that contains interesting
+It is advisable to extract frames from a period of the video that contains interesting
 behaviors, and not extract the frames across the whole video. This can be achieved by using the start and stop
-parameters in the config.yaml file. Also, the user can change the number of frames to extract from each video using
-the numframes2extract in the config.yaml file.
+parameters in the config.yaml file.
+Also, the user can change the number of frames to extract from each video using the numframes2extract in the config.yaml file.
 ```
 
 #### Manual frame selection
 
 However, picking frames is highly dependent on the data and the behavior being studied. Therefore, it is hard to
-provide all purpose code that extracts frames to create a good training dataset for every behavior and animal. If the
-user feels specific frames are lacking, they can extract hand selected frames of interest using the interactive GUI
+provide one-size-fits-all code that extracts frames to create a good training dataset for every behavior and animal.
+If the user feels specific frames are lacking, they can extract hand selected frames of interest using the interactive GUI
 provided along with the toolbox. This can be launched by using:
 
 ```python
@@ -467,7 +468,7 @@ saves file sets as both Linux and Windows for you).
 
 #### Overview
 
-**OVERVIEW:** This function combines the labeled datasets from all the videos and splits them to create train and test
+This function combines the labeled datasets from all the videos and splits them to create train and test
 datasets. The training data will be used to train the network, while the test data set will be used for evaluating the
 network.
 
@@ -542,7 +543,7 @@ TensorFlow engine, the [**pose_cfg.yaml**](https://github.com/DeepLabCut/DeepLab
 
 #### Model comparison
 
-**MODEL COMPARISON**: You can also test several models by creating the same train/test
+You can also test several models by creating the same train/test
 split for different networks.
 You can easily do this in the Project Manager GUI (by selecting the "Use an existing
 data split" option), which also lets you compare PyTorch and TensorFlow models.
