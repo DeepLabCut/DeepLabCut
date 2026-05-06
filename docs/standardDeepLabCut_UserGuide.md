@@ -18,19 +18,18 @@ the same), then please see our [maDLC user guide](multi-animal-userguide).
 
 To get started, you can use the GUI, or the terminal. See below.
 
-## DeepLabCut Project Manager GUI (recommended for beginners)
+## Using the GUI (recommended for beginners)
 
-**GUI:**
+1. To begin, navigate to Anaconda Prompt Terminal and right-click to "open as admin "(Windows), or simply launch
+   "Terminal" (unix/MacOS) on your computer.
+1. We assume you have DeepLabCut installed (if not, see {ref}`file:how-to-install`). Next, launch your conda env (i.e., for example `conda activate DEEPLABCUT`).
+1. Then, simply run `python -m deeplabcut`.
 
-To begin, navigate to Anaconda Prompt Terminal and right-click to "open as admin "(Windows), or simply launch
-"Terminal" (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, see
-[install docs](how-to-install)!). Next, launch your conda env (i.e., for example `conda activate DEEPLABCUT`). Then,
-simply run `python -m deeplabcut`. The below functions are available to you in an easy-to-use graphical user interface.
-While most functionality is available, advanced users might want the additional flexibility that command line interface
-offers. Read more below.
+Most functions are available to you in the GUI.
+However, advanced users might prefer the additional flexibility that command line interface offers. Read more below.
 
-```{Hint}
-🚨 If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
+```{important}
+If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
 ```
 
 <p align="center">
@@ -42,7 +41,7 @@ As a reminder, the core functions are described in our
 Additional functions and features are continually added to the package. Thus, we recommend you read over the protocol
 and then please look at the following documentation and the doctrings. Thanks for using DeepLabCut!
 
-## DeepLabCut in the Terminal/Command line interface:
+## Using the CLI
 
 To begin, navigate to Anaconda Prompt Terminal and right-click to "open as admin "(Windows), or simply launch
 "Terminal" (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, see Install docs!). Next,
@@ -52,24 +51,40 @@ launch your conda env (i.e., for example `conda activate DEEPLABCUT`) and then t
 import deeplabcut
 ```
 
-```{Hint}
-🚨 If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
+```{important}
+If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
 ```
 
 ### (A) Create a New Project
+
+#### Overview
 
 The function `create_new_project` creates a new project directory, required subdirectories, and a basic project
 configuration file. Each project is identified by the name of the project (e.g. Reaching), name of the experimenter
 (e.g. YourName), as well as the date at creation.
 
-Thus, this function requires the user to input the name of the project, the name of the experimenter, and the full
-path of the videos that are (initially) used to create the training dataset.
+Thus, this function requires the user to input:
 
-Optional arguments specify the working directory, where the project directory will be created, and if the user wants
-to copy the videos (to the project directory). If the optional argument `working_directory` is unspecified, the
-project directory is created in the current working directory, and if `copy_videos` is unspecified symbolic links
-for the videos are created in the videos directory. Each symbolic link creates a reference to a video and thus
+- The name of the project
+- The name of the experimenter
+- The full path of the videos that are (initially) used to create the training dataset.
+- Optional arguments specify:
+  - The working directory
+  - Where the project directory will be created
+  - Whether to copy the videos to the project directory
+
+```{note}
+If the optional argument `working_directory` is unspecified, the
+project directory is created in the current working directory.
+
+If `copy_videos` is unspecified symbolic links
+for the videos are created in the videos directory.
+Each symbolic link creates a reference to a video and thus
 eliminates the need to copy the entire video to the video directory (if the videos remain at the original location).
+This is why administrator privileges are required for Windows users, as creating symbolic links requires them.
+```
+
+#### Code example
 
 ```python
 deeplabcut.create_new_project(
@@ -82,13 +97,17 @@ deeplabcut.create_new_project(
 )
 ```
 
+#### Additional arguments
+
 **Important path formatting note**
 
 Windows users, you must input paths as: `r'C:\Users\computername\Videos\reachingvideo1.avi'` or
-` 'C:\\Users\\computername\\Videos\\reachingvideo1.avi'`
+`'C:\\Users\\computername\\Videos\\reachingvideo1.avi'`
 
-TIP: you can also place `config_path` in front of `deeplabcut.create_new_project` to create a variable that holds
+```{tip}
+You can also place `config_path` in front of `deeplabcut.create_new_project` to create a variable that holds
 the path to the config.yaml file, i.e. `config_path=deeplabcut.create_new_project(...)`
+```
 
 This set of arguments will create a project directory with the name
 **<Name of the project>+<name of the experimenter>+<date of creation of the project>** in the **Working directory** and
