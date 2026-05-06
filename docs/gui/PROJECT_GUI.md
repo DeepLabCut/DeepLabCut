@@ -30,7 +30,7 @@ While several advanced features are not fully available in this Project GUI, we 
 Start at the Project Management Tab and work your way through the tabs to built your customized model and deploy it on new data.
 We recommend to keep the terminal visible (as well as the GUI) so you can see the ongoing processes as you step through your project, or any errors that might arise.
 
-- For specific napari-based labeling features, see the ["napari gui" docs](file:napari-gui-landing).
+- For specific napari-based labeling features, see the \["napari gui" docs\](file:napari-gui-landing).
 - To change from dark to light mode, set appearance at the top:
 
 <p align="center">
