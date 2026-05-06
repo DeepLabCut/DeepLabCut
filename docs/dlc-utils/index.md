@@ -6,7 +6,7 @@ deeplabcut:
   ignore: false
 ---
 
-# DeepLabCut-Utils: Community contributions
+# DeepLabCut-Utils - Community contributions
 
 [![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&url=https%3A%2F%2Fforum.image.sc%2Ftags%2Fdeeplabcut.json&query=%24.topic_list.tags.0.topic_count&colorB=brightgreen&suffix=%20topics&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tags/deeplabcut)
 
@@ -18,7 +18,8 @@ align: right
 ---
 ```
 
-The DeepLabCut-Utils repository contains various scripts as well as links to other packages related to [DeepLabCut](https://github.com/AlexEMG/DeepLabCut). Feel free to contribute your own analysis methods, and perhaps some short notebook of how to use it. Thanks!
+This repository contains various scripts as well as links to other packages related to [DeepLabCut](https://github.com/DeepLabCut/DeepLabCut). 
+Feel free to contribute your own analysis methods, and perhaps some short notebook of how to use it. Thanks!
 
 ```{admonition} DLC-Utils
 ---
@@ -28,7 +29,7 @@ class: tip
 ```
 
 ```{caution}
-Please direct inquiries to the **contributors/code maintainers of that code**. Note that the software(s) are provided "as is", without warranty of any kind, express.
+Please direct inquiries to the **contributors/code maintainers of that code**. Note that the software(s) are provided "as is", without warranty of any kind, express or implied.
 The DeepLabCut team is not responsible for the maintenance of these packages, and cannot guarantee that they will work with present & future versions of DeepLabCut.
 ```
 
