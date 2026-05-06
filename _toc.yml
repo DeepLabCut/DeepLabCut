@@ -103,6 +103,8 @@ parts:
           - file: docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook
           # - file: docs/course
       - file: docs/dlc-utils/index
+        sections:
+          - file: docs/dlc-utils/XROMM/usage
 
   - caption: Project & Community
     chapters:
