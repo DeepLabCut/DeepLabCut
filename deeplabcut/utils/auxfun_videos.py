@@ -21,8 +21,10 @@ Licensed under GNU Lesser General Public License v3.0
 
 import datetime
 import os
+import random
 import subprocess
 import warnings
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -643,3 +645,58 @@ def draw_bbox(video):
 
     plt.close(fig)
     return bbox
+
+
+def collect_video_paths(
+    data_path: str | Path | list[str | Path],
+    extensions: str | None = None,
+    shuffle: bool = False,
+) -> list[Path]:
+    """
+    Args:
+        data_path: Path or list of paths to folders containing videos, or individual
+            video files. Can be a mix of directories and files.
+        extensions: The types of videos to filter for (e.g., "mp4", ".mp4", ".avi", ".AVI", etc.).
+            - If set: filter all videos with the given extensions. Both for directory contents and supplied files.
+            - If ``None``, provided files are not filtered, but directory contents are filtered by ``SUPPORTED_VIDEOS``.
+        shuffle: Whether to shuffle the order of videos. If False, videos are returned
+            in sorted order for deterministic behavior.
+
+    Returns:
+        The paths of videos to analyze. Duplicate paths are removed.
+
+    Raises:
+        FileNotFoundError: If any path in data_path does not exist.
+    """
+    if isinstance(data_path, (str, Path)):
+        data_path = [data_path]
+
+    if extensions:
+        explicit_suffixes: set[str] | None = {f".{extensions.lstrip('.').lower()}"}
+    else:
+        explicit_suffixes = None
+    implicit_suffixes = {f".{ext.lower()}" for ext in SUPPORTED_VIDEOS}
+
+    videos: list[Path] = []
+    for path in map(Path, data_path):
+        if not path.exists():
+            raise FileNotFoundError(f"Could not find: {path}. Check access rights.")
+
+        if path.is_dir():
+            # Discriminate videos from other files; skip prior DLC outputs.
+            allowed = explicit_suffixes if explicit_suffixes else implicit_suffixes
+            videos.extend(
+                f
+                for f in path.iterdir()
+                if f.is_file() and f.suffix.lower() in allowed and "_labeled." not in f.name and "_full." not in f.name
+            )
+        elif path.is_file():
+            # Accept all caller-supplied files; only filter if extensions set.
+            if explicit_suffixes is None or path.suffix.lower() in explicit_suffixes:
+                videos.append(path)
+
+    # Resolve video paths and remove duplicates
+    unique_videos = list(dict.fromkeys(v.resolve() for v in videos))
+    if shuffle:
+        random.shuffle(unique_videos)
+    return unique_videos

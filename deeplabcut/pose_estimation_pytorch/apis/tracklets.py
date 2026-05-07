@@ -26,10 +26,10 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.core.inferenceutils import Assembly
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_scorer_name,
-    list_videos_in_folder,
     parse_snapshot_index_for_analysis,
 )
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
+from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 
 def convert_detections2tracklets(
@@ -124,7 +124,7 @@ def convert_detections2tracklets(
         modelprefix=modelprefix,
     )
 
-    videos = list_videos_in_folder(videos, videotype)
+    videos = collect_video_paths(videos, videotype)
     if len(videos) == 0:
         print(f"No videos were found in {videos}")
         return

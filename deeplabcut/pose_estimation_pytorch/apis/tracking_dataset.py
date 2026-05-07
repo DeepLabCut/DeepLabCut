@@ -24,6 +24,7 @@ from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.apis.videos import VideoIterator
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_tracking_pytorch import create_triplets_dataset
+from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 
 def build_feature_extraction_runner(
@@ -240,7 +241,7 @@ def create_tracking_dataset(
         modelprefix=modelprefix,
     )
 
-    videos = utils.list_videos_in_folder(videos, videotype)
+    videos = collect_video_paths(videos, videotype)
     for video_path in videos:
         print(f"Loading {video_path}")
         video = VideoIterator(video_path, cropping=cropping)

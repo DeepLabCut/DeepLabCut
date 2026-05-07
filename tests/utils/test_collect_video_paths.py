@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests for ``list_videos_in_folder``.
+"""Tests for ``collect_video_paths``.
 
 These tests pin down the rule:
 
@@ -25,8 +25,7 @@ from pathlib import Path
 
 import pytest
 
-from deeplabcut.pose_estimation_pytorch.apis.utils import list_videos_in_folder
-from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS
+from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS, collect_video_paths
 
 
 def _touch(path: Path) -> Path:
@@ -41,7 +40,7 @@ def test_keeps_suffixless_files_when_explicitly_listed(tmp_path):
     suffixed = _touch(tmp_path / "video.mp4")
     hashed = _touch(tmp_path / "abcd1234")
 
-    result = list_videos_in_folder([suffixed, hashed], video_type=None)
+    result = collect_video_paths([suffixed, hashed], video_type=None)
 
     assert {p.name for p in result} == {"video.mp4", "abcd1234"}
 
@@ -50,7 +49,7 @@ def test_accepts_path_objects_and_strings(tmp_path):
     suffixed = _touch(tmp_path / "video.mp4")
     hashed = _touch(tmp_path / "abcd1234")
 
-    result = list_videos_in_folder([str(suffixed), hashed], video_type=None)
+    result = collect_video_paths([str(suffixed), hashed], video_type=None)
 
     assert {p.name for p in result} == {"video.mp4", "abcd1234"}
 
@@ -59,7 +58,7 @@ def test_accepts_single_path_argument(tmp_path):
     """A single path (not wrapped in a list) is also valid input."""
     hashed = _touch(tmp_path / "abcd1234")
 
-    result = list_videos_in_folder(hashed, video_type=None)
+    result = collect_video_paths(hashed, video_type=None)
 
     assert [p.name for p in result] == ["abcd1234"]
 
@@ -69,7 +68,7 @@ def test_explicit_video_type_filters_listed_files(tmp_path):
     mp4 = _touch(tmp_path / "video.mp4")
     avi = _touch(tmp_path / "video.avi")
 
-    result = list_videos_in_folder([mp4, avi], video_type="mp4")
+    result = collect_video_paths([mp4, avi], video_type="mp4")
 
     assert [p.name for p in result] == ["video.mp4"]
 
@@ -78,7 +77,7 @@ def test_explicit_video_type_accepts_leading_dot(tmp_path):
     mp4 = _touch(tmp_path / "video.mp4")
     avi = _touch(tmp_path / "video.avi")
 
-    result = list_videos_in_folder([mp4, avi], video_type=".mp4")
+    result = collect_video_paths([mp4, avi], video_type=".mp4")
 
     assert [p.name for p in result] == ["video.mp4"]
 
@@ -90,7 +89,7 @@ def test_directory_enumeration_filters_by_supported_videos(tmp_path):
     _touch(tmp_path / "results.h5")
     _touch(tmp_path / "abcd1234")  # suffix-less file in a directory: not a video
 
-    result = list_videos_in_folder(tmp_path, video_type=None)
+    result = collect_video_paths(tmp_path, video_type=None)
 
     assert [p.name for p in result] == [mp4.name]
 
@@ -101,7 +100,7 @@ def test_directory_enumeration_skips_dlc_artifacts(tmp_path):
     _touch(tmp_path / "video_labeled.mp4")
     _touch(tmp_path / "video_full.mp4")
 
-    result = list_videos_in_folder(tmp_path, video_type=None)
+    result = collect_video_paths(tmp_path, video_type=None)
 
     assert [p.name for p in result] == [mp4.name]
 
@@ -115,7 +114,7 @@ def test_mixed_files_and_directories(tmp_path):
     explicit_mp4 = _touch(tmp_path / "explicit.mp4")
     explicit_hashed = _touch(tmp_path / "abcd1234")
 
-    result = list_videos_in_folder(
+    result = collect_video_paths(
         [folder, explicit_mp4, explicit_hashed],
         video_type=None,
     )
@@ -130,7 +129,7 @@ def test_mixed_files_and_directories(tmp_path):
 def test_duplicates_are_removed(tmp_path):
     mp4 = _touch(tmp_path / "video.mp4")
 
-    result = list_videos_in_folder([mp4, mp4, str(mp4)], video_type=None)
+    result = collect_video_paths([mp4, mp4, str(mp4)], video_type=None)
 
     assert len(result) == 1
     assert result[0].name == "video.mp4"
@@ -138,14 +137,14 @@ def test_duplicates_are_removed(tmp_path):
 
 def test_missing_path_raises(tmp_path):
     with pytest.raises(FileNotFoundError):
-        list_videos_in_folder([tmp_path / "does_not_exist.mp4"], video_type=None)
+        collect_video_paths([tmp_path / "does_not_exist.mp4"], video_type=None)
 
 
 @pytest.mark.parametrize("ext", SUPPORTED_VIDEOS)
 def test_each_supported_extension_picked_up_in_directory(tmp_path, ext):
     expected = _touch(tmp_path / f"clip.{ext}")
 
-    result = list_videos_in_folder(tmp_path, video_type=None)
+    result = collect_video_paths(tmp_path, video_type=None)
 
     assert [p.name for p in result] == [expected.name]
 
@@ -157,6 +156,6 @@ def test_sorted_by_default_when_not_shuffled(tmp_path):
 
     # The resolution order in the function is dict-insertion-stable; given a
     # sorted input list we expect a sorted output list.
-    result = list_videos_in_folder([c, a, b], video_type=None, shuffle=False)
+    result = collect_video_paths([c, a, b], video_type=None, shuffle=False)
 
     assert [p.name for p in result] == ["c.mp4", "a.mp4", "b.mp4"]

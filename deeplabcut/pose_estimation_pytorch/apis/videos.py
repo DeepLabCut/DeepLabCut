@@ -44,6 +44,7 @@ from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import VideoReader, auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 
 class VideoIterator(VideoReader):
@@ -540,7 +541,7 @@ def analyze_videos(
     print(f"Using scorer: {dlc_scorer}")
 
     # Reading video and init variables
-    videos = utils.list_videos_in_folder(videos, videotype, shuffle=in_random_order)
+    videos = collect_video_paths(videos, videotype, shuffle=in_random_order)
     h5_files_created = False  # Track if any .h5 files were created
 
     for video in videos:
