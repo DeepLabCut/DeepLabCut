@@ -156,8 +156,10 @@ jobs:
       - name: Install dependencies
         shell: bash -el {0}
         run: |
+          python -m ensurepip --upgrade
           python -m pip install --upgrade pip setuptools wheel
-          pip install --no-cache-dir -e ".${{ matrix.extras }}" --group dev
+          python -m pip install dependency-groups
+          python -m pip install --no-cache-dir -e ".${{ matrix.extras }}" --group dev
 
       - name: Run TensorFlow install smoke test
         shell: bash -el {0}
