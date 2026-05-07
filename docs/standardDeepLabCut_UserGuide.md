@@ -199,7 +199,7 @@ protocol.
 
 The project directory also contains the main configuration file called *config.yaml*. The *config.yaml* file contains
 many important parameters of the project. A complete list of parameters including their description can be found in
-Box1.
+{ref}`Box 1 <config-box1>`.
 
 The `create_new_project` step writes the following parameters to the configuration file:
 
@@ -214,11 +214,13 @@ The first three parameters should **not** be changed.
 The list of videos can be changed by adding new videos or manually removing videos.
 ```
 
-```{image} images/box1-single.png
+```{figure} images/box1-single.png
 ---
+name: config-box1
 alt: Box 1 - Single Animal Project Configuration File Glossary
 align: center
 ---
+Single Animal project configuration file glossary
 ```
 
 ##### API Docs
