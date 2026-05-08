@@ -21,7 +21,7 @@ from pathlib import Path
 
 import numpy as np
 
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 from .config import cfg
 from .datasets import make_dlc_dataloader
@@ -79,7 +79,7 @@ def train_tracking_transformer(
     destfolder=None,
 ):
     npy_list = []
-    videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    videos = collect_video_paths(videos, videotype)
     for video in videos:
         videofolder = str(Path(video).parents[0])
         if destfolder is None:

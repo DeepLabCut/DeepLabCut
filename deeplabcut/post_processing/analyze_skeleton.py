@@ -23,6 +23,7 @@ import pandas as pd
 from scipy.spatial import distance
 
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 
 # utility functions
@@ -261,7 +262,7 @@ def analyzeskeleton(
         **kwargs,
     )
 
-    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    Videos = collect_video_paths(videos, videotype)
     for video in Videos:
         print(f"Processing {video}")
         if destfolder is None:

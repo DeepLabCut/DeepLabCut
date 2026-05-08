@@ -48,7 +48,7 @@ from tqdm import trange
 
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
-from deeplabcut.utils.auxfun_videos import VideoWriter
+from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
 from deeplabcut.utils.video_processor import (
     VideoProcessorCV as vp,
 )  # used to CreateVideo
@@ -733,7 +733,7 @@ def create_labeled_video(
         skeleton_color = None
 
     start_path = os.getcwd()
-    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    Videos = collect_video_paths(videos, videotype)
 
     if not Videos:
         return []
@@ -1225,7 +1225,7 @@ def create_video_with_all_detections(
         **kwargs,
     )
 
-    videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    videos = collect_video_paths(videos, videotype)
     if not videos:
         return
 

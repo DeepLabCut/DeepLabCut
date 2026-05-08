@@ -35,7 +35,7 @@ from deeplabcut.core.trackingutils import (
     calc_iou,
 )
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
-from deeplabcut.utils.auxfun_videos import VideoWriter
+from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
 
 
 class Tracklet:
@@ -1076,7 +1076,7 @@ def stitch_tracklets(
     -------
     A TrackletStitcher object
     """
-    vids = deeplabcut.utils.auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    vids = collect_video_paths(videos, videotype)
     if not vids:
         print("No video(s) found. Please check your path!")
         return

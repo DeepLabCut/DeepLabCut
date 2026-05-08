@@ -40,6 +40,7 @@ from deeplabcut.pose_estimation_tensorflow.core.openvino.session import (
 )
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxfun_models, auxfun_multianimal, auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 ####################################################
 # Loading data, and defining model folder
@@ -198,7 +199,7 @@ def create_tracking_dataset(
     ##################################################
     # Looping over videos
     ##################################################
-    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    Videos = collect_video_paths(videos, videotype)
     if len(Videos) > 0:
         if "multi-animal" in dlc_cfg["dataset_type"]:
             for video in Videos:
@@ -594,7 +595,7 @@ def analyze_videos(
     ##################################################
     # Looping over videos
     ##################################################
-    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype, in_random_order)
+    Videos = collect_video_paths(videos, videotype, in_random_order)
     if len(Videos) > 0:
         if "multi-animal" in dlc_cfg["dataset_type"]:
             from deeplabcut.pose_estimation_tensorflow.predict_multianimal import (
@@ -1651,7 +1652,7 @@ def convert_detections2tracklets(
     ##################################################
     # Looping over videos
     ##################################################
-    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    Videos = collect_video_paths(videos, videotype)
     if len(Videos) > 0:
         for video in Videos:
             print("Processing... ", video)

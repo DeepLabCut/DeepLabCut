@@ -36,6 +36,7 @@ import pandas as pd
 
 from deeplabcut.core import crossvalutils
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
+from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 
 def Histogram(vector, color, bins, ax=None, linewidth=1.0):
@@ -288,7 +289,7 @@ def plot_trajectories(
     )  # automatically loads corresponding model (even training iteration based on snapshot index)
     bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, displayedbodyparts)
     individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(cfg, displayedindividuals)
-    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    Videos = collect_video_paths(videos, videotype)
     if not len(Videos):
         print("No videos found. Make sure you passed a list of videos and that *videotype* is right.")
         return

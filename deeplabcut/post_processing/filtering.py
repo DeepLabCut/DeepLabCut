@@ -19,6 +19,7 @@ from scipy.interpolate import CubicSpline
 
 from deeplabcut.refine_training_dataset.outlier_frames import FitSARIMAXModel
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 
 def columnwise_spline_interp(data, max_gap=0):
@@ -212,7 +213,7 @@ def filterpredictions(
         modelprefix=modelprefix,
         **kwargs,
     )
-    Videos = auxiliaryfunctions.get_list_of_videos(video, videotype)
+    Videos = collect_video_paths(video, videotype)
 
     video_to_filtered_df = {}
 

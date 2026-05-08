@@ -30,7 +30,7 @@ from deeplabcut.utils import (
     frameselectiontools,
     visualization,
 )
-from deeplabcut.utils.auxfun_videos import VideoWriter
+from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
 
 
 def find_outliers_in_raw_data(
@@ -402,7 +402,7 @@ def extract_outlier_frames(
         **kwargs,
     )
 
-    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    Videos = collect_video_paths(videos, videotype)
     if len(Videos) == 0:
         print("No suitable videos found in", videos)
 
