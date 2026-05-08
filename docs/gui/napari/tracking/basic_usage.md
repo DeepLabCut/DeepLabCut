@@ -1,3 +1,11 @@
+---
+deeplabcut:
+  last_metadata_updated: '2026-05-08'
+  last_verified: '2026-05-08'
+  verified_for: 3.0.0rc14
+  ignore: false
+---
+
 # Automated annotation with point tracking
 
 ```{seealso}
