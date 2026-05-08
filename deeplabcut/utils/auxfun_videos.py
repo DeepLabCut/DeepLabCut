@@ -651,16 +651,25 @@ def collect_video_paths(
     data_path: str | Path | list[str | Path],
     extensions: str | None = None,
     shuffle: bool = False,
+    exclude_patterns: list[str] | None = None,
 ) -> list[Path]:
     """
+    Collects video paths from a given set of data paths: directories, files or mix of both.
+    Optionally filters paths by extension and excludes patterns. Files and directories are treated differently:
+    - Files are not filtered by extension by default. Set ``extensions`` if needed, to filter also supplied files.
+    - Directory contents are filtered by ``SUPPORTED_VIDEOS`` by default. Specify custom ``extensions`` if needed.
+    - exclude patterns are ALWAYS applied for directory contents and supplied files. Set to `[]` to exclude no patterns.
+
     Args:
         data_path: Path or list of paths to folders containing videos, or individual
             video files. Can be a mix of directories and files.
-        extensions: The types of videos to filter for (e.g., "mp4", ".mp4", ".avi", ".AVI", etc.).
+        extensions: The types of videos to filter for (e.g., ".mp4", ".avi", etc.).
             - If set: filter all videos with the given extensions. Both for directory contents and supplied files.
             - If ``None``, provided files are not filtered, but directory contents are filtered by ``SUPPORTED_VIDEOS``.
         shuffle: Whether to shuffle the order of videos. If False, videos are returned
             in sorted order for deterministic behavior.
+        exclude_patterns: Patterns to exclude from the collection. Defaults to ["*_labeled.*", "*_full.*"].
+            Set to [] to exclude no patterns.
 
     Returns:
         The paths of videos to analyze. Duplicate paths are removed.
@@ -670,6 +679,9 @@ def collect_video_paths(
     """
     if isinstance(data_path, (str, Path)):
         data_path = [data_path]
+
+    if exclude_patterns is None:
+        exclude_patterns = ["*_labeled.*", "*_full.*"]
 
     if extensions:
         explicit_suffixes: set[str] | None = {f".{extensions.lstrip('.').lower()}"}
@@ -683,17 +695,20 @@ def collect_video_paths(
             raise FileNotFoundError(f"Could not find: {path}. Check access rights.")
 
         if path.is_dir():
-            # Discriminate videos from other files; skip prior DLC outputs.
+            # Discriminate videos from other files; skip excluded patterns (e.g. prior DLC outputs).
             allowed = explicit_suffixes if explicit_suffixes else implicit_suffixes
             videos.extend(
                 f
                 for f in path.iterdir()
-                if f.is_file() and f.suffix.lower() in allowed and "_labeled." not in f.name and "_full." not in f.name
+                if f.is_file()
+                and f.suffix.lower() in allowed
+                and not any(f.match(pattern) for pattern in exclude_patterns)
             )
         elif path.is_file():
-            # Accept all caller-supplied files; only filter if extensions set.
+            # Accept all caller-supplied files; ONLY filter extensions if set. ALWAYS filter exclude patterns.
             if explicit_suffixes is None or path.suffix.lower() in explicit_suffixes:
-                videos.append(path)
+                if not any(path.match(pattern) for pattern in exclude_patterns):
+                    videos.append(path)
 
     # Resolve video paths and remove duplicates
     unique_videos = list(dict.fromkeys(v.resolve() for v in videos))
