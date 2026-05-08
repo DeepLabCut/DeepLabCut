@@ -239,7 +239,7 @@ The toolbox provides a function **label_frames** which helps the user to easily 
 all the extracted frames using an interactive graphical user interface (GUI). The user
 should have already named the bodyparts to label (points of interest) in the
 project’s configuration file by providing a list. The following command invokes the
-napari-deeplabcut labelling GUI. Checkout the [napari-deeplabcut docs](napari-gui) for
+napari-deeplabcut labelling GUI. Checkout the [napari-deeplabcut docs](file:napari-gui-landing) for
 more information about the labelling workflow.
 
 ```python
@@ -267,7 +267,7 @@ labels to the bodyparts in the config.yaml file. Thereafter, the user can call t
 2.0.5+: then a box will pop up and ask the user if they wish to display all parts, or only add in the new labels.
 Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.
 
-For more information, checkout the [napari-deeplabcut docs](napari-gui) for
+For more information, checkout the [napari-deeplabcut docs](file:napari-gui-landing) for
 more information about the labelling workflow.
 
 ### (E) Check Annotated Frames
@@ -952,7 +952,7 @@ deeplabcut.refine_labels(config_path)
 ```
 This will launch a GUI where the user can refine the labels.
 
-Please refer to the [napari-deeplabcut docs](napari-gui) for more information about the labelling workflow.
+Please refer to the [napari-deeplabcut docs](file:napari-gui-landing) for more information about the labelling workflow.
 
 After correcting the labels for all the frames in each of the subdirectories, the users should merge the data set to
 create a new dataset. In this step the iteration parameter in the config.yaml file is automatically updated.
