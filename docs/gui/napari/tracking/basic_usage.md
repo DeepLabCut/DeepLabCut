@@ -121,6 +121,7 @@ Most tracking functions have keyboard shortcuts for easier usage.
 ```{tip}
 You can see shortcuts and their status using:
 > Help -> Show napari-dlc shortcuts
+
 This is only available if the Keypoint controls widget has been opened.
 ```
 
@@ -128,8 +129,8 @@ This is only available if the Keypoint controls widget has been opened.
 
 ```{tip}
 **Hiding layers, and being able to distinguish which results originate from which layer, is a very important notion for effectively using the plugin.**
-Layers can be toggled (visible/invisible) with `V` by default or by clicking the eye icon next to the layer name in the layer list.
-Grid mode (toggled with `Ctrl+G` by default) can also help visually separate different layers and their results.
+- Layers can be toggled (visible/invisible) with `V` by default or by clicking the eye icon next to the layer name in the layer list.
+- Grid mode (toggled with `Ctrl+G` by default) can also help visually separate different layers and their results.
 ```
 
 Each tracking run creates a **new Points layer**:
@@ -160,9 +161,10 @@ This is inherent to the tools, and as such we provide a simple way to delete inc
 
 1. Select a tracking-result Points layer.
 
-- This is always disabled for the original annotation layer.
+   - This is always disabled for the original annotation layer.
 
-2. Select one or more points on the **current frame**.
+1. Select one or more points on the **current frame**.
+
 1. Click **Delete selected points in future frames**.
 
 Only *exact identity matches* in future frames are removed.
@@ -196,19 +198,20 @@ There is **currently no undo option**. Any **deletion or merging action you perf
 ### Loading & annotating from scratch
 
 1. Create a DeepLabCut project and add the videos to label.
+
 1. Extract frames in the videos.
 
-- Currently implemented trackers prefer continuous video frames. We recommend avoiding large gaps in frame indices, which can make tracking more difficult.
+   - Currently implemented trackers prefer continuous video frames. We recommend avoiding large gaps in frame indices, which can make tracking more difficult.
 
-3. Go to the `labeled-data` folder, drag-and-drop a folder with extracted frames into napari.
+1. Go to the `labeled-data` folder, drag-and-drop a folder with extracted frames into napari.
 
-- This will create an Image layer with the frames
+   - This will create an Image layer with the frames
 
-4. Drag-and-drop the `config.yaml` file from your DLC project into napari.
+1. Drag-and-drop the `config.yaml` file from your DLC project into napari.
 
-- This will create an empty Points layer with the correct DLC metadata, ready for annotation.
+   - This will create an empty Points layer with the correct DLC metadata, ready for annotation.
 
-5. Annotate keypoints on a reference frame.
+1. Annotate keypoints on a reference frame.
 
 See {ref}`sec:tracking-workflow-guides`.
 
@@ -216,10 +219,10 @@ See {ref}`sec:tracking-workflow-guides`.
 
 1. Go to the `labeled-data` folder, drag-and-drop a folder with extracted frames into napari.
 
-- This will create an Image layer with the frames.
-- The existing annotation from the `CollectedData_*.h5` file will be loaded as a Points layer.
+   - This will create an Image layer with the frames.
+   - The existing annotation from the `CollectedData_*.h5` file will be loaded as a Points layer.
 
-2. Inspect existing annotations, select a reference frame, and refine keypoints if needed.
+1. Inspect existing annotations, select a reference frame, and refine keypoints if needed.
 
 See {ref}`sec:tracking-workflow-guides`.
 
@@ -233,10 +236,10 @@ See {ref}`sec:tracking-workflow-guides`.
 1. Inspect the tracking results
    - You can use "Show trajectories" in the Keypoint Controls dock widget to visualize the trajectories of tracked points across frames, which can help identify where tracking starts to drift.
    - The plot is filtered by selected keypoints, so you can select a subset of points to inspect their trajectories more closely.
-1. On the frame where tracking starts to drift:
-1. Select the problematic point(s) and click "Delete selected points in future frames" to remove incorrect tracking results while preserving the tracked point(s) on the current frame.
-1. Refine the keypoint(s) on the current frame to correct their position.
-1. Re-run tracking from that frame to propagate the correction forward/backward in time.
+1. If there are problematic points:
+   1. On the frame where tracking starts to drift, select the problematic point(s) and click "Delete selected points in future frames" to remove incorrect tracking results while preserving the tracked point(s) on the current frame.
+   1. Refine the keypoint(s) on the current frame to correct their position.
+   1. Re-run tracking from that frame to propagate the correction forward/backward in time.
 1. Merge the new tracking result back into the previous tracking layer (e.g. using "Overwrite existing target points")
 1. Repeat until satisfied with the tracking result, then merge into the original annotation layer using "Fill missing only" to preserve your original annotations and only add tracked keypoints in frames where you don't have manual annotations.
 1. **Remember to save the original Points annotation layer.** This is the only step that writes back to the DLC project folder directly and integrates with the `h5` file.
@@ -289,6 +292,9 @@ Please share any feedback or insights you have with us!
 
 ### Important considerations
 
+- As correcting labels can be time-consuming, annotating by hand may sometimes be faster than running tracking and heavily correcting its results.
+  - The benefits are mostly for long, continuous videos with many frames to annotate, where tracking can save time by propagating annotations across many frames at once.
+  - In very high variability/very challenging videos, annotating by hand may still be more efficient than running tracking and correcting its results, especially if you only have a few frames to annotate.
 - Manual curation is still essential for good tracking results, and the tracking models do not fully replace the need for manual annotation.
 - Ideally mixing manual annotations from challenging/distinct frames with tracking results from easier frames would yield the best results.
 - Be mindful of training set imbalance: if you flood your training set with easy frames that are well tracked, and only have a few hand-picked frames with rare or difficult poses, your model may not learn to generalize well to those challenging poses.
