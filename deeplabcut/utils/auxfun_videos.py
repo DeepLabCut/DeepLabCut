@@ -649,7 +649,7 @@ def draw_bbox(video):
 
 def collect_video_paths(
     data_path: str | Path | list[str | Path],
-    extensions: str | None = None,
+    extensions: str | list[str] | None = None,
     shuffle: bool = False,
     exclude_patterns: list[str] | None = None,
 ) -> list[Path]:
@@ -683,10 +683,18 @@ def collect_video_paths(
     if exclude_patterns is None:
         exclude_patterns = ["*_labeled.*", "*_full.*"]
 
-    if extensions:
-        explicit_suffixes: set[str] | None = {f".{extensions.lstrip('.').lower()}"}
-    else:
-        explicit_suffixes = None
+    def _coerce_extensions(extensions: str | None) -> set[str]:
+        """Flexible coercion of extensions to a set of suffixes"""
+        # NOTE @deruyter92: support legacy API, which mixed strings and iterables.
+        if isinstance(extensions, (list, tuple)):
+            explicit_suffixes = {f".{e.lstrip('.').lower()}" for e in extensions if e} or None
+        elif extensions:
+            explicit_suffixes = {f".{extensions.lstrip('.').lower()}"}
+        else:
+            explicit_suffixes = None
+        return explicit_suffixes
+
+    explicit_suffixes = _coerce_extensions(extensions)
     implicit_suffixes = {f".{ext.lower()}" for ext in SUPPORTED_VIDEOS}
 
     videos: list[Path] = []

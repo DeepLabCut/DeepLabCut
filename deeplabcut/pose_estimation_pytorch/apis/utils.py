@@ -302,7 +302,7 @@ def list_videos_in_folder(
 ) -> list[Path]:
     return collect_video_paths(
         data_path=data_path,
-        extensions=video_type,
+        extensions=video_type or None,
         shuffle=shuffle,
     )
 
