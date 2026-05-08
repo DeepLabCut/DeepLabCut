@@ -33,7 +33,7 @@ Before using tracking, you must:
   - The easiest is to drag-and-drop one of the `labeled-data` folders from your DLC project
 - Ensure you have a **Points** layer containing DeepLabCut-style keypoints.
     - If annotating from scratch, drag-and-drop the `config.yaml` file from your DLC project to create a new Points layer with the correct metadata.
-    - If loading an folder which already contains a `CollectedData_*.h5` file, the plugin will automatically create a Points layer with the existing annotations.
+    - If loading a folder which already contains a `CollectedData_*.h5` file, the plugin will automatically create a Points layer with the existing annotations.
 - Annotate at least one frame with valid keypoints.
 ```
 
@@ -231,7 +231,7 @@ See {ref}`sec:tracking-workflow-guides`.
 1. Go to the desired reference frame (with annotated keypoints visible).
 1. Select the forward/backward tracking range using the sliders, OR track to beginning/end of the video using the fast-forward buttons.
 1. Inspect the tracking results
-   - You can use "Show trajectories" in the Keypoint Controls layer to visualize the trajectories of tracked points across frames, which can help identify where tracking starts to drift.
+   - You can use "Show trajectories" in the Keypoint Controls dock widget to visualize the trajectories of tracked points across frames, which can help identify where tracking starts to drift.
    - The plot is filtered by selected keypoints, so you can select a subset of points to inspect their trajectories more closely.
 1. On the frame where tracking starts to drift:
 1. Select the problematic point(s) and click "Delete selected points in future frames" to remove incorrect tracking results while preserving the tracked point(s) on the current frame.
@@ -269,12 +269,12 @@ Check that:
 
 ### CoTracker3
 
-CoTracker is a fast transformer-based model that can track any point in a video. It brings to tracking some of the benefits of Optical Flow.
+> CoTracker is a fast transformer-based model that can track any point in a video. It brings to tracking some of the benefits of Optical Flow.
 
 [Link to GitHub repository](https://github.com/facebookresearch/co-tracker)
 [Citation information](https://github.com/facebookresearch/co-tracker#citing-cotracker)
 
-```{admonition} Emprical observations
+```{admonition} Empirical observations
 ---
 class: tip
 ---
@@ -287,12 +287,18 @@ Please share any feedback or insights you have with us!
 
 ## Limitations and future directions
 
-- We currently only provide CoTracker3 as a model. It is however easy to add new models to the plugin via the registry; feel free to ask if you would like to contribute a model or see a specific model added!
+### Important considerations
+
+- Manual curation is still essential for good tracking results, and the tracking models do not fully replace the need for manual annotation.
+- Ideally mixing manual annotations from challenging/distinct frames with tracking results from easier frames would yield the best results.
+- Be mindful of training set imbalance: if you flood your training set with easy frames that are well tracked, and only have a few hand-picked frames with rare or difficult poses, your model may not learn to generalize well to those challenging poses.
+
+#### Future features
+
+- We currently only provide CoTracker3 as a model. It is however relatively easy to add new models to the plugin via the registry; feel free to ask if you would like to contribute a model or see a specific model added!
 - Saving tracking layers as CSV is supported, but they will not be loaded correctly as tracking results in the plugin. We currently recommend using the "Merge tracked points" workflow to save results back into the original annotation layer, which is then saved to the DLC project folder and can be loaded in future sessions.
 - If there is demand, we may add support for saving/loading tracking layers as separate files in the DLC project folder.
-- Manual curation is still essential for good tracking results, and the tracking models do not fully replace the need for manual annotation.
-- Ideally mixing manual annotations from challenging/distincts frames with tracking results from easier frames would yield the best results.
-- Be mindful of training set imbalance: if you flood your training set with easy frames that are well tracked, and only have few hand-picked frames with rare or difficult poses, your model may not learn to generalize well to those challenging poses.
+- If you have ideas for specific refinement tools, shortcuts or other features that would be useful to add to the plugin, please share them with us!
 
 ## Getting help and providing feedback
 
