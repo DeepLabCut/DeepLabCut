@@ -484,6 +484,7 @@ def filter_files_by_patterns(
     return matching_files
 
 
+@deprecated(replacement="deeplabcut.collect_video_paths", since="3.0.0")
 def get_video_list(filename, videopath, videtype):
     """Get list of videos in a path (if filetype == all), otherwise just a specific
     file."""
