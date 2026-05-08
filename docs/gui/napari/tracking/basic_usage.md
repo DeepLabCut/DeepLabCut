@@ -14,7 +14,7 @@ For basic usage of the annotation plugin, see {ref}`file:napari-dlc-basic-usage`
 ```
 
 ```{note}
-We use third-party, open-source models for point tracking, and we thank the original authors and developers.
+The plugin relies on third-party open-source tracking models.
 Please see {ref}`sec:napari-tracking-models-attribution` at the end of this page for information about the tracking models used in the plugin and their citation information.
 ```
 
@@ -94,7 +94,7 @@ Available models may depend on your installation and optional dependencies.
 | **Keypoints** | Points layer containing manually annotated DLC keypoints |
 | **Video**     | Image layer containing the video to track                |
 
-The widget automatically updates when layers are added, removed, or reordered.
+The widget automatically updates based on layer changes.
 
 ### 3. Reference frame selection
 
@@ -136,7 +136,7 @@ Changing the current frame updates the valid forward/backward range automaticall
 | ■      | Stop tracking                 |
 
 ```{note}
-Tracking runs in a background worker thread. You can continue navigating the viewer and editing layers while it runs, and results will appear as a new layer once tracking is complete.
+Tracking runs in a background worker thread. You can continue navigating the viewer and editing layers while it runs; results will appear as a new layer once tracking is complete.
 ```
 
 ## Keyboard shortcuts
@@ -153,7 +153,7 @@ This is only available if the Keypoint controls widget has been opened.
 ## Tracking results
 
 ```{tip}
-**Hiding layers, and being able to distinguish which results originate from which layer, is a very important notion for effectively using the plugin.**
+**Being able to tell which results originate from which layer is very important for effectively using the plugin.**
 - Layers can be toggled (visible/invisible) with `V` by default or by clicking the eye icon next to the layer name in the layer list.
 - Grid mode (toggled with `Ctrl+G` by default) can also help visually separate different layers and their results.
 ```
@@ -186,7 +186,7 @@ There is **currently no undo option**. Any **deletion or merging action you perf
 ### Deleting tracked points in future frames
 
 **Tracking results are often satisfactory for a certain number of frames, then start to drift or produce errors.**
-This is inherent to the tools, so the plugin provides a simple way to delete incorrect tracking results in future frames while preserving the original annotations on the reference frame.
+Because of this sometimes unavoidable drift, we provide a way to delete future tracked points while keeping the current frame intact.
 
 1. Select a tracking-result Points layer.
    - This action is always disabled for the original annotation layer.
@@ -204,7 +204,7 @@ Points on the current frame are preserved so you can correct them and re-run tra
 The **Merge tracked points** workflow allows you to:
 
 - Combine multiple tracking passes
-- Resolve overlaps or conflicts
+- Decide how to handle overlaps or conflicts
 - Produce a clean final annotation layer
 
 This is especially useful when tracking was run from multiple reference frames.
@@ -316,7 +316,7 @@ Please share any feedback or insights you have with us!
   - The benefits are mostly for long, continuous videos with many frames to annotate, where tracking can save time by propagating annotations across many frames at once.
   - In very high-variability or very challenging videos, annotating by hand may still be more efficient than running tracking and correcting its results, especially if you only have a few frames to annotate.
 - Manual curation is still essential for good tracking results, and the tracking models do not fully replace the need for manual annotation.
-- Ideally, mixing manual annotations from challenging or distinct frames with tracking results from easier frames yields the best results.
+- In practice, a mix of hand-labeled hard frames and tracked easy frames should often works best.
 - Be mindful of training set imbalance: if you flood your training set with easy frames that are well tracked, and only have a few hand-picked frames with rare or difficult poses, your model may not learn to generalize well to those challenging poses.
 
 #### Future features
