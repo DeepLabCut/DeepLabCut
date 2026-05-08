@@ -294,7 +294,7 @@ def get_scorer_name(
     return f"DLC_{name}_{task}{date}shuffle{shuffle}_{snapshot_uid}"
 
 
-@deprecated("deeplabcut.utils.auxfun_videos.collect_video_paths", since="3.0.0")
+@deprecated(replacement="deeplabcut.collect_video_paths", since="3.0.0")
 def list_videos_in_folder(
     data_path: str | Path | list[str | Path],
     video_type: str | None = None,
