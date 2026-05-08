@@ -165,4 +165,5 @@ markers = [
   "fmpose3d: tests for fmpose3d integration",
   "unittest: fast unit-level tests",
   "functional: functional/integration-style tests",
+  "deprecated: tests for deprecated APIs kept for backward-compatibility",
 ]
