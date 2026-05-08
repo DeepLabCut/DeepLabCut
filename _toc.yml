@@ -33,6 +33,7 @@ parts:
         sections:
           - file: docs/gui/napari/basic_usage
           - file: docs/gui/napari/advanced_usage
+          - file: docs/gui/napari/tracking/basic_usage
       - file: docs/dlc-live/dlc-live-gui/index
         sections:
           - file: docs/dlc-live/dlc-live-gui/quickstart/install
