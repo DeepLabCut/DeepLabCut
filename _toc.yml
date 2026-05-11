@@ -74,6 +74,7 @@ parts:
       - file: docs/ModelZoo
         sections:
           - file: docs/recipes/UsingModelZooPupil
+      - file: docs/dlc-live/deeplabcutlive
       - file: docs/pytorch/index
         sections:
           - file: docs/pytorch/user_guide.md
@@ -81,7 +82,6 @@ parts:
           - file: docs/pytorch/architectures.md
           - file: docs/pytorch/Benchmarking_shuffle_guide
       - file: docs/benchmark
-      - file: docs/dlc-live/deeplabcutlive
       - file: docs/recipes/TechHardware
 
   - caption: Additional guides (Recipes)
@@ -101,7 +101,7 @@ parts:
           - file: docs/recipes/flip_and_rotate
           - file: docs/recipes/pose_cfg_file_breakdown
           - file: docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook
-          - file: docs/course
+          # - file: docs/course
 
   - caption: Project & Community
     chapters:
