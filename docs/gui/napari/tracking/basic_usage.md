@@ -30,6 +30,11 @@ The **Tracking Controls** widget is designed to help automate DeepLabCut annotat
 
 ## Requirements
 
+```{tip}
+We recommend **having a GPU available for tracking**, as it can be computationally intensive and slow on CPU.
+Expect longer processing times on CPU, especially for longer videos or larger tracking ranges.
+```
+
 ### In napari
 
 ```{important}
@@ -160,8 +165,8 @@ This is only available if the Keypoint controls widget has been opened.
 
 Each tracking run creates a **new Points layer**:
 
-- Named automatically (`[Tracking vXX] Ref. layer name - tT - Tracker name`)
-  - `XX` refers to the iteration number (if multiple tracking runs are performed from the same reference frame)
+- Named automatically (`[Tracking v<XX>] Ref. layer name - t<T> - Tracker name`)
+  - `XX` refers to the iteration number (if multiple tracking runs are performed from the same reference layer and model)
   - `T` refers to the reference frame index used to generate the tracking result
 - Visually distinct from manual annotations:
   - Cross symbol
