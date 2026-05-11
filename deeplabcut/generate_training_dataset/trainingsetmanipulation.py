@@ -728,15 +728,46 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
         outer[0, 0] = array.astype("int64")
         return outer
 
+    # Keep only x/y columns if likelihood is present
+    if isinstance(df.columns, pd.MultiIndex):
+        coord_level = "coords" if "coords" in df.columns.names else df.columns.names[-1]
+        coord_values = df.columns.get_level_values(coord_level)
+
+        has_x = "x" in coord_values
+        has_y = "y" in coord_values
+        has_likelihood = "likelihood" in coord_values
+
+        if has_x and has_y:
+            if has_likelihood:
+                logging.info(
+                    "Detected likelihood columns in training data; dropping them before formatting training dataset."
+                )
+            df = df.loc[:, coord_values.isin(["x", "y"])]
+        else:
+            raise ValueError(
+                f"Training data must contain x/y coordinates. Found coordinate labels: {list(pd.unique(coord_values))}"
+            )
+
     for i in train_inds:
         data = dict()
         filename = df.index[i]
         data["image"] = filename
         img_shape = read_image_shape_fast(os.path.join(project_path, *filename))
         data["size"] = img_shape
-        temp = df.iloc[i].values.reshape(-1, 2)
+
+        row = df.iloc[i].values
+
+        if row.size % 2 != 0:
+            raise ValueError(
+                "Training data row does not contain an even number of coordinate values "
+                f"after dropping non-coordinate columns. Row size={row.size}, "
+                f"image={filename}"
+            )
+
+        temp = row.reshape(-1, 2)
         joints = np.c_[range(nbodyparts), temp]
         joints = joints[~np.isnan(joints).any(axis=1)].astype(int)
+
         # Check that points lie within the image
         inside = np.logical_and(
             np.logical_and(joints[:, 1] < img_shape[2], joints[:, 1] > 0),
@@ -744,6 +775,7 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
         )
         if not all(inside):
             joints = joints[inside]
+
         if joints.size:  # Exclude images without labels
             data["joints"] = joints
             train_data.append(data)
@@ -754,6 +786,7 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
                     to_matlab_cell(data["joints"]),
                 )
             )
+
     matlab_data = np.asarray(matlab_data, dtype=[("image", "O"), ("size", "O"), ("joints", "O")])
     return train_data, matlab_data
 
