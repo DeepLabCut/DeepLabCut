@@ -9,7 +9,7 @@ deeplabcut:
 
 (file:napari-dlc-advanced-features)=
 
-# napari-DLC - Advanced features
+# Advanced features
 
 napari-DLC provides several additional features to enhance the annotation experience.
 
