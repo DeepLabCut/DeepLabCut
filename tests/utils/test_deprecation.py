@@ -11,8 +11,13 @@
 import warnings
 
 import pytest
+from packaging.version import Version
 
-from deeplabcut.utils.deprecation import deprecated, renamed_parameter
+from deeplabcut.utils.deprecation import (
+    DLCDeprecationWarning,
+    deprecated,
+    renamed_parameter,
+)
 
 # ---------------------------------------------------------------------------
 # @deprecated
@@ -24,7 +29,7 @@ def test_deprecated_emits_deprecation_warning():
     def old_fn():
         return 42
 
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DLCDeprecationWarning):
         result = old_fn()
 
     assert result == 42
@@ -35,7 +40,7 @@ def test_deprecated_warning_contains_function_name():
     def my_old_function():
         pass
 
-    with pytest.warns(DeprecationWarning, match="my_old_function"):
+    with pytest.warns(DLCDeprecationWarning, match="my_old_function"):
         my_old_function()
 
 
@@ -44,7 +49,7 @@ def test_deprecated_warning_contains_replacement():
     def old_fn():
         pass
 
-    with pytest.warns(DeprecationWarning, match="new_module.new_fn"):
+    with pytest.warns(DLCDeprecationWarning, match="new_module.new_fn"):
         old_fn()
 
 
@@ -53,7 +58,7 @@ def test_deprecated_warning_contains_since_and_removed_in():
     def old_fn():
         pass
 
-    with pytest.warns(DeprecationWarning, match="3.1") as record:
+    with pytest.warns(DLCDeprecationWarning, match="3.1") as record:
         old_fn()
 
     assert "4.0" in str(record[0].message)
@@ -64,7 +69,7 @@ def test_deprecated_preserves_return_value_and_args():
     def add(a, b):
         return a + b
 
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DLCDeprecationWarning):
         assert add(2, 3) == 5
 
 
@@ -76,6 +81,44 @@ def test_deprecated_preserves_name_and_docstring():
     assert documented_fn.__name__ == "documented_fn"
     assert "Original docstring." in documented_fn.__doc__
     assert "Deprecated." in documented_fn.__doc__
+    assert "new_fn" in documented_fn.__doc__
+
+
+def test_deprecated_attaches_metadata():
+    @deprecated(replacement="new_fn", since="3.1", removed_in="4.0")
+    def old_fn():
+        pass
+
+    info = old_fn.__deprecated_info__
+    assert info.kind == "callable"
+    assert info.target.endswith("old_fn")
+    assert info.replacement == "new_fn"
+    assert info.since == Version("3.1")
+    assert info.removed_in == Version("4.0")
+
+
+def test_deprecated_invalid_since_raises():
+    with pytest.raises(ValueError, match="Invalid version"):
+
+        @deprecated(since="not-a-version")
+        def old_fn():
+            pass
+
+
+def test_deprecated_invalid_removed_in_raises():
+    with pytest.raises(ValueError, match="Invalid version"):
+
+        @deprecated(removed_in="definitely-not-a-version")
+        def old_fn():
+            pass
+
+
+def test_deprecated_removed_in_must_be_greater_than_since():
+    with pytest.raises(ValueError, match="must be greater than"):
+
+        @deprecated(since="4.0", removed_in="4.0")
+        def old_fn():
+            pass
 
 
 # ---------------------------------------------------------------------------
@@ -88,7 +131,7 @@ def test_renamed_parameter_old_name_emits_warning():
     def fn(shuffle=False):
         return shuffle
 
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DLCDeprecationWarning):
         fn(in_random_order=True)
 
 
@@ -97,7 +140,7 @@ def test_renamed_parameter_old_name_is_forwarded():
     def fn(shuffle=False):
         return shuffle
 
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(DLCDeprecationWarning):
         result = fn(in_random_order=True)
 
     assert result is True
@@ -110,7 +153,7 @@ def test_renamed_parameter_new_name_no_warning():
 
     # No warning should be emitted when using the current name.
     with warnings.catch_warnings():
-        warnings.simplefilter("error", DeprecationWarning)
+        warnings.simplefilter("error", DLCDeprecationWarning)
         result = fn(shuffle=True)
 
     assert result is True
@@ -121,7 +164,7 @@ def test_renamed_parameter_warning_contains_names():
     def fn(extensions=None):
         return extensions
 
-    with pytest.warns(DeprecationWarning, match="videotype") as record:
+    with pytest.warns(DLCDeprecationWarning, match="videotype") as record:
         fn(videotype="mp4")
 
     message = str(record[0].message)
@@ -135,3 +178,36 @@ def test_renamed_parameter_preserves_name():
         """Docstring."""
 
     assert my_fn.__name__ == "my_fn"
+
+
+def test_renamed_parameter_old_and_new_together_raise():
+    @renamed_parameter(old="videotype", new="extensions")
+    def fn(extensions=None):
+        return extensions
+
+    with pytest.raises(TypeError, match="both 'videotype' and 'extensions'"):
+        fn(videotype="mp4", extensions="avi")
+
+
+def test_renamed_parameter_attaches_metadata():
+    @renamed_parameter(old="videotype", new="extensions", since="3.2")
+    def fn(extensions=None):
+        return extensions
+
+    params = fn.__deprecated_params__
+    assert len(params) == 1
+
+    info = params[0]
+    assert info.kind == "parameter"
+    assert info.target.endswith("fn")
+    assert info.old_parameter == "videotype"
+    assert info.new_parameter == "extensions"
+    assert info.since == Version("3.2")
+
+
+def test_renamed_parameter_invalid_since_raises():
+    with pytest.raises(ValueError, match="Invalid version"):
+
+        @renamed_parameter(old="videotype", new="extensions", since="invalid-version")
+        def fn(extensions=None):
+            return extensions
