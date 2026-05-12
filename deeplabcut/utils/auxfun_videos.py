@@ -24,6 +24,7 @@ import os
 import random
 import subprocess
 import warnings
+from collections.abc import Sequence
 from pathlib import Path
 
 import cv2
@@ -650,7 +651,7 @@ def draw_bbox(video):
 
 def collect_video_paths(
     data_path: str | Path | list[str | Path],
-    extensions: str | list[str] | None = None,
+    extensions: str | Sequence[str] | None = None,
     shuffle: bool = False,
     exclude_patterns: Sequence[str] = DEFAULT_EXCLUDE_PATTERNS,
 ) -> list[Path]:
@@ -666,9 +667,11 @@ def collect_video_paths(
     Args:
         data_path: Path or list of paths to folders containing videos, or individual
             video files. Can be a mix of directories and files.
-        extensions: The types of videos to filter for (e.g., ".mp4", ".avi", etc.).
-            - If set: filter all videos with the given extensions. Both for directory contents and supplied files.
+        extensions: The types of videos to select, by filtering the extension (e.g., ".mp4", ".avi", etc.).
+            - If set: select all videos with the given extensions. Both for directory contents and supplied files.
             - If ``None``, provided files are not filtered, but directory contents are filtered by ``SUPPORTED_VIDEOS``.
+            - An empty str "" is equivalent to None (for backwards compatibility).
+            - An empty sequence: select only files without extension.
         shuffle: Whether to shuffle the order of videos. If False, videos are returned
             in sorted order for deterministic behavior.
         exclude_patterns: Patterns to exclude from the collection. Defaults to DEFAULT_EXCLUDE_PATTERNS.
@@ -683,17 +686,18 @@ def collect_video_paths(
     if isinstance(data_path, (str, Path)):
         data_path = [data_path]
 
-    if exclude_patterns is None:
-        exclude_patterns = ["*_labeled.*", "*_full.*"]
-
-    def _coerce_extensions(extensions: str | None) -> set[str]:
+    def _coerce_extensions(extensions: str | Sequence[str] | None) -> set[str] | None:
         """Flexible coercion of extensions to a set of suffixes"""
         # NOTE @deruyter92: support legacy API, which mixed strings and iterables.
-        if isinstance(extensions, (list, tuple)):
-            explicit_suffixes = {f".{e.lstrip('.').lower()}" for e in extensions if e} or None
-        elif extensions:
+        if isinstance(extensions, (Sequence, set)):
+            explicit_suffixes = {f".{e.lstrip('.').lower()}" for e in extensions}
+        elif isinstance(extensions, str):
             explicit_suffixes = {f".{extensions.lstrip('.').lower()}"}
         else:
+            explicit_suffixes = None
+
+        # Normalize empty string to None
+        if explicit_suffixes == {""}:
             explicit_suffixes = None
         return explicit_suffixes
 
