@@ -3,6 +3,9 @@ deeplabcut:
   last_content_updated: '2025-02-28'
   last_metadata_updated: '2026-03-06'
   ignore: false
+  visibility: online
+  status: viable
+  recommendation: keep
 ---
 # Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial
 

@@ -3,6 +3,10 @@ deeplabcut:
   last_content_updated: '2025-06-30'
   last_metadata_updated: '2026-03-06'
   ignore: false
+  visibility: online
+  status: viable
+  recommendation: update
+  notes: "Useful content, a note is that this should be better integrated with the napari plugin docs, making the workflow transition from DLC GUI -> napari viewer -> back to DLC GUI more seamless so as to confuse users less. This will need a bit of restructuring, as napari-DLC docs are also standalone from the main GUI. Finding a good linking strategy would help. Perhaps breaking napari-DLC docs into install/setup, basic usage, *labeling workflow* (new) and advanced usage would allow to do this cleanly, as it would separate the standalone plugin operation from the DLC-GUI integrated workflow, yet retaining a single source for napari-DLC labeling workflow."
 ---
 (labeling)=
 # Labeling GUI

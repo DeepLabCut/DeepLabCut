@@ -3,6 +3,10 @@ deeplabcut:
   last_content_updated: '2026-02-10'
   last_metadata_updated: '2026-04-09'
   ignore: false
+  visibility: online
+  status: outdated
+  recommendation: archive
+  notes: Being updated in a separate PR (#3280)
   last_verified: '2026-04-09'
   verified_for: 3.0.0rc14
 ---

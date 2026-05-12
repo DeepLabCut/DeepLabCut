@@ -3,6 +3,10 @@ deeplabcut:
   last_content_updated: '2025-06-30'
   last_metadata_updated: '2026-03-06'
   ignore: false
+  visibility: online
+  status: review_needed
+  recommendation: update
+  notes: This is a crucial piece of the doc, but it is rather long and verbose. Recommend breaking it up into smaller sections, and adding more visuals (e.g. screenshots of the GUI, etc.) to make it more engaging and easier to read. Also, consider adding a table of contents at the beginning for easier navigation.
 ---
 (single-animal-userguide)=
 # DeepLabCut User Guide (for single animal projects)

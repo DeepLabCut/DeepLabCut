@@ -3,6 +3,10 @@ deeplabcut:
   last_content_updated: '2024-01-17'
   last_metadata_updated: '2026-03-06'
   ignore: false
+  visibility: orphaned
+  status: viable
+  recommendation: move
+  notes: "Unclear why this is unlisted in TOC; recommend updating and moving to PyTorch section."
 ---
 # DeepLabCut: PyTorch API
 
