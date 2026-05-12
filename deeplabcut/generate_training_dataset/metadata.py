@@ -421,8 +421,14 @@ def get_shuffle_engine(
     shuffle_metadata = None
     try:
         shuffle_metadata = metadata.get(trainingsetindex, shuffle)
-    except ValueError:
-        pass
+    except ValueError as e:
+        logging.warning(
+            "Could not read shuffle metadata for trainingsetindex=%s, shuffle=%s: %s. "
+            "Falling back to detecting the engine from model folders.",
+            trainingsetindex,
+            shuffle,
+            e,
+        )
 
     if shuffle_metadata is not None:
         return shuffle_metadata.engine
