@@ -6,25 +6,26 @@ deeplabcut:
   visibility: orphaned
   status: viable
   recommendation: move
-  notes: "Unclear why this is unlisted in TOC; recommend updating and moving to PyTorch section."
+  notes: Unclear why this is unlisted in TOC; recommend updating and moving to PyTorch section.
 ---
+
 # DeepLabCut: PyTorch API
 
 ## Modules
 
 - [data](https://github.com/nastya236/DLCdev/blob/69005057eeac3c1492712863303f8268cee776e6/deeplabcut/pose_estimation_pytorch/data/project.py#L7):
-The `deeplabcut.pose_estimations_pytorch.data` package contains all code for pytorch
-dataset creation and test/train splitting.
+  The `deeplabcut.pose_estimations_pytorch.data` package contains all code for pytorch
+  dataset creation and test/train splitting.
   - `Project` class provides train and test splitting and converts dataset to required
-  format. For instance, to [COCO]() format.
+    format. For instance, to [COCO](<>) format.
   - `PoseTrainDataset` class is a [torch.utils.Dataset](https://pytorch.org/docs/stable/data.html) class, which converts raw
-  images and keypoints to a tensor dataset for training and evaluation.
+    images and keypoints to a tensor dataset for training and evaluation.
 - [models](https://github.com/nastya236/DLCdev/blob/69005057eeac3c1492712863303f8268cee776e6/deeplabcut/pose_estimation_pytorch/data/models):
-The `deeplabcut.pose_estimations_pytorch.models` package contains all related to
-building a model with `backbone`, `neck` (optional) and `head`.
+  The `deeplabcut.pose_estimations_pytorch.models` package contains all related to
+  building a model with `backbone`, `neck` (optional) and `head`.
 - [train_module](https://github.com/nastya236/DLCdev/blob/69005057eeac3c1492712863303f8268cee776e6/deeplabcut/pose_estimation_pytorch/data/models):
-The `deeplabcut.pose_estimations_pytorch.train_module` contains all classes for model
-training and validation.
+  The `deeplabcut.pose_estimations_pytorch.train_module` contains all classes for model
+  training and validation.
 
 ## API
 
@@ -38,6 +39,7 @@ PyTorch or Tensorflow project should be created.
 ### Creating a Training Dataset
 
 To create a training dataset for a DeepLabCut PyTorch model, simply call:
+
 ```python
 import deeplabcut
 deeplabcut.create_training_dataset(
@@ -57,6 +59,7 @@ Proceedings of the IEEE/CVF conference on computer vision and pattern recognitio
 2021.) and Tokenpose (Li, Yanjie, et al. "Tokenpose: Learning keypoint tokens for human
 pose estimation." Proceedings of the IEEE/CVF International conference on computer
 vision. 2021.). The choices of `net_type` that will create PyTorch training sets are:
+
 - `"dekr_16"`
 - `"dekr_32"`
 - `"dekr_48"`
@@ -68,14 +71,17 @@ Note that Tokenpose models cannot currently be used with projects that contain u
 keypoints.
 
 ### Training the network
+
 Training a PyTorch model is done in a very similar manner as a tensorflow model, though
 currently the PyTorch API needs to be called directly:
+
 ```python
 import deeplabcut.pose_estimation_pytorch.apis as api
 api.train_network(config_path, shuffle=1, trainingsetindex=0)
 ```
 
 **Parameters**
+
 ```
 config : path to the yaml config file of the project
 shuffle : index of the shuffle we want to train on
@@ -105,13 +111,16 @@ detector_path: if resuming training of a top down model, used to specify the det
 ```
 
 ### Evaluating the network
+
 As for training, the main difference is the need to call the API directly.
+
 ```python
 import deeplabcut.pose_estimation_pytorch.apis as api
 api.evaluate_network(config_path, shuffle=1, trainingsetindex="all")
 ```
 
 **Parameters**
+
 ```
 config: path to the project's config file
 shuffles: Iterable of integers specifying the shuffle indices to evaluate.
@@ -137,6 +146,7 @@ batch_size: the batch size to use for evaluation
 ```
 
 ### Analyzing novel videos
+
 One big difference between the PyTorch and Tensorflow implementations comes in the way
 animal assembly happens (for multi-animal models). While in Tensorflow, assembly was a
 separate step that needed to be done from the keypoints, in the PyTorch version it's
@@ -144,6 +154,7 @@ integrated directly into the models. From an API standpoint, that does not chang
 
 Again, the PyTorch API needs to be invoked directly (it also has the `auto_track`
 option).
+
 ```python
 import deeplabcut.pose_estimation_pytorch.apis as api
 api.analyze_videos(config_path, ["/fullpath/project/videos/test.mp4"], videotype=".mp4")
@@ -151,6 +162,7 @@ api.analyze_videos(config_path, ["/fullpath/project/videos/test.mp4"], videotype
 
 The PyTorch detections need to be converted to tracklets using the PyTorch API, but then
 the original tracklet stitching can be used.
+
 ```python
 import deeplabcut
 import deeplabcut.pose_estimation_pytorch.apis as api
@@ -167,6 +179,7 @@ deeplabcut.stitch_tracklets(
 ```
 
 Creating labeled videos can then be called in exactly the same way as before.
+
 ```python
 import deeplabcut
 deeplabcut.create_labeled_video(

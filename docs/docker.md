@@ -56,7 +56,7 @@ $ deeplabcut-docker bash
 If you have GPUs on your machine and want to use them to train models, you
 need to pass the `--gpus all` argument to `deeplabcut-docker`:
 
-``` bash
+```bash
 $ deeplabcut-docker bash --gpus all
 ```
 ````
