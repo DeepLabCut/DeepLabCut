@@ -691,7 +691,7 @@ def collect_video_paths(
         # NOTE @deruyter92: support legacy API, which mixed strings and iterables.
         if isinstance(extensions, (list, tuple, set)):
             explicit_suffixes = {f".{e.lstrip('.').lower()}" for e in extensions}
-        elif isinstance(extensions, str):
+        elif isinstance(extensions, str) and not extensions == "":
             explicit_suffixes = {f".{extensions.lstrip('.').lower()}"}
         else:
             explicit_suffixes = None
