@@ -158,4 +158,4 @@ def test_sorted_by_default_when_not_shuffled(tmp_path):
     # sorted input list we expect a sorted output list.
     result = collect_video_paths([c, a, b], extensions=None, shuffle=False)
 
-    assert [p.name for p in result] == ["c.mp4", "a.mp4", "b.mp4"]
+    assert [p.name for p in result] == ["a.mp4", "b.mp4", "c.mp4"]
