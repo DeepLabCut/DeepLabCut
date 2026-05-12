@@ -8,6 +8,8 @@ deeplabcut:
   recommendation: keep
 ---
 
+(file:multi-animal-quick-start)=
+
 # Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial
 
 ## GUI:
