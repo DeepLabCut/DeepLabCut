@@ -654,7 +654,9 @@ def collect_video_paths(
     exclude_patterns: list[str] | None = None,
 ) -> list[Path]:
     """
-    Collects video paths from a given set of data paths: directories, files or mix of both.
+    Collects video paths from a given set of data paths: directories, files or mix of both. Directories are
+    only scanned single level, non-recursively.
+
     Optionally filters paths by extension and excludes patterns. Files and directories are treated differently:
     - Files are not filtered by extension by default. Set ``extensions`` if needed, to filter also supplied files.
     - Directory contents are filtered by ``SUPPORTED_VIDEOS`` by default. Specify custom ``extensions`` if needed.
