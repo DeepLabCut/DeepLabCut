@@ -20,6 +20,10 @@ deeplabcut:
 ### Creating a training dataset
 
 Before training your model, the first step is to assemble your training dataset.
+This involves:
+
+- Splitting labeled data into training and evaluation subsets
+- Creating each shuffle folder with the model configuration ready for training.
 
 **Create Training Dataset:** Move to the corresponding tab and click **`Create Training Dataset`**. For starters, the default settings will do just fine. While there are more powerful models and data augmentations you might want to consider, you can trust that for most projects the defaults are a good place to start.
 
