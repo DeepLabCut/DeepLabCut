@@ -9,9 +9,14 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import numpy as np
-import tensorflow as tf
+import pytest
 
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal
+
+tf = pytest.importorskip(
+    "tensorflow",
+    reason="TensorFlow not installed (use a project extra such as .[tf])",
+)
 
 RADIUS = 5
 THRESHOLD = 0.01
