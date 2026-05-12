@@ -9,6 +9,8 @@ deeplabcut:
   notes: This is a bit stuck between minimal guide and quick start, as the lack of explanations makes it more into a catalogue of commands (which is an API docs responsibility), and a proper quick start guide that gives users a proper sense of the workflow. This should either be expanded greatly or simply archived. For simplicity, I recommend archiving.
 ---
 
+(file:single-animal-quick-start)=
+
 # QUICK GUIDE to single Animal Training:
 
 **The main steps to take you from project creation to analyzed videos:**
