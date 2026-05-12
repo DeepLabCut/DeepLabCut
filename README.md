@@ -74,11 +74,8 @@ pip install --pre  "deeplabcut[gui]"
 or `pip install  --pre "deeplabcut"` (headless
 version with PyTorch)!
 
-To use the TensorFlow (TF) engine (requires Python 3.10; TF up to v2.10 supported on Windows,
-up to v2.12 on other platforms): you'll need to run `pip install "deeplabcut[gui,tf]"`
-(which includes all functions plus GUIs) or `pip install "deeplabcut[tf]"` (headless
-version with PyTorch and TensorFlow).
-We aim to deprecate the TF part in 2027.
+To use the TensorFlow (TF) engine: you'll need to run `pip install "deeplabcut[gui,tf]"` or `pip install "deeplabcut[tf]"` (headless version with TF).
+We aim to deprecate the tensorflow backend in version 3.2 (release date TBD).
 
 We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/main/conda-environments/README.md) or the [`deeplabcut-docker` package](https://github.com/DeepLabCut/DeepLabCut/tree/main/docker).
 
@@ -116,7 +113,8 @@ In general, we provide all the tooling for you to train and use custom models wi
 We also provide two foundation pretrained animal models: `SuperAnimal-Quadruped` & `SuperAnimal-TopViewMouse`.
 To gauge their *out-of-distribution* performance, we provide the following tables.
 
-These models are trained on the [SuperAnimal-Quadruped with AP-10K held out for out-of-domain testing]([https://cocodataset.org/](https://www.nature.com/articles/s41467-024-48792-2)) and the [SuperAnimal-TopViewMouse with DLC-openfield held out for out-of-distribution testing](https://www.nature.com/articles/s41467-024-48792-2). We provide models that include AP-10K in the API (and GUI).
+These models are trained on the [SuperAnimal-Quadruped dataset](https://doi.org/10.5281/zenodo.10619172) with *AP-10K* held out for out-of-domain testing and the [SuperAnimal-TopViewMouse dataset](https://doi.org/10.5281/zenodo.13757509) with *DLC-openfield* held out for out-of-distribution testing (see [Ye et al. 2024](https://www.nature.com/articles/s41467-024-48792-2)).
+We provide models that include AP-10K in the API (and GUI).
 Note, there are many different models to select from in DeepLabCut 3.0. We strongly recommend you check [this Guide](https://deeplabcut.github.io/DeepLabCut/docs/pytorch/architectures.html) for more details.
 This table, and those below, give you a sense of performance in real-world complex in-the-wild and lab mouse data, respectively.
 This [link provides the model weights](https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-Quadruped) to reproduce the numbers; but please note, our `full` models are in our DLClibrary and released in the API.
@@ -267,6 +265,6 @@ importing a project into the new data format for DLC 2.0
 
   # Funding
 
-  We are grateful for the follow support over the years!
+  We are grateful for the following support and funding over the years!
   This software project was supported in part by the **Essential Open Source Software for Science (EOSS)** program at **Chan Zuckerberg Initiative** (cycles 1, 3, 3-DEI, 4), and jointly with the **Kavli Foundation** for **EOSS Cycle 6**!
   We also thank the **Rowland Institute** at **Harvard** for funding from 2017-2020, and **EPFL** from 2020-present.
