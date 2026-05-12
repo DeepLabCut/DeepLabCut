@@ -689,7 +689,7 @@ def collect_video_paths(
     def _coerce_extensions(extensions: str | Sequence[str] | None) -> set[str] | None:
         """Flexible coercion of extensions to a set of suffixes"""
         # NOTE @deruyter92: support legacy API, which mixed strings and iterables.
-        if isinstance(extensions, (Sequence, set)):
+        if isinstance(extensions, (list, tuple, set)):
             explicit_suffixes = {f".{e.lstrip('.').lower()}" for e in extensions}
         elif isinstance(extensions, str):
             explicit_suffixes = {f".{extensions.lstrip('.').lower()}"}
