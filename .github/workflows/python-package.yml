@@ -33,7 +33,7 @@ on:
         description: "JSON matrix definition"
         required: true
         type: string
-        default: '{"include":[{"os":"ubuntu-latest","python-version":"3.12"}]}'
+        default: '{"include":[{"os":"ubuntu-latest","python-version":"3.12","extras": ""}]}'
       pytest_paths_json:
         description: "JSON array of pytest paths"
         required: false
@@ -96,23 +96,13 @@ jobs:
           channel-priority: strict
           python-version: ${{ matrix.python-version }}
 
-      - name: Install TensorFlow
-        if: runner.os != 'macOS'
+      - name: Install dependencies
         shell: bash -el {0} # Important to enable conda env
         run: |
-          pip install --no-cache-dir tensorflow tensorpack==0.11 tf_slim==1.1.0 tf-keras
-
-      - name: Install TensorFlow on macOS
-        if: runner.os == 'macOS'
-        shell: bash -el {0}
-        run: |
-          pip install --no-cache-dir tensorflow-macos tensorpack==0.11 tf_slim==1.1.0 tf-keras
-
-      - name: Install dependencies
-        shell: bash -el {0}
-        run: |
+          python -m ensurepip --upgrade
           python -m pip install --upgrade pip setuptools wheel
-          pip install --no-cache-dir -e . --group dev
+          python -m pip install dependency-groups
+          python -m pip install --no-cache-dir -e ".${{ matrix.extras }}" --group dev
 
       - name: Install ffmpeg (Linux/macOS)
         if: runner.os != 'Windows'
@@ -221,8 +211,6 @@ jobs:
         env:
           FULL_SUITE: ${{ inputs.full_suite }}
           FUNCTIONAL_SCRIPTS_JSON: ${{ inputs.functional_scripts_json }}
-          RUNNER_OS: ${{ runner.os }}
-          PYTHON_VERSION: ${{ matrix.python-version }}
         run: |
           python - << 'PY'
           import json
@@ -230,10 +218,11 @@ jobs:
           import subprocess
           import sys
 
-          full_suite = os.environ["FULL_SUITE"].lower() == "true"
-          runner_os = os.environ["RUNNER_OS"]
-          python_version = os.environ["PYTHON_VERSION"]
+          def is_windows_python_3_11_or_greater() -> bool:
+              """Aligned with pyproject: .[tf*] omits TensorFlow on Windows for Python 3.11+."""
+              return sys.platform == "win32" and sys.version_info >= (3, 11)
 
+          full_suite = os.environ["FULL_SUITE"].lower() == "true"
           if full_suite:
               scripts = [
                   "examples/testscript_tensorflow_single_animal.py",
@@ -247,22 +236,13 @@ jobs:
                   print("No functional scripts selected; skipping functional tests.")
                   raise SystemExit(0)
 
-          # Respect current TensorFlow support expectations on Windows
-          tf_allowed = not (runner_os == "Windows" and python_version in {"3.11", "3.12"})
-
-          filtered = []
           for script in scripts:
-              is_tf = "tensorflow" in script
-              if is_tf and not tf_allowed:
-                  print(f"Skipping unsupported TensorFlow script on {runner_os} Python {python_version}: {script}")
+              if "tensorflow" in script and is_windows_python_3_11_or_greater():
+                  ver = f"{sys.version_info.major}.{sys.version_info.minor}"
+                  print(
+                      f"Skipping TensorFlow example on Windows {ver} (no TF in .[tf*] for 3.11+): {script}"
+                  )
                   continue
-              filtered.append(script)
-
-          if not filtered:
-              print("No functional scripts remain after platform filtering; skipping.")
-              raise SystemExit(0)
-
-          for script in filtered:
               print("Running:", script)
               rc = subprocess.call([sys.executable, script])
               if rc != 0:
