@@ -12,16 +12,14 @@ deeplabcut:
 
 # DeepLabCut in Docker
 
-For DeepLabCut 2.2.0.2 and onwards, we provide container containers on [DockerHub](https://hub.docker.com/r/deeplabcut/deeplabcut). Using Docker is an alternative approach
-to using DeepLabCut, which only requires the user to install [Docker](https://www.docker.com/) on your machine, vs. following the step-by-step installation
-guide for a Anaconda setup. All dependencies needed to run DeepLabCut in the terminal or
-running Jupyter notebooks with DeepLabCut pre-installed are shipped with the provided
-Docker images.
+From DeepLabCut 2.2.0.2 onward, we provide container images on [DockerHub](https://hub.docker.com/r/deeplabcut/deeplabcut).
+Using Docker is an alternative approach to installing DeepLabCut in a local conda or pip environment: the images bundle all dependencies needed to run DeepLabCut in a reproducible, self-contained environment.
+In a Docker container, DeepLabCut can be used from the terminal, or with Jupyter notebook - the DeepLabCut GUI is not supported.
+The approach requires a local installation of [Docker / Docker Desktop](https://www.docker.com/), and is meant for users who need strict reproducibility, an isolated environment, or server-based automation.
 
 ```{important}
-The {ref}`napari-deeplabcut plugin <file:napari-gui-landing>` can be used to label
-your data, but it cannot be run in a Docker container: it should be installed as
-documented in the link above: `pip install napari-deeplabcut`
+The napari-deeplabcut plugin **cannot be run in a Docker container**. To label
+your data, please {ref}`install napari-deeplabcut <file:napari-gui-landing>` in a local, non-dockerized environment, e.g. using pip: `pip install napari-deeplabcut` .
 ```
 
 Advanced users can directly head to [DockerHub](https://hub.docker.com/r/deeplabcut/deeplabcut) and use the provided images there. To get started with using the images, we however also provide a helper tool, `deeplabcut-docker`, which makes the transition to docker images particularly convenient; to install the tool, run
@@ -30,8 +28,7 @@ Advanced users can directly head to [DockerHub](https://hub.docker.com/r/deeplab
 $ pip install deeplabcut-docker
 ```
 
-on your machine (potentially in a virtual environment, or an existing Anaconda environment).
-Note that this will *not* disprupt or install Tensorflow, or any other DeepLabCut dependencies on your computer---the Docker containers are completely isolated from your existing software installation!
+on your machine (in any environment). deeplabcut-docker is just a lightweight package for setting up the Docker environment and it will *not* disrupt your installation of TensorFlow, PyTorch or any other dependencies. The Docker container itself is completely isolated from your existing software installation!
 
 ## Usage modes
 
