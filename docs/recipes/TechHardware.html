@@ -543,6 +543,13 @@ Note, some info is repeated here, and will be updated as systems and hardware ch
 <section id="computer-hardware">
 <h3>Computer Hardware:<a class="headerlink" href="#computer-hardware" title="Link to this heading">#</a></h3>
 <p>Ideally, you will use a strong GPU with <em>at least</em> 8GB memory such as the <a class="reference external" href="https://marketplace.nvidia.com/en-us/consumer/graphics-cards/">NVIDIA GeForce 1080 Ti,  2080 Ti, or 3090</a>.  A GPU is not strictly necessary, but on a CPU the (training and evaluation) code is considerably slower (10x) for ResNets, but MobileNets and EfficientNets are slightly faster. Still, a GPU will give you a massive speed boost. You might also consider using cloud computing services like <a class="reference external" href="https://github.com/DeepLabCut/DeepLabCut/issues/47">Google cloud/amazon web services</a> or Google Colaboratory.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you encounter errors during inference related to
+<code class="docutils literal notranslate"><span class="pre">torch.inference_mode</span></code> and DirectML, set the environment variable
+<code class="docutils literal notranslate"><span class="pre">DLC_DIRECTML_NO_GRAD=true</span></code> before starting Python. This switches the inference
+context to <code class="docutils literal notranslate"><span class="pre">torch.no_grad</span></code>, which is compatible with the DirectML execution path.</p>
+</div>
 </section>
 <section id="camera-hardware">
 <h3>Camera Hardware:<a class="headerlink" href="#camera-hardware" title="Link to this heading">#</a></h3>
