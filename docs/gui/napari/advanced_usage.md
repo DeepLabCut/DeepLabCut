@@ -25,7 +25,7 @@ This is the folder where annotations will be saved when using **File -> Save Sel
 
 ### Labeling progress
 
-When a labeled data folder is loaded, the widget shows a percentage of labeled frames, based on the theoretical maximum number of keypoints (i.e. number of body parts x number of individuals x number of frames) that could be labeled.
+When a labeled data folder is loaded, the widget shows a percentage of labeled frames, based on the theoretical maximum number of keypoints (i.e. number of bodyparts x number of individuals x number of frames) that could be labeled.
 
 ```{note}
 This can be a useful reference to track labeling progress.<br>
@@ -46,7 +46,7 @@ To copy-paste keypoints from one frame to another:
 
 ## Color scheme display features
 
-The plugin shows a list of body parts and their corresponding colors in the dock widget. You can toggle the visibility of this color scheme using the **Show color scheme** button.
+The plugin shows a list of bodyparts and their corresponding colors in the dock widget. You can toggle the visibility of this color scheme using the **Show color scheme** button.
 
 ```{tip}
 The display only shows keypoints that are currently visible in the viewer.<br>

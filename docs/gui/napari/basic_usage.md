@@ -171,7 +171,7 @@ Keeping data inside the project directory is recommended for best compatibility.
 - napari-deeplabcut specific:
   - `M`: cycle through annotation modes
   - `E`: toggle edge coloring
-  - `F`: toggle between individual and body-part coloring modes
+  - `F`: toggle between individual and bodypart coloring modes
   - `V`: toggle visibility of the selected layer
   - `Backspace`: delete selected point(s)
   - `Ctrl+C` / `Ctrl+V`: copy and paste selected points
@@ -182,7 +182,7 @@ Use the **View shortcuts** button in the dock widget for a quick reference of na
 
 ### More quality-of-life features
 
-See the {ref}`Advanced features <file:napari-dlc-advanced-features>` for useful features such as copy-pasting annotations, quick body part selection, and more.
+See the {ref}`Advanced features <file:napari-dlc-advanced-features>` for useful features such as copy-pasting annotations, quick bodypart selection, and more.
 
 ## Labeling workflows
 
@@ -210,9 +210,9 @@ Use this when the folder already contains a `CollectedData_<ScorerName>.h5` file
 - Open (or drag and drop) the folder in napari.
 
 Existing annotations and keypoint metadata will be loaded automatically from the H5 file.
-In this case, loading `config.yaml` is usually **not needed** unless :
+In this case, loading `config.yaml` is usually **not needed** unless:
 
-- The project's body parts have changed or
+- The project's bodyparts have changed or
 - You want to refresh the configured color scheme
 
 ### Refining machine labels
