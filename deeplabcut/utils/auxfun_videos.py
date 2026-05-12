@@ -34,6 +34,7 @@ from skimage.util import img_as_ubyte
 
 # more videos are in principle covered, as OpenCV is used and allows many formats.
 SUPPORTED_VIDEOS = "avi", "mp4", "mov", "mpeg", "mpg", "mpv", "mkv", "flv", "qt", "yuv"
+DEFAULT_EXCLUDE_PATTERNS: tuple[str, ...] = "*_labeled.*", "*_full.*"
 
 
 class VideoReader:
@@ -651,7 +652,7 @@ def collect_video_paths(
     data_path: str | Path | list[str | Path],
     extensions: str | list[str] | None = None,
     shuffle: bool = False,
-    exclude_patterns: list[str] | None = None,
+    exclude_patterns: Sequence[str] = DEFAULT_EXCLUDE_PATTERNS,
 ) -> list[Path]:
     """
     Collects video paths from a given set of data paths: directories, files or mix of both. Directories are
@@ -670,8 +671,8 @@ def collect_video_paths(
             - If ``None``, provided files are not filtered, but directory contents are filtered by ``SUPPORTED_VIDEOS``.
         shuffle: Whether to shuffle the order of videos. If False, videos are returned
             in sorted order for deterministic behavior.
-        exclude_patterns: Patterns to exclude from the collection. Defaults to ["*_labeled.*", "*_full.*"].
-            Set to [] to exclude no patterns.
+        exclude_patterns: Patterns to exclude from the collection. Defaults to DEFAULT_EXCLUDE_PATTERNS.
+            Set to an empty sequence e.g. `[]` to exclude no patterns.
 
     Returns:
         The paths of videos to analyze. Duplicate paths are removed.
