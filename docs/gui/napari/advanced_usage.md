@@ -29,7 +29,7 @@ When a labeled data folder is loaded, the widget shows a percentage of labeled f
 
 ```{note}
 This can be a useful reference to track labeling progress.<br>
-Since visibility cannot be accounted for, it should be considered an estimate of relative labeling progress rather than an absolute measure of completeness. (as not all videos would need 100% labeling, i.e. every body part on every individual in every frame).
+Since visibility cannot be accounted for, it should be considered only a rough estimate of relative labeling progress rather than an absolute measure of completeness: hidden/occluded keypoints are not counted, therefore projects with occlusions will not have every body part on every individual in every frame.
 ```
 
 ### Point size slider
@@ -63,7 +63,11 @@ In individual coloring mode, the color scheme also shows the individuals list, a
 
 ### Jump to body part in viewer
 
-If showing all body parts in the color scheme from the config, clicking on a keypoint in the list that is not currently visible in the viewer will jump to the first instance of that body part in the viewer and select it, if applicable.
+To locate a bodypart label that is currently not visible in the viewer, enable "Show all bodyparts" in the color scheme list.
+Then, click on a bodypart entry in the color scheme list.
+The viewer will jump to the first instance of that body part and select it (when it exists).
+If the bodypart is already visible in the viewer, clicking on it in the color scheme will simply select all keypoints of that bodypart, as described above.
+
 This helps quickly find a specific body part in the viewer.
 
 ## Trajectory plot
