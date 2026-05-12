@@ -21,6 +21,11 @@ from deeplabcut.pose_estimation_tensorflow.datasets import (
 )
 from deeplabcut.utils import read_plainconfig
 
+tf = pytest.importorskip(
+    "tensorflow",
+    reason="TensorFlow not installed (use a project extra such as .[tf])",
+)
+
 
 def mock_imread(path, mode):
     return (np.random.rand(400, 400, 3) * 255).astype(np.uint8)
