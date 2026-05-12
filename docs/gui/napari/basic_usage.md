@@ -277,8 +277,9 @@ This helps keep saving behavior unambiguous.
 
 A short demo video is available here:
 
+[Link to video](https://youtu.be/hsA9IB5r73E)
+
 ```{warning}
 This demo may be outdated, but the general annotation workflow remains the same. If you would like an updated video tutorial, please open a feature request issue on GitHub, and we will update it.
 
-[Link to video](https://youtu.be/hsA9IB5r73E)
 ```
