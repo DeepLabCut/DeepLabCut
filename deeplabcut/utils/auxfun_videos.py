@@ -722,4 +722,6 @@ def collect_video_paths(
     unique_videos = list(dict.fromkeys(v.resolve() for v in videos))
     if shuffle:
         random.shuffle(unique_videos)
+    else:
+        unique_videos.sort()
     return unique_videos
