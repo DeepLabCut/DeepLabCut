@@ -95,7 +95,7 @@ jobs:
     with:
       concurrency_key: ${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || '' }}
       matrix_json: >-
-        {"include":[{"os":"ubuntu-latest","python-version":"3.12"}]}
+        {"include":[{"os":"ubuntu-latest","python-version":"3.12", "extras": "[tf]"}]}
       pytest_paths_json: ${{ needs.intelligent-test-selection.outputs.pytest_paths }}
       functional_scripts_json: ${{ needs.intelligent-test-selection.outputs.functional_scripts }}
       full_suite: false
@@ -110,15 +110,58 @@ jobs:
       matrix_json: >-
         {
           "include": [
-            {"os":"ubuntu-latest","python-version":"3.10"},
-            {"os":"ubuntu-latest","python-version":"3.11"},
-            {"os":"ubuntu-latest","python-version":"3.12"},
-            {"os":"macos-latest","python-version":"3.10"},
-            {"os":"macos-latest","python-version":"3.11"},
-            {"os":"macos-latest","python-version":"3.12"},
-            {"os":"windows-latest","python-version":"3.10"},
-            {"os":"windows-latest","python-version":"3.11"},
-            {"os":"windows-latest","python-version":"3.12"}
+            {"os":"ubuntu-latest","python-version":"3.10", "extras": "[tf]"},
+            {"os":"ubuntu-latest","python-version":"3.11", "extras": "[tf]"},
+            {"os":"ubuntu-latest","python-version":"3.12", "extras": "[tf]"},
+            {"os":"macos-latest","python-version":"3.10", "extras": "[tf]"},
+            {"os":"macos-latest","python-version":"3.11", "extras": "[tf]"},
+            {"os":"macos-latest","python-version":"3.12", "extras": "[tf]"},
+            {"os":"windows-latest","python-version":"3.10", "extras": "[tf]"},
+            {"os":"windows-latest","python-version":"3.11", "extras": "[tf]"},
+            {"os":"windows-latest","python-version":"3.12", "extras": "[tf]"}
           ]
         }
       full_suite: true
+
+  tf-install-smoke-test:
+    name: TensorFlow install smoke test
+    needs: intelligent-test-selection
+    if: needs.intelligent-test-selection.outputs.run_full == 'true'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.10', '3.11', '3.12']
+        # Run smoke test on the extras that are not tested in the full matrix tests
+        extras: ["[tf-cu11]", "[tf-cu12]"]
+        exclude:
+          - os: windows-latest
+            python-version: '3.11'
+          - os: windows-latest
+            python-version: '3.12'
+          - extras: "[tf-cu11]"
+            python-version: '3.12'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          channels: conda-forge
+          channel-priority: strict
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        shell: bash -el {0}
+        run: |
+          python -m ensurepip --upgrade
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install dependency-groups
+          python -m pip install --no-cache-dir -e ".${{ matrix.extras }}" --group dev
+
+      - name: Run TensorFlow install smoke test
+        shell: bash -el {0}
+        run: |
+          pytest tests/test_tf_install_smoke.py

@@ -80,23 +80,55 @@ docs = [
   "sphinxcontrib-mermaid",
 ]
 fmpose3d = [ "fmpose3d>=0.0.8" ]
+# Use only one of [tf, tf-cu11, tf-cu12, tf-latest]. Do not combine extras.
 tf = [
   "protobuf<7",
-  # !!! TensorFlow is not supported on Windows with Python >= 3.11
-  "tensorflow>=2,<=2.10; platform_system=='Windows' and python_version<'3.11'",
-  "tensorflow>=2,<2.12; platform_system=='Linux' and python_version<'3.11'",
-  "tensorflow>=2.12; platform_system=='Linux' and python_version>='3.11'",
-  "tensorflow-io-gcs-filesystem==0.31; platform_system=='Windows' and python_version<'3.11'",
-  "tensorflow-io-gcs-filesystem>0.31; platform_system!='Windows'",
-  "tensorflow-macos>=2,<2.12; platform_system=='Darwin' and python_version<'3.11'",
-  "tensorflow-macos>=2.12; platform_system=='Darwin' and python_version>='3.11'",
+  "tensorflow>=2.12,<2.16; python_version<'3.12'",
+  "tensorflow>=2.16.1,<2.18; python_version>='3.12'",
+  "tensorflow-io-gcs-filesystem==0.31; platform_system=='Windows' and python_version<'3.12'",
+  "tensorflow-metal==1.2; platform_system=='Darwin' and python_version<'3.12'",
+  "tensorflow-metal>=1.2; platform_system=='Darwin' and python_version>='3.12'",
   "tensorpack>=0.11",
-  "tf-keras; platform_system!='Windows'",
+  "tf-keras<2.15; python_version<'3.12'",
+  "tf-keras>=2.15,<2.18; python_version>='3.12'",
   "tf-slim>=1.1",
 ]
+tf-cu11 = [
+  "protobuf<7",
+  "tensorflow==2.14",
+  "tensorflow-io-gcs-filesystem==0.31; platform_system=='Windows'",
+  "tensorflow-metal==1.2; platform_system=='Darwin'",
+  "tensorpack==0.11",
+  "tf-keras==2.14.1",
+  "tf-slim==1.1",
+  "torch<2.1",
+  "torchvision<0.16",
+]
+tf-cu12 = [
+  "protobuf<7",
+  "tensorflow==2.18",
+  "tensorflow-metal==1.2; platform_system=='Darwin'",
+  "tensorpack==0.11",
+  "tf-keras==2.18",
+  "tf-slim==1.1",
+  "torch<2.11",
+  "torchvision<0.26",
+]
+tf-latest = [
+  "protobuf<7",
+  "tensorflow>=2.18",
+  "tensorflow-metal>=1.2; platform_system=='Darwin'",
+  "tensorpack>=0.11",
+  "tf-keras",
+  "tf-slim>=1.1",
+]
+# apple_mchips is kept for older systems, prefer [tf] in new projects.
 apple_mchips = [
-  "tensorflow-macos; platform_system=='Darwin'",
-  "tensorflow-metal; platform_system=='Darwin'",
+  "protobuf<7; platform_system=='Darwin'",
+  "tensorflow>=2.12,<2.15; platform_system=='Darwin' and python_version<'3.12'",
+  "tensorflow>=2.15,<2.18; platform_system=='Darwin' and python_version>='3.12'",
+  "tensorflow-metal==1.2; platform_system=='Darwin' and python_version<'3.12'",
+  "tensorflow-metal>=1.2; platform_system=='Darwin' and python_version>='3.12'",
   "tensorpack>=0.11; platform_system=='Darwin'",
   "tf-keras; platform_system=='Darwin'",
   "tf-slim>=1.1; platform_system=='Darwin'",
@@ -128,6 +160,23 @@ include-package-data = false
 include = [ "deeplabcut*" ]
 exclude = [ "tests*", "docs*", "examples*" ]
 
+[tool.uv]
+# One of tf / tf-cu12 / tf-latest. apple_mchips matches [tf] on macOS but conflicts with
+# [tf-cu12] and [tf-latest] (overlapping tensorflow pins cannot be unified with uv's lock).
+conflicts = [
+  [
+    { extra = "tf" },
+    { extra = "tf-cu11" },
+    { extra = "tf-cu12" },
+    { extra = "tf-latest" },
+    { extra = "apple_mchips" },
+  ],
+  [
+    { extra = "tf-cu11" },
+    { extra = "tf-cu12" },
+    { extra = "fmpose3d" },
+  ],
+]
 [[tool.uv.dependency-metadata]]
 name = "openvino-dev"
 version = "2022.1.0"

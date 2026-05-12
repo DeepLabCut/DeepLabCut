@@ -87,7 +87,7 @@ repos:
     hooks:
       - id: mdformat
         additional_dependencies:
-        - mdformat-myst
+          - mdformat-myst
         files: ^docs/.*\.md$
         stages: [pre-commit]
 

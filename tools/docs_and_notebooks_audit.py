@@ -42,11 +42,11 @@ Notebook metadata:
 
 Usage
 -----
-python tools/docs_audit_export.py \
+python tools/docs_and_notebooks_audit.py \
   --config tools/docs_and_notebooks_report_config.yml \
   --out docs/_meta/docs_audit_register.csv
 
-python tools/docs_audit_export.py \
+python tools/docs_and_notebooks_audit.py \
   --targets docs/gui/ docs/recipes/*.md examples/COLAB/*.ipynb
 """
 
