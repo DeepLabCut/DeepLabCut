@@ -438,12 +438,12 @@ def get_shuffle_engine(
         prefix_str = f" and modelprefix={modelprefix}" if modelprefix else ""
         raise ValueError(
             f"Couldn't find any shuffles with trainingsetindex={trainingsetindex}, "
-            f"shuffle={shuffle}{prefix_str}. The shuffle was not found"
+            f"shuffle={shuffle}{prefix_str}. The shuffle was not found "
             "in metadata.yaml and no model folder exists for it. Please check that "
             "such a shuffle is defined."
         )
 
-    engine = engines[0]
+    engine = list(engines)[0]  # Get any engine from the set
     if len(engines) > 1:
         logging.warning(
             f"Found multiple engines for trainingsetindex={trainingsetindex}, "
