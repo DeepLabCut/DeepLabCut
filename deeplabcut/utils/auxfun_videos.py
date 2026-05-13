@@ -731,4 +731,10 @@ def collect_video_paths(
         random.shuffle(unique_videos)
     else:
         unique_videos.sort()
+
+    if any([fn.suffix not in SUPPORTED_VIDEOS for fn in unique_videos]):
+        warnings.warn(
+            f"Some videos have unsupported extensions: {unique_videos} \nSupported extensions are: {SUPPORTED_VIDEOS}",
+            stacklevel=2,
+        )
     return unique_videos
