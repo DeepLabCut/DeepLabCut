@@ -150,31 +150,35 @@ The project directory will have subdirectories:
 
 All the outputs generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be curated in separation from other projects.
 
-The purpose of the subdirectories is as follows:
+##### Subdirectory layout
 
-1. **dlc-models** and **dlc-models-pytorch** have a similar structure; the first contains files for the TensorFlow engine
-   while the second contains files for the PyTorch engine. At the top level in these directories, there are directories
-   referring to different iterations of label refinement (see below): **iteration-0**, **iteration-1**, etc.
-   The iteration directories store shuffle directories, where each shuffle directory stores model data related to a
-   particular experiment: trained and tested on a particular training and testing set, and with a particular model
-   architecture. Each shuffle directory contains the subdirectories *test* and *train*, each of which holds the meta
-   information with regard to the parameters of the feature detectors in configuration files. The configuration files are
-   YAML files, a common human-readable data serialization language. These files can be opened and edited with standard text
-   editors. The subdirectory *train* will store checkpoints (called snapshots) during training of the model. These
-   snapshots allow the user to reload the trained model without re-training it, or to pick-up training from a particular
-   saved checkpoint, in case the training was interrupted.
+1. `dlc-models` and `dlc-models-pytorch`:
+   These directories have the same structure but store model files for different engines:
 
-1. **labeled-data:** This directory will store the frames used to create the training dataset. Frames from different videos
-   are stored in separate subdirectories. Each frame has a filename related to the temporal index within the corresponding
-   video, which allows the user to trace every frame back to its origin.
+   - `dlc-models` for TensorFlow
+   - `dlc-models-pytorch` for PyTorch
+   - At the top level, both contain **iteration folders** such as:
+     - `iteration-0`
+     - `iteration-1`, etc.
+       which correspond to successive rounds of label refinement.
+       Each iteration folder in turn contains **shuffle directories**, each representing a specific experiment defined by a particular train/test split and model architecture.
+       Within each shuffle directory:
+       - `train/` and `test/` store metadata and configuration files for the feature detectors.
+       - These configuration files are written in YAML, a human-readable format that can be edited with any standard text editor.
+       - The `train/` folder also stores training checkpoints (snapshots), which let users reload a trained model or resume training from an intermediate checkpoint if training was interrupted.
 
-1. **training-datasets:** This directory will contain the training dataset used to train the network and metadata, which
-   contains information about how the training dataset was created.
+1. `labeled-data/`:
+   Contains the extracted frames used to build the training dataset. Frames from different videos are stored in separate subdirectories, and each frame filename encodes its temporal position in the source video, making it easy to trace each frame back to its origin.
 
-1. **videos:** Directory of video links or videos. When **copy_videos** is set to `False`, this directory contains
-   symbolic links to the videos. If it is set to `True` then the videos will be copied to this directory. The default is
-   `False`. Additionally, if the user wants to add new videos to the project at any stage, the function
-   **add_new_videos** can be used. This will update the list of videos in the project's configuration file.
+1. `training-datasets/`:
+   Stores the generated training datasets along with metadata describing how each dataset was created.
+
+1. `videos/`:
+   Stores either the project videos themselves or symbolic links to them:
+   If copy_videos=False, it contains symbolic links.
+   If copy_videos=True, the videos are copied into the directory.
+
+The default setting is False.
 
 ```python
 deeplabcut.add_new_videos(
@@ -365,8 +369,12 @@ The toolbox provides a function **label_frames** which helps the user to easily 
 all the extracted frames using an interactive graphical user interface (GUI). The user
 should have already named the bodyparts to label (points of interest) in the
 project’s configuration file by providing a list. The following command invokes the
-napari-deeplabcut labelling GUI. Checkout the {ref}`napari-deeplabcut docs <file:napari-gui-landing>` for
+napari-deeplabcut labelling GUI.
+
+```{hint}
+Check out the {ref}`napari-deeplabcut docs <file:napari-gui-landing>` for
 more information about the labelling workflow.
+```
 
 #### Code example
 
@@ -378,20 +386,9 @@ deeplabcut.label_frames(config_path)
 
 [🎥 DEMO](https://youtu.be/hsA9IB5r73E)
 
-#### HOT KEYS IN THE Labeling GUI (also see "help" in GUI)
+<!-- Should remain in napari guide: -->
 
-```text
-Ctrl + C: Copy labels from previous frame.
-Keyboard arrows: advance frames.
-Delete key: delete label.
-```
-
-```{image} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/192345a5-e411-4d56-b718-ef52f91e195e/Qwerty.png?format=2500w
----
-alt: hot keys
-align: center
----
-```
+<!-- #### HOT KEYS IN THE Labeling GUI (also see "help" in GUI) -->
 
 ```{important}
 **CRITICAL POINT:** It is advisable to **consistently label similar spots** (e.g., on a wrist that is very large, try
@@ -399,9 +396,9 @@ to label the same location). In general, invisible or occluded points should not
 simply be skipped by not applying the label anywhere on the frame.
 ```
 
-#### Optional addition of more labels
+#### Optional: Adding new bodypart labels
 
-OPTIONAL: In the event of adding more labels to the existing labeled dataset, the user needs to append the new labels to the bodyparts in the config.yaml file.
+To add more labels to the existing labeled dataset, the user needs to append the new labels to the bodyparts in the config.yaml file.
 Thereafter, the user can call the function **label_frames**.
 As of 2.0.5+: then a box will pop up and ask the user if they wish to display all parts, or only add in the new labels.
 Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.
@@ -415,7 +412,7 @@ ______________________________________________________________________
 
 #### Overview
 
-OPTIONAL: Checking if the labels were created and stored correctly is beneficial for training, since labeling
+Checking if the labels were created and stored correctly is beneficial for training, since labeling
 is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
 ‘check_labels’ to do so. It is used as follows:
 
