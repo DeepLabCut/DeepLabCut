@@ -174,9 +174,12 @@ class DebugTextDialog(QDialog):
 
     def refresh_text(self) -> None:
         try:
+            QApplication.setOverrideCursor(Qt.WaitCursor)
             text = self._text_provider()
         except Exception as exc:
             text = f"[debug-dialog] failed to build debug text\n\n{exc!r}"
+        finally:
+            QApplication.restoreOverrideCursor()
 
         self._text_edit.setPlainText(text or "<no debug text available>")
         self._text_edit.moveCursor(QTextCursor.MoveOperation.Start)
