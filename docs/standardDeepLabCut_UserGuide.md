@@ -128,14 +128,6 @@ This set of arguments will create a project directory with the name
 
 The project directory will have subdirectories:
 
-- dlc-models
-- dlc-models-pytorch
-- labeled-data
-- training-datasets
-- videos
-  All the outputs generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be
-  curated in separation from other projects.
-
 ```
 <Name of the project>+<name of the experimenter>+<date of creation of the project>/
 ├── dlc-models/
@@ -155,6 +147,8 @@ The project directory will have subdirectories:
 ├── videos/
 └── config.yaml
 ```
+
+All the outputs generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be curated in separation from other projects.
 
 The purpose of the subdirectories is as follows:
 
@@ -412,7 +406,7 @@ labels to the bodyparts in the config.yaml file. Thereafter, the user can call t
 2.0.5+: then a box will pop up and ask the user if they wish to display all parts, or only add in the new labels.
 Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.
 
-For more information, checkout the \[napari-deeplabcut docs\](file:napari-gui-landing) for
+For more information, check out the {ref}`napari-deeplabcut docs <file:napari-gui-landing>` for
 more information about the labelling workflow.
 
 ______________________________________________________________________
@@ -1279,7 +1273,7 @@ deeplabcut.refine_labels(config_path)
 
 This will launch a GUI where the user can refine the labels.
 
-Please refer to the \[napari-deeplabcut docs\](file:napari-gui-landing) for more information about the labelling workflow.
+Please refer to the {ref}`napari-deeplabcut docs <file:napari-gui-landing>` for more information about the labelling workflow.
 
 #### Merge datasets
 
