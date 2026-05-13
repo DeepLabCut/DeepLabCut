@@ -18,17 +18,6 @@ from collections.abc import Sequence
 from pathlib import Path
 
 
-def reload_debug_settings_from_env() -> None:
-    """Reload debug/timing settings from environment variables."""
-    global DLC_LOG_TIMING, DLC_LOG_TIMING_THRESHOLD_MS
-
-    DLC_LOG_TIMING = _env_flag("DLC_LOG_TIMING", default=False)
-    DLC_LOG_TIMING_THRESHOLD_MS = _env_optional_float(
-        "DLC_LOG_TIMING_THRESHOLD_MS",
-        default=None,
-    )
-
-
 def _env_flag(name: str, default: bool = False) -> bool:
     """Parse a boolean environment variable.
 
