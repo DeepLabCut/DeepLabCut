@@ -23,6 +23,7 @@ from __future__ import annotations
 import os
 import pickle
 import warnings
+from collections.abc import Sequence
 from pathlib import Path
 
 import pandas as pd
@@ -33,7 +34,7 @@ from ruamel.yaml import YAML
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.trackingutils import TRACK_METHODS
 from deeplabcut.utils import auxfun_multianimal
-from deeplabcut.utils.auxfun_videos import collect_video_paths
+from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS, collect_video_paths
 from deeplabcut.utils.deprecation import deprecated
 
 
@@ -392,14 +393,15 @@ def write_pickle(filename, data):
 @deprecated(replacement="deeplabcut.collect_video_paths", since="3.0.0")
 def get_list_of_videos(
     videos: list[str] | str,
-    videotype: list[str] | str = "",
+    videotype: str | Sequence[str] | None = SUPPORTED_VIDEOS,
     in_random_order: bool = True,
 ) -> list[str]:
-    return collect_video_paths(
+    video_paths = collect_video_paths(
         data_path=videos,
         extensions=videotype,
         shuffle=in_random_order,
     )
+    return [str(path) for path in video_paths]
 
 
 def save_data(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv):

@@ -11,7 +11,7 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 import albumentations as A
@@ -65,7 +65,7 @@ from deeplabcut.pose_estimation_pytorch.runners.snapshots import (
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import resolve_device
 from deeplabcut.utils import auxiliaryfunctions
-from deeplabcut.utils.auxfun_videos import collect_video_paths
+from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS, collect_video_paths
 from deeplabcut.utils.deprecation import deprecated
 
 
@@ -297,12 +297,12 @@ def get_scorer_name(
 @deprecated(replacement="deeplabcut.collect_video_paths", since="3.0.0")
 def list_videos_in_folder(
     data_path: str | Path | list[str | Path],
-    video_type: str | None = None,
+    video_type: str | Sequence[str] | None = SUPPORTED_VIDEOS,
     shuffle: bool = False,
 ) -> list[Path]:
     return collect_video_paths(
         data_path=data_path,
-        extensions=video_type or None,
+        extensions=video_type,
         shuffle=shuffle,
     )
 
