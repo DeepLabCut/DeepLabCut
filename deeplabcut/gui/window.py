@@ -82,7 +82,8 @@ class MainWindow(QMainWindow):
         self.screen_height = screen_size.height()
         self._closing = False
 
-        self.logger = logging.getLogger("GUI")
+        self.logger = logging.getLogger("deeplabcut.gui")
+        self.console_logger = logging.getLogger("deeplabcut.gui.console")
 
         self.config = None
         self.loaded = False
@@ -134,7 +135,7 @@ class MainWindow(QMainWindow):
 
         # create logger to also log to the console
         logging.basicConfig()
-        logging.getLogger("console").setLevel(logging.INFO)
+        self.console_logger.setLevel(logging.INFO)
 
         self._progress_bar = QtWidgets.QProgressBar()
         self._progress_bar.setMaximum(0)
@@ -144,7 +145,7 @@ class MainWindow(QMainWindow):
     def print_to_status_bar(self, text):
         self.status_bar.showMessage(text)
         self.status_bar.repaint()
-        logging.getLogger("console").info(text)
+        self.console_logger.info(text)
 
     @property
     def toolbar(self):
