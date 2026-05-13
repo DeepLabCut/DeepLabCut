@@ -40,9 +40,9 @@ We are primarily a package that enables deep learning-based pose estimation. We 
 - Decide on your needs: there are **two main modes, standard DeepLabCut or multi-animal DeepLabCut**.
 
   - We highly recommend carefully considering which one is best for your needs.
-  - For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. **[Important Information on how to use DLC in different scenarios (single vs multi animal)](important-info-regd-usage)** Then pick a user guide:
-  - (1) \[How to use standard DeepLabCut\](file:single-animal-userguide)
-  - (2) [How to use multi-animal DeepLabCut](multi-animal-userguide)
+  - For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. **{ref}`Important Information on how to use DLC in different scenarios (single vs multi animal) <important-info-regd-usage>`** Then pick a user guide:
+  - (1) {ref}`How to use standard DeepLabCut <file:single-animal-userguide>`
+  - (2) {ref}`How to use multi-animal DeepLabCut <multi-animal-userguide>`
 
 - To note, as of DLC3+ the single and multi-animal code bases are more integrated and we support **top-down**, **bottom-up**, and a new "hybrid" approach that is state-of-the-art, called **BUCTD** (bottom-up conditional top down)
 
@@ -229,10 +229,10 @@ That's it! Follow the GUI for details
 
 [VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=7xwOhUcIGio)
 
-Please decide with mode you want to use DeepLabCut, and follow one of the following:
+Please decide which mode you want to use DeepLabCut, and follow the relevant user guide:
 
-- (1) \[How to use standard DeepLabCut\](file:single-animal-userguide)
-- (2) [How to use multi-animal DeepLabCut](multi-animal-userguide)
+- (1) {ref}`How to use standard DeepLabCut <file:single-animal-userguide>`
+- (2) {ref}`How to use multi-animal DeepLabCut <multi-animal-userguide>`
 
 ## Useful links
 
