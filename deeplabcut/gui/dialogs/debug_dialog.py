@@ -114,6 +114,21 @@ class DebugTextDialog(QDialog):
         self._build_ui(initial_hint=initial_hint)
         self.refresh_text()
 
+    def update_content(
+        self,
+        *,
+        title: str | None = None,
+        text_provider: Callable[[], str] | None = None,
+        hint: str | None = None,
+    ) -> None:
+        """Update dialog metadata when reusing an existing instance."""
+        if title is not None:
+            self.setWindowTitle(title)
+        if text_provider is not None:
+            self._text_provider = text_provider
+        if hint is not None:
+            self._hint_label.setText(hint)
+
     def _build_ui(self, *, initial_hint: str) -> None:
         layout = QVBoxLayout(self)
 
@@ -186,7 +201,7 @@ def _get_or_create_debug_dialog(
     parent: QWidget,
     title: str,
     text_provider: Callable[[], str],
-    initial_hint: str,
+    text_hint: str,
     attr_name: str = "_dlc_debug_dialog",
 ) -> DebugTextDialog:
     """
@@ -197,13 +212,18 @@ def _get_or_create_debug_dialog(
     """
     dlg = getattr(parent, attr_name, None)
     if isinstance(dlg, DebugTextDialog):
+        dlg.update_content(
+            title=title,
+            text_provider=text_provider,
+            hint=text_hint,
+        )
         return dlg
 
     dlg = DebugTextDialog(
         title=title,
         text_provider=text_provider,
         parent=parent,
-        initial_hint=initial_hint,
+        initial_hint=text_hint,
     )
     setattr(parent, attr_name, dlg)
     return dlg
@@ -245,7 +265,7 @@ def show_debug_report_dialog(
         parent=parent,
         title="DeepLabCut debug log",
         text_provider=provider,
-        initial_hint=("Diagnostic report for issue reporting. Use Refresh to update, then Copy to clipboard."),
+        text_hint=("Diagnostic report for issue reporting. Use Refresh to update, then Copy to clipboard."),
         attr_name=dialog_attr_name,
     )
     dlg.refresh_text()
