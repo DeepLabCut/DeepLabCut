@@ -26,6 +26,8 @@ def clean_logger(logger_name: str):
     old_propagate = logger.propagate
     old_handlers = list(logger.handlers)
 
+    logger.setLevel(logging.DEBUG)
+
     yield logger
 
     for handler in list(logger.handlers):
@@ -56,7 +58,7 @@ def test_install_debug_recorder_is_idempotent(logger_name: str, clean_logger):
 
 def test_recorder_captures_messages_and_exceptions(logger_name: str, clean_logger):
     logger = clean_logger
-    recorder = install_debug_recorder(logger_name=logger_name, capacity=10)
+    recorder = install_debug_recorder(logger_name=logger_name, capacity=10, handler_level=logging.DEBUG)
 
     logger.info("hello %s", "dlc")
     try:
@@ -77,7 +79,7 @@ def test_recorder_captures_messages_and_exceptions(logger_name: str, clean_logge
 
 def test_recorder_is_bounded(logger_name: str, clean_logger):
     logger = clean_logger
-    recorder = install_debug_recorder(logger_name=logger_name, capacity=2)
+    recorder = install_debug_recorder(logger_name=logger_name, capacity=2, handler_level=logging.DEBUG)
 
     logger.debug("first")
     logger.debug("second")
