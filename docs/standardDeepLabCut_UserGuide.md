@@ -156,7 +156,7 @@ The purpose of the subdirectories is as follows:
    while the second contains files for the PyTorch engine. At the top level in these directories, there are directories
    referring to different iterations of label refinement (see below): **iteration-0**, **iteration-1**, etc.
    The iteration directories store shuffle directories, where each shuffle directory stores model data related to a
-   particular experiment: trained and tested on a particular training and testing sets, and with a particular model
+   particular experiment: trained and tested on a particular training and testing set, and with a particular model
    architecture. Each shuffle directory contains the subdirectories *test* and *train*, each of which holds the meta
    information with regard to the parameters of the feature detectors in configuration files. The configuration files are
    YAML files, a common human-readable data serialization language. These files can be opened and edited with standard text
@@ -318,7 +318,7 @@ computational complexity.
 It is advisable to extract frames from a period of the video that contains interesting
 behaviors, and not extract the frames across the whole video. This can be achieved by using the start and stop
 parameters in the config.yaml file.
-Also, the user can change the number of frames to extract from each video using the numframes2extract in the config.yaml file.
+Also, the user can change the number of frames to extract from each video using the numframes2pick in the config.yaml file.
 ```
 
 #### Manual frame selection
@@ -365,7 +365,7 @@ The toolbox provides a function **label_frames** which helps the user to easily 
 all the extracted frames using an interactive graphical user interface (GUI). The user
 should have already named the bodyparts to label (points of interest) in the
 project’s configuration file by providing a list. The following command invokes the
-napari-deeplabcut labelling GUI. Checkout the \[napari-deeplabcut docs\](file:napari-gui-landing) for
+napari-deeplabcut labelling GUI. Checkout the {ref}`napari-deeplabcut docs <file:napari-gui-landing>` for
 more information about the labelling workflow.
 
 #### Code example
@@ -401,9 +401,9 @@ simply be skipped by not applying the label anywhere on the frame.
 
 #### Optional addition of more labels
 
-OPTIONAL: In the event of adding more labels to the existing labeled dataset, the user need to append the new
-labels to the bodyparts in the config.yaml file. Thereafter, the user can call the function **label_frames**. As of
-2.0.5+: then a box will pop up and ask the user if they wish to display all parts, or only add in the new labels.
+OPTIONAL: In the event of adding more labels to the existing labeled dataset, the user needs to append the new labels to the bodyparts in the config.yaml file.
+Thereafter, the user can call the function **label_frames**.
+As of 2.0.5+: then a box will pop up and ask the user if they wish to display all parts, or only add in the new labels.
 Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.
 
 For more information, check out the {ref}`napari-deeplabcut docs <file:napari-gui-landing>` for
@@ -507,7 +507,7 @@ A schematic view of the structure described above is:
 additional data augmentation (beyond our defaults). You can set `net_type`, `detector_type` (if using a detector)
 and `augmenter_type` when you call the function.
 
-- Networks: ImageNet pre-trained networks OR SuperAnimal pre-trained networks weights will be downloaded, as you
+- Networks: ImageNet pre-trained networks OR SuperAnimal pre-trained network weights will be downloaded, as you
   select. You can decide to do transfer-learning (recommended) or "fine-tune" both the backbone and the decoder head. We
   suggest seeing our [dedicated documentation on models](dlc3-architectures) for more information (
   or the [this page on selecting models](what-neural-network-should-i-use) for the TensorFlow engine).
@@ -884,17 +884,18 @@ field experiment but only track the mouse, this will speed up your analysis (als
 To use this simply add `dynamic=(True,.5,10)` when you call `analyze_videos`.
 
 ```python
-dynamic: triple containing (state, detectiontreshold, margin)
-
-    If the state is true, then dynamic cropping will be performed.
-    That means that if an object is detected (i.e., any body part > detectiontreshold),
-    then object boundaries are computed according to the smallest/largest x position and
-    smallest/largest y position of all body parts. This window is expanded by the margin
-    and from then on only the posture within this crop is analyzed (until the object is lost;
-    i.e., < detectiontreshold). The current position is utilized for updating the crop window
-    for the next frame (this is why the margin is important and should be set large enough
-    given the movement of the animal).
+"""
+dynamic: tuple containing (state, detectionthreshold, margin)
+"""
 ```
+
+If the state is true, then dynamic cropping will be performed.
+That means that if an object is detected (i.e., any body part > detectionthreshold),
+then object boundaries are computed according to the smallest/largest x position and
+smallest/largest y position of all body parts.
+This window is expanded by the margin and from then on only the posture within this crop is analyzed (until the object is lost;
+i.e., < detectionthreshold).
+The current position is utilized for updating the crop window for the next frame (this is why the margin is important and should be set large enough given the movement of the animal).
 
 ______________________________________________________________________
 
@@ -902,7 +903,8 @@ ______________________________________________________________________
 
 #### Overview
 
-You can also filter the predictions with a median filter (default) or with a [SARIMAX model](https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html), if you wish. This creates a new .h5 file with the ending *\_filtered* that you can use in create_labeled_data and/or plot trajectories.
+You can also filter the predictions with a median filter (default) or with a [SARIMAX model](https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html), if you wish.
+This creates a new .h5 file with the ending *\_filtered* that you can use in create_labeled_video and/or plot trajectories.
 
 #### Code examples
 
@@ -970,9 +972,9 @@ ______________________________________________________________________
 
 #### Overview
 
-The plotting components of this toolbox utilizes matplotlib. Therefore, these plots can easily be customized by
-the end user. We also provide a function to plot the trajectory of the extracted poses across the analyzed video, which
-can be called by typing:
+The plotting components of this toolbox utilize matplotlib. Therefore, these plots can easily be customized by
+the end user.
+We also provide a function to plot the trajectory of the extracted poses across the analyzed video, as shown in the example below.
 
 #### Code example
 
@@ -1061,8 +1063,8 @@ deeplabcut.create_labeled_video(
 #### Skeleton configuration
 
 To draw a skeleton, you need to first define the pairs of connected nodes (in the `config.yaml` file) and set the
-skeleton color (in the `config.yaml` file). There is also a GUI to help you do this, use by calling
-`deeplabcut.SkeletonBuilder(configpath)`!
+skeleton color (in the `config.yaml` file).
+There is also a GUI to help you do this, use by calling`deeplabcut.SkeletonBuilder(config_path)`, where `config_path` is the path to your project's `config.yaml` file on disk.
 
 Here is how the `config.yaml` additions/edits should look (for example, on the Openfield demo data we provide):
 
