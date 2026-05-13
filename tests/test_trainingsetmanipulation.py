@@ -167,3 +167,64 @@ def test_format_training_data_ignores_likelihood_columns(monkeypatch):
         assert np.array_equal(got["image"], expected["image"])
         assert np.array_equal(got["size"], expected["size"])
         assert np.array_equal(got["joints"][0, 0], expected["joints"][0, 0])
+
+
+def test_merge_annotateddatasets_drops_likelihood_columns(tmp_path):
+    scorer = "testscorer"
+    video_name = "video1"
+    bodyparts = ["nose", "tail"]
+
+    project_path = tmp_path
+    labeled_data_dir = project_path / "labeled-data" / video_name
+    labeled_data_dir.mkdir(parents=True)
+
+    trainingsetfolder_full = project_path / "training-datasets" / "iteration-0"
+    trainingsetfolder_full.mkdir(parents=True)
+
+    # Build a single-animal annotation dataframe with x/y/likelihood columns
+    columns = pd.MultiIndex.from_product(
+        [[scorer], bodyparts, ["x", "y", "likelihood"]],
+        names=["scorer", "bodyparts", "coords"],
+    )
+
+    index = pd.MultiIndex.from_tuples(
+        [("labeled-data", video_name, "img0001.png")],
+    )
+
+    data = np.array([[10.0, 20.0, 0.9, 30.0, 40.0, 0.8]])
+    df = pd.DataFrame(data, index=index, columns=columns)
+
+    input_h5 = labeled_data_dir / f"CollectedData_{scorer}.h5"
+    df.to_hdf(input_h5, key="df_with_missing", mode="w")
+
+    cfg = {
+        "project_path": str(project_path),
+        "video_sets": {str(project_path / "videos" / f"{video_name}.mp4"): {}},
+        "scorer": scorer,
+        "bodyparts": bodyparts,
+        "multianimalproject": False,
+    }
+
+    merged = trainingsetmanipulation.merge_annotateddatasets(
+        cfg,
+        trainingsetfolder_full,
+    )
+
+    # Returned dataframe should not contain likelihood anymore
+    coord_level = "coords" if "coords" in merged.columns.names else merged.columns.names[-1]
+    assert "likelihood" not in merged.columns.get_level_values(coord_level)
+
+    # Saved merged h5 should also not contain likelihood
+    output_h5 = trainingsetfolder_full / f"CollectedData_{scorer}.h5"
+    saved = pd.read_hdf(output_h5)
+
+    coord_level = "coords" if "coords" in saved.columns.names else saved.columns.names[-1]
+    assert "likelihood" not in saved.columns.get_level_values(coord_level)
+
+    # Sanity check: x/y are preserved
+    assert set(saved.columns.get_level_values(coord_level)) == {"x", "y"}
+    output_csv = trainingsetfolder_full / f"CollectedData_{scorer}.csv"
+    saved_csv = pd.read_csv(output_csv, header=[0, 1, 2], index_col=[0, 1, 2])
+
+    coord_level = "coords" if "coords" in saved_csv.columns.names else saved_csv.columns.names[-1]
+    assert "likelihood" not in saved_csv.columns.get_level_values(coord_level)
