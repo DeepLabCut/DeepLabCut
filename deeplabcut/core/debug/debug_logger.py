@@ -562,7 +562,7 @@ def collect_debug_sections(
         executables=executables,
         include_paths=include_executable_paths,
     )
-    if exec_items and executables is not None:  # report if unavailable
+    if exec_items:  # report if unavailable
         sections.append(
             DebugSection(
                 title="External tools",
