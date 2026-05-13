@@ -1,9 +1,73 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
+
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 from collections.abc import Sequence
 from pathlib import Path
+
+
+def reload_debug_settings_from_env() -> None:
+    """Reload debug/timing settings from environment variables."""
+    global DLC_LOG_TIMING, DLC_LOG_TIMING_THRESHOLD_MS
+
+    DLC_LOG_TIMING = _env_flag("DLC_LOG_TIMING", default=False)
+    DLC_LOG_TIMING_THRESHOLD_MS = _env_optional_float(
+        "DLC_LOG_TIMING_THRESHOLD_MS",
+        default=None,
+    )
+
+
+def _env_flag(name: str, default: bool = False) -> bool:
+    """Parse a boolean environment variable.
+
+    Accepted truthy values:
+    1, true, yes, on
+
+    Accepted falsy values:
+    0, false, no, off
+    """
+    value = os.getenv(name)
+    if value is None:
+        return default
+
+    value = value.strip().lower()
+    if value in {"1", "true", "yes", "on"}:
+        return True
+    if value in {"0", "false", "no", "off"}:
+        return False
+    return default
+
+
+def _env_optional_float(name: str, default: float | None = None) -> float | None:
+    """Parse an optional float environment variable.
+
+    Empty strings / unset values return ``default``.
+    Invalid values also fall back to ``default``.
+    """
+    value = os.getenv(name)
+    if value is None:
+        return default
+
+    value = value.strip()
+    if not value:
+        return default
+
+    try:
+        return float(value)
+    except ValueError:
+        return default
 
 
 def _which(command: str) -> str:

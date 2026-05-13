@@ -1,3 +1,14 @@
+#
+# DeepLabCut Toolbox (deeplabcut.org)
+# © A. & M.W. Mathis Labs
+# https://github.com/DeepLabCut/DeepLabCut
+#
+# Please see AUTHORS for contributors.
+# https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
+#
+# Licensed under GNU Lesser General Public License v3.0
+#
+
 from __future__ import annotations
 
 import logging
@@ -16,14 +27,17 @@ from time import perf_counter_ns
 
 from ._debug_utils import (
     _command_version,
+    _env_flag,
+    _env_optional_float,
     _which,
 )
 
 _DEBUG_HANDLER_ATTR = "_dlc_debug_recorder"
 LOG_QUEUE_MAXLEN = 1000
 
-# TODO: Consider making this configurable via env var/settings.
-DLC_LOG_TIMING = False
+# NOTE @C-Achard 2026-05-13: we may want to centralize env vars in a config/settings module in the future
+DLC_LOG_TIMING = _env_flag("DLC_LOG_TIMING", default=False)
+DLC_LOG_TIMING_THRESHOLD_MS = _env_optional_float("DLC_LOG_TIMING_THRESHOLD_MS", default=None)
 
 
 @contextmanager
@@ -44,12 +58,13 @@ def log_timing(
         yield
         return
 
+    effective_threshold_ms = threshold_ms if threshold_ms is not None else DLC_LOG_TIMING_THRESHOLD_MS
     t0 = perf_counter_ns()
     try:
         yield
     finally:
         dt_ms = (perf_counter_ns() - t0) / 1e6
-        if threshold_ms is None or dt_ms >= threshold_ms:
+        if effective_threshold_ms is None or dt_ms >= effective_threshold_ms:
             logger.log(level, "%s took %.3f ms", label, dt_ms)
 
 
@@ -179,6 +194,8 @@ def install_debug_recorder(
     *,
     logger_name: str = "deeplabcut",
     capacity: int = LOG_QUEUE_MAXLEN,
+    handler_level: int = logging.INFO,
+    ensure_logger_level: int | None = None,
 ) -> InMemoryDebugRecorder:
     """Attach a single in-memory recorder to the requested logger namespace.
 
@@ -190,7 +207,7 @@ def install_debug_recorder(
     if isinstance(existing, InMemoryDebugRecorder):
         return existing
 
-    recorder = InMemoryDebugRecorder(capacity=capacity, level=logging.DEBUG)
+    recorder = InMemoryDebugRecorder(capacity=capacity, level=handler_level)
     recorder.set_name("deeplabcut-debug-recorder")
 
     # Important:
@@ -198,7 +215,11 @@ def install_debug_recorder(
     # - set logger level to DEBUG so DLC debug calls are emitted
     # - keep propagation unchanged
     root_logger.addHandler(recorder)
-    root_logger.setLevel(logging.DEBUG)
+
+    if ensure_logger_level is not None:
+        # Only lower verbosity if explicitly requested.
+        if root_logger.getEffectiveLevel() > ensure_logger_level:
+            root_logger.setLevel(ensure_logger_level)
 
     setattr(root_logger, _DEBUG_HANDLER_ATTR, recorder)
     return recorder
@@ -530,7 +551,7 @@ def collect_debug_sections(
         executables=executables,
         include_paths=include_executable_paths,
     )
-    if exec_items and _section_has_useful_values(exec_items):
+    if exec_items and executables is not None:  # report if unavailable
         sections.append(
             DebugSection(
                 title="External tools",
