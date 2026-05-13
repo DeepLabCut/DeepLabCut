@@ -50,11 +50,11 @@ align: center
 As a reminder, the core functions are described in our
 [Nature Protocols paper](https://www.nature.com/articles/s41596-019-0176-0) (published at the time of 2.0.6).
 Additional functions and features are continually added to the package. Thus, we recommend you read over the protocol
-and then please look at the following documentation and the doctrings. Thanks for using DeepLabCut!
+and then please look at the following documentation and the docstrings. Thanks for using DeepLabCut!
 
 ## Using the CLI
 
-To begin, navigate to Anaconda Prompt Terminal and right-click to "open as admin "(Windows), or simply launch
+To begin, navigate to Anaconda Prompt Terminal and right-click to "open as admin" (Windows), or simply launch
 "Terminal" (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, see Install docs!). Next,
 launch your conda env (i.e., for example `conda activate DEEPLABCUT`) and then type `ipython`. Then type:
 
@@ -103,7 +103,7 @@ This is why administrator privileges are required for Windows users, as creating
 deeplabcut.create_new_project(
     "Name of the project",
     "Name of the experimenter",
-    ["Full path of video 1", "Full path of video2", "Full path of video3"],
+    ["Full path of video 1", "Full path of video 2", "Full path of video3"],
     working_directory="Full path of the working directory",
     copy_videos=True/False,
     multianimal=False
@@ -265,12 +265,12 @@ A good training dataset should consist of a sufficient number of frames that cap
 behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and
 different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a
 robust network that you can reuse in the laboratory, a good training dataset should reflect the diversity of the
-behavior with respect to postures, luminance conditions, background conditions, animal identities,etc. of the data that
+behavior with respect to postures, luminance conditions, background conditions, animal identities ,etc. of the data that
 will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200
 frames gave good results [Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y). However, depending on
 the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, more
 or less frames might be necessary to create a good network. Ultimately, in order to scale up the analysis to large
-collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see
+collections of videos with perhaps unexpected conditions, one can also refine the dataset in an adaptive way (see
 refinement below).
 ```
 
@@ -462,7 +462,7 @@ saves file sets as both Linux and Windows for you).
 #### Overview
 
 This function combines the labeled datasets from all the videos and splits them to create train and test
-datasets. The training data will be used to train the network, while the test data set will be used for evaluating the
+datasets. The training data will be used to train the network, while the test dataset will be used for evaluating the
 network.
 
 #### Code example
@@ -477,10 +477,10 @@ deeplabcut.create_training_dataset(config_path)
 #### Output structure and configuration files
 
 The function creates a new shuffle(s) directory in the **dlc-models-pytorch** directory
-(**dlc-models** if using Tensorflow), in the current "iteration" directory.
+(**dlc-models** if using TensorFlow), in the current "iteration" directory.
 The `train` and `test` directories each have a configuration file
-(**pytorch_config.yaml** in **train** and **pose_cfg.yaml** in **test** for Pytorch models,
-**pose_cfg.yaml** in **train** and **test** for Tensorflow models).
+(**pytorch_config.yaml** in **train** and **pose_cfg.yaml** in **test** for PyTorch models,
+**pose_cfg.yaml** in **train** and **test** for TensorFlow models).
 Specifically, the user can edit the **pytorch_config.yaml** (or **pose_cfg.yaml**) within the **train** subdirectory
 before starting the training. These configuration files contain meta information with regard to the parameters
 of the feature detectors. For more information about the **pytorch_config.yaml** file, see [here](dlc3-pytorch-config)
@@ -631,7 +631,7 @@ deeplabcut.train_network(
 )
 ```
 
-Pytorch models in DeepLabCut 3.0 are trained for a set number of epochs, instead of a
+PyTorch models in DeepLabCut 3.0 are trained for a set number of epochs, instead of a
 maximum number of iterations (which is what was used for TensorFlow models). An epoch
 is a single pass through the training dataset, which means your model has seen each
 training image exactly once. So if you have 64 training images for your network, an
@@ -787,10 +787,9 @@ Note that with multi-animal projects additional distance statistics aggregated o
 in that directory. This aims at providing a finer quantitative evaluation of multi-animal prediction performance
 before animal tracking. If the generalization is not sufficient, the user might want to:
 
-- check if the labels were imported correctly; i.e., invisible points are not labeled and the points of interest are
-  labeled accurately
-- make sure that the loss has already converged
-- consider labeling additional images and make another iteration of the training data set
+- Check if the labels were imported correctly; i.e., invisible points are not labeled and the points of interest are labeled accurately
+- Make sure that the loss has already converged
+- Consider labeling additional images and make another iteration of the training dataset
 
 #### Optional maps
 
@@ -1061,7 +1060,7 @@ deeplabcut.create_labeled_video(
 
 To draw a skeleton, you need to first define the pairs of connected nodes (in the `config.yaml` file) and set the
 skeleton color (in the `config.yaml` file).
-There is also a GUI to help you do this, use by calling`deeplabcut.SkeletonBuilder(config_path)`, where `config_path` is the path to your project's `config.yaml` file on disk.
+There is also a GUI to help you do this, used by calling`deeplabcut.SkeletonBuilder(config_path)`, where `config_path` is the path to your project's `config.yaml` file on disk.
 
 Here is how the `config.yaml` additions/edits should look (for example, on the Openfield demo data we provide):
 
@@ -1168,7 +1167,7 @@ ______________________________________________________________________
 #### Overview
 
 While DeepLabCut typically generalizes well across datasets, one might want to optimize its performance in various,
-perhaps unexpected, situations. For generalization to large data sets, images with insufficient labeling performance
+perhaps unexpected, situations. For generalization to large datasets, images with insufficient labeling performance
 can be extracted, manually corrected by adjusting the labels to increase the training set and iteratively improve the
 feature detectors. Such an active learning framework can be used to achieve a predefined level of confidence for all
 images with minimal labeling cost (discussed in Mathis et al 2018). Then, due to the large capacity of the neural network that underlies the feature detectors, one can continue training the network with these additional examples. One does not
@@ -1276,7 +1275,7 @@ Please refer to the {ref}`napari-deeplabcut docs <file:napari-gui-landing>` for 
 
 #### Merge datasets
 
-After correcting the labels for all the frames in each of the subdirectories, the users should merge the data set to
+After correcting the labels for all the frames in each of the subdirectories, the users should merge the dataset to
 create a new dataset. In this step the iteration parameter in the config.yaml file is automatically updated.
 
 ```python
