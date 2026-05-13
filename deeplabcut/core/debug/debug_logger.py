@@ -24,6 +24,7 @@ from datetime import datetime
 from importlib import metadata
 from pathlib import Path
 from time import perf_counter_ns
+from typing import Literal
 
 from ._debug_utils import (
     _command_version,
@@ -206,12 +207,30 @@ def install_debug_recorder(
     logger_name: str = "deeplabcut",
     capacity: int = LOG_QUEUE_MAXLEN,
     handler_level: int = logging.INFO,
-    ensure_logger_level: int | None = None,
+    ensure_logger_level: int | Literal["auto"] | None = "auto",
 ) -> InMemoryDebugRecorder:
     """Attach a single in-memory recorder to the requested logger namespace.
 
     Idempotent: repeated calls return the same recorder.
+
+    Parameters
+    ----------
+    logger_name:
+        Logger namespace to attach the recorder to.
+    capacity:
+        Maximum number of captured records. If None, uses LOG_QUEUE_MAXLEN.
+    handler_level:
+        Minimum level stored by the recorder itself.
+    ensure_logger_level:
+        Controls whether to adjust the target logger level.
+
+        - None: never modify the logger level
+        - int: lower the logger only if its effective level is more restrictive
+        - "auto": if the logger has no explicit level (level == NOTSET),
+          initialize it to ``handler_level`` so fresh namespaces are useful
+          by default without overriding explicit logging config
     """
+
     root_logger = logging.getLogger(logger_name)
 
     existing = getattr(root_logger, _DEBUG_HANDLER_ATTR, None)
@@ -227,7 +246,10 @@ def install_debug_recorder(
     # - keep propagation unchanged
     root_logger.addHandler(recorder)
 
-    if ensure_logger_level is not None:
+    if ensure_logger_level == "auto":
+        if root_logger.level == logging.NOTSET:
+            root_logger.setLevel(handler_level)
+    elif isinstance(ensure_logger_level, int):
         # Only lower verbosity if explicitly requested.
         if root_logger.getEffectiveLevel() > ensure_logger_level:
             root_logger.setLevel(ensure_logger_level)

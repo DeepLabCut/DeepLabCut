@@ -112,7 +112,9 @@ class MainWindow(QMainWindow):
         self._updater.finished.connect(self._on_update_check_finished)
 
         # Debug recorder
-        self._debug_recorder = install_debug_recorder(logger_name="deeplabcut")
+        self._debug_recorder = install_debug_recorder(
+            logger_name="deeplabcut", handler_level=logging.INFO, ensure_logger_level="auto"
+        )
 
         self.default_set()
 
