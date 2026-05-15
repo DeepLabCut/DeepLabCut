@@ -65,13 +65,20 @@ def make_issue_report_provider(
     include_executable_paths: bool = True,
     log_limit: int = 300,
 ) -> Callable[[], str]:
-    """Return a callable that builds a full DLC debug report."""
+    """Return a callable that builds a full DLC debug report.
+
+    ``libraries`` and ``executables`` are normalized to tuples so the returned
+    provider can be called repeatedly even if the caller passed a generator or
+    another one-shot iterable.
+    """
+    libraries_snapshot = None if libraries is None else tuple(libraries)
+    executables_snapshot = None if executables is None else tuple(executables)
 
     def _provider() -> str:
         return build_debug_report(
             recorder=recorder,
-            libraries=libraries,
-            executables=executables,
+            libraries=libraries_snapshot,
+            executables=executables_snapshot,
             include_module_paths=include_module_paths,
             include_executable_paths=include_executable_paths,
             log_limit=log_limit,
@@ -112,7 +119,7 @@ class DebugTextDialog(QDialog):
         self._text_provider = text_provider
 
         self._build_ui(initial_hint=initial_hint)
-        self.refresh_text()
+        # self.refresh_text() # showEvent triggers initial refresh, so this is redundant
 
     def update_content(
         self,
@@ -271,7 +278,7 @@ def show_debug_report_dialog(
         text_hint=("Diagnostic report for issue reporting. Use Refresh to update, then Copy to clipboard."),
         attr_name=dialog_attr_name,
     )
-    dlg.refresh_text()
+    # dlg.refresh_text() # redundant
     dlg.show()
     dlg.raise_()
     dlg.activateWindow()

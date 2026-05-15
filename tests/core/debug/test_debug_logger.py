@@ -27,6 +27,7 @@ def clean_logger(logger_name: str):
     old_handlers = list(logger.handlers)
 
     logger.setLevel(logging.DEBUG)
+    logger.propagate = False
 
     yield logger
 
