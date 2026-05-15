@@ -569,12 +569,13 @@ def evaluate_network(
     raise NotImplementedError(f"This function is not implemented for {engine}")
 
 
+@renamed_parameter(old="Snapindex", new="snapshotindex", since="3.0.0")
 def return_evaluate_network_data(
     config: str,
     shuffle: int = 0,
     trainingsetindex: int = 0,
     comparisonbodyparts: str | list[str] = "all",
-    Snapindex: str | int | None = None,
+    snapshotindex: str | int | None = None,
     rescale: bool = False,
     fulldata: bool = False,
     show_errors: bool = True,
@@ -585,7 +586,7 @@ def return_evaluate_network_data(
     """Returns the results for (previously evaluated) network.
     deeplabcut.evaluate_network(..) Returns list of (per model): [trainingsiterations,tr
     ainfraction,shuffle,trainerror,testerror,pcutoff,trainerrorpcutoff,testerrorpcutoff,
-    Snapshots[snapindex],scale,net_type]
+    Snapshots[snapshotindex],scale,net_type]
 
     This function is only implemented for tensorflow models/shuffles, and will throw
     an error if called with a PyTorch shuffle.
@@ -594,7 +595,7 @@ def return_evaluate_network_data(
     Returns list of:
        (DataMachine, Data, data, trainIndices,
        testIndices, trainFraction, DLCscorer,
-       comparisonbodyparts, cfg, Snapshots[snapindex]
+       comparisonbodyparts, cfg, Snapshots[snapshotindex]
        )
     ----------
     config : string
@@ -652,7 +653,7 @@ def return_evaluate_network_data(
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             comparisonbodyparts=comparisonbodyparts,
-            Snapindex=Snapindex,
+            Snapindex=snapshotindex,
             rescale=rescale,
             fulldata=fulldata,
             show_errors=show_errors,
