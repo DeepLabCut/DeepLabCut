@@ -18,6 +18,11 @@ from deeplabcut.pose_estimation_tensorflow.core.evaluate import (
     get_snapshots_by_index,
 )
 
+tf = pytest.importorskip(
+    "tensorflow",
+    reason="TensorFlow not installed (use a project extra such as .[tf])",
+)
+
 
 def make_single_animal_rmse_df(
     bodyparts,

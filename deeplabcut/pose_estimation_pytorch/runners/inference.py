@@ -10,10 +10,12 @@
 #
 from __future__ import annotations
 
+import os
 import threading
 import warnings
 from abc import ABCMeta, abstractmethod
 from collections.abc import Iterable
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from queue import Empty, Full, Queue
@@ -38,6 +40,39 @@ from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (
     TopDownDynamicCropper,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
+
+# NOTE @deruyter92 2026-04-28: AMD GPUs with DirectML inference mode currently do not
+# support torch.inference_mode, which is stricter than torch.no_grad. The ENV
+# variable is used to conditionally use torch.no_grad instead. See PR #3295.
+_directml_no_grad: bool = os.getenv("DLC_DIRECTML_NO_GRAD", "false").lower() in (
+    "true",
+    "1",
+)
+
+
+def _inference_mode_decorator(fn):
+    """
+    Conditional decorator for inference mode, controlled by the DLC_DIRECTML_NO_GRAD ENV variable.
+    Uses @torch.no_grad if set to "true", otherwise defaults to @torch.inference_mode.
+    """
+    return torch.no_grad()(fn) if _directml_no_grad else torch.inference_mode()(fn)
+
+
+@contextmanager
+def _directml_runtime_error_hint():
+    """Context manager that augments runtime errors with a hint for DirectML-related issues."""
+    try:
+        yield
+    except RuntimeError as e:
+        if torch.is_inference_mode_enabled() and not _directml_no_grad:
+            raise RuntimeError(
+                f"{e}\n\n"
+                "If you are using an AMD GPU with DirectML, this error may be caused by "
+                "@torch.inference_mode being incompatible with the DirectML execution path. "
+                "Try setting the environment variable DLC_DIRECTML_NO_GRAD=true, "
+                "which will switch the inference context to @torch.no_grad."
+            ) from e
+        raise
 
 
 def _merge_defaults(cls, data: dict[str, Any]):
@@ -268,7 +303,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             the predictions for each of the 'batch_size' inputs
         """
 
-    @torch.inference_mode()
+    @_inference_mode_decorator
     def inference(
         self,
         images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
@@ -353,7 +388,8 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 batch, model_kwargs = item
 
                 # Run model inference
-                predictions = self.predict(batch, **model_kwargs)
+                with _directml_runtime_error_hint():
+                    predictions = self.predict(batch, **model_kwargs)
                 self._predictions.extend(predictions)
 
                 # Extract and return results
@@ -463,7 +499,8 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         batch = torch.stack(self._batch_list[: self.batch_size], dim=0)
         model_kwargs = {mk: v[: self.batch_size] for mk, v in self._model_kwargs.items()}
 
-        self._predictions += self.predict(batch, **model_kwargs)
+        with _directml_runtime_error_hint():
+            self._predictions += self.predict(batch, **model_kwargs)
 
         # remove processed inputs
         if len(self._batch_list) <= self.batch_size:
@@ -648,7 +685,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
         self._idx_to_id = None
         self._ctd_track_ages = None  # the age of each CTD tracklet
 
-    @torch.inference_mode()
+    @_inference_mode_decorator
     def inference(
         self,
         images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
@@ -752,7 +789,8 @@ class CTDInferenceRunner(PoseInferenceRunner):
             inputs = torch.as_tensor(image)
 
         # Get and post-process the predictions
-        predictions = self.bu_runner.predict(inputs)
+        with _directml_runtime_error_hint():
+            predictions = self.bu_runner.predict(inputs)
         if self.bu_runner.postprocessor is not None:
             predictions, context = self.bu_runner.postprocessor(predictions, context)
 
@@ -775,7 +813,8 @@ class CTDInferenceRunner(PoseInferenceRunner):
         for data in images:
             inputs, context = self._prepare_ctd_inputs(data)
             model_kwargs = context.pop("model_kwargs", {})
-            predictions = self.predict(inputs, **model_kwargs)
+            with _directml_runtime_error_hint():
+                predictions = self.predict(inputs, **model_kwargs)
             if self.postprocessor is not None:
                 # Pop the "cond_kpts" from the context so there's no re-scoring
                 # This is required when tracking with CTD, otherwise scores go to 0

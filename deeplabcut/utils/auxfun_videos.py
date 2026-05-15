@@ -21,8 +21,11 @@ Licensed under GNU Lesser General Public License v3.0
 
 import datetime
 import os
+import random
 import subprocess
 import warnings
+from collections.abc import Sequence
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -30,8 +33,11 @@ import skimage.color
 from skimage import io
 from skimage.util import img_as_ubyte
 
+from deeplabcut.utils.deprecation import DLCDeprecationWarning
+
 # more videos are in principle covered, as OpenCV is used and allows many formats.
 SUPPORTED_VIDEOS = "avi", "mp4", "mov", "mpeg", "mpg", "mpv", "mkv", "flv", "qt", "yuv"
+DEFAULT_EXCLUDE_PATTERNS: tuple[str, ...] = "*_labeled.*", "*_full.*"
 
 
 class VideoReader:
@@ -643,3 +649,108 @@ def draw_bbox(video):
 
     plt.close(fig)
     return bbox
+
+
+def collect_video_paths(
+    data_path: str | Path | list[str | Path],
+    extensions: str | Sequence[str] | None = None,
+    shuffle: bool = False,
+    exclude_patterns: Sequence[str] = DEFAULT_EXCLUDE_PATTERNS,
+) -> list[Path]:
+    """
+    Collects video paths from a given set of data paths: directories, files, or a mix
+    of both. Directories are scanned one level deep (non-recursively).
+
+    Files and directories are treated differently with respect to extension filtering:
+    - File paths are accepted as-is when ``extensions`` is ``None``; only filtered when
+      ``extensions`` is explicitly set.
+    - Directory contents are always filtered by extension: by ``SUPPORTED_VIDEOS`` when
+      ``extensions`` is ``None``, or by the given value(s) otherwise.
+    - ``exclude_patterns`` are always applied to both files and directory contents.
+
+    Args:
+        data_path: Path or list of paths to folders containing videos, or individual
+            video files. Can be a mix of directories and files.
+        extensions: Controls extension filtering for collected video files.
+            - ``None`` (default): file paths are accepted without extension filtering;
+              directories are scanned for files with a recognized video extension.
+            - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+              both file paths and directory contents are filtered to only include files
+              matching the given extension(s).
+            - Empty ``str`` ``""`` is treated as ``None`` (deprecated, keep for backwards
+              compatibility).
+        shuffle: Whether to shuffle the order of videos. If ``False``, videos are
+            returned in sorted order for deterministic behavior.
+        exclude_patterns: Patterns to exclude from the collection. Defaults to
+            ``DEFAULT_EXCLUDE_PATTERNS``. Set to ``[]`` to disable pattern exclusion.
+
+    Returns:
+        The paths of videos to analyze. Duplicate paths are removed.
+
+    Raises:
+        FileNotFoundError: If any path in ``data_path`` does not exist.
+        ValueError: If ``extensions`` is an empty sequence.
+    """
+    if isinstance(data_path, (str, Path)):
+        data_path = [data_path]
+
+    def _coerce_extensions(extensions: str | Sequence[str] | None) -> set[str] | None:
+        """Coerce the extensions argument to a set of dot-prefixed suffixes, or None."""
+        if extensions is None:
+            return None
+
+        if extensions in ["", ("",), [""], {""}]:
+            warnings.warn(
+                "Passing an empty string for filtering video type extensions is deprecated; pass None instead.",
+                DLCDeprecationWarning,
+                stacklevel=3,
+            )
+            return None
+
+        if isinstance(extensions, str):
+            return {f".{extensions.lstrip('.').lower()}"}
+
+        if not isinstance(extensions, Sequence):
+            raise TypeError(f"extensions must be a string, a sequence or None, got {type(extensions)}")
+
+        if len(extensions) == 0:
+            raise ValueError("Video type extensions filter needs to be an non-empty sequence.")
+        return {f".{e.lstrip('.').lower()}" for e in extensions}
+
+    explicit_suffixes = _coerce_extensions(extensions)
+    implicit_suffixes = {f".{ext.lower()}" for ext in SUPPORTED_VIDEOS}
+
+    videos: list[Path] = []
+    for path in map(Path, data_path):
+        if not path.exists():
+            raise FileNotFoundError(f"Could not find: {path}. Check access rights.")
+
+        if path.is_dir():
+            # Discriminate videos from other files; skip excluded patterns (e.g. prior DLC outputs).
+            allowed = explicit_suffixes if explicit_suffixes else implicit_suffixes
+            videos.extend(
+                f
+                for f in path.iterdir()
+                if f.is_file()
+                and f.suffix.lower() in allowed
+                and not any(f.match(pattern) for pattern in exclude_patterns)
+            )
+        elif path.is_file():
+            # Accept all caller-supplied files; ONLY filter extensions if set. ALWAYS filter exclude patterns.
+            if explicit_suffixes is None or path.suffix.lower() in explicit_suffixes:
+                if not any(path.match(pattern) for pattern in exclude_patterns):
+                    videos.append(path)
+
+    # Resolve video paths and remove duplicates
+    unique_videos = list(dict.fromkeys(v.resolve() for v in videos))
+    if shuffle:
+        random.shuffle(unique_videos)
+    else:
+        unique_videos.sort()
+
+    if any(fn.suffix.lower().lstrip(".") not in SUPPORTED_VIDEOS for fn in unique_videos if fn.suffix):
+        warnings.warn(
+            f"Some videos have unsupported extensions: {unique_videos} \nSupported extensions are: {SUPPORTED_VIDEOS}",
+            stacklevel=2,
+        )
+    return unique_videos

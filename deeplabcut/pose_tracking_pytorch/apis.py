@@ -9,11 +9,13 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
+from collections.abc import Sequence
+
 
 def transformer_reID(
     config: str,
     videos: list[str],
-    videotype: str = "",
+    videotype: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     track_method: str = "ellipse",
@@ -44,11 +46,14 @@ def transformer_reID(
         A list of strings containing the full paths to videos for analysis or a path to
         the directory, where all the videos with same extension are stored.
 
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a
-        directory. Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg',
-        'mkv') are kept.
+    videotype : str | Sequence[str] | None, optional, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
 
     shuffle : int, optional
         which shuffle to use

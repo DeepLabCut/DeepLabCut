@@ -12,7 +12,9 @@
 
 from __future__ import annotations
 
+import logging
 import pickle
+from unittest.mock import MagicMock, patch
 
 import pytest
 from ruamel.yaml import YAML
@@ -330,6 +332,209 @@ def test_create_metadata_from_shuffles(tmpdir, shuffles):
         assert tuple(shuffle_data["train"]) == shuffle.split.train_indices
         assert tuple(shuffle_data["test"]) == shuffle.split.test_indices
     print()
+
+
+def test_get_shuffle_engine_warns_when_metadata_get_fails_then_uses_model_folder(caplog):
+    """ValueError from metadata lookup is logged; engine is inferred from model folders."""
+    caplog.set_level(logging.WARNING)
+
+    cfg = {
+        "project_path": "/tmp/dlc-nonexistent-project-path",
+        "TrainingFraction": [0.95],
+        "Task": "t",
+        "date": "d",
+        "scorer": "s",
+        "iteration": 0,
+    }
+
+    meta_path_mock = MagicMock()
+    meta_path_mock.exists.return_value = True
+
+    training_meta_mock = MagicMock()
+    training_meta_mock.get.side_effect = ValueError("no shuffle for this index")
+
+    with (
+        patch.object(metadata.TrainingDatasetMetadata, "path", return_value=meta_path_mock),
+        patch.object(metadata.TrainingDatasetMetadata, "load", return_value=training_meta_mock),
+        patch.object(metadata, "find_engines_from_model_folders", return_value={Engine.PYTORCH}),
+    ):
+        engine = metadata.get_shuffle_engine(cfg, trainingsetindex=0, shuffle=1)
+
+    assert engine == Engine.PYTORCH
+    assert "no shuffle for this index" in caplog.text
+    assert "Falling back to detecting the engine from model folders" in caplog.text
+
+
+# ---------------------------------------------------------------------------
+# TrainingDatasetMetadata.__post_init__
+# ---------------------------------------------------------------------------
+
+
+def test_training_dataset_metadata_requires_sorted_shuffles(tmpdir):
+    """Constructor raises RuntimeError when shuffles are not sorted."""
+    cfg, *_ = _create_project_with_config(tmpdir)
+    with pytest.raises(RuntimeError):
+        metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[2], SHUFFLES[1]))
+
+
+# ---------------------------------------------------------------------------
+# TrainingDatasetMetadata.get
+# ---------------------------------------------------------------------------
+
+
+def test_get_returns_matching_shuffle(tmpdir):
+    """get() returns the correct ShuffleMetadata."""
+    cfg, *_ = _create_project_with_config(tmpdir)
+    cfg["TrainingFraction"] = [0.5]
+    trainset_meta = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1],))
+
+    result = trainset_meta.get(trainset_index=0, index=1)
+    assert result == SHUFFLES[1]
+
+
+def test_get_raises_when_trainset_index_out_of_bounds(tmpdir):
+    """get() raises ValueError when trainset_index >= len(TrainingFraction)."""
+    cfg, *_ = _create_project_with_config(tmpdir)
+    cfg["TrainingFraction"] = [0.5]
+    trainset_meta = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1],))
+
+    with pytest.raises(ValueError, match="out of bounds"):
+        trainset_meta.get(trainset_index=1, index=1)
+
+
+def test_get_raises_when_shuffle_not_found(tmpdir):
+    """get() raises ValueError when no shuffle matches the given index."""
+    cfg, *_ = _create_project_with_config(tmpdir)
+    cfg["TrainingFraction"] = [0.5]
+    trainset_meta = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1],))
+
+    with pytest.raises(ValueError, match="Could not find"):
+        trainset_meta.get(trainset_index=0, index=99)
+
+
+# ---------------------------------------------------------------------------
+# TrainingDatasetMetadata.save — lazy load_split branch
+# ---------------------------------------------------------------------------
+
+
+def test_save_loads_split_when_shuffle_has_no_split(tmpdir):
+    """save() calls load_split for shuffles where split is None."""
+    cfg, _cfg_path, trainset_dir, _meta_path = _create_project_with_config(tmpdir)
+    _create_doc_data(cfg, trainset_dir, 0.5, 1, [0, 1], [2, 3])
+
+    # Build a shuffle with split=None — mimics a load(load_splits=False) result
+    shuffle_no_split = metadata.ShuffleMetadata(
+        name=SHUFFLES[1].name,
+        train_fraction=0.5,
+        index=1,
+        engine=Engine.PYTORCH,
+        split=None,
+    )
+    trainset_meta = metadata.TrainingDatasetMetadata(cfg, (shuffle_no_split,))
+    # Should not raise; save() must call load_split internally
+    trainset_meta.save()
+
+    reloaded = metadata.TrainingDatasetMetadata.load(cfg, load_splits=True)
+    assert len(reloaded.shuffles) == 1
+    assert reloaded.shuffles[0].split is not None
+
+
+# ---------------------------------------------------------------------------
+# TrainingDatasetMetadata.load
+# ---------------------------------------------------------------------------
+
+
+def test_load_raises_when_metadata_file_missing(tmpdir):
+    """load() raises FileNotFoundError when metadata.yaml does not exist."""
+    cfg, *_ = _create_project_with_config(tmpdir)
+    with pytest.raises(FileNotFoundError):
+        metadata.TrainingDatasetMetadata.load(cfg)
+
+
+# ---------------------------------------------------------------------------
+# TrainingDatasetMetadata.create — empty trainset_path branch
+# ---------------------------------------------------------------------------
+
+
+def test_create_returns_empty_when_trainset_dir_missing(tmp_path):
+    """create() returns metadata with no shuffles when the trainset dir is absent."""
+    cfg = {
+        "Task": "t",
+        "date": "d",
+        "scorer": "s",
+        "iteration": 0,
+        "project_path": str(tmp_path),
+    }
+    trainset_meta = metadata.TrainingDatasetMetadata.create(cfg)
+    assert len(trainset_meta.shuffles) == 0
+
+
+# ---------------------------------------------------------------------------
+# update_metadata
+# ---------------------------------------------------------------------------
+
+
+def test_update_metadata_adds_shuffle(tmpdir):
+    """update_metadata adds a new shuffle and persists it."""
+    cfg, _cfg_path, trainset_dir, _meta_path = _create_project_with_config(tmpdir)
+    # Seed an existing metadata file with one shuffle
+    _create_doc_data(cfg, trainset_dir, 0.5, 1, [0, 1], [2, 3])
+    seed = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1],))
+    seed.save()
+
+    metadata.update_metadata(
+        cfg,
+        train_fraction=0.5,
+        shuffle=2,
+        engine=Engine.PYTORCH,
+        train_indices=[0, 1],
+        test_indices=[2, 3],
+    )
+
+    reloaded = metadata.TrainingDatasetMetadata.load(cfg)
+    indices = [s.index for s in reloaded.shuffles]
+    assert 2 in indices
+
+
+def test_update_metadata_overwrite(tmpdir):
+    """update_metadata with overwrite=True replaces an existing shuffle."""
+    cfg, _cfg_path, trainset_dir, _meta_path = _create_project_with_config(tmpdir)
+    _create_doc_data(cfg, trainset_dir, 0.5, 1, [0, 1], [2, 3])
+    seed = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1],))
+    seed.save()
+
+    metadata.update_metadata(
+        cfg,
+        train_fraction=0.5,
+        shuffle=1,
+        engine=Engine.TF,
+        train_indices=[0, 1],
+        test_indices=[2, 3],
+        overwrite=True,
+    )
+
+    reloaded = metadata.TrainingDatasetMetadata.load(cfg)
+    assert len(reloaded.shuffles) == 1
+    assert reloaded.shuffles[0].engine == Engine.TF
+
+
+def test_update_metadata_raises_without_overwrite(tmpdir):
+    """update_metadata raises RuntimeError when shuffle exists and overwrite=False."""
+    cfg, _cfg_path, trainset_dir, _meta_path = _create_project_with_config(tmpdir)
+    _create_doc_data(cfg, trainset_dir, 0.5, 1, [0, 1], [2, 3])
+    seed = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1],))
+    seed.save()
+
+    with pytest.raises(RuntimeError):
+        metadata.update_metadata(
+            cfg,
+            train_fraction=0.5,
+            shuffle=1,
+            engine=Engine.PYTORCH,
+            train_indices=[0, 1],
+            test_indices=[2, 3],
+            overwrite=False,
+        )
 
 
 def _create_project_with_config(

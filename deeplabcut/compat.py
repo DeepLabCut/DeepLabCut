@@ -12,7 +12,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from pathlib import Path
 
 import numpy as np
@@ -664,7 +664,7 @@ def return_evaluate_network_data(
 def analyze_videos(
     config: str,
     videos: list[str],
-    videotype: str = "",
+    videotype: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     gputouse: str | None = None,
@@ -710,10 +710,14 @@ def analyze_videos(
         A list of strings containing the full paths to videos for analysis or a path to
         the directory, where all the videos with same extension are stored.
 
-    videotype: str, optional, default=""
-        Checks for the extension of the video in case the input to the video is a
-        directory. Only videos with this extension are analyzed. If left unspecified,
-        videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+    videotype : str | Sequence[str] | None, optional, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
 
     shuffle: int, optional, default=1
         An integer specifying the shuffle index of the training dataset used for
@@ -986,7 +990,7 @@ def create_tracking_dataset(
     config: str,
     videos: list[str],
     track_method: str,
-    videotype: str = "",
+    videotype: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     gputouse: int | None = None,
@@ -1015,10 +1019,14 @@ def create_tracking_dataset(
         Specifies the tracker used to generate the pose estimation data. Must be either
         'box', 'skeleton', or 'ellipse'.
 
-    videotype: str, optional, default=""
-        Checks for the extension of the video in case the input to the video is a
-        directory. Only videos with this extension are analyzed. If left unspecified,
-        videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+    videotype : str | Sequence[str] | None, optional, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
 
     shuffle: int, optional, default=1
         An integer specifying the shuffle index of the training dataset used for
@@ -1408,7 +1416,7 @@ def analyze_time_lapse_frames(
 def convert_detections2tracklets(
     config: str,
     videos: list[str],
-    videotype: str = "",
+    videotype: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     overwrite: bool = False,
@@ -1435,10 +1443,14 @@ def convert_detections2tracklets(
         A list of strings containing the full paths to videos for analysis or a path to the directory,
         where all the videos with same extension are stored.
 
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n
-        Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+    videotype : str | Sequence[str] | None, optional, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
 
     shuffle: int, optional
         An integer specifying the shuffle index of the training dataset used for training the network. T

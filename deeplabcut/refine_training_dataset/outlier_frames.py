@@ -14,6 +14,7 @@ import argparse
 import os
 import pickle
 import re
+from collections.abc import Sequence
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -30,7 +31,7 @@ from deeplabcut.utils import (
     frameselectiontools,
     visualization,
 )
-from deeplabcut.utils.auxfun_videos import VideoWriter
+from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
 
 
 def find_outliers_in_raw_data(
@@ -199,7 +200,7 @@ def _read_video_specific_cropping_margins(config: str | Path | dict, video_path:
 def extract_outlier_frames(
     config,
     videos,
-    videotype="",
+    videotype: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     outlieralgorithm="jump",
@@ -239,11 +240,14 @@ def extract_outlier_frames(
         The full paths to videos for analysis or a path to the directory, where all the
         videos with same extension are stored.
 
-    videotype: str, optional, default=""
-        Checks for the extension of the video in case the input to the video is a
-        directory. Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions
-        ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+    videotype : str | Sequence[str] | None, optional, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
 
     shuffle : int, optional, default=1
         The shuffle index of training dataset. The extracted frames will be stored in
@@ -402,7 +406,7 @@ def extract_outlier_frames(
         **kwargs,
     )
 
-    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    Videos = collect_video_paths(videos, extensions=videotype)
     if len(Videos) == 0:
         print("No suitable videos found in", videos)
 
@@ -617,23 +621,27 @@ def compute_deviations(Dataframe, dataname, p_bound, alpha, ARdegree, MAdegree, 
         preds.append(np.c_[distance, significant, meanx, meany, CIx, CIy])
 
     columns = Dataframe.columns
-    prod = []
-    for i in range(columns.nlevels - 1):
-        prod.append(columns.get_level_values(i).unique())
-    prod.append(
-        [
-            "distance",
-            "sig",
-            "meanx",
-            "meany",
-            "lowerCIx",
-            "higherCIx",
-            "lowerCIy",
-            "higherCIy",
-        ]
+    # Use the existing valid keypoint combinations, in their original order.
+    # The goal is to extract each stream (e.g. Scorer/ID/Bodypart) as a separate column,
+    # and then build, for each stat, a MultiIndex with the same levels, i.e.
+    # Scorer/ID/Bodypart/stat (see stats below).
+    # Note, this could be built from "y" as well without any difference in the output
+    base_cols = Dataframe.xs("x", axis=1, level="coords", drop_level=True).columns
+    stats = [
+        "distance",
+        "sig",
+        "meanx",
+        "meany",
+        "lowerCIx",
+        "higherCIx",
+        "lowerCIy",
+        "higherCIy",
+    ]
+    pdindex = pd.MultiIndex.from_tuples(
+        [(*col, stat) for col in base_cols for stat in stats],
+        names=[n for n in columns.names if n != "coords"] + ["stats"],
     )
-    pdindex = pd.MultiIndex.from_product(prod, names=columns.names)
-    data = pd.DataFrame(np.concatenate(preds, axis=1), columns=pdindex)
+    data = pd.DataFrame(np.concatenate(preds, axis=1), columns=pdindex)  # preds (n_frames, n_stats * n_streams)
     # average distance and average # significant differences avg. over comparisonbodyparts
     d = data.xs("distance", axis=1, level=-1).mean(axis=1).values
     o = data.xs("sig", axis=1, level=-1).mean(axis=1).values
