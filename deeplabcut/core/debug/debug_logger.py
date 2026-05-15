@@ -24,7 +24,6 @@ from datetime import datetime
 from importlib import metadata
 from pathlib import Path
 from time import perf_counter_ns
-from typing import Literal
 
 from ._debug_utils import (
     _command_version,
@@ -207,7 +206,7 @@ def install_debug_recorder(
     logger_name: str = "deeplabcut",
     capacity: int = LOG_QUEUE_MAXLEN,
     handler_level: int = logging.INFO,
-    ensure_logger_level: int | Literal["auto"] | None = "auto",
+    ensure_logger_level: int | None = None,
 ) -> InMemoryDebugRecorder:
     """Attach a single in-memory recorder to the requested logger namespace.
 
@@ -218,7 +217,7 @@ def install_debug_recorder(
     logger_name:
         Logger namespace to attach the recorder to.
     capacity:
-        Maximum number of captured records. If None, uses LOG_QUEUE_MAXLEN.
+        Maximum number of captured records. By default, uses LOG_QUEUE_MAXLEN.
     handler_level:
         Minimum level stored by the recorder itself.
     ensure_logger_level:
@@ -226,9 +225,6 @@ def install_debug_recorder(
 
         - None: never modify the logger level
         - int: lower the logger only if its effective level is more restrictive
-        - "auto": if the logger has no explicit level (level == NOTSET),
-          initialize it to ``handler_level`` so fresh namespaces are useful
-          by default without overriding explicit logging config
     """
 
     root_logger = logging.getLogger(logger_name)
@@ -247,10 +243,7 @@ def install_debug_recorder(
     #   an unset logger to ``handler_level`` rather than forcing DEBUG
     root_logger.addHandler(recorder)
 
-    if ensure_logger_level == "auto":
-        if root_logger.level == logging.NOTSET:
-            root_logger.setLevel(handler_level)
-    elif isinstance(ensure_logger_level, int):
+    if isinstance(ensure_logger_level, int):
         # Only lower verbosity if explicitly requested.
         if root_logger.getEffectiveLevel() > ensure_logger_level:
             root_logger.setLevel(ensure_logger_level)
@@ -272,21 +265,12 @@ def get_debug_recorder(*, logger_name: str = "deeplabcut") -> InMemoryDebugRecor
 
 @dataclass(frozen=True)
 class LibrarySpec:
-    """Small description of a library to report.
-
-    Parameters
-    ----------
-    key:
-        Label used in the output report.
-    dist_name:
-        Distribution name used by ``importlib.metadata.version``.
-    module_name:
-        Importable module name used to resolve a module path.
-    """
+    """Small description of a library to report."""
 
     key: str
     dist_name: str | None = None
     module_name: str | None = None
+    prefer_module_version: bool = False
 
     def resolved_dist_name(self) -> str:
         return self.dist_name or self.key
@@ -304,7 +288,7 @@ DLC_CORE_LIBS: tuple[LibrarySpec, ...] = (
     LibrarySpec("scipy"),
     LibrarySpec("h5py"),
     LibrarySpec("tables"),
-    LibrarySpec("opencv-python", dist_name="opencv-python", module_name="cv2"),
+    LibrarySpec("opencv-python", dist_name="opencv-python", module_name="cv2", prefer_module_version=True),
 )
 DLC_GUI_LIBS: tuple[LibrarySpec, ...] = (
     LibrarySpec("PySide6"),
@@ -369,26 +353,40 @@ def _safe_tail(pathlike: object) -> str:
         return str(pathlike)
 
 
+def _module_version(module_name: str) -> str:
+    try:
+        mod = __import__(module_name)
+        version = getattr(mod, "__version__", None)
+        if version:
+            return str(version)
+        return "unknown"
+    except Exception:
+        return "not-installed"
+
+
 def collect_version_summary(
     *,
     libraries: Iterable[LibrarySpec | str] | None = None,
     include_module_paths: bool = False,
 ) -> dict[str, str]:
-    """Collect package versions for a configurable library list.
-
-    The ``libraries`` argument is intentionally lightweight:
-    - pass ``None`` to use ``DLC_ALL_LIBS_SPECS``
-    - pass a list of strings for simple cases
-    - pass ``LibrarySpec`` objects when distribution/module names differ
-    """
     specs = _normalize_library_specs(libraries)
     summary: dict[str, str] = {}
 
     for spec in specs:
         key = spec.key
-        summary[key] = _version(spec.resolved_dist_name())
+        module_name = spec.resolved_module_name()
+
+        if spec.prefer_module_version:
+            version = _module_version(module_name)
+            if version in {"not-installed", "unknown"}:
+                version = _version(spec.resolved_dist_name())
+        else:
+            version = _version(spec.resolved_dist_name())
+
+        summary[key] = version
+
         if include_module_paths:
-            summary[f"{key}_module_path"] = _safe_tail(_module_path(spec.resolved_module_name()))
+            summary[f"{key}_module_path"] = _safe_tail(_module_path(module_name))
 
     return summary
 
