@@ -13,6 +13,7 @@ from collections.abc import Sequence
 
 from .debug_logger import (
     DLC_ALL_LIBS_SPECS,
+    DebugSection,
     ExecutableSpec,
     InMemoryDebugRecorder,
     LibrarySpec,
@@ -30,6 +31,7 @@ from .debug_logger import (
 __all__: Sequence[str] = (
     "DLC_ALL_LIBS_SPECS",
     "ExecutableSpec",
+    "DebugSection",
     "InMemoryDebugRecorder",
     "LibrarySpec",
     "RecordedLog",
