@@ -376,6 +376,7 @@ def return_train_network_path(
     raise NotImplementedError(f"This function is not implemented for {engine}")
 
 
+@renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since="3.0.0")
 @renamed_parameter(old="Shuffles", new="shuffles", since="3.0.0")
 def evaluate_network(
     config: str | Path,
@@ -383,7 +384,7 @@ def evaluate_network(
     trainingsetindex: int | str = 0,
     plotting: bool | str = False,
     show_errors: bool = True,
-    comparisonbodyparts: str | list[str] = "all",
+    comparison_bodyparts: str | list[str] = "all",
     gputouse: str | None = None,
     rescale: bool = False,
     modelprefix: str = "",
@@ -423,7 +424,7 @@ def evaluate_network(
     show_errors: bool, optional, default=True
         Display train and test errors.
 
-    comparisonbodyparts: str or list, optional, default="all"
+    comparison_bodyparts: str or list, optional, default="all"
         The average error will be computed for those body parts only.
         The provided list has to be a subset of the defined body parts.
 
@@ -543,7 +544,7 @@ def evaluate_network(
             trainingsetindex=trainingsetindex,
             plotting=plotting,
             show_errors=show_errors,
-            comparisonbodyparts=comparisonbodyparts,
+            comparisonbodyparts=comparison_bodyparts,
             gputouse=gputouse,
             rescale=rescale,
             modelprefix=modelprefix,
@@ -560,7 +561,7 @@ def evaluate_network(
             trainingsetindex=trainingsetindex,
             plotting=plotting,
             show_errors=show_errors,
-            comparison_bodyparts=comparisonbodyparts,
+            comparison_bodyparts=comparison_bodyparts,
             snapshots_to_evaluate=snapshots_to_evaluate,
             per_keypoint_evaluation=per_keypoint_evaluation,
             modelprefix=modelprefix,
@@ -571,12 +572,13 @@ def evaluate_network(
     raise NotImplementedError(f"This function is not implemented for {engine}")
 
 
+@renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since="3.0.0")
 @renamed_parameter(old="Snapindex", new="snapshotindex", since="3.0.0")
 def return_evaluate_network_data(
     config: str,
     shuffle: int = 0,
     trainingsetindex: int = 0,
-    comparisonbodyparts: str | list[str] = "all",
+    comparison_bodyparts: str | list[str] = "all",
     snapshotindex: str | int | None = None,
     rescale: bool = False,
     fulldata: bool = False,
@@ -597,7 +599,7 @@ def return_evaluate_network_data(
     Returns list of:
        (DataMachine, Data, data, trainIndices,
        testIndices, trainFraction, DLCscorer,
-       comparisonbodyparts, cfg, Snapshots[snapshotindex]
+       comparison_bodyparts, cfg, Snapshots[snapshotindex]
        )
     ----------
     config : string
@@ -612,7 +614,7 @@ def return_evaluate_network_data(
         By default the first (note that TrainingFraction is a list in config.yaml).
         This variable can also be set to "all".
 
-    comparisonbodyparts: list of bodyparts, Default is "all".
+    comparison_bodyparts: list of bodyparts, Default is "all".
         The average error will be computed for those body parts only
         (Has to be a subset of the body parts).
 
@@ -654,7 +656,7 @@ def return_evaluate_network_data(
             config,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
-            comparisonbodyparts=comparisonbodyparts,
+            comparisonbodyparts=comparison_bodyparts,
             Snapindex=snapshotindex,
             rescale=rescale,
             fulldata=fulldata,
@@ -1737,11 +1739,12 @@ def visualize_paf(
     return visualization.visualize_paf(image, paf, step=step, colors=colors)
 
 
+@renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since="3.0.0")
 def extract_save_all_maps(
     config,
     shuffle: int = 1,
     trainingsetindex: int = 0,
-    comparisonbodyparts: str | list[str] = "all",
+    comparison_bodyparts: str | list[str] = "all",
     extract_paf: bool = True,
     all_paf_in_one: bool = True,
     gputouse: int | None = None,
@@ -1770,7 +1773,7 @@ def extract_save_all_maps(
         By default the first (note that TrainingFraction is a list in config.yaml).
         This variable can also be set to "all".
 
-    comparisonbodyparts: list of bodyparts, Default is "all".
+    comparison_bodyparts: list of bodyparts, Default is "all".
         The average error will be computed for those body parts only (Has to be a subset of the body parts).
 
     extract_paf : bool
@@ -1831,7 +1834,7 @@ def extract_save_all_maps(
             config,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
-            comparisonbodyparts=comparisonbodyparts,
+            comparisonbodyparts=comparison_bodyparts,
             extract_paf=extract_paf,
             all_paf_in_one=all_paf_in_one,
             gputouse=gputouse,
@@ -1847,7 +1850,7 @@ def extract_save_all_maps(
             config,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
-            comparison_bodyparts=comparisonbodyparts,
+            comparison_bodyparts=comparison_bodyparts,
             extract_paf=extract_paf,
             all_paf_in_one=all_paf_in_one,
             device=_gpu_to_use_to_device(gputouse, device),
