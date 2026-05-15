@@ -374,9 +374,10 @@ def return_train_network_path(
     raise NotImplementedError(f"This function is not implemented for {engine}")
 
 
+@renamed_parameter(old="Shuffles", new="shuffles", since="3.0.0")
 def evaluate_network(
     config: str | Path,
-    Shuffles: Iterable[int] = (1,),
+    shuffles: Iterable[int] = (1,),
     trainingsetindex: int | str = 0,
     plotting: bool | str = False,
     show_errors: bool = True,
@@ -402,7 +403,7 @@ def evaluate_network(
     config : string
         Full path of the config.yaml file.
 
-    Shuffles: list, optional, default=[1]
+    shuffles: list, optional, default=[1]
         List of integers specifying the shuffle indices of the training dataset.
 
     trainingsetindex: int or str, optional, default=0
@@ -482,14 +483,14 @@ def evaluate_network(
     If you do not want to plot and evaluate with shuffle set to 1.
 
     >>> deeplabcut.evaluate_network(
-            '/analysis/project/reaching-task/config.yaml', Shuffles=[1],
+            '/analysis/project/reaching-task/config.yaml', shuffles=[1],
         )
 
     If you want to plot and evaluate with shuffle set to 0 and 1.
 
     >>> deeplabcut.evaluate_network(
             '/analysis/project/reaching-task/config.yaml',
-            Shuffles=[0, 1],
+            shuffles=[0, 1],
             plotting=True,
         )
 
@@ -497,7 +498,7 @@ def evaluate_network(
 
     >>> deeplabcut.evaluate_network(
             '/analysis/project/reaching-task/config.yaml',
-            Shuffles=[1],
+            shuffles=[1],
             plotting="individual",
         )
 
@@ -507,7 +508,7 @@ def evaluate_network(
 
     >>> deeplabcut.evaluate_network(
     >>>     "/analysis/project/reaching-task/config.yaml",
-    >>>     Shuffles=[0, 1],
+    >>>     shuffles=[0, 1],
     >>>     pcutoff={"left_ear": 0.8, "right_ear": 0.8},
     >>> )
 
@@ -516,7 +517,7 @@ def evaluate_network(
     if engine is None:
         cfg = _load_config(config)
         engines = set()
-        for shuffle in Shuffles:
+        for shuffle in shuffles:
             engines.add(
                 get_shuffle_engine(
                     cfg,
@@ -526,7 +527,7 @@ def evaluate_network(
                 )
             )
         if len(engines) == 0:
-            raise ValueError(f"You must pass at least one shuffle to evaluate (had {list(Shuffles)})")
+            raise ValueError(f"You must pass at least one shuffle to evaluate (had {list(shuffles)})")
         elif len(engines) > 1:
             raise ValueError(f"All shuffles must have the same engine (found {list(engines)})")
         engine = engines.pop()
@@ -536,7 +537,7 @@ def evaluate_network(
 
         return evaluate_network(
             str(config),
-            Shuffles=Shuffles,
+            Shuffles=shuffles,
             trainingsetindex=trainingsetindex,
             plotting=plotting,
             show_errors=show_errors,
@@ -553,7 +554,7 @@ def evaluate_network(
         _update_device(gputouse, torch_kwargs)
         return evaluate_network(
             config,
-            shuffles=Shuffles,
+            shuffles=shuffles,
             trainingsetindex=trainingsetindex,
             plotting=plotting,
             show_errors=show_errors,
