@@ -33,6 +33,8 @@ import skimage.color
 from skimage import io
 from skimage.util import img_as_ubyte
 
+from deeplabcut.utils.deprecation import DLCDeprecationWarning
+
 # more videos are in principle covered, as OpenCV is used and allows many formats.
 SUPPORTED_VIDEOS = "avi", "mp4", "mov", "mpeg", "mpg", "mpv", "mkv", "flv", "qt", "yuv"
 DEFAULT_EXCLUDE_PATTERNS: tuple[str, ...] = "*_labeled.*", "*_full.*"
@@ -656,50 +658,64 @@ def collect_video_paths(
     exclude_patterns: Sequence[str] = DEFAULT_EXCLUDE_PATTERNS,
 ) -> list[Path]:
     """
-    Collects video paths from a given set of data paths: directories, files or mix of both. Directories are
-    only scanned single level, non-recursively.
+    Collects video paths from a given set of data paths: directories, files, or a mix
+    of both. Directories are scanned one level deep (non-recursively).
 
-    Optionally filters paths by extension and excludes patterns. Files and directories are treated differently:
-    - Files are not filtered by extension by default. Set ``extensions`` if needed, to filter also supplied files.
-    - Directory contents are filtered by ``SUPPORTED_VIDEOS`` by default. Specify custom ``extensions`` if needed.
-    - exclude patterns are ALWAYS applied for directory contents and supplied files. Set to `[]` to exclude no patterns.
+    Files and directories are treated differently with respect to extension filtering:
+    - File paths are accepted as-is when ``extensions`` is ``None``; only filtered when
+      ``extensions`` is explicitly set.
+    - Directory contents are always filtered by extension: by ``SUPPORTED_VIDEOS`` when
+      ``extensions`` is ``None``, or by the given value(s) otherwise.
+    - ``exclude_patterns`` are always applied to both files and directory contents.
 
     Args:
         data_path: Path or list of paths to folders containing videos, or individual
             video files. Can be a mix of directories and files.
-        extensions: The types of videos to select, by filtering the extension (e.g., ".mp4", ".avi", etc.).
-            - If set: select all videos with the given extensions. Both for directory contents and supplied files.
-            - If ``None``, provided files are not filtered, but directory contents are filtered by ``SUPPORTED_VIDEOS``.
-            - An empty str "" is equivalent to None (for backwards compatibility).
-            - An empty sequence: select only files without extension.
-        shuffle: Whether to shuffle the order of videos. If False, videos are returned
-            in sorted order for deterministic behavior.
-        exclude_patterns: Patterns to exclude from the collection. Defaults to DEFAULT_EXCLUDE_PATTERNS.
-            Set to an empty sequence e.g. `[]` to exclude no patterns.
+        extensions: Controls extension filtering for collected video files.
+            - ``None`` (default): file paths are accepted without extension filtering;
+              directories are scanned for files with a recognized video extension.
+            - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+              both file paths and directory contents are filtered to only include files
+              matching the given extension(s).
+            - Empty ``str`` ``""`` is treated as ``None`` (deprecated, keep for backwards
+              compatibility).
+        shuffle: Whether to shuffle the order of videos. If ``False``, videos are
+            returned in sorted order for deterministic behavior.
+        exclude_patterns: Patterns to exclude from the collection. Defaults to
+            ``DEFAULT_EXCLUDE_PATTERNS``. Set to ``[]`` to disable pattern exclusion.
 
     Returns:
         The paths of videos to analyze. Duplicate paths are removed.
 
     Raises:
-        FileNotFoundError: If any path in data_path does not exist.
+        FileNotFoundError: If any path in ``data_path`` does not exist.
+        ValueError: If ``extensions`` is an empty sequence.
     """
     if isinstance(data_path, (str, Path)):
         data_path = [data_path]
 
     def _coerce_extensions(extensions: str | Sequence[str] | None) -> set[str] | None:
-        """Flexible coercion of extensions to a set of suffixes"""
-        # NOTE @deruyter92: support legacy API, which mixed strings and iterables.
-        if isinstance(extensions, (list, tuple, set)):
-            explicit_suffixes = {f".{e.lstrip('.').lower()}" for e in extensions}
-        elif isinstance(extensions, str) and not extensions == "":
-            explicit_suffixes = {f".{extensions.lstrip('.').lower()}"}
-        else:
-            explicit_suffixes = None
+        """Coerce the extensions argument to a set of dot-prefixed suffixes, or None."""
+        if extensions is None:
+            return None
 
-        # Normalize empty string to None
-        if explicit_suffixes == {""}:
-            explicit_suffixes = None
-        return explicit_suffixes
+        if extensions in ["", ("",), [""], {""}]:
+            warnings.warn(
+                "Passing an empty string for filtering video type extensions is deprecated; pass None instead.",
+                DLCDeprecationWarning,
+                stacklevel=3,
+            )
+            return None
+
+        if isinstance(extensions, str):
+            return {f".{extensions.lstrip('.').lower()}"}
+
+        if not isinstance(extensions, Sequence):
+            raise TypeError(f"extensions must be a string, a sequence or None, got {type(extensions)}")
+
+        if len(extensions) == 0:
+            raise ValueError("Video type extensions filter needs to be an non-empty sequence.")
+        return {f".{e.lstrip('.').lower()}" for e in extensions}
 
     explicit_suffixes = _coerce_extensions(extensions)
     implicit_suffixes = {f".{ext.lower()}" for ext in SUPPORTED_VIDEOS}
@@ -732,7 +748,7 @@ def collect_video_paths(
     else:
         unique_videos.sort()
 
-    if any([fn.suffix not in SUPPORTED_VIDEOS for fn in unique_videos]):
+    if any(fn.suffix.lower().lstrip(".") not in SUPPORTED_VIDEOS for fn in unique_videos if fn.suffix):
         warnings.warn(
             f"Some videos have unsupported extensions: {unique_videos} \nSupported extensions are: {SUPPORTED_VIDEOS}",
             stacklevel=2,
