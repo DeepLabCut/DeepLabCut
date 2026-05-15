@@ -26,6 +26,7 @@ from pathlib import Path
 import pytest
 
 from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS, collect_video_paths
+from deeplabcut.utils.deprecation import DLCDeprecationWarning
 
 
 def _touch(path: Path) -> Path:
@@ -64,13 +65,13 @@ def test_accepts_single_path_argument(tmp_path):
 
 
 def test_explicit_video_type_filters_listed_files(tmp_path):
-    """When ``video_type`` is set, it filters explicitly-supplied files too."""
+    """When ``extensions`` is set, it filters explicitly-supplied files too."""
     mp4 = _touch(tmp_path / "video.mp4")
     avi = _touch(tmp_path / "video.avi")
 
     result = collect_video_paths([mp4, avi], extensions="mp4")
 
-    assert [p.name for p in result] == ["video.mp4"]
+    assert {p.name for p in result} == {"video.mp4"}
 
 
 def test_explicit_video_type_accepts_leading_dot(tmp_path):
@@ -79,7 +80,28 @@ def test_explicit_video_type_accepts_leading_dot(tmp_path):
 
     result = collect_video_paths([mp4, avi], extensions=".mp4")
 
-    assert [p.name for p in result] == ["video.mp4"]
+    assert {p.name for p in result} == {"video.mp4"}
+
+
+def test_explicit_video_type_case_insensitive(tmp_path):
+    """Extension matching must be case-insensitive."""
+    mp4 = _touch(tmp_path / "video.mp4")
+    avi = _touch(tmp_path / "video.avi")
+
+    result = collect_video_paths([mp4, avi], extensions="MP4")
+
+    assert {p.name for p in result} == {"video.mp4"}
+
+
+def test_multiple_extensions_filter_directory(tmp_path):
+    """A sequence of extensions filters directory contents to only matching files."""
+    mp4 = _touch(tmp_path / "video.mp4")
+    avi = _touch(tmp_path / "video.avi")
+    _touch(tmp_path / "video.mkv")
+
+    result = collect_video_paths(tmp_path, extensions=["mp4", "avi"])
+
+    assert {p.name for p in result} == {mp4.name, avi.name}
 
 
 def test_directory_enumeration_filters_by_supported_videos(tmp_path):
@@ -102,7 +124,18 @@ def test_directory_enumeration_skips_dlc_artifacts(tmp_path):
 
     result = collect_video_paths(tmp_path, extensions=None)
 
-    assert [p.name for p in result] == [mp4.name]
+    assert {p.name for p in result} == {mp4.name}
+
+
+def test_disable_exclude_patterns_includes_dlc_artifacts(tmp_path):
+    """Setting ``exclude_patterns=[]`` disables all pattern exclusion."""
+    mp4 = _touch(tmp_path / "video.mp4")
+    labeled = _touch(tmp_path / "video_labeled.mp4")
+    full = _touch(tmp_path / "video_full.mp4")
+
+    result = collect_video_paths(tmp_path, extensions=None, exclude_patterns=[])
+
+    assert {p.name for p in result} == {mp4.name, labeled.name, full.name}
 
 
 def test_mixed_files_and_directories(tmp_path):
@@ -154,8 +187,21 @@ def test_sorted_by_default_when_not_shuffled(tmp_path):
     b = _touch(tmp_path / "b.mp4")
     c = _touch(tmp_path / "c.mp4")
 
-    # The resolution order in the function is dict-insertion-stable; given a
-    # sorted input list we expect a sorted output list.
     result = collect_video_paths([c, a, b], extensions=None, shuffle=False)
 
     assert [p.name for p in result] == ["a.mp4", "b.mp4", "c.mp4"]
+
+
+@pytest.mark.parametrize("deprecated_value", ["", [""], ("",), {""}])
+def test_deprecated_empty_extensions_warns(tmp_path, deprecated_value):
+    """Empty / blank extension values are deprecated and should emit a warning."""
+    _touch(tmp_path / "video.mp4")
+
+    with pytest.warns(DLCDeprecationWarning):
+        collect_video_paths(tmp_path, extensions=deprecated_value)
+
+
+def test_empty_sequence_raises(tmp_path):
+    """An empty sequence is not a valid filter; callers must pass None instead."""
+    with pytest.raises(ValueError):
+        collect_video_paths(tmp_path, extensions=[])
