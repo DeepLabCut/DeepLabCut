@@ -663,6 +663,7 @@ def return_evaluate_network_data(
     raise NotImplementedError(f"This function is not implemented for {engine}")
 
 
+@renamed_parameter(old="batchsize", new="batch_size", since="3.0.0")
 def analyze_videos(
     config: str,
     videos: list[str],
@@ -673,7 +674,7 @@ def analyze_videos(
     save_as_csv: bool = False,
     in_random_order: bool = True,
     destfolder: str | None = None,
-    batchsize: int = None,
+    batch_size: int = None,
     cropping: list[int] | None = None,
     TFGPUinference: bool = True,
     dynamic: tuple[bool, float, int] = (False, 0.5, 10),
@@ -748,7 +749,7 @@ def analyze_videos(
         the video is used. Note that for subsequent analysis this folder also needs to
         be passed.
 
-    batchsize: int or None, optional, default=None
+    batch_size: int or None, optional, default=None
         Currently not supported by the PyTorch engine.
         Change batch size for inference; if given overwrites value in ``pose_cfg.yaml``.
 
@@ -932,7 +933,7 @@ def analyze_videos(
             save_as_csv=save_as_csv,
             in_random_order=in_random_order,
             destfolder=destfolder,
-            batchsize=batchsize,
+            batchsize=batch_size,
             cropping=cropping,
             TFGPUinference=TFGPUinference,
             dynamic=dynamic,
@@ -952,15 +953,15 @@ def analyze_videos(
 
         _update_device(gputouse, torch_kwargs)
 
-        if batchsize is not None:
+        if batch_size is not None:
             if "batch_size" in torch_kwargs:
                 print(
-                    f"You called analyze_videos with parameters ``batchsize={batchsize}"
+                    f"You called analyze_videos with parameters ``batch_size={batch_size}"
                     f"`` and batch_size={torch_kwargs['batch_size']}. Only one is "
                     f"needed/used. Using batch size {torch_kwargs['batch_size']}"
                 )
             else:
-                torch_kwargs["batch_size"] = batchsize
+                torch_kwargs["batch_size"] = batch_size
 
         return analyze_videos(
             config,
@@ -988,6 +989,7 @@ def analyze_videos(
     raise NotImplementedError(f"This function is not implemented for {engine}")
 
 
+@renamed_parameter(old="batchsize", new="batch_size", since="3.0.0")
 def create_tracking_dataset(
     config: str,
     videos: list[str],
@@ -997,7 +999,7 @@ def create_tracking_dataset(
     trainingsetindex: int = 0,
     gputouse: int | None = None,
     destfolder: str | None = None,
-    batchsize: int | None = None,
+    batch_size: int | None = None,
     cropping: list[int] | None = None,
     TFGPUinference: bool = True,
     modelprefix: str = "",
@@ -1098,7 +1100,7 @@ def create_tracking_dataset(
             trainingsetindex=trainingsetindex,
             gputouse=gputouse,
             destfolder=destfolder,
-            batchsize=batchsize,
+            batchsize=batch_size,
             cropping=cropping,
             TFGPUinference=TFGPUinference,
             modelprefix=modelprefix,
@@ -1116,7 +1118,7 @@ def create_tracking_dataset(
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             destfolder=destfolder,
-            batch_size=batchsize,
+            batch_size=batch_size,
             cropping=cropping,
             modelprefix=modelprefix,
             robust_nframes=robust_nframes,
