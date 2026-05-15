@@ -51,16 +51,15 @@ when calling `docker run`:
 deeplabcut-docker bash --gpus all -v /home/john:/home/john
 ```
 
-You can select which DeepLabCut version and CUDA version to use through the
-`DLC_VERSION` and `CUDA_VERSION` environment variables. So to launch a container with
-CUDA 12.1 and DLC 3.0.0, you can run:
+Use `DLC_VERSION` and `CUDA_VERSION` to select the Hub tag (unset `DLC_VERSION` uses
+`latest` / `latest-jupyter`):
 
 ```bash
-DLC_VERSION=3.0.0 CUDA_VERSION=12.1 deeplabcut-docker bash --gpus all
+DLC_VERSION=3.0.0rc14 CUDA_VERSION=12.4 deeplabcut-docker bash --gpus all
 ```
 
-*Note: Advanced users can also directly download and use the `deeplabcut-docker.sh`
-script if this is preferred over a python helper script.*
+To use a specific image instead of the default tags, pass `--image repo:tag`.
+Make sure that the image supports jupyter notebooks when passing `notebook`.
 
 ### Jupyter Notebooks Running on Remote Servers
 
@@ -129,11 +128,11 @@ ARG UNAME
 ARG GNAME
 
 # Create same user as on the host system
-RUN mkdir -p /home
+RUN mkdir -p /home/${UNAME}
 RUN mkdir -p /app
 RUN groupadd -g ${GID} ${GNAME} || groupmod -o -g ${GID} ${GNAME}
-RUN useradd -d /home -s /bin/bash -u ${UID} -g ${GID} ${UNAME}
-RUN chown -R ${UNAME}:${GNAME} /home
+RUN useradd -d /home/${UNAME} -s /bin/bash -u ${UID} -g ${GID} ${UNAME}
+RUN chown -R ${UNAME}:${GNAME} /home/${UNAME}
 RUN chown -R ${UNAME}:${GNAME} /app
 WORKDIR /app
 
