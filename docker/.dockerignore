@@ -1,0 +1,5 @@
+examples/
+package/
+README.md
+docker-bake.hcl
+.gitignore
