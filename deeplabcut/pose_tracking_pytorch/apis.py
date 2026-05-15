@@ -11,11 +11,14 @@
 
 from collections.abc import Sequence
 
+from deeplabcut.utils.deprecation import renamed_parameter
 
+
+@renamed_parameter(old="videotype", new="extensions", since="3.0.0")
 def transformer_reID(
     config: str,
     videos: list[str],
-    videotype: str | Sequence[str] | None = None,
+    extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     track_method: str = "ellipse",
@@ -46,7 +49,7 @@ def transformer_reID(
         A list of strings containing the full paths to videos for analysis or a path to
         the directory, where all the videos with same extension are stored.
 
-    videotype : str | Sequence[str] | None, optional, default=None
+    extensions : str | Sequence[str] | None, optional, default=None
         Controls how ``videos`` are filtered, based on file extension.
         File paths and directory contents are treated differently:
         - ``None`` (default): file paths are accepted as-is; directories are
@@ -112,7 +115,7 @@ def transformer_reID(
         config,
         videos,
         track_method,
-        videotype=videotype,
+        extensions=extensions,
         shuffle=shuffle,
         trainingsetindex=trainingsetindex,
         modelprefix=modelprefix,
@@ -135,7 +138,7 @@ def transformer_reID(
         config,
         DLCscorer,
         videos,
-        videotype=videotype,
+        extensions=extensions,
         train_frac=train_frac,
         modelprefix=modelprefix,
         train_epochs=train_epochs,
@@ -151,7 +154,7 @@ def transformer_reID(
     deeplabcut.stitch_tracklets(
         config,
         videos,
-        videotype=videotype,
+        extensions=extensions,
         shuffle=shuffle,
         trainingsetindex=trainingsetindex,
         track_method=track_method,

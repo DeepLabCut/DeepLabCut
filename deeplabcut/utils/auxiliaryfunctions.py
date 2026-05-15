@@ -35,7 +35,7 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.core.trackingutils import TRACK_METHODS
 from deeplabcut.utils import auxfun_multianimal
 from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS, collect_video_paths
-from deeplabcut.utils.deprecation import deprecated
+from deeplabcut.utils.deprecation import deprecated, renamed_parameter
 
 
 def create_config_template(multianimal=False):
@@ -391,14 +391,15 @@ def write_pickle(filename, data):
 
 
 @deprecated(replacement="deeplabcut.collect_video_paths", since="3.0.0")
+@renamed_parameter(old="videotype", new="extensions", since="3.0.0")
 def get_list_of_videos(
     videos: list[str] | str,
-    videotype: str | Sequence[str] | None = SUPPORTED_VIDEOS,
+    extensions: str | Sequence[str] | None = SUPPORTED_VIDEOS,
     in_random_order: bool = True,
 ) -> list[str]:
     video_paths = collect_video_paths(
         data_path=videos,
-        extensions=videotype,
+        extensions=extensions,
         shuffle=in_random_order,
     )
     return [str(path) for path in video_paths]

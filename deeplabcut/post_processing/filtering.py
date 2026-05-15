@@ -21,6 +21,7 @@ from scipy.interpolate import CubicSpline
 from deeplabcut.refine_training_dataset.outlier_frames import FitSARIMAXModel
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 
 def columnwise_spline_interp(data, max_gap=0):
@@ -64,10 +65,11 @@ def columnwise_spline_interp(data, max_gap=0):
     return temp
 
 
+@renamed_parameter(old="videotype", new="extensions", since="3.0.0")
 def filterpredictions(
     config,
     video,
-    videotype: str | Sequence[str] | None = None,
+    extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     filtertype="median",
@@ -97,7 +99,7 @@ def filterpredictions(
         Full path of the video to extract the frame from. Make sure that this video is
         already analyzed.
 
-    videotype : str | Sequence[str] | None, optional, default=None
+    extensions : str | Sequence[str] | None, optional, default=None
         Controls how ``videos`` are filtered, based on file extension.
         File paths and directory contents are treated differently:
         - ``None`` (default): file paths are accepted as-is; directories are
@@ -223,12 +225,12 @@ def filterpredictions(
         modelprefix=modelprefix,
         **kwargs,
     )
-    Videos = collect_video_paths(video, extensions=videotype)
+    Videos = collect_video_paths(video, extensions=extensions)
 
     video_to_filtered_df = {}
 
     if not len(Videos):
-        print("No video(s) were found. Please check your paths and/or 'videotype'.")
+        print("No video(s) were found. Please check your paths and/or extensions filter.")
         if return_data:
             return video_to_filtered_df
 
