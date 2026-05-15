@@ -60,14 +60,17 @@ def get_available_aug_methods(engine: Engine) -> tuple[str, ...]:
     raise RuntimeError(f"Unknown augmentation for engine: {engine}")
 
 
+@renamed_parameter(old="maxiters", new="max_iters", since="3.0.0")
+@renamed_parameter(old="saveiters", new="save_iters", since="3.0.0")
+@renamed_parameter(old="displayiters", new="display_iters", since="3.0.0")
 def train_network(
     config: str | Path,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     max_snapshots_to_keep: int | None = None,
-    displayiters: int | None = None,
-    saveiters: int | None = None,
-    maxiters: int | None = None,
+    display_iters: int | None = None,
+    save_iters: int | None = None,
+    max_iters: int | None = None,
     epochs: int | None = None,
     save_epochs: int | None = None,
     allow_growth: bool = True,
@@ -109,13 +112,13 @@ def train_network(
         are kept.
         See: https://github.com/DeepLabCut/DeepLabCut/issues/8#issuecomment-387404835
 
-    displayiters: optional, default=None
+    display_iters: optional, default=None
         This variable is actually set in ``pose_config.yaml``. However, you can
         overwrite it with this hack. Don't use this regularly, just if you are too lazy
         to dig out the ``pose_config.yaml`` file for the corresponding project. If
         ``None``, the value from there is used, otherwise it is overwritten!
 
-    saveiters: optional, default=None
+    save_iters: optional, default=None
         Only for the TensorFlow engine (for the PyTorch engine see the ``torch_kwargs``:
         you can use ``save_epochs``).
         This variable is actually set in ``pose_config.yaml``. However, you can
@@ -123,7 +126,7 @@ def train_network(
         to dig out the ``pose_config.yaml`` file for the corresponding project.
         If ``None``, the value from there is used, otherwise it is overwritten!
 
-    maxiters: optional, default=None
+    max_iters: optional, default=None
         Only for the TensorFlow engine (for the PyTorch engine see the ``torch_kwargs``:
         you can use ``epochs``).
         This variable is actually set in ``pose_config.yaml``. However, you can
@@ -132,7 +135,7 @@ def train_network(
         If ``None``, the value from there is used, otherwise it is overwritten!
 
     epochs: optional, default=None
-        Only for the PyTorch engine (equivalent to the `maxiters` parameter for the
+        Only for the PyTorch engine (equivalent to the `max_iters` parameter for the
         TensorFlow engine). The maximum number of epochs to train the model for. If
         None, the value will be read from the `pytorch_config.yaml` file. An epoch is a
         single pass through the training dataset, which means your model has seen each
@@ -141,7 +144,7 @@ def train_network(
         16 with batch size 4, etc.).
 
     save_epochs: optional, default=None
-        Only for the PyTorch engine (equivalent to the `saveiters` parameter for the
+        Only for the PyTorch engine (equivalent to the `save_iters` parameter for the
         TensorFlow engine). The number of epochs between each snapshot save. If
         None, the value will be read from the `pytorch_config.yaml` file.
 
@@ -250,7 +253,7 @@ def train_network(
             batch_size=8,
             epochs=100,
             save_epochs=10,
-            displayiters=50,
+            display_iters=50,
         )
     """
     if engine is None:
@@ -271,9 +274,9 @@ def train_network(
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             max_snapshots_to_keep=max_snapshots_to_keep,
-            displayiters=displayiters,
-            saveiters=saveiters,
-            maxiters=maxiters,
+            displayiters=display_iters,
+            saveiters=save_iters,
+            maxiters=max_iters,
             allow_growth=allow_growth,
             gputouse=gputouse,
             autotune=autotune,
@@ -300,7 +303,7 @@ def train_network(
             detector_batch_size=detector_batch_size,
             detector_epochs=detector_epochs,
             detector_save_epochs=detector_save_epochs,
-            display_iters=displayiters,
+            display_iters=display_iters,
             max_snapshots_to_keep=max_snapshots_to_keep,
             pose_threshold=pose_threshold,
             pytorch_cfg_updates=pytorch_cfg_updates,
