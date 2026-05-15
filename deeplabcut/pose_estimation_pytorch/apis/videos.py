@@ -14,6 +14,7 @@ import copy
 import logging
 import pickle
 import time
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -243,7 +244,7 @@ def video_inference(
 def analyze_videos(
     config: str,
     videos: str | list[str],
-    videotype: str | None = None,
+    videotype: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     save_as_csv: bool = False,
@@ -283,9 +284,13 @@ def analyze_videos(
         videos: a str (or list of strings) containing the full paths to videos for
             analysis or a path to the directory, where all the videos with same
             extension are stored.
-        videotype: checks for the extension of the video in case the input to the video
-            is a directory. Only videos with this extension are analyzed. If left
-            unspecified, keeps videos with extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv').
+        videotype: Controls how ``videos`` are filtered, based on file extension.
+            File paths and directory contents are treated differently:
+            - ``None`` (default): file paths are accepted as-is; directories are
+              scanned for files with a recognized video extension.
+            - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+              both file paths and directory contents are filtered by the given
+              extension(s).
         shuffle: An integer specifying the shuffle index of the training dataset used for
             training the network.
         trainingsetindex: Integer specifying which TrainingsetFraction to use.
@@ -541,7 +546,7 @@ def analyze_videos(
     print(f"Using scorer: {dlc_scorer}")
 
     # Reading video and init variables
-    videos = collect_video_paths(videos, videotype, shuffle=in_random_order)
+    videos = collect_video_paths(videos, extensions=videotype, shuffle=in_random_order)
     h5_files_created = False  # Track if any .h5 files were created
 
     for video in videos:

@@ -11,6 +11,7 @@
 import os
 import pickle
 import warnings
+from collections.abc import Sequence
 from pathlib import Path
 
 import numpy as np
@@ -35,7 +36,7 @@ from deeplabcut.utils.auxfun_videos import collect_video_paths
 def convert_detections2tracklets(
     config: str,
     videos: str | list[str],
-    videotype: str | None = None,
+    videotype: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     overwrite: bool = False,
@@ -124,9 +125,10 @@ def convert_detections2tracklets(
         modelprefix=modelprefix,
     )
 
-    videos = collect_video_paths(videos, videotype)
+    paths_input = videos
+    videos = collect_video_paths(videos, extensions=videotype)
     if len(videos) == 0:
-        print(f"No videos were found in {videos}")
+        print(f"No videos were found in {paths_input}")
         return
 
     for video in videos:

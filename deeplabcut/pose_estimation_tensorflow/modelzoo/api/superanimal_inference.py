@@ -14,6 +14,7 @@ import os.path
 import pickle
 import time
 import warnings
+from collections.abc import Sequence
 from pathlib import Path
 
 import imgaug.augmenters as iaa
@@ -247,7 +248,7 @@ def video_inference(
     project_name,
     model_name,
     scale_list=None,
-    videotype="avi",
+    videotype: str | Sequence[str] | None = None,
     destfolder=None,
     batchsize=1,
     robust_nframes=False,
@@ -306,7 +307,7 @@ def video_inference(
 
     sess, inputs, outputs = single_predict.setup_pose_prediction(test_cfg, allow_growth=allow_growth)
     DLCscorer = "DLC_" + Path(test_cfg["init_weights"]).stem
-    videos = collect_video_paths(videos, videotype)
+    videos = collect_video_paths(videos, extensions=videotype)
 
     datafiles = []
     for video in videos:
