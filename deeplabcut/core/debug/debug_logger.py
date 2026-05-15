@@ -242,8 +242,9 @@ def install_debug_recorder(
 
     # Important:
     # - attach only to a DLC-owned logger namespace, not the global root logger
-    # - set logger level to DEBUG so DLC debug calls are emitted
     # - keep propagation unchanged
+    # - logger level adjustment, if any, is handled below; "auto" initializes
+    #   an unset logger to ``handler_level`` rather than forcing DEBUG
     root_logger.addHandler(recorder)
 
     if ensure_logger_level == "auto":
