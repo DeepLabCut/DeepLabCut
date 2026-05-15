@@ -186,6 +186,9 @@ class StreamWriter:
     def flush(self):
         pass
 
+    def isatty(self):
+        return False
+
 
 class StreamReceiver(QtCore.QThread):
     new_text = QtCore.Signal(str)
