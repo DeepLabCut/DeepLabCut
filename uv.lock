@@ -1201,6 +1201,7 @@ dependencies = [
     { name = "networkx", version = "3.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11' or (extra == 'extra-10-deeplabcut-apple-mchips' and extra == 'extra-10-deeplabcut-tf') or (extra == 'extra-10-deeplabcut-apple-mchips' and extra == 'extra-10-deeplabcut-tf-cu11') or (extra == 'extra-10-deeplabcut-apple-mchips' and extra == 'extra-10-deeplabcut-tf-cu12') or (extra == 'extra-10-deeplabcut-apple-mchips' and extra == 'extra-10-deeplabcut-tf-latest') or (extra == 'extra-10-deeplabcut-fmpose3d' and extra == 'extra-10-deeplabcut-tf-cu11') or (extra == 'extra-10-deeplabcut-fmpose3d' and extra == 'extra-10-deeplabcut-tf-cu12') or (extra == 'extra-10-deeplabcut-tf' and extra == 'extra-10-deeplabcut-tf-cu11') or (extra == 'extra-10-deeplabcut-tf' and extra == 'extra-10-deeplabcut-tf-cu12') or (extra == 'extra-10-deeplabcut-tf' and extra == 'extra-10-deeplabcut-tf-latest') or (extra == 'extra-10-deeplabcut-tf-cu11' and extra == 'extra-10-deeplabcut-tf-cu12') or (extra == 'extra-10-deeplabcut-tf-cu11' and extra == 'extra-10-deeplabcut-tf-latest') or (extra == 'extra-10-deeplabcut-tf-cu12' and extra == 'extra-10-deeplabcut-tf-latest')" },
     { name = "numba" },
     { name = "numpy" },
+    { name = "packaging" },
     { name = "pandas", extra = ["hdf5", "performance"] },
     { name = "pillow" },
     { name = "pycocotools" },
@@ -1247,7 +1248,6 @@ fmpose3d = [
 ]
 gui = [
     { name = "napari-deeplabcut" },
-    { name = "packaging" },
     { name = "pyside6" },
     { name = "qdarkstyle" },
 ]
@@ -1335,7 +1335,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=1.18.5,<2" },
     { name = "numpydoc", marker = "extra == 'docs'" },
     { name = "openvino-dev", marker = "extra == 'openvino'", specifier = "==2022.1" },
-    { name = "packaging", marker = "extra == 'gui'", specifier = ">=26" },
+    { name = "packaging", specifier = ">=26" },
     { name = "pandas", extras = ["hdf5", "performance"], specifier = ">=2.2,<3" },
     { name = "pillow", specifier = ">=7.1" },
     { name = "protobuf", marker = "sys_platform == 'darwin' and extra == 'apple-mchips'", specifier = "<7" },

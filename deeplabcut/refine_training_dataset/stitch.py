@@ -14,6 +14,7 @@ import re
 import shelve
 import warnings
 from collections import defaultdict
+from collections.abc import Sequence
 from functools import partial
 from itertools import combinations, cycle
 from pathlib import Path
@@ -35,7 +36,7 @@ from deeplabcut.core.trackingutils import (
     calc_iou,
 )
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
-from deeplabcut.utils.auxfun_videos import VideoWriter
+from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
 
 
 class Tracklet:
@@ -960,7 +961,7 @@ class TrackletStitcher:
 def stitch_tracklets(
     config_path,
     videos,
-    videotype="",
+    videotype: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     n_tracks=None,
@@ -990,10 +991,14 @@ def stitch_tracklets(
         A list of strings containing the full paths to videos for analysis or a path to the directory, where all the
         videos with same extension are stored.
 
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this
-        extension are analyzed.
-        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+    videotype : str | Sequence[str] | None, optional, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
 
     shuffle: int, optional
         An integer specifying the shuffle index of the training dataset used for training the network. The default is 1.
@@ -1076,7 +1081,7 @@ def stitch_tracklets(
     -------
     A TrackletStitcher object
     """
-    vids = deeplabcut.utils.auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    vids = collect_video_paths(videos, extensions=videotype)
     if not vids:
         print("No video(s) found. Please check your path!")
         return

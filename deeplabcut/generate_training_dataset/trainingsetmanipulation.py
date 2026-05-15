@@ -493,6 +493,26 @@ def parse_video_filenames(videos: list[str]) -> list[str]:
     return filenames
 
 
+def _drop_likelihood_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Drop any columns whose coord level is named 'likelihood'.
+
+    This sanitizes annotation DataFrames coming from h5/csv files before they are
+    used for training dataset generation.
+    """
+    if not isinstance(df.columns, pd.MultiIndex):
+        return df
+
+    coord_level = "coords" if "coords" in df.columns.names else df.columns.names[-1]
+    coord_values = df.columns.get_level_values(coord_level)
+
+    likelihood_mask = coord_values == "likelihood"
+    if likelihood_mask.any():
+        logging.info("Detected likelihood columns in annotation data; dropping them.")
+        df = df.drop(columns=df.columns[likelihood_mask])
+
+    return df
+
+
 def merge_annotateddatasets(cfg, trainingsetfolder_full):
     """Merges all the h5 files for all labeled-datasets (from individual videos).
 
@@ -547,11 +567,16 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
     else:
         bodyparts = cfg["bodyparts"]
     AnnotationData = AnnotationData.reindex(bodyparts, axis=1, level=AnnotationData.columns.names.index("bodyparts"))
+    # Filter out any stray likelihood columns that may have been concatenated in
+    # see napari-deeplabcut #204 and DeepLabCut #3319
+    AnnotationData = _drop_likelihood_columns(AnnotationData)
+
     if AnnotationData.empty:
         logging.warning(
             "The annotated dataframe is empty after reindexing using config. "
             "Hint: are bodyparts correctly listed in the configuration?"
         )
+
     filename = os.path.join(trainingsetfolder_full, f"CollectedData_{cfg['scorer']}")
     AnnotationData.to_hdf(filename + ".h5", key="df_with_missing", mode="w")
     AnnotationData.to_csv(filename + ".csv")  # human readable.
@@ -728,23 +753,49 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
         outer[0, 0] = array.astype("int64")
         return outer
 
+    # Again, remove likelihood if present
+    df = _drop_likelihood_columns(df)
+
+    if isinstance(df.columns, pd.MultiIndex):
+        coord_level = "coords" if "coords" in df.columns.names else df.columns.names[-1]
+        coord_values = df.columns.get_level_values(coord_level)
+
+        has_x = "x" in coord_values
+        has_y = "y" in coord_values
+
+        if not (has_x and has_y):
+            raise ValueError(
+                f"Training data must contain x/y coordinates. Found coordinate labels: {list(pd.unique(coord_values))}"
+            )
+
     for i in train_inds:
         data = dict()
         filename = df.index[i]
         data["image"] = filename
         img_shape = read_image_shape_fast(os.path.join(project_path, *filename))
         data["size"] = img_shape
-        temp = df.iloc[i].values.reshape(-1, 2)
+
+        row = df.iloc[i].values
+
+        if row.size % 2 != 0:
+            raise ValueError(
+                "Training data row does not contain an even number of coordinate values "
+                f"after dropping non-coordinate columns. Row size={row.size}, "
+                f"image={filename}"
+            )
+
+        temp = row.reshape(-1, 2)
         joints = np.c_[range(nbodyparts), temp]
         joints = joints[~np.isnan(joints).any(axis=1)].astype(int)
-        # Check that points lie within the image
+
         inside = np.logical_and(
             np.logical_and(joints[:, 1] < img_shape[2], joints[:, 1] > 0),
             np.logical_and(joints[:, 2] < img_shape[1], joints[:, 2] > 0),
         )
         if not all(inside):
             joints = joints[inside]
-        if joints.size:  # Exclude images without labels
+
+        if joints.size:
             data["joints"] = joints
             train_data.append(data)
             matlab_data.append(
@@ -754,7 +805,11 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
                     to_matlab_cell(data["joints"]),
                 )
             )
-    matlab_data = np.asarray(matlab_data, dtype=[("image", "O"), ("size", "O"), ("joints", "O")])
+
+    matlab_data = np.asarray(
+        matlab_data,
+        dtype=[("image", "O"), ("size", "O"), ("joints", "O")],
+    )
     return train_data, matlab_data
 
 
