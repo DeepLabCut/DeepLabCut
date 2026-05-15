@@ -66,7 +66,7 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import resolve_device
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS, collect_video_paths
-from deeplabcut.utils.deprecation import deprecated
+from deeplabcut.utils.deprecation import deprecated, renamed_parameter
 
 
 def parse_snapshot_index_for_analysis(
@@ -295,14 +295,15 @@ def get_scorer_name(
 
 
 @deprecated(replacement="deeplabcut.collect_video_paths", since="3.0.0")
+@renamed_parameter(old="video_type", new="extensions", since="3.0.0")
 def list_videos_in_folder(
     data_path: str | Path | list[str | Path],
-    video_type: str | Sequence[str] | None = SUPPORTED_VIDEOS,
+    extensions: str | Sequence[str] | None = SUPPORTED_VIDEOS,
     shuffle: bool = False,
 ) -> list[Path]:
     return collect_video_paths(
         data_path=data_path,
-        extensions=video_type,
+        extensions=extensions,
         shuffle=shuffle,
     )
 

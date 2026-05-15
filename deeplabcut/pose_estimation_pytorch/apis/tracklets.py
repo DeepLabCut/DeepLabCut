@@ -31,12 +31,14 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
 )
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
 from deeplabcut.utils.auxfun_videos import collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 
+@renamed_parameter(old="videotype", new="extensions", since="3.0.0")
 def convert_detections2tracklets(
     config: str,
     videos: str | list[str],
-    videotype: str | Sequence[str] | None = None,
+    extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     overwrite: bool = False,
@@ -126,7 +128,7 @@ def convert_detections2tracklets(
     )
 
     paths_input = videos
-    videos = collect_video_paths(videos, extensions=videotype)
+    videos = collect_video_paths(videos, extensions=extensions)
     if len(videos) == 0:
         print(f"No videos were found in {paths_input}")
         return

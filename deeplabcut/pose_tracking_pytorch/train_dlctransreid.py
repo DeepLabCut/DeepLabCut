@@ -23,6 +23,7 @@ from pathlib import Path
 import numpy as np
 
 from deeplabcut.utils.auxfun_videos import collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 from .config import cfg
 from .datasets import make_dlc_dataloader
@@ -67,11 +68,12 @@ def split_train_test(npy_list, train_frac):
     return train_list, test_list
 
 
+@renamed_parameter(old="videotype", new="extensions", since="3.0.0")
 def train_tracking_transformer(
     path_config_file,
     dlcscorer,
     videos,
-    videotype: str | Sequence[str] | None = None,
+    extensions: str | Sequence[str] | None = None,
     train_frac=0.8,
     modelprefix="",
     train_epochs=100,
@@ -80,7 +82,7 @@ def train_tracking_transformer(
     destfolder=None,
 ):
     npy_list = []
-    videos = collect_video_paths(videos, extensions=videotype)
+    videos = collect_video_paths(videos, extensions=extensions)
     for video in videos:
         videofolder = str(Path(video).parents[0])
         if destfolder is None:

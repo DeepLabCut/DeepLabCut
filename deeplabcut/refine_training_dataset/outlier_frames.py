@@ -32,6 +32,7 @@ from deeplabcut.utils import (
     visualization,
 )
 from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 
 def find_outliers_in_raw_data(
@@ -197,10 +198,11 @@ def _read_video_specific_cropping_margins(config: str | Path | dict, video_path:
     return x1, y1
 
 
+@renamed_parameter(old="videotype", new="extensions", since="3.0.0")
 def extract_outlier_frames(
     config,
     videos,
-    videotype: str | Sequence[str] | None = None,
+    extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     outlieralgorithm="jump",
@@ -240,7 +242,7 @@ def extract_outlier_frames(
         The full paths to videos for analysis or a path to the directory, where all the
         videos with same extension are stored.
 
-    videotype : str | Sequence[str] | None, optional, default=None
+    extensions : str | Sequence[str] | None, optional, default=None
         Controls how ``videos`` are filtered, based on file extension.
         File paths and directory contents are treated differently:
         - ``None`` (default): file paths are accepted as-is; directories are
@@ -406,7 +408,7 @@ def extract_outlier_frames(
         **kwargs,
     )
 
-    Videos = collect_video_paths(videos, extensions=videotype)
+    Videos = collect_video_paths(videos, extensions=extensions)
     if len(Videos) == 0:
         print("No suitable videos found in", videos)
 

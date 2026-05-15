@@ -21,6 +21,7 @@ from ruamel.yaml import YAML
 import deeplabcut.core.visualization as visualization
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
+from deeplabcut.utils.deprecation import renamed_parameter
 
 DEFAULT_ENGINE = Engine.PYTORCH
 
@@ -661,10 +662,11 @@ def return_evaluate_network_data(
     raise NotImplementedError(f"This function is not implemented for {engine}")
 
 
+@renamed_parameter(old="videotype", new="extensions", since="3.0.0")
 def analyze_videos(
     config: str,
     videos: list[str],
-    videotype: str | Sequence[str] | None = None,
+    extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     gputouse: str | None = None,
@@ -710,7 +712,7 @@ def analyze_videos(
         A list of strings containing the full paths to videos for analysis or a path to
         the directory, where all the videos with same extension are stored.
 
-    videotype : str | Sequence[str] | None, optional, default=None
+    extensions : str | Sequence[str] | None, optional, default=None
         Controls how ``videos`` are filtered, based on file extension.
         File paths and directory contents are treated differently:
         - ``None`` (default): file paths are accepted as-is; directories are
@@ -869,7 +871,7 @@ def analyze_videos(
     >>> deeplabcut.analyze_videos(
             '/analysis/project/reaching-task/config.yaml',
             ['/analysis/project/videos'],
-            videotype='.avi',
+            extensions='.avi',
         )
 
     Analyze multiple videos
@@ -923,7 +925,7 @@ def analyze_videos(
         return analyze_videos(
             config,
             videos,
-            videotype=videotype,
+            extensions=extensions,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             gputouse=gputouse,
@@ -963,7 +965,7 @@ def analyze_videos(
         return analyze_videos(
             config,
             videos=videos,
-            videotype=videotype,
+            extensions=extensions,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             save_as_csv=save_as_csv,
@@ -986,11 +988,12 @@ def analyze_videos(
     raise NotImplementedError(f"This function is not implemented for {engine}")
 
 
+@renamed_parameter(old="videotype", new="extensions", since="3.0.0")
 def create_tracking_dataset(
     config: str,
     videos: list[str],
     track_method: str,
-    videotype: str | Sequence[str] | None = None,
+    extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     gputouse: int | None = None,
@@ -1019,7 +1022,7 @@ def create_tracking_dataset(
         Specifies the tracker used to generate the pose estimation data. Must be either
         'box', 'skeleton', or 'ellipse'.
 
-    videotype : str | Sequence[str] | None, optional, default=None
+    extensions : str | Sequence[str] | None, optional, default=None
         Controls how ``videos`` are filtered, based on file extension.
         File paths and directory contents are treated differently:
         - ``None`` (default): file paths are accepted as-is; directories are
@@ -1091,7 +1094,7 @@ def create_tracking_dataset(
             config,
             videos,
             track_method,
-            videotype=videotype,
+            extensions=extensions,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             gputouse=gputouse,
@@ -1110,7 +1113,7 @@ def create_tracking_dataset(
             config,
             videos,
             track_method,
-            videotype=videotype,
+            extensions=extensions,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             destfolder=destfolder,
@@ -1413,10 +1416,11 @@ def analyze_time_lapse_frames(
     raise NotImplementedError(f"This function is not implemented for {engine}")
 
 
+@renamed_parameter(old="videotype", new="extensions", since="3.0.0")
 def convert_detections2tracklets(
     config: str,
     videos: list[str],
-    videotype: str | Sequence[str] | None = None,
+    extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     overwrite: bool = False,
@@ -1443,7 +1447,7 @@ def convert_detections2tracklets(
         A list of strings containing the full paths to videos for analysis or a path to the directory,
         where all the videos with same extension are stored.
 
-    videotype : str | Sequence[str] | None, optional, default=None
+    extensions : str | Sequence[str] | None, optional, default=None
         Controls how ``videos`` are filtered, based on file extension.
         File paths and directory contents are treated differently:
         - ``None`` (default): file paths are accepted as-is; directories are
@@ -1509,7 +1513,7 @@ def convert_detections2tracklets(
     >>> deeplabcut.convert_detections2tracklets(
     >>>    "/analysis/project/reaching-task/config.yaml",
     >>>    ["/analysis/project/video1.mp4"],
-    >>>    videotype='.mp4',
+    >>>    extensions='.mp4',
     >>> )
 
     If you want to convert detections to tracklets based on box_tracker:
@@ -1517,7 +1521,7 @@ def convert_detections2tracklets(
     >>> deeplabcut.convert_detections2tracklets(
     >>>    "/analysis/project/reaching-task/config.yaml",
     >>>    ["/analysis/project/video1.mp4"],
-    >>>    videotype=".mp4",
+    >>>    extensions=".mp4",
     >>>    track_method="box",
     >>> )
 
@@ -1537,7 +1541,7 @@ def convert_detections2tracklets(
         return convert_detections2tracklets(
             config,
             videos,
-            videotype=videotype,
+            extensions=extensions,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             overwrite=overwrite,
@@ -1563,7 +1567,7 @@ def convert_detections2tracklets(
         return convert_detections2tracklets(
             config,
             videos,
-            videotype=videotype,
+            extensions=extensions,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             overwrite=overwrite,
