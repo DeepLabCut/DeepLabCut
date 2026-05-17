@@ -87,6 +87,15 @@ version with PyTorch and TensorFlow). We aim to depreciate the TF part in 2027.
 
 We recommend using our conda file, see [here](https://github.com/DeepLabCut/DeepLabCut/blob/main/conda-environments/README.md) or the [`deeplabcut-docker` package](https://github.com/DeepLabCut/DeepLabCut/tree/main/docker).
 
+## Local sibling-repo integration
+This repository can also be used as a sibling checkout together with:
+- `../XROMM_DLCTools`
+- `../xmalab`
+
+In that local layout, `XROMM_DLCTools` uses the optional `dlc` dependency group to import this checkout directly, and its baseline harness runs both a DeepLabCut smoke scenario and a broader end-to-end local workflow integration scenario.
+
+See `instructions.md` in this repo for the local integration notes and exact commands.
+
 # [Documentation: The DeepLabCut Process](https://deeplabcut.github.io/DeepLabCut/README.html)
 
 Our docs walk you through using DeepLabCut, and key API points. For an overview of the toolbox and workflow for project management, see our step-by-step at [Nature Protocols paper](https://doi.org/10.1038/s41596-019-0176-0).
