@@ -35,8 +35,10 @@ from PySide6.QtWidgets import (
 import deeplabcut
 from deeplabcut import __version__ as DLC_VERSION
 from deeplabcut import auxiliaryfunctions, compat
+from deeplabcut.core.debug import install_debug_recorder
 from deeplabcut.core.engine import Engine
 from deeplabcut.gui import BASE_DIR, components
+from deeplabcut.gui.dialogs import create_generate_debug_log_action
 from deeplabcut.gui.tabs import (
     AnalyzeVideos,
     CreateTrainingDataset,
@@ -80,7 +82,8 @@ class MainWindow(QMainWindow):
         self.screen_height = screen_size.height()
         self._closing = False
 
-        self.logger = logging.getLogger("GUI")
+        self.logger = logging.getLogger("deeplabcut.gui")
+        self.console_logger = logging.getLogger("deeplabcut.gui.console")
 
         self.config = None
         self.loaded = False
@@ -108,6 +111,11 @@ class MainWindow(QMainWindow):
         )
         self._updater.finished.connect(self._on_update_check_finished)
 
+        # Debug recorder
+        self._debug_recorder = install_debug_recorder(
+            logger_name="deeplabcut", handler_level=logging.INFO, ensure_logger_level=logging.INFO
+        )
+
         self.default_set()
 
         self._generate_welcome_page()
@@ -129,7 +137,7 @@ class MainWindow(QMainWindow):
 
         # create logger to also log to the console
         logging.basicConfig()
-        logging.getLogger("console").setLevel(logging.INFO)
+        self.console_logger.setLevel(logging.INFO)
 
         self._progress_bar = QtWidgets.QProgressBar()
         self._progress_bar.setMaximum(0)
@@ -139,7 +147,7 @@ class MainWindow(QMainWindow):
     def print_to_status_bar(self, text):
         self.status_bar.showMessage(text)
         self.status_bar.repaint()
-        logging.getLogger("console").info(text)
+        self.console_logger.info(text)
 
     @property
     def toolbar(self):
@@ -627,6 +635,15 @@ class MainWindow(QMainWindow):
         self.check_updates = QAction("&Check for Updates...", self)
         self.check_updates.triggered.connect(lambda: self.check_for_updates(silent=False))
 
+        self.buildDebugLogAction = create_generate_debug_log_action(
+            parent=self,
+            recorder=self._debug_recorder,
+            logger_name="deeplabcut",
+            include_module_paths=False,
+            include_executable_paths=True,
+            log_limit=1000,
+        )
+
     def create_menu_bar(self):
         menu_bar = self.menuBar()
 
@@ -653,9 +670,11 @@ class MainWindow(QMainWindow):
         help_menu = QMenu("&Help", self)
         menu_bar.addMenu(help_menu)
         help_menu.addAction(self.helpAction)
-        help_menu.adjustSize()
+        help_menu.addAction(self.buildDebugLogAction)
+        help_menu.addSeparator()
         help_menu.addAction(self.check_updates)
         help_menu.addAction(self.aboutAction)
+        help_menu.adjustSize()
 
     def update_menu_bar(self):
         self.file_menu.removeAction(self.newAction)
