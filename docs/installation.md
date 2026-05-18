@@ -4,8 +4,8 @@ deeplabcut:
   last_metadata_updated: '2026-04-21'
   ignore: false
   visibility: online
-  status: outdated
-  recommendation: update
+  status: viable
+  recommendation: move
   notes: Could be moved to a core/installation folder for clarity.
   last_verified: '2026-04-21'
   verified_for: 3.0.0rc14
