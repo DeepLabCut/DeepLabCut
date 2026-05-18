@@ -389,7 +389,7 @@ deeplabcut.label_frames(config_path)
 <!-- #### HOT KEYS IN THE Labeling GUI (also see "help" in GUI) -->
 
 ```{important}
-**CRITICAL POINT:** It is advisable to **consistently label similar spots** (e.g., on a wrist that is very large, try
+It is advisable to **consistently label similar spots** (e.g., on a wrist that is very large, try
 to label the same location). In general, invisible or occluded points should not be labeled by the user. They can
 simply be skipped by not applying the label anywhere on the frame.
 ```
@@ -445,7 +445,7 @@ ______________________________________________________________________
 ### (F) Create Training Dataset
 
 ```{important}
-**CRITICAL POINT:** Only run this step **where** you are going to train the network. If you label on your laptop but
+Only run this step **where** you are going to train the network. If you label on your laptop but
 move your project folder to Google Colab or AWS, lab server, etc, then run the step below on that platform! If you
 labeled on a Windows machine but train on Linux, this is fine as of 2.0.4 onwards it will be done automatically (it
 saves file sets as both Linux and Windows for you).
@@ -498,7 +498,7 @@ A schematic view of the structure described above is:
 
 #### Network and augmentation selection
 
-**CRITICAL POINT:** At this step, for **create_training_dataset** you select the network you want to use, and any
+At this step, for **create_training_dataset** you select the network you want to use, and any
 additional data augmentation (beyond our defaults). You can set `net_type`, `detector_type` (if using a detector)
 and `augmenter_type` when you call the function.
 
@@ -645,7 +645,7 @@ full path of the checkpoint to the variable ``resume_training_from`` in the [
 dlc3-pytorch-config) file (checkout the "Restarting Training at a Specific Checkpoint"
 section of the docs) under the *train* subdirectory.
 
-**CRITICAL POINT:** It is recommended to train the networks **until the loss plateaus**
+**Tip**: It is recommended to train the networks **until the loss plateaus**
 (depending on the dataset, model architecture and training hyper-parameters this happens
 after 100 to 250 epochs of training).
 
@@ -686,7 +686,7 @@ If the user wishes to restart the training at a specific checkpoint they can spe
 full path of the checkpoint to the variable ``init_weights`` in the **pose_cfg.yaml**
 file under the *train* subdirectory (see Box 2).
 
-**CRITICAL POINT:** It is recommended to train the networks for thousands of iterations
+**Tip**: It is recommended to train the networks for thousands of iterations
 until the loss plateaus (typically around **500,000**) if you use batch size 1. If you
 want to batch train, we recommend using Adam,
 [see more here](tf-custom-image-augmentation).
@@ -694,7 +694,7 @@ want to batch train, we recommend using Adam,
 The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows
 the user to alter how often the loss is displayed and how often the weights are stored.
 
-**maDeepLabCut CRITICAL POINT:** For multi-animal projects we are using not only
+**maDeepLabCut recommendation:** For multi-animal projects we are using not only
 different and new output layers, but also new data augmentation, optimization, learning
 rates, and batch training defaults. Thus, please use a lower ``save_iters`` and
 ``maxiters``. I.e. we suggest saving every 10K-15K iterations, and only training until
