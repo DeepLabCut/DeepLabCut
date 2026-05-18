@@ -9,10 +9,10 @@ parts:
         sections:
           # - file: docs/recipes/installTips
           - file: docs/docker
-      - file: docs/quick-start/index
-        sections:
-          - file: docs/quick-start/single_animal_quick_guide
-          - file: docs/quick-start/tutorial_maDLC
+      # - file: docs/quick-start/index
+        # sections:
+          # - file: docs/quick-start/single_animal_quick_guide
+          # - file: docs/quick-start/tutorial_maDLC
 
   - caption: Main workflows overview
     chapters:
