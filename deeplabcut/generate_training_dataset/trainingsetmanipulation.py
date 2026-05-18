@@ -512,7 +512,7 @@ def drop_likelihood_columns(df: pd.DataFrame) -> pd.DataFrame:
 
     likelihood_mask = coord_values == "likelihood"
     if likelihood_mask.any():
-        logging.info("Detected likelihood columns in annotation data; dropping them.")
+        logging.warning("Detected likelihood columns in annotation data; dropping them.", stacklevel=2)
         df = df.drop(columns=df.columns[likelihood_mask])
 
     return df
@@ -706,23 +706,24 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     fn = os.path.join(project_path, trainingsetfolder, "CollectedData_" + cfg["scorer"])
 
     try:
-        Data = pd.read_hdf(fn + ".h5")
+        data = pd.read_hdf(fn + ".h5")
+        data = drop_likelihood_columns(data)
     except FileNotFoundError:
-        Data = merge_annotateddatasets(
+        data = merge_annotateddatasets(
             cfg,
             Path(os.path.join(project_path, trainingsetfolder)),
         )
-        if Data is None:
+        if data is None:
             return [], []
 
-    conversioncode.guarantee_multiindex_rows(Data)
-    Data = Data[scorer]  # extract labeled data
+    conversioncode.guarantee_multiindex_rows(data)
+    data = data[scorer]  # extract labeled data
 
     if uniform:
         TrainingFraction = cfg["TrainingFraction"]
         trainFraction = TrainingFraction[trainindex]
         trainIndices, testIndices = SplitTrials(
-            range(len(Data.index)),
+            range(len(data.index)),
             trainFraction,
             True,
         )
@@ -731,7 +732,7 @@ def mergeandsplit(config, trainindex=0, uniform=True):
         test_video_name = [Path(i).stem for i in videos][trainindex]
         print("Excluding the following folder (from training):", test_video_name)
         trainIndices, testIndices = [], []
-        for index, name in enumerate(Data.index):
+        for index, name in enumerate(data.index):
             if test_video_name == name[1]:  # this is the video name
                 # print(name,test_video_name)
                 testIndices.append(index)
