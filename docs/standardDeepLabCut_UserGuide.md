@@ -26,23 +26,25 @@ the same), then please see our [maDLC user guide](multi-animal-userguide).
 ## Getting started
 
 DeepLabCut offers two equivalent interfaces: a **GUI** for those who prefer a visual
-workflow (no Python knowledge required), and a **Python API** for users who want scripting flexibility or to integrate
-DeepLabCut into a larger pipeline. All workflow steps are available in both. Please follow these steps to launch DeepLabCut.
+workflow (no Python knowledge required), and a **Python API** for users who want
+scripting flexibility or to integrate DeepLabCut into a larger pipeline. All workflow
+steps are available in both.
 
-1. To begin, navigate to Anaconda Prompt Terminal and right-click to "open as admin" (Windows), or simply launch
-   "Terminal" (unix/MacOS) on your computer.
-1. We assume you have DeepLabCut installed (if not, see {ref}`file:how-to-install`).
-1. Next, activate your conda env (e.g. `conda activate DEEPLABCUT`).
-1. Then launch the DeepLabCut GUI or import the package in a Python script or interactive session (see below).
+We assume you have DeepLabCut installed (if not, see {ref}`file:how-to-install`).
+Open a terminal and activate your conda environment:
+
+```bash
+conda activate DEEPLABCUT
+```
 
 ```{important}
 On Windows, always open the terminal with administrator privileges: right-click and
 select "Run as administrator".
 ```
 
-#### GUI (recommended for beginners)
+Choose your interface below to launch DeepLabCut:
 
-To launch the graphical user interface, run the following command:
+### GUI (recommended for beginners)
 
 ```bash
 python -m deeplabcut
@@ -55,7 +57,7 @@ align: center
 ---
 ```
 
-#### Python API
+### Python API
 
 In an interactive Python session (e.g. `ipython`), import DeepLabCut:
 
@@ -64,9 +66,10 @@ import deeplabcut
 ```
 
 As a reminder, the core functions are described in our
-[Nature Protocols paper](https://www.nature.com/articles/s41596-019-0176-0) (published at the time of DeepLabCut version 2.0.6).
-Additional functions and features are continually added to the package; we recommend
-reading the protocol alongside this documentation.
+[Nature Protocols paper](https://www.nature.com/articles/s41596-019-0176-0) (published
+at the time of DeepLabCut version 2.0.6). Additional functions and features are
+continually added to the package; we recommend reading the protocol alongside this
+documentation.
 
 ## Workflow
 
@@ -1353,12 +1356,11 @@ own dataset.
   control in mice. Some example labels for these images are also provided. See more details
   [here](https://github.com/DeepLabCut/DeepLabCut/tree/main/examples).
 
-### 3D Toolbox
+### 3D tracking
 
-Please see [3D overview](3D-overview) for information on using the 3D toolbox of
-DeepLabCut (as of 2.0.7+).
+For stereo or multi-camera setups, see the {ref}`3D overview <3D-overview>`.
 
 ### Additional helper functions
 
-We suggest you [check out these additional helper functions](helper-functions), that
-could be useful (they are all optional).
+A collection of optional utility functions is available in the
+{ref}`helper functions reference <helper-functions>`.
