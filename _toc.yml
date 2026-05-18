@@ -91,6 +91,7 @@ parts:
     chapters:
       - file: docs/recipes/index
         sections:
+          - file: docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook
           - file: docs/HelperFunctions
           - file: docs/convert_maDLC
           - file: docs/recipes/OtherData
@@ -103,7 +104,6 @@ parts:
           - file: docs/recipes/OpenVINO
           - file: docs/recipes/flip_and_rotate
           - file: docs/recipes/pose_cfg_file_breakdown
-          - file: docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook
           # - file: docs/course
 
   - caption: Project & Community
