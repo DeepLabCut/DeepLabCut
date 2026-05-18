@@ -37,17 +37,17 @@ parts:
 
   - caption: Notebooks & Demos
     chapters:
+      - file: docs/notebooks/your_data
+        sections:
+          - file: examples/COLAB/COLAB_YOURDATA_SuperAnimal
+          - file: examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis
+          - file: examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis
       - file: docs/notebooks/main_demos
         sections:
           - file: examples/COLAB/COLAB_DEMO_SuperAnimal
           - file: examples/COLAB/COLAB_DEMO_mouse_openfield
           - file: examples/COLAB/COLAB_3miceDemo
           - file: examples/COLAB/COLAB_HumanPose_with_RTMPose
-      - file: docs/notebooks/your_data
-        sections:
-          - file: examples/COLAB/COLAB_YOURDATA_SuperAnimal
-          - file: examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis
-          - file: examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis
       - file: docs/notebooks/extra
         sections:
           - file: examples/COLAB/COLAB_transformer_reID
