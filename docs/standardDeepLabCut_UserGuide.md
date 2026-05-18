@@ -23,21 +23,29 @@ depth: 3
 This document covers single/standard DeepLabCut use. If you have a complicated multi-animal scenario (i.e., they look
 the same), then please see our [maDLC user guide](multi-animal-userguide).
 
-To get started, you can use the GUI, or the terminal. See below.
+## Getting started
 
-## Using the GUI (recommended for beginners)
+DeepLabCut offers two equivalent interfaces: a **GUI** for those who prefer a visual
+workflow (no Python knowledge required), and a **Python API** for users who want scripting flexibility or to integrate
+DeepLabCut into a larger pipeline. All workflow steps are available in both. Please follow these steps to launch DeepLabCut.
 
 1. To begin, navigate to Anaconda Prompt Terminal and right-click to "open as admin "(Windows), or simply launch
    "Terminal" (unix/MacOS) on your computer.
 1. We assume you have DeepLabCut installed (if not, see {ref}`file:how-to-install`).
-1. Next, launch your conda env (e.g. `conda activate DEEPLABCUT`).
-1. Then, simply run `python -m deeplabcut`.
-
-Most functions are available to you in the GUI.
-However, advanced users might prefer the additional flexibility that command line interface offers. Read more below.
+1. Next, activate your conda env (e.g. `conda activate DEEPLABCUT`).
+1. Then launch the DeepLabCut GUI (see below) or import the package in your Python project.
 
 ```{important}
-If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
+On Windows, always open the terminal with administrator privileges: right-click and
+select "Run as administrator".
+```
+
+#### GUI (recommended for beginners)
+
+To launch the graphical user interface, run the following command:
+
+```bash
+python -m deeplabcut
 ```
 
 ```{image} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w
@@ -47,26 +55,26 @@ align: center
 ---
 ```
 
-As a reminder, the core functions are described in our
-[Nature Protocols paper](https://www.nature.com/articles/s41596-019-0176-0) (published at the time of 2.0.6).
-Additional functions and features are continually added to the package. Thus, we recommend you read over the protocol
-and then please look at the following documentation and the docstrings. Thanks for using DeepLabCut!
+#### Python API
 
-## Using the CLI
-
-To begin, navigate to Anaconda Prompt Terminal and right-click to "open as admin" (Windows), or simply launch
-"Terminal" (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, see {ref}`file:how-to-install`). Next,
-launch your conda env (e.g. `conda activate DEEPLABCUT`) and then type `ipython`. Then type:
+In an interactive Python session (e.g. `ipython`), import DeepLabCut:
 
 ```python
 import deeplabcut
 ```
 
-```{important}
-If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
-```
+As a reminder, the core functions are described in our
+[Nature Protocols paper](https://www.nature.com/articles/s41596-019-0176-0) (published at the time of DeepLabCut version 2.0.6).
+Additional functions and features are continually added to the package; we recommend
+reading the protocol alongside this documentation.
 
 ## Workflow
+
+DeepLabCut's full workflow is described in steps (A)–(N) below.
+Every step can be completed either via the **GUI** or the **Python API** — both are
+fully equivalent. Code examples throughout this page use the Python API; if you are
+using the GUI, the same steps are available in the corresponding panels of the
+Project Manager.
 
 ### Phase 1 — Project setup
 
