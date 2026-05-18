@@ -33,25 +33,7 @@ parts:
         sections:
           - file: docs/gui/napari/basic_usage
           - file: docs/gui/napari/advanced_usage
-<<<<<<< cy/docs-update-napari-tracking
           - file: docs/gui/napari/tracking/basic_usage
-      - file: docs/dlc-live/dlc-live-gui/index
-        sections:
-          - file: docs/dlc-live/dlc-live-gui/quickstart/install
-          - file: docs/dlc-live/dlc-live-gui/user_guide/overview
-          - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/camera_support
-            sections:
-              - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/opencv_backend
-              - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/basler_backend
-              - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/aravis_backend
-              - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend
-          - file: docs/dlc-live/dlc-live-gui/user_guide/misc/misc_landing
-            sections:
-              - file: docs/dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads
-              - file: docs/dlc-live/dlc-live-gui/user_guide/misc/timestamp_format
-=======
->>>>>>> cy/docs-audit-2026-toc-update
-
 
   - caption: Notebooks & Demos
     chapters:
