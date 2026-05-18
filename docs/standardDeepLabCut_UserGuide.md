@@ -55,8 +55,8 @@ and then please look at the following documentation and the docstrings. Thanks f
 ## Using the CLI
 
 To begin, navigate to Anaconda Prompt Terminal and right-click to "open as admin" (Windows), or simply launch
-"Terminal" (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, see Install docs!). Next,
-launch your conda env (i.e., for example `conda activate DEEPLABCUT`) and then type `ipython`. Then type:
+"Terminal" (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, see {ref}`file:how-to-install`). Next,
+launch your conda env (e.g. `conda activate DEEPLABCUT`) and then type `ipython`. Then type:
 
 ```python
 import deeplabcut
@@ -175,10 +175,8 @@ All the outputs generated during the course of a project will be stored in one o
 
 1. `videos/`:
    Stores either the project videos themselves or symbolic links to them:
-   If copy_videos=False, it contains symbolic links.
+   If copy_videos=False (default), it contains symbolic links.
    If copy_videos=True, the videos are copied into the directory.
-
-The default setting is False.
 
 ```python
 deeplabcut.add_new_videos(
@@ -302,7 +300,7 @@ GUI (and this is written to the config.yaml file).
 
 #### Parameter note
 
-`userfeedback` allows the user to specify which videos they wish to extract frames from. When set to `"True"`, a dialog
+`userfeedback` allows the user to specify which videos they wish to extract frames from. When set to `True`, a dialog
 will be initiated, where the user is asked for each video if (additional/any) frames from this video should be
 extracted. Use this, e.g. if you have already labeled some folders and want to extract data for new videos.
 
@@ -1090,7 +1088,7 @@ deeplabcut.create_labeled_video(
 )
 ```
 
-**NEW** as of 2.2b8: You can create a video with only the "dots" plotted, i.e., in the
+You can create a video with only the "dots" plotted, i.e., in the
 [style of Johansson](https://link.springer.com/article/10.1007/BF00309043), by passing `keypoints_only=True`:
 
 ```python
@@ -1101,8 +1099,10 @@ deeplabcut.create_labeled_video(
 )
 ```
 
-**PRO TIP:** that the **best quality videos** are created when `fastmode=False` is passed. Therefore, when
+```{tip}
+The best quality videos are created when `fastmode=False` is passed. Therefore, when
 `trailpoints` and `draw_skeleton` are used, we **highly** recommend you also pass `fastmode=False`!
+```
 
 ```{image} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559935526258-KFYZC8BDHK01ZIDPNVIX/ke17ZwdGBToddI8pDm48kJbosy0LGK_KqcAZRQ_Qph1Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpzkC6kmM1CbNgeHQVxASNv0wiXikHv274BIFe4LR7nd1rKmAka4uxYMJ9FupazBoaU/mouse_skel_trail.gif?format=750w
 ---
@@ -1129,7 +1129,7 @@ class: dropdown
 
 ##### Overview
 
-NEW, as of 2.0.7+: You can save the "skeleton" that was applied in `create_labeled_videos` for more computations.
+You can save the "skeleton" that was applied in `create_labeled_videos` for more computations.
 Namely, it extracts length and orientation of each "bone" of the skeleton as defined in the **config.yaml** file. You
 can use the function by:
 
