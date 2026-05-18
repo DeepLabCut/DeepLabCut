@@ -107,7 +107,8 @@ class InMemoryDebugRecorder(logging.Handler):
 
     @property
     def dropped_count(self) -> int:
-        return self._dropped
+        with self._lock:
+            return self._dropped
 
     def emit(self, record: logging.LogRecord) -> None:
         try:

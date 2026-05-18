@@ -4,7 +4,7 @@
 # https://github.com/DeepLabCut/DeepLabCut
 #
 # Please see AUTHORS for contributors.
-# https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
+# https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
@@ -12,7 +12,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING
 
 from PySide6 import QtGui
 from PySide6.QtCore import Qt
@@ -36,9 +35,6 @@ from deeplabcut.core.debug import (
     get_debug_recorder,
     install_debug_recorder,
 )
-
-if TYPE_CHECKING:
-    pass
 
 
 def make_log_text_provider(
@@ -119,7 +115,6 @@ class DebugTextDialog(QDialog):
         self._text_provider = text_provider
 
         self._build_ui(initial_hint=initial_hint)
-        # self.refresh_text() # showEvent triggers initial refresh, so this is redundant
 
     def update_content(
         self,

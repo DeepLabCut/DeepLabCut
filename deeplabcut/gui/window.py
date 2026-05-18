@@ -113,7 +113,7 @@ class MainWindow(QMainWindow):
 
         # Debug recorder
         self._debug_recorder = install_debug_recorder(
-            logger_name="deeplabcut", handler_level=logging.INFO, ensure_logger_level="auto"
+            logger_name="deeplabcut", handler_level=logging.INFO, ensure_logger_level=logging.INFO
         )
 
         self.default_set()
