@@ -10,7 +10,7 @@ deeplabcut:
 
 (dlc3-architectures)=
 
-# DeepLabCut 3.0 - PyTorch Model Architectures
+# Model architectures
 
 ## Introduction
 

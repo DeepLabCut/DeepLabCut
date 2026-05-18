@@ -55,6 +55,15 @@ parts:
           - file: examples/JUPYTER/Demo_3D_DeepLabCut
           - file: examples/COLAB/COLAB_DLC_ModelZoo
 
+  - caption: DeepLabCut 3.0 - PyTorch guides
+    chapters:
+      - file: docs/pytorch/index
+        sections:
+          - file: docs/pytorch/user_guide.md
+          - file: docs/pytorch/pytorch_config.md
+          - file: docs/pytorch/architectures.md
+          - file: docs/pytorch/Benchmarking_shuffle_guide
+
   - caption: Advanced, Performance & Live
     chapters:
       - file: docs/ModelZoo
@@ -75,12 +84,6 @@ parts:
             sections:
               - file: docs/dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads
               - file: docs/dlc-live/dlc-live-gui/user_guide/misc/timestamp_format
-      - file: docs/pytorch/index
-        sections:
-          - file: docs/pytorch/user_guide.md
-          - file: docs/pytorch/pytorch_config.md
-          - file: docs/pytorch/architectures.md
-          - file: docs/pytorch/Benchmarking_shuffle_guide
       - file: docs/benchmark
       - file: docs/recipes/TechHardware
 

@@ -11,7 +11,7 @@ deeplabcut:
 
 (dlc3-pytorch-config)=
 
-# The PyTorch Configuration file
+# Configuration file reference
 
 The `pytorch_config.yaml` file specifies the configuration for your PyTorch pose models,
 from the model architecture to which optimizer will be used for training, how training
