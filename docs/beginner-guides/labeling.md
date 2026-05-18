@@ -59,7 +59,7 @@ Please refer to the {ref}`file:napari-dlc-basic-usage` section for a detailed wa
 Work through all the frames in the first folder and save them.
 
 ```{tip}
-After saving, you can close napari and click **`Label Frames`* again to open the next folder
+After saving, you can close napari and click **`Label Frames`** again to open the next folder
 **OR**
 Remove all layers in napari and drag-and-drop the next folder in the same napari session to keep going without needing to close and reopen napari.
 ```
@@ -68,7 +68,7 @@ Remove all layers in napari and drag-and-drop the next folder in the same napari
 
 After you've labeled all your frames, you may want to review their accuracy before moving on to training your model. This is a crucial step, as the quality of your labels will directly impact the performance of your model.
 
-- **Return to the Main Window:** Once you're done with labeling, head back to DeepLabCut's main window, and click on **`Check Labels`**.
+- **Return to the DeepLabCut GUI:** Once you're done with labeling, head back to DeepLabCut's main window, and click on **`Check Labels`**.
 - **Review the Labeled Folders:** The system will have created new folders for each labeled set inside your labeled-data folder. These folders contain your original frames overlaid with the keypoints you've added.
 
 ![Checking Labels in DeepLabCut](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779615252-6BNW661XB2ULH85RTAD3/evaluation-example.png?format=500w)

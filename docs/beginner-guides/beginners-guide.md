@@ -11,7 +11,7 @@ deeplabcut:
 
 (file:beginners-guide)=
 
-# Using the DeepLabCut GUI
+# Project Manager GUI - Step by step
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572296495650-Y4ZTJ2XP2Z9XF1AD74VW/ke17ZwdGBToddI8pDm48kMulEJPOrz9Y8HeI7oJuXxR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UZiU3J6AN9rgO1lHw9nGbkYQrCLTag1XBHRgOrY8YAdXW07ycm2Trb21kYhaLJjddA/DLC_logo_blk-01.png?format=1000w" width="150" title="DLC-live" alt="DLC LIVE!" align="right" vspace = "50">
 
@@ -143,7 +143,7 @@ When you first launch the GUI, you'll find three primary main options:
      Avoid empty spaces in your project name.
      ```
 
-     - Fill in the name of the experimenter. This will be the permanent name associated with the project.
+     - Fill in the name of the experimenter. This name is used in data headers and directory names and it remains permanently associated with the project.
 
 1. **Determine Project Location:**
 
@@ -152,7 +152,7 @@ When you first launch the GUI, you'll find three primary main options:
 
 1. **Multi-Animal or Single-Animal Project:**
 
-   - Tick the 'Multi-Animal' option in the menuif relevant to your experiment.
+   - Tick the 'Multi-Animal' option in the menu if relevant to your experiment.
    - Choose the 'Number of Cameras' as per your experiment.
 
 1. **Adding Videos:**
@@ -164,9 +164,9 @@ When you first launch the GUI, you'll find three primary main options:
      ```
    - A list will be created with all the videos inside this folder.
    - Unselect the videos you wish to remove from the project.
-   - Videos can be automatically copied to the project folder by selecting the "Copy videos to project folder" option. This is recommended for data management and to avoid issues with moving files later on, but depends on your storage system and needs.
+   - Videos outside the project directory can be automatically copied into to the project folder by selecting the "Copy videos to project folder" option. This is the recommended strategy for data management. External videos that are not copied are instead referenced via symbolic links. While using symbolic links avoids duplicating files and reduces storage usage, it is also more prone to issues, for example if the original files are moved or deleted.
    - ```{tip}
-      By default, the GUI will look for **folders of videos**. Use the "Select individual files"
+      By default, the GUI will look for a **directory** containing videos. Use the "Select individual files"
       checkbox if you want to select individual videos instead of a whole folder.
      ```
 
@@ -174,7 +174,7 @@ When you first launch the GUI, you'll find three primary main options:
 
    - Enter all the name, numbers or IDs of bodyparts you wish to track.
      - **Example:** "head", "tail", "left paw", "right paw", etc.
-     - Less recommened: "L1", "L2", "L3", etc.
+     - Less recommended: "L1", "L2", "L3", etc.
    - **If you have multiple animals**:
      - Enter the name, numbers or IDs of the individuals in your experiment.
        - **Example:** "mouse1", "mouse2", "mouse3", etc.

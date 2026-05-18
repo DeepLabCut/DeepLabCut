@@ -78,7 +78,9 @@ We are primarily a package that enables deep learning-based pose estimation. We 
 
 - **A set of videos that span the types of behaviors you want to track.** Having 10 videos that include different backgrounds, different individuals, and different postures is MUCH better than 1 or 2 videos of 1 or 2 different individuals (i.e. 10-20 frames from each of 10 videos is **much better** than 50-100 frames from 2 videos).
 
-- **Ideally, a computer with a GPU.** If you want to use DeepLabCut on your own computer for training and/or for many experiments, then you should get an NVIDIA GPU. See technical specs [here](https://github.com/DeepLabCut/DeepLabCut/wiki/FAQ). You can also use cloud computing resources, including COLAB ([see how](https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/README.md)).
+- **Ideally, a computer with a GPU.** If you want to use DeepLabCut on your own computer for training and/or for many experiments, then you should get an NVIDIA GPU.
+
+- You can also use cloud computing resources, including COLAB ([see how](https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/README.md)).
 
 ### What you DON'T need to get started
 
@@ -236,4 +238,4 @@ Please decide which mode you want to use DeepLabCut, and follow the relevant use
 
 ## Useful links
 
-Please read more in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0). And, see our [troubleshooting wiki](https://github.com/DeepLabCut/DeepLabCut/wiki/Troubleshooting-Tips).
+Please read more in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0).
