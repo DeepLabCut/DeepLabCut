@@ -28,6 +28,7 @@ import os
 ####################################################
 import os.path
 import pickle
+from collections.abc import Sequence
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -36,6 +37,7 @@ import pandas as pd
 
 from deeplabcut.core import crossvalutils
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
+from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 
 def Histogram(vector, color, bins, ax=None, linewidth=1.0):
@@ -170,7 +172,7 @@ def PlottingResults(
 def plot_trajectories(
     config,
     videos,
-    videotype="",
+    videotype: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     filtered=False,
@@ -197,11 +199,14 @@ def plot_trajectories(
         Full paths to videos for analysis or a path to the directory, where all the
         videos with same extension are stored.
 
-    videotype: str, optional, default=""
-        Checks for the extension of the video in case the input to the video is a
-        directory. Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions
-        ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+    videotype : str | Sequence[str] | None, optional, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
 
     shuffle: int, optional, default=1
         Integer specifying the shuffle index of the training dataset.
@@ -288,7 +293,7 @@ def plot_trajectories(
     )  # automatically loads corresponding model (even training iteration based on snapshot index)
     bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, displayedbodyparts)
     individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(cfg, displayedindividuals)
-    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    Videos = collect_video_paths(videos, extensions=videotype)
     if not len(Videos):
         print("No videos found. Make sure you passed a list of videos and that *videotype* is right.")
         return

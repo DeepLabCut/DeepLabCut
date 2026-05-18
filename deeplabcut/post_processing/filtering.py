@@ -10,6 +10,7 @@
 #
 
 import argparse
+from collections.abc import Sequence
 from pathlib import Path
 
 import numpy as np
@@ -19,6 +20,7 @@ from scipy.interpolate import CubicSpline
 
 from deeplabcut.refine_training_dataset.outlier_frames import FitSARIMAXModel
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 
 def columnwise_spline_interp(data, max_gap=0):
@@ -65,7 +67,7 @@ def columnwise_spline_interp(data, max_gap=0):
 def filterpredictions(
     config,
     video,
-    videotype="",
+    videotype: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     filtertype="median",
@@ -94,6 +96,15 @@ def filterpredictions(
     video : string
         Full path of the video to extract the frame from. Make sure that this video is
         already analyzed.
+
+    videotype : str | Sequence[str] | None, optional, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
 
     shuffle : int, optional, default=1
         The shuffle index of training dataset. The extracted frames will be stored in
@@ -212,7 +223,7 @@ def filterpredictions(
         modelprefix=modelprefix,
         **kwargs,
     )
-    Videos = auxiliaryfunctions.get_list_of_videos(video, videotype)
+    Videos = collect_video_paths(video, extensions=videotype)
 
     video_to_filtered_df = {}
 

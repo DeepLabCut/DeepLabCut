@@ -14,6 +14,7 @@ import os.path
 import pickle
 import time
 import warnings
+from collections.abc import Sequence
 from pathlib import Path
 
 import imgaug.augmenters as iaa
@@ -26,7 +27,7 @@ from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import predict as single_predict
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal as predict
 from deeplabcut.utils import auxiliaryfunctions
-from deeplabcut.utils.auxfun_videos import VideoWriter
+from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
 
 warnings.simplefilter("ignore", category=RuntimeWarning)
 
@@ -247,7 +248,7 @@ def video_inference(
     project_name,
     model_name,
     scale_list=None,
-    videotype="avi",
+    videotype: str | Sequence[str] | None = None,
     destfolder=None,
     batchsize=1,
     robust_nframes=False,
@@ -306,7 +307,7 @@ def video_inference(
 
     sess, inputs, outputs = single_predict.setup_pose_prediction(test_cfg, allow_growth=allow_growth)
     DLCscorer = "DLC_" + Path(test_cfg["init_weights"]).stem
-    videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    videos = collect_video_paths(videos, extensions=videotype)
 
     datafiles = []
     for video in videos:

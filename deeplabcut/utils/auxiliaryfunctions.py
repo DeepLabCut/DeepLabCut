@@ -23,6 +23,7 @@ from __future__ import annotations
 import os
 import pickle
 import warnings
+from collections.abc import Sequence
 from pathlib import Path
 
 import pandas as pd
@@ -32,7 +33,9 @@ from ruamel.yaml import YAML
 
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.trackingutils import TRACK_METHODS
-from deeplabcut.utils import auxfun_multianimal, auxfun_videos
+from deeplabcut.utils import auxfun_multianimal
+from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS, collect_video_paths
+from deeplabcut.utils.deprecation import deprecated
 
 
 def create_config_template(multianimal=False):
@@ -387,66 +390,18 @@ def write_pickle(filename, data):
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
+@deprecated(replacement="deeplabcut.collect_video_paths", since="3.0.0")
 def get_list_of_videos(
     videos: list[str] | str,
-    videotype: list[str] | str = "",
+    videotype: str | Sequence[str] | None = SUPPORTED_VIDEOS,
     in_random_order: bool = True,
 ) -> list[str]:
-    """Returns list of videos of videotype "videotype" in folder videos or for list of
-    videos.
-
-    NOTE: excludes keyword videos of the form:
-
-    *_labeled.videotype
-    *_full.videotype
-
-    Args:
-        videos (list[str], str): List of video paths or a single path string. If string (or len() == 1 list of strings)
-        is a directory,
-            finds all videos whose extension matches  ``videotype`` in the directory
-
-        videotype (list[str], str): File extension used to filter videos. Optional if ``videos`` is a list of video
-        files,
-            and filters with common video extensions if a directory is passed in.
-
-        in_random_order (bool): Whether or not to return a shuffled list of videos.
-    """
-    if isinstance(videos, str):
-        videos = [videos]
-
-    if [os.path.isdir(i) for i in videos] == [True]:  # checks if input is a directory
-        """Returns all the videos in the directory."""
-        if not videotype:
-            videotype = auxfun_videos.SUPPORTED_VIDEOS
-
-        print("Analyzing all the videos in the directory...")
-        videofolder = videos[0]
-
-        # make list of full paths
-        videos = [os.path.join(videofolder, fn) for fn in os.listdir(videofolder)]
-
-        if in_random_order:
-            from random import shuffle
-
-            shuffle(videos)  # this is useful so multiple nets can be used to analyze simultaneously
-        else:
-            videos.sort()
-
-    if isinstance(videotype, str):
-        videotype = [videotype]
-    if not videotype:
-        videotype = auxfun_videos.SUPPORTED_VIDEOS
-    # filter list of videos
-    videos = [
-        v
-        for v in videos
-        if os.path.isfile(v)
-        and any(v.endswith(ext) for ext in videotype)
-        and "_labeled." not in v
-        and "_full." not in v
-    ]
-
-    return videos
+    video_paths = collect_video_paths(
+        data_path=videos,
+        extensions=videotype,
+        shuffle=in_random_order,
+    )
+    return [str(path) for path in video_paths]
 
 
 def save_data(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv):
@@ -531,6 +486,7 @@ def filter_files_by_patterns(
     return matching_files
 
 
+@deprecated(replacement="deeplabcut.collect_video_paths", since="3.0.0")
 def get_video_list(filename, videopath, videtype):
     """Get list of videos in a path (if filetype == all), otherwise just a specific
     file."""

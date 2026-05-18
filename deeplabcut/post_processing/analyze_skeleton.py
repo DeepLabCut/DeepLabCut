@@ -15,6 +15,7 @@ Contributed by Federico Claudi - https://github.com/FedeClaudi
 
 import argparse
 import os
+from collections.abc import Sequence
 from math import atan2, degrees
 from pathlib import Path
 
@@ -23,6 +24,7 @@ import pandas as pd
 from scipy.spatial import distance
 
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 
 # utility functions
@@ -167,7 +169,7 @@ def analyzebone(bp1, bp2):
 def analyzeskeleton(
     config,
     videos,
-    videotype="",
+    videotype: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     filtered=False,
@@ -191,11 +193,14 @@ def analyzeskeleton(
         The full paths to videos for analysis or a path to the directory, where all the
         videos with same extension are stored.
 
-    videotype: str, optional, default=""
-        Checks for the extension of the video in case the input to the video is a
-        directory. Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions
-        ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+    videotype : str | Sequence[str] | None, optional, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
 
     shuffle : int, optional, default=1
         The shuffle index of training dataset. The extracted frames will be stored in
@@ -261,7 +266,7 @@ def analyzeskeleton(
         **kwargs,
     )
 
-    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    Videos = collect_video_paths(videos, extensions=videotype)
     for video in Videos:
         print(f"Processing {video}")
         if destfolder is None:

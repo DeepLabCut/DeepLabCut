@@ -10,6 +10,7 @@
 #
 """Code to create tracking datasets for ReID model training."""
 
+from collections.abc import Sequence
 from pathlib import Path
 
 from tqdm import tqdm
@@ -24,6 +25,7 @@ from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.apis.videos import VideoIterator
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_tracking_pytorch import create_triplets_dataset
+from deeplabcut.utils.auxfun_videos import collect_video_paths
 
 
 def build_feature_extraction_runner(
@@ -127,7 +129,7 @@ def create_tracking_dataset(
     config: str,
     videos: list[str] | list[Path],
     track_method: str,
-    videotype: str = "",
+    videotype: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     destfolder: str | None = None,
@@ -147,10 +149,13 @@ def create_tracking_dataset(
             the videos with same extension are stored.
         track_method: Specifies the tracker used to generate the pose estimation data.
             Must be either 'box', 'skeleton', or 'ellipse'.
-        videotype: Checks for the extension of the video in case the input to the video
-            is a directory. Only videos with this extension are analyzed. If left
-            unspecified, keeps videos with extensions ('avi', 'mp4', 'mov', 'mpeg',
-            'mkv').
+        videotype: Controls how ``videos`` are filtered, based on file extension.
+            File paths and directory contents are treated differently:
+            - ``None`` (default): file paths are accepted as-is; directories are
+              scanned for files with a recognized video extension.
+            - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+              both file paths and directory contents are filtered by the given
+              extension(s).
         shuffle: An integer specifying the shuffle index of the training dataset used
             for training the network.
         trainingsetindex: Integer specifying which TrainingsetFraction to use.
@@ -240,7 +245,7 @@ def create_tracking_dataset(
         modelprefix=modelprefix,
     )
 
-    videos = utils.list_videos_in_folder(videos, videotype)
+    videos = collect_video_paths(videos, extensions=videotype)
     for video_path in videos:
         print(f"Loading {video_path}")
         video = VideoIterator(video_path, cropping=cropping)

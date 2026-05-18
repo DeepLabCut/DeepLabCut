@@ -14,6 +14,7 @@ import argparse
 import os
 import pickle
 import re
+from collections.abc import Sequence
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -30,7 +31,7 @@ from deeplabcut.utils import (
     frameselectiontools,
     visualization,
 )
-from deeplabcut.utils.auxfun_videos import VideoWriter
+from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
 
 
 def find_outliers_in_raw_data(
@@ -199,7 +200,7 @@ def _read_video_specific_cropping_margins(config: str | Path | dict, video_path:
 def extract_outlier_frames(
     config,
     videos,
-    videotype="",
+    videotype: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     outlieralgorithm="jump",
@@ -239,11 +240,14 @@ def extract_outlier_frames(
         The full paths to videos for analysis or a path to the directory, where all the
         videos with same extension are stored.
 
-    videotype: str, optional, default=""
-        Checks for the extension of the video in case the input to the video is a
-        directory. Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions
-        ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+    videotype : str | Sequence[str] | None, optional, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
 
     shuffle : int, optional, default=1
         The shuffle index of training dataset. The extracted frames will be stored in
@@ -402,7 +406,7 @@ def extract_outlier_frames(
         **kwargs,
     )
 
-    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    Videos = collect_video_paths(videos, extensions=videotype)
     if len(Videos) == 0:
         print("No suitable videos found in", videos)
 
