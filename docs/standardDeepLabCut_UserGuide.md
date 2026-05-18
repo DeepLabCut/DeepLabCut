@@ -700,7 +700,7 @@ are stored in the subdirectory *train* under the respective iteration directory.
 
 If the user wishes to restart the training at a specific checkpoint they can specify the
 full path of the checkpoint to the variable ``init_weights`` in the **pose_cfg.yaml**
-file under the *train* subdirectory (see Box 2).
+file under the *train* subdirectory (see {ref}`Box 2 <pose-cfg-box2>`).
 
 **Tip**: It is recommended to train the networks for thousands of iterations
 until the loss plateaus (typically around **500,000**) if you use batch size 1. If you
@@ -718,6 +718,111 @@ rates, and batch training defaults. Thus, please use a lower ``save_iters`` and
 data. This will reduce your training time.
 ````
 
+(pose-cfg-box2)=
+
+## \`\`\`\`\{admonition} Box 2 — Key parameters in `pose_cfg.yaml` (TensorFlow engine)
+
+## class: dropdown
+
+**`net_type`**
+
+The neural network architecture to deploy. Default: `resnet_50`.
+
+Available options: `resnet_50`, `resnet_101`, `resnet_152`, `mobilenet_v2_1.0`,
+`mobilenet_v2_0.75`, `mobilenet_v2_0.5`, `mobilenet_v2_0.35`.
+
+```{note}
+If you select `resnet_101` or `resnet_152`, set `intermediate_supervision` to `True`
+for best performance.
+```
+
+______________________________________________________________________
+
+**`display_iters`**
+
+Period (in iterations) at which the loss is printed to the console and saved to
+`log.csv`.
+
+______________________________________________________________________
+
+**`save_iters`**
+
+Period (in iterations) at which network checkpoints (snapshots) are saved to disk.
+Each snapshot is larger than 90 MB, so avoid saving too frequently.
+
+______________________________________________________________________
+
+**`init_weights`**
+
+Path to the weights used to initialise training. By default this points to the
+downloaded pretrained ResNet weights:
+
+```text
+<DeepLabCut_path>/Pose_Estimation_Tensorflow/pretrained/resnet_v1_50.ckpt
+```
+
+For ResNet-50 or ResNet-101, this will be created automatically. To resume training
+from a specific checkpoint, set this to the snapshot path, e.g.:
+
+```text
+<full path>-snapshot-5000
+```
+
+No file extension should be added. This restarts training from the saved weights;
+the iteration counter resets to 0.
+
+______________________________________________________________________
+
+**`multi_step`**
+
+Learning rates and the number of training iterations to run at each rate. To stop
+training before 1M iterations, delete a row or change the final value to the
+desired stopping point.
+
+______________________________________________________________________
+
+**`max_input_size`**
+
+Images whose `width × height` exceeds `max_input_size²` are excluded from training,
+to prevent out-of-memory errors on GPUs with limited memory. Default: `1500`.
+We recommend reducing image resolution as much as possible before training
+(see Mathis & Warren, 2018).
+
+______________________________________________________________________
+
+**Parameters controlling network resolution**
+
+- **`global_scale`** — All training images are rescaled by this factor before being
+  processed by the CNN. The optimal value can be found by cross-validation
+  (see Mathis et al., 2018). Default: `0.8`.
+
+- **`pos_dist_thresh`** — Pixel radius around a labelled location that is treated as a
+  positive training sample for the detector (see Mathis et al., 2018). Default: `17`.
+  For very small objects (e.g. a fly leg in a large image), consider lowering this value.
+
+______________________________________________________________________
+
+**Parameters controlling data augmentation**
+
+- **`dataset_type`** — Augmentation pipeline to use. Options: `default`, `tensorpack`,
+  `imgaug`, `deterministic`. Default: `default`. When calling
+  `create_training_dataset`, this can be set via `augmenter_type="default"`.
+
+- **`scale_jitter_lo` / `scale_jitter_up`** — Each training image is randomly rescaled
+  within `[scale_jitter_lo, scale_jitter_up]`. Defaults: `0.5` / `1.5`.
+
+- **`mirror`** — If the dataset is symmetric around the vertical axis, enables random
+  horizontal flipping during training. Default: `False`.
+
+- **`cropping`** — Automatically crop images during training. Default: `True`.
+
+- **`cropratio`** — Fraction of training samples that are cropped. Default: `0.4` (40%).
+
+- **`minsize`, `leftwidth`, `rightwidth`, `bottomheight`, `topheight`** — Define the
+  dimensions and limits used when cropping.
+
+`````
+
 ##### API Docs
 
 ````{admonition} Click the button to see API Docs for train_network
@@ -727,7 +832,7 @@ class: dropdown
 ```{eval-rst}
 .. include:: ./api/deeplabcut.train_network.rst
 ```
-````
+`````
 
 ______________________________________________________________________
 
@@ -1310,7 +1415,7 @@ subdirectory, where the `#` is the new value of `iteration` variable stored in t
 
 Now you can run `create_training_dataset`, then `train_network`, etc. If your original labels were adjusted at all,
 start from fresh weights (which is generally recommended), otherwise consider using your already trained network
-weights (see Box 2).
+weights (see {ref}`Box 2 <pose-cfg-box2>`).
 
 If after training the network generalizes well to the data, proceed to analyze new videos. Otherwise, consider labeling
 more data.
