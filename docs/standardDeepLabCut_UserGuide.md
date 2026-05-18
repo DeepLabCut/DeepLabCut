@@ -248,7 +248,10 @@ text editor. Familiarize yourself with the meaning of the parameters (Box 1). Yo
 particular you **must add the list of *bodyparts* (or points of interest)** that you want to track. You can also set the
 *colormap* here that is used for all downstream steps (can also be edited at anytime), like labeling GUIs, videos, etc.
 Here any [matplotlib colormaps](https://matplotlib.org/tutorials/colors/colormaps.html) will do!
-Please DO NOT have spaces in the names of bodyparts.
+
+```{caution}
+Please do not include spaces in the names of bodyparts.
+```
 
 #### Key item
 
@@ -335,7 +338,7 @@ deeplabcut.extract_frames(config_path, "manual")
 ```
 
 The user can use the *Load Video* button to load one of the videos in the project configuration file, use the scroll
-bar to navigate across the video and *Grab a Frame* (or a range of frames, as of version 2.0.5) to extract the frame(s).
+bar to navigate across the video and grab a frame or a range of frames to extract the frame(s).
 The user can also look at the extracted frames and e.g. delete frames (from the directory) that are too similar before
 reloading the set and then manually annotating them.
 
@@ -721,11 +724,11 @@ ______________________________________________________________________
 
 It is important to evaluate the performance of the trained network. This performance is measured by computing
 the average root mean square error (RMSE) between the manual labels and the ones predicted by DeepLabCut.
-The RMSE is saved as a comma separated file and displayed for all pairs and only likely pairs (>p-cutoff).
+The RMSE is saved as a comma-separated file and displayed for all pairs and only likely pairs (>p-cutoff).
 This helps to exclude, for example, occluded body parts. One of the strengths of DeepLabCut is that due to the
 probabilistic output of the scoremap, it can, if sufficiently trained, also reliably report if a body part is visible
 in a given frame. (see discussions of finger tips in reaching and the Drosophila legs during 3D behavior in
-[Mathis et al, 2018]). The evaluation results are computed by typing:
+[Mathis et al, 2018](https://doi.org/10.1038/s41593-018-0209-y)). The evaluation results are computed by typing:
 
 #### Code example
 
@@ -797,7 +800,7 @@ before animal tracking. If the generalization is not sufficient, the user might 
 deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 ```
 
-you can drop "Indices" to run this on all training/testing images (this is slow!)
+you can drop `Indices` to run this on all training/testing images (this is slow!)
 
 #### API Docs
 
@@ -883,12 +886,12 @@ dynamic: tuple containing (state, detectionthreshold, margin)
 """
 ```
 
-If the state is true, then dynamic cropping will be performed.
-That means that if an object is detected (i.e., any body part > detectionthreshold),
+If `state` is `True`, then dynamic cropping will be performed.
+That means that if an object is detected (i.e., any body part likelihood > `detectionthreshold`),
 then object boundaries are computed according to the smallest/largest x position and
 smallest/largest y position of all body parts.
-This window is expanded by the margin and from then on only the posture within this crop is analyzed (until the object is lost;
-i.e., < detectionthreshold).
+This window is expanded by `margin` and from then on only the posture within this crop is analyzed (until the object is lost;
+i.e., < `detectionthreshold`).
 The current position is utilized for updating the crop window for the next frame (this is why the margin is important and should be set large enough given the movement of the animal).
 
 ______________________________________________________________________
