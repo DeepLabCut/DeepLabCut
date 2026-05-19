@@ -1034,60 +1034,58 @@ class: dropdown
 ```
 ````
 
-#### HELP:
+## Resources and further reading
 
-In ipython/Jupyter notebook:
+### Getting function help
 
-```
+In an interactive Python session or Jupyter notebook, append `?` to any function name:
+
+```python
 deeplabcut.nameofthefunction?
 ```
 
-In python or pythonw:
+Or use the built-in `help()`:
 
-```
+```python
 help(deeplabcut.nameofthefunction)
 ```
 
-## Tips for "daily" use:
+### Tips for daily use
 
-<p align="center">
-<img src= https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc5abe0d9297405a428522/1556896461304/howtouseDLC-01.png?format=1000w width="80%">
- </p>
+You can always exit a conda environment and pick up where you left off:
 
-You can always exit an conda environment and easily jump back into a project by simply:
+Linux/macOS:
 
-Linux/MacOS formatting example:
-
-```
+```bash
 source activate yourdeeplabcutEnvName
-ipython or pythonw
+ipython
 import deeplabcut
-config_path ='/home/yourprojectfolder/config.yaml'
+config_path = '/home/yourprojectfolder/config.yaml'
 ```
 
-Windows formatting example:
+Windows:
 
-```
+```bash
 activate yourdeeplabcutEnvName
 ipython
 import deeplabcut
 config_path = r'C:\home\yourprojectfolder\config.yaml'
 ```
 
-Now, you can run any of the functions described in this documentation.
+### Getting help and support
 
-# Getting help with maDLC:
-
-- If you have a detailed question about how to use the code, or you hit errors that are not "bugs" but you want code assistance, please post on the [![Image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&url=https%3A%2F%2Fforum.image.sc%2Ftags%2Fdeeplabcut.json&query=%24.topic_list.tags.0.topic_count&colorB=brightgreen&&suffix=%20topics&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tags/deeplabcut)
-
-- If you have a quick, short question that fits a "chat" format:
+- **Forum** — for detailed usage questions or errors that are not bugs, please post on the
+  [Image.sc forum](https://forum.image.sc/tags/deeplabcut).
+- **Chat** — for short questions:
   [![Gitter](https://badges.gitter.im/DeepLabCut/community.svg)](https://gitter.im/DeepLabCut/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-
-- If you want to share some results, or see others:
+- **Social** — share results or follow updates:
   [![Twitter Follow](https://img.shields.io/twitter/follow/DeepLabCut.svg?label=DeepLabCut&style=social)](https://x.com/DeepLabCut)
+- **Bug reports** — please open an issue with a minimal reproducible example:
+  <https://github.com/DeepLabCut/DeepLabCut/issues>
 
-- If you have a code bug report, please create an issue and show the minimal code to reproduce the error: https://github.com/DeepLabCut/DeepLabCut/issues
-
-- if you are looking for resources to increase your understanding of the software and general guidelines, we have an open source, free course: https://deeplabcut.github.io/DeepLabCut/docs/course.html.
-
-**Please note:** what we cannot do is provided support or help designing your experiments and data analysis. The number of requests for this is too great to sustain in our inbox. We are happy to answer such questions in the forum as a community, in a scalable way. We hope and believe we have given enough tools and resources to get started and to accelerate your research program, and this is backed by the >700 citations using DLC, 2 clinical trials by others, and countless applications. Thus, we believe this code works, is accessible, and with limited programming knowledge can be used. Please read our [Missions & Values statement](mission-and-values) to learn more about what we DO hope to provide you.
+```{note}
+We are not able to provide individual support for experiment design or custom data
+analysis — the volume of such requests is too large to sustain. We welcome these
+discussions on the forum, where the community can benefit collectively. Please read our
+[Missions & Values statement](mission-and-values) to learn more.
+```
