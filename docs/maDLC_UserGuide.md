@@ -84,7 +84,17 @@ In an interactive Python session (e.g. `ipython`), import DeepLabCut:
 import deeplabcut
 ```
 
-### (A) Create a New Project
+## Workflow
+
+DeepLabCut's full multi-animal workflow is described in steps (A)–(L) below.
+Every step can be completed either via the **GUI** or the **Python API** — both are
+fully equivalent. Code examples throughout this page use the Python API; if you are
+using the GUI, the same steps are available in the corresponding tabs of the Project
+Manager.
+
+### Phase 1 — Project setup
+
+#### (A) Create a New Project
 
 ```python
 deeplabcut.create_new_project(
@@ -144,7 +154,7 @@ There are docs for this: [convert single to multianimal annotation data](convert
 
 ![Box 1 - Multi Animal Project Configuration File Glossary](images/box1-multi.png)
 
-### API Docs
+##### API Docs
 
 ````{admonition} Click the button to see API Docs
 ---
@@ -155,7 +165,7 @@ class: dropdown
 ```
 ````
 
-### (B) Configure the Project
+#### (B) Configure the Project
 
 Next, open the **config.yaml** file, which was created during **create_new_project**.
 You can edit this file in any text editor. Familiarize yourself with the meaning of the
@@ -212,7 +222,9 @@ identity: True/False
 
 **Uniquebodyparts:** are points that you want to track, but that appear only once within each frame, i.e. they are "unique". Typically these are things like unique objects, landmarks, tools, etc. They can also be animals, e.g. in the case where one German shepherd is attending to many sheep the sheep bodyparts would be multianimalbodyparts, the shepherd parts would be uniquebodyparts and the individuals would be the list of sheep (e.g. Polly, Molly, Dolly, ...).
 
-### (C) Select Frames to Label
+### Phase 2 — Data preparation
+
+#### (C) Select Frames to Label
 
 **CRITICAL:** A good training dataset should consist of a sufficient number of frames that capture the breadth of the behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a robust network that you can reuse in the laboratory, a good training dataset should reflect the diversity of the behavior with respect to postures, luminance conditions, background conditions, animal identities, etc. of the data that will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200 frames gave good results [Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y). However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, more or less frames might be necessary to create a good network. Ultimately, in order to scale up the analysis to large collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see refinement below). **For maDLC, be sure you have labeled frames with closely interacting animals!**
 
@@ -281,7 +293,7 @@ class: dropdown
 ```
 ````
 
-### (D) Label Frames
+#### (D) Label Frames
 
 ```python
 deeplabcut.label_frames(config_path)
@@ -334,7 +346,7 @@ Note, we also highly recommend that you use more bodyparts that you might otherw
 For more information, checkout the {ref}`napari-deeplabcut docs <file:napari-gui-landing>` for
 more information about the labelling workflow.
 
-### (E) Check Annotated Frames
+#### (E) Check Annotated Frames
 
 Checking if the labels were created and stored correctly is beneficial for training, since labeling
 is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
@@ -361,7 +373,9 @@ class: dropdown
 ```
 ````
 
-### (F) Create Training Dataset
+### Phase 3 — Training and evaluation
+
+#### (F) Create Training Dataset
 
 At this point, you'll need to select your neural network type.
 
@@ -475,7 +489,7 @@ class: dropdown
 ```
 ````
 
-### (G) Train The Network
+#### (G) Train The Network
 
 ```python
 deeplabcut.train_network(config_path, shuffle=1)
@@ -593,7 +607,7 @@ class: dropdown
 ```
 ````
 
-### (H) Evaluate the Trained Network
+#### (H) Evaluate the Trained Network
 
 It is important to evaluate the performance of the trained network. This performance is
 measured by computing two metrics:
@@ -726,7 +740,9 @@ deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 
 You can drop "Indices" to run this on all training/testing images (this is very slow!)
 
-### (I) Analyze new Videos
+### Phase 4 — Video analysis and tracking
+
+#### (I) Analyze new Videos
 
 ```{versionadded} 3.0.0
 With the addition of conditional top-down models in DeepLabCut 3.0, it's now possible to
@@ -788,7 +804,7 @@ deeplabcut.find_outliers_in_raw_data(config_path, pickle_file, video_file)
 where pickle_file is the `_full.pickle` one obtains after video analysis.
 Flagged frames will be added to your collection of images in the corresponding labeled-data folders for you to label.
 
-### Animal Assembly and Tracking across frames
+#### Animal Assembly and Tracking across frames
 
 After pose estimation, now you perform assembly and tracking.
 
@@ -798,7 +814,7 @@ metrics, so this no longer requires user input. The metrics, in case you do want
 them, can be found in the `inference_cfg.yaml` file.
 ```
 
-### Optimized Animal Assembly + Video Analysis:
+#### Optimized Animal Assembly + Video Analysis:
 
 Please note that **novel videos DO NOT need to be added to the config.yaml file**. You
 can simply have a folder elsewhere on your computer and pass the video folder (then it
@@ -809,7 +825,7 @@ path to the **folder** or exact video(s) you wish to analyze:
 deeplabcut.analyze_videos(config_path, ['/fullpath/project/videos/'], videotype='.mp4', auto_track=True)
 ```
 
-### IF auto_track = True:
+#### IF auto_track = True:
 
 ```{versionadded} v2.2.0.3
 A new argument `auto_track=True`, was added to `deeplabcut.analyze_videos` chaining pose
@@ -820,7 +836,7 @@ DLC. If `auto_track=False`, one must run `convert_detections2tracklets` and
 the workflow (ideal for advanced users).
 ```
 
-### IF auto_track = False:
+#### IF auto_track = False:
 
 You can validate the tracking parameters. Namely, you can iteratively change the
 parameters, run `convert_detections2tracklets` then load them in the GUI
@@ -883,7 +899,7 @@ deeplabcut.stitch_tracklets(..., n_tracks=n)
 
 In such cases, file columns will default to dummy animal names (ind1, ind2, ..., up to indn).
 
-### API Docs
+#### API Docs
 
 ````{admonition} Click the button to see API Docs for analyze_videos
 ---
@@ -912,7 +928,7 @@ class: dropdown
 ```
 ````
 
-### Using Unsupervised Identity Tracking:
+#### Using Unsupervised Identity Tracking:
 
 In Lauer et al. 2022 we introduced a new method to do unsupervised reID of animals.
 Here, you can use the tracklets to learn the identity of animals to enhance your
@@ -924,7 +940,7 @@ deeplabcut.transformer_reID(config, videos_to_analyze, n_tracks=None, videotype=
 
 Note you should pass the n_tracks (number of animals) you expect to see in the video.
 
-### Refine Tracklets:
+#### Refine Tracklets:
 
 You can also optionally **refine the tracklets**. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` or `.h5'` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc!
 
@@ -948,7 +964,9 @@ Short demo:
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588690928000-90ZMRIM8SN6QE20ZOMNX/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/refineDEMO.gif?format=750w" width="70%">
 </p>
 
-### (J) Filter Pose Data
+### Phase 5 — Post-processing and refinement
+
+#### (J) Filter Pose Data
 
 Firstly, Here are some tips for scaling up your video analysis, including looping over many folders for batch processing: https://github.com/DeepLabCut/DeepLabCut/wiki/Batch-Processing-your-Analysis
 
@@ -969,27 +987,18 @@ class: dropdown
 ```
 ````
 
-### (K) Plot Trajectories , (L) Create Labeled Videos
+#### (K) Plot Trajectories
 
-- **NOTE :bulb::mega::** Before you create a video, you should set what threshold to use for plotting. This is set in the `config.yaml` file as `pcutoff` - if you have a well trained network, this should be high, i.e. set it to `0.8` or higher! IF YOU FILLED IN GAPS, you need to set this to `0` to "see" the filled in parts.
+Before creating labeled videos, set the `pcutoff` threshold in `config.yaml`. For a
+well-trained network this should be high, e.g. `0.8` or higher. If you filled in gaps,
+set it to `0` to make those interpolated points visible.
 
-- You can also determine a good `pcutoff` value by looking at the likelihood plot created during `plot_trajectories`:
-
-Plot the outputs:
-
-```python
-  deeplabcut.plot_trajectories(config_path,['/fullpath/project/videos/reachingvideo1.avi'],filtered = True)
-```
-
-Create videos:
+You can determine a good `pcutoff` value by inspecting the likelihood plot produced by
+`plot_trajectories`:
 
 ```python
-  deeplabcut.create_labeled_video(config_path, [videos], videotype='avi', shuffle=1, trainingsetindex=0, filtered=False, fastmode=True, save_frames=False, keypoints_only=False, Frames2plot=None, displayedbodyparts='all', displayedindividuals='all', codec='mp4v', outputframerate=None, destfolder=None, draw_skeleton=False, trailpoints=0, displaycropped=False, color_by='bodypart', track_method='')
+deeplabcut.plot_trajectories(config_path, ['/fullpath/project/videos/reachingvideo1.avi'], filtered=True)
 ```
-
-- **NOTE :bulb::mega::** You have a lot of options in terms of video plotting (quality, display type, etc). We recommend checking the docstring!
-
-(more details [here](functionDetails.md#i-video-analysis-and-plotting-results))
 
 ````{admonition} Click the button to see API Docs for plot_trajectories
 ---
@@ -1000,6 +1009,22 @@ class: dropdown
 ```
 ````
 
+#### (L) Create Labeled Videos
+
+There are many options for controlling video quality and display style — check the
+docstring for the full list. More details are also available
+[here](functionDetails.md#i-video-analysis-and-plotting-results).
+
+```python
+deeplabcut.create_labeled_video(
+    config_path, [videos], videotype='avi', shuffle=1, trainingsetindex=0,
+    filtered=False, fastmode=True, save_frames=False, keypoints_only=False,
+    Frames2plot=None, displayedbodyparts='all', displayedindividuals='all',
+    codec='mp4v', outputframerate=None, destfolder=None, draw_skeleton=False,
+    trailpoints=0, displaycropped=False, color_by='bodypart', track_method='',
+)
+```
+
 ````{admonition} Click the button to see API Docs for create_labeled_video
 ---
 class: dropdown
@@ -1009,7 +1034,7 @@ class: dropdown
 ```
 ````
 
-### HELP:
+#### HELP:
 
 In ipython/Jupyter notebook:
 
