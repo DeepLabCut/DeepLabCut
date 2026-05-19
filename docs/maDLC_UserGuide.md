@@ -240,7 +240,19 @@ identity: True/False
 
 #### (C) Select Frames to Label
 
-**CRITICAL:** A good training dataset should consist of a sufficient number of frames that capture the breadth of the behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and different animals, if those vary substantially (to train an invariant, robust feature detector). Thus for creating a robust network that you can reuse in the laboratory, a good training dataset should reflect the diversity of the behavior with respect to postures, luminance conditions, background conditions, animal identities, etc. of the data that will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200 frames gave good results [Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y). However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, more or less frames might be necessary to create a good network. Ultimately, in order to scale up the analysis to large collections of videos with perhaps unexpected conditions, one can also refine the data set in an adaptive way (see refinement below). **For maDLC, be sure you have labeled frames with closely interacting animals!**
+```{important}
+A good training dataset should consist of a sufficient number of frames that capture
+the breadth of the behavior. Select frames from different behavioral sessions, different
+lighting conditions, and different animals if those vary substantially (to train an
+invariant, robust feature detector). The dataset should reflect the diversity of
+postures, luminance conditions, background conditions, and animal identities in the data
+to be analyzed. For simple lab behaviors such as mouse reaching, open-field behavior,
+and fly behavior, 100–200 frames gave good results
+([Mathis et al., 2018](https://www.nature.com/articles/s41593-018-0209-y)). However,
+more or fewer frames may be needed depending on accuracy requirements, behavior
+complexity, and video quality (e.g. motion blur, poor lighting). **For maDLC, make sure
+you include labeled frames with closely interacting animals.**
+```
 
 The function `extract_frames` extracts frames from all the videos in the project configuration file in order to create a training dataset. The extracted frames from all the videos are stored in a separate subdirectory named after the video file’s name under the ‘labeled-data’. This function also has various parameters that might be useful based on the user’s need.
 
@@ -254,9 +266,11 @@ deeplabcut.extract_frames(
 )
 ```
 
-**CRITICAL POINT:** It is advisable to keep the frame size small, as large frames increase the training and
-inference time, or you might not have a large enough GPU for this.
-When running the function `extract_frames`, if the parameter crop=True, then you will be asked to draw a box within the GUI (and this is written to the config.yaml file).
+```{important}
+Keep frame sizes small — large frames increase training and inference time and may
+exceed GPU memory. When running `extract_frames` with `crop=True`, you will be asked to
+draw a bounding box in the GUI (this is saved to `config.yaml`).
+```
 
 `userfeedback` allows the user to check which videos they wish to extract frames from. In this way, if you added more videos to the config.yaml file it does not, by default, extract frames (again) from every video. If you wish to disable this question, set `userfeedback = True`.
 
@@ -270,13 +284,15 @@ video and clusters the frames using k-means, where each frame is treated as a ve
 are then selected. This procedure makes sure that the frames look different. However, on large and long videos, this
 code is slow due to computational complexity.
 
-**CRITICAL POINT:** It is advisable to extract frames from a period of the video that contains interesting
-behaviors, and not extract the frames across the whole video. This can be achieved by using the start and stop
-parameters in the config.yaml file. Also, the user can change the number of frames to extract from each video using
-the numframes2extract in the config.yaml file.
+```{important}
+Extract frames from video segments that contain the behaviors of interest rather than
+from the whole video. Use the `start` and `stop` parameters in `config.yaml` to limit
+the extraction window, and `numframes2extract` to control the number of frames per
+video.
+```
 
-```{TIP}
-For maDLC,  **be sure you have labeled frames with closely interacting animals**!
+```{tip}
+For maDLC, **be sure you have labeled frames with closely interacting animals**!
 Therefore, manually selecting some frames is a good idea if interactions are not highly
 frequent in the video.
 ```
@@ -337,28 +353,31 @@ alt: Keyboard shortcut reference for the DeepLabCut labeling GUI
 Keyboard shortcuts for the labeling GUI.
 ```
 
-**CRITICAL POINT:** It is advisable to **consistently label similar spots** (e.g., on a
-wrist that is very large, try to label the same location). In general, invisible or
-occluded points should not be labeled by the user, unless you want to teach the network
-to "guess" - this is possible, but could affect accuracy. If you don't want/or don't see
-a bodypart, they can simply be skipped by not applying the label anywhere on the frame.
+```{important}
+**Label similar spots consistently** (e.g., on a large wrist, always click the same
+sub-location). Invisible or occluded points should generally not be labeled unless you
+intentionally want to teach the network to predict occluded locations — this is
+possible, but may reduce accuracy. Body parts that are not visible can simply be skipped
+by leaving them unlabeled.
+```
 
-OPTIONAL: In the event of adding more labels to the existing labeled dataset, the user
-needs to append the new labels to the bodyparts in the config.yaml file. Thereafter, the
-user can call the function **label_frames**. A box will pop up and ask the user if they
-wish to display all parts, or only add in the new labels. Saving the labels after all
-the images are labelled will append the new labels to the existing labeled dataset.
+```{note}
+To add new labels to an existing dataset, first append the new body parts to
+`bodyparts` in `config.yaml`, then call `label_frames` again. A dialog will ask whether
+to display all parts or only the new ones. Saving will append the new labels to the
+existing dataset.
+```
 
-**maDeepLabCut CRITICAL POINT:** For multi-animal labeling, unless you can tell apart
-the animals, you do not need to worry about the "ID" of each animal. For example: if you
-have a white and black mouse label the white mouse as animal 1, and black as animal 2
-across all frames. If two black mice, then the ID label 1 or 2 can switch between
-frames - no need for you to try to identify them (but always label consistently within a
-frame). If you have 2 black mice but one always has an optical fiber (for example), then
-DO label them consistently as animal1 and animal_fiber (for example). The point of
-multi-animal DLC is to train models that can first group the correct bodyparts to
-individuals, then associate those points in a given video to a specific individual,
-which then also uses temporal information to link across the video frames.
+```{important}
+**Multi-animal labeling and identity:** Unless you can visually distinguish the animals,
+you do not need to maintain a consistent ID across frames. For example, with a white and
+a black mouse, always label white as animal 1 and black as animal 2. With two
+indistinguishable black mice the ID assignment (1 or 2) may switch between frames —
+just be consistent *within* each frame. If one animal always has a distinguishing
+feature (e.g., an optical fiber), then label them consistently across all frames. The
+goal of maDLC is to train a model that groups body parts to individuals and then links
+those individuals across video frames using temporal information.
+```
 
 Note, we also highly recommend that you use more bodyparts that you might otherwise have
 (see the example below).
@@ -426,8 +445,8 @@ deeplabcut.create_training_dataset(config_path)
   information, where the `#` is the value of `iteration` variable stored in the project’s configuration file (this number
   keeps track of how often the dataset was refined).
 
-- OPTIONAL: If the user wishes to benchmark the performance of the DeepLabCut, they can create multiple
-  training datasets by specifying an integer value to the `num_shuffles`; see the docstring for more details.
+- To benchmark performance across multiple train/test splits, pass an integer to
+  `num_shuffles`; see the docstring for details.
 
 - Each iteration of the creation of a training dataset will create several files, which
   is used by the feature detectors, and a `.pickle` file that contains the meta
@@ -463,10 +482,11 @@ In addition, one can specify a crop sampling strategy: crop centers can either b
 As a reminder, cropping images into smaller patches is a form of data augmentation that simultaneously
 allows the use of batch processing even on small GPUs that could not otherwise accommodate larger images + larger batchsizes (this usually increases performance and decreasing training time).
 
-**MODEL COMPARISON**: You can also test several models by creating the same train/test
-split for different networks.
-You can easily do this in the Project Manager GUI (by selecting the "Use an existing
-data split" option), which also lets you compare PyTorch and TensorFlow models.
+```{tip}
+To compare multiple model architectures on the same train/test split, select "Use an
+existing data split" in the Project Manager GUI. This also lets you compare PyTorch and
+TensorFlow models side by side.
+```
 
 ````{versionadded} 3.0.0
 You can now create new shuffles using the same train/test split as
@@ -564,9 +584,10 @@ full path of the checkpoint to the variable ``resume_training_from`` in the [
 dlc3-pytorch-config) file (checkout the "Restarting Training at a Specific Checkpoint"
 section of the docs) under the *train* subdirectory.
 
-**CRITICAL POINT:** It is recommended to train the networks **until the loss plateaus**
-(depending on the dataset, model architecture and training hyper-parameters this happens
-after 100 to 250 epochs of training).
+```{important}
+Train the network **until the loss plateaus** — depending on the dataset, model
+architecture, and hyper-parameters this typically occurs after 100–250 epochs.
+```
 
 The variables ``display_iters`` and ``save_epochs`` in the [**pytorch_config.yaml**](
 dlc3-pytorch-config) file allows the user to alter how often the loss is displayed
@@ -605,9 +626,10 @@ If the user wishes to restart the training at a specific checkpoint they can spe
 full path of the checkpoint to the variable ``init_weights`` in the **pose_cfg.yaml**
 file under the *train* subdirectory (see Box 2).
 
-**CRITICAL POINT:** It is recommended to train the networks for thousands of iterations
-until the loss plateaus (typically around **500,000**) if you use batch size 1, and
-**50-100K** if you use batchsize 8 (the default).
+```{important}
+Train until the loss plateaus — typically around **500,000** iterations with batch
+size 1, or **50–100K** iterations with batch size 8 (the default).
+```
 
 If you use **maDeepLabCut** the recommended training iterations is **20K-100K**
 (it automatically stops at 200K!), as we use Adam and batchsize 8; if you have to reduce
@@ -616,12 +638,13 @@ If you use **maDeepLabCut** the recommended training iterations is **20K-100K**
 The variables ``display_iters`` and ``save_iters`` in the **pose_cfg.yaml** file allows
 the user to alter how often the loss is displayed and how often the weights are stored.
 
-**maDeepLabCut CRITICAL POINT:** For multi-animal projects we are using not only
-different and new output layers, but also new data augmentation, optimization, learning
-rates, and batch training defaults. Thus, please use a lower ``save_iters`` and
-``maxiters``. I.e. we suggest saving every 10K-15K iterations, and only training until
-50K-100K iterations. We recommend you look closely at the loss to not overfit on your
-data. The bonus, training time is much less!!!
+```{important}
+Multi-animal projects use different output layers, data augmentation, optimizers,
+learning rates, and batch defaults compared to single-animal projects. Use a lower
+`save_iters` and `maxiters`: save every 10K–15K iterations and stop training at
+50K–100K iterations. Monitor the loss curve carefully to avoid overfitting. Training
+time is correspondingly shorter.
+```
 ````
 
 ````{admonition} Click the button to see API Docs for train_network
@@ -882,9 +905,11 @@ max_age: 100
 min_hits: 3
 ```
 
-- **IMPORTANT POINT FOR SUPERVISED IDENTITY TRACKING**
-
-  If the network has been trained to learn the animals' identities (i.e., you set `identity=True` in config.yaml before training) this information can be leveraged both during: (i) animal assembly, where body parts are grouped based on the animal they are predicted to belong to (affinity between pairs of keypoints is no longer considered in that case); and (ii) animal tracking, where identity only can be utilized in place of motion trackers to form tracklets.
+If the network was trained with identity supervision (i.e., `identity=True` in
+`config.yaml` before training), this information can be leveraged during: (i) animal
+assembly, where body parts are grouped by predicted identity rather than keypoint
+affinity; and (ii) tracking, where identity alone can be used in place of motion
+trackers to form tracklets.
 
 To use this ID information, simply pass:
 
