@@ -700,7 +700,7 @@ are stored in the subdirectory *train* under the respective iteration directory.
 
 If the user wishes to restart the training at a specific checkpoint they can specify the
 full path of the checkpoint to the variable ``init_weights`` in the **pose_cfg.yaml**
-file under the *train* subdirectory (see Box 2).
+file under the *train* subdirectory (see {ref}`Box 2 <pose-cfg-box2>`).
 
 **Tip**: It is recommended to train the networks for thousands of iterations
 until the loss plateaus (typically around **500,000**) if you use batch size 1. If you
@@ -716,6 +716,15 @@ rates, and batch training defaults. Thus, please use a lower ``save_iters`` and
 ``maxiters``. I.e. we suggest saving every 10K-15K iterations, and only training until
 50K-100K iterations. We recommend you look closely at the loss to not overfit on your
 data. This will reduce your training time.
+
+```{figure} images/box2-single.png
+---
+name: config-box2
+alt: Box 2 - Single Animal TensorFlow Configuration File Glossary
+align: center
+---
+Single-animal TensorFlow configuration file glossary
+```
 ````
 
 ##### API Docs
@@ -1310,7 +1319,7 @@ subdirectory, where the `#` is the new value of `iteration` variable stored in t
 
 Now you can run `create_training_dataset`, then `train_network`, etc. If your original labels were adjusted at all,
 start from fresh weights (which is generally recommended), otherwise consider using your already trained network
-weights (see Box 2).
+weights (see {ref}`Box 2 <pose-cfg-box2>`).
 
 If after training the network generalizes well to the data, proceed to analyze new videos. Otherwise, consider labeling
 more data.
