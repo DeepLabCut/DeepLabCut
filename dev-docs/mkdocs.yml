@@ -111,17 +111,17 @@ copyright: "Copyright © 2026 The DeepLabCut Team"
 nav:
   - Get Started:
       - Overview: index.md
-      - Installation: installation.md
+      # - Installation: installation.md
       - Quick Start: quickstart.md
   - Developer Guides:
       - Overview: devguides.md
       - Model Architecture: models.md
-      - Configuration Files: configuration.md
+      # - Configuration Files: configuration.md
       - Data Preparation: dataprep.md
       - Training Models: training.md
       - Inference & Analysis: inference.md
-      - Adding Custom Models: custom_models.md
-      - Multi-animal Tracking: tracking.md
+      # - Adding Custom Models: custom_models.md
+      # - Multi-animal Tracking: tracking.md
   - Examples:
       - Practical Examples: examples.md
   - API Reference
