@@ -679,7 +679,7 @@ def analyze_videos(
     save_as_csv: bool = False,
     in_random_order: bool = True,
     destfolder: str | None = None,
-    batch_size: int = None,
+    batch_size: int | None = None,
     cropping: list[int] | None = None,
     TFGPUinference: bool = True,
     dynamic: tuple[bool, float, int] = (False, 0.5, 10),
