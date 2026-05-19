@@ -46,34 +46,42 @@ Thus, you should always label, train, and evaluate the pose estimation performan
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596370260800-SP2GWKDPJCOIR7LJ31VM/ke17ZwdGBToddI8pDm48kB4fL2ovSQh5dRlH2jCMtpoUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcSV94BuD0XUinmig_1P1RJNYVU597j3jgswapL4c_w92BJE9r6UgUperYhWQ2ubQ_/workflow.png?format=2500w" width="550" title="maDLC" alt="maDLC" align="center" vspace = "50">
 
-## Install:
+## Getting started
 
-**Quick start:** If you are using DeepLabCut on the cloud, or otherwise cannot use the GUIs and you should install with: `pip install 'deeplabcut'`; if you need GUI support, please use: `pip install 'deeplabcut[gui]'`. Check the [installation page](how-to-install) for more information, including GPU support.
+DeepLabCut offers two equivalent interfaces: a **GUI** for those who prefer a visual
+workflow (no Python knowledge required), and a **Python API** for users who want
+scripting flexibility or to integrate DeepLabCut into a larger pipeline. All workflow
+steps are available in both.
 
-IF you want to use the bleeding edge version to make edits to the code, see [here on how to install it and test it](https://deeplabcut.github.io/DeepLabCut/docs/recipes/installTips.html#how-to-use-the-latest-updates-directly-from-github).
+We assume you have DeepLabCut installed (if not, see {ref}`file:how-to-install`).
+Open a terminal and activate your conda environment:
 
-## Get started in the terminal or Project GUI:
-
-**GUI:** simply launch your conda env, and type `python -m deeplabcut` in the terminal.
-Then follow the tabs! It might be useful to read the following, however, so you understand what each command does.
-
-**TERMINAL:** To begin, 🚨 (windows) navigate to anaconda prompt and right-click to "open as admin", or (unix/MacOS) simply launch "terminal" on your computer. We assume you have DeepLabCut installed (if not, [see installation instructions](how-to-install)). Next, launch your conda env (i.e., for example `conda activate DEEPLABCUT`).
-
-```{Hint}
-🚨 If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
+```bash
+conda activate DEEPLABCUT
 ```
 
-Please read more [here](https://deeplabcut.github.io/DeepLabCut/docs/docker.html), and in our Nature Protocols paper [here](https://www.nature.com/articles/s41596-019-0176-0). And, see our [troubleshooting wiki](https://github.com/DeepLabCut/DeepLabCut/wiki/Troubleshooting-Tips).
+```{important}
+On Windows, always open the terminal with administrator privileges: right-click and
+select "Run as administrator".
+```
 
-Open an `ipython` session and import the package by typing in the terminal:
+Choose your interface below to launch DeepLabCut:
+
+### GUI (recommended for beginners)
+
+```bash
+python -m deeplabcut
+```
+
+Each workflow step has a corresponding tab in the Project Manager. It is useful to
+read the sections below so you understand what each step does.
+
+### Python API
+
+In an interactive Python session (e.g. `ipython`), import DeepLabCut:
 
 ```python
-ipython
 import deeplabcut
-```
-
-```{TIP}
-for every function there is a associated help document that can be viewed by adding a **?** after the function name; i.e. ``deeplabcut.create_new_project?``. To exit this help screen, type ``:q``.
 ```
 
 ### (A) Create a New Project
