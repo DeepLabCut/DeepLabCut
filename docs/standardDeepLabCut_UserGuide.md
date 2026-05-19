@@ -50,11 +50,14 @@ Choose your interface below to launch DeepLabCut:
 python -m deeplabcut
 ```
 
-```{image} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w
+```{figure} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572824438905-QY9XQKZ8LAJZG6BLPWOQ/ke17ZwdGBToddI8pDm48kIIa76w436aRzIF_cdFnEbEUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcLthF_aOEGVRewCT7qiippiAuU5PSJ9SSYal26FEts0MmqyMIhpMOn8vJAUvOV4MI/guilaunch.jpg?format=1000w
 ---
+name: fig-gui-launch
+alt: The DeepLabCut Project Manager GUI after launch
 width: 60%
 align: center
 ---
+The DeepLabCut Project Manager GUI.
 ```
 
 ### Python API
@@ -350,15 +353,19 @@ deeplabcut.extract_frames(config_path, "manual")
 ```
 
 The user can use the *Load Video* button to load one of the videos in the project configuration file, use the scroll
-bar to navigate across the video and grab a frame or a range of frames to extract the frame(s).
+bar to navigate across the video and grab a frame or a range of frames to extract the frame(s)
+(see {numref}`fig-manual-frame-selection`).
 The user can also look at the extracted frames and e.g. delete frames (from the directory) that are too similar before
 reloading the set and then manually annotating them.
 
-```{image} https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c71bfbc71c10b4a23d20567/1550958540700/cropMANUAL.gif?format=750w
+```{figure} https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c71bfbc71c10b4a23d20567/1550958540700/cropMANUAL.gif?format=750w
 ---
+name: fig-manual-frame-selection
+alt: Manual frame selection using the extract_frames GUI
 width: 70%
 align: center
 ---
+Manual frame selection using the `extract_frames` GUI.
 ```
 
 ##### API Docs
@@ -719,7 +726,7 @@ data. This will reduce your training time.
 
 ```{figure} images/box2-single.png
 ---
-name: config-box2
+name: pose-cfg-box2
 alt: Box 2 - Single Animal TensorFlow Configuration File Glossary
 align: center
 ---
@@ -969,11 +976,14 @@ deeplabcut.filterpredictions(
 
 Here is an example of how this can be applied to a video:
 
-```{image} https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc8b8ae6e8df000100a995/1556908943893/filter_example-01.png?format=1000w
+```{figure} https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc8b8ae6e8df000100a995/1556908943893/filter_example-01.png?format=1000w
 ---
+name: fig-filter-example
+alt: Example output of filterpredictions applied to a video
 width: 70%
 align: center
 ---
+Example output of `filterpredictions` applied to a video.
 ```
 
 ##### API Docs
@@ -995,7 +1005,8 @@ ______________________________________________________________________
 
 The plotting components of this toolbox utilize matplotlib. Therefore, these plots can easily be customized by
 the end user.
-We also provide a function to plot the trajectory of the extracted poses across the analyzed video, as shown in the example below.
+We also provide a function to plot the trajectory of the extracted poses across the analyzed video
+(see {numref}`fig-trajectory-frame` and {numref}`fig-trajectory-plots`).
 
 ##### Code example
 
@@ -1009,20 +1020,26 @@ It creates a folder called `plot-poses` (in the directory of the video). The plo
 vs. time, likelihoods vs time, the x- vs. y- coordinate of the body parts, as well as histograms of consecutive
 coordinate differences. These plots help the user to quickly assess the tracking performance for a video. Ideally, the
 likelihood stays high and the histogram of consecutive coordinate differences has values close to zero (i.e. no jumps in
-body part detections across frames). Here are example plot outputs on a demo video (left):
+body part detections across frames). Example outputs are shown below.
 
-```{image} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559946148685-WHDO5IG9MMCHU0T7RC62/ke17ZwdGBToddI8pDm48kEOb1vFO6oRDmR8SXh4iL21Zw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVG1gXK66ltnjKh4U2immgm7AVAdfOWODmXNLQLqbLRZ2DqWIIaSPh2v08GbKqpiV54/file0289.png?format=500w
+```{figure} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559946148685-WHDO5IG9MMCHU0T7RC62/ke17ZwdGBToddI8pDm48kEOb1vFO6oRDmR8SXh4iL21Zw-zPPgdn4jUwVcJE1ZvWEtT5uBSRWt4vQZAgTJucoTqqXjS3CfNDSuuf31e0tVG1gXK66ltnjKh4U2immgm7AVAdfOWODmXNLQLqbLRZ2DqWIIaSPh2v08GbKqpiV54/file0289.png?format=500w
 ---
+name: fig-trajectory-frame
+alt: Example video frame with tracked body parts overlaid
 height: 240px
 align: center
 ---
+Example video frame with tracked body parts overlaid.
 ```
 
-```{image} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559939762886-CCB0R107I2HXAHZLHECP/ke17ZwdGBToddI8pDm48kNeA8e5AnyMqj80u4_mB0hV7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UcpboONgOQYHLzaUWEI1Ir9fXt7Ehyn7DSgU3GCReAA-ZDqXZYzu2fuaodM4POSZ4w/plot_poses-01.png?format=1000w
+```{figure} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559939762886-CCB0R107I2HXAHZLHECP/ke17ZwdGBToddI8pDm48kNeA8e5AnyMqj80u4_mB0hV7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UcpboONgOQYHLzaUWEI1Ir9fXt7Ehyn7DSgU3GCReAA-ZDqXZYzu2fuaodM4POSZ4w/plot_poses-01.png?format=1000w
 ---
+name: fig-trajectory-plots
+alt: Example plot_trajectories output
 height: 250px
 align: center
 ---
+Example `plot_trajectories` output: body part coordinates, likelihoods, and consecutive displacement histograms.
 ```
 
 ##### API Docs
@@ -1069,8 +1086,8 @@ deeplabcut.create_labeled_video(
 )
 ```
 
-You can also optionally add a skeleton to connect points and/or add a history of points for visualization. To set the
-"trailing points" you need to pass `trailpoints`:
+You can also optionally add a skeleton to connect points and/or add a history of points for visualization
+(see {numref}`fig-skeleton-trail`). To set the "trailing points" you need to pass `trailpoints`:
 
 ```python
 deeplabcut.create_labeled_video(
@@ -1131,11 +1148,14 @@ The best quality videos are created when `fastmode=False` is passed. Therefore, 
 `trailpoints` and `draw_skeleton` are used, we **highly** recommend you also pass `fastmode=False`!
 ```
 
-```{image} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559935526258-KFYZC8BDHK01ZIDPNVIX/ke17ZwdGBToddI8pDm48kJbosy0LGK_KqcAZRQ_Qph1Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpzkC6kmM1CbNgeHQVxASNv0wiXikHv274BIFe4LR7nd1rKmAka4uxYMJ9FupazBoaU/mouse_skel_trail.gif?format=750w
+```{figure} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559935526258-KFYZC8BDHK01ZIDPNVIX/ke17ZwdGBToddI8pDm48kJbosy0LGK_KqcAZRQ_Qph1Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpzkC6kmM1CbNgeHQVxASNv0wiXikHv274BIFe4LR7nd1rKmAka4uxYMJ9FupazBoaU/mouse_skel_trail.gif?format=750w
 ---
+name: fig-skeleton-trail
+alt: Labeled video with skeleton overlay and trailing points
 width: 40%
 align: center
 ---
+Labeled video with skeleton overlay and trailing points (`draw_skeleton=True`, `trailpoints=10`).
 ```
 
 This function has various other parameters, in particular the user can set the `colormap`, the `dotsize`, and
