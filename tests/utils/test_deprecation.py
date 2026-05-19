@@ -274,3 +274,18 @@ def test_renamed_parameter_positional_arg_unaffected():
         result = fn(True)
 
     assert result is True
+
+
+def test_multiple_subsequent_renames_allowed():
+    @renamed_parameter(old="oldestname", new="newest", since="3.0.0")
+    @renamed_parameter(old="older_name", new="newest", since="4.0.0")
+    def fn(*, newest):
+        return newest
+
+    with pytest.warns(DLCDeprecationWarning):
+        result = fn(oldestname=1)
+    assert result == 1
+
+    with pytest.warns(DLCDeprecationWarning):
+        result = fn(older_name=2)
+    assert result == 2
