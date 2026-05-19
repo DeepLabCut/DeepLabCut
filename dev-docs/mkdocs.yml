@@ -1,6 +1,7 @@
 site_name: DeepLabCut Developer Documentation
 site_description: Developer documentation for DeepLabCut
 site_url: https://deeplabcut.github.io/DeepLabCut/dev
+site_dir: "../_build/dev"
 
 repo_name: DeepLabCut/DeepLabCut
 repo_url: https://github.com/DeepLabCut/DeepLabCut
@@ -8,8 +9,8 @@ repo_url: https://github.com/DeepLabCut/DeepLabCut
 theme:
   name: material
   custom_dir: "docs/theme"
-  logo: assets/logo.png
-  favicon: assets/favicon.ico
+  logo: docs/assets/logo.png
+  favicon: docs/assets/favicon.ico
 
   palette:
     - media: "(prefers-color-scheme: light)"
@@ -50,9 +51,14 @@ plugins:
   - mike # for versioning
   - mkdocs-jupyter # adds support for rendering Jupyter Notebooks
   - api-autonav: # automatically generates API reference navigation based on the file structure
-      modules: ["../"]
+      modules:
+        - "../deeplabcut"
       module_options: {}
-      exclude: []
+      exclude:
+        - "deeplabcut.version"
+        - "deeplabcut.cli"
+        - "deeplabcut.benchmark"
+        - "deeplabcut.gui"
       nav_section_title: "API Reference"
       api_root_uri: "reference"
       nav_item_prefix: "<code class='doc-symbol doc-symbol-nav doc-symbol-module'></code>"
@@ -63,6 +69,7 @@ plugins:
       default_handler: python
       handlers:
         python:
+          paths: [".."]  # repo root, so `import deeplabcut` resolves correctly
           options:
             summary: true
             show_root_heading: true
