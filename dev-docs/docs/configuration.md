@@ -63,33 +63,159 @@ model_cfg = dlc_torch.config.make_pytorch_pose_config(
 
 ## Configuration File Components
 
-A complete `pytorch_cfg.yaml` file contains several sections:
+A complete `pytorch_cfg.yaml` file contains the following sections.
 
-- Model Architecture: specifies the backbone, neck, and head components:
+### Model Architecture
 
-- Training Parameters: Defines the optimization strategy and training loop settings:
+Specifies the backbone, optional neck, and head:
 
-- Data Configuration: Specifies data augmentation and preprocessing for training and inference:
+```yaml
+model:
+  backbone:
+    type: HRNet
+    variant: w32
+  neck: null          # omit or set to null for no neck
+  head:
+    type: HeatmapHead
+    weight_init: normal
+    predictor:
+      type: HeatmapPredictor
+      location_refinement: true
+      locref_std: 7.2801
+    target_generator:
+      type: HeatmapGaussianGenerator
+      num_heatmaps: "num_bodyparts"
+      pos_dist_thresh: 17
+      generate_locref: true
+    criterion:
+      heatmap:
+        type: WeightedMSECriterion
+        weight: 1.0
+      locref:
+        type: WeightedHuberCriterion
+        weight: 0.05
+```
 
-- Data Augmentation Options: transformations are available for the `train` and `inference` configurations. Most augmentations should only be applied during training, not inference.
+### Data Configuration
 
-- Training Settings: Training-specific parameters control batch size, epochs, and data loading:
+Controls data loading, augmentation, and preprocessing. Augmentations under `train` are applied only during training; `inference` augmentations are applied during evaluation and video analysis:
 
-- Runner Configuration: The runner manages training execution, optimization, and checkpointing:
+```yaml
+data:
+  colormode: RGB        # RGB or GRAY
+  bbox_margin: 20       # pixels added around bounding boxes (top-down only)
+  train:
+    normalize_images: true
+    crop_sampling:
+      width: 448
+      height: 448
+      max_shift: 0.1
+      method: hybrid
+    affine:
+      p: 0.5
+      rotation: 30
+      scaling: [0.5, 1.25]
+      translation: 0
+    gaussian_noise: 12.75
+    motion_blur: true
+    hflip: true
+  inference:
+    normalize_images: true
+```
 
-- Optimizers
+### Training Settings
 
-- Learning Rate Schedulers: use any scheduler from [`torch.optim.lr_scheduler`](https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate):
+Controls the training loop — batch size, number of epochs, data loading, and random seed:
 
-- Logging: training runs are logged locally by default. Optionally integrate with [Weights & Biases](https://wandb.ai/site):
+```yaml
+train_settings:
+  batch_size: 8
+  epochs: 200
+  seed: 42
+  dataloader_workers: 4
+  dataloader_pin_memory: true
+  display_iters: 500
+```
 
+### Runner Configuration
 
-- Resuming Training: resume from a specific checkpoint by specifying its path:
+The runner manages the training loop, optimisation, checkpointing, and evaluation. Use any optimizer from [`torch.optim`](https://pytorch.org/docs/stable/optim.html) and any scheduler from [`torch.optim.lr_scheduler`](https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate):
+
+```yaml
+runner:
+  type: PoseTrainingRunner
+  gpus: null              # null = use device setting; list of ints for multi-GPU
+  key_metric: "test.mAP"
+  key_metric_asc: true    # true if higher is better
+  eval_interval: 10       # evaluate every N epochs
+
+  optimizer:
+    type: AdamW
+    params:
+      lr: 0.0001
+      weight_decay: 0.01
+
+  scheduler:
+    type: LRListScheduler
+    params:
+      milestones: [160, 190]
+      lr_list: [[1e-5], [1e-6]]
+
+  snapshots:
+    max_snapshots: 5        # keep only the N most recent snapshots
+    save_epochs: 25         # save a snapshot every N epochs
+    save_optimizer_state: false
+
+  logger:
+    type: WandbLogger       # omit or set to null for local-only logging
+    project_name: my-project
+    tags: ["model=hrnet_w32"]
+```
+
+### Resuming Training
+
+Resume from a specific snapshot by setting:
 
 ```yaml
 resume_training_from: /path/to/model/train/snapshot-010.pt
 ```
 
-- Inference Configuration: configure inference-specific behavior independently of training:
+### Inference Configuration
 
-- Top-Down Detector Configuration: Top-down models require a separate detector configuration:
+Controls inference-specific behaviour, set independently of training augmentations:
+
+```yaml
+method: td          # bu = bottom-up, td = top-down, ctd = conditional top-down
+device: auto        # auto, cpu, cuda, or cuda:N
+```
+
+### Top-Down Detector Configuration
+
+Top-down models require a separate detector. The detector `pytorch_cfg.yaml` mirrors the pose model structure but uses `DetectorTrainingRunner`:
+
+```yaml
+runner:
+  type: DetectorTrainingRunner
+  key_metric: "test.mAP@50:95"
+  key_metric_asc: true
+  eval_interval: 10
+  optimizer:
+    type: AdamW
+    params:
+      lr: 1e-4
+  scheduler:
+    type: LRListScheduler
+    params:
+      milestones: [160]
+      lr_list: [[1e-5]]
+  snapshots:
+    max_snapshots: 5
+    save_epochs: 25
+    save_optimizer_state: false
+
+train_settings:
+  batch_size: 1
+  epochs: 250
+  dataloader_workers: 0
+  display_iters: 500
+```
