@@ -44,7 +44,15 @@ You should think of maDLC being **four** parts.
 
 Thus, you should always label, train, and evaluate the pose estimation performance first. If and when that performance is high, then you should go advance to the tracking step (and video analysis). There is a natural break point for this, as you will see below.
 
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596370260800-SP2GWKDPJCOIR7LJ31VM/ke17ZwdGBToddI8pDm48kB4fL2ovSQh5dRlH2jCMtpoUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcSV94BuD0XUinmig_1P1RJNYVU597j3jgswapL4c_w92BJE9r6UgUperYhWQ2ubQ_/workflow.png?format=2500w" width="550" title="maDLC" alt="maDLC" align="center" vspace = "50">
+```{figure} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1596370260800-SP2GWKDPJCOIR7LJ31VM/ke17ZwdGBToddI8pDm48kB4fL2ovSQh5dRlH2jCMtpoUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcSV94BuD0XUinmig_1P1RJNYVU597j3jgswapL4c_w92BJE9r6UgUperYhWQ2ubQ_/workflow.png?format=2500w
+---
+name: fig-madlc-workflow
+alt: Overview of the four-part multi-animal DeepLabCut workflow
+width: 550px
+align: center
+---
+Overview of the multi-animal DeepLabCut workflow.
+```
 
 ## Getting started
 
@@ -152,7 +160,13 @@ deeplabcut.add_new_videos(
 You can also use annotated data from single-animal projects, by converting those files.
 There are docs for this: [convert single to multianimal annotation data](convert-maDLC)
 
-![Box 1 - Multi Animal Project Configuration File Glossary](images/box1-multi.png)
+```{figure} images/box1-multi.png
+---
+name: pose-cfg-box1-multi
+alt: Box 1 — multi-animal project configuration file parameter glossary
+---
+**Box 1.** Multi-animal project `config.yaml` parameter glossary.
+```
 
 ##### API Docs
 
@@ -315,7 +329,13 @@ Keyboard arrows: advance frames.
 Delete key: delete label.
 ```
 
-![hot keys](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/192345a5-e411-4d56-b718-ef52f91e195e/Qwerty.png?format=2500w)
+```{figure} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/192345a5-e411-4d56-b718-ef52f91e195e/Qwerty.png?format=2500w
+---
+name: fig-labeling-hotkeys
+alt: Keyboard shortcut reference for the DeepLabCut labeling GUI
+---
+Keyboard shortcuts for the labeling GUI.
+```
 
 **CRITICAL POINT:** It is advisable to **consistently label similar spots** (e.g., on a
 wrist that is very large, try to label the same location). In general, invisible or
@@ -358,9 +378,15 @@ deeplabcut.check_labels(config_path, visualizeindividuals=True/False)
 
 **maDeepLabCut:** you can check and plot colors per individual or per body part, just set the flag `visualizeindividuals=True/False`. Note, you can run this twice in both states to see both images.
 
-<p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1586203062876-D9ZL5Q7NZ464FUQN95NA/ke17ZwdGBToddI8pDm48kKmw982fUOZVIQXHUCR1F55Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpx7krGdD6VO1HGZR3BdeCbrijc_yIxzfnirMo-szZRSL5-VIQGAVcQr6HuuQP1evvE/img1068_individuals.png?format=750w" width="50%">
-</p>
+```{figure} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1586203062876-D9ZL5Q7NZ464FUQN95NA/ke17ZwdGBToddI8pDm48kKmw982fUOZVIQXHUCR1F55Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpx7krGdD6VO1HGZR3BdeCbrijc_yIxzfnirMo-szZRSL5-VIQGAVcQr6HuuQP1evvE/img1068_individuals.png?format=750w
+---
+name: fig-check-labels-individuals
+alt: Example check_labels output showing annotated individuals per frame
+width: 50%
+align: center
+---
+Example `check_labels` output with annotations shown per individual.
+```
 
 For each video directory in labeled-data this function creates a subdirectory with **labeled** as a suffix. Those directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are labeled correctly. If they are not correct, the user can reload the frames (i.e. `deeplabcut.label_frames`), move them around, and click save again.
 
@@ -950,7 +976,15 @@ deeplabcut.refine_tracklets(config_path, pickle_or_h5_file, videofile_path, max_
 
 If you use the GUI (or otherwise), here are some settings to consider:
 
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1619628014395-BQ09VLLTKCLQQGRB5T9A/ke17ZwdGBToddI8pDm48kLMj_XrWI9gi4tVeBdgcB8p7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z4YTzHvnKhyp6Da-NYroOW3ZGjoBKy3azqku80C789l0lt53wR20brczws2A6XSGt3kSTbW7uM0ncVKHWPvgHR4kN5Ka1TcK96ljy4ji9jPkQ/TrackletGUI.png?format=1000w" width="950" title="maDLCtrack" alt="maDLC" align="center" vspace = "50">
+```{figure} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1619628014395-BQ09VLLTKCLQQGRB5T9A/ke17ZwdGBToddI8pDm48kLMj_XrWI9gi4tVeBdgcB8p7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z4YTzHvnKhyp6Da-NYroOW3ZGjoBKy3azqku80C789l0lt53wR20brczws2A6XSGt3kSTbW7uM0ncVKHWPvgHR4kN5Ka1TcK96ljy4ji9jPkQ/TrackletGUI.png?format=1000w
+---
+name: fig-tracklet-gui
+alt: Tracklet refinement GUI showing key settings
+width: 950px
+align: center
+---
+Tracklet refinement GUI. Key settings to configure are described in the text.
+```
 
 \*note, setting `max_gap=0` can be used to fill in all frames across the video; otherwise, 1-n is the # of frames you want to fill in, i.e. maybe you want to fill in short gaps of 5 frames, but 15 frames indicates another issue, etc. You can test this in the GUI very easy by editing the value and then re-launch pop-up GUI.
 
@@ -960,9 +994,15 @@ If you fill in gaps, they will be associated to an ultra low probability, 0.01, 
 
 Short demo:
 
-<p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588690928000-90ZMRIM8SN6QE20ZOMNX/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/refineDEMO.gif?format=750w" width="70%">
-</p>
+```{figure} https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588690928000-90ZMRIM8SN6QE20ZOMNX/ke17ZwdGBToddI8pDm48kJ1oJoOIxBAgRD2ClXVCmKFZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpxBw7VlGKDQO2xTcc51Yv6DahHgScLwHgvMZoEtbzk_9vMJY_JknNFgVzVQ2g0FD_s/refineDEMO.gif?format=750w
+---
+name: fig-refine-tracklets-demo
+alt: Animated demonstration of the tracklet refinement workflow
+width: 70%
+align: center
+---
+Short demo of the tracklet refinement workflow.
+```
 
 ### Phase 5 — Post-processing and refinement
 
