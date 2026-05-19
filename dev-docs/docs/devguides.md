@@ -111,7 +111,7 @@ class MyBackbone(BaseBackbone):
     def __init__(self, ...):
         super().__init__(stride=32)
         # Implementation
-    
+
     def forward(self, x):
         # Forward pass
         return x

@@ -132,4 +132,3 @@ pose_runner = dlc_torch.get_pose_inference_runner(
 #  as a dict (with keys for "bodyparts" but also "bboxes")!
 predictions = pose_runner.inference(images=tqdm(video))
 ```
-

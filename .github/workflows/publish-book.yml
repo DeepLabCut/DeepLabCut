@@ -40,13 +40,13 @@ jobs:
 
       - name: Build developer docs
         run: |
-          mkdocs build -v -f deeplabcut/pose_estimation_pytorch/mkdocs.yml --site-dir site
+          mkdocs build -v -f dev-docs/mkdocs.yml
 
       - name: Upload developer docs artifact
         uses: actions/upload-artifact@v6
         with:
           name: built-dev-docs
-          path: site
+          path: _build/dev
           if-no-files-found: error
           retention-days: 1
 
