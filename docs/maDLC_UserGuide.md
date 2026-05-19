@@ -307,12 +307,12 @@ provided along with the toolbox. This can be launched by using:
 deeplabcut.extract_frames(config_path, 'manual')
 ```
 
-// FIXME(niels) - add a napari frame extractor description.
+<!-- // FIXME(niels) - add a napari frame extractor description.
 The user can use the *Load Video* button to load one of the videos in the project
 configuration file, use the scroll bar to navigate across the video and *Grab a Frame*.
 The user can also look at the extracted frames and e.g. delete frames (from the
 directory) that are too similar before reloading the set and then manually annotating
-them.
+them. -->
 
 ````{admonition} Click the button to see API Docs
 ---
