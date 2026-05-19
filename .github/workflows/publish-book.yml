@@ -16,30 +16,60 @@ jobs:
       upload_artifact: true
     secrets: inherit
 
+  build-dev-docs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+
+      - name: Install system dependencies for mkdocs-material social plugin
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libcairo2-dev libfreetype6-dev libffi-dev libjpeg-dev libpng-dev libz-dev
+
+      - name: Install developer docs dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ".[dev-docs]"
+
+      - name: Build developer docs
+        run: |
+          mkdocs build -v -f deeplabcut/pose_estimation_pytorch/mkdocs.yml --site-dir site
+
+      - name: Upload developer docs artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: built-dev-docs
+          path: site
+          if-no-files-found: error
+          retention-days: 1
+
   deploy:
-    needs: build
+    needs: [build, build-dev-docs]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Download built site artifact
+      - name: Download built Jupyter Book artifact
         uses: actions/download-artifact@v4
         with:
           name: built-book
           path: site
+
+      - name: Download built developer docs artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: built-dev-docs
+          path: site/dev
 
       - name: Deploy via gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: site
-
-      - name: Build developer docs
-        run: |
-          mkdocs build -v -f deeplabcut/pose_estimation_pytorch/mkdocs.yml  --site-dir ../../_build/html/dev
-
-      - name: GitHub Pages action
-        uses: peaceiris/actions-gh-pages@v3.9.3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./_build/html

@@ -79,6 +79,15 @@ docs = [
   "numpydoc",
   "sphinxcontrib-mermaid",
 ]
+dev-docs = [
+  "mike>=2.1",
+  "mkdocs>=1.6",
+  "mkdocs-api-autonav>=0.1",
+  "mkdocs-autorefs>=1.2",
+  "mkdocs-jupyter>=0.25",
+  "mkdocs-material[imaging]>=9.5",
+  "mkdocstrings[python]>=0.27",
+]
 fmpose3d = [ "fmpose3d>=0.0.8" ]
 # Use only one of [tf, tf-cu11, tf-cu12, tf-latest]. Do not combine extras.
 tf = [
