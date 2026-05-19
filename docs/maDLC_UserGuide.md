@@ -13,6 +13,13 @@ deeplabcut:
 
 # Multi-animal projects
 
+```{contents}
+---
+local:
+depth: 3
+---
+```
+
 This document should serve as the user guide for maDLC,
 and it is here to support the scientific advances presented in [Lauer et al. 2022](https://doi.org/10.1038/s41592-022-01443-0).
 
