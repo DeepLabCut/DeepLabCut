@@ -12,7 +12,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from pathlib import Path
 
 import numpy as np
@@ -380,7 +380,7 @@ def return_train_network_path(
 @renamed_parameter(old="Shuffles", new="shuffles", since="3.0.0")
 def evaluate_network(
     config: str | Path,
-    shuffles: Iterable[int] = (1,),
+    shuffles: Sequence[int] = (1,),
     trainingsetindex: int | str = 0,
     plotting: bool | str = False,
     show_errors: bool = True,
@@ -406,7 +406,7 @@ def evaluate_network(
     config : string
         Full path of the config.yaml file.
 
-    shuffles: list, optional, default=[1]
+    shuffles: sequence of int, optional, default=[1]
         List of integers specifying the shuffle indices of the training dataset.
 
     trainingsetindex: int or str, optional, default=0
