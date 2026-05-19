@@ -714,7 +714,7 @@ def collect_video_paths(
             raise TypeError(f"extensions must be a string, a sequence or None, got {type(extensions)}")
 
         if len(extensions) == 0:
-            raise ValueError("Video type extensions filter needs to be an non-empty sequence.")
+            raise ValueError("Video type extensions filter needs to be a non-empty sequence.")
         return {f".{e.lstrip('.').lower()}" for e in extensions}
 
     explicit_suffixes = _coerce_extensions(extensions)

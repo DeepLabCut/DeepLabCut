@@ -225,9 +225,18 @@ def test_new_not_in_signature_raises():
     """Applying a rename whose 'new' is not in the signature raises an error."""
     with pytest.raises(ValueError, match="not a parameter"):
 
-        @renamed_parameter(old="videotype", new="video_type")
-        def fn(extensions=None):
-            return extensions
+        @renamed_parameter(old="old_name", new="new_name")
+        def fn(not_new_name=None):
+            return not_new_name
+
+
+def test_old_still_in_signature_raises():
+    """Applying a rename when the old name is still in the signature raises an error."""
+    with pytest.raises(ValueError, match="still a parameter"):
+
+        @renamed_parameter(old="old_name", new="new_name")
+        def fn(old_name=None, new_name=None):
+            return new_name
 
 
 def test_renamed_parameter_chaining_raises():
@@ -236,8 +245,8 @@ def test_renamed_parameter_chaining_raises():
 
         @renamed_parameter(old="A", new="B")  # outer: A→B, but B is already deprecated to C
         @renamed_parameter(old="B", new="C")  # inner: B→C
-        def fn(B=None, C=None):
-            return C or B
+        def fn(C=None):
+            return C
 
 
 def test_renamed_parameter_multiple_independent_renames():

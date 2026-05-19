@@ -145,14 +145,7 @@ def renamed_parameter(
     """
 
     def decorator(fn: Callable[P, R]) -> Callable[P, R]:
-        # Guard: 'new' must actually exist in the function's signature.
         sig = inspect.signature(fn)
-        if new not in sig.parameters:
-            raise ValueError(
-                f"@renamed_parameter: '{new}' is not a parameter of "
-                f"{fn.__qualname__}. "
-                f"Available parameters: {list(sig.parameters)}"
-            )
 
         # Guard: disallow chaining renames (A→B stacked on top of B→C).
         existing = getattr(fn, "__deprecated_params__", ())
@@ -165,6 +158,21 @@ def renamed_parameter(
                     f"on {fn.__qualname__}. "
                     f"Use '{old}' → '{prev.new_parameter}' directly instead."
                 )
+
+        # Guard: 'new' must actually exist in the function's signature.
+        if new not in sig.parameters:
+            raise ValueError(
+                f"@renamed_parameter: '{new}' is not a parameter of "
+                f"{fn.__qualname__}. "
+                f"Available parameters: {list(sig.parameters)}"
+            )
+
+        # Guard: 'old' must NOT exist in the signature.
+        if old in sig.parameters:
+            raise ValueError(
+                f"@renamed_parameter: '{old}' is still a parameter of "
+                f"{fn.__qualname__}. Use either old name or new name: '{new}'."
+            )
 
         info = DeprecationInfo(
             kind="parameter",
