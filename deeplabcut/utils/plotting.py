@@ -297,7 +297,7 @@ def plot_trajectories(
     individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(cfg, displayedindividuals)
     Videos = collect_video_paths(videos, extensions=video_extensions)
     if not len(Videos):
-        print("No videos found. Make sure you passed a list of videos and that extensions filter is right.")
+        print("No videos found. Make sure you passed a list of videos and that the video_extensions filter is right.")
         return
 
     failures, multianimal_errors = [], []

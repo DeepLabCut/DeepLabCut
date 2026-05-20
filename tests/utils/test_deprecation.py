@@ -160,15 +160,15 @@ def test_renamed_parameter_new_name_no_warning():
 
 
 def test_renamed_parameter_warning_contains_names():
-    @renamed_parameter(old="videotype", new="extensions", since="3.2")
-    def fn(extensions=None):
-        return extensions
+    @renamed_parameter(old="videotype", new="video_extensions", since="3.2")
+    def fn(video_extensions=None):
+        return video_extensions
 
     with pytest.warns(DLCDeprecationWarning, match="videotype") as record:
         fn(videotype="mp4")
 
     message = str(record[0].message)
-    assert "extensions" in message
+    assert "video_extensions" in message
     assert "3.2" in message
 
 
@@ -181,18 +181,18 @@ def test_renamed_parameter_preserves_name():
 
 
 def test_renamed_parameter_old_and_new_together_raise():
-    @renamed_parameter(old="videotype", new="extensions")
-    def fn(extensions=None):
-        return extensions
+    @renamed_parameter(old="videotype", new="video_extensions")
+    def fn(video_extensions=None):
+        return video_extensions
 
-    with pytest.raises(TypeError, match="both 'videotype' and 'extensions'"):
-        fn(videotype="mp4", extensions="avi")
+    with pytest.raises(TypeError, match="both 'videotype' and 'video_extensions'"):
+        fn(videotype="mp4", video_extensions="avi")
 
 
 def test_renamed_parameter_attaches_metadata():
-    @renamed_parameter(old="videotype", new="extensions", since="3.2")
-    def fn(extensions=None):
-        return extensions
+    @renamed_parameter(old="videotype", new="video_extensions", since="3.2")
+    def fn(video_extensions=None):
+        return video_extensions
 
     params = fn.__deprecated_params__
     assert len(params) == 1
@@ -201,16 +201,16 @@ def test_renamed_parameter_attaches_metadata():
     assert info.kind == "parameter"
     assert info.target.endswith("fn")
     assert info.old_parameter == "videotype"
-    assert info.new_parameter == "extensions"
+    assert info.new_parameter == "video_extensions"
     assert info.since == Version("3.2")
 
 
 def test_renamed_parameter_invalid_since_raises():
     with pytest.raises(ValueError, match="Invalid version"):
 
-        @renamed_parameter(old="videotype", new="extensions", since="invalid-version")
-        def fn(extensions=None):
-            return extensions
+        @renamed_parameter(old="videotype", new="video_extensions", since="invalid-version")
+        def fn(video_extensions=None):
+            return video_extensions
 
 
 def test_renamed_parameter_new_not_in_signature_raises():
@@ -251,9 +251,9 @@ def test_renamed_parameter_chaining_raises():
 
 def test_renamed_parameter_multiple_independent_renames():
     @renamed_parameter(old="batchsize", new="batch_size")
-    @renamed_parameter(old="videotype", new="extensions")
-    def fn(extensions=None, batch_size=None):
-        return extensions, batch_size
+    @renamed_parameter(old="videotype", new="video_extensions")
+    def fn(video_extensions=None, batch_size=None):
+        return video_extensions, batch_size
 
     with pytest.warns(DLCDeprecationWarning):
         result = fn(videotype="mp4")

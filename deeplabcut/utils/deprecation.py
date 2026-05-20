@@ -137,7 +137,7 @@ def renamed_parameter(
           is later renamed to ``C``, replace the ``A→B`` decorator with
           ``A→C`` directly rather than stacking a second decorator.
         - Multiple independent renames on the same function (e.g.
-          ``batchsize→batch_size`` *and* ``videotype→extensions``) are fine
+          ``batchsize→batch_size`` *and* ``videotype→video_extensions``) are fine
           as long as they do not form a chain.
         - This decorator only intercepts **keyword** arguments.  Positional
           arguments are passed through unchanged; renaming a parameter that

@@ -689,7 +689,7 @@ def analyze_videos(
             )
         return DLCscorer  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
-        print("No video(s) were found. Please check your paths and/or extensions filter.")
+        print("No video(s) were found. Please check your paths and/or video_extensions filter.")
         return DLCscorer
 
 

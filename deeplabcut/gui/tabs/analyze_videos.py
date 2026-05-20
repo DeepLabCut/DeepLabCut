@@ -352,7 +352,7 @@ class AnalyzeVideos(DefaultTab):
                 deeplabcut.analyze_videos(
                     options.config,
                     videos=videos,
-                    videotype=videotype,
+                    video_extensions=videotype,
                     shuffle=options.shuffle,
                     save_as_csv=options.save_as_csv,
                     cropping=options.cropping,
@@ -383,7 +383,7 @@ class AnalyzeVideos(DefaultTab):
             deeplabcut.create_video_with_all_detections(
                 options.config,
                 videos=videos,
-                videotype=videotype,
+                video_extensions=videotype,
                 shuffle=options.shuffle,
             )
 
@@ -391,7 +391,7 @@ class AnalyzeVideos(DefaultTab):
             deeplabcut.filterpredictions(
                 options.config,
                 video=videos,
-                videotype=videotype,
+                video_extensions=videotype,
                 shuffle=options.shuffle,
                 filtertype="median",
                 windowlength=5,
@@ -404,7 +404,7 @@ class AnalyzeVideos(DefaultTab):
                 options.config,
                 videos=videos,
                 displayedbodyparts=options.displayed_bodyparts,
-                videotype=videotype,
+                video_extensions=videotype,
                 shuffle=options.shuffle,
                 filtered=options.filter_data,
                 showfigures=options.show_trajectory_plots,
