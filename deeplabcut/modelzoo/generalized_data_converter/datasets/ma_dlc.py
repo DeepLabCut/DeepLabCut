@@ -13,6 +13,7 @@ import os
 import numpy as np
 import pandas as pd
 
+from deeplabcut.generate_training_dataset.trainingsetmanipulation import drop_likelihood_columns
 from deeplabcut.modelzoo.generalized_data_converter.datasets.base_dlc import (
     BaseDLCPoseDataset,
 )
@@ -27,7 +28,7 @@ class MaDLCPoseDataset(BaseDLCPoseDataset):
         super().__init__(proj_root, dataset_name, shuffle=shuffle, modelprefix=modelprefix)
 
     def _df2generic(self, df, image_id_offset=0):
-
+        df = drop_likelihood_columns(df)
         individuals = df.columns.get_level_values("individuals").unique().tolist()
 
         unique_bpts = []
