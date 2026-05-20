@@ -28,6 +28,7 @@ from deeplabcut.pose_estimation_tensorflow.core import predict as single_predict
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal as predict
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 warnings.simplefilter("ignore", category=RuntimeWarning)
 
@@ -243,12 +244,13 @@ def _video_inference(
     return PredicteData, nframes
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def video_inference(
     videos,
     project_name,
     model_name,
     scale_list=None,
-    videotype: str | Sequence[str] | None = None,
+    video_extensions: str | Sequence[str] | None = None,
     destfolder=None,
     batchsize=1,
     robust_nframes=False,
@@ -307,7 +309,7 @@ def video_inference(
 
     sess, inputs, outputs = single_predict.setup_pose_prediction(test_cfg, allow_growth=allow_growth)
     DLCscorer = "DLC_" + Path(test_cfg["init_weights"]).stem
-    videos = collect_video_paths(videos, extensions=videotype)
+    videos = collect_video_paths(videos, extensions=video_extensions)
 
     datafiles = []
     for video in videos:

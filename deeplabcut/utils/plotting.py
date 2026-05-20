@@ -38,6 +38,7 @@ import pandas as pd
 from deeplabcut.core import crossvalutils
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
 from deeplabcut.utils.auxfun_videos import collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 
 def Histogram(vector, color, bins, ax=None, linewidth=1.0):
@@ -169,10 +170,11 @@ def PlottingResults(
 ##################################################
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def plot_trajectories(
     config,
     videos,
-    videotype: str | Sequence[str] | None = None,
+    video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     filtered=False,
@@ -199,7 +201,7 @@ def plot_trajectories(
         Full paths to videos for analysis or a path to the directory, where all the
         videos with same extension are stored.
 
-    videotype : str | Sequence[str] | None, optional, default=None
+    video_extensions : str | Sequence[str] | None, optional, default=None
         Controls how ``videos`` are filtered, based on file extension.
         File paths and directory contents are treated differently:
         - ``None`` (default): file paths are accepted as-is; directories are
@@ -293,9 +295,9 @@ def plot_trajectories(
     )  # automatically loads corresponding model (even training iteration based on snapshot index)
     bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, displayedbodyparts)
     individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(cfg, displayedindividuals)
-    Videos = collect_video_paths(videos, extensions=videotype)
+    Videos = collect_video_paths(videos, extensions=video_extensions)
     if not len(Videos):
-        print("No videos found. Make sure you passed a list of videos and that *videotype* is right.")
+        print("No videos found. Make sure you passed a list of videos and that extensions filter is right.")
         return
 
     failures, multianimal_errors = [], []
