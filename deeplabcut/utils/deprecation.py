@@ -136,6 +136,11 @@ def renamed_parameter(
         - Do **not** chain renames.  If ``A`` was renamed to ``B`` and ``B``
           is later renamed to ``C``, replace the ``A→B`` decorator with
           ``A→C`` directly rather than stacking a second decorator.
+            Example:
+                @renamed_parameter(old="A", new="C", since="12.4.0")
+                @renamed_parameter(old="B", new="C", since="13.0.0")
+                def func(*, C: int):
+                    print(f"C={C}")
         - Multiple independent renames on the same function (e.g.
           ``batchsize→batch_size`` *and* ``videotype→video_extensions``) are fine
           as long as they do not form a chain.
