@@ -63,6 +63,8 @@ If you drag and drop a compatible labeled-data folder, the widget opens automati
 To familiarize yourself with napari, we recommend checking out the [official napari documentation and tutorials](https://napari.org/stable/usage.html).
 ```
 
+(sec:napari-dlc-basic-workflow)=
+
 ## Recommended basic labeling workflow
 
 The simplest way to **start labeling** is:

@@ -40,20 +40,26 @@ Expect longer processing times on CPU, especially for longer videos or larger tr
 ```{important}
 Before using tracking, you must:
 
-- Load a **video** as an `Image` layer with time as the first dimension.
-  - For DLC-integrated workflows, the easiest starting point is often to drag-and-drop one of the `labeled-data` folders from your DLC project.
-  - Tracking is most useful on temporally continuous image sequences or videos.
+- Load a **video** or **extracted frames** as an `Image` layer with time as the first dimension.
+  - For DLC-integrated workflows, the **easiest starting point is often to drag-and-drop one of the `labeled-data` folders from your DLC project**.
+  - See {ref}`sec:napari-dlc-basic-workflow` for more details on how to prepare your data and annotations before tracking.
 - Ensure you have a **Points** layer containing DeepLabCut-style keypoints.
   - If annotating from scratch, drag-and-drop the `config.yaml` file from your DLC project to create a new Points layer with the correct metadata.
   - If loading a folder which already contains a `CollectedData_*.h5` file, the plugin will automatically create a Points layer with the existing annotations.
 - Annotate at least one frame with valid keypoints.
+- Tracking is most useful on temporally continuous image sequences or videos.
 
-See the workflow guides below for more details on how to prepare your data and annotations for tracking.
+See the workflow guides below for more details of the tracking process.
 ```
 
 ### In your Python environment
 
 **Skip this if you have already installed PyTorch or DeepLabCut**
+
+```{important}
+**By default, installing the `[tracking]` extra alone will not enable GPU support.**
+Check the [official PyTorch installation guide](https://pytorch.org/get-started/locally/) for GPU support and installation instructions for your system.
+```
 
 If you do not have PyTorch installed, or if you are using the plugin without the DeepLabCut package installed, install with:
 
@@ -108,7 +114,8 @@ The widget automatically updates based on layer changes.
   - The model generates tracking predictions from the keypoints present on this frame and uses them as seeds to track forward and/or backward in time.
 
 ```{note}
-Only keypoints present on the selected reference frame are used to initialize tracking.
+Only keypoints present on the selected reference frame are used to initialize a tracking run.
+Neighboring frames or frames later in the video are never considered for initialization, even if they contain keypoints.
 ```
 
 ### 4. Frame range controls
@@ -141,7 +148,7 @@ Changing the current frame updates the valid forward/backward range automaticall
 | ■      | Stop tracking                 |
 
 ```{note}
-Tracking runs in a background worker thread. You can continue navigating the viewer and editing layers while it runs; results will appear as a new layer once tracking is complete.
+Tracking runs in the background. You can continue navigating the viewer and editing layers while it runs; results will appear as a new layer once tracking is complete.
 ```
 
 ## Keyboard shortcuts
@@ -152,7 +159,7 @@ Most tracking functions have keyboard shortcuts for easier usage.
 You can see shortcuts and their status using:
 > Help -> Show napari-dlc shortcuts
 
-This is only available if the Keypoint controls widget has been opened.
+This is only available if the Keypoint controls widget has been opened at least once.
 ```
 
 ## Tracking results
@@ -168,7 +175,7 @@ Each tracking run creates a **new Points layer**:
 - Named automatically (`[Tracking v<XX>] Ref. layer name - t<T> - Tracker name`)
   - `XX` refers to the iteration number (if multiple tracking runs are performed from the same reference layer and model)
   - `T` refers to the reference frame index used to generate the tracking result
-- Visually distinct from manual annotations:
+- **Visually distinct from manual annotations**:
   - Cross symbol
   - Slight transparency
   - Green border
@@ -179,21 +186,25 @@ To incorporate tracking results into your annotation data, use the merge workflo
 ```
 
 ```{important}
-If you run into accessibility issues with the default visualization style, please [open an issue](https://github.com/DeepLabCut/napari-deeplabcut/issues). We would be happy to expand settings and provide more customization options if requested.
+If you run into accessibility issues with the default visualization style, please [open an issue](https://github.com/DeepLabCut/napari-deeplabcut/issues).
+We would be happy to expand settings and provide more customization options if requested.
 ```
 
 ## Refinement and saving tools
 
 ```{danger}
-There is **currently no undo option**. Any **deletion or merging action you perform is irreversible**, so we recommend keeping track of your layers and using visibility toggles to compare before and after merge results.
+There is **currently no undo option**. Any **deletion or merging action you perform on layers is irreversible**, so we recommend keeping track of your layers and using visibility toggles to compare before and after merge results.
+
+Overwrite warnings will be shown where relevant.
 ```
 
 ### Deleting tracked points in future frames
 
 **Tracking results are often satisfactory for a certain number of frames, then start to drift or produce errors.**
+For example, a tracked point may start following the background instead of the intended body part, or jump to a different body part or individual.
 Because of this sometimes unavoidable drift, we provide a way to delete future tracked points while keeping the current frame intact.
 
-1. Select a tracking-result Points layer.
+1. Select a tracking result Points layer.
    - This action is always disabled for the original annotation layer.
 1. Select one or more points on the **current frame**.
 1. Click **Delete selected points in future frames**.
@@ -203,6 +214,8 @@ Only *exact identity matches* in future frames are removed.
 ```{important}
 Points on the current frame are preserved so you can correct them and re-run tracking.
 ```
+
+This allows you to run tracking, and iteratively progress through the frames, correcting keypoints as you go, and merging the final results back into the original annotation layer when you are satisfied, see below for more details on merging.
 
 ### Merging tracked points
 
@@ -221,8 +234,9 @@ There are several merge options available to help you achieve the desired result
   - Intended for replacing poor tracking results with a new, updated tracking pass.
 
 ```{important}
-Tracking-result layers are intermediate working layers.
+Tracking result layers are intermediate working layers.
 To save results back into the DeepLabCut project, first merge tracked points into a standard DLC annotation layer, then save that final annotation layer.
+Tracking layers will be saved as CSVs, which are not compatible with DLC project annotations and will not be written back to the `CollectedData_*.h5` workflow.
 ```
 
 ## Workflow example
@@ -231,23 +245,24 @@ To save results back into the DeepLabCut project, first merge tracked points int
 
 1. Create a DeepLabCut project and add the videos to label.
 1. Extract frames from the videos.
-   - Currently implemented trackers prefer continuous video frames. We recommend avoiding large gaps in frame indices, which can make tracking more difficult.
+   - Currently implemented trackers prefer continuous video frames. We recommend avoiding large gaps in frames ("jumpy" video), which can make tracking more difficult.
+   - For this reason, you may want to run tracking on the original video, then extract frames with tracking/refined annotations directly.
 1. Go to the `labeled-data` folder, then drag-and-drop a folder with extracted frames into napari.
    - This creates an Image layer with the frames.
 1. Drag-and-drop the `config.yaml` file from your DLC project into napari.
    - This creates an empty Points layer with the correct DLC metadata, ready for annotation.
 1. Annotate keypoints on a reference frame.
 
-> See {ref}`sec:tracking-workflow-guides`.
+> Go to {ref}`sec:tracking-workflow-guides`.
 
 ### Loading and annotating from existing DLC annotations
 
-1. Go to the `labeled-data` folder, then drag-and-drop a folder with extracted frames into napari.
+1. Go to the `labeled-data` folder, then drag-and-drop a subfolder with extracted frames into napari.
    - This creates an Image layer with the frames.
    - Existing annotations from the `CollectedData_*.h5` file are loaded as a Points layer.
 1. Inspect existing annotations, select a reference frame, and refine keypoints if needed.
 
-> See {ref}`sec:tracking-workflow-guides`.
+> Go to {ref}`sec:tracking-workflow-guides`.
 
 (sec:tracking-workflow-guides)=
 
@@ -255,32 +270,32 @@ To save results back into the DeepLabCut project, first merge tracked points int
 
 1. Open the Tracking Controls widget (`Plugins -> napari-deeplabcut -> Tracking controls`).
 1. Go to the desired reference frame, with annotated keypoints visible.
-1. Select the forward/backward tracking range using the sliders, or track to the beginning/end of the video using the seek buttons.
+1. Select the forward/backward tracking range using the sliders and track forward/backward, or track to the beginning/end of the video using the seek buttons.
 1. Inspect the tracking results.
    - You can use **Show trajectories** in the Keypoint Controls dock widget to visualize the trajectories of tracked points across frames, which can help identify where tracking starts to drift.
    - The plot is filtered by selected keypoints, so you can select a subset of points to inspect their trajectories more closely.
 1. If there are problematic points:
    1. On the frame where tracking starts to drift, select the problematic point(s) and click **Delete selected points in future frames** to remove incorrect tracking results while preserving the tracked point(s) on the current frame.
-   1. Refine the keypoint(s) on the current frame to correct their position.
+   1. Refine the keypoint(s) on the current frame by correcting their position.
    1. Re-run tracking from that frame to propagate the correction forward or backward in time.
 1. Merge the new tracking result back into the previous tracking layer when appropriate (for example, using **Overwrite existing target points**).
 1. Repeat until satisfied with the tracking result, then merge into the original annotation layer using **Fill missing only** to preserve your original annotations and only add tracked keypoints in frames where you do not yet have manual annotations.
 1. **Save the final DLC annotation layer** (usually the original annotation layer after merging).
-   - Tracking-result layers are intermediate working layers and are not written back directly as DLC project annotations.
-   - Saving the final merged annotation layer is the step that writes back to the DLC project folder and updates the `CollectedData_*.h5` workflow.
+   - Tracking result layers are intermediate working layers and are not written back directly as DLC project annotations.
+   - **Saving the final merged annotation layer is the step that writes back to the DLC project folder and updates the `CollectedData_*.h5` workflow.**
 
 ```{note}
-The **Show trails** feature is currently not available for tracking-result layers. Please [open an issue](https://github.com/DeepLabCut/napari-deeplabcut/issues) if this is something you would like to see in the future.
+The **Show trails** feature is currently not available for tracking result layers. Please [open an issue](https://github.com/DeepLabCut/napari-deeplabcut/issues) if this is something you would like to see in the future.
 ```
 
 ## Troubleshooting
 
 ### No keypoints found on reference frame
 
-Ensure:
+Ensure that:
 
+- **The correct Points layer is selected in the tracking controls dropdown menu.**
 - You are on the intended frame.
-- The correct Points layer is selected.
 - Points exist exactly on that frame index.
 
 ### Tracking buttons do nothing
@@ -311,6 +326,7 @@ Please share any feedback or insights you have with us!
 
 - **Strengths:** fast on GPU, can output 10-100 frames of satisfactory tracking results, depending on difficulty.
 - **Limitations:** strong preference for continuous video frames; struggles with large gaps in frame indices (for example, automated DLC frame extraction via clustering, or uniform extraction with a large step size).
+  Consider running tracking on the original video, then extracting frames with tracking/refined annotations directly.
 ```
 
 ## Limitations and future directions
@@ -327,11 +343,11 @@ Please share any feedback or insights you have with us!
 #### Future features
 
 - We currently only provide CoTracker3 as a model. It is, however, relatively easy to add new models to the plugin via the registry; feel free to ask if you would like to contribute a model or see a specific model added.
-- Generic napari saves or exports of tracking-result layers are not part of the recommended DeepLabCut workflow. Tracking-result layers are intermediate working layers; to preserve results in a DLC project-compatible way, merge them into a standard annotation layer and save that layer.
+- Generic napari saves or exports of tracking result layers are not part of the recommended DeepLabCut workflow. Tracking result layers are intermediate working layers; to preserve results in a DLC project-compatible way, merge them into a standard annotation layer and save that layer.
 - If there is demand, we may add support for saving and loading tracking layers as separate files in the DLC project folder.
 - If you have ideas for specific refinement tools, shortcuts, or other features that would be useful to add to the plugin, please share them with us.
 
 ## Getting help and providing feedback
 
 - [GitHub issues](https://github.com/DeepLabCut/napari-deeplabcut/issues): for bug reports, feature requests, or general questions. We welcome your feedback and contributions.
-- [Discussion forum](https://forum.image.sc/tag/deeplabcut): for general discussion, questions, and sharing your work with the community. We also provide troubleshooting help and guidance here, but may open an issue for actual bugs or feature requests and request more information there.
+- [Discussion forum](https://forum.image.sc/tag/deeplabcut): for general discussion, questions, and sharing your work with the community. We also provide troubleshooting help and guidance here, but may open an issue for actual bugs or feature requests directly on GitHub, as well as request more information there.
