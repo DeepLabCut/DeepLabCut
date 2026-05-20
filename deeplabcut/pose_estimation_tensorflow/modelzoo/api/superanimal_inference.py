@@ -28,6 +28,7 @@ from deeplabcut.pose_estimation_tensorflow.core import predict as single_predict
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal as predict
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 warnings.simplefilter("ignore", category=RuntimeWarning)
 
@@ -243,12 +244,13 @@ def _video_inference(
     return PredicteData, nframes
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def video_inference(
     videos,
     project_name,
     model_name,
     scale_list=None,
-    videotype: str | Sequence[str] | None = None,
+    video_extensions: str | Sequence[str] | None = None,
     destfolder=None,
     batchsize=1,
     robust_nframes=False,
@@ -307,7 +309,7 @@ def video_inference(
 
     sess, inputs, outputs = single_predict.setup_pose_prediction(test_cfg, allow_growth=allow_growth)
     DLCscorer = "DLC_" + Path(test_cfg["init_weights"]).stem
-    videos = collect_video_paths(videos, extensions=videotype)
+    videos = collect_video_paths(videos, extensions=video_extensions)
 
     datafiles = []
     for video in videos:
@@ -429,7 +431,7 @@ def _video_inference_superanimal(
     project_name,
     model_name,
     scale_list=None,
-    videotype=".mp4",
+    video_extensions=".mp4",
     video_adapt=False,
     plot_trajectories=True,
     pcutoff=0.1,
@@ -468,7 +470,7 @@ def _video_inference_superanimal(
         By default it uses the original size.
         Users are advised to try a wide range of scale list when the super model does not give reasonable results
 
-    videotype: string, optional
+    video_extensions: string, optional
         Checks for the extension of the video in case the input to the video is a directory.\n
         Only videos with this extension are analyzed.
         The default is ``.avi``
@@ -497,12 +499,12 @@ def _video_inference_superanimal(
     scale_list = range(600,800,100)
 
     superanimal_name = 'superanimal_topviewmouse'
-    videotype = 'mp4'
+    video_extensions = 'mp4'
     scale_list = [200, 300, 400]
     deeplabcut.video_inference_superanimal(
          video,
          superanimal_name,
-         videotype = '.avi',
+         video_extensions = '.avi',
          scale_list = scale_list,
     )
     >>>
@@ -522,7 +524,7 @@ def _video_inference_superanimal(
             video,
             superanimal_name,
             modelfolder=str(modelfolder),
-            videotype=video.split(".")[-1],
+            video_extensions=video.split(".")[-1],
             scale_list=scale_list,
         )
         if not video_adapt:

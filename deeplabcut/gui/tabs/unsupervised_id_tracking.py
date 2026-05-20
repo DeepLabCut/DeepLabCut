@@ -122,7 +122,7 @@ class UnsupervizedIdTracking(DefaultTab):
             deeplabcut.transformer_reID,
             config=config,
             videos=videos,
-            videotype=videotype,
+            video_extensions=videotype,
             n_tracks=n_tracks,
             shuffle=shuffle,
             track_method=track_method,
