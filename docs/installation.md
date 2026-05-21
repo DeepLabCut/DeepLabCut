@@ -163,7 +163,7 @@ class: dropdown
 💡 **PyTorch and TensorFlow Support within DeepLabCut**
 
 As of June 2024 we have a PyTorch Engine backend and we will be deprecating the
-TensorFlow backend by 2027.
+TensorFlow backend by version 3.2 latest (TBD).
 Currently, if you want to use TensorFlow, you
 need to run `pip install deeplabcut[tf]` in order to install the correct version of
 TensorFlow in your conda env.
