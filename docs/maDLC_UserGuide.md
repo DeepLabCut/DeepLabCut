@@ -793,36 +793,40 @@ You can drop "Indices" to run this on all training/testing images (this is very 
 
 #### (I) Analyze new Videos
 
+```{important}
+Before moving on, make a deliberate decision about whether the pose estimation quality is sufficient. If you do not have good pose estimation evaluation metrics at this point, please revisit the original labels, add more training data and refine the model rather than proceeding with the current results.
+```
+
+```{note}
+In prior versions of DeepLabCut, pose estimation and tracking were separate procedures. From version 3.0 onward, `deeplabcut.analyze_videos` runs the **full pose estimation + tracking pipeline** by default (`auto_track=True`), producing an .h5 file ready for downstream use. To inspect raw detections before any of this is applied, pass `auto_track=False` explicitly.
+```
+
+##### Pose estimation quality check
+
+To validate raw pose estimation performance on a video before committing to the tracking
+results, run:
+
+```python
+videos_to_analyze = ['/fullpath/project/videos/testVideo.mp4']
+deeplabcut.analyze_videos(config_path, videos_to_analyze, videotype='.mp4', auto_track=False)
+deeplabcut.create_video_with_all_detections(config_path, videos_to_analyze, videotype='.mp4')
+```
+
+With `auto_track=False`, no `.h5` file is produced — only a `*_full.pickle` file
+containing the raw detections, which is what `create_video_with_all_detections` uses to
+render all detections before any individual is assigned.
+
 ```{versionadded} 3.0.0
-With the addition of conditional top-down models in DeepLabCut 3.0, it's now possible to
-track individuals directly **during video analysis**. If you choose to train any model
-with a name that starts with `ctd_`, you'll be able to call `deeplabcut.analyze_videos`
-with `ctd_tracking=True`. To learn more about tracking with CTD, see the [
+For conditional top-down (CTD) models, tracking can be performed **inside the model
+during inference**, using temporal context from previous frames to condition predictions
+on the current frame. This is a distinct mechanism from `auto_track`: pass
+`ctd_tracking=True` to `deeplabcut.analyze_videos` when using any model whose name
+starts with `ctd_`. When `ctd_tracking=True`, post-processing tracking (`auto_track`) is
+skipped automatically. To learn more, see the [
 `COLAB_BUCTD_and_CTD_tracking`](
 https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/COLAB/COLAB_BUCTD_and_CTD_tracking.ipynb)
 COLAB notebook.
 ```
-
-**-------------------- DECISION POINT -------------------**
-
-**ATTENTION!**
-**Pose estimation and tracking should be thought of as separate steps.** If you do not
-have good pose estimation evaluation metrics at this point, stop, check original labels,
-add more data, etc --> don't move forward with this model. If you think you have a good
-model, please test the "raw" pose estimation performance on a video to validate
-performance:
-
-Please run:
-
-```python
-videos_to_analyze = ['/fullpath/project/videos/testVideo.mp4']
-scorername = deeplabcut.analyze_videos(config_path, videos_to_analyze, videotype='.mp4')
-deeplabcut.create_video_with_all_detections(config_path, videos_to_analyze, videotype='.mp4')
-```
-
-Please note that you do **not** get the .h5/csv file you might be used to getting (this
-comes after tracking). You will get a `pickle` file that is used in
-`create_video_with_all_detections`.
 
 For models predicting part-affinity fields, another sanity check may be to
 examine the distributions of edge affinity costs using `deeplabcut.utils.plot_edge_affinity_distributions`. Easily separable distributions
@@ -853,7 +857,7 @@ deeplabcut.find_outliers_in_raw_data(config_path, pickle_file, video_file)
 where pickle_file is the `_full.pickle` one obtains after video analysis.
 Flagged frames will be added to your collection of images in the corresponding labeled-data folders for you to label.
 
-#### Animal Assembly and Tracking across frames
+##### Animal Assembly and Tracking across frames
 
 After pose estimation, now you perform assembly and tracking.
 
@@ -863,7 +867,7 @@ metrics, so this no longer requires user input. The metrics, in case you do want
 them, can be found in the `inference_cfg.yaml` file.
 ```
 
-#### Optimized Animal Assembly + Video Analysis:
+##### Optimized Animal Assembly + Video Analysis:
 
 Please note that **novel videos DO NOT need to be added to the config.yaml file**. You
 can simply have a folder elsewhere on your computer and pass the video folder (then it
@@ -874,7 +878,7 @@ path to the **folder** or exact video(s) you wish to analyze:
 deeplabcut.analyze_videos(config_path, ['/fullpath/project/videos/'], videotype='.mp4', auto_track=True)
 ```
 
-#### IF auto_track = True:
+##### IF auto_track = True:
 
 ```{versionadded} v2.2.0.3
 A new argument `auto_track=True`, was added to `deeplabcut.analyze_videos` chaining pose
@@ -885,7 +889,7 @@ DLC. If `auto_track=False`, one must run `convert_detections2tracklets` and
 the workflow (ideal for advanced users).
 ```
 
-#### IF auto_track = False:
+##### IF auto_track = False:
 
 You can validate the tracking parameters. Namely, you can iteratively change the
 parameters, run `convert_detections2tracklets` then load them in the GUI
@@ -950,7 +954,7 @@ deeplabcut.stitch_tracklets(..., n_tracks=n)
 
 In such cases, file columns will default to dummy animal names (ind1, ind2, ..., up to indn).
 
-#### API Docs
+##### API Docs
 
 ````{admonition} Click the button to see API Docs for analyze_videos
 ---
@@ -979,7 +983,7 @@ class: dropdown
 ```
 ````
 
-#### Using Unsupervised Identity Tracking:
+##### Using Unsupervised Identity Tracking:
 
 In Lauer et al. 2022 we introduced a new method to do unsupervised reID of animals.
 Here, you can use the tracklets to learn the identity of animals to enhance your
@@ -991,7 +995,7 @@ deeplabcut.transformer_reID(config, videos_to_analyze, n_tracks=None, videotype=
 
 Note you should pass the n_tracks (number of animals) you expect to see in the video.
 
-#### Refine Tracklets:
+##### Refine Tracklets:
 
 You can also optionally **refine the tracklets**. You can fix both "major" ID swaps, i.e. perhaps when animals cross, and you can micro-refine the individual body points. You will load the `...trackertype.pickle` or `.h5'` file that was created above, and then you can launch a GUI to interactively refine the data. This also has several options, so please check out the docstring. Upon saving the refined tracks you get an `.h5` file (akin to what you might be used to from standard DLC. You can also load (1) filter this to take care of small jitters, and (2) load this `.h5` this to refine (again) in case you find another issue, etc!
 
