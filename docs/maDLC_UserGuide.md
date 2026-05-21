@@ -1033,8 +1033,6 @@ align: center
 Short demo of the tracklet refinement workflow.
 ```
 
-### Phase 5 — Post-processing and refinement
-
 #### (J) Filter Pose Data
 
 Firstly, Here are some tips for scaling up your video analysis, including looping over many folders for batch processing: https://github.com/DeepLabCut/DeepLabCut/wiki/Batch-Processing-your-Analysis
@@ -1100,6 +1098,163 @@ class: dropdown
 ---
 ```{eval-rst}
 .. include:: ./api/deeplabcut.create_labeled_video.rst
+```
+````
+
+### Phase 5 — Refinement (optional)
+
+#### (M) Optional Active Learning - Network Refinement: Extract Outlier Frames
+
+##### Overview
+
+While DeepLabCut typically generalizes well across datasets, one might want to optimize its performance in various,
+perhaps unexpected, situations. For generalization to large datasets, images with insufficient labeling performance
+can be extracted, manually corrected by adjusting the labels to increase the training set and iteratively improve the
+feature detectors. Such an active learning framework can be used to achieve a predefined level of confidence for all
+images with minimal labeling cost (discussed in Mathis et al 2018). Then, due to the large capacity of the neural network that underlies the feature detectors, one can continue training the network with these additional examples. One does not
+necessarily need to correct all errors as common errors could be eliminated by relabeling a few examples and then
+re-training. A priori, given that there is no ground truth data for analyzed videos, it is challenging to find putative
+“outlier frames”. However, one can use heuristics such as the continuity of body part trajectories, to identify images
+where the decoder might make large errors.
+
+All this can be done for a specific video by typing (see other optional inputs below):
+
+##### Code example
+
+```python
+deeplabcut.extract_outlier_frames(config_path, ["videofile_path"])
+```
+
+##### Frame-selection methods
+
+We provide various frame-selection methods for this purpose. In particular
+the user can set:
+
+```text
+outlieralgorithm: "fitting", "jump", or "uncertain"
+```
+
+- `outlieralgorithm="uncertain"`: select frames if the likelihood of a particular or all body parts lies below `p_bound`
+  (note this could also be due to occlusions rather than errors).
+
+- `outlieralgorithm="jump"`: select frames where a particular body part or all body parts jumped more than `epsilon`
+  pixels from the last frame.
+
+- `outlieralgorithm="fitting"`: select frames if the predicted body part location deviates from a state-space model fit
+  to the time series of individual body parts. Specifically, this method fits an Auto Regressive Integrated Moving Average
+  (ARIMA) model to the time series for each body part. Thereby each body part detection with a likelihood smaller than
+  `p_bound` is treated as missing data. Putative outlier frames are then identified as time points, where the average
+  body part estimates are at least `epsilon` pixels away from the fits. The parameters of this method are `epsilon`,
+  `p_bound`, the ARIMA parameters as well as the list of body parts to average over (can also be `all`).
+
+- `outlieralgorithm="manual"`: manually select outlier frames based on visual inspection from the user.
+
+As an example:
+
+```python
+deeplabcut.extract_outlier_frames(config_path, ["videofile_path"], outlieralgorithm="manual")
+```
+
+##### Selection after detection
+
+In general, depending on the parameters, these methods might return many more frames than the user wants to
+extract (`numframes2pick`). Thus, this list is then used to select outlier frames either by randomly sampling from
+this list (`extractionalgorithm="uniform"`), by performing `extractionalgorithm="kmeans"` clustering on the
+corresponding frames.
+
+In the automatic configuration, before the frame selection happens, the user is informed about the amount of frames
+satisfying the criteria and asked if the selection should proceed. This step allows the user to perhaps change the
+parameters of the frame-selection heuristics first (i.e. to make sure that not too many frames are qualified). The user
+can run the `extract_outlier_frames` method iteratively, and (even) extract additional frames from the same video.
+Once enough outlier frames are extracted the refinement GUI can be used to adjust the labels based on user feedback
+(see below).
+
+##### API Docs
+
+````{admonition} Click the button to see API Docs
+---
+class: dropdown
+---
+```{eval-rst}
+.. include:: ./api/deeplabcut.extract_outlier_frames.rst
+```
+````
+
+______________________________________________________________________
+
+#### (N) Refine Labels: Augmentation of the Training Dataset
+
+##### Overview
+
+Based on the performance of DeepLabCut, four scenarios are possible:
+
+- (A) Visible body part with accurate DeepLabCut prediction. These labels do not need any modifications.
+
+- (B) Visible body part but wrong DeepLabCut prediction. Move the label’s location to the actual position of the
+  body part.
+
+- (C) Invisible, occluded body part. Remove the predicted label by DeepLabCut with a middle click. Every predicted
+  label is shown, even when DeepLabCut is uncertain. This is necessary, so that the user can potentially move
+  the predicted label. However, to help the user to remove all invisible body parts the low-likelihood predictions
+  are shown as open circles (rather than disks).
+
+- (D) Invalid images: In the unlikely event that there are any invalid images, the user should remove such an image
+  and their corresponding predictions, if any. Here, the GUI will prompt the user to remove an image identified
+  as invalid.
+
+The labels for extracted putative outlier frames can be refined by opening the GUI:
+
+##### Code example
+
+```python
+deeplabcut.refine_labels(config_path)
+```
+
+This will launch a GUI where the user can refine the labels.
+
+Please refer to the {ref}`napari-deeplabcut docs <file:napari-gui-landing>` for more information about the labelling workflow.
+
+##### Merge datasets
+
+After correcting the labels for all the frames in each of the subdirectories, the users should merge the dataset to
+create a new dataset. In this step the iteration parameter in the config.yaml file is automatically updated.
+
+```python
+deeplabcut.merge_datasets(config_path)
+```
+
+Once the dataset is merged, the user can test if the merging process was successful by plotting all the labels (Step E).
+Next, with this expanded training set the user can now create a new training set and train the network as described
+in Steps F and G. The training dataset will be stored in the same place as before but under a different `iteration-#`
+subdirectory, where the `#` is the new value of `iteration` variable stored in the project’s configuration file
+(this is automatically done).
+
+Now you can run `create_training_dataset`, then `train_network`, etc. If your original labels were adjusted at all,
+start from fresh weights (which is generally recommended), otherwise consider using your already trained network
+weights (see {ref}`Box 2 <pose-cfg-box2>`).
+
+If after training the network generalizes well to the data, proceed to analyze new videos. Otherwise, consider labeling
+more data.
+
+##### API Docs for deeplabcut.refine_labels
+
+````{admonition} Click the button to see API Docs
+---
+class: dropdown
+---
+```{eval-rst}
+.. include:: ./api/deeplabcut.refine_labels.rst
+```
+````
+
+##### API Docs for deeplabcut.merge_datasets
+
+````{admonition} Click the button to see API Docs
+---
+class: dropdown
+---
+```{eval-rst}
+.. include:: ./api/deeplabcut.merge_datasets.rst
 ```
 ````
 
