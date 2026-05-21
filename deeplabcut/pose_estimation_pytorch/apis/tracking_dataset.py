@@ -26,6 +26,7 @@ from deeplabcut.pose_estimation_pytorch.apis.videos import VideoIterator
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_tracking_pytorch import create_triplets_dataset
 from deeplabcut.utils.auxfun_videos import collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 
 def build_feature_extraction_runner(
@@ -125,11 +126,12 @@ def extract_features_for_video(
     shelf_writer.close()
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def create_tracking_dataset(
     config: str,
     videos: list[str] | list[Path],
     track_method: str,
-    videotype: str | Sequence[str] | None = None,
+    video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     destfolder: str | None = None,
@@ -149,7 +151,7 @@ def create_tracking_dataset(
             the videos with same extension are stored.
         track_method: Specifies the tracker used to generate the pose estimation data.
             Must be either 'box', 'skeleton', or 'ellipse'.
-        videotype: Controls how ``videos`` are filtered, based on file extension.
+        video_extensions: Controls how ``videos`` are filtered, based on file extension.
             File paths and directory contents are treated differently:
             - ``None`` (default): file paths are accepted as-is; directories are
               scanned for files with a recognized video extension.
@@ -245,7 +247,7 @@ def create_tracking_dataset(
         modelprefix=modelprefix,
     )
 
-    videos = collect_video_paths(videos, extensions=videotype)
+    videos = collect_video_paths(videos, extensions=video_extensions)
     for video_path in videos:
         print(f"Loading {video_path}")
         video = VideoIterator(video_path, cropping=cropping)

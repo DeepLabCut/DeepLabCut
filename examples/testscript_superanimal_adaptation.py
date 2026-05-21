@@ -28,14 +28,14 @@ if __name__ == "__main__":
     print("adaptation training for superanimal_topviewmouse")
 
     superanimal_name = "superanimal_topviewmouse"
-    videotype = ".mp4"
+    video_extensions = ".mp4"
     scale_list = [200, 300, 400]
     deeplabcut.video_inference_superanimal(
         [video],
         superanimal_name,
         model_name="hrnet_w32",
         detector_name="fasterrcnn_resnet50_fpn_v2",
-        videotype=".mp4",
+        video_extensions=".mp4",
         video_adapt=True,
         scale_list=scale_list,
         pcutoff=0.1,

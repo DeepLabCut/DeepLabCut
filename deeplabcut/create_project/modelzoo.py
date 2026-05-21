@@ -10,6 +10,7 @@
 #
 
 import os
+from collections.abc import Sequence
 from pathlib import Path
 
 import yaml
@@ -39,6 +40,7 @@ from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
 )
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import load_super_animal_config
 from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils.deprecation import renamed_parameter
 
 Modeloptions = MODELOPTIONS  # backwards compatibility for COLAB NOTEBOOK
 
@@ -77,13 +79,14 @@ def MakeTest_pose_yaml(dictionary, keys2save, saveasfile):
     #    yaml.dump(dict_test, f)
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def create_pretrained_human_project(
     project,
     experimenter,
     videos,
     working_directory=None,
     copy_videos=False,
-    videotype="",
+    video_extensions: str | Sequence[str] | None = None,
     createlabeledvideo=True,
     analyzevideo=True,
 ):
@@ -109,13 +112,14 @@ def create_pretrained_human_project(
         model="full_human",
         working_directory=working_directory,
         copy_videos=copy_videos,
-        videotype=videotype,
+        video_extensions=video_extensions,
         createlabeledvideo=createlabeledvideo,
         analyzevideo=analyzevideo,
         engine=Engine.TF,
     )
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def create_pretrained_project(
     project: str,
     experimenter: str,
@@ -123,7 +127,7 @@ def create_pretrained_project(
     model: str | None = None,
     working_directory: str | None = None,
     copy_videos: bool = False,
-    videotype: str = "",
+    video_extensions: str | Sequence[str] | None = None,
     analyzevideo: bool = True,
     filtered: bool = True,
     createlabeledvideo: bool = True,
@@ -224,7 +228,7 @@ def create_pretrained_project(
             model=model,
             working_directory=working_directory,
             copy_videos=copy_videos,
-            videotype=videotype,
+            video_extensions=video_extensions,
             analyzevideo=analyzevideo,
             filtered=filtered,
             createlabeledvideo=createlabeledvideo,
@@ -238,7 +242,7 @@ def create_pretrained_project(
             dataset=model,
             working_directory=working_directory,
             copy_videos=copy_videos,
-            video_type=videotype,
+            video_extensions=video_extensions,
             analyze_video=analyzevideo,
             filtered=filtered,
             create_labeled_video=createlabeledvideo,
@@ -259,7 +263,7 @@ def create_pretrained_project_pytorch(
     dataset: str | None = None,
     working_directory: str | None = None,
     copy_videos: bool = False,
-    video_type: str | None = None,
+    video_extensions: str | None = None,
     analyze_video: bool = True,
     filtered: bool = True,
     create_labeled_video: bool = True,
@@ -382,7 +386,7 @@ def create_pretrained_project_pytorch(
         videos=videos,
         working_directory=working_directory,
         copy_videos=copy_videos,
-        videotype=video_type,
+        video_extensions=video_extensions,
         multianimal=multi_animal,
         individuals=individuals,
     )
@@ -458,7 +462,7 @@ def create_pretrained_project_pytorch(
     # Process the videos
     _process_videos(
         cfg_path=cfg_path,
-        video_type=video_type,
+        video_extensions=video_extensions,
         analyze_video=analyze_video,
         filtered=filtered,
         create_labeled_video=create_labeled_video,
@@ -476,6 +480,7 @@ def _create_inference_config(inference_cfg_path: str | Path, project_cfg: dict):
     MakeInference_yaml(inf_updates, inference_cfg_path, default_inf_path)
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def create_pretrained_project_tensorflow(
     project: str,
     experimenter: str,
@@ -483,7 +488,7 @@ def create_pretrained_project_tensorflow(
     model: str | None = None,
     working_directory: str | None = None,
     copy_videos: bool = False,
-    videotype: str = "",
+    video_extensions: str | Sequence[str] | None = None,
     analyzevideo: bool = True,
     filtered: bool = True,
     createlabeledvideo: bool = True,
@@ -558,7 +563,9 @@ def create_pretrained_project_tensorflow(
     if model in MODELOPTIONS:
         cwd = os.getcwd()
 
-        cfg = deeplabcut.create_new_project(project, experimenter, videos, working_directory, copy_videos, videotype)
+        cfg = deeplabcut.create_new_project(
+            project, experimenter, videos, working_directory, copy_videos, video_extensions=video_extensions
+        )
         if trainFraction is not None:
             auxiliaryfunctions.edit_config(cfg, {"TrainingFraction": [trainFraction]})
 
@@ -687,7 +694,7 @@ def create_pretrained_project_tensorflow(
 
         _process_videos(
             cfg_path=cfg,
-            video_type=videotype,
+            video_extensions=video_extensions,
             analyze_video=analyzevideo,
             filtered=filtered,
             create_labeled_video=createlabeledvideo,
@@ -724,7 +731,7 @@ def _create_training_datasets_metadata(config: dict, shuffle_dir_name: str, engi
 
 def _process_videos(
     cfg_path: str | Path,
-    video_type: str = "",
+    video_extensions: str | Sequence[str] | None = None,
     analyze_video: bool = True,
     filtered: bool = True,
     create_labeled_video: bool = True,
@@ -734,12 +741,12 @@ def _process_videos(
 
     if analyze_video:
         print("Analyzing video...")
-        deeplabcut.analyze_videos(cfg_path, [video_dir], videotype=video_type, save_as_csv=True)
+        deeplabcut.analyze_videos(cfg_path, [video_dir], video_extensions=video_extensions, save_as_csv=True)
 
     if create_labeled_video:
         if filtered:
-            deeplabcut.filterpredictions(cfg_path, [video_dir], video_type)
+            deeplabcut.filterpredictions(cfg_path, [video_dir], video_extensions)
 
         print("Plotting results...")
-        deeplabcut.create_labeled_video(cfg_path, [video_dir], video_type, draw_skeleton=True, filtered=filtered)
-        deeplabcut.plot_trajectories(cfg_path, [video_dir], video_type, filtered=filtered)
+        deeplabcut.create_labeled_video(cfg_path, [video_dir], video_extensions, draw_skeleton=True, filtered=filtered)
+        deeplabcut.plot_trajectories(cfg_path, [video_dir], video_extensions, filtered=filtered)

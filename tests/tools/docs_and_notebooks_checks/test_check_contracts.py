@@ -12,6 +12,11 @@ from types import ModuleType
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def no_github_step_summary(monkeypatch):
+    monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
+
+
 # -----------------------------
 # Module loader (tools/ is not necessarily a package)
 # -----------------------------
@@ -501,6 +506,7 @@ def test_main_prints_matched_files_and_fails_on_unmatched_targets(tool, repo: Pa
         [
             "--config",
             str(cfg_path),
+            "--no-step-summary",
             "report",
             "--targets",
             r".\docs\gui\napari\basic_usage.md",
@@ -528,6 +534,7 @@ def test_main_prints_matched_files_for_valid_targets(tool, repo: Path, monkeypat
         [
             "--config",
             str(cfg_path),
+            "--no-step-summary",
             "report",
             "--targets",
             "docs/gui/napari/",
@@ -548,5 +555,5 @@ def test_main_returns_2_for_invalid_target_selector(tool, repo: Path, monkeypatc
 
     monkeypatch.chdir(repo)
 
-    rc = tool.main(["--config", str(cfg_path), "report", "--targets", "./"])
+    rc = tool.main(["--config", str(cfg_path), "--no-step-summary", "report", "--targets", "./"])
     assert rc == 2

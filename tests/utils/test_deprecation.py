@@ -160,15 +160,15 @@ def test_renamed_parameter_new_name_no_warning():
 
 
 def test_renamed_parameter_warning_contains_names():
-    @renamed_parameter(old="videotype", new="extensions", since="3.2")
-    def fn(extensions=None):
-        return extensions
+    @renamed_parameter(old="videotype", new="video_extensions", since="3.2")
+    def fn(video_extensions=None):
+        return video_extensions
 
     with pytest.warns(DLCDeprecationWarning, match="videotype") as record:
         fn(videotype="mp4")
 
     message = str(record[0].message)
-    assert "extensions" in message
+    assert "video_extensions" in message
     assert "3.2" in message
 
 
@@ -181,18 +181,18 @@ def test_renamed_parameter_preserves_name():
 
 
 def test_renamed_parameter_old_and_new_together_raise():
-    @renamed_parameter(old="videotype", new="extensions")
-    def fn(extensions=None):
-        return extensions
+    @renamed_parameter(old="videotype", new="video_extensions")
+    def fn(video_extensions=None):
+        return video_extensions
 
-    with pytest.raises(TypeError, match="both 'videotype' and 'extensions'"):
-        fn(videotype="mp4", extensions="avi")
+    with pytest.raises(TypeError, match="both 'videotype' and 'video_extensions'"):
+        fn(videotype="mp4", video_extensions="avi")
 
 
 def test_renamed_parameter_attaches_metadata():
-    @renamed_parameter(old="videotype", new="extensions", since="3.2")
-    def fn(extensions=None):
-        return extensions
+    @renamed_parameter(old="videotype", new="video_extensions", since="3.2")
+    def fn(video_extensions=None):
+        return video_extensions
 
     params = fn.__deprecated_params__
     assert len(params) == 1
@@ -201,13 +201,91 @@ def test_renamed_parameter_attaches_metadata():
     assert info.kind == "parameter"
     assert info.target.endswith("fn")
     assert info.old_parameter == "videotype"
-    assert info.new_parameter == "extensions"
+    assert info.new_parameter == "video_extensions"
     assert info.since == Version("3.2")
 
 
 def test_renamed_parameter_invalid_since_raises():
     with pytest.raises(ValueError, match="Invalid version"):
 
-        @renamed_parameter(old="videotype", new="extensions", since="invalid-version")
-        def fn(extensions=None):
-            return extensions
+        @renamed_parameter(old="videotype", new="video_extensions", since="invalid-version")
+        def fn(video_extensions=None):
+            return video_extensions
+
+
+def test_renamed_parameter_new_not_in_signature_raises():
+    with pytest.raises(ValueError, match="not a parameter"):
+
+        @renamed_parameter(old="foo", new="nonexistent")
+        def fn(bar=None):
+            return bar
+
+
+def test_new_not_in_signature_raises():
+    """Applying a rename whose 'new' is not in the signature raises an error."""
+    with pytest.raises(ValueError, match="not a parameter"):
+
+        @renamed_parameter(old="old_name", new="new_name")
+        def fn(not_new_name=None):
+            return not_new_name
+
+
+def test_old_still_in_signature_raises():
+    """Applying a rename when the old name is still in the signature raises an error."""
+    with pytest.raises(ValueError, match="still a parameter"):
+
+        @renamed_parameter(old="old_name", new="new_name")
+        def fn(old_name=None, new_name=None):
+            return new_name
+
+
+def test_renamed_parameter_chaining_raises():
+    """Chaining renames A→B→C raises an error."""
+    with pytest.raises(ValueError, match="chaining renames is not allowed"):
+
+        @renamed_parameter(old="A", new="B")  # outer: A→B, but B is already deprecated to C
+        @renamed_parameter(old="B", new="C")  # inner: B→C
+        def fn(C=None):
+            return C
+
+
+def test_renamed_parameter_multiple_independent_renames():
+    @renamed_parameter(old="batchsize", new="batch_size")
+    @renamed_parameter(old="videotype", new="video_extensions")
+    def fn(video_extensions=None, batch_size=None):
+        return video_extensions, batch_size
+
+    with pytest.warns(DLCDeprecationWarning):
+        result = fn(videotype="mp4")
+    assert result == ("mp4", None)
+
+    with pytest.warns(DLCDeprecationWarning):
+        result = fn(batchsize=4)
+    assert result == (None, 4)
+
+
+def test_renamed_parameter_positional_arg_unaffected():
+    @renamed_parameter(old="in_random_order", new="shuffle")
+    def fn(shuffle=False):
+        return shuffle
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DLCDeprecationWarning)
+        result = fn(True)
+
+    assert result is True
+
+
+def test_multiple_subsequent_renames_allowed():
+    @renamed_parameter(old="oldestname", new="newest", since="3.0.0")
+    @renamed_parameter(old="older_name", new="newest", since="4.0.0")
+    def fn(*, newest):
+        return newest
+
+    with pytest.warns(DLCDeprecationWarning):
+        result = fn(oldestname=1)
+    assert result == 1
+
+    with pytest.warns(DLCDeprecationWarning):
+        result = fn(older_name=2)
+    assert result == 2
