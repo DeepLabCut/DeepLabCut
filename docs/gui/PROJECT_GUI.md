@@ -6,7 +6,7 @@ deeplabcut:
   visibility: online
   status: review_needed
   recommendation: update
-  notes: 'While the content is generally accurate, repeating installation instructions is not ideal. I would suggest linking to the installation guide instead of re-suggesting commmands but then still saying to read the install page... Also, the GUI is likely used by the majority of users, so I would even consider making this a full section in the TOC, and maybe even having one file per GUI tab, which would make tracking code/docs sync easier. Addendum: it seems the beginner guide section is more of a GUI step-by-step, as mentioned earlier in this comment. I would suggest merging/moving and adding links in the present doc, which would make it less of a video list and more of a proper GUI guide.'
+  notes: 'While the content is generally accurate, repeating installation instructions is not ideal. I would suggest linking to the installation guide instead of re-suggesting commands but then still saying to read the install page... Also, the GUI is likely used by the majority of users, so I would even consider making this a full section in the TOC, and maybe even having one file per GUI tab, which would make tracking code/docs sync easier. Addendum: it seems the beginner guide section is more of a GUI step-by-step, as mentioned earlier in this comment. I would suggest merging/moving and adding links in the present doc, which would make it less of a video list and more of a proper GUI guide.'
 ---
 
 (project-manager-gui)=
@@ -27,15 +27,14 @@ While several advanced features are not fully available in this Project GUI, we 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/07ae2633-dc3e-4b6d-beec-27c08d9f8531/ezgif.com-gif-maker+%284%29.gif?format=2500w" width="80%">
 </p>
 
-Start at the Project Management Tab and work your way through the tabs to built your customized model and deploy it on new data.
+Start at the Project Management Tab and work your way through the tabs to build your customized model and deploy it on new data.
 We recommend to keep the terminal visible (as well as the GUI) so you can see the ongoing processes as you step through your project, or any errors that might arise.
 
 - For specific napari-based labeling features, see the {ref}`napari gui<file:napari-gui-landing>` section.
 - To change from dark to light mode, set appearance at the top:
 
 <p align="center">
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/5e41b01d-3101-40b2-9c53-129d8988370f/Screen+Shot+2022-10-09+at+3.45.46+PM.png?format=2500w
-" width="30%">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/5e41b01d-3101-40b2-9c53-129d8988370f/Screen+Shot+2022-10-09+at+3.45.46+PM.png?format=2500w" width="30%">
 </p>
 
 ## User guide

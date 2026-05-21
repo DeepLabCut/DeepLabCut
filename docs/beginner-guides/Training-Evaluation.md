@@ -6,7 +6,7 @@ deeplabcut:
   visibility: online
   status: viable
   recommendation: move
-  notes: As mentioned on oher beginner-guides/ docs, this should be part of the GUI section.
+  notes: As mentioned on other beginner-guides/ docs, this should be part of the GUI section.
 ---
 
 (file:training-evaluation-gui)=

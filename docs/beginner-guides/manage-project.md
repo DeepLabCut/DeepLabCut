@@ -48,9 +48,9 @@ After creating your DeepLabCut project, you'll be shown the main GUI window, whe
 - **Navigate to the Skeleton Section:** Scroll down to the **`skeleton`** category.
 - **Adjust the Skeleton List:** Click on the arrow to expand this section.
   - You can then update the list of bodypart pairs: i.e. the connections that define the skeleton structure of your model.
-  - In the list of bodypart pairs, each pair has an index. (ranging from 0 to the total number of pairs in the skeleton). 
+  - In the list of bodypart pairs, each pair has an index. (ranging from 0 to the total number of pairs in the skeleton).
   - Each item of the pair (also indexed; 0 or 1) has a value: the name of the bodypart.
-  - Each pair of two bodyparts represents a connection, where all connections together make the skeleton.  
+  - Each pair of two bodyparts represents a connection, where all connections together make the skeleton.
 
 ![Defining the Skeleton Structure in Config File](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779598505-HQNECHIKSQ6XL033JX8M/skeleton.png?format=500w)
 

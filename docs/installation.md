@@ -40,9 +40,8 @@ If you have an NVIDIA GPU, install PyTorch according to [their instructions](htt
 conda create -n DEEPLABCUT python=3.12
 conda activate DEEPLABCUT
 
-# install PyTorch with your desired CUDA version (or for CPU only) - check [their
-](https://pytorch.org/get-started/locally/) website:
-# GPU version of pytorch for CUDA 11.3
+# Install PyTorch with your desired CUDA version (or CPU only)
+# Example: GPU version of pytorch for CUDA 11.3
 conda install pytorch cudatoolkit=11.3 -c pytorch
 
 # install the latest version of DeepLabCut
@@ -232,8 +231,7 @@ Please see how to test your installation by following [this video](https://www.y
 
 Recommended for users who want to modify the code, or want to be up-to-date with the latest code on GitHub.
 
-- **Windows/Linux/MacBooks:** git clone this repo (in the terminal/cmd program, while **in a folder** you wish to place DeepLabCut
-- To git clone run: `git clone https://github.com/DeepLabCut/DeepLabCut.git`)
+- To clone the repository run: `git clone https://github.com/DeepLabCut/DeepLabCut.git`
 - Then follow the same steps as in Step 2 above, adjusting for the `DEEPLABCUT.yaml` env file now being in the folder where you git cloned the repo.
 - Or use pip/uv to install from the cloned repo (see below).
 
@@ -252,7 +250,7 @@ source .venv/bin/activate # or & .venv\Scripts\activate.ps1 on Windows
 
 ### `pip`
 
-If you already have a local environment, everything you need to use the project manager GI, train and/or build custom models within DeepLabCut (i.e., use our source code and our dependencies) can be installed with `pip install 'deeplabcut[gui]'` (for GUI support w/PyTorch) or without the gui: `pip install 'deeplabcut'`.
+If you already have a local environment, everything you need to use the project manager GUI, train and/or build custom models within DeepLabCut (i.e., use our source code and our dependencies) can be installed with `pip install 'deeplabcut[gui]'` (for GUI support w/PyTorch) or without the gui: `pip install 'deeplabcut'`.
 
 - If you **cloned the repo** and want to make edits to the code locally, navigate to the cloned repo folder and run `pip install -e .[gui,modelzoo,tf]` to install the package in "editable" mode, which allows you to make changes to the code and have those changes reflected when you import the package.
 - If you want to use the SuperAnimal models, then please use `pip install 'deeplabcut[gui,modelzoo]'`.
@@ -329,8 +327,8 @@ Thus, you do not need to independently install tensorflow.
 
 ### Notes
 
-- **As of version 3.0+ we moved to PyTorch. The Last supported version of TensorFlow is
-  2.10 (window users) and 2.12 for others** (We will not be testing beyond this)
+- **As of version 3.0+ we moved to PyTorch. The last supported version of TensorFlow is
+  2.10 (for Windows users) and 2.12 for others**. Support will not be provided for future versions.
 
 - Please be mindful different versions of TensorFlow require different CUDA versions.
 
@@ -383,7 +381,7 @@ Here are some additional resources users have found helpful (posted without endo
 ```{note}
 **What is a system-wide installation?**
 
-A system-wide installation, or a base environment installation, is when you install using the default Python environment/interpreter on your computer, instead of a compartimentalized, separate environment (e.g., a conda environment).
+A system-wide installation, or a base environment installation, is when you install using the default Python environment/interpreter on your computer, instead of a compartmentalized, separate environment (e.g., a conda environment).
 
 This is often a source of conflicts between packages, user confusion and progressive "dependency hell" (where you have to keep installing and uninstalling packages to get the right versions for different applications).
 
