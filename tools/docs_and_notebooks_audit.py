@@ -5,15 +5,7 @@ Purpose
 -------
 Read audit metadata from the `deeplabcut` namespace in Markdown frontmatter and
 notebook-level metadata, validate selected fields against enums/schema, and
-export a CSV register that humans can annotate with notes.
-
-Design goals
-------------
-- read-only and safe in CI
-- lightweight, but with strong validation for key lifecycle fields
-- preserve human-authored CSV columns across re-runs
-- generic/extensible field extraction (add a field spec once; reuse everywhere)
-- minimal duplication between Markdown and notebook handling
+export a CSV register with docs metadata and review notes to help drive documentation maintenance.
 
 Supported metadata fields
 -------------------------
@@ -22,6 +14,7 @@ From `deeplabcut:` this tool currently validates and exports:
 - status
 - recommendation (with fallback alias: review_decision)
 - last_verified (pass-through)
+- notes (pass-through, but preserved from previous CSV if present even if updated in source)
 
 Example metadata
 ----------------
@@ -49,11 +42,11 @@ Notebook metadata:
 
 Usage
 -----
-python tools/docs_audit_export.py \
+python tools/docs_and_notebooks_audit.py \
   --config tools/docs_and_notebooks_report_config.yml \
   --out docs/_meta/docs_audit_register.csv
 
-python tools/docs_audit_export.py \
+python tools/docs_and_notebooks_audit.py \
   --targets docs/gui/ docs/recipes/*.md examples/COLAB/*.ipynb
 """
 

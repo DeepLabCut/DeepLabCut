@@ -1,0 +1,32 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [ "setuptools>=77", "wheel" ]
+
+[project]
+name = "deeplabcut-docker"
+description = "A helper package to launch DeepLabCut docker images"
+readme = { file = "PYPI_README.md", content-type = "text/markdown" }
+license = "LGPL-3.0-or-later"
+license-files = [ "LICENSE" ]
+authors = [
+  { name = "M-Lab of Adaptive Intelligence", email = "mackenzie@deeplabcut.org" },
+  { name = "Mathis Group for Computational Neuroscience and AI", email = "alexander@deeplabcut.org" },
+]
+requires-python = ">=3.10,<3.13"
+classifiers = [
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Utilities",
+]
+dynamic = [ "version" ]
+urls."Bug Tracker" = "https://github.com/DeepLabCut/DeepLabCut/issues"
+urls.Homepage = "https://github.com/DeepLabCut/DeepLabCut/tree/main/docker"
+scripts.deeplabcut-docker = "deeplabcut_docker:main"
+
+[tool.setuptools]
+py-modules = [ "deeplabcut_docker" ]
+dynamic.version = { attr = "deeplabcut_docker.__version__" }
