@@ -9,6 +9,17 @@ html[data-theme="light"] {
   --logo-filter: none;
   --button-color: #fff;
   --footer-text-color: #000000;
+
+  /* Workflow dropdown/admonition colors */
+  --single-animal-border: #9b5de5;
+  --single-animal-bg: #f5edff;
+  --single-animal-title-bg: #ead7ff;
+  --single-animal-title-text: #4b236f;
+
+  --multi-animal-border: #2f9e44;
+  --multi-animal-bg: #effaf1;
+  --multi-animal-title-bg: #d8f5dc;
+  --multi-animal-title-text: #14532d;
 }
 
 html[data-theme="dark"] {
@@ -20,6 +31,17 @@ html[data-theme="dark"] {
   /* --logo-filter: grayscale(100%) brightness(20); */
   --button-color: #fff;
   --footer-text-color: #b9b9b9;
+
+  /* Workflow dropdown/admonition colors */
+  --single-animal-border: #c084fc;
+  --single-animal-bg: rgba(155, 93, 229, 0.18);
+  --single-animal-title-bg: rgba(155, 93, 229, 0.32);
+  --single-animal-title-text: #f3e8ff;
+
+  --multi-animal-border: #74c69d;
+  --multi-animal-bg: rgba(47, 158, 68, 0.16);
+  --multi-animal-title-bg: rgba(47, 158, 68, 0.30);
+  --multi-animal-title-text: #dcfce7;
 }
 
 /* Sidebar */
@@ -100,4 +122,201 @@ html[data-theme="dark"] {
 .article-header-buttons .btn:hover {
   opacity: 0.8;
   z-index: 1;
+}
+
+/* ============================================================
+   Workflow-specific dropdown/admonition styling
+   Single animal = light purple
+   Multi animal  = light green
+
+   Recommended MyST usage:
+
+   ```{dropdown} Configuration
+   :class: single-animal
+   :open:
+
+   Single-animal-specific instructions.
+   ```
+
+   ```{dropdown} Configuration
+   :class: multi-animal
+   :open:
+
+   Multi-animal-specific instructions.
+   ```
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   Sphinx-design dropdowns
+   Usually rendered with .sd-dropdown
+   ------------------------------------------------------------ */
+
+.sd-dropdown.single-animal {
+  border-left: 0.35rem solid var(--single-animal-border);
+  background-color: var(--single-animal-bg);
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.sd-dropdown.single-animal>.sd-summary-title {
+  background-color: var(--single-animal-title-bg);
+  color: var(--single-animal-title-text);
+  font-weight: 700;
+}
+
+.sd-dropdown.multi-animal {
+  border-left: 0.35rem solid var(--multi-animal-border);
+  background-color: var(--multi-animal-bg);
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.sd-dropdown.multi-animal>.sd-summary-title {
+  background-color: var(--multi-animal-title-bg);
+  color: var(--multi-animal-title-text);
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------
+   Regular Sphinx/MyST admonitions as fallback
+
+   ```{admonition} Configuration
+   :class: single-animal
+
+   Single-animal-specific instructions.
+   ```
+   ------------------------------------------------------------ */
+
+div.admonition.single-animal {
+  border-left: 0.35rem solid var(--single-animal-border);
+  background-color: var(--single-animal-bg);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+div.admonition.single-animal>.admonition-title {
+  background-color: var(--single-animal-title-bg);
+  color: var(--single-animal-title-text);
+  font-weight: 700;
+}
+
+div.admonition.multi-animal {
+  border-left: 0.35rem solid var(--multi-animal-border);
+  background-color: var(--multi-animal-bg);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+div.admonition.multi-animal>.admonition-title {
+  background-color: var(--multi-animal-title-bg);
+  color: var(--multi-animal-title-text);
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------
+   Raw HTML <details> fallback
+
+   <details class="workflow-dropdown single-animal" open>
+   <summary>Configuration</summary>
+
+   Single-animal-specific instructions.
+   </details>
+   ------------------------------------------------------------ */
+
+details.workflow-dropdown {
+  border: 1px solid transparent;
+  border-left-width: 0.35rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+details.workflow-dropdown>summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0.6rem 0.9rem;
+  list-style-position: inside;
+}
+
+details.workflow-dropdown>*:not(summary) {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+details.workflow-dropdown.single-animal {
+  border-left-color: var(--single-animal-border);
+  background-color: var(--single-animal-bg);
+}
+
+details.workflow-dropdown.single-animal>summary {
+  background-color: var(--single-animal-title-bg);
+  color: var(--single-animal-title-text);
+}
+
+details.workflow-dropdown.multi-animal {
+  border-left-color: var(--multi-animal-border);
+  background-color: var(--multi-animal-bg);
+}
+
+details.workflow-dropdown.multi-animal>summary {
+  background-color: var(--multi-animal-title-bg);
+  color: var(--multi-animal-title-text);
+}
+
+/* ------------------------------------------------------------
+   Compatibility fallback for dropdowns rendered as div.dropdown
+   ------------------------------------------------------------ */
+
+div.dropdown.single-animal {
+  border-left: 0.35rem solid var(--single-animal-border);
+  background-color: var(--single-animal-bg);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+div.dropdown.single-animal>.admonition-title,
+div.dropdown.single-animal>.sd-summary-title {
+  background-color: var(--single-animal-title-bg);
+  color: var(--single-animal-title-text);
+  font-weight: 700;
+}
+
+div.dropdown.multi-animal {
+  border-left: 0.35rem solid var(--multi-animal-border);
+  background-color: var(--multi-animal-bg);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+div.dropdown.multi-animal>.admonition-title,
+div.dropdown.multi-animal>.sd-summary-title {
+  background-color: var(--multi-animal-title-bg);
+  color: var(--multi-animal-title-text);
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------
+   Optional title prefixes
+   Remove this block if you prefer titles exactly as written.
+   ------------------------------------------------------------ */
+
+.sd-dropdown.single-animal>.sd-summary-title::before,
+div.admonition.single-animal>.admonition-title::before,
+details.workflow-dropdown.single-animal>summary::before,
+div.dropdown.single-animal>.admonition-title::before,
+div.dropdown.single-animal>.sd-summary-title::before {
+  content: "Single animal · ";
+  font-weight: 700;
+}
+
+.sd-dropdown.multi-animal>.sd-summary-title::before,
+div.admonition.multi-animal>.admonition-title::before,
+details.workflow-dropdown.multi-animal>summary::before,
+div.dropdown.multi-animal>.admonition-title::before,
+div.dropdown.multi-animal>.sd-summary-title::before {
+  content: "Multi animal · ";
+  font-weight: 700;
 }
