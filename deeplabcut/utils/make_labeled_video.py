@@ -30,7 +30,7 @@ import os
 # Dependencies
 ####################################################
 import os.path
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Sequence
 from functools import partial
 from multiprocessing import Pool, get_start_method
 from pathlib import Path
@@ -48,7 +48,8 @@ from tqdm import trange
 
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
-from deeplabcut.utils.auxfun_videos import VideoWriter
+from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 from deeplabcut.utils.video_processor import (
     VideoProcessorCV as vp,
 )  # used to CreateVideo
@@ -390,10 +391,11 @@ def CreateVideoSlow(
     plt.switch_backend(prev_backend)
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def create_labeled_video(
     config: str,
     videos: list[str],
-    videotype: str = "",
+    video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     filtered: bool = False,
@@ -441,11 +443,14 @@ def create_labeled_video(
         A list of strings containing the full paths to videos for analysis or a path
         to the directory, where all the videos with same extension are stored.
 
-    videotype: str, optional, default=""
-        Checks for the extension of the video in case the input to the video is a
-        directory. Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions
-        ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+    video_extensions : str | Sequence[str] | None, optional, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
 
     shuffle : int, optional, default=1
         Number of shuffles of training dataset.
@@ -630,7 +635,7 @@ def create_labeled_video(
     >>> deeplabcut.create_labeled_video(
             '/analysis/project/reaching-task/config.yaml',
             ['/analysis/project/videos/'],
-            videotype='mp4',
+            video_extensions='mp4',
         )
     """
     if skeleton is None:
@@ -733,7 +738,7 @@ def create_labeled_video(
         skeleton_color = None
 
     start_path = os.getcwd()
-    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    Videos = collect_video_paths(videos, extensions=video_extensions)
 
     if not Videos:
         return []
@@ -1144,10 +1149,11 @@ def create_video_with_keypoints_only(
     plt.switch_backend(prev_backend)
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def create_video_with_all_detections(
     config,
     videos,
-    videotype="",
+    video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     displayedbodyparts="all",
@@ -1169,10 +1175,14 @@ def create_video_with_all_detections(
         A list of strings containing the full paths to videos for analysis or a path to the directory,
         where all the videos with same extension are stored.
 
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n
-        Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+    video_extensions : str | Sequence[str] | None, optional, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
 
     shuffle : int, optional
         Number of shuffles of training dataset. Default is set to 1.
@@ -1225,7 +1235,7 @@ def create_video_with_all_detections(
         **kwargs,
     )
 
-    videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    videos = collect_video_paths(videos, extensions=video_extensions)
     if not videos:
         return
 

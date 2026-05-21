@@ -31,6 +31,8 @@ from ruamel.yaml import YAML
 from scipy.spatial import KDTree
 from skimage import io
 
+from deeplabcut.generate_training_dataset.trainingsetmanipulation import drop_likelihood_columns
+
 
 # NOTE @C-Achard 2026-03-26 duplicate config read/write functions
 # should be addressed in config refactor
@@ -60,6 +62,7 @@ class SkeletonBuilder:
             folder = os.path.join(root, dir_)
             if os.path.isdir(folder) and not any(folder.endswith(s) for s in ("cropped", "labeled")):
                 self.df = pd.read_hdf(os.path.join(folder, f"CollectedData_{self.cfg['scorer']}.h5"))
+                self.df = drop_likelihood_columns(self.df)
                 row, col = self.pick_labeled_frame()
                 if "individuals" in self.df.columns.names:
                     self.df = self.df.xs(col, axis=1, level="individuals")
