@@ -34,12 +34,12 @@ html[data-theme="dark"] {
 
   /* Workflow dropdown/admonition colors */
   --single-animal-border: #c084fc;
-  --single-animal-bg: rgba(155, 93, 229, 0.18);
-  --single-animal-title-bg: rgba(155, 93, 229, 0.32);
+  --single-animal-bg: rgba(72, 86, 107, 0.16);
+  --single-animal-title-bg: rgba(241, 83, 255, 0.32);
   --single-animal-title-text: #f3e8ff;
 
   --multi-animal-border: #74c69d;
-  --multi-animal-bg: rgba(47, 158, 68, 0.16);
+  --multi-animal-bg: rgba(72, 86, 107, 0.16);
   --multi-animal-title-bg: rgba(47, 158, 68, 0.30);
   --multi-animal-title-text: #dcfce7;
 }
@@ -298,25 +298,82 @@ div.dropdown.multi-animal>.sd-summary-title {
   font-weight: 700;
 }
 
-/* ------------------------------------------------------------
-   Optional title prefixes
-   Remove this block if you prefer titles exactly as written.
-   ------------------------------------------------------------ */
+/* ============================================================
+   Workflow dropdowns: title from CSS, default alignment,
+   custom left stripe, no hover color shift
+   ============================================================ */
 
-.sd-dropdown.single-animal>.sd-summary-title::before,
-div.admonition.single-animal>.admonition-title::before,
-details.workflow-dropdown.single-animal>summary::before,
-div.dropdown.single-animal>.admonition-title::before,
-div.dropdown.single-animal>.sd-summary-title::before {
-  content: "Single animal · ";
-  font-weight: 700;
+/* Hide sphinx-design's no-title kebab icon */
+details.sd-dropdown.sd-card.single-animal .sd-summary-text>svg.no-title,
+details.sd-dropdown.sd-card.multi-animal .sd-summary-text>svg.no-title {
+  display: none !important;
 }
 
-.sd-dropdown.multi-animal>.sd-summary-title::before,
-div.admonition.multi-animal>.admonition-title::before,
-details.workflow-dropdown.multi-animal>summary::before,
-div.dropdown.multi-animal>.admonition-title::before,
-div.dropdown.multi-animal>.sd-summary-title::before {
-  content: "Multi animal · ";
-  font-weight: 700;
+/* CSS-generated titles inside the default title span */
+details.sd-dropdown.sd-card.single-animal .sd-summary-text::before {
+  content: "🐁 Single animal";
+}
+
+details.sd-dropdown.sd-card.multi-animal .sd-summary-text::before {
+  content: "🐀🐀🐀 Multi animal";
+}
+
+/* Single animal colors */
+details.sd-dropdown.sd-card.single-animal>summary.sd-card-header {
+  --pst-sd-dropdown-color: var(--single-animal-border);
+  --pst-sd-dropdown-bg-color: var(--single-animal-title-bg);
+
+  color: var(--single-animal-title-text) !important;
+  background-color: var(--single-animal-title-bg) !important;
+}
+
+/* The body also needs the variable because pydata sets border-left there too */
+details.sd-dropdown.sd-card.single-animal>summary.sd-card-header+div.sd-summary-content {
+  --pst-sd-dropdown-color: var(--single-animal-border);
+
+  background-color: var(--single-animal-bg) !important;
+}
+
+/* Multi animal colors */
+details.sd-dropdown.sd-card.multi-animal>summary.sd-card-header {
+  --pst-sd-dropdown-color: var(--multi-animal-border);
+  --pst-sd-dropdown-bg-color: var(--multi-animal-title-bg);
+
+  color: var(--multi-animal-title-text) !important;
+  background-color: var(--multi-animal-title-bg) !important;
+}
+
+/* The body also needs the variable because pydata sets border-left there too */
+details.sd-dropdown.sd-card.multi-animal>summary.sd-card-header+div.sd-summary-content {
+  --pst-sd-dropdown-color: var(--multi-animal-border);
+
+  background-color: var(--multi-animal-bg) !important;
+}
+
+/* Keep text, emoji, chevron color stable */
+details.sd-dropdown.sd-card.single-animal .sd-summary-text,
+details.sd-dropdown.sd-card.single-animal .sd-summary-state-marker,
+details.sd-dropdown.sd-card.single-animal .sd-summary-state-marker svg {
+  color: var(--single-animal-title-text) !important;
+  fill: currentColor !important;
+}
+
+details.sd-dropdown.sd-card.multi-animal .sd-summary-text,
+details.sd-dropdown.sd-card.multi-animal .sd-summary-state-marker,
+details.sd-dropdown.sd-card.multi-animal .sd-summary-state-marker svg {
+  color: var(--multi-animal-title-text) !important;
+  fill: currentColor !important;
+}
+
+/* Disable pydata hover darken/lighten effect */
+details.sd-dropdown.sd-card.single-animal>summary.sd-card-header:hover,
+details.sd-dropdown.sd-card.single-animal>summary.sd-card-header:focus {
+  color: var(--single-animal-title-text) !important;
+  background-color: var(--single-animal-title-bg) !important;
+}
+
+details.sd-dropdown.sd-card.multi-animal>summary.sd-card-header:hover,
+details.sd-dropdown.sd-card.multi-animal>summary.sd-card-header:focus {
+  color: var(--multi-animal-title-text) !important;
+  background-color: var(--multi-animal-title-bg) !important;
 }
