@@ -3,6 +3,10 @@ deeplabcut:
   last_content_updated: '2025-06-30'
   last_metadata_updated: '2026-03-06'
   ignore: false
+  visibility: online
+  status: viable
+  recommendation: move
+  notes: "Useful and well-written, but it could be better groped with other tutorials/guides rather than being a PyTorch docs only page, as its contents are somewhat inbetween the two backends."
 ---
 # DeepLabCut Benchmarking - User Guide
 

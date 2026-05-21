@@ -3,6 +3,10 @@ deeplabcut:
   last_content_updated: '2025-10-14'
   last_metadata_updated: '2026-03-06'
   ignore: false
+  visibility: online
+  status: review_needed
+  recommendation: update
+  notes: Contents seem up-to-date as the codebase has not evolved drastically for 3D, but formatting and organization could be improved. Separate basic/advanced sections could help, as well as more admonitions/dropdowns to streamline.
 ---
 (3D-overview)=
 # 3D DeepLabCut

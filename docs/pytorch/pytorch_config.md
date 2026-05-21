@@ -3,6 +3,10 @@ deeplabcut:
   last_content_updated: '2025-10-02'
   last_metadata_updated: '2026-03-06'
   ignore: false
+  visibility: online
+  status: review_needed
+  recommendation: verify
+  notes: "Check for accuracy and completeness of content, and update as needed. Formatting is fairly consistent and does not need an urgent update."
 ---
 (dlc3-pytorch-config)=
 # The PyTorch Configuration file

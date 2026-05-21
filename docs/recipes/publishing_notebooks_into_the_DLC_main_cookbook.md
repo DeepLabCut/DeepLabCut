@@ -3,6 +3,10 @@ deeplabcut:
   last_content_updated: '2025-06-30'
   last_metadata_updated: '2026-03-06'
   ignore: false
+  visibility: online
+  status: review_needed
+  recommendation: verify
+  notes: Sligthly redundant with CONTRIBUTING.md, style may need adjusted based on the rest of the repo.
 ---
 # Publishing Notebooks into the Main DLC Cookbook
 ### Your Recipe Guide to Contributing to the DLC Cookbook

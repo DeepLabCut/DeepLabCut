@@ -1,10 +1,16 @@
 ---
 deeplabcut:
   last_content_updated: '2026-02-23'
-  last_metadata_updated: '2026-03-06'
+  last_metadata_updated: '2026-04-21'
   ignore: false
+  visibility: online
+  status: outdated
+  recommendation: update
+  notes: Could be moved to a core/installation folder for clarity.
+  last_verified: '2026-04-21'
+  verified_for: 3.0.0rc14
 ---
-(how-to-install)=
+(file:how-to-install)=
 # How To Install DeepLabCut
 
 - **DeepLabCut can be run on Windows, Linux, or MacOS as long as you have Python 3.10 installed**
