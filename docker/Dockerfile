@@ -3,7 +3,7 @@
 ARG PYTORCH_VERSION=2.5.1
 ARG CUDA_VERSION=12.4
 ARG CUDNN_VERSION=9
-ARG DEEPLABCUT_VERSION=3.0.0rc14
+ARG DEEPLABCUT_VERSION=3.0.0
 
 # ── core ──────────────────────────────────────────────────────────────────────
 FROM pytorch/pytorch:${PYTORCH_VERSION}-cuda${CUDA_VERSION}-cudnn${CUDNN_VERSION}-runtime AS core
