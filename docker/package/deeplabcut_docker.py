@@ -193,11 +193,14 @@ def main() -> None:
     run += _supplementary_group_args()
     if mode == "notebook":
         port = os.environ.get("DLC_NOTEBOOK_PORT", "8888")
+        token = os.environ.get("NOTEBOOK_TOKEN", "deeplabcut")
         _log("Starting the notebook server.")
         _log(f"Open your browser at http://127.0.0.1:{port}")
-        _log("If prompted for a token, enter 'deeplabcut' (default).")
-        _log("To use a custom token: add -e NOTEBOOK_TOKEN=<your-token> to your arguments.")
-        run += ["-p", f"127.0.0.1:{port}:8888"]
+        if token == "deeplabcut":
+            _log(f"If prompted for a token, enter {token!r}.")
+        else:
+            _log("If prompted for a token, enter the value of NOTEBOOK_TOKEN.")
+        run += ["-p", f"127.0.0.1:{port}:8888", "-e", f"NOTEBOOK_TOKEN={token}"]
     run += docker_run_args + [local] + ([] if mode == "notebook" else ["bash"])
     sys.exit(subprocess.run(run).returncode)
 
