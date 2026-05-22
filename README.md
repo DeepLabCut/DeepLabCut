@@ -265,6 +265,6 @@ importing a project into the new data format for DLC 2.0
 
   # Funding
 
-  We are grateful for the following support and funding over the years!
-  This software project was supported in part by the **Essential Open Source Software for Science (EOSS)** program at **Chan Zuckerberg Initiative** (cycles 1, 3, 3-DEI, 4), and jointly with the **Kavli Foundation** for **EOSS Cycle 6**!
-  We also thank the **Rowland Institute** at **Harvard** for funding from 2017-2020, and **EPFL** from 2020-present.
+We are grateful for the following support and funding over the years!
+This software project was supported in part by the **Essential Open Source Software for Science (EOSS)** program at **Chan Zuckerberg Initiative** (cycles 1, 3, 3-DEI, 4), and jointly with the **Kavli Foundation** for **EOSS Cycle 6**!
+We also thank the **Rowland Institute** at **Harvard** for funding from 2017-2020, and **EPFL** from 2020-present.

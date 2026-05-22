@@ -28,7 +28,7 @@ We expect it to take *roughly* 1-2 weeks to get through if you do it rigorously.
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1605642639913-OIUBVR8R0JLYZQPRIYIR/ke17ZwdGBToddI8pDm48kMMAxEenKbh651VJujierMxZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpw-CO5bsXt3Lwn3O5kv-PfTgGtLU9oye8D4J7Fixq38Gl-o9tfrEtbnqpPzC5bXTas/ezgif.com-gif-maker.gif?format=750w" width="95%">
 </p>
 
-## Installation:
+## Installation
 
 You need Python and DeepLabCut installed!
 

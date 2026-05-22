@@ -232,7 +232,7 @@ That's it! Follow the GUI for details
 
 [VIDEO TUTORIAL AVAILABLE!](https://www.youtube.com/watch?v=7xwOhUcIGio)
 
-Please decide with mode you want to use DeepLabCut, and follow one of the following:
+Please decide which mode you want to use DeepLabCut with, and follow one of:
 
 - (1) [How to use standard DeepLabCut](single-animal-userguide)
 - (2) [How to use multi-animal DeepLabCut](multi-animal-userguide)
