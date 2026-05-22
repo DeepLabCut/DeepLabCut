@@ -9,19 +9,21 @@ ARG DEEPLABCUT_VERSION=3.0.0rc14
 FROM pytorch/pytorch:${PYTORCH_VERSION}-cuda${CUDA_VERSION}-cudnn${CUDNN_VERSION}-runtime AS core
 
 ARG DEEPLABCUT_VERSION
+ARG CUDA_VERSION
+ARG PYTORCH_VERSION
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -yy && \
     apt-get install -yy --no-install-recommends \
       libgl1 \
       libglib2.0-0 \
+      ffmpeg \
       build-essential \
       git \
-      ffmpeg \
+    && pip install --upgrade pip \
+    && pip install "deeplabcut[modelzoo,wandb]==${DEEPLABCUT_VERSION}" \
+    && apt-get purge -yy --auto-remove build-essential git \
     && rm -rf /var/lib/apt/lists/*
-
-RUN pip install --upgrade pip && \
-    pip install "deeplabcut[modelzoo,wandb]==${DEEPLABCUT_VERSION}"
 
 # Create pretrained weights directory and make it writable
 # (same default as HuggingFaceWeightsMixin in backbones/base.py: Path(__file__).parent / "pretrained_weights")
