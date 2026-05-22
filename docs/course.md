@@ -32,7 +32,7 @@ We expect it to take *roughly* 1-2 weeks to get through if you do it rigorously.
 
 You need Python and DeepLabCut installed!
 
-- See the {ref}`beginners-guide` for help!
+- See the {ref}`file:beginners-guide` for help!
 
 - **WATCH:** overview of conda: [Python Tutorial: Anaconda - Installation and Using Conda](https://www.youtube.com/watch?v=YJC6ldI3hWk)
 
