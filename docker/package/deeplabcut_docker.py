@@ -116,6 +116,16 @@ def _build_user_image(remote: str, local: str) -> None:
     _log("Build succeeded")
 
 
+def _supplementary_group_args() -> list[str]:
+    """Return --group-add flags for each supplementary group of the current user."""
+    primary_gid = os.getgid()
+    args = []
+    for gid in os.getgroups():
+        if gid != primary_gid:
+            args += ["--group-add", str(gid)]
+    return args
+
+
 def _parse_args() -> tuple[argparse.Namespace, list[str]]:
     """Parse CLI args and return (namespace, extra args for docker run)."""
     parser = argparse.ArgumentParser(
@@ -149,6 +159,27 @@ def _parse_args() -> tuple[argparse.Namespace, list[str]]:
     return parser.parse_known_args()
 
 
+def _pull_image(remote: str, *, skip_if_local: bool = True) -> None:
+    """Pull the image; skip the pull if it already exists locally and skip_if_local is True."""
+    if skip_if_local:
+        r = subprocess.run(
+            _docker() + ["image", "inspect", remote],
+            capture_output=True,
+            text=True,
+        )
+        if r.returncode == 0:
+            _log(f"Using local image {remote!r} (skipping pull)")
+            return
+        if r.stderr:
+            _log(f"`docker image inspect` stderr: {r.stderr.strip()}")
+    _log(f"Pulling image {remote!r}...")
+    try:
+        subprocess.run(_docker() + ["pull", remote], check=True)
+    except subprocess.CalledProcessError as e:
+        _log(f"Failed to pull image {remote!r}. Verify the image name/tag and that Docker is running and accessible.")
+        sys.exit(e.returncode)
+
+
 def main() -> None:
     """Entry point: pull, user-layer build, and run the container."""
     _check_system()
@@ -157,19 +188,26 @@ def main() -> None:
 
     remote = args.image or _remote_tag(mode)
     local = f"deeplabcut-local-{mode}"
-    subprocess.run(_docker() + ["pull", remote], check=True)
-    if mode == "notebook" and args.image:
+    try_local_image = bool(args.image or os.environ.get("DLC_VERSION", "").strip())
+    _pull_image(remote, skip_if_local=try_local_image)
+    if mode == "notebook":
         _warn_if_not_jupyter_image(remote)
     _build_user_image(remote, local)
 
     run = _docker() + ["run", "-it", "--rm", "-v", f"{os.getcwd()}:/app", "-w", "/app"]
+    run += _supplementary_group_args()
     if mode == "notebook":
         port = os.environ.get("DLC_NOTEBOOK_PORT", "8888")
+        token = os.environ.get("NOTEBOOK_TOKEN", "deeplabcut")
         _log("Starting the notebook server.")
         _log(f"Open your browser at http://127.0.0.1:{port}")
-        _log("If prompted for a token, enter 'deeplabcut' (default).")
-        _log("To use a custom token: add -e NOTEBOOK_TOKEN=<your-token> to your arguments.")
-        run += ["-p", f"127.0.0.1:{port}:8888"]
+        if token == "":
+            _log("Warning: NOTEBOOK_TOKEN is empty — Jupyter token authentication is disabled.")
+        elif token == "deeplabcut":
+            _log(f"If prompted for a token, enter {token!r}.")
+        else:
+            _log("If prompted for a token, enter the value of NOTEBOOK_TOKEN.")
+        run += ["-p", f"127.0.0.1:{port}:8888", "-e", f"NOTEBOOK_TOKEN={token}"]
     run += docker_run_args + [local] + ([] if mode == "notebook" else ["bash"])
     sys.exit(subprocess.run(run).returncode)
 
