@@ -173,6 +173,14 @@ class GenerativeSampler:
 
         N = 500  # TODO: do not know how this is set
         for j in range(self.num_keypoints):
+            # Skip unlabeled / invisible GT joints. Synthesizing a conditional
+            # keypoint for them creates a spurious cue and biases CTD training.
+            # Previously, this was prevented implicitly by NaN propagation; now
+            # we make the contract explicit. (Required since PR #2995)
+            if keypoints[j, 2] <= 0:
+                synth_joints[j] = 0  # (x, y, vis) = (0, 0, 0)
+                continue
+
             # source keypoint position candidates to generate error on that (gt, swap, inv, swap+inv)
             coord_list = []
             # on top of gt

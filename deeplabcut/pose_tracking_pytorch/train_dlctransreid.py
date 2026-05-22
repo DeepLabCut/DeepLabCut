@@ -17,11 +17,13 @@ except ModuleNotFoundError as e:
     raise ModuleNotFoundError("Unsupervised identity learning requires PyTorch. Please run `pip install torch`.") from e
 import glob
 import os
+from collections.abc import Sequence
 from pathlib import Path
 
 import numpy as np
 
-from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 from .config import cfg
 from .datasets import make_dlc_dataloader
@@ -66,11 +68,12 @@ def split_train_test(npy_list, train_frac):
     return train_list, test_list
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def train_tracking_transformer(
     path_config_file,
     dlcscorer,
     videos,
-    videotype="",
+    video_extensions: str | Sequence[str] | None = None,
     train_frac=0.8,
     modelprefix="",
     train_epochs=100,
@@ -79,7 +82,7 @@ def train_tracking_transformer(
     destfolder=None,
 ):
     npy_list = []
-    videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    videos = collect_video_paths(videos, extensions=video_extensions)
     for video in videos:
         videofolder = str(Path(video).parents[0])
         if destfolder is None:

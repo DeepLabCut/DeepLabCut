@@ -8,42 +8,66 @@ jobs:
     executor:
       name: python/default
       tag: '3.10' # or '3.12'
+    environment:
+      # HuggingFace: disable xet and use cache directory
+      # NOTE @deruyter92 2026-05-07: "xet" opens many simultaneous connections
+      # to different data chunks. Currently doesn't work well with CircleCI.
+      # See: https://github.com/huggingface/xet-core/issues/800
+      HF_HUB_DISABLE_XET: 1
+      HF_HOME: ~/.cache/huggingface
+
     steps:
       - checkout
 
-      # 1) Restore uv cache
+      # Restore uv cache
       - restore_cache:
           name: Restore uv cache
           keys:
             - v2-uv-pip-{{ checksum "pyproject.toml" }}
             - v2-uv-pip-
-      # 2) Install uv
+
+      # Restore HuggingFace weights cache
+      - restore_cache:
+          name: Restore Hugging Face cache
+          keys:
+            - hf-weights-v1-{{ checksum "pyproject.toml" }}
+            - hf-weights-v1-
+
+      # Install uv
       - run:
           name: Install uv
           command: |
             pip install uv
 
+      # Install DeepLabCut runtime deps only
       - run:
           name: Install DeepLabCut runtime deps only
           command: |
             uv pip install --system -e .
 
-      # 3) (Optional) Trim the cache for CI so uploads stay small and fast
+      # (Optional) Trim the cache for CI so uploads stay small and fast
       - run:
           name: Prune uv cache for CI
           command: uv cache prune --ci || true
 
-      # 4) Save the cache for next runs
+      # Save the uv cache for next runs
       - save_cache:
           name: Save uv cache
           key: v2-uv-pip-{{ checksum "pyproject.toml" }}
           paths:
             - ~/.cache/uv
 
+      # Test DLC
       - run:
           name: TestDLC
-          # uv handles the installation of the dependencies
           command: python testscript_cli.py
+
+      # Save the HF weights cache for next runs
+      - save_cache:
+          name: Save huggingface cache
+          key: hf-weights-v1-{{ checksum "pyproject.toml" }}
+          paths:
+            - ~/.cache/huggingface
 
 workflows:
   main:

@@ -6,7 +6,7 @@ deeplabcut:
   visibility: online
   status: viable
   recommendation: move
-  notes: As mentioned on oher beginner-guides/ docs, this should be part of the GUI section.
+  notes: As mentioned on other beginner-guides/ docs, this should be part of the GUI section.
 ---
 
 (file:video-analysis-gui)=
@@ -23,11 +23,9 @@ After training and evaluating your model, the next step is to apply it to your v
 
 1. **Navigate to the 'Analyze Videos' Tab:** Begin applying your trained model to video data here.
 1. **Select Your Video Format and Files:**
-
-- **Choose Video Format:** Pick the format of your video (`.mp4`, `.avi`, `.mkv`, or `.mov`).
-- **Select Videos:** Click **`Select Videos`** to find and open your video file.
-
-3. **Start Analysis:** Click **`Analyze`**. The analysis time depends on video length and resolution. Track progress in the terminal or Anaconda prompt.
+   - **Choose Video Format:** Pick the format of your video (`.mp4`, `.avi`, `.mkv`, or `.mov`).
+   - **Select Videos:** Click **`Select Videos`** to find and open your video file.
+1. **Start Analysis:** Click **`Analyze`**. The analysis time depends on video length and resolution. Track progress in the terminal or Anaconda prompt.
 
 ### Reviewing analysis results
 

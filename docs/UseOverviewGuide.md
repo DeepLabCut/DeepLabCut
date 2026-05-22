@@ -20,7 +20,7 @@ Below we will first outline what you need to get started, the different ways you
 **DeepLabCut** is a software package for markerless pose estimation of animals performing various tasks. The software can manage multiple projects for various tasks. Each project is identified by the name of the project (e.g. TheBehavior), name of the experimenter (e.g. YourName), as well as the date at creation. This project folder holds a `config.yaml` (a text document) file containing various (project) parameters as well as links the data of the project.
 
 <p align="center">
-<img src=   https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572293604382-W6BWA63LZ9J8R7N0QEA5/ke17ZwdGBToddI8pDm48kIw6YkRUEyoge4858uAJfaMUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYwL8IeDg6_3B-BRuF4nNrNcQkVuAT7tdErd0wQFEGFSnH9wUPiI8bGoX-EQadkbLIJwhzjIpw393-uEwSKO7VZIL9gN_Sb5I_dLwvWryjeCJg/dlc_overview-01.png?format=1000w width="80%">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572293604382-W6BWA63LZ9J8R7N0QEA5/ke17ZwdGBToddI8pDm48kIw6YkRUEyoge4858uAJfaMUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYwL8IeDg6_3B-BRuF4nNrNcQkVuAT7tdErd0wQFEGFSnH9wUPiI8bGoX-EQadkbLIJwhzjIpw393-uEwSKO7VZIL9gN_Sb5I_dLwvWryjeCJg/dlc_overview-01.png?format=1000w" width="80%">
  </p>
 
 <p align="center">
@@ -40,22 +40,23 @@ We are primarily a package that enables deep learning-based pose estimation. We 
 - Decide on your needs: there are **two main modes, standard DeepLabCut or multi-animal DeepLabCut**.
 
   - We highly recommend carefully considering which one is best for your needs.
-  - For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. **[Important Information on how to use DLC in different scenarios (single vs multi animal)](important-info-regd-usage)** Then pick a user guide:
-  - (1) [How to use standard DeepLabCut](single-animal-userguide)
-  - (2) [How to use multi-animal DeepLabCut](multi-animal-userguide)
+  - For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. See {ref}`important-info-regd-usage`.
+  - Then pick a user guide:
+    1. [How to use standard DeepLabCut](single-animal-userguide)
+    1. [How to use multi-animal DeepLabCut](multi-animal-userguide)
 
 - To note, as of DLC3+ the single and multi-animal code bases are more integrated and we support **top-down**, **bottom-up**, and a new "hybrid" approach that is state-of-the-art, called **BUCTD** (bottom-up conditional top down)
 
   - If these terms are new to you, check out our [Primer on Motion Capture with Deep Learning!](https://www.sciencedirect.com/science/article/pii/S0896627320307170). In brief, both work for single or multiple animals and each method can be better or worse on your data.
 
 <p align="center">
-<img src= https://ars.els-cdn.com/content/image/1-s2.0-S0896627320307170-gr5_lrg.jpg?format=1000w width="50%">
+<img src="https://ars.els-cdn.com/content/image/1-s2.0-S0896627320307170-gr5_lrg.jpg?format=1000w" width="50%">
  </p>
 
 - Here is more information on BUCTD:
 
 <p align="center">
-<img src= https://github.com/amathislab/BUCTD/raw/main/media/BUCTD_fig1.png?format=1000w width="50%">
+<img src="https://github.com/amathislab/BUCTD/raw/main/media/BUCTD_fig1.png?format=1000w" width="50%">
  </p>
 
 ### Additional learning resources
@@ -68,7 +69,7 @@ We are primarily a package that enables deep learning-based pose estimation. We 
 
 - [Explanations:](https://github.com/DeepLabCut/DeepLabCut-Workshop-Materials) resources on understanding how DeepLabCut works
 - [References:](https://github.com/DeepLabCut/DeepLabCut#references) read the science behind DeepLabCut
-- \[Beginner Guide to the GUI\](file:beginners-guide)
+- {ref}`Beginner's guide to the GUI<file:beginners-guide>`: a step-by-step walkthrough of the GUI for new users.
 
 <!-- Outdated video: uses previous MD files / GitHub Wiki instead of Jupyter Book -->
 
@@ -90,7 +91,7 @@ We are primarily a package that enables deep learning-based pose estimation. We 
 
 ## Workflow overview
 
-This page contains a list of the essential functions of DeepLabCut as well as demos. There are many optional parameters with each described function. For detailed function documentation, please refer to the main user guides or API documentation. For additional assistance, you can use the [help](UseOverviewGuide.md#help) function to better understand what each function does.
+This page contains a list of the essential functions of DeepLabCut as well as demos. There are many optional parameters with each described function. For detailed function documentation, please refer to the main user guides or API documentation. For additional assistance, you can use the `help` function to better understand what each function does.
 
 <p align="center">
   <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5cca272524a69435c3251c40/1556752170424/flowfig.jpg?format=1000w" width=95%>
@@ -103,13 +104,13 @@ This page contains a list of the essential functions of DeepLabCut as well as de
 You can have as many projects on your computer as you wish.
 You can have DeepLabCut installed in a {ref}`conda environment<sec:conda-build-env>`; once you are finished, exit your terminal, and later re-activate your environment.
 
-When working on a given project, you just need to point to the correct `config.yaml` file to [jump back in](/docs/UseOverviewGuide.md#tips-for-daily-use)! The documentation below will take you through the individual steps.
+When working on a given project, you just need to point to the correct `config.yaml` file to resume work; the documentation below will take you through the individual steps.
 
 <p align="center">
-<img src=  https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=500w width="60%">
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=500w" width="60%">
  </p>
 
-(important-info-regd-usage)=
+(sec:important-info-regd-usage)=
 
 ## Usage advice & project types
 
@@ -159,7 +160,7 @@ If you can tell them apart, label your animals consistently!
 
 ### Getting started with multi-animal (ma) DeepLabCut
 
-We highly recommend using it first in the Project Manager GUI ([Option 3](docs/functionDetails.md#deeplabcut-project-manager-gui)).
+We highly recommend using it first in the {ref}`Project Manager GUI <project-manager-gui>`.
 This will allow you to get used to the additional steps by being walked through the process. Then, you can always use all the functions in your favorite IDE, notebooks, etc.
 
 ## How to run DeepLabCut

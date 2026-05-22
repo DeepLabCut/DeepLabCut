@@ -104,7 +104,8 @@ This will open DeepLabCut.
 
 ![DeepLabCut GUI Screenshot](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779625875-5UHPC367I293CBSP8CT6/GUI-screenshot.png?format=500w)
 
-```{note} For a visual guide on navigating through the DeepLabCut GUI, check out our [YouTube tutorial](https://www.youtube.com/watch?v=tr3npnXWoD4).
+```{note}
+For a visual guide on navigating through the DeepLabCut GUI, check out our [YouTube tutorial](https://www.youtube.com/watch?v=tr3npnXWoD4).
 ```
 
 ## Starting a new project
@@ -140,10 +141,10 @@ When you first launch the GUI, you'll find three primary main options:
      - Give a specific, easy-to-track name to your project.
 
      ```{tip}
-     Avoid empty spaces in your project name.
+     Avoid spaces in your project name.
      ```
 
-     - Fill in the name of the experimenter. This name is used in data headers and directory names and it remains permanently associated with the project.
+     - **Fill in the name of the scorer/experimenter**. This name is used in data headers and directory names and it remains permanently associated with the project.
 
 1. **Determine Project Location:**
 
@@ -164,7 +165,7 @@ When you first launch the GUI, you'll find three primary main options:
      ```
    - A list will be created with all the videos inside this folder.
    - Unselect the videos you wish to remove from the project.
-   - Videos outside the project directory can be automatically copied into to the project folder by selecting the "Copy videos to project folder" option. This is the recommended strategy for data management. External videos that are not copied are instead referenced via symbolic links. While using symbolic links avoids duplicating files and reduces storage usage, it is also more prone to issues, for example if the original files are moved or deleted.
+   - Videos outside the project directory can be automatically copied into the project folder by selecting the "Copy videos to project folder" option. This is the recommended strategy for data management. External videos that are not copied are instead referenced via symbolic links. While using symbolic links avoids duplicating files and reduces storage usage, it is also more prone to issues, for example if the original files are moved or deleted.
    - ```{tip}
       By default, the GUI will look for a **directory** containing videos. Use the "Select individual files"
       checkbox if you want to select individual videos instead of a whole folder.

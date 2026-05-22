@@ -14,7 +14,7 @@ deeplabcut:
 
 From DeepLabCut 2.2.0.2 onward, we provide container images on [DockerHub](https://hub.docker.com/r/deeplabcut/deeplabcut).
 Using Docker is an alternative approach to installing DeepLabCut in a local conda or pip environment: the images bundle all dependencies needed to run DeepLabCut in a reproducible, self-contained environment.
-In a Docker container, DeepLabCut can be used from the terminal, or with Jupyter notebook - the DeepLabCut GUI is not supported.
+In a Docker container, DeepLabCut can be used from the terminal, or with Jupyter notebooks; the DeepLabCut GUI is not supported.
 The approach requires a local installation of [Docker / Docker Desktop](https://www.docker.com/), and is meant for users who need strict reproducibility, an isolated environment, or server-based automation.
 
 ```{important}
@@ -34,11 +34,12 @@ on your machine (in any environment). deeplabcut-docker is just a lightweight pa
 
 With `deeplabcut-docker`, you can use the images in two modes.
 
-```{note}
-1. When running any of the following commands first, it can take some time to complete (a few minutes, depending on your internet connection), since it downloads the Docker image in the background. If you do not see any errors in your terminal, assume that everything is working fine! Subsequent runs of the command will be faster.*
 <!-- - *Note 2: The labelling GUI cannot be used through the Docker images. However, you can install [`napari-deeplabcut`](https://github.com/DeepLabCut/napari-deeplabcut/tree/main?tab=readme-ov-file#napari-deeplabcut-keypoint-annotation-for-pose-estimation) in a conda environment to do the labelling!* -->
-1. For any mode below, you might want to set which directory is the base, namely, so you can have read/write (or read-only access). Here is how to do so:
-  If you want to mount the whole directory could e.g., pass*
+
+```{note}
+1. When running any of the following commands first, it can take some time to complete (a few minutes, depending on your internet connection), since it downloads the Docker image in the background. If you do not see any errors in your terminal, assume that everything is working fine! Subsequent runs of the command will be faster.
+2. For any mode below, you might want to set which directory is the base, namely, so you can have read/write (or read-only access). Here is how to do so:
+  If you want to mount the whole directory could e.g., pass
   `deeplabcut-docker bash -v /home/mackenzie/DEEPLABCUT:/home/mackenzie/DEEPLABCUT`
   (which will mount the full directory into the container in read/write mode)
   If read-only access is enough, `deeplabcut-docker bash -v /home/mackenzie/DEEPLABCUT:/home/mackenzie/DEEPLABCUT:ro`
