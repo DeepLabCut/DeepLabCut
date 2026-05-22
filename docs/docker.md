@@ -1,11 +1,12 @@
 ---
 deeplabcut:
   last_content_updated: '2026-05-22'
-  last_metadata_updated: '2026-03-06'
+  last_metadata_updated: '2026-05-22'
   ignore: false
   visibility: online
-  status: review_needed
-  recommendation: verify
+  status: viable
+  last_verified: '2026-05-22'
+  verified_for: 3.0.0
 ---
 
 (docker-containers)=
