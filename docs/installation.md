@@ -23,7 +23,7 @@ deeplabcut:
 <!-- Tips page is outdated -->
 
 - 🚧 Please note, there are several possibilities for installation:
-  - **Recommended for most users**: Install in a [**conda environment**](https://deeplabcut.github.io/DeepLabCut/docs/installation.html#conda-the-installation-process-is-as-easy-as-this-figure)
+  - **Recommended for most users**: Install in a {ref}`conda environment <sec:installation-using-conda>`
   - Install with **{ref}`uv <sec:uv-install>`** (recommended for developers)
   - In the supplied **{ref}`Docker container <docker-containers>`** (recommended for Ubuntu advanced users and reproducibility).
 - 🚀 You will get the best performance when using a **GPU**!
@@ -56,6 +56,8 @@ python -c "import torch; print(torch.cuda.is_available())"
 ````
 
 - If you're familiar with the command line and want TensorFlow support, look {ref}`below <sec:deeplabcut-with-tf-install>` for a fresh installation on Linux and makes it possible to use the GPU with both PyTorch and TensorFlow.
+
+(sec:installation-using-conda)=
 
 ## Using Conda
 
@@ -244,7 +246,7 @@ Recommended for users who want to modify the code, or want to be up-to-date with
 
 ```bash
 uv venv -p 3.12
-uv pip install -e .[gui,modelzoo,tf] # Change optional install as needed
+uv pip install -e '.[gui,modelzoo,tf]' # Change optional install as needed
 source .venv/bin/activate # or & .venv\Scripts\activate.ps1 on Windows
 ```
 
