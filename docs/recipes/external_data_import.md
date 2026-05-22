@@ -1,3 +1,11 @@
+---
+deeplabcut:
+  last_metadata_updated: '2026-05-22'
+  last_verified: '2026-05-22'
+  verified_for: 3.0.0rc14
+  ignore: false
+---
+
 (file:recipe-importing-data)=
 
 # Importing annotated data from elsewhere
