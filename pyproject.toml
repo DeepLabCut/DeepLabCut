@@ -4,7 +4,7 @@ requires = [ "setuptools>=61" ]
 
 [project]
 name = "deeplabcut"
-version = "3.0.0rc14"
+version = "3.0.0"
 description = "Markerless pose-estimation of user-defined features with deep learning"
 readme = { file = "README.md", content-type = "text/markdown" }
 keywords = [
@@ -30,7 +30,7 @@ classifiers = [
 ]
 dependencies = [
   "albumentations<=1.4.3",
-  "dlclibrary>=0.0.7",
+  "dlclibrary>=0.0.12",
   "einops",
   "filelock>=3.12,<3.16",
   "filterpy>=1.4.4",
@@ -67,7 +67,7 @@ name = "Mathis Group for Computational Neuroscience and AI"
 email = "alexander@deeplabcut.org"
 [project.optional-dependencies]
 gui = [
-  "napari-deeplabcut>=0.2.1.6",
+  "napari-deeplabcut>=0.3.1",
   "pyside6; platform_system!='Linux' or platform_machine!='x86_64'",
   # Avoid 6.10.0 only on Linux x86_64 (fails for older glib versions)
   "pyside6<6.10; platform_system=='Linux' and platform_machine=='x86_64'",
