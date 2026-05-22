@@ -10,10 +10,10 @@ deeplabcut:
 
 # DeepLabCut Self-paced Course
 
-::::\{warning}
+```{warning}
 This course was designed for DLC 2.
 An updated version for DLC 3 is in the works.
-::::
+```
 
 Do you have video of animal behaviors? Step 1: Get Poses ...
 
@@ -32,7 +32,7 @@ We expect it to take *roughly* 1-2 weeks to get through if you do it rigorously.
 
 You need Python and DeepLabCut installed!
 
-- \[See these "beginner docs" for help!\](file:beginners-guide)
+- See the {ref}`file:beginners-guide` for help!
 
 - **WATCH:** overview of conda: [Python Tutorial: Anaconda - Installation and Using Conda](https://www.youtube.com/watch?v=YJC6ldI3hWk)
 

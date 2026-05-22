@@ -122,7 +122,7 @@ def test_video_directory(
             experimenter="user",
             videos=[str(video_directory)],
             working_directory=str(tmpdir),
-            videotype=".avi",
+            video_extensions=".avi",
             copy_videos=copy_videos,
         )
 
@@ -149,7 +149,7 @@ def test_mixed_video_files_and_directories(
             experimenter="user",
             videos=[str(mock_video_file), str(video_directory)],
             working_directory=str(tmpdir),
-            videotype=".avi",
+            video_extensions=".avi",
             copy_videos=copy_videos,
         )
 
@@ -175,7 +175,7 @@ def test_empty_video_directory(
                 experimenter="user",
                 videos=[str(empty_dir)],
                 working_directory=str(tmpdir),
-                videotype=".avi",
+                video_extensions=".avi",
                 copy_videos=False,
             )
             # Should return "nothingcreated" when no valid videos found

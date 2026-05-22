@@ -138,7 +138,8 @@ def get_simcc_maximum(
     mask = max_val_x > max_val_y
     max_val_x[mask] = max_val_y[mask]
     vals = max_val_x
-    locs[vals <= 0.0] = -1
+    threshold = 1.0 / simcc_x.shape[-1] if apply_softmax else 0.0
+    locs[vals <= threshold] = -1
 
     if N:
         locs = locs.reshape(N, K, 2)
