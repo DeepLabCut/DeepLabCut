@@ -59,13 +59,13 @@ Note that currently the video demo is the wxPython version, but the logic is the
 
 [![Watch the video](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589046800303-OV1CCNZINWDMF1PZWCWE/ke17ZwdGBToddI8pDm48kB4PVlRPKDmSlQNbUD3wvXgUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8N_N4V1vUb5AoIIIbLZhVYxCRW4BPu10St3TBAUQYVKcaja1QZ1SznGf7WzFOi-J6zLusnaF2VdeZcKivwxvFiDfGDqVYuwbAlftad9hfoui/dlc_gui_22.png?format=1000w)](https://www.youtube.com/watch?v=JDsa8R5J0nQ)
 
-[Read more here](important-info-regd-usage)
+{ref}`Read more here <sec:important-info-regd-usage>`
 
 ### Using the Project Manager GUI with the latest DLC code (multiple identical-looking animals, plus objects)
 
 [![Watch the video](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589047147498-G1KTFA5BXR4PVHOOR7OG/ke17ZwdGBToddI8pDm48kJDij24pM2COisBTLIGjR1pZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIel60EThn7SDFlTiSprUhmjQQHn9bhdY9dnQSKs8bCCo/Untitled.png?format=1000w)](https://www.youtube.com/watch?v=Kp-stcTm77g)
 
-[Read more here](important-info-regd-usage)
+{ref}`Read more here <sec:important-info-regd-usage>`
 
 ### How to benchmark your data with the new networks and data augmentation pipelines
 
