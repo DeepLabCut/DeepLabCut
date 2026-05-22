@@ -116,6 +116,16 @@ def _build_user_image(remote: str, local: str) -> None:
     _log("Build succeeded")
 
 
+def _supplementary_group_args() -> list[str]:
+    """Return --group-add flags for each supplementary group of the current user."""
+    primary_gid = os.getgid()
+    args = []
+    for gid in os.getgroups():
+        if gid != primary_gid:
+            args += ["--group-add", str(gid)]
+    return args
+
+
 def _parse_args() -> tuple[argparse.Namespace, list[str]]:
     """Parse CLI args and return (namespace, extra args for docker run)."""
     parser = argparse.ArgumentParser(
@@ -180,6 +190,7 @@ def main() -> None:
     _build_user_image(remote, local)
 
     run = _docker() + ["run", "-it", "--rm", "-v", f"{os.getcwd()}:/app", "-w", "/app"]
+    run += _supplementary_group_args()
     if mode == "notebook":
         port = os.environ.get("DLC_NOTEBOOK_PORT", "8888")
         _log("Starting the notebook server.")
