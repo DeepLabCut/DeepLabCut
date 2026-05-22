@@ -90,7 +90,7 @@ We are primarily a package that enables deep learning-based pose estimation. We 
 
 ## Workflow overview
 
-This page contains a list of the essential functions of DeepLabCut as well as demos. There are many optional parameters with each described function. For detailed function documentation, please refer to the main user guides or API documentation. For additional assistance, you can use the [help](UseOverviewGuide.md#help) function to better understand what each function does.
+This page contains a list of the essential functions of DeepLabCut as well as demos. There are many optional parameters with each described function. For detailed function documentation, please refer to the main user guides or API documentation. For additional assistance, you can use the `help` function to better understand what each function does.
 
 <p align="center">
   <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5cca272524a69435c3251c40/1556752170424/flowfig.jpg?format=1000w" width=95%>
@@ -103,7 +103,7 @@ This page contains a list of the essential functions of DeepLabCut as well as de
 You can have as many projects on your computer as you wish.
 You can have DeepLabCut installed in a {ref}`conda environment<sec:conda-build-env>`; once you are finished, exit your terminal, and later re-activate your environment.
 
-When working on a given project, you just need to point to the correct `config.yaml` file to [jump back in](/docs/UseOverviewGuide.md#tips-for-daily-use)! The documentation below will take you through the individual steps.
+When working on a given project, you just need to point to the correct `config.yaml` file to resume work; the documentation below will take you through the individual steps.
 
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559758477126-B9PU1EFA7L7L1I24Z2EH/ke17ZwdGBToddI8pDm48kH6mtUjqMdETiS6k4kEkCoR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UQf4d-kVja3vCG3Q_2S8RPAcZTZ9JxgjXkf3-Un9aT84H3bqxw7fF48mhrq5Ulr0Hg/howtouseDLC2d_3d-01.png?format=500w" width="60%">
@@ -159,7 +159,7 @@ If you can tell them apart, label your animals consistently!
 
 ### Getting started with multi-animal (ma) DeepLabCut
 
-We highly recommend using it first in the Project Manager GUI ([Option 3](docs/functionDetails.md#deeplabcut-project-manager-gui)).
+We highly recommend using it first in the {ref}`Project Manager GUI <project-manager-gui>`.
 This will allow you to get used to the additional steps by being walked through the process. Then, you can always use all the functions in your favorite IDE, notebooks, etc.
 
 ## How to run DeepLabCut

@@ -141,10 +141,10 @@ When you first launch the GUI, you'll find three primary main options:
      - Give a specific, easy-to-track name to your project.
 
      ```{tip}
-     Avoid empty spaces in your project name.
+     Avoid spaces in your project name.
      ```
 
-     - Fill in the name of the experimenter. This name is used in data headers and directory names and it remains permanently associated with the project.
+     - **Fill in the name of the scorer/experimenter**. This name is used in data headers and directory names and it remains permanently associated with the project.
 
 1. **Determine Project Location:**
 
