@@ -432,6 +432,7 @@ class MainWindow(QMainWindow):
 
         if self._update_process is not None:
             self._update_process.deleteLater()
+            self._update_process_output = []
             self._update_process = None
 
         if self._start_next_update_command():

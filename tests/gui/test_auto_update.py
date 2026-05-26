@@ -2,6 +2,8 @@ import sys
 
 import pytest
 
+pytest.importorskip("PySide6")
+
 from deeplabcut.gui.utils import build_update_commands, package_specs_for_update
 
 
