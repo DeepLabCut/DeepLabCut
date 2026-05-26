@@ -10,6 +10,8 @@
 #
 import json
 import re
+import shutil
+import sys
 import urllib.request
 from collections.abc import Callable
 
@@ -234,3 +236,57 @@ class UpdateChecker(QtCore.QObject):
             except InvalidVersion:
                 return installed == latest
         return installed == latest
+
+
+def package_specs_for_update(packages: list[str]) -> list[str]:
+    """Return package specs to install for GUI updates.
+
+    DeepLabCut itself should be updated with the GUI extra so GUI dependencies
+    are kept in sync.
+    """
+    specs = []
+
+    for package in packages:
+        normalized = package.strip()
+
+        if normalized == "deeplabcut":
+            specs.append("deeplabcut[gui]")
+        else:
+            specs.append(normalized)
+
+    return specs
+
+
+def build_update_commands(packages: list[str]) -> list[tuple[str, str, list[str]]]:
+    """Build installer commands, ordered from preferred to fallback.
+
+    Returns tuples of:
+
+        (backend_name, program, arguments)
+
+    The order is:
+      1. uv, if available
+      2. current-interpreter pip fallback
+    """
+    specs = package_specs_for_update(packages)
+    commands = []
+
+    uv = shutil.which("uv")
+    if uv:
+        commands.append(
+            (
+                "uv",
+                uv,
+                ["pip", "install", "--python", sys.executable, "-U", *specs],
+            )
+        )
+
+    commands.append(
+        (
+            "pip",
+            sys.executable,
+            ["-m", "pip", "install", "-U", *specs],
+        )
+    )
+
+    return commands
