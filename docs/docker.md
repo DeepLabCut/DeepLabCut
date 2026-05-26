@@ -19,8 +19,8 @@ In a Docker container, DeepLabCut can be used from the terminal, or with Jupyter
 The approach requires a local installation of [Docker / Docker Desktop](https://www.docker.com/), and is meant for users who need strict reproducibility, an isolated environment, or server-based automation.
 
 ```{important}
-The napari-deeplabcut plugin **cannot be run in a Docker container**. To label
-your data, please {ref}`install napari-deeplabcut <file:napari-gui-landing>` in a local, non-dockerized environment, e.g. using pip: `pip install napari-deeplabcut` .
+The napari-deeplabcut plugin **cannot be run in a Docker container**.
+To label your data, please {ref}`install napari-deeplabcut <file:napari-gui-landing>` in a local, non-dockerized environment, e.g. using pip: `pip install napari-deeplabcut` .
 ```
 
 Advanced users can directly head to [DockerHub](https://hub.docker.com/r/deeplabcut/deeplabcut) and use the provided images there. To get started with using the images, we however also provide a helper tool, `deeplabcut-docker`, which makes the transition to docker images particularly convenient; to install the tool, run
@@ -52,18 +52,35 @@ To use a completely custom image instead of the default tags, pass `--image repo
 
 ## Usage modes
 
-With `deeplabcut-docker`, you can use the images in two modes.
+With `deeplabcut-docker`, you can use the images in two modes: terminal mode and Jupyter Notebook mode.
 
 <!-- - *Note 2: The labelling GUI cannot be used through the Docker images. However, you can install [`napari-deeplabcut`](https://github.com/DeepLabCut/napari-deeplabcut/tree/main?tab=readme-ov-file#napari-deeplabcut-keypoint-annotation-for-pose-estimation) in a conda environment to do the labelling!* -->
 
 ```{note}
-1. When running any of the following commands first, it can take some time to complete (a few minutes, depending on your internet connection), since it downloads the Docker image in the background. If you do not see any errors in your terminal, assume that everything is working fine! Subsequent runs of the command will be faster.
-2. For any mode below, you might want to set which directory is the base, namely, so you can have read/write (or read-only access). Here is how to do so:
-  If you want to mount the whole directory could e.g., pass
-  `deeplabcut-docker bash -v /home/mackenzie/DEEPLABCUT:/home/mackenzie/DEEPLABCUT`
-  (which will mount the full directory into the container in read/write mode)
-  If read-only access is enough, `deeplabcut-docker bash -v /home/mackenzie/DEEPLABCUT:/home/mackenzie/DEEPLABCUT:ro`
+When running any of the following commands first, it can take some time to complete (a few minutes, depending on your internet connection), since it downloads the Docker image in the background. If you do not see any errors in your terminal, assume that everything is working fine! Subsequent runs of the command will be faster.
 ```
+
+````{admonition} Choosing which directory to mount in the container
+---
+class: tip dropdown
+---
+For any mode below, you might want to set which directory is the base, so you can
+have read/write or read-only access.
+
+If you want to mount the whole directory, you could e.g. pass:
+
+```bash
+deeplabcut-docker bash -v /home/mackenzie/DEEPLABCUT:/home/mackenzie/DEEPLABCUT
+```
+
+This will mount the full directory into the container in read/write mode.
+
+If read-only access is enough:
+
+```bash
+deeplabcut-docker bash -v /home/mackenzie/DEEPLABCUT:/home/mackenzie/DEEPLABCUT:ro
+```
+````
 
 ### Terminal mode
 
@@ -101,9 +118,11 @@ which will start a Jupyter notebook server. Follow the terminal instructions to 
 
 The container comes with `deeplabcut[modelzoo,wandb]` pre-installed. Note that the DeepLabCut GUI is not available inside the container.
 
-```{warning}
+```{danger}
 The Jupyter image uses a fixed default access token (`deeplabcut`) that is publicly known.
-Anyone who can reach port 8888 on your machine can execute arbitrary code in the container.
+
+**Anyone who can reach port 8888 on your machine can execute arbitrary code in the container.**
+
 Do not expose port 8888 to the internet (e.g. via a cloud VM's firewall or a public `0.0.0.0`
 binding without a reverse proxy).
 For local use, bind the port to localhost only (e.g. `-p 127.0.0.1:8888:8888`) and use SSH
@@ -111,7 +130,7 @@ port forwarding to access the server remotely (see below).
 To use a custom token, pass `-e NOTEBOOK_TOKEN=<your-token>` to `docker run`.
 ```
 
-### Jupyter Notebooks on remote servers
+#### Jupyter Notebooks on remote servers
 
 Sometimes you want to run Jupyter Notebooks on a remote server and connect from your local
 browser. This requires SSH port forwarding. For general guidance see
@@ -134,7 +153,8 @@ DLC_NOTEBOOK_PORT=8889 deeplabcut-docker notebook --gpus all
 
 ### Advanced usage
 
-Advanced users and developers can visit the [`/docker` subdirectory](https://github.com/DeepLabCut/DeepLabCut/tree/main/docker) in the DeepLabCut codebase on GitHub. It contains a single multi-stage Dockerfile covering all images, along with build instructions.
+Advanced users and developers can visit the [`/docker` subdirectory](https://github.com/DeepLabCut/DeepLabCut/tree/main/docker) in the DeepLabCut codebase on GitHub.
+It contains a single multi-stage Dockerfile covering all images, along with build instructions.
 
 ## Prerequisites (if you don't have Docker installed already)
 
