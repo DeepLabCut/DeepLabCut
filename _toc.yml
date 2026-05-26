@@ -16,8 +16,10 @@ parts:
 
   - caption: Main workflows overview
     chapters:
-      - file: docs/standardDeepLabCut_UserGuide
-      - file: docs/maDLC_UserGuide
+      - file: docs/main-workflows/user-guide
+      - file: docs/main-workflows/multi-animal-tracking
+      # - file: docs/standardDeepLabCut_UserGuide
+      # - file: docs/maDLC_UserGuide
       - file: docs/Overviewof3D
 
   - caption: GUI workflow
