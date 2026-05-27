@@ -76,14 +76,23 @@ jobs:
 
 
   docs:
-    name: Docs build
+    name: Main docs build
     needs: intelligent-test-selection
     if: needs.intelligent-test-selection.outputs.run_docs == 'true'
-    uses: ./.github/workflows/build-book.yml
+    uses: ./.github/workflows/build-main-docs.yml
     with:
       python-version: "3.10"
       build_dir: "./_build/html"
       upload_artifact: false
+    secrets: inherit
+
+  dev-docs:
+    name: Dev docs build
+    needs: intelligent-test-selection
+    if: needs.intelligent-test-selection.outputs.run_docs == 'true'
+    uses: ./.github/workflows/build-dev-docs.yml
+    with:
+      python-version: "3.10"
     secrets: inherit
 
 
