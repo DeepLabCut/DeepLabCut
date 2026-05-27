@@ -1,6 +1,6 @@
 site_name: DeepLabCut Developer Documentation
 site_description: Developer documentation for DeepLabCut
-site_url: https://deeplabcut.github.io/DeepLabCut/dev
+site_url: https://deeplabcut.github.io/DeepLabCut/dev/
 site_dir: "../_build/dev"
 
 repo_name: DeepLabCut/DeepLabCut
@@ -48,7 +48,8 @@ theme:
 
 plugins:
   - autorefs # link to a heading or attribute (id) from any other page in the site
-  - mike # for versioning
+  - mike:
+      deploy_prefix: dev
   - mkdocs-jupyter # adds support for rendering Jupyter Notebooks
   - api-autonav: # automatically generates API reference navigation based on the file structure
       modules:
@@ -110,7 +111,7 @@ markdown_extensions:
 extra:
   version:
     provider: mike
-    default: latest
+    default: main
 
 copyright: "Copyright © 2026 The DeepLabCut Team"
 

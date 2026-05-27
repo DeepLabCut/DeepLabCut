@@ -66,13 +66,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Deploy latest dev-docs with mike
+      - name: Deploy latest dev-docs with mike (main branch)
         run: |
           mike deploy --push \
             --config-file dev-docs/mkdocs.yml \
             --deploy-prefix dev \
-            latest
+            main
           mike set-default --push \
             --config-file dev-docs/mkdocs.yml \
             --deploy-prefix dev \
-            latest
+            main
