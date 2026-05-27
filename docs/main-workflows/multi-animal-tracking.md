@@ -227,6 +227,3 @@ align: center
 ---
 Short demo of the tracklet refinement workflow.
 ```
-
-```
-```
