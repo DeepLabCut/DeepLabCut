@@ -1,4 +1,4 @@
-name: publish-book
+name: Deploy docs (main + dev-docs latest)
 
 on:
   push:
@@ -9,14 +9,14 @@ permissions:
 
 jobs:
   build:
-    uses: ./.github/workflows/build-book.yml
+    uses: ./.github/workflows/build-main-docs.yml
     with:
       python-version: "3.10"
       build_dir: "./_build/html"
       upload_artifact: true
     secrets: inherit
 
-  deploy-dev-docs:
+  deploy-dev-docs-latest:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -33,9 +33,10 @@ jobs:
       - name: Install system dependencies for mkdocs-material social plugin
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y libcairo2-dev libfreetype6-dev libffi-dev libjpeg-dev libpng-dev libz-dev
+          sudo apt-get install -y libcairo2-dev libfreetype6-dev libffi-dev \
+            libjpeg-dev libpng-dev libz-dev
 
-      - name: Install developer docs dependencies
+      - name: Install dev-docs dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install ".[dev-docs]"
@@ -45,20 +46,19 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Deploy dev-docs with mike
+      - name: Deploy latest dev-docs with mike
         run: |
-          VERSION=$(python -c "import deeplabcut; v=deeplabcut.__version__; print('.'.join(v.split('.')[:2]))")
-          mike deploy --push --update-aliases \
+          mike deploy --push \
             --config-file dev-docs/mkdocs.yml \
             --deploy-prefix dev \
-            "$VERSION" latest
+            latest
           mike set-default --push \
             --config-file dev-docs/mkdocs.yml \
             --deploy-prefix dev \
             latest
 
   deploy-main-docs:
-    needs: [build, deploy-dev-docs]
+    needs: [ build, deploy-dev-docs-latest ]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -69,7 +69,7 @@ jobs:
           name: built-book
           path: site
 
-      - name: Deploy main docs via gh-pages branch
+      - name: Deploy main docs to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

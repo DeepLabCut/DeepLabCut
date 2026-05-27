@@ -1,0 +1,98 @@
+name: Manage dev-docs versions (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action to perform"
+        required: true
+        type: choice
+        options:
+          - deploy-version
+          - delete-version
+      version_label:
+        description: "Version label to deploy or delete (e.g. 3.0)"
+        required: true
+        type: string
+      git_tag:
+        description: "Git tag to check out for deploy-version (e.g. v3.0.0rc14). Ignored for delete-version."
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  deploy-version:
+    if: ${{ inputs.action == 'deploy-version' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate inputs
+        run: |
+          if [ -z "${{ inputs.git_tag }}" ]; then
+            echo "::error::git_tag is required for deploy-version"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.git_tag }}
+          fetch-depth: 0  # mike needs full history to read/write gh-pages branch
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+
+      - name: Install system dependencies for mkdocs-material social plugin
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libcairo2-dev libfreetype6-dev libffi-dev \
+            libjpeg-dev libpng-dev libz-dev
+
+      - name: Install dev-docs dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ".[dev-docs]"
+
+      - name: Configure git for mike
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Deploy version with mike
+        run: |
+          mike deploy --push \
+            --config-file dev-docs/mkdocs.yml \
+            --deploy-prefix dev \
+            "${{ inputs.version_label }}"
+
+  delete-version:
+    if: ${{ inputs.action == 'delete-version' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # mike needs full history to read/write gh-pages branch
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+
+      - name: Install dev-docs dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ".[dev-docs]"
+
+      - name: Configure git for mike
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Delete version with mike
+        run: |
+          mike delete --push \
+            --config-file dev-docs/mkdocs.yml \
+            --deploy-prefix dev \
+            "${{ inputs.version_label }}"
