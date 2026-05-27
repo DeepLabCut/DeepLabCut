@@ -1,4 +1,4 @@
-name: Build (and optionally deploy) Jupyter Book
+name: Build main docs (Jupyter Book)
 
 on:
   workflow_call:
@@ -17,8 +17,6 @@ on:
         required: false
         default: false
         type: boolean
-
-
 
 jobs:
   build:
