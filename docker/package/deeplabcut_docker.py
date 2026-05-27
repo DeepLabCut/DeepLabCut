@@ -162,19 +162,22 @@ def _parse_args() -> tuple[argparse.Namespace, list[str]]:
 def _pull_image(remote: str, *, skip_if_local: bool = True) -> None:
     """Pull the image; skip the pull if it already exists locally and skip_if_local is True."""
     if skip_if_local:
-        r = subprocess.run(_docker() + ["image", "inspect", remote], capture_output=True)
+        r = subprocess.run(
+            _docker() + ["image", "inspect", remote],
+            capture_output=True,
+            text=True,
+        )
         if r.returncode == 0:
             _log(f"Using local image {remote!r} (skipping pull)")
             return
+        if r.stderr:
+            _log(f"`docker image inspect` stderr: {r.stderr.strip()}")
     _log(f"Pulling image {remote!r}...")
     try:
         subprocess.run(_docker() + ["pull", remote], check=True)
-    except subprocess.CalledProcessError:
-        _log(
-            f"Failed to pull image {remote!r}. Please verify that you specified "
-            "a valid image name and tag, e.g. deeplabcut/deeplabcut:latest."
-        )
-        sys.exit(1)
+    except subprocess.CalledProcessError as e:
+        _log(f"Failed to pull image {remote!r}. Verify the image name/tag and that Docker is running and accessible.")
+        sys.exit(e.returncode)
 
 
 def main() -> None:
