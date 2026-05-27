@@ -36,7 +36,6 @@ jobs:
 
       - uses: actions/checkout@v6
         with:
-          ref: ${{ inputs.git_tag }}
           fetch-depth: 0  # mike needs full history to read/write gh-pages branch
 
       - name: Set up Python
@@ -49,6 +48,9 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y libcairo2-dev libfreetype6-dev libffi-dev \
             libjpeg-dev libpng-dev libz-dev
+
+      - name: Check out tagged source tree
+        run: git checkout "${{ inputs.git_tag }}" -- deeplabcut
 
       - name: Install dev-docs dependencies
         run: |
