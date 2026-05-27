@@ -42,8 +42,8 @@ We are primarily a package that enables deep learning-based pose estimation. We 
   - We highly recommend carefully considering which one is best for your needs.
   - For example, a white mouse + black mouse would call for standard, while two black mice would use multi-animal. See {ref}`important-info-regd-usage`.
   - Then pick a user guide:
-    1. [How to use standard DeepLabCut](single-animal-userguide)
-    1. [How to use multi-animal DeepLabCut](multi-animal-userguide)
+    1. {ref}`How to use standard DeepLabCut <file:single-animal-userguide>`
+    1. {ref}`How to use multi-animal DeepLabCut <multi-animal-userguide>`
 
 - To note, as of DLC3+ the single and multi-animal code bases are more integrated and we support **top-down**, **bottom-up**, and a new "hybrid" approach that is state-of-the-art, called **BUCTD** (bottom-up conditional top down)
 
@@ -234,8 +234,8 @@ That's it! Follow the GUI for details
 
 Please decide which mode you want to use DeepLabCut with, and follow one of:
 
-- (1) [How to use standard DeepLabCut](single-animal-userguide)
-- (2) [How to use multi-animal DeepLabCut](multi-animal-userguide)
+- (1) {ref}`How to use standard DeepLabCut <file:single-animal-userguide>`
+- (2) {ref}`How to use multi-animal DeepLabCut <multi-animal-userguide>`
 
 ## Useful links
 
