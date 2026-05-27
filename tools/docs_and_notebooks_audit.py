@@ -446,19 +446,32 @@ def load_existing_rows(csv_path: Path) -> tuple[dict[str, dict[str, str]], list[
     return rows, extra_columns
 
 
-def merged_row(base: dict[str, Any], previous: dict[str, str] | None, extra_columns: Iterable[str]) -> dict[str, Any]:
+def merged_row(
+    base: dict[str, Any],
+    previous: dict[str, str] | None,
+    extra_columns: Iterable[str],
+    force_overwrite_notes: bool = False,
+) -> dict[str, Any]:
     row = dict(base)
 
     if previous:
         prev_notes = (previous.get("notes") or "").strip()
         scanned_notes = (row.get("notes") or "").strip()
+
         if prev_notes and scanned_notes and prev_notes != scanned_notes:
             print(f"WARNING: Notes conflict for {row['path']}:")
             print(f"-  Previous: {prev_notes}")
             print(f"-  Scanned:  {scanned_notes}")
-            print("Preserving previous notes and ignoring scanned notes.")
-        # Preserve human notes if present, otherwise keep scanned notes
-        row["notes"] = prev_notes if prev_notes else scanned_notes
+
+            if force_overwrite_notes:
+                print("Force overwrite enabled; using scanned notes.")
+            else:
+                print("Preserving previous notes and ignoring scanned notes.")
+
+        if force_overwrite_notes:
+            row["notes"] = scanned_notes
+        else:
+            row["notes"] = prev_notes if prev_notes else scanned_notes
 
     for col in extra_columns:
         row[col] = previous.get(col, "") if previous else ""
@@ -492,7 +505,12 @@ def build_row(repo_root: Path, path: Path) -> dict[str, Any]:
 
 
 def export_csv(
-    repo_root: Path, include: list[str], exclude: list[str], out_path: Path, targets: list[str] | None
+    repo_root: Path,
+    include: list[str],
+    exclude: list[str],
+    out_path: Path,
+    targets: list[str] | None,
+    force_overwrite_notes: bool = False,
 ) -> int:
     candidates = iter_candidate_paths(repo_root, include, exclude, targets=targets)
     existing_rows, extra_columns = load_existing_rows(out_path)
@@ -501,7 +519,7 @@ def export_csv(
     for path in candidates:
         base = build_row(repo_root, path)
         previous = existing_rows.get(base["path"])
-        rows.append(merged_row(base, previous, extra_columns))
+        rows.append(merged_row(base, previous, extra_columns, force_overwrite_notes=force_overwrite_notes))
 
     fieldnames = list(GENERATED_COLUMNS) + [c for c in extra_columns if c not in GENERATED_COLUMNS]
 
@@ -536,6 +554,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             "directories, and glob patterns (e.g. docs/page.md, docs/gui/, 'docs/**/*.md')."
         ),
     )
+    parser.add_argument(
+        "--force-overwrite-notes",
+        action="store_true",
+        help=(
+            "By default, if a record already exists in the CSV and has notes, those notes are preserved even if the "
+            "scanned metadata contains notes. This flag forces the scanned notes to overwrite existing notes, "
+            "which can be useful for bulk updates but may lead to loss of manually curated information."
+        ),
+    )
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     repo_root = find_repo_root(Path(args.root))
@@ -545,7 +572,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not out_path.is_absolute():
         out_path = repo_root / out_path
 
-    return export_csv(repo_root, include, exclude, out_path, targets=args.targets)
+    return export_csv(
+        repo_root, include, exclude, out_path, targets=args.targets, force_overwrite_notes=args.force_overwrite_notes
+    )
 
 
 if __name__ == "__main__":
