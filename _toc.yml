@@ -2,125 +2,109 @@ format: jb-book
 root: README
 
 parts:
-- caption: Getting Started
-  chapters:
-  - file: docs/UseOverviewGuide
-  - file: docs/course
+  - caption: Getting started
+    chapters:
+      - file: docs/UseOverviewGuide
+      - file: docs/installation
+        sections:
+          - file: docs/recipes/installTips
+          - file: docs/docker
+      - file: docs/quick-start/index
+        sections:
+          - file: docs/quick-start/single_animal_quick_guide
+          - file: docs/quick-start/tutorial_maDLC
 
-- caption: Installation
-  chapters:
-  - file: docs/installation
-  - file: docs/recipes/installTips
-  - file: docs/docker
+  - caption: Main workflows overview
+    chapters:
+      - file: docs/standardDeepLabCut_UserGuide
+      - file: docs/maDLC_UserGuide
+      - file: docs/Overviewof3D
 
   - caption: GUI workflow
     chapters:
       - file: docs/gui/PROJECT_GUI
-      - file: docs/beginner-guides/beginners-guide
-        sections:
-          - file: docs/beginner-guides/manage-project
-          - file: docs/beginner-guides/labeling
-          - file: docs/beginner-guides/Training-Evaluation
-          - file: docs/beginner-guides/video-analysis
       - file: docs/gui/napari_GUI
+      - file: docs/gui/index
         sections:
-          - file: docs/gui/napari/basic_usage
-          - file: docs/gui/napari/advanced_usage
-          - file: docs/gui/napari/tracking/basic_usage
+          - file: docs/beginner-guides/beginners-guide
+            sections:
+              - file: docs/beginner-guides/manage-project
+              - file: docs/beginner-guides/labeling
+              - file: docs/beginner-guides/Training-Evaluation
+              - file: docs/beginner-guides/video-analysis
 
-- caption: DLC3 PyTorch Specific Docs
-  chapters:
-  - file: docs/pytorch/user_guide.md
-  - file: docs/pytorch/pytorch_config.md
-  - file: docs/pytorch/architectures.md
-
-- caption: Quick Start Tutorials
-  chapters:
-  - file: docs/quick-start/single_animal_quick_guide
-  - file: docs/quick-start/tutorial_maDLC
-
-- caption: "🚀 Beginner's Guide to DeepLabCut"
-  chapters:
-  - file: docs/beginner-guides/beginners-guide
-  - file: docs/beginner-guides/manage-project
-  - file: docs/beginner-guides/labeling
-  - file: docs/beginner-guides/Training-Evaluation
-  - file: docs/beginner-guides/video-analysis
-
-- caption: "🚀 Main Demo Notebooks"
-  chapters:
-  - file: examples/COLAB/COLAB_DEMO_SuperAnimal
-  - file: examples/COLAB/COLAB_DEMO_mouse_openfield
-  - file: examples/COLAB/COLAB_3miceDemo
-  - file: examples/COLAB/COLAB_HumanPose_with_RTMPose
-
-- caption: "🚀 Notebooks For Your Data"
-  chapters:
-  - file: examples/COLAB/COLAB_YOURDATA_SuperAnimal
-  - file: examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis
-  - file: examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis
-
-- caption: "🚀 Special Feature Demos"
-  chapters:
-  - file: examples/COLAB/COLAB_transformer_reID
-  - file: examples/COLAB/COLAB_BUCTD_and_CTD_tracking
-  - file: examples/JUPYTER/Demo_3D_DeepLabCut
-  - file: examples/COLAB/COLAB_DLC_ModelZoo
-
-- caption: "🧑‍🍳 Cookbook (detailed helper guides)"
-  chapters:
-  - file: docs/convert_maDLC
-  - file: docs/recipes/OtherData
-  - file: docs/recipes/io
-  - file: docs/recipes/nn
-  - file: docs/recipes/post
-  - file: docs/recipes/BatchProcessing
-  - file: docs/recipes/DLCMethods
-  - file: docs/recipes/ClusteringNapari
-  - file: docs/recipes/OpenVINO
-  - file: docs/recipes/flip_and_rotate
-  - file: docs/recipes/pose_cfg_file_breakdown
-  - file: docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook
-
-- caption: Hardware Tips
-  chapters:
-  - file: docs/recipes/TechHardware
-
-- caption: DeepLabCut-Live!
-  chapters:
-  - file: docs/dlc-live/deeplabcutlive
-  - file: docs/dlc-live/dlc-live-gui/index
-    sections:
-      - file: docs/dlc-live/dlc-live-gui/quickstart/install
-      - file: docs/dlc-live/dlc-live-gui/user_guide/overview
-      - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/camera_support
+  - caption: Notebooks & Demos
+    chapters:
+      - file: docs/notebooks/main_demos
         sections:
-          - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/opencv_backend
-          - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/basler_backend
-          - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/aravis_backend
-          - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend
-      - file: docs/dlc-live/dlc-live-gui/user_guide/misc/misc_landing
+          - file: examples/COLAB/COLAB_DEMO_SuperAnimal
+          - file: examples/COLAB/COLAB_DEMO_mouse_openfield
+          - file: examples/COLAB/COLAB_3miceDemo
+          - file: examples/COLAB/COLAB_HumanPose_with_RTMPose
+      - file: docs/notebooks/your_data
         sections:
-          - file: docs/dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads
-          - file: docs/dlc-live/dlc-live-gui/user_guide/misc/timestamp_format
+          - file: examples/COLAB/COLAB_YOURDATA_SuperAnimal
+          - file: examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis
+          - file: examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis
+      - file: docs/notebooks/extra
+        sections:
+          - file: examples/COLAB/COLAB_transformer_reID
+          - file: examples/COLAB/COLAB_BUCTD_and_CTD_tracking
+          - file: examples/JUPYTER/Demo_3D_DeepLabCut
+          - file: examples/COLAB/COLAB_DLC_ModelZoo
 
-- caption: "🦄 DeepLabCut Model Zoo"
-  chapters:
-  - file: docs/ModelZoo
-  - file: docs/recipes/UsingModelZooPupil
+  - caption: Advanced, Performance & Live
+    chapters:
+      - file: docs/pytorch/index
+        sections:
+          - file: docs/pytorch/user_guide.md
+          - file: docs/pytorch/pytorch_config.md
+          - file: docs/pytorch/architectures.md
+          - file: docs/pytorch/Benchmarking_shuffle_guide
+      - file: docs/benchmark
+      - file: docs/ModelZoo
+        sections:
+          - file: docs/recipes/UsingModelZooPupil
+      - file: docs/dlc-live/deeplabcutlive
+      - file: docs/dlc-live/dlc-live-gui/index
+        sections:
+          - file: docs/dlc-live/dlc-live-gui/quickstart/install
+          - file: docs/dlc-live/dlc-live-gui/user_guide/overview
+          - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/camera_support
+            sections:
+              - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/opencv_backend
+              - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/basler_backend
+              - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/aravis_backend
+              - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend
+          - file: docs/dlc-live/dlc-live-gui/user_guide/misc/misc_landing
+            sections:
+              - file: docs/dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads
+              - file: docs/dlc-live/dlc-live-gui/user_guide/misc/timestamp_format
+      - file: docs/recipes/TechHardware
 
-- caption: DeepLabCut Benchmarking
-  chapters:
-  - file: docs/benchmark
-  - file: docs/pytorch/Benchmarking_shuffle_guide
+  - caption: Additional guides (Recipes)
+    chapters:
+      - file: docs/recipes/index
+        sections:
+          - file: docs/HelperFunctions
+          - file: docs/convert_maDLC
+          - file: docs/recipes/OtherData
+          - file: docs/recipes/io
+          - file: docs/recipes/nn
+          - file: docs/recipes/post
+          - file: docs/recipes/BatchProcessing
+          - file: docs/recipes/DLCMethods
+          - file: docs/recipes/ClusteringNapari
+          - file: docs/recipes/OpenVINO
+          - file: docs/recipes/flip_and_rotate
+          - file: docs/recipes/pose_cfg_file_breakdown
+          - file: docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook
+          - file: docs/course
 
-- caption: "Mission & Contribute"
-  chapters:
-  - file: docs/MISSION_AND_VALUES
-  - file: docs/roadmap
-  - file: docs/Governance
-  - file: CONTRIBUTING
-
-- caption: Citations for DeepLabCut
-  chapters:
-    - file: docs/citation
+  - caption: Project & Community
+    chapters:
+      - file: docs/MISSION_AND_VALUES
+      - file: docs/roadmap
+      - file: docs/Governance
+      - file: CONTRIBUTING
+      - file: docs/citation

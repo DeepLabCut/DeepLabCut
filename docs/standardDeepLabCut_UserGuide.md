@@ -11,7 +11,7 @@ deeplabcut:
 
 (single-animal-userguide)=
 
-# DeepLabCut User Guide (for single animal projects)
+# Single animal projects
 
 This document covers single/standard DeepLabCut use. If you have a complicated multi-animal scenario (i.e., they look
 the same), then please see our [maDLC user guide](multi-animal-userguide).
