@@ -74,7 +74,7 @@ and you can add more easily in our new model registry). Also check out the expla
 
 **AnimalTokenPose**
 
-- Adapted from [Li, Yanjie, et al. "Tokenpose: Learning keypoint tokens for human pose estimation." Proceedings of the IEEE/CVF International conference on computer vision. 2021.](https://arxiv.org/abs/2104.03516) as in Ye et al. "SuperAnimal pretrained pose estimation models for behavioral analysis." Nature Communications. 2024\](https://arxiv.org/abs/2203.07436)
+- Adapted from [Li, Yanjie, et al. "Tokenpose: Learning keypoint tokens for human pose estimation." Proceedings of the IEEE/CVF International conference on computer vision. 2021.](https://arxiv.org/abs/2104.03516) as in [Ye et al. "SuperAnimal pretrained pose estimation models for behavioral analysis." Nature Communications. 2024](https://arxiv.org/abs/2203.07436)
 - One variant is implemented as: `animal_tokenpose_base` for video inference only (we don't support directly training this within deeplabcut)
 
 ## Information on Single Animal Models
