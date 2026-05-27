@@ -6,7 +6,7 @@ deeplabcut:
   visibility: online
   status: review_needed
   recommendation: verify
-  notes: Sligthly redundant with CONTRIBUTING.md, style may need adjusted based on the rest of the repo.
+  notes: Slightly redundant with CONTRIBUTING.md, style may need adjusted based on the rest of the repo.
 ---
 
 # Publishing Notebooks into the Main DLC Cookbook
