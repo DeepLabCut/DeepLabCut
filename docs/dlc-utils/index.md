@@ -18,7 +18,14 @@ align: right
 ---
 ```
 
-This repository contains various scripts as well as links to other packages related to [DeepLabCut](https://github.com/DeepLabCut/DeepLabCut). Feel free to contribute your own analysis methods, and perhaps some short notebook of how to use it. Thanks!
+The DeepLabCut-Utils repository contains various scripts as well as links to other packages related to [DeepLabCut](https://github.com/DeepLabCut/DeepLabCut). Feel free to contribute your own analysis methods, and perhaps some short notebook of how to use it. Thanks!
+
+```{admonition} DLC-Utils
+---
+class: tip
+---
+[Link to repository](https://github.com/DeepLabCut/DLCutils)
+```
 
 ```{caution}
 Please direct inquiries to the **contributors/code maintainers of that code**. Note that the software(s) are provided "as is", without warranty of any kind, express or implied.
@@ -33,6 +40,19 @@ These two scripts illustrate how to train, test, and analyze videos for multiple
 - [Code: `scale_training_and_evaluation.py`](https://github.com/DeepLabCut/DLCutils/blob/master/SCALE_YOUR_ANALYSIS/scale_training_and_evaluation.py)
 
 Contributed by [Alexander Mathis](https://github.com/AlexEMG)
+
+## Using DLC + XROMM_DLCTools + xmalab
+
+> Contributed by [@homfunc](https://github.com/homfunc)
+
+The DeepLabCut repository can also be used as a sibling checkout together with:
+
+- `../XROMM_DLCTools`
+- `../xmalab`
+
+In that local layout, `XROMM_DLCTools` uses the optional `dlc` dependency group to import this checkout directly, and its baseline harness runs both a DeepLabCut smoke scenario and a broader end-to-end local workflow integration scenario.
+
+See {ref}`file:xamalab-dlc-integration` for the local integration notes and exact commands.
 
 ## Using your DLC outputs, loading, simple ROI analysis, visualization examples
 

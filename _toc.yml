@@ -106,6 +106,8 @@ parts:
           - file: docs/recipes/pose_cfg_file_breakdown
           # - file: docs/course
       - file: docs/dlc-utils/index
+        sections:
+          - file: docs/dlc-utils/XROMM/usage
 
   - caption: Project & Community
     chapters:
