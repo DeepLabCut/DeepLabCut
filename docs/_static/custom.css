@@ -16,10 +16,10 @@ html[data-theme="light"] {
   --single-animal-title-bg: #ead7ff;
   --single-animal-title-text: #4b236f;
 
-  --multi-animal-border: #2f9e44;
-  --multi-animal-bg: #effaf1;
-  --multi-animal-title-bg: #d8f5dc;
-  --multi-animal-title-text: #14532d;
+  --multi-animal-border: #57c4be;
+  --multi-animal-bg: #e8f8f7;
+  --multi-animal-title-bg: #21a197;
+  --multi-animal-title-text: #000000;
 }
 
 html[data-theme="dark"] {
@@ -38,10 +38,10 @@ html[data-theme="dark"] {
   --single-animal-title-bg: rgba(241, 83, 255, 0.32);
   --single-animal-title-text: #f3e8ff;
 
-  --multi-animal-border: #74c69d;
+  --multi-animal-border: #57c4be;
   --multi-animal-bg: rgba(72, 86, 107, 0.16);
-  --multi-animal-title-bg: rgba(47, 158, 68, 0.30);
-  --multi-animal-title-text: #dcfce7;
+  --multi-animal-title-bg: #21a197;
+  --multi-animal-title-text: #000000;
 }
 
 /* Sidebar */
