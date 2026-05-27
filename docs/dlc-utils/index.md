@@ -98,9 +98,9 @@ Deep learning based behavioral analysis enables high precision rodent tracking a
 - [Paper](https://www.biorxiv.org/content/10.1101/2020.01.21.913624v1)
 - [Code: `DLCAnalyzer`](https://github.com/ETHZ-INS/DLCAnalyzer)
 
-### Behavior analysis with machine learning classifiers (SIMBA)
+### Behavior analysis with machine learning classifiers (SimBA)
 
-A pipeline for using pose estimation (i.e. DeepLabCut) then behavioral annotation and generation of supervised machine-learning-based classifiers. \<-- you can use the outputs of DLC to feed directly into SIMBA (in Python).
+A pipeline for using pose estimation (i.e. DeepLabCut) then behavioral annotation and generation of supervised machine-learning-based classifiers. \<-- you can use the outputs of DLC to feed directly into SimBA (in Python).
 
 Code written by: [Simon Nilsson](https://github.com/sronilsson) (please direct use questions to Simon).
 
