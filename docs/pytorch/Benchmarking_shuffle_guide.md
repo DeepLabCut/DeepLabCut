@@ -6,10 +6,10 @@ deeplabcut:
   visibility: online
   status: viable
   recommendation: move
-  notes: Useful and well-written, but it could be better groped with other tutorials/guides rather than being a PyTorch docs only page, as its contents are somewhat inbetween the two backends.
+  notes: Useful and well-written, but it could be better grouped with other tutorials/guides rather than being a PyTorch docs only page, as its contents are somewhat in between the two backends.
 ---
 
-# DeepLabCut Benchmarking - User Guide
+# Benchmarking user guide
 
 ## Reasoning for benchmarking models in DLC (across DLC versions and architectures)
 

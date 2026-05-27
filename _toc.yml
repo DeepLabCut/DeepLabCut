@@ -9,10 +9,10 @@ parts:
         sections:
           # - file: docs/recipes/installTips
           - file: docs/docker
-      - file: docs/quick-start/index
-        sections:
-          - file: docs/quick-start/single_animal_quick_guide
-          - file: docs/quick-start/tutorial_maDLC
+      # - file: docs/quick-start/index
+        # sections:
+          # - file: docs/quick-start/single_animal_quick_guide
+          # - file: docs/quick-start/tutorial_maDLC
 
   - caption: Main workflows overview
     chapters:
@@ -33,6 +33,43 @@ parts:
         sections:
           - file: docs/gui/napari/basic_usage
           - file: docs/gui/napari/advanced_usage
+
+
+  - caption: Notebooks & Demos
+    chapters:
+      - file: docs/notebooks/your_data
+        sections:
+          - file: examples/COLAB/COLAB_YOURDATA_SuperAnimal
+          - file: examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis
+          - file: examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis
+      - file: docs/notebooks/main_demos
+        sections:
+          - file: examples/COLAB/COLAB_DEMO_SuperAnimal
+          - file: examples/COLAB/COLAB_DEMO_mouse_openfield
+          - file: examples/COLAB/COLAB_3miceDemo
+          - file: examples/COLAB/COLAB_HumanPose_with_RTMPose
+      - file: docs/notebooks/extra
+        sections:
+          - file: examples/COLAB/COLAB_transformer_reID
+          - file: examples/COLAB/COLAB_BUCTD_and_CTD_tracking
+          - file: examples/JUPYTER/Demo_3D_DeepLabCut
+          - file: examples/COLAB/COLAB_DLC_ModelZoo
+
+  - caption: DeepLabCut 3.0 - PyTorch guides
+    chapters:
+      - file: docs/pytorch/index
+        sections:
+          - file: docs/pytorch/user_guide.md
+          - file: docs/pytorch/pytorch_config.md
+          - file: docs/pytorch/architectures.md
+          - file: docs/pytorch/Benchmarking_shuffle_guide
+
+  - caption: Advanced, Performance & Live
+    chapters:
+      - file: docs/ModelZoo
+        sections:
+          - file: docs/recipes/UsingModelZooPupil
+      - file: docs/dlc-live/deeplabcutlive
       - file: docs/dlc-live/dlc-live-gui/index
         sections:
           - file: docs/dlc-live/dlc-live-gui/quickstart/install
@@ -47,40 +84,6 @@ parts:
             sections:
               - file: docs/dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads
               - file: docs/dlc-live/dlc-live-gui/user_guide/misc/timestamp_format
-
-
-  - caption: Notebooks & Demos
-    chapters:
-      - file: docs/notebooks/main_demos
-        sections:
-          - file: examples/COLAB/COLAB_DEMO_SuperAnimal
-          - file: examples/COLAB/COLAB_DEMO_mouse_openfield
-          - file: examples/COLAB/COLAB_3miceDemo
-          - file: examples/COLAB/COLAB_HumanPose_with_RTMPose
-      - file: docs/notebooks/your_data
-        sections:
-          - file: examples/COLAB/COLAB_YOURDATA_SuperAnimal
-          - file: examples/COLAB/COLAB_YOURDATA_TrainNetwork_VideoAnalysis
-          - file: examples/COLAB/COLAB_YOURDATA_maDLC_TrainNetwork_VideoAnalysis
-      - file: docs/notebooks/extra
-        sections:
-          - file: examples/COLAB/COLAB_transformer_reID
-          - file: examples/COLAB/COLAB_BUCTD_and_CTD_tracking
-          - file: examples/JUPYTER/Demo_3D_DeepLabCut
-          - file: examples/COLAB/COLAB_DLC_ModelZoo
-
-  - caption: Advanced, Performance & Live
-    chapters:
-      - file: docs/ModelZoo
-        sections:
-          - file: docs/recipes/UsingModelZooPupil
-      - file: docs/dlc-live/deeplabcutlive
-      - file: docs/pytorch/index
-        sections:
-          - file: docs/pytorch/user_guide.md
-          - file: docs/pytorch/pytorch_config.md
-          - file: docs/pytorch/architectures.md
-          - file: docs/pytorch/Benchmarking_shuffle_guide
       - file: docs/benchmark
       - file: docs/recipes/TechHardware
 
@@ -88,6 +91,7 @@ parts:
     chapters:
       - file: docs/recipes/index
         sections:
+          - file: docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook
           - file: docs/HelperFunctions
           - file: docs/convert_maDLC
           - file: docs/recipes/OtherData
@@ -100,7 +104,6 @@ parts:
           - file: docs/recipes/OpenVINO
           - file: docs/recipes/flip_and_rotate
           - file: docs/recipes/pose_cfg_file_breakdown
-          - file: docs/recipes/publishing_notebooks_into_the_DLC_main_cookbook
           # - file: docs/course
 
   - caption: Project & Community
