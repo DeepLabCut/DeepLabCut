@@ -23,8 +23,8 @@ parts:
   - caption: GUI workflow
     chapters:
       - file: docs/gui/PROJECT_GUI
-      - file: docs/beginner-guides/beginners-guide
         sections:
+          - file: docs/beginner-guides/beginners-guide
           - file: docs/beginner-guides/manage-project
           - file: docs/beginner-guides/labeling
           - file: docs/beginner-guides/Training-Evaluation
