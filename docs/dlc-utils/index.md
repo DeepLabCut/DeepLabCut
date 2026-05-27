@@ -28,7 +28,7 @@ class: tip
 ```
 
 ```{caution}
-Please direct inquiries to the **contributors/code maintainers of that code**. Note that the software(s) are provided "as is", without warranty of any kind, express.
+Please direct inquiries to the **contributors/code maintainers of that code**. Note that the software(s) are provided "as is", without warranty of any kind, express or implied.
 The DeepLabCut team is not responsible for the maintenance of these packages, and cannot guarantee that they will work with present & future versions of DeepLabCut.
 ```
 
@@ -104,7 +104,7 @@ Contributed by [Mackenzie Mathis](https://github.com/MMathisLab)
 
 ### Behavior clustering with B-SOiD
 
-B-SOiD: An Open Source Unsupervised Algorithm for Discovery of Spontaneous Behaviors \<-- you can use the outputs of DLC to feed directly into B-SOiD (in MATLAB).
+B-SOiD is an open source unsupervised algorithm for discovery of spontaneous behaviors, and you can use the outputs of DLC to feed directly into B-SOiD in MATLAB.
 
 - [Paper](https://www.biorxiv.org/content/10.1101/770271v1.abstract)
 - [Code: `B-SOiD`](https://github.com/YttriLab/B-SOiD)
@@ -118,9 +118,9 @@ Deep learning based behavioral analysis enables high precision rodent tracking a
 - [Paper](https://www.biorxiv.org/content/10.1101/2020.01.21.913624v1)
 - [Code: `DLCAnalyzer`](https://github.com/ETHZ-INS/DLCAnalyzer)
 
-### Behavior analysis with machine learning classifiers (SIMBA)
+### Behavior analysis with machine learning classifiers (SimBA)
 
-A pipeline for using pose estimation (i.e. DeepLabCut) then behavioral annotation and generation of supervised machine-learning-based classifiers. \<-- you can use the outputs of DLC to feed directly into SIMBA (in Python).
+A pipeline for using pose estimation (i.e. DeepLabCut) then behavioral annotation and generation of supervised machine-learning-based classifiers. \<-- you can use the outputs of DLC to feed directly into SimBA (in Python).
 
 Code written by: [Simon Nilsson](https://github.com/sronilsson) (please direct use questions to Simon).
 
