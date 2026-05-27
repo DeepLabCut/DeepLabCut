@@ -350,41 +350,6 @@ Activate! `conda activate DEEPLABCUT` and then run: `conda install -c conda-forg
 
 Then run `python -m deeplabcut` which launches the DLC GUI.
 
-## DeepLabCut MacOS M-chip installation environment instructions:
-
-This only assumes you have anaconda installed. Use the `DEEPLABCUT_M1.yaml` conda file
-if you have a newer MacBook (with an M1, M2, M3, M4 chip or more later), and follow
-these steps:
-
-(1) git clone the deeplabcut cut repo:
-
-```bash
-git clone https://github.com/DeepLabCut/DeepLabCut.git
-```
-
-(2) in the program terminal run: `cd DeepLabCut/conda-environments`
-
-(3) Then, run:
-
-```bash
-conda env create -f DEEPLABCUT.yaml
-```
-
-(4) Finally, activate your environment and to launch DLC with the GUI
-
-```bash
-conda activate DEEPLABCUT
-python -m deeplabcut
-```
-
-The GUI will open. Of course, you can also run DeepLabCut in headless mode.
-
-If **you want to use the TensorFlow engine**, you'll need to install the `apple_mchips`
-extra with DeepLabCut. You can do so by running:
-
-```bash
-pip install deeplabcut[apple_mchips]
-```
 
 ## How to confirm that your GPU is being used by DeepLabCut
 
