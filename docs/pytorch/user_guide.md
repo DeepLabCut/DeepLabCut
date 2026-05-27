@@ -7,7 +7,7 @@ deeplabcut:
 
 (dlc3-user-guide)=
 
-# DeepLabCut 3.0 - PyTorch User Guide
+# What is new in DeepLabCut 3.0
 
 ## Using DeepLabCut 3.0
 
@@ -74,7 +74,9 @@ from deeplabcut.pose_estimation_pytorch import available_models
 print(available_models())
 ```
 
-### Development State and Road Map 🚧
+<!-- Roadmap is outdated -->
+
+<!-- ### Development State and Road Map 🚧
 
 The table below describes the DeepLabCut API methods that have been implemented for the
 PyTorch engine, as well as indications which options are not yet implemented, and which
@@ -95,4 +97,4 @@ parameters are not valid for the DLC 3.0 PyTorch API.
 | `visualize_locrefs`            |     🟢      |                                                                                                    |                                                     |
 | `visualize_paf`                |     🟢      |                                                                                                    |                                                     |
 | `extract_save_all_maps`        |     🟢      |                                                                                                    |                                                     |
-| `export_model`                 |     🟢      |                                                                                                    |                                                     |
+| `export_model`                 |     🟢      |                                                                                                    |                                                     | -->
