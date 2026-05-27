@@ -34,10 +34,6 @@ def test_package_specs_for_update_strips_whitespace():
     [
         ({}, ["pip"]),
         ({"uv": "/mock/bin/uv"}, ["uv", "pip"]),
-        (
-            {"uv": "/mock/bin/uv"},
-            ["uv", "pip"],
-        ),
     ],
 )
 def test_build_update_commands_backend_order(monkeypatch, available_installers, expected_backends):
