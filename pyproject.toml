@@ -80,6 +80,7 @@ docs = [
   "sphinxcontrib-mermaid",
 ]
 dev-docs = [
+  "black>=24",
   "mike>=2.1",
   "mkdocs>=1.6",
   "mkdocs-api-autonav>=0.1",

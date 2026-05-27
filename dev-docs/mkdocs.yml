@@ -9,8 +9,8 @@ repo_url: https://github.com/DeepLabCut/DeepLabCut
 theme:
   name: material
   custom_dir: "docs/theme"
-  logo: docs/assets/logo.png
-  favicon: docs/assets/favicon.ico
+  logo: assets/logo.png
+  favicon: assets/favicon.ico
 
   palette:
     - media: "(prefers-color-scheme: light)"
@@ -73,9 +73,14 @@ plugins:
           options:
             summary: true
             show_root_heading: true
+            show_symbol_type_heading: true
+            parameter_headings: true
             docstring_options:
               returns_multiple_items: false
             docstring_section_style: table
+            separate_signature: true
+            line_length: 88
+            show_signature_annotations: true
           inventories:
             - url: https://docs.python.org/3/objects.inv
               domains: [py, std]
