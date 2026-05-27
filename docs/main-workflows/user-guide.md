@@ -95,7 +95,7 @@ The 5 phases of the DeepLabCut workflow. The expected outputs are indicated in t
 
 ```{admonition} Automated multi-animal tracking
 ---
-class: multi-animal
+class-container: multi-animal
 ---
   For multi-animal projects, the video-analysis step contains an automated tracking step. More information is available in the {ref}`multi-animal tracking guide <file:multi-animal-tracking>`.
 ```
@@ -810,7 +810,7 @@ class: dropdown
 
 ______________________________________________________________________
 
-#### (G) Train The Network
+#### (G) Train the Network
 
 ##### Overview
 
@@ -1057,9 +1057,9 @@ before animal tracking.
 - Make sure that the loss has already converged
 - Consider labeling additional images and make another iteration of the training dataset
 
-```{dropdown} Multi-animal skeleton selection and map inspection
+```{dropdown} : Skeleton selection and map inspection
 ---
-class: multi-animal
+class-container: multi-animal
 ---
 In multi-animal projects, model evaluation is crucial because this is when the
 data-driven selection of the **optimal skeleton** is carried out. Skipping this step
@@ -1101,7 +1101,7 @@ ______________________________________________________________________
 
 ### Phase 4 — Analysis
 
-#### (I) Analyze new Videos
+#### (I) Analyze New Videos
 
 ##### Overview
 
@@ -1178,10 +1178,8 @@ If you have large frames and the animal/object occupies a smaller fraction, you 
 field experiment but only track the mouse, this will speed up your analysis (also helpful for real-time applications).
 To use this simply add `dynamic=(True,.5,10)` when you call `analyze_videos`.
 
-```python
-"""
+```text
 dynamic: tuple containing (state, detectionthreshold, margin)
-"""
 ```
 
 If `state` is `True`, then dynamic cropping will be performed.
@@ -1421,7 +1419,7 @@ There is also a GUI to help you do this, used by calling `deeplabcut.SkeletonBui
 
 Here is how the `config.yaml` additions/edits should look (for example, on the Openfield demo data we provide):
 
-```python
+```yaml
 # Plotting configuration
 skeleton:
   - ["snout", "leftear"]
@@ -1499,7 +1497,7 @@ can use the function by:
 
 ```python
 deeplabcut.analyzeskeleton(
-    config,
+    config_path,
     video,
     video_extensions="avi",
     shuffle=1,
@@ -1611,19 +1609,19 @@ ______________________________________________________________________
 
 Based on the performance of DeepLabCut, four scenarios are possible:
 
-- (A) Visible body part with accurate DeepLabCut prediction. These labels do not need any modifications.
+1. Visible body part with accurate DeepLabCut prediction. These labels do not need any modifications.
 
-- (B) Visible body part but wrong DeepLabCut prediction. Move the label’s location to the actual position of the
-  body part.
+1. Visible body part but wrong DeepLabCut prediction. Move the label’s location to the actual position of the
+   body part.
 
-- (C) Invisible, occluded body part. Remove the predicted label by DeepLabCut with a middle click. Every predicted
-  label is shown, even when DeepLabCut is uncertain. This is necessary, so that the user can potentially move
-  the predicted label. However, to help the user to remove all invisible body parts the low-likelihood predictions
-  are shown as open circles (rather than disks).
+1. Invisible, occluded body part. Remove the predicted label by DeepLabCut with a middle click. Every predicted
+   label is shown, even when DeepLabCut is uncertain. This is necessary, so that the user can potentially move
+   the predicted label. However, to help the user to remove all invisible body parts the low-likelihood predictions
+   are shown as open circles (rather than disks).
 
-- (D) Invalid images: In the unlikely event that there are any invalid images, the user should remove such an image
-  and their corresponding predictions, if any. Here, the GUI will prompt the user to remove an image identified
-  as invalid.
+1. Invalid images: In the unlikely event that there are any invalid images, the user should remove such an image
+   and their corresponding predictions, if any. Here, the GUI will prompt the user to remove an image identified
+   as invalid.
 
 The labels for extracted putative outlier frames can be refined by opening the GUI:
 
