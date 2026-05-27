@@ -13,20 +13,20 @@ parts:
   - file: docs/recipes/installTips
   - file: docs/docker
 
-- caption: Main User Guides
-  chapters:
-  - file: docs/standardDeepLabCut_UserGuide
-  - file: docs/maDLC_UserGuide
-  - file: docs/Overviewof3D
-  - file: docs/HelperFunctions
-
-- caption: Graphical User Interfaces (GUIs)
-  chapters:
-  - file: docs/gui/PROJECT_GUI
-  - file: docs/gui/napari_GUI
-    sections:
-      - file: docs/gui/napari/basic_usage
-      - file: docs/gui/napari/advanced_usage
+  - caption: GUI workflow
+    chapters:
+      - file: docs/gui/PROJECT_GUI
+      - file: docs/beginner-guides/beginners-guide
+        sections:
+          - file: docs/beginner-guides/manage-project
+          - file: docs/beginner-guides/labeling
+          - file: docs/beginner-guides/Training-Evaluation
+          - file: docs/beginner-guides/video-analysis
+      - file: docs/gui/napari_GUI
+        sections:
+          - file: docs/gui/napari/basic_usage
+          - file: docs/gui/napari/advanced_usage
+          - file: docs/gui/napari/tracking/basic_usage
 
 - caption: DLC3 PyTorch Specific Docs
   chapters:

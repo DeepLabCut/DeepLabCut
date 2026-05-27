@@ -9,7 +9,7 @@ deeplabcut:
 
 (file:napari-dlc-basic-usage)=
 
-# napari-DLC - Basic usage
+# Basic usage
 
 `napari-deeplabcut` is a napari plugin for keypoint annotation and label refinement. It can be used either as part of the DeepLabCut GUI or as a standalone annotation tool.
 
@@ -62,6 +62,8 @@ If you drag and drop a compatible labeled-data folder, the widget opens automati
 ```{important}
 To familiarize yourself with napari, we recommend checking out the [official napari documentation and tutorials](https://napari.org/stable/usage.html).
 ```
+
+(sec:napari-dlc-basic-workflow)=
 
 ## Recommended basic labeling workflow
 
