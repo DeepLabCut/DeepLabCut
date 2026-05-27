@@ -159,21 +159,22 @@ def _parse_args() -> tuple[argparse.Namespace, list[str]]:
     return parser.parse_known_args()
 
 
-def _pull_image_if_not_exists(remote: str) -> None:
-    """Pull the image if it does not exist locally."""
-    _log(f"Pulling image {remote!r} if it does not exist locally...")
-    r = subprocess.run(_docker() + ["image", "inspect", remote], capture_output=True)
-    if r.returncode != 0:
-        try:
-            subprocess.run(_docker() + ["pull", remote], check=True)
-        except subprocess.CalledProcessError:
-            _log(
-                f"Failed to pull image {remote!r}. Please verify that you specified "
-                "a valid image name and tag, e.g. deeplabcut/deeplabcut:latest."
-            )
-            sys.exit(1)
-    else:
-        _log(f"Using local image {remote!r} (skipping pull)")
+def _pull_image(remote: str, *, skip_if_local: bool = True) -> None:
+    """Pull the image; skip the pull if it already exists locally and skip_if_local is True."""
+    if skip_if_local:
+        r = subprocess.run(_docker() + ["image", "inspect", remote], capture_output=True)
+        if r.returncode == 0:
+            _log(f"Using local image {remote!r} (skipping pull)")
+            return
+    _log(f"Pulling image {remote!r}...")
+    try:
+        subprocess.run(_docker() + ["pull", remote], check=True)
+    except subprocess.CalledProcessError:
+        _log(
+            f"Failed to pull image {remote!r}. Please verify that you specified "
+            "a valid image name and tag, e.g. deeplabcut/deeplabcut:latest."
+        )
+        sys.exit(1)
 
 
 def main() -> None:
@@ -184,7 +185,8 @@ def main() -> None:
 
     remote = args.image or _remote_tag(mode)
     local = f"deeplabcut-local-{mode}"
-    _pull_image_if_not_exists(remote)
+    try_local_image = bool(args.image or os.environ.get("DLC_VERSION", "").strip())
+    _pull_image(remote, skip_if_local=try_local_image)
     if mode == "notebook":
         _warn_if_not_jupyter_image(remote)
     _build_user_image(remote, local)
