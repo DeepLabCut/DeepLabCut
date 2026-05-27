@@ -52,7 +52,7 @@ RUN pip install "notebook<7"
 EXPOSE 8888
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8888/api/', timeout=3).read()" || exit 1
-ENTRYPOINT jupyter notebook --no-browser --NotebookApp.token="${NOTEBOOK_TOKEN}" --ip 0.0.0.0
+ENTRYPOINT exec jupyter notebook --no-browser --NotebookApp.token="${NOTEBOOK_TOKEN}" --ip 0.0.0.0
 
 # ── test (CI only, not published to Hub) ─────────────────────────────────────
 FROM core AS test
