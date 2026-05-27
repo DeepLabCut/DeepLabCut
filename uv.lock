@@ -1183,7 +1183,7 @@ wheels = [
 
 [[package]]
 name = "deeplabcut"
-version = "3.0.0rc14"
+version = "3.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "albumentations" },
