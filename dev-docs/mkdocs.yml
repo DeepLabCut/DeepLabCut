@@ -109,7 +109,8 @@ markdown_extensions:
 
 extra:
   version:
-    provider: mike # TODO: use mike to manage versions
+    provider: mike
+    default: latest
 
 copyright: "Copyright © 2026 The DeepLabCut Team"
 

@@ -16,12 +16,14 @@ jobs:
       upload_artifact: true
     secrets: inherit
 
-  build-dev-docs:
+  deploy-dev-docs:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # mike needs full history to read/write gh-pages branch
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -38,20 +40,25 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install ".[dev-docs]"
 
-      - name: Build developer docs
+      - name: Configure git for mike
         run: |
-          mkdocs build -v -f dev-docs/mkdocs.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Upload developer docs artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: built-dev-docs
-          path: _build/dev
-          if-no-files-found: error
-          retention-days: 1
+      - name: Deploy dev-docs with mike
+        run: |
+          VERSION=$(python -c "import deeplabcut; v=deeplabcut.__version__; print('.'.join(v.split('.')[:2]))")
+          mike deploy --push --update-aliases \
+            --config-file dev-docs/mkdocs.yml \
+            --deploy-prefix dev \
+            "$VERSION" latest
+          mike set-default --push \
+            --config-file dev-docs/mkdocs.yml \
+            --deploy-prefix dev \
+            latest
 
-  deploy:
-    needs: [build, build-dev-docs]
+  deploy-main-docs:
+    needs: [build, deploy-dev-docs]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -62,14 +69,9 @@ jobs:
           name: built-book
           path: site
 
-      - name: Download built developer docs artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: built-dev-docs
-          path: site/dev
-
-      - name: Deploy via gh-pages branch
+      - name: Deploy main docs via gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: site
+          keep_files: true  # preserve /dev/ tree managed by mike
