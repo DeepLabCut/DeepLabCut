@@ -3,6 +3,7 @@ deeplabcut:
   last_metadata_updated: '2026-03-17'
   ignore: false
 ---
+
 # DeepLabCut-live-GUI
 
 A graphical application for **real-time pose estimation with DeepLabCut** using one or more cameras.
@@ -20,7 +21,7 @@ This GUI is designed for **scientists and experimenters** who want to preview, r
 Please be aware of the {ref}`sec:dlclivegui-index-limitations`
 ```
 
----
+______________________________________________________________________
 
 ## Description
 
@@ -34,16 +35,17 @@ Please be aware of the {ref}`sec:dlclivegui-index-limitations`
 - **Optional processor plugins** to extend behavior (e.g. remote control, triggers)
 
 The application is built with **PySide6 (Qt)** and is intended for interactive experimental use rather than offline batch processing.
+
 <!-- TODO mention and link to DLC live standalone -->
 
 ### Typical workflow
 
 1. **Install** the application and required camera backends
-2. **Configure cameras** (single or multi-camera)
-3. **Select a DeepLabCut Live model**
-4. **Start preview** and verify frame rate
-5. **Run pose inference** on a selected camera
-6. **Record video** (optionally with overlays)
+1. **Configure cameras** (single or multi-camera)
+1. **Select a DeepLabCut Live model**
+1. **Start preview** and verify frame rate
+1. **Run pose inference** on a selected camera
+1. **Record video** (optionally with overlays)
    - With **organized results** by session and run
 
 Each of these steps is covered in the *{doc}`Quickstart <quickstart/install>`*
@@ -55,8 +57,10 @@ and *{doc}`User Guide <user_guide/overview>`* sections of this documentation.
 - Experimentalists running real-time tracking
 - Anyone who wants a **GUI-first** workflow for DeepLabCut Live
 
----
+______________________________________________________________________
+
 (sec:dlclivegui-index-limitations)=
+
 ## Current limitations
 
 Before getting started, be aware of the following constraints:
@@ -71,7 +75,7 @@ Before getting started, be aware of the following constraints:
 - **Performance** depends on camera resolution, frame rate, GPU availability, and codec choice
   - Expect bottlenecks with heavy models, multiple high-resolution cameras, or CPU-only inference.
 
----
+______________________________________________________________________
 
 ## Feedback, issues, and contributions
 
