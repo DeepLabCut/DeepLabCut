@@ -16,7 +16,27 @@ jobs:
       upload_artifact: true
     secrets: inherit
 
+  deploy-main-docs:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download built Jupyter Book artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: built-book
+          path: site
+
+      - name: Deploy main docs to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: site
+          keep_files: true  # preserve /dev/ versions managed by mike
+
   deploy-dev-docs-latest:
+    needs: deploy-main-docs
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -56,22 +76,3 @@ jobs:
             --config-file dev-docs/mkdocs.yml \
             --deploy-prefix dev \
             latest
-
-  deploy-main-docs:
-    needs: [ build, deploy-dev-docs-latest ]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Download built Jupyter Book artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: built-book
-          path: site
-
-      - name: Deploy main docs to gh-pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: site
-          keep_files: true  # preserve /dev/ tree managed by mike
