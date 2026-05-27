@@ -127,7 +127,7 @@ Do not expose port 8888 to the internet (e.g. via a cloud VM's firewall or a pub
 binding without a reverse proxy).
 For local use, bind the port to localhost only (e.g. `-p 127.0.0.1:8888:8888`) and use SSH
 port forwarding to access the server remotely (see below).
-To use a custom token, pass `-e NOTEBOOK_TOKEN=<your-token>` to `docker run`. You can pass an empty string to disable token-authentication.
+To use a custom token, pass `-e NOTEBOOK_TOKEN=<your-token>` to `docker run`. You can pass an empty string to disable token-authentication: `-e NOTEBOOK_TOKEN=`.
 ```
 
 #### Jupyter Notebooks on remote servers
