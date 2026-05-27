@@ -16,8 +16,6 @@ deeplabcut:
 As some users may be more comfortable working with an interactive interface, we wanted to provide an easy entry point to the software. All the main functionality is available in an easy-to-use GUI interface.
 While several advanced features are not fully available in this Project GUI, we hope this gets more users up-and-running quickly.
 
-**Release notes:** As of DeepLabCut 2.1+ now provide a full front-end user experience for DeepLabCut, and as of 2.3+ we changed the GUI from wxPython to PySide6 with napari support.
-
 ## Getting started
 
 1. Install DeepLabCut following the instructions in the {ref}`installation page<file:how-to-install>`.

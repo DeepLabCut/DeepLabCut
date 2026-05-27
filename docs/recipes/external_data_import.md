@@ -31,7 +31,7 @@ Here is a guide to do this via the ".csv" route: (the pandas array route is iden
 
 1. When you are done, run `deeplabcut.convertcsv2h5('path_to_config.yaml', scorer= 'experimenter')`
 
-- The scorer name must be identical to the input name for experimenter that you used when you created the project. This will automatically update "Mackenzie" to your name in the example demo notebook.
+   - The scorer name must be identical to the input name for experimenter that you used when you created the project. This will automatically update "Mackenzie" to your name in the example demo notebook.
 
 ## Merging multiple datasets
 
