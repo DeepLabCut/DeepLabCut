@@ -1,4 +1,10 @@
-## ﻿--- deeplabcut: last_content_updated: '2025-06-30' last_metadata_updated: '2026-03-06' ignore: false visibility: online
+---
+deeplabcut:
+  last_content_updated: '2025-06-30'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+  visibility: online
+---
 
 (file:dlc-userguide)=
 
@@ -128,9 +134,9 @@ This is why administrator privileges are required for Windows users, as creating
 
 ##### Code example
 
-````{dropdown} Create single-animal project
+````{dropdown}
 ---
-class: single-animal
+class-container: single-animal
 open:
 ---
 ```python
@@ -145,9 +151,9 @@ deeplabcut.create_new_project(
 ```
 ````
 
-````{dropdown} Create multi-animal project
+````{dropdown}
 ---
-class: multi-animal
+class-container: multi-animal
 open:
 ---
 ```python
@@ -277,9 +283,9 @@ Familiarize yourself with the meaning of the parameters. For instance **it is im
 
 The project configuration **differs between single-animal and multi-animal projects**, a complete overview is presented below.
 
-````{dropdown} Single-animal project configuration
+````{dropdown} Configuration
 ---
-class: single-animal
+class-container: single-animal
 open:
 ---
 A complete list of parameters including their description can be found in
@@ -301,9 +307,9 @@ Single Animal project configuration file glossary
 ```
 ````
 
-````{dropdown} Multi-animal project configuration
+````{dropdown} Configuration
 ---
-class: multi-animal
+class-container: multi-animal
 open:
 ---
 A complete list of parameters including their description can be found in
@@ -372,9 +378,7 @@ refinement below).
 ```
 
 ```{admonition} Converting single-animal data to multi-animal data
----
 class: multi-animal
----
 You can use annotated data from single-animal projects, by converting those files.
 See the {ref}`conversion guide<convert-maDLC>` for more information.
 ```
@@ -507,7 +511,7 @@ simply be skipped by not applying the label anywhere on the frame.
 
 ```{dropdown} Annotation tips for multi-animal projects
 ---
-class: multi-animal
+class-container: multi-animal
 open:
 ---
 *Interacting Animals*<br>
@@ -564,7 +568,7 @@ around, and click save again.
 
 ````{dropdown} Multi-animal colors
 ---
-class: multi-animal
+class-container: multi-animal
 open:
 ---
 you can check and plot colors per individual or per body part, just set the flag `visualizeindividuals=True/False`. Note, you can run this twice in both states to see both images.
@@ -690,7 +694,7 @@ TensorFlow engine, the [**pose_cfg.yaml**](https://github.com/DeepLabCut/DeepLab
 
 ```{dropdown} Multi-animal augmentation details (TensorFlow engine)
 ---
-class: multi-animal
+class-container: multi-animal
 open:
 ---
 Only `imgaug` augmentation is available for multi-animal projects with the TensorFlow
@@ -926,7 +930,7 @@ across frames, and are more informative than RMSE alone when multiple animals ar
 
 ```{dropdown}  mAP and mAR explained
 ---
-class: multi-animal
+class-container: multi-animal
 open:
 ---
 For multi-animal pose estimation the model can produce multiple detections per image.

@@ -131,15 +131,15 @@ html[data-theme="dark"] {
 
    Recommended MyST usage:
 
-   ```{dropdown} Configuration
-   :class: single-animal
+   ```{dropdown}
+   :class-container: single-animal
    :open:
 
    Single-animal-specific instructions.
    ```
 
-   ```{dropdown} Configuration
-   :class: multi-animal
+   ```{dropdown}
+   :class-container: multi-animal
    :open:
 
    Multi-animal-specific instructions.
