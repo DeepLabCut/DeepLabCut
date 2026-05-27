@@ -84,7 +84,7 @@ Contributed by [Mackenzie Mathis](https://github.com/MMathisLab)
 
 ### Behavior clustering with B-SOiD
 
-B-SOiD: An Open Source Unsupervised Algorithm for Discovery of Spontaneous Behaviors \<-- you can use the outputs of DLC to feed directly into B-SOiD (in MATLAB).
+B-SOiD is an open source unsupervised algorithm for discovery of spontaneous behaviors, and you can use the outputs of DLC to feed directly into B-SOiD in MATLAB.
 
 - [Paper](https://www.biorxiv.org/content/10.1101/770271v1.abstract)
 - [Code: `B-SOiD`](https://github.com/YttriLab/B-SOiD)
