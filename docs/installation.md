@@ -41,13 +41,13 @@ conda create -n DEEPLABCUT python=3.12
 conda activate DEEPLABCUT
 
 # Install PyTorch with your desired CUDA version (or CPU only)
-# Example: GPU version of pytorch for CUDA 11.3
-conda install pytorch cudatoolkit=11.3 -c pytorch
+# Example: install GPU-enabled pytorch for CUDA 12.6
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
 
 # install the latest version of DeepLabCut
-pip install --pre deeplabcut
+pip install deeplabcut # add --pre for pre-release versions!
 # or if you want to use the GUI
-pip install --pre deeplabcut[gui]
+pip install deeplabcut[gui]
 
 # ONLY IF YOU HAVE A CUDA GPU - check that PyTorch can access your GPU; this
 # should print `True`
@@ -241,12 +241,13 @@ Recommended for users who want to modify the code, or want to be up-to-date with
 
 ### `uv` (recommended for developers)
 
+- Clone the [repository](https://github.com/DeepLabCut/DeepLabCut)
 - Install `uv` following [instructions here](https://docs.astral.sh/uv/getting-started/installation/)
 - Run in the cloned repo:
 
 ```bash
 uv venv -p 3.12
-uv pip install -e '.[gui,modelzoo,tf]' # Change optional install as needed
+uv pip install -e '.[gui,modelzoo]' # Change optional install as needed
 source .venv/bin/activate # or & .venv\Scripts\activate.ps1 on Windows
 ```
 
@@ -284,7 +285,12 @@ GUI.
 If you ever want to update your DLC, just run `pip install --upgrade deeplabcut` inside your env.
 If you want to use a specific release, then specify the version you want, such as `pip install deeplabcut==3.0`.
 Once installed, you can
-check the version by running `import deeplabcut` `deeplabcut.__version__`.
+check the version by running:
+
+```python
+import deeplabcut
+deeplabcut.__version__
+```
 
 Don't be afraid to update, DLC is backwards compatible with your 2.0+ projects and performance continues to get better and new features are added often.
 
@@ -319,8 +325,7 @@ You will need an NVIDIA GPU that is compatible with CUDA.
 
 To see a list of CUDA-enabled NVIDIA GPUs, please [see their website](https://developer.nvidia.com/cuda-gpus).
 
-Here we provide notes on how to install and check your GPU use with TensorFlow, which is used by DeepLabCut and will be installed with the Anaconda files above.
-Thus, you do not need to independently install tensorflow.
+Here we provide notes on how to install and check your GPU use with TensorFlow, which is used by DeepLabCut.
 
 1. Install a driver for your GPU, using the NVIDIA Drivers link above.
    - Check which driver is installed by typing this into the terminal: `nvidia-smi`.
