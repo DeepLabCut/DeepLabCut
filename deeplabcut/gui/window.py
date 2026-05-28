@@ -459,9 +459,7 @@ class MainWindow(QMainWindow):
 
         output = "".join(self._update_process_output).strip()
         message = error_strings.get(error, f"An unknown {backend} update error occurred.")
-        failed_output = (
-            f"{message}\n\n{output}" if output else message
-        )
+        failed_output = f"{message}\n\n{output}" if output else message
         self.logger.warning(failed_output)
         self._update_attempt_outputs.append(failed_output)
 
