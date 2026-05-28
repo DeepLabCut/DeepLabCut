@@ -12,9 +12,10 @@ from __future__ import annotations
 import logging
 
 import pytest
-from pydantic import ValidationError
+from pydantic import Field, ValidationError
 
 from deeplabcut.core.config import DLCVersionedConfig
+from deeplabcut.utils.deprecation import DLCDeprecationWarning
 
 
 class TrackedConfig(DLCVersionedConfig):
@@ -174,7 +175,7 @@ class TestLogChanges:
 
 
 # ------------------------------------------------------------------
-# Integration with DLCBaseConfig.from_yaml
+# Integration with DLCVersionedConfig.from_yaml
 # ------------------------------------------------------------------
 
 
@@ -226,36 +227,101 @@ class TestValidateAssignment:
 
 
 # ------------------------------------------------------------------
-# DLCVersionedConfig (migration + change tracking)
+# Instance isolation — two instances of the same class are independent
 # ------------------------------------------------------------------
 
 
-class TrackedMigratingConfig(DLCVersionedConfig):
-    """Mirrors real usage (e.g. ProjectConfig)."""
+class TestInstanceIsolation:
+    """The class-level __setattr__ patch must not cause instances to share state."""
 
-    name: str = "default"
-    count: int = 0
-    flag: bool = False
+    def test_two_instances_independent_dirty_sets(self):
+        cfg1 = TrackedConfig()
+        cfg2 = TrackedConfig()
+        cfg1.name = "one"
+        assert "name" in cfg1.dirty_fields
+        assert not cfg2.is_dirty
+
+    def test_mark_clean_on_one_does_not_affect_other(self):
+        cfg1 = TrackedConfig()
+        cfg2 = TrackedConfig()
+        cfg1.name = "x"
+        cfg2.count = 5
+        cfg1.mark_clean()
+        assert not cfg1.is_dirty
+        assert cfg2.is_dirty
+        assert "count" in cfg2.dirty_fields
+
+    def test_different_subclasses_independent(self):
+        class ConfigA(DLCVersionedConfig):
+            x: int = 0
+
+        class ConfigB(DLCVersionedConfig):
+            y: int = 0
+
+        a = ConfigA()
+        b = ConfigB()
+        a.x = 1
+        assert "x" in a.dirty_fields
+        assert not b.is_dirty
 
 
-class TestChangeTrackingWithMigration:
-    """Verify validate_assignment with versioning + change tracking (regression)."""
+# ------------------------------------------------------------------
+# from_dict and to_yaml lifecycle
+# ------------------------------------------------------------------
 
-    def test_valid_assignment_still_works(self):
-        cfg = TrackedMigratingConfig()
-        cfg.count = 42
-        assert cfg.count == 42
-        assert "count" in cfg.dirty_fields
 
-    def test_invalid_assignment_raises_validation_error(self):
-        cfg = TrackedMigratingConfig()
-        with pytest.raises(ValidationError):
-            cfg.count = "not-an-int"
-        assert cfg.count == 0
+class TestLifecycle:
+    def test_from_dict_is_clean(self):
+        cfg = TrackedConfig.from_dict({"name": "loaded", "count": 5})
+        assert not cfg.is_dirty
+        assert cfg.change_notes == []
+
+    def test_to_yaml_marks_writer_clean(self, tmp_path):
+        path = tmp_path / "out.yaml"
+        cfg = TrackedConfig(name="dirty")
+        cfg.name = "changed"
+        assert cfg.is_dirty
+        cfg.to_yaml(path)
         assert not cfg.is_dirty
 
-    def test_coercion_still_applied(self):
-        cfg = TrackedMigratingConfig()
-        cfg.count = True  # should be coerced to 1
-        assert cfg.count == 1
-        assert "count" in cfg.dirty_fields
+    def test_to_yaml_with_mark_clean_false_does_not_reset(self, tmp_path):
+        path = tmp_path / "out.yaml"
+        cfg = TrackedConfig()
+        cfg.name = "changed"
+        cfg.to_yaml(path, mark_clean=False)
+        assert cfg.is_dirty
+
+    def test_record_change_note_for_unmodified_field_is_stored(self):
+        """record_change_note does not require the field to be dirty; it just stores the note."""
+        cfg = TrackedConfig()
+        cfg.record_change_note("name", "set during init")
+        assert cfg.change_notes == ["set during init"]
+        assert not cfg.is_dirty  # still clean — no assignment was made
+
+
+# ------------------------------------------------------------------
+# Alias access with change tracking
+# ------------------------------------------------------------------
+
+
+class TrackedAliasConfig(DLCVersionedConfig):
+    project_path: str = Field(
+        default="",
+        json_schema_extra={"aliases": ["projectPath"]},
+    )
+
+
+class TestAliasChangeTracking:
+    def test_setitem_alias_marks_canonical_field_dirty(self):
+        cfg = TrackedAliasConfig()
+        with pytest.warns(DLCDeprecationWarning, match="projectPath"):
+            cfg["projectPath"] = "/new"
+        assert cfg.project_path == "/new"
+        assert "project_path" in cfg.dirty_fields
+
+    def test_setattr_alias_marks_canonical_field_dirty(self):
+        cfg = TrackedAliasConfig()
+        with pytest.warns(DLCDeprecationWarning, match="projectPath"):
+            cfg.projectPath = "/attr"
+        assert cfg.project_path == "/attr"
+        assert "project_path" in cfg.dirty_fields

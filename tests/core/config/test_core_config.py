@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
-from ruamel.yaml import YAMLError
+from ruamel.yaml.error import YAMLError
 
 from deeplabcut.core.config import (
     create_config_template,
@@ -262,20 +262,16 @@ def test_read_config_preserves_existing_engine_and_project_path(tmp_path, engine
     assert cfg["project_path"] == tmp_path
 
 
-@pytest.mark.skip("This preferred behavior is not yet implemented.")
 def test_read_config_breaks_for_yaml_tags(tmp_path):
-    """read_config breaks for YAML tags like !!python/tuple"""
+    """read_config raises for YAML files containing unsafe tags like !!python/tuple."""
     config_path = tmp_path / "config.yaml"
-    # Ruamel fails on !!python/tuple; read_config falls back to PyYAML and repairs the file.
     config_path.write_text("project_path: /old/path\nengine: pytorch\nbodyparts: !!python/tuple [a, b, c]\n")
     with pytest.raises(YAMLError):
         read_config(config_path)
 
 
-@pytest.mark.skip("This preferred behavior is not yet implemented.")
 def test_read_config_breaks_for_invalid_fieds(tmp_path):
-    # NOTE @deruyter92 2026-02-03: This test is currently skipped, because
-    # read_config does not validate the keys. This should be fixed in the future.
+    """read_config raises when the YAML contains field names not declared by ProjectConfig."""
     config_path = tmp_path / "typos.yaml"
     config_path.write_text(
         "project_pathh: /wrong\n"  # typo
