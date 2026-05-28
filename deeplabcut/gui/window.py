@@ -312,6 +312,20 @@ class MainWindow(QMainWindow):
     def video_files(self):
         return self.files
 
+    def _disconnect_update_process(self, process):
+        if process is None:
+            return
+
+        for signal, slot in (
+            (process.finished, self._on_update_process_finished),
+            (process.errorOccurred, self._on_update_process_error),
+            (process.readyRead, self._drain_update_process_output),
+        ):
+            try:
+                signal.disconnect(slot)
+            except (TypeError, RuntimeError):
+                pass
+
     def check_for_updates(self, *, silent=True, delay_ms=0):
         """Start an update check immediately or schedule it after a delay."""
         if self._closing:
@@ -379,11 +393,19 @@ class MainWindow(QMainWindow):
                 "No available installer backend was found.",
             )
 
-    def _drain_update_process_output(self):
-        if self._update_process is None:
+    def _drain_update_process_output(self, process=None):
+
+        if process is None:
+            sender = self.sender()
+            process = sender if sender is not None else self._update_process
+
+        if process is not self._update_process:
             return
 
-        data = bytes(self._update_process.readAll())
+        if process is None:
+            return
+
+        data = bytes(process.readAll())
         if not data:
             return
 
@@ -399,6 +421,7 @@ class MainWindow(QMainWindow):
 
     def _cleanup_update_process(self):
         if self._update_process is not None:
+            self._disconnect_update_process(self._update_process)
             self._update_process.deleteLater()
             self._update_process = None
 
@@ -411,6 +434,11 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage("www.deeplabcut.org")
 
     def _on_update_process_error(self, error):
+
+        process = self.sender()
+        if process is not self._update_process:
+            return
+
         if self._closing:
             self._cleanup_update_process()
             return
@@ -430,10 +458,9 @@ class MainWindow(QMainWindow):
         self.logger.warning(message)
         self._update_attempt_outputs.append(message)
 
-        if self._update_process is not None:
-            self._update_process.deleteLater()
-            self._update_process_output = []
-            self._update_process = None
+        self._disconnect_update_process(process)
+        self._update_process.deleteLater()
+        self._update_process = None
 
         if self._start_next_update_command():
             return
@@ -446,14 +473,18 @@ class MainWindow(QMainWindow):
         self._cleanup_update_process()
 
     def _on_update_process_finished(self, exit_code, exit_status):
+        process = self.sender()
+        if process is not self._update_process:
+            return
+
         if self._closing:
             self._cleanup_update_process()
             return
 
-        if self._update_process is None:
+        if process is None:
             return
 
-        self._drain_update_process_output()
+        self._drain_update_process_output(process)
 
         output = "".join(self._update_process_output).strip()
         backend = self._current_update_backend or "installer"
@@ -479,7 +510,8 @@ class MainWindow(QMainWindow):
         self._update_attempt_outputs.append(failed_output)
         self.logger.warning(failed_output)
 
-        self._update_process.deleteLater()
+        self._disconnect_update_process(process)
+        process.deleteLater()
         self._update_process = None
         self._update_process_output = []
 
