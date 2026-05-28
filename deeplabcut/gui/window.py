@@ -454,13 +454,21 @@ class MainWindow(QMainWindow):
             QtCore.QProcess.UnknownError: f"An unknown {backend} update error occurred.",
         }
 
+        if process is not None:
+            self._drain_update_process_output(process)
+
+        output = "".join(self._update_process_output).strip()
         message = error_strings.get(error, f"An unknown {backend} update error occurred.")
-        self.logger.warning(message)
-        self._update_attempt_outputs.append(message)
+        failed_output = (
+            f"{message}\n\n{output}" if output else message
+        )
+        self.logger.warning(failed_output)
+        self._update_attempt_outputs.append(failed_output)
 
         self._disconnect_update_process(process)
         self._update_process.deleteLater()
         self._update_process = None
+        self._update_process_output = []
 
         if self._start_next_update_command():
             return
