@@ -13,10 +13,9 @@
 from enum import Enum
 from typing import Literal
 
-from pydantic import Field, field_validator
-from pydantic.dataclasses import dataclass
+from pydantic import ConfigDict, Field, field_validator
 
-from deeplabcut.core.config.mixins import ConfigMixin
+from deeplabcut.core.config import DLCBaseConfig
 
 
 class DataLoaderType(str, Enum):
@@ -24,8 +23,7 @@ class DataLoaderType(str, Enum):
     COCOLoader = "COCOLoader"
 
 
-@dataclass
-class DataLoaderConfig(ConfigMixin):
+class DataLoaderConfig(DLCBaseConfig):
     """Base class for data loader configuration.
 
     Attributes:
@@ -35,8 +33,7 @@ class DataLoaderConfig(ConfigMixin):
     type: str
 
 
-@dataclass
-class DLCLoaderConfig(DataLoaderConfig):
+class DLCLoaderConfig(DLCBaseConfig):
     """Configuration for DeepLabCut Loader.
 
     Attributes:
@@ -54,8 +51,7 @@ class DLCLoaderConfig(DataLoaderConfig):
     modelprefix: str = ""
 
 
-@dataclass
-class COCOLoaderConfig(DataLoaderConfig):
+class COCOLoaderConfig(DLCBaseConfig):
     """Configuration for COCO Loader.
 
     Attributes:
@@ -74,8 +70,7 @@ class COCOLoaderConfig(DataLoaderConfig):
     val_json_path: str = "val.json"
 
 
-@dataclass
-class DataTransformationConfig(ConfigMixin):
+class DataTransformationConfig(DLCBaseConfig):
     """Data transformation configuration.
 
     Attributes:
@@ -117,8 +112,7 @@ class DataTransformationConfig(ConfigMixin):
     collate: dict | None = None
 
 
-@dataclass(frozen=True)
-class GenSamplingConfig(ConfigMixin):
+class GenSamplingConfig(DLCBaseConfig):
     """Configuration for CTD models.
 
     Args:
@@ -135,6 +129,8 @@ class GenSamplingConfig(ConfigMixin):
         miss_prob: The probability of applying a miss error. Miss error represents a
             large displacement from the GT keypoint position.
     """
+
+    model_config = ConfigDict(frozen=True)
 
     keypoint_sigmas: float | list[float] = 0.1
     keypoints_symmetry: list[tuple[int, int]] | None = None
@@ -154,8 +150,7 @@ class GenSamplingConfig(ConfigMixin):
         }
 
 
-@dataclass
-class DataConfig(ConfigMixin):
+class DataConfig(DLCBaseConfig):
     """Complete data configuration.
 
     Attributes:

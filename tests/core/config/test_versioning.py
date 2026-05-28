@@ -13,12 +13,10 @@
 import logging
 
 import pytest
-from pydantic import ConfigDict, ValidationError
-from pydantic.dataclasses import dataclass
+from pydantic import ValidationError
 
-from deeplabcut.core.config import versioning
+from deeplabcut.core.config import DLCVersionedConfig, versioning
 from deeplabcut.core.config.versioning import (
-    MigrationMixin,
     get_config_version,
     migrate_config,
     register_migration,
@@ -181,8 +179,7 @@ def test_roundtrip_v98_without_toy_field_unchanged():
 
 @pytest.fixture
 def ToyConfigWithValidField():
-    @dataclass(config={"extra": "forbid"})
-    class ToyConfig(MigrationMixin):
+    class ToyConfig(DLCVersionedConfig):
         config_version: int = _TOY_VERSION_NEW
         valid_project_config_field: str = ""
 
@@ -209,7 +206,7 @@ def test_config_after_migration_accepts_renamed_field(monkeypatch, ToyConfigWith
     }
 
     # Replace the existing toy (98→99) migration with one that renames
-    # the unknown field to a field the dataclass actually declares.
+    # the unknown field to a field the model actually declares.
     del versioning._MIGRATIONS[(_TOY_VERSION_OLD, _TOY_VERSION_NEW)]
 
     @register_migration(_TOY_VERSION_OLD, _TOY_VERSION_NEW)
@@ -629,13 +626,12 @@ class TestMigrationLogging:
         assert "Migrating config from version 53 to 50 (downgrade)" in caplog.text
         assert "Migration complete: config is now at version 50" in caplog.text
 
-    def test_same_version_logs_debug_no_migration(self, caplog, chain_migrations):
-        """When source == target, a DEBUG message is emitted and nothing else."""
+    def test_same_version_no_log(self, caplog, chain_migrations):
+        """When source == target, nothing is logged."""
         cfg = {"config_version": _V50}
         with caplog.at_level(logging.DEBUG, logger=_LOGGER_NAME):
             migrate_config(cfg, target_version=_V50)
-        assert "already at version 50" in caplog.text
-        assert "Migrating config" not in caplog.text
+        assert caplog.text == ""
 
     def test_debug_logs_field_rename(self, caplog, chain_migrations):
         """DEBUG logs report removed and added fields for a rename."""
@@ -758,8 +754,7 @@ class TestMigrationLogging:
 # -----------------------------------------------------------------------------
 
 
-@dataclass(config=ConfigDict(validate_assignment=True))
-class ValidatedMigratingConfig(MigrationMixin):
+class ValidatedMigratingConfig(DLCVersionedConfig):
     name: str = "default"
     count: int = 0
 

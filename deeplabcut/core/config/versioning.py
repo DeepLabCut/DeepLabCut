@@ -20,12 +20,7 @@ can be registered for specific version pairs when backward compatibility is need
 import copy
 import logging
 from collections.abc import Callable
-from dataclasses import fields
 from functools import wraps
-from typing import Any
-
-from pydantic import model_validator
-from pydantic_core import ArgsKwargs
 
 logger = logging.getLogger(__name__)
 
@@ -173,7 +168,6 @@ def migrate_config(config: dict, target_version: int = CURRENT_CONFIG_VERSION) -
     current_version = get_config_version(config)
 
     if current_version == target_version:
-        logger.debug("Config already at version %d, no migration needed", current_version)
         return config
 
     if target_version > CURRENT_CONFIG_VERSION:
@@ -232,39 +226,6 @@ def migrate_v1_to_v0(config: dict) -> dict:
     """Migrate from v1 to v0 (legacy format)."""
     # TODO @deruyter92 2026-01-30: Migration logic goes here.
     return config
-
-
-# ============================================================================
-# MigrationMixin
-# ============================================================================
-
-
-class MigrationMixin:
-    """Migration mixin for configuration classes.
-
-    Applies :func:`migrate_config` on raw input data **before** pydantic
-    field validation.  Uses ``mode="before"`` so the validator only runs
-    during construction and does not interfere with ``validate_assignment``.
-    """
-
-    @model_validator(mode="before")
-    @classmethod
-    def migrate_before_validate(cls, data: Any) -> Any:
-        """Migrate raw input data to the current config version.
-
-        Converts ``ArgsKwargs`` (positional / keyword constructor args) to a
-        plain dict, then runs the migration chain.  Already-constructed
-        instances and non-dict data are returned unchanged.
-        """
-        if isinstance(data, ArgsKwargs):
-            names = [f.name for f in fields(cls)]
-            data = dict(
-                zip(names, data.args or [], strict=False),
-                **(data.kwargs or {}),
-            )
-        if isinstance(data, dict):
-            data = migrate_config(data, target_version=CURRENT_CONFIG_VERSION)
-        return data
 
 
 # ============================================================================

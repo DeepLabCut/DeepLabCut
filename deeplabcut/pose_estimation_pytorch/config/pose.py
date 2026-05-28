@@ -10,16 +10,14 @@
 #
 """Main pose configuration class for DeepLabCut pose estimation models."""
 
-from dataclasses import field
 from enum import Enum
 from pathlib import Path
 
-from pydantic import ConfigDict, Field
-from pydantic.dataclasses import dataclass
+from pydantic import Field
 
-from deeplabcut.core.config.mixins import ConfigMixin
+from deeplabcut.core.config import DLCBaseConfig, DLCVersionedConfig
 from deeplabcut.core.config.project_config import ProjectConfig
-from deeplabcut.core.config.versioning import CURRENT_CONFIG_VERSION, MigrationMixin
+from deeplabcut.core.config.versioning import CURRENT_CONFIG_VERSION
 from deeplabcut.pose_estimation_pytorch.config.data import DataConfig
 from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.config.logger import (
@@ -109,18 +107,16 @@ class DatasetType(str, Enum):
     MULTIANIMAL_IMGAUG = "multi-animal-imgaug"
 
 
-@dataclass
-class DetectorConfig(ConfigMixin):
+class DetectorConfig(DLCBaseConfig):
     model: DetectorModelConfig
     device: str = "auto"
     data: DataConfig | None = None
     runner: RunnerConfig | None = None
     train_settings: TrainSettingsConfig | None = None
-    inference: InferenceConfig = field(default_factory=InferenceConfig)
+    inference: InferenceConfig = Field(default_factory=InferenceConfig)
 
 
-@dataclass(config=ConfigDict(extra="forbid", validate_assignment=True))
-class PoseConfig(MigrationMixin, ConfigMixin):
+class PoseConfig(DLCVersionedConfig):
     """Main configuration class for DeepLabCut pose estimation models.
 
     This is the top-level configuration that brings together all the different
@@ -142,13 +138,13 @@ class PoseConfig(MigrationMixin, ConfigMixin):
     """
 
     config_version: int = CURRENT_CONFIG_VERSION
-    model: ModelConfig = field(default_factory=ModelConfig)
+    model: ModelConfig = Field(default_factory=ModelConfig)
     net_type: NetType = NetType.RESNET_50
     method: MethodType = MethodType.BOTTOM_UP
     device: str = "auto"
     metadata: ProjectConfig | None = None
     data: DataConfig | None = None
-    inference: InferenceConfig = field(default_factory=InferenceConfig)
+    inference: InferenceConfig = Field(default_factory=InferenceConfig)
     logger: CSVLoggerConfig | WandbLoggerConfig | None = Field(default=None, discriminator="type")
     with_center_keypoints: bool = False
     runner: RunnerConfig | None = None
@@ -156,8 +152,7 @@ class PoseConfig(MigrationMixin, ConfigMixin):
     detector: DetectorConfig | None = None
 
 
-@dataclass(config=ConfigDict(extra="forbid", validate_assignment=True))
-class TestConfig(ConfigMixin):
+class TestConfig(DLCBaseConfig):
     """Configuration class for DeepLabCut test/inference settings.
 
     This configuration is used for downstream tracking and evaluation, containing
@@ -178,8 +173,8 @@ class TestConfig(ConfigMixin):
     # We could aim for using the PoseConfig class or InferenceConfig class instead.
     dataset: Path = Path()
     num_joints: int = 0
-    all_joints: list[list[int]] = field(default_factory=list)
-    all_joints_names: list[str] = field(default_factory=list)
+    all_joints: list[list[int]] = Field(default_factory=list)
+    all_joints_names: list[str] = Field(default_factory=list)
     net_type: NetType = NetType.RESNET_50
     dataset_type: DatasetType = DatasetType.MULTIANIMAL_IMGAUG
     global_scale: int = 1
