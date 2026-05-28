@@ -13,10 +13,10 @@
 from enum import Enum
 from typing import Literal
 
-from pydantic import Field, field_validator
-from pydantic.dataclasses import dataclass
+from pydantic import ConfigDict, Field, field_validator
 
-from deeplabcut.core.config.mixins import ConfigMixin
+from deeplabcut.core.config import DLCBaseConfig
+from deeplabcut.core.config.validation import Fraction, NonNegativeFloat, NonNegativeInt
 
 
 class DataLoaderType(str, Enum):
@@ -24,19 +24,7 @@ class DataLoaderType(str, Enum):
     COCOLoader = "COCOLoader"
 
 
-@dataclass
-class DataLoaderConfig(ConfigMixin):
-    """Base class for data loader configuration.
-
-    Attributes:
-        type: Loader type identifier
-    """
-
-    type: str
-
-
-@dataclass
-class DLCLoaderConfig(DataLoaderConfig):
+class DLCLoaderConfig(DLCBaseConfig):
     """Configuration for DeepLabCut Loader.
 
     Attributes:
@@ -49,33 +37,23 @@ class DLCLoaderConfig(DataLoaderConfig):
 
     type: Literal[DataLoaderType.DLCLoader]
     config: str | dict
-    trainset_index: int = 0
-    shuffle: int = 0
+    trainset_index: NonNegativeInt = 0
+    shuffle: NonNegativeInt = 0
     modelprefix: str = ""
 
 
-@dataclass
-class COCOLoaderConfig(DataLoaderConfig):
+class COCOLoaderConfig(DLCBaseConfig):
     """Configuration for COCO Loader.
 
     Attributes:
         type: Loader type identifier
-        project_root: Root directory path of the COCO project
-        model_config_path: Path to the pytorch_config.yaml file
-        train_json_path: Path of the json file containing the train annotations relative to project_root
-        test_json_path: Path of the json file containing the test annotations relative to project_root
-        val_json_path: Path of the json file containing the validation annotations relative to project_root
     """
 
     type: Literal[DataLoaderType.COCOLoader]
-    project_root: str = ""
-    train_json_path: str = "train.json"
-    test_json_path: str = "test.json"
-    val_json_path: str = "val.json"
+    # TODO @deruyter92 2026-06-05: COCOLoader is never build from config, add confg when needed
 
 
-@dataclass
-class DataTransformationConfig(ConfigMixin):
+class DataTransformationConfig(DLCBaseConfig):
     """Data transformation configuration.
 
     Attributes:
@@ -117,8 +95,7 @@ class DataTransformationConfig(ConfigMixin):
     collate: dict | None = None
 
 
-@dataclass(frozen=True)
-class GenSamplingConfig(ConfigMixin):
+class GenSamplingConfig(DLCBaseConfig):
     """Configuration for CTD models.
 
     Args:
@@ -136,12 +113,14 @@ class GenSamplingConfig(ConfigMixin):
             large displacement from the GT keypoint position.
     """
 
-    keypoint_sigmas: float | list[float] = 0.1
+    model_config = ConfigDict(frozen=True)
+
+    keypoint_sigmas: NonNegativeFloat | list[NonNegativeFloat] = 0.1
     keypoints_symmetry: list[tuple[int, int]] | None = None
-    jitter_prob: float = 0.16
-    swap_prob: float = 0.08
-    inv_prob: float = 0.03
-    miss_prob: float = 0.10
+    jitter_prob: Fraction = 0.16
+    swap_prob: Fraction = 0.08
+    inv_prob: Fraction = 0.03
+    miss_prob: Fraction = 0.10
 
     def to_dict(self) -> dict:
         return {
@@ -154,8 +133,7 @@ class GenSamplingConfig(ConfigMixin):
         }
 
 
-@dataclass
-class DataConfig(ConfigMixin):
+class DataConfig(DLCBaseConfig):
     """Complete data configuration.
 
     Attributes:
@@ -167,8 +145,8 @@ class DataConfig(ConfigMixin):
         loader: Data loader configuration
     """
 
-    bbox_margin: int = 25
-    colormode: str = "RGB"
+    bbox_margin: NonNegativeInt = 25
+    colormode: Literal["RGB"] = "RGB"  # Docs state that it should never be changed to BGR
     gen_sampling: GenSamplingConfig | None = None
     inference: DataTransformationConfig | None = None
     train: DataTransformationConfig | None = None

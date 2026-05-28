@@ -16,13 +16,14 @@ import warnings
 from pathlib import Path
 
 import numpy as np
-from pydantic.dataclasses import dataclass
+from pydantic import field_validator, model_validator
+from typing_extensions import Self
 
-from deeplabcut.core.types import PydanticNDArray
+from deeplabcut.core.config import DLCBaseConfig
+from deeplabcut.core.config.validation import NDArrayInt
 
 
-@dataclass
-class WeightInitialization:
+class WeightInitialization(DLCBaseConfig):
     """Configures weights initialization when transfer learning or fine-tuning models.
 
     Args:
@@ -50,10 +51,11 @@ class WeightInitialization:
     dataset: str | None = None
     with_decoder: bool = False
     memory_replay: bool = False
-    conversion_array: PydanticNDArray | None = None
+    conversion_array: NDArrayInt | None = None
     bodyparts: list[str] | None = None
 
-    def __post_init__(self):
+    @model_validator(mode="after")
+    def _validate_options(self) -> Self:
         if self.memory_replay and not self.with_decoder:
             raise ValueError(
                 "You cannot train a model with memory replay if you do not keep the "
@@ -74,70 +76,37 @@ class WeightInitialization:
             )
 
         if self.conversion_array is not None and self.bodyparts is not None:
-            if not len(self.conversion_array) == len(self.bodyparts):
+            if len(self.conversion_array) != len(self.bodyparts):
                 raise ValueError(
-                    "There must be the same number of elements in the bodyparts list "
-                    "and conv. array; found {self.bodyparts}, {self.conversion_array}"
+                    f"There must be the same number of elements in the bodyparts list "
+                    f"and conv. array; found {self.bodyparts}, {self.conversion_array}"
                 )
+        return self
 
-    def to_dict(self) -> dict:
-        """Returns: the weight initialization as a dict"""
-        data = dict()
-        if self.dataset is not None:
-            data["dataset"] = self.dataset
+    @field_validator("snapshot_path", "detector_snapshot_path", mode="before")
+    @classmethod
+    def _coerce_null_path(cls, v):
+        if v is None or v == "None":
+            return None
+        return v
 
-        data["snapshot_path"] = str(self.snapshot_path)
-        if self.detector_snapshot_path is not None:
-            data["detector_snapshot_path"] = str(self.detector_snapshot_path)
-
-        data["with_decoder"] = self.with_decoder
-        data["memory_replay"] = self.memory_replay
-
-        if self.conversion_array is not None:
-            data["conversion_array"] = self.conversion_array.tolist()
-
-        if self.bodyparts is not None:
-            data["bodyparts"] = self.bodyparts
-
-        return data
-
-    @staticmethod
-    def from_dict(data: dict) -> WeightInitialization:
+    @classmethod
+    def from_dict(cls, data: dict) -> Self:
         if "snapshot_path" not in data:
-            return WeightInitialization.from_dict_legacy(data)
+            return cls.from_dict_legacy(data)
+        return cls.model_validate(data)
 
-        snapshot_path = data["snapshot_path"]
-        if data["snapshot_path"] is not None:
-            snapshot_path = Path(snapshot_path)
+    @classmethod
+    def from_dict_legacy(cls, data: dict) -> Self:
+        """Deals with weight initialization that were created before 3.0.0rc5"""
 
-        detector_snapshot_path = data.get("detector_snapshot_path")
-        if detector_snapshot_path is not None:
-            detector_snapshot_path = Path(detector_snapshot_path)
-
-        conversion_array = data.get("conversion_array")
-        if conversion_array is not None:
-            conversion_array = np.array(conversion_array, dtype=int)
-
-        return WeightInitialization(
-            snapshot_path=snapshot_path,
-            detector_snapshot_path=detector_snapshot_path,
-            dataset=data.get("dataset"),
-            with_decoder=data["with_decoder"],
-            memory_replay=data["memory_replay"],
-            conversion_array=conversion_array,
-            bodyparts=data.get("bodyparts"),
-        )
-
-    @staticmethod
-    def from_dict_legacy(data: dict) -> WeightInitialization:
-        """Deals with weight initialization that were created before 3.0.0rc5."""
         import deeplabcut.pose_estimation_pytorch.modelzoo.utils as utils
 
         conversion_array = data.get("conversion_array")
         if conversion_array is not None:
             conversion_array = np.array(conversion_array, dtype=int)
 
-        return WeightInitialization(
+        return cls(
             snapshot_path=utils.get_super_animal_snapshot_path(
                 dataset=data["dataset"],
                 model_name="hrnet_w32",

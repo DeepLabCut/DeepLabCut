@@ -10,15 +10,12 @@
 #
 """Model configuration class for DeepLabCut pose estimation models."""
 
-from dataclasses import field
+from pydantic import Field
 
-from pydantic.dataclasses import dataclass
-
-from deeplabcut.core.config.mixins import ConfigMixin
+from deeplabcut.core.config import DLCBaseConfig
 
 
-@dataclass
-class ModelConfig(ConfigMixin):
+class ModelConfig(DLCBaseConfig):
     """Complete model configuration.
 
     Attributes:
@@ -29,15 +26,14 @@ class ModelConfig(ConfigMixin):
         pose_model: Pose model configuration
     """
 
-    backbone: dict = field(default_factory=dict)
-    heads: dict[str, dict] = field(default_factory=dict)
+    backbone: dict = Field(default_factory=dict)
+    heads: dict[str, dict] = Field(default_factory=dict)
     backbone_output_channels: int | None = None
     neck: dict | None = None
     pose_model: dict | None = None
 
 
-@dataclass
-class DetectorModelConfig(ConfigMixin):
+class DetectorModelConfig(DLCBaseConfig):
     """Configuration for detector models
 
     Attributes:

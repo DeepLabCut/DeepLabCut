@@ -14,19 +14,18 @@ from __future__ import annotations
 
 import logging
 import warnings
-from collections.abc import Callable
+from collections import Counter
+from collections.abc import Callable, Mapping
 from enum import Enum
 from functools import wraps
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING
-
-from omegaconf import DictConfig, OmegaConf
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from deeplabcut.core.config.project_config import ProjectConfig
 
+import numpy as np
 import ruamel.yaml.representer
-from omegaconf import ListConfig
 from pydantic import ValidationError
 from ruamel.yaml import YAML
 
@@ -53,9 +52,6 @@ def get_yaml_dumper() -> YAML:
     # Auto-serialize Path objects as strings
     yaml.representer.add_multi_representer(PurePath, lambda r, p: r.represent_str(str(p)))
     yaml.representer.add_multi_representer(Enum, lambda r, e: r.represent_str(e.value))
-    # OmegaConf containers -> plain dict/list so ruamel can serialize them
-    yaml.representer.add_representer(DictConfig, lambda r, d: r.represent_dict(dict(d)))
-    yaml.representer.add_representer(ListConfig, lambda r, l: r.represent_list(list(l)))
     return yaml
 
 
@@ -96,6 +92,89 @@ def write_config(config_path: str | Path, config: dict, overwrite: bool = True) 
         get_yaml_dumper().dump(config, file)
 
 
+def resolve_alias(
+    name: str,
+    alias_map: dict[str, str],
+    *,
+    warn: bool = True,
+    stacklevel: int = 3,
+) -> str:
+    """Resolve a config key to its canonical field name.
+    Args:
+        name: Raw key name (alias or canonical).
+        alias_map: ``{alias: canonical_name}`` for deprecated keys.
+        warn: If True, emit :class:`DLCDeprecationWarning` when ``name`` is an alias.
+        stacklevel: Passed to :func:`warnings.warn` for deprecation messages.
+    Returns:
+        Canonical field name, or ``name`` unchanged if it is not an alias.
+    """
+    canonical = alias_map.get(name, name)
+    if warn and name in alias_map:
+        from deeplabcut.utils.deprecation import DLCDeprecationWarning
+
+        warnings.warn(
+            f"'{name}' is deprecated, use '{canonical}' instead.",
+            DLCDeprecationWarning,
+            stacklevel=stacklevel,
+        )
+    return canonical
+
+
+def resolve_aliases_in_dict(
+    cfg_dict: dict,
+    alias_map: dict[str, str],
+    *,
+    target: str = "config",
+    warn: bool = True,
+    stacklevel: int = 3,
+) -> dict:
+    """Rename deprecated config keys to their canonical names.
+
+    Args:
+        cfg_dict: Raw configuration mapping (e.g. from YAML).
+        alias_map: ``{alias: canonical_name}`` for deprecated keys.
+        target: Config class name shown in errors.
+        stacklevel: Passed to :func:`warnings.warn` for deprecation messages.
+
+    Returns:
+        A new dict with alias keys replaced by canonical names. Unchanged if
+        ``alias_map`` is empty.
+
+    Raises:
+        TypeError: If multiple keys resolve to the same canonical field name
+        (e.g. an alias and its canonical name, or two aliases for one field).
+    """
+    if not alias_map:
+        return cfg_dict
+
+    def _raise_for_duplicates(raw_to_canonical: dict[str, str]):
+        counts = Counter(raw_to_canonical.values())
+        conflicts = [f"{raw} -> {canonical}" for raw, canonical in raw_to_canonical.items() if counts[canonical] > 1]
+        if conflicts:
+            raise TypeError(f"{target} received duplicate canonical field names: {', '.join(conflicts)}.")
+
+    raw_to_canonical = {raw: resolve_alias(raw, alias_map, warn=warn, stacklevel=stacklevel + 1) for raw in cfg_dict}
+    _raise_for_duplicates(raw_to_canonical)
+    return {raw_to_canonical[raw]: v for raw, v in cfg_dict.items()}
+
+
+def normalize_for_serialization(obj: Any) -> Any:
+    """Recursively normalize Paths to strings and Enums to values."""
+    if isinstance(obj, Path):
+        return str(obj)
+    if isinstance(obj, Enum):
+        return obj.value
+    if isinstance(obj, Mapping):
+        return type(obj)({k: normalize_for_serialization(v) for k, v in obj.items()})
+    if isinstance(obj, tuple):
+        return tuple(normalize_for_serialization(v) for v in obj)
+    if isinstance(obj, (list, set)):
+        return [normalize_for_serialization(v) for v in obj]
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    return obj
+
+
 def pretty_print(
     config: dict,
     indent: int = 0,
@@ -112,7 +191,7 @@ def pretty_print(
         print_fn = print
 
     for k, v in config.items():
-        if isinstance(v, (dict, DictConfig)):
+        if isinstance(v, dict):
             print_fn(f"{indent * ' '}{k}:")
             pretty_print(v, indent + 2, print_fn=print_fn)
         else:
@@ -122,16 +201,15 @@ def pretty_print(
 def ensure_plain_config(fn: Callable) -> Callable:
     """Convert typed config arguments into plain Python objects.
 
-    Any positional or keyword argument that is a ConfigMixin, OmegaConf
-    DictConfig, or OmegaConf ListConfig is converted to a plain ``dict`` / ``list``
-    before the decorated function is called.
+    Any positional or keyword argument that is a DLCBaseConfig is converted to
+    a plain ``dict`` before the decorated function is called.
     """
 
     def _to_plain(value, fn_name: str = "<unknown>", var_name: str = "<unknown>"):
         # Lazy import to avoid circular imports during module initialization.
-        from deeplabcut.core.config.mixins import ConfigMixin
+        from deeplabcut.core.config.base_config import DLCBaseConfig
 
-        if isinstance(value, ConfigMixin):
+        if isinstance(value, DLCBaseConfig):
             logger.debug(
                 "converting %s (%s) to native dict in %s.",
                 var_name,
@@ -139,20 +217,6 @@ def ensure_plain_config(fn: Callable) -> Callable:
                 fn_name,
             )
             return value.to_dict()
-        if isinstance(value, DictConfig):
-            logger.debug(
-                "converting %s (OmegaConf DictConfig) to plain dict in %s.",
-                var_name,
-                fn_name,
-            )
-            return OmegaConf.to_container(value, resolve=True)
-        if isinstance(value, ListConfig):
-            logger.debug(
-                "converting %s (OmegaConf ListConfig) to plain list in %s.",
-                var_name,
-                fn_name,
-            )
-            return OmegaConf.to_container(value, resolve=True)
         return value
 
     @wraps(fn)
@@ -181,7 +245,10 @@ def create_config_template(multianimal: bool = False) -> tuple:
     from deeplabcut.core.config.project_config import ProjectConfig
 
     ruamelFile = get_yaml_dumper()
-    cfg_file = ProjectConfig(multianimalproject=multianimal).to_dict()
+
+    # TODO @deruyter92 2026-06-15: This sentinel should be removed in v1.
+    bodyparts = "MULTI!" if multianimal else []
+    cfg_file = ProjectConfig(multianimalproject=multianimal, bodyparts=bodyparts).to_dict()
     return cfg_file, ruamelFile
 
 
@@ -266,7 +333,7 @@ def write_project_config(
     except ValidationError as e:
         warnings.warn(
             f"Invalid configuration! Validation error in config file {cfg}. Error: {e}"
-            "Reverting to legacy config file writing.",
+            " Reverting to legacy config file writing.",
             stacklevel=2,
         )
     with open(configname, "w") as cf:
