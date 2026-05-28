@@ -5,34 +5,38 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests for ConfigMixin."""
-
-from dataclasses import field
+"""Tests for DLCBaseConfig."""
 
 import pytest
-from pydantic.dataclasses import dataclass
+from pydantic import Field, ValidationError
 
-from deeplabcut.core.config import ConfigMixin
+from deeplabcut.core.config import DLCBaseConfig, DLCVersionedConfig, versioning
+from deeplabcut.core.config.versioning import register_migration
+from deeplabcut.utils.deprecation import DLCDeprecationWarning
 
 
-@dataclass
-class ToyConfig(ConfigMixin):
-    """Minimal config used to exercise ConfigMixin."""
+class ToyConfig(DLCBaseConfig):
+    """Minimal config used to exercise DLCBaseConfig."""
 
     Task: str = "DefaultTask"
-    project_path: str = "DefaultProjectPath"
+    project_path: str = Field(
+        default="DefaultProjectPath",
+        json_schema_extra={"aliases": ["projectPath"]},
+    )
 
 
-@dataclass
-class NestedInner(ConfigMixin):
+class NestedInner(DLCBaseConfig):
     lr: float = 0.001
     momentum: float = 0.9
 
 
-@dataclass
-class NestedOuter(ConfigMixin):
+class NestedOuter(DLCBaseConfig):
     name: str = "outer"
-    inner: NestedInner | None = field(default_factory=NestedInner)
+    inner: NestedInner | None = Field(default_factory=NestedInner)
+
+
+class DictBranchConfig(DLCBaseConfig):
+    payload: dict = Field(default_factory=lambda: {"section": {"key": "old", "count": 1}})
 
 
 # ------------------------------------------------------------------
@@ -89,6 +93,54 @@ class TestGet:
         cfg = ToyConfig()
         assert cfg.get("nonexistent") is None
         assert cfg.get("nonexistent", 42) == 42
+
+
+class TestUpdate:
+    def test_update_applies_fields_dict(self):
+        cfg = ToyConfig()
+        cfg.update({"Task": "t", "project_path": "/p"})
+        assert cfg.Task == "t"
+        assert cfg.project_path == "/p"
+
+    def test_update_applies_fields_kwargs(self):
+        cfg = ToyConfig()
+        cfg.update(Task="t", project_path="/p")
+        assert cfg.Task == "t"
+        assert cfg.project_path == "/p"
+
+    def test_update_empty_is_noop(self):
+        cfg = ToyConfig(Task="unchanged")
+        assert cfg.update() is cfg
+        assert cfg.update({}) is cfg
+        assert cfg.Task == "unchanged"
+
+    def test_update_rejects_dict_and_kwargs_together(self):
+        cfg = ToyConfig()
+        with pytest.raises(TypeError, match="either a dict or keyword"):
+            cfg.update({"Task": "x"}, Task="y")
+
+    def test_update_unknown_field_raises_validation_error(self):
+        cfg = ToyConfig()
+        with pytest.raises(ValidationError):
+            cfg.update({"nonexistent": 42})
+
+    def test_update_invalid_value_raises(self):
+        cfg = TypedBase()
+        with pytest.raises(ValidationError):
+            cfg.update({"count": "not-a-number"})
+        assert cfg.count == 0
+
+    def test_update_resolves_alias_with_warning(self):
+        cfg = ToyConfig()
+        with pytest.warns(DLCDeprecationWarning, match="projectPath") as record:
+            cfg.update({"projectPath": "/alias"})
+        assert len(record) == 1
+        assert cfg.project_path == "/alias"
+
+    def test_update_rejects_alias_and_canonical_together(self):
+        with pytest.warns(DLCDeprecationWarning, match="projectPath"):
+            with pytest.raises(TypeError, match=r"projectPath.*project_path"):
+                ToyConfig().update({"projectPath": "/a", "project_path": "/b"})
 
 
 class TestKeysValuesItems:
@@ -151,20 +203,114 @@ class TestSelect:
 
 
 # ------------------------------------------------------------------
-# validate_dict
+# set_nested() utility
 # ------------------------------------------------------------------
 
 
-class TestValidateDict:
-    def test_validate_dict_returns_instance(self):
-        cfg = ToyConfig.validate_dict({"Task": "task", "project_path": ""})
+class TestSetNested:
+    def test_set_nested_top_level_field(self):
+        cfg = ToyConfig()
+        cfg.set_nested("Task", "updated")
+        assert cfg.Task == "updated"
+        assert cfg.select("Task") == "updated"
+
+    def test_set_nested_nested_typed_field(self):
+        cfg = NestedOuter(inner=NestedInner(lr=0.001))
+        cfg.set_nested("inner.lr", 0.05)
+        assert cfg.inner.lr == 0.05
+        assert cfg.select("inner.lr") == 0.05
+
+    def test_set_nested_dict_field(self):
+        cfg = DictBranchConfig()
+        cfg.set_nested("payload.section.key", "new")
+        cfg.set_nested("payload.section.count", 42)
+        assert cfg.select("payload.section.key") == "new"
+        assert cfg.select("payload.section.count") == 42
+
+    def test_set_nested_returns_self_for_nested_path(self):
+        cfg = NestedOuter()
+        assert cfg.set_nested("inner.lr", 0.02) is cfg
+
+    def test_set_nested_missing_path_raises(self):
+        cfg = NestedOuter()
+        with pytest.raises(AttributeError, match="has no 'inner.missing'"):
+            cfg.set_nested("inner.missing", 1.0)
+
+    def test_set_nested_none_intermediate_raises(self):
+        cfg = NestedOuter(inner=None)
+        with pytest.raises(AttributeError, match="has no 'inner.lr'"):
+            cfg.set_nested("inner.lr", 0.1)
+
+    def test_set_nested_invalid_value_raises(self):
+        cfg = NestedOuter()
+        with pytest.raises(ValidationError):
+            cfg.set_nested("inner.lr", "not-a-float")
+        assert cfg.inner.lr == 0.001
+
+    def test_set_nested_unknown_top_level_field_raises(self):
+        cfg = ToyConfig()
+        with pytest.raises(ValidationError):
+            cfg.set_nested("nonexistent", 42)
+
+
+# ------------------------------------------------------------------
+# model_validate / extra=forbid
+# ------------------------------------------------------------------
+
+
+class TestModelValidate:
+    def test_model_validate_returns_instance(self):
+        cfg = ToyConfig.model_validate({"Task": "task", "project_path": ""})
         assert isinstance(cfg, ToyConfig)
         assert cfg.Task == "task"
 
-    def test_validate_dict_rejects_extra_keys(self):
-        """ToyConfig has no extra='forbid', so extra keys are just ignored."""
-        cfg = ToyConfig.validate_dict({"Task": "ok", "project_path": "", "extra": 1})
-        assert cfg.Task == "ok"
+    def test_model_validate_rejects_extra_keys(self):
+        with pytest.raises(ValidationError):
+            ToyConfig.model_validate({"Task": "ok", "project_path": "", "extra": 1})
+
+
+# ------------------------------------------------------------------
+# aliases
+# ------------------------------------------------------------------
+
+
+class TestAliases:
+    def test_model_validate_resolves_alias_without_from_dict(self):
+        with pytest.warns(DLCDeprecationWarning, match="projectPath"):
+            cfg = ToyConfig.model_validate({"Task": "t", "projectPath": "/alias"})
+        assert cfg.project_path == "/alias"
+
+    def test_model_validate_rejects_alias_and_canonical_together(self):
+        with pytest.warns(DLCDeprecationWarning, match="projectPath"):
+            with pytest.raises(TypeError, match=r"projectPath.*project_path"):
+                ToyConfig.model_validate({"Task": "t", "projectPath": "/alias", "project_path": "/canonical"})
+
+    def test_getitem_alias_warns_and_reads_canonical(self):
+        cfg = ToyConfig(project_path="/p")
+        with pytest.warns(DLCDeprecationWarning, match="projectPath"):
+            assert cfg["projectPath"] == "/p"
+
+    def test_setitem_alias_warns_once_and_writes_canonical(self):
+        cfg = ToyConfig()
+        with pytest.warns(DLCDeprecationWarning, match="projectPath") as record:
+            cfg["projectPath"] = "/new"
+        assert len(record) == 1
+        assert cfg.project_path == "/new"
+
+    def test_setattr_alias_warns_and_validates(self):
+        cfg = ToyConfig()
+        with pytest.warns(DLCDeprecationWarning, match="projectPath"):
+            cfg.projectPath = "/attr"
+        assert cfg.project_path == "/attr"
+
+    def test_getattr_alias_warns(self):
+        cfg = ToyConfig(project_path="/p")
+        with pytest.warns(DLCDeprecationWarning, match="projectPath"):
+            assert cfg.projectPath == "/p"
+
+    def test_contains_accepts_alias(self):
+        cfg = ToyConfig()
+        assert "projectPath" in cfg
 
 
 # ------------------------------------------------------------------
@@ -180,7 +326,6 @@ def test_from_dict_returns_instance():
 
 
 def test_from_dict_incomplete_uses_defaults():
-    """Missing keys in dict input are filled from ToyConfig defaults."""
     cfg = ToyConfig.from_dict({"Task": "custom_task"})
     assert cfg.Task == "custom_task"
     assert cfg.project_path == "DefaultProjectPath"
@@ -202,16 +347,6 @@ def test_from_any_with_dict_returns_instance():
     assert cfg.Task == "y"
 
 
-def test_from_any_with_dictconfig_emits_deprecation_warning():
-    from omegaconf import OmegaConf
-
-    dc = OmegaConf.create({"Task": "z", "project_path": "/dc"})
-    with pytest.warns(DeprecationWarning, match="DictConfig is deprecated"):
-        cfg = ToyConfig.from_any(dc)
-    assert isinstance(cfg, ToyConfig)
-    assert cfg.Task == "z"
-
-
 def test_from_any_with_invalid_type_raises():
     with pytest.raises(TypeError, match="Expected.*Got <class 'int'>"):
         ToyConfig.from_any(42)
@@ -230,16 +365,6 @@ def test_to_dict_returns_dict():
     d = cfg.to_dict()
     assert isinstance(d, dict)
     assert d["Task"] == "t"
-
-
-def test_to_dictconfig_emits_deprecation_warning():
-    from omegaconf import OmegaConf
-
-    cfg = ToyConfig(Task="t", project_path="")
-    with pytest.warns(DeprecationWarning, match="to_dictconfig.*deprecated"):
-        dc = cfg.to_dictconfig()
-    assert OmegaConf.is_config(dc)
-    assert dc.Task == "t"
 
 
 def test_from_dict_to_dict_roundtrip():
@@ -265,3 +390,48 @@ def test_print_no_error(capsys):
     cfg.print()
     out, _ = capsys.readouterr()
     assert "Task" in out
+
+
+# ------------------------------------------------------------------
+# No schema migration on DLCBaseConfig
+# ------------------------------------------------------------------
+
+
+class _ToyBaseOnly(DLCBaseConfig):
+    toy_new_field: str = ""
+
+
+class _ToyVersioned(DLCVersionedConfig):
+    config_version: int = _TOY_VERSION_NEW
+    toy_new_field: str = ""
+
+
+@register_migration(_TOY_VERSION_OLD, _TOY_VERSION_NEW, config_type="_ToyVersioned")
+def _toy_versioned_migrate_v98_to_v99(config: dict) -> dict:
+    if _LEGACY_FIELD in config:
+        config["toy_new_field"] = config.pop(_LEGACY_FIELD)
+    return config
+
+
+class TestNoMigrationOnBaseConfig:
+    """DLCBaseConfig resolves aliases but does not run version migrations."""
+
+    @pytest.fixture(autouse=True)
+    def _toy_current_version(self, monkeypatch):
+        monkeypatch.setattr(versioning, "CURRENT_CONFIG_VERSION", _TOY_VERSION_NEW)
+
+    def test_base_config_rejects_legacy_key_without_migration(self):
+        legacy_cfg = {
+            "config_version": _TOY_VERSION_OLD,
+            _LEGACY_FIELD: "value",
+        }
+        with pytest.raises(ValidationError):
+            _ToyBaseOnly.from_dict(legacy_cfg)
+
+    def test_versioned_config_applies_migration_for_same_input(self):
+        legacy_cfg = {
+            "config_version": _TOY_VERSION_OLD,
+            _LEGACY_FIELD: "value",
+        }
+        cfg = _ToyVersioned.from_dict(legacy_cfg)
+        assert cfg.toy_new_field == "value"

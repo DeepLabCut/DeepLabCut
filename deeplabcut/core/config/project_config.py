@@ -10,26 +10,30 @@
 #
 """Project configuration classes for DeepLabCut pose estimation models."""
 
-from dataclasses import field
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal, Self
 
-from pydantic import ConfigDict
-from pydantic.dataclasses import dataclass
+from pydantic import Field, model_validator
 
-from deeplabcut.core.config.mixins import ChangeTrackingMixin, ConfigMixin
-from deeplabcut.core.config.versioning import CURRENT_CONFIG_VERSION, MigrationMixin
+from deeplabcut.core.config.base_config import DLCVersionedConfig
+from deeplabcut.core.config.validation import (
+    BodypartPair,
+    Fraction,
+    NonNegativeInt,
+    StrictPositiveInt,
+    UniqueStrList,
+    less_than,
+    validate_crop_bounds,
+)
 
 
-@dataclass(config=ConfigDict(extra="forbid", validate_assignment=True))
-class ProjectConfig(ChangeTrackingMixin, MigrationMixin, ConfigMixin):
+class ProjectConfig(DLCVersionedConfig):
     """Complete project configuration.
 
     Mirrors the structure of the project config.yaml (and metadata in pose config).
     Field names match the old dictionary keys for round-trip compatibility.
 
     Attributes:
-        config_version: Configuration version.
         Task: Project task identifier (do not edit).
         scorer: Scorer name (do not edit).
         date: Project date (do not edit).
@@ -43,7 +47,6 @@ class ProjectConfig(ChangeTrackingMixin, MigrationMixin, ConfigMixin):
         individuals: List of individual animal identities (multi-animal).
         uniquebodyparts: List of unique body parts (multi-animal project key).
         multianimalbodyparts: List of multi-animal body parts (multi-animal key).
-        unique_bodyparts: List of unique body parts (metadata key).
         start: Fraction of video to start extracting frames.
         stop: Fraction of video to stop extracting frames.
         numframes2pick: Number of frames to pick for labeling.
@@ -72,90 +75,95 @@ class ProjectConfig(ChangeTrackingMixin, MigrationMixin, ConfigMixin):
         SuperAnimalConversionTables: Conversion tables for SuperAnimal weights.
     """
 
-    config_version: int = CURRENT_CONFIG_VERSION
     # Project definitions (do not edit)
-    Task: str = field(default="", metadata={"comment": "Project definitions (do not edit)"})
+    Task: str = Field(default="", json_schema_extra={"comment": "Project definitions (do not edit)"})
     scorer: str = ""
     date: str = ""
     multianimalproject: bool = False
-    identity: bool | None = None
+    identity: bool | None = Field(default=None, json_schema_extra={"aliases": ["with_identity"]})
 
     # Project path
-    project_path: Path = field(default=Path(), metadata={"comment": "\nProject path (change when moving around)"})
-    pose_config_path: Path = Path()
+    project_path: Path = Field(
+        default_factory=Path,
+        json_schema_extra={"comment": "\nProject path (change when moving around)"},
+    )
+    pose_config_path: Path | None = None
 
     # Engine
-    engine: str = field(
+    engine: Literal["pytorch", "tensorflow"] = Field(
         default="pytorch",
-        metadata={"comment": "\nDefault DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)"},
+        json_schema_extra={
+            "comment": "\nDefault DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)"
+        },
     )
 
-    # Annotation data set configuration (and individual video cropping parameters)
-    video_sets: dict[str, Any] = field(
+    # Annotation dataset configuration (and individual video cropping parameters)
+    video_sets: dict[str, Any] = Field(
         default_factory=dict,
-        metadata={"comment": "\nAnnotation data set configuration (and individual video cropping parameters)"},
+        json_schema_extra={"comment": "\nAnnotation data set configuration (and individual video cropping parameters)"},
     )
     # VV TODO @deruyter92 2026-01-30: following the old original config.yaml template for now. VV
     # VV We should change this to a list[str] in the future. VV
-    bodyparts: list[str] | str = "MULTI!"
+    bodyparts: UniqueStrList | Literal["MULTI!"] = Field(default_factory=list)
 
     # TODO @deruyter92 2026-02-06: The current pipeline requires at least one individual defined in the
     # default configuration. This will be removed in the future.
-    individuals: list[str] = field(default_factory=lambda: ["individual_1"])
-    uniquebodyparts: list[str] = field(default_factory=list)  # multi-animal project key
-    multianimalbodyparts: list[str] = field(default_factory=list)  # multi-animal project key
-    unique_bodyparts: list[str] = field(default_factory=list)  # metadata key; same as uniquebodyparts
+    individuals: UniqueStrList = Field(default_factory=lambda: ["individual_1"])
+    uniquebodyparts: UniqueStrList = Field(default_factory=list, json_schema_extra={"aliases": ["unique_bodyparts"]})
+    multianimalbodyparts: UniqueStrList = Field(default_factory=list)  # multi-animal project key
 
     # Fraction of video to start/stop when extracting frames for labeling/refinement
-    start: float = field(
+    start: Fraction = Field(
         default=0.0,
-        metadata={"comment": "\nFraction of video to start/stop when extracting frames for labeling/refinement"},
+        json_schema_extra={
+            "comment": "\nFraction of video to start/stop when extracting frames for labeling/refinement"
+        },
     )
-    stop: float = 1.0
-    numframes2pick: int = 20
+    stop: Fraction = 1.0
+    numframes2pick: NonNegativeInt = 20
 
     # Plotting configuration
-    skeleton: list[list[str]] = field(
+    skeleton: list[BodypartPair] = Field(
         default_factory=list,
-        metadata={"comment": "\nPlotting configuration"},
+        json_schema_extra={"comment": "\nPlotting configuration"},
     )
     skeleton_color: str = "black"
-    pcutoff: float = 0.4
-    dotsize: int = 12
-    alphavalue: float = 0.7
+    pcutoff: Fraction = 0.6
+    dotsize: NonNegativeInt = 12
+    alphavalue: Fraction = 0.7
     colormap: str = "rainbow"
 
     # Training, evaluation and analysis configuration
-    TrainingFraction: list[float] = field(
-        default_factory=list,
-        metadata={"comment": "\nTraining,Evaluation and Analysis configuration"},
+    TrainingFraction: list[Fraction] = Field(
+        default_factory=lambda: [0.95],
+        json_schema_extra={"comment": "\nTraining,Evaluation and Analysis configuration"},
     )
-    iteration: int | None = None
+    iteration: NonNegativeInt | None = None
     default_net_type: str = "resnet_50"
     default_augmenter: str | None = None
     default_track_method: str | None = None
-    snapshotindex: str | int = "all"
+    snapshotindex: Literal["all"] | int = "all"
     detector_snapshotindex: int = -1
-    batch_size: int = 8
-    detector_batch_size: int = 1
+    batch_size: StrictPositiveInt = 8
+    detector_batch_size: StrictPositiveInt = 1
 
     # Cropping parameters (for analysis and outlier frame detection)
-    cropping: bool = field(
+    cropping: bool = Field(
         default=False,
-        metadata={"comment": "\nCropping Parameters (for analysis and outlier frame detection)"},
+        json_schema_extra={"comment": "\nCropping Parameters (for analysis and outlier frame detection)"},
     )
-    x1: int | None = field(
+    x1: NonNegativeInt | None = Field(
         default=None,
-        metadata={"comment": "if cropping is true for analysis, then set the values here:"},
+        json_schema_extra={"comment": "if cropping is true for analysis, then set the values here:"},
     )
-    x2: int | None = None
-    y1: int | None = None
-    y2: int | None = None
+    x2: NonNegativeInt | None = None
+    y1: NonNegativeInt | None = None
+    y2: NonNegativeInt | None = None
 
     # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
-    corner2move2: list[int] | None = field(
+    corner2move2: list[NonNegativeInt] | None = Field(
         default=None,
-        metadata={
+        json_schema_extra={
             "comment": (
                 "\nRefinement configuration (parameters from annotation dataset "
                 "configuration also relevant in this stage)"
@@ -165,28 +173,50 @@ class ProjectConfig(ChangeTrackingMixin, MigrationMixin, ConfigMixin):
     move2corner: bool | None = None
 
     # Conversion tables to fine-tune SuperAnimal weights
-    SuperAnimalConversionTables: dict[str, Any] | None = field(
+    SuperAnimalConversionTables: dict[str, Any] | None = Field(
         default=None,
-        metadata={"comment": "\nConversion tables to fine-tune SuperAnimal weights"},
-    )
-
-    # @TODO @deruyter92 2026-02-13: These aliases are used in parallel. One of them should be removed.
-    with_identity: bool | None = field(
-        default=False, metadata={"comment": "Alias for 'identity'. Kept for backwards compatibility."}
-    )
-    unique_bodyparts: list[str] = field(
-        default_factory=list, metadata={"comment": "Alias for 'uniquebodyparts'. Kept for backwards compatibility."}
+        json_schema_extra={"comment": "\nConversion tables to fine-tune SuperAnimal weights"},
     )
 
     # TODO @deruyter92 2026-02-06: These parameters are no longer used in the new pipeline.
-    resnet: int | None = field(
+    # We should remove them in config schema v1. They are needed now to support reading old configs.
+    resnet: int | None = Field(
         default=None,
-        metadata={
-            "comment": "\nThese are very old parameters that are no longer used "
-            "in most cases. They are kept for backwards compatibility."
+        json_schema_extra={
+            "comment": "\nThese are very old parameters that are no longer used They are simply ignored."
         },
     )
     croppedtraining: bool | None = None
+
+    @property
+    def bodyparts_list(self) -> list[str]:
+        # Animal-count agnostic; Always return a list (never "MULTI!", None, etc.)
+        if self.multianimalproject:
+            return list(self.multianimalbodyparts)
+        if self.bodyparts == "MULTI!":
+            raise ValueError("bodyparts must be a list of strings when multianimalproject is False, got 'MULTI!'")
+        return list(self.bodyparts)
+
+    @property
+    def config_yaml_path(self) -> Path:
+        return self.project_path / "config.yaml"
+
+    def validate_project_path(self, *, yaml_path: str | Path | None = None, write: bool = False) -> Self:
+        """Repair project_path from yaml location; optionally persist."""
+        path = Path(yaml_path) if yaml_path is not None else self.config_yaml_path
+        if not path.is_file():
+            raise FileNotFoundError(f"config.yaml not found: {path}")
+        self._post_yaml_load_updates(yaml_path=path)
+        if write and "project_path" in self.dirty_fields:
+            self.to_yaml(path, log_changes=True, mark_clean=True)
+        return self
+
+    @classmethod
+    def from_any(cls, config: Self | dict | str | Path, *, repair_path: bool = False) -> Self:
+        cfg = super().from_any(config)
+        if repair_path:
+            cfg.validate_project_path(yaml_path=config if isinstance(config, (str, Path)) else None, write=True)
+        return cfg
 
     def _post_yaml_load_updates(self, *, yaml_path: Path) -> None:
         """
@@ -203,3 +233,26 @@ class ProjectConfig(ChangeTrackingMixin, MigrationMixin, ConfigMixin):
                 "project_path",
                 f"project_path updated: {old} -> {project_path} (resolved from YAML location when reading config.yaml)",
             )
+
+    @model_validator(mode="after")
+    def validate_start_before_stop(self) -> Self:
+        less_than(self.start, self.stop, name="start", threshold_name="stop")
+        return self
+
+    @model_validator(mode="after")
+    def validate_bodyparts_single_animal(self) -> Self:
+        if not self.multianimalproject and self.bodyparts == "MULTI!":
+            raise ValueError("bodyparts must be a list of strings when multianimalproject is False, got 'MULTI!'")
+
+        # TODO @deruyter92 2026-06-15: This sentinel should be removed in v1.
+        elif self.multianimalproject and self.bodyparts != "MULTI!":
+            raise ValueError(f"bodyparts must be 'MULTI!' when multianimalproject is True, got {self.bodyparts}")
+
+        return self
+
+    @model_validator(mode="after")
+    def validate_cropping_bounds(self) -> Self:
+        if self.cropping and any(value is None for value in (self.x1, self.x2, self.y1, self.y2)):
+            raise ValueError("When cropping is enabled, x1, x2, y1, and y2 must all be set")
+        validate_crop_bounds(x1=self.x1, x2=self.x2, y1=self.y1, y2=self.y2)
+        return self
