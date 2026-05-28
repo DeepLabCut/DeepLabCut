@@ -16,14 +16,14 @@ import warnings
 from pathlib import Path
 
 import numpy as np
-from pydantic.dataclasses import dataclass
+from pydantic import model_validator
+from typing_extensions import Self
 
-from deeplabcut.core.config import ConfigMixin
+from deeplabcut.core.config import DLCBaseConfig
 from deeplabcut.core.types import PydanticNDArray
 
 
-@dataclass
-class WeightInitialization(ConfigMixin):
+class WeightInitialization(DLCBaseConfig):
     """Configures weights initialization when transfer learning or fine-tuning models
 
     Args:
@@ -54,7 +54,8 @@ class WeightInitialization(ConfigMixin):
     conversion_array: PydanticNDArray | None = None
     bodyparts: list[str] | None = None
 
-    def __post_init__(self):
+    @model_validator(mode="after")
+    def _validate_options(self) -> Self:
         if self.memory_replay and not self.with_decoder:
             raise ValueError(
                 "You cannot train a model with memory replay if you do not keep the "
@@ -75,11 +76,12 @@ class WeightInitialization(ConfigMixin):
             )
 
         if self.conversion_array is not None and self.bodyparts is not None:
-            if not len(self.conversion_array) == len(self.bodyparts):
+            if len(self.conversion_array) != len(self.bodyparts):
                 raise ValueError(
-                    "There must be the same number of elements in the bodyparts list "
-                    "and conv. array; found {self.bodyparts}, {self.conversion_array}"
+                    f"There must be the same number of elements in the bodyparts list "
+                    f"and conv. array; found {self.bodyparts}, {self.conversion_array}"
                 )
+        return self
 
     def to_dict(self) -> dict:
         """Returns: the weight initialization as a dict"""

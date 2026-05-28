@@ -14,11 +14,11 @@ from __future__ import annotations
 
 import logging
 import warnings
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from enum import Enum
 from functools import wraps
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from omegaconf import DictConfig, OmegaConf
 
@@ -96,6 +96,62 @@ def write_config(config_path: str | Path, config: dict, overwrite: bool = True) 
         get_yaml_dumper().dump(config, file)
 
 
+def resolve_aliases_in_dict(
+    cfg_dict: dict,
+    alias_map: dict[str, str],
+    *,
+    target: str = "config",
+    stacklevel: int = 3,
+) -> dict:
+    """Rename deprecated config keys to their canonical names.
+
+    Args:
+        cfg_dict: Raw configuration mapping (e.g. from YAML).
+        alias_map: ``{alias: canonical_name}`` for deprecated keys.
+        target: Config class name shown in errors.
+        stacklevel: Passed to :func:`warnings.warn` for deprecation messages.
+
+    Returns:
+        A new dict with alias keys replaced by canonical names. Unchanged if
+        ``alias_map`` is empty.
+
+    Raises:
+        TypeError: If both an alias and its canonical name are present.
+    """
+    if not alias_map:
+        return cfg_dict
+
+    for alias, canonical in alias_map.items():
+        if alias in cfg_dict and canonical in cfg_dict:
+            raise TypeError(f"{target} received both '{alias}' and '{canonical}'. Use only '{canonical}'.")
+
+    from deeplabcut.utils.deprecation import DLCDeprecationWarning
+
+    resolved = {}
+    for k, v in cfg_dict.items():
+        canonical = alias_map.get(k)
+        if canonical is not None:
+            warnings.warn(
+                f"Config key '{k}' is deprecated, use '{canonical}' instead.",
+                DLCDeprecationWarning,
+                stacklevel=stacklevel,
+            )
+            k = canonical
+        resolved[k] = v
+    return resolved
+
+
+def normalize_for_serialization(obj: Any) -> Any:
+    """Recursively normalize Paths to strings and Enums to values."""
+    if isinstance(obj, Path):
+        return str(obj)
+    if isinstance(obj, Enum):
+        return obj.value
+    if isinstance(obj, Mapping):
+        return type(obj)({k: normalize_for_serialization(v) for k, v in obj.items()})
+    return obj
+
+
 def pretty_print(
     config: dict,
     indent: int = 0,
@@ -122,16 +178,16 @@ def pretty_print(
 def ensure_plain_config(fn: Callable) -> Callable:
     """Convert typed config arguments into plain Python objects.
 
-    Any positional or keyword argument that is a ConfigMixin, OmegaConf
+    Any positional or keyword argument that is a DLCBaseConfig, OmegaConf
     DictConfig, or OmegaConf ListConfig is converted to a plain ``dict`` / ``list``
     before the decorated function is called.
     """
 
     def _to_plain(value, fn_name: str = "<unknown>", var_name: str = "<unknown>"):
         # Lazy import to avoid circular imports during module initialization.
-        from deeplabcut.core.config.mixins import ConfigMixin
+        from deeplabcut.core.config.base_config import DLCBaseConfig
 
-        if isinstance(value, ConfigMixin):
+        if isinstance(value, DLCBaseConfig):
             logger.debug(
                 "converting %s (%s) to native dict in %s.",
                 var_name,

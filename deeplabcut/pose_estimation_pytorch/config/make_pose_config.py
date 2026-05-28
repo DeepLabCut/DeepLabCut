@@ -258,7 +258,7 @@ def make_pytorch_pose_config(
     pose_config_dict = update_config(pose_config_dict, defaults)
 
     # Validate and convert back to typed PoseConfig
-    pose_config = PoseConfig.validate_dict(pose_config_dict)
+    pose_config = PoseConfig.from_dict(pose_config_dict)
 
     if save:
         pose_config.to_yaml(pose_config_path, overwrite=True)
@@ -327,7 +327,7 @@ def make_pytorch_test_config(
         The test configuration as a typed TestConfig.
     """
     # Validate the model config against the PoseConfig pydantic model
-    model_config = PoseConfig.from_any(model_config).to_dictconfig()
+    model_config = PoseConfig.from_any(model_config).to_dict()
 
     bodyparts = model_config["metadata"]["bodyparts"]
     unique_bodyparts = model_config["metadata"]["unique_bodyparts"]

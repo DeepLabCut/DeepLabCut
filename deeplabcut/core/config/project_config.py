@@ -10,19 +10,16 @@
 #
 """Project configuration classes for DeepLabCut pose estimation models."""
 
-from dataclasses import field
 from pathlib import Path
 from typing import Any
 
-from pydantic import ConfigDict
-from pydantic.dataclasses import dataclass
+from pydantic import Field
 
-from deeplabcut.core.config.mixins import ChangeTrackingMixin, ConfigMixin
-from deeplabcut.core.config.versioning import CURRENT_CONFIG_VERSION, MigrationMixin
+from deeplabcut.core.config.base_config import DLCVersionedConfig
+from deeplabcut.core.config.versioning import CURRENT_CONFIG_VERSION
 
 
-@dataclass(config=ConfigDict(extra="forbid", validate_assignment=True))
-class ProjectConfig(ChangeTrackingMixin, MigrationMixin, ConfigMixin):
+class ProjectConfig(DLCVersionedConfig):
     """Complete project configuration.
 
     Mirrors the structure of the project config.yaml (and metadata in pose config).
@@ -74,26 +71,31 @@ class ProjectConfig(ChangeTrackingMixin, MigrationMixin, ConfigMixin):
 
     config_version: int = CURRENT_CONFIG_VERSION
     # Project definitions (do not edit)
-    Task: str = field(default="", metadata={"comment": "Project definitions (do not edit)"})
+    Task: str = Field(default="", json_schema_extra={"comment": "Project definitions (do not edit)"})
     scorer: str = ""
     date: str = ""
     multianimalproject: bool = False
     identity: bool | None = None
 
     # Project path
-    project_path: Path = field(default=Path(), metadata={"comment": "\nProject path (change when moving around)"})
+    project_path: Path = Field(
+        default_factory=Path,
+        json_schema_extra={"comment": "\nProject path (change when moving around)"},
+    )
     pose_config_path: Path = Path()
 
     # Engine
-    engine: str = field(
+    engine: str = Field(
         default="pytorch",
-        metadata={"comment": "\nDefault DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)"},
+        json_schema_extra={
+            "comment": "\nDefault DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)"
+        },
     )
 
     # Annotation data set configuration (and individual video cropping parameters)
-    video_sets: dict[str, Any] = field(
+    video_sets: dict[str, Any] = Field(
         default_factory=dict,
-        metadata={"comment": "\nAnnotation data set configuration (and individual video cropping parameters)"},
+        json_schema_extra={"comment": "\nAnnotation data set configuration (and individual video cropping parameters)"},
     )
     # VV TODO @deruyter92 2026-01-30: following the old original config.yaml template for now. VV
     # VV We should change this to a list[str] in the future. VV
@@ -101,23 +103,25 @@ class ProjectConfig(ChangeTrackingMixin, MigrationMixin, ConfigMixin):
 
     # TODO @deruyter92 2026-02-06: The current pipeline requires at least one individual defined in the
     # default configuration. This will be removed in the future.
-    individuals: list[str] = field(default_factory=lambda: ["individual_1"])
-    uniquebodyparts: list[str] = field(default_factory=list)  # multi-animal project key
-    multianimalbodyparts: list[str] = field(default_factory=list)  # multi-animal project key
-    unique_bodyparts: list[str] = field(default_factory=list)  # metadata key; same as uniquebodyparts
+    individuals: list[str] = Field(default_factory=lambda: ["individual_1"])
+    uniquebodyparts: list[str] = Field(default_factory=list)  # multi-animal project key
+    multianimalbodyparts: list[str] = Field(default_factory=list)  # multi-animal project key
+    unique_bodyparts: list[str] = Field(default_factory=list)  # metadata key; same as uniquebodyparts
 
     # Fraction of video to start/stop when extracting frames for labeling/refinement
-    start: float = field(
+    start: float = Field(
         default=0.0,
-        metadata={"comment": "\nFraction of video to start/stop when extracting frames for labeling/refinement"},
+        json_schema_extra={
+            "comment": "\nFraction of video to start/stop when extracting frames for labeling/refinement"
+        },
     )
     stop: float = 1.0
     numframes2pick: int = 20
 
     # Plotting configuration
-    skeleton: list[list[str]] = field(
+    skeleton: list[list[str]] = Field(
         default_factory=list,
-        metadata={"comment": "\nPlotting configuration"},
+        json_schema_extra={"comment": "\nPlotting configuration"},
     )
     skeleton_color: str = "black"
     pcutoff: float = 0.4
@@ -126,9 +130,9 @@ class ProjectConfig(ChangeTrackingMixin, MigrationMixin, ConfigMixin):
     colormap: str = "rainbow"
 
     # Training, evaluation and analysis configuration
-    TrainingFraction: list[float] = field(
+    TrainingFraction: list[float] = Field(
         default_factory=list,
-        metadata={"comment": "\nTraining,Evaluation and Analysis configuration"},
+        json_schema_extra={"comment": "\nTraining,Evaluation and Analysis configuration"},
     )
     iteration: int | None = None
     default_net_type: str = "resnet_50"
@@ -140,22 +144,22 @@ class ProjectConfig(ChangeTrackingMixin, MigrationMixin, ConfigMixin):
     detector_batch_size: int = 1
 
     # Cropping parameters (for analysis and outlier frame detection)
-    cropping: bool = field(
+    cropping: bool = Field(
         default=False,
-        metadata={"comment": "\nCropping Parameters (for analysis and outlier frame detection)"},
+        json_schema_extra={"comment": "\nCropping Parameters (for analysis and outlier frame detection)"},
     )
-    x1: int | None = field(
+    x1: int | None = Field(
         default=None,
-        metadata={"comment": "if cropping is true for analysis, then set the values here:"},
+        json_schema_extra={"comment": "if cropping is true for analysis, then set the values here:"},
     )
     x2: int | None = None
     y1: int | None = None
     y2: int | None = None
 
     # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
-    corner2move2: list[int] | None = field(
+    corner2move2: list[int] | None = Field(
         default=None,
-        metadata={
+        json_schema_extra={
             "comment": (
                 "\nRefinement configuration (parameters from annotation dataset "
                 "configuration also relevant in this stage)"
@@ -165,23 +169,25 @@ class ProjectConfig(ChangeTrackingMixin, MigrationMixin, ConfigMixin):
     move2corner: bool | None = None
 
     # Conversion tables to fine-tune SuperAnimal weights
-    SuperAnimalConversionTables: dict[str, Any] | None = field(
+    SuperAnimalConversionTables: dict[str, Any] | None = Field(
         default=None,
-        metadata={"comment": "\nConversion tables to fine-tune SuperAnimal weights"},
+        json_schema_extra={"comment": "\nConversion tables to fine-tune SuperAnimal weights"},
     )
 
     # @TODO @deruyter92 2026-02-13: These aliases are used in parallel. One of them should be removed.
-    with_identity: bool | None = field(
-        default=False, metadata={"comment": "Alias for 'identity'. Kept for backwards compatibility."}
+    with_identity: bool | None = Field(
+        default=False,
+        json_schema_extra={"comment": "Alias for 'identity'. Kept for backwards compatibility."},
     )
-    unique_bodyparts: list[str] = field(
-        default_factory=list, metadata={"comment": "Alias for 'uniquebodyparts'. Kept for backwards compatibility."}
+    unique_bodyparts: list[str] = Field(
+        default_factory=list,
+        json_schema_extra={"comment": "Alias for 'uniquebodyparts'. Kept for backwards compatibility."},
     )
 
     # TODO @deruyter92 2026-02-06: These parameters are no longer used in the new pipeline.
-    resnet: int | None = field(
+    resnet: int | None = Field(
         default=None,
-        metadata={
+        json_schema_extra={
             "comment": "\nThese are very old parameters that are no longer used "
             "in most cases. They are kept for backwards compatibility."
         },

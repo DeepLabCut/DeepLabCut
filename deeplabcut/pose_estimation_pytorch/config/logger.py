@@ -13,9 +13,7 @@
 from enum import Enum
 from typing import Literal
 
-from pydantic.dataclasses import dataclass
-
-from deeplabcut.core.config.mixins import ConfigMixin
+from deeplabcut.core.config import DLCBaseConfig
 
 
 class LoggerType(str, Enum):
@@ -23,8 +21,7 @@ class LoggerType(str, Enum):
     CSVLogger = "CSVLogger"
 
 
-@dataclass
-class LoggerConfig(ConfigMixin):
+class LoggerConfig(DLCBaseConfig):
     """Base configuration for all loggers.
 
     Attributes:
@@ -34,7 +31,6 @@ class LoggerConfig(ConfigMixin):
     type: str
 
 
-@dataclass
 class WandbLoggerConfig(LoggerConfig):  #
     """Configuration for Weights & Biases (wandb) logger.
 
@@ -61,7 +57,6 @@ class WandbLoggerConfig(LoggerConfig):  #
     wandb_kwargs: dict | None = None
 
 
-@dataclass
 class CSVLoggerConfig(LoggerConfig):  #
     """Configuration for CSV logger.
 

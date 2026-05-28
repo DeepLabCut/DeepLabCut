@@ -12,13 +12,10 @@
 
 from typing import Any
 
-from pydantic.dataclasses import dataclass
-
-from deeplabcut.core.config.mixins import ConfigMixin
+from deeplabcut.core.config import DLCBaseConfig
 
 
-@dataclass
-class OptimizerConfig(ConfigMixin):
+class OptimizerConfig(DLCBaseConfig):
     """Optimizer configuration.
 
     Attributes:
@@ -30,8 +27,7 @@ class OptimizerConfig(ConfigMixin):
     params: dict[str, Any] | None = None
 
 
-@dataclass
-class SchedulerConfig(ConfigMixin):
+class SchedulerConfig(DLCBaseConfig):
     """Learning rate scheduler configuration.
 
     Attributes:
@@ -43,8 +39,7 @@ class SchedulerConfig(ConfigMixin):
     params: dict[str, Any] | None = None
 
 
-@dataclass
-class SnapshotCheckpointConfig(ConfigMixin):
+class SnapshotCheckpointConfig(DLCBaseConfig):
     """Snapshot configuration for model checkpoints.
 
     Attributes:
@@ -58,8 +53,7 @@ class SnapshotCheckpointConfig(ConfigMixin):
     save_optimizer_state: bool = False
 
 
-@dataclass
-class RunnerConfig(ConfigMixin):
+class RunnerConfig(DLCBaseConfig):
     """Training runner configuration.
 
     Attributes:

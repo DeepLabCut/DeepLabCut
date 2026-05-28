@@ -10,16 +10,14 @@
 #
 """Inference configuration classes for DeepLabCut pose estimation models."""
 
-from dataclasses import field
 from typing import Any, Literal
 
-from pydantic.dataclasses import dataclass
+from pydantic import Field
 
-from deeplabcut.core.config.mixins import ConfigMixin
+from deeplabcut.core.config import DLCBaseConfig
 
 
-@dataclass
-class MultithreadingConfig(ConfigMixin):
+class MultithreadingConfig(DLCBaseConfig):
     """Multithreading configuration for inference.
 
     Attributes:
@@ -33,8 +31,7 @@ class MultithreadingConfig(ConfigMixin):
     timeout: float = 30.0
 
 
-@dataclass
-class CompileConfig(ConfigMixin):
+class CompileConfig(DLCBaseConfig):
     """Model compilation configuration for inference optimization.
 
     Attributes:
@@ -46,8 +43,7 @@ class CompileConfig(ConfigMixin):
     backend: str = "inductor"
 
 
-@dataclass
-class AutocastConfig(ConfigMixin):
+class AutocastConfig(DLCBaseConfig):
     """Automatic mixed precision configuration.
 
     Attributes:
@@ -58,8 +54,7 @@ class AutocastConfig(ConfigMixin):
     enabled: bool = False
 
 
-@dataclass
-class EvaluationConfig(ConfigMixin):
+class EvaluationConfig(DLCBaseConfig):
     """Configuration for evaluation metrics computation.
 
     Attributes:
@@ -82,8 +77,7 @@ class EvaluationConfig(ConfigMixin):
     force_multi_animal: bool = False
 
 
-@dataclass
-class InferenceConfig(ConfigMixin):
+class InferenceConfig(DLCBaseConfig):
     """Complete inference configuration.
 
     Attributes:
@@ -95,10 +89,10 @@ class InferenceConfig(ConfigMixin):
         eval: Evaluation configuration
     """
 
-    multithreading: MultithreadingConfig = field(default_factory=MultithreadingConfig)
-    compile: CompileConfig = field(default_factory=CompileConfig)
-    autocast: AutocastConfig = field(default_factory=AutocastConfig)
+    multithreading: MultithreadingConfig = Field(default_factory=MultithreadingConfig)
+    compile: CompileConfig = Field(default_factory=CompileConfig)
+    autocast: AutocastConfig = Field(default_factory=AutocastConfig)
     conditions: dict[str, Any] | None = None
     snapshot: int | str | list[int] | None = None
-    eval: EvaluationConfig = field(default_factory=EvaluationConfig)
+    eval: EvaluationConfig = Field(default_factory=EvaluationConfig)
     output_dir: str | None = None
