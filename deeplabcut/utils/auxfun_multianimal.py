@@ -228,7 +228,7 @@ def returnlabelingdata(config):
         print("Do you want to get the data for folder:", folder, "?")
         askuser = input("yes/no")
         if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":  # multilanguage support :)
-            fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
+            fn = folder / ("CollectedData_" + cfg["scorer"] + ".h5")
             Data = pd.read_hdf(fn)
             return Data
 
@@ -292,8 +292,8 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
             askuser = "yes"
 
         if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":  # multilanguage support :)
-            fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
-            Data = pd.read_hdf(fn + ".h5")
+            fn = folder / ("CollectedData_" + cfg["scorer"])
+            Data = pd.read_hdf(str(fn) + ".h5")
             conversioncode.guarantee_multiindex_rows(Data)
             imindex = Data.index
 
@@ -380,8 +380,8 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
             askuser = "yes"
 
         if askuser == "y" or askuser == "yes" or askuser == "Ja" or askuser == "ha":  # multilanguage support :)
-            fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"])
-            Data = pd.read_hdf(fn + ".h5")
+            fn = folder / ("CollectedData_" + cfg["scorer"])
+            Data = pd.read_hdf(str(fn) + ".h5")
             conversioncode.guarantee_multiindex_rows(Data)
             imindex = Data.index
 
@@ -544,7 +544,7 @@ def check_inferencecfg_sanity(cfg, inferencecfg):
 def read_inferencecfg(path_inference_config, cfg):
     """Load inferencecfg or initialize it."""
     try:
-        inferencecfg = auxiliaryfunctions.read_plainconfig(str(path_inference_config))
+        inferencecfg = auxiliaryfunctions.read_plainconfig(path_inference_config)
     except FileNotFoundError:
         inferencecfg = form_default_inferencecfg(cfg)
         auxiliaryfunctions.write_plainconfig(str(path_inference_config), dict(inferencecfg))

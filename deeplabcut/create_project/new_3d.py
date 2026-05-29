@@ -10,7 +10,6 @@
 #
 
 
-import os
 from pathlib import Path
 
 from deeplabcut import DEBUG
@@ -122,7 +121,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
         cfg_file_3d.insert(len(cfg_file_3d), str("shuffle_camera-" + str(i + 1)), 1)
         cfg_file_3d.insert(len(cfg_file_3d), str("trainingsetindex_camera-" + str(i + 1)), 0)
 
-    projconfigfile = os.path.join(str(project_path), "config.yaml")
+    projconfigfile = project_path / "config.yaml"
     auxiliaryfunctions.write_config_3d(projconfigfile, cfg_file_3d)
 
     print('Generated "{}"'.format(project_path / "config.yaml"))

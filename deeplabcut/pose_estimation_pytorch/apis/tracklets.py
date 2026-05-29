@@ -84,7 +84,7 @@ def convert_detections2tracklets(
     )
     model_dir = Path(cfg["project_path"]) / rel_model_dir
     path_test_config = model_dir / "test" / "pose_cfg.yaml"
-    dlc_cfg = auxiliaryfunctions.read_plainconfig(str(path_test_config))
+    dlc_cfg = auxiliaryfunctions.read_plainconfig(path_test_config)
 
     if "multi-animal" not in dlc_cfg["dataset_type"]:
         raise ValueError("This function is only required for multianimal projects!")

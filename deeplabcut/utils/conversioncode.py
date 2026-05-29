@@ -68,7 +68,7 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
                 askuser = "yes"
 
             if askuser in ("y", "yes", "Ja", "ha", "oui"):  # multilanguage support :)
-                fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv")
+                fn = folder / ("CollectedData_" + cfg["scorer"] + ".csv")
                 # Determine whether the data are single- or multi-animal without loading into memory
                 # simply by checking whether 'individuals' is in the second line of the CSV.
                 with open(fn) as datafile:

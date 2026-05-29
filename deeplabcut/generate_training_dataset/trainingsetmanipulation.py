@@ -139,14 +139,14 @@ def dropduplicatesinannotatinfiles(config):
 
     for folder in folders:
         try:
-            fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
+            fn = folder / ("CollectedData_" + cfg["scorer"] + ".h5")
             DC = pd.read_hdf(fn)
             numimages = len(DC.index)
             DC = DC[~DC.index.duplicated(keep="first")]
             if len(DC.index) < numimages:
                 print("Dropped", numimages - len(DC.index))
                 DC.to_hdf(fn, key="df_with_missing", mode="w")
-                DC.to_csv(os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv"))
+                DC.to_csv(folder / ("CollectedData_" + cfg["scorer"] + ".csv"))
 
         except FileNotFoundError:
             print("Attention:", folder, "does not appear to have labeled data!")
@@ -168,7 +168,7 @@ def dropannotationfileentriesduetodeletedimages(config):
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
 
     for folder in folders:
-        fn = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
+        fn = folder / ("CollectedData_" + cfg["scorer"] + ".h5")
         try:
             DC = pd.read_hdf(fn)
         except FileNotFoundError:
@@ -184,7 +184,7 @@ def dropannotationfileentriesduetodeletedimages(config):
                 dropped = True
         if dropped:
             DC.to_hdf(fn, key="df_with_missing", mode="w")
-            DC.to_csv(os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv"))
+            DC.to_csv(folder / ("CollectedData_" + cfg["scorer"] + ".csv"))
 
 
 def dropimagesduetolackofannotation(config):
@@ -203,7 +203,7 @@ def dropimagesduetolackofannotation(config):
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
 
     for folder in folders:
-        h5file = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
+        h5file = folder / ("CollectedData_" + cfg["scorer"] + ".h5")
         try:
             DC = pd.read_hdf(h5file)
         except FileNotFoundError:
@@ -211,7 +211,7 @@ def dropimagesduetolackofannotation(config):
             continue
         conversioncode.guarantee_multiindex_rows(DC)
         annotatedimages = [fn[-1] for fn in DC.index]
-        imagelist = [fns for fns in os.listdir(str(folder)) if ".png" in fns]
+        imagelist = [fns for fns in os.listdir(folder) if ".png" in fns]
         print("Annotated images: ", len(annotatedimages), " In folder:", len(imagelist))
         for imagename in imagelist:
             if imagename in annotatedimages:
@@ -250,7 +250,7 @@ def dropunlabeledframes(config):
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
 
     for folder in folders:
-        h5file = os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5")
+        h5file = folder / ("CollectedData_" + cfg["scorer"] + ".h5")
         try:
             DC = pd.read_hdf(h5file)
         except FileNotFoundError:
@@ -262,7 +262,7 @@ def dropunlabeledframes(config):
         dropped = before_len - after_len
         if dropped:
             DC.to_hdf(h5file, key="df_with_missing", mode="w")
-            DC.to_csv(os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".csv"))
+            DC.to_csv(folder / ("CollectedData_" + cfg["scorer"] + ".csv"))
 
             print("Dropped ", dropped, "entries in ", folder)
 
@@ -327,11 +327,11 @@ def check_labels(
     videos = cfg["video_sets"].keys()
     video_names = [_robust_path_split(video)[1] for video in videos]
 
-    folders = [os.path.join(cfg["project_path"], "labeled-data", str(Path(i))) for i in video_names]
+    folders = [Path(cfg["project_path"]) / "labeled-data" / Path(i) for i in video_names]
     print("Creating images with labels by {}.".format(cfg["scorer"]))
     for folder in folders:
         try:
-            DataCombined = pd.read_hdf(os.path.join(str(folder), "CollectedData_" + cfg["scorer"] + ".h5"))
+            DataCombined = pd.read_hdf(folder / ("CollectedData_" + cfg["scorer"] + ".h5"))
             conversioncode.guarantee_multiindex_rows(DataCombined)
             if cfg.get("multianimalproject", False):
                 color_by = "individual" if visualizeindividuals else "bodypart"

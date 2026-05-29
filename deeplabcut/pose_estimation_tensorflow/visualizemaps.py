@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import os
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 from skimage.transform import resize
@@ -61,7 +62,6 @@ def extract_maps(
     If you want to extract the data for image 0 and 103 (of the training set) for model trained with shuffle 0.
     >>> deeplabcut.extract_maps(configfile,0,Indices=[0,103])
     """
-    from pathlib import Path
 
     import numpy as np
     import pandas as pd
@@ -114,7 +114,7 @@ def extract_maps(
     )
 
     # Make folder for evaluation
-    auxiliaryfunctions.attempt_to_make_folder(str(cfg["project_path"] + "/evaluation-results/"))
+    auxiliaryfunctions.attempt_to_make_folder(Path(cfg["project_path"]) / "evaluation-results")
 
     Maps = {}
     for trainFraction in TrainingFractions:

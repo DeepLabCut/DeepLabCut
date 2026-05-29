@@ -670,7 +670,7 @@ def create_labeled_video(
         )
         model_config_path = Path(config).parent / model_folder / "train" / Engine.PYTORCH.pose_cfg_name
         if model_config_path.exists():
-            model_config = auxiliaryfunctions.read_plainconfig(str(model_config_path))
+            model_config = auxiliaryfunctions.read_plainconfig(model_config_path)
             if model_config["train_settings"].get("weight_init", {}).get("memory_replay", False):
                 superanimal_name = model_config["train_settings"]["weight_init"]["dataset"]
             if bboxes_pcutoff is None:

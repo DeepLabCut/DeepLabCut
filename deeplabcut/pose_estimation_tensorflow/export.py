@@ -276,12 +276,12 @@ def export_model(
 
     ### set up export directory
 
-    export_dir = os.path.normpath(cfg["project_path"] + "/" + "exported-models")
+    export_dir = Path(cfg["project_path"]) / "exported-models"
     if not os.path.isdir(export_dir):
         os.mkdir(export_dir)
 
     sub_dir_name = f"DLC_{cfg['Task']}_{dlc_cfg['net_type']}_iteration-{cfg['iteration']}_shuffle-{shuffle}"
-    full_export_dir = os.path.normpath(export_dir + "/" + sub_dir_name)
+    full_export_dir = export_dir / sub_dir_name
 
     if os.path.isdir(full_export_dir):
         if not overwrite:
