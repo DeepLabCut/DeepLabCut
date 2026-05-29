@@ -212,7 +212,10 @@ def safe_resolve(path: Path) -> Path:
     """
     resolved = path.resolve()
     try:
-        os.stat(str(resolved))
+        if resolved.is_dir():
+            os.listdir(str(resolved))
+        else:
+            open(str(resolved)).close()
         return resolved
     except OSError:
         return path.absolute()
@@ -238,7 +241,7 @@ def read_config(configname):
                 if cfg.get("detector_batch_size") is None:
                     cfg["detector_batch_size"] = 1
 
-                if cfg["project_path"] != curr_dir:
+                if cfg["project_path"] != str(curr_dir):
                     cfg["project_path"] = str(curr_dir)
                     write_config(configname, cfg)
         except Exception as err:
