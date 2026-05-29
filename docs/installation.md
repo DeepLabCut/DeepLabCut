@@ -324,7 +324,7 @@ interface.
 
 ## Updating your installation
 
-If you ever want to update your DLC, just run `pip install --upgrade deeplabcut` (alongside optional needed reqirements, e.g. `[gui]`) using your environment.
+If you ever want to update your DLC, just run `pip install --upgrade deeplabcut` (alongside optional needed requirements, e.g. `[gui]`) using your environment.
 
 If you would like to use a specific release, then specify the version you want, such as `pip install deeplabcut==3.0` and optional requirements.
 
