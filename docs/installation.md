@@ -319,13 +319,15 @@ Create a new conda environment with Python 3.10 (or 3.11, 3.12) by running:
 `conda create -n DLC python=3.10`
 
 **Current version:** The only thing you then need to add to the env is deeplabcut (
-`pip install deeplabcut`) or `pip install 'deeplabcut[gui]'` which has a napari based
-GUI.
+`pip install deeplabcut`) or `pip install 'deeplabcut[gui]'` if you are using the GUI, which includes the napari based labeling
+interface.
 
 ## Updating your installation
 
-If you ever want to update your DLC, just run `pip install --upgrade deeplabcut` inside your env.
-If you want to use a specific release, then specify the version you want, such as `pip install deeplabcut==3.0`.
+If you ever want to update your DLC, just run `pip install --upgrade deeplabcut` (alongside optional needed reqirements, e.g. `[gui]`) using your environment.
+
+If you would like to use a specific release, then specify the version you want, such as `pip install deeplabcut==3.0` and optional requirements.
+
 Once installed, you can
 check the version by running:
 
