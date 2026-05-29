@@ -213,6 +213,7 @@ def safe_resolve(path: Path) -> Path:
     resolved = path.resolve()
     try:
         if resolved.is_dir():
+            # test if os.listdir works after str-conversion
             os.listdir(str(resolved))
         else:
             open(str(resolved)).close()
