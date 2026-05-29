@@ -135,8 +135,11 @@ def prepare_memory_replay_dataset(
     device: str | None = None,
 ):
     """Need to first run inference on the source project train file."""
-    project_root = loader.project_path.resolve()
-    source_dataset_folder = Path(source_dataset_folder).resolve()
+    # Use safe_resolve so that symlinks are followed where possible, but we
+    # fall back to abspath on Windows 11 SMB drives that produce unusable
+    # \\?\Volume{GUID}\... paths. See https://github.com/DeepLabCut/DeepLabCut/issues/3348
+    project_root = af.safe_resolve(loader.project_path)
+    source_dataset_folder = af.safe_resolve(Path(source_dataset_folder))
 
     # Contains the ground truth annotations for the DeepLabCut project
     # .../dlc-models-pytorch/.../...shuffle0/train/memory_replay/annotations/train.json
@@ -242,7 +245,7 @@ def prepare_memory_replay_dataset(
     # parse the GT to put the image paths back into OS-specific format
     for image in project_gt["images"]:
         image_rel_path = image["file_name"].split("/")
-        image["file_name"] = str(project_root.resolve() / Path(*image_rel_path))
+        image["file_name"] = str(af.safe_resolve(project_root / Path(*image_rel_path)))
 
     with open(memory_replay_train_file_path, "w") as f:
         json.dump(project_gt, f, indent=4)

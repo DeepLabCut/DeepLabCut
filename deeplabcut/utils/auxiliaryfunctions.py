@@ -200,6 +200,24 @@ scorername_3d: # Enter the scorer name for the 3D output
     return cfg_file_3d, ruamelFile_3d
 
 
+def safe_resolve(path: Path) -> Path:
+    """Return a resolved Path that is safe to use with str-based I/O.
+
+    Prefers Path.resolve() so that symlinks are followed (useful on Linux).
+    Falls back to Path.absolute() when the resolved path cannot be opened
+    as a plain string — e.g. on Windows 11 + SMB network drives where
+    resolve() may return an unusable \\\\?\\Volume{GUID}\\... form.
+
+    See https://github.com/DeepLabCut/DeepLabCut/issues/3348
+    """
+    resolved = path.resolve()
+    try:
+        open(resolved).close()
+        return resolved
+    except OSError:
+        return path.absolute()
+
+
 def read_config(configname):
     """Reads structured config file defining a project."""
     ruamelFile = YAML()

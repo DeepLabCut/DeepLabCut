@@ -8,7 +8,9 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+import os
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -269,3 +271,78 @@ def test_get_snapshots_from_folder_none(mock_no_snapshots_folder):
     """Test raises ValueError if no snapshots are found."""
     with pytest.raises(FileNotFoundError):
         auxiliaryfunctions.get_snapshots_from_folder(mock_no_snapshots_folder)
+
+
+# ---------------------------------------------------------------------------
+# Tests for safe_resolve() and read_config() network-drive path safety
+# https://github.com/DeepLabCut/DeepLabCut/issues/3348
+# ---------------------------------------------------------------------------
+
+
+class TestSafeResolve:
+    """safe_resolve() must return a Path whose str() representation can be
+    opened by plain string-based I/O — i.e. it must not return Windows 11 SMB
+    Volume GUID paths like \\\\?\\Volume{...}\\...
+    """
+
+    def test_normal_path_is_returned_unchanged(self, tmp_path):
+        """On a normal local filesystem, safe_resolve returns the resolved path."""
+        f = tmp_path / "config.yaml"
+        f.touch()
+        result = auxiliaryfunctions.safe_resolve(f)
+        assert result == f.resolve()
+        assert result.exists()
+
+    def test_fallback_when_resolve_produces_unusable_path(self, tmp_path):
+        """When resolve() returns a path that cannot be opened as a string,
+        safe_resolve must fall back to abspath."""
+        f = tmp_path / "config.yaml"
+        f.write_text("project_path: .")
+
+        fake_volume_guid = Path(r"\\?\Volume{DEADBEEF-0000-0000-0000-000000000000}\fake")
+
+        with patch.object(Path, "resolve", return_value=fake_volume_guid):
+            result = auxiliaryfunctions.safe_resolve(f)
+
+        # Must NOT return the unusable Volume GUID path
+        assert "Volume{" not in str(result)
+        # Fallback must be the absolute (non-resolved) path, which exists and is openable
+        assert result == f.absolute()
+        open(result).close()
+
+
+class TestReadConfigProjectPath:
+    """read_config() must never persist a \\\\?\\Volume{GUID}\\... path into
+    project_path, even on Windows 11 SMB network drives."""
+
+    def test_project_path_not_written_as_volume_guid(self, tmp_path):
+        """If resolve() would produce a Volume GUID path, read_config must fall
+        back to abspath and write a usable path to config.yaml."""
+        project_dir = tmp_path / "my_project"
+        project_dir.mkdir()
+        config_file = project_dir / "config.yaml"
+
+        auxiliaryfunctions.write_config(config_file, {"project_path": str(project_dir)})
+
+        fake_volume_guid = Path(r"\\?\Volume{DEADBEEF-0000-0000-0000-000000000000}\my_project")
+
+        with patch.object(Path, "resolve", return_value=fake_volume_guid):
+            cfg = auxiliaryfunctions.read_config(config_file)
+
+        assert "Volume{" not in cfg["project_path"]
+        # The stored value must be openable as a plain string
+        assert os.path.isdir(cfg["project_path"])
+
+    def test_project_path_updated_when_moved(self, tmp_path):
+        """read_config() must still update project_path when a project is moved
+        to a new directory (the original feature that resolve() was meant for)."""
+        project_dir = tmp_path / "original_location"
+        project_dir.mkdir()
+        config_file = project_dir / "config.yaml"
+
+        auxiliaryfunctions.write_config(config_file, {"project_path": "/some/old/path/that/no/longer/exists"})
+
+        cfg = auxiliaryfunctions.read_config(config_file)
+
+        expected = str(project_dir.absolute())
+        assert cfg["project_path"] == expected
