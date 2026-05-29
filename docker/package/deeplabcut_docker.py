@@ -201,7 +201,9 @@ def main() -> None:
         token = os.environ.get("NOTEBOOK_TOKEN", "deeplabcut")
         _log("Starting the notebook server.")
         _log(f"Open your browser at http://127.0.0.1:{port}")
-        if token == "deeplabcut":
+        if token == "":
+            _log("Warning: NOTEBOOK_TOKEN is empty — Jupyter token authentication is disabled.")
+        elif token == "deeplabcut":
             _log(f"If prompted for a token, enter {token!r}.")
         else:
             _log("If prompted for a token, enter the value of NOTEBOOK_TOKEN.")

@@ -46,6 +46,8 @@ WORKDIR /app
 # (runs as root intentionally; deeplabcut-docker adds a host-matched user at runtime)
 FROM core AS jupyter
 
+# Default Jupyter token (override with -e NOTEBOOK_TOKEN=<secret>).
+# An empty value (-e NOTEBOOK_TOKEN=) disables token auth — see docker/README.md.
 ENV NOTEBOOK_TOKEN=deeplabcut
 
 RUN pip install "notebook<7"

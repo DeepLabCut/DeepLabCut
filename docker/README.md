@@ -77,7 +77,7 @@ a cloud VM's firewall or a public 0.0.0.0 binding without a reverse proxy).
 For local use, bind the port to localhost only (e.g. -p 127.0.0.1:8888:8888)
 and use SSH port forwarding to access the server remotely, as described below.
 To use a custom token, pass `-e NOTEBOOK_TOKEN=<your-token>` to `docker run`.
-You can pass an empty string to disable token-authentication: `-e NOTEBOOK_TOKEN=`.
+Passing `-e NOTEBOOK_TOKEN=` (i.e. an empty string) **disables** token-authentication.
 ```
 
 This can easily be done with `deeplabcut-docker`. To run a DeepLabCut notebook on a
