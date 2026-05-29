@@ -262,7 +262,7 @@ def extract_frames(
 
     from deeplabcut.utils import auxiliaryfunctions, frameselectiontools
 
-    config_file = Path(config).resolve()
+    config_file = Path(config)
     cfg = auxiliaryfunctions.read_config(config_file)
     print("Config file read successfully.")
 
@@ -456,7 +456,7 @@ def extract_frames(
     elif mode == "match":
         import cv2
 
-        config_file = Path(config).resolve()
+        config_file = Path(config)
         cfg = auxiliaryfunctions.read_config(config_file)
         print("Config file read successfully.")
         videos = sorted(cfg["video_sets"].keys())

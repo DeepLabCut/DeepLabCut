@@ -59,7 +59,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
     if working_directory is None:
         working_directory = "."
 
-    wd = Path(working_directory).resolve()
+    wd = Path(working_directory).absolute()
     project_name = "{pn}-{exp}-{date}-{triangulate}".format(pn=project, exp=experimenter, date=date, triangulate="3d")
     project_path = wd / project_name
     # Create project and sub-directories
