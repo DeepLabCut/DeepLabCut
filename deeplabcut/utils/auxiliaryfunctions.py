@@ -212,7 +212,7 @@ def safe_resolve(path: Path) -> Path:
     """
     resolved = path.resolve()
     try:
-        open(resolved).close()
+        os.stat(str(resolved))
         return resolved
     except OSError:
         return path.absolute()
