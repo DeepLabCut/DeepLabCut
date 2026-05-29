@@ -11,7 +11,7 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 
-__version__ = "0.0.12-alpha"
+__version__ = "0.1.0"
 
 _IMAGE = "deeplabcut/deeplabcut"
 _DEFAULT_CUDA = "12.4"
