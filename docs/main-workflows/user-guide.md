@@ -715,8 +715,7 @@ TensorFlow engine, the [**pose_cfg.yaml**](https://github.com/DeepLabCut/DeepLab
   augmentation.
   - See the [**pytorch_config.yaml**](dlc3-pytorch-config) for more
     information about image augmentation options.
-- TensorFlow Engine: The default augmentation works well for most tasks (as shown on
-  www.deeplabcut.org), but there are many options, more data augmentation, intermediate
+- TensorFlow Engine: The default augmentation works well for most tasks, but there are many options, more data augmentation, intermediate
   supervision, etc. Here are the available loaders:
   - `imgaug`: a lot of augmentation possibilities, efficient code for target map creation & batch sizes >1 supported.
     You can set the parameters such as the `batch_size` in the `pose_cfg.yaml` file for the model you are training. This
