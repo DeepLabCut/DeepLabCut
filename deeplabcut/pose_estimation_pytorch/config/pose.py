@@ -17,7 +17,6 @@ from pydantic import Field
 
 from deeplabcut.core.config import DLCBaseConfig, DLCVersionedConfig
 from deeplabcut.core.config.project_config import ProjectConfig
-from deeplabcut.core.config.versioning import CURRENT_CONFIG_VERSION
 from deeplabcut.pose_estimation_pytorch.config.data import DataConfig
 from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.config.logger import (
@@ -123,7 +122,6 @@ class PoseConfig(DLCVersionedConfig):
     configuration domains (project, model, data, training, etc.).
 
     Attributes:
-        config_version: Configuration version.
         net_type: Network architecture type (e.g., resnet_50, hrnet_w32, dlcrnet_stride16_ms5)
         method: Method type (bu=Bottom-Up, td=Top-Down, ctd=Conditional Top-Down)
         device: Device configuration (auto, cpu, cuda)
@@ -137,7 +135,6 @@ class PoseConfig(DLCVersionedConfig):
         with_center_keypoints: Whether to include center keypoints (for DEKR models)
     """
 
-    config_version: int = CURRENT_CONFIG_VERSION
     model: ModelConfig = Field(default_factory=ModelConfig)
     net_type: NetType = NetType.RESNET_50
     method: MethodType = MethodType.BOTTOM_UP

@@ -8,7 +8,7 @@ from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import Any, ClassVar
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pydantic_core import ArgsKwargs
 from ruamel.yaml.comments import CommentedMap
 from typing_extensions import Self
@@ -291,6 +291,11 @@ class DLCVersionedConfig(DLCBaseConfig):
       alias warnings to the base `__setattr__`.
     """
 
+    config_version: int = Field(
+        default=versioning.CURRENT_CONFIG_VERSION,
+        json_schema_extra={"comment": "Config schema version. Do not edit manually."},
+    )
+
     _CHANGE_TRACKING_INTERNALS: ClassVar[frozenset[str]] = frozenset(
         {
             "_dirty_fields",
@@ -317,7 +322,11 @@ class DLCVersionedConfig(DLCBaseConfig):
         if isinstance(data, ArgsKwargs):
             data = cls._args_kwargs_to_dict(data)
         if isinstance(data, dict):
-            data = migrate_config(data, target_version=versioning.CURRENT_CONFIG_VERSION)
+            data = migrate_config(
+                data,
+                config_type=cls.__name__,
+                target_version=versioning.CURRENT_CONFIG_VERSION,
+            )
         return data
 
     # ------------------------------------------------------------------

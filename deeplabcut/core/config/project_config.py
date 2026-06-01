@@ -16,7 +16,6 @@ from typing import Any
 from pydantic import Field
 
 from deeplabcut.core.config.base_config import DLCVersionedConfig
-from deeplabcut.core.config.versioning import CURRENT_CONFIG_VERSION
 
 
 class ProjectConfig(DLCVersionedConfig):
@@ -26,7 +25,6 @@ class ProjectConfig(DLCVersionedConfig):
     Field names match the old dictionary keys for round-trip compatibility.
 
     Attributes:
-        config_version: Configuration version.
         Task: Project task identifier (do not edit).
         scorer: Scorer name (do not edit).
         date: Project date (do not edit).
@@ -69,7 +67,6 @@ class ProjectConfig(DLCVersionedConfig):
         SuperAnimalConversionTables: Conversion tables for SuperAnimal weights.
     """
 
-    config_version: int = CURRENT_CONFIG_VERSION
     # Project definitions (do not edit)
     Task: str = Field(default="", json_schema_extra={"comment": "Project definitions (do not edit)"})
     scorer: str = ""

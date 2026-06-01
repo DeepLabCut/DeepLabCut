@@ -11,6 +11,7 @@ import pytest
 from pydantic import Field, ValidationError
 
 from deeplabcut.core.config import DLCBaseConfig, DLCVersionedConfig, versioning
+from deeplabcut.core.config.versioning import register_migration
 from deeplabcut.utils.deprecation import DLCDeprecationWarning
 
 _TOY_VERSION_OLD = 98
@@ -366,6 +367,13 @@ class _ToyBaseOnly(DLCBaseConfig):
 class _ToyVersioned(DLCVersionedConfig):
     config_version: int = _TOY_VERSION_NEW
     toy_new_field: str = ""
+
+
+@register_migration(_TOY_VERSION_OLD, _TOY_VERSION_NEW, config_type="_ToyVersioned")
+def _toy_versioned_migrate_v98_to_v99(config: dict) -> dict:
+    if _LEGACY_FIELD in config:
+        config["toy_new_field"] = config.pop(_LEGACY_FIELD)
+    return config
 
 
 class TestNoMigrationOnBaseConfig:
