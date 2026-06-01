@@ -9,20 +9,20 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Tests for the configuration versioning and migration system."""
+
 import logging
 
 import pytest
-
 from pydantic import ConfigDict, ValidationError
 from pydantic.dataclasses import dataclass
 
 from deeplabcut.core.config import versioning
 from deeplabcut.core.config.versioning import (
+    MigrationMixin,
     get_config_version,
     migrate_config,
     register_migration,
 )
-from deeplabcut.core.config.versioning import MigrationMixin
 
 _LOGGER_NAME = "deeplabcut.core.config.versioning"
 
@@ -69,6 +69,7 @@ def test_get_config_version_():
     assert get_config_version({"config_version": 1}) == 1
     assert get_config_version({"config_version": 0}) == 0
 
+
 # -----------------------------------------------------------------------------
 # migrate_config (no-op, errors)
 # -----------------------------------------------------------------------------
@@ -77,6 +78,7 @@ def test_get_config_version_():
 def test_migrate_config_same_version_returns_unchanged():
     cfg = {"a": 1, "b": 2}
     assert migrate_config(cfg, target_version=0) is cfg
+
 
 def test_migrate_config_does_not_mutate_input(monkeypatch):
     monkeypatch.setattr(versioning, "CURRENT_CONFIG_VERSION", _TOY_VERSION_NEW)
@@ -179,15 +181,16 @@ def test_roundtrip_v98_without_toy_field_unchanged():
 
 @pytest.fixture
 def ToyConfigWithValidField():
-    @dataclass(config={'extra': 'forbid'})
+    @dataclass(config={"extra": "forbid"})
     class ToyConfig(MigrationMixin):
         config_version: int = _TOY_VERSION_NEW
         valid_project_config_field: str = ""
+
     return ToyConfig
 
+
 def test_config_with_legacy_field_raises_without_migration(monkeypatch, ToyConfigWithValidField):
-    """Initializing ProjectConfig with the legacy (wrong) field raises validation error.
-    """
+    """Initializing ProjectConfig with the legacy (wrong) field raises validation error."""
     monkeypatch.setattr(versioning, "CURRENT_CONFIG_VERSION", _TOY_VERSION_OLD)
     config_with_legacy_field = {
         "config_version": _TOY_VERSION_OLD,
@@ -196,9 +199,9 @@ def test_config_with_legacy_field_raises_without_migration(monkeypatch, ToyConfi
     with pytest.raises((ValidationError, TypeError)):
         ToyConfigWithValidField(**config_with_legacy_field)
 
+
 def test_config_after_migration_accepts_renamed_field(monkeypatch, ToyConfigWithValidField):
-    """Registering a migration renames the wrong field so ProjectConfig accepts the config.
-    """
+    """Registering a migration renames the wrong field so ProjectConfig accepts the config."""
     monkeypatch.setattr(versioning, "CURRENT_CONFIG_VERSION", _TOY_VERSION_NEW)
     config_with_legacy_field = {
         "config_version": _TOY_VERSION_OLD,
@@ -232,6 +235,7 @@ _V50, _V51, _V52, _V53 = 50, 51, 52, 53
 
 def _register_chain_migrations():
     """Register a v50↔v53 migration chain (upgrades and downgrades)."""
+
     @register_migration(_V50, _V51)
     def _chain_v50_to_v51(config: dict) -> dict:
         if "field_a_old" in config:
@@ -568,29 +572,34 @@ class TestRegisterMigrationValidation:
 
     def test_negative_from_version_raises(self):
         with pytest.raises(ValueError, match="non-negative"):
+
             @register_migration(-1, 0)
             def _bad(config):
                 return config
 
     def test_negative_to_version_raises(self):
         with pytest.raises(ValueError, match="non-negative"):
+
             @register_migration(0, -1)
             def _bad(config):
                 return config
 
     def test_same_version_raises(self):
         with pytest.raises(ValueError, match="must differ"):
+
             @register_migration(5, 5)
             def _bad(config):
                 return config
 
     def test_duplicate_registration_raises(self):
         """Registering the same (from, to) pair twice raises."""
+
         @register_migration(_V50, _V51)
         def _first(config):
             return config
 
         with pytest.raises(ValueError, match="Duplicate migration"):
+
             @register_migration(_V50, _V51)
             def _second(config):
                 return config

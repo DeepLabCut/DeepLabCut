@@ -6,11 +6,11 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Tests for ConfigMixin."""
-from pathlib import Path
+
+from dataclasses import field
 
 import pytest
 from pydantic.dataclasses import dataclass
-from dataclasses import field
 
 from deeplabcut.core.config import ConfigMixin
 
@@ -18,6 +18,7 @@ from deeplabcut.core.config import ConfigMixin
 @dataclass
 class ToyConfig(ConfigMixin):
     """Minimal config used to exercise ConfigMixin."""
+
     Task: str = "DefaultTask"
     project_path: str = "DefaultProjectPath"
 

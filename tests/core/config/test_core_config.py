@@ -9,10 +9,13 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Tests for deeplabcut.core.config."""
+
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Mapping
 
 import pytest
+from pydantic import ValidationError
+from ruamel.yaml import YAMLError
 
 from deeplabcut.core.config import (
     create_config_template,
@@ -27,16 +30,17 @@ from deeplabcut.core.config import (
     write_project_config,
 )
 
-
 # -----------------------------------------------------------------------------
 # read_config_as_dict
 # -----------------------------------------------------------------------------
+
 
 def test_read_config_as_dict_loads_yaml(tmp_path):
     config_path = tmp_path / "config.yaml"
     config_path.write_text("a: 1\nb: [2, 3]\nc:\n  d: 4\n")
     cfg = read_config_as_dict(str(config_path))
     assert cfg == {"a": 1, "b": [2, 3], "c": {"d": 4}}
+
 
 def test_read_config_as_dict_raises_when_file_missing():
     with pytest.raises(FileNotFoundError):
@@ -47,7 +51,7 @@ def test_read_config_as_dict_raises_on_invalid_yaml(tmp_path):
     """Broken YAML syntax (e.g. unclosed bracket) raises an exception."""
     config_path = tmp_path / "broken.yaml"
     config_path.write_text("key: [unclosed\n")
-    with pytest.raises(Exception):
+    with pytest.raises(YAMLError):
         read_config_as_dict(config_path)
 
 
@@ -55,27 +59,23 @@ def test_read_config_as_dict_raises_on_invalid_yaml(tmp_path):
 def test_read_config_as_dict_breaks_for_yaml_tags(tmp_path):
     """read_config breaks for YAML tags like !!python/tuple"""
     config_path = tmp_path / "config.yaml"
-    # NOTE @deruyter92 2026-02-03: This test is currently skipped, because 
+    # NOTE @deruyter92 2026-02-03: This test is currently skipped, because
     # read_config_as_dict currently allows unsafe yaml loading. This should be fixed in the future.
-    config_path.write_text(
-        "project_path: /old/path\n"
-        "engine: pytorch\n"
-        "bodyparts: !!python/tuple [a, b, c]\n"
-    )
-    with pytest.raises(Exception):
+    config_path.write_text("project_path: /old/path\nengine: pytorch\nbodyparts: !!python/tuple [a, b, c]\n")
+    with pytest.raises(YAMLError):
         read_config_as_dict(config_path)
 
 
 def test_read_config_as_dict_accepts_config_with_misnamed_fields(tmp_path):
     """Config with typos/misnamed keys still loads; keys are not validated."""
     # NOTE @deruyter92 2026-02-03: This test captures the current behavior where
-    # read_config_as_dict does not validate the keys. This behavior is different 
+    # read_config_as_dict does not validate the keys. This behavior is different
     # from read_config, which should validate the keys (in the future).
     # The tests can be updated according, depending on the preferred behavior.
     config_path = tmp_path / "typos.yaml"
     config_path.write_text(
         "project_pathh: /wrong\n"  # typo
-        "bodypartz: [a, b]\n"      # typo
+        "bodypartz: [a, b]\n"  # typo
         "Task: mytask\n"
     )
     cfg = read_config_as_dict(config_path)
@@ -84,9 +84,12 @@ def test_read_config_as_dict_accepts_config_with_misnamed_fields(tmp_path):
     assert cfg["Task"] == "mytask"
     assert "project_path" not in cfg
     assert "bodyparts" not in cfg
+
+
 # -----------------------------------------------------------------------------
 # write_config
 # -----------------------------------------------------------------------------
+
 
 def test_write_config_creates_file(tmp_path):
     config_path = tmp_path / "out.yaml"
@@ -264,27 +267,25 @@ def test_read_config_breaks_for_yaml_tags(tmp_path):
     """read_config breaks for YAML tags like !!python/tuple"""
     config_path = tmp_path / "config.yaml"
     # Ruamel fails on !!python/tuple; read_config falls back to PyYAML and repairs the file.
-    config_path.write_text(
-        "project_path: /old/path\n"
-        "engine: pytorch\n"
-        "bodyparts: !!python/tuple [a, b, c]\n"
-    ) 
-    with pytest.raises(Exception):
+    config_path.write_text("project_path: /old/path\nengine: pytorch\nbodyparts: !!python/tuple [a, b, c]\n")
+    with pytest.raises(YAMLError):
         read_config(config_path)
 
 
 @pytest.mark.skip("This preferred behavior is not yet implemented.")
 def test_read_config_breaks_for_invalid_fieds(tmp_path):
-    # NOTE @deruyter92 2026-02-03: This test is currently skipped, because 
+    # NOTE @deruyter92 2026-02-03: This test is currently skipped, because
     # read_config does not validate the keys. This should be fixed in the future.
     config_path = tmp_path / "typos.yaml"
     config_path.write_text(
         "project_pathh: /wrong\n"  # typo
-        "bodypartz: [a, b]\n"      # typo
+        "bodypartz: [a, b]\n"  # typo
         "Task: mytask\n"
     )
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         read_config(config_path)
+
+
 # -----------------------------------------------------------------------------
 # write_project_config
 # -----------------------------------------------------------------------------
