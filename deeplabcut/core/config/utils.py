@@ -20,13 +20,10 @@ from functools import wraps
 from pathlib import Path, PurePath
 from typing import TYPE_CHECKING, Any
 
-from omegaconf import DictConfig, OmegaConf
-
 if TYPE_CHECKING:
     from deeplabcut.core.config.project_config import ProjectConfig
 
 import ruamel.yaml.representer
-from omegaconf import ListConfig
 from pydantic import ValidationError
 from ruamel.yaml import YAML
 
@@ -53,9 +50,6 @@ def get_yaml_dumper() -> YAML:
     # Auto-serialize Path objects as strings
     yaml.representer.add_multi_representer(PurePath, lambda r, p: r.represent_str(str(p)))
     yaml.representer.add_multi_representer(Enum, lambda r, e: r.represent_str(e.value))
-    # OmegaConf containers -> plain dict/list so ruamel can serialize them
-    yaml.representer.add_representer(DictConfig, lambda r, d: r.represent_dict(dict(d)))
-    yaml.representer.add_representer(ListConfig, lambda r, l: r.represent_list(list(l)))
     return yaml
 
 
@@ -168,7 +162,7 @@ def pretty_print(
         print_fn = print
 
     for k, v in config.items():
-        if isinstance(v, (dict, DictConfig)):
+        if isinstance(v, dict):
             print_fn(f"{indent * ' '}{k}:")
             pretty_print(v, indent + 2, print_fn=print_fn)
         else:
@@ -178,9 +172,8 @@ def pretty_print(
 def ensure_plain_config(fn: Callable) -> Callable:
     """Convert typed config arguments into plain Python objects.
 
-    Any positional or keyword argument that is a DLCBaseConfig, OmegaConf
-    DictConfig, or OmegaConf ListConfig is converted to a plain ``dict`` / ``list``
-    before the decorated function is called.
+    Any positional or keyword argument that is a DLCBaseConfig is converted to
+    a plain ``dict`` before the decorated function is called.
     """
 
     def _to_plain(value, fn_name: str = "<unknown>", var_name: str = "<unknown>"):
@@ -195,20 +188,6 @@ def ensure_plain_config(fn: Callable) -> Callable:
                 fn_name,
             )
             return value.to_dict()
-        if isinstance(value, DictConfig):
-            logger.debug(
-                "converting %s (OmegaConf DictConfig) to plain dict in %s.",
-                var_name,
-                fn_name,
-            )
-            return OmegaConf.to_container(value, resolve=True)
-        if isinstance(value, ListConfig):
-            logger.debug(
-                "converting %s (OmegaConf ListConfig) to plain list in %s.",
-                var_name,
-                fn_name,
-            )
-            return OmegaConf.to_container(value, resolve=True)
         return value
 
     @wraps(fn)

@@ -177,9 +177,8 @@ class PoseModel(nn.Module):
         heads = {}
         for name, head_cfg in cfg["heads"].items():
             # NOTE @deruyter92 2026-02-05: currently modules are added inside the config
-            # dictionary. This seems like a bad practice and is unsupported for typed configs or
-            # OmegaConf DictConfig. The intermediate head_cfg container is now converted to a dictionary
-            # to avoid this issue.
+            # dictionary. This seems like a bad practice and is unsupported for typed configs.
+            # The intermediate head_cfg container is converted to a dictionary to avoid this issue.
             head_cfg = dict(copy.deepcopy(head_cfg))
             if "type" in head_cfg["criterion"]:
                 head_cfg["criterion"] = CRITERIONS.build(head_cfg["criterion"])

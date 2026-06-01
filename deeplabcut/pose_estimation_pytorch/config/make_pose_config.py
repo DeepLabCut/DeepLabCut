@@ -84,7 +84,7 @@ def _load_pose_config_defaults(
         The model configuration defaults as a dictionary.
     """
     # TODO JR 2026-01-27: Model configs are currently still first loaded as plain dictionaries.
-    # We probably want to move to using typed config classes / OmegaConf DictConfig in the future.
+    # We probably want to move to using typed config classes in the future.
     multianimal_project = project_config.get("multianimalproject", False)
     individuals = project_config.get("individuals", ["single"])
     with_identity = project_config.get("identity")
