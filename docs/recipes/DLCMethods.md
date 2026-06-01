@@ -4,7 +4,6 @@ deeplabcut:
   last_metadata_updated: '2026-03-06'
   ignore: false
 ---
-
 # How to write a DLC Methods Section
 
 **Pose estimation using DeepLabCut**
@@ -12,20 +11,19 @@ deeplabcut:
 For body part tracking we used DeepLabCut (version 3.X.X) [Mathis et al, 2018, Nath et al, 2019]. Specifically, we
 labeled X number of frames taken from X videos/animals (then X% was used for training (default is 95%). We used a
 X-based neural network (i.e., X = ResNet-50, ResNet-101, MobileNetV2-0.35, MobileNetV2-0.5, MobileNetV2-0.75,
-MobileNetV2-1, EfficientNet ..X, dlcrnet_ms5, cspnext_s, dekr_w32, rtmpose_s, etc.)\*\*\* with default parameters\* for X
+MobileNetV2-1, EfficientNet ..X, dlcrnet_ms5, cspnext_s, dekr_w32, rtmpose_s, etc.)*** with default parameters* for X
 number of training iterations. We validated with X number of shuffles, and found the test error was: X pixels, train:
 X pixels (image size was X by X). We then used a p-cutoff of X (i.e. 0.9) to condition the X,Y coordinates for future
 analysis. This network was then used to analyze videos from similar experimental settings.
 
-\*If any defaults were changed in *`pose_config.yaml`*, mention them.
+*If any defaults were changed in *`pose_config.yaml`*, mention them.
 
 i.e. common things one might change:
+* the loader (options are `default`, `imgaug`, `tensorpack`, `deterministic`).
+* the `post_dist_threshold` (default is 17 and determines training resolution).
+* optimizer: do you use the default `SGD` or `ADAM`?
 
-- the loader (options are `default`, `imgaug`, `tensorpack`, `deterministic`).
-- the `post_dist_threshold` (default is 17 and determines training resolution).
-- optimizer: do you use the default `SGD` or `ADAM`?
-
-\*\*\* here, you could add additional citations.
+*** here, you could add additional citations.
 If you use ResNets, consider citing Insafutdinov et al 2016 & He et al 2016. If you use the MobileNetV2s consider citing Mathis et al 2021, and Sandler et al, 2018. If you use DLCRNet, please cite Lauer et al, 2021.
 
 > Mathis, A. et al. Deeplabcut: markerless pose estimation

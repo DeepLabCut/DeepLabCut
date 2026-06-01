@@ -3,9 +3,7 @@ deeplabcut:
   last_metadata_updated: '2026-03-17'
   ignore: false
 ---
-
 (deeplabcut-live)=
-
 # Running DeepLabCut models in real-time
 
 We provide two additional packages that allow you to record and stream camera data and run DeepLabCut models in real-time.

@@ -3,9 +3,7 @@ deeplabcut:
   last_metadata_updated: '2026-03-17'
   ignore: false
 ---
-
 (file:dlclivegui-basler-backend)=
-
 # Basler backend
 
 The Basler backend provides support for Basler cameras using the official **pylon SDK** through the **pypylon** Python bindings.
@@ -16,7 +14,7 @@ Download the official pylon SDK from Basler and install the `pypylon` Python pac
 This backend requires the optional `pypylon` dependency. If `pypylon` is not installed, the backend will be unavailable.
 ```
 
-______________________________________________________________________
+---
 
 ## Features & design
 
@@ -26,7 +24,7 @@ ______________________________________________________________________
 - Configurable exposure, gain, frame rate, and resolution.
 - Frames are converted to **BGR (8-bit)** for consistency with other GUI backends.
 
-______________________________________________________________________
+---
 
 ## Installation
 
@@ -69,7 +67,7 @@ pip install pypylon # OR uv pip install pypylon
 
 `pypylon` is the official Python wrapper for the Basler pylon Camera Software Suite
 
-______________________________________________________________________
+---
 
 ## Basic configuration
 
@@ -87,7 +85,7 @@ Select the Basler backend in the GUI or via configuration:
 }
 ```
 
-______________________________________________________________________
+---
 
 ## Camera selection
 
@@ -123,9 +121,9 @@ The backend supports a stable identity field `device_id` (serial number). When p
 How selection works:
 
 1. If `properties.basler.device_id` is set, the backend selects the device with a matching serial number.
-1. Otherwise, the backend uses `index`.
+2. Otherwise, the backend uses `index`.
 
-______________________________________________________________________
+---
 
 ## Full properties and advanced configuration
 
@@ -161,7 +159,7 @@ After a successful open, the backend may populate the following read-only conven
 
 These fields are managed automatically and are not required to configure the backend.
 
-______________________________________________________________________
+---
 
 ### Exposure and gain
 
@@ -183,7 +181,7 @@ Example:
 }
 ```
 
-______________________________________________________________________
+---
 
 ### Frame rate (FPS)
 
@@ -191,7 +189,7 @@ ______________________________________________________________________
 - The backend attempts to enable `AcquisitionFrameRateEnable` when available, then sets `AcquisitionFrameRate`.
 - The backend reads back the **actual FPS** (if available) and exposes it via telemetry.
 
-______________________________________________________________________
+---
 
 ### Resolution handling
 
@@ -200,7 +198,7 @@ Resolution is only changed when explicitly requested.
 Priority order for requesting a resolution:
 
 1. `width` + `height` (GUI fields)
-1. `properties.basler.resolution` (namespaced override)
+2. `properties.basler.resolution` (namespaced override)
 
 If no resolution is provided (or if width/height are `0`), the backend preserves the camera’s default configuration.
 
@@ -210,7 +208,7 @@ Increment and range constraints:
 - The backend snaps requested values down to the nearest valid increment (best-effort) and clamps to min/max.
 - A warning is logged if the requested and applied resolutions differ.
 
-______________________________________________________________________
+---
 
 ### Pixel format and color conversion
 
@@ -220,7 +218,7 @@ To provide a consistent frame format across backends, the Basler backend convert
 
 Internally, it uses a pypylon `ImageFormatConverter` configured for `PixelType_BGR8packed`.
 
-______________________________________________________________________
+---
 
 ### Device discovery
 
@@ -233,7 +231,7 @@ The backend can enumerate devices without opening them and returns (best-effort)
 
 Note that availability and richness of fields depend on camera transport and SDK support.
 
-______________________________________________________________________
+---
 
 ## Troubleshooting
 
@@ -248,6 +246,7 @@ ______________________________________________________________________
   pip install pypylon
   ```
 
+
 ### No cameras detected
 
 - Verify the Basler pylon runtime is installed and your camera is visible in Basler tooling.
@@ -257,7 +256,7 @@ ______________________________________________________________________
 
 If you request a resolution that violates camera constraints (min/max or increment), the backend will snap/clamp to valid values and log a warning.
 
-______________________________________________________________________
+---
 
 ## Example configuration
 
@@ -280,7 +279,7 @@ ______________________________________________________________________
 }
 ```
 
-______________________________________________________________________
+---
 
 ## Resources
 

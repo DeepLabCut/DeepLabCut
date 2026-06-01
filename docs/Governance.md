@@ -4,11 +4,8 @@ deeplabcut:
   last_metadata_updated: '2026-03-06'
   ignore: false
 ---
-
 (governance-model)=
-
 # Governance Model of DeepLabCut
-
 (adapted from https://napari.org/stable/community/governance.html)
 
 ## Abstract
@@ -115,7 +112,7 @@ DeepLabCut uses a “consensus seeking” process for making decisions. The grou
 tries to find a resolution that has no open objections among core developers.
 Core developers are expected to distinguish between fundamental objections to a
 proposal and minor perceived flaws that they can live with, and not hold up the
-decision-making process for the latter. If no option can be found without
+decision-making process for the latter.  If no option can be found without
 objections, the decision is escalated to the SC, which will itself use
 consensus seeking to come to a resolution. In the unlikely event that there is
 still a deadlock, the proposal will move forward if it has the support of a
@@ -142,7 +139,7 @@ are made according to the following rules:
   decision-making process outlined above.
 
 - **Changes to this governance model or our mission, vision, and values**
-  require a dedicated issue on our [issue tracker](https://github.com/DeepLabCut/DeepLabCut/issues)
+  require a  dedicated issue on our [issue tracker](https://github.com/DeepLabCut/DeepLabCut/issues)
   and follow the decision-making process outlined above,
   *unless* there is unanimous agreement from core developers on the change in
   which case it can move forward faster.

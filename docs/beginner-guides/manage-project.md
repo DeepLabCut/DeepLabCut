@@ -4,9 +4,7 @@ deeplabcut:
   last_metadata_updated: '2026-03-06'
   ignore: false
 ---
-
 # Setting up what keypoints to track
-
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572296495650-Y4ZTJ2XP2Z9XF1AD74VW/ke17ZwdGBToddI8pDm48kMulEJPOrz9Y8HeI7oJuXxR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UZiU3J6AN9rgO1lHw9nGbkYQrCLTag1XBHRgOrY8YAdXW07ycm2Trb21kYhaLJjddA/DLC_logo_blk-01.png?format=1000w" width="150" title="DLC-live" alt="DLC LIVE!" align="right" vspace = "50">
 
 **Edit the Configuration File**
@@ -31,7 +29,9 @@ A **`Configuration Editor`** window will open, displaying all the configuration 
   - Update the list with the names of the bodyparts relevant to your study.
   - Add more entries by right-clicking on a row number and selecting **`Insert`**.
 
+
 ![Editing Bodyparts in DeepLabCut's Config File](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779624617-CIVZCM23U69NYK9BO3GY/bodyparts.png?format=500w)
+
 
 ### 2. Defining the Skeleton
 

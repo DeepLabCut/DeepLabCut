@@ -4,9 +4,7 @@ deeplabcut:
   last_metadata_updated: '2026-03-06'
   ignore: false
 ---
-
 (installation-tips)=
-
 # Installation Tips
 
 ## How to use the latest updates directly from GitHub
@@ -16,7 +14,6 @@ We often update the master deeplabcut code base on GitHub, and then ~1 a month w
 ### Method 1:
 
 If you want to *use* the latest, you can use pip and add the specific tags, such as `gui`, etc. by modifying and running:
-
 ```
 pip install --upgrade 'git+https://github.com/deeplabcut/deeplabcut.git#egg=deeplabcut[gui]'
 ```
@@ -62,7 +59,6 @@ Then, you can see what version you have with `deeplabcut.__version__`
 If you make changes, you can also then utilize our test scripts. Run the desired test script found here (you will need to git clone first): https://github.com/DeepLabCut/DeepLabCut/blob/master/examples/.
 
 i.e., for example:
-
 ```
 # Testing with the PyTorch engine
 python testscript_pytorch_multi_animal.py
@@ -70,6 +66,7 @@ python testscript_pytorch_multi_animal.py
 # Testing with the TensorFlow engine
 python testscript_tensorflow_multi_animal.py
 ```
+
 
 ## Installation on Ubuntu 18.04 LTS
 
@@ -87,8 +84,7 @@ then, download CUDA 10 from here: https://developer.nvidia.com/cuda-downloads an
 wget http://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.243_418.87.00_linux.run
 sudo sh cuda_10.1.243_418.87.00_linux.run
 ```
-
-with the exception that I also (afterwards):
+ with the exception that I also (afterwards):
 
 ```
 sudo add-apt-repository ppa:graphics-drivers/ppa
@@ -105,16 +101,13 @@ gcc --version
 ```
 
 output:
-
 ```
 gcc (Ubuntu 7.3.0-27ubuntu1~18.04) 7.3.0
 Copyright (C) 2017 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE
 ```
-
 Then:
-
 ```
 sudo apt install nvidia-cuda-toolkit gcc-7
 ```
@@ -154,7 +147,6 @@ sudo apt-get -y install cuda
 ```
 
 Then:
-
 ```
 sudo add-apt-repository ppa:graphics-drivers/ppa
 sudo apt update
@@ -170,7 +162,6 @@ re-open terminal and check gcc version:
 `gcc --version`
 
 output:
-
 ```python
 gcc --version
 gcc (Ubuntu 9.3.0-17ubuntu1~20.04) 9.3.0
@@ -178,7 +169,6 @@ Copyright (C) 2019 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 ```
-
 Then finish installation:
 
 `sudo apt install nvidia-cuda-toolkit gcc-9`
@@ -222,7 +212,6 @@ sudo apt-get install \
     gnupg \
     lsb-release
 ```
-
 add key: `curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg`
 
 ```
@@ -230,9 +219,7 @@ echo \
   "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 ```
-
 Then:
-
 ```
 sudo apt-get update
 sudo apt-get install docker-ce docker-ce-cli containerd.io
@@ -244,7 +231,6 @@ some clean up:
 now you can run `sudo docker run hello-world`
 
 and get:
-
 ```
 Hello from Docker!
 This message shows that your installation appears to be working correctly.
@@ -281,7 +267,6 @@ and run:
 `bash Anaconda3-2021.05-Linux-x86_64.sh`
 
 and you get:
-
 ```python
 Welcome to Anaconda3 2021.05
 
@@ -321,11 +306,9 @@ failed
 
 CondaEnvException: Pip failed
 ```
-
 You can either: remove conda env: `conda remove --name DEEPLABCUT --all`, open the DLC-GPU.yaml file (any text editor!) and change `deeplabcut[gui]` to `deeplabcut`. Then run: `conda env create -f DEEPLABCUT.yaml` again...
 
 then you will get:
-
 ```python
 
  Successfully uninstalled decorator-5.0.9

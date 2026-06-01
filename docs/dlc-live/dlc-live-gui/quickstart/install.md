@@ -3,7 +3,6 @@ deeplabcut:
   last_metadata_updated: '2026-03-17'
   ignore: false
 ---
-
 # Installation
 
 This page explains how to install **DeepLabCut-live-GUI** for interactive, real‑time pose estimation.
@@ -14,7 +13,7 @@ We support various installation methods, including `uv` and `mamba`/`conda`.
 If you feel confident you meet the requirements and you just want to get started quickly, see the {ref}`sec:dlclivegui-install-quickstart` section below.
 ```
 
-______________________________________________________________________
+---
 
 ## System requirements
 
@@ -26,11 +25,11 @@ ______________________________________________________________________
 
 ### OS support
 
-| OS      | PyTorch | TensorFlow | Notes & recommendations                                                                           |
-| ------- | ------- | ---------- | ------------------------------------------------------------------------------------------------- |
-| Windows | ✅      | ❌         | Limited TensorFlow support due to lack of official Windows builds for Python 3.11+ onwards        |
-| Linux   | ✅      | ✅         | Full support for both backends                                                                    |
-| macOS   | ✅      | ⚠️         | PyTorch MPS support is improving but still has limitations; TensorFlow only supports CPU on macOS |
+| OS | PyTorch | TensorFlow | Notes & recommendations |
+| -- | ------- | ---------- | ----- |
+| Windows | ✅ | ❌ | Limited TensorFlow support due to lack of official Windows builds for Python 3.11+ onwards |
+| Linux | ✅ | ✅ | Full support for both backends |
+| macOS | ✅ | ⚠️ | PyTorch MPS support is improving but still has limitations; TensorFlow only supports CPU on macOS |
 
 ### Hardware requirements
 
@@ -55,10 +54,8 @@ If you use an OpenCV-compatible camera (e.g. USB webcam, OBS virtual camera), yo
   - **TensorFlow** (for backwards compatibility with existing models)
 - A working camera backend (see *{ref}`file:dlclivegui-camera-support`*)
 
-______________________________________________________________________
-
+---
 (sec:dlclivegui-install-quickstart)=
-
 ## Quickstart (recommended defaults)
 
 ```bash

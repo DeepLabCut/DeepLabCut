@@ -3,9 +3,7 @@ deeplabcut:
   last_metadata_updated: '2026-03-17'
   ignore: false
 ---
-
 (file:dlclivegui-camera-support)=
-
 # Camera support
 
 DeepLabCut-live-GUI supports multiple camera backends for different platforms and camera types:
@@ -14,10 +12,10 @@ DeepLabCut-live-GUI supports multiple camera backends for different platforms an
 
 1. {ref}`OpenCV <file:dlclivegui-opencv-backend>` - "Universal" webcam and USB camera support *(all platforms)*
    - Expect some limitations in camera control and performance
-1. {ref}`GenTL <file:dlclivegui-gentl-backend>` - Industrial cameras via GenTL producers *(Windows, Linux)*
-   - Requires vendor-provided CTI files
-1. {ref}`Aravis <file:dlclivegui-camera-aravis-backend>` - GenICam/GigE Vision cameras *(Linux, experimental on macOS)*
-1. {ref}`Basler <file:dlclivegui-basler-backend>` - Basler cameras via pypylon *(all platforms)*
+2. {ref}`GenTL <file:dlclivegui-gentl-backend>` - Industrial cameras via GenTL producers *(Windows, Linux)*
+    - Requires vendor-provided CTI files
+3. {ref}`Aravis <file:dlclivegui-camera-aravis-backend>` - GenICam/GigE Vision cameras *(Linux, experimental on macOS)*
+4. {ref}`Basler <file:dlclivegui-basler-backend>` - Basler cameras via pypylon *(all platforms)*
 
 ## Backend selection
 
@@ -89,10 +87,10 @@ Install vendor-provided camera drivers and SDK. CTI files are typically in:
 
 ## Backend comparison
 
-| Feature          | OpenCV | GenTL | Aravis | Basler (pypylon) |
-| ---------------- | ------ | ----- | ------ | ---------------- |
-| Exposure control | No     | Yes   | Yes    | Yes              |
-| Gain control     | No     | Yes   | Yes    | Yes              |
-| Windows          | ✅     | ✅    | ❌     | ✅               |
-| Linux            | ✅     | ✅    | ✅     | ✅               |
-| macOS            | ✅     | ❌    | ⚠️     | ✅               |
+| Feature | OpenCV | GenTL | Aravis | Basler (pypylon) |
+|---------|--------|-------|--------|------------------|
+| Exposure control | No | Yes | Yes | Yes |
+| Gain control | No | Yes | Yes | Yes |
+| Windows | ✅ | ✅ | ❌ | ✅ |
+| Linux | ✅ | ✅ | ✅ | ✅ |
+| macOS | ✅ | ❌ | ⚠️ | ✅ |

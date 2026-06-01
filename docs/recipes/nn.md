@@ -4,9 +4,7 @@ deeplabcut:
   last_metadata_updated: '2026-03-06'
   ignore: false
 ---
-
 (tf-training-tips-and-tricks)=
-
 # Model training tips & tricks
 
 ## TensorFlow Engine: Limiting a GPU's memory consumption
@@ -28,7 +26,6 @@ sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 ```
 
 (tf-custom-image-augmentation)=
-
 ## Using custom image augmentation
 
 Image augmentation is the process of artificially expanding the training set
@@ -40,13 +37,16 @@ by DeepLabCut, default values can be readily overwritten prior to training. See 
 augmentation variables defined in the:
 
 - PyTorch Engine: [docs for the `pytorch_config.yaml` file](dlc3-pytorch-config)
-- TensorFlow Engine: [default pose_cfg.yaml file](https://github.com/DeepLabCut/DeepLabCut/blob/main/deeplabcut/pose_cfg.yaml#L23-L74)
+- TensorFlow Engine: [default pose_cfg.yaml file](
+https://github.com/DeepLabCut/DeepLabCut/blob/main/deeplabcut/pose_cfg.yaml#L23-L74)
 
-For the single-animal TensorFlow models, [you have several options](https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide.html#f-create-training-dataset-s-and-selection-of-your-neural-network)
+For the single-animal TensorFlow models, [you have several options](
+https://deeplabcut.github.io/DeepLabCut/docs/standardDeepLabCut_UserGuide.html#f-create-training-dataset-s-and-selection-of-your-neural-network)
 for image augmentation when calling `create_training_dataset`
 
 An in-depth tutorial on image augmentation and training hyperparameters can be found [
-here](https://deeplabcut.github.io/DeepLabCut/docs/recipes/pose_cfg_file_breakdown.html).
+here](
+https://deeplabcut.github.io/DeepLabCut/docs/recipes/pose_cfg_file_breakdown.html).
 
 ## Evaluating intermediate (and all) snapshots
 
@@ -55,7 +55,6 @@ the highest performance. Therefore, you should analyze ALL snapshots, and select
 best. Put 'all' in the snapshots section of the `config.yaml` to do this.
 
 (what-neural-network-should-i-use)=
-
 ## What neural network should I use? (Trade offs, speed performance, and considerations)
 
 You always select the network type when you create a training data set: i.e., standard
@@ -77,8 +76,7 @@ where to start.
 **TL;DR - your best performance for most everything is ResNet-50; MobileNetV2-1 is much
 faster, needs less memory on your GPU to train and nearly as accurate.**
 
-______________________________________________________________________
-
+***
 ### ResNets:
 
 In Mathis et al. 2018 we benchmarked three networks: **ResNet-50, ResNet-101, and
@@ -145,7 +143,8 @@ red - read more here: https://arxiv.org/abs/1909.11229)
 ### When should I use an EfficientNet?
 
 Built with inverse residual blocks like MobileNets, but more powerful than ResNets, due
-to optimal depth/width/resolution scaling, [EfficientNet](https://arxiv.org/abs/1905.11946) are an excellent choice if you want speed and
+to optimal depth/width/resolution scaling, [EfficientNet](
+https://arxiv.org/abs/1905.11946) are an excellent choice if you want speed and
 performance. They do require more careful handling though! Especially for small
 datasets, you will need to tune the batch size and learning rates. So, we suggest these
 for more advanced users, or those willing to run experiments to find the best settings.
@@ -163,4 +162,4 @@ that is generated in create_training_dataset) with different models. Here, as of
 we have a **new** function that lets you do this easily. Instead of using
 `create_training_dataset` you will run `create_training_model_comparison` (see the
 docstrings by `deeplabcut.create_training_model_comparison?` or run the Project Manager
-GUI - `deeplabcut.launch_dlc()`- for assistance.
+GUI - `deeplabcut.launch_dlc()`-  for assistance.

@@ -3,7 +3,6 @@ deeplabcut:
   last_metadata_updated: '2026-03-17'
   ignore: false
 ---
-
 # GenTL backend
 
 The GenTL backend provides support for **GenICam / GenTL** compatible cameras using the **Harvesters** Python library (a GenTL consumer).
@@ -17,7 +16,7 @@ Support for GenTL in the GUI is currently experimental.
 Please report issues on GitHub to help improve this backend.
 ```
 
-______________________________________________________________________
+---
 
 ## Features & design
 
@@ -39,7 +38,7 @@ ______________________________________________________________________
   - `RGB8` → BGR
   - Non-8-bit frames → scaled down to 8-bit (per-frame scaling)
 
-______________________________________________________________________
+---
 
 ## Installation
 
@@ -76,7 +75,7 @@ If you have multiple producers installed, separate entries with:
 Many vendor installers set `GENICAM_GENTL64_PATH` automatically. If your camera is not discovered, explicitly set the variable (or provide `cti_file` / `cti_files` in configuration as described below).
 ```
 
-______________________________________________________________________
+---
 
 ## Basic configuration
 
@@ -100,7 +99,7 @@ Select the GenTL backend in the GUI or via configuration:
 }
 ```
 
-______________________________________________________________________
+---
 
 ## CTI / producer configuration
 
@@ -119,24 +118,20 @@ By default, the backend will **discover** and **try to load all available** GenT
 CTI locations are resolved in this order:
 
 1. **Namespace explicit CTIs** (`properties.gentl`):
-
    - `properties.gentl.cti_files`
    - `properties.gentl.cti_file`
 
    Behavior depends on the persisted source marker `properties.gentl.cti_files_source`:
 
    - If `cti_files_source == "user"` (or missing/unknown):
-
      - Treated as a **user override**
      - **strict**: missing paths cause `open()` to raise
 
    - If `cti_files_source == "auto"`:
-
      - Treated as an **auto-discovered cache**
      - If cached paths are stale/missing, `open()` will **fall back to discovery** automatically
 
-1. **Discovery** (auto):
-
+2. **Discovery** (auto):
    - environment: `GENICAM_GENTL64_PATH` / `GENICAM_GENTL32_PATH`
    - optional: `properties.gentl.cti_search_paths` (glob patterns)
    - optional: `properties.gentl.cti_dirs` (extra directories; non-recursive)
@@ -229,7 +224,7 @@ After `open()` (success or failure), the backend writes:
 
 These fields are intended for UI troubleshooting and do not normally need manual edits.
 
-______________________________________________________________________
+---
 
 ## Camera selection and stable identity
 
@@ -269,9 +264,9 @@ Prefer `properties.gentl.device_id`, which is persisted automatically after a su
 The backend selects a device in this order:
 
 1. Exact match of `device_id` against computed IDs for discovered devices
-1. If `device_id` starts with `serial:`, match by exact serial number, then (if needed) substring
-1. Legacy serial keys (`serial_number` / `serial`) if present (exact then substring)
-1. Fallback to `index`
+2. If `device_id` starts with `serial:`, match by exact serial number, then (if needed) substring
+3. Legacy serial keys (`serial_number` / `serial`) if present (exact then substring)
+4. Fallback to `index`
 
 If a serial substring matches **multiple** cameras, an “ambiguous” error is raised.
 
@@ -279,7 +274,7 @@ If a serial substring matches **multiple** cameras, an “ambiguous” error is 
 The backend updates `settings.index` to the selected device’s current index to improve UI stability.
 ```
 
-______________________________________________________________________
+---
 
 ### Automated rebind (index changes, reconnects)
 
@@ -293,9 +288,9 @@ When the UI restarts (or devices re-enumerate), the backend can **rebind setting
 Matching strategy:
 
 1. Exact match on computed `device_id`
-1. Fallback: treat stored value as a serial-like substring and match the first serial containing it
+2. Fallback: treat stored value as a serial-like substring and match the first serial containing it
 
-______________________________________________________________________
+---
 
 ## Camera settings
 
@@ -307,7 +302,7 @@ These settings are shared across backends and configurable in the GUI:
 - `exposure` (float): exposure time; `<= 0` means do not set
 - `gain` (float): gain value; `<= 0` means do not set
 
-______________________________________________________________________
+---
 
 ## Full properties and advanced configuration
 
@@ -346,7 +341,7 @@ Probe / telemetry:
 - `cti_files_loaded` (list[string]): populated automatically after open
 - `cti_files_failed` (list[object]): populated automatically after open; each entry has `cti` and `error`
 
-______________________________________________________________________
+---
 
 ### Pixel format
 
@@ -360,7 +355,7 @@ Frames are normalized to **BGR (8-bit)**:
 - `RGB8` is converted to BGR
 - Higher bit-depth images are scaled to 8-bit based on the frame’s max value (per frame)
 
-______________________________________________________________________
+---
 
 ### Exposure and gain
 
@@ -375,7 +370,7 @@ Best-effort behavior (depends on producer + camera GenApi implementation):
 
 If nodes are missing or read-only, the backend logs a warning and continues.
 
-______________________________________________________________________
+---
 
 ### Frame rate (FPS)
 
@@ -390,7 +385,7 @@ If `fps` is set to a non-zero value:
 
 The backend also tries to read back `ResultingFrameRate` for GUI telemetry (`actual_fps`).
 
-______________________________________________________________________
+---
 
 ### Resolution handling
 
@@ -402,7 +397,7 @@ Resolution is applied **only when explicitly requested** (either `width+height`,
 
 If no resolution is specified, the device’s current/default configuration is preserved.
 
-______________________________________________________________________
+---
 
 ### Streaming and probe mode
 
@@ -419,7 +414,7 @@ If `properties.gentl.fast_start` is `true`:
 
 This is intended for capability probing and faster startup of probe workers.
 
-______________________________________________________________________
+---
 
 ## Troubleshooting
 
@@ -462,7 +457,7 @@ If you pinned CTIs as a user override and paths no longer exist, `open()` will f
 - Inspect available formats via vendor tools or by checking `PixelFormat.symbolics`
 - Try a simpler format such as `Mono8`
 
-______________________________________________________________________
+---
 
 ## Example configuration
 
@@ -488,7 +483,7 @@ ______________________________________________________________________
 }
 ```
 
-______________________________________________________________________
+---
 
 ## Resources
 

@@ -3,9 +3,7 @@ deeplabcut:
   last_metadata_updated: '2026-03-17'
   ignore: false
 ---
-
 (file:dlclivegui-timestamp-format)=
-
 # Video timestamp format
 
 When recording videos, the application automatically saves frame timestamps to a JSON file alongside the video file.
@@ -18,6 +16,7 @@ please refer to the {ref}`sec:dlclivegui-recording-paths-info` section.
 ```
 
 For a video file named `recording_2025-10-23_143052.mp4`, the timestamp file will be:
+
 
 ```
 recording_2025-10-23_143052.mp4_timestamps.json

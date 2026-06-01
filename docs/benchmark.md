@@ -4,7 +4,6 @@ deeplabcut:
   last_metadata_updated: '2026-03-06'
   ignore: false
 ---
-
 # DeepLabCut benchmark
 
 For further information and the leaderboard, see [the official homepage](https://benchmark.deeplabcut.org/).
@@ -12,7 +11,7 @@ For further information and the leaderboard, see [the official homepage](https:/
 ## High Level API
 
 When implementing your own benchmarks, the most important functions are directly accessible
-under the `deeplabcut.benchmark` package.
+under the ``deeplabcut.benchmark`` package.
 
 ```{eval-rst}
 .. automodule:: deeplabcut.benchmark

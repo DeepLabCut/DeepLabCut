@@ -4,9 +4,7 @@ deeplabcut:
   last_metadata_updated: '2026-03-06'
   ignore: false
 ---
-
 (3D-overview)=
-
 # 3D DeepLabCut
 
 In this repo we directly support 2-camera based 3D pose estimation. If you want n camera support, plus nicer
@@ -16,30 +14,32 @@ link you will find how we optimize 6+ camera DLC output data for cheetahs (and s
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1589578632599-HQENUYUIBI9KYTZA2WXV/ke17ZwdGBToddI8pDm48kBgERiRoVg6XJpnbAnG076FZw-zPPgdn4jUwVcJE1ZvWhcwhEtWJXoshNdA9f1qD7Y5_KuY_fkOEvGrDVB8aRb13EC_7Ld97nVeJG4MMJk1tqSdWG3KOMGCA68a4XjyT5g/3D.png?format=300w" width="350" title="DLC-3D" alt="DLC 3D" align="right" vspace = "50">
 
+
 ## **ATTENTION: Our code base in this repo assumes you:**
 
 A. You have 2D videos and a DeepLabCut network to analyze them as described in the
 [main documentation](overview). This can be with multiple
 separate networks for each camera (less recommended), or one network trained on all views - recommended! (See
-[Nath\*, Mathis\* et al., 2019](https://www.biorxiv.org/content/10.1101/476531v1)). We also support multi-animal 3D with this code (please see
+[Nath*, Mathis* et al., 2019](https://www.biorxiv.org/content/10.1101/476531v1)). We also support multi-animal 3D with this code (please see
 [Lauer et al. 2022](https://doi.org/10.1038/s41592-022-01443-0)).
 
-B. You are using 2 cameras, in a [stereo configuration](https://github.com/DeepLabCut/DeepLabCut/blob/5ac4c8cb6bcf2314a3abfcf979b8dd170608e094/deeplabcut/pose_estimation_3d/camera_calibration.py#L223), for 3D\*.
+B. You are using 2 cameras, in a [stereo configuration](https://github.com/DeepLabCut/DeepLabCut/blob/5ac4c8cb6bcf2314a3abfcf979b8dd170608e094/deeplabcut/pose_estimation_3d/camera_calibration.py#L223), for 3D*.
 
 C. You have calibration images taken (see details below!).
 
-### \***If you need more than 2 camera support:**
 
+### ***If you need more than 2 camera support:**
 Here are other excellent options for you to use that extend DeepLabCut:
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1628432165795-BBF6AWCK1BEKV3AJ6GF5/cheetah.gif?format=1500w" width="350" title="AcinoSet-3D" alt="DLC 3D" align="right" vspace = "50">
 
 - **[AcinoSet](https://github.com/African-Robotics-Unit/AcinoSet)**; **n**-camera support with triangulation, extended Kalman filtering, and trajectory optimization
-  code (see video to the right for a min demo, courtesy of Prof. Patel), plus a GUI to visualize 3D data. It is built to
-  work directly with DeepLabCut (but currently tailored to cheetah's, thus some coding skills are required at this time).
+code (see video to the right for a min demo, courtesy of Prof. Patel), plus a GUI to visualize 3D data. It is built to
+work directly with DeepLabCut (but currently tailored to cheetah's, thus some coding skills are required at this time).
+
 
 - **[anipose.org](https://anipose.readthedocs.io/en/latest/)**; a wrapper for 3D deeplabcut that provides >3 camera support and is built to work directly with
-  DeepLabCut. You can `pip install anipose` into your DLC conda environment.
+DeepLabCut. You can `pip install anipose` into your DLC conda environment.
 
 - **Argus, easywand or DLTdv** w/DeepLabCut see https://github.com/backyardbiomech/DLCconverterDLT; this can be used with the the highly popular Argus or DLTdv tools for wand calibration. As of Summer, 2025, [Argus](https://github.com/kilmoretrout/argus_gui) now supports direct import and export of DeepLabCut output files in the GUI with new [workflow documentation](https://github.com/kilmoretrout/argus_gui/blob/master/docs/deeplabcut.md)
 
@@ -57,10 +57,11 @@ Here are other excellent options for you to use that extend DeepLabCut:
 
 Watch a [DEMO VIDEO](https://youtu.be/Eh6oIGE4dwI) on how to use this code, and check out the Notebook [here](https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/JUPYTER/Demo_3D_DeepLabCut.ipynb)!
 
+
 You will run this function **one** time per project; a project is defined as a given set of cameras and calibration
 images. You can always analyze new videos within this project.
 
-The function **create_new_project_3d** creates a new project directory specifically for converting the 2D pose to 3D
+The function **create\_new\_project\_3d** creates a new project directory specifically for converting the 2D pose to 3D
 pose, required subdirectories, and a basic 3D project configuration file. Each project is identified by the name of the
 project (e.g. Task1), name of the experimenter (e.g. YourName), as well as the date at creation.
 
@@ -69,11 +70,9 @@ cameras to be used. Currently, DeepLabCut supports triangulation using 2 cameras
 in a future version.
 
 To start a 3D project type the following in ipython:
-
 ```python
 deeplabcut.create_new_project_3d("ProjectName", "NameofLabeler", num_cameras=2)
 ```
-
 TIP 1: you can also pass `working_directory="Full path of the working directory"` if you want to place this folder
 somewhere beside the current directory you are working in. If the optional argument `working_directory` is unspecified,
 the project directory is created in the current working directory.
@@ -84,7 +83,7 @@ easy use. Please note that `config_path3d='Full path of the 3D project configura
 
 This function will create a project directory with the name **Name of the project+name of the experimenter+date of
 creation of the project+3d** in the **Working directory**. The project directory will have subdirectories:
-**calibration_images**, **camera_matrix**, **corners**, and **undistortion**. All the outputs generated during the
+**calibration_images**, **camera_matrix**, **corners**, and **undistortion**.  All the outputs generated during the
 course of a project will be stored in one of these subdirectories, thus allowing each project to be curated in
 separation from other projects.
 
@@ -99,7 +98,7 @@ pickle files contain the intrinsic and extrinsic camera parameters. While the in
 transformation from 3-D camera's coordinates into the image coordinates, the extrinsic parameters represent a rigid
 transformation from world coordinate system to the 3-D camera's coordinate system.
 
-**corners:** As a part of camera calibration, the checkerboard pattern is detected in the calibration images and these
+**corners:**  As a part of camera calibration, the checkerboard pattern is detected in the calibration images and these
 patterns will be stored in this directory. Each row of the checkerboard grid is marked with a unique color.
 
 **undistortion:** In order to check for calibration, the calibration images and the corresponding corner points are
@@ -116,10 +115,9 @@ Here is an overview of the calibration and triangulation workflow that follows:
 (**CRITICAL!**) You must take images of a checkerboard to calibrate your images. Here are example boards you could
 print and use (mount it on a flat, hard surface!):
 https://markhedleyjones.com/projects/calibration-checkerboard-collection.
-
 - You must save the image pairs as .jpg files.
 - They should be named with the **camera-#** as the prefix, i.e. **camera-1-01.jpg** and **camera-2-01.jpg** for the
-  first pair of images. Please note, this cannot be changed after the project is created.
+first pair of images. Please note, this cannot be changed after the project is created.
 
 **TIP:** If you want to take a short video (vs. snapping pairs of frames) while you move the checkerboard around, you
 can use this command inside your conda environment (but outside of ipython!) to convert the video to **.jpg** frames
@@ -128,20 +126,20 @@ can use this command inside your conda environment (but outside of ipython!) to 
 ```python
 ffmpeg -i videoname.mp4 -vframes 20 camera-1-%03d.jpg
 ```
-
 - While taking the images:
   - Keep the orientation of the checkerboard the same and do not rotate it more than 30 degrees. Rotating the
-    checkerboard circular will change the origin across the frames and may result in incorrect order of detected corners.
+  checkerboard circular will change the origin across the frames and may result in incorrect order of detected corners.
 
   - Cover several distances, and within each distance, cover all parts of the image view (all corners and center).
 
   - Use a checkerboard as big as possible, ideally with at least 8x6 squares.
 
   - Aim for taking at least 30-70 pair of images, as after corner detection, some of the images might need to be
-    discarded due to either incorrect corner detection or incorrect order of detected corners.
+  discarded due to either incorrect corner detection or incorrect order of detected corners.
 
   - You can take the images as a series of .jpg images, or a video where you post-hoc pair sync'd frames (see tip
-    above).
+  above).
+
 
 The camera calibration is an **iterative process**, where the user needs to select a set of calibration images where the
 grid pattern is correctly detected. The function `deeplabcut.calibrate_cameras(config_path)`
@@ -176,6 +174,7 @@ Here is what they might look like:
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559776966423-RATM6ZQT8JXHYAN768F6/ke17ZwdGBToddI8pDm48kKmw982fUOZVIQXHUCR1F55Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpw5XnxLBmEFHJGf_0qFdDpmIncOw4kq9OpCHNTYqzGO-E1YJr-Thht9Tdog4YtCwrE/right02_corner.jpg?format=500w" height="220">
  <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559776952829-KRHFX74CDO3BPIY9E9U0/ke17ZwdGBToddI8pDm48kKmw982fUOZVIQXHUCR1F55Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpw5XnxLBmEFHJGf_0qFdDpmIncOw4kq9OpCHNTYqzGO-E1YJr-Thht9Tdog4YtCwrE/left02_corner.jpg?format=500w" height="220">
 </p>
+
 
 Once all the set of images has been selected (namely, delete from the folder any bad pairs!) where the corners and their
 orders are detected correctly, then the two cameras can be calibrated using:
@@ -228,15 +227,15 @@ video filename must contain this naming, i.e. this could be named as `rig-1-mous
 information for the 2D views.
 
 - Of critical importance is that you need to input the **same** body part names as in the config.yaml file of the 2D
-  project.
+project.
 - You must set the snapshot to use inside the 2D config file (default is -1, namely the last training snapshot of the
-  network).
+network).
 - You need to set a "scorer 3D" name; this will point to the project file and be set in future 3D output file names.
 - You should define a "skeleton" here as well (note, this is not rigid, it just connects the points in the plotting
-  step). Not every point needs to be "skeletonized", i.e. these points can be a subset of the full body parts list. The
-  other points will just be plotted into the 3D space. Here is how the config.yaml looks with some example inputs:
+step). Not every point needs to be "skeletonized", i.e. these points can be a subset of the full body parts list. The
+other points will just be plotted into the 3D space. Here is how the config.yaml looks with some example inputs:
 
-<p align="center">
+ <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559756808766-2G6FG91S2I4ZX2SSP6QF/ke17ZwdGBToddI8pDm48kEULogWWASOhGi36VEr2SOlZw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZamWLI2zvYWH8K3-s_4yszcp2ryTI0HqTOaaUohrI8PIoI8wFyxyzDq4NO_A5fg6hgZUWi6FxVv9SjR8GkGxb-wKMshLAGzx4R3EDFOm1kBS/config3d.jpg?format=1000w" width="95%">
 </p>
 
@@ -254,9 +253,8 @@ deeplabcut.triangulate(
   filterpredictions=True/False
 )
 ```
-
-NOTE: Windows users, you must input paths as: `` r`C:\Users\computername\videofolder' `` or
-`C:\\Users\\computername\\videofolder'`.
+NOTE: Windows users, you must input paths as: ``r`C:\Users\computername\videofolder'`` or
+``C:\\Users\\computername\\videofolder'``.
 
 **TIP:** Here are all the parameters you can pass:
 
@@ -291,7 +289,6 @@ save_as_csv: bool, optional
 track_method: str, optional
     Method used for tracking: "box" or "ellipse"
 ```
-
 The **triangulated file** is now saved under the same directory where the video files reside (or the destination folder
 you set)! This can be used for future analysis. This step can be run at anytime as you collect new videos, and easily
 added to your automated analysis pipeline, i.e. such as **replacing**
@@ -323,7 +320,7 @@ deeplabcut.create_labeled_video_3d(
 variables `xlim`, `ylim`, `zlim` and `view`. Your checkerboard_3d.png image which was created above will show you the
 axis ranges. Here is an example:
 
-<p align="center">
+ <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559864026106-B6XQHUDUA8VB6F0FNVBA/ke17ZwdGBToddI8pDm48kKmw982fUOZVIQXHUCR1F55Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpx7krGdD6VO1HGZR3BdeCbrijc_yIxzfnirMo-szZRSL5-VIQGAVcQr6HuuQP1evvE/checkerboard_3d.png?format=750w" width="45%">
 </p>
 
@@ -334,7 +331,6 @@ the values, and start again!
 
 **Other optional parameters include:**
 here
-
 ```python
 videofolder: string
     Full path of the folder where the videos are stored. Use this if the videos are stored in a different location other than where the triangulation files are stored. By default is ``None`` and therefore looks for video files in the directory where the triangulation file is stored.
@@ -377,5 +373,5 @@ dpi: int, optional, default=300
 
 ### If you use this code:
 
-We kindly ask that you cite [Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y) **&** [Nath\*, Mathis\*, et al., 2019](https://doi.org/10.1038/s41596-019-0176-0). If you use 3D
+We kindly ask that you cite [Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y) **&** [Nath*, Mathis*, et al., 2019](https://doi.org/10.1038/s41596-019-0176-0). If you use 3D
 multi-animal: [Lauer et al. 2022](https://doi.org/10.1038/s41592-022-01443-0).
