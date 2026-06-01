@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests loggers"""
+"""Tests loggers."""
+
 from pathlib import Path
 from typing import Any
 
@@ -19,7 +20,7 @@ import deeplabcut.pose_estimation_pytorch.runners.logger as logging
 
 
 class MockImageLogger(logging.ImageLoggerMixin):
-    """Mock image logger"""
+    """Mock image logger."""
 
     def log_images(
         self,
@@ -77,7 +78,7 @@ def test_prepare_image(keypoints: list[list[float]], denormalize: bool) -> None:
 
 
 def test_csv_logger_resume(tmp_path: Path) -> None:
-    """Test CSVLogger preserves data when resuming from snapshot"""
+    """Test CSVLogger preserves data when resuming from snapshot."""
     log_file = tmp_path / "learning_stats.csv"
 
     # Initial training: log some metrics

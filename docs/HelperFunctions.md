@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2025-06-30'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+---
 (helper-functions)=
 # Helper & Advanced Optional Function Documentation
 
@@ -40,7 +46,7 @@ Only videos with this extension are analyzed. The default is ``.avi``
 -----------
 
     Converts all pose-output files belonging to mp4 videos in the folder '/media/alex/experimentaldata/cheetahvideos' to csv files.
-    deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')  
+    deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
 ```
 
 While some of the names are ridiculously long, we wanted them to be "self-explanatory." Here is a list

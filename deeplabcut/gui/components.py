@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
@@ -19,7 +20,6 @@ from PySide6.QtGui import QIcon
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.gui.dlc_params import DLCParams
 from deeplabcut.gui.widgets import ConfigEditor
-from pathlib import Path
 
 
 def _create_label_widget(
@@ -71,10 +71,9 @@ def _create_grid_layout(
 
 
 def set_combo_items(combo_box: QtWidgets.QComboBox, items: list[str], index: int = 0):
-    """
-    Safely replaces all items in a QComboBox and sets the current index,
-    ensuring that the `currentTextChanged` signal is emitted exactly once
-    (and only if items are present).
+    """Safely replaces all items in a QComboBox and sets the current index, ensuring
+    that the `currentTextChanged` signal is emitted exactly once (and only if items are
+    present).
 
     This method suppresses intermediate signal emissions that can be triggered
     by `clear()` and `addItems()` — both of which may emit multiple signals
@@ -155,12 +154,19 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         self,
         root: QtWidgets.QMainWindow,
         parent: QtWidgets.QWidget,
+        *,
         hide_videotype: bool = False,
+        sync_videotype_with_selection: bool = False,
+        strict_videotype_filter: bool = False,
     ):
         super().__init__(parent)
 
         self.root = root
         self.parent = parent
+
+        # Optional safeties; defaults preserve current behavior
+        self.sync_videotype_with_selection = sync_videotype_with_selection
+        self.strict_videotype_filter = strict_videotype_filter
 
         self._init_layout(hide_videotype)
 
@@ -171,7 +177,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         self.videotype_widget = QtWidgets.QComboBox()
         self.videotype_widget.setMinimumWidth(100)
         self.videotype_widget.addItems(DLCParams.VIDEOTYPES)
-        self.videotype_widget.setCurrentText(self.root.video_type)
+        self.videotype_widget.setCurrentText(self._normalize_videotype(self.root.video_type))
         self.root.video_type_.connect(self.videotype_widget.setCurrentText)
         self.videotype_widget.currentTextChanged.connect(self.update_videotype)
 
@@ -182,9 +188,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         self.root.video_files_.connect(self._update_video_selection)
 
         # Number of selected videos text
-        self.selected_videos_text = QtWidgets.QLabel(
-            ""
-        )  # updated when videos are selected
+        self.selected_videos_text = QtWidgets.QLabel("")
 
         # Clear video selection
         self.clear_videos = QtWidgets.QPushButton("Clear selection")
@@ -202,14 +206,138 @@ class VideoSelectionWidget(QtWidgets.QWidget):
     def files(self):
         return self.root.video_files
 
-    def update_videotype(self, vtype):
+    def _normalize_videotype(self, vtype: str) -> str:
+        return (vtype or "").lower().lstrip(".")
+
+    @property
+    def selected_suffixes(self) -> set[str]:
+        """Return normalized suffixes (without leading dot) of currently selected files."""
+        suffixes = set()
+        for f in self.files:
+            suffix = Path(f).suffix.lower().lstrip(".")
+            if suffix:
+                suffixes.add(suffix)
+        return suffixes
+
+    def get_effective_videotype(
+        self,
+        prefer_selected_files: bool = False,
+        with_dot: bool = True,
+    ) -> str:
+        """
+        Return the videotype to use.
+
+        By default, preserves current behavior and uses the dropdown.
+        If prefer_selected_files=True and the selected files all share one suffix,
+        that suffix is used instead.
+        """
+        videotype = self._normalize_videotype(self.videotype_widget.currentText())
+
+        if prefer_selected_files:
+            suffixes = self.selected_suffixes
+            if len(suffixes) == 1:
+                videotype = next(iter(suffixes))
+
+        if with_dot and videotype:
+            return f".{videotype}"
+        return videotype
+
+    def get_files_grouped_by_suffix(self, keep_dot: bool = False) -> dict[str, list[str]]:
+        """Return a dict grouping selected files by their suffixes."""
+        groups: dict[str, list[str]] = {}
+        for f in self.files:
+            suffix = Path(f).suffix.lower()
+            if not keep_dot:
+                suffix = suffix.lstrip(".")
+            groups.setdefault(suffix, []).append(f)
+        return groups
+
+    def _all_supported_video_patterns(self) -> list[str]:
+        """Return all supported video patterns in both lower and upper case."""
+        return [f"*.{ext.lower()}" for ext in DLCParams.VIDEOTYPES[1:]] + [
+            f"*.{ext.upper()}" for ext in DLCParams.VIDEOTYPES[1:]
+        ]
+
+    def _build_video_filter(self) -> str:
+        """
+        Build the file dialog filter.
+
+        By default, preserve current behavior: show all supported video types.
+        If strict_videotype_filter is enabled, restrict to the currently selected
+        videotype when it is non-empty. If the current dropdown value is empty
+        (the "all types" option), fall back to the full supported-extension filter.
+        """
+        all_video_types = self._all_supported_video_patterns()
+
+        if self.strict_videotype_filter:
+            current = self.get_effective_videotype(
+                prefer_selected_files=False,
+                with_dot=False,
+            )
+
+            if current:
+                video_types = [f"*.{current.lower()}", f"*.{current.upper()}"]
+            else:
+                # "All types" entry selected: keep the dialog usable
+                video_types = all_video_types
+        else:
+            video_types = all_video_types
+
+        return f"Videos ({' '.join(video_types)})"
+
+    def _set_videotype_silently(self, vtype: str):
+        """
+        Update the dropdown/root videotype without triggering update_videotype(),
+        because that method clears the current selection.
+
+        Only updates state if the videotype is supported by the combo box.
+        Otherwise, leaves the current state unchanged.
+        """
+        normalized = self._normalize_videotype(vtype)
+        current = self._normalize_videotype(self.videotype_widget.currentText())
+
+        if not normalized:
+            self.root.logger.warning("Attempted to set an empty videotype silently; keeping current selection.")
+            return
+
+        # Validate against actual combo-box items
+        if self.videotype_widget.findText(normalized) == -1:
+            self.root.logger.warning(
+                f"Attempted to set unsupported videotype '{normalized}' silently; "
+                f"keeping current videotype '{current}'."
+            )
+            return
+
+        if normalized != current:
+            self.videotype_widget.blockSignals(True)
+            self.videotype_widget.setCurrentText(normalized)
+            self.videotype_widget.blockSignals(False)
+
+        self.root.video_type = normalized
+
+    def update_videotype(self, vtype: str):
+        normalized = self._normalize_videotype(vtype)
         self.clear_selected_videos()
-        self.root.video_type = vtype
+        self.root.video_type = normalized
 
     def _update_video_selection(self, videopaths):
         n_videos = len(self.root.video_files)
         if n_videos:
-            self.selected_videos_text.setText(f"{n_videos} videos selected")
+            suffixes = self.selected_suffixes
+            if len(suffixes) == 1:
+                suffix = next(iter(suffixes))
+                self.selected_videos_text.setText(f"{n_videos} videos selected (.{suffix})")
+            elif len(suffixes) > 1:
+                counts = {
+                    suffix: len(files) for suffix, files in self.get_files_grouped_by_suffix(keep_dot=False).items()
+                }
+                summary = ", ".join(f"{count} .{suffix}" for suffix, count in sorted(counts.items()))
+                self.selected_videos_text.setText(
+                    f"{n_videos} videos selected ({summary}; will run in separate batches)"
+                )
+            else:
+                self.selected_videos_text.setText(f"{n_videos} videos selected")
+
             self.select_video_button.setText("Add more videos")
         else:
             self.selected_videos_text.setText("")
@@ -217,13 +345,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
 
     def update_videos(self):
         directory_to_open = self.root.project_folder
-
-        # Create a filter string with both lowercase and uppercase extensions
-
-        video_types = [f"*.{ext.lower()}" for ext in DLCParams.VIDEOTYPES[1:]] + [
-            f"*.{ext.upper()}" for ext in DLCParams.VIDEOTYPES[1:]
-        ]
-        video_filter = f"Videos ({' '.join(video_types)})"
+        video_filter = self._build_video_filter()
 
         filenames = QtWidgets.QFileDialog.getOpenFileNames(
             parent=self,
@@ -233,12 +355,26 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         )
 
         if filenames[0]:
-            # Qt returns a tuple (list of files, filetype)
-            self.root.add_video_files([os.path.abspath(vid) for vid in filenames[0]])
+            abs_files = [os.path.abspath(vid) for vid in filenames[0]]
+            self.root.add_video_files(abs_files)
+
+            # Optional safety: sync dropdown to selected file suffix
+            if self.sync_videotype_with_selection:
+                suffixes = {Path(v).suffix.lower().lstrip(".") for v in abs_files if Path(v).suffix}
+
+                if len(suffixes) == 1:
+                    inferred = next(iter(suffixes))
+                    self._set_videotype_silently(inferred)
+                    self.root.logger.info(f"Inferred videotype '{inferred}' from selected file(s)")
+                elif len(suffixes) > 1:
+                    self.root.logger.warning(
+                        f"Selected videos have mixed suffixes {sorted(suffixes)}; "
+                        "keeping current videotype dropdown unchanged."
+                    )
 
     def clear_selected_videos(self):
         self.root.clear_video_files()
-        self.root.logger.info(f"Cleared selected videos")
+        self.root.logger.info("Cleared selected videos")
 
 
 class SnapshotSelectionWidget(QtWidgets.QWidget):
@@ -264,9 +400,7 @@ class SnapshotSelectionWidget(QtWidgets.QWidget):
         self.select_snapshot_button.clicked.connect(self.select_snapshot)
 
         # Selected snapshot text
-        self.selected_snapshot_text = QtWidgets.QLabel(
-            ""
-        )  # updated when snapshot is selected
+        self.selected_snapshot_text = QtWidgets.QLabel("")  # updated when snapshot is selected
 
         # Clear snapshot selection
         self.clear_snapshot_button = QtWidgets.QPushButton("Clear selection")
@@ -284,9 +418,7 @@ class SnapshotSelectionWidget(QtWidgets.QWidget):
             self.selected_snapshot_text.setText("")
             self.clear_snapshot_button.hide()
         else:
-            self.selected_snapshot_text.setText(
-                f"{os.path.basename(self.selected_snapshot)}"
-            )
+            self.selected_snapshot_text.setText(f"{os.path.basename(self.selected_snapshot)}")
             self.clear_snapshot_button.show()
 
     def select_snapshot(self):
@@ -334,9 +466,7 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
         self.select_conditions_button.clicked.connect(self.select_conditions)
 
         # Selected conditions text
-        self.selected_conditions_text = QtWidgets.QLabel(
-            ""
-        )  # updated when conditions are selected
+        self.selected_conditions_text = QtWidgets.QLabel("")  # updated when conditions are selected
 
         layout.addWidget(self.select_conditions_button)
         layout.addWidget(self.selected_conditions_text)
@@ -350,9 +480,7 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
             return "..." + path[-(max_length - 3) :]
 
         self.selected_conditions_text.setText(
-            ""
-            if self.selected_conditions is None
-            else f"{_shorten_path(self.selected_conditions)}"
+            "" if self.selected_conditions is None else f"{_shorten_path(self.selected_conditions)}"
         )
 
     def select_conditions(self):
@@ -387,7 +515,7 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
         if selected_filter.startswith(snapshots_label) and selected_conditions:
             if not _is_model_bu(selected_conditions):
                 msg = _create_message_box(
-                    f"Invalid conditions",
+                    "Invalid conditions",
                     (
                         f"The selected snapshot ({selected_conditions}) cannot be "
                         "used as conditions because it is not a Bottom-Up model."
@@ -397,9 +525,7 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
                 selected_conditions = None
 
         # When Canceling a file selection, Qt returns an empty string as selected file
-        self.selected_conditions = (
-            str(os.path.abspath(selected_conditions)) if selected_conditions else None
-        )
+        self.selected_conditions = str(os.path.abspath(selected_conditions)) if selected_conditions else None
 
         self._update_selected_conditions_display()
 
@@ -456,9 +582,7 @@ class DefaultTab(QtWidgets.QWidget):
 
     def _init_default_layout(self):
         # Add tab header
-        self.main_layout.addWidget(
-            _create_label_widget(self.h1_description, "font:bold;", (10, 10, 0, 10))
-        )
+        self.main_layout.addWidget(_create_label_widget(self.h1_description, "font:bold;", (10, 10, 0, 10)))
 
         # Add separating line
         self.separator = QtWidgets.QFrame()
@@ -474,9 +598,7 @@ class DefaultTab(QtWidgets.QWidget):
 
 
 class EditYamlButton(QtWidgets.QPushButton):
-    def __init__(
-        self, button_label: str, filepath: str, parent: QtWidgets.QWidget = None
-    ):
+    def __init__(self, button_label: str, filepath: str, parent: QtWidgets.QWidget = None):
         super().__init__(parent)
         self.filepath = filepath
         self.parent = parent

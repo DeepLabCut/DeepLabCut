@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests the pre-processors"""
+"""Tests the pre-processors."""
+
 import pytest
 
 import deeplabcut.utils.auxiliaryfunctions as af
@@ -24,9 +25,7 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
 
 
 @pytest.mark.parametrize("bodyparts", [["nose"], ["nose", "ear", "eye"]])
-@pytest.mark.parametrize(
-    "net_type", ["resnet_50", "resnet_101", "hrnet_w18", "hrnet_w32", "hrnet_w48"]
-)
+@pytest.mark.parametrize("net_type", ["resnet_50", "resnet_101", "hrnet_w18", "hrnet_w32", "hrnet_w48"])
 def test_make_single_animal_config(bodyparts: list[str], net_type: str):
     # Single animal projects can't have unique bodyparts
     project_config = _make_project_config(
@@ -68,9 +67,7 @@ def test_make_single_animal_config(bodyparts: list[str], net_type: str):
 @pytest.mark.parametrize("bodyparts", [["nose"], ["nose", "ear", "eye"]])
 @pytest.mark.parametrize("identity", [False, True])
 @pytest.mark.parametrize("unique_bodyparts", [[], ["tail"]])
-@pytest.mark.parametrize(
-    "net_type", ["resnet_50", "resnet_101", "hrnet_w18", "hrnet_w32", "hrnet_w48"]
-)
+@pytest.mark.parametrize("net_type", ["resnet_50", "resnet_101", "hrnet_w18", "hrnet_w32", "hrnet_w48"])
 def test_backbone_plus_paf_config(
     multianimal: bool,
     individuals: list[str],
@@ -95,9 +92,7 @@ def test_backbone_plus_paf_config(
     )
     pretty_print(pytorch_pose_config)
 
-    graph = [
-        [i, j] for i in range(len(bodyparts)) for j in range(i + 1, len(bodyparts))
-    ]
+    graph = [[i, j] for i in range(len(bodyparts)) for j in range(i + 1, len(bodyparts))]
     num_limbs = len(graph) * 2
 
     # check heads are there
@@ -148,9 +143,7 @@ def test_backbone_plus_paf_config(
 )
 @pytest.mark.parametrize("individuals", [["single"], ["bugs", "daffy"]])
 @pytest.mark.parametrize("bodyparts", [["nose"], ["nose", "ear", "eye"]])
-@pytest.mark.parametrize(
-    "net_type", ["resnet_50", "resnet_101", "hrnet_w18", "hrnet_w32", "hrnet_w48"]
-)
+@pytest.mark.parametrize("net_type", ["resnet_50", "resnet_101", "hrnet_w18", "hrnet_w32", "hrnet_w48"])
 def test_top_down_config(
     detector: tuple[str, str],
     individuals: list[str],
@@ -285,9 +278,7 @@ def test_make_dlcrnet_config(
         net_type=net_type,
     )
     pretty_print(pytorch_pose_config)
-    paf_graph = [
-        [i, j] for i in range(len(bodyparts)) for j in range(i + 1, len(bodyparts))
-    ]
+    paf_graph = [[i, j] for i in range(len(bodyparts)) for j in range(i + 1, len(bodyparts))]
     num_limbs = len(paf_graph)
 
     # check heads are there
@@ -344,7 +335,7 @@ def test_make_tokenpose_config(
     )
 
     if identity or len(unique_bodyparts) > 0:
-        with pytest.raises(ValueError) as err_info:
+        with pytest.raises(ValueError) as _:
             # Not yet implemented!
             _ = make_pytorch_pose_config(
                 project_config,

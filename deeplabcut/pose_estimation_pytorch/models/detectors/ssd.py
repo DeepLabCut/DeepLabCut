@@ -20,7 +20,7 @@ from deeplabcut.pose_estimation_pytorch.models.detectors.torchvision import (
 
 @DETECTORS.register_module
 class SSDLite(TorchvisionDetectorAdaptor):
-    """An SSD object detection model"""
+    """An SSD object detection model."""
 
     def __init__(
         self,

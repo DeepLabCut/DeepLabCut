@@ -4,8 +4,7 @@ from torch import nn
 
 class FilteredDetector(nn.Module):
     def __init__(self, base_model: nn.Module, class_id: int):
-        """
-        Wrap a torchvision detector to return predictions only for a single class.
+        """Wrap a torchvision detector to return predictions only for a single class.
 
         Args:
             base_model: A torchvision-style object detector.

@@ -42,9 +42,7 @@ def test_load_weights_only_with_build_training_runner(task: Task, weights_only: 
             device="cpu",
             snapshot_path="snapshot.pt",
         )
-        load.assert_called_once_with(
-            "snapshot.pt", map_location="cpu", weights_only=weights_only
-        )
+        load.assert_called_once_with("snapshot.pt", map_location="cpu", weights_only=weights_only)
 
 
 @dataclass
@@ -104,9 +102,7 @@ def test_load_head_weights(tmp_path_factory, load_head_weights):
     )
 
     original_state_dict = model.state_dict()
-    zero_state_dict = {
-        k: torch.zeros_like(v) for k, v in original_state_dict.items()
-    }
+    zero_state_dict = {k: torch.zeros_like(v) for k, v in original_state_dict.items()}
 
     load = Mock()
     load.return_value = dict(model=zero_state_dict)
@@ -198,9 +194,7 @@ def test_resuming_training_scheduler_every_epoch(
             [expected_lr],  # trains for 1 epoch
             snapshot_to_load=snapshot_to_load,
         )
-        snapshot_to_load = dict(
-            metadata=dict(epoch=epoch + 1), scheduler=runner.scheduler.state_dict()
-        )
+        snapshot_to_load = dict(metadata=dict(epoch=epoch + 1), scheduler=runner.scheduler.state_dict())
 
 
 @patch("deeplabcut.pose_estimation_pytorch.runners.train.CSVLogger", Mock())
@@ -243,12 +237,11 @@ def test_resuming_training_scheduler_every_epoch(
         ),
     ],
 )
-def test_resuming_training_with_no_scheduler_state(
-    runner_cls, test_cfg: SchedulerTestConfig, resume_epoch: int
-):
-    """
-    Without a scheduler config, there is no way to set the initial LR. All we can do is
-    set the last_epoch value, and adjust correctly at milestones going forward.
+def test_resuming_training_with_no_scheduler_state(runner_cls, test_cfg: SchedulerTestConfig, resume_epoch: int):
+    """Without a scheduler config, there is no way to set the initial LR.
+
+    All we can do is set the last_epoch value, and adjust correctly at milestones going
+    forward.
     """
     runner = _fit_runner_and_check_lrs(
         runner_cls,

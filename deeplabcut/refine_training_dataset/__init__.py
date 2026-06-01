@@ -10,5 +10,5 @@
 #
 
 
-from deeplabcut.refine_training_dataset.tracklets import *
 from deeplabcut.refine_training_dataset.outlier_frames import *
+from deeplabcut.refine_training_dataset.tracklets import *

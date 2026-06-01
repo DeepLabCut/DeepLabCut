@@ -8,18 +8,17 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Code to export DeepLabCut models for DLCLive inference"""
+"""Code to export DeepLabCut models for DLCLive inference."""
+
 import copy
 from pathlib import Path
 
 import torch
-from omegaconf import DictConfig, OmegaConf
-
-from deeplabcut.core.config.config_mixin import ConfigMixin
 
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.data as dlc3_data
 import deeplabcut.utils.auxiliaryfunctions as af
+from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.task import Task
 
@@ -91,9 +90,7 @@ def export_model(
 
     if snapshotindex is None:
         snapshotindex = loader.project_cfg["snapshotindex"]
-    snapshots = utils.get_model_snapshots(
-        snapshotindex, loader.model_folder, loader.pose_task
-    )
+    snapshots = utils.get_model_snapshots(snapshotindex, loader.model_folder, loader.pose_task)
 
     if len(snapshots) == 0:
         raise ValueError(
@@ -105,9 +102,7 @@ def export_model(
     if loader.pose_task == Task.TOP_DOWN and not without_detector:
         if detector_snapshot_index is None:
             detector_snapshot_index = loader.project_cfg["detector_snapshotindex"]
-        detector_snapshots = utils.get_model_snapshots(
-            detector_snapshot_index, loader.model_folder, Task.DETECT
-        )
+        detector_snapshots = utils.get_model_snapshots(detector_snapshot_index, loader.model_folder, Task.DETECT)
 
         if len(detector_snapshots) == 0:
             raise ValueError(
@@ -139,7 +134,7 @@ def export_model(
 
             # Convert typed config to plain dict so torch.save doesn't pickle
             # custom types (which require weights_only=False to load)
-            if isinstance(model_cfg, ConfigMixin):
+            if isinstance(model_cfg, PoseConfig):
                 model_cfg = model_cfg.to_dict()
 
             pose_weights = torch.load(snapshot.path, **load_kwargs)["model"]
@@ -186,8 +181,7 @@ def get_export_filename(
 
 
 def wipe_paths_from_model_config(model_cfg: dict) -> None:
-    """
-    Removes all paths from the contents of the ``pytorch_config`` file.
+    """Removes all paths from the contents of the ``pytorch_config`` file.
 
     Args:
         model_cfg: The model configuration to wipe.

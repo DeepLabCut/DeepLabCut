@@ -8,14 +8,14 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from typing import Dict, Any
+from typing import Any
 
 import torch
 
 
 class Scheduler:
-    """Parameter Scheduler Base Class
-    A scheduler base class that can be used to schedule any optimizer parameter groups.
+    """Parameter Scheduler Base Class A scheduler base class that can be used to
+    schedule any optimizer parameter groups.
 
     Unlike the builtin PyTorch schedulers, this is intended to be consistently called
     * At the END of each epoch, before incrementing the epoch count, to calculate next epoch's value
@@ -49,22 +49,13 @@ class Scheduler:
         if initialize:
             for i, group in enumerate(self.optimizer.param_groups):
                 if param_group_field not in group:
-                    raise KeyError(
-                        f"{param_group_field} missing from param_groups[{i}]"
-                    )
-                group.setdefault(
-                    self._initial_param_group_field, group[param_group_field]
-                )
+                    raise KeyError(f"{param_group_field} missing from param_groups[{i}]")
+                group.setdefault(self._initial_param_group_field, group[param_group_field])
         else:
             for i, group in enumerate(self.optimizer.param_groups):
                 if self._initial_param_group_field not in group:
-                    raise KeyError(
-                        f"{self._initial_param_group_field} missing from param_groups[{i}]"
-                    )
-        self.base_values = [
-            group[self._initial_param_group_field]
-            for group in self.optimizer.param_groups
-        ]
+                    raise KeyError(f"{self._initial_param_group_field} missing from param_groups[{i}]")
+        self.base_values = [group[self._initial_param_group_field] for group in self.optimizer.param_groups]
         self.metric = None  # any point to having this for all?
         self.noise_range_t = noise_range_t
         self.noise_pct = noise_pct
@@ -73,12 +64,10 @@ class Scheduler:
         self.noise_seed = noise_seed if noise_seed is not None else 42
         self.update_groups(self.base_values)
 
-    def state_dict(self) -> Dict[str, Any]:
-        return {
-            key: value for key, value in self.__dict__.items() if key != "optimizer"
-        }
+    def state_dict(self) -> dict[str, Any]:
+        return {key: value for key, value in self.__dict__.items() if key != "optimizer"}
 
-    def load_state_dict(self, state_dict: Dict[str, Any]) -> None:
+    def load_state_dict(self, state_dict: dict[str, Any]) -> None:
         self.__dict__.update(state_dict)
 
     def get_epoch_values(self, epoch: int):
@@ -104,7 +93,7 @@ class Scheduler:
     def update_groups(self, values):
         if not isinstance(values, (list, tuple)):
             values = [values] * len(self.optimizer.param_groups)
-        for param_group, value in zip(self.optimizer.param_groups, values):
+        for param_group, value in zip(self.optimizer.param_groups, values, strict=False):
             param_group[self.param_group_field] = value
 
     def _add_noise(self, lrs, t):
@@ -123,8 +112,6 @@ class Scheduler:
                         if abs(noise) < self.noise_pct:
                             break
                 else:
-                    noise = (
-                        2 * (torch.rand(1, generator=g).item() - 0.5) * self.noise_pct
-                    )
+                    noise = 2 * (torch.rand(1, generator=g).item() - 0.5) * self.noise_pct
                 lrs = [v + v * noise for v in lrs]
         return lrs

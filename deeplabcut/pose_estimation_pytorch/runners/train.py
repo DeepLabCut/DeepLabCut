@@ -19,7 +19,6 @@ from typing import Any, Generic
 import numpy as np
 import torch
 import torch.nn as nn
-from omegaconf import DictConfig
 from torch.nn.parallel import DataParallel
 from torch.utils.data import DataLoader
 
@@ -28,9 +27,9 @@ import deeplabcut.pose_estimation_pytorch.runners.schedulers as schedulers
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.runners.base import (
-    attempt_snapshot_load,
     ModelType,
     Runner,
+    attempt_snapshot_load,
 )
 from deeplabcut.pose_estimation_pytorch.runners.logger import (
     BaseLogger,
@@ -93,9 +92,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         log_filename: str = "learning_stats.csv",
         load_weights_only: bool | None = None,
     ):
-        super().__init__(
-            model=model, device=device, gpus=gpus, snapshot_path=snapshot_path
-        )
+        super().__init__(model=model, device=device, gpus=gpus, snapshot_path=snapshot_path)
         # TODO @deruyter92: decide on typed / plain dict
         if isinstance(optimizer, dict):
             optimizer = build_optimizer(model, optimizer)
@@ -156,10 +153,8 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         return state_dict_
 
     @abstractmethod
-    def step(
-        self, batch: dict[str, Any], mode: str = "train"
-    ) -> dict[str, torch.Tensor]:
-        """Perform a single epoch gradient update or validation step
+    def step(self, batch: dict[str, Any], mode: str = "train") -> dict[str, torch.Tensor]:
+        """Perform a single epoch gradient update or validation step.
 
         Args:
             batch: the batch data on which to run a step
@@ -174,7 +169,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
 
     @abstractmethod
     def _compute_epoch_metrics(self) -> dict[str, float]:
-        """Computes the metrics using the data accumulated during an epoch
+        """Computes the metrics using the data accumulated during an epoch.
 
         Returns:
             A dictionary containing the different losses for the step
@@ -223,9 +218,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         for e in range(self.starting_epoch + 1, epochs + 1):
             self.current_epoch = e
             self._metadata["epoch"] = e
-            train_loss = self._epoch(
-                train_loader, mode="train", display_iters=display_iters
-            )
+            train_loss = self._epoch(train_loader, mode="train", display_iters=display_iters)
             if self.scheduler:
                 self.scheduler.step()
 
@@ -234,9 +227,7 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             if e % self.eval_interval == 0:
                 with torch.no_grad():
                     logging.info(f"Training for epoch {e} done, starting evaluation")
-                    valid_loss = self._epoch(
-                        valid_loader, mode="eval", display_iters=display_iters
-                    )
+                    valid_loss = self._epoch(valid_loader, mode="eval", display_iters=display_iters)
                     if self._print_valid_loss:
                         msg += f", valid loss {float(valid_loss):.5f}"
             msg += self._gpu_usage_str()
@@ -245,12 +236,8 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             logging.info(msg)
 
             epoch_metrics = self._metadata.get("metrics")
-            if (
-                e % self.eval_interval == 0
-                and epoch_metrics is not None
-                and len(epoch_metrics) > 0
-            ):
-                logging.info(f"Model performance:")
+            if e % self.eval_interval == 0 and epoch_metrics is not None and len(epoch_metrics) > 0:
+                logging.info("Model performance:")
                 line_length = max([len(name) for name in epoch_metrics.keys()]) + 2
                 for name, score in epoch_metrics.items():
                     logging.info(f"  {(name + ':').ljust(line_length)}{score:6.2f}")
@@ -351,14 +338,12 @@ class TrainingRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 )
 
         if not loaded_state_dict and self.starting_epoch > 0:
-            logging.info(
-                f"Setting the scheduler starting epoch to {self.starting_epoch}"
-            )
+            logging.info(f"Setting the scheduler starting epoch to {self.starting_epoch}")
             self.scheduler.last_epoch = self.starting_epoch
 
 
 class PoseTrainingRunner(TrainingRunner[PoseModel]):
-    """Runner to train pose estimation models"""
+    """Runner to train pose estimation models."""
 
     def __init__(
         self,
@@ -385,7 +370,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         model: PoseModel,
         weights_only: bool | None = None,
     ) -> dict:
-        """Loads the state dict for a model from a file
+        """Loads the state dict for a model from a file.
 
         This method loads a file containing a DeepLabCut PyTorch model snapshot onto
         a given device, and sets the model weights using the state_dict.
@@ -411,17 +396,13 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
         else:
             backbone_prefix = "backbone."
             backbone_weights = {
-                k[len(backbone_prefix) :]: v
-                for k, v in snapshot["model"].items()
-                if k.startswith(backbone_prefix)
+                k[len(backbone_prefix) :]: v for k, v in snapshot["model"].items() if k.startswith(backbone_prefix)
             }
             model.backbone.load_state_dict(backbone_weights)
 
         return snapshot
 
-    def step(
-        self, batch: dict[str, Any], mode: str = "train"
-    ) -> dict[str, torch.Tensor]:
+    def step(self, batch: dict[str, Any], mode: str = "train") -> dict[str, torch.Tensor]:
         """Perform a single epoch gradient update or validation step.
 
         Args:
@@ -439,9 +420,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             }
         """
         if mode not in ["train", "eval"]:
-            raise ValueError(
-                f"BottomUpSolver must be in train or eval mode, but {mode} was found."
-            )
+            raise ValueError(f"BottomUpSolver must be in train or eval mode, but {mode} was found.")
 
         if mode == "train":
             self.optimizer.zero_grad()
@@ -535,6 +514,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
             pred_keypoints,
             scales,
             offsets,
+            strict=False,
         ):
             ground_truth = gt.detach().cpu().numpy()
             pred = pred.copy()
@@ -553,7 +533,7 @@ class PoseTrainingRunner(TrainingRunner[PoseModel]):
 
 
 class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
-    """Runner to train object detection models"""
+    """Runner to train object detection models."""
 
     def __init__(self, model: BaseDetector, optimizer: torch.optim.Optimizer, **kwargs):
         """
@@ -570,9 +550,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
         self._pycoco_warning_displayed = False
         self._print_valid_loss = False
 
-    def step(
-        self, batch: dict[str, Any], mode: str = "train"
-    ) -> dict[str, torch.Tensor]:
+    def step(self, batch: dict[str, Any], mode: str = "train") -> dict[str, torch.Tensor]:
         """Perform a single epoch gradient update or validation step.
 
         Args:
@@ -590,9 +568,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
             }
         """
         if mode not in ["train", "eval"]:
-            raise ValueError(
-                f"DetectorSolver must be in train or eval mode, but {mode} was found."
-            )
+            raise ValueError(f"DetectorSolver must be in train or eval mode, but {mode} was found.")
 
         if mode == "train":
             self.optimizer.zero_grad()
@@ -641,9 +617,7 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
         try:
             return {
                 f"metrics/test.{k}": v
-                for k, v in metrics.compute_bbox_metrics(
-                    self._epoch_ground_truth, self._epoch_predictions
-                ).items()
+                for k, v in metrics.compute_bbox_metrics(self._epoch_ground_truth, self._epoch_predictions).items()
             }
         except ModuleNotFoundError:
             if not self._pycoco_warning_displayed:
@@ -667,9 +641,9 @@ class DetectorTrainingRunner(TrainingRunner[BaseDetector]):
         scales: torch.Tensor,
         offsets: torch.Tensor,
     ) -> None:
-        """Updates the stored predictions with a new batch"""
+        """Updates the stored predictions with a new batch."""
         for img_path, img_size, img_bboxes, img_pred, scale, offset in zip(
-            paths, sizes, bboxes, predictions, scales, offsets
+            paths, sizes, bboxes, predictions, scales, offsets, strict=False
         ):
             scale_x, scale_y = scale
             scale_factors = np.array([scale_x, scale_y, scale_x, scale_y])
@@ -712,8 +686,7 @@ def build_training_runner(
     load_head_weights: bool = True,
     logger: BaseLogger | None = None,
 ) -> TrainingRunner:
-    """
-    Build a runner object according to a pytorch configuration file
+    """Build a runner object according to a pytorch configuration file.
 
     Args:
         runner_config: the configuration for the runner

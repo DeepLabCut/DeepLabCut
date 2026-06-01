@@ -8,13 +8,12 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from typing import Tuple
 
 import torch
 from einops import rearrange, repeat
 from timm.layers import trunc_normal_
 
-from deeplabcut.pose_estimation_pytorch.models.necks.base import BaseNeck, NECKS
+from deeplabcut.pose_estimation_pytorch.models.necks.base import NECKS, BaseNeck
 from deeplabcut.pose_estimation_pytorch.models.necks.layers import TransformerLayer
 from deeplabcut.pose_estimation_pytorch.models.necks.utils import (
     make_sine_position_embedding,
@@ -26,11 +25,10 @@ BN_MOMENTUM = 0.1
 
 @NECKS.register_module
 class Transformer(BaseNeck):
-    """Transformer Neck for pose estimation.
-       title={TokenPose: Learning Keypoint Tokens for Human Pose Estimation},
-       author={Yanjie Li and Shoukui Zhang and Zhicheng Wang and Sen Yang and Wankou Yang and Shu-Tao Xia and Erjin Zhou},
-       booktitle={IEEE/CVF International Conference on Computer Vision (ICCV)},
-       year={2021}
+    """Transformer Neck for pose estimation. title={TokenPose: Learning Keypoint Tokens
+    for Human Pose Estimation}, author={Yanjie Li and Shoukui Zhang and Zhicheng Wang
+    and Sen Yang and Wankou Yang and Shu-Tao Xia and Erjin Zhou}, booktitle={IEEE/CVF
+    International Conference on Computer Vision (ICCV)}, year={2021}
 
     Args:
         feature_size: Size of the input feature map (height, width).
@@ -79,25 +77,23 @@ class Transformer(BaseNeck):
     def __init__(
         self,
         *,
-        feature_size: Tuple[int, int],
-        patch_size: Tuple[int, int],
+        feature_size: tuple[int, int],
+        patch_size: tuple[int, int],
         num_keypoints: int,
         dim: int,
         depth: int,
         heads: int,
         mlp_dim: int = 3,
         apply_init: bool = False,
-        heatmap_size: Tuple[int, int] = (64, 64),
+        heatmap_size: tuple[int, int] = (64, 64),
         channels: int = 32,
         dropout: float = 0.0,
         emb_dropout: float = 0.0,
-        pos_embedding_type: str = "sine-full"
+        pos_embedding_type: str = "sine-full",
     ):
         super().__init__()
 
-        num_patches = (feature_size[0] // (patch_size[0])) * (
-            feature_size[1] // (patch_size[1])
-        )
+        num_patches = (feature_size[0] // (patch_size[0])) * (feature_size[1] // (patch_size[1]))
         patch_dim = channels * patch_size[0] * patch_size[1]
 
         self.inplanes = 64
@@ -108,9 +104,7 @@ class Transformer(BaseNeck):
         self.pos_embedding_type = pos_embedding_type
         self.all_attn = self.pos_embedding_type == "sine-full"
 
-        self.keypoint_token = torch.nn.Parameter(
-            torch.zeros(1, self.num_keypoints, dim)
-        )
+        self.keypoint_token = torch.nn.Parameter(torch.zeros(1, self.num_keypoints, dim))
         h, w = (
             feature_size[0] // (self.patch_size[0]),
             feature_size[1] // (self.patch_size[1]),
@@ -156,9 +150,7 @@ class Transformer(BaseNeck):
         if apply_init:
             self.apply(self._init_weights)
 
-    def _make_position_embedding(
-        self, w: int, h: int, d_model: int, pe_type="learnable"
-    ):
+    def _make_position_embedding(self, w: int, h: int, d_model: int, pe_type="learnable"):
         """Create position embeddings for the transformer.
 
         Args:
@@ -171,19 +163,13 @@ class Transformer(BaseNeck):
         with torch.no_grad():
             self.pe_h = h
             self.pe_w = w
-            length = h * w
+            h * w
         if pe_type != "learnable":
-            self.pos_embedding = torch.nn.Parameter(
-                make_sine_position_embedding(h, w, d_model), requires_grad=False
-            )
+            self.pos_embedding = torch.nn.Parameter(make_sine_position_embedding(h, w, d_model), requires_grad=False)
         else:
-            self.pos_embedding = torch.nn.Parameter(
-                torch.zeros(1, self.num_patches + self.num_keypoints, d_model)
-            )
+            self.pos_embedding = torch.nn.Parameter(torch.zeros(1, self.num_patches + self.num_keypoints, d_model))
 
-    def _make_layer(
-        self, block: torch.nn.Module, planes: int, blocks: int, stride: int = 1
-    ) -> torch.nn.Sequential:
+    def _make_layer(self, block: torch.nn.Module, planes: int, blocks: int, stride: int = 1) -> torch.nn.Sequential:
         """Create a layer of the transformer encoder.
 
         Args:
@@ -211,7 +197,7 @@ class Transformer(BaseNeck):
         layers = []
         layers.append(block(self.inplanes, planes, stride, downsample))
         self.inplanes = planes * block.expansion
-        for i in range(1, blocks):
+        for _i in range(1, blocks):
             layers.append(block(self.inplanes, planes))
 
         return torch.nn.Sequential(*layers)
@@ -248,9 +234,7 @@ class Transformer(BaseNeck):
         """
         p = self.patch_size
 
-        x = rearrange(
-            feature, "b c (h p1) (w p2) -> b (h w) (p1 p2 c)", p1=p[0], p2=p[1]
-        )
+        x = rearrange(feature, "b c (h p1) (w p2) -> b (h w) (p1 p2 c)", p1=p[0], p2=p[1])
         x = self.patch_to_embedding(x)
 
         b, n, _ = x.shape

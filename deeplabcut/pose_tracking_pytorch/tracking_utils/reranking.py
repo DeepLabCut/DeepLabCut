@@ -12,9 +12,7 @@ import numpy as np
 import torch
 
 
-def re_ranking(
-    probFea, galFea, k1, k2, lambda_value, local_distmat=None, only_local=False
-):
+def re_ranking(probFea, galFea, k1, k2, lambda_value, local_distmat=None, only_local=False):
     """
 
     probFea: all feature vectors of the query set (torch tensor)
@@ -41,7 +39,7 @@ def re_ranking(
         distmat.addmm_(1, -2, feat, feat.t())
         original_dist = distmat.cpu().numpy()
         del feat
-        if not local_distmat is None:
+        if local_distmat is not None:
             original_dist = original_dist + local_distmat
     gallery_num = original_dist.shape[0]
     original_dist = np.transpose(original_dist / np.max(original_dist, axis=0))
@@ -58,20 +56,16 @@ def re_ranking(
         k_reciprocal_expansion_index = k_reciprocal_index
         for j in range(len(k_reciprocal_index)):
             candidate = k_reciprocal_index[j]
-            candidate_forward_k_neigh_index = initial_rank[
-                candidate, : int(np.around(k1 / 2)) + 1
-            ]
+            candidate_forward_k_neigh_index = initial_rank[candidate, : int(np.around(k1 / 2)) + 1]
             candidate_backward_k_neigh_index = initial_rank[
                 candidate_forward_k_neigh_index, : int(np.around(k1 / 2)) + 1
             ]
             fi_candidate = np.where(candidate_backward_k_neigh_index == candidate)[0]
             candidate_k_reciprocal_index = candidate_forward_k_neigh_index[fi_candidate]
-            if len(
-                np.intersect1d(candidate_k_reciprocal_index, k_reciprocal_index)
-            ) > 2 / 3 * len(candidate_k_reciprocal_index):
-                k_reciprocal_expansion_index = np.append(
-                    k_reciprocal_expansion_index, candidate_k_reciprocal_index
-                )
+            if len(np.intersect1d(candidate_k_reciprocal_index, k_reciprocal_index)) > 2 / 3 * len(
+                candidate_k_reciprocal_index
+            ):
+                k_reciprocal_expansion_index = np.append(k_reciprocal_expansion_index, candidate_k_reciprocal_index)
 
         k_reciprocal_expansion_index = np.unique(k_reciprocal_expansion_index)
         weight = np.exp(-original_dist[i, k_reciprocal_expansion_index])

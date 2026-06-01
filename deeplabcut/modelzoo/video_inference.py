@@ -11,12 +11,15 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
+import warnings
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional, Union
 
 import torch
 from dlclibrary.dlcmodelzoo.modelzoo_download import download_huggingface_model
+
 from deeplabcut.core.config import read_config_as_dict, write_config
 from deeplabcut.modelzoo.utils import get_super_animal_scorer
 from deeplabcut.pose_estimation_pytorch.modelzoo.train_from_coco import adaptation_train
@@ -27,15 +30,17 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     update_config,
 )
 from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
+from deeplabcut.utils.deprecation import renamed_parameter
 from deeplabcut.utils.pseudo_label import (
     dlc3predictions_2_annotation_from_video,
     video_to_frames,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def get_checkpoint_epoch(checkpoint_path):
-    """
-    Load a PyTorch checkpoint and return the current epoch number.
+    """Load a PyTorch checkpoint and return the current epoch number.
 
     Args:
         checkpoint_path (str): Path to the checkpoint file
@@ -51,14 +56,15 @@ def get_checkpoint_epoch(checkpoint_path):
         return 0
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def video_inference_superanimal(
-    videos: Union[str, list],
+    videos: str | list,
     superanimal_name: str,
     model_name: str,
     detector_name: str | None = None,
-    scale_list: Optional[list] = None,
-    videotype: str = ".mp4",
-    dest_folder: Optional[str] = None,
+    scale_list: list | None = None,
+    video_extensions: str | Sequence[str] | None = None,
+    dest_folder: str | None = None,
     cropping: list[int] | None = None,
     video_adapt: bool = False,
     plot_trajectories: bool = False,
@@ -72,15 +78,15 @@ def video_inference_superanimal(
     pose_epochs: int = 4,
     max_individuals: int = 10,
     video_adapt_batch_size: int = 8,
-    device: Optional[str] = "auto",
-    customized_pose_checkpoint: Optional[str] = None,
-    customized_detector_checkpoint: Optional[str] = None,
-    customized_model_config: Optional[str] = None,
+    device: str | None = "auto",
+    customized_pose_checkpoint: str | None = None,
+    customized_detector_checkpoint: str | None = None,
+    customized_model_config: str | None = None,
     plot_bboxes: bool = True,
     create_labeled_video: bool = True,
+    fmpose_return_3d: bool = False,
 ):
-    """
-    This function performs inference on videos using a pretrained SuperAnimal model.
+    """This function performs inference on videos using a pretrained SuperAnimal model.
 
     IMPORTANT: Note that since we have both TensorFlow and PyTorch Engines, we will
     route the engine based on the model you select:
@@ -107,9 +113,14 @@ def video_inference_superanimal(
     scale_list (list):
         A list of different resolutions for the spatial pyramid. Used only for bottom up models.
 
-    videotype (str):
-        Checks for the extension of the video in case the input to the video is a directory.
-        Only videos with this extension are analyzed. The default is ``.mp4``.
+    video_extensions (str | Sequence[str] | None, default=None):
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
 
     dest_folder (str): The path to the folder where the results should be saved.
 
@@ -175,10 +186,20 @@ def video_inference_superanimal(
     create_labeled_video (bool):
         Specifies if a labeled video needs to be created, True by default.
 
+    fmpose_return_3d (bool):
+        Only used when ``model_name`` starts with ``"fmpose3d"``.
+        If True, include in-memory 3D poses in the return payload
+        (per video: ``{"df_2d": ..., "df_3d": ...}``).
+        If False (default), keep the legacy return payload with only
+        the 2D DataFrame per video.
+
     Raises:
         NotImplementedError:
         If the model is not found in the modelzoo.
         Warning: If the superanimal_name will be deprecated in the future.
+
+        FileNotFoundError:
+        If a non-existent path is passed to ``videos``.
 
     (Model Explanation) SuperAnimal-Quadruped:
     `superanimal_quadruped` models aim to work across a large range of quadruped
@@ -293,7 +314,7 @@ def video_inference_superanimal(
     >>> from deeplabcut.modelzoo.video_inference import video_inference_superanimal
     >>> videos = ["/path/to/my/video.mp4"]
     >>> superanimal_name = "superanimal_topviewmouse"
-    >>> videotype = "mp4"
+    >>> video_extensions = "mp4"
     >>> scale_list = [200, 300, 400]
     >>> video_inference_superanimal(
             videos,
@@ -301,7 +322,7 @@ def video_inference_superanimal(
             model_name="hrnet_w32",
             detector_name="fasterrcnn_resnet50_fpn_v2",
             scale_list = scale_list,
-            videotype = videotype,
+            video_extensions = video_extensions,
             video_adapt = True,
         )
 
@@ -314,13 +335,11 @@ def video_inference_superanimal(
     """
     if scale_list is None:
         scale_list = []
-
-    print(f"Running video inference on {videos} with {superanimal_name}_{model_name}")
+    if not model_name.startswith("fmpose3d"):
+        print(f"Running video inference on {videos} with {superanimal_name}_{model_name}")
     dlc_root_path = get_deeplabcut_path()
     modelzoo_path = os.path.join(dlc_root_path, "modelzoo")
-    available_architectures = json.load(
-        open(os.path.join(modelzoo_path, "models_to_framework.json"), "r")
-    )
+    available_architectures = json.load(open(os.path.join(modelzoo_path, "models_to_framework.json")))
     framework = available_architectures[model_name]
     print(f"Using {framework} for model {model_name}")
     if framework == "tensorflow":
@@ -330,9 +349,7 @@ def video_inference_superanimal(
 
         weight_folder = get_snapshot_folder_path() / f"{superanimal_name}_{model_name}"
         if not weight_folder.exists():
-            download_huggingface_model(
-                superanimal_name, target_dir=str(weight_folder), rename_mapping=None
-            )
+            download_huggingface_model(superanimal_name, target_dir=str(weight_folder), rename_mapping=None)
 
         if isinstance(videos, str):
             videos = [videos]
@@ -341,7 +358,7 @@ def video_inference_superanimal(
             superanimal_name,
             model_name,
             scale_list,
-            videotype,
+            video_extensions,
             video_adapt,
             plot_trajectories,
             pcutoff,
@@ -350,11 +367,45 @@ def video_inference_superanimal(
             create_labeled_video=create_labeled_video,
         )
     elif framework == "pytorch":
+        if model_name.startswith("fmpose3d"):
+            logger.info("Running video inference on %s using %s", videos, model_name)
+
+            recommended_superanimal_name = {
+                "fmpose3d_animals": "quadruped",
+                "fmpose3d_humans": "human",
+            }.get(model_name)
+
+            provided_superanimal_name = superanimal_name or "<not provided>"
+            if superanimal_name != recommended_superanimal_name:
+                warnings.warn(
+                    "For FMPose3D models, model selection is driven by 'model_name'. But for API "
+                    "consistency, it is recommended to set 'superanimal_name' to the corresponding value."
+                    f"Provided superanimal_name={provided_superanimal_name!r} differs from the "
+                    f"recommended value for {model_name!r}: "
+                    f"{recommended_superanimal_name!r}.",
+                    stacklevel=2,
+                )
+
+            from deeplabcut.pose_estimation_pytorch.modelzoo.fmpose_3d.inference import (
+                _video_inference_fmpose3d,
+            )
+
+            return _video_inference_fmpose3d(
+                video_paths=videos,
+                model_name=model_name,
+                max_individuals=max_individuals,
+                pcutoff=pcutoff,
+                batch_size=batch_size,
+                dest_folder=dest_folder,
+                device=device,
+                create_labeled_video=create_labeled_video,
+                cropping=cropping,
+                include_3d_in_return=fmpose_return_3d,
+            )
+
         torchvision_detector_name = None
         if superanimal_name != "superanimal_humanbody" and detector_name is None:
-            raise ValueError(
-                "You have to specify a detector_name when using the Pytorch framework."
-            )
+            raise ValueError("You have to specify a detector_name when using the Pytorch framework.")
         elif superanimal_name == "superanimal_humanbody":
             if detector_name:
                 torchvision_detector_name = detector_name
@@ -371,11 +422,7 @@ def video_inference_superanimal(
             config = load_super_animal_config(
                 super_animal=superanimal_name,
                 model_name=model_name,
-                detector_name=(
-                    detector_name
-                    if superanimal_name != "superanimal_humanbody"
-                    else None
-                ),
+                detector_name=(detector_name if superanimal_name != "superanimal_humanbody" else None),
             )
 
         pose_model_path = customized_pose_checkpoint
@@ -440,16 +487,11 @@ def video_inference_superanimal(
                 print(f"{image_folder} exists, skipping the frame extraction")
             else:
                 image_folder.mkdir()
-                print(
-                    f"Video frames being extracted to {image_folder} for video "
-                    f"adaptation."
-                )
+                print(f"Video frames being extracted to {image_folder} for video adaptation.")
                 video_to_frames(video_path, pseudo_dataset_folder, cropping=cropping)
 
             anno_folder = pseudo_dataset_folder / "annotations"
-            if (anno_folder / "train.json").exists() and (
-                anno_folder / "test.json"
-            ).exists():
+            if (anno_folder / "train.json").exists() and (anno_folder / "test.json").exists():
                 print(
                     f"{anno_folder} exists, skipping the annotation construction. "
                     f"Delete the folder if you want to re-construct pseudo annotations"
@@ -463,7 +505,7 @@ def video_inference_superanimal(
                     pseudo_anno_dir = Path(dest_folder)
 
                 pseudo_anno_name = f"{video_path.stem}_{dlc_scorer}_before_adapt.json"
-                with open(pseudo_anno_dir / pseudo_anno_name, "r") as f:
+                with open(pseudo_anno_dir / pseudo_anno_name) as f:
                     predictions = json.load(f)
 
                 # make sure we tune parameters inside this function such as pseudo
@@ -483,9 +525,7 @@ def video_inference_superanimal(
 
             if superanimal_name != "superanimal_humanbody":
                 detector_snapshot_prefix = f"snapshot-{detector_name}"
-                config["detector"]["runner"][
-                    "snapshot_prefix"
-                ] = detector_snapshot_prefix
+                config["detector"]["runner"]["snapshot_prefix"] = detector_snapshot_prefix
 
             # the model config's parameters need to be updated for adaptation training
             model_config_path = model_folder / "pytorch_config.yaml"
@@ -493,22 +533,18 @@ def video_inference_superanimal(
 
             # get the current epoch of the pose model
             current_pose_epoch = get_checkpoint_epoch(pose_model_path)
-            # update the checkpoint path with the current epoch, if the checkpoint does not exist, use the best checkpoint
-            adapted_pose_checkpoint = (
-                model_folder
-                / f"{model_snapshot_prefix}-{current_pose_epoch + pose_epochs:03}.pt"
-            )
+            # update the checkpoint path with the current epoch, if the checkpoint
+            # does not exist, use the best checkpoint
+            adapted_pose_checkpoint = model_folder / f"{model_snapshot_prefix}-{current_pose_epoch + pose_epochs:03}.pt"
             if not Path(adapted_pose_checkpoint).exists():
                 adapted_pose_checkpoint = (
-                    model_folder
-                    / f"{model_snapshot_prefix}-best-{current_pose_epoch + pose_epochs:03}.pt"
+                    model_folder / f"{model_snapshot_prefix}-best-{current_pose_epoch + pose_epochs:03}.pt"
                 )
 
             if superanimal_name != "superanimal_humanbody":
                 current_detector_epoch = get_checkpoint_epoch(detector_path)
                 adapted_detector_checkpoint = (
-                    model_folder
-                    / f"{detector_snapshot_prefix}-{current_detector_epoch + detector_epochs:03}.pt"
+                    model_folder / f"{detector_snapshot_prefix}-{current_detector_epoch + detector_epochs:03}.pt"
                 )
                 if not Path(adapted_detector_checkpoint).exists():
                     adapted_detector_checkpoint = (
@@ -517,8 +553,7 @@ def video_inference_superanimal(
                     )
 
             if (
-                superanimal_name == "superanimal_humanbody"
-                or adapted_detector_checkpoint.exists()
+                superanimal_name == "superanimal_humanbody" or adapted_detector_checkpoint.exists()
             ) and adapted_pose_checkpoint.exists():
                 snapshots_msg = f"pose ({adapted_pose_checkpoint})"
                 if superanimal_name != "superanimal_humanbody":
@@ -535,30 +570,20 @@ def video_inference_superanimal(
                     "  (pose) save_epochs: 1\n"
                 )
                 if superanimal_name != "superanimal_humanbody":
-                    params_msg += (
-                        f"  detector_epochs: {detector_epochs}\n"
-                        "  detector_save_epochs: 1\n"
-                    )
-                print(
-                    "Running video adaptation with following parameters:\n" + params_msg
-                )
+                    params_msg += f"  detector_epochs: {detector_epochs}\n  detector_save_epochs: 1\n"
+                print("Running video adaptation with following parameters:\n" + params_msg)
 
                 train_file = pseudo_dataset_folder / "annotations" / "train.json"
-                with open(train_file, "r") as f:
+                with open(train_file) as f:
                     temp_obj = json.load(f)
 
                 annotations = temp_obj["annotations"]
                 if len(annotations) == 0:
-                    print(
-                        f"No valid predictions from {str(video_path)}. Check the "
-                        "quality of the video"
-                    )
+                    print(f"No valid predictions from {str(video_path)}. Check the quality of the video")
                     return
 
                 if superanimal_name == "superanimal_humanbody":
-                    print(
-                        "Warning, with the superanimal_humanbody type, only the pose model is adapted"
-                    )
+                    print("Warning, with the superanimal_humanbody type, only the pose model is adapted")
 
                 adaptation_train(
                     project_root=pseudo_dataset_folder,
@@ -578,22 +603,18 @@ def video_inference_superanimal(
                     skip_detector=(superanimal_name == "superanimal_humanbody"),
                 )
 
-            # after video adaptation, re-update the adapted checkpoint path, if the checkpoint does not exist, use the best checkpoint
-            adapted_pose_checkpoint = (
-                model_folder
-                / f"{model_snapshot_prefix}-{current_pose_epoch + pose_epochs:03}.pt"
-            )
+            # after video adaptation, re-update the adapted checkpoint path, if the
+            # checkpoint does not exist, use the best checkpoint
+            adapted_pose_checkpoint = model_folder / f"{model_snapshot_prefix}-{current_pose_epoch + pose_epochs:03}.pt"
             if not Path(adapted_pose_checkpoint).exists():
                 adapted_pose_checkpoint = (
-                    model_folder
-                    / f"{model_snapshot_prefix}-best-{current_pose_epoch + pose_epochs:03}.pt"
+                    model_folder / f"{model_snapshot_prefix}-best-{current_pose_epoch + pose_epochs:03}.pt"
                 )
             pose_model_path = adapted_pose_checkpoint
 
             if superanimal_name != "superanimal_humanbody":
                 adapted_detector_checkpoint = (
-                    model_folder
-                    / f"{detector_snapshot_prefix}-{current_detector_epoch + detector_epochs:03}.pt"
+                    model_folder / f"{detector_snapshot_prefix}-{current_detector_epoch + detector_epochs:03}.pt"
                 )
                 if not Path(adapted_detector_checkpoint).exists():
                     adapted_detector_checkpoint = (

@@ -8,7 +8,9 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Code to create tracking datasets for ReID model training"""
+"""Code to create tracking datasets for ReID model training."""
+
+from collections.abc import Sequence
 from pathlib import Path
 
 from tqdm import tqdm
@@ -23,6 +25,8 @@ from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.apis.videos import VideoIterator
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_tracking_pytorch import create_triplets_dataset
+from deeplabcut.utils.auxfun_videos import collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 
 def build_feature_extraction_runner(
@@ -31,7 +35,7 @@ def build_feature_extraction_runner(
     device: str,
     batch_size: int = 1,
 ) -> runners.PoseInferenceRunner:
-    """Builds a runner to extract backbone features for poses of individuals
+    """Builds a runner to extract backbone features for poses of individuals.
 
     Args:
         loader: The loader for the model to use.
@@ -61,8 +65,7 @@ def build_feature_extraction_runner(
         )
     else:
         preprocessor = data.build_bottom_up_preprocessor(
-            loader.model_cfg["data"]["colormode"],
-            data.build_transforms(loader.model_cfg["data"]["inference"])
+            loader.model_cfg["data"]["colormode"], data.build_transforms(loader.model_cfg["data"]["inference"])
         )
 
     postprocessor = postprocessing.ComposePostprocessor(
@@ -93,9 +96,7 @@ def build_feature_extraction_runner(
         postprocessor=postprocessor,
         load_weights_only=loader.model_cfg["runner"].get("load_weights_only", None),
     )
-    assert isinstance(runner, runners.PoseInferenceRunner), (
-        f"Failed to build inference runner: got type {type(runner)}"
-    )
+    assert isinstance(runner, runners.PoseInferenceRunner), f"Failed to build inference runner: got type {type(runner)}"
 
     # Set the model to output backbone features
     runner.model.output_features = True
@@ -127,11 +128,12 @@ def extract_features_for_video(
     shelf_writer.close()
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def create_tracking_dataset(
     config: str,
     videos: list[str] | list[Path],
     track_method: str,
-    videotype: str = "",
+    video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     destfolder: str | None = None,
@@ -151,10 +153,13 @@ def create_tracking_dataset(
             the videos with same extension are stored.
         track_method: Specifies the tracker used to generate the pose estimation data.
             Must be either 'box', 'skeleton', or 'ellipse'.
-        videotype: Checks for the extension of the video in case the input to the video
-            is a directory. Only videos with this extension are analyzed. If left
-            unspecified, keeps videos with extensions ('avi', 'mp4', 'mov', 'mpeg',
-            'mkv').
+        video_extensions: Controls how ``videos`` are filtered, based on file extension.
+            File paths and directory contents are treated differently:
+            - ``None`` (default): file paths are accepted as-is; directories are
+              scanned for files with a recognized video extension.
+            - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+              both file paths and directory contents are filtered by the given
+              extension(s).
         shuffle: An integer specifying the shuffle index of the training dataset used
             for training the network.
         trainingsetindex: Integer specifying which TrainingsetFraction to use.
@@ -189,10 +194,15 @@ def create_tracking_dataset(
     test_cfg = read_config_as_dict(test_cfg_path)
 
     snapshot_index, detector_snapshot_index = utils.parse_snapshot_index_for_analysis(
-        loader.project_cfg, loader.model_cfg, None, None,
+        loader.project_cfg,
+        loader.model_cfg,
+        None,
+        None,
     )
     snapshot = utils.get_model_snapshots(
-        snapshot_index, loader.model_folder, loader.pose_task,
+        snapshot_index,
+        loader.model_folder,
+        loader.pose_task,
     )[0]
 
     if cropping is None and loader.project_cfg.get("cropping", False):
@@ -211,9 +221,7 @@ def create_tracking_dataset(
         batch_size = loader.project_cfg["batch_size"]
 
     device = utils.resolve_device(loader.model_cfg)
-    runner = build_feature_extraction_runner(
-        loader, snapshot.path, device, batch_size=batch_size
-    )
+    runner = build_feature_extraction_runner(loader, snapshot.path, device, batch_size=batch_size)
 
     detector_runner = None
     detector_snapshot = None
@@ -222,7 +230,9 @@ def create_tracking_dataset(
             detector_batch_size = loader.project_cfg.get("detector_batch_size", 1)
 
         detector_snapshot = utils.get_model_snapshots(
-            detector_snapshot_index, loader.model_folder, Task.DETECT,
+            detector_snapshot_index,
+            loader.model_folder,
+            Task.DETECT,
         )[0]
         detector_runner = utils.get_detector_inference_runner(
             model_config=loader.model_cfg,
@@ -239,7 +249,7 @@ def create_tracking_dataset(
         modelprefix=modelprefix,
     )
 
-    videos = utils.list_videos_in_folder(videos, videotype)
+    videos = collect_video_paths(videos, extensions=video_extensions)
     for video_path in videos:
         print(f"Loading {video_path}")
         video = VideoIterator(video_path, cropping=cropping)
@@ -266,9 +276,7 @@ def create_tracking_dataset(
             output_filepath,
             num_frames=video.get_n_frames(robust=robust_nframes),
         )
-        extract_features_for_video(
-            runner, video, shelf_writer, detector_runner=detector_runner
-        )
+        extract_features_for_video(runner, video, shelf_writer, detector_runner=detector_runner)
 
     create_triplets_dataset(
         videos,

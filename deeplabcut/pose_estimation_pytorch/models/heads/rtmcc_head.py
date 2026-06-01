@@ -8,11 +8,12 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Modified SimCC head for the RTMPose model
+"""Modified SimCC head for the RTMPose model.
 
 Based on the official ``mmpose`` RTMCC head implementation. For more information, see
 <https://github.com/open-mmlab/mmpose>.
 """
+
 from __future__ import annotations
 
 import torch
@@ -23,8 +24,9 @@ from deeplabcut.pose_estimation_pytorch.models.criterions import (
     BaseLossAggregator,
 )
 from deeplabcut.pose_estimation_pytorch.models.heads.base import (
-    BaseHead,
     HEADS,
+    BaseHead,
+    WeightConversionMixin,
 )
 from deeplabcut.pose_estimation_pytorch.models.modules import (
     GatedAttentionUnit,
@@ -36,8 +38,8 @@ from deeplabcut.pose_estimation_pytorch.models.weight_init import BaseWeightInit
 
 
 @HEADS.register_module
-class RTMCCHead(BaseHead):
-    """RTMPose Coordinate Classification head
+class RTMCCHead(WeightConversionMixin, BaseHead):
+    """RTMPose Coordinate Classification head.
 
     The RTMCC head is itself adapted from the SimCC head. For more information, see
     "SimCC: a Simple Coordinate Classification Perspective for Human Pose Estimation"
@@ -136,8 +138,66 @@ class RTMCCHead(BaseHead):
         return dict(x=x, y=y)
 
     @staticmethod
+    def convert_weights(
+        state_dict: dict[str, torch.Tensor],
+        module_prefix: str,
+        conversion: torch.Tensor,
+        *,
+        omit_gau_w: bool = False,
+    ) -> dict[str, torch.Tensor]:
+        """Re-order / subset bodypart (token) channels for transfer from SuperAnimal.
+
+        Args:
+            state_dict: State dict for this head.
+            module_prefix: Prefix for state-dict keys.
+            conversion: Mapping from new bodyparts to source bodyparts.
+            omit_gau_w: If True, remove ``gau.w`` from the returned dict instead of
+                constructing a remapped replacement. This requires loading with
+                ``strict=False`` to avoid missing-key errors.
+                Prefer omitting when source/target keypoint ordering semantics differ.
+        """
+        conv = conversion.long()
+        k_new = int(conv.shape[0])
+
+        # Remap final layer weights and biases if they exist.
+        fl_w = f"{module_prefix}final_layer.weight"
+        fl_b = f"{module_prefix}final_layer.bias"
+        if fl_w in state_dict:
+            state_dict[fl_w] = state_dict[fl_w][conv]
+        if fl_b in state_dict:
+            state_dict[fl_b] = state_dict[fl_b][conv]
+
+        # Remap or re-init gau.w if it exists (only if omit_gau_w is False)
+        w_key = f"{module_prefix}gau.w"
+        if w_key in state_dict:
+            if omit_gau_w:
+                state_dict.pop(w_key, None)
+                return state_dict
+
+            w_old = state_dict[w_key]
+            k_old = (w_old.shape[0] + 1) // 2
+            old_center = k_old - 1
+            new_center = k_new - 1
+
+            # Deterministic default for unmapped offsets (mean of original weights).
+            default_val = w_old.mean()
+            w_new = torch.empty(2 * k_new - 1, dtype=w_old.dtype, device=w_old.device)
+            for idx_new, d in enumerate(range(-new_center, new_center + 1)):
+                old_vals = []
+                for i in range(k_new):
+                    j = i - d
+                    if not (0 <= j < k_new):
+                        continue
+                    old_idx = int(conv[i] - conv[j]) + old_center
+                    if 0 <= old_idx < w_old.shape[0]:
+                        old_vals.append(w_old[old_idx])
+                w_new[idx_new] = torch.stack(old_vals).mean() if old_vals else default_val
+            state_dict[w_key] = w_new
+        return state_dict
+
+    @staticmethod
     def update_input_size(model_cfg: dict, input_size: tuple[int, int]) -> None:
-        """Updates an RTMPose model configuration file for a new image input size
+        """Updates an RTMPose model configuration file for a new image input size.
 
         Args:
             model_cfg: The model configuration to update in-place.

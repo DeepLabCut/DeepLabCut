@@ -15,19 +15,19 @@ from abc import ABC, abstractmethod
 import torch
 import torch.nn as nn
 
-from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
+from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 TARGET_GENERATORS = Registry("target_generators", build_func=build_from_cfg)
 
 
 class BaseGenerator(ABC, nn.Module):  # TODO: Should this really be a module?
-    """Generates target maps from ground truth annotations to train models
+    """Generates target maps from ground truth annotations to train models.
 
     The outputs of the target generator are used to compute losses for model heads. If
     the head outputs "heatmap" and "offset" tensors, then the corresponding generator
     must output target "heatmap" and "offset" tensors. The targets themselves are
-    dictionaries, and passed as keyword-arguments to the criterions. This allows to
-    pass masks to the criterions.
+    dictionaries, and passed as keyword-arguments to the criterions. This allows to pass
+    masks to the criterions.
 
     Generally, this means that for each head output (such as "heatmap"), a dict will be
     generated with a "target" key (for the target heatmap) and optionally a "weights"
@@ -42,7 +42,7 @@ class BaseGenerator(ABC, nn.Module):  # TODO: Should this really be a module?
     def forward(
         self, stride: float, outputs: dict[str, torch.Tensor], labels: dict
     ) -> dict[str, dict[str, torch.Tensor]]:
-        """Generates targets
+        """Generates targets.
 
         Args:
             stride: the stride of the model

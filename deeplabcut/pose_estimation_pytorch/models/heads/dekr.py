@@ -17,7 +17,7 @@ from deeplabcut.pose_estimation_pytorch.models.criterions import (
     BaseCriterion,
     BaseLossAggregator,
 )
-from deeplabcut.pose_estimation_pytorch.models.heads.base import BaseHead, HEADS
+from deeplabcut.pose_estimation_pytorch.models.heads.base import HEADS, BaseHead
 from deeplabcut.pose_estimation_pytorch.models.modules.conv_block import (
     AdaptBlock,
     BaseBlock,
@@ -49,9 +49,7 @@ class DEKRHead(BaseHead):
         weight_init: str | dict | BaseWeightInitializer | None = "dekr",
         stride: int | float = 1,  # head stride - should always be 1 for DEKR
     ) -> None:
-        super().__init__(
-            stride, predictor, target_generator, criterion, aggregator, weight_init
-        )
+        super().__init__(stride, predictor, target_generator, criterion, aggregator, weight_init)
         self.heatmap_head = DEKRHeatmap(**heatmap_config)
         self.offset_head = DEKROffset(**offset_config)
         self._init_weights()
@@ -101,21 +99,13 @@ class DEKRHeatmap(nn.Module):
         super().__init__()
         self.bn_momentum = 0.1
         self.inp_channels = channels[0]
-        self.num_joints_with_center = channels[
-            2
-        ]  # Should account for the center being a joint
+        self.num_joints_with_center = channels[2]  # Should account for the center being a joint
         self.final_conv_kernel = final_conv_kernel
 
-        self.transition_heatmap = self._make_transition_for_head(
-            self.inp_channels, channels[1]
-        )
-        self.head_heatmap = self._make_heatmap_head(
-            block, num_blocks, channels[1], dilation_rate
-        )
+        self.transition_heatmap = self._make_transition_for_head(self.inp_channels, channels[1])
+        self.head_heatmap = self._make_heatmap_head(block, num_blocks, channels[1], dilation_rate)
 
-    def _make_transition_for_head(
-        self, in_channels: int, out_channels: int
-    ) -> nn.Sequential:
+    def _make_transition_for_head(self, in_channels: int, out_channels: int) -> nn.Sequential:
         """Summary:
         Construct the transition layer for the head.
 
@@ -154,9 +144,7 @@ class DEKRHeatmap(nn.Module):
         """
         heatmap_head_layers = []
 
-        feature_conv = self._make_layer(
-            block, num_channels, num_channels, num_blocks, dilation=dilation_rate
-        )
+        feature_conv = self._make_layer(block, num_channels, num_channels, num_blocks, dilation=dilation_rate)
         heatmap_head_layers.append(feature_conv)
 
         heatmap_conv = nn.Conv2d(
@@ -203,14 +191,10 @@ class DEKRHeatmap(nn.Module):
                     stride=stride,
                     bias=False,
                 ),
-                nn.BatchNorm2d(
-                    out_channels * block.expansion, momentum=self.bn_momentum
-                ),
+                nn.BatchNorm2d(out_channels * block.expansion, momentum=self.bn_momentum),
             )
 
-        layers = [
-            block(in_channels, out_channels, stride, downsample, dilation=dilation)
-        ]
+        layers = [block(in_channels, out_channels, stride, downsample, dilation=dilation)]
         in_channels = out_channels * block.expansion
         for _ in range(1, num_blocks):
             layers.append(block(in_channels, out_channels, dilation=dilation))
@@ -264,9 +248,7 @@ class DEKROffset(nn.Module):
         self.dilation_rate = dilation_rate
         self.final_conv_kernel = final_conv_kernel
 
-        self.transition_offset = self._make_transition_for_head(
-            self.inp_channels, self.offset_channels
-        )
+        self.transition_offset = self._make_transition_for_head(self.inp_channels, self.offset_channels)
         (
             self.offset_feature_layers,
             self.offset_final_layer,
@@ -319,24 +301,18 @@ class DEKROffset(nn.Module):
                     stride=stride,
                     bias=False,
                 ),
-                nn.BatchNorm2d(
-                    out_channels * block.expansion, momentum=self.bn_momentum
-                ),
+                nn.BatchNorm2d(out_channels * block.expansion, momentum=self.bn_momentum),
             )
 
         layers = []
-        layers.append(
-            block(in_channels, out_channels, stride, downsample, dilation=dilation)
-        )
+        layers.append(block(in_channels, out_channels, stride, downsample, dilation=dilation))
         in_channels = out_channels * block.expansion
         for _ in range(1, num_blocks):
             layers.append(block(in_channels, out_channels, dilation=dilation))
 
         return nn.Sequential(*layers)
 
-    def _make_transition_for_head(
-        self, in_channels: int, out_channels: int
-    ) -> nn.Sequential:
+    def _make_transition_for_head(self, in_channels: int, out_channels: int) -> nn.Sequential:
         """Summary:
         Create a transition layer for the head.
 
@@ -417,9 +393,7 @@ class DEKROffset(nn.Module):
             final_offset.append(
                 self.offset_final_layer[j](
                     self.offset_feature_layers[j](
-                        offset_feature[
-                            :, j * self.offset_perkpt : (j + 1) * self.offset_perkpt
-                        ]
+                        offset_feature[:, j * self.offset_perkpt : (j + 1) * self.offset_perkpt]
                     )
                 )
             )

@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests exporting models"""
+"""Tests exporting models."""
+
 import copy
 import shutil
 from pathlib import Path
@@ -16,6 +17,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 import torch
+from ruamel.yaml.scalarstring import SingleQuotedScalarString as SQS
 
 import deeplabcut.pose_estimation_pytorch.apis.export as export
 import deeplabcut.utils.auxiliaryfunctions as af
@@ -26,7 +28,7 @@ from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 @pytest.fixture()
 def project_dir(tmp_path_factory) -> Path:
     project_dir = tmp_path_factory.mktemp("tmp-project")
-    print(f"\nTemporary project directory:")
+    print("\nTemporary project directory:")
     print(str(project_dir))
     print("---")
     yield project_dir
@@ -38,16 +40,18 @@ def _mock_multianimal_project(project_dir: Path):
     video_dir.mkdir(exist_ok=True)
 
     cfg_file, yaml_file = af.create_config_template(multianimal=True)
+    yaml_file.width = 10_000
+
     cfg_file["Task"] = "mock"
     cfg_file["scorer"] = "mock"
-    cfg_file["video_sets"] = {str(video_dir / "vid.mp4"): dict(crop="0, 640, 0, 480")}
-    cfg_file["project_path"] = str(project_dir)
+    cfg_file["video_sets"] = {SQS((video_dir / "vid.mp4").as_posix()): {"crop": "0, 640, 0, 480"}}
+    cfg_file["project_path"] = project_dir.as_posix()
     cfg_file["individuals"] = ["a", "b"]
     cfg_file["uniquebodyparts"] = []
     cfg_file["multianimalbodyparts"] = ["k1", "k2", "k3"]
     cfg_file["bodyparts"] = "MULTI!"
 
-    with open(project_dir / "config.yaml", "w") as f:
+    with open(project_dir / "config.yaml", "w", encoding="utf-8") as f:
         yaml_file.dump(cfg_file, f)
 
 
@@ -118,9 +122,7 @@ def _get_export_model_data(
             snapshot_path = model_dir / f"snapshot-detector-{i:03}.pt"
             torch.save(snapshot, snapshot_path)
             detector_data.append(snapshot)
-            detector_snapshots.append(
-                Snapshot(best=False, epochs=i, path=snapshot_path)
-            )
+            detector_snapshots.append(Snapshot(best=False, epochs=i, path=snapshot_path))
 
     mock_loader = _make_mock_loader(
         project_path=project_dir,
@@ -264,9 +266,7 @@ def test_export_change_iteration(project_dir, task: Task, iteration: int):
     snapshot = snapshots[0]
     detector = None if task == Task.BOTTOM_UP else detector_snapshots[0]
 
-    loader_diff_iter = _get_export_model_data(
-        project_dir, 1, task, project_iteration=iteration
-    )[0]
+    loader_diff_iter = _get_export_model_data(project_dir, 1, task, project_iteration=iteration)[0]
 
     def get_mock_loader(config, *args, **kwargs):
         _loader = copy.deepcopy(mock_loader)
@@ -291,9 +291,7 @@ def test_export_change_iteration(project_dir, task: Task, iteration: int):
             for loader in [mock_loader, loader_diff_iter]:
                 dir_name = export.get_export_folder_name(loader)
                 filename = export.get_export_filename(loader, snapshot, detector)
-                assert not (
-                    project_dir / "exported-models-pytorch" / dir_name / filename
-                ).exists()
+                assert not (project_dir / "exported-models-pytorch" / dir_name / filename).exists()
 
             # export data
             export.export_model(project_dir / "config.yaml", iteration=iteration)

@@ -17,11 +17,15 @@ parts:
   - file: docs/maDLC_UserGuide
   - file: docs/Overviewof3D
   - file: docs/HelperFunctions
-  
+
 - caption: Graphical User Interfaces (GUIs)
   chapters:
   - file: docs/gui/PROJECT_GUI
   - file: docs/gui/napari_GUI
+    sections:
+      - file: docs/gui/napari/basic_usage
+      - file: docs/gui/napari/advanced_usage
+
 - caption: DLC3 PyTorch Specific Docs
   chapters:
   - file: docs/pytorch/user_guide.md
@@ -46,7 +50,7 @@ parts:
   - file: examples/COLAB/COLAB_HumanPose_with_RTMPose
 
 
-  
+
 - caption: 🚀 Notebooks For Your Data
   chapters:
   - file: examples/COLAB/COLAB_YOURDATA_SuperAnimal
@@ -80,8 +84,23 @@ parts:
   - file: docs/recipes/TechHardware
 - caption: DeepLabCut-Live!
   chapters:
-  - file: docs/deeplabcutlive
-- caption: 🦄 DeepLabCut Model Zoo
+  - file: docs/dlc-live/deeplabcutlive
+  - file: docs/dlc-live/dlc-live-gui/index
+    sections:
+      - file: docs/dlc-live/dlc-live-gui/quickstart/install
+      - file: docs/dlc-live/dlc-live-gui/user_guide/overview
+      - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/camera_support
+        sections:
+          - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/opencv_backend
+          - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/basler_backend
+          - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/aravis_backend
+          - file: docs/dlc-live/dlc-live-gui/user_guide/cameras_backends/gentl_backend
+      - file: docs/dlc-live/dlc-live-gui/user_guide/misc/misc_landing
+        sections:
+          - file: docs/dlc-live/dlc-live-gui/user_guide/misc/modelzoo_downloads
+          - file: docs/dlc-live/dlc-live-gui/user_guide/misc/timestamp_format
+
+- caption: "🦄 DeepLabCut Model Zoo"
   chapters:
   - file: docs/ModelZoo
   - file: docs/recipes/UsingModelZooPupil
@@ -100,4 +119,4 @@ parts:
 
 - caption: Citations for DeepLabCut
   chapters:
-  - file: docs/citation
+    - file: docs/citation

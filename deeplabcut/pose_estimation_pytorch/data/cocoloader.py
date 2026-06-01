@@ -17,14 +17,14 @@ from pathlib import Path
 
 import numpy as np
 
-from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.core.types import DEPRECATED_ARGUMENT
+from deeplabcut.pose_estimation_pytorch.config.pose import MethodType, PoseConfig
+from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.utils import (
     map_id_to_annotations,
     map_image_path_to_id,
 )
-from deeplabcut.pose_estimation_pytorch.config.pose import MethodType, PoseConfig
 
 
 class COCOLoader(Loader):
@@ -59,7 +59,8 @@ class COCOLoader(Loader):
 
         Args:
             project_root: The root directory of the project.
-            model_config: The pose model configuration. Can be a path to a YAML file, a PoseConfig object, or a dictionary.
+            model_config: The pose model configuration. Can be a path to a YAML
+                file, a PoseConfig object, or a dictionary.
             train_json_filename: The name of the JSON file containing the train annotations.
             test_json_filename: The name of the JSON file containing the test annotations.
             model_config_path: The path to the pose model configuration. Deprecated, use `model_config` instead.
@@ -76,8 +77,7 @@ class COCOLoader(Loader):
             self.test_json = self.load_json(self.project_root, self.test_json_filename)
 
     def get_dataset_parameters(self) -> PoseDatasetParameters:
-        """
-        Retrieves dataset parameters based on the instance's configuration.
+        """Retrieves dataset parameters based on the instance's configuration.
 
         Returns:
             An instance of the PoseDatasetParameters with the parameters set.
@@ -98,9 +98,7 @@ class COCOLoader(Loader):
                 bodyparts=bodyparts,
                 unique_bpts=[],
                 individuals=[f"individual{i}" for i in range(num_individuals)],
-                with_center_keypoints=self.model_cfg.get(
-                    "with_center_keypoints", False
-                ),
+                with_center_keypoints=self.model_cfg.get("with_center_keypoints", False),
                 color_mode=self.model_cfg.get("color_mode", "RGB"),
                 ctd_bbox_margin=ctd_bbox_margin,
                 top_down_crop_size=(crop_w, crop_h),
@@ -133,7 +131,7 @@ class COCOLoader(Loader):
         if not os.path.exists(json_path):
             raise FileNotFoundError(f"File {json_path} does not exist.")
 
-        with open(json_path, "r") as f:
+        with open(json_path) as f:
             json_obj = json.load(f)
 
         if not isinstance(json_obj, dict):
@@ -166,13 +164,15 @@ class COCOLoader(Loader):
                 warnings.warn(
                     f"Found a category with ID 0 ({cat}) in the COCO dataset. This is not"
                     f" allowed, as category ID 0 is reserved as the background ID for"
-                    f" torchvision detectors. All category IDs have been shifted by 1."
+                    f" torchvision detectors. All category IDs have been shifted by 1.",
+                    stacklevel=2,
                 )
 
         if len(coco_json["categories"]) > 1:
             warnings.warn(
-                f"Found more than 1 category in the project. This is currently not"
-                f" supported in DeepLabCut. All annotations will be given category 1"
+                "Found more than 1 category in the project. This is currently not"
+                " supported in DeepLabCut. All annotations will be given category 1",
+                stacklevel=2,
             )
 
         if cat_0:
@@ -186,7 +186,7 @@ class COCOLoader(Loader):
         return coco_json
 
     def validate_images(self, coco_json: dict) -> dict:
-        """Goes over images and annotations to look for potential errors
+        """Goes over images and annotations to look for potential errors.
 
         This code tries to ensure that training a model on this project does not crash
         down the line
@@ -221,10 +221,7 @@ class COCOLoader(Loader):
                 image_ids.add(image["id"])
 
         if len(missing_images) > 0:
-            warnings.warn(
-                f"There are {len(missing_images)} images that cannot be found (here"
-                " are some):"
-            )
+            warnings.warn(f"There are {len(missing_images)} images that cannot be found (here are some):", stacklevel=2)
             for img_id, file_name in missing_images.items():
                 print(f"  * {img_id}: {file_name}")
 
@@ -245,8 +242,8 @@ class COCOLoader(Loader):
 
         if len(coco_json["annotations"]) < len(validated_annotations):
             warnings.warn(
-                f"Found some annotations for which the image ID was not in the images."
-                f" Removing them from the dataset."
+                "Found some annotations for which the image ID was not in the images. Removing them from the dataset.",
+                stacklevel=2,
             )
             print(f"  All annotations: {len(coco_json['annotations'])}")
             print(f"  Annotations with correct image IDs: {len(validated_annotations)}")
@@ -324,9 +321,7 @@ class COCOLoader(Loader):
         elif len(img_to_annotations) == 1:
             num_individuals = len(list(img_to_annotations.values())[0])
         else:
-            num_individuals = max(
-                *[len(a_ids) for a_ids in img_to_annotations.values()]
-            )
+            num_individuals = max(*[len(a_ids) for a_ids in img_to_annotations.values()])
 
         return num_individuals, bodyparts
 
@@ -335,7 +330,7 @@ class COCOLoader(Loader):
         predictions: dict[str, dict[str, np.ndarray]],
         mode: str = "train",
     ) -> list[dict]:
-        """Converts detections to COCO format
+        """Converts detections to COCO format.
 
         Args:
             predictions: a dictionary mapping image name to the predictions made for it
@@ -368,9 +363,7 @@ class COCOLoader(Loader):
                     if "bboxes" in pred:
                         coco_pred["bbox"] = pred["bboxes"][idx].reshape(-1).tolist()
                     if "bbox_scores" in pred:
-                        coco_pred["bbox_scores"] = (
-                            pred["bbox_scores"][idx].reshape(-1).tolist()
-                        )
+                        coco_pred["bbox_scores"] = pred["bbox_scores"][idx].reshape(-1).tolist()
 
                     coco_predictions.append(coco_pred)
 

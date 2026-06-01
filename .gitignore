@@ -5,9 +5,6 @@ _build/*
 #Data and examples
 /examples/open*
 /examples/Reac*
-/examples/TES*
-/examples/multi*
-/examples/3D*
 /examples/m3*
 /examples/OUT
 /examples/pretrained*
@@ -138,3 +135,16 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# Tools output
+tmp/*
+
+# Test data
+tests/data/*
+
+# Automated docs checks
+**/tmp/docs_nb_checks/
+
+
+# Automatic test selection report
+**/tmp/test-selection/

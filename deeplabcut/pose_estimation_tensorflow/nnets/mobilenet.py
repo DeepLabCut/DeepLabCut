@@ -23,11 +23,11 @@ import tensorflow as tf
 import tf_slim as slim
 
 from deeplabcut.pose_estimation_tensorflow.backbones import mobilenet_v2
+
 from .base import BasePoseNet
 from .factory import PoseNetFactory
 from .layers import prediction_layer
 from .utils import wrapper
-
 
 networks = {
     "mobilenet_v2_1.0": (mobilenet_v2.mobilenet_base, mobilenet_v2.training_scope),
@@ -61,7 +61,7 @@ networks = {
 @PoseNetFactory.register("mobilenet")
 class PoseMobileNet(BasePoseNet):
     def __init__(self, cfg):
-        super(PoseMobileNet, self).__init__(cfg)
+        super().__init__(cfg)
 
     def extract_features(self, inputs):
         net_fun, net_arg_scope = networks[self.cfg["net_type"]]
@@ -78,7 +78,7 @@ class PoseMobileNet(BasePoseNet):
         scope="pose",
         reuse=None,
     ):
-        out = super(PoseMobileNet, self).prediction_layers(
+        out = super().prediction_layers(
             features,
             scope,
             reuse,

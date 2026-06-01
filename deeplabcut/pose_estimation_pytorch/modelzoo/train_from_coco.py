@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""File to train a model on a COCO dataset"""
+"""File to train a model on a COCO dataset."""
 
 from __future__ import annotations
 
@@ -70,7 +70,7 @@ def adaptation_train(
     if eval_interval is not None:
         updates["runner.eval_interval"] = eval_interval
 
-    # TODO @deruyter92: midway config updates are not ideal. 
+    # TODO @deruyter92: midway config updates are not ideal.
     # We should validate this against the pydantic schema.
     loader.update_model_cfg(updates)
 

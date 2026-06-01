@@ -17,24 +17,28 @@ Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
+
 from __future__ import annotations
 
 import argparse
 import os
-import pickle
-import pandas as pd
 
 ####################################################
 # Dependencies
 ####################################################
 import os.path
+import pickle
+from collections.abc import Sequence
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 from deeplabcut.core import crossvalutils
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal, visualization
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
+from deeplabcut.utils.auxfun_videos import collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 
 def Histogram(vector, color, bins, ax=None, linewidth=1.0):
@@ -57,7 +61,8 @@ def PlottingResults(
     resolution=100,
     linewidth=1.0,
 ):
-    """Plots poses vs time; pose x vs pose y; histogram of differences and likelihoods."""
+    """Plots poses vs time; pose x vs pose y; histogram of differences and
+    likelihoods."""
     pcutoff = cfg["pcutoff"]
     colors = visualization.get_cmap(len(bodyparts2plot), name=cfg["colormap"])
     alphavalue = cfg["alphavalue"]
@@ -95,12 +100,8 @@ def PlottingResults(
 
     with np.errstate(invalid="ignore"):
         for bpindex, bp in enumerate(bodyparts2plot):
-            if (
-                bp in animal_bpts
-            ):  # Avoid 'unique' bodyparts only present in the 'single' animal
-                prob = Dataframe.xs(
-                    (bp, "likelihood"), level=(-2, -1), axis=1
-                ).values.squeeze()
+            if bp in animal_bpts:  # Avoid 'unique' bodyparts only present in the 'single' animal
+                prob = Dataframe.xs((bp, "likelihood"), level=(-2, -1), axis=1).values.squeeze()
                 mask = prob < pcutoff
                 temp_x = np.ma.array(
                     Dataframe.xs((bp, "x"), level=(-2, -1), axis=1).values.squeeze(),
@@ -152,17 +153,13 @@ def PlottingResults(
         bbox_inches="tight",
         dpi=resolution,
     )
-    fig2.savefig(
-        os.path.join(tmpfolder, "plot" + suffix), bbox_inches="tight", dpi=resolution
-    )
+    fig2.savefig(os.path.join(tmpfolder, "plot" + suffix), bbox_inches="tight", dpi=resolution)
     fig3.savefig(
         os.path.join(tmpfolder, "plot-likelihood" + suffix),
         bbox_inches="tight",
         dpi=resolution,
     )
-    fig4.savefig(
-        os.path.join(tmpfolder, "hist" + suffix), bbox_inches="tight", dpi=resolution
-    )
+    fig4.savefig(os.path.join(tmpfolder, "hist" + suffix), bbox_inches="tight", dpi=resolution)
 
     if showfigures:
         plt.show()
@@ -173,10 +170,11 @@ def PlottingResults(
 ##################################################
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def plot_trajectories(
     config,
     videos,
-    videotype="",
+    video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     filtered=False,
@@ -203,11 +201,14 @@ def plot_trajectories(
         Full paths to videos for analysis or a path to the directory, where all the
         videos with same extension are stored.
 
-    videotype: str, optional, default=""
-        Checks for the extension of the video in case the input to the video is a
-        directory. Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions
-        ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+    video_extensions : str | Sequence[str] | None, optional, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
 
     shuffle: int, optional, default=1
         Integer specifying the shuffle index of the training dataset.
@@ -292,17 +293,11 @@ def plot_trajectories(
         modelprefix=modelprefix,
         **kwargs,
     )  # automatically loads corresponding model (even training iteration based on snapshot index)
-    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(
-        cfg, displayedbodyparts
-    )
-    individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(
-        cfg, displayedindividuals
-    )
-    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, displayedbodyparts)
+    individuals = auxfun_multianimal.IntersectionofIndividualsandOnesGivenbyUser(cfg, displayedindividuals)
+    Videos = collect_video_paths(videos, extensions=video_extensions)
     if not len(Videos):
-        print(
-            "No videos found. Make sure you passed a list of videos and that *videotype* is right."
-        )
+        print("No videos found. Make sure you passed a list of videos and that the video_extensions filter is right.")
         return
 
     failures, multianimal_errors = [], []
@@ -339,9 +334,7 @@ def plot_trajectories(
             if track_method != "":
                 # In a multi animal scenario, show more verbose errors.
                 try:
-                    _ = auxiliaryfunctions.load_detection_data(
-                        video, DLCscorer, track_method
-                    )
+                    _ = auxiliaryfunctions.load_detection_data(video, DLCscorer, track_method)
                     error_message = 'Call "deeplabcut.stitch_tracklets() prior to plotting the trajectories.'
                 except FileNotFoundError as e:
                     print(e)
@@ -361,13 +354,10 @@ def plot_trajectories(
             verbose_error = "."
         print(
             f"Plots could not be created for {failed_videos}. "
-            f"Videos were not evaluated with the current scorer {DLCscorer}"
-            + verbose_error
+            f"Videos were not evaluated with the current scorer {DLCscorer}" + verbose_error
         )
     else:
-        print(
-            'Plots created! Please check the directory "plot-poses" within the video directory'
-        )
+        print('Plots created! Please check the directory "plot-poses" within the video directory')
 
 
 def _plot_trajectories(
@@ -398,11 +388,7 @@ def _plot_trajectories(
         dest_folder = os.path.join(vid_folder, "plot-poses", vname)
     auxiliaryfunctions.attempt_to_make_folder(dest_folder, recursive=True)
     # Keep only the individuals and bodyparts that were labeled
-    labeled_bpts = [
-        bp
-        for bp in df.columns.get_level_values("bodyparts").unique()
-        if bp in bodyparts
-    ]
+    labeled_bpts = [bp for bp in df.columns.get_level_values("bodyparts").unique() if bp in bodyparts]
     # Either display the animals defined in the config if they are found
     # in the dataframe, or all the trajectories regardless of their names
     try:
@@ -444,9 +430,7 @@ def _plot_paf_performance(
     if ax is None:
         fig, ax = plt.subplots(tight_layout=True, figsize=(3, 3))
     sns.histplot(within, kde=kde, ax=ax, stat="probability", color=colors[0], bins=bins)
-    sns.histplot(
-        between, kde=kde, ax=ax, stat="probability", color=colors[1], bins=bins
-    )
+    sns.histplot(between, kde=kde, ax=ax, stat="probability", color=colors[1], bins=bins)
     return ax
 
 
@@ -456,8 +440,7 @@ def plot_edge_affinity_distributions(
     output_name="",
     figsize=(10, 7),
 ):
-    """
-    Display the distribution of affinity costs of within- and between-animal edges.
+    """Display the distribution of affinity costs of within- and between-animal edges.
 
     Parameters
     ----------
@@ -474,7 +457,6 @@ def plot_edge_affinity_distributions(
 
     figsize: tuple
         Figure size in inches.
-
     """
 
     with open(eval_pickle_file, "rb") as file:

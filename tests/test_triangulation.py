@@ -11,6 +11,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+
 from deeplabcut.pose_estimation_3d import triangulation
 
 
@@ -48,9 +49,7 @@ def test_undistort_views(n_view_pairs, is_multi, stereo_params):
         df = df.xs("bird1", level="individuals", axis=1)
 
     view_pairs = [(df, df) for _ in range(n_view_pairs)]
-    cam_params = {
-        f"camera-1-camera-{i}": stereo_params for i in range(2, n_view_pairs + 2)
-    }
+    cam_params = {f"camera-1-camera-{i}": stereo_params for i in range(2, n_view_pairs + 2)}
     dfs = triangulation._undistort_views(view_pairs, cam_params)
     assert len(dfs) == n_view_pairs
     assert all(len(pair) == 2 for pair in dfs)

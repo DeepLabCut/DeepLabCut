@@ -11,9 +11,9 @@
 """Training configuration classes for DeepLabCut pose estimation models."""
 
 from pydantic.dataclasses import dataclass
-from dataclasses import field
+
+from deeplabcut.core.config.mixins import ConfigMixin
 from deeplabcut.core.weight_init import WeightInitialization
-from deeplabcut.core.config.config_mixin import ConfigMixin
 
 
 @dataclass
@@ -36,6 +36,6 @@ class TrainSettingsConfig(ConfigMixin):
     display_iters: int = 500
     epochs: int = 200
     seed: int = 42
-    # @TODO @deruyter92 2026-02-13: V0 pipeline uses None for default initialization 
+    # @TODO @deruyter92 2026-02-13: V0 pipeline uses None for default initialization
     # (with ImageNet weights). We should update this to explicit WeightInitialization.
-    weight_init: WeightInitialization | None = None 
+    weight_init: WeightInitialization | None = None

@@ -10,9 +10,9 @@
 #
 import glob
 import os
-import io
+from collections.abc import Sequence
 from pathlib import Path
-import yaml
+
 from deeplabcut.pose_estimation_tensorflow.modelzoo.api.superanimal_inference import (
     video_inference,
 )
@@ -21,24 +21,25 @@ from deeplabcut.utils.auxiliaryfunctions import (
     load_analyzed_data,
     read_config,
 )
+from deeplabcut.utils.deprecation import renamed_parameter
 from deeplabcut.utils.make_labeled_video import create_labeled_video
 from deeplabcut.utils.plotting import _plot_trajectories
 
 
 class SpatiotemporalAdaptation:
+    @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
     def __init__(
         self,
         video_path,
         supermodel_name,
         scale_list=None,
-        videotype="mp4",
+        video_extensions: str | Sequence[str] | None = "mp4",
         adapt_iterations=1000,
         modelfolder="",
         customized_pose_config="",
         init_weights="",
     ):
-        """
-        This class supports video adaptation to a super model.
+        """This class supports video adaptation to a super model.
 
         Parameters
         ----------
@@ -50,12 +51,20 @@ class SpatiotemporalAdaptation:
            Currently we support supertopview(LabMice) and superquadruped (quadruped side-view animals)
         scale_list: list
            A list of different resolutions for the spatial pyramid
-        videotype: string
-           Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this extension are analyzed. The default is ``.avi``
+        video_extensions: str | Sequence[str] | None, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
         adapt_iterations: int
-           Number of iterations for adaptation training. Empirically 1000 is sufficient. Training longer can cause worse performance depending whether there is occlusion in the video
+           Number of iterations for adaptation training. Empirically 1000 is sufficient. Training longer can cause worse
+           performance depending whether there is occlusion in the video
         modelfolder: string, optional
-           Because the API does not need a dlc project, the checkpoint and logs go to this temporary model folder, and otherwise model is saved to the current work place
+           Because the API does not need a dlc project, the checkpoint and logs go to this temporary model folder, and
+           otherwise model is saved to the current work place
         customized_pose_config: string, optional
            For future support of non modelzoo model
 
@@ -65,17 +74,15 @@ class SpatiotemporalAdaptation:
         from  deeplabcut.modelzoo.apis import SpatiotemporalAdaptation
         video_path = '/mnt/md0/shaokai/openfield_video/m3v1mp4.mp4'
         superanimal_name = 'superanimal_topviewmouse'
-        videotype = 'mp4'
+        video_extensions = 'mp4'
         >>> adapter = SpatiotemporalAdaptation(video_path,
                                        superanimal_name,
                                        modelfolder = "temp_topview",
-                                       videotype = videotype)
+                                       video_extensions = video_extensions)
 
         adapter.before_adapt_inference()
         adapter.adaptation_training()
         adapter.after_adapt_inference()
-
-
         """
         if scale_list is None:
             scale_list = []
@@ -83,7 +90,7 @@ class SpatiotemporalAdaptation:
         self.video_path = video_path
         self.supermodel_name = supermodel_name
         self.scale_list = scale_list
-        self.videotype = videotype
+        self.video_extensions = video_extensions
         vname = str(Path(self.video_path).stem)
         self.adapt_modelprefix = vname + "_video_adaptation"
         self.adapt_iterations = adapt_iterations
@@ -99,16 +106,10 @@ class SpatiotemporalAdaptation:
             dlc_root_path = get_deeplabcut_path()
 
             project_config = read_config(
-                os.path.join(
-                    dlc_root_path, "modelzoo", "project_configs", f"{project_name}.yaml"
-                )
+                os.path.join(dlc_root_path, "modelzoo", "project_configs", f"{project_name}.yaml")
             )
 
-            model_config = read_config(
-                os.path.join(
-                    dlc_root_path, "modelzoo", "model_configs", f"{model_name}.yaml"
-                )
-            )
+            model_config = read_config(os.path.join(dlc_root_path, "modelzoo", "model_configs", f"{model_name}.yaml"))
 
             joints = [i for i in range(len(project_config["bodyparts"]))]
             num_joints = len(joints)
@@ -127,7 +128,7 @@ class SpatiotemporalAdaptation:
                 [self.video_path],
                 self.project_name,
                 self.model_name,
-                videotype=self.videotype,
+                video_extensions=self.video_extensions,
                 scale_list=self.scale_list,
                 init_weights=self.init_weights,
                 customized_test_config=self.customized_pose_config,
@@ -137,7 +138,7 @@ class SpatiotemporalAdaptation:
                 [self.video_path],
                 self.project_name,
                 self.model_name,
-                videotype=self.videotype,
+                video_extensions=self.video_extensions,
                 scale_list=self.scale_list,
                 customized_test_config=self.customized_pose_config,
             )
@@ -151,7 +152,7 @@ class SpatiotemporalAdaptation:
             create_labeled_video(
                 "",
                 [self.video_path],
-                videotype=self.videotype,
+                video_extensions=self.video_extensions,
                 filtered=False,
                 init_weights=self.init_weights,
                 draw_skeleton=True,
@@ -180,8 +181,9 @@ class SpatiotemporalAdaptation:
         )
 
     def adaptation_training(self, displayiters=500, saveiters=1000, **kwargs):
-        """
-        There should be two choices, either taking a config, with is then assuming there is a DLC project.
+        """There should be two choices, either taking a config, with is then assuming
+        there is a DLC project.
+
         Or we make up a fake one, then we use a light way convention to do adaptation
         """
 
@@ -190,14 +192,11 @@ class SpatiotemporalAdaptation:
         vname = str(Path(self.video_path).stem)
         video_root = Path(self.video_path).parent
 
-        _, pseudo_label_path, _, _ = load_analyzed_data(
-            video_root, vname, DLCscorer, False, ""
-        )
+        _, pseudo_label_path, _, _ = load_analyzed_data(video_root, vname, DLCscorer, False, "")
         if self.modelfolder != "":
             os.makedirs(self.modelfolder, exist_ok=True)
 
         self.adapt_iterations = kwargs.get("adapt_iterations", self.adapt_iterations)
-
 
         self.train_without_project(
             pseudo_label_path,
@@ -207,9 +206,7 @@ class SpatiotemporalAdaptation:
         )
 
     def after_adapt_inference(self, create_labeled_video, **kwargs):
-        pattern = os.path.join(
-            self.modelfolder, f"snapshot-{self.adapt_iterations}.index"
-        )
+        pattern = os.path.join(self.modelfolder, f"snapshot-{self.adapt_iterations}.index")
         ref_proj_config_path = ""
 
         files = glob.glob(pattern)
@@ -229,7 +226,7 @@ class SpatiotemporalAdaptation:
             [self.video_path],
             self.project_name,
             self.model_name,
-            videotype=self.videotype,
+            video_extensions=self.video_extensions,
             init_weights=adapt_weights,
             scale_list=scale_list,
             customized_test_config=self.customized_pose_config,
@@ -242,7 +239,7 @@ class SpatiotemporalAdaptation:
             create_labeled_video(
                 ref_proj_config_path,
                 [self.video_path],
-                videotype=self.videotype,
+                video_extensions=self.video_extensions,
                 filtered=False,
                 init_weights=adapt_weights,
                 draw_skeleton=True,

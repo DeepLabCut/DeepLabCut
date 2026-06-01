@@ -1,24 +1,25 @@
 """Apply copyright headers to all code files in the repository.
 
-This file can be called as a python script without arguments. For
-configuration, see the instructions in NOTICE.yml.
+This file can be called as a python script without arguments. For configuration, see the
+instructions in NOTICE.yml.
 """
 
-import tempfile
-import glob
-import yaml
 import fnmatch
+import glob
 import subprocess
+import tempfile
+
+import yaml
 
 
 def load_config(filename):
-    with open(filename, "r") as fh:
+    with open(filename) as fh:
         config = yaml.safe_load(fh)
     return config
 
 
 def walk_directory(entry):
-    """Talk the directory"""
+    """Talk the directory."""
 
     if "header" not in entry:
         raise ValueError("Current entry does not have a header.")
@@ -28,8 +29,7 @@ def walk_directory(entry):
     def _list_include():
         """List all files specified in the include list."""
         for include_pattern in entry["include"]:
-            for filename in glob.iglob(include_pattern, recursive=True):
-                yield filename
+            yield from glob.iglob(include_pattern, recursive=True)
 
     def _filter_exclude(iterable):
         """Filter filenames from an iterator by the exclude patterns."""

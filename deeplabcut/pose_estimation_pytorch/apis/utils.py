@@ -11,21 +11,19 @@
 from __future__ import annotations
 
 import logging
-import random
+from collections.abc import Callable, Sequence
 from pathlib import Path
-from typing import Callable
 
 import albumentations as A
 import numpy as np
 import pandas as pd
-
 from torchvision.models import detection
 from torchvision.models.detection import (
-    fasterrcnn_resnet50_fpn,
-    fasterrcnn_mobilenet_v3_large_fpn,
-    FasterRCNN_ResNet50_FPN_Weights,
-    FasterRCNN_ResNet50_FPN_V2_Weights,
     FasterRCNN_MobileNet_V3_Large_FPN_Weights,
+    FasterRCNN_ResNet50_FPN_V2_Weights,
+    FasterRCNN_ResNet50_FPN_Weights,
+    fasterrcnn_mobilenet_v3_large_fpn,
+    fasterrcnn_resnet50_fpn,
 )
 
 from deeplabcut.core.config import read_config_as_dict
@@ -42,8 +40,8 @@ from deeplabcut.pose_estimation_pytorch.data.postprocessor import (
 )
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import (
     build_bottom_up_preprocessor,
-    build_top_down_preprocessor,
     build_conditional_top_down_preprocessor,
+    build_top_down_preprocessor,
 )
 from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
@@ -51,13 +49,13 @@ from deeplabcut.pose_estimation_pytorch.models.detectors.filtered_detector impor
     FilteredDetector,
 )
 from deeplabcut.pose_estimation_pytorch.runners import (
-    build_inference_runner,
     CTDTrackingConfig,
     DetectorInferenceRunner,
     DynamicCropper,
     InferenceRunner,
     PoseInferenceRunner,
     TopDownDynamicCropper,
+    build_inference_runner,
 )
 from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import (
@@ -66,7 +64,9 @@ from deeplabcut.pose_estimation_pytorch.runners.snapshots import (
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import resolve_device
-from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
+from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS, collect_video_paths
+from deeplabcut.utils.deprecation import deprecated
 
 
 def parse_snapshot_index_for_analysis(
@@ -180,14 +180,12 @@ def get_model_snapshots(
         ValueError: If the index given is not valid
         ValueError: If index=="best" but there is no saved best model
     """
-    snapshot_manager = TorchSnapshotManager(
-        model_folder=model_folder, snapshot_prefix=task.snapshot_prefix
-    )
+    snapshot_manager = TorchSnapshotManager(model_folder=model_folder, snapshot_prefix=task.snapshot_prefix)
     if snapshot_filter is not None:
         all_snapshots = snapshot_manager.snapshots()
         snapshots = [s for s in all_snapshots if s.path.stem in snapshot_filter]
         if len(snapshots) != len(snapshot_filter):
-            print(f"Warning: could not find all `snapshots_to_evaluate`.")
+            print("Warning: could not find all `snapshots_to_evaluate`.")
             print(f"  Requested snapshots: {snapshot_filter}")
             print(f"  Found snapshots: {[s.path.stem for s in all_snapshots]}")
             print(f"  Snapshots returned: {[s.path.stem for s in snapshots]}")
@@ -202,11 +200,7 @@ def get_model_snapshots(
         snapshots = snapshot_manager.snapshots()
     elif isinstance(index, int):
         all_snapshots = snapshot_manager.snapshots()
-        if (
-            len(all_snapshots) == 0
-            or len(all_snapshots) <= index
-            or (index < 0 and len(all_snapshots) < -index)
-        ):
+        if len(all_snapshots) == 0 or len(all_snapshots) <= index or (index < 0 and len(all_snapshots) < -index):
             names = [s.path.name for s in all_snapshots]
             raise ValueError(
                 f"Found {len(all_snapshots)} snapshots in {model_folder} (with names "
@@ -247,7 +241,7 @@ def get_scorer_name(
     snapshot_uid: str | None = None,
     modelprefix: str = "",
 ) -> str:
-    """Get the scorer name for a particular PyTorch DeepLabCut shuffle
+    """Get the scorer name for a particular PyTorch DeepLabCut shuffle.
 
     Args:
         cfg: The project configuration.
@@ -279,9 +273,7 @@ def get_scorer_name(
 
     if snapshot_uid is None:
         if snapshot_index is None:
-            snapshot_index = auxiliaryfunctions.get_snapshot_index_for_scorer(
-                "snapshotindex", cfg["snapshotindex"]
-            )
+            snapshot_index = auxiliaryfunctions.get_snapshot_index_for_scorer("snapshotindex", cfg["snapshotindex"])
         if detector_index is None:
             detector_index = auxiliaryfunctions.get_snapshot_index_for_scorer(
                 "detector_snapshotindex", cfg["detector_snapshotindex"]
@@ -291,9 +283,7 @@ def get_scorer_name(
         detector_snapshot = None
         if detector_index is not None and pose_task == Task.TOP_DOWN:
             try:
-                detector_snapshot = get_model_snapshots(
-                    detector_index, train_dir, Task.DETECT
-                )[0]
+                detector_snapshot = get_model_snapshots(detector_index, train_dir, Task.DETECT)[0]
             except ValueError:
                 detector_snapshot = None
 
@@ -304,56 +294,21 @@ def get_scorer_name(
     return f"DLC_{name}_{task}{date}shuffle{shuffle}_{snapshot_uid}"
 
 
+@deprecated(replacement="deeplabcut.collect_video_paths", since="3.0.0")
 def list_videos_in_folder(
     data_path: str | Path | list[str | Path],
-    video_type: str | None = None,
+    video_type: str | Sequence[str] | None = SUPPORTED_VIDEOS,
     shuffle: bool = False,
 ) -> list[Path]:
-    """
-    Args:
-        data_path: Path or list of paths to folders containing videos, or individual
-            video files. Can be a mix of directories and files.
-        video_type: The type of video to filter for (e.g., "mp4", ".mp4"). If None,
-            all supported video types are included.
-        shuffle: Whether to shuffle the order of videos. If False, videos are returned
-            in sorted order for deterministic behavior.
-
-    Returns:
-        The paths of videos to analyze. Duplicate paths are removed.
-
-    Raises:
-        FileNotFoundError: If any path in data_path does not exist.
-    """
-    if isinstance(data_path, (str, Path)):
-        data_path = [data_path]
-
-    if not video_type:
-        video_suffixes = {f".{ext.lower()}" for ext in auxfun_videos.SUPPORTED_VIDEOS}
-    else:
-        video_suffixes = {f".{video_type.lstrip('.').lower()}"}
-
-    videos = []
-    for path in map(Path, data_path):
-        if not path.exists():
-            raise FileNotFoundError(
-                f"Could not find: {path}. Check access rights."
-            )
-
-        if path.is_dir():
-            videos.extend(f for f in path.iterdir() if f.is_file() and f.suffix.lower() in video_suffixes)
-        elif path.is_file() and path.suffix.lower() in video_suffixes:
-            videos.append(path)
-
-    # Resolve video paths and remove duplicates
-    unique_videos = list(dict.fromkeys(v.resolve() for v in videos))
-    if shuffle:
-        random.shuffle(unique_videos)
-    return unique_videos
+    return collect_video_paths(
+        data_path=data_path,
+        extensions=video_type,
+        shuffle=shuffle,
+    )
 
 
 def ensure_multianimal_df_format(df_predictions: pd.DataFrame) -> pd.DataFrame:
-    """
-    Convert dataframe to 'multianimal' format (with an "individuals" columns index)
+    """Convert dataframe to 'multianimal' format (with an "individuals" columns index)
 
     Args:
         df_predictions: the dataframe to convert
@@ -377,10 +332,9 @@ def _image_names_to_df_index(
     image_names: list[str],
     image_name_to_index: Callable[[str], tuple[str, ...]] | None = None,
 ) -> pd.MultiIndex | list[str]:
-    """
-    Creates index for predictions dataframe.
-    This method is used in build_predictions_dataframe, but also in build_bboxes_dict_for_dataframe.
-    It is important that these two methods return objects with the same index / keys.
+    """Creates index for predictions dataframe. This method is used in
+    build_predictions_dataframe, but also in build_bboxes_dict_for_dataframe. It is
+    important that these two methods return objects with the same index / keys.
 
     Args:
         image_names: list of image names
@@ -388,9 +342,7 @@ def _image_names_to_df_index(
     """
 
     if image_name_to_index is not None:
-        return pd.MultiIndex.from_tuples(
-            [image_name_to_index(image_name) for image_name in image_names]
-        )
+        return pd.MultiIndex.from_tuples([image_name_to_index(image_name) for image_name in image_names])
     else:
         return image_names
 
@@ -401,8 +353,7 @@ def build_predictions_dataframe(
     parameters: PoseDatasetParameters,
     image_name_to_index: Callable[[str], tuple[str, ...]] | None = None,
 ) -> pd.DataFrame:
-    """
-    Builds a pandas DataFrame from pose prediction data. The resulting DataFrame
+    """Builds a pandas DataFrame from pose prediction data. The resulting DataFrame
     includes properly formatted indices and column names for compatibility with
     DeepLabCut workflows.
 
@@ -430,9 +381,7 @@ def build_predictions_dataframe(
     for image_name, image_predictions in predictions.items():
         image_data = image_predictions["bodyparts"][..., :3].reshape(-1)
         if "unique_bodyparts" in image_predictions:
-            image_data = np.concatenate(
-                [image_data, image_predictions["unique_bodyparts"][..., :3].reshape(-1)]
-            )
+            image_data = np.concatenate([image_data, image_predictions["unique_bodyparts"][..., :3].reshape(-1)])
         image_names.append(image_name)
         prediction_data.append(image_data)
 
@@ -453,8 +402,7 @@ def build_bboxes_dict_for_dataframe(
     predictions: dict[str, dict[str, np.ndarray]],
     image_name_to_index: Callable[[str], tuple[str, ...]] | None = None,
 ) -> dict:
-    """
-    Creates a dictionary with bounding boxes from predictions.
+    """Creates a dictionary with bounding boxes from predictions.
 
     The keys of the dictionary are the same as the index of the dataframe created by
     build_predictions_dataframe. Therefore, the structures returned by
@@ -475,13 +423,11 @@ def build_bboxes_dict_for_dataframe(
     for image_name, image_predictions in predictions.items():
         image_names.append(image_name)
         if "bboxes" in image_predictions and "bbox_scores" in image_predictions:
-            bboxes_data.append(
-                (image_predictions["bboxes"], image_predictions["bbox_scores"])
-            )
+            bboxes_data.append((image_predictions["bboxes"], image_predictions["bbox_scores"]))
 
     index = _image_names_to_df_index(image_names, image_name_to_index)
 
-    return dict(zip(index, bboxes_data))
+    return dict(zip(index, bboxes_data, strict=False))
 
 
 def get_inference_runners(
@@ -498,10 +444,10 @@ def get_inference_runners(
     detector_path: str | Path | None = None,
     detector_transform: A.BaseCompose | None = None,
     dynamic: DynamicCropper | None = None,
-    inference_cfg:InferenceConfig | dict | None = None,
+    inference_cfg: InferenceConfig | dict | None = None,
     min_bbox_score: float | None = None,
 ) -> tuple[InferenceRunner, InferenceRunner | None]:
-    """Builds the runners for pose estimation
+    """Builds the runners for pose estimation.
 
     Args:
         model_config: the pytorch configuration file
@@ -603,9 +549,7 @@ def get_inference_runners(
         if detector_path is not None:
             detector_path = str(detector_path)
             if detector_transform is None:
-                detector_transform = build_transforms(
-                    model_config["detector"]["data"]["inference"]
-                )
+                detector_transform = build_transforms(model_config["detector"]["data"]["inference"])
 
             detector_config = model_config["detector"]["model"]
             if "pretrained" in detector_config:
@@ -746,8 +690,8 @@ def get_filtered_coco_detector_inference_runner(
     inference_cfg: InferenceConfig | dict | None = None,
     min_bbox_score: float | None = None,
 ) -> DetectorInferenceRunner:
-    """
-    Builds a detector inference runner using a pretrained COCO detector from torchvision.
+    """Builds a detector inference runner using a pretrained COCO detector from
+    torchvision.
 
     This function loads a pretrained object detection model from `torchvision.models.detection`,
     wraps it in a `FilteredDetector` that keeps only detections for a specified COCO category,
@@ -809,9 +753,7 @@ def get_filtered_coco_detector_inference_runner(
         if color_mode is None:
             missing.append("color_mode")
         if missing:
-            raise ValueError(
-                f"If `model_config` is not provided, you must explicitly specify: {', '.join(missing)}."
-            )
+            raise ValueError(f"If `model_config` is not provided, you must explicitly specify: {', '.join(missing)}.")
     if device == "mps":
         device = "cpu"
 

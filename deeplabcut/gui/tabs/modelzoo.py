@@ -15,21 +15,19 @@ from pathlib import Path
 
 import dlclibrary
 from PySide6 import QtWidgets
-from PySide6.QtCore import QRegularExpression, Qt, QTimer, Signal, Slot, QSize
+from PySide6.QtCore import QRegularExpression, QSize, Qt, QTimer, Signal, Slot
 from PySide6.QtGui import QIcon, QPixmap, QRegularExpressionValidator
-import cv2
-import torch
 
 import deeplabcut
 from deeplabcut.core.engine import Engine
 from deeplabcut.gui import BASE_DIR
 from deeplabcut.gui.components import (
-    _create_grid_layout,
-    _create_label_widget,
     DefaultTab,
     VideoSelectionWidget,
-    set_layout_contents_visible,
+    _create_grid_layout,
+    _create_label_widget,
     set_combo_items,
+    set_layout_contents_visible,
 )
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.gui.widgets import ClickableLabel
@@ -87,9 +85,7 @@ class ModelZoo(DefaultTab):
         button_layout.addStretch()
 
         self.main_layout.addWidget(_create_label_widget("Video Selection", "font:bold"))
-        self.video_selection_widget = VideoSelectionWidget(
-            self.root, self, hide_videotype=True
-        )
+        self.video_selection_widget = VideoSelectionWidget(self.root, self, hide_videotype=True)
         self.main_layout.addWidget(self.video_selection_widget)
 
         self._build_common_attributes()
@@ -104,7 +100,9 @@ class ModelZoo(DefaultTab):
         self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
 
         self.go_to_button = QtWidgets.QPushButton("Read Documentation")
-        # go to url https://deeplabcut.github.io/DeepLabCut/docs/ModelZoo.html#about-the-superanimal-models when button is clicked
+        # go to url
+        # https://deeplabcut.github.io/DeepLabCut/docs/ModelZoo.html#about-the-superanimal-models
+        # when button is clicked
         self.go_to_button.clicked.connect(
             lambda: webbrowser.open(
                 "https://deeplabcut.github.io/DeepLabCut/docs/ModelZoo.html#about-the-superanimal-models"
@@ -241,27 +239,19 @@ class ModelZoo(DefaultTab):
 
         self.model_combo.currentTextChanged.connect(self._update_pose_models)
         self.model_combo.currentTextChanged.connect(self._update_detectors)
-        self.model_combo.currentTextChanged.connect(
-            self._update_adaptation_detector_visibility
-        )
+        self.model_combo.currentTextChanged.connect(self._update_adaptation_detector_visibility)
 
     def _add_tf_scales_row(self, layout: QtWidgets.QGridLayout):
         scales_label = QtWidgets.QLabel("Scale list")
         scales_label.setMinimumWidth(300)
         self.scales_line = QtWidgets.QLineEdit("", parent=self)
         self.scales_line.setMinimumWidth(500)
-        self.scales_line.setPlaceholderText(
-            "Optionally input a list of integer sizes separated by commas..."
-        )
+        self.scales_line.setPlaceholderText("Optionally input a list of integer sizes separated by commas...")
         validator = RegExpValidator(self._val_pattern, self)
         validator.validationChanged.connect(self._handle_validation_change)
         self.scales_line.setValidator(validator)
         tooltip_label = QtWidgets.QLabel()
-        tooltip_label.setPixmap(
-            QPixmap(
-                os.path.join(BASE_DIR, "assets", "icons", "help2.png")
-            ).scaledToWidth(30)
-        )
+        tooltip_label.setPixmap(QPixmap(os.path.join(BASE_DIR, "assets", "icons", "help2.png")).scaledToWidth(30))
         tooltip_label.setToolTip(
             "Approximate animal sizes in pixels, for spatial pyramid search. If left "
             "blank, defaults to video height +/- 50 pixels"
@@ -276,14 +266,10 @@ class ModelZoo(DefaultTab):
         # --- Adaptation Checkbox with Help Button (TF section) ---
         self.adapt_checkbox = QtWidgets.QCheckBox("Use video adaptation")
         self.adapt_checkbox.setChecked(True)
-        self.adapt_checkbox.setStyleSheet(
-            "font-weight: bold; font-size: 16px; padding: 6px 12px;"
-        )
+        self.adapt_checkbox.setStyleSheet("font-weight: bold; font-size: 16px; padding: 6px 12px;")
         # Add help button
         adapt_help_btn = QtWidgets.QToolButton()
-        adapt_help_btn.setIcon(
-            QIcon(os.path.join(BASE_DIR, "assets", "icons", "help2.png"))
-        )
+        adapt_help_btn.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", "help2.png")))
         adapt_help_btn.setIconSize(QSize(24, 24))
         adapt_help_btn.setToolTip("What is video adaptation?")
 
@@ -361,9 +347,7 @@ class ModelZoo(DefaultTab):
         self.torch_adapt_epoch_spinbox.setRange(1, 50)
         self.torch_adapt_epoch_spinbox.setValue(4)
         self.torch_adapt_epoch_spinbox.setMaximumWidth(100)
-        self.adapt_det_epoch_label = QtWidgets.QLabel(
-            "Number of detector adaptation epochs"
-        )
+        self.adapt_det_epoch_label = QtWidgets.QLabel("Number of detector adaptation epochs")
         self.adapt_det_epoch_label.setMinimumWidth(200)
         self.torch_adapt_det_epoch_spinbox = QtWidgets.QSpinBox()
         self.torch_adapt_det_epoch_spinbox.setRange(1, 50)
@@ -371,9 +355,7 @@ class ModelZoo(DefaultTab):
         self.torch_adapt_det_epoch_spinbox.setMaximumWidth(100)
         self.torch_adaptation_settings_row = QtWidgets.QHBoxLayout()
         self.torch_adaptation_settings_row.addWidget(pseudo_threshold_label)
-        self.torch_adaptation_settings_row.addWidget(
-            self.torch_pseudo_threshold_spinbox
-        )
+        self.torch_adaptation_settings_row.addWidget(self.torch_pseudo_threshold_spinbox)
         self.torch_adaptation_settings_row.addSpacing(20)
         self.torch_adaptation_settings_row.addWidget(adapt_epoch_label)
         self.torch_adaptation_settings_row.addWidget(self.torch_adapt_epoch_spinbox)
@@ -398,22 +380,14 @@ class ModelZoo(DefaultTab):
 
     def _adapt_checkbox_status_changed(self, state: int) -> None:
         if self.root.engine == Engine.TF:
-            set_layout_contents_visible(
-                self.tf_adaptation_settings_row, Qt.CheckState(state) == Qt.Checked
-            )
+            set_layout_contents_visible(self.tf_adaptation_settings_row, Qt.CheckState(state) == Qt.Checked)
         elif self.root.engine == Engine.PYTORCH:
-            set_layout_contents_visible(
-                self.torch_adaptation_settings_row, Qt.CheckState(state) == Qt.Checked
-            )
+            set_layout_contents_visible(self.torch_adaptation_settings_row, Qt.CheckState(state) == Qt.Checked)
             if Qt.CheckState(state) == Qt.Checked:
-                self._update_adaptation_detector_visibility(
-                    self.model_combo.currentText()
-                )
+                self._update_adaptation_detector_visibility(self.model_combo.currentText())
 
     def select_folder(self):
-        dirname = QtWidgets.QFileDialog.getExistingDirectory(
-            self, "Please select a folder", self.root.project_folder
-        )
+        dirname = QtWidgets.QFileDialog.getExistingDirectory(self, "Please select a folder", self.root.project_folder)
         if not dirname:
             return
 
@@ -484,7 +458,7 @@ class ModelZoo(DefaultTab):
                 self.thread.start()
             else:
                 print(f"Calling video_inference_superanimal with kwargs={kwargs}")
-                results = deeplabcut.video_inference_superanimal(
+                deeplabcut.video_inference_superanimal(
                     files,
                     supermodel_name,
                     dest_folder=self._destfolder,
@@ -513,29 +487,26 @@ class ModelZoo(DefaultTab):
 
         for video_path in files:
             video_name = Path(video_path).stem
-            labeled_videos = list(
-                Path(output_folder).glob(f"{video_name}_*_labeled*.mp4")
-            )
+            labeled_videos = list(Path(output_folder).glob(f"{video_name}_*_labeled*.mp4"))
             if labeled_videos:
                 videos_created.extend([str(v) for v in labeled_videos])
 
         # Show appropriate message
         if videos_created:
             msg = QtWidgets.QMessageBox(
-                text=f"SuperAnimal video inference complete!\n\nCreated labeled videos:\n"
-                + "\n".join(videos_created)
+                text="SuperAnimal video inference complete!\n\nCreated labeled videos:\n" + "\n".join(videos_created)
             )
             msg.setIcon(QtWidgets.QMessageBox.Information)
             msg.exec_()
         else:
             msg = QtWidgets.QMessageBox(
-                text=f"SuperAnimal video inference complete, but no labeled videos were created."
+                text="SuperAnimal video inference complete, but no labeled videos were created."
             )
             msg.setIcon(QtWidgets.QMessageBox.Warning)
             msg.exec_()
 
     def stop_processes(self):
-        """Stop any running processes"""
+        """Stop any running processes."""
         if self.thread and self.thread.isRunning():
             print("Stopping running processes...")
             self.thread.quit()
@@ -549,7 +520,7 @@ class ModelZoo(DefaultTab):
             self.root._progress_bar.hide()
 
     def closeEvent(self, event):
-        """Override closeEvent to stop processes when tab is closed"""
+        """Override closeEvent to stop processes when tab is closed."""
         self.stop_processes()
         super().closeEvent(event)
 
@@ -560,10 +531,7 @@ class ModelZoo(DefaultTab):
             scales = []
             scales_ = self.scales_line.text()
             if scales_:
-                if (
-                    self.scales_line.validator().validate(scales_, 0)[0]
-                    == RegExpValidator.Acceptable
-                ):
+                if self.scales_line.validator().validate(scales_, 0)[0] == RegExpValidator.Acceptable:
                     scales = list(map(int, scales_.split(",")))
             kwargs["scale_list"] = scales
             kwargs["video_adapt"] = self.adapt_checkbox.isChecked()
@@ -571,7 +539,7 @@ class ModelZoo(DefaultTab):
             kwargs["adapt_iterations"] = self.adapt_iter_spinbox.value()
         else:
             kwargs["detector_name"] = self.detector_type_selector.currentText()
-            kwargs["video_adapt"] = (self.adapt_checkbox.isChecked())
+            kwargs["video_adapt"] = self.adapt_checkbox.isChecked()
             kwargs["pseudo_threshold"] = self.pose_threshold_spinbox.value()
             kwargs["bbox_threshold"] = self.detector_threshold_spinbox.value()
             kwargs["detector_epochs"] = self.torch_adapt_det_epoch_spinbox.value()
@@ -591,11 +559,7 @@ class ModelZoo(DefaultTab):
         set_combo_items(
             combo_box=self.model_combo,
             items=supermodels,
-            index=(
-                supermodels.index(current_dataset)
-                if current_dataset in supermodels
-                else 0
-            ),
+            index=(supermodels.index(current_dataset) if current_dataset in supermodels else 0),
         )
 
     def _update_pose_models(self, super_animal: str) -> None:
@@ -605,11 +569,7 @@ class ModelZoo(DefaultTab):
 
         set_combo_items(
             combo_box=self.net_type_selector,
-            items=(
-                ["dlcrnet"]
-                if self.root.engine == Engine.TF
-                else dlclibrary.get_available_models(super_animal)
-            ),
+            items=(["dlcrnet"] if self.root.engine == Engine.TF else dlclibrary.get_available_models(super_animal)),
         )
 
     def _update_detectors(self, super_animal: str) -> None:
@@ -624,15 +584,11 @@ class ModelZoo(DefaultTab):
             else:
                 items = dlclibrary.get_available_detectors(super_animal)
         set_combo_items(combo_box=self.detector_type_selector, items=items)
-        set_layout_contents_visible(
-            self.detector_row, self.root.engine == Engine.PYTORCH
-        )
+        set_layout_contents_visible(self.detector_row, self.root.engine == Engine.PYTORCH)
 
     def _update_adaptation_detector_visibility(self, superanimal: str):
-        self.adapt_det_epoch_label.setVisible((superanimal != "superanimal_humanbody"))
-        self.torch_adapt_det_epoch_spinbox.setVisible(
-            (superanimal != "superanimal_humanbody")
-        )
+        self.adapt_det_epoch_label.setVisible(superanimal != "superanimal_humanbody")
+        self.torch_adapt_det_epoch_spinbox.setVisible(superanimal != "superanimal_humanbody")
 
     @Slot(Engine)
     def _on_engine_change(self, engine: Engine) -> None:

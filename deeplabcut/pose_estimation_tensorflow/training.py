@@ -15,7 +15,9 @@ from pathlib import Path
 
 
 def return_train_network_path(config, shuffle=1, trainingsetindex=0, modelprefix=""):
-    """Returns the training and test pose config file names as well as the folder where the snapshot is
+    """Returns the training and test pose config file names as well as the folder where
+    the snapshot is.
+
     Parameters
     ----------
     config : string
@@ -25,7 +27,8 @@ def return_train_network_path(config, shuffle=1, trainingsetindex=0, modelprefix
         Integer value specifying the shuffle index to select for training.
 
     trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list in config.yaml).
+        Integer specifying which TrainingsetFraction to use. By default the first (note that TrainingFraction is a list
+        in config.yaml).
 
     Returns the triple: trainposeconfigfile, testposeconfigfile, snapshotfolder
     """
@@ -35,17 +38,9 @@ def return_train_network_path(config, shuffle=1, trainingsetindex=0, modelprefix
     modelfoldername = auxiliaryfunctions.get_model_folder(
         cfg["TrainingFraction"][trainingsetindex], shuffle, cfg, modelprefix=modelprefix
     )
-    trainposeconfigfile = Path(
-        os.path.join(
-            cfg["project_path"], str(modelfoldername), "train", "pose_cfg.yaml"
-        )
-    )
-    testposeconfigfile = Path(
-        os.path.join(cfg["project_path"], str(modelfoldername), "test", "pose_cfg.yaml")
-    )
-    snapshotfolder = Path(
-        os.path.join(cfg["project_path"], str(modelfoldername), "train")
-    )
+    trainposeconfigfile = Path(os.path.join(cfg["project_path"], str(modelfoldername), "train", "pose_cfg.yaml"))
+    testposeconfigfile = Path(os.path.join(cfg["project_path"], str(modelfoldername), "test", "pose_cfg.yaml"))
+    snapshotfolder = Path(os.path.join(cfg["project_path"], str(modelfoldername), "train"))
 
     return trainposeconfigfile, testposeconfigfile, snapshotfolder
 
@@ -157,11 +152,11 @@ def train_network(
     if allow_growth:
         os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
 
-    import tensorflow as tf
-
     # reload logger.
     import importlib
     import logging
+
+    import tensorflow as tf
 
     importlib.reload(logging)
     logging.shutdown()
@@ -176,24 +171,17 @@ def train_network(
     modelfoldername = auxiliaryfunctions.get_model_folder(
         cfg["TrainingFraction"][trainingsetindex], shuffle, cfg, modelprefix=modelprefix
     )
-    poseconfigfile = Path(
-        os.path.join(
-            cfg["project_path"], str(modelfoldername), "train", "pose_cfg.yaml"
-        )
-    )
+    poseconfigfile = Path(os.path.join(cfg["project_path"], str(modelfoldername), "train", "pose_cfg.yaml"))
     if not poseconfigfile.is_file():
         print("The training datafile ", poseconfigfile, " is not present.")
+        print("Probably, the training dataset for this specific shuffle index was not created.")
         print(
-            "Probably, the training dataset for this specific shuffle index was not created."
-        )
-        print(
-            "Try with a different shuffle/trainingsetfraction or use function 'create_training_dataset' to create a new trainingdataset with this shuffle index."
+            "Try with a different shuffle/trainingsetfraction or use function 'create_training_dataset' to create a new"
+            "trainingdataset with this shuffle index."
         )
     else:
         # Set environment variables
-        if (
-            autotune is not False
-        ):  # see: https://github.com/tensorflow/tensorflow/issues/13317
+        if autotune is not False:  # see: https://github.com/tensorflow/tensorflow/issues/13317
             os.environ["TF_CUDNN_USE_AUTOTUNE"] = "0"
         if gputouse is not None:
             os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
@@ -201,15 +189,17 @@ def train_network(
         cfg_dlc = auxiliaryfunctions.read_plainconfig(poseconfigfile)
 
         if superanimal_name != "":
-            from deeplabcut.modelzoo.utils import parse_available_supermodels
-            from dlclibrary.dlcmodelzoo.modelzoo_download import (
-                download_huggingface_model,
-                MODELOPTIONS,
-            )
             import glob
 
+            from dlclibrary.dlcmodelzoo.modelzoo_download import (
+                MODELOPTIONS,
+                download_huggingface_model,
+            )
+
+            from deeplabcut.modelzoo.utils import parse_available_supermodels
+
             dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
-            supermodels = parse_available_supermodels()
+            parse_available_supermodels()
             weight_folder = str(
                 Path(dlc_root_path)
                 / "pose_estimation_tensorflow"
@@ -246,11 +236,7 @@ def train_network(
                 keepdeconvweights=keepdeconvweights,
                 allow_growth=allow_growth,
                 init_weights=init_weights,
-                remove_head=(
-                    True
-                    if superanimal_name != "" and superanimal_transfer_learning
-                    else False
-                ),
+                remove_head=(True if superanimal_name != "" and superanimal_transfer_learning else False),
             )  # pass on path and file name for pose_cfg.yaml!
 
         elif "multi-animal" in cfg_dlc["dataset_type"]:

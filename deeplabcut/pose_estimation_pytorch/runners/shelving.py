@@ -8,17 +8,17 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Modules used to read/write shelve data during video analysis in DeepLabCut 3.0"""
+"""Modules used to read/write shelve data during video analysis in DeepLabCut 3.0."""
+
 import pickle
 import shelve
-from abc import ABC
 from pathlib import Path
 
 import numpy as np
 
 
-class ShelfManager(ABC):
-    """Class to manage shelf data"""
+class ShelfManager:
+    """Class to manage shelf data."""
 
     def __init__(self, filepath: str | Path, flag: str = "r") -> None:
         self.filepath = Path(filepath)
@@ -28,7 +28,7 @@ class ShelfManager(ABC):
         self._open: bool = False
 
     def open(self) -> None:
-        """Opens the shelf"""
+        """Opens the shelf."""
         self._db = shelve.open(
             str(self.filepath),
             flag=self.flag,
@@ -37,7 +37,7 @@ class ShelfManager(ABC):
         self._open = True
 
     def close(self) -> None:
-        """Closes the shelf"""
+        """Closes the shelf."""
         if not self._open:
             return
 
@@ -50,13 +50,13 @@ class ShelfManager(ABC):
 
     def keys(self) -> list[str]:
         if not self._open:
-            raise ValueError(f"You must call open() before reading keys!")
+            raise ValueError("You must call open() before reading keys!")
 
         return [k for k in self._db]
 
 
 class ShelfReader(ShelfManager):
-    """Reads data from a shelf"""
+    """Reads data from a shelf."""
 
     def __getitem__(self, item: str) -> dict:
         """Reads an item from the shelf.
@@ -68,7 +68,7 @@ class ShelfReader(ShelfManager):
             The item.
         """
         if not self._open:
-            raise ValueError(f"You must call open() before reading data!")
+            raise ValueError("You must call open() before reading data!")
 
         return self._db[item]
 
@@ -87,9 +87,7 @@ class ShelfWriter(ShelfManager):
         filepath: The path to the shelf.
     """
 
-    def __init__(
-        self, pose_cfg: dict, filepath: str | Path, num_frames: int | None = None
-    ):
+    def __init__(self, pose_cfg: dict, filepath: str | Path, num_frames: int | None = None):
         super().__init__(filepath, flag="c")
         self._pose_cfg = pose_cfg
         self._num_frames = num_frames
@@ -106,7 +104,7 @@ class ShelfWriter(ShelfManager):
         identity_scores: np.ndarray | None = None,
         **kwargs,
     ) -> None:
-        """Adds the prediction for a frame to the shelf
+        """Adds the prediction for a frame to the shelf.
 
         Args:
             bodyparts: The predicted bodyparts.
@@ -114,7 +112,7 @@ class ShelfWriter(ShelfManager):
             identity_scores: The predicted identities, if there are any.
         """
         if not self._open:
-            raise ValueError(f"You must call open() before adding data!")
+            raise ValueError("You must call open() before adding data!")
 
         key = "frame" + str(self._frame_index).zfill(self._str_width)
 
@@ -124,7 +122,6 @@ class ShelfWriter(ShelfManager):
         scores = [bpt[:, 2:3] for bpt in bodyparts]
 
         # full pickle has bodyparts and unique bodyparts in same array
-        unique_bodyparts = kwargs.get("unique_bodyparts", None)
         if unique_bodyparts is not None:
             unique_bpts = unique_bodyparts.transpose((1, 0, 2))
             coordinates += [bpt[:, :2] for bpt in unique_bpts]
@@ -132,7 +129,6 @@ class ShelfWriter(ShelfManager):
 
         output = dict(coordinates=(coordinates,), confidence=scores, costs=None)
 
-        identity_scores = kwargs.get("identity_scores", None)
         if identity_scores is not None:
             # Reshape id scores from (num_assemblies, num_bpts, num_individuals)
             # to the original DLC full pickle format: (num_bpts, num_assem, num_ind)
@@ -143,22 +139,23 @@ class ShelfWriter(ShelfManager):
                 # needed for create_video_with_all_detections to display unique bpts
                 num_unique = unique_bodyparts.shape[1]
                 num_assem, num_ind = id_scores.shape[1:]
-                output["identity"] += [
-                    -1 * np.ones((num_assem, num_ind)) for i in range(num_unique)
-                ]
+                output["identity"] += [-1 * np.ones((num_assem, num_ind)) for i in range(num_unique)]
 
         self._db[key] = output
         self._frame_index += 1
 
     def close(self) -> None:
-        """Opens the shelf"""
+        """Closes the shelf and writes the updated metadata."""
         if self._open and self._frame_index > 0:
-            self._db["metadata"]["nframes"] = self._frame_index
+            # Write updated metadata to shelf (top-level indexing required for shelve)
+            metadata = self._db["metadata"]
+            metadata["nframes"] = self._frame_index
+            self._db["metadata"] = metadata
 
         super().close()
 
     def open(self) -> None:
-        """Opens the shelf"""
+        """Opens the shelf."""
         super().open()
         self._frame_index = 0
 
@@ -172,9 +169,7 @@ class ShelfWriter(ShelfManager):
             "PAFgraph": paf_graph,
             "PAFinds": self._pose_cfg.get("paf_best", np.arange(len(paf_graph))),
             "all_joints": [[i] for i in range(len(all_joints))],
-            "all_joints_names": [
-                self._pose_cfg["all_joints_names"][i] for i in range(len(all_joints))
-            ],
+            "all_joints_names": [self._pose_cfg["all_joints_names"][i] for i in range(len(all_joints))],
             "nframes": self._num_frames,
             "key_str_width": self._str_width,
         }
@@ -194,9 +189,7 @@ class FeatureShelfWriter(ShelfWriter):
         filepath: The path to the shelf.
     """
 
-    def __init__(
-        self, pose_cfg: dict, filepath: str | Path, num_frames: int | None = None
-    ):
+    def __init__(self, pose_cfg: dict, filepath: str | Path, num_frames: int | None = None):
         super().__init__(pose_cfg, filepath, num_frames)
 
     def add_prediction(
@@ -205,23 +198,21 @@ class FeatureShelfWriter(ShelfWriter):
         features: np.ndarray | None = None,
         **kwargs,
     ) -> None:
-        """Adds the prediction for a frame to the shelf
+        """Adds the prediction for a frame to the shelf.
 
         Args:
             bodyparts: The predicted bodyparts.
             features: The features for the bodyparts.
         """
         if not self._open:
-            raise ValueError(f"You must call open() before adding data!")
+            raise ValueError("You must call open() before adding data!")
 
         key = "frame" + str(self._frame_index).zfill(self._str_width)
 
         # bodyparts to shape (num_assemblies, num_bpts, xy)
         coordinates = bodyparts[:, :, :2]
         if features is None:
-            raise ValueError(
-                "Backbone features must be given to the FeatureShelfWriter"
-            )
+            raise ValueError("Backbone features must be given to the FeatureShelfWriter")
 
         self._db[key] = dict(coordinates=coordinates, features=features)
         self._frame_index += 1

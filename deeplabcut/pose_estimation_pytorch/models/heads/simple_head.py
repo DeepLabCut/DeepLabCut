@@ -18,8 +18,8 @@ from deeplabcut.pose_estimation_pytorch.models.criterions import (
     BaseLossAggregator,
 )
 from deeplabcut.pose_estimation_pytorch.models.heads.base import (
-    BaseHead,
     HEADS,
+    BaseHead,
     WeightConversionMixin,
 )
 from deeplabcut.pose_estimation_pytorch.models.predictors import BasePredictor
@@ -101,7 +101,7 @@ class HeatmapHead(WeightConversionMixin, BaseHead):
         module_prefix: str,
         conversion: torch.Tensor,
     ) -> dict[str, torch.Tensor]:
-        """Converts pre-trained weights to be fine-tuned on another dataset
+        """Converts pre-trained weights to be fine-tuned on another dataset.
 
         Args:
             state_dict: the state dict for the pre-trained model
@@ -127,9 +127,7 @@ class HeatmapHead(WeightConversionMixin, BaseHead):
 
 
 class DeconvModule(nn.Module):
-    """
-    Deconvolutional module to predict maps from the extracted features.
-    """
+    """Deconvolutional module to predict maps from the extracted features."""
 
     def __init__(
         self,
@@ -159,9 +157,7 @@ class DeconvModule(nn.Module):
         head_stride = 1
         self.deconv_layers = nn.Identity()
         if len(kernel_size) > 0:
-            self.deconv_layers = nn.Sequential(
-                *self._make_layers(in_channels, channels[1:], kernel_size, strides)
-            )
+            self.deconv_layers = nn.Sequential(*self._make_layers(in_channels, channels[1:], kernel_size, strides))
             for s in strides:
                 head_stride *= s
 
@@ -182,8 +178,7 @@ class DeconvModule(nn.Module):
         kernel_sizes: list[int],
         strides: list[int],
     ) -> list[nn.Module]:
-        """
-        Helper function to create the deconvolutional layers.
+        """Helper function to create the deconvolutional layers.
 
         Args:
             in_channels: number of input channels to the module
@@ -195,17 +190,14 @@ class DeconvModule(nn.Module):
             the deconvolutional layers
         """
         layers = []
-        for out_channels, k, s in zip(out_channels, kernel_sizes, strides):
-            layers.append(
-                nn.ConvTranspose2d(in_channels, out_channels, kernel_size=k, stride=s)
-            )
+        for out_c, k, s in zip(out_channels, kernel_sizes, strides, strict=False):
+            layers.append(nn.ConvTranspose2d(in_channels, out_c, kernel_size=k, stride=s))
             layers.append(nn.ReLU())
-            in_channels = out_channels
+            in_channels = out_c
         return layers[:-1]
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Forward pass of the HeatmapHead
+        """Forward pass of the HeatmapHead.
 
         Args:
             x: input tensor
@@ -223,7 +215,7 @@ class DeconvModule(nn.Module):
         module_prefix: str,
         conversion: torch.Tensor,
     ) -> dict[str, torch.Tensor]:
-        """Converts pre-trained weights to be fine-tuned on another dataset
+        """Converts pre-trained weights to be fine-tuned on another dataset.
 
         Args:
             state_dict: the state dict for the pre-trained model

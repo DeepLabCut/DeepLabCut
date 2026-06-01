@@ -24,7 +24,7 @@ class COCOPoseDataset(BasePoseDataset):
         shuffle=None,
     ):
 
-        super(COCOPoseDataset, self).__init__()
+        super().__init__()
 
         self.meta["dataset_name"] = dataset_name
         self.meta["proj_root"] = proj_root
@@ -35,21 +35,17 @@ class COCOPoseDataset(BasePoseDataset):
         self.train_json_obj = (
             self._load_json(train_filename)
             if shuffle is None
-            else self._load_json(
-                train_filename.replace(".json", f"_shuffle{shuffle}.json")
-            )
+            else self._load_json(train_filename.replace(".json", f"_shuffle{shuffle}.json"))
         )
         self.test_json_obj = (
-            self._load_json("test.json")
-            if shuffle is None
-            else self._load_json(f"test_shuffle{shuffle}.json")
+            self._load_json("test.json") if shuffle is None else self._load_json(f"test_shuffle{shuffle}.json")
         )
 
         self.populate_generic()
 
     def _load_json(self, json_fn):
         path = os.path.join(self.proj_root, "annotations", json_fn)
-        with open(path, "r") as f:
+        with open(path) as f:
             json_obj = json.load(f)
         return json_obj
 
@@ -79,12 +75,8 @@ class COCOPoseDataset(BasePoseDataset):
 
         print(f"Before checking trainset {self.meta['dataset_name']}")
 
-        self.whether_anno_image_match(
-            self.generic_train_images, self.generic_train_annotations
-        )
+        self.whether_anno_image_match(self.generic_train_images, self.generic_train_annotations)
 
         print(f"Before checking testset {self.meta['dataset_name']}")
 
-        self.whether_anno_image_match(
-            self.generic_test_images, self.generic_test_annotations
-        )
+        self.whether_anno_image_match(self.generic_test_images, self.generic_test_annotations)

@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2022-06-08'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+---
 # Some data processing recipes!
 
 ## Flagging frames with abnormal bodypart distances

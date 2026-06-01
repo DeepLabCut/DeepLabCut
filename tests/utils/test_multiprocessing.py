@@ -8,8 +8,10 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import pytest
 import time
+
+import pytest
+
 from deeplabcut.utils.multiprocessing import call_with_timeout
 
 

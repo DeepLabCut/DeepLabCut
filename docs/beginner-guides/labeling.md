@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2025-06-30'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+---
 (labeling)=
 # Labeling GUI
 
@@ -47,24 +53,23 @@ Alright, you've got your extracted frames ready. Now comes the labeling!
 - **Save Progress:** Remember to save your work as you go with **`Command and S`** (or **`Ctrl and S`** on Windows).
 
 > 💡 **Note:** For a detailed walkthrough on using the Napari labeling GUI, have a look at the
-[DeepLabCut Napari Guide](napari-gui). Additionally, you can watch our instructional
+[DeepLabCut Napari Guide](file:napari-gui-landing). Additionally, you can watch our instructional
 [YouTube video](https://www.youtube.com/watch?v=hsA9IB5r73E) for more insights and tips.
 
 
 ### Completing the Set
 
-Work through all the frames in the first folder. Then, proceed to the next, continuing this way until each folder in your **labeled-data** directory is done. 
+Work through all the frames in the first folder. Then, proceed to the next, continuing this way until each folder in your **labeled-data** directory is done.
 
 ## Checking Your Labels
 
-After you've labeled all your frames, it's important to ensure they're accurate. 
+After you've labeled all your frames, it's important to ensure they're accurate.
 
 ### How to Check Your Labels
 
-- **Return to the Main Window:** Once you're done with labeling, head back to DeepLabCut's main window, and click on **`Check Labels`**. 
+- **Return to the Main Window:** Once you're done with labeling, head back to DeepLabCut's main window, and click on **`Check Labels`**.
 - **Review the Labeled Folders:** The system will have created new folders for each labeled set inside your labeled-data folder. These folders contain your original frames overlaid with the keypoints you've added.
 
 ![Checking Labels in DeepLabCut](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779615252-6BNW661XB2ULH85RTAD3/evaluation-example.png?format=500w)
 
 Take the time to go through each folder. Accurate labels are key. If there are mistakes, the model might learn incorrectly and mislabel your videos later on. It's all about setting the right foundation for accurate analysis.
-

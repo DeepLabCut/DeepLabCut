@@ -20,7 +20,6 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-from omegaconf import DictConfig
 from tqdm import tqdm
 
 import deeplabcut.core.config as config_utils
@@ -31,17 +30,20 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.modelzoo.utils import get_superanimal_colormaps
 from deeplabcut.pose_estimation_pytorch.apis.ctd import get_condition_provider
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
-    get_detector_inference_runner,
     build_predictions_dataframe,
+    get_detector_inference_runner,
+    get_filtered_coco_detector_inference_runner,
     get_model_snapshots,
     get_pose_inference_runner,
     get_scorer_name,
     get_scorer_uid,
     parse_snapshot_index_for_analysis,
-    get_filtered_coco_detector_inference_runner,
 )
 from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
-from deeplabcut.pose_estimation_pytorch.modelzoo.utils import update_config
+from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
+    COCO_PERSON_CATEGORY_ID,
+    update_config,
+)
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import resolve_device
 from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
@@ -64,8 +66,7 @@ def superanimal_analyze_images(
     customized_detector_checkpoint: str | Path | None = None,
     close_figure_after_save=True,
 ) -> dict[str, dict]:
-    """
-    This function inferences a superanimal model on a set of images and saves the
+    """This function inferences a superanimal model on a set of images and saves the
     results as labeled images.
 
     Args:
@@ -177,19 +178,16 @@ def superanimal_analyze_images(
             torchvision_detector_name = detector_name
         else:
             torchvision_detector_name = "fasterrcnn_mobilenet_v3_large_fpn"
-        COCO_PERSON = 1  # COCO class ID for person
         filtered_detector_config = {
             "torchvision_detector_name": torchvision_detector_name,
-            "category_id": COCO_PERSON,
+            "category_id": COCO_PERSON_CATEGORY_ID,
         }
 
     if customized_model_config is None:
         config = modelzoo.load_super_animal_config(
             super_animal=superanimal_name,
             model_name=model_name,
-            detector_name=(
-                detector_name if superanimal_name != "superanimal_humanbody" else None
-            ),
+            detector_name=(detector_name if superanimal_name != "superanimal_humanbody" else None),
         )
     elif isinstance(customized_model_config, (str, Path)):
         config = config_utils.read_config_as_dict(customized_model_config)
@@ -322,9 +320,7 @@ def analyze_images(
     snapshot = get_model_snapshots(snapshot_index, train_folder, pose_task)[0]
     detector_snapshot = None
     if detector_snapshot_index is not None:
-        detector_snapshot = get_model_snapshots(
-            detector_snapshot_index, train_folder, Task.DETECT
-        )[0]
+        detector_snapshot = get_model_snapshots(detector_snapshot_index, train_folder, Task.DETECT)[0]
 
     # Load the BU model for the conditions provider
     cond_provider = None
@@ -406,10 +402,7 @@ def analyze_images(
         bodyparts = model_cfg["metadata"]["bodyparts"]
         skeleton = None
         if plot_skeleton and len(cfg.get("skeleton", [])) > 0:
-            skeleton = [
-                (bodyparts.index(bpt_0), bodyparts.index(bpt_1))
-                for bpt_0, bpt_1 in cfg["skeleton"]
-            ]
+            skeleton = [(bodyparts.index(bpt_0), bodyparts.index(bpt_1)) for bpt_0, bpt_1 in cfg["skeleton"]]
 
         if pcutoff is None:
             pcutoff = cfg.get("pcutoff", 0.6)
@@ -444,7 +437,7 @@ def analyze_image_folder(
     filtered_detector_config: dict | None = None,
     cond_provider: CondFromModel | None = None,
 ) -> dict[str, dict[str, np.ndarray | np.ndarray]]:
-    """Runs pose inference on a folder of images and returns the predictions
+    """Runs pose inference on a folder of images and returns the predictions.
 
     Args:
         model_cfg: The model config (or its path) used to analyze the images.
@@ -476,14 +469,10 @@ def analyze_image_folder(
         model_cfg = config_utils.read_config_as_dict(model_cfg)
 
     pose_task = Task(model_cfg["method"])
-    if (
-        pose_task == Task.TOP_DOWN
-        and detector_path is None
-        and filtered_detector_config is None
-    ):
+    if pose_task == Task.TOP_DOWN and detector_path is None and filtered_detector_config is None:
         raise ValueError(
             "A detector path or filtered_detector_config must be specified for image analysis using top-down models"
-            f" Please specify the `detector_path` parameter or the `filtered_detector_config` parameter."
+            " Please specify the `detector_path` parameter or the `filtered_detector_config` parameter."
         )
 
     if max_individuals is None:
@@ -495,7 +484,7 @@ def analyze_image_folder(
     if pose_task == Task.COND_TOP_DOWN and cond_provider is None:
         raise ValueError(
             "A conditions provider must be specified for image analysis when using cond-top-down models"
-            f" Please specify the `cond_provider` parameter."
+            " Please specify the `cond_provider` parameter."
         )
 
     pose_runner = get_pose_inference_runner(
@@ -512,10 +501,7 @@ def analyze_image_folder(
 
     image_paths = parse_images_and_image_folders(images, image_suffixes)
     if not image_paths:
-        logging.info(
-            f"No images found searching {images} for extensions {image_suffixes}. "
-            "Skipping analysis."
-        )
+        logging.info(f"No images found searching {images} for extensions {image_suffixes}. Skipping analysis.")
         return {}
     pose_inputs = image_paths
 
@@ -548,7 +534,7 @@ def analyze_image_folder(
     if detector_runner is not None:
         detector_image_paths = tqdm(image_paths) if progress_bar else image_paths
         bbox_predictions = detector_runner.inference(images=detector_image_paths)
-        pose_inputs = list(zip(image_paths, bbox_predictions))
+        pose_inputs = list(zip(image_paths, bbox_predictions, strict=False))
 
     logging.info(f"Running pose estimation with {snapshot_path}")
 
@@ -558,8 +544,7 @@ def analyze_image_folder(
     predictions = pose_runner.inference(pose_inputs)
 
     return {
-        image_path: image_predictions
-        for image_path, image_predictions in zip(image_paths, predictions)
+        image_path: image_predictions for image_path, image_predictions in zip(image_paths, predictions, strict=False)
     }
 
 
@@ -574,9 +559,8 @@ def plot_images_coco(
     max_individuals: int | None = None,
     cond_provider: CondFromModel | None = None,
 ) -> list[dict]:
-    """
-    Runs pose inference on a folder of images from a COCO dataset, and plots all
-    predicted keypoints and bounding boxes
+    """Runs pose inference on a folder of images from a COCO dataset, and plots all
+    predicted keypoints and bounding boxes.
 
     Args:
         model_cfg: The model config (or its path) used to analyze the images.
@@ -596,7 +580,7 @@ def plot_images_coco(
     Raises:
         ValueError: if a top-down model configuration is given but detector_path is None
     """
-    with open(data_json_path, "r") as f:
+    with open(data_json_path) as f:
         obj = json.load(f)
 
     coco_images = obj["images"]
@@ -673,9 +657,7 @@ def plot_images_coco(
         for bbox in bboxes:
             # Draw bounding boxes around detected objects
             xmin, ymin, w, h = bbox
-            rect = plt.Rectangle(
-                (xmin, ymin), w, h, fill=False, edgecolor="blue", linewidth=2
-            )
+            rect = plt.Rectangle((xmin, ymin), w, h, fill=False, edgecolor="blue", linewidth=2)
 
         ax.add_patch(rect)
         image_name = image_path.split("/")[-1]

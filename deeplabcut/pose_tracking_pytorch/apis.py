@@ -9,11 +9,16 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
+from collections.abc import Sequence
 
+from deeplabcut.utils.deprecation import renamed_parameter
+
+
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def transformer_reID(
     config: str,
     videos: list[str],
-    videotype: str = "",
+    video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     track_method: str = "ellipse",
@@ -24,8 +29,7 @@ def transformer_reID(
     modelprefix: str = "",
     destfolder: str = None,
 ):
-    """
-    Enables tracking with transformer.
+    """Enables tracking with transformer.
 
     Substeps include:
         - Mines triplets from tracklets in videos (from another tracker)
@@ -45,11 +49,14 @@ def transformer_reID(
         A list of strings containing the full paths to videos for analysis or a path to
         the directory, where all the videos with same extension are stored.
 
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a
-        directory. Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg',
-        'mkv') are kept.
+    video_extensions : str | Sequence[str] | None, optional, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
 
     shuffle : int, optional
         which shuffle to use
@@ -87,10 +94,10 @@ def transformer_reID(
     >>>     track_method="transformer",
     >>> )
     --------
-
     """
-    import deeplabcut
     import os
+
+    import deeplabcut
     from deeplabcut.utils import auxiliaryfunctions
 
     # calling create_tracking_dataset, train_tracking_transformer, stitch_tracklets
@@ -108,7 +115,7 @@ def transformer_reID(
         config,
         videos,
         track_method,
-        videotype=videotype,
+        video_extensions=video_extensions,
         shuffle=shuffle,
         trainingsetindex=trainingsetindex,
         modelprefix=modelprefix,
@@ -131,7 +138,7 @@ def transformer_reID(
         config,
         DLCscorer,
         videos,
-        videotype=videotype,
+        video_extensions=video_extensions,
         train_frac=train_frac,
         modelprefix=modelprefix,
         train_epochs=train_epochs,
@@ -139,9 +146,7 @@ def transformer_reID(
         destfolder=destfolder,
     )
 
-    transformer_checkpoint = os.path.join(
-        snapshotfolder, f"dlc_transreid_{train_epochs}.pth"
-    )
+    transformer_checkpoint = os.path.join(snapshotfolder, f"dlc_transreid_{train_epochs}.pth")
 
     if not os.path.exists(transformer_checkpoint):
         raise FileNotFoundError(f"checkpoint {transformer_checkpoint} not found")
@@ -149,7 +154,7 @@ def transformer_reID(
     deeplabcut.stitch_tracklets(
         config,
         videos,
-        videotype=videotype,
+        video_extensions=video_extensions,
         shuffle=shuffle,
         trainingsetindex=trainingsetindex,
         track_method=track_method,

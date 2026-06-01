@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from functools import lru_cache
+from functools import cache
 
 import numpy as np
 from PIL import Image
@@ -32,7 +32,7 @@ def calc_bboxes_from_keypoints(data, slack=0, offset=0, clip=False):
     return bboxes
 
 
-@lru_cache(maxsize=None)
+@cache
 def read_image_shape_fast(path):
     # Blazing fast and does not load the image into memory
     with Image.open(path) as img:

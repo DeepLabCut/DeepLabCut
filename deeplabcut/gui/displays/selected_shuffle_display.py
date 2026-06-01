@@ -8,8 +8,10 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Module to display information about the selected shuffle in the GUI"""
+"""Module to display information about the selected shuffle in the GUI."""
+
 from __future__ import annotations
+
 from pathlib import Path
 
 import PySide6.QtCore as QtCore
@@ -20,7 +22,8 @@ from deeplabcut.utils import auxiliaryfunctions
 
 
 class SelectedShuffleDisplay(QtWidgets.QWidget):
-    """A widget displaying information about the selected shuffle"""
+    """A widget displaying information about the selected shuffle."""
+
     pose_cfg_signal = QtCore.Signal(dict)
 
     def __init__(self, root, row_margin: int = 25):
@@ -65,10 +68,8 @@ class SelectedShuffleDisplay(QtWidgets.QWidget):
 
         try:
             pose_cfg_path = Path(self.root.pose_cfg_path)
-        except ValueError as err:
-            self._set_text_error(
-                f"Failed to read shuffle {self._current_index} - check that it exists!"
-            )
+        except ValueError:
+            self._set_text_error(f"Failed to read shuffle {self._current_index} - check that it exists!")
             return
         except ModuleNotFoundError as err:
             # Loading a TF shuffle but TF is not installed
@@ -85,9 +86,7 @@ class SelectedShuffleDisplay(QtWidgets.QWidget):
             return
 
         if not pose_cfg_path.exists():
-            self._set_text_error(
-                f"The model configuration file {pose_cfg_path} was not created"
-            )
+            self._set_text_error(f"The model configuration file {pose_cfg_path} was not created")
             return
 
         self._read_pose_config(pose_cfg_path)
@@ -100,7 +99,7 @@ class SelectedShuffleDisplay(QtWidgets.QWidget):
 
         text = f"net type: {self._net_type}  |  engine: {engine_str}"
         if self._engine == Engine.PYTORCH and self._is_top_down:
-            text += f"  |  top-down"
+            text += "  |  top-down"
 
         style = f"margin: 0px 0px {self._row_margin}px 0px;"
         if self._engine != self.root.engine:
@@ -120,11 +119,7 @@ class SelectedShuffleDisplay(QtWidgets.QWidget):
     def _read_pose_config(self, pose_cfg_path: Path) -> None:
         pose_cfg = auxiliaryfunctions.read_plainconfig(str(pose_cfg_path))
 
-        self._engine = (
-            Engine.PYTORCH if "pytorch" in pose_cfg_path.stem.lower() else Engine.TF
-        )
+        self._engine = Engine.PYTORCH if "pytorch" in pose_cfg_path.stem.lower() else Engine.TF
         self._net_type = pose_cfg.get("net_type", "UNKNOWN")
-        self._is_top_down = (
-            self._engine == Engine.PYTORCH and pose_cfg.get("method").lower() == "td"
-        )
+        self._is_top_down = self._engine == Engine.PYTORCH and pose_cfg.get("method").lower() == "td"
         self.pose_cfg = pose_cfg

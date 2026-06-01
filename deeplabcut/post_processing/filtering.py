@@ -10,6 +10,7 @@
 #
 
 import argparse
+from collections.abc import Sequence
 from pathlib import Path
 
 import numpy as np
@@ -18,14 +19,14 @@ from scipy import signal
 from scipy.interpolate import CubicSpline
 
 from deeplabcut.refine_training_dataset.outlier_frames import FitSARIMAXModel
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 
 def columnwise_spline_interp(data, max_gap=0):
-    """
-    Perform cubic spline interpolation over the columns of *data*.
-    All gaps of size lower than or equal to *max_gap* are filled,
-    and data slightly smoothed.
+    """Perform cubic spline interpolation over the columns of *data*. All gaps of size
+    lower than or equal to *max_gap* are filled, and data slightly smoothed.
 
     Parameters
     ----------
@@ -46,9 +47,7 @@ def columnwise_spline_interp(data, max_gap=0):
     x = np.arange(nrows)
     for i in range(ncols):
         mask = valid[:, i]
-        if (
-            np.sum(mask) > 3
-        ):  # Make sure there are enough points to fit the cubic spline
+        if np.sum(mask) > 3:  # Make sure there are enough points to fit the cubic spline
             spl = CubicSpline(x[mask], temp[mask, i])
             y = spl(x)
             if max_gap > 0:
@@ -56,7 +55,7 @@ def columnwise_spline_interp(data, max_gap=0):
                 count = np.diff(inds)
                 inds = inds[:-1]
                 to_fill = np.ones_like(mask)
-                for ind, n, is_nan in zip(inds, count, ~mask[inds]):
+                for ind, n, is_nan in zip(inds, count, ~mask[inds], strict=False):
                     if is_nan and n > max_gap:
                         to_fill[ind : ind + n] = False
                 y[~to_fill] = np.nan
@@ -66,10 +65,11 @@ def columnwise_spline_interp(data, max_gap=0):
     return temp
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def filterpredictions(
     config,
     video,
-    videotype="",
+    video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     filtertype="median",
@@ -98,6 +98,15 @@ def filterpredictions(
     video : string
         Full path of the video to extract the frame from. Make sure that this video is
         already analyzed.
+
+    video_extensions : str | Sequence[str] | None, optional, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
 
     shuffle : int, optional, default=1
         The shuffle index of training dataset. The extracted frames will be stored in
@@ -216,12 +225,12 @@ def filterpredictions(
         modelprefix=modelprefix,
         **kwargs,
     )
-    Videos = auxiliaryfunctions.get_list_of_videos(video, videotype)
+    Videos = collect_video_paths(video, extensions=video_extensions)
 
     video_to_filtered_df = {}
 
     if not len(Videos):
-        print("No video(s) were found. Please check your paths and/or 'videotype'.")
+        print("No video(s) were found. Please check your paths and/or extensions filter.")
         if return_data:
             return video_to_filtered_df
 
@@ -229,13 +238,11 @@ def filterpredictions(
         if destfolder is None:
             destfolder = str(Path(video).parents[0])
 
-        print("Filtering with %s model %s" % (filtertype, video))
+        print(f"Filtering with {filtertype} model {video}")
         vname = Path(video).stem
 
         try:
-            df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(
-                destfolder, vname, DLCscorer, True, track_method
-            )
+            df, filepath, _, _ = auxiliaryfunctions.load_analyzed_data(destfolder, vname, DLCscorer, True, track_method)
             print(f"Data from {vname} were already filtered. Skipping...")
             video_to_filtered_df[video] = df
             # Data has been filtered so continue to the next video
@@ -259,12 +266,8 @@ def filterpredictions(
             placeholder = np.empty_like(temp)
             for i in range(temp.shape[1]):
                 x, y, p = temp[:, i].T
-                meanx, _ = FitSARIMAXModel(
-                    x, p, p_bound, alpha, ARdegree, MAdegree, False
-                )
-                meany, _ = FitSARIMAXModel(
-                    y, p, p_bound, alpha, ARdegree, MAdegree, False
-                )
+                meanx, _ = FitSARIMAXModel(x, p, p_bound, alpha, ARdegree, MAdegree, False)
+                meany, _ = FitSARIMAXModel(y, p, p_bound, alpha, ARdegree, MAdegree, False)
                 meanx[0] = x[0]
                 meany[0] = y[0]
                 placeholder[:, i] = np.c_[meanx, meany, p]
@@ -276,9 +279,7 @@ def filterpredictions(
         elif filtertype == "median":
             data = df.copy()
             mask = data.columns.get_level_values("coords") != "likelihood"
-            data.loc[:, mask] = df.loc[:, mask].apply(
-                signal.medfilt, args=(windowlength,), axis=0
-            )
+            data.loc[:, mask] = df.loc[:, mask].apply(signal.medfilt, args=(windowlength,), axis=0)
         elif filtertype == "spline":
             data = df.copy()
             mask_data = data.columns.get_level_values("coords").isin(("x", "y"))

@@ -10,12 +10,12 @@
 #
 """Inference configuration classes for DeepLabCut pose estimation models."""
 
-from typing import Literal
-from pydantic.dataclasses import dataclass
 from dataclasses import field
-from typing import Any
+from typing import Any, Literal
 
-from deeplabcut.core.config.config_mixin import ConfigMixin
+from pydantic.dataclasses import dataclass
+
+from deeplabcut.core.config.mixins import ConfigMixin
 
 
 @dataclass

@@ -1,0 +1,59 @@
+name: Docs & notebooks freshness and formatting checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  staleness:
+    name: Docs and notebooks scan (read-only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository (full history for git dates)
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install staleness tool dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "pydantic>=2,<3" pyyaml "nbformat>=5"
+
+      - name: Run staleness report (read-only)
+        run: |
+          python tools/docs_and_notebooks_check.py \
+          --config tools/docs_and_notebooks_report_config.yml \
+          --out-dir tmp/docs_nb_checks \
+          report
+
+
+      # Optional: run check mode (will fail only once you populate allowlists in config)
+      - name: Run staleness policy check (optional gate)
+        continue-on-error: true
+        run: |
+          python tools/docs_and_notebooks_check.py \
+          --config tools/docs_and_notebooks_report_config.yml \
+          --out-dir tmp/docs_nb_checks \
+          --no-step-summary \
+          check
+
+      - name: Upload staleness artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: staleness-report
+          path: |
+            tmp/docs_nb_checks/*.json
+            tmp/docs_nb_checks/*.md
+          if-no-files-found: error

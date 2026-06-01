@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests that mAP computation is correct"""
+"""Tests that mAP computation is correct."""
 
 from __future__ import annotations
 
@@ -198,18 +198,14 @@ def test_random_map_computation(num_images, num_joints, max_error):
         # predictions that are ground truth + error
         matched = min(gt_idv, pred_idv)
         if matched > 0:
-            error = rng.integers(
-                low=-max_error, high=max_error, size=(matched, num_joints, 2)
-            )
+            error = rng.integers(low=-max_error, high=max_error, size=(matched, num_joints, 2))
             matched_pred = gt_kpts[:matched, :, :2] + error
             pred_kpts[:matched, :, :2] = np.clip(matched_pred, 0, 1024)
 
         # random predictions
         unmatched = pred_idv - matched
         if unmatched > 0:
-            pred_kpts[matched:, :, :2] = rng.integers(
-                low=0, high=1024, size=(unmatched, num_joints, 2)
-            )
+            pred_kpts[matched:, :, :2] = rng.integers(low=0, high=1024, size=(unmatched, num_joints, 2))
 
         pred[f"img_{i}"] = pred_kpts
 
@@ -240,18 +236,14 @@ def test_random_map_computation_with_missing_kpts(num_images, num_joints, max_er
         # predictions that are ground truth + error
         matched = min(gt_idv, pred_idv)
         if matched > 0:
-            error = rng.integers(
-                low=-max_error, high=max_error, size=(matched, num_joints, 2)
-            )
+            error = rng.integers(low=-max_error, high=max_error, size=(matched, num_joints, 2))
             matched_pred = gt_kpts[:matched, :, :2] + error
             pred_kpts[:matched, :, :2] = np.clip(matched_pred, 0, 1024)
 
         # random predictions
         unmatched = pred_idv - matched
         if unmatched > 0:
-            pred_kpts[matched:, :, :2] = rng.integers(
-                low=0, high=1024, size=(unmatched, num_joints, 2)
-            )
+            pred_kpts[matched:, :, :2] = rng.integers(low=0, high=1024, size=(unmatched, num_joints, 2))
 
         pred[f"img_{i}"] = pred_kpts
 
@@ -275,7 +267,7 @@ def _evaluate(gt: dict[str, np.ndarray], pred: dict[str, np.ndarray]):
     coco_pred = _to_coco_predictions(coco_gt, pred, bbox_margin=0)
     coco_oks = eval_coco(coco_gt, coco_pred, num_joints)
     print(20 * "-")
-    print(f"dlc mAP:")
+    print("dlc mAP:")
     for k, v in oks.items():
         print(k)
         print(v)
@@ -299,7 +291,7 @@ def _to_coco_ground_truth(
         images.append(dict(id=id_, file_name=path, width=w, height=h))
 
         assert image_keypoints.shape[1] == num_joints
-        for idv_id, kpts in enumerate(image_keypoints):
+        for _idv_id, kpts in enumerate(image_keypoints):
             visible = kpts[:, 2] > 0
             num_keypoints = visible.sum()
 
@@ -349,9 +341,7 @@ def _to_coco_predictions(
         assert image_keypoints.shape[1] == num_joints
 
         img_id = path_to_id[path]
-        valid_predictions = [
-            kpt for kpt in image_keypoints if np.any(np.all(~np.isnan(kpt), axis=-1))
-        ]
+        valid_predictions = [kpt for kpt in image_keypoints if np.any(np.all(~np.isnan(kpt), axis=-1))]
         for kpts in valid_predictions:
             score = float(np.nanmean(kpts[:, 2]).item())
             kpts = kpts.copy()
@@ -405,5 +395,5 @@ def eval_coco(
         coco_eval.summarize()
         return float(coco_eval.stats[0])
 
-    except ModuleNotFoundError as err:
-        print(f"pycocotools is not installed")
+    except ModuleNotFoundError:
+        print("pycocotools is not installed")

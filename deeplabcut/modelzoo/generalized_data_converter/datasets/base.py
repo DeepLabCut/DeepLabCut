@@ -23,10 +23,10 @@ from deeplabcut.modelzoo.generalized_data_converter.datasets.materialize import 
 
 
 def raw_2_imagename_with_id(image):
-    """
-    raw image data has filename and id.
-    we modify the imagename such that itis composed of
-    both original imagename and image id
+    """Raw image data has filename and id.
+
+    we modify the imagename such that itis composed of both original imagename and image
+    id
     """
 
     file_name = image["file_name"]
@@ -37,9 +37,7 @@ def raw_2_imagename_with_id(image):
 
 
 def raw_2_imagename(image):
-    """
-    Only getting the imagename part from the image object
-    """
+    """Only getting the imagename part from the image object."""
 
     file_name = image["file_name"]
     image_name = file_name.split(os.sep)[-1]
@@ -47,9 +45,10 @@ def raw_2_imagename(image):
 
 
 class BasePoseDataset:
-    """
-    Dual representation of generic and raw data. For classes that inherits this class,
-    the raw data is kept but generic data is populated so you have dual representation.
+    """Dual representation of generic and raw data.
+
+    For classes that inherits this class, the raw data is kept but generic data is
+    populated so you have dual representation.
     """
 
     def __init__(self):
@@ -73,9 +72,7 @@ class BasePoseDataset:
     def _build_maps(self):
         self.datasetname2imageids[self.meta["dataset_name"]] = set()
 
-        total_annotations = (
-            self.generic_train_annotations + self.generic_test_annotations
-        )
+        total_annotations = self.generic_train_annotations + self.generic_test_annotations
         for anno in total_annotations:
             image_id = anno["image_id"]
             if image_id not in self.imageid2anno:
@@ -107,7 +104,6 @@ class BasePoseDataset:
         for img in self.generic_train_images + self.generic_test_images:
             print(img["file_name"])
             if pattern in img["file_name"]:
-
                 image_id = img["id"]
                 keep_ids.append(image_id)
 
@@ -139,9 +135,9 @@ class BasePoseDataset:
         self.generic_test_annotations = keep_test_annotations
 
     def summary(self):
-        print(f'Summary of dataset {self.meta["dataset_name"]}')
+        print(f"Summary of dataset {self.meta['dataset_name']}")
         print("-------------")
-        print(f'max num individuals  is {self.meta["max_individuals"]}')
+        print(f"max num individuals  is {self.meta['max_individuals']}")
         print(f"total keypoints : {len(self.meta['categories']['keypoints'])}")
         print(f"total train images : {len(self.generic_train_images)}")
         print(f"total test images : {len(self.generic_test_images)}")
@@ -178,11 +174,9 @@ class BasePoseDataset:
         )
 
     def whether_anno_image_match(self, images, annotations):
-        """
-        Every image id should be annotated at least once
-        There should not be any image that is not being annotated
-        There should not be any annotation for beyond the set of given images
-        """
+        """Every image id should be annotated at least once There should not be any
+        image that is not being annotated There should not be any annotation for beyond
+        the set of given images."""
 
         image_ids = set([image["id"] for image in images])
 
@@ -193,7 +187,7 @@ class BasePoseDataset:
             print("len(images-annotatinos)", len(image_ids - annotation_image_ids))
             print("annotations-images", annotation_image_ids - image_ids)
             print("len(annotations-images)", len(annotation_image_ids - image_ids))
-            warnings.warn("annotation and image ids do not match")
+            warnings.warn("annotation and image ids do not match", stacklevel=2)
 
     def get_keypoints(self):
         # TODO make sure it's always one element in a list
@@ -221,7 +215,7 @@ class BasePoseDataset:
         for anno in annotations:
             try:
                 kpts = anno["keypoints"]
-            except:
+            except Exception:
                 print(anno)
 
             new_kpts = np.zeros(len(master_keypoints) * 3)
@@ -235,9 +229,7 @@ class BasePoseDataset:
 
                 src_kpt_name = master2src[master_kpt_name]
                 src_kpt_id = kpt2index[src_kpt_name]
-                new_kpts[master_kpt_id * 3 : master_kpt_id * 3 + 3] = kpts[
-                    src_kpt_id * 3 : src_kpt_id * 3 + 3
-                ]
+                new_kpts[master_kpt_id * 3 : master_kpt_id * 3 + 3] = kpts[src_kpt_id * 3 : src_kpt_id * 3 + 3]
 
             # skipping empty frames after conversion
             new_anno = copy.deepcopy(anno)
@@ -255,9 +247,7 @@ class BasePoseDataset:
         """
         from .utils import calc_bboxes_from_keypoints
 
-        for annotation in (
-            self.generic_train_annotations + self.generic_test_annotations
-        ):
+        for annotation in self.generic_train_annotations + self.generic_test_annotations:
             keypoints = annotation["keypoints"]
             bbox_margin = 20
 
@@ -288,25 +278,17 @@ class BasePoseDataset:
                 annotation["area"] = area
 
     def project_with_conversion_table(self, table_path="", table_dict=None):
-        """
-        Replace the generic annotations with those that are in superset keypoint space
-
-        """
-        print(f'Converting {self.meta["dataset_name"]}')
+        """Replace the generic annotations with those that are in superset keypoint
+        space."""
+        print(f"Converting {self.meta['dataset_name']}")
 
         keypoints = self.get_keypoints()
 
-        self.conversion_table = get_conversion_table(
-            keypoints=keypoints, table_path=table_path, table_dict=table_dict
-        )
+        self.conversion_table = get_conversion_table(keypoints=keypoints, table_path=table_path, table_dict=table_dict)
 
-        self.generic_train_annotations = self._proj(
-            self.generic_train_annotations, self.conversion_table
-        )
+        self.generic_train_annotations = self._proj(self.generic_train_annotations, self.conversion_table)
 
-        self.generic_test_annotations = self._proj(
-            self.generic_test_annotations, self.conversion_table
-        )
+        self.generic_test_annotations = self._proj(self.generic_test_annotations, self.conversion_table)
 
         # all category id fixed to 1. So that it does not conflict with the background
         # category id

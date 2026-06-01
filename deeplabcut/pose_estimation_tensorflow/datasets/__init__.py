@@ -11,12 +11,11 @@
 
 from .factory import PoseDatasetFactory
 from .pose_deterministic import DeterministicPoseDataset
-from .pose_scalecrop import ScalecropPoseDataset
 from .pose_imgaug import ImgaugPoseDataset
-from .pose_tensorpack import TensorpackPoseDataset
 from .pose_multianimal_imgaug import MAImgaugPoseDataset
+from .pose_scalecrop import ScalecropPoseDataset
+from .pose_tensorpack import TensorpackPoseDataset
 from .utils import Batch
-
 
 __all__ = [
     "PoseDatasetFactory",

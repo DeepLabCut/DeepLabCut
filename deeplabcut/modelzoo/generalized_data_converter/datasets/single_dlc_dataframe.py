@@ -26,27 +26,27 @@ from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, conversionc
 
 
 def merge_annotateddatasets(cfg):
-    """
-    Merges all the h5 files for all labeled-datasets (from individual videos).
+    """Merges all the h5 files for all labeled-datasets (from individual videos).
 
     This is a bit of a mess because of cross platform compatibility.
 
-    Within platform comp. is straightforward. But if someone labels on windows and wants to train on a unix cluster or colab...
+    Within platform comp. is straightforward. But if someone labels on windows and wants to train on a unix cluster or
+    colab...
     """
     AnnotationData = []
     data_path = Path(os.path.join(cfg["project_path"], "labeled-data"))
     videos = cfg["video_sets"].keys()
     video_filenames = parse_video_filenames(videos)
     for filename in video_filenames:
-        file_path = os.path.join(
-            data_path / filename, f'CollectedData_{cfg["scorer"]}.h5'
-        )
+        file_path = os.path.join(data_path / filename, f"CollectedData_{cfg['scorer']}.h5")
         try:
             data = pd.read_hdf(file_path)
             conversioncode.guarantee_multiindex_rows(data)
             if data.columns.levels[0][0] != cfg["scorer"]:
                 print(
-                    f"{file_path} labeled by a different scorer. This data will not be utilized in training dataset creation. If you need to merge datasets across scorers, see https://github.com/DeepLabCut/DeepLabCut/wiki/Using-labeled-data-in-DeepLabCut-that-was-annotated-elsewhere-(or-merge-across-labelers)"
+                    f"{file_path} labeled by a different scorer. This data will not be utilized in training dataset"
+                    f"creation. If you need to merge datasets across scorers, see"
+                    f"https://github.com/DeepLabCut/DeepLabCut/wiki/Using-labeled-data-in-DeepLabCut-that-was-annotated-elsewhere-(or-merge-across-labelers)"
                 )
                 continue
             AnnotationData.append(data)
@@ -55,7 +55,8 @@ def merge_annotateddatasets(cfg):
 
     if not len(AnnotationData):
         print(
-            "Annotation data was not found by splitting video paths (from config['video_sets']). An alternative route is taken..."
+            "Annotation data was not found by splitting video paths (from config['video_sets']). An alternative route"
+            "is taken..."
         )
         AnnotationData = conversioncode.merge_windowsannotationdataONlinuxsystem(cfg)
         if not len(AnnotationData):
@@ -75,19 +76,16 @@ def merge_annotateddatasets(cfg):
         bodyparts = multianimalbodyparts + uniquebodyparts
     else:
         bodyparts = cfg["bodyparts"]
-    AnnotationData = AnnotationData.reindex(
-        bodyparts, axis=1, level=AnnotationData.columns.names.index("bodyparts")
-    )
+    AnnotationData = AnnotationData.reindex(bodyparts, axis=1, level=AnnotationData.columns.names.index("bodyparts"))
 
     return AnnotationData
 
 
 class SingleDLCDataFrame(BasePoseDataset):
-
     def __init__(self, proj_root, dataset_name):
-        super(SingleDLCDataFrame, self).__init__()
+        super().__init__()
         self.meta["max_individuals"] = 1
-        assert proj_root != None and dataset_name != None
+        assert proj_root is not None and dataset_name is not None
         self.proj_root = proj_root
         self.dataset_name = dataset_name
         self.meta["dataset_name"] = dataset_name
@@ -134,15 +132,11 @@ class SingleDLCDataFrame(BasePoseDataset):
 
         print(f"Before checking trainset {self.meta['dataset_name']}")
 
-        self.whether_anno_image_match(
-            self.generic_train_images, self.generic_train_annotations
-        )
+        self.whether_anno_image_match(self.generic_train_images, self.generic_train_annotations)
 
         print(f"Before checking testset {self.meta['dataset_name']}")
 
-        self.whether_anno_image_match(
-            self.generic_test_images, self.generic_test_annotations
-        )
+        self.whether_anno_image_match(self.generic_test_images, self.generic_test_annotations)
 
     def _df2generic(self, df, image_id_offset=0):
 
@@ -215,7 +209,6 @@ class SingleDLCDataFrame(BasePoseDataset):
                 "iscrowd": 0,
             }
             if np.sum(keypoints) != 0:
-
                 coco_annotations.append(annotation)
 
             # I think width and height are important

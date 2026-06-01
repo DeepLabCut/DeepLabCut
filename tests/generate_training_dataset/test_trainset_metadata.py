@@ -8,14 +8,18 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Tests for deeplabcut/generate_training_dataset/metadata.py"""
+"""Tests for deeplabcut/generate_training_dataset/metadata.py."""
+
 from __future__ import annotations
+
+import logging
 import pickle
+from unittest.mock import MagicMock, patch
 
 import pytest
 
-from deeplabcut.core.config.utils import get_yaml_loader, get_yaml_dumper
 import deeplabcut.generate_training_dataset.metadata as metadata
+from deeplabcut.core.config.utils import get_yaml_dumper, get_yaml_loader
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
 
@@ -64,7 +68,7 @@ SHUFFLES = {
 )
 @pytest.mark.parametrize("load_splits", [True, False])
 def test_load_metadata(tmpdir, data: dict, load_splits: bool):
-    """Tests that loading the metadata from files doesn't fail"""
+    """Tests that loading the metadata from files doesn't fail."""
     # write data to tmp file
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
     with open(meta_path, "w") as f:
@@ -76,16 +80,12 @@ def test_load_metadata(tmpdir, data: dict, load_splits: bool):
     print(data["splits"])
     print()
 
-    for name, s in data["shuffles"].items():
+    for _name, s in data["shuffles"].items():
         split = data["splits"][s["split"]]
         train, test = split["train"], split["test"]
-        _create_doc_data(
-            cfg, trainset_dir, s["train_fraction"], s["index"], train, test
-        )
+        _create_doc_data(cfg, trainset_dir, s["train_fraction"], s["index"], train, test)
 
-    trainset_meta = metadata.TrainingDatasetMetadata.load(
-        str(cfg_path), load_splits=load_splits
-    )
+    trainset_meta = metadata.TrainingDatasetMetadata.load(str(cfg_path), load_splits=load_splits)
     for s in trainset_meta.shuffles:
         print(s)
 
@@ -107,95 +107,87 @@ def test_load_metadata(tmpdir, data: dict, load_splits: bool):
             assert s_with_split.split.test_indices == tuple(split_idx["test"])
 
 
-@pytest.mark.parametrize("data", [
-    {
-        "task": "ch",
-        "date": "Aug1",
-        "shuffles": (SHUFFLES[1], ),
-        "expected": {
-            "shuffles": {
-                SHUFFLES[1].name: {
-                    "index": 1, "train_fraction": 0.5, "split": 1, "engine": "pytorch"
-                }
+@pytest.mark.parametrize(
+    "data",
+    [
+        {
+            "task": "ch",
+            "date": "Aug1",
+            "shuffles": (SHUFFLES[1],),
+            "expected": {
+                "shuffles": {SHUFFLES[1].name: {"index": 1, "train_fraction": 0.5, "split": 1, "engine": "pytorch"}},
             },
-        }
-    },
-    {
-        "task": "t",
-        "date": "Jan1",
-        "shuffles": (SHUFFLES[1], SHUFFLES[3]),
-        "expected": {
-            "shuffles": {
-                SHUFFLES[1].name: {
-                    "index": 1, "train_fraction": 0.5, "split": 1, "engine": "pytorch"
-                },
-                SHUFFLES[3].name: {
-                    "index": 3,
-                    "train_fraction": 0.5,
-                    "split": 1,
-                    "engine": "tensorflow",
-                },
-            },
-        }
-    },
-    {
-        "task": "t",
-        "date": "Jan1",
-        "shuffles": (SHUFFLES[1], SHUFFLES[2]),
-        "expected": {
-            "shuffles": {
-                SHUFFLES[1].name: {
-                    "index": 1, "train_fraction": 0.5, "split": 1, "engine": "pytorch"
-                },
-                SHUFFLES[2].name: {
-                    "index": 2, "train_fraction": 0.5, "split": 2, "engine": "pytorch"
+        },
+        {
+            "task": "t",
+            "date": "Jan1",
+            "shuffles": (SHUFFLES[1], SHUFFLES[3]),
+            "expected": {
+                "shuffles": {
+                    SHUFFLES[1].name: {"index": 1, "train_fraction": 0.5, "split": 1, "engine": "pytorch"},
+                    SHUFFLES[3].name: {
+                        "index": 3,
+                        "train_fraction": 0.5,
+                        "split": 1,
+                        "engine": "tensorflow",
+                    },
                 },
             },
         },
-    },
-    {
-        "shuffles": (SHUFFLES[1], SHUFFLES[2], SHUFFLES[3]),
-        "expected": {
-            "shuffles": {
-                SHUFFLES[1].name: {
-                    "index": 1, "train_fraction": 0.5, "split": 1, "engine": "pytorch"
-                },
-                SHUFFLES[2].name: {
-                    "index": 2, "train_fraction": 0.5, "split": 2, "engine": "pytorch"
-                },
-                SHUFFLES[3].name: {
-                    "index": 3,
-                    "train_fraction": 0.5,
-                    "split": 1,
-                    "engine": "tensorflow",
+        {
+            "task": "t",
+            "date": "Jan1",
+            "shuffles": (SHUFFLES[1], SHUFFLES[2]),
+            "expected": {
+                "shuffles": {
+                    SHUFFLES[1].name: {"index": 1, "train_fraction": 0.5, "split": 1, "engine": "pytorch"},
+                    SHUFFLES[2].name: {"index": 2, "train_fraction": 0.5, "split": 2, "engine": "pytorch"},
                 },
             },
         },
-    },
-])
+        {
+            "shuffles": (SHUFFLES[1], SHUFFLES[2], SHUFFLES[3]),
+            "expected": {
+                "shuffles": {
+                    SHUFFLES[1].name: {"index": 1, "train_fraction": 0.5, "split": 1, "engine": "pytorch"},
+                    SHUFFLES[2].name: {"index": 2, "train_fraction": 0.5, "split": 2, "engine": "pytorch"},
+                    SHUFFLES[3].name: {
+                        "index": 3,
+                        "train_fraction": 0.5,
+                        "split": 1,
+                        "engine": "tensorflow",
+                    },
+                },
+            },
+        },
+    ],
+)
 def test_save_metadata_simple(tmpdir, data):
-    """Tests that saving the metadata creates the expected file"""
+    """Tests that saving the metadata creates the expected file."""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
     trainset_meta = metadata.TrainingDatasetMetadata(cfg, data["shuffles"])
     print(trainset_meta)
 
     trainset_meta.save()
-    with open(meta_path, "r") as f:
+    with open(meta_path) as f:
         meta = get_yaml_loader().load(f)
     print(data)
     print(meta)
     assert data["expected"] == meta
 
 
-@pytest.mark.parametrize("shuffles", [
-    [SHUFFLES[i] for i in indices]
-    for indices in [[1], [1, 2], [1, 2, 3], [1, 2, 4], [1, 3, 4], [1, 2, 3, 4]]
-])
+@pytest.mark.parametrize(
+    "shuffles",
+    [[SHUFFLES[i] for i in indices] for indices in [[1], [1, 2], [1, 2, 3], [1, 2, 4], [1, 3, 4], [1, 2, 3, 4]]],
+)
 def test_save_metadata(tmpdir, shuffles):
-    """Tests that saving the metadata and reloading it leads to the same instance"""
+    """Tests that saving the metadata and reloading it leads to the same instance."""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
     for s in shuffles:
-        train, test = s.split.train_indices, s.split.test_indices,
+        train, test = (
+            s.split.train_indices,
+            s.split.test_indices,
+        )
         _create_doc_data(cfg, trainset_dir, s.train_fraction, s.index, train, test)
 
     trainset_meta = metadata.TrainingDatasetMetadata(cfg, tuple(shuffles))
@@ -218,9 +210,9 @@ def test_save_metadata(tmpdir, shuffles):
 
 
 def test_add_shuffle(tmpdir):
-    """Tests that a shuffle can be added correctlt"""
+    """Tests that a shuffle can be added correctlt."""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
-    trainset_meta = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1], ))
+    trainset_meta = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1],))
     trainset_meta_added = trainset_meta.add(SHUFFLES[2])
     assert len(trainset_meta.shuffles) == 1
     assert len(trainset_meta_added.shuffles) == 2
@@ -228,19 +220,19 @@ def test_add_shuffle(tmpdir):
 
 
 def test_add_shuffle_twice(tmpdir):
-    """Tests that a shuffle can be added correctlt"""
+    """Tests that a shuffle can be added correctlt."""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
-    trainset_meta = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1], ))
+    trainset_meta = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1],))
     trainset_meta_added = trainset_meta.add(SHUFFLES[2])
     trainset_meta_added_2 = trainset_meta.add(SHUFFLES[2])
     assert len(trainset_meta.shuffles) == 1
-    assert trainset_meta.shuffles == (SHUFFLES[1], )
+    assert trainset_meta.shuffles == (SHUFFLES[1],)
     assert len(trainset_meta_added.shuffles) == len(trainset_meta_added_2.shuffles)
     assert trainset_meta_added.shuffles == trainset_meta_added_2.shuffles
 
 
 def test_add_shuffle_sorts_to_correct_order(tmpdir):
-    """Tests that a shuffle can be added correctlt"""
+    """Tests that a shuffle can be added correctlt."""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
     trainset_meta = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1], SHUFFLES[3]))
     trainset_meta_added = trainset_meta.add(SHUFFLES[2])
@@ -249,31 +241,23 @@ def test_add_shuffle_sorts_to_correct_order(tmpdir):
     assert trainset_meta_added.shuffles == (SHUFFLES[1], SHUFFLES[2], SHUFFLES[3])
 
 
-@pytest.mark.parametrize("shuffles", [
-    indices for indices in [[1], [1, 2], [1, 2, 3], [1, 2, 4], [1, 3, 4], [1, 2, 3, 4]]
-])
+@pytest.mark.parametrize(
+    "shuffles", [indices for indices in [[1], [1, 2], [1, 2, 3], [1, 2, 4], [1, 3, 4], [1, 2, 3, 4]]]
+)
 @pytest.mark.parametrize("shuffle_to_add", [1, 2, 3, 4])
-def test_add_shuffle(tmpdir, shuffles, shuffle_to_add):
-    """Tests """
+def test_add_shuffle_indices(tmpdir, shuffles, shuffle_to_add):
+    """Tests."""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
-    trainset_meta = metadata.TrainingDatasetMetadata(
-        cfg, tuple([SHUFFLES[i] for i in shuffles])
-    )
+    trainset_meta = metadata.TrainingDatasetMetadata(cfg, tuple([SHUFFLES[i] for i in shuffles]))
     if shuffle_to_add in shuffles:
         with pytest.raises(RuntimeError):
-            trainset_meta_added = trainset_meta.add(
-                SHUFFLES[shuffle_to_add], overwrite=False
-            )
+            trainset_meta_added = trainset_meta.add(SHUFFLES[shuffle_to_add], overwrite=False)
 
-        trainset_meta_added = trainset_meta.add(
-            SHUFFLES[shuffle_to_add], overwrite=True
-        )
+        trainset_meta_added = trainset_meta.add(SHUFFLES[shuffle_to_add], overwrite=True)
         assert len(trainset_meta_added.shuffles) == len(shuffles)
         assert [s.index for s in trainset_meta_added.shuffles] == shuffles
     else:
-        trainset_meta_added = trainset_meta.add(
-            SHUFFLES[shuffle_to_add], overwrite=False
-        )
+        trainset_meta_added = trainset_meta.add(SHUFFLES[shuffle_to_add], overwrite=False)
         indices = [s.index for s in trainset_meta_added.shuffles]
         assert len(trainset_meta_added.shuffles) == len(shuffles) + 1
         assert indices == list(sorted(shuffles + [shuffle_to_add]))
@@ -291,7 +275,7 @@ def test_add_shuffle(tmpdir, shuffles, shuffle_to_add):
     ],
 )
 def test_data_split_equality(split1, split2, equal):
-    """Tests that equality functions as expected for DataSplits"""
+    """Tests that equality functions as expected for DataSplits."""
     print(split1)
     print(split2)
     print(equal)
@@ -301,65 +285,256 @@ def test_data_split_equality(split1, split2, equal):
 @pytest.mark.parametrize("split_idx", [1, 4, 20, 1000])
 @pytest.mark.parametrize("indices", [(2, 1), (10, 1), (1, 21, 20), (1, 2, 4, 3)])
 @pytest.mark.parametrize("sorted_indices", [(1, 2), (10, 12), (3, 4), (1, 1000, 1200)])
-def test_data_split_requires_sorted(
-    split_idx: int, indices: tuple[int], sorted_indices: tuple[int]
-):
-    """Tests that equality functions as expected for DataSplits"""
+def test_data_split_requires_sorted(split_idx: int, indices: tuple[int], sorted_indices: tuple[int]):
+    """Tests that equality functions as expected for DataSplits."""
     with pytest.raises(RuntimeError):
-        metadata.DataSplit(
-            train_indices=tuple(indices), test_indices=tuple(sorted_indices)
-        )
+        metadata.DataSplit(train_indices=tuple(indices), test_indices=tuple(sorted_indices))
 
     with pytest.raises(RuntimeError):
-        metadata.DataSplit(
-            train_indices=tuple(sorted_indices), test_indices=tuple(indices)
-        )
+        metadata.DataSplit(train_indices=tuple(sorted_indices), test_indices=tuple(indices))
 
     with pytest.raises(RuntimeError):
-        metadata.DataSplit(
-            train_indices=tuple(indices), test_indices=tuple(indices)
-        )
+        metadata.DataSplit(train_indices=tuple(indices), test_indices=tuple(indices))
 
-    metadata.DataSplit(
-        train_indices=tuple(sorted_indices), test_indices=tuple(sorted_indices)
-    )
+    metadata.DataSplit(train_indices=tuple(sorted_indices), test_indices=tuple(sorted_indices))
 
 
-@pytest.mark.parametrize("shuffles", [
-    (
-        {"idx": 3, "train": [1], "test": [2], "train_fraction": 0.5},
-    ),
-    (
-        {"idx": 1, "train": [1], "test": [2], "train_fraction": 0.5},
-        {"idx": 5, "train": [1, 2, 3], "test": [4, 5], "train_fraction": 0.6},
-        {"idx": 4, "train": [1, 3], "test": [2], "train_fraction": 0.66},
-    ),
-])
+@pytest.mark.parametrize(
+    "shuffles",
+    [
+        ({"idx": 3, "train": [1], "test": [2], "train_fraction": 0.5},),
+        (
+            {"idx": 1, "train": [1], "test": [2], "train_fraction": 0.5},
+            {"idx": 5, "train": [1, 2, 3], "test": [4, 5], "train_fraction": 0.6},
+            {"idx": 4, "train": [1, 3], "test": [2], "train_fraction": 0.66},
+        ),
+    ],
+)
 def test_create_metadata_from_shuffles(tmpdir, shuffles):
-    """Tests that equality functions as expected for DataSplits"""
+    """Tests that equality functions as expected for DataSplits."""
     cfg, cfg_path, trainset_dir, meta_path = _create_project_with_config(tmpdir)
     print(trainset_dir)
     for s in shuffles:
         doc = f"Documentation_data-ex_{s['train_fraction']}shuffle{s['idx']}.pickle"
         doc_path = trainset_dir.join(doc)
         with open(doc_path, "wb") as f:
-            pickle.dump(
-                [[], s["train"], s["test"], s['train_fraction']], f,
-                pickle.HIGHEST_PROTOCOL
-            )
+            pickle.dump([[], s["train"], s["test"], s["train_fraction"]], f, pickle.HIGHEST_PROTOCOL)
 
     trainset_metadata = metadata.TrainingDatasetMetadata.create(cfg)
     print()
     print(trainset_metadata)
     assert len(trainset_metadata.shuffles) == len(shuffles)
 
-    for shuffle_data, shuffle in zip(shuffles, trainset_metadata.shuffles):
+    for shuffle_data, shuffle in zip(shuffles, trainset_metadata.shuffles, strict=False):
         print(shuffle.index)
         assert shuffle_data["idx"] == shuffle.index
         assert shuffle_data["train_fraction"] == shuffle.train_fraction
         assert tuple(shuffle_data["train"]) == shuffle.split.train_indices
         assert tuple(shuffle_data["test"]) == shuffle.split.test_indices
     print()
+
+
+def test_get_shuffle_engine_warns_when_metadata_get_fails_then_uses_model_folder(caplog):
+    """ValueError from metadata lookup is logged; engine is inferred from model folders."""
+    caplog.set_level(logging.WARNING)
+
+    cfg = {
+        "project_path": "/tmp/dlc-nonexistent-project-path",
+        "TrainingFraction": [0.95],
+        "Task": "t",
+        "date": "d",
+        "scorer": "s",
+        "iteration": 0,
+    }
+
+    meta_path_mock = MagicMock()
+    meta_path_mock.exists.return_value = True
+
+    training_meta_mock = MagicMock()
+    training_meta_mock.get.side_effect = ValueError("no shuffle for this index")
+
+    with (
+        patch.object(metadata.TrainingDatasetMetadata, "path", return_value=meta_path_mock),
+        patch.object(metadata.TrainingDatasetMetadata, "load", return_value=training_meta_mock),
+        patch.object(metadata, "find_engines_from_model_folders", return_value={Engine.PYTORCH}),
+    ):
+        engine = metadata.get_shuffle_engine(cfg, trainingsetindex=0, shuffle=1)
+
+    assert engine == Engine.PYTORCH
+    assert "no shuffle for this index" in caplog.text
+    assert "Falling back to detecting the engine from model folders" in caplog.text
+
+
+# ---------------------------------------------------------------------------
+# TrainingDatasetMetadata.__post_init__
+# ---------------------------------------------------------------------------
+
+
+def test_training_dataset_metadata_requires_sorted_shuffles(tmpdir):
+    """Constructor raises RuntimeError when shuffles are not sorted."""
+    cfg, *_ = _create_project_with_config(tmpdir)
+    with pytest.raises(RuntimeError):
+        metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[2], SHUFFLES[1]))
+
+
+# ---------------------------------------------------------------------------
+# TrainingDatasetMetadata.get
+# ---------------------------------------------------------------------------
+
+
+def test_get_returns_matching_shuffle(tmpdir):
+    """get() returns the correct ShuffleMetadata."""
+    cfg, *_ = _create_project_with_config(tmpdir)
+    cfg["TrainingFraction"] = [0.5]
+    trainset_meta = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1],))
+
+    result = trainset_meta.get(trainset_index=0, index=1)
+    assert result == SHUFFLES[1]
+
+
+def test_get_raises_when_trainset_index_out_of_bounds(tmpdir):
+    """get() raises ValueError when trainset_index >= len(TrainingFraction)."""
+    cfg, *_ = _create_project_with_config(tmpdir)
+    cfg["TrainingFraction"] = [0.5]
+    trainset_meta = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1],))
+
+    with pytest.raises(ValueError, match="out of bounds"):
+        trainset_meta.get(trainset_index=1, index=1)
+
+
+def test_get_raises_when_shuffle_not_found(tmpdir):
+    """get() raises ValueError when no shuffle matches the given index."""
+    cfg, *_ = _create_project_with_config(tmpdir)
+    cfg["TrainingFraction"] = [0.5]
+    trainset_meta = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1],))
+
+    with pytest.raises(ValueError, match="Could not find"):
+        trainset_meta.get(trainset_index=0, index=99)
+
+
+# ---------------------------------------------------------------------------
+# TrainingDatasetMetadata.save — lazy load_split branch
+# ---------------------------------------------------------------------------
+
+
+def test_save_loads_split_when_shuffle_has_no_split(tmpdir):
+    """save() calls load_split for shuffles where split is None."""
+    cfg, _cfg_path, trainset_dir, _meta_path = _create_project_with_config(tmpdir)
+    _create_doc_data(cfg, trainset_dir, 0.5, 1, [0, 1], [2, 3])
+
+    # Build a shuffle with split=None — mimics a load(load_splits=False) result
+    shuffle_no_split = metadata.ShuffleMetadata(
+        name=SHUFFLES[1].name,
+        train_fraction=0.5,
+        index=1,
+        engine=Engine.PYTORCH,
+        split=None,
+    )
+    trainset_meta = metadata.TrainingDatasetMetadata(cfg, (shuffle_no_split,))
+    # Should not raise; save() must call load_split internally
+    trainset_meta.save()
+
+    reloaded = metadata.TrainingDatasetMetadata.load(cfg, load_splits=True)
+    assert len(reloaded.shuffles) == 1
+    assert reloaded.shuffles[0].split is not None
+
+
+# ---------------------------------------------------------------------------
+# TrainingDatasetMetadata.load
+# ---------------------------------------------------------------------------
+
+
+def test_load_raises_when_metadata_file_missing(tmpdir):
+    """load() raises FileNotFoundError when metadata.yaml does not exist."""
+    cfg, *_ = _create_project_with_config(tmpdir)
+    with pytest.raises(FileNotFoundError):
+        metadata.TrainingDatasetMetadata.load(cfg)
+
+
+# ---------------------------------------------------------------------------
+# TrainingDatasetMetadata.create — empty trainset_path branch
+# ---------------------------------------------------------------------------
+
+
+def test_create_returns_empty_when_trainset_dir_missing(tmp_path):
+    """create() returns metadata with no shuffles when the trainset dir is absent."""
+    cfg = {
+        "Task": "t",
+        "date": "d",
+        "scorer": "s",
+        "iteration": 0,
+        "project_path": str(tmp_path),
+    }
+    trainset_meta = metadata.TrainingDatasetMetadata.create(cfg)
+    assert len(trainset_meta.shuffles) == 0
+
+
+# ---------------------------------------------------------------------------
+# update_metadata
+# ---------------------------------------------------------------------------
+
+
+def test_update_metadata_adds_shuffle(tmpdir):
+    """update_metadata adds a new shuffle and persists it."""
+    cfg, _cfg_path, trainset_dir, _meta_path = _create_project_with_config(tmpdir)
+    # Seed an existing metadata file with one shuffle
+    _create_doc_data(cfg, trainset_dir, 0.5, 1, [0, 1], [2, 3])
+    seed = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1],))
+    seed.save()
+
+    metadata.update_metadata(
+        cfg,
+        train_fraction=0.5,
+        shuffle=2,
+        engine=Engine.PYTORCH,
+        train_indices=[0, 1],
+        test_indices=[2, 3],
+    )
+
+    reloaded = metadata.TrainingDatasetMetadata.load(cfg)
+    indices = [s.index for s in reloaded.shuffles]
+    assert 2 in indices
+
+
+def test_update_metadata_overwrite(tmpdir):
+    """update_metadata with overwrite=True replaces an existing shuffle."""
+    cfg, _cfg_path, trainset_dir, _meta_path = _create_project_with_config(tmpdir)
+    _create_doc_data(cfg, trainset_dir, 0.5, 1, [0, 1], [2, 3])
+    seed = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1],))
+    seed.save()
+
+    metadata.update_metadata(
+        cfg,
+        train_fraction=0.5,
+        shuffle=1,
+        engine=Engine.TF,
+        train_indices=[0, 1],
+        test_indices=[2, 3],
+        overwrite=True,
+    )
+
+    reloaded = metadata.TrainingDatasetMetadata.load(cfg)
+    assert len(reloaded.shuffles) == 1
+    assert reloaded.shuffles[0].engine == Engine.TF
+
+
+def test_update_metadata_raises_without_overwrite(tmpdir):
+    """update_metadata raises RuntimeError when shuffle exists and overwrite=False."""
+    cfg, _cfg_path, trainset_dir, _meta_path = _create_project_with_config(tmpdir)
+    _create_doc_data(cfg, trainset_dir, 0.5, 1, [0, 1], [2, 3])
+    seed = metadata.TrainingDatasetMetadata(cfg, (SHUFFLES[1],))
+    seed.save()
+
+    with pytest.raises(RuntimeError):
+        metadata.update_metadata(
+            cfg,
+            train_fraction=0.5,
+            shuffle=1,
+            engine=Engine.PYTORCH,
+            train_indices=[0, 1],
+            test_indices=[2, 3],
+            overwrite=False,
+        )
 
 
 def _create_project_with_config(
@@ -401,9 +576,5 @@ def _create_doc_data(
     train_indices,
     test_indices,
 ) -> None:
-    _, doc_path = auxiliaryfunctions.get_data_and_metadata_filenames(
-        trainset_dir, train_frac, shuffle, cfg
-    )
-    auxiliaryfunctions.save_metadata(
-        doc_path, {}, list(train_indices), list(test_indices), train_frac
-    )
+    _, doc_path = auxiliaryfunctions.get_data_and_metadata_filenames(trainset_dir, train_frac, shuffle, cfg)
+    auxiliaryfunctions.save_metadata(doc_path, {}, list(train_indices), list(test_indices), train_frac)

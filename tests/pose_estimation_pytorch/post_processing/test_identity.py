@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-""" Tests identity matching """
+"""Tests identity matching."""
+
 import numpy as np
 import pytest
 

@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Implementation of the CSPNeXt Backbone
+"""Implementation of the CSPNeXt Backbone.
 
 Based on the ``mmdetection`` CSPNeXt implementation. For more information, see:
 <https://github.com/open-mmlab/mmdetection/blob/main/mmdet/models/backbones/cspnext.py>
@@ -16,6 +16,7 @@ Based on the ``mmdetection`` CSPNeXt implementation. For more information, see:
 For more details about this architecture, see `RTMDet: An Empirical Study of Designing
 Real-Time Object Detectors`: https://arxiv.org/abs/1711.05101.
 """
+
 from dataclasses import dataclass
 
 import torch
@@ -35,7 +36,8 @@ from deeplabcut.pose_estimation_pytorch.models.modules.csp import (
 
 @dataclass(frozen=True)
 class CSPNeXtLayerConfig:
-    """Configuration for a CSPNeXt layer"""
+    """Configuration for a CSPNeXt layer."""
+
     in_channels: int
     out_channels: int
     num_blocks: int
@@ -45,7 +47,7 @@ class CSPNeXtLayerConfig:
 
 @BACKBONES.register_module
 class CSPNeXt(HuggingFaceWeightsMixin, BaseBackbone):
-    """CSPNeXt Backbone
+    """CSPNeXt Backbone.
 
     Args:
         model_name: The model variant to build. If ``pretrained==True``, must be one of
@@ -79,7 +81,7 @@ class CSPNeXt(HuggingFaceWeightsMixin, BaseBackbone):
             CSPNeXtLayerConfig(256, 512, 6, True, False),
             CSPNeXtLayerConfig(512, 768, 3, True, False),
             CSPNeXtLayerConfig(768, 1024, 3, False, True),
-        ]
+        ],
     }
 
     def __init__(
@@ -98,10 +100,7 @@ class CSPNeXt(HuggingFaceWeightsMixin, BaseBackbone):
     ) -> None:
         super().__init__(stride=32, **kwargs)
         if arch not in self.ARCH:
-            raise ValueError(
-                f"Unknown `CSPNeXT` architecture: {arch}. Must be one of "
-                f"{self.ARCH.keys()}"
-            )
+            raise ValueError(f"Unknown `CSPNeXT` architecture: {arch}. Must be one of {self.ARCH.keys()}")
 
         self.model_name = model_name
         self.layer_configs = self.ARCH[arch]
@@ -136,7 +135,7 @@ class CSPNeXt(HuggingFaceWeightsMixin, BaseBackbone):
                 stride=1,
                 norm_layer=norm_layer,
                 activation_fn=activation_fn,
-            )
+            ),
         )
         self.layers = ["stem"]
 
@@ -177,8 +176,8 @@ class CSPNeXt(HuggingFaceWeightsMixin, BaseBackbone):
                 activation_fn=activation_fn,
             )
             stage.append(csp_layer)
-            self.add_module(f'stage{i + 1}', nn.Sequential(*stage))
-            self.layers.append(f'stage{i + 1}')
+            self.add_module(f"stage{i + 1}", nn.Sequential(*stage))
+            self.layers.append(f"stage{i + 1}")
 
         self.single_output = isinstance(out_indices, int)
         if self.single_output:

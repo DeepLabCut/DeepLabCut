@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Configuration for CTD tracking"""
+"""Configuration for CTD tracking."""
+
 from dataclasses import dataclass
 
 
@@ -38,6 +39,7 @@ class CTDTrackingConfig:
         threshold_nms: The OKS threshold for non-maximum suppression to remove
             duplicates poses when two CTD model predictions converge to a single animal.
     """
+
     bu_on_lost_idv: bool = True
     bu_min_frequency: int | None = None
     bu_max_frequency: int | None = 100

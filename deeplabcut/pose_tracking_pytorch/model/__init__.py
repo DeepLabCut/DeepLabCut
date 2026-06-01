@@ -9,4 +9,4 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-from .make_model import make_dlc_model, build_dlc_transformer
+from .make_model import build_dlc_transformer, make_dlc_model

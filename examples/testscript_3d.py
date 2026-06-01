@@ -20,13 +20,15 @@ Licensed under GNU Lesser General Public License v3.0
 This script tests various functionalities in an automatic way.
 It produces nothing of interest scientifically.
 """
-import os, deeplabcut
-import zipfile, urllib.request, shutil
-from datetime import datetime as dt
-import glob
-from pathlib import Path
-import subprocess
 
+import glob
+import os
+import shutil
+import subprocess
+import zipfile
+from pathlib import Path
+
+import deeplabcut
 
 if __name__ == "__main__":
     print("Imported DLC!")
@@ -87,7 +89,7 @@ if __name__ == "__main__":
                 output2,
             ]
         )
-    except:
+    except Exception:
         pass
 
     """
@@ -102,8 +104,8 @@ if __name__ == "__main__":
     # checking if 2d test project is available
     try:
         config = glob.glob(os.path.join(basepath, "TEST*", "config.yaml"))[-1]
-    except:
-        raise RuntimeError("Please run the testscript.py first before testing for 3d")
+    except Exception as e:
+        raise RuntimeError("Please run the testscript_tensorflow_single_animal.py first before testing for 3d") from e
 
     dfolder = None
 
@@ -120,10 +122,8 @@ if __name__ == "__main__":
 
         cfg["skeleton"] = [["bodypart1", "bodypart2"], ["objectA", "bodypart3"]]
         deeplabcut.auxiliaryfunctions.write_config_3d(path_config_file, cfg)
-    except:
-        raise (
-            "Please delete the project and re-try."
-        )  # otherwise the cfg is an empty array!
+    except Exception as e:
+        raise RuntimeError("Please delete the project and re-try.") from e  # otherwise the cfg is an empty array!
 
     """
     # Creating the name of the project
@@ -138,7 +138,7 @@ if __name__ == "__main__":
 
     os.chdir(os.path.join(project_name, "calibration_images"))
 
-    file_name = os.path.join(basepath,"stereo_example.zip")
+    file_name = os.path.join(basepath, "stereo_example.zip")
     with zipfile.ZipFile(file_name) as zf:
         zf.extractall()
 
@@ -146,7 +146,8 @@ if __name__ == "__main__":
     cwd = os.getcwd()
     [os.remove(file) for file in os.listdir(cwd) if not file.endswith(".jpg")]
 
-    # change the file names for calibration images to match the name of cameras in config.yaml file.i.e. camera-1 and camera-2
+    # change the file names for calibration images to match the name of
+    # cameras in config.yaml file.i.e. camera-1 and camera-2
     cam1_images = glob.glob(os.path.join(cwd, "left*.jpg"))
     cam2_images = glob.glob(os.path.join(cwd, "right*.jpg"))
     # Sorting images
@@ -155,13 +156,13 @@ if __name__ == "__main__":
     for idx, name in enumerate(cam1_images):
         os.rename(
             name,
-            os.path.join(cwd, str("camera-1_" + "{0:0=2d}".format(idx + 1) + ".jpg")),
+            os.path.join(cwd, str("camera-1_" + f"{idx + 1:0=2d}" + ".jpg")),
         )
 
     for idx, name in enumerate(cam2_images):
         os.rename(
             name,
-            os.path.join(cwd, str("camera-2_" + "{0:0=2d}".format(idx + 1) + ".jpg")),
+            os.path.join(cwd, str("camera-2_" + f"{idx + 1:0=2d}" + ".jpg")),
         )
 
     # Removing some of the images where the corner was not detected
@@ -176,13 +177,11 @@ if __name__ == "__main__":
 
     print("TRIANGULATING")
     video_dir = os.path.join(os.path.dirname(basepath), folder)
-    deeplabcut.auxiliaryfunctions.edit_config(
-        path_config_file, edits={"pcutoff": 0.1}
-    )  # otherwise get all-nan slices
+    deeplabcut.auxiliaryfunctions.edit_config(path_config_file, edits={"pcutoff": 0.1})  # otherwise get all-nan slices
     deeplabcut.triangulate(path_config_file, video_dir, save_as_csv=True)
 
     print("CREATING LABELED VIDEO 3-D")
-    deeplabcut.create_labeled_video_3d(path_config_file, [video_dir], start=5, end=10, videotype=".avi")
+    deeplabcut.create_labeled_video_3d(path_config_file, [video_dir], start=5, end=10, video_extensions=".avi")
 
     # output_path = [os.path.join(basepath,folder)]
     # deeplabcut.create_labeled_video_3d(path_config_file,output_path,start=5,end=10)

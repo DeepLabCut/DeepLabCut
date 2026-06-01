@@ -10,6 +10,7 @@
 #
 import numpy as np
 import pytest
+
 from deeplabcut.pose_estimation_tensorflow.modelzoo.api import superanimal_inference
 
 
@@ -22,7 +23,7 @@ def test_get_multi_scale_frames():
         heights,
     )
     assert len(frames) == len(shapes) == len(heights)
-    assert all(shape[0] == h for shape, h in zip(shapes, heights))
+    assert all(shape[0] == h for shape, h in zip(shapes, heights, strict=False))
     assert all(round(shape[0] * ar) == shape[1] for shape in shapes)
 
 
@@ -44,4 +45,4 @@ def test_project_pred_to_original_size(scale):
     )
     coords_orig = preds_orig["coordinates"][0]
     assert len(coords_orig) == len(xs)
-    assert all([round(x * scale) == round(xy[0]) for xy, x in zip(coords_orig, xs)])
+    assert all([round(x * scale) == round(xy[0]) for xy, x in zip(coords_orig, xs, strict=False)])

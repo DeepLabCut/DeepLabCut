@@ -10,10 +10,11 @@
 #
 """Model configuration class for DeepLabCut pose estimation models."""
 
-from pydantic.dataclasses import dataclass
 from dataclasses import field
 
-from deeplabcut.core.config.config_mixin import ConfigMixin
+from pydantic.dataclasses import dataclass
+
+from deeplabcut.core.config.mixins import ConfigMixin
 
 
 @dataclass

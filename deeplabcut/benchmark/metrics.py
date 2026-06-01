@@ -11,39 +11,25 @@
 
 """Evaluation metrics for the DeepLabCut benchmark."""
 
-import sys
-import unittest.mock
-
-# TODO(stes) mocking a few modules to rely in fewer dependencies, without
-# causing import errors when using deeplabcut.
-MOCK_MODULES = ["statsmodels", "statsmodels.api", "pytables"]
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = unittest.mock.MagicMock()
-
 import os
 import pickle
 from collections import defaultdict
-from typing import List, Optional
 
 import numpy as np
 import pandas as pd
 
 import deeplabcut.benchmark.utils
-from deeplabcut.core import inferenceutils, crossvalutils
+from deeplabcut.core import crossvalutils, inferenceutils
 from deeplabcut.utils.conversioncode import guarantee_multiindex_rows
 
 
-def _format_gt_data(h5file: str, test_indices: Optional[List[int]] = None):
+def _format_gt_data(h5file: str, test_indices: list[int] | None = None):
     df = pd.read_hdf(h5file)
 
     animals = _get_unique_level_values(df.columns, "individuals")
     kpts = _get_unique_level_values(df.columns, "bodyparts")
     try:
-        n_unique = len(
-            _get_unique_level_values(
-                df.xs("single", level="individuals", axis=1).columns, "bodyparts"
-            )
-        )
+        n_unique = len(_get_unique_level_values(df.xs("single", level="individuals", axis=1).columns, "bodyparts"))
     except KeyError:
         n_unique = 0
     guarantee_multiindex_rows(df)
@@ -60,7 +46,7 @@ def _format_gt_data(h5file: str, test_indices: Optional[List[int]] = None):
 
     meta = {"animals": animals, "keypoints": kpts, "n_unique": n_unique}
     return {
-        "annotations": dict(zip(file_paths, data)),
+        "annotations": dict(zip(file_paths, data, strict=False)),
         "metadata": meta,
     }
 
@@ -98,9 +84,7 @@ def calc_prediction_errors(preds, gt):
             if visible.size and xy_pred_.size:
                 # Pick the predictions closest to ground truth,
                 # rather than the ones the model has most confident in.
-                neighbors = crossvalutils.find_closest_neighbors(
-                    xy_gt_[visible], xy_pred_, k=3
-                )
+                neighbors = crossvalutils.find_closest_neighbors(xy_gt_[visible], xy_pred_, k=3)
                 found = neighbors != -1
                 if ~np.any(found):
                     continue
@@ -115,10 +99,8 @@ def calc_prediction_errors(preds, gt):
 
 
 def _map(strings, substrings):
-    """
-    Map image paths from predicted data to GT as the first are typically
-    absolute whereas the latter are relative to the project path.
-    """
+    """Map image paths from predicted data to GT as the first are typically absolute
+    whereas the latter are relative to the project path."""
 
     lookup = dict()
     strings_ = strings.copy()
@@ -178,16 +160,14 @@ def calc_map_from_obj(
     missing_images = set(test_images) - set(eval_results_obj.keys())
     if len(missing_images) > 0:
         raise ValueError(
-            "Failed to compute the test mAP: there are test images missing from the"
-            f"prediction object: {missing_images}"
+            f"Failed to compute the test mAP: there are test images missing from theprediction object: {missing_images}"
         )
 
     ground_truth = df_test.to_numpy().reshape((len(test_images), n_animals, -1, 2))
     temp = np.ones((*ground_truth.shape[:3], 3))
     temp[..., :2] = ground_truth
     assemblies_gt_test = {
-        test_images[i]: assembly
-        for i, assembly in inferenceutils._parse_ground_truth_data(temp).items()
+        test_images[i]: assembly for i, assembly in inferenceutils._parse_ground_truth_data(temp).items()
     }
 
     # TODO(stes): remove/rewrite
@@ -233,9 +213,7 @@ def calc_rmse_from_obj(
         for ind in sorted(drop_kpts, reverse=True):
             kpts.pop(ind)
 
-    test_objects = {
-        k: v for k, v in eval_results_obj.items() if k in gt["annotations"].keys()
-    }
+    test_objects = {k: v for k, v in eval_results_obj.items() if k in gt["annotations"].keys()}
     if len(gt["annotations"]) != len(test_objects):
         gt_images = list(gt["annotations"].keys())
         missing_images = [img for img in gt_images if img not in test_objects]
@@ -261,11 +239,9 @@ def calc_rmse_from_obj(
     return np.nanmean(errors[..., 0])
 
 
-def load_test_images(h5file: str, metadata: str) -> List[str]:
-    """
-    Returns the names of the test images for the benchmark, in the order corresponding
-    to the test indices.
-    """
+def load_test_images(h5file: str, metadata: str) -> list[str]:
+    """Returns the names of the test images for the benchmark, in the order
+    corresponding to the test indices."""
     df = pd.read_hdf(h5file)
     test_indices = _load_test_indices(metadata)
     df_test = df.iloc[test_indices]
@@ -278,7 +254,7 @@ def load_test_images(h5file: str, metadata: str) -> List[str]:
 
 
 def _load_test_indices(shuffle_metadata_path: str) -> list[int]:
-    """Returns the indices of test images in the training dataset dataframe"""
+    """Returns the indices of test images in the training dataset dataframe."""
     with open(shuffle_metadata_path, "rb") as f:
         test_indices = set([int(i) for i in pickle.load(f)[2]])
     return list(sorted(test_indices))

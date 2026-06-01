@@ -16,6 +16,7 @@
 import functools
 import os
 import re
+
 import tensorflow as tf
 
 import deeplabcut.pose_estimation_tensorflow.backbones.efficientnet_model as efficientnet_model
@@ -41,7 +42,7 @@ def efficientnet_params(model_name):
     return params_dict[model_name]
 
 
-class BlockDecoder(object):
+class BlockDecoder:
     """Block Decoder for readability."""
 
     def _decode_block_string(self, block_string):
@@ -73,22 +74,23 @@ class BlockDecoder(object):
     def _encode_block_string(self, block):
         """Encodes a block to a string."""
         args = [
-            "r%d" % block.num_repeat,
-            "k%d" % block.kernel_size,
-            "s%d%d" % (block.strides[0], block.strides[1]),
-            "e%s" % block.expand_ratio,
-            "i%d" % block.input_filters,
-            "o%d" % block.output_filters,
-            "c%d" % block.conv_type,
+            f"r{block.num_repeat}",
+            f"k{block.kernel_size}",
+            f"s{block.strides[0]}{block.strides[1]}",
+            f"e{block.expand_ratio}",
+            f"i{block.input_filters}",
+            f"o{block.output_filters}",
+            f"c{block.conv_type}",
         ]
         if block.se_ratio > 0 and block.se_ratio <= 1:
-            args.append("se%s" % block.se_ratio)
+            args.append(f"se{block.se_ratio}")
         if block.id_skip is False:
             args.append("noskip")
         return "_".join(args)
 
     def decode(self, string_list):
         """Decodes a list of string notations to specify blocks inside the network.
+
         Args:
           string_list: a list of strings, each string is a notation of block.
         Returns:
@@ -102,6 +104,7 @@ class BlockDecoder(object):
 
     def encode(self, blocks_args):
         """Encodes a list of Blocks to a list of strings.
+
         Args:
           blocks_args: A list of namedtuples to represent blocks arguments.
         Returns:
@@ -115,6 +118,7 @@ class BlockDecoder(object):
 
 def swish(features, use_native=True):
     """Computes the Swish activation function.
+
     The tf.nn.swish operation uses a custom gradient to reduce memory usage.
     Since saving custom gradients in SavedModel is currently not supported, and
     one would not be able to use an exported TF-Hub module for fine-tuning, we
@@ -183,14 +187,10 @@ def efficientnet(
 def get_model_params(model_name, override_params):
     """Get the block args and global params for a given model."""
     if model_name.startswith("efficientnet"):
-        width_coefficient, depth_coefficient, _, dropout_rate = efficientnet_params(
-            model_name
-        )
-        blocks_args, global_params = efficientnet(
-            width_coefficient, depth_coefficient, dropout_rate
-        )
+        width_coefficient, depth_coefficient, _, dropout_rate = efficientnet_params(model_name)
+        blocks_args, global_params = efficientnet(width_coefficient, depth_coefficient, dropout_rate)
     else:
-        raise NotImplementedError("model name is not pre-defined: %s" % model_name)
+        raise NotImplementedError(f"model name is not pre-defined: {model_name}")
 
     if override_params:
         # ValueError will be raised here if override_params has fields not included
@@ -212,6 +212,7 @@ def build_model(
     features_only=False,
 ):
     """A helper function to creates a model and returns predicted logits.
+
     Args:
       images: input images tensor.
       model_name: string, the predefined model name.
@@ -242,10 +243,10 @@ def build_model(
             if not tf.io.gfile.exists(model_dir):
                 tf.io.gfile.makedirs(model_dir)
             with tf.io.gfile.GFile(param_file, "w") as f:
-                tf.compat.v1.logging.info("writing to %s" % param_file)
-                f.write("model_name= %s\n\n" % model_name)
-                f.write("global_params= %s\n\n" % str(global_params))
-                f.write("blocks_args= %s\n\n" % str(blocks_args))
+                tf.compat.v1.logging.info(f"writing to {param_file}")
+                f.write(f"model_name= {model_name}\n\n")
+                f.write(f"global_params= {str(global_params)}\n\n")
+                f.write(f"blocks_args= {str(blocks_args)}\n\n")
 
     with tf.compat.v1.variable_scope(model_name):
         model = efficientnet_model.Model(blocks_args, global_params)
@@ -254,10 +255,9 @@ def build_model(
     return outputs, model.endpoints
 
 
-def build_model_base(
-    images, model_name, use_batch_norm=False, drop_out=False, override_params=None
-):
+def build_model_base(images, model_name, use_batch_norm=False, drop_out=False, override_params=None):
     """A helper function to create a base model and return global_pool.
+
     Args:
       images: input images tensor.
       model_name: string, the predefined model name.
@@ -276,9 +276,7 @@ def build_model_base(
 
     with tf.compat.v1.variable_scope(model_name):
         model = efficientnet_model.Model(blocks_args, global_params)
-        features = model(
-            images, use_batch_norm=use_batch_norm, drop_out=drop_out, features_only=True
-        )
+        features = model(images, use_batch_norm=use_batch_norm, drop_out=drop_out, features_only=True)
 
     features = tf.identity(features, "features")
     return features, model.endpoints

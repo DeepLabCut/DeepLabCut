@@ -8,16 +8,16 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""
+"""Effnet added by T.
 
-Effnet added by T. Biasi & AM
-Efficient Nets added by T. Biasi & AM
-See https://openaccess.thecvf.com/content/WACV2021/html/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.html
-
+Biasi & AM Efficient Nets added by T. Biasi & AM See
+https://openaccess.thecvf.com/content/WACV2021/html/Mathis_Pretraining_Boosts_Out-of-Domain_Robustness_for_Pose_Estimation_WACV_2021_paper.html
 """
 
 import tensorflow as tf
+
 import deeplabcut.pose_estimation_tensorflow.backbones.efficientnet_builder as eff
+
 from .base import BasePoseNet
 from .factory import PoseNetFactory
 
@@ -25,7 +25,7 @@ from .factory import PoseNetFactory
 @PoseNetFactory.register("efficientnet")
 class PoseEfficientNet(BasePoseNet):
     def __init__(self, cfg):
-        super(PoseEfficientNet, self).__init__(cfg)
+        super().__init__(cfg)
         if "use_batch_norm" not in self.cfg:
             self.cfg["use_batch_norm"] = False
         if "use_drop_out" not in self.cfg:
@@ -49,7 +49,5 @@ class PoseEfficientNet(BasePoseNet):
         return self.prediction_layers(net)
 
     def test(self, inputs):
-        heads = self.get_net(
-            inputs, self.cfg["use_batch_norm"], self.cfg["use_drop_out"]
-        )
+        heads = self.get_net(inputs, self.cfg["use_batch_norm"], self.cfg["use_drop_out"])
         return self.add_inference_layers(heads)

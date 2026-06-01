@@ -12,13 +12,13 @@ from abc import ABC, abstractmethod
 
 import torch
 
-from deeplabcut.pose_estimation_pytorch.registry import build_from_cfg, Registry
+from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 NECKS = Registry("necks", build_func=build_from_cfg)
 
 
 class BaseNeck(ABC, torch.nn.Module):
-    """Base Neck class for pose estimation"""
+    """Base Neck class for pose estimation."""
 
     def __init__(self):
         super().__init__()

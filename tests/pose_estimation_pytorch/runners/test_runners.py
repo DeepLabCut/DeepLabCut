@@ -35,6 +35,4 @@ def test_load_snapshot_weights_only_error(tmpdir_factory):
 
     runners.set_load_weights_only(False)
     with pytest.raises(pickle.UnpicklingError):
-        runners.Runner.load_snapshot(
-            snapshot_path, device="cpu", model=Mock(), weights_only=True
-        )
+        runners.Runner.load_snapshot(snapshot_path, device="cpu", model=Mock(), weights_only=True)

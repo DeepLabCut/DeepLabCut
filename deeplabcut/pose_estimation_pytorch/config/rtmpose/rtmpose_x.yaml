@@ -51,6 +51,8 @@ model:
         simcc_split_ratio: 2.0
         sigma: [6.93, 6.93]
         decode_beta: 150.0
+        apply_softmax: true
+        normalize_outputs: false
       input_size: [384, 384]
       in_channels: 1280
       out_channels: "num_bodyparts"

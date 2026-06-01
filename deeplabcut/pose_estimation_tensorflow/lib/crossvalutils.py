@@ -8,5 +8,6 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Backwards compatibility"""
+"""Backwards compatibility."""
+
 from deeplabcut.core.crossvalutils import *

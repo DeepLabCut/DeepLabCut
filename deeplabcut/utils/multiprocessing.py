@@ -17,6 +17,7 @@ Please see AUTHORS for contributors.
 https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
+
 import multiprocessing
 
 
@@ -28,20 +29,17 @@ def _wrapper(func, queue, *args, **kwargs):
         queue.put(e)  # Pass any exception back via the queue
 
 
+# NOTE: @C-Achard 2026-03-10 deprecated, as this is not used for the update check anymore
 def call_with_timeout(func, timeout, *args, **kwargs):
     queue = multiprocessing.Queue()
-    process = multiprocessing.Process(
-        target=_wrapper, args=(func, queue, *args), kwargs=kwargs
-    )
+    process = multiprocessing.Process(target=_wrapper, args=(func, queue, *args), kwargs=kwargs)
     process.start()
     process.join(timeout)
 
     if process.is_alive():
         process.terminate()  # Forcefully terminate the process
         process.join()
-        raise TimeoutError(
-            f"Function {func.__name__} did not complete within {timeout} seconds."
-        )
+        raise TimeoutError(f"Function {func.__name__} did not complete within {timeout} seconds.")
 
     if not queue.empty():
         result = queue.get()
@@ -49,6 +47,4 @@ def call_with_timeout(func, timeout, *args, **kwargs):
             raise result  # Re-raise the exception if it occurred in the function
         return result
     else:
-        raise TimeoutError(
-            f"Function {func.__name__} completed but did not return a result."
-        )
+        raise TimeoutError(f"Function {func.__name__} completed but did not return a result.")

@@ -109,7 +109,7 @@
     - deeplabcut/pose_tracking_pytorch/solver/scheduler_factory.py
     - deeplabcut/pose_tracking_pytorch/model/backones/vit_pytorch.py
 
-# PyTorch license 
+# PyTorch license
 
 - header: |
     See https://github.com/pytorch/pytorch/blob/main/LICENSE

@@ -29,7 +29,7 @@ from deeplabcut.pose_estimation_pytorch.models.weight_init import BaseWeightInit
 
 @HEADS.register_module
 class DLCRNetHead(HeatmapHead):
-    """A head for DLCRNet models using Part-Affinity Fields to predict individuals"""
+    """A head for DLCRNet models using Part-Affinity Fields to predict individuals."""
 
     def __init__(
         self,
@@ -51,9 +51,7 @@ class DLCRNetHead(HeatmapHead):
         num_limbs = paf_config["channels"][-1]  # Already has the 2x multiplier
         in_refined_channels = features_dim + num_keypoints + num_limbs
         if num_stages > 0:
-            heatmap_config["channels"][0] = paf_config["channels"][0] = (
-                in_refined_channels
-            )
+            heatmap_config["channels"][0] = paf_config["channels"][0] = in_refined_channels
             locref_config["channels"][0] = locref_config["channels"][-1]
 
         super().__init__(
@@ -70,36 +68,22 @@ class DLCRNetHead(HeatmapHead):
 
         self.paf_head = DeconvModule(**paf_config)
 
-        self.convt1 = self._make_layer_same_padding(
-            in_channels=in_channels, out_channels=num_keypoints
-        )
-        self.convt2 = self._make_layer_same_padding(
-            in_channels=in_channels, out_channels=locref_config["channels"][-1]
-        )
-        self.convt3 = self._make_layer_same_padding(
-            in_channels=in_channels, out_channels=num_limbs
-        )
-        self.convt4 = self._make_layer_same_padding(
-            in_channels=in_channels, out_channels=features_dim
-        )
+        self.convt1 = self._make_layer_same_padding(in_channels=in_channels, out_channels=num_keypoints)
+        self.convt2 = self._make_layer_same_padding(in_channels=in_channels, out_channels=locref_config["channels"][-1])
+        self.convt3 = self._make_layer_same_padding(in_channels=in_channels, out_channels=num_limbs)
+        self.convt4 = self._make_layer_same_padding(in_channels=in_channels, out_channels=features_dim)
         self.hm_ref_layers = nn.ModuleList()
         self.paf_ref_layers = nn.ModuleList()
         for _ in range(num_stages):
             self.hm_ref_layers.append(
-                self._make_refinement_layer(
-                    in_channels=in_refined_channels, out_channels=num_keypoints
-                )
+                self._make_refinement_layer(in_channels=in_refined_channels, out_channels=num_keypoints)
             )
             self.paf_ref_layers.append(
-                self._make_refinement_layer(
-                    in_channels=in_refined_channels, out_channels=num_limbs
-                )
+                self._make_refinement_layer(in_channels=in_refined_channels, out_channels=num_limbs)
             )
         self._init_weights()
 
-    def _make_layer_same_padding(
-        self, in_channels: int, out_channels: int
-    ) -> nn.ConvTranspose2d:
+    def _make_layer_same_padding(self, in_channels: int, out_channels: int) -> nn.ConvTranspose2d:
         # FIXME There is no consensual solution to emulate TF behavior in pytorch
         # see https://github.com/pytorch/pytorch/issues/3867
         return nn.ConvTranspose2d(
@@ -122,9 +106,7 @@ class DLCRNetHead(HeatmapHead):
         Returns:
             refinement_layer: the refinement layer.
         """
-        return nn.Conv2d(
-            in_channels, out_channels, kernel_size=3, stride=1, padding="same"
-        )
+        return nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1, padding="same")
 
     def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
         if self.num_stages > 0:
@@ -136,7 +118,7 @@ class DLCRNetHead(HeatmapHead):
             stage_paf_out = stage1_paf_out
             stage_hm_out = stage1_hm_out
             for i, (hm_ref_layer, paf_ref_layer) in enumerate(
-                zip(self.hm_ref_layers, self.paf_ref_layers)
+                zip(self.hm_ref_layers, self.paf_ref_layers, strict=True)
             ):
                 pre_stage_hm_out = stage_hm_out
                 stage_hm_out = hm_ref_layer(stage_in)

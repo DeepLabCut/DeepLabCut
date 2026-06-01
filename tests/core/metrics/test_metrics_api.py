@@ -8,7 +8,8 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""General tests for the metrics API"""
+"""General tests for the metrics API."""
+
 import numpy as np
 import pytest
 from numpy.testing import assert_almost_equal
@@ -16,9 +17,7 @@ from numpy.testing import assert_almost_equal
 import deeplabcut.core.metrics as metrics
 
 
-def _get_gt_and_pred_with_constant_err(
-    num_idv: int, num_bpt: int, error: float
-) -> tuple[np.ndarray, np.ndarray]:
+def _get_gt_and_pred_with_constant_err(num_idv: int, num_bpt: int, error: float) -> tuple[np.ndarray, np.ndarray]:
     gt = np.arange(num_idv * num_bpt * 3).astype(float).reshape((num_idv, num_bpt, 3))
     gt[..., 2] = 2
     predictions = gt.copy()
@@ -109,4 +108,3 @@ def test_computing_metrics_single_animal(error):
     )
     assert_almost_equal(results["rmse"], np.sqrt(2) * error)
     assert_almost_equal(results["rmse_pcutoff"], np.sqrt(2) * error)
-

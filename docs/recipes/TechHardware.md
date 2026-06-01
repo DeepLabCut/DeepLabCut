@@ -1,3 +1,9 @@
+---
+deeplabcut:
+  last_content_updated: '2026-02-10'
+  last_metadata_updated: '2026-03-06'
+  ignore: false
+---
 # Technical (Hardware) Considerations
 
 ## Quick summary:
@@ -12,6 +18,13 @@ For reference, we use e.g. Dell workstations (79xx series) with **Ubuntu 16.04 L
 ### Computer Hardware:
 
 Ideally, you will use a strong GPU with *at least* 8GB memory such as the [NVIDIA GeForce 1080 Ti,  2080 Ti, or 3090](https://marketplace.nvidia.com/en-us/consumer/graphics-cards/).  A GPU is not strictly necessary, but on a CPU the (training and evaluation) code is considerably slower (10x) for ResNets, but MobileNets and EfficientNets are slightly faster. Still, a GPU will give you a massive speed boost. You might also consider using cloud computing services like [Google cloud/amazon web services](https://github.com/DeepLabCut/DeepLabCut/issues/47) or Google Colaboratory.
+
+```{note}
+If you encounter errors during inference related to
+`torch.inference_mode` and DirectML, set the environment variable
+`DLC_DIRECTML_NO_GRAD=true` before starting Python. This switches the inference
+context to `torch.no_grad`, which is compatible with the DirectML execution path.
+```
 
 ### Camera Hardware:
 
@@ -29,7 +42,7 @@ tested **TensorFlow versions 1.0 to 1.15, and 2.0 to 2.12 (2.10 for Windows)**; 
 recommend TF2.12 for MacOS/Ubuntu and 2.10 for Windows) for Python 3.10 with GPU
 support.
 
-To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see: 
+To note, is it possible to run DeepLabCut on your CPU, but it will be VERY slow (see:
 [Mathis & Warren](https://www.biorxiv.org/content/early/2018/10/30/457242)). However, this is the preferred path if you want to test
 DeepLabCut on your own computer/data before purchasing a GPU, with the added benefit of
 a straightforward installation! Otherwise, use our COLAB notebooks for GPU access for
@@ -38,5 +51,5 @@ testing.
 Docker: We highly recommend advanced users use the supplied [Docker container](
 docker-containers).
 
-NOTE: [Currently GPU support in Docker Desktop is only available on Windows with the 
+NOTE: [Currently GPU support in Docker Desktop is only available on Windows with the
 WSL2 backend.](https://docs.docker.com/desktop/features/gpu/)

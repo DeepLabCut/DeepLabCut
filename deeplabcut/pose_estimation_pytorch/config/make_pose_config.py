@@ -8,14 +8,20 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Methods to create the configuration files for PyTorch DeepLabCut models"""
+"""Methods to create the configuration files for PyTorch DeepLabCut models."""
+
 from __future__ import annotations
 
 import copy
 from pathlib import Path
 
 from deeplabcut.core.config import read_config_as_dict
+from deeplabcut.core.config.project_config import ProjectConfig
+from deeplabcut.core.config.utils import ensure_plain_config
 from deeplabcut.core.weight_init import WeightInitialization
+from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
+from deeplabcut.pose_estimation_pytorch.config.pose import NetType, PoseConfig, TestConfig
+from deeplabcut.pose_estimation_pytorch.config.training import TrainSettingsConfig
 from deeplabcut.pose_estimation_pytorch.config.utils import (
     get_config_folder_path,
     load_backbones,
@@ -23,14 +29,8 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     replace_default_values,
     update_config,
 )
-from deeplabcut.core.config.project_config import ProjectConfig
-from deeplabcut.core.config.config_mixin import ensure_plain_config
-from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
-from deeplabcut.pose_estimation_pytorch.config.training import TrainSettingsConfig
-from deeplabcut.pose_estimation_pytorch.config.runner import RunnerConfig
-from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig, TestConfig, NetType
 from deeplabcut.pose_estimation_pytorch.task import Task
-from deeplabcut.utils import auxiliaryfunctions, auxfun_multianimal
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 
 
 @ensure_plain_config
@@ -74,14 +74,16 @@ def _load_pose_config_defaults(
             It defines the conditions that will be used with the CTD model.
             It can be either:
                 * A shuffle number (ctd_conditions: int), which must correspond to a bottom-up (BU) network type.
-                * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5 predictions file.
-                * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
+                * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5
+                predictions file.
+                * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which
+                respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
 
 
     Returns:
         The model configuration defaults as a dictionary.
     """
-    # TODO JR 2026-01-27: Model configs are currently still first loaded as plain dictionaries. 
+    # TODO JR 2026-01-27: Model configs are currently still first loaded as plain dictionaries.
     # We probably want to move to using typed config classes / OmegaConf DictConfig in the future.
     multianimal_project = project_config.get("multianimalproject", False)
     individuals = project_config.get("individuals", ["single"])
@@ -213,9 +215,13 @@ def make_pytorch_pose_config(
             If using a conditional-top-down (CTD) net_type, this argument needs to be specified.
             It defines the conditions that will be used with the CTD model.
             It can be either:
-                * A shuffle number (ctd_conditions: int), which must correspond to a bottom-up (BU) network type.
-                * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5 predictions file.
-                * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
+                * A shuffle number (ctd_conditions: int), which must correspond to a
+                  bottom-up (BU) network type.
+                * A predictions file path (ctd_conditions: string | Path), which must
+                  correspond to a .json or .h5 predictions file.
+                * A shuffle number and a particular snapshot
+                  (ctd_conditions: tuple[int, str] | tuple[int, int]), which respectively
+                  correspond to a bottom-up (BU) network type and a snapshot name or index.
     Returns:
         the PyTorch pose configuration as a typed PoseConfig
     """
@@ -223,13 +229,13 @@ def make_pytorch_pose_config(
     project_config = ProjectConfig.from_any(project_config)
     project_config.pose_config_path = pose_config_path
 
-    # @TODO @deruyter92 2026-02-13: This is a temporary fix to allow backwards compatibility. 
+    # @TODO @deruyter92 2026-02-13: This is a temporary fix to allow backwards compatibility.
     # This should be resolved by migrating to V1 project config.
     project_config.with_identity = project_config.identity
     if project_config.bodyparts == "MULTI!":
         project_config.bodyparts = project_config.multianimalbodyparts
     project_config.unique_bodyparts = project_config.uniquebodyparts
-    
+
     if weight_init is not None:
         weight_init = WeightInitialization.from_any(weight_init)
 
@@ -260,9 +266,7 @@ def make_pytorch_pose_config(
 
 
 @ensure_plain_config
-def _add_ctd_conditions(
-    model_cfg: dict, ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int]
-):
+def _add_ctd_conditions(model_cfg: dict, ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int]):
     """
     Args:
         model_cfg: dict, contents of pytorch_config.yaml
@@ -284,12 +288,12 @@ def _add_ctd_conditions(
         if not ctd_conditions.exists():
             raise FileNotFoundError(f"Invalid path: {ctd_conditions}")
         if ctd_conditions.suffix not in (".h5", ".json"):
-            raise ValueError(f"Invalid conditions file extension.")
+            raise ValueError("Invalid conditions file extension.")
         conditions = str(ctd_conditions.resolve())
 
     elif isinstance(ctd_conditions, tuple):
         if len(ctd_conditions) != 2:
-            raise ValueError(f"Invalid conditions tuple length.")
+            raise ValueError("Invalid conditions tuple length.")
         if not isinstance(ctd_conditions[0], int):
             raise TypeError("Conditions shuffle number must be of type int.")
         if isinstance(ctd_conditions[1], int):
@@ -300,9 +304,7 @@ def _add_ctd_conditions(
         elif isinstance(ctd_conditions[1], str):
             conditions = {"shuffle": ctd_conditions[0], "snapshot": ctd_conditions[1]}
         else:
-            raise TypeError(
-                "Conditions snapshot must be of type int (index) or string (snapshot name)."
-            )
+            raise TypeError("Conditions snapshot must be of type int (index) or string (snapshot name).")
     else:
         raise TypeError("Conditions ctd_conditions is of invalid type.")
 
@@ -418,9 +420,7 @@ def make_basic_project_config(
 
 
 @ensure_plain_config
-def add_metadata(
-    project_config: dict, config: dict, pose_config_path: str | Path
-) -> dict:
+def add_metadata(project_config: dict, config: dict, pose_config_path: str | Path) -> dict:
     """Adds metadata to a pytorch pose configuration
 
     Args:
@@ -450,9 +450,8 @@ def create_backbone_with_heatmap_model(
     bodyparts: list[str],
     top_down: bool,
 ) -> dict:
-    """
-    Creates a simple heatmap pose estimation model, composed of a backbone and a head
-    predicting heatmaps and location refinement maps
+    """Creates a simple heatmap pose estimation model, composed of a backbone and a head
+    predicting heatmaps and location refinement maps.
 
     Args:
         configs_dir: path to the DeepLabCut "configs" directory
@@ -490,9 +489,7 @@ def create_backbone_with_heatmap_model(
         bodypart_head_name = "head_topdown.yaml"
 
     # add a bodypart head
-    bodypart_head_config = read_config_as_dict(
-        configs_dir / "base" / bodypart_head_name
-    )
+    bodypart_head_config = read_config_as_dict(configs_dir / "base" / bodypart_head_name)
     model_config["model"]["heads"] = {
         "bodypart": replace_default_values(
             bodypart_head_config,
@@ -510,8 +507,7 @@ def create_backbone_with_paf_model(
     bodyparts: list[str],
     paf_parameters: dict,
 ) -> dict:
-    """
-    Creates a pose estimation model, composed of a backbone and a head predicting
+    """Creates a pose estimation model, composed of a backbone and a head predicting
     heatmaps, location refinement maps and part affinity fields for multi-animal pose
     estimation.
 
@@ -530,9 +526,7 @@ def create_backbone_with_paf_model(
     backbone_output_channels = model_config["model"]["backbone_output_channels"]
 
     # add a bodypart head
-    bodypart_head_config = read_config_as_dict(
-        configs_dir / "base" / f"head_bodyparts_with_paf.yaml"
-    )
+    bodypart_head_config = read_config_as_dict(configs_dir / "base" / "head_bodyparts_with_paf.yaml")
     model_config["model"]["heads"] = {
         "bodypart": replace_default_values(
             bodypart_head_config,
@@ -551,7 +545,7 @@ def add_detector(
     num_individuals: int,
     detector_type: str | None = None,
 ) -> dict:
-    """Adds a detector to a model
+    """Adds a detector to a model.
 
     Args:
         configs_dir: path to the DeepLabCut "configs" directory
@@ -585,7 +579,7 @@ def add_unique_bodypart_head(
     num_unique_bodyparts: int,
     backbone_output_channels: int,
 ) -> dict:
-    """Adds a unique bodypart head to a model
+    """Adds a unique bodypart head to a model.
 
     Args:
         configs_dir: path to the DeepLabCut "configs" directory
@@ -613,7 +607,7 @@ def add_identity_head(
     num_individuals: int,
     backbone_output_channels: int,
 ) -> dict:
-    """Adds an identity head to a model
+    """Adds an identity head to a model.
 
     Args:
         configs_dir: path to the DeepLabCut "configs" directory
@@ -640,10 +634,8 @@ def _get_paf_parameters(
     num_limbs_threshold: int = 105,
     paf_graph_degree: int = 6,
 ) -> dict:
-    """Gets values for PAF parameters from the project configuration"""
-    paf_graph = [
-        [i, j] for i in range(len(bodyparts)) for j in range(i + 1, len(bodyparts))
-    ]
+    """Gets values for PAF parameters from the project configuration."""
+    paf_graph = [[i, j] for i in range(len(bodyparts)) for j in range(i + 1, len(bodyparts))]
     num_limbs = len(paf_graph)
     # If the graph is unnecessarily large (with 15+ keypoints by default),
     # we randomly prune it to a size guaranteeing an average node degree of 6;

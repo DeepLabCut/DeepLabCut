@@ -18,6 +18,11 @@ from deeplabcut.pose_estimation_tensorflow.core.evaluate import (
     get_snapshots_by_index,
 )
 
+tf = pytest.importorskip(
+    "tensorflow",
+    reason="TensorFlow not installed (use a project extra such as .[tf])",
+)
+
 
 def make_single_animal_rmse_df(
     bodyparts,
@@ -43,9 +48,7 @@ def make_multi_animal_rmse_df(
         names=["scorer", "individuals", "bodyparts"],
     )
     if error_data is None:
-        error_data = np.ones(
-            (len(train_indices) + len(test_indices), len(individuals) * len(bodyparts))
-        )
+        error_data = np.ones((len(train_indices) + len(test_indices), len(individuals) * len(bodyparts)))
     return pd.DataFrame(error_data, columns=columns)
 
 
@@ -206,7 +209,8 @@ def test_get_snapshots_by_index_int_ok():
 
 
 def test_get_snapshots_by_index_error():
-    """Test that a ValueError is raised when the index is out of range or invalid str."""
+    """Test that a ValueError is raised when the index is out of range or invalid
+    str."""
     available = ["snapshot-1", "snapshot-2", "snapshot-3"]
 
     # positive int
