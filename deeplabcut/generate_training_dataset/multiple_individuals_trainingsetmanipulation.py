@@ -264,13 +264,13 @@ def create_multianimaltraining_dataset(
 
     Example
     --------
-    >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
+    >>> deeplabcut.create_multianimaltraining_dataset("/analysis/project/reaching-task/config.yaml", num_shuffles=1)
 
     >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml', Shuffles=[0,1,2],
     trainIndices=[trainInd1, trainInd2, trainInd3], testIndices=[testInd1, testInd2, testInd3])
 
     Windows:
-    >>> deeplabcut.create_multianimaltraining_dataset(r'C:\\Users\\Ulf\\looming-task\\config.yaml',Shuffles=[3,17,5])
+    >>> deeplabcut.create_multianimaltraining_dataset(r"C:\\Users\\Ulf\\looming-task\\config.yaml", Shuffles=[3, 17, 5])
     --------
     """
     if windows2linux:

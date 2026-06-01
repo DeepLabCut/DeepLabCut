@@ -257,11 +257,11 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
     --------
     Converts mulianimalbodyparts under the 'first individual' in individuals list in config.yaml
     and uniquebodyparts under 'single'
-    >>> deeplabcut.convert2_maDLC('/socialrearing-task/config.yaml')
+    >>> deeplabcut.convert2_maDLC("/socialrearing-task/config.yaml")
 
     --------
     Converts mulianimalbodyparts under the individual label mus17 and uniquebodyparts under 'single'
-    >>> deeplabcut.convert2_maDLC('/socialrearing-task/config.yaml', forceindividual='mus17')
+    >>> deeplabcut.convert2_maDLC("/socialrearing-task/config.yaml", forceindividual="mus17")
     """
 
     cfg = auxiliaryfunctions.read_config(config)

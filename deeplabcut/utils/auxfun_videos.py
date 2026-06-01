@@ -410,13 +410,14 @@ def ShortenVideo(vname, start="00:00:01", stop="00:01:00", outsuffix="short", ou
     ----------
 
     Linux/MacOs
-    >>> deeplabcut.ShortenVideo('/data/videos/mouse1.avi')
+    >>> deeplabcut.ShortenVideo("/data/videos/mouse1.avi")
 
     Extracts (sub)video from 1st second to 1st minutes (default values) and saves it in /data/videos as mouse1short.avi
 
     Windows:
-    >>> deeplabcut.ShortenVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi',
-    ... start='00:17:00',stop='00:22:00',outsuffix='brief')
+    >>> deeplabcut.ShortenVideo(
+    ...     "C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi", start="00:17:00", stop="00:22:00", outsuffix="brief"
+    ... )
 
     Extracts (sub)video from minute 17 to 22 and and saves it in
     C:\\yourusername\\rig-95\\Videos as reachingvideo1brief.avi
@@ -466,7 +467,7 @@ def CropVideo(
     ----------
 
     Linux/MacOs
-    >>> deeplabcut.CropVideo('/data/videos/mouse1.avi')
+    >>> deeplabcut.CropVideo("/data/videos/mouse1.avi")
 
     Crops the video using default values and saves it in /data/videos as mouse1cropped.avi
 
@@ -536,13 +537,14 @@ def DownSampleVideo(
     ----------
 
     Linux/MacOs
-    >>> deeplabcut.DownSampleVideo('/data/videos/mouse1.avi')
+    >>> deeplabcut.DownSampleVideo("/data/videos/mouse1.avi")
 
     Downsamples the video using default values and saves it in /data/videos as mouse1cropped.avi
 
     Windows:
-    >>> shortenedvideoname=deeplabcut.DownSampleVideo('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi',
-    ... width=220,height=320,outsuffix='cropped')
+    >>> shortenedvideoname = deeplabcut.DownSampleVideo(
+    ...     "C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi", width=220, height=320, outsuffix="cropped"
+    ... )
 
     Downsamples the video to a width of 220 and height of 320 and
     saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1cropped.avi
@@ -578,13 +580,14 @@ def rotate_video(vname, angle, rotatecw="Arbitrary", outsuffix="rotated", outpat
     ----------
 
     Linux/MacOs
-    >>> deeplabcut.rotate_video('/data/videos/mouse1.avi',angle=90)
+    >>> deeplabcut.rotate_video("/data/videos/mouse1.avi", angle=90)
 
     Rotates the video by 90 degrees and saves it in /data/videos as mouse1rotated.avi
 
     Windows:
-    >>> shortenedvideoname=deeplabcut.rotate_video('C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi',
-    ... angle=180,rotatecw='Yes')
+    >>> shortenedvideoname = deeplabcut.rotate_video(
+    ...     "C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi", angle=180, rotatecw="Yes"
+    ... )
 
     Rotates the video by 180 degrees and
     saves it in C:\\yourusername\\rig-95\\Videos as reachingvideo1rotated.avi

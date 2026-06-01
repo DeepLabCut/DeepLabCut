@@ -44,12 +44,12 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
     Examples
     --------
     Convert csv annotation files for reaching-task project into hdf.
-    >>> deeplabcut.convertcsv2h5('/analysis/project/reaching-task/config.yaml')
+    >>> deeplabcut.convertcsv2h5("/analysis/project/reaching-task/config.yaml")
 
     --------
     Convert csv annotation files for reaching-task project into hdf
     while changing the scorer/annotator in all annotation files to Albert!
-    >>> deeplabcut.convertcsv2h5('/analysis/project/reaching-task/config.yaml',scorer='Albert')
+    >>> deeplabcut.convertcsv2h5("/analysis/project/reaching-task/config.yaml", scorer="Albert")
     --------
     """
     cfg = auxiliaryfunctions.read_config(config)

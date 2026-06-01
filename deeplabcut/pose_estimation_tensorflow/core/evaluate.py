@@ -240,10 +240,10 @@ def return_evaluate_network_data(
     Examples
     --------
     If you do not want to plot
-    >>> deeplabcut._evaluate_network_data('/analysis/project/reaching-task/config.yaml', shuffle=[1])
+    >>> deeplabcut._evaluate_network_data("/analysis/project/reaching-task/config.yaml", shuffle=[1])
     --------
     If you want to plot
-    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',shuffle=[1],plotting=True)
+    >>> deeplabcut.evaluate_network("/analysis/project/reaching-task/config.yaml", shuffle=[1], plotting=True)
     """
 
     import os

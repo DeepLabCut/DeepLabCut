@@ -47,7 +47,7 @@ def calc_distance_between_points_two_vectors_2d(v1, v2):
     testing:
     >>> v1 = np.zeros((2, 5))
     >>> v2 = np.zeros((2, 5))
-    >>> v2[1, :]  = [0, 10, 25, 50, 100]
+    >>> v2[1, :] = [0, 10, 25, 50, 100]
     >>> d = calc_distance_between_points_two_vectors_2d(v1.T, v2.T)
     """
 
@@ -114,7 +114,12 @@ def calc_angle_between_vectors_of_points_2d(v1, v2):
 
     Testing:
     >>> v1 = np.zeros((2, 4))
-    >>> v1[1, :] = [1, 1, 1, 1, ]
+    >>> v1[1, :] = [
+    ...     1,
+    ...     1,
+    ...     1,
+    ...     1,
+    ... ]
     >>> v2 = np.zeros((2, 4))
     >>> v2[0, :] = [0, 1, 0, -1]
     >>> v2[1, :] = [1, 0, -1, 0]

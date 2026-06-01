@@ -134,9 +134,9 @@ class Registry:
 
         The first scope will be split from key.
         Examples:
-            >>> Registry.split_scope_key('mmdet.ResNet')
+            >>> Registry.split_scope_key("mmdet.ResNet")
             'mmdet', 'ResNet'
-            >>> Registry.split_scope_key('ResNet')
+            >>> Registry.split_scope_key("ResNet")
             None, 'ResNet'
         Return:
             tuple[str | None, str]: The former element is the first scope of
@@ -232,12 +232,12 @@ class Registry:
 
         Example:
             >>> from deeplabcut.pose_estimation_pytorch.registry import Registry
-            >>> models = Registry('models')
-            >>> mmdet_models = Registry('models', parent=models)
+            >>> models = Registry("models")
+            >>> mmdet_models = Registry("models", parent=models)
             >>> class Model:
             >>>     pass
             >>> mmdet_models.register_module(Model)
-            >>> obj = models.build(dict(type='mmdet.Model'))
+            >>> obj = models.build(dict(type="mmdet.Model"))
             >>> assert isinstance(obj, Model)
         """
         assert isinstance(registry, Registry)

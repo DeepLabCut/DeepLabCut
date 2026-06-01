@@ -69,7 +69,7 @@ class ResNet(BaseBackbone):
         Example:
             >>> import torch
             >>> from deeplabcut.pose_estimation_pytorch.models.backbones import ResNet
-            >>> backbone = ResNet(model_name='resnet50', pretrained=False)
+            >>> backbone = ResNet(model_name="resnet50", pretrained=False)
             >>> x = torch.randn(1, 3, 256, 256)
             >>> y = backbone(x)
 

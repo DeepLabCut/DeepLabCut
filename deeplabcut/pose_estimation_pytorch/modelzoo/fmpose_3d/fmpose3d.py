@@ -121,7 +121,7 @@ def get_fmpose3d_inference_api(
     )
 
     # Run inference on an image
-    predictions_3d = fmpose.predict(source="path/to/image.jpg") # or (H, W, 3) numpy array
+    predictions_3d = fmpose.predict(source="path/to/image.jpg")  # or (H, W, 3) numpy array
 
     # Lift 2d predictions to 3d
     keypoints_2d = np.random.rand(num_frames, num_joints, 2)

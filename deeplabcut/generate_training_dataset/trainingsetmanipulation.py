@@ -316,7 +316,7 @@ def check_labels(
 
     Examples
     --------
-    >>> deeplabcut.check_labels('/analysis/project/reaching-task/config.yaml')
+    >>> deeplabcut.check_labels("/analysis/project/reaching-task/config.yaml")
     """
 
     from deeplabcut.utils import visualization
@@ -675,20 +675,20 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     Examples
     --------
     To create a leave-one-folder-out model:
-    >>> trainIndices, testIndices=deeplabcut.mergeandsplit(config,trainindex=0,uniform=False)
+    >>> trainIndices, testIndices = deeplabcut.mergeandsplit(config, trainindex=0, uniform=False)
     returns the indices for the first video folder (as defined in config file)
     as testIndices and all others as trainIndices.
     You can then create the training set by calling (e.g. defining it as Shuffle 3):
-    >>> deeplabcut.create_training_dataset(config,Shuffles=[3],trainIndices=trainIndices,testIndices=testIndices)
+    >>> deeplabcut.create_training_dataset(config, Shuffles=[3], trainIndices=trainIndices, testIndices=testIndices)
 
     To freeze a (uniform) split (i.e. iid sampled from all the data):
-    >>> trainIndices, testIndices=deeplabcut.mergeandsplit(config,trainindex=0,uniform=True)
+    >>> trainIndices, testIndices = deeplabcut.mergeandsplit(config, trainindex=0, uniform=True)
 
     You can then create two model instances that have the identical trainingset.
     Thereby you can assess the role of various parameters on the performance of DLC.
     >>> deeplabcut.create_training_dataset(
-    ...     config,Shuffles=[0,1],trainIndices=[trainIndices, trainIndices],
-    ...     testIndices=[testIndices, testIndices])
+    ...     config, Shuffles=[0, 1], trainIndices=[trainIndices, trainIndices], testIndices=[testIndices, testIndices]
+    ... )
     --------
     """
     # Loading metadata from config file:

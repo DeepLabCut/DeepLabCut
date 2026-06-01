@@ -252,7 +252,7 @@ def export_model(
     Example:
     --------
     Export the first stored snapshot for model trained with shuffle 3:
-    >>> deeplabcut.export_model('/analysis/project/reaching-task/config.yaml',shuffle=3, snapshotindex=-1)
+    >>> deeplabcut.export_model("/analysis/project/reaching-task/config.yaml", shuffle=3, snapshotindex=-1)
     --------
     """
 

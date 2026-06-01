@@ -203,17 +203,23 @@ def create_pretrained_project(
     Example
     --------
     Linux/MacOs loading full_human model and analyzing video /homosapiens1.avi
-    >>> deeplabcut.create_pretrained_project("humanstrokestudy", "Linus",
-    ...     ["/data/videos/homosapiens1.avi"], copy_videos=False)
+    >>> deeplabcut.create_pretrained_project(
+    ...     "humanstrokestudy", "Linus", ["/data/videos/homosapiens1.avi"], copy_videos=False
+    ... )
 
     Loading full_cat model and analyzing video "felixfeliscatus3.avi"
-    >>> deeplabcut.create_pretrained_project("humanstrokestudy", "Linus",
-    ...     ["/data/videos/felixfeliscatus3.avi"], model="full_cat", engine=Engine.TF)
+    >>> deeplabcut.create_pretrained_project(
+    ...     "humanstrokestudy", "Linus", ["/data/videos/felixfeliscatus3.avi"], model="full_cat", engine=Engine.TF
+    ... )
 
     Windows:
-    >>> deeplabcut.create_pretrained_project("humanstrokestudy", "Bill",
-    ...     [r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'],
-    ...     r'C:\yourusername\analysis\project', copy_videos=True)
+    >>> deeplabcut.create_pretrained_project(
+    ...     "humanstrokestudy",
+    ...     "Bill",
+    ...     [r"C:\yourusername\rig-95\Videos\reachingvideo1.avi"],
+    ...     r"C:\yourusername\analysis\project",
+    ...     copy_videos=True,
+    ... )
     Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
     """
     if engine == Engine.TF:
@@ -336,17 +342,23 @@ def create_pretrained_project_pytorch(
     Example
     --------
     Linux/MacOs loading full_human model and analyzing video /homosapiens1.avi
-    >>> deeplabcut.create_pretrained_project_pytorch("humanstrokestudy", "Linus",
-    ...     ["/data/videos/homosapiens1.avi"], copy_videos=False)
+    >>> deeplabcut.create_pretrained_project_pytorch(
+    ...     "humanstrokestudy", "Linus", ["/data/videos/homosapiens1.avi"], copy_videos=False
+    ... )
 
     Loading full_cat model and analyzing video "felixfeliscatus3.avi"
-    >>> deeplabcut.create_pretrained_project_pytorch("humanstrokestudy", "Linus",
-    ...     ["/data/videos/felixfeliscatus3.avi"], model="full_cat", engine=Engine.TF)
+    >>> deeplabcut.create_pretrained_project_pytorch(
+    ...     "humanstrokestudy", "Linus", ["/data/videos/felixfeliscatus3.avi"], model="full_cat", engine=Engine.TF
+    ... )
 
     Windows:
-    >>> deeplabcut.create_pretrained_project_pytorch("humanstrokestudy",
-    ...     "Bill", [r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'],
-    ...     r'C:\yourusername\analysis\project', copy_videos=True)
+    >>> deeplabcut.create_pretrained_project_pytorch(
+    ...     "humanstrokestudy",
+    ...     "Bill",
+    ...     [r"C:\yourusername\rig-95\Videos\reachingvideo1.avi"],
+    ...     r"C:\yourusername\analysis\project",
+    ...     copy_videos=True,
+    ... )
     Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
     """
     # Check arguments
@@ -539,17 +551,23 @@ def create_pretrained_project_tensorflow(
     Example
     --------
     Linux/MacOs loading full_human model and analyzing video /homosapiens1.avi
-    >>> deeplabcut.create_pretrained_project_tensorflow("humanstrokestudy",
-    ...  "Linus", ["/data/videos/homosapiens1.avi"], copy_videos=False)
+    >>> deeplabcut.create_pretrained_project_tensorflow(
+    ...     "humanstrokestudy", "Linus", ["/data/videos/homosapiens1.avi"], copy_videos=False
+    ... )
 
     Loading full_cat model and analyzing video "felixfeliscatus3.avi"
-    >>> deeplabcut.create_pretrained_project_tensorflow("humanstrokestudy",
-    ...  "Linus", ["/data/videos/felixfeliscatus3.avi"], model="full_cat", engine=Engine.TF)
+    >>> deeplabcut.create_pretrained_project_tensorflow(
+    ...     "humanstrokestudy", "Linus", ["/data/videos/felixfeliscatus3.avi"], model="full_cat", engine=Engine.TF
+    ... )
 
     Windows:
-    >>> deeplabcut.create_pretrained_project_tensorflow("humanstrokestudy",
-    ...  "Bill", [r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'],
-    ...  r'C:\yourusername\analysis\project', copy_videos=True)
+    >>> deeplabcut.create_pretrained_project_tensorflow(
+    ...     "humanstrokestudy",
+    ...     "Bill",
+    ...     [r"C:\yourusername\rig-95\Videos\reachingvideo1.avi"],
+    ...     r"C:\yourusername\analysis\project",
+    ...     copy_videos=True,
+    ... )
     Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
     """
     if not model:

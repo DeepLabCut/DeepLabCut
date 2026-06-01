@@ -88,7 +88,7 @@ class HRNet(BaseBackbone):
         Example:
             >>> import torch
             >>> from deeplabcut.pose_estimation_pytorch.models.backbones import HRNet
-            >>> backbone = HRNet(model_name='hrnet_w32', pretrained=False)
+            >>> backbone = HRNet(model_name="hrnet_w32", pretrained=False)
             >>> x = torch.randn(1, 3, 256, 256)
             >>> y = backbone(x)
         """

@@ -139,10 +139,10 @@ def create_labeled_video_3d(
     Example
     -------
     Linux/MacOs
-    >>> deeplabcut.create_labeled_video_3d(config,['/data/project1/videos/3d.h5'],start=100, end=500)
+    >>> deeplabcut.create_labeled_video_3d(config, ["/data/project1/videos/3d.h5"], start=100, end=500)
 
     To create labeled videos for all the triangulated files in the folder
-    >>> deeplabcut.create_labeled_video_3d(config,['/data/project1/videos'],start=100, end=500)
+    >>> deeplabcut.create_labeled_video_3d(config, ["/data/project1/videos"], start=100, end=500)
 
     To set the xlim, ylim, zlim and rotate the view of the 3d axis
     >>> deeplabcut.create_labeled_video_3d(config,['/data/project1/videos'],start=100,

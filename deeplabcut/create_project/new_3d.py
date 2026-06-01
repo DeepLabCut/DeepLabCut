@@ -40,10 +40,10 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
     Example
     --------
     Linux/MacOs
-    >>> deeplabcut.create_new_project_3d('reaching-task','Linus',2)
+    >>> deeplabcut.create_new_project_3d("reaching-task", "Linus", 2)
 
     Windows:
-    >>> deeplabcut.create_new_project('reaching-task','Bill',2)
+    >>> deeplabcut.create_new_project("reaching-task", "Bill", 2)
     Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \\ )
     """
     from datetime import datetime as dt
