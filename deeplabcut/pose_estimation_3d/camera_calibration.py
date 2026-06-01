@@ -80,7 +80,7 @@ def calibrate_cameras(
     >>> deeplabcut.calibrate_camera(config)
 
     Once the right set of calibration images are selected,
-    >>> deeplabcut.calibrate_camera(config,calibrate=True)
+    >>> deeplabcut.calibrate_camera(config, calibrate=True)
     """
     # Termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -298,7 +298,7 @@ def check_undistortion(config: str | Path, cbrow=8, cbcol=6, plot=True):
     Example
     --------
     Linux/MacOs/Windows
-    >>> deeplabcut.check_undistortion(config, cbrow = 8,cbcol = 6)
+    >>> deeplabcut.check_undistortion(config, cbrow=8, cbcol=6)
     """
 
     # Read the config file

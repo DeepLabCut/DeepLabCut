@@ -139,7 +139,7 @@ def train_network(
         --------
         To train the network for first shuffle of the training dataset
 
-        >>> deeplabcut.train_network('/analysis/project/reaching-task/config.yaml')
+        >>> deeplabcut.train_network("/analysis/project/reaching-task/config.yaml")
 
         To train the network for second shuffle of the training dataset
 

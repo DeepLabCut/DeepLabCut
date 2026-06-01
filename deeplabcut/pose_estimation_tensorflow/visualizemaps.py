@@ -60,7 +60,7 @@ def extract_maps(
     Examples
     --------
     If you want to extract the data for image 0 and 103 (of the training set) for model trained with shuffle 0.
-    >>> deeplabcut.extract_maps(configfile,0,Indices=[0,103])
+    >>> deeplabcut.extract_maps(configfile, 0, Indices=[0, 103])
     """
 
     import numpy as np
@@ -303,7 +303,7 @@ def extract_save_all_maps(
     Examples
     --------
     Calculated maps for images 0, 1 and 33.
-    >>> deeplabcut.extract_save_all_maps('/analysis/project/reaching-task/config.yaml', shuffle=1,Indices=[0,1,33])
+    >>> deeplabcut.extract_save_all_maps("/analysis/project/reaching-task/config.yaml", shuffle=1, Indices=[0, 1, 33])
 
     """
 

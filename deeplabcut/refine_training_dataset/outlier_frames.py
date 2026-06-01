@@ -1100,7 +1100,7 @@ def merge_datasets(config: str | Path, forceiterate=None):
     Examples
     --------
 
-    >>> deeplabcut.merge_datasets('/analysis/project/reaching-task/config.yaml')
+    >>> deeplabcut.merge_datasets("/analysis/project/reaching-task/config.yaml")
     """
 
     cfg = auxiliaryfunctions.read_config(config)

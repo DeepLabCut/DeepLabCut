@@ -231,7 +231,7 @@ def train_network(
         paths to the values to update in the config.
         For example, to update the gpus to run the training on, you can use:
         ```
-        pytorch_cfg_updates={"runner.gpus": [0,1,2,3]}
+        pytorch_cfg_updates = {"runner.gpus": [0, 1, 2, 3]}
         ```
 
     Returns
@@ -242,7 +242,7 @@ def train_network(
     --------
     To train the network for first shuffle of the training dataset
 
-    >>> deeplabcut.train_network('/analysis/project/reaching-task/config.yaml')
+    >>> deeplabcut.train_network("/analysis/project/reaching-task/config.yaml")
 
     To train the network for second shuffle of the training dataset
 
@@ -648,10 +648,10 @@ def return_evaluate_network_data(
     Examples
     --------
     If you do not want to plot
-    >>> deeplabcut._evaluate_network_data('/analysis/project/reaching-task/config.yaml', shuffle=[1])
+    >>> deeplabcut._evaluate_network_data("/analysis/project/reaching-task/config.yaml", shuffle=[1])
     --------
     If you want to plot
-    >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',shuffle=[1],plotting=True)
+    >>> deeplabcut.evaluate_network("/analysis/project/reaching-task/config.yaml", shuffle=[1], plotting=True)
     """
     config = Path(config)
     if engine is None:
@@ -1670,7 +1670,7 @@ def extract_maps(
     Examples
     --------
     If you want to extract the data for image 0 and 103 (of the training set) for model trained with shuffle 0.
-    >>> deeplabcut.extract_maps(configfile,0,Indices=[0,103])
+    >>> deeplabcut.extract_maps(configfile, 0, Indices=[0, 103])
     """
     config = Path(config)
     if engine is None:
@@ -1843,7 +1843,7 @@ def extract_save_all_maps(
     Examples
     --------
     Calculated maps for images 0, 1 and 33.
-    >>> deeplabcut.extract_save_all_maps('/analysis/project/reaching-task/config.yaml', shuffle=1,Indices=[0,1,33])
+    >>> deeplabcut.extract_save_all_maps("/analysis/project/reaching-task/config.yaml", shuffle=1, Indices=[0, 1, 33])
 
     """
     config = Path(config)
@@ -1959,7 +1959,7 @@ def export_model(
     Example:
     --------
     Export the first stored snapshot for model trained with shuffle 3:
-    >>> deeplabcut.export_model('/analysis/project/reaching-task/config.yaml',shuffle=3, snapshotindex=-1)
+    >>> deeplabcut.export_model("/analysis/project/reaching-task/config.yaml", shuffle=3, snapshotindex=-1)
     --------
     """
     cfg_path = Path(cfg_path)
