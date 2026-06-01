@@ -4,14 +4,14 @@ deeplabcut:
   last_metadata_updated: '2026-03-06'
   ignore: false
 ---
+
 (file:model-zoo)=
+
 # The DeepLabCut Model Zoo!
 
 ![image](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/8957c690-4f27-4430-8581-4161fd58d052/68747470733a2f2f696d616765732e73717561726573706163652d63646e2e636f6d2f636f6e74656e742f76312f3537663664353163396637343536366635356563663237312f313631363439323337333730302d50474f41433732494f4236415545343756544a582f6b6531375a77644742546f646449.png?format=450w)
 
-
 ## 🏠 [Home page](http://modelzoo.deeplabcut.org/)
-
 
 Started in 2020, expanded in 2022 with PhD student [Shaokai Ye et al.](https://arxiv.org/abs/2203.07436v1), and the
 first proper [SuperAnimal Foundation Models](#about-the-superanimal-models) published in 2024 🔥, the Model Zoo is four things:
@@ -19,10 +19,11 @@ first proper [SuperAnimal Foundation Models](#about-the-superanimal-models) publ
 - (1) a collection of models that are trained on diverse data across (typically) large datasets, which means you do not need to train models yourself, rather you can use them in your research applications.
 - (2) a contribution website for community crowd sourcing of expertly labeled keypoints to improve models! You can get involved here: [contrib.deeplabcut.org](https://contrib.deeplabcut.org/).
 - (3) a no-install DeepLabCut that you can use on ♾[Google Colab](https://github.com/DeepLabCut/DeepLabCut/blob/main/examples/COLAB/COLAB_DEMO_SuperAnimal.ipynb),
-test our models in 🕸[the browser](https://contrib.deeplabcut.org/), or on our 🤗[HuggingFace](https://huggingface.co/spaces/DeepLabCut/DeepLabCutModelZoo-SuperAnimals) app!
+  test our models in 🕸[the browser](https://contrib.deeplabcut.org/), or on our 🤗[HuggingFace](https://huggingface.co/spaces/DeepLabCut/DeepLabCutModelZoo-SuperAnimals) app!
 - (4) new methods to make SuperAnimal Foundation Models that combine data across different labs/datasets, keypoints, animals/species, and use on your data!
 
 ## Quick Start:
+
 ```
 pip install deeplabcut[gui,modelzoo]
 ```
@@ -34,52 +35,54 @@ Animal pose estimation is critical in applications ranging from neuroscience to 
 To provide the community with easy access to such high performance models across diverse environments and species, we present a new paradigm for building pre-trained animal pose models -- which we call SuperAnimal models -- and the ability to use them for transfer learning (e.g., fine-tune them if needed).
 
 ## SuperAnimal members:
+
 - Models are based on what they are trained on, for example `superanimal_quadruped_x` is trained on [SuperAnimal-Quadruped-80K](https://zenodo.org/records/10619173). Each model class is described below:
-
-
 
 ### SuperAnimal-Quadruped:
 
-
 - `superanimal_quadruped_x` models aim to work across a large range of quadruped animals, from horses, dogs, sheep, rodents, to elephants. The camera perspective is orthogonal to the animal ("side view"), and most of the data includes the animals face (thus the front and side of the animal). You will note we have several variants that differ in speed vs. performance, so please do test them out on your data to see which is best suited for your application. Also note we have a "video adaptation" feature, which lets you adapt your data to the model in a self-supervised way. No labeling needed!
+
 - [Please see the full datasheet here](https://zenodo.org/records/10619173)
+
 - [More details on the models (detector, pose estimators)](https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-Quadruped)
+
 - We provide several models:
-    - `superanimal_quadruped_hrnetw32` (pytorch engine)
-        - `superanimal_quadruped_hrnetw32` is a top-down model that is paired with a detector. That means it takes a cropped image from an object detector and predicts the keypoints. The object detector is currently a trained [ResNet50-based Faster-RCNN](https://pytorch.org/vision/stable/models/faster_rcnn.html).
-    - `superanimal_quadruped_dlcrnet` (tensorflow engine)
-        - `superanimal_quadruped_dlcrnet` is a bottom-up model that predicts all keypoints, then groups them into individuals. This can be faster, but more error prone.
-    - `superanimal_quadruped` -> This is the same as `superanimal_quadruped_dlcrnet`, this was the old naming and being depreciated.
-    - For all models, they are automatically downloaded to modelzoo/checkpoints when used.
+
+  - `superanimal_quadruped_hrnetw32` (pytorch engine)
+    - `superanimal_quadruped_hrnetw32` is a top-down model that is paired with a detector. That means it takes a cropped image from an object detector and predicts the keypoints. The object detector is currently a trained [ResNet50-based Faster-RCNN](https://pytorch.org/vision/stable/models/faster_rcnn.html).
+  - `superanimal_quadruped_dlcrnet` (tensorflow engine)
+    - `superanimal_quadruped_dlcrnet` is a bottom-up model that predicts all keypoints, then groups them into individuals. This can be faster, but more error prone.
+  - `superanimal_quadruped` -> This is the same as `superanimal_quadruped_dlcrnet`, this was the old naming and being depreciated.
+  - For all models, they are automatically downloaded to modelzoo/checkpoints when used.
 
 - Here are example images of what the model is trained on:
-![SA_Q](https://user-images.githubusercontent.com/28102185/209957688-954fb616-7750-4521-bb52-20a51c3a7718.png)
-
-
+  ![SA_Q](https://user-images.githubusercontent.com/28102185/209957688-954fb616-7750-4521-bb52-20a51c3a7718.png)
 
 ### SuperAnimal-TopViewMouse:
 
+- `superanimal_topviewmouse_x` aims to work across lab mice in different lab settings from a top-view perspective; this is very polar in many behavioral assays in freely moving mice.
 
--  `superanimal_topviewmouse_x` aims to work across lab mice in different lab settings from a top-view perspective; this is very polar in many behavioral assays in freely moving mice.
 - [Please see the full datasheet here](https://zenodo.org/records/10618947)
-- [More details on the models (detector, pose estimators)](https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-TopViewMouse)
-- We provide several models:
-    - `superanimal_topviewmouse_hrnetw32` (pytorch engine)
-        - `superanimal_topviewmouse_hrnetw32` is a top-down model that is paired with a detector. That means it takes a cropped image from an object detector and predicts the keypoints. The object detector is currently a trained [ResNet50-based Faster-RCNN](https://pytorch.org/vision/stable/models/faster_rcnn.html).
-    - `superanimal_topviewmouse_dlcrnet` (tensorflow engine)
-        - `superanimal_topviewmouse_dlcrnet` is a bottom-up model that predicts all keypoints then groups them into individuals. This can be faster, but more error prone.
-    - `superanimal_topviewmouse` -> This is the same as `superanimal_topviewmouse_dlcrnet`, this was the old naming and being depreciated.
-    - For all models, they are automatically downloaded to modelzoo/checkpoints when used.
 
--  Here are example images of what the model is trained on:
-![SA-TVM](https://user-images.githubusercontent.com/28102185/209957260-c0db72e0-4fdf-434c-8579-34bc5f27f907.png)
+- [More details on the models (detector, pose estimators)](https://huggingface.co/mwmathis/DeepLabCutModelZoo-SuperAnimal-TopViewMouse)
+
+- We provide several models:
+
+  - `superanimal_topviewmouse_hrnetw32` (pytorch engine)
+    - `superanimal_topviewmouse_hrnetw32` is a top-down model that is paired with a detector. That means it takes a cropped image from an object detector and predicts the keypoints. The object detector is currently a trained [ResNet50-based Faster-RCNN](https://pytorch.org/vision/stable/models/faster_rcnn.html).
+  - `superanimal_topviewmouse_dlcrnet` (tensorflow engine)
+    - `superanimal_topviewmouse_dlcrnet` is a bottom-up model that predicts all keypoints then groups them into individuals. This can be faster, but more error prone.
+  - `superanimal_topviewmouse` -> This is the same as `superanimal_topviewmouse_dlcrnet`, this was the old naming and being depreciated.
+  - For all models, they are automatically downloaded to modelzoo/checkpoints when used.
+
+- Here are example images of what the model is trained on:
+  ![SA-TVM](https://user-images.githubusercontent.com/28102185/209957260-c0db72e0-4fdf-434c-8579-34bc5f27f907.png)
 
 ### SuperAnimal-Human:
 
 - `superanimal_humanbody` models aim to work across human body pose estimation from various camera perspectives and environments. The models are designed to handle different human poses, activities, and lighting conditions commonly found in human motion analysis, sports analysis, and behavioral studies.
-    - `superanimal_humanbody_rtmpose_x` (pytorch engine)
-        - `superanimal_humanbody_rtmpose_x` is a top-down model that is paired with a detector pretrained from `torchvision`. That means it takes a cropped image from an object detector and predicts the keypoints. This model uses 17 body parts in the COCO body7 format.
-
+  - `superanimal_humanbody_rtmpose_x` (pytorch engine)
+    - `superanimal_humanbody_rtmpose_x` is a top-down model that is paired with a detector pretrained from `torchvision`. That means it takes a cropped image from an object detector and predicts the keypoints. This model uses 17 body parts in the COCO body7 format.
 
 ### Practical example: Using SuperAnimal models for inference without training.
 
@@ -126,7 +129,6 @@ result = deeplabcut.video_inference_superanimal(
 df_3d = result[video_path]["df_3d"]
 ```
 
-
 ### Practical example: Using SuperAnimal model bottom up, considering video/animal size.
 
 In our work we introduced a spatial-pyramid for smartly rescaling images. Imagine if you frames are much larger than what we trained on, it would be hard for the model to find the animal! Here, you can simply guide the model with the `scale_list`:
@@ -148,12 +150,13 @@ deeplabcut.video_inference_superanimal([video_path],
 ```
 
 ### Practical example: Using transfer learning with superanimal weights.
+
 In the `deeplabcut.train_network` function, the `superanimal_transfer_learning` option plays a pivotal role. If it's set to __True__, it uses a new decoding layer and allows you to use superanimal weights in any project, no matter the number of keypoints. However, if it's set to __False__, you are doing fine-tuning. So, make sure your dataset has the right number of keypoints.
 
 Specifically:
-    * `superanimal_quadruped_x` uses 39 keypoints
-    * `superanimal_topviewmouse_x` uses 27 keypoints
-    * `superanimal_humanbody_x` uses 17 keypoints
+\* `superanimal_quadruped_x` uses 39 keypoints
+\* `superanimal_topviewmouse_x` uses 27 keypoints
+\* `superanimal_humanbody_x` uses 17 keypoints
 
 ```python
 import os
@@ -190,8 +193,6 @@ better to pass `scale_list` in the range within 1000.
 Pixel statistics domain shift: The brightness of your video might look very different from our training datasets.
 This might either result in jittering predictions in the video or fail modes for lab mice videos (if the brightness of
 the mice is unusual compared to our training dataset). You can use our "video adaptation" model to counter this.
-
-
 
 ### Our longer term perspective ...
 

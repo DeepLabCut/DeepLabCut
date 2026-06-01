@@ -4,6 +4,7 @@ deeplabcut:
   last_metadata_updated: '2026-03-06'
   ignore: false
 ---
+
 # DeepLabCut Benchmarking - User Guide
 
 ## Reasoning for benchmarking models in DLC (across DLC versions and architectures)
@@ -48,45 +49,59 @@ dlc-project
 ### Creating a shuffle
 
 Creating a new shuffle with the same train/test split as an existing one:
+
 ### In the DeepLabCut GUI
+
 1. Front page > Load project > Open project folder > choose *config.yaml*
-2. Select *'Create training dataset'* tab
-3. Tick *Use an existing data split* option
 
-    ![create_from_existing](<assets/img1.png>)
-4. Click 'View existing shuffles':
-    - This is used to view the indices of shuffles created for a project to determine which index is available to assign to a new shuffle.
-    - The elements described in this window are:
-        - train_fraction: The fraction of the dataset used for training.
-        - index: The index of the shuffle.
-        - split: The data split for the shuffle. The integer value on its own does not
-hold any meaning, but this "split" value indicates which shuffles have the same split
-(as their results can then be compared)
-        - engine: Whether it is a PyTorch or TensorFlow shuffle
+1. Select *'Create training dataset'* tab
 
-            ![view_existing_sh](<assets/img2.png>)
-5. Choose the index of the training shuffle to replicate. Let us assume we want
-to replicate the train-test split from OpenfieldOct30-trainset95shuffle3, in which
-`split: 3`. In this case, we insert in the *'From shuffle'* menu
+1. Tick *Use an existing data split* option
 
-    ![choose_existing_index](<assets/img3.png>)
-6. To create this new dataset, set the shuffle option to an un-used shuffle
-(here 4)
+   ![create_from_existing](assets/img1.png)
 
-    ![choose_new_index](<assets/img4.png>)
-7. Click *'Create training dataset'* and move on to *'train network'*. Shuffle should be
-set to the new shuffle entered at the previous step (in this case, 4)
+1. Click 'View existing shuffles':
 
-    ![create_from_existing](<assets/img5.png>)
-8. To view/edit the specifications of the model you created, you can go to `pytoch_config.yaml` file at:
-    ```
-    dlc-project
-    |
-    |___ dlc-models-pytorch
-        |__ iterationX
-            |__ shuffleX
-                |__ pytorch_config.yaml
-    ```
+   - This is used to view the indices of shuffles created for a project to determine which index is available to assign to a new shuffle.
+   - The elements described in this window are:
+     - train_fraction: The fraction of the dataset used for training.
+
+     - index: The index of the shuffle.
+
+     - split: The data split for the shuffle. The integer value on its own does not
+       hold any meaning, but this "split" value indicates which shuffles have the same split
+       (as their results can then be compared)
+
+     - engine: Whether it is a PyTorch or TensorFlow shuffle
+
+       ![view_existing_sh](assets/img2.png)
+
+1. Choose the index of the training shuffle to replicate. Let us assume we want
+   to replicate the train-test split from OpenfieldOct30-trainset95shuffle3, in which
+   `split: 3`. In this case, we insert in the *'From shuffle'* menu
+
+   ![choose_existing_index](assets/img3.png)
+
+1. To create this new dataset, set the shuffle option to an un-used shuffle
+   (here 4)
+
+   ![choose_new_index](assets/img4.png)
+
+1. Click *'Create training dataset'* and move on to *'train network'*. Shuffle should be
+   set to the new shuffle entered at the previous step (in this case, 4)
+
+   ![create_from_existing](assets/img5.png)
+
+1. To view/edit the specifications of the model you created, you can go to `pytoch_config.yaml` file at:
+
+   ```
+   dlc-project
+   |
+   |___ dlc-models-pytorch
+       |__ iterationX
+           |__ shuffleX
+               |__ pytorch_config.yaml
+   ```
 
 ### In Code
 
@@ -123,6 +138,7 @@ Once trained we can evaluate our model using
 ```python
 deeplabcut.evaluate_network(config, Shuffles=[4], snapshotindex="all")
 ```
+
 Now, we can compare performances with peace of mind!
 
 ### Good practices: naming shuffles created from existing ones

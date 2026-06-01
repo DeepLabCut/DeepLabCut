@@ -4,7 +4,9 @@ deeplabcut:
   last_metadata_updated: '2026-03-06'
   ignore: false
 ---
+
 (labeling)=
+
 # Labeling GUI
 
 ## Selecting Frames to Label
@@ -12,10 +14,11 @@ deeplabcut:
 In DeepLabCut, choosing the right frames for labeling is a key step. The trick is always to select the MOST DIVERSE data you can that your model will see. That means good lighting, bad lighting, anything you want to throw at it. So, first, pick a range of diverse videos! Then, we will help you pick frames. You've got two easy ways to do this:
 
 1. **Let DeepLabCut Choose:** DeepLabCut can extract frames automatically for you. It's got two neat ways to do that:
+
    - **Uniform:** This is like taking a snapshot at regular time intervals.
    - **K-means clustering:** This one applies k-means and picks images from different clusters. This is typically better, as it gives you a variety of actions and poses. Note, as it is a clustering tool, it will miss rare events, so ideally run this step, then perhaps consider running the manual GUI to get some rare frames! You can do both within DLC.
 
-2. **Pick Frames Yourself:** Just like flipping through a photo album, you can go through your video and pick the frames that catch your eye - this is great for finding rare frames. Choose the **`manual`** extraction method.
+1. **Pick Frames Yourself:** Just like flipping through a photo album, you can go through your video and pick the frames that catch your eye - this is great for finding rare frames. Choose the **`manual`** extraction method.
 
 ### Here's how to get started:
 
@@ -53,9 +56,8 @@ Alright, you've got your extracted frames ready. Now comes the labeling!
 - **Save Progress:** Remember to save your work as you go with **`Command and S`** (or **`Ctrl and S`** on Windows).
 
 > 💡 **Note:** For a detailed walkthrough on using the Napari labeling GUI, have a look at the
-[DeepLabCut Napari Guide](file:napari-gui-landing). Additionally, you can watch our instructional
-[YouTube video](https://www.youtube.com/watch?v=hsA9IB5r73E) for more insights and tips.
-
+> \[DeepLabCut Napari Guide\](file:napari-gui-landing). Additionally, you can watch our instructional
+> [YouTube video](https://www.youtube.com/watch?v=hsA9IB5r73E) for more insights and tips.
 
 ### Completing the Set
 

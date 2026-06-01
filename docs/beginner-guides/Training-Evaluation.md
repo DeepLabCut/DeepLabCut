@@ -4,9 +4,10 @@ deeplabcut:
   last_metadata_updated: '2026-03-06'
   ignore: false
 ---
-# Neural Network training and evaluation in the GUI
-<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572296495650-Y4ZTJ2XP2Z9XF1AD74VW/ke17ZwdGBToddI8pDm48kMulEJPOrz9Y8HeI7oJuXxR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UZiU3J6AN9rgO1lHw9nGbkYQrCLTag1XBHRgOrY8YAdXW07ycm2Trb21kYhaLJjddA/DLC_logo_blk-01.png?format=1000w" width="150" title="DLC-live" alt="DLC LIVE!" align="right" vspace = "50">
 
+# Neural Network training and evaluation in the GUI
+
+<img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1572296495650-Y4ZTJ2XP2Z9XF1AD74VW/ke17ZwdGBToddI8pDm48kMulEJPOrz9Y8HeI7oJuXxR7gQa3H78H3Y0txjaiv_0fDoOvxcdMmMKkDsyUqMSsMWxHk725yiiHCCLfrh8O1z5QPOohDIaIeljMHgDF5CVlOqpeNLcJ80NK65_fV7S1UZiU3J6AN9rgO1lHw9nGbkYQrCLTag1XBHRgOrY8YAdXW07ycm2Trb21kYhaLJjddA/DLC_logo_blk-01.png?format=1000w" width="150" title="DLC-live" alt="DLC LIVE!" align="right" vspace = "50">
 
 Before training your model, the first step is to assemble your training dataset.
 
@@ -36,22 +37,21 @@ After training, it's time to see how well your model performs.
 ### Steps to Evaluate the Network
 
 1. Find and click on the **`Evaluate Network`** tab.
-2. **Choose Evaluation Options:**
+1. **Choose Evaluation Options:**
    - **Plot Predictions:** Select this to visualize the model's predictions, similar to standard DeepLabCut (DLC) evaluations.
    - **Compare Bodyparts:** Opt to compare all the bodyparts for a comprehensive evaluation.
-3. Click the **`Evaluate Network`** button, located on the right side of the main window.
+1. Click the **`Evaluate Network`** button, located on the right side of the main window.
 
->💡 Tip: If you wish to evaluate all saved snapshots, go to the configuration file and change the `snapshotindex` parameter to `all`.
-
+> 💡 Tip: If you wish to evaluate all saved snapshots, go to the configuration file and change the `snapshotindex` parameter to `all`.
 
 ### Understanding the Evaluation Results
 
 - **Performance Metrics:** DLC will assess the latest snapshot of your model, generating a `.CSV` file with performance
-metrics. This file is stored in the **`evaluation-results`** (for TensorFlow models) or the
-**`evaluation-results-pytorch`** (for PyTorch models) folder within your project.
-
+  metrics. This file is stored in the **`evaluation-results`** (for TensorFlow models) or the
+  **`evaluation-results-pytorch`** (for PyTorch models) folder within your project.
 
 ![Combined Evaluation Results in DeepLabCut](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779617667-0RLTM9DVRALN9YIKSHJZ/combined-evaluation-results.png?format=750w))
+
 - **Visual Feedback:** Additionally, DLC creates subfolders containing your frames overlaid with both the labeled bodyparts and the model's predictions, allowing you to visually gauge the network's performance.
 
 ![Evaluation Example in DeepLabCut](https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1717779623162-BFDAW37B9TO94EGME2O5/check-labels.png?format=500w))
