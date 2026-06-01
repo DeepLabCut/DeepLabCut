@@ -50,8 +50,8 @@ class MappingAccessMixin:
             return getattr(self, canonical)
         try:
             return getattr(self, key)
-        except AttributeError:
-            raise KeyError(key)
+        except AttributeError as err:
+            raise KeyError(key) from err
 
     def __setitem__(self, key: str, value: Any) -> None:
         canonical = self._resolve_alias(key)

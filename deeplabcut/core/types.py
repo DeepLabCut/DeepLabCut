@@ -1,15 +1,12 @@
-from typing import TypeAlias, Annotated
+from typing import Annotated, TypeAlias
 
 import numpy as np
-from pydantic import  GetPydanticSchema, InstanceOf
 from numpy.typing import NDArray
-
+from pydantic import GetPydanticSchema, InstanceOf
 
 PydanticNDArray: TypeAlias = Annotated[
     NDArray,
-    GetPydanticSchema(
-        lambda _s, h: h(InstanceOf[np.ndarray]), lambda _s, h: h(InstanceOf[np.ndarray])
-    ),
+    GetPydanticSchema(lambda _s, h: h(InstanceOf[np.ndarray]), lambda _s, h: h(InstanceOf[np.ndarray])),
 ]
 
 

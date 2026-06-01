@@ -14,6 +14,7 @@ These tests document default values and behavior so that a migration to a new
 configuration system can preserve existing behavior. Add or adjust assertions
 if you intentionally change defaults.
 """
+
 import os
 import tempfile
 from pathlib import Path
@@ -26,7 +27,6 @@ from deeplabcut.modelzoo.generalized_data_converter.datasets.materialize import 
     SingleDLC_config,
     modify_train_test_cfg,
 )
-
 
 # Modelzoo SingleDLC_config defaults
 # 2026-01-29 config version 0, before centralized typed configs were added
@@ -94,9 +94,7 @@ class TestModelzooProjectConfigDefaults:
         ma_config = MaDLC_config()
         for key, expected in MA_DLC_DEFAULTS_OVERRIDES.items():
             assert ma_config.cfg[key] == expected, f"MaDLC_config.cfg[{key!r}]"
-            assert ma_config.cfg[key] != single_config.cfg[key], (
-                f"MaDLC should differ from Single for {key!r}"
-            )
+            assert ma_config.cfg[key] != single_config.cfg[key], f"MaDLC should differ from Single for {key!r}"
 
     def test_ma_dlc_config_shared_defaults_match_single(self):
         """Keys not overridden in Ma should match Single defaults."""
@@ -105,9 +103,7 @@ class TestModelzooProjectConfigDefaults:
         for key in SINGLE_DLC_DEFAULTS:
             if key in MA_DLC_DEFAULTS_OVERRIDES:
                 continue
-            assert ma_config.cfg[key] == single_config.cfg[key], (
-                f"MaDLC_config.cfg[{key!r}] should match Single"
-            )
+            assert ma_config.cfg[key] == single_config.cfg[key], f"MaDLC_config.cfg[{key!r}] should match Single"
 
 
 class TestModelzooCreateProjectConfig:
@@ -160,7 +156,6 @@ class TestModifyTrainTestCfg:
         """When a valid project layout exists, train/test configs get multi_stage, batch_size, gradient_masking.
         We only assert the intended defaults; full integration would need a real project.
         """
-        from deeplabcut.utils import auxiliaryfunctions
 
         # Document intended behavior: multi_stage=True, batch_size=8, gradient_masking=True
         # Actual call requires compat.return_train_network_path to resolve paths;

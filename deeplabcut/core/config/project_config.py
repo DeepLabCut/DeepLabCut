@@ -156,7 +156,10 @@ class ProjectConfig(ChangeTrackingMixin, MigrationMixin, ConfigMixin):
     corner2move2: list[int] | None = field(
         default=None,
         metadata={
-            "comment": "\nRefinement configuration (parameters from annotation dataset configuration also relevant in this stage)"
+            "comment": (
+                "\nRefinement configuration (parameters from annotation dataset "
+                "configuration also relevant in this stage)"
+            )
         },
     )
     move2corner: bool | None = None

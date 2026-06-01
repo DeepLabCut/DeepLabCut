@@ -214,7 +214,7 @@ class TestValidateAssignment:
 
     def test_invalid_assignment_rejected_and_not_tracked(self):
         cfg = TrackedConfig()
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             cfg.count = "not-an-int"
         assert cfg.count == 0
         assert not cfg.is_dirty
