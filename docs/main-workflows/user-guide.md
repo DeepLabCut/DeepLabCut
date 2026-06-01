@@ -365,23 +365,6 @@ ______________________________________________________________________
 
 #### (C) Select Frames to Label
 
-```{important}
-A good training dataset should consist of a **sufficient number of frames** that **capture the breadth of the
-behavior**. This ideally implies to select the frames from different (behavioral) sessions, different lighting and
-different animals, if those vary substantially (to train an invariant, robust feature detector).
-
-Thus for creating a robust network that you can reuse in the laboratory, a **good training dataset should reflect the diversity of the
-behavior with respect to postures, luminance conditions, background conditions, animal identities, etc**. of the data that
-will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200
-frames gave good results [Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y).
-However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, **more
-or less frames might be necessary to create a good network**.
-
-Ultimately, in order to scale up the analysis to large
-collections of videos with perhaps unexpected conditions, one can also **refine the dataset in an adaptive way** (see
-refinement below).
-```
-
 ```{dropdown} : Converting single-animal data to multi-animal data
 ---
 class-container: multi-animal
@@ -400,6 +383,23 @@ file’s name under the ‘labeled-data’ subfolder.
 
 This function also has various parameters that might be useful based on the user’s
 need.
+
+```{important}
+A good training dataset should consist of a **sufficient number of frames** that **capture the breadth of the
+behavior**. This ideally implies to select the frames from different (behavioral) sessions, different lighting and
+different animals, if those vary substantially (to train an invariant, robust feature detector).
+
+Thus for creating a robust network that you can reuse in the laboratory, a **good training dataset should reflect the diversity of the
+behavior with respect to postures, luminance conditions, background conditions, animal identities, etc**. of the data that
+will be analyzed. For the simple lab behaviors comprising mouse reaching, open-field behavior and fly behavior, 100−200
+frames gave good results [Mathis et al, 2018](https://www.nature.com/articles/s41593-018-0209-y).
+However, depending on the required accuracy, the nature of behavior, the video quality (e.g. motion blur, bad lighting) and the context, **more
+or less frames might be necessary to create a good network**.
+
+Ultimately, in order to scale up the analysis to large
+collections of videos with perhaps unexpected conditions, one can also **refine the dataset in an adaptive way** (see
+refinement below).
+```
 
 ##### Code example
 
@@ -445,9 +445,10 @@ Frame selection can be performed in three ways:
    over the training set.
 
 In brief:
-\- Behavior varies throughout the video -> use uniform sampling.
-\- Behavior is sparse or brief -> use k-means selection.
-\- Specific useful frames are known -> use manual selection.
+
+- Behavior varies throughout the video -> use uniform sampling.
+- Behavior is sparse or brief -> use k-means selection.
+- Specific useful frames are known -> use manual selection.
 
 For best results, restrict frame extraction to video intervals containing the
 behaviors of interest using the `start` and `stop` parameters in `config.yaml`.
@@ -475,11 +476,14 @@ deeplabcut.extract_frames(config_path, "manual")
 ```
 
 The user can use the *Load Video* button to load one of the videos in the project configuration file, use the scroll
-bar to navigate across the video and grab a frame or a range of frames to extract the frame(s)
-(see {numref}`fig-manual-frame-selection`).
+bar to navigate across the video and grab a frame to extract.
+
+<!-- (see {numref}`fig-manual-frame-selection`). -->
+
 The user can also look at the extracted frames and e.g. delete frames (from the directory) that are too similar before
 reloading the set and then manually annotating them.
 
+````{comment}
 ```{figure} https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5c71bfbc71c10b4a23d20567/1550958540700/cropMANUAL.gif?format=750w
 ---
 name: fig-manual-frame-selection
@@ -488,7 +492,7 @@ width: 70%
 align: center
 ---
 Manual frame selection using the `extract_frames` GUI.
-```
+````
 
 ##### API Docs
 
