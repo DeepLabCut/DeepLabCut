@@ -17,14 +17,14 @@ from pathlib import Path
 
 import numpy as np
 
-from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.core.types import DEPRECATED_ARGUMENT
+from deeplabcut.pose_estimation_pytorch.config.pose import MethodType, PoseConfig
+from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.utils import (
     map_id_to_annotations,
     map_image_path_to_id,
 )
-from deeplabcut.pose_estimation_pytorch.config.pose import MethodType, PoseConfig
 
 
 class COCOLoader(Loader):
@@ -59,7 +59,8 @@ class COCOLoader(Loader):
 
         Args:
             project_root: The root directory of the project.
-            model_config: The pose model configuration. Can be a path to a YAML file, a PoseConfig object, or a dictionary.
+            model_config: The pose model configuration. Can be a path to a YAML
+                file, a PoseConfig object, or a dictionary.
             train_json_filename: The name of the JSON file containing the train annotations.
             test_json_filename: The name of the JSON file containing the test annotations.
             model_config_path: The path to the pose model configuration. Deprecated, use `model_config` instead.

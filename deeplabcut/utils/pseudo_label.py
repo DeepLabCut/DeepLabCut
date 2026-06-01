@@ -201,7 +201,7 @@ def keypoint_matching(
         model_name=detector_name,
     )
 
-    # TODO @deruyter92: midway config updates are not ideal. 
+    # TODO @deruyter92: midway config updates are not ideal.
     # We should validate this against the pydantic schema.
     config = update_config(config, max_individuals, device)
     individuals = [f"animal{i}" for i in range(max_individuals)]

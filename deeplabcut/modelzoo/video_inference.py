@@ -19,6 +19,7 @@ from pathlib import Path
 
 import torch
 from dlclibrary.dlcmodelzoo.modelzoo_download import download_huggingface_model
+
 from deeplabcut.core.config import read_config_as_dict, write_config
 from deeplabcut.modelzoo.utils import get_super_animal_scorer
 from deeplabcut.pose_estimation_pytorch.modelzoo.train_from_coco import adaptation_train

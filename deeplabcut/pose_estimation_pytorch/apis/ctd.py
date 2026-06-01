@@ -13,7 +13,6 @@
 from pathlib import Path
 
 import numpy as np
-from omegaconf import DictConfig
 
 import deeplabcut.pose_estimation_pytorch.data as data
 from deeplabcut.pose_estimation_pytorch.data.ctd import (

@@ -79,7 +79,7 @@ class SuperanimalPyTorchInference:
             model_name=pose_model_type,
             detector_name=detector_model_type,
         )
-        # TODO @deruyter92: super animal configs are currently not 
+        # TODO @deruyter92: super animal configs are currently not
         # validated against the pydantic schema. We should add this functionality.
         config = update_config(config, max_individuals, device)
         self._config = config

@@ -14,7 +14,6 @@ from abc import ABC, abstractmethod
 
 import torch
 import torch.nn as nn
-from omegaconf import DictConfig
 
 from deeplabcut.pose_estimation_pytorch.models.criterions import (
     BaseCriterion,

@@ -17,7 +17,7 @@ parts:
   - file: docs/maDLC_UserGuide
   - file: docs/Overviewof3D
   - file: docs/HelperFunctions
-  
+
 - caption: Graphical User Interfaces (GUIs)
   chapters:
   - file: docs/gui/PROJECT_GUI
@@ -50,7 +50,7 @@ parts:
   - file: examples/COLAB/COLAB_HumanPose_with_RTMPose
 
 
-  
+
 - caption: 🚀 Notebooks For Your Data
   chapters:
   - file: examples/COLAB/COLAB_YOURDATA_SuperAnimal

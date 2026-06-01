@@ -22,7 +22,6 @@ import albumentations as A
 import numpy as np
 import pandas as pd
 import torch
-from omegaconf import DictConfig
 from tqdm import tqdm
 
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils

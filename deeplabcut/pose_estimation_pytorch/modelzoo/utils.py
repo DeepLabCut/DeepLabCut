@@ -186,7 +186,8 @@ def raise_warning_if_called_directly():
             stacklevel=2,
         )
 
-# TODO @deruyter92: This logic is currently completely separated from 
+
+# TODO @deruyter92: This logic is currently completely separated from
 # the PoseConfig logic elsewhere. We should put this in line with the rest of the codebase.
 def update_config(config: dict, max_individuals: int, device: str):
     """Loads the model configuration file for a model, detector and SuperAnimal.

@@ -10,17 +10,14 @@
 #
 """Project configuration classes for DeepLabCut pose estimation models."""
 
-from typing import Any
+from dataclasses import field
 from pathlib import Path
-from typing_extensions import Self
-import warnings
+from typing import Any
 
 from pydantic import ConfigDict
 from pydantic.dataclasses import dataclass
-from dataclasses import field
 
-from deeplabcut.core.config.change_tracking import ChangeTrackingMixin
-from deeplabcut.core.config.config_mixin import ConfigMixin
+from deeplabcut.core.config.mixins import ChangeTrackingMixin, ConfigMixin
 from deeplabcut.core.config.versioning import CURRENT_CONFIG_VERSION, MigrationMixin
 
 
@@ -100,18 +97,14 @@ class ProjectConfig(ChangeTrackingMixin, MigrationMixin, ConfigMixin):
     )
     # VV TODO @deruyter92 2026-01-30: following the old original config.yaml template for now. VV
     # VV We should change this to a list[str] in the future. VV
-    bodyparts: list[str] | str = 'MULTI!' 
+    bodyparts: list[str] | str = "MULTI!"
 
-    # TODO @deruyter92 2026-02-06: The current pipeline requires at least one individual defined in the 
+    # TODO @deruyter92 2026-02-06: The current pipeline requires at least one individual defined in the
     # default configuration. This will be removed in the future.
-    individuals: list[str] = field(default_factory=lambda: ['individual_1']) 
+    individuals: list[str] = field(default_factory=lambda: ["individual_1"])
     uniquebodyparts: list[str] = field(default_factory=list)  # multi-animal project key
-    multianimalbodyparts: list[str] = field(
-        default_factory=list
-    )  # multi-animal project key
-    unique_bodyparts: list[str] = field(
-        default_factory=list
-    )  # metadata key; same as uniquebodyparts
+    multianimalbodyparts: list[str] = field(default_factory=list)  # multi-animal project key
+    unique_bodyparts: list[str] = field(default_factory=list)  # metadata key; same as uniquebodyparts
 
     # Fraction of video to start/stop when extracting frames for labeling/refinement
     start: float = field(
@@ -162,7 +155,9 @@ class ProjectConfig(ChangeTrackingMixin, MigrationMixin, ConfigMixin):
     # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
     corner2move2: list[int] | None = field(
         default=None,
-        metadata={"comment": "\nRefinement configuration (parameters from annotation dataset configuration also relevant in this stage)"},
+        metadata={
+            "comment": "\nRefinement configuration (parameters from annotation dataset configuration also relevant in this stage)"
+        },
     )
     move2corner: bool | None = None
 
@@ -173,15 +168,19 @@ class ProjectConfig(ChangeTrackingMixin, MigrationMixin, ConfigMixin):
     )
 
     # @TODO @deruyter92 2026-02-13: These aliases are used in parallel. One of them should be removed.
-    with_identity: bool | None = field(default=False, metadata={"comment": "Alias for 'identity'. Kept for backwards compatibility."})
-    unique_bodyparts: list[str] = field(default_factory=list, metadata={"comment": "Alias for 'uniquebodyparts'. Kept for backwards compatibility."})
+    with_identity: bool | None = field(
+        default=False, metadata={"comment": "Alias for 'identity'. Kept for backwards compatibility."}
+    )
+    unique_bodyparts: list[str] = field(
+        default_factory=list, metadata={"comment": "Alias for 'uniquebodyparts'. Kept for backwards compatibility."}
+    )
 
     # TODO @deruyter92 2026-02-06: These parameters are no longer used in the new pipeline.
     resnet: int | None = field(
         default=None,
         metadata={
-        "comment": "\nThese are very old parameters that are no longer used "
-        "in most cases. They are kept for backwards compatibility."
+            "comment": "\nThese are very old parameters that are no longer used "
+            "in most cases. They are kept for backwards compatibility."
         },
     )
     croppedtraining: bool | None = None
@@ -199,6 +198,5 @@ class ProjectConfig(ChangeTrackingMixin, MigrationMixin, ConfigMixin):
             self.project_path = project_path
             self.record_change_note(
                 "project_path",
-                f"project_path updated: {old} -> {project_path} "
-                f"(resolved from YAML location when reading config.yaml)",
+                f"project_path updated: {old} -> {project_path} (resolved from YAML location when reading config.yaml)",
             )

@@ -73,15 +73,17 @@ def main(
 
                 # Only add detector config updates for top-down models
                 if is_model_top_down(net_type):
-                    pytorch_cfg_updates.update({
-                        "detector.train_settings.display_iters": 1,
-                        "detector.train_settings.epochs": detector_epochs,
-                        "detector.train_settings.batch_size": detector_batch_size,
-                        "detector.train_settings.dataloader_workers": 0,
-                        "detector.runner.snapshots.save_epochs": save_epochs,
-                        "detector.runner.snapshots.max_snapshots": max_snapshots_to_keep,
-                    })
-                
+                    pytorch_cfg_updates.update(
+                        {
+                            "detector.train_settings.display_iters": 1,
+                            "detector.train_settings.epochs": detector_epochs,
+                            "detector.train_settings.batch_size": detector_batch_size,
+                            "detector.train_settings.dataloader_workers": 0,
+                            "detector.runner.snapshots.save_epochs": save_epochs,
+                            "detector.runner.snapshots.max_snapshots": max_snapshots_to_keep,
+                        }
+                    )
+
                 # Only add conditional top-down config updates for conditional top-down models
                 if is_model_cond_top_down(net_type):
                     pytorch_cfg_updates["inference.conditions.shuffle"] = conditions_shuffle

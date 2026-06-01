@@ -20,7 +20,6 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-from omegaconf import DictConfig
 from tqdm import tqdm
 
 import deeplabcut.core.config as config_utils

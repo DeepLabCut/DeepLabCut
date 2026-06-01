@@ -9,12 +9,13 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Logger configuration classes for DeepLabCut training runs."""
+
+from enum import Enum
 from typing import Literal
 
 from pydantic.dataclasses import dataclass
-from enum import Enum
 
-from deeplabcut.core.config.config_mixin import ConfigMixin
+from deeplabcut.core.config.mixins import ConfigMixin
 
 
 class LoggerType(str, Enum):
@@ -34,7 +35,7 @@ class LoggerConfig(ConfigMixin):
 
 
 @dataclass
-class WandbLoggerConfig(LoggerConfig): #
+class WandbLoggerConfig(LoggerConfig):  #
     """Configuration for Weights & Biases (wandb) logger.
 
     This logger tracks experiments and logs data to Weights & Biases.
@@ -61,7 +62,7 @@ class WandbLoggerConfig(LoggerConfig): #
 
 
 @dataclass
-class CSVLoggerConfig(LoggerConfig): #
+class CSVLoggerConfig(LoggerConfig):  #
     """Configuration for CSV logger.
 
     This logger saves training stats and metrics to a CSV file.

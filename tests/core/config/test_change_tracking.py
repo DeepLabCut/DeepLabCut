@@ -6,18 +6,16 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 """Tests for ChangeTrackingMixin."""
+
 from __future__ import annotations
 
 import logging
 
 import pytest
-from pydantic import ConfigDict
+from pydantic import ConfigDict, ValidationError
 from pydantic.dataclasses import dataclass
 
-from pydantic import ValidationError
-
-from deeplabcut.core.config.change_tracking import ChangeTrackingMixin
-from deeplabcut.core.config.config_mixin import ConfigMixin
+from deeplabcut.core.config.mixins import ChangeTrackingMixin, ConfigMixin
 from deeplabcut.core.config.versioning import MigrationMixin
 
 

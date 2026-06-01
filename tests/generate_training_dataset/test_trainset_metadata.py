@@ -18,8 +18,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from deeplabcut.core.config.utils import get_yaml_loader, get_yaml_dumper
 import deeplabcut.generate_training_dataset.metadata as metadata
+from deeplabcut.core.config.utils import get_yaml_dumper, get_yaml_loader
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
 
@@ -169,7 +169,7 @@ def test_save_metadata_simple(tmpdir, data):
     print(trainset_meta)
 
     trainset_meta.save()
-    with open(meta_path, "r") as f:
+    with open(meta_path) as f:
         meta = get_yaml_loader().load(f)
     print(data)
     print(meta)

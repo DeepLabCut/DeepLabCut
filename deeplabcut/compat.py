@@ -17,8 +17,8 @@ from pathlib import Path
 
 import numpy as np
 
-from deeplabcut.core.config import read_config_as_dict
 import deeplabcut.core.visualization as visualization
+from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 from deeplabcut.utils.deprecation import renamed_parameter

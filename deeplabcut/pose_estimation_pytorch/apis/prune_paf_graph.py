@@ -148,7 +148,7 @@ def benchmark_paf_graphs(
 
         # TODO @deruyter92: Mid-way updates of the config are not ideal.
         # We should validate this against the pydantic schema.
-        
+
         # update the edges to keep in the PyTorch configuration file
         loader.update_model_cfg({"model.heads.bodypart.predictor.edges_to_keep": best_edges})
 

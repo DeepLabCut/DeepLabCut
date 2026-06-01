@@ -15,7 +15,6 @@ from collections.abc import Iterable, Sequence
 from typing import Any
 
 import albumentations as A
-from omegaconf import DictConfig
 import cv2
 import numpy as np
 from albumentations.augmentations.geometric import functional as F

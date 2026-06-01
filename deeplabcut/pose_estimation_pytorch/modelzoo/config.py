@@ -15,13 +15,13 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from deeplabcut.core.config.utils import get_yaml_loader
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.core.config import (
     read_config_as_dict,
     write_config,
 )
+from deeplabcut.core.config.utils import get_yaml_loader
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (

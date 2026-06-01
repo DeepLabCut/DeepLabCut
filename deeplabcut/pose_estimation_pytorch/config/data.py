@@ -10,14 +10,13 @@
 #
 """Data configuration classes for DeepLabCut pose estimation models."""
 
-from pydantic.dataclasses import dataclass
-from pydantic import Field, field_validator
-from typing import Any
-
 from enum import Enum
 from typing import Literal
 
-from deeplabcut.core.config.config_mixin import ConfigMixin
+from pydantic import Field, field_validator
+from pydantic.dataclasses import dataclass
+
+from deeplabcut.core.config.mixins import ConfigMixin
 
 
 class DataLoaderType(str, Enum):
@@ -173,19 +172,15 @@ class DataConfig(ConfigMixin):
     gen_sampling: GenSamplingConfig | None = None
     inference: DataTransformationConfig | None = None
     train: DataTransformationConfig | None = None
-    loader: DLCLoaderConfig | COCOLoaderConfig | None = Field(
-        default=None, discriminator="type"
-    )
+    loader: DLCLoaderConfig | COCOLoaderConfig | None = Field(default=None, discriminator="type")
 
     @field_validator("train", "inference", mode="before")
     @classmethod
     def validate_transforms(cls, v):
         from deeplabcut.pose_estimation_pytorch.data import build_transforms
+
         try:
             build_transforms(v)
         except Exception as e:
-            raise ValueError(
-                f"Could not build transforms. Please check your config. "
-                f"Config: {v}; Error: {e}"
-            ) from e
+            raise ValueError(f"Could not build transforms. Please check your config. Config: {v}; Error: {e}") from e
         return v
