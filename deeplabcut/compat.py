@@ -12,7 +12,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from pathlib import Path
 
 import numpy as np
@@ -21,6 +21,7 @@ from ruamel.yaml import YAML
 import deeplabcut.core.visualization as visualization
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
+from deeplabcut.utils.deprecation import renamed_parameter
 
 DEFAULT_ENGINE = Engine.PYTORCH
 
@@ -59,14 +60,17 @@ def get_available_aug_methods(engine: Engine) -> tuple[str, ...]:
     raise RuntimeError(f"Unknown augmentation for engine: {engine}")
 
 
+@renamed_parameter(old="maxiters", new="max_iters", since="3.0.0")
+@renamed_parameter(old="saveiters", new="save_iters", since="3.0.0")
+@renamed_parameter(old="displayiters", new="display_iters", since="3.0.0")
 def train_network(
     config: str | Path,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     max_snapshots_to_keep: int | None = None,
-    displayiters: int | None = None,
-    saveiters: int | None = None,
-    maxiters: int | None = None,
+    display_iters: int | None = None,
+    save_iters: int | None = None,
+    max_iters: int | None = None,
     epochs: int | None = None,
     save_epochs: int | None = None,
     allow_growth: bool = True,
@@ -108,13 +112,13 @@ def train_network(
         are kept.
         See: https://github.com/DeepLabCut/DeepLabCut/issues/8#issuecomment-387404835
 
-    displayiters: optional, default=None
+    display_iters: optional, default=None
         This variable is actually set in ``pose_config.yaml``. However, you can
         overwrite it with this hack. Don't use this regularly, just if you are too lazy
         to dig out the ``pose_config.yaml`` file for the corresponding project. If
         ``None``, the value from there is used, otherwise it is overwritten!
 
-    saveiters: optional, default=None
+    save_iters: optional, default=None
         Only for the TensorFlow engine (for the PyTorch engine see the ``torch_kwargs``:
         you can use ``save_epochs``).
         This variable is actually set in ``pose_config.yaml``. However, you can
@@ -122,7 +126,7 @@ def train_network(
         to dig out the ``pose_config.yaml`` file for the corresponding project.
         If ``None``, the value from there is used, otherwise it is overwritten!
 
-    maxiters: optional, default=None
+    max_iters: optional, default=None
         Only for the TensorFlow engine (for the PyTorch engine see the ``torch_kwargs``:
         you can use ``epochs``).
         This variable is actually set in ``pose_config.yaml``. However, you can
@@ -131,7 +135,7 @@ def train_network(
         If ``None``, the value from there is used, otherwise it is overwritten!
 
     epochs: optional, default=None
-        Only for the PyTorch engine (equivalent to the `maxiters` parameter for the
+        Only for the PyTorch engine (equivalent to the `max_iters` parameter for the
         TensorFlow engine). The maximum number of epochs to train the model for. If
         None, the value will be read from the `pytorch_config.yaml` file. An epoch is a
         single pass through the training dataset, which means your model has seen each
@@ -140,7 +144,7 @@ def train_network(
         16 with batch size 4, etc.).
 
     save_epochs: optional, default=None
-        Only for the PyTorch engine (equivalent to the `saveiters` parameter for the
+        Only for the PyTorch engine (equivalent to the `save_iters` parameter for the
         TensorFlow engine). The number of epochs between each snapshot save. If
         None, the value will be read from the `pytorch_config.yaml` file.
 
@@ -249,7 +253,7 @@ def train_network(
             batch_size=8,
             epochs=100,
             save_epochs=10,
-            displayiters=50,
+            display_iters=50,
         )
     """
     if engine is None:
@@ -270,9 +274,9 @@ def train_network(
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             max_snapshots_to_keep=max_snapshots_to_keep,
-            displayiters=displayiters,
-            saveiters=saveiters,
-            maxiters=maxiters,
+            displayiters=display_iters,
+            saveiters=save_iters,
+            maxiters=max_iters,
             allow_growth=allow_growth,
             gputouse=gputouse,
             autotune=autotune,
@@ -299,7 +303,7 @@ def train_network(
             detector_batch_size=detector_batch_size,
             detector_epochs=detector_epochs,
             detector_save_epochs=detector_save_epochs,
-            display_iters=displayiters,
+            display_iters=display_iters,
             max_snapshots_to_keep=max_snapshots_to_keep,
             pose_threshold=pose_threshold,
             pytorch_cfg_updates=pytorch_cfg_updates,
@@ -373,13 +377,15 @@ def return_train_network_path(
     raise NotImplementedError(f"This function is not implemented for {engine}")
 
 
+@renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since="3.0.0")
+@renamed_parameter(old="Shuffles", new="shuffles", since="3.0.0")
 def evaluate_network(
     config: str | Path,
-    Shuffles: Iterable[int] = (1,),
+    shuffles: Sequence[int] = (1,),
     trainingsetindex: int | str = 0,
     plotting: bool | str = False,
     show_errors: bool = True,
-    comparisonbodyparts: str | list[str] = "all",
+    comparison_bodyparts: str | list[str] = "all",
     gputouse: str | None = None,
     rescale: bool = False,
     modelprefix: str = "",
@@ -401,7 +407,7 @@ def evaluate_network(
     config : string
         Full path of the config.yaml file.
 
-    Shuffles: list, optional, default=[1]
+    shuffles: sequence of int, optional, default=[1]
         List of integers specifying the shuffle indices of the training dataset.
 
     trainingsetindex: int or str, optional, default=0
@@ -419,7 +425,7 @@ def evaluate_network(
     show_errors: bool, optional, default=True
         Display train and test errors.
 
-    comparisonbodyparts: str or list, optional, default="all"
+    comparison_bodyparts: str or list, optional, default="all"
         The average error will be computed for those body parts only.
         The provided list has to be a subset of the defined body parts.
 
@@ -481,14 +487,14 @@ def evaluate_network(
     If you do not want to plot and evaluate with shuffle set to 1.
 
     >>> deeplabcut.evaluate_network(
-            '/analysis/project/reaching-task/config.yaml', Shuffles=[1],
+            '/analysis/project/reaching-task/config.yaml', shuffles=[1],
         )
 
     If you want to plot and evaluate with shuffle set to 0 and 1.
 
     >>> deeplabcut.evaluate_network(
             '/analysis/project/reaching-task/config.yaml',
-            Shuffles=[0, 1],
+            shuffles=[0, 1],
             plotting=True,
         )
 
@@ -496,7 +502,7 @@ def evaluate_network(
 
     >>> deeplabcut.evaluate_network(
             '/analysis/project/reaching-task/config.yaml',
-            Shuffles=[1],
+            shuffles=[1],
             plotting="individual",
         )
 
@@ -506,7 +512,7 @@ def evaluate_network(
 
     >>> deeplabcut.evaluate_network(
     >>>     "/analysis/project/reaching-task/config.yaml",
-    >>>     Shuffles=[0, 1],
+    >>>     shuffles=[0, 1],
     >>>     pcutoff={"left_ear": 0.8, "right_ear": 0.8},
     >>> )
 
@@ -515,7 +521,7 @@ def evaluate_network(
     if engine is None:
         cfg = _load_config(config)
         engines = set()
-        for shuffle in Shuffles:
+        for shuffle in shuffles:
             engines.add(
                 get_shuffle_engine(
                     cfg,
@@ -525,7 +531,7 @@ def evaluate_network(
                 )
             )
         if len(engines) == 0:
-            raise ValueError(f"You must pass at least one shuffle to evaluate (had {list(Shuffles)})")
+            raise ValueError(f"You must pass at least one shuffle to evaluate (had {list(shuffles)})")
         elif len(engines) > 1:
             raise ValueError(f"All shuffles must have the same engine (found {list(engines)})")
         engine = engines.pop()
@@ -535,11 +541,11 @@ def evaluate_network(
 
         return evaluate_network(
             str(config),
-            Shuffles=Shuffles,
+            Shuffles=shuffles,
             trainingsetindex=trainingsetindex,
             plotting=plotting,
             show_errors=show_errors,
-            comparisonbodyparts=comparisonbodyparts,
+            comparisonbodyparts=comparison_bodyparts,
             gputouse=gputouse,
             rescale=rescale,
             modelprefix=modelprefix,
@@ -552,11 +558,11 @@ def evaluate_network(
         _update_device(gputouse, torch_kwargs)
         return evaluate_network(
             config,
-            shuffles=Shuffles,
+            shuffles=shuffles,
             trainingsetindex=trainingsetindex,
             plotting=plotting,
             show_errors=show_errors,
-            comparison_bodyparts=comparisonbodyparts,
+            comparison_bodyparts=comparison_bodyparts,
             snapshots_to_evaluate=snapshots_to_evaluate,
             per_keypoint_evaluation=per_keypoint_evaluation,
             modelprefix=modelprefix,
@@ -567,12 +573,14 @@ def evaluate_network(
     raise NotImplementedError(f"This function is not implemented for {engine}")
 
 
+@renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since="3.0.0")
+@renamed_parameter(old="Snapindex", new="snapshotindex", since="3.0.0")
 def return_evaluate_network_data(
     config: str,
     shuffle: int = 0,
     trainingsetindex: int = 0,
-    comparisonbodyparts: str | list[str] = "all",
-    Snapindex: str | int | None = None,
+    comparison_bodyparts: str | list[str] = "all",
+    snapshotindex: str | int | None = None,
     rescale: bool = False,
     fulldata: bool = False,
     show_errors: bool = True,
@@ -583,7 +591,7 @@ def return_evaluate_network_data(
     """Returns the results for (previously evaluated) network.
     deeplabcut.evaluate_network(..) Returns list of (per model): [trainingsiterations,tr
     ainfraction,shuffle,trainerror,testerror,pcutoff,trainerrorpcutoff,testerrorpcutoff,
-    Snapshots[snapindex],scale,net_type]
+    Snapshots[snapshotindex],scale,net_type]
 
     This function is only implemented for tensorflow models/shuffles, and will throw
     an error if called with a PyTorch shuffle.
@@ -592,7 +600,7 @@ def return_evaluate_network_data(
     Returns list of:
        (DataMachine, Data, data, trainIndices,
        testIndices, trainFraction, DLCscorer,
-       comparisonbodyparts, cfg, Snapshots[snapindex]
+       comparison_bodyparts, cfg, Snapshots[snapshotindex]
        )
     ----------
     config : string
@@ -607,7 +615,7 @@ def return_evaluate_network_data(
         By default the first (note that TrainingFraction is a list in config.yaml).
         This variable can also be set to "all".
 
-    comparisonbodyparts: list of bodyparts, Default is "all".
+    comparison_bodyparts: list of bodyparts, Default is "all".
         The average error will be computed for those body parts only
         (Has to be a subset of the body parts).
 
@@ -649,8 +657,8 @@ def return_evaluate_network_data(
             config,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
-            comparisonbodyparts=comparisonbodyparts,
-            Snapindex=Snapindex,
+            comparisonbodyparts=comparison_bodyparts,
+            Snapindex=snapshotindex,
             rescale=rescale,
             fulldata=fulldata,
             show_errors=show_errors,
@@ -661,17 +669,19 @@ def return_evaluate_network_data(
     raise NotImplementedError(f"This function is not implemented for {engine}")
 
 
+@renamed_parameter(old="batchsize", new="batch_size", since="3.0.0")
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def analyze_videos(
     config: str,
     videos: list[str],
-    videotype: str | Sequence[str] | None = None,
+    video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     gputouse: str | None = None,
     save_as_csv: bool = False,
     in_random_order: bool = True,
     destfolder: str | None = None,
-    batchsize: int = None,
+    batch_size: int | None = None,
     cropping: list[int] | None = None,
     TFGPUinference: bool = True,
     dynamic: tuple[bool, float, int] = (False, 0.5, 10),
@@ -710,7 +720,7 @@ def analyze_videos(
         A list of strings containing the full paths to videos for analysis or a path to
         the directory, where all the videos with same extension are stored.
 
-    videotype : str | Sequence[str] | None, optional, default=None
+    video_extensions : str | Sequence[str] | None, optional, default=None
         Controls how ``videos`` are filtered, based on file extension.
         File paths and directory contents are treated differently:
         - ``None`` (default): file paths are accepted as-is; directories are
@@ -746,7 +756,7 @@ def analyze_videos(
         the video is used. Note that for subsequent analysis this folder also needs to
         be passed.
 
-    batchsize: int or None, optional, default=None
+    batch_size: int or None, optional, default=None
         Currently not supported by the PyTorch engine.
         Change batch size for inference; if given overwrites value in ``pose_cfg.yaml``.
 
@@ -869,7 +879,7 @@ def analyze_videos(
     >>> deeplabcut.analyze_videos(
             '/analysis/project/reaching-task/config.yaml',
             ['/analysis/project/videos'],
-            videotype='.avi',
+            video_extensions='.avi',
         )
 
     Analyze multiple videos
@@ -923,14 +933,14 @@ def analyze_videos(
         return analyze_videos(
             config,
             videos,
-            videotype=videotype,
+            video_extensions=video_extensions,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             gputouse=gputouse,
             save_as_csv=save_as_csv,
             in_random_order=in_random_order,
             destfolder=destfolder,
-            batchsize=batchsize,
+            batchsize=batch_size,
             cropping=cropping,
             TFGPUinference=TFGPUinference,
             dynamic=dynamic,
@@ -950,20 +960,20 @@ def analyze_videos(
 
         _update_device(gputouse, torch_kwargs)
 
-        if batchsize is not None:
+        if batch_size is not None:
             if "batch_size" in torch_kwargs:
                 print(
-                    f"You called analyze_videos with parameters ``batchsize={batchsize}"
+                    f"You called analyze_videos with parameters ``batch_size={batch_size}"
                     f"`` and batch_size={torch_kwargs['batch_size']}. Only one is "
                     f"needed/used. Using batch size {torch_kwargs['batch_size']}"
                 )
             else:
-                torch_kwargs["batch_size"] = batchsize
+                torch_kwargs["batch_size"] = batch_size
 
         return analyze_videos(
             config,
             videos=videos,
-            videotype=videotype,
+            video_extensions=video_extensions,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             save_as_csv=save_as_csv,
@@ -986,16 +996,18 @@ def analyze_videos(
     raise NotImplementedError(f"This function is not implemented for {engine}")
 
 
+@renamed_parameter(old="batchsize", new="batch_size", since="3.0.0")
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def create_tracking_dataset(
     config: str,
     videos: list[str],
     track_method: str,
-    videotype: str | Sequence[str] | None = None,
+    video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     gputouse: int | None = None,
     destfolder: str | None = None,
-    batchsize: int | None = None,
+    batch_size: int | None = None,
     cropping: list[int] | None = None,
     TFGPUinference: bool = True,
     modelprefix: str = "",
@@ -1019,7 +1031,7 @@ def create_tracking_dataset(
         Specifies the tracker used to generate the pose estimation data. Must be either
         'box', 'skeleton', or 'ellipse'.
 
-    videotype : str | Sequence[str] | None, optional, default=None
+    video_extensions : str | Sequence[str] | None, optional, default=None
         Controls how ``videos`` are filtered, based on file extension.
         File paths and directory contents are treated differently:
         - ``None`` (default): file paths are accepted as-is; directories are
@@ -1091,12 +1103,12 @@ def create_tracking_dataset(
             config,
             videos,
             track_method,
-            videotype=videotype,
+            video_extensions=video_extensions,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             gputouse=gputouse,
             destfolder=destfolder,
-            batchsize=batchsize,
+            batchsize=batch_size,
             cropping=cropping,
             TFGPUinference=TFGPUinference,
             modelprefix=modelprefix,
@@ -1110,11 +1122,11 @@ def create_tracking_dataset(
             config,
             videos,
             track_method,
-            videotype=videotype,
+            video_extensions=video_extensions,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             destfolder=destfolder,
-            batch_size=batchsize,
+            batch_size=batch_size,
             cropping=cropping,
             modelprefix=modelprefix,
             robust_nframes=robust_nframes,
@@ -1413,10 +1425,11 @@ def analyze_time_lapse_frames(
     raise NotImplementedError(f"This function is not implemented for {engine}")
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def convert_detections2tracklets(
     config: str,
     videos: list[str],
-    videotype: str | Sequence[str] | None = None,
+    video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     overwrite: bool = False,
@@ -1443,7 +1456,7 @@ def convert_detections2tracklets(
         A list of strings containing the full paths to videos for analysis or a path to the directory,
         where all the videos with same extension are stored.
 
-    videotype : str | Sequence[str] | None, optional, default=None
+    video_extensions : str | Sequence[str] | None, optional, default=None
         Controls how ``videos`` are filtered, based on file extension.
         File paths and directory contents are treated differently:
         - ``None`` (default): file paths are accepted as-is; directories are
@@ -1509,7 +1522,7 @@ def convert_detections2tracklets(
     >>> deeplabcut.convert_detections2tracklets(
     >>>    "/analysis/project/reaching-task/config.yaml",
     >>>    ["/analysis/project/video1.mp4"],
-    >>>    videotype='.mp4',
+    >>>    video_extensions='.mp4',
     >>> )
 
     If you want to convert detections to tracklets based on box_tracker:
@@ -1517,7 +1530,7 @@ def convert_detections2tracklets(
     >>> deeplabcut.convert_detections2tracklets(
     >>>    "/analysis/project/reaching-task/config.yaml",
     >>>    ["/analysis/project/video1.mp4"],
-    >>>    videotype=".mp4",
+    >>>    video_extensions=".mp4",
     >>>    track_method="box",
     >>> )
 
@@ -1537,7 +1550,7 @@ def convert_detections2tracklets(
         return convert_detections2tracklets(
             config,
             videos,
-            videotype=videotype,
+            video_extensions=video_extensions,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             overwrite=overwrite,
@@ -1563,7 +1576,7 @@ def convert_detections2tracklets(
         return convert_detections2tracklets(
             config,
             videos,
-            videotype=videotype,
+            video_extensions=video_extensions,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
             overwrite=overwrite,
@@ -1730,11 +1743,12 @@ def visualize_paf(
     return visualization.visualize_paf(image, paf, step=step, colors=colors)
 
 
+@renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since="3.0.0")
 def extract_save_all_maps(
     config,
     shuffle: int = 1,
     trainingsetindex: int = 0,
-    comparisonbodyparts: str | list[str] = "all",
+    comparison_bodyparts: str | list[str] = "all",
     extract_paf: bool = True,
     all_paf_in_one: bool = True,
     gputouse: int | None = None,
@@ -1763,7 +1777,7 @@ def extract_save_all_maps(
         By default the first (note that TrainingFraction is a list in config.yaml).
         This variable can also be set to "all".
 
-    comparisonbodyparts: list of bodyparts, Default is "all".
+    comparison_bodyparts: list of bodyparts, Default is "all".
         The average error will be computed for those body parts only (Has to be a subset of the body parts).
 
     extract_paf : bool
@@ -1824,7 +1838,7 @@ def extract_save_all_maps(
             config,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
-            comparisonbodyparts=comparisonbodyparts,
+            comparisonbodyparts=comparison_bodyparts,
             extract_paf=extract_paf,
             all_paf_in_one=all_paf_in_one,
             gputouse=gputouse,
@@ -1840,7 +1854,7 @@ def extract_save_all_maps(
             config,
             shuffle=shuffle,
             trainingsetindex=trainingsetindex,
-            comparison_bodyparts=comparisonbodyparts,
+            comparison_bodyparts=comparison_bodyparts,
             extract_paf=extract_paf,
             all_paf_in_one=all_paf_in_one,
             device=_gpu_to_use_to_device(gputouse, device),

@@ -25,6 +25,7 @@ from scipy.spatial import distance
 
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 
 # utility functions
@@ -166,10 +167,11 @@ def analyzebone(bp1, bp2):
 
 
 # MAIN FUNC
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def analyzeskeleton(
     config,
     videos,
-    videotype: str | Sequence[str] | None = None,
+    video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     filtered=False,
@@ -193,7 +195,7 @@ def analyzeskeleton(
         The full paths to videos for analysis or a path to the directory, where all the
         videos with same extension are stored.
 
-    videotype : str | Sequence[str] | None, optional, default=None
+    video_extensions : str | Sequence[str] | None, optional, default=None
         Controls how ``videos`` are filtered, based on file extension.
         File paths and directory contents are treated differently:
         - ``None`` (default): file paths are accepted as-is; directories are
@@ -266,7 +268,7 @@ def analyzeskeleton(
         **kwargs,
     )
 
-    Videos = collect_video_paths(videos, extensions=videotype)
+    Videos = collect_video_paths(videos, extensions=video_extensions)
     for video in Videos:
         print(f"Processing {video}")
         if destfolder is None:

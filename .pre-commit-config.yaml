@@ -16,6 +16,8 @@ repos:
       - id: name-tests-test
         args: [--pytest-test-first]
         stages: [pre-commit, manual]
+      - id: check-json
+        stages: [pre-commit, manual]
 
       # These modify files. Run locally only (pre-commit stage).
       - id: end-of-file-fixer
@@ -82,6 +84,15 @@ repos:
         args: [--check, --diff]
         stages: [manual]
 
+  - repo: https://github.com/hukkin/mdformat
+    rev: 1.0.0
+    hooks:
+      - id: mdformat
+        additional_dependencies:
+          - mdformat-myst
+        files: ^docs/.*\.md$
+        stages: [pre-commit]
+
   # check only, no modifications
   - repo: local
     hooks:
@@ -91,6 +102,7 @@ repos:
         language: python
         pass_filenames: true
         files: ^(docs/|examples/(JUPYTER|COLAB)/|tools/).*(\.md|\.ipynb)$
+        exclude: ^tools/docs_audits/
         args:
           - --config
           - tools/docs_and_notebooks_report_config.yml

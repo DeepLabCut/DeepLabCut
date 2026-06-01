@@ -49,6 +49,7 @@ from tqdm import trange
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
 from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 from deeplabcut.utils.video_processor import (
     VideoProcessorCV as vp,
 )  # used to CreateVideo
@@ -390,10 +391,11 @@ def CreateVideoSlow(
     plt.switch_backend(prev_backend)
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def create_labeled_video(
     config: str,
     videos: list[str],
-    videotype: str | Sequence[str] | None = None,
+    video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     filtered: bool = False,
@@ -441,7 +443,7 @@ def create_labeled_video(
         A list of strings containing the full paths to videos for analysis or a path
         to the directory, where all the videos with same extension are stored.
 
-    videotype : str | Sequence[str] | None, optional, default=None
+    video_extensions : str | Sequence[str] | None, optional, default=None
         Controls how ``videos`` are filtered, based on file extension.
         File paths and directory contents are treated differently:
         - ``None`` (default): file paths are accepted as-is; directories are
@@ -633,7 +635,7 @@ def create_labeled_video(
     >>> deeplabcut.create_labeled_video(
             '/analysis/project/reaching-task/config.yaml',
             ['/analysis/project/videos/'],
-            videotype='mp4',
+            video_extensions='mp4',
         )
     """
     if skeleton is None:
@@ -736,7 +738,7 @@ def create_labeled_video(
         skeleton_color = None
 
     start_path = os.getcwd()
-    Videos = collect_video_paths(videos, extensions=videotype)
+    Videos = collect_video_paths(videos, extensions=video_extensions)
 
     if not Videos:
         return []
@@ -1147,10 +1149,11 @@ def create_video_with_keypoints_only(
     plt.switch_backend(prev_backend)
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def create_video_with_all_detections(
     config,
     videos,
-    videotype: str | Sequence[str] | None = None,
+    video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     displayedbodyparts="all",
@@ -1172,7 +1175,7 @@ def create_video_with_all_detections(
         A list of strings containing the full paths to videos for analysis or a path to the directory,
         where all the videos with same extension are stored.
 
-    videotype : str | Sequence[str] | None, optional, default=None
+    video_extensions : str | Sequence[str] | None, optional, default=None
         Controls how ``videos`` are filtered, based on file extension.
         File paths and directory contents are treated differently:
         - ``None`` (default): file paths are accepted as-is; directories are
@@ -1232,7 +1235,7 @@ def create_video_with_all_detections(
         **kwargs,
     )
 
-    videos = collect_video_paths(videos, extensions=videotype)
+    videos = collect_video_paths(videos, extensions=video_extensions)
     if not videos:
         return
 

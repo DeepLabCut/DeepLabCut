@@ -3,9 +3,15 @@ deeplabcut:
   last_content_updated: '2025-10-02'
   last_metadata_updated: '2026-03-06'
   ignore: false
+  visibility: online
+  status: review_needed
+  recommendation: verify
+  notes: Check for accuracy and completeness of content, and update as needed. Formatting is fairly consistent and does not need an urgent update.
 ---
+
 (dlc3-pytorch-config)=
-# The PyTorch Configuration file
+
+# Configuration file reference
 
 The `pytorch_config.yaml` file specifies the configuration for your PyTorch pose models,
 from the model architecture to which optimizer will be used for training, how training
@@ -43,10 +49,10 @@ resume_training_from:  # optional: restart the training at the specific checkpoi
 There are a few singleton parameters defined in the PyTorch configuration file:
 
 - `device`: The device to use for training/inference. The default is `auto`, which sets
-the device to `cuda` if an NVIDIA GPU is available, and `cpu` otherwise. For users
-running models on macOS with an M1/M2/M3 chip, this is set to `mps` for certain models
-(not all operations are currently supported on Apple GPUs - so some models like HRNets
-need to be trained on CPU, while others like ResNets can take advantage of the GPU).
+  the device to `cuda` if an NVIDIA GPU is available, and `cpu` otherwise. For users
+  running models on macOS with an M1/M2/M3 chip, this is set to `mps` for certain models
+  (not all operations are currently supported on Apple GPUs - so some models like HRNets
+  need to be trained on CPU, while others like ResNets can take advantage of the GPU).
 - `method`: Either `bu` for bottom-up models, or `td` for top-down models.
 - `net_type`: The type of pose model configured by the file (e.g. `resnet_50`).
 
@@ -55,11 +61,10 @@ need to be trained on CPU, while others like ResNets can take advantage of the G
 The data section configures:
 
 - `bbox_margin`: The margin (in pixels) to add around ground truth pose when generating
-bounding boxes. For more information, see [generating bounding boxes from pose](
-#bbox-from-pose).
+  bounding boxes. For more information, see [generating bounding boxes from pose](#bbox-from-pose).
 - `colormode`: in which format images are given to the model (e.g., `RGB`, `BGR`)
 - `inference`: which transformations should be applied to images when running evaluation
-or inference
+  or inference
 - `train`: which transformations should be applied to images when training
 
 The default configuration for a pose model is:
@@ -120,11 +125,9 @@ auto_padding:
   border_mask_value: null  # str: padding value for mask if border_mode is 'constant'
 ```
 
-**Covering**: Based on Albumentations's [CoarseDropout](
-https://albumentations.ai/docs/api_reference/augmentations/dropout/coarse_dropout/#albumentations.augmentations.dropout.coarse_dropout)
+**Covering**: Based on Albumentations's [CoarseDropout](https://albumentations.ai/docs/api_reference/augmentations/dropout/coarse_dropout/#albumentations.augmentations.dropout.coarse_dropout)
 augmentation, this "cuts" holes out of the image. As defined in
-[Improved Regularization of Convolutional Neural Networks with Cutout](
-https://arxiv.org/abs/1708.04552).
+[Improved Regularization of Convolutional Neural Networks with Cutout](https://arxiv.org/abs/1708.04552).
 
 ```yaml
 covering: true  # bool: if true, applies a coarse dropout with probability 50%
@@ -188,14 +191,14 @@ height and width of images in the batches. There are a few different ways to ens
 all images in a batch have the same size:
 
 1. **Crop sampling**. This is the default behavior for the PyTorch engine in DeepLabCut.
-A part of each image (of a fixed size) is cropped and given to the model to train. See
-below for more information.
-2. **A custom collate function**. Collate functions define a way that images of different
-sizes can be combined into one tensor. This involves resizing and padding images to the
-same size and aspect ratio. Available collate functions are defined in
-`deeplabcut/pose_estimation_pytorch/data/collate.py`.
-3. **Resizing all images**. All images can simply be resized to the same size. This
-usually doesn't lead to the best performance.
+   A part of each image (of a fixed size) is cropped and given to the model to train. See
+   below for more information.
+1. **A custom collate function**. Collate functions define a way that images of different
+   sizes can be combined into one tensor. This involves resizing and padding images to the
+   same size and aspect ratio. Available collate functions are defined in
+   `deeplabcut/pose_estimation_pytorch/data/collate.py`.
+1. **Resizing all images**. All images can simply be resized to the same size. This
+   usually doesn't lead to the best performance.
 
 **Resizing - Crop Sampling**: An alternative way to ensure all images have the same size
 is through cropping. The `crop_sampling` crops images down to a maximum width and
@@ -219,12 +222,13 @@ crop_sampling:
 function to use is `ResizeFromDataSizeCollate` (other collate functions are defined in
 `deeplabcut/pose_estimation_pytorch/data/collate.py`). For each batch to collate, this
 implementation:
+
 1. Selects the target width & height all images will be resized to by getting the size
-of the first image in the batch, and multiplying it by a scale sampled uniformly at
-random from `(min_scale, max_scale)`.
-2. Resizes all images in the batch (while preserving their aspect ratio) such that they
-are the smallest size such that the target size fits entirely in the image.
-3. Crops each resulting image into the target size with a random crop.
+   of the first image in the batch, and multiplying it by a scale sampled uniformly at
+   random from `(min_scale, max_scale)`.
+1. Resizes all images in the batch (while preserving their aspect ratio) such that they
+   are the smallest size such that the target size fits entirely in the image.
+1. Crops each resulting image into the target size with a random crop.
 
 ```yaml
 collate:  # rescales the images when putting them in a batch
@@ -348,8 +352,7 @@ after every epoch, you could decide to evaluate every 5 epochs (by setting
 is training, it can speed up training on large datasets.
 
 **Optimizer**: Any optimizer inheriting `torch.optim.Optimizer`. More information about
-optimizers can be found in [PyTorch's documentation](
-https://pytorch.org/docs/stable/optim.html). Examples:
+optimizers can be found in [PyTorch's documentation](https://pytorch.org/docs/stable/optim.html). Examples:
 
 ```yaml
   # SGD with initial learning rate 1e-3 and momentum 0.9
@@ -368,8 +371,7 @@ https://pytorch.org/docs/stable/optim.html). Examples:
       lr: 1e-4
 ```
 
-**Scheduler**: You can use [any scheduler](
-https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate) defined in
+**Scheduler**: You can use [any scheduler](https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate) defined in
 `torch.optim.lr_scheduler`, where the arguments given are arguments of the scheduler.
 The default scheduler is an LRListScheduler, which changes the learning rates at each
 milestone to the corresponding values in `lr_list`. Examples:
@@ -392,10 +394,8 @@ milestone to the corresponding values in `lr_list`. Examples:
 ```
 
 You can also use schedulers that use other schedulers as parameters, such as a
-[`ChainedScheduler`](
-https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ChainedScheduler.html)
-or a [`SequentialLR`](
-https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.SequentialLR.html).
+[`ChainedScheduler`](https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ChainedScheduler.html)
+or a [`SequentialLR`](https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.SequentialLR.html).
 
 The `SequentialLR` can be particularly useful, such as to use a first scheduler for some
 warmup epochs, and a second scheduler later. An example usage would be:
@@ -433,8 +433,7 @@ warmup epochs, and a second scheduler later. An example usage would be:
 
 The `train_settings` key contains parameters that are specific to training. For more
 information about the `dataloader_workers` and `dataloader_pin_memory` settings, see
-[Single- and Multi-process Data Loading](
-https://pytorch.org/docs/stable/data.html#single-and-multi-process-data-loading)
+[Single- and Multi-process Data Loading](https://pytorch.org/docs/stable/data.html#single-and-multi-process-data-loading)
 and [memory pinning](https://pytorch.org/docs/stable/data.html#memory-pinning). Setting
 `dataloader_workers: 0` uses single-process data loading, while setting it to 1 or more
 will use multi-process data loading. You should always keep
@@ -500,11 +499,13 @@ Otherwise, the parameters for the scheduler your started training with will be l
 from the state dictionary, and your edits might not be kept!
 
 ### Inference
+
 The `inference:` block in `pytorch_config.yaml` allows configuring **inference-specific
 behavior** for your model. It is independent of training settings and can include multiple
 sub-configs, currently supporting **multithreading**, **compile**, **autocast**, and **conditions**.
 
 **Example**
+
 ```yaml
 inference:
   multithreading:
@@ -522,6 +523,7 @@ inference:
 ```
 
 **Sub-configs**
+
 - `multithreading`
   Controls producer-consumer threading during inference for preprocessing and batching.
   - `enabled` (`bool`): Enable/disable multithreading.
@@ -537,7 +539,7 @@ inference:
 - `autocast`
   Controls optional mixed precision during inference.
   - `enabled` (`bool`): Enable/disable `torch.autocast`. Default: `false`.
-  Note: Enabling autocast may reduce inference accuracy. It is disabled by default.
+    Note: Enabling autocast may reduce inference accuracy. It is disabled by default.
 - `conditions`
   Only used for **Conditional Top-Down (CTD)** models to specify which conditions should be used during inference.
 
@@ -590,12 +592,11 @@ detector that brings enough performance. The recommended variants are the follow
 (from fastest to most powerful, taken from torchvision's documentation):
 
 | name                              | Box MAP (larger = more powerful) | Params (larger = more powerful) | GFLOPS (larger = slower) |
-|-----------------------------------|---------------------------------:|--------------------------------:|-------------------------:|
+| --------------------------------- | -------------------------------: | ------------------------------: | -----------------------: |
 | SSDLite                           |                             21.3 |                            3.4M |                     0.58 |
 | fasterrcnn_mobilenet_v3_large_fpn |                             32.8 |                           19.4M |                     4.49 |
 | fasterrcnn_resnet50_fpn           |                               37 |                           41.8M |                   134.38 |
 | fasterrcnn_resnet50_fpn_v2        |                             46.7 |                           43.7M |                   280.37 |
-
 
 ### Restarting Training of an Object Detector at a Specific Checkpoint
 
@@ -619,6 +620,7 @@ config! Otherwise, the parameters for the scheduler your started training with w
 loaded from the state dictionary, and your edits might not be kept!
 
 (bbox-from-pose)=
+
 ### Generating Bounding Boxes from Pose
 
 To train object detection models (for top-down pose estimation), ground truth bounding

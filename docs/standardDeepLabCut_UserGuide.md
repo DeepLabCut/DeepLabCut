@@ -3,9 +3,15 @@ deeplabcut:
   last_content_updated: '2025-06-30'
   last_metadata_updated: '2026-03-06'
   ignore: false
+  visibility: online
+  status: review_needed
+  recommendation: update
+  notes: This is a crucial piece of the doc, but it is rather long and verbose. Recommend breaking it up into smaller sections, and adding more visuals (e.g. screenshots of the GUI, etc.) to make it more engaging and easier to read. Also, consider adding a table of contents at the beginning for easier navigation.
 ---
+
 (single-animal-userguide)=
-# DeepLabCut User Guide (for single animal projects)
+
+# Single animal projects
 
 This document covers single/standard DeepLabCut use. If you have a complicated multi-animal scenario (i.e., they look
 the same), then please see our [maDLC user guide](multi-animal-userguide).
@@ -13,8 +19,6 @@ the same), then please see our [maDLC user guide](multi-animal-userguide).
 To get started, you can use the GUI, or the terminal. See below.
 
 ## DeepLabCut Project Manager GUI (recommended for beginners)
-
-
 
 **GUI:**
 
@@ -24,6 +28,7 @@ To begin, navigate to Anaconda Prompt Terminal and right-click to "open as admin
 simply run `python -m deeplabcut`. The below functions are available to you in an easy-to-use graphical user interface.
 While most functionality is available, advanced users might want the additional flexibility that command line interface
 offers. Read more below.
+
 ```{Hint}
 🚨 If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
 ```
@@ -42,6 +47,7 @@ and then please look at the following documentation and the doctrings. Thanks fo
 To begin, navigate to Anaconda Prompt Terminal and right-click to "open as admin "(Windows), or simply launch
 "Terminal" (unix/MacOS) on your computer. We assume you have DeepLabCut installed (if not, see Install docs!). Next,
 launch your conda env (i.e., for example `conda activate DEEPLABCUT`) and then type `ipython`. Then type:
+
 ```python
 import deeplabcut
 ```
@@ -87,7 +93,7 @@ the path to the config.yaml file, i.e. `config_path=deeplabcut.create_new_projec
 This set of arguments will create a project directory with the name
 **<Name of the project>+<name of the experimenter>+<date of creation of the project>** in the **Working directory** and
 creates the symbolic links to videos in the **videos** directory. The project directory will have subdirectories:
-**dlc-models**, **dlc-models-pytorch**, **labeled-data**, **training-datasets**, and **videos**.  All the outputs
+**dlc-models**, **dlc-models-pytorch**, **labeled-data**, **training-datasets**, and **videos**. All the outputs
 generated during the course of a project will be stored in one of these subdirectories, thus allowing each project to be
 curated in separation from other projects. The purpose of the subdirectories is as follows:
 
@@ -107,13 +113,13 @@ saved checkpoint, in case the training was interrupted.
 are stored in separate subdirectories. Each frame has a filename related to the temporal index within the corresponding
 video, which allows the user to trace every frame back to its origin.
 
-**training-datasets:**  This directory will contain the training dataset used to train the network and metadata, which
+**training-datasets:** This directory will contain the training dataset used to train the network and metadata, which
 contains information about how the training dataset was created.
 
-**videos:** Directory of video links or videos. When **copy\_videos** is set to `False`, this directory contains
+**videos:** Directory of video links or videos. When **copy_videos** is set to `False`, this directory contains
 symbolic links to the videos. If it is set to `True` then the videos will be copied to this directory. The default is
 `False`. Additionally, if the user wants to add new videos to the project at any stage, the function
-**add\_new\_videos** can be used. This will update the list of videos in the project's configuration file.
+**add_new_videos** can be used. This will update the list of videos in the project's configuration file.
 
 ```python
 deeplabcut.add_new_videos(
@@ -123,7 +129,7 @@ deeplabcut.add_new_videos(
 )
 ```
 
-*Please note, *Full path of the project configuration file* will be referenced as `config_path` throughout this
+\*Please note, *Full path of the project configuration file* will be referenced as `config_path` throughout this
 protocol.
 
 The project directory also contains the main configuration file called *config.yaml*. The *config.yaml* file contains
@@ -131,14 +137,17 @@ many important parameters of the project. A complete list of parameters includin
 Box1.
 
 The `create_new_project` step writes the following parameters to the configuration file: *Task*, *scorer*, *date*,
-*project\_path* as well as a list of videos *video\_sets*. The first three parameters should **not** be changed. The
+*project_path* as well as a list of videos *video_sets*. The first three parameters should **not** be changed. The
 list of videos can be changed by adding new videos or manually removing videos.
 
 ![Box 1 - Single Animal Project Configuration File Glossary](images/box1-single.png)
 
 ### API Docs
+
 ````{admonition} Click the button to see API Docs
-:class: dropdown
+---
+class: dropdown
+---
 ```{eval-rst}
 .. include:: ./api/deeplabcut.create_new_project.rst
 ```
@@ -148,8 +157,8 @@ list of videos can be changed by adding new videos or manually removing videos.
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1588892210304-EW7WD46PYAU43WWZS4QZ/ke17ZwdGBToddI8pDm48kAXtGtTuS2U1SVcl-tYMBOAUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8PaoYXhp6HxIwZIk7-Mi3Tsic-L2IOPH3Dwrhl-Ne3Z2YjE9w60pqfeJxDohDRZk1jXSVCSSfcEA7WmgMAGpjTehHAH51QaxKq4KdVMVBxpG/1nktc1kdgq2.jpg?format=1000w" width="175" title="colormaps" alt="DLC Utils" align="right" vspace = "50">
 
-Next, open the **config.yaml** file, which was created during  **create\_new\_project**. You can edit this file in any
-text editor.  Familiarize yourself with the meaning of the parameters (Box 1). You can edit various parameters, in
+Next, open the **config.yaml** file, which was created during **create_new_project**. You can edit this file in any
+text editor. Familiarize yourself with the meaning of the parameters (Box 1). You can edit various parameters, in
 particular you **must add the list of *bodyparts* (or points of interest)** that you want to track. You can also set the
 *colormap* here that is used for all downstream steps (can also be edited at anytime), like labeling GUIs, videos, etc.
 Here any [matplotlib colormaps](https://matplotlib.org/tutorials/colors/colormaps.html) will do!
@@ -157,8 +166,7 @@ Please DO NOT have spaces in the names of bodyparts.
 
 **bodyparts:** are the bodyparts of each individual (in the above list).
 
-
- ### (C) Select Frames to Label
+### (C) Select Frames to Label
 
 **CRITICAL:** A good training dataset should consist of a sufficient number of frames that capture the breadth of the
 behavior. This ideally implies to select the frames from different (behavioral) sessions, different lighting and
@@ -176,6 +184,7 @@ The function `extract_frames` extracts frames from all the videos in the project
 a training dataset. The extracted frames from all the videos are stored in a separate subdirectory named after the video
 file’s name under the ‘labeled-data’. This function also has various parameters that might be useful based on the user’s
 need.
+
 ```python
 deeplabcut.extract_frames(
     config_path,
@@ -185,6 +194,7 @@ deeplabcut.extract_frames(
     userfeedback=False
 )
 ```
+
 **CRITICAL POINT:** It is advisable to keep the frame size small, as large frames increase the training and
 inference time. The cropping parameters for each video can be provided in the config.yaml file (and see below).
 When running the function extract_frames, if the parameter crop=True, then you will be asked to draw a box within the
@@ -213,9 +223,11 @@ However, picking frames is highly dependent on the data and the behavior being s
 provide all purpose code that extracts frames to create a good training dataset for every behavior and animal. If the
 user feels specific frames are lacking, they can extract hand selected frames of interest using the interactive GUI
 provided along with the toolbox. This can be launched by using:
+
 ```python
 deeplabcut.extract_frames(config_path, "manual")
 ```
+
 The user can use the *Load Video* button to load one of the videos in the project configuration file, use the scroll
 bar to navigate across the video and *Grab a Frame* (or a range of frames, as of version 2.0.5) to extract the frame(s).
 The user can also look at the extracted frames and e.g. delete frames (from the directory) that are too similar before
@@ -226,8 +238,11 @@ reloading the set and then manually annotating them.
 </p>
 
 ### API Docs
+
 ````{admonition} Click the button to see API Docs
-:class: dropdown
+---
+class: dropdown
+---
 ```{eval-rst}
 .. include:: ./api/deeplabcut.extract_frames.rst
 ```
@@ -239,7 +254,7 @@ The toolbox provides a function **label_frames** which helps the user to easily 
 all the extracted frames using an interactive graphical user interface (GUI). The user
 should have already named the bodyparts to label (points of interest) in the
 project’s configuration file by providing a list. The following command invokes the
-napari-deeplabcut labelling GUI. Checkout the [napari-deeplabcut docs](file:napari-gui-landing) for
+napari-deeplabcut labelling GUI. Checkout the \[napari-deeplabcut docs\](file:napari-gui-landing) for
 more information about the labelling workflow.
 
 ```python
@@ -267,7 +282,7 @@ labels to the bodyparts in the config.yaml file. Thereafter, the user can call t
 2.0.5+: then a box will pop up and ask the user if they wish to display all parts, or only add in the new labels.
 Saving the labels after all the images are labelled will append the new labels to the existing labeled dataset.
 
-For more information, checkout the [napari-deeplabcut docs](file:napari-gui-landing) for
+For more information, checkout the \[napari-deeplabcut docs\](file:napari-gui-landing) for
 more information about the labelling workflow.
 
 ### (E) Check Annotated Frames
@@ -275,9 +290,10 @@ more information about the labelling workflow.
 OPTIONAL: Checking if the labels were created and stored correctly is beneficial for training, since labeling
 is one of the most critical parts for creating the training dataset. The DeepLabCut toolbox provides a function
 ‘check_labels’ to do so. It is used as follows:
+
 ```python
 deeplabcut.check_labels(config_path, visualizeindividuals=True/False)
- ```
+```
 
 For each video directory in labeled-data this function creates a subdirectory with **labeled** as a suffix. Those
 directories contain the frames plotted with the annotated body parts. The user can double check if the body parts are
@@ -285,14 +301,18 @@ labeled correctly. If they are not correct, the user can reload the frames (i.e.
 around, and click save again.
 
 ### API Docs
+
 ````{admonition} Click the button to see API Docs
-:class: dropdown
+---
+class: dropdown
+---
 ```{eval-rst}
 .. include:: ./api/deeplabcut.check_labels.rst
 ```
 ````
 
 (create-training-dataset)=
+
 ### (F) Create Training Dataset
 
 **CRITICAL POINT:** Only run this step **where** you are going to train the network. If you label on your laptop but
@@ -301,10 +321,10 @@ labeled on a Windows machine but train on Linux, this is fine as of 2.0.4 onward
 saves file sets as both Linux and Windows for you).
 
 - If you move your project folder, you must only change the `project_path` (which is done automatically) in the main
-config.yaml file - that's it - no need to change the video paths, etc! Your project is fully portable.
+  config.yaml file - that's it - no need to change the video paths, etc! Your project is fully portable.
 
 - Be aware you select your neural network backbone at this stage. As of DLC3+ we support PyTorch (and TensorFlow, but
-this will be phased out).
+  this will be phased out).
 
 **OVERVIEW:** This function combines the labeled datasets from all the videos and splits them to create train and test
 datasets. The training data will be used to train the network, while the test data set will be used for evaluating the
@@ -315,7 +335,7 @@ deeplabcut.create_training_dataset(config_path)
 ```
 
 - OPTIONAL: If the user wishes to benchmark the performance of the DeepLabCut, they can create multiple training
-datasets by specifying an integer value to the `num_shuffles`; see the docstring for more details.
+  datasets by specifying an integer value to the `num_shuffles`; see the docstring for more details.
 
 The function creates a new shuffle(s) directory in the **dlc-models-pytorch** directory
 (**dlc-models** if using Tensorflow), in the current "iteration" directory.
@@ -333,9 +353,9 @@ additional data augmentation (beyond our defaults). You can set `net_type`, `det
 and `augmenter_type` when you call the function.
 
 - Networks: ImageNet pre-trained networks OR SuperAnimal pre-trained networks weights will be downloaded, as you
-select. You can decide to do transfer-learning (recommended) or "fine-tune" both the backbone and the decoder head. We
-suggest seeing our [dedicated documentation on models](dlc3-architectures) for more information (
-or the [this page on selecting models](what-neural-network-should-i-use) for the TensorFlow engine).
+  select. You can decide to do transfer-learning (recommended) or "fine-tune" both the backbone and the decoder head. We
+  suggest seeing our [dedicated documentation on models](dlc3-architectures) for more information (
+  or the [this page on selecting models](what-neural-network-should-i-use) for the TensorFlow engine).
 
 ```{Hint}
 🚨 If they do not download (you will see this downloading in the terminal), then you may not have permission to do
@@ -346,21 +366,20 @@ the **[docs for more help!](tf-training-tips-and-tricks)**).
 **DATA AUGMENTATION:** At this stage you can also decide what type of augmentation to
 use. Once you've called `create_training_dataset`, you can edit the
 [**pytorch_config.yaml**](dlc3-pytorch-config) file that was created (or for the
-TensorFlow engine, the [**pose_cfg.yaml**](
-https://github.com/DeepLabCut/DeepLabCut/blob/main/deeplabcut/pose_cfg.yaml) file).
+TensorFlow engine, the [**pose_cfg.yaml**](https://github.com/DeepLabCut/DeepLabCut/blob/main/deeplabcut/pose_cfg.yaml) file).
 
 - PyTorch Engine: [Albumentations](https://albumentations.ai/docs/) is used for data
-augmentation. Look at the [**pytorch_config.yaml**](dlc3-pytorch-config) for more
-information about image augmentation options.
+  augmentation. Look at the [**pytorch_config.yaml**](dlc3-pytorch-config) for more
+  information about image augmentation options.
 - TensorFlow Engine: The default augmentation works well for most tasks (as shown on
-www.deeplabcut.org), but there are many options, more data augmentation, intermediate
-supervision, etc. Here are the available loaders:
+  www.deeplabcut.org), but there are many options, more data augmentation, intermediate
+  supervision, etc. Here are the available loaders:
   - `imgaug`: a lot of augmentation possibilities, efficient code for target map creation & batch sizes >1 supported.
-  You can set the parameters such as the `batch_size` in the `pose_cfg.yaml` file for the model you are training. This
-  is the recommended default!
+    You can set the parameters such as the `batch_size` in the `pose_cfg.yaml` file for the model you are training. This
+    is the recommended default!
   - `crop_scale`: our standard DLC 2.0 introduced in Nature Protocols variant (scaling, auto-crop augmentation)
   - `tensorpack`: a lot of augmentation possibilities, multi CPU support for fast processing, target maps are created
-  less efficiently than in imgaug, does not allow batch size>1
+    less efficiently than in imgaug, does not allow batch size>1
   - `deterministic`: only useful for testing, freezes numpy seed; otherwise like default.
 
 **MODEL COMPARISON**: You can also test several models by creating the same train/test
@@ -389,21 +408,27 @@ deeplabcut.create_training_dataset_from_existing_split(
 ````
 
 ````{admonition} Click the button to see API Docs for deeplabcut.create_training_dataset
-:class: dropdown
+---
+class: dropdown
+---
 ```{eval-rst}
 .. include:: ./api/deeplabcut.create_training_dataset.rst
 ```
 ````
 
 ````{admonition} Click the button to see API Docs for deeplabcut.create_training_model_comparison
-:class: dropdown
+---
+class: dropdown
+---
 ```{eval-rst}
 .. include:: ./api/deeplabcut.create_training_model_comparison.rst
 ```
 ````
 
 ````{admonition} Click the button to see API Docs for deeplabcut.create_training_dataset_from_existing_split
-:class: dropdown
+---
+class: dropdown
+---
 ```{eval-rst}
 .. include:: ./api/deeplabcut.create_training_dataset_from_existing_split.rst
 ```
@@ -412,9 +437,11 @@ deeplabcut.create_training_dataset_from_existing_split(
 ### (G) Train The Network
 
 The function ‘train_network’ helps the user in training the network. It is used as follows:
+
 ```python
 deeplabcut.train_network(config_path)
 ```
+
 The set of arguments in the function starts training the network for the dataset created
 for one specific shuffle. Note that you can change training parameters in the
 [**pytorch_config.yaml**](dlc3-pytorch-config) file (or **pose_cfg.yaml** for TensorFlow
@@ -424,8 +451,9 @@ At user specified iterations during training checkpoints are stored in the subdi
 *train* under the respective iteration & shuffle directory.
 
 ````{admonition} Tips on training models with the PyTorch Engine
-:class: dropdown
-
+---
+class: dropdown
+---
 Example parameters that one can call:
 
 ```python
@@ -467,8 +495,9 @@ and how often the weights are stored. We suggest saving every 5 to 25 epochs.
 ````
 
 ````{admonition} Tips on training models with the TensorFlow Engine
-:class: dropdown
-
+---
+class: dropdown
+---
 Example parameters that one can call:
 
 ```python
@@ -514,7 +543,9 @@ data. The bonus, training time is much less!!!
 ````
 
 ````{admonition} Click the button to see API Docs for train_network
-:class: dropdown
+---
+class: dropdown
+---
 ```{eval-rst}
 .. include:: ./api/deeplabcut.train_network.rst
 ```
@@ -545,34 +576,35 @@ Neuroscience 2018).
 **Optional parameters:**
 
 - `Shuffles: list, optional` - List of integers specifying the shuffle indices of the training dataset.
-The default is [1]
+  The default is [1]
 
 - `plotting: bool, optional` - Plots the predictions on the train and test images. The default is `False`;
-if provided it must be either `True` or `False`
+  if provided it must be either `True` or `False`
 
 - `show_errors: bool, optional` - Display train and test errors. The default is `True`
 
 - `comparisonbodyparts: list of bodyparts, Default is all` - The average error will be computed for those body parts
-only (Has to be a subset of the body parts).
+  only (Has to be a subset of the body parts).
 
 - `gputouse: int, optional` - Natural number indicating the number of your GPU (see number in nvidia-smi). If you do not
-have a GPU, put None. See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
+  have a GPU, put None. See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
 
 - `pcutoff: float | list[float] | dict[str, float], optional`
-(Only applicable when using the PyTorch engine. For TensorFlow, set `pcutoff` in the `config.yaml` file.)
-Specifies the cutoff value(s) used to compute evaluation metrics.
+  (Only applicable when using the PyTorch engine. For TensorFlow, set `pcutoff` in the `config.yaml` file.)
+  Specifies the cutoff value(s) used to compute evaluation metrics.
+
   - If `None` (default), the cutoff will be loaded from the project configuration.
   - To apply a single cutoff value to all bodyparts, provide a `float`.
   - To specify different cutoffs per bodypart, provide either:
     - A `list[float]`: one value per bodypart, with an additional value for each unique bodypart if applicable.
     - A `dict[str, float]`: where keys are bodypart names and values are the corresponding cutoff values.
-If a bodypart is not included in the provided dictionary, a default `pcutoff` of `0.6` will be used for that bodypart.
+      If a bodypart is not included in the provided dictionary, a default `pcutoff` of `0.6` will be used for that bodypart.
 
 The plots can be customized by editing the **config.yaml** file (i.e., the colormap, scale, marker size (dotsize), and
 transparency of labels (alphavalue) can be modified). By default each body part is plotted in a different color
 (governed by the colormap) and the plot labels indicate their source. Note that by default the human labels are
 plotted as plus (‘+’), DeepLabCut’s predictions either as ‘.’ (for confident predictions with likelihood > p-cutoff) and
-’x’ for (likelihood <= `pcutoff`).
+’x’ for (likelihood \<= `pcutoff`).
 
 The evaluation results for each shuffle of the training dataset are stored in a unique subdirectory in a newly created
 directory ‘evaluation-results-pytorch’ (‘evaluation-results’ for tensorflow models) in the project directory.
@@ -595,11 +627,15 @@ labeled accurately
 ```python
 deeplabcut.extract_save_all_maps(config_path, shuffle=shuffle, Indices=[0, 5])
 ```
+
 you can drop "Indices" to run this on all training/testing images (this is slow!)
 
 ### API Docs
+
 ````{admonition} Click the button to see API Docs
-:class: dropdown
+---
+class: dropdown
+---
 ```{eval-rst}
 .. include:: ./api/deeplabcut.evaluate_network.rst
 ```
@@ -609,13 +645,16 @@ you can drop "Indices" to run this on all training/testing images (this is slow!
 
 The trained network can be used to analyze new videos. Novel/new videos **DO NOT have to be in the config file!**.
 You can analyze new videos anytime by simply using the following line of code:
+
 ```python
 deeplabcut.analyze_videos(
     config_path, ["fullpath/analysis/project/videos/reachingvideo1.avi"],
     save_as_csv=True
 )
 ```
+
 There are several other optional inputs, such as:
+
 ```python
 deeplabcut.analyze_videos(
     config_path,
@@ -629,6 +668,7 @@ deeplabcut.analyze_videos(
     dynamic=(True, .5, 10)
 )
 ```
+
 The user can choose a checkpoint for analyzing the videos. For this, the user can enter the corresponding index of the
 checkpoint to the variable snapshotindex in the config.yaml file. By default, the most recent checkpoint (i.e. last) is
 used for analyzing the video.
@@ -641,8 +681,11 @@ by default. You can also set a destination folder (`destfolder`) for the output 
 you wish to write to.
 
 ### API Docs
+
 ````{admonition} Click the button to see API Docs
-:class: dropdown
+---
+class: dropdown
+---
 ```{eval-rst}
 .. include:: ./api/deeplabcut.analyze_videos.rst
 ```
@@ -669,16 +712,20 @@ dynamic: triple containing (state, detectiontreshold, margin)
     for the next frame (this is why the margin is important and should be set large enough
     given the movement of the animal).
 ```
+
 ### (J) Filter Pose Data
 
-You can also filter the predictions with a median filter (default) or with a [SARIMAX model](https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html), if you wish. This creates a new .h5 file with the ending *_filtered* that you can use in create_labeled_data and/or plot trajectories.
+You can also filter the predictions with a median filter (default) or with a [SARIMAX model](https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html), if you wish. This creates a new .h5 file with the ending *\_filtered* that you can use in create_labeled_data and/or plot trajectories.
+
 ```python
 deeplabcut.filterpredictions(
     config_path,
     ["fullpath/analysis/project/videos/reachingvideo1.avi"]
 )
 ```
-  An example call:
+
+An example call:
+
 ```python
 deeplabcut.filterpredictions(
     config_path,
@@ -689,7 +736,9 @@ deeplabcut.filterpredictions(
     MAdegree=2
 )
 ```
-  Here are parameters you can modify and pass:
+
+Here are parameters you can modify and pass:
+
 ```python
 deeplabcut.filterpredictions(
     config_path,
@@ -703,15 +752,19 @@ deeplabcut.filterpredictions(
     alpha=0.01
 )
 ```
- Here is an example of how this can be applied to a video:
 
- <p align="center">
+Here is an example of how this can be applied to a video:
+
+<p align="center">
 <img src="https://static1.squarespace.com/static/57f6d51c9f74566f55ecf271/t/5ccc8b8ae6e8df000100a995/1556908943893/filter_example-01.png?format=1000w" width="70%">
 </p>
 
 ### API Docs
+
 ````{admonition} Click the button to see API Docs
-:class: dropdown
+---
+class: dropdown
+---
 ```{eval-rst}
 .. include:: ./api/deeplabcut.filterpredictions.rst
 ```
@@ -739,8 +792,11 @@ body part detections across frames). Here are example plot outputs on a demo vid
 </p>
 
 ### API Docs
+
 ````{admonition} Click the button to see API Docs
-:class: dropdown
+---
+class: dropdown
+---
 ```{eval-rst}
 .. include:: ./api/deeplabcut.plot_trajectories.rst
 ```
@@ -751,6 +807,7 @@ body part detections across frames). Here are example plot outputs on a demo vid
 Additionally, the toolbox provides a function to create labeled videos based on the extracted poses by plotting the
 labels on top of the frame and creating a video. There are two modes to create videos: FAST and SLOW (but higher
 quality!). One can use the command as follows to create multiple labeled videos:
+
 ```python
 deeplabcut.create_labeled_video(
     config_path,
@@ -759,8 +816,10 @@ deeplabcut.create_labeled_video(
     save_frames = True/False
 )
 ```
- Optionally, if you want to use the filtered data for a video or directory of filtered videos pass `filtered=True`,
- i.e.:
+
+Optionally, if you want to use the filtered data for a video or directory of filtered videos pass `filtered=True`,
+i.e.:
+
 ```python
 deeplabcut.create_labeled_video(
     config_path,
@@ -769,8 +828,10 @@ deeplabcut.create_labeled_video(
     filtered=True
 )
 ```
+
 You can also optionally add a skeleton to connect points and/or add a history of points for visualization. To set the
 "trailing points" you need to pass `trailpoints`:
+
 ```python
 deeplabcut.create_labeled_video(
     config_path,
@@ -779,11 +840,13 @@ deeplabcut.create_labeled_video(
     trailpoints=10
 )
 ```
+
 To draw a skeleton, you need to first define the pairs of connected nodes (in the `config.yaml` file) and set the
 skeleton color (in the `config.yaml` file). There is also a GUI to help you do this, use by calling
 `deeplabcut.SkeletonBuilder(configpath)`!
 
 Here is how the `config.yaml` additions/edits should look (for example, on the Openfield demo data we provide):
+
 ```python
 # Plotting configuration
 skeleton:
@@ -798,7 +861,9 @@ dotsize: 4
 alphavalue: 0.5
 colormap: jet
 ```
+
 Then pass `draw_skeleton=True` with the command:
+
 ```python
 deeplabcut.create_labeled_video(
     config_path,
@@ -822,7 +887,7 @@ deeplabcut.create_labeled_video(
 **PRO TIP:** that the **best quality videos** are created when `fastmode=False` is passed. Therefore, when
 `trailpoints` and `draw_skeleton` are used, we **highly** recommend you also pass `fastmode=False`!
 
- <p align="center">
+<p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1559935526258-KFYZC8BDHK01ZIDPNVIX/ke17ZwdGBToddI8pDm48kJbosy0LGK_KqcAZRQ_Qph1Zw-zPPgdn4jUwVcJE1ZvWQUxwkmyExglNqGp0IvTJZUJFbgE-7XRK3dMEBRBhUpzkC6kmM1CbNgeHQVxASNv0wiXikHv274BIFe4LR7nd1rKmAka4uxYMJ9FupazBoaU/mouse_skel_trail.gif?format=750w" width="40%">
 </p>
 
@@ -830,8 +895,11 @@ This function has various other parameters, in particular the user can set the `
 `alphavalue` of the labels in **config.yaml** file.
 
 ### API Docs
+
 ````{admonition} Click the button to see API Docs
-:class: dropdown
+---
+class: dropdown
+---
 ```{eval-rst}
 .. include:: ./api/deeplabcut.create_labeled_video.rst
 ```
@@ -840,7 +908,7 @@ This function has various other parameters, in particular the user can set the `
 ### Extract "Skeleton" Features:
 
 NEW, as of 2.0.7+: You can save the "skeleton" that was applied in `create_labeled_videos` for more computations.
-Namely,  it extracts length and orientation of each "bone" of the skeleton as defined in the **config.yaml** file. You
+Namely, it extracts length and orientation of each "bone" of the skeleton as defined in the **config.yaml** file. You
 can use the function by:
 
 ```python
@@ -856,14 +924,18 @@ deeplabcut.analyzeskeleton(
 ```
 
 ### API Docs
+
 ````{admonition} Click the button to see API Docs
-:class: dropdown
+---
+class: dropdown
+---
 ```{eval-rst}
 .. include:: ./api/deeplabcut.analyzeskeleton.rst
 ```
 ````
 
 (active-learning)=
+
 ### (M) Optional Active Learning -> Network Refinement: Extract Outlier Frames
 
 While DeepLabCut typically generalizes well across datasets, one might want to optimize its performance in various,
@@ -888,6 +960,7 @@ the user can set:
 ```
 outlieralgorithm: "fitting", "jump", or "uncertain"
 ```
+
 • `outlieralgorithm="uncertain"`: select frames if the likelihood of a particular or all body parts lies below `p_bound`
 (note this could also be due to occlusions rather than errors).
 
@@ -897,13 +970,14 @@ pixels from the last frame.
 • `outlieralgorithm="fitting"`: select frames if the predicted body part location deviates from a state-space model fit
 to the time series of individual body parts. Specifically, this method fits an Auto Regressive Integrated Moving Average
 (ARIMA) model to the time series for each body part. Thereby each body part detection with a likelihood smaller than
-`p_bound` is treated as missing data.  Putative outlier frames are then identified as time points, where the average
+`p_bound` is treated as missing data. Putative outlier frames are then identified as time points, where the average
 body part estimates are at least `epsilon` pixels away from the fits. The parameters of this method are `epsilon`,
 `p_bound`, the ARIMA parameters as well as the list of body parts to average over (can also be `all`).
 
 • `outlieralgorithm="manual"`: manually select outlier frames based on visual inspection from the user.
 
- As an example:
+As an example:
+
 ```python
 deeplabcut.extract_outlier_frames(config_path, ["videofile_path"], outlieralgorithm="manual")
 ```
@@ -921,16 +995,19 @@ Once enough outlier frames are extracted the refinement GUI can be used to adjus
 (see below).
 
 ### API Docs
+
 ````{admonition} Click the button to see API Docs
-:class: dropdown
+---
+class: dropdown
+---
 ```{eval-rst}
 .. include:: ./api/deeplabcut.extract_outlier_frames.rst
 ```
 ````
 
- ### (N) Refine Labels: Augmentation of the Training Dataset
+### (N) Refine Labels: Augmentation of the Training Dataset
 
- Based on the performance of DeepLabCut, four scenarios are possible:
+Based on the performance of DeepLabCut, four scenarios are possible:
 
 (A) Visible body part with accurate DeepLabCut prediction. These labels do not need any modifications.
 
@@ -947,22 +1024,26 @@ and their corresponding predictions, if any. Here, the GUI will prompt the user 
 as invalid.
 
 The labels for extracted putative outlier frames can be refined by opening the GUI:
+
 ```python
 deeplabcut.refine_labels(config_path)
 ```
+
 This will launch a GUI where the user can refine the labels.
 
-Please refer to the [napari-deeplabcut docs](file:napari-gui-landing) for more information about the labelling workflow.
+Please refer to the \[napari-deeplabcut docs\](file:napari-gui-landing) for more information about the labelling workflow.
 
 After correcting the labels for all the frames in each of the subdirectories, the users should merge the data set to
 create a new dataset. In this step the iteration parameter in the config.yaml file is automatically updated.
+
 ```python
 deeplabcut.merge_datasets(config_path)
 ```
+
 Once the dataset is merged, the user can test if the merging process was successful by plotting all the labels (Step E).
 Next, with this expanded training set the user can now create a novel training set and train the network as described
 in Steps F and G. The training dataset will be stored in the same place as before but under a different `iteration-#`
-subdirectory, where the ``#`` is the new value of `iteration` variable stored in the project’s configuration file
+subdirectory, where the `#` is the new value of `iteration` variable stored in the project’s configuration file
 (this is automatically done).
 
 Now you can run `create_training_dataset`, then `train_network`, etc. If your original labels were adjusted at all,
@@ -973,16 +1054,22 @@ If after training the network generalizes well to the data, proceed to analyze n
 more data.
 
 ### API Docs for deeplabcut.refine_labels
+
 ````{admonition} Click the button to see API Docs
-:class: dropdown
+---
+class: dropdown
+---
 ```{eval-rst}
 .. include:: ./api/deeplabcut.refine_labels.rst
 ```
 ````
 
 ### API Docs for deeplabcut.merge_datasets
+
 ````{admonition} Click the button to see API Docs
-:class: dropdown
+---
+class: dropdown
+---
 ```{eval-rst}
 .. include:: ./api/deeplabcut.merge_datasets.rst
 ```

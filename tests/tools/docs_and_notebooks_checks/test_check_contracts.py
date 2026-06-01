@@ -12,6 +12,11 @@ from types import ModuleType
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def no_github_step_summary(monkeypatch):
+    monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
+
+
 # -----------------------------
 # Module loader (tools/ is not necessarily a package)
 # -----------------------------
@@ -438,7 +443,7 @@ def test_write_outputs_contract(tool, repo: Path, cfg, tmp_path: Path):
     assert md_path.exists()
 
     payload = json.loads(json_path.read_text(encoding="utf-8"))
-    assert payload["schema_version"] == tool.SCHEMA_VERSION
+    assert payload["schema_version"] == tool.REPORT_SCHEMA_VERSION
     assert "records" in payload and isinstance(payload["records"], list)
     assert md_path.read_text(encoding="utf-8").startswith("#")
 
@@ -501,6 +506,7 @@ def test_main_prints_matched_files_and_fails_on_unmatched_targets(tool, repo: Pa
         [
             "--config",
             str(cfg_path),
+            "--no-step-summary",
             "report",
             "--targets",
             r".\docs\gui\napari\basic_usage.md",
@@ -528,6 +534,7 @@ def test_main_prints_matched_files_for_valid_targets(tool, repo: Path, monkeypat
         [
             "--config",
             str(cfg_path),
+            "--no-step-summary",
             "report",
             "--targets",
             "docs/gui/napari/",
@@ -548,5 +555,120 @@ def test_main_returns_2_for_invalid_target_selector(tool, repo: Path, monkeypatc
 
     monkeypatch.chdir(repo)
 
-    rc = tool.main(["--config", str(cfg_path), "report", "--targets", "./"])
+    rc = tool.main(["--config", str(cfg_path), "--no-step-summary", "report", "--targets", "./"])
     assert rc == 2
+
+
+@pytest.mark.parametrize(
+    ("rel", "kind"),
+    [
+        ("docs/page.md", "md"),
+        ("docs/nbs/nb.ipynb", "ipynb"),
+    ],
+)
+def test_metadata_sync_warning_populates_report_targets_and_command(tool, repo: Path, cfg, rel: str, kind: str):
+    """
+    Out-of-sync embedded last_content_updated should:
+    - add metadata_sync_needed warning
+    - appear in Report.metadata_sync_targets
+    - generate a non-empty metadata_sync_command
+    """
+    embedded_date = "2000-01-01"
+
+    if kind == "md":
+        _write(
+            repo,
+            rel,
+            f"---\ndeeplabcut:\n  last_content_updated: {embedded_date}\n---\n# hello\n",
+        )
+    else:
+        nb = tool.nbformat.v4.new_notebook(metadata={tool.DLC_NAMESPACE: {"last_content_updated": embedded_date}})
+        _write(
+            repo,
+            rel,
+            tool.nbformat.writes(nb, version=4, indent=2, ensure_ascii=False) + "\n",
+        )
+
+    # Git-derived content date differs from embedded metadata date
+    _git_commit(repo, "docs: add file", "2020-01-01T12:00:00+00:00")
+
+    tool_cfg = cfg(include=[rel])
+    records = tool.scan_files(repo, tool_cfg, targets=[rel])
+
+    assert len(records) == 1
+    rec = records[0]
+
+    # Sanity check: embedded metadata is parsed, but differs from git-derived date
+    assert rec.meta is not None
+    assert rec.meta.last_content_updated == date(2000, 1, 1)
+    assert rec.last_content_updated == date(2020, 1, 1)
+
+    # New warning should be present
+    assert "metadata_sync_needed" in rec.warnings
+
+    metadata_sync_targets = tool.collect_metadata_sync_targets(records)
+    metadata_sync_command = tool.build_metadata_sync_command(
+        "tools/docs_and_notebooks_report_config.yml",
+        metadata_sync_targets,
+    )
+
+    report = tool.Report(
+        generated_at=datetime.now(timezone.utc),
+        repo_root=str(repo),
+        config_path="tools/docs_and_notebooks_report_config.yml",
+        totals=tool.summarize(records),
+        records=records,
+        metadata_sync_targets=metadata_sync_targets,
+        metadata_sync_command=metadata_sync_command,
+    )
+
+    assert report.metadata_sync_targets == [rel]
+    assert report.metadata_sync_command
+    assert "--set-content-date-from-git" in report.metadata_sync_command
+    assert "--targets" in report.metadata_sync_command
+    assert rel in report.metadata_sync_command
+
+    # Optional: also verify the markdown report renders the guidance section
+    rendered = tool.to_markdown(report, tool_cfg)
+    assert "## Metadata sync suggestions" in rendered
+    assert f"- `{rel}`" in rendered
+
+
+@pytest.mark.parametrize(
+    ("rel", "kind"),
+    [
+        ("docs/page.md", "md"),
+        ("docs/nbs/nb.ipynb", "ipynb"),
+    ],
+)
+def test_enforce_fails_when_metadata_sync_needed_is_configured(tool, repo: Path, cfg, rel: str, kind: str):
+    """
+    If policy.fail_if_metadata_sync_needed=True, an out-of-sync file should
+    become a policy violation in check/enforcement mode.
+    """
+    embedded_date = "2000-01-01"
+
+    if kind == "md":
+        _write(
+            repo,
+            rel,
+            f"---\ndeeplabcut:\n  last_content_updated: {embedded_date}\n---\n# hello\n",
+        )
+    else:
+        nb = tool.nbformat.v4.new_notebook(metadata={tool.DLC_NAMESPACE: {"last_content_updated": embedded_date}})
+        _write(
+            repo,
+            rel,
+            tool.nbformat.writes(nb, version=4, indent=2, ensure_ascii=False) + "\n",
+        )
+
+    _git_commit(repo, "docs: add file", "2020-01-01T12:00:00+00:00")
+
+    tool_cfg = cfg(include=[rel], fail_if_metadata_sync_needed=True)
+    records = tool.scan_files(repo, tool_cfg, targets=[rel])
+
+    violations = tool.enforce(tool_cfg, records)
+
+    assert violations == [
+        f"{rel}: embedded last_content_updated is missing or out of sync with git content update date"
+    ]

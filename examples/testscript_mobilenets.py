@@ -191,7 +191,7 @@ if __name__ == "__main__":
             shuffle=shuffle,
             save_as_csv=True,
             destfolder=dfolder,
-            videotype="avi",
+            video_extensions="avi",
         )
 
         print("CREATE VIDEO")
@@ -200,7 +200,7 @@ if __name__ == "__main__":
             [newvideo],
             shuffle=shuffle,
             destfolder=dfolder,
-            videotype="avi",
+            video_extensions="avi",
         )
 
         print("Making plots")
@@ -209,7 +209,7 @@ if __name__ == "__main__":
             [newvideo],
             shuffle=shuffle,
             destfolder=dfolder,
-            videotype="avi",
+            video_extensions="avi",
         )
 
         print("EXTRACT OUTLIERS")
@@ -221,7 +221,7 @@ if __name__ == "__main__":
             epsilon=0,
             automatic=True,
             destfolder=dfolder,
-            videotype="avi",
+            video_extensions="avi",
         )
         file = os.path.join(
             cfg["project_path"],
