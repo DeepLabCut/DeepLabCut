@@ -29,8 +29,10 @@ logger = logging.getLogger(__name__)
 CURRENT_CONFIG_VERSION = 0
 
 
-# Version registry: maps (from_version, to_version) -> migration function
-_MIGRATIONS: dict[tuple[int, int], Callable[[dict], dict]] = {}
+# Version registry: maps (config_type, from_version, to_version) -> migration function.
+# config_type is the class name of the DLCVersionedConfig subclass the migration applies to
+# (e.g. "ProjectConfig", "PoseConfig").  Every migration must declare its target type.
+_MIGRATIONS: dict[tuple[str, int, int], Callable[[dict], dict]] = {}
 
 
 def _diff_dicts(
@@ -89,21 +91,31 @@ def _log_field_changes(before: dict, after: dict, from_v: int, to_v: int) -> Non
         logger.debug("  [%s] No field changes", step)
 
 
-def register_migration(from_version: int, to_version: int):
-    """Decorator to register a migration function.
+def register_migration(
+    from_version: int,
+    to_version: int,
+    config_type: str,
+):
+    """Decorator to register a migration function for a specific config type.
+
+    Every migration must be scoped to a concrete ``DLCVersionedConfig`` subclass.
+    This keeps ``ProjectConfig`` and ``PoseConfig`` migration chains fully independent.
 
     Args:
         from_version: The source version number (>= 0).
         to_version: The target version number (>= 0, from_version ± 1 by convention).
+        config_type: Class name of the config this migration applies to (e.g.
+            ``"ProjectConfig"`` or ``"PoseConfig"``).
 
     Raises:
         ValueError: If version numbers are invalid or a migration for the same
-            (from, to) pair is already registered.
+            (config_type, from_version, to_version) triple is already registered.
 
-    Example:
-        @register_migration(1, 2)
-        def migrate_v1_to_v2(config: dict) -> dict:
-            # Transform config from version 1 to version 2
+    Example::
+
+        @register_migration(0, 1, config_type="ProjectConfig")
+        def migrate_project_v0_to_v1(config: dict) -> dict:
+            config["unique_bodyparts"] = config.pop("uniquebodyparts", [])
             return config
     """
     if from_version < 0 or to_version < 0:
@@ -112,7 +124,7 @@ def register_migration(from_version: int, to_version: int):
         raise ValueError(f"from_version and to_version must differ, got ({from_version}, {to_version})")
 
     def decorator(func: Callable[[dict], dict]) -> Callable[[dict], dict]:
-        key = (from_version, to_version)
+        key = (config_type, from_version, to_version)
         if key in _MIGRATIONS:
             raise ValueError(
                 f"Duplicate migration registered for {key}. "
@@ -149,21 +161,28 @@ def get_config_version(config: dict) -> int:
     return config.get("config_version", 0)
 
 
-def migrate_config(config: dict, target_version: int = CURRENT_CONFIG_VERSION) -> dict:
+def migrate_config(
+    config: dict,
+    config_type: str,
+    target_version: int = CURRENT_CONFIG_VERSION,
+) -> dict:
     """Migrate a configuration to the target version.
 
     Applies all necessary migrations in sequence to upgrade the config
-    from its current version to the target version.
+    from its current version to the target version. Only migrations registered
+    for ``config_type`` are applied.
 
     Args:
-        config: Configuration dictionary to migrate
-        target_version: Target version to migrate to (default: current)
+        config: Configuration dictionary to migrate.
+        config_type: Class name of the config being migrated (e.g. ``"ProjectConfig"``).
+            Only migrations registered for this type are applied.
+        target_version: Target version to migrate to (default: current).
 
     Returns:
-        Migrated configuration dictionary
+        Migrated configuration dictionary.
 
     Raises:
-        ValueError: If migration chain is incomplete or target version is invalid
+        ValueError: If migration chain is incomplete or target version is invalid.
     """
     current_version = get_config_version(config)
 
@@ -175,7 +194,8 @@ def migrate_config(config: dict, target_version: int = CURRENT_CONFIG_VERSION) -
 
     direction = "upgrade" if target_version > current_version else "downgrade"
     logger.info(
-        "Migrating config from version %d to %d (%s)",
+        "Migrating %s from version %d to %d (%s)",
+        config_type,
         current_version,
         target_version,
         direction,
@@ -186,13 +206,15 @@ def migrate_config(config: dict, target_version: int = CURRENT_CONFIG_VERSION) -
     step = 1 if target_version > current_version else -1
     for v in range(current_version, target_version, step):
         next_v = v + step
-        key = (v, next_v)
+        key = (config_type, v, next_v)
         if key not in _MIGRATIONS:
             raise ValueError(
-                f"Missing migration from version {v} to {next_v}. Available migrations: {list(_MIGRATIONS.keys())}"
+                f"No migration registered for '{config_type}' v{v} -> v{next_v}. "
+                f"Available migrations: {list(_MIGRATIONS.keys())}"
             )
         logger.debug(
-            "Applying migration v%d -> v%d (%s)",
+            "Applying migration %s v%d -> v%d (%s)",
+            config_type,
             v,
             next_v,
             _MIGRATIONS[key].__wrapped__.__qualname__,
@@ -201,10 +223,11 @@ def migrate_config(config: dict, target_version: int = CURRENT_CONFIG_VERSION) -
             migrated = _MIGRATIONS[key](migrated)
         except Exception as exc:
             raise type(exc)(
-                f"Migration from version {v} to {next_v} failed ({_MIGRATIONS[key].__wrapped__.__qualname__}): {exc}"
+                f"Migration for '{config_type}' v{v} -> v{next_v} failed "
+                f"({_MIGRATIONS[key].__wrapped__.__qualname__}): {exc}"
             ) from exc
 
-    logger.info("Migration complete: config is now at version %d", target_version)
+    logger.info("Migration complete: %s is now at version %d", config_type, target_version)
     return migrated
 
 
@@ -213,31 +236,41 @@ def migrate_config(config: dict, target_version: int = CURRENT_CONFIG_VERSION) -
 # ============================================================================
 
 
-@register_migration(0, 1)
-def migrate_v0_to_v1(config: dict) -> dict:
-    """Migrate from unversioned/legacy config (v0) to v1."""
+@register_migration(0, 1, config_type="ProjectConfig")
+def migrate_project_v0_to_v1(config: dict) -> dict:
+    """Migrate ProjectConfig from unversioned/legacy (v0) to v1."""
     # TODO @deruyter92 2026-01-30: Migration logic goes here.
-    # e.g. for normalizing field bodyparts from str "MULTI!" to list[str]
+    # e.g. renaming uniquebodyparts -> unique_bodyparts, with_identity -> identity
     return config
 
 
-@register_migration(1, 0)
-def migrate_v1_to_v0(config: dict) -> dict:
-    """Migrate from v1 to v0 (legacy format)."""
+@register_migration(1, 0, config_type="ProjectConfig")
+def migrate_project_v1_to_v0(config: dict) -> dict:
+    """Migrate ProjectConfig from v1 back to v0 (legacy format)."""
     # TODO @deruyter92 2026-01-30: Migration logic goes here.
+    return config
+
+
+@register_migration(0, 1, config_type="PoseConfig")
+def migrate_pose_v0_to_v1(config: dict) -> dict:
+    """Migrate PoseConfig from v0 to v1."""
+    # TODO: Migration logic goes here.
+    return config
+
+
+@register_migration(1, 0, config_type="PoseConfig")
+def migrate_pose_v1_to_v0(config: dict) -> dict:
+    """Migrate PoseConfig from v1 back to v0."""
+    # TODO: Migration logic goes here.
     return config
 
 
 # ============================================================================
-# Future migrations can be added here following the same pattern:
+# Future migrations — add per-config-type pairs following the pattern above:
 # ============================================================================
 #
-# @register_migration(2, 3)
-# def migrate_v2_to_v3(config: dict) -> dict:
-#     """Migrate from v2 to v3.
-#
-#     Describe what changes in this version.
-#     """
-#     # The wrapper passes a copy, so mutate config directly.
-#     # Apply transformations...
+# @register_migration(1, 2, config_type="ProjectConfig")
+# def migrate_project_v1_to_v2(config: dict) -> dict:
+#     """Migrate ProjectConfig from v1 to v2."""
+#     # The wrapper passes a copy, so mutate directly.
 #     return config
