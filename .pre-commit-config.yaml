@@ -91,6 +91,16 @@ repos:
         files: ^docs/.*\.md$
         stages: [pre-commit]
 
+  - repo: https://github.com/hukkin/mdformat
+    rev: 1.0.0
+    hooks:
+      - id: mdformat
+        additional_dependencies:
+          - mdformat-mkdocs
+        files: ^dev-docs/.*\.md$
+        stages: [pre-commit]
+
+
   # check only, no modifications
   - repo: local
     hooks:
