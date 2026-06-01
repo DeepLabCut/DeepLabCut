@@ -198,6 +198,8 @@ torch-backend = "auto"
 target-version = "py310"
 line-length = 120
 fix = true
+[tool.ruff.format]
+docstring-code-format = true
 [tool.ruff.lint]
 select = [ "E", "F", "B", "I", "UP" ]
 ignore = [ "E741", "B007" ]
@@ -210,7 +212,7 @@ ignore = [ "E741", "B007" ]
 "deeplabcut/pose_estimation_tensorflow/lib/trackingutils.py" = [ "F403" ]
 "*.ipynb" = [ "E402" ]
 [tool.ruff.lint.pydocstyle]
-convention = "google"
+convention = "numpy"
 
 [tool.pyproject-fmt]
 max_supported_python = "3.12"

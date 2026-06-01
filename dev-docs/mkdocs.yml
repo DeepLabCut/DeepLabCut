@@ -80,7 +80,8 @@ plugins:
               returns_multiple_items: false
             docstring_section_style: table
             separate_signature: true
-            line_length: 88
+            line_length: 120
+            docstring_style: numpy
             show_signature_annotations: true
           inventories:
             - url: https://docs.python.org/3/objects.inv
