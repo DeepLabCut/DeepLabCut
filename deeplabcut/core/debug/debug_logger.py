@@ -227,7 +227,6 @@ def install_debug_recorder(
         - None: never modify the logger level
         - int: lower the logger only if its effective level is more restrictive
     """
-
     root_logger = logging.getLogger(logger_name)
 
     existing = getattr(root_logger, _DEBUG_HANDLER_ATTR, None)

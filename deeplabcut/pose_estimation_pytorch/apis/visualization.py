@@ -284,7 +284,7 @@ def extract_maps(
         key, the item contains a tuple of:
             (img, scmap, locref, paf, bpt_names, paf_graph, img_name, is_train)
 
-    Examples
+    Examples:
     --------
         If you want to extract the data for image 0 and 103 (of the training set) for
         model trained with shuffle 0.
@@ -431,7 +431,7 @@ def extract_save_all_maps(
             the given index for pose estimation. To extract maps for all detector
             snapshots, use "all".
 
-    Examples
+    Examples:
     --------
     Calculated maps for images 0, 1 and 33.
         >>> deeplabcut.extract_save_all_maps(

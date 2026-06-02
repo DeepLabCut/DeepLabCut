@@ -226,7 +226,7 @@ class VideoWriter(VideoReader):
         dest_folder: str, optional
             Folder the video is saved into (by default, same as the original video)
 
-        Returns
+        Returns:
         -------
         str
             Full path to the shortened video
@@ -264,7 +264,7 @@ class VideoWriter(VideoReader):
         dest_folder: str, optional
             Folder the video splits are saved into (by default, same as the original video)
 
-        Returns
+        Returns:
         -------
         list
             Paths of the video splits
@@ -406,9 +406,8 @@ def ShortenVideo(vname, start="00:00:01", stop="00:01:00", outsuffix="short", ou
     outpath: str
         Output path for saving video to (by default will be the same folder as the video)
 
-    Examples
+    Examples:
     ----------
-
     Linux/MacOs
     >>> deeplabcut.ShortenVideo("/data/videos/mouse1.avi")
 
@@ -463,9 +462,8 @@ def CropVideo(
     outpath: str
         Output path for saving video to (by default will be the same folder as the video)
 
-    Examples
+    Examples:
     ----------
-
     Linux/MacOs
     >>> deeplabcut.CropVideo("/data/videos/mouse1.avi")
 
@@ -533,9 +531,8 @@ def DownSampleVideo(
     angle: float
         Angle to rotate by in degrees, default 0.0. Negative values rotate counter-clockwise
 
-    Examples
+    Examples:
     ----------
-
     Linux/MacOs
     >>> deeplabcut.DownSampleVideo("/data/videos/mouse1.avi")
 
@@ -576,9 +573,8 @@ def rotate_video(vname, angle, rotatecw="Arbitrary", outsuffix="rotated", outpat
     outpath: str
         Output path for saving video to (by default will be the same folder as the video)
 
-    Examples
+    Examples:
     ----------
-
     Linux/MacOs
     >>> deeplabcut.rotate_video("/data/videos/mouse1.avi", angle=90)
 

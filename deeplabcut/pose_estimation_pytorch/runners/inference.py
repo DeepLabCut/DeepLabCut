@@ -150,7 +150,8 @@ class AutocastConfig:
 @dataclass
 class InferenceConfig:
     """Top-level inference configuration that mirrors the `inference` block in
-    pytorch_config.yaml."""
+    pytorch_config.yaml.
+    """
 
     multithreading: MultithreadingConfig = field(default_factory=MultithreadingConfig)
     compile: CompileConfig = field(default_factory=CompileConfig)
@@ -420,7 +421,8 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
         data: str | Path | np.ndarray | tuple[str | Path | np.ndarray, dict],
     ) -> None:
         """Prepares inputs for an image and adds them to the data ready to be
-        processed."""
+        processed.
+        """
         if isinstance(data, (str, Path, np.ndarray)):
             inputs, context = data, {}
         else:
@@ -937,7 +939,8 @@ class CTDInferenceRunner(PoseInferenceRunner):
 
     def _merge_conditions(self, bu_cond: np.ndarray) -> np.ndarray:
         """Merges conditions made by a BU model with existing conditions from CTD
-        tracking."""
+        tracking.
+        """
         # prepare the BU conditions for matching
         bu_cond = bu_cond.copy()[:, :, :3]
         # mask low-quality keypoints

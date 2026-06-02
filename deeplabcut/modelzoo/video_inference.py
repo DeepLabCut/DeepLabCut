@@ -298,9 +298,8 @@ def video_inference_superanimal(
         not require too much training. However, you can make them higher if you see a
         substaintial gain in the training logs.
 
-    Examples
+    Examples:
     --------
-
     >>> from deeplabcut.modelzoo.video_inference import video_inference_superanimal
     >>> videos = ["/path/to/my/video.mp4"]
     >>> superanimal_name = "superanimal_topviewmouse"

@@ -165,7 +165,7 @@ def set_visible_devices(gputouse: int):
 
 
 def smart_restore(restorer, sess, checkpoint_path, net_type):
-    "Restore pretrained weights, smartly redownloading them if missing."
+    """Restore pretrained weights, smartly redownloading them if missing."""
     try:
         restorer.restore(sess, checkpoint_path)
     except ValueError as e:  # The path may be wrong, or the weights no longer exist

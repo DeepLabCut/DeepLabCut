@@ -222,7 +222,8 @@ class Tracklet:
     def calc_rate_of_turn(self, where="head"):
         """Calculate the rate of turn (or angular velocity) of either the `head` or
         `tail` of the Tracklet, computed over the last or first three frames,
-        respectively."""
+        respectively.
+        """
         if where == "tail":
             v = np.diff(self.centroid[:3], axis=0)
         else:
@@ -237,7 +238,8 @@ class Tracklet:
 
     def immediately_follows(self, other_tracklet, max_gap=1):
         """Test whether this Tracklet follows another within a tolerance of`max_gap`
-        frames."""
+        frames.
+        """
         return 0 < self.start - other_tracklet.end <= max_gap
 
     def distance_to(self, other_tracklet):
@@ -1077,7 +1079,7 @@ def stitch_tracklets(
             - snapshot_index
             - detector_snapshot_index
 
-    Returns
+    Returns:
     -------
     A TrackletStitcher object
     """

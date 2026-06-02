@@ -127,8 +127,9 @@ def getpose(image, cfg, sess, inputs, outputs, outall=False):
 
 ## Functions below implement are for batch sizes > 1:
 def extract_cnn_outputmulti(outputs_np, cfg):
-    """extract locref + scmap from network
-    Dimensions: image batch x imagedim1 x imagedim2 x bodypart"""
+    """Extract locref + scmap from network
+    Dimensions: image batch x imagedim1 x imagedim2 x bodypart
+    """
     scmap = outputs_np[0]
     locref = None
     if cfg["location_refinement"]:
@@ -163,7 +164,6 @@ def getposeNP(image, cfg, sess, inputs, outputs, outall=False):
 
     Introduced in https://www.biorxiv.org/content/10.1101/457242v1
     """
-
     num_outputs = cfg.get("num_outputs", 1)
     outputs_np = sess.run(outputs, feed_dict={inputs: image})
 

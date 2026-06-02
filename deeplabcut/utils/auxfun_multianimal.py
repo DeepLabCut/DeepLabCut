@@ -92,7 +92,8 @@ def get_track_method(cfg, track_method=""):
 
 def IntersectionofIndividualsandOnesGivenbyUser(cfg, individuals):
     """Returns all individuals when set to 'all', otherwise all bpts that are in the
-    intersection of comparisonbodyparts and the actual bodyparts."""
+    intersection of comparisonbodyparts and the actual bodyparts.
+    """
     if "individuals" not in cfg:  # Not a multi-animal project...
         return [""]
     all_indivs = extractindividualsandbodyparts(cfg)[0]
@@ -193,7 +194,8 @@ def graph2names(cfg, partaffinityfield_graph):
 
 def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
     """Save predicted data as h5 file and metadata as pickle file; created by
-    predict_videos.py."""
+    predict_videos.py.
+    """
     data_path = dataname.split(".h5")[0] + suffix + ".pickle"
     metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
 
@@ -206,7 +208,8 @@ def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
 
 def LoadFullMultiAnimalData(dataname):
     """Save predicted data as h5 file and metadata as pickle file; created by
-    predict_videos.py."""
+    predict_videos.py.
+    """
     data_file = dataname.split(".h5")[0] + "_full.pickle"
     try:
         with open(data_file, "rb") as handle:
@@ -253,7 +256,7 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
     forceindividual: None default
             If a string is given that is used in the individuals column.
 
-    Examples
+    Examples:
     --------
     Converts mulianimalbodyparts under the 'first individual' in individuals list in config.yaml
     and uniquebodyparts under 'single'
@@ -263,7 +266,6 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
     Converts mulianimalbodyparts under the individual label mus17 and uniquebodyparts under 'single'
     >>> deeplabcut.convert2_maDLC("/socialrearing-task/config.yaml", forceindividual="mus17")
     """
-
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
     video_names = [trainingsetmanipulation._robust_path_split(i)[1] for i in videos]

@@ -66,14 +66,13 @@ def create_new_project(
         list of individuals to be used in the project configuration.
         If None - defaults to ['individual1', 'individual2', 'individual3']
 
-    Returns
+    Returns:
     -------
     str
         Path to the new project configuration file.
 
-    Examples
+    Examples:
     --------
-
     Linux/MacOS:
 
     >>> deeplabcut.create_new_project(

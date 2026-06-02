@@ -149,7 +149,6 @@ class GatedAttentionUnit(nn.Module):
 
     def rel_pos_bias(self, seq_len, k_len=None):
         """Add relative position bias."""
-
         if self.attn_type == "self-attn":
             t = F.pad(self.w[: 2 * seq_len - 1], [0, seq_len]).repeat(seq_len)
             t = t[..., :-seq_len].reshape(-1, seq_len, 3 * seq_len - 2)
@@ -163,7 +162,6 @@ class GatedAttentionUnit(nn.Module):
 
     def _forward(self, inputs):
         """GAU Forward function."""
-
         if self.attn_type == "self-attn":
             x = inputs
         else:

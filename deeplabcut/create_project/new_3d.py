@@ -37,7 +37,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
         it must be a string.
 
 
-    Example
+    Example:
     --------
     Linux/MacOs
     >>> deeplabcut.create_new_project_3d("reaching-task", "Linus", 2)

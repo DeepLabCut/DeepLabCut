@@ -68,7 +68,7 @@ def triangulate(
     save_as_csv: bool, optional
         Saves the predictions in a .csv file. The default is ``False``
 
-    Example
+    Example:
     -------
     Linux/MacOS
     To analyze all the videos in the directory:

@@ -131,11 +131,11 @@ def train_network(
             If set true, the training is transfer learning (new decoding layer). If set false,
     and superanimal_name is True, then the training is fine-tuning (reusing the decoding layer)
 
-        Returns
+    Returns:
         -------
         None
 
-        Examples
+    Examples:
         --------
         To train the network for first shuffle of the training dataset
 

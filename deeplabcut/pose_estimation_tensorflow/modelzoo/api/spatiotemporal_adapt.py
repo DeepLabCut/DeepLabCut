@@ -60,9 +60,8 @@ class SpatiotemporalAdaptation:
         customized_pose_config: string, optional
            For future support of non modelzoo model
 
-        Examples
+        Examples:
         --------
-
         from  deeplabcut.modelzoo.apis import SpatiotemporalAdaptation
         video_path = '/mnt/md0/shaokai/openfield_video/m3v1mp4.mp4'
         superanimal_name = 'superanimal_topviewmouse'
@@ -178,7 +177,6 @@ class SpatiotemporalAdaptation:
 
         Or we make up a fake one, then we use a light way convention to do adaptation
         """
-
         # looking for the pseudo label path
         DLCscorer = "DLC_" + Path(self.init_weights).stem
         vname = str(Path(self.video_path).stem)

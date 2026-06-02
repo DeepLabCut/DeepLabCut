@@ -114,7 +114,6 @@ def map_image_path_to_id(images: list[dict]) -> dict[str, int]:
     Examples:
         images = [{"file_name": "path/to/image1.jpg", "id": 1}, ...]
     """
-
     return {image["file_name"]: image["id"] for image in images}
 
 
@@ -131,7 +130,6 @@ def map_id_to_annotations(annotations: list[dict]) -> dict[int, list[int]]:
     Examples:
         annotations = [{"image_id": 1, ...}, ...]
     """
-
     annotation_idx_map = defaultdict(list)
     for idx, annotation in enumerate(annotations):
         annotation_idx_map[annotation["image_id"]].append(idx)
@@ -226,7 +224,6 @@ def _crop_image_keypoints(
         The offsets to map predicted keypoints back to the original image
         The scale to map predicted keypoints back to the original image
     """
-
     cropped_image, pad_size = _crop_and_pad_image(image, coords, output_size)
     cropped_keypoints = _crop_and_pad_keypoints(keypoints, (coords[0][0], coords[1][0]), pad_size)
 
@@ -416,7 +413,6 @@ def apply_transform(
     Returns:
         transformed: A dictionary containing the transformed image and keypoints.
     """
-
     if transform:
         oob_mask = out_of_bounds_keypoints(keypoints, image.shape)
         transformed = _apply_transform(transform, image, keypoints, bboxes, class_labels)

@@ -233,6 +233,7 @@ class COCOLoader(Loader):
 
     def load_data(self, mode: str = "train") -> dict:
         """Convert data from JSON object to dictionary.
+
         Args:
             mode: indicates which JSON object to convert. Defaults to "train".
 

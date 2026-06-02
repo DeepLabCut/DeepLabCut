@@ -359,7 +359,8 @@ class BoxTracker(BaseTracker):
     @staticmethod
     def convert_x_to_bbox(x, score=None):
         """Takes a bounding box in the centre form [x,y,s,r] and returns it in the form
-        [x1,y1,x2,y2] where x1,y1 is the top left and x2,y2 is the bottom right."""
+        [x1,y1,x2,y2] where x1,y1 is the top left and x2,y2 is the bottom right.
+        """
         w = np.sqrt(x[2] * x[3])
         h = x[2] / w
         if score is None:
@@ -371,7 +372,8 @@ class BoxTracker(BaseTracker):
     def convert_bbox_to_z(bbox):
         """Takes a bounding box in the form [x1,y1,x2,y2] and returns z in the form
         [x,y,s,r] where x,y is the centre of the box and s is the scale/area and r is
-        the aspect ratio."""
+        the aspect ratio.
+        """
         w = bbox[2] - bbox[0]
         h = bbox[3] - bbox[1]
         x = bbox[0] + w / 2.0
@@ -753,7 +755,7 @@ def reconstruct_all_ellipses(data, sd):
     sd : float
         The standard deviation used by the `EllipseFitter` for fitting ellipses.
 
-    Returns
+    Returns:
     -------
     numpy.ndarray
         A 3D array of shape (A, F, 5), where:
@@ -761,7 +763,7 @@ def reconstruct_all_ellipses(data, sd):
         - F is the number of frames.
         - Each row contains ellipse parameters [cx, cy, width, height, angle].
 
-    Notes
+    Notes:
     -----
     - The method drops the "likelihood" column from the input DataFrame as it is not
       relevant for ellipse fitting.

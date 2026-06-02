@@ -327,7 +327,6 @@ class Loader(ABC):
             ValueError: If 'bbox' is not found in annotation when method is 'gt'.
             ValueError: If method is not one of 'gt', 'detection bbox', 'keypoints', or 'segmentation mask'.
         """
-
         if not method:
             return annotations
 

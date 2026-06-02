@@ -139,7 +139,7 @@ def find_outliers_in_raw_detections(pickled_data, algo="uncertain", threshold=0.
         Indices in the list of labeled body parts to be kept of the analysis.
         By default, all keypoints are used for outlier search.
 
-    Returns
+    Returns:
     -------
     candidates : list
         Indices of video frames containing potential outliers
@@ -352,13 +352,12 @@ def extract_outlier_frames(
             - snapshot_index
             - detector_snapshot_index
 
-    Returns
+    Returns:
     -------
     None
 
-    Examples
+    Examples:
     --------
-
     Extract the frames with default settings on Windows.
 
     >>> deeplabcut.extract_outlier_frames(
@@ -390,7 +389,6 @@ def extract_outlier_frames(
             extractionalgorithm='kmeans',
         )
     """
-
     cfg = auxiliaryfunctions.read_config(config)
     bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts)
     if not len(bodyparts):
@@ -549,7 +547,8 @@ def extract_outlier_frames(
 
 def convertparms2start(pn):
     """Creating a start value for sarimax in case of an value error
-    See: https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk"""
+    See: https://groups.google.com/forum/#!topic/pystatsmodels/S_Fo53F25Rk
+    """
     if "ar." in pn:
         return 0
     elif "ma." in pn:
@@ -605,8 +604,8 @@ def FitSARIMAXModel(x, p, pcutoff, alpha, ARdegree, MAdegree, nforecast=0, disp=
 
 def compute_deviations(Dataframe, dataname, p_bound, alpha, ARdegree, MAdegree, storeoutput=None):
     """Fits Seasonal AutoRegressive Integrated Moving Average with eXogenous regressors
-    model to data and computes confidence interval as well as mean fit."""
-
+    model to data and computes confidence interval as well as mean fit.
+    """
     print("Fitting state-space models with parameters:", ARdegree, MAdegree)
     df_x, df_y, df_likelihood = Dataframe.values.reshape((Dataframe.shape[0], -1, 3)).T
     preds = []
@@ -683,7 +682,7 @@ def attempt_to_add_video(
     coords: list, optional
         A list containing the list of cropping coordinates of the video. The default is set to None.
 
-    Returns
+    Returns:
     -------
     True iff the video was successfully added to the project
     """
@@ -1094,12 +1093,10 @@ def merge_datasets(config, forceiterate=None):
         If an integer is given the iteration variable is set to this value
         This is only done if all datasets were labeled or refined.
 
-    Examples
+    Examples:
     --------
-
     >>> deeplabcut.merge_datasets("/analysis/project/reaching-task/config.yaml")
     """
-
     cfg = auxiliaryfunctions.read_config(config)
     config_path = Path(config).parents[0]
 

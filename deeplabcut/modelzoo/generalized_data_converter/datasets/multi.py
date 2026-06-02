@@ -112,8 +112,8 @@ class MultiSourceDataset:
     def whether_anno_image_match(self, images, annotations):
         """Every image id should be annotated at least once There should not be any
         image that is not being annotated There should not be any annotation for beyond
-        the set of given images."""
-
+        the set of given images.
+        """
         image_ids = set([image["id"] for image in images])
 
         annotation_image_ids = set([anno["image_id"] for anno in annotations])
@@ -134,7 +134,6 @@ class MultiSourceDataset:
         are defined within their own local scope. Therefore, we will need to put these
         ids in the global scope
         """
-
         from collections import defaultdict
 
         dataset_id_pool = defaultdict(set)
@@ -184,7 +183,6 @@ class MultiSourceDataset:
 
         # only do this when iid/ood split is done
         """
-
         merged_train_images = []
         merged_test_images = []
         merged_train_annotations = []

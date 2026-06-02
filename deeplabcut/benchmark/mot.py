@@ -35,7 +35,7 @@ def convert_bboxes_to_xywh(bboxes: NDArray, inplace: bool = False) -> NDArray:
         If True, modifies the input array in place. If False, returns a copy of
         the array with the converted bounding box format. Defaults to False.
 
-    Returns
+    Returns:
     -------
     numpy.ndarray or None
         If `inplace` is False, returns a new array of the same shape as `bbox`
@@ -72,7 +72,7 @@ def reconstruct_bboxes_from_bodyparts(data: pd.DataFrame, margin: float, to_xywh
         If True, converts the bounding box format from [x_min, y_min, x_max, y_max]
         to [x, y, width, height]. Defaults to False.
 
-    Returns
+    Returns:
     -------
     numpy.ndarray
         An array of shape (N, 5), where N is the number of rows in `data`.
@@ -80,7 +80,7 @@ def reconstruct_bboxes_from_bodyparts(data: pd.DataFrame, margin: float, to_xywh
         - [x_min, y_min, x_max, y_max, likelihood]
         If `to_xywh` is True, the format will be [x, y, width, height, likelihood].
 
-    Notes
+    Notes:
     -----
     - NaN values in the input data are ignored when computing the bounding box dimensions.
     - Warnings related to NaN values are suppressed during calculations.
@@ -116,7 +116,7 @@ def reconstruct_all_bboxes(data: pd.DataFrame, margin: float, to_xywh: bool = Fa
         If True, converts the bounding box format from [x_min, y_min, x_max, y_max]
         to [x, y, width, height].
 
-    Returns
+    Returns:
     -------
     numpy.ndarray
         A 3D array of shape (A, F, 5), where:
@@ -125,7 +125,7 @@ def reconstruct_all_bboxes(data: pd.DataFrame, margin: float, to_xywh: bool = Fa
         - Each bounding box is represented as [x_min, y_min, x_max, y_max, likelihood].
           If `to_xywh` is True, the format will be [x, y, width, height, likelihood].
 
-    Notes
+    Notes:
     -----
     - Individuals are extracted from the 'individuals' level of the DataFrame columns.
     - If an individual named 'single' exists, it is excluded from the bounding box computation.

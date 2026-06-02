@@ -39,7 +39,6 @@ def build_from_cfg(cfg: dict, registry: "Registry", default_args: dict | None = 
         >>> assert isinstance(obj, Model)
         >>> assert obj.param == 10
     """
-
     args = cfg.copy()
 
     if default_args is not None:
@@ -133,6 +132,7 @@ class Registry:
         """Split scope and key.
 
         The first scope will be split from key.
+
         Examples:
             >>> Registry.split_scope_key("mmdet.ResNet")
             'mmdet', 'ResNet'
@@ -308,6 +308,7 @@ class Registry:
         A record will be added to `self._module_dict`, whose key is the class
         name or the specified name, and value is the class itself.
         It can be used as a decorator or a normal function.
+
         Args:
             name: The module name to be registered. If not
                   specified, the class name will be used.

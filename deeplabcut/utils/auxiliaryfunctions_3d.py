@@ -31,7 +31,6 @@ import pandas as pd
 
 def Foldernames3Dproject(cfg_3d):
     """Definitions of subfolders in 3D projects."""
-
     img_path = os.path.join(cfg_3d["project_path"], "calibration_images")
     path_corners = os.path.join(cfg_3d["project_path"], "corners")
     path_camera_matrix = os.path.join(cfg_3d["project_path"], "camera_matrix")
@@ -163,7 +162,6 @@ def get_camerawise_videos(path, cam_names, videotype):
 
 def Get_list_of_triangulated_and_videoFiles(filepath, videotype, scorer_3d, cam_names, videofolder):
     """Returns the list of triangulated h5 and the corresponding video files."""
-
     prefix = []
     suffix = []
     file_list = []
@@ -320,7 +318,6 @@ def cross_view_match_dataframes(df1, df2, F):
     df: Data read from .h5 track file
     F: fundamental matrix from OpenCV
     """
-
     tracks1 = _reconstruct_tracks_as_tracklets(df1)
     tracks2 = _reconstruct_tracks_as_tracklets(df2)
     costs, voting = _associate_paired_view_tracks(tracks1, tracks2, F)

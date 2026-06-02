@@ -50,7 +50,6 @@ def calc_distance_between_points_two_vectors_2d(v1, v2):
     >>> v2[1, :] = [0, 10, 25, 50, 100]
     >>> d = calc_distance_between_points_two_vectors_2d(v1.T, v2.T)
     """
-
     # Check dataformats
     if not isinstance(v1, np.ndarray) or not isinstance(v2, np.ndarray):
         raise ValueError("Invalid argument data format")
@@ -85,7 +84,6 @@ def angle_between_points_2d_anticlockwise(p1, p2):
         >>> ninety2 = angle_between_points_2d_clockwise([10, 0], [10, 1])
         >>> print(ninety2)
     """
-
     """
         Determines the angle of a straight line drawn between point one and two.
         The number returned, which is a double in degrees, tells us how much we have to rotate
@@ -125,7 +123,6 @@ def calc_angle_between_vectors_of_points_2d(v1, v2):
     >>> v2[1, :] = [1, 0, -1, 0]
     >>> a = calc_angle_between_vectors_of_points_2d(v2, v1)
     """
-
     # Check data format
     if v1 is None or v2 is None or not isinstance(v1, np.ndarray) or not isinstance(v2, np.ndarray):
         raise ValueError("Invalid format for input arguments")
@@ -246,7 +243,7 @@ def analyzeskeleton(
             - snapshot_index
             - detector_snapshot_index
 
-    Returns
+    Returns:
     -------
     video_to_skeleton_df
         Dictionary mapping video filepaths to skeleton dataframes.

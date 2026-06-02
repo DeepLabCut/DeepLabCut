@@ -340,7 +340,6 @@ def _image_names_to_df_index(
         image_names: list of image names
         image_name_to_index, optional: a transform to apply on each image_name
     """
-
     if image_name_to_index is not None:
         return pd.MultiIndex.from_tuples([image_name_to_index(image_name) for image_name in image_names])
     else:
@@ -417,7 +416,6 @@ def build_bboxes_dict_for_dataframe(
         Dictionary with sames keys as in the dataframe returned by
         build_predictions_dataframe, and respective bounding boxes and scores, if any.
     """
-
     image_names = []
     bboxes_data = []
     for image_name, image_predictions in predictions.items():

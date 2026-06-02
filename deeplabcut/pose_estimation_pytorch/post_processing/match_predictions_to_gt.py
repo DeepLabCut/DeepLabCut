@@ -121,7 +121,6 @@ def oks_match_prediction_to_gt(pred_kpts: np.array, gt_kpts: np.array, individua
         output:
             col_ind = np.array([...])
     """
-
     num_animals, num_keypoints, _ = pred_kpts.shape
     if num_keypoints + 1 == gt_kpts.shape[1]:
         gt_kpts_without_ctr = gt_kpts[:, :-1, :].copy()

@@ -25,7 +25,7 @@ def select_cropping_area(config, videos=None):
         List of videos whose cropping areas are to be defined. Note that full paths are required.
         By default, all videos in the config are successively loaded.
 
-    Returns
+    Returns:
     -------
     cfg : dict
         Updated project configuration
@@ -171,11 +171,11 @@ def extract_frames(
         this is left as ``None`` all videos specified in the config file will have
         frames extracted. Otherwise one can select a subset by passing those paths.
 
-    Returns
+    Returns:
     -------
     None
 
-    Notes
+    Notes:
     -----
     Use the function ``add_new_videos`` at any stage of the project to add new videos
     to the config file and extract their frames.
@@ -189,7 +189,7 @@ def extract_frames(
     parameter in the command. Rather, you will get a prompt in the graphic user
     interface to choose if you need to crop or not.
 
-    Examples
+    Examples:
     --------
     To extract frames automatically with 'kmeans' and then crop the frames
 

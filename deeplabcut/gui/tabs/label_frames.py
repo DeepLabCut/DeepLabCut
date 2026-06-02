@@ -43,7 +43,7 @@ def label_frames(config_path: str | Path | None = None, image_folder: str | None
     image_folder: str, None
         Name of the image folder to open for labelling.
 
-    Examples
+    Examples:
     --------
     Opening the napari-deeplabcut annotation GUI without opening a specific folder of
     images to label. You then need to drag-and-drop your image folder into the GUI.

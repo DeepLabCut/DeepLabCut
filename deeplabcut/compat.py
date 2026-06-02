@@ -222,11 +222,11 @@ def train_network(
         pytorch_cfg_updates = {"runner.gpus": [0, 1, 2, 3]}
         ```
 
-    Returns
+    Returns:
     -------
     None
 
-    Examples
+    Examples:
     --------
     To train the network for first shuffle of the training dataset
 
@@ -472,11 +472,11 @@ def evaluate_network(
         the `detector_snapshot_index` parameter can override the index of the detector
         to use for evaluation in the project configuration file.
 
-    Returns
+    Returns:
     -------
     None
 
-    Examples
+    Examples:
     --------
     If you do not want to plot and evaluate with shuffle set to 1.
 
@@ -626,7 +626,7 @@ def return_evaluate_network_data(
         overwrite this by passing the engine as an argument, but this should generally
         not be done.
 
-    Examples
+    Examples:
     --------
     If you do not want to plot
     >>> deeplabcut._evaluate_network_data("/analysis/project/reaching-task/config.yaml", shuffle=[1])
@@ -842,14 +842,13 @@ def analyze_videos(
         Any extra parameters to pass to the PyTorch API, such as ``device`` which can
         be used to specify the CUDA device to use for training.
 
-    Returns
+    Returns:
     -------
     DLCScorer: str
         the scorer used to analyze the videos
 
-    Examples
+    Examples:
     --------
-
     Analyzing a single video on Windows
 
     >>> deeplabcut.analyze_videos(
@@ -1071,7 +1070,7 @@ def create_tracking_dataset(
         overwrite this by passing the engine as an argument, but this should generally
         not be done.
 
-    Returns
+    Returns:
     -------
     DLCScorer: str
         the scorer used to analyze the videos
@@ -1232,11 +1231,11 @@ def analyze_images(
     torch_kwargs:
         Any extra parameters to pass to the PyTorch API, such as ``ctd_conditions``
 
-    Returns
+    Returns:
     -------
         A dictionary mapping image paths (as strings) to model predictions.
 
-    Examples
+    Examples:
     --------
     If you want to analyze all frames in /analysis/project/my_images
         >>> import deeplabcut
@@ -1361,7 +1360,7 @@ def analyze_time_lapse_frames(
         Saves the predictions in a .csv file. The default is ``False``; if provided if
         must be either ``True`` or ``False``
 
-    Examples
+    Examples:
     --------
     If you want to analyze all frames in /analysis/project/timelapseexperiment1
     >>> import deeplabcut
@@ -1502,7 +1501,7 @@ def convert_detections2tracklets(
         overwrite this by passing the engine as an argument, but this should generally
         not be done.
 
-    Examples
+    Examples:
     --------
     If you want to convert detections to tracklets:
     >>> import deeplabcut
@@ -1632,7 +1631,7 @@ def extract_maps(
         overwrite this by passing the engine as an argument, but this should generally
         not be done.
 
-    Examples
+    Examples:
     --------
     If you want to extract the data for image 0 and 103 (of the training set) for model trained with shuffle 0.
     >>> deeplabcut.extract_maps(configfile, 0, Indices=[0, 103])
@@ -1803,7 +1802,7 @@ def extract_save_all_maps(
         overwrite this by passing the engine as an argument, but this should generally
         not be done.
 
-    Examples
+    Examples:
     --------
     Calculated maps for images 0, 1 and 33.
     >>> deeplabcut.extract_save_all_maps("/analysis/project/reaching-task/config.yaml", shuffle=1, Indices=[0, 1, 33])

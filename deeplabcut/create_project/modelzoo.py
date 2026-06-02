@@ -200,7 +200,7 @@ def create_pretrained_project(
         Name of the detector model on which the superanimal dataset has been trained on.
         If None - "fasterrcnn_resnet50_fpn_v2" will be used as default.
 
-    Example
+    Example:
     --------
     Linux/MacOs loading full_human model and analyzing video /homosapiens1.avi
     >>> deeplabcut.create_pretrained_project(
@@ -339,7 +339,7 @@ def create_pretrained_project_pytorch(
         Name of the detector model on which the superanimal dataset has been trained on.
         If None - "fasterrcnn_resnet50_fpn_v2" will be used as default.
 
-    Example
+    Example:
     --------
     Linux/MacOs loading full_human model and analyzing video /homosapiens1.avi
     >>> deeplabcut.create_pretrained_project_pytorch(
@@ -548,7 +548,7 @@ def create_pretrained_project_tensorflow(
             Fraction that will be used in dlc-model/trainingset folder name.
             If None - default value (0.95) from new projects will be used.
 
-    Example
+    Example:
     --------
     Linux/MacOs loading full_human model and analyzing video /homosapiens1.avi
     >>> deeplabcut.create_pretrained_project_tensorflow(

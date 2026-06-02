@@ -75,6 +75,7 @@ def conv_kernel_initializer(shape, dtype=None, partition_info=None):
     standard deviation, whereas here we use a normal distribution. Similarly,
     tf.contrib.layers.variance_scaling_initializer uses a truncated normal with
     a corrected standard deviation.
+
     Args:
       shape: shape of variable
       dtype: dtype of variable
@@ -95,6 +96,7 @@ def dense_kernel_initializer(shape, dtype=None, partition_info=None):
       tf.variance_scaling_initializer(scale=1.0/3.0, mode='fan_out',
                                       distribution='uniform').
     It is written out explicitly here for clarity.
+
     Args:
       shape: shape of variable
       dtype: dtype of variable
@@ -136,6 +138,7 @@ def round_repeats(repeats, global_params):
 
 class MBConvBlock(tf.keras.layers.Layer):
     """A class of MBConv: Mobile Inverted Residual Bottleneck.
+
     Attributes:
       endpoints: dict. A list of internal tensors.
     """
@@ -253,6 +256,7 @@ class MBConvBlock(tf.keras.layers.Layer):
 
         Args:
           input_tensor: Tensor, a single input tensor for Squeeze/Excitation layer.
+
         Returns:
           A output tensor, which should have the same shape as input.
         """
@@ -268,6 +272,7 @@ class MBConvBlock(tf.keras.layers.Layer):
           inputs: the inputs tensor.
           training: boolean, whether the model is constructed for training.
           drop_connect_rate: float, between 0 to 1, drop connect rate.
+
         Returns:
           A output tensor.
         """
@@ -346,6 +351,7 @@ class MBConvBlockWithoutDepthwise(MBConvBlock):
           inputs: the inputs tensor.
           training: boolean, whether the model is constructed for training.
           drop_connect_rate: float, between 0 to 1, drop connect rate.
+
         Returns:
           A output tensor.
         """
@@ -384,6 +390,7 @@ class Model(tf.keras.Model):
         Args:
           blocks_args: A list of BlockArgs to construct block modules.
           global_params: GlobalParams, a set of global parameters.
+
         Raises:
           ValueError: when blocks_args is not specified as a list.
         """
@@ -477,6 +484,7 @@ class Model(tf.keras.Model):
           inputs: input tensors.
           training: boolean, whether the model is constructed for training.
           features_only: build the base feature network only.
+
         Returns:
           output tensors.
         """

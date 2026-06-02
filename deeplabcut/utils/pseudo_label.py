@@ -369,7 +369,6 @@ def dlc3predictions_2_annotation_from_video(
     bbox: []
 
     """
-
     category_id = 1  # the default for superanimal. But it might be changed
 
     images = []

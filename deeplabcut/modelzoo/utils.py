@@ -194,7 +194,6 @@ def parse_project_model_name(superanimal_name: str) -> tuple[str, str]:
         project_name: the parsed SuperAnimal model name
         model_name: the model architecture (e.g., dlcrnet, hrnetw32)
     """
-
     if superanimal_name == "superanimal_quadruped":
         warnings.warn(
             f"{superanimal_name} is deprecated and will be removed in a future version. Use"

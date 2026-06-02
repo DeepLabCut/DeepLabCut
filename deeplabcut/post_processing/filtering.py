@@ -34,7 +34,7 @@ def columnwise_spline_interp(data, max_gap=0):
     max_gap : int, optional
         Maximum gap size to fill. By default, all gaps are interpolated.
 
-    Returns
+    Returns:
     -------
     interpolated data with same shape as *data*
     """
@@ -165,7 +165,7 @@ def filterpredictions(
             - snapshot_index
             - detector_snapshot_index
 
-    Returns
+    Returns:
     -------
     video_to_filtered_df
         Dictionary mapping video filepaths to filtered dataframes.
@@ -174,9 +174,8 @@ def filterpredictions(
         * If a video is not analyzed, the corresponding value in the dictionary will be
           None.
 
-    Examples
+    Examples:
     --------
-
     Arima model:
 
     >>> deeplabcut.filterpredictions(

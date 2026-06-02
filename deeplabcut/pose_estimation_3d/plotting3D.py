@@ -136,7 +136,7 @@ def create_labeled_video_3d(
         Coloring rule. By default, each bodypart is colored differently.
         If set to 'individual', points belonging to a single individual are colored the same.
 
-    Example
+    Example:
     -------
     Linux/MacOs
     >>> deeplabcut.create_labeled_video_3d(config, ["/data/project1/videos/3d.h5"], start=100, end=500)

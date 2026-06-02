@@ -61,7 +61,8 @@ def PlottingResults(
     linewidth=1.0,
 ):
     """Plots poses vs time; pose x vs pose y; histogram of differences and
-    likelihoods."""
+    likelihoods.
+    """
     pcutoff = cfg["pcutoff"]
     colors = visualization.get_cmap(len(bodyparts2plot), name=cfg["colormap"])
     alphavalue = cfg["alphavalue"]
@@ -262,13 +263,12 @@ def plot_trajectories(
             - snapshot_index
             - detector_snapshot_index
 
-    Returns
+    Returns:
     -------
     None
 
-    Examples
+    Examples:
     --------
-
     To label the frames
 
     >>> deeplabcut.plot_trajectories(
@@ -456,7 +456,6 @@ def plot_edge_affinity_distributions(
     figsize: tuple
         Figure size in inches.
     """
-
     with open(eval_pickle_file, "rb") as file:
         data = pickle.load(file)
     meta_pickle_file = eval_pickle_file.replace("_full.", "_meta.")

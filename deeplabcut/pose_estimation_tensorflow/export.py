@@ -31,7 +31,6 @@ def create_deploy_config_template():
     Creates a template for config.yaml file.
     This specific order is preserved while saving as yaml file.
     """
-
     yaml_str = """\
 # Deploy config.yaml - info about project origin:
     Task:
@@ -61,7 +60,6 @@ def write_deploy_config(configname, cfg):
 
     Write structured config file.
     """
-
     with open(configname, "w") as cf:
         ruamelFile = ruamel.yaml.YAML()
         cfg_file, ruamelFile = create_deploy_config_template()
@@ -101,7 +99,6 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
     checkpoint file path : string
         the path to the checkpoint file associated with the loaded model
     """
-
     ########################
     ### find snapshot to use
     ########################
@@ -179,7 +176,6 @@ def tf_to_pb(sess, checkpoint, output, output_dir=None):
         path to the directory that exported models should be saved to.
         If None, will export to the directory of the checkpoint file.
     """
-
     output_dir = os.path.expanduser(output_dir) if output_dir else os.path.dirname(checkpoint)
     ckpt_base = os.path.basename(checkpoint)
 
@@ -255,7 +251,6 @@ def export_model(
     >>> deeplabcut.export_model("/analysis/project/reaching-task/config.yaml", shuffle=3, snapshotindex=-1)
     --------
     """
-
     ### read config file
 
     try:

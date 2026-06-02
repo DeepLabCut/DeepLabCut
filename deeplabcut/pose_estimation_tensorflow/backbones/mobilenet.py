@@ -368,6 +368,7 @@ def global_pool(input_tensor, pool_op=tf.nn.avg_pool2d):
     Args:
       input_tensor: input tensor
       pool_op: pooling op (avg pool is default)
+
     Returns:
       a tensor batch_size x 1 x 1 x depth.
     """
@@ -404,6 +405,7 @@ def training_scope(
 
        # the network created will be trainble with dropout/batch norm
        # initialized appropriately.
+
     Args:
       is_training: if set to False this will ensure that all customizations are
         set to non-training mode. This might be helpful for code that is reused

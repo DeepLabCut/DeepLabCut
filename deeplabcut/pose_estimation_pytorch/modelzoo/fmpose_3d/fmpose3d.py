@@ -109,6 +109,7 @@ def get_fmpose3d_inference_api(
         snapshot_path: The path to the snapshot file. If None, FMPose3D will download the default snapshot.
         device: The device to use. If None, the device will be inferred from the environment.
         config_kwargs: Additional keyword arguments to pass to the FMPose3DConfig.
+
     Returns:
         FMPose3DInference: An FMPose3DInference API runner.
 

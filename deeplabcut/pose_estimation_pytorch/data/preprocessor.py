@@ -163,7 +163,8 @@ def build_conditional_top_down_preprocessor(
 
 class ComposePreprocessor(Preprocessor):
     """Class to preprocess an image and turn it into a batch of inputs before running
-    inference."""
+    inference.
+    """
 
     def __init__(self, components: list[Preprocessor]) -> None:
         self.components = components

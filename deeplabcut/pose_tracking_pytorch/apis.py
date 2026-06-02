@@ -77,9 +77,8 @@ def transformer_reID(
     train_frac: (optional), fraction
         fraction of triplets used for training/testing of the transformer
 
-    Examples
+    Examples:
     --------
-
     Training model for one video based on ellipse-tracker derived tracklets
     >>> config = "/home/users/.../dlc-project-2025-01-01/config.yaml"
     >>> videos = ["/home/alex/video.mp4"]

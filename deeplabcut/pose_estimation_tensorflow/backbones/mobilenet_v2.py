@@ -130,6 +130,7 @@ def mobilenet(
         prediction_fn- what prediction function to use.
         reuse-: whether to reuse variables (if reuse set to true, scope
         must be given).
+
     Returns:
       logits/endpoints pair
 

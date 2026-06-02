@@ -310,7 +310,8 @@ def _conv_predictions_to_assemblies(
     image_names: list[str], predictions: dict[str, np.ndarray]
 ) -> dict[int, list[Assembly]]:
     """Converts predictions to an assemblies dictionary predictions shape (num_animals,
-    num_keypoints, 2 or 3)"""
+    num_keypoints, 2 or 3)
+    """
     assemblies = {}
     if len(predictions) == 0:
         return assemblies

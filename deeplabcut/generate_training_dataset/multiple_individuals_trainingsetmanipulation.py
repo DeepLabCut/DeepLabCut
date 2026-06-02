@@ -262,7 +262,7 @@ def create_multianimaltraining_dataset(
             * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which
             respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
 
-    Example
+    Example:
     --------
     >>> deeplabcut.create_multianimaltraining_dataset("/analysis/project/reaching-task/config.yaml", num_shuffles=1)
 

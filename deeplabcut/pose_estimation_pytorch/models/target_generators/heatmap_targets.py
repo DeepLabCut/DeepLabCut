@@ -35,7 +35,8 @@ class HeatmapGenerator(BaseGenerator):
     class Mode(Enum):
         """KEYPOINT generates one heatmap per type of keypoint (for pose estimation
         heads) INDIVIDUAL generates one heatmap per individual (for identification
-        heads)"""
+        heads)
+        """
 
         INDIVIDUAL = "INDIVIDUAL"
         KEYPOINT = "KEYPOINT"

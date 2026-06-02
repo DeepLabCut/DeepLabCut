@@ -36,9 +36,8 @@ class TrackletManager:
         max_gap : int, optional (default = 0).
             Number of frames to consider when filling in missing data.
 
-        Examples
+        Examples:
         --------
-
         manager = TrackletManager(config_path, min_swap_frac=0, min_tracklet_frac=0)
 
         manager.load_tracklets_from_pickle(filename)

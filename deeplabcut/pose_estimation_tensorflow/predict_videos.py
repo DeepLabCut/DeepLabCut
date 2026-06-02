@@ -418,14 +418,13 @@ def analyze_videos(
     use_openvino: str, optional
         Use "CPU" for inference if OpenVINO is available in the Python environment.
 
-    Returns
+    Returns:
     -------
     DLCScorer: str
         the scorer used to analyze the videos
 
-    Examples
+    Examples:
     --------
-
     Analyzing a single video on Windows
 
     >>> deeplabcut.analyze_videos(
@@ -892,7 +891,8 @@ def getboundingbox(x, y, nx, ny, margin):
 
 def GetPoseDynamic(cfg, dlc_cfg, sess, inputs, outputs, cap, nframes, detectiontreshold, margin):
     """Non batch wise pose estimation for video cap by dynamically cropping around
-    previously detected parts."""
+    previously detected parts.
+    """
     if cfg["cropping"]:
         ny, nx = checkcropping(cfg, cap)
     else:
@@ -1224,7 +1224,7 @@ def analyze_time_lapse_frames(
         Saves the predictions in a .csv file. The default is ``False``;
         if provided it must be either ``True`` or ``False``
 
-    Examples
+    Examples:
     --------
     If you want to analyze all frames in /analysis/project/timelapseexperiment1
     >>> deeplabcut.analyze_videos(
@@ -1564,7 +1564,7 @@ def convert_detections2tracklets(
          and will be taken from the config.yaml file if none is given.
 
 
-    Examples
+    Examples:
     --------
     If you want to convert detections to tracklets:
     >>> deeplabcut.convert_detections2tracklets(

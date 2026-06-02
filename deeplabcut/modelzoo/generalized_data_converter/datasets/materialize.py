@@ -88,8 +88,8 @@ class SingleDLC_config:
 class MaDLC_config:
     def __init__(self):
         """Plain text only for generating templates Some variables can be configured by
-        the user later."""
-
+        the user later.
+        """
         self.cfg = {k: v for k, v in vars().items() if "__" not in k and "self" not in k}
 
     def create_cfg(self, proj_root, kwargs):
@@ -116,7 +116,6 @@ def _generic2madlc(
     Args:
     proj_root where to materialize the data
     """
-
     assert full_image_path, "DLC wants full image path"
 
     os.makedirs(os.path.join(proj_root, "labeled-data"), exist_ok=True)
@@ -557,7 +556,6 @@ def _generic2coco(
         no_image_copy: Instead of copying images to the COCO dataset, the full paths to
             the images in the original dataset are used in the annotations.
     """
-
     os.makedirs(os.path.join(proj_root, "images"), exist_ok=True)
     os.makedirs(os.path.join(proj_root, "annotations"), exist_ok=True)
 

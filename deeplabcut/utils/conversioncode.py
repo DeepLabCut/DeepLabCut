@@ -41,7 +41,7 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
         If a string is given, then the scorer/annotator
         in all csv and hdf files that are changed, will be overwritten with this name.
 
-    Examples
+    Examples:
     --------
     Convert csv annotation files for reaching-task project into hdf.
     >>> deeplabcut.convertcsv2h5("/analysis/project/reaching-task/config.yaml")
@@ -109,7 +109,6 @@ def adapt_labeled_data_to_new_project(config_path, remove_old_bodyparts=False, o
         for each folder in labeled-data if the containing csv
         shall be converted to hdf format.
     """
-
     # Load the config file
     cfg = dlc.auxiliaryfunctions.read_config(config_path)
 
@@ -231,14 +230,12 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
     videotype: string, optional (default=.mp4)
         Only videos with this extension are screened.
 
-    Examples
+    Examples:
     --------
-
     Converts all pose-output files belonging to mp4 videos
     in the folder '/media/alex/experimentaldata/cheetahvideos' to csv files.
     deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
     """
-
     if listofvideos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos
         if len(videos) > 0:
@@ -271,9 +268,8 @@ def analyze_videos_converth5_to_nwb(
     videotype: string, optional (default=.mp4)
         Only videos with this extension are screened.
 
-    Examples
+    Examples:
     --------
-
     Converts all pose-output files belonging to mp4 videos in the folder
     '/media/alex/experimentaldata/cheetahvideos' to csv files.
     deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
@@ -330,7 +326,6 @@ def merge_windowsannotationdataONlinuxsystem(cfg):
 
     This function gets them directly by looping over all folders in labeled-data
     """
-
     AnnotationData = []
     data_path = Path(cfg["project_path"], "labeled-data")
     annotationfolders = []

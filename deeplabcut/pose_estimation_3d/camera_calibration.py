@@ -69,7 +69,7 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
     search_window_size: tuple of int
         Half of the side length of the search window when refining detected checkerboard corners for subpixel accuracy.
 
-    Example
+    Example:
     --------
     Linux/MacOs/Windows
     >>> deeplabcut.calibrate_camera(config)
@@ -302,12 +302,11 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
         If this is set to True, the results of undistortion are saved as plots.
         The default is ``True``; if provided it must be either ``True`` or ``False``.
 
-    Example
+    Example:
     --------
     Linux/MacOs/Windows
     >>> deeplabcut.check_undistortion(config, cbrow=8, cbcol=6)
     """
-
     # Read the config file
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
     cfg_3d = auxiliaryfunctions.read_config(config)

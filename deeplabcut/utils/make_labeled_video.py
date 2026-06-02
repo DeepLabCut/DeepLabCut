@@ -247,7 +247,6 @@ def CreateVideoSlow(
     bboxes_color: str | None = None,
 ):
     """Creating individual frames with labeled body parts and making a video."""
-
     if displaycropped:
         ny, nx = y2 - y1, x2 - x1
     else:
@@ -587,14 +586,13 @@ def create_labeled_video(
             - snapshot_index
             - detector_snapshot_index
 
-    Returns
+    Returns:
     -------
         results : list[bool]
         ``True`` if the video is successfully created for each item in ``videos``.
 
-    Examples
+    Examples:
     --------
-
     Create the labeled video for a single video
 
     >>> deeplabcut.create_labeled_video(
@@ -821,7 +819,7 @@ def proc_video(
     ----------
 
 
-    Returns
+    Returns:
     -------
         result : bool
         ``True`` if a video is successfully created.

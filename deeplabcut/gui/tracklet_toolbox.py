@@ -49,8 +49,7 @@ class DraggablePoint:
         self.coords = []
 
     def connect(self):
-        "connect to all the events we need"
-
+        """Connect to all the events we need"""
         self.cidpress = self.point.figure.canvas.mpl_connect("button_press_event", self.on_press)
         self.cidrelease = self.point.figure.canvas.mpl_connect("button_release_event", self.on_release)
         self.cidmotion = self.point.figure.canvas.mpl_connect("motion_notify_event", self.on_motion)
@@ -123,7 +122,7 @@ class DraggablePoint:
             canvas.blit(axes.bbox)
 
     def on_release(self, event):
-        "on release we reset the press data"
+        """On release we reset the press data"""
         if DraggablePoint.lock is not self:
             return
         if event.button == 1:
@@ -142,7 +141,8 @@ class DraggablePoint:
 
     def on_hover(self, event):
         """Annotate the labels and likelihood when the user hovers over the data
-        points."""
+        points.
+        """
         vis = self.annot.get_visible()
 
         if event.inaxes == self.point.axes:
@@ -163,7 +163,7 @@ class DraggablePoint:
                     self.annot.set_visible(False)
 
     def disconnect(self):
-        "disconnect all the stored connection ids"
+        """Disconnect all the stored connection ids"""
         self.point.figure.canvas.mpl_disconnect(self.cidpress)
         self.point.figure.canvas.mpl_disconnect(self.cidrelease)
         self.point.figure.canvas.mpl_disconnect(self.cidmotion)

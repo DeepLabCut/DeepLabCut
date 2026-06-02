@@ -227,7 +227,8 @@ def build_detector_postprocessor(
 
 class ComposePostprocessor(Postprocessor):
     """Class to preprocess an image and turn it into a batch of inputs before running
-    inference."""
+    inference.
+    """
 
     def __init__(self, components: list[Postprocessor]) -> None:
         self.components = components
@@ -419,7 +420,8 @@ class RescaleAndOffset(Postprocessor):
 
 class RemoveLowConfidenceBoxes(Postprocessor):
     """Removes low confidence bounding boxes from detector output before they reach the
-    pose estimator."""
+    pose estimator.
+    """
 
     def __init__(self, bbox_score_thresh: float):
         super().__init__()
@@ -452,7 +454,8 @@ class BboxToCoco(Postprocessor):
 
 class AddContextToOutput(Postprocessor):
     """Adds items from the context to the output, such as the bounding boxes contained
-    during top-down inference."""
+    during top-down inference.
+    """
 
     def __init__(self, keys: list[str]) -> None:
         super().__init__()

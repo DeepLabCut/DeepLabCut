@@ -237,7 +237,7 @@ def return_evaluate_network_data(
         on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!.
         The evaluation images are also shown for the original size!
 
-    Examples
+    Examples:
     --------
     If you do not want to plot
     >>> deeplabcut._evaluate_network_data("/analysis/project/reaching-task/config.yaml", shuffle=[1])
@@ -245,7 +245,6 @@ def return_evaluate_network_data(
     If you want to plot
     >>> deeplabcut.evaluate_network("/analysis/project/reaching-task/config.yaml", shuffle=[1], plotting=True)
     """
-
     import os
 
     from deeplabcut.pose_estimation_tensorflow.config import load_config
@@ -572,11 +571,11 @@ def evaluate_network(
     snapshots_to_evaluate: List[str], optional, default=None
         List of snapshot names to evaluate (e.g. ["snapshot-50000", "snapshot-75000", ...])
 
-    Returns
+    Returns:
     -------
     None
 
-    Examples
+    Examples:
     --------
     If you do not want to plot and evaluate with shuffle set to 1.
 

@@ -669,7 +669,6 @@ def export_model(_, *args, **kwargs):
     \tDo you want to compress the exported directory to a tar file? Default = True\n
     \tThis is necessary to export to the model zoo, but not for live inference.
     """
-
     from deeplabcut import export_model
 
     export_model(*args, **kwargs)

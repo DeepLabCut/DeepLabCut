@@ -41,7 +41,7 @@ def select_cropping_area(config, videos=None):
         List of videos whose cropping areas are to be defined. Note that full paths are required.
         By default, all videos in the config are successively loaded.
 
-    Returns
+    Returns:
     -------
     cfg : dict
         Updated project configuration

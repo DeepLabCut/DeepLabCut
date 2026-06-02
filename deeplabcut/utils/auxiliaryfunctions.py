@@ -272,7 +272,7 @@ def edit_config(configname, edits, output_name=""):
         Overwrite the original config.yaml by default.
         If passed in though, new filename of the edited config.
 
-    Examples
+    Examples:
     --------
     config_path = 'my_stellar_lab/dlc/config.yaml'
 
@@ -406,7 +406,8 @@ def get_list_of_videos(
 
 def save_data(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv):
     """Save predicted data as h5 file and metadata as pickle file; created by
-    predict_videos.py."""
+    predict_videos.py.
+    """
     DataMachine = pd.DataFrame(PredicteData, columns=pdindex, index=imagenames)
     if save_as_csv:
         print("Saving csv poses!")
@@ -489,7 +490,8 @@ def filter_files_by_patterns(
 @deprecated(replacement="deeplabcut.collect_video_paths", since="3.0.0")
 def get_video_list(filename, videopath, videtype):
     """Get list of videos in a path (if filetype == all), otherwise just a specific
-    file."""
+    file.
+    """
     videos = list(grab_files_in_folder(videopath, videtype))
     if filename == "all":
         return videos
@@ -637,7 +639,8 @@ def get_deeplabcut_path():
 
 def intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts):
     """Returns all body parts when comparisonbodyparts=='all', otherwise all bpts that
-    are in the intersection of comparisonbodyparts and the actual bodyparts."""
+    are in the intersection of comparisonbodyparts and the actual bodyparts.
+    """
     # if "MULTI!" in allbpts:
     if cfg["multianimalproject"]:
         allbpts = cfg["multianimalbodyparts"] + cfg["uniquebodyparts"]
@@ -842,7 +845,6 @@ def find_video_full_data(folder, videoname, scorer):
 
 def find_video_metadata(folder, videoname: str, scorer: str):
     """For backward compatibility, let us search the substring 'meta'."""
-
     scorer_legacy = scorer.replace("DLC", "DeepCut")
     meta_files = filter_files_by_patterns(
         folder=folder,
@@ -865,7 +867,6 @@ def load_video_full_data(folder, videoname, scorer):
 
 def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, track_method=""):
     """Find potential data files from the hints given to the function."""
-
     scorer_legacy = scorer.replace("DLC", "DeepCut")
     suffix = "_filtered" if filtered else ""
     tracker = TRACK_METHODS.get(track_method, "")

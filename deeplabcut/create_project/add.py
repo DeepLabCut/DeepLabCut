@@ -32,7 +32,7 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
     extract_frames: bool, optional
         if this is set to True extract_frames will be run on the new videos
 
-    Examples
+    Examples:
     --------
     Video will be added, with cropping dimensions according to the frame dimensions of mouse5.avi
     >>> deeplabcut.add_new_videos(

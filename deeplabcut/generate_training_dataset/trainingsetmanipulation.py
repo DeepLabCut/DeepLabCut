@@ -310,15 +310,14 @@ def check_labels(
         colors (and all bodyparts the same). If False, the colors change over bodyparts
         rather than individuals.
 
-    Returns
+    Returns:
     -------
     None
 
-    Examples
+    Examples:
     --------
     >>> deeplabcut.check_labels("/analysis/project/reaching-task/config.yaml")
     """
-
     from deeplabcut.utils import visualization
 
     if Labels is None:
@@ -672,7 +671,7 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     uniform: bool, optional
         Perform uniform split (disregarding folder structure in labeled data), or (if False) leave one folder out.
 
-    Examples
+    Examples:
     --------
     To create a leave-one-folder-out model:
     >>> trainIndices, testIndices = deeplabcut.mergeandsplit(config, trainindex=0, uniform=False)
@@ -972,7 +971,7 @@ def create_training_dataset(
                 correspond to a bottom-up (BU) network type and a particular snapshot
                 name or index.
 
-    Returns
+    Returns:
     -------
     list(tuple) or None
         If training dataset was successfully created, a list of tuples is returned.
@@ -982,14 +981,13 @@ def create_training_dataset(
 
         Returns None if training dataset could not be created.
 
-    Notes
+    Notes:
     -----
     Use the function ``add_new_videos`` at any stage of the project to add more videos
     to the project.
 
-    Examples
+    Examples:
     --------
-
     Linux/MacOS:
     >>> deeplabcut.create_training_dataset(
             '/analysis/project/reaching-task/config.yaml', num_shuffles=1,
@@ -1529,12 +1527,12 @@ def create_training_model_comparison(
         ..deprecated::
             Has no effect since 2.2.0.4 and will be removed in 2.2.1.
 
-    Returns
+    Returns:
     -------
     shuffle_list: list
         List of indices corresponding to the trainingsplits/models that were created.
 
-    Examples
+    Examples:
     --------
     On Linux/MacOS
 

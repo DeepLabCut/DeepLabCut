@@ -66,6 +66,7 @@ class ResNet(BaseBackbone):
 
         Returns:
             torch.Tensor: Output tensor.
+
         Example:
             >>> import torch
             >>> from deeplabcut.pose_estimation_pytorch.models.backbones import ResNet

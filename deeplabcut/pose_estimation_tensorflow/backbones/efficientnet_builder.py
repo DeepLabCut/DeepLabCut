@@ -93,6 +93,7 @@ class BlockDecoder:
 
         Args:
           string_list: a list of strings, each string is a notation of block.
+
         Returns:
           A list of namedtuples to represent blocks arguments.
         """
@@ -107,6 +108,7 @@ class BlockDecoder:
 
         Args:
           blocks_args: A list of namedtuples to represent blocks arguments.
+
         Returns:
           a list of strings, each string is a notation of block.
         """
@@ -125,11 +127,13 @@ def swish(features, use_native=True):
     provide this wrapper that can allow to select whether to use the native
     TensorFlow swish operation, or whether to use a customized operation that
     has uses default TensorFlow gradient computation.
+
     Args:
       features: A `Tensor` representing preactivation values.
       use_native: Whether to use the native swish from tf.nn that uses a custom
         gradient to reduce memory usage, or to use customized swish that uses
         default TensorFlow gradient computation.
+
     Returns:
       The activation value.
     """
@@ -222,9 +226,11 @@ def build_model(
       model_dir: string, optional model dir for saving configs.
       fine_tuning: boolean, whether the model is used for finetuning.
       features_only: build the base feature network only.
+
     Returns:
       logits: the logits tensor of classes.
       endpoints: the endpoints for each layer.
+
     Raises:
       When model_name specified an undefined model, raises NotImplementedError.
       When override_params has invalid fields, raises ValueError.
@@ -264,9 +270,11 @@ def build_model_base(images, model_name, use_batch_norm=False, drop_out=False, o
       training: boolean, whether the model is constructed for training.
       override_params: A dictionary of params for overriding. Fields must exist in
         efficientnet_model.GlobalParams.
+
     Returns:
       features: global pool features.
       endpoints: the endpoints for each layer.
+
     Raises:
       When model_name specified an undefined model, raises NotImplementedError.
       When override_params has invalid fields, raises ValueError.

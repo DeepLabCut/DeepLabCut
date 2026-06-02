@@ -393,6 +393,7 @@ class CreateTrainingDataset(DefaultTab):
     def _build_ctd_conditions(self, conditions_path: str | Path) -> Path | tuple[int, str]:
         """
         Builds CTD conditions in appropriate format from path to conditions.
+
         Args:
             conditions_path: str | Path:
                  path to conditions (path to snapshot or to predictions)
@@ -704,7 +705,8 @@ class WeightInitializationSelector(QtWidgets.QWidget):
 
 class DataSplitSelector(QtWidgets.QWidget):
     """Allows users to create training sets with the same train/test split as
-    another."""
+    another.
+    """
 
     def __init__(self, root: QtWidgets.QMainWindow, parent: QtWidgets.QWidget):
         super().__init__()

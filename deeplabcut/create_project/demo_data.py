@@ -36,7 +36,7 @@ def load_demo_data(
       engine: Engine
           The Engine to create the training set for if a training set shall be created.
 
-      Example
+    Example:
       --------
       >>> deeplabcut.load_demo_data("config.yaml")
       --------
@@ -55,7 +55,6 @@ def transform_data(config):
 
     It also adds the correct path to the video file in the config file.
     """
-
     cfg = auxiliaryfunctions.read_config(config)
     project_path = str(Path(config).parents[0])
 

@@ -62,8 +62,8 @@ def make_labeled_image(
     ax=None,
 ):
     """Creating a labeled image with the original human labels, as well as the
-    DeepLabCut's!"""
-
+    DeepLabCut's!
+    """
     if labels is None:
         labels = ["+", ".", "x"]
     alphavalue = cfg["alphavalue"]  # .5
@@ -157,7 +157,6 @@ def make_multianimal_labeled_image(
     Returns:
         matplotlib Axes object with plotted labels and predictions.
     """
-
     if labels is None:
         labels = ["+", ".", "x"]
     if ax is None:
@@ -332,7 +331,6 @@ def make_labeled_images_from_dataframe(
         Color scheme of the keypoints. Must be either 'bodypart' or 'individual'.
         By default, keypoints are colored relative to the bodypart they represent.
     """
-
     bodyparts = df.columns.get_level_values("bodyparts")
     bodypart_names = bodyparts.unique()
     nbodyparts = len(bodypart_names)
