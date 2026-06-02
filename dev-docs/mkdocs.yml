@@ -81,7 +81,7 @@ plugins:
             docstring_section_style: table
             separate_signature: true
             line_length: 120
-            docstring_style: numpy
+            docstring_style: google
             show_signature_annotations: true
           inventories:
             - url: https://docs.python.org/3/objects.inv

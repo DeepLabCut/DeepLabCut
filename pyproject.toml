@@ -76,7 +76,6 @@ gui = [
 openvino = [ "openvino-dev==2022.1" ]
 docs = [
   "jupyter-book==1.0.4.post1",
-  "numpydoc",
   "sphinxcontrib-mermaid",
 ]
 dev-docs = [
@@ -212,7 +211,7 @@ ignore = [ "E741", "B007" ]
 "deeplabcut/pose_estimation_tensorflow/lib/trackingutils.py" = [ "F403" ]
 "*.ipynb" = [ "E402" ]
 [tool.ruff.lint.pydocstyle]
-convention = "numpy"
+convention = "google"
 
 [tool.pyproject-fmt]
 max_supported_python = "3.12"
