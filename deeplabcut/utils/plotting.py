@@ -229,7 +229,7 @@ def plot_trajectories(
             For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
             be taken from the config.yaml file if none is given. Defaults to "".
         pcutoff (float | None, optional): Overrides project pcutoff for plotting trajectories. Defaults to None.
-        kwargs: additional arguments.
+        kwargs (dict, optional): Additional arguments.
             For torch-based shuffles, can be used to specify:
                 - snapshot_index
                 - detector_snapshot_index

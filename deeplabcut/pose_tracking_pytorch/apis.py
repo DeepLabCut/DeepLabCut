@@ -53,7 +53,7 @@ def transformer_reID(
         trainingsetindex (int, optional): Which training fraction to use, identified by
             its index. Defaults to 0.
         track_method (str, optional): Track method from which tracklets are sampled.
-            Defaults to "".
+            Defaults to "ellipse".
         n_tracks (int | None, optional): Number of tracks to be formed in the videos.
             Defaults to None.
         n_triplets (int, optional): Number of triplets to be mined from the videos.

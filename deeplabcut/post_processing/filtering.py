@@ -32,7 +32,7 @@ def columnwise_spline_interp(data, max_gap=0):
         max_gap (int, optional): Maximum gap size to fill. By default, all gaps are interpolated.
 
     Returns:
-        interpolated data with same shape as *data*
+        ndarray: Interpolated data with the same shape as *data*.
     """
     if np.ndim(data) < 2:
         data = np.expand_dims(data, axis=1)
@@ -129,7 +129,7 @@ def filterpredictions(
             be taken from the config.yaml file if none is given. Defaults to "".
         return_data (bool, optional): If True, returns a dictionary of the filtered data keyed by video names.
             Defaults to False.
-        kwargs: additional arguments.
+        kwargs (dict, optional): Additional arguments.
             For torch-based shuffles, can be used to specify:
                 - snapshot_index
                 - detector_snapshot_index

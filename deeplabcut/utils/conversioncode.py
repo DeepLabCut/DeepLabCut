@@ -204,8 +204,8 @@ def adapt_labeled_data_to_new_project(config_path, remove_old_bodyparts=False, o
 def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos=False):
     """By default the output poses (when running analyze_videos) are stored as
     MultiIndex Pandas Array, which contains the name of the network, body part name, (x,
-    y) label position \n in pixels, and the likelihood for each frame per body part.
-    These arrays are stored in an efficient Hierarchical Data Format (HDF) \n in the
+    y) label position in pixels, and the likelihood for each frame per body part.
+    These arrays are stored in an efficient Hierarchical Data Format (HDF) in the
     same directory, where the video is stored. This functions converts hdf (h5) files to
     the comma-separated values format (.csv), which in turn can be imported in many
     programs, such as MATLAB, R, Prism, etc.

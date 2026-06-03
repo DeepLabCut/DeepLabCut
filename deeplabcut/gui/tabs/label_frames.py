@@ -36,7 +36,8 @@ def label_frames(config_path: str | Path | None = None, image_folder: str | None
     If only the `config_path` is given, the first image folder is opened.
 
     Args:
-        config_path (str, Path, None): Full path of the project config.yaml file.
+        config_path (str | Path | None, optional): Full path of the project config.yaml
+            file. Defaults to None.
         image_folder (str, optional): Name of the image folder to open for labelling.
             Defaults to None.
 

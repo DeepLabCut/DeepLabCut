@@ -54,7 +54,7 @@ def create_new_project(_, *args, **kwargs):
     Delegates to ``deeplabcut.create_new_project``.
 
     The configuration file is loaded with default values. Change its parameters to your
-    projects need.\n.
+    projects need.
 
     Options:
         project (string): String containing the name of the project.
@@ -99,7 +99,7 @@ def create_new_project(_, *args, **kwargs):
 def add_new_videos(_, *args, **kwargs):
     """Add new videos to the config file at any stage of the project.
 
-    Delegates to ``deeplabcut.add_new_videos``.\n.
+    Delegates to ``deeplabcut.add_new_videos``.
 
     Options:
         config (string): String containing the full path of the config file in the project.
@@ -138,9 +138,9 @@ def extract_frames(_, *args, **kwargs):
 
     Delegates to ``deeplabcut.extract_frames``.
 
-    Only the videos in the config.yaml will be used to select the frames.\n Use the
+    Only the videos in the config.yaml will be used to select the frames. Use the
     function ``add_new_videos`` at any stage of the project to add new videos to the
-    config file and extract their frames.\n.
+    config file and extract their frames.
 
     Options:
         config (string): Full path of the config.yaml file as a string.
@@ -175,7 +175,7 @@ def label_frames(_, config):
 
     Delegates to ``deeplabcut.label_frames``.
 
-    Update the list of body parts you want to localize in the config.yaml file first.\n.
+    Update the list of body parts you want to localize in the config.yaml file first.
 
     Options:
         config (string): Full path of the config.yaml file.
@@ -198,7 +198,7 @@ def check_labels(_, config):
 
     Delegates to ``deeplabcut.check_labels``.
 
-    If some are wrong, then use the refine_labels to correct the labels.\n
+    If some are wrong, then use the refine_labels to correct the labels.
     """
     from deeplabcut.generate_training_dataset.trainingsetmanipulation import check_labels as _check_labels
 
@@ -222,7 +222,7 @@ def create_training_dataset(_, *args, **kwargs):
     Delegates to ``deeplabcut.create_training_dataset``.
 
     Update parameters TrainFraction and iteration in config.yaml. Also update
-    parameters for pose_config.yaml as wanted.\n
+    parameters for pose_config.yaml as wanted.
 
     Options:
         config (string): Full path of the config.yaml file in the train directory of a
@@ -512,7 +512,7 @@ def refine_labels(_, config):
 
     Helps in augmenting the training dataset. Use the function ``analyze_videos`` to
     analyze a video and extract the outlier frames using ``extract_outlier_frames``
-    before refining the labels.\n.
+    before refining the labels.
 
     Options:
         config (string): Full path of the config.yaml file.
@@ -619,7 +619,7 @@ def create_labeled_video(_, *args, **kwargs):
 def plot_trajectories(_, *args, **kwargs):
     """Plots the trajectories of various bodyparts across the video.
 
-    Delegates to ``deeplabcut.plot_trajectories``.\n.
+    Delegates to ``deeplabcut.plot_trajectories``.
 
     Options:
         config (string): Full path of the config.yaml file.

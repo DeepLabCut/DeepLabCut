@@ -1041,7 +1041,7 @@ def stitch_tracklets(
         transformer_checkpoint (str, optional): Path to transformer checkpoint for re-ID
             stitching. Defaults to "".
         save_as_csv (bool, optional): Whether to write the tracks to a CSV file too (False by default).
-        kwargs: additional arguments.
+        kwargs (dict, optional): Additional arguments.
             For torch-based shuffles, can be used to specify:
                 - snapshot_index
                 - detector_snapshot_index
