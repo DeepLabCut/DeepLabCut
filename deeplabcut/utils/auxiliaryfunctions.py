@@ -262,25 +262,21 @@ def write_config(configname, cfg):
 def edit_config(configname, edits, output_name=""):
     """Convenience function to edit and save a config file from a dictionary.
 
-    Parameters
-    ----------
-    configname : string
-        String containing the full path of the config file in the project.
-    edits : dict
-        Key–value pairs to edit in config
-    output_name : string, optional (default='')
-        Overwrite the original config.yaml by default.
-        If passed in though, new filename of the edited config.
+    Args:
+        configname (string): String containing the full path of the config file in the
+            project.
+        edits (dict): Key–value pairs to edit in config.
+        output_name (string, optional): Overwrite the original config.yaml by default.
+            If passed in though, new filename of the edited config. Defaults to ''.
 
     Examples:
-    --------
-    config_path = 'my_stellar_lab/dlc/config.yaml'
+        config_path = 'my_stellar_lab/dlc/config.yaml'
 
-    edits = {'numframes2pick': 5,
-             'trainingFraction': [0.5, 0.8],
-             'skeleton': [['a', 'b'], ['b', 'c']]}
+        edits = {'numframes2pick': 5,
+                 'trainingFraction': [0.5, 0.8],
+                 'skeleton': [['a', 'b'], ['b', 'c']]}
 
-    deeplabcut.auxiliaryfunctions.edit_config(config_path, edits)
+        deeplabcut.auxiliaryfunctions.edit_config(config_path, edits)
     """
     cfg = read_plainconfig(configname)
     for key, value in edits.items():
@@ -679,13 +675,17 @@ def get_scorer_name(
     **kwargs,
 ):
     """Extract the scorer/network name for a particular shuffle, training fraction, etc.
-    If the engine is not specified, determines which to use from
-    kwargs: additional arguments.
-        For torch-based shuffles, can be used to specify:
+
+    If the engine is not specified, determines which to use from the project
+    configuration.
+
+    Args:
+        **kwargs: Additional arguments. For torch-based shuffles, can be used to specify:
             - snapshot_index
             - detector_snapshot_index
 
-    Returns tuple of DLCscorer, DLCscorerlegacy (old naming convention)
+    Returns:
+        tuple: DLCscorer and DLCscorerlegacy (old naming convention).
     """
     if engine is None:
         from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
