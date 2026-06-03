@@ -295,8 +295,9 @@ def analyze_videos(
         config (str): Full path of the config.yaml file.
         videos (list[str]): A list of strings containing the full paths to videos for analysis or a path to
             the directory, where all the videos with same extension are stored.
-        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are filtered, based on file extension.
-            File paths and directory contents are treated differently:
+        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are
+            filtered, based on file extension. File paths and directory contents are
+            treated differently:
             - ``None`` (default): file paths are accepted as-is; directories are
               scanned for files with a recognized video extension.
             - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
@@ -324,16 +325,12 @@ def analyze_videos(
             boosts out-of-domain robustness for pose estimation" by Alexander Mathis,
             Mert Yüksekgönül, Byron Rogers, Matthias Bethge, Mackenzie W. Mathis.
             Source: https://arxiv.org/abs/1909.11229. Defaults to True.
-        dynamic (tuple(bool, float, int)): Triple containing (state, detectiontreshold, margin).
-            If the state is true, then dynamic cropping will be performed. That means that if
-            an object is detected (i.e. any body part > detectiontreshold),
-            then object boundaries are computed according to
-            the smallest/largest x position and smallest/largest y position of all body parts.
-            This window is expanded by the margin and from then on only the posture within
-            this crop is analyzed (until the object is lost, i.e. <detectiontreshold).
-            The current position is utilized for updating the crop window for the next frame
-            (this is why the margin is important and should be set large
-            enough given the movement of the animal).
+        dynamic (tuple[bool, float, int], optional): Triple containing (state,
+            detection_threshold, margin). If state is True, dynamic cropping is
+            performed: when any body part exceeds detection_threshold, object boundaries
+            are computed from min/max x/y positions, expanded by margin, and only the
+            posture within this crop is analyzed until the object is lost. Defaults to
+            (False, 0.5, 10).
         modelprefix (str, optional): Directory containing the deeplabcut models to use when evaluating the network.
             By default, the models are assumed to exist in the project folder. Defaults to "".
         robust_nframes (bool, optional): Evaluate a video's number of frames in a robust manner.
@@ -347,23 +344,15 @@ def analyze_videos(
             Otherwise, data are written to disk on the fly using a "shelf"; i.e., a
             pickle-based, persistent, database-like object by default, resulting in
             constant memory footprint. Defaults to False.
-
-        The following parameters are only relevant for multi-animal projects:
-
-        auto_track (bool, optional): By default, tracking and stitching are automatically performed, producing the
-            final h5 data file. This is equivalent to the behavior for single-animal
-            projects.
-
-            If ``False``, one must run ``convert_detections2tracklets`` and
-            ``stitch_tracklets`` afterwards, in order to obtain the h5 file. Defaults to True.
-
-        This function has 3 related sub-calls:
-
-        identity_only (bool, optional): If ``True`` and animal identity was learned by the model, assembly and tracking
-            rely exclusively on identity prediction. Defaults to False.
-        calibrate (bool, optional): If ``True``, use training data to calibrate the animal assembly procedure. This
-            improves its robustness to wrong body part links, but requires very little
-            missing data. Defaults to False.
+        auto_track (bool, optional): For multi-animal projects, automatically perform
+            tracking and stitching to produce the final h5 file. If False, run
+            ``convert_detections2tracklets`` and ``stitch_tracklets`` afterwards.
+            Defaults to True.
+        identity_only (bool, optional): If True and animal identity was learned by the
+            model, assembly and tracking rely exclusively on identity prediction.
+            Defaults to False.
+        calibrate (bool, optional): If True, use training data to calibrate the animal
+            assembly procedure. Defaults to False.
         n_tracks (int or None, optional): Number of tracks to reconstruct. By default from config.yaml.
             Pass another value if animal count differs from training. Defaults to None.
         animal_names (list[str], optional): If you want the names given to individuals in the labeled data file, you can
@@ -372,6 +361,7 @@ def analyze_videos(
             equal to `len(animal_names)`. If it is not given, then `animal_names` will
             be loaded from the `individuals` in the project config.yaml file.
         use_openvino (str, optional): Use "CPU" for inference if OpenVINO is available in the Python environment.
+            Defaults to "CPU" when OpenVINO is available, otherwise None.
 
     Returns:
         str: DLCScorer; the scorer used to analyze the videos.
@@ -1134,20 +1124,16 @@ def analyze_time_lapse_frames(
     save_as_csv=False,
     modelprefix="",
 ):
-    """Analyzed all images (of type = frametype) in a folder and stores the output in
+    """Analyze all images (of type ``frametype``) in a folder and store the output in
     one file.
 
     You can crop the frames (before analysis),
     by changing 'cropping'=True and setting 'x1','x2','y1','y2' in the config file.
 
-    Output:
-    The labels are stored as MultiIndex Pandas Array,
-    which contains the name of the network, body part name, (x, y) label position \n
-    in pixels, and the likelihood for each frame per body part.
-    These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
-    in the same directory, where the video is stored.
-    However, if the flag save_as_csv is set to True, the data can also be exported in \n
-    comma-separated values format (.csv), which in turn can be imported in many programs, such as MATLAB, R, Prism, etc.
+    Output labels are stored as a MultiIndex Pandas DataFrame containing the network
+    name, body part name, (x, y) label position in pixels, and likelihood for each
+    frame per body part. These arrays are stored in HDF format in the same directory
+    as the images. If ``save_as_csv`` is True, data can also be exported as CSV.
 
     Args:
         config (string): Full path of the config.yaml file as a string.
@@ -1157,21 +1143,25 @@ def analyze_time_lapse_frames(
         shuffle (int, optional): Shuffle index of the training dataset used for training the network. Defaults to 1.
         trainingsetindex (int, optional): Integer specifying which TrainingsetFraction to use.
             By default the first (note that TrainingFraction is a list in config.yaml).
+            Defaults to 0.
         gputouse (int, optional): Natural number indicating the number of your GPU (see number in nvidia-smi).
             If you do not have a GPU, set to None.
             See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
-        save_as_csv (bool, optional): Saves the predictions in a .csv file. Defaults to ``False``;
-            if provided it must be either ``True`` or ``False``.
+        save_as_csv (bool, optional): Saves the predictions in a .csv file. Defaults to False.
+        modelprefix (str, optional): Directory containing the deeplabcut models to use.
+            Defaults to "".
 
     Examples:
         If you want to analyze all frames in /analysis/project/timelapseexperiment1
-        >>> deeplabcut.analyze_videos(
-            '/analysis/project/reaching-task/config.yaml',
-            '/analysis/project/timelapseexperiment1'
-            )
 
-    Note: for test purposes one can extract all frames from a video with ffmpeg,
-    e.g. ffmpeg -i testvideo.avi thumb%04d.png
+        >>> deeplabcut.analyze_images(
+        ...     "/analysis/project/reaching-task/config.yaml",
+        ...     "/analysis/project/timelapseexperiment1",
+        ... )
+
+    Note:
+        For test purposes one can extract all frames from a video with ffmpeg,
+        e.g. ffmpeg -i testvideo.avi thumb%04d.png
     """
     if "TF_CUDNN_USE_AUTOTUNE" in os.environ:
         del os.environ["TF_CUDNN_USE_AUTOTUNE"]  # was potentially set during training
@@ -1442,8 +1432,9 @@ def convert_detections2tracklets(
         config (string): Full path of the config.yaml file as a string.
         videos (list): A list of strings containing the full paths to videos for analysis
             or a path to the directory, where all the videos with same extension are stored.
-        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are filtered, based on file extension.
-            File paths and directory contents are treated differently:
+        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are
+            filtered, based on file extension. File paths and directory contents are
+            treated differently:
             - ``None`` (default): file paths are accepted as-is; directories are
               scanned for files with a recognized video extension.
             - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
@@ -1453,15 +1444,20 @@ def convert_detections2tracklets(
             Defaults to 1.
         trainingsetindex (int, optional): Integer specifying which TrainingsetFraction to use.
             By default the first (note that TrainingFraction is a list in config.yaml).
-        overwrite (bool, optional): Overwrite tracks file i.e. recompute tracks from full detections and overwrite.
+            Defaults to 0.
+        overwrite (bool, optional): Overwrite tracks file; recompute tracks from full
+            detections. Defaults to False.
         destfolder (string, optional): Destination folder for analysis data (default is the path of the video).
             Note that for subsequent analysis this folder also needs to be passed.
-        ignore_bodyparts (optional): List of body part names that should be ignored during tracking (advanced).
-            By default, all the body parts are used.
-        inferencecfg: Configuration file for inference (assembly of individuals). Ideally
-            should be obtained from cross validation (during evaluation). By default
-            the parameters are loaded from inference_cfg.yaml, but these get_level_values
-            can be overwritten. Defaults to None.
+        ignore_bodyparts (list, optional): List of body part names to ignore during tracking.
+            By default, all body parts are used. Defaults to None.
+        inferencecfg (dict, optional): Configuration for inference (assembly of individuals).
+            Ideally obtained from cross validation. By default loaded from inference_cfg.yaml.
+            Defaults to None.
+        modelprefix (str, optional): Directory containing the deeplabcut models to use.
+            Defaults to "".
+        greedy (bool, optional): Use greedy assembly instead of default method.
+            Defaults to False.
         calibrate (bool, optional): If True, use training data to calibrate the animal assembly procedure.
             This improves its robustness to wrong body part links,
             but requires very little missing data. Defaults to False.
@@ -1472,7 +1468,7 @@ def convert_detections2tracklets(
             assembly and tracking rely exclusively on identity prediction. Defaults to False.
         track_method (string, optional): Specifies the tracker used to generate the pose estimation data.
             For multiple animals, must be either 'box', 'skeleton', or 'ellipse'
-            and will be taken from the config.yaml file if none is given.
+            and will be taken from the config.yaml file if none is given. Defaults to "".
 
     Examples:
         If you want to convert detections to tracklets:

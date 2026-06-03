@@ -51,6 +51,8 @@ def main(ctx, verbose):
 def create_new_project(_, *args, **kwargs):
     """Create a new project directory, sub-directories and a basic configuration file.
 
+    Delegates to ``deeplabcut.create_new_project``.
+
     The configuration file is loaded with default values. Change its parameters to your
     projects need.\n.
 
@@ -95,7 +97,9 @@ def create_new_project(_, *args, **kwargs):
 )
 @click.pass_context
 def add_new_videos(_, *args, **kwargs):
-    """Add new videos to the config file at any stage of the project.\n.
+    """Add new videos to the config file at any stage of the project.
+
+    Delegates to ``deeplabcut.add_new_videos``.\n.
 
     Options:
         config (string): String containing the full path of the config file in the project.
@@ -130,15 +134,21 @@ def add_new_videos(_, *args, **kwargs):
 )
 @click.pass_context
 def extract_frames(_, *args, **kwargs):
-    """Extracts frames from the videos in the config.yaml file. Only the videos in the
-    config.yaml will be used to select the frames.\n Use the function ``add_new_videos``
-    at any stage of the project to add new videos to the config file and extract their
-    frames.\n.
+    """Extracts frames from the videos in the config.yaml file.
 
-    CONFIG : string \n
-        Full path of the config.yaml file as a string.  \n \n \n
-    MODE : string \n \n
-        String containing the mode of extraction. It must be either ``automatic`` or ``manual``.  \n
+    Delegates to ``deeplabcut.extract_frames``.
+
+    Only the videos in the config.yaml will be used to select the frames.\n Use the
+    function ``add_new_videos`` at any stage of the project to add new videos to the
+    config file and extract their frames.\n.
+
+    Options:
+        config (string): Full path of the config.yaml file as a string.
+        mode (string): Mode of extraction. Must be either ``automatic`` or ``manual``.
+        algo (string, optional): For automatic extraction, the algorithm to use:
+            ``kmeans`` or ``uniform``. Defaults to ``uniform``.
+        crop (bool, optional): If True, crop frames according to config.yaml parameters.
+            Defaults to False.
 
     Examples:
         for selecting frames automatically with 'kmeans' and do not want to crop the frames \n
@@ -161,8 +171,14 @@ def extract_frames(_, *args, **kwargs):
 @click.argument("config")
 @click.pass_context
 def label_frames(_, config):
-    """Manually label/annotate the extracted frames. Update the list of body parts you
-    want to localize in the config.yaml file first.\n.
+    """Manually label/annotate the extracted frames.
+
+    Delegates to ``deeplabcut.label_frames``.
+
+    Update the list of body parts you want to localize in the config.yaml file first.\n.
+
+    Options:
+        config (string): Full path of the config.yaml file.
 
     Examples:
         python3 dlc.py label_frames /analysis/project/reaching-task/config.yaml
@@ -179,6 +195,8 @@ def label_frames(_, config):
 def check_labels(_, config):
     """Check if labels were stored correctly by plotting annotations and inspect them
     visually.
+
+    Delegates to ``deeplabcut.check_labels``.
 
     If some are wrong, then use the refine_labels to correct the labels.\n
     """
@@ -199,10 +217,19 @@ def check_labels(_, config):
 )
 @click.pass_context
 def create_training_dataset(_, *args, **kwargs):
-    """Combine frame and label information into a an array. Create training and test sets.
-    Update parameters TrainFraction, iteration in config.yaml
-        Also update parameters for pose_config.yaml as wanted.\n
-    CONFIG: Full path of the config.yaml file in the train directory of a project.\n
+    """Combine frame and label information into an array. Create training and test sets.
+
+    Delegates to ``deeplabcut.create_training_dataset``.
+
+    Update parameters TrainFraction and iteration in config.yaml. Also update
+    parameters for pose_config.yaml as wanted.\n
+
+    Options:
+        config (string): Full path of the config.yaml file in the train directory of a
+            project.
+        num_shuffles (int, optional): Number of shuffles of training dataset to create.
+            Defaults to 1.
+
     Examples:
         To create a training dataset with only 1 shuffle
         python3 dlc.py create_training_dataset /analysis/project/reaching-task/config.yaml
@@ -229,9 +256,14 @@ def create_training_dataset(_, *args, **kwargs):
 )
 @click.pass_context
 def train_network(_, *args, **kwargs):
-    """Train a trained Feature detector with a specific training data set.\n
-        Provide path to the pose_config file.
-        CONFIG: Full path of the config.yaml file in the train directory of a project.\n
+    """Train a trained Feature detector with a specific training data set.
+
+    Delegates to ``deeplabcut.train_network``.
+
+    Options:
+        config (string): Full path of the config.yaml file in the train directory of a
+            project.
+        shuffle (int, optional): Shuffle index of the training dataset. Defaults to 1.
 
     e.g. run the script like this:
     python3 dlc.py step7_train  /home/project/reaching/config.yaml
@@ -255,8 +287,15 @@ def train_network(_, *args, **kwargs):
 @click.option("-p", "--plot", "plotting", is_flag=True, help="Make plots. Default is False.")
 @click.pass_context
 def evaluate_network(_, config, **kwargs):
-    """Evaluates a trained Feature detector model.\n
-        CONFIG: Full path of the "pose_config.yaml" file in the train directory of a project.\n
+    """Evaluates a trained Feature detector model.
+
+    Delegates to ``deeplabcut.evaluate_network``.
+
+    Options:
+        config (string): Full path of the config.yaml file in the train directory of a
+            project.
+        shuffle (list, optional): Shuffle index of the training dataset. Defaults to [1].
+        plotting (bool, optional): Make evaluation plots. Defaults to False.
 
     Examples:
         Evalaute the network
@@ -297,9 +336,19 @@ def evaluate_network(_, config, **kwargs):
 )
 @click.pass_context
 def analyze_videos(_, *args, **kwargs):
-    """Makes prediction.\n
-        CONFIG: Full path of the "config.yaml" file in the train directory of a project.\n
-        VIDEOS: Full path to video.\n
+    """Makes prediction on videos using a trained network.
+
+    Delegates to ``deeplabcut.analyze_videos``.
+
+    Options:
+        config (string): Full path of the config.yaml file in the train directory of a
+            project.
+        videos (list): Full path(s) to video(s).
+        shuffle (int, optional): Shuffle index of the training dataset. Defaults to 1.
+        videotype (string, optional): Video extension when the input is a directory.
+            Defaults to ``.avi``.
+        save_as_csv (bool, optional): Also save predictions as a CSV file. Defaults to
+            False.
 
     Examples:
 
@@ -411,12 +460,30 @@ def extract_outlier_frames(_, *args, **kwargs):
     certain video from the cropped video running from start to stop as defined in
     config.yaml.
 
-    Another crucial parameter in config.yaml is how many frames to extract 'numframes2extract'.
+    Delegates to ``deeplabcut.extract_outlier_frames``.
 
-    CONFIG : string \n
-    Full path of the config.yaml file as a string.  \n
-    VIDEO : Full path of the video to extract the frame from. Make sure that this video is already analyzed.
+    Another crucial parameter in config.yaml is how many frames to extract
+    'numframes2extract'.
 
+    Options:
+        config (string): Full path of the config.yaml file as a string.
+        video (string): Full path of the video to extract frames from. Make sure that
+            this video is already analyzed.
+        outlieralgorithm (string, optional): Algorithm used to detect outliers.
+            Defaults to ``fitting``.
+        comparisonbodyparts (string, optional): Body parts used for comparison.
+            Defaults to ``all``.
+        epsilon (float, optional): Meaning depends on outlier algorithm. Defaults to 20.
+        p_bound (float, optional): Likelihood threshold for ``uncertain`` algorithm.
+            Defaults to 0.01.
+        ARdegree (int, optional): Autoregressive degree for ``fitting`` algorithm.
+            Defaults to 7.
+        MAdegree (int, optional): Moving average degree for ``fitting`` algorithm.
+            Defaults to 1.
+        alpha (float, optional): Significance level for SARIMAX outlier detection.
+            Defaults to 0.01.
+        extractionalgorithm (string, optional): Algorithm for selecting outlier frames.
+            Defaults to ``uniform``.
 
     Examples:
         for extracting the frames with default settings\n
@@ -439,10 +506,16 @@ def extract_outlier_frames(_, *args, **kwargs):
 @click.argument("config")
 @click.pass_context
 def refine_labels(_, config):
-    """Refines the labels of the outlier frames extracted from the analyzed videos.\n
-    Helps in augmenting the training dataset. Use the function ``analyze_video`` to
-    analyze a video and extracts the outlier frames using the function
-    ``extract_outlier_frames`` before refining the labels.\n.
+    """Refines the labels of the outlier frames extracted from the analyzed videos.
+
+    Delegates to ``deeplabcut.refine_labels``.
+
+    Helps in augmenting the training dataset. Use the function ``analyze_videos`` to
+    analyze a video and extract the outlier frames using ``extract_outlier_frames``
+    before refining the labels.\n.
+
+    Options:
+        config (string): Full path of the config.yaml file.
 
     Examples:
         >>> python3 dlc.py refine_labels /analysis/project/reaching-task/config.yaml \n
@@ -495,7 +568,20 @@ def refine_labels(_, config):
 def create_labeled_video(_, *args, **kwargs):
     """Labels the bodyparts in a video.
 
-    Make sure the video is already analyzed by the function 'analyze_video'
+    Delegates to ``deeplabcut.create_labeled_video``.
+
+    Make sure the video is already analyzed by the function ``analyze_videos``.
+
+    Options:
+        config (string): Full path of the config.yaml file.
+        videos (list): Full path(s) to video(s).
+        shuffle (int, optional): Shuffle index of the training dataset. Defaults to 1.
+        videotype (string, optional): Video extension when the input is a directory.
+            Defaults to ``.avi``.
+        save_frames (bool, optional): Save individual frames before combining into video.
+            Defaults to False.
+        delete (bool, optional): Delete individual frames after video generation.
+            Defaults to False.
     """
     from deeplabcut.utils import make_labeled_video
 
@@ -531,7 +617,17 @@ def create_labeled_video(_, *args, **kwargs):
 )
 @click.pass_context
 def plot_trajectories(_, *args, **kwargs):
-    """Plots the trajectories of various bodyparts across the video.\n.
+    """Plots the trajectories of various bodyparts across the video.
+
+    Delegates to ``deeplabcut.plot_trajectories``.\n.
+
+    Options:
+        config (string): Full path of the config.yaml file.
+        videos (list): Full path(s) to video(s).
+        shuffle (int, optional): Shuffle index of the training dataset. Defaults to 1.
+        videotype (string, optional): Video extension when the input is a directory.
+            Defaults to ``.avi``.
+        showfigures (bool, optional): Also display plots interactively. Defaults to False.
 
     Examples:
         for labeling the frames\n
@@ -605,23 +701,29 @@ def plot_trajectories(_, *args, **kwargs):
 )
 @click.pass_context
 def export_model(_, *args, **kwargs):
-    """Export DLC models for the model zoo or for live inference.\n Saves the pose
-    configuration, snapshot files, and frozen graph of the model to a directory named
-    exported-models within the project directory.
+    """Export DLC models for the model zoo or for live inference.
 
-    Args:
-        cfg_path (string): path to the DLC Project config.yaml file.
-        iteration (int, optional): the model iteration you wish to export.
+    Delegates to ``deeplabcut.export_model``.
+
+    Saves the pose configuration, snapshot files, and frozen graph of the model to a
+    directory named exported-models within the project directory.
+
+    Options:
+        cfg_path (string): Path to the DLC Project config.yaml file.
+        iteration (int, optional): The model iteration you wish to export.
             If None, uses the iteration listed in the config file.
-        shuffle (int, optional): the shuffle of the model to export. Defaults to 1.
-        trainingsetindex (int, optional): Index of the training fraction for the model to export. Defaults to 1.
-        snapshotindex (int, optional): the snapshot index for the weights you wish to export.
-            If None, uses the snapshotindex as defined in 'config.yaml'. Defaults to None.
-        TFGPUinference (bool, optional): use the tensorflow inference model? Defaults to True.
-            For inference using DeepLabCut-live, it is recommended to set TFGPIinference=False.
-        overwrite (bool, optional): If the model was already exported, whether to overwrite. Defaults to False.
-        make_tar (bool, optional): Do you want to compress the exported directory to a tar file? Defaults to True.
-            This is necessary to export to the model zoo, but not for live inference.
+        shuffle (int, optional): The shuffle of the model to export. Defaults to 1.
+        trainingsetindex (int, optional): Index of the training fraction for the model
+            to export. Defaults to 0.
+        snapshotindex (int, optional): The snapshot index for the weights you wish to
+            export. If None, uses the snapshotindex as defined in config.yaml.
+            Defaults to None.
+        TFGPUinference (bool, optional): Use the tensorflow inference model?
+            Defaults to True. For DeepLabCut-live, set TFGPUinference=False.
+        overwrite (bool, optional): If the model was already exported, whether to
+            overwrite. Defaults to False.
+        make_tar (bool, optional): Compress the exported directory to a tar file?
+            Defaults to True. Required for model zoo export, not for live inference.
     """
     from deeplabcut import export_model
 

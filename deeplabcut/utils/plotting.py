@@ -195,8 +195,9 @@ def plot_trajectories(
         config (str): Full path of the config.yaml file.
         videos (list[str]): Full paths to videos for analysis or a path to the directory, where all the
             videos with same extension are stored.
-        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are filtered, based on file extension.
-            File paths and directory contents are treated differently:
+        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are
+            filtered, based on file extension. File paths and directory contents are
+            treated differently:
             - ``None`` (default): file paths are accepted as-is; directories are
               scanned for files with a recognized video extension.
             - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
@@ -227,7 +228,7 @@ def plot_trajectories(
             Empty by default (corresponding to a single animal project).
             For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
             be taken from the config.yaml file if none is given. Defaults to "".
-        pcutoff (string, optional): Overrides project pcutoff for plotting trajectories. Defaults to None.
+        pcutoff (float | None, optional): Overrides project pcutoff for plotting trajectories. Defaults to None.
         kwargs: additional arguments.
             For torch-based shuffles, can be used to specify:
                 - snapshot_index

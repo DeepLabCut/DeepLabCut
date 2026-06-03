@@ -22,7 +22,7 @@ def return_train_network_path(config, shuffle=1, trainingsetindex=0, modelprefix
         config (string): Full path of the config.yaml file as a string.
         shuffle (int): Integer value specifying the shuffle index to select for training.
         trainingsetindex (int, optional): Which TrainingsetFraction to use. By default the first
-            (TrainingFraction is a list in config.yaml).
+            (TrainingFraction is a list in config.yaml). Defaults to 0.
 
     Returns:
         tuple: trainposeconfigfile, testposeconfigfile, snapshotfolder.
@@ -68,15 +68,15 @@ def train_network(
             ``max_snapshots_to_keep`` many are kept! If you change this to None, then all
             are kept.
             See: https://github.com/DeepLabCut/DeepLabCut/issues/8#issuecomment-387404835
-        displayiters (optional): This variable is actually set in ``pose_config.yaml``. However, you can
+        displayiters (int, optional): This variable is actually set in ``pose_config.yaml``. However, you can
             overwrite it with this hack. Don't use this regularly, just if you are too lazy
             to dig out the ``pose_config.yaml`` file for the corresponding project. If
             ``None``, the value from there is used, otherwise it is overwritten! Defaults to None.
-        saveiters (optional): This variable is actually set in ``pose_config.yaml``. However, you can
+        saveiters (int, optional): This variable is actually set in ``pose_config.yaml``. However, you can
             overwrite it with this hack. Don't use this regularly, just if you are too lazy
             to dig out the ``pose_config.yaml`` file for the corresponding project.
             If ``None``, the value from there is used, otherwise it is overwritten! Defaults to None.
-        maxiters (optional): This variable is actually set in ``pose_config.yaml``. However, you can
+        maxiters (int, optional): This variable is actually set in ``pose_config.yaml``. However, you can
             overwrite it with this hack. Don't use this regularly, just if you are too lazy
             to dig out the ``pose_config.yaml`` file for the corresponding project.
             If ``None``, the value from there is used, otherwise it is overwritten! Defaults to None.
@@ -84,7 +84,7 @@ def train_network(
             allocator does not pre-allocate the entire specified GPU memory region, instead
             starting small and growing as needed.
             See issue: https://forum.image.sc/t/how-to-stop-running-out-of-vram/30551/2. Defaults to True.
-        gputouse (optional): Natural number indicating the number of your GPU (see number in nvidia-smi).
+        gputouse (int, optional): Natural number indicating the number of your GPU (see number in nvidia-smi).
             If you do not have a GPU put None.
             See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries. Defaults to None.
         autotune (bool, optional): Property of TensorFlow, somehow faster if ``False``

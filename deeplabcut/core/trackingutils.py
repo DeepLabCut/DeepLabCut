@@ -178,10 +178,13 @@ class EllipseFitter:
         """Least Squares ellipse fitting algorithm Fit an ellipse to a set of X- and
         Y-coordinates. See Halir and Flusser, 1998 for implementation details.
 
-        :param x: ndarray, 1D trajectory
-        :param y: ndarray, 1D trajectory
-        :return: 1D ndarray of 6 coefficients of the general quadratic curve: ax^2 +
-            2bxy + cy^2 + 2dx + 2fy + g = 0
+        Args:
+            x (ndarray): 1D trajectory.
+            y (ndarray): 1D trajectory.
+
+        Returns:
+            ndarray: 1D array of 6 coefficients of the general quadratic curve:
+                ax^2 + 2bxy + cy^2 + 2dx + 2fy + g = 0.
         """
         D1 = np.vstack((x * x, x * y, y * y))
         D2 = np.vstack((x, y, np.ones_like(x)))
@@ -205,10 +208,13 @@ class EllipseFitter:
     def _fit_error(x, y, sd):
         """Fit a sd-sigma covariance error ellipse to the data.
 
-        :param x: ndarray, 1D input of X coordinates
-        :param y: ndarray, 1D input of Y coordinates
-        :param sd: int, size of the error ellipse in 'standard deviation'
-        :return: ellipse center, semi-axes length, angle to the X-axis
+        Args:
+            x (ndarray): 1D input of X coordinates.
+            y (ndarray): 1D input of Y coordinates.
+            sd (int): Size of the error ellipse in standard deviations.
+
+        Returns:
+            list: Ellipse center, semi-axes length, and angle to the X-axis.
         """
         cov = np.cov(x, y)
         E, V = np.linalg.eigh(cov)  # Returns the eigenvalues in ascending order
@@ -222,14 +228,16 @@ class EllipseFitter:
     @staticmethod
     @jit(nopython=True)
     def calc_parameters(coeffs):
-        """
-        Calculate ellipse center coordinates, semi-axes lengths, and
+        """Calculate ellipse center coordinates, semi-axes lengths, and
         the counterclockwise angle of rotation from the x-axis to the ellipse major axis.
         Visit http://mathworld.wolfram.com/Ellipse.html
         for how to estimate ellipse parameters.
 
-        :param coeffs: list of fitting coefficients
-        :return: center: 1D ndarray, semi-axes: 1D ndarray, angle: float
+        Args:
+            coeffs (list): Fitting coefficients.
+
+        Returns:
+            list: Center (1D ndarray), semi-axes (1D ndarray), and angle (float).
         """
         # The general quadratic curve has the form:
         # ax^2 + 2bxy + cy^2 + 2dx + 2fy + g = 0
