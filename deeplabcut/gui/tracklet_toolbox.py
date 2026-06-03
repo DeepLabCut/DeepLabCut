@@ -927,8 +927,8 @@ def refine_tracklets(
     max_gap=2,
     trail_len=0,
 ):
-    """
-    Refine tracklets stored either in pickle or h5 format.
+    """Refine tracklets stored either in pickle or h5 format.
+
     The procedure is done in two stages:
     (i) freshly-converted detections are read by the TrackletManager,
     which automatically attempts to optimize tracklet continuity by
@@ -940,40 +940,27 @@ def refine_tracklets(
     selected using the Lasso tool in order to re-assign multiple tracks
     to another identity at once.
 
-    Parameters
-    ----------
-    config: str
-        Full path of the config.yaml file.
-
-    pickle_or_h5_file: str
-        Full path of either the pickle file obtained after calling
-        deeplabcut.convert_detections2tracklets, or the h5 file written after
-        refining the tracklets a first time. Note that refined tracklets are
-        always stored in the h5 format.
-
-    video: str
-        Full path of the corresponding video.
-        If the video duration and the total length of the tracklets disagree
-        by more than 5%, a message is printed indicating that the selected
-        video may not be the right one.
-
-    min_swap_len : float, optional (default=2)
-        Minimum swap length.
-        Set to 2 by default. Retained swaps appear in the right panel in
-        shaded regions.
-
-    min_tracklet_len : float, optional (default=2)
-        Minimum tracklet length.
-        By default, tracklets shorter than 2 frames are discarded,
-        leaving missing data instead. If set to 0, all tracklets are kept.
-
-    max_gap : int, optional (default=2).
-        Maximal gap size (in number of frames) of missing data to be filled.
-        The procedure fits a cubic spline over all individual trajectories,
-        and fills all gaps smaller than or equal to 2 frames by default.
-
-    trail_len : int, optional (default=0)
-        Number of trailing points. None by default, to accelerate visualization.
+    Args:
+        config (str): Full path of the config.yaml file.
+        pickle_or_h5_file (str): Full path of either the pickle file obtained after calling
+            deeplabcut.convert_detections2tracklets, or the h5 file written after
+            refining the tracklets a first time. Note that refined tracklets are
+            always stored in the h5 format.
+        video (str): Full path of the corresponding video.
+            If the video duration and the total length of the tracklets disagree
+            by more than 5%, a message is printed indicating that the selected
+            video may not be the right one.
+        min_swap_len (float, optional): Minimum swap length.
+            Set to 2 by default. Retained swaps appear in the right panel in
+            shaded regions. Defaults to 2.
+        min_tracklet_len (float, optional): Minimum tracklet length.
+            By default, tracklets shorter than 2 frames are discarded,
+            leaving missing data instead. If set to 0, all tracklets are kept. Defaults to 2.
+        max_gap (int, optional): Maximal gap size (in number of frames) of missing data to be filled.
+            The procedure fits a cubic spline over all individual trajectories,
+            and fills all gaps smaller than or equal to 2 frames by default. Defaults to 2.
+        trail_len (int, optional): Number of trailing points. None by default, to accelerate visualization.
+            Defaults to 0.
     """
     manager = TrackletManager(config, min_swap_len, min_tracklet_len, max_gap)
     if pickle_or_h5_file.endswith("pickle"):

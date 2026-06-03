@@ -26,9 +26,7 @@ matplotlib_axes_logger.setLevel("ERROR")
 
 
 def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, search_window_size=(11, 11)):
-    """This function extracts the corners points from the calibration images, calibrates
-    the camera and stores the calibration files in the project folder (defined in the
-    config file).
+    """Extract corner points from calibration images, calibrate cameras, and store results.
 
     Make sure you have around 20-60 pairs of calibration images.
     The function should be used iteratively to select the right set of calibration images.
@@ -43,39 +41,27 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
     Once the right number of calibration images are selected,
     use the parameter ``calibrate=True`` to calibrate the cameras.
 
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        cbrow (int): Integer specifying the number of rows in the calibration image.
+        cbcol (int): Integer specifying the number of columns in the calibration image.
+        calibrate (bool): If True, calibrate cameras with the current calibration images.
+            Set to True only after checking corner detection and removing bad images.
+            Defaults to False.
+        alpha (float): Free scaling parameter between 0 and 1.
+            When alpha = 0, rectified images with only valid pixels are stored (zoomed in).
+            When alpha = 1, all pixels from the original images are retained.
+            For more details:
+            https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
+        search_window_size (tuple of int): Half of the side length of the search window when
+            refining detected checkerboard corners for subpixel accuracy.
 
-    cbrow : int
-        Integer specifying the number of rows in the calibration image.
+    Examples:
+        Linux/MacOs/Windows
+        >>> deeplabcut.calibrate_camera(config)
 
-    cbcol : int
-        Integer specifying the number of columns in the calibration image.
-
-    calibrate : bool
-        If this is set to True, the cameras are calibrated with the current set of calibration images.
-        The default is ``False``
-        Set it to True, only after checking the results of the corner detection method
-        and removing dysfunctional images!
-
-    alpha: float
-        Floating point number between 0 and 1 specifying the free scaling parameter.
-        When alpha = 0, the rectified images with only valid pixels are stored
-        i.e. the rectified images are zoomed in. When alpha = 1, all the pixels from the original images are retained.
-        For more details: https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
-
-    search_window_size: tuple of int
-        Half of the side length of the search window when refining detected checkerboard corners for subpixel accuracy.
-
-    Example:
-    --------
-    Linux/MacOs/Windows
-    >>> deeplabcut.calibrate_camera(config)
-
-    Once the right set of calibration images are selected,
-    >>> deeplabcut.calibrate_camera(config, calibrate=True)
+        Once the right set of calibration images are selected,
+        >>> deeplabcut.calibrate_camera(config, calibrate=True)
     """
     # Termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -283,29 +269,20 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
 
 
 def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
-    """This function undistorts the calibration images based on the camera matrices and
-    stores them in the project folder(defined in the config file) to visually check if
-    the camera matrices are correct.
+    """Undistort calibration images and store them for visual inspection.
 
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Uses camera matrices from calibration to verify they are correct.
 
-    cbrow : int
-        Int specifying the number of rows in the calibration image.
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        cbrow (int): Number of rows in the calibration image.
+        cbcol (int): Number of columns in the calibration image.
+        plot (bool): If True, save undistortion results as plots.
+            Must be either ``True`` or ``False`` if provided. Defaults to True.
 
-    cbcol : int
-        Int specifying the number of columns in the calibration image.
-
-    plot : bool
-        If this is set to True, the results of undistortion are saved as plots.
-        The default is ``True``; if provided it must be either ``True`` or ``False``.
-
-    Example:
-    --------
-    Linux/MacOs/Windows
-    >>> deeplabcut.check_undistortion(config, cbrow=8, cbcol=6)
+    Examples:
+        Linux/MacOs/Windows
+        >>> deeplabcut.check_undistortion(config, cbrow=8, cbcol=6)
     """
     # Read the config file
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)

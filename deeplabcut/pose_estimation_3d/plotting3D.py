@@ -72,80 +72,42 @@ def create_labeled_video_3d(
     fps=30,
     dpi=300,
 ):
-    """Creates a video with views from the two cameras and the 3d reconstruction for a
-    selected number of frames.
+    """Create a video with two camera views and 3D reconstruction for selected frames.
 
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        path (list): Full paths to triangulated files for analysis, or a directory containing them.
+        videofolder (string): Full path of the folder where videos are stored.
+            Use when videos are not co-located with triangulation files.
+            Defaults to None (videos searched next to the triangulation file).
+        start (int): Start frame index to select. Defaults to 0.
+        end (int): End frame index to select.
+            Defaults to None (all frames used).
+        trailpoints (int): Number of previous frames whose body parts are plotted (history).
+            Defaults to 0.
+        videotype (string, optional): When ``path`` is a directory, only videos with this extension are
+            analyzed. If unspecified, common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+        view (list): Elevation (z plane) and azimuth (x,y plane) angles for the 3D view.
+        xlim (list): Limits for the 3D x-axis.
+            Defaults to [None, None] (min/max over all bodyparts).
+        ylim (list): Limits for the 3D y-axis.
+            Defaults to [None, None] (min/max over all bodyparts).
+        zlim (list): Limits for the 3D z-axis.
+            Defaults to [None, None] (min/max over all bodyparts).
+        draw_skeleton (bool): If True, draw skeleton lines on each frame (from config).
+            Defaults to True.
+        color_by (string, optional): Coloring rule. Each bodypart colored differently by default.
+            Use 'individual' to color all points of one individual the same. Defaults to 'bodypart'.
 
-    path : list
-        A list of strings containing the full paths to triangulated files for analysis or a path to the directory,
-        where all the triangulated files are stored.
+    Examples:
+        Linux/MacOs
+        >>> deeplabcut.create_labeled_video_3d(config, ["/data/project1/videos/3d.h5"], start=100, end=500)
 
-    videofolder: string
-        Full path of the folder where the videos are stored.
-        Use this if the videos are stored in a different location other than
-        where the triangulation files are stored.
-        By default is ``None`` and therefore looks for video files in the
-        directory where the triangulation file is stored.
+        To create labeled videos for all the triangulated files in the folder
+        >>> deeplabcut.create_labeled_video_3d(config, ["/data/project1/videos"], start=100, end=500)
 
-    start: int
-        Integer specifying the start of frame index to select.
-        Default is set to 0.
-
-    end: int
-        Integer specifying the end of frame index to select.
-        Default is set to None, where all the frames of the video are used for creating the labeled video.
-
-    trailpoints: int
-        Number of revious frames whose body parts are plotted in a frame (for displaying history).
-        Default is set to 0.
-
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n
-        Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
-
-    view: list
-        A list that sets the elevation angle in z plane and azimuthal angle in x,y plane of 3d view.
-        Useful for rotating the axis for 3d view
-
-    xlim: list
-        A list of integers specifying the limits for xaxis of 3d view.
-        By default it is set to [None,None], where the x limit is set by t
-        aking the minimum and maximum value of the x coordinates for all the bodyparts.
-
-    ylim: list
-        A list of integers specifying the limits for yaxis of 3d view.
-        By default it is set to [None,None], where the y limit is set by
-        taking the minimum and maximum value of the y coordinates for all the bodyparts.
-
-    zlim: list
-        A list of integers specifying the limits for zaxis of 3d view.
-        By default it is set to [None,None], where the z limit is set by
-        taking the minimum and maximum value of the z coordinates for all the bodyparts.
-
-    draw_skeleton: bool
-        If ``True`` adds a line connecting the body parts making a skeleton on on each frame.
-        The body parts to be connected and the color of these connecting lines are specified in the config file.
-        By default: ``True``
-
-    color_by : string, optional (default='bodypart')
-        Coloring rule. By default, each bodypart is colored differently.
-        If set to 'individual', points belonging to a single individual are colored the same.
-
-    Example:
-    -------
-    Linux/MacOs
-    >>> deeplabcut.create_labeled_video_3d(config, ["/data/project1/videos/3d.h5"], start=100, end=500)
-
-    To create labeled videos for all the triangulated files in the folder
-    >>> deeplabcut.create_labeled_video_3d(config, ["/data/project1/videos"], start=100, end=500)
-
-    To set the xlim, ylim, zlim and rotate the view of the 3d axis
-    >>> deeplabcut.create_labeled_video_3d(config,['/data/project1/videos'],start=100,
+        To set the xlim, ylim, zlim and rotate the view of the 3d axis
+        >>> deeplabcut.create_labeled_video_3d(config,['/data/project1/videos'],start=100,
         end=500,view=[30,90],xlim=[-12,12],ylim=[15,25],zlim=[20,30])
     """
     os.getcwd()
