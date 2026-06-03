@@ -37,7 +37,8 @@ def label_frames(config_path: str | Path | None = None, image_folder: str | None
 
     Args:
         config_path (str, Path, None): Full path of the project config.yaml file.
-        image_folder (str, None): Name of the image folder to open for labelling.
+        image_folder (str, optional): Name of the image folder to open for labelling.
+            Defaults to None.
 
     Examples:
         Opening the napari-deeplabcut annotation GUI without opening a specific folder of

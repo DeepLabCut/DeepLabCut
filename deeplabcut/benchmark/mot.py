@@ -26,14 +26,14 @@ def convert_bboxes_to_xywh(bboxes: NDArray, inplace: bool = False) -> NDArray:
     y, width, height] format.
 
     Args:
-        bbox (numpy.ndarray): A 2D array of shape (N, M), where N is the number of bounding boxes
+        bboxes (numpy.ndarray): A 2D array of shape (N, M), where N is the number of bounding boxes
             and M >= 4. The first four columns represent the bounding box in the format
             [x_min, y_min, x_max, y_max].
         inplace (bool, optional): If True, modifies the input array in place. If False, returns a copy of
             the array with the converted bounding box format. Defaults to False.
 
     Returns:
-        numpy.ndarray or None: If `inplace` is False, returns a new array of the same shape as `bbox`
+        numpy.ndarray or None: If `inplace` is False, returns a new array of the same shape as `bboxes`
             with the format [x, y, width, height]. If `inplace` is True, the input
             array is modified directly, and nothing is returned.
     """
@@ -97,8 +97,8 @@ def reconstruct_all_bboxes(data: pd.DataFrame, margin: float, to_xywh: bool = Fa
             - 'individuals': Names of the individuals (e.g., animals).
             - 'x', 'y', and 'likelihood': Coordinate and confidence data for body parts.
         margin (float): The margin to add/subtract from the minimum/maximum coordinates when defining the bounding box.
-        to_xywh (bool): If True, converts the bounding box format from [x_min, y_min, x_max, y_max]
-            to [x, y, width, height].
+        to_xywh (bool, optional): If True, converts the bounding box format from [x_min, y_min, x_max, y_max]
+            to [x, y, width, height]. Defaults to False.
 
     Returns:
         numpy.ndarray: A 3D array of shape (A, F, 5), where:

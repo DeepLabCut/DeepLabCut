@@ -86,10 +86,11 @@ def filterpredictions(
 
     Args:
         config (string): Full path of the config.yaml file.
-        video (string): Full path of the video to extract the frame from. Make sure that this video is
+        video (string): Full path of the video to filter. Make sure that this video is
             already analyzed.
-        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are filtered, based on file extension.
-            File paths and directory contents are treated differently:
+        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are
+            filtered, based on file extension. File paths and directory contents are
+            treated differently:
             - ``None`` (default): file paths are accepted as-is; directories are
               scanned for files with a recognized video extension.
             - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
@@ -134,11 +135,8 @@ def filterpredictions(
                 - detector_snapshot_index
 
     Returns:
-        video_to_filtered_df: Dictionary mapping video filepaths to filtered dataframes.
-
-            * If no videos exist, the dictionary will be empty.
-            * If a video is not analyzed, the corresponding value in the dictionary will be
-              None.
+        dict | None: If ``return_data`` is True, returns a dictionary mapping video
+            filepaths to filtered dataframes. Otherwise returns None.
 
     Examples:
         Arima model:
@@ -147,7 +145,7 @@ def filterpredictions(
                 'C:\\myproject\\reaching-task\\config.yaml',
                 ['C:\\myproject\\trailtracking-task\\test.mp4'],
                 shuffle=3,
-                filterype='arima',
+                filtertype='arima',
                 ARdegree=5,
                 MAdegree=2,
             )

@@ -18,8 +18,9 @@ def select_cropping_area(config, videos=None):
 
     Args:
         config (string): Full path of the config.yaml file as a string.
-        videos (optional): List of videos whose cropping areas are to be defined. Note that full paths are required.
-            By default, all videos in the config are successively loaded. Defaults to None.
+        videos (list, optional): List of videos whose cropping areas are to be defined.
+            Full paths are required. By default, all videos in the config are loaded.
+            Defaults to None.
 
     Returns:
         dict: Updated project configuration
@@ -128,7 +129,7 @@ def extract_frames(
         cluster_color (bool): If ``"False"`` then each downsampled image is treated as a grayscale vector
             (discarding color information). If ``"True"``, then the color channels are
             considered. This increases the computational complexity. Defaults to False.
-        opencv (bool): Uses openCV for loading & extractiong (otherwise moviepy (legacy)). Defaults to True.
+        opencv (bool): Uses openCV for loading and extracting (otherwise moviepy (legacy)). Defaults to True.
         slider_width (int): Width of the video frames slider, in percent of window. Defaults to 25.
         config3d (string, optional): Path to the project configuration file in the 3D project. This will be used to
             match frames extracted from all cameras present in the field 'camera_names' to

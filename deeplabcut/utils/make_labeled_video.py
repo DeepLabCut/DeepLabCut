@@ -435,8 +435,9 @@ def create_labeled_video(
         config (string): Full path of the config.yaml file.
         videos (list[str]): A list of strings containing the full paths to videos for analysis or a path
             to the directory, where all the videos with same extension are stored.
-        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are filtered, based on file extension.
-            File paths and directory contents are treated differently:
+        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are
+            filtered, based on file extension. File paths and directory contents are
+            treated differently:
             - ``None`` (default): file paths are accepted as-is; directories are
               scanned for files with a recognized video extension.
             - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
@@ -488,7 +489,7 @@ def create_labeled_video(
             same. Defaults to 'bodypart'.
         modelprefix (str, optional): Directory containing the deeplabcut models to use when evaluating the network.
             By default, the models are assumed to exist in the project folder. Defaults to "".
-        init_weights (str): Checkpoint path to the super model.
+        init_weights (str, optional): Checkpoint path to the super model. Defaults to "".
         track_method (string, optional): Tracker used to generate the data.
             Empty by default (corresponding to a single animal project).
             For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
@@ -496,13 +497,13 @@ def create_labeled_video(
         superanimal_name (str, optional): Name of the superanimal model. Defaults to "".
         pcutoff (float, optional): Overrides the pcutoff set in the project configuration to plot the trajectories.
             Defaults to None.
-        skeleton (list, optional): Defaults to [].
+        skeleton (list, optional): Skeleton definition for drawing. Defaults to None.
         skeleton_color (string, optional): Color for the skeleton. Defaults to "white".
         dotsize (int, optional): Size of label dots to use. Defaults to 8.
         colormap (str, optional): Colormap to use for the labels. Defaults to "rainbow".
-        alphavalue (float, optional): Defaults to 0.5.
+        alphavalue (float, optional): Transparency of markers. Defaults to 0.5.
         overwrite (bool, optional): If ``True`` overwrites existing labeled videos. Defaults to False.
-        confidence_to_alpha (Union[bool, Callable[[float], float]): If False, all keypoints
+        confidence_to_alpha (bool | Callable[[float], float], optional): If False, all keypoints
             use alpha=1. Otherwise, a function f: [0, 1] -> [0, 1] maps score to alpha.
             When True, f(x) = max(0, (x - pcutoff)/(1 - pcutoff)). Defaults to False.
         plot_bboxes (bool, optional): If using Pytorch and in Top-Down mode,
@@ -742,7 +743,7 @@ def proc_video(
     plot_bboxes: bool = True,
     bboxes_pcutoff: float = 0.6,
 ):
-    """Helper function for create_videos.
+    """Helper function for create_labeled_video.
 
     Returns:
         bool: ``True`` if a video is successfully created.
@@ -1088,8 +1089,9 @@ def create_video_with_all_detections(
         config (str): Absolute path to the config.yaml file.
         videos (list of str): Full paths to videos for analysis, or a directory where all
             videos with the same extension are stored.
-        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are filtered, based on file extension.
-            File paths and directory contents are treated differently:
+        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are
+            filtered, based on file extension. File paths and directory contents are
+            treated differently:
             - ``None`` (default): file paths are accepted as-is; directories are
               scanned for files with a recognized video extension.
             - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
@@ -1107,7 +1109,7 @@ def create_video_with_all_detections(
             shift detections appropriately. Defaults to None.
         destfolder (string, optional): Destination folder used for storing analysis data
             (default is the path of the video).
-        confidence_to_alpha (Union[bool, Callable[[float], float]): If False, all keypoints
+        confidence_to_alpha (bool | Callable[[float], float], optional): If False, all keypoints
             use alpha=1. Otherwise, a function f: [0, 1] -> [0, 1] maps score to alpha.
             When True, f(x) = x. Defaults to False.
         plot_bboxes (bool, optional): If detections were produced using a Pytorch Top-Down model,

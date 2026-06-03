@@ -98,6 +98,9 @@ def create_labeled_video_3d(
             Defaults to True.
         color_by (string, optional): Coloring rule. Each bodypart colored differently by default.
             Use 'individual' to color all points of one individual the same. Defaults to 'bodypart'.
+        figsize (tuple, optional): Figure size for the matplotlib plot. Defaults to (20, 8).
+        fps (int, optional): Output video frame rate. Defaults to 30.
+        dpi (int, optional): Output video DPI. Defaults to 300.
 
     Examples:
         Linux/MacOs

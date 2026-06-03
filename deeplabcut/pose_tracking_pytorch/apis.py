@@ -41,21 +41,31 @@ def transformer_reID(
         config (string): Full path of the config.yaml file as a string.
         videos (list): A list of strings containing the full paths to videos for analysis or a path to
             the directory, where all the videos with same extension are stored.
-        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are filtered, based on file extension.
-            File paths and directory contents are treated differently:
+        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are
+            filtered, based on file extension. File paths and directory contents are
+            treated differently:
             - ``None`` (default): file paths are accepted as-is; directories are
               scanned for files with a recognized video extension.
             - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
               both file paths and directory contents are filtered by the given
               extension(s). Defaults to None.
-        shuffle (int, optional): which shuffle to use.
-        trainingsetindex (int, optional): which training fraction to use, identified by its index.
-        track_method (str, optional): track method from which tracklets are sampled.
-        n_tracks (int): number of tracks to be formed in the videos.
-            TODO: handling videos with different number of tracks.
-        n_triplets (int, optional): number of triplets to be mined from the videos.
-        train_epochs (int, optional): number of epochs to train the transformer.
-        train_frac (fraction, optional): fraction of triplets used for training/testing of the transformer.
+        shuffle (int, optional): Which shuffle to use. Defaults to 1.
+        trainingsetindex (int, optional): Which training fraction to use, identified by
+            its index. Defaults to 0.
+        track_method (str, optional): Track method from which tracklets are sampled.
+            Defaults to "".
+        n_tracks (int | None, optional): Number of tracks to be formed in the videos.
+            Defaults to None.
+        n_triplets (int, optional): Number of triplets to be mined from the videos.
+            Defaults to 1000.
+        train_epochs (int, optional): Number of epochs to train the transformer.
+            Defaults to 100.
+        train_frac (float, optional): Fraction of triplets used for training/testing of
+            the transformer. Defaults to 0.8.
+        modelprefix (str, optional): Directory containing the deeplabcut models to use.
+            Defaults to "".
+        destfolder (str, optional): Destination folder for analysis data. Defaults to
+            None.
 
     Examples:
         Training model for one video based on ellipse-tracker derived tracklets

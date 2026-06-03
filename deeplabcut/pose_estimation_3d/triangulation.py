@@ -43,13 +43,15 @@ def triangulate(
         videotype (string, optional): When ``video_path`` is a directory, only videos with this extension
             are analyzed. If unspecified, common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
         filterpredictions (bool, optional): Filter predictions with ``filtertype``.
-            Must be ``True`` or ``False`` if specified.
+            Defaults to True.
         filtertype (string): Filter to use: 'arima' or 'median' (currently supported).
         gputouse (int, optional): GPU index (see nvidia-smi). Use None if no GPU.
             See: https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries
         destfolder (string, optional): Destination folder for analysis data.
             Defaults to the video path.
         save_as_csv (bool, optional): Save predictions as .csv. Defaults to False.
+        track_method (str, optional): Tracking method suffix for multi-animal projects.
+            Defaults to "".
 
     Examples:
         Linux/MacOS — analyze all videos in the directory:

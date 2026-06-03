@@ -58,7 +58,7 @@ class KeypointAwareCropToFixedSize(iaa.CropToFixedSize):
             width (int): Crop images down to this maximum width.
             height (int): Crop images down to this maximum height.
             max_shift (float, optional): Maximum allowed shift of the cropping center position
-                as a fraction of the crop size. Defaults to 0.25.
+                as a fraction of the crop size. Defaults to 0.4.
             crop_sampling (str, optional): Crop centers sampling method. Must be either:
                 "uniform" (randomly over the image),
                 "keypoints" (randomly over the annotated keypoints),

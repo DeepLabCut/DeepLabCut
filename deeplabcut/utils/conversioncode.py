@@ -247,8 +247,8 @@ def analyze_videos_converth5_to_nwb(
 
     Examples:
         Converts all pose-output files belonging to mp4 videos in the folder
-        '/media/alex/experimentaldata/cheetahvideos' to csv files.
-        deeplabcut.analyze_videos_converth5_to_csv('/media/alex/experimentaldata/cheetahvideos','.mp4')
+        '/media/alex/experimentaldata/cheetahvideos' to NWB files.
+        >>> deeplabcut.analyze_videos_converth5_to_nwb(config, "/media/alex/experimentaldata/cheetahvideos", ".mp4")
     """
     if listofvideos:  # can also be called with a list of videos (from GUI)
         videos = video_folder  # GUI gives a list of videos

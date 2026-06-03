@@ -16,10 +16,9 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
     Args:
         config (string): String containing the full path of the config file in the project.
         videos (list): A list of strings containing the full paths of the videos to include in the project.
-        copy_videos (bool, optional): If this is set to True, the videos will be copied
-            to your project/videos directory. If False, the symlink of the videos will
-            be copied instead. The default is ``False``; if provided it must be either
-            ``True`` or ``False``. Defaults to False.
+        copy_videos (bool, optional): If True, the videos will be copied to your
+            project/videos directory. If False, symlinks of the videos are copied
+            instead. Defaults to False.
         coords (list, optional): A list containing the list of cropping coordinates of the video. Defaults to None.
         extract_frames (bool, optional): If True, extract_frames will be run on the new
             videos. Defaults to False.

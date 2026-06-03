@@ -985,8 +985,9 @@ def stitch_tracklets(
         config_path (str): Path to the main project config.yaml file.
         videos (list): Full paths to videos for analysis, or a directory where all videos
             with the same extension are stored.
-        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are filtered, based on file extension.
-            File paths and directory contents are treated differently:
+        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are
+            filtered, based on file extension. File paths and directory contents are
+            treated differently:
             - ``None`` (default): file paths are accepted as-is; directories are
               scanned for files with a recognized video extension.
             - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
@@ -1037,6 +1038,8 @@ def stitch_tracklets(
         output_name (str, optional): Name of the output h5 file.
             By default, tracks are automatically stored into the same directory
             as the pickle file and with its name.
+        transformer_checkpoint (str, optional): Path to transformer checkpoint for re-ID
+            stitching. Defaults to "".
         save_as_csv (bool, optional): Whether to write the tracks to a CSV file too (False by default).
         kwargs: additional arguments.
             For torch-based shuffles, can be used to specify:

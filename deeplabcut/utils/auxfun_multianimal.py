@@ -202,9 +202,7 @@ def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
 
 
 def LoadFullMultiAnimalData(dataname):
-    """Save predicted data as h5 file and metadata as pickle file; created by
-    predict_videos.py.
-    """
+    """Load predicted data and metadata from pickle files created by predict_videos.py."""
     data_file = dataname.split(".h5")[0] + "_full.pickle"
     try:
         with open(data_file, "rb") as handle:
@@ -242,7 +240,8 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
         userfeedback (bool, optional): If false, all folders are processed without prompting.
             If true, the user is asked for each folder whether to convert. Use this, e.g. if you have already labeled
             some folders and want to convert data for new videos only.
-        forceindividual (None): If a string is given, that value is used in the individuals column.
+        forceindividual (str | None, optional): If a string is given, that value is used
+            in the individuals column. Defaults to None.
 
     Examples:
         Converts mulianimalbodyparts under the 'first individual' in individuals list in config.yaml

@@ -25,19 +25,19 @@ class TrackletManager:
 
         Args:
             config (str): Path to a configuration file.
-            min_swap_len (float, optional): Minimum swap length.
+            min_swap_len (int, optional): Minimum swap length.
                 Swaps shorter than 2 frames are discarded by default. Defaults to 2.
-            min_tracklet_len (float, optional): Minimum tracklet length.
+            min_tracklet_len (int, optional): Minimum tracklet length.
                 Tracklets shorter than 2 frames are discarded by default. Defaults to 2.
             max_gap (int, optional): Number of frames to consider when filling in missing data.
                 Defaults to 0.
 
         Examples:
-            manager = TrackletManager(config_path, min_swap_frac=0, min_tracklet_frac=0)
+            manager = TrackletManager(config_path, min_swap_len=0, min_tracklet_len=0)
 
             manager.load_tracklets_from_pickle(filename)
             # Alternatively
-            manager.load_tracklets_from_h5(filename)
+            manager.load_tracklets_from_hdf(filename)
 
             manager.find_swapping_bodypart_pairs()
         """
