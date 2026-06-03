@@ -36,44 +36,38 @@ class SpatiotemporalAdaptation:
         customized_pose_config="",
         init_weights="",
     ):
-        """This class supports video adaptation to a super model.
+        """Support video adaptation to a super model.
 
-        Parameters
-        ----------
-        video_path: string
-           The string to the path of the video
-        init_weights: string
-           The path to a superanimal model's checkpoint
-        supermodel_name: string
-           Currently we support supertopview(LabMice) and superquadruped (quadruped side-view animals)
-        scale_list: list
-           A list of different resolutions for the spatial pyramid
-        videotype: string
-           Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this
-           extension are analyzed. The default is ``.avi``
-        adapt_iterations: int
-           Number of iterations for adaptation training. Empirically 1000 is sufficient. Training longer can cause worse
-           performance depending whether there is occlusion in the video
-        modelfolder: string, optional
-           Because the API does not need a dlc project, the checkpoint and logs go to this temporary model folder, and
-           otherwise model is saved to the current work place
-        customized_pose_config: string, optional
-           For future support of non modelzoo model
+        Args:
+            video_path (string): The string to the path of the video.
+            init_weights (string): The path to a superanimal model's checkpoint.
+            supermodel_name (string): Currently we support supertopview (LabMice) and
+                superquadruped (quadruped side-view animals).
+            scale_list (list): A list of different resolutions for the spatial pyramid.
+            videotype (string): Checks for the extension of the video in case the input to
+                the video is a directory.\n Only videos with this extension are analyzed.
+                The default is ``.avi``.
+            adapt_iterations (int): Number of iterations for adaptation training.
+                Empirically 1000 is sufficient. Training longer can cause worse
+                performance depending whether there is occlusion in the video.
+            modelfolder (string, optional): Because the API does not need a dlc project,
+                the checkpoint and logs go to this temporary model folder, and otherwise
+                model is saved to the current work place.
+            customized_pose_config (string, optional): For future support of non modelzoo model.
 
         Examples:
-        --------
-        from  deeplabcut.modelzoo.apis import SpatiotemporalAdaptation
-        video_path = '/mnt/md0/shaokai/openfield_video/m3v1mp4.mp4'
-        superanimal_name = 'superanimal_topviewmouse'
-        videotype = 'mp4'
-        >>> adapter = SpatiotemporalAdaptation(video_path,
-                                       superanimal_name,
-                                       modelfolder = "temp_topview",
-                                       videotype = videotype)
+            from  deeplabcut.modelzoo.apis import SpatiotemporalAdaptation
+            video_path = '/mnt/md0/shaokai/openfield_video/m3v1mp4.mp4'
+            superanimal_name = 'superanimal_topviewmouse'
+            videotype = 'mp4'
+            >>> adapter = SpatiotemporalAdaptation(video_path,
+                                           superanimal_name,
+                                           modelfolder = "temp_topview",
+                                           videotype = videotype)
 
-        adapter.before_adapt_inference()
-        adapter.adaptation_training()
-        adapter.after_adapt_inference()
+            adapter.before_adapt_inference()
+            adapter.adaptation_training()
+            adapter.after_adapt_inference()
         """
         if scale_list is None:
             scale_list = []

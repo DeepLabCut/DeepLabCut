@@ -452,60 +452,43 @@ def _video_inference_superanimal(
             These arrays are stored in an efficient Hierarchical Data Format (HDF) \n
             in the same directory, where the video is stored.
 
-    Parameters
-    ----------
-    videos: list
-        A list of strings containing the full paths to videos for analysis or a path to the directory,
-        where all the videos with same extension are stored.
+    Args:
+        videos (list): A list of strings containing the full paths to videos for analysis or a path to the directory,
+            where all the videos with same extension are stored.
+        superanimal_name (str): The name of the superanimal model.
+            In TensorFlow, we only support "superanimal_quadruped", "superanimal_topviewmouse".
+            Check out the PyTorch version for active development,
+            better performance and additional models (humans, birds, ...)
+        scale_list (list): A list of int containing the target height of the multi scale test time augmentation.
+            By default it uses the original size.
+            Users are advised to try a wide range of scale list when the super model does not give reasonable results.
+        videotype (string, optional): Checks for the extension of the video in case the input
+            to the video is a directory.\n Only videos with this extension are analyzed.
+            The default is ``.avi``.
+        video_adapt (bool, optional): Set True to apply video adaptation for less jittering
+            results. Adaptation training takes more time than usual video inference.
+        plot_trajectories (bool, optional): By default, plot the trajectories of various body parts across the video.
+            Defaults to True.
+        pcutoff (float, optional): Keypoints confidence that are under pcutoff will not be shown in the resulted video.
+        adapt_iterations (int, optional): Number of iterations for adaptation training.
+        pseudo_threshold (float): Video adaptation only uses predictions that are above pseudo_threshold.
+            Defaults to 0.1.
+        create_labeled_video (bool): Specifies if a labeled video needs to be created. Defaults to True.
 
-    superanimal_name: str
-        The name of the superanimal model.
-        In TensorFlow, we only support "superanimal_quadruped", "superanimal_topviewmouse".
-        Check out the PyTorch version for active development,
-        better performance and additional models (humans, birds, ...)
-    scale_list: list
-        A list of int containing the target height of the multi scale test time augmentation.
-        By default it uses the original size.
-        Users are advised to try a wide range of scale list when the super model does not give reasonable results
+        Given a list of scales for spatial pyramid, i.e. [600, 700]
 
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n
-        Only videos with this extension are analyzed.
-        The default is ``.avi``
+        scale_list = range(600,800,100)
 
-    video_adapt: bool, optional
-        Set True if you want to apply video adaptation to make the resulted video less jittering and better.
-        However, adaptation training takes more time than usual video inference
-
-    plot_trajectories: bool, optional (default=True)
-        By default, plot the trajectories of various body parts across the video.
-
-    pcutoff: float, optional
-        Keypoints confidence that are under pcutoff will not be shown in the resulted video
-
-    adapt_iterations: int, optional:
-        Number of iterations for adaptation training
-
-    pseudo_threshold: float, default 0.1
-        Video adaptation only uses predictions that are above pseudo_threshold
-
-    create_labeled_video (bool):
-        Specifies if a labeled video needs to be created, True by default.
-
-    Given a list of scales for spatial pyramid, i.e. [600, 700]
-
-    scale_list = range(600,800,100)
-
-    superanimal_name = 'superanimal_topviewmouse'
-    videotype = 'mp4'
-    scale_list = [200, 300, 400]
-    deeplabcut.video_inference_superanimal(
-         video,
-         superanimal_name,
-         videotype = '.avi',
-         scale_list = scale_list,
-    )
-    >>>
+        superanimal_name = 'superanimal_topviewmouse'
+        videotype = 'mp4'
+        scale_list = [200, 300, 400]
+        deeplabcut.video_inference_superanimal(
+             video,
+             superanimal_name,
+             videotype = '.avi',
+             scale_list = scale_list,
+        )
+        >>>
     """
     from deeplabcut.pose_estimation_tensorflow.modelzoo.api import (
         SpatiotemporalAdaptation,

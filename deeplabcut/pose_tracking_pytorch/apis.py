@@ -37,59 +37,37 @@ def transformer_reID(
     Outputs: The tracklet file is saved in the same folder where the non-transformer
     tracklet file is stored.
 
-    Parameters
-    ----------
-    config: string
-        Full path of the config.yaml file as a string.
-
-    videos: list
-        A list of strings containing the full paths to videos for analysis or a path to
-        the directory, where all the videos with same extension are stored.
-
-    videotype : str | Sequence[str] | None, optional, default=None
-        Controls how ``videos`` are filtered, based on file extension.
-        File paths and directory contents are treated differently:
-        - ``None`` (default): file paths are accepted as-is; directories are
-          scanned for files with a recognized video extension.
-        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
-          both file paths and directory contents are filtered by the given
-          extension(s).
-
-    shuffle : int, optional
-        which shuffle to use
-
-    trainingsetindex : int. optional
-        which training fraction to use, identified by its index
-
-    track_method: str, optional
-        track method from which tracklets are sampled
-
-    n_tracks: int
-        number of tracks to be formed in the videos.
-        TODO: handling videos with different number of tracks
-
-    n_triplets: (optional) int
-        number of triplets to be mined from the videos
-
-    train_epochs: (optional), int
-        number of epochs to train the transformer
-
-    train_frac: (optional), fraction
-        fraction of triplets used for training/testing of the transformer
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        videos (list): A list of strings containing the full paths to videos for analysis or a path to
+            the directory, where all the videos with same extension are stored.
+        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are filtered, based on file extension.
+            File paths and directory contents are treated differently:
+            - ``None`` (default): file paths are accepted as-is; directories are
+              scanned for files with a recognized video extension.
+            - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+              both file paths and directory contents are filtered by the given
+              extension(s). Defaults to None.
+        shuffle (int, optional): which shuffle to use.
+        trainingsetindex (int, optional): which training fraction to use, identified by its index.
+        track_method (str, optional): track method from which tracklets are sampled.
+        n_tracks (int): number of tracks to be formed in the videos.
+            TODO: handling videos with different number of tracks.
+        n_triplets (int, optional): number of triplets to be mined from the videos.
+        train_epochs (int, optional): number of epochs to train the transformer.
+        train_frac (fraction, optional): fraction of triplets used for training/testing of the transformer.
 
     Examples:
-    --------
-    Training model for one video based on ellipse-tracker derived tracklets
-    >>> config = "/home/users/.../dlc-project-2025-01-01/config.yaml"
-    >>> videos = ["/home/alex/video.mp4"]
-    >>> deeplabcut.transformer_reID(config, videos, shuffle=1, track_method="ellipse")
-    >>> deeplabcut.create_labeled_video(
-    >>>     config,
-    >>>     videos,
-    >>>     shuffle=1,
-    >>>     track_method="transformer",
-    >>> )
-    --------
+        Training model for one video based on ellipse-tracker derived tracklets
+        >>> config = "/home/users/.../dlc-project-2025-01-01/config.yaml"
+        >>> videos = ["/home/alex/video.mp4"]
+        >>> deeplabcut.transformer_reID(config, videos, shuffle=1, track_method="ellipse")
+        >>> deeplabcut.create_labeled_video(
+        >>>     config,
+        >>>     videos,
+        >>>     shuffle=1,
+        >>>     track_method="transformer",
+        >>> )
     """
     import os
 
