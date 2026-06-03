@@ -77,27 +77,17 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
     """Loads a tensorflow session with a DLC model from the associated configuration
     Return a tensorflow session with DLC model given cfg and shuffle.
 
-    Parameters:
-    -----------
-    cfg : dict
-        Configuration read from the project's main config.yaml file
-
-    shuffle : int, optional
-        which shuffle to use
-
-    trainingsetindex : int. optional
-        which training fraction to use, identified by its index
-
-    TFGPUinference : bool, optional
-        use tensorflow inference model? default = True
+    Args:
+        cfg (dict): Configuration read from the project's main config.yaml file.
+        shuffle (int, optional): Which shuffle to use.
+        trainingsetindex (int, optional): Which training fraction to use, identified by
+            its index.
+        TFGPUinference (bool, optional): Use tensorflow inference model? Defaults to
+            True.
 
     Returns:
-    --------
-    sess : tensorflow session
-        tensorflow session with DLC model from the provided configuration, shuffle, and trainingsetindex
-
-    checkpoint file path : string
-        the path to the checkpoint file associated with the loaded model
+        tuple: sess, input, output, and dlc_cfg where sess is a tensorflow session with
+            DLC model from the provided configuration, shuffle, and trainingsetindex.
     """
     ########################
     ### find snapshot to use
@@ -156,25 +146,18 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
 
 
 def tf_to_pb(sess, checkpoint, output, output_dir=None):
-    """
+    """Saves a frozen tensorflow graph (a protobuf file).
 
-    Saves a frozen tensorflow graph (a protobuf file).
     See also https://leimao.github.io/blog/Save-Load-Inference-From-TF-Frozen-Graph/
 
-    Parameters
-    ----------
-    sess : tensorflow session
-        session with graph to be saved
-
-    checkpoint : string
-        checkpoint of tensorflow model to be converted to protobuf (output will be <checkpoint>.pb)
-
-    output : list of strings
-        list of the names of output nodes (is returned by load_models)
-
-    output_dir : string, optional
-        path to the directory that exported models should be saved to.
-        If None, will export to the directory of the checkpoint file.
+    Args:
+        sess: Session with graph to be saved.
+        checkpoint (string): Checkpoint of tensorflow model to be converted to protobuf
+            (output will be <checkpoint>.pb).
+        output (list of strings): List of the names of output nodes (is returned by
+            load_models).
+        output_dir (string, optional): Path to the directory that exported models should
+            be saved to. If None, will export to the directory of the checkpoint file.
     """
     output_dir = os.path.expanduser(output_dir) if output_dir else os.path.dirname(checkpoint)
     ckpt_base = os.path.basename(checkpoint)
@@ -211,45 +194,30 @@ def export_model(
     Saves the pose configuration, snapshot files, and frozen TF graph of the model to
     directory named exported-models within the project directory
 
-    Parameters
-    -----------
+    Args:
+        cfg_path (string): Path to the DLC Project config.yaml file.
+        shuffle (int, optional): The shuffle of the model to export. Defaults to 1.
+        trainingsetindex (int, optional): The index of the training fraction for the
+            model you wish to export. Defaults to 1.
+        snapshotindex (int, optional): The snapshot index for the weights you wish to
+            export. If None, uses the snapshotindex as defined in 'config.yaml'.
+            Defaults to None.
+        iteration (int, optional): The model iteration (active learning loop) you wish
+            to export. If None, the iteration listed in the config file is used.
+        TFGPUinference (bool, optional): Use the tensorflow inference model? Default =
+            True. For inference using DeepLabCut-live, it is recommended to set
+            TFGPIinference=False.
+        overwrite (bool, optional): If the model you wish to export has already been
+            exported, whether to overwrite. Defaults to False.
+        make_tar (bool, optional): Do you want to compress the exported directory to a
+            tar file? Default = True. This is necessary to export to the model zoo, but
+            not for live inference.
+        wipepaths (bool, optional): Removes the actual path of your project and the
+            init_weights from pose_cfg.
 
-    cfg_path : string
-        path to the DLC Project config.yaml file
-
-    shuffle : int, optional
-        the shuffle of the model to export. default = 1
-
-    trainingsetindex : int, optional
-        the index of the training fraction for the model you wish to export. default = 1
-
-    snapshotindex : int, optional
-        the snapshot index for the weights you wish to export. If None,
-        uses the snapshotindex as defined in 'config.yaml'. Default = None
-
-    iteration : int, optional
-        The model iteration (active learning loop) you wish to export. If None,
-        the iteration listed in the config file is used.
-
-    TFGPUinference : bool, optional
-        use the tensorflow inference model? Default = True
-        For inference using DeepLabCut-live, it is recommended to set TFGPIinference=False
-
-    overwrite : bool, optional
-        if the model you wish to export has already been exported, whether to overwrite. default = False
-
-    make_tar : bool, optional
-        Do you want to compress the exported directory to a tar file? Default = True
-        This is necessary to export to the model zoo, but not for live inference.
-
-    wipepaths : bool, optional
-        Removes the actual path of your project and the init_weights from pose_cfg.
-
-    Example:
-    --------
-    Export the first stored snapshot for model trained with shuffle 3:
-    >>> deeplabcut.export_model("/analysis/project/reaching-task/config.yaml", shuffle=3, snapshotindex=-1)
-    --------
+    Examples:
+        Export the first stored snapshot for model trained with shuffle 3:
+        >>> deeplabcut.export_model("/analysis/project/reaching-task/config.yaml", shuffle=3, snapshotindex=-1)
     """
     ### read config file
 

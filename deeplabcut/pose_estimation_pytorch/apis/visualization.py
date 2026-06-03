@@ -285,7 +285,6 @@ def extract_maps(
             (img, scmap, locref, paf, bpt_names, paf_graph, img_name, is_train)
 
     Examples:
-    --------
         If you want to extract the data for image 0 and 103 (of the training set) for
         model trained with shuffle 0.
 
@@ -432,8 +431,7 @@ def extract_save_all_maps(
             snapshots, use "all".
 
     Examples:
-    --------
-    Calculated maps for images 0, 1 and 33.
+        Calculated maps for images 0, 1 and 33.
         >>> deeplabcut.extract_save_all_maps(
         >>>     "/analysis/project/reaching-task/config.yaml",
         >>>     shuffle=1,
@@ -548,11 +546,12 @@ def _collect_model_outputs(
         result: A result output by ``extract_model_outputs``.
         image_idx: The index of the image
 
-    Returns: keys, images, outputs
-        keys: The key for each image to plot.
-        images: The images to plot for this input image (a single image for bottom-up
-            models, and the number of bounding boxes for top-down models).
-        outputs: The model outputs for each image.
+    Returns:
+        tuple: keys, images, and outputs.
+            keys: The key for each image to plot.
+            images: The images to plot for this input image (a single image for bottom-up
+                models, and the number of bounding boxes for top-down models).
+            outputs: The model outputs for each image.
     """
     if task == Task.TOP_DOWN:
         keys, images, outputs = [], [], []
@@ -592,11 +591,12 @@ def _parse_model_outputs(
         strides: The total stride for each model head.
         denormalize_image: Whether the image was normalized and should be de-normalized.
 
-    Returns: (img, scmap, locref, paf)
-        img: The (de-normalized) image used as input.
-        scmap: The score maps output by the model.
-        locref: The locref fields output by the model.
-        paf: The part-affinity fields output by the model.
+    Returns:
+        tuple: img, scmap, locref, and paf.
+            img: The (de-normalized) image used as input.
+            scmap: The score maps output by the model.
+            locref: The locref fields output by the model.
+            paf: The part-affinity fields output by the model.
     """
     image = image.transpose((1, 2, 0))
     if denormalize_image:
