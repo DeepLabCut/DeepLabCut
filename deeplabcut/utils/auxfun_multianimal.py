@@ -39,17 +39,12 @@ from deeplabcut.utils import auxiliaryfunctions, conversioncode
 def reorder_individuals_in_df(df: pd.DataFrame, order: list) -> pd.DataFrame:
     """Reorders data of df to match the order given in a list.
 
-    Parameters:
-    ----------
-    df: pd.DataFrame
-        Data from tracked .h5 file
-    order: list of str
-        Desired order of individuals
+    Args:
+        df (pd.DataFrame): Data from tracked .h5 file.
+        order (list of str): Desired order of individuals.
 
-    Return:
-    -------
-        df: pd.DataFrame
-            Reordered DataFrame
+    Returns:
+        pd.DataFrame: Reordered DataFrame.
     """
     columns = df.columns
     inds = df.index
@@ -237,34 +232,25 @@ def returnlabelingdata(config):
 
 
 def convert2_maDLC(config, userfeedback=True, forceindividual=None):
-    """
-    Converts single animal annotation file into a multianimal annotation file,
-    by introducing an individuals column with either the first individual
+    """Convert a single-animal annotation file into a multianimal annotation file.
+
+    Introduces an individuals column with either the first individual
     in individuals list in config.yaml or whatever is passed via "forceindividual".
 
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
-
-    userfeedback: bool, optional
-            If this is set to false during automatic mode then frames for all videos are extracted. The user can set
-            this to true, which will result in a dialog,
-            where the user is asked for each video if (additional/any) frames from this video should be extracted. Use
-            this, e.g. if you have already labeled
-            some folders and want to extract data for new videos.
-
-    forceindividual: None default
-            If a string is given that is used in the individuals column.
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        userfeedback (bool, optional): If false, all folders are processed without prompting.
+            If true, the user is asked for each folder whether to convert. Use this, e.g. if you have already labeled
+            some folders and want to convert data for new videos only.
+        forceindividual (None): If a string is given, that value is used in the individuals column.
 
     Examples:
-    --------
-    Converts mulianimalbodyparts under the 'first individual' in individuals list in config.yaml
-    and uniquebodyparts under 'single'
-    >>> deeplabcut.convert2_maDLC("/socialrearing-task/config.yaml")
+        Converts mulianimalbodyparts under the 'first individual' in individuals list in config.yaml
+        and uniquebodyparts under 'single'
+        >>> deeplabcut.convert2_maDLC("/socialrearing-task/config.yaml")
 
-    --------
-    Converts mulianimalbodyparts under the individual label mus17 and uniquebodyparts under 'single'
-    >>> deeplabcut.convert2_maDLC("/socialrearing-task/config.yaml", forceindividual="mus17")
+        Converts mulianimalbodyparts under the individual label mus17 and uniquebodyparts under 'single'
+        >>> deeplabcut.convert2_maDLC("/socialrearing-task/config.yaml", forceindividual="mus17")
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()

@@ -21,30 +21,25 @@ from deeplabcut.utils import auxiliaryfunctions
 
 class TrackletManager:
     def __init__(self, config, min_swap_len=2, min_tracklet_len=2, max_gap=0):
-        """
+        """Manage tracklets for refinement and visualization.
 
-        Parameters
-        ----------
-        config : str
-            Path to a configuration file.
-        min_swap_len : float, optional (default=2)
-            Minimum swap length.
-            Swaps shorter than 2 frames are discarded by default.
-        min_tracklet_len : float, optional (default=2)
-            Minimum tracklet length.
-            Tracklets shorter than 2 frames are discarded by default.
-        max_gap : int, optional (default = 0).
-            Number of frames to consider when filling in missing data.
+        Args:
+            config (str): Path to a configuration file.
+            min_swap_len (float, optional): Minimum swap length.
+                Swaps shorter than 2 frames are discarded by default. Defaults to 2.
+            min_tracklet_len (float, optional): Minimum tracklet length.
+                Tracklets shorter than 2 frames are discarded by default. Defaults to 2.
+            max_gap (int, optional): Number of frames to consider when filling in missing data.
+                Defaults to 0.
 
         Examples:
-        --------
-        manager = TrackletManager(config_path, min_swap_frac=0, min_tracklet_frac=0)
+            manager = TrackletManager(config_path, min_swap_frac=0, min_tracklet_frac=0)
 
-        manager.load_tracklets_from_pickle(filename)
-        # Alternatively
-        manager.load_tracklets_from_h5(filename)
+            manager.load_tracklets_from_pickle(filename)
+            # Alternatively
+            manager.load_tracklets_from_h5(filename)
 
-        manager.find_swapping_bodypart_pairs()
+            manager.find_swapping_bodypart_pairs()
         """
         self.config = config
         self.cfg = auxiliaryfunctions.read_config(config)
