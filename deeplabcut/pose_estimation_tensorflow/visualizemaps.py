@@ -31,35 +31,29 @@ def extract_maps(
 ):
     """Extracts the scoremap, locref, partaffinityfields (if available).
 
-    Returns a dictionary indexed by: trainingsetfraction, snapshotindex, and imageindex
-    for those keys, each item contains: (image,scmap,locref,paf,bpt names,partaffinity graph,
-    imagename, True/False if this image was in trainingset)
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        shuffle (integer): integers specifying shuffle index of the training dataset. Defaults to 0.
+        trainingsetindex (int, optional): Integer specifying which TrainingsetFraction to use. By default the first
+            (note that TrainingFraction is a list in config.yaml).
+            This variable can also be set to "all".
+        rescale (bool): Evaluate the model at the 'global_scale' variable
+            (as set in the test/pose_config.yaml file for a particular project).
+            I.e. every image will be resized according to that scale
+            and prediction will be compared to the resized ground truth.
+            The error will be reported in pixels at rescaled to the *original* size.
+            I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
+            on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!.
+            The evaluation images are also shown for the original size! Defaults to False.
 
-    shuffle: integer
-        integers specifying shuffle index of the training dataset. The default is 0.
-
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use. By default the first
-        (note that TrainingFraction is a list in config.yaml).
-        This variable can also be set to "all".
-
-    rescale: bool, default False
-        Evaluate the model at the 'global_scale' variable
-        (as set in the test/pose_config.yaml file for a particular project).
-        I.e. every image will be resized according to that scale
-        and prediction will be compared to the resized ground truth.
-        The error will be reported in pixels at rescaled to the *original* size.
-        I.e. For a [200,200] pixel image evaluated at global_scale=.5, the predictions are calculated
-        on [100,100] pixel images, compared to 1/2*ground truth and this error is then multiplied by 2!.
-        The evaluation images are also shown for the original size!
+    Returns:
+        dict: Dictionary indexed by trainingsetfraction, snapshotindex, and imageindex;
+            each item contains (image, scmap, locref, paf, bpt names, partaffinity graph,
+            imagename, True/False if this image was in trainingset).
 
     Examples:
-    --------
-    If you want to extract the data for image 0 and 103 (of the training set) for model trained with shuffle 0.
-    >>> deeplabcut.extract_maps(configfile, 0, Indices=[0, 103])
+        If you want to extract the data for image 0 and 103 (of the training set) for model trained with shuffle 0.
+        >>> deeplabcut.extract_maps(configfile, 0, Indices=[0, 103])
     """
     from pathlib import Path
 
@@ -277,42 +271,29 @@ def extract_save_all_maps(
     modelprefix="",
     dest_folder=None,
 ):
-    """
-    Extracts the scoremap, location refinement field and part affinity field prediction of the model. The maps
-    will be rescaled to the size of the input image and stored in the corresponding model folder in /evaluation-results.
+    """Extract scoremap, location refinement field and part affinity field predictions.
 
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Maps are rescaled to the size of the input image and stored in the corresponding
+    model folder in /evaluation-results.
 
-    shuffle: integer
-        integers specifying shuffle index of the training dataset. The default is 1.
-
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use.
-        By default the first (note that TrainingFraction is a list in config.yaml).
-        This variable can also be set to "all".
-
-    comparisonbodyparts: list of bodyparts, Default is "all".
-        The average error will be computed for those body parts only (Has to be a subset of the body parts).
-
-    extract_paf : bool
-        Extract part affinity fields by default.
-        Note that turning it off will make the function much faster.
-
-    all_paf_in_one : bool
-        By default, all part affinity fields are displayed on a single frame.
-        If false, individual fields are shown on separate frames.
-
-    Indices: default None
-        For which images shall the scmap/locref and paf be computed? Give a list of images
-
-    nplots_per_row: int, optional (default=None)
-        Number of plots per row in grid plots. By default, calculated to approximate a squared grid of plots
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        shuffle (integer): integers specifying shuffle index of the training dataset. Defaults to 1.
+        trainingsetindex (int, optional): Integer specifying which TrainingsetFraction to use.
+            By default the first (note that TrainingFraction is a list in config.yaml).
+            This variable can also be set to "all".
+        comparisonbodyparts (list of bodyparts): Average error for those body parts only
+            (subset of all body parts). Defaults to "all".
+        extract_paf (bool): Extract part affinity fields by default.
+            Note that turning it off will make the function much faster.
+        all_paf_in_one (bool): By default, all part affinity fields are displayed on a single frame.
+            If false, individual fields are shown on separate frames.
+        Indices: For which images shall the scmap/locref and paf be computed? Give a list of images. Defaults to None.
+        nplots_per_row (int, optional): Number of plots per row in grid plots.
+            By default, approximates a squared grid. Defaults to None.
 
     Examples:
-    --------
-    Calculated maps for images 0, 1 and 33.
+        Calculated maps for images 0, 1 and 33.
     >>> deeplabcut.extract_save_all_maps("/analysis/project/reaching-task/config.yaml", shuffle=1, Indices=[0, 1, 33])
 
     """

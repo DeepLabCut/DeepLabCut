@@ -50,37 +50,31 @@ def main(ctx, verbose):
 @click.pass_context
 def create_new_project(_, *args, **kwargs):
     """Create a new project directory, sub-directories and a basic configuration file.
+
     The configuration file is loaded with default values. Change its parameters to your
     projects need.\n.
 
-    Options \n
-    ---------- \n
-    project : string \n
-    \tString containing the name of the project.\n
-    experimenter : string \n
-    \tString containing the name of the experimenter. \n
-    videos : list \n
-    \tA list of string containing the full paths of the videos to include in the project.\n
-    working_directory : string, optional \n
-    \tThe directory where the project will be created.
-    The default is the ``current working directory``; if provided, it must be a string\n
-    copy_videos : bool, optional \n
-    If this is set to True, the symlink of the videos are copied to the project/videos directory.
-    The default is ``True``; if provided it must be either ``True`` or ``False`` \n
+    Options:
+        project (string): String containing the name of the project.
+        experimenter (string): String containing the name of the experimenter.
+        videos (list): A list of string containing the full paths of the videos to include in the project.
+        working_directory (string, optional): The directory where the project will be created.
+            The default is the ``current working directory``; if provided, it must be a string.
+        copy_videos (bool, optional): If True, symlink videos into project/videos directory.
+            The default is ``True``; if provided it must be either ``True`` or ``False``.
 
-    Example \n
-    -------- \n
-    To create the project in the current working directory \n
-    python3 dlc.py create_new_project reaching-task
-    Tanmay /data/videos/mouse1.avi /data/videos/mouse2.avi /data/videos/mouse3.avi /analysis/project/
+    Examples:
+        To create the project in the current working directory \n
+        python3 dlc.py create_new_project reaching-task
+        Tanmay /data/videos/mouse1.avi /data/videos/mouse2.avi /data/videos/mouse3.avi /analysis/project/
 
-    To create the project in the current working directory but do not want to create the symlinks \n
-    python3 dlc.py create_new_project reaching-task
-    Tanmay /data/videos/mouse1.avi /data/videos/mouse2.avi /data/videos/mouse3.avi /analysis/project/ -c False
+        To create the project in the current working directory but do not want to create the symlinks \n
+        python3 dlc.py create_new_project reaching-task
+        Tanmay /data/videos/mouse1.avi /data/videos/mouse2.avi /data/videos/mouse3.avi /analysis/project/ -c False
 
-    To create the project in another directory \n
-    python3 dlc.py create_new_project reaching-task
-    Tanmay /data/vies/mouse1.avi /data/videos/mouse2.avi /data/videos/mouse3.avi analysis/project -d home/project
+        To create the project in another directory \n
+        python3 dlc.py create_new_project reaching-task
+        Tanmay /data/vies/mouse1.avi /data/videos/mouse2.avi /data/videos/mouse3.avi analysis/project -d home/project
     """
     from deeplabcut.create_project import new
 
@@ -103,20 +97,13 @@ def create_new_project(_, *args, **kwargs):
 def add_new_videos(_, *args, **kwargs):
     """Add new videos to the config file at any stage of the project.\n.
 
-    Options\n
-    ----------\n
-    config : string\n
-        String containing the full path of the config file in the project.
+    Options:
+        config (string): String containing the full path of the config file in the project.
+        videos (list): A list of string containing the full paths of the videos to include in the project.
+        copy_videos (bool, optional): If True, symlinks of the videos are copied to
+            project/videos. Default ``True``; must be ``True`` or ``False``.
 
-    videos : list \n
-        A list of string containing the full paths of the videos to include in the project.
-
-    copy_videos : bool, optional\n
-        If this is set to True, the symlink of the videos are copied to the project/videos directory. The default is
-        ``True``; if provided it must be either ``True`` or ``False``
-
-    Examples\n
-    --------\n
+    Examples:
     >>> python3 dlc.py add_new_videos /home/project/reaching-task-Tanmay-2018-08-23/config.yaml /data/videos/mouse5.avi
     """
     from deeplabcut.create_project import add
@@ -153,20 +140,16 @@ def extract_frames(_, *args, **kwargs):
     MODE : string \n \n
         String containing the mode of extraction. It must be either ``automatic`` or ``manual``.  \n
 
-    Examples \n
-    -------- \n
-    for selecting frames automatically with 'kmeans' and do not want to crop the frames \n
-    >>> python3 dlc.py extract_frames /analysis/project/reaching-task/config.yaml automatic --algo kmeans \n
-    -------- \n
-    for selecting frames automatically with 'uniform' and want to
-    crop the frames based on the ``crop`` parameters in config.yaml \n
-    >>> python3 dlc.py extract_frames /analysis/project/reaching-task/config.yaml automatic --crop
-    -------- \n
-    for selecting frames manually, \n
-    >>> deeplabcut.extract_frames /analysis/project/reaching-task/config.yaml manual \n
-    While selecting the frames manually, you do not need to specify the cropping parameters.
-    Rather, you will get a prompt in the graphic user interface to choose if you need to crop or not. \n
-    -------- \n
+    Examples:
+        for selecting frames automatically with 'kmeans' and do not want to crop the frames \n
+        >>> python3 dlc.py extract_frames /analysis/project/reaching-task/config.yaml automatic --algo kmeans \n
+        for selecting frames automatically with 'uniform' and want to
+        crop the frames based on the ``crop`` parameters in config.yaml \n
+        >>> python3 dlc.py extract_frames /analysis/project/reaching-task/config.yaml automatic --crop
+        for selecting frames manually, \n
+        >>> deeplabcut.extract_frames /analysis/project/reaching-task/config.yaml manual \n
+        While selecting the frames manually, you do not need to specify the cropping parameters.
+        Rather, you will get a prompt in the graphic user interface to choose if you need to crop or not. \n
     """
     from deeplabcut.generate_training_dataset.frame_extraction import extract_frames as _extract_frames
 
@@ -181,9 +164,8 @@ def label_frames(_, config):
     """Manually label/annotate the extracted frames. Update the list of body parts you
     want to localize in the config.yaml file first.\n.
 
-    Example\n
-    --------\n
-    python3 dlc.py label_frames /analysis/project/reaching-task/config.yaml
+    Examples:
+        python3 dlc.py label_frames /analysis/project/reaching-task/config.yaml
     """
     from deeplabcut.gui.tabs.label_frames import label_frames as _label_frames
 
@@ -221,13 +203,12 @@ def create_training_dataset(_, *args, **kwargs):
     Update parameters TrainFraction, iteration in config.yaml
         Also update parameters for pose_config.yaml as wanted.\n
     CONFIG: Full path of the config.yaml file in the train directory of a project.\n
-    Example \n
-    --------\n
-    To create a training dataset with only 1 shuffle
-    python3 dlc.py create_training_dataset /analysis/project/reaching-task/config.yaml
+    Examples:
+        To create a training dataset with only 1 shuffle
+        python3 dlc.py create_training_dataset /analysis/project/reaching-task/config.yaml
 
-    To create a training dataset with only 2 shuffles
-    python3 dlc.py create_training_dataset /analysis/project/reaching-task/config.yaml num_shuffles 2
+        To create a training dataset with only 2 shuffles
+        python3 dlc.py create_training_dataset /analysis/project/reaching-task/config.yaml num_shuffles 2
     """
     from deeplabcut.generate_training_dataset.trainingsetmanipulation import (
         create_training_dataset as _create_training_dataset,
@@ -277,10 +258,9 @@ def evaluate_network(_, config, **kwargs):
     """Evaluates a trained Feature detector model.\n
         CONFIG: Full path of the "pose_config.yaml" file in the train directory of a project.\n
 
-    Example\n
-    ----------
-    Evalaute the network
-    python3 dlc.py evaluate_network  /home/project/reaching/config.yaml
+    Examples:
+        Evalaute the network
+        python3 dlc.py evaluate_network  /home/project/reaching/config.yaml
 
     """
     from deeplabcut.pose_estimation_tensorflow.core.evaluate import evaluate_network as _evaluate_network
@@ -321,10 +301,9 @@ def analyze_videos(_, *args, **kwargs):
         CONFIG: Full path of the "config.yaml" file in the train directory of a project.\n
         VIDEOS: Full path to video.\n
 
-    Example\n
-    ----------
+    Examples:
 
-    python3 dlc.py analyze_videos /home/project/reaching/config.yaml /home/project/reaching/newVideo/1.avi
+        python3 dlc.py analyze_videos /home/project/reaching/config.yaml /home/project/reaching/newVideo/1.avi
 
     """
     from deeplabcut.pose_estimation_tensorflow import predict_videos
@@ -439,20 +418,16 @@ def extract_outlier_frames(_, *args, **kwargs):
     VIDEO : Full path of the video to extract the frame from. Make sure that this video is already analyzed.
 
 
-    Example \n
-    --------\n
-    for extracting the frames with default settings\n
-    >>> python3 dlc.py extract_outlier_frames /analysis/project/reaching-task/config.yaml
-    ... /analysis/project/video/reachinvideo1.avi \n
-    --------\n
-    for extracting the frames with kmeans\n
-    >>> python3 dlc.py extract_outlier_frames /analysis/project/reaching-task/config.yaml
-    ... /analysis/project/video/reachinvideo1.avi --extractionalgorithm 'kmeans' \n
-    --------\n
-    for extracting the frames with kmeans and epsilon = 5 pixels.\n
-    >>> python3 dlc.py extract_outlier_frames /analysis/project/reaching-task/config.yaml
-    ... /analysis/project/video/reachinvideo1.avi --epsilon 5 --extractionalgorithm kmeans \n
-    --------\n
+    Examples:
+        for extracting the frames with default settings\n
+        >>> python3 dlc.py extract_outlier_frames /analysis/project/reaching-task/config.yaml
+        ... /analysis/project/video/reachinvideo1.avi \n
+        for extracting the frames with kmeans\n
+        >>> python3 dlc.py extract_outlier_frames /analysis/project/reaching-task/config.yaml
+        ... /analysis/project/video/reachinvideo1.avi --extractionalgorithm 'kmeans' \n
+        for extracting the frames with kmeans and epsilon = 5 pixels.\n
+        >>> python3 dlc.py extract_outlier_frames /analysis/project/reaching-task/config.yaml
+        ... /analysis/project/video/reachinvideo1.avi --epsilon 5 --extractionalgorithm kmeans \n
     """
     from deeplabcut.refine_training_dataset import outlier_frames
 
@@ -469,10 +444,8 @@ def refine_labels(_, config):
     analyze a video and extracts the outlier frames using the function
     ``extract_outlier_frames`` before refining the labels.\n.
 
-    Examples \n
-    --------\n
-    >>> python3 dlc.py refine_labels /analysis/project/reaching-task/config.yaml \n
-    --------\n
+    Examples:
+        >>> python3 dlc.py refine_labels /analysis/project/reaching-task/config.yaml \n
     """
     from deeplabcut.refine_training_dataset import outlier_frames
 
@@ -560,12 +533,10 @@ def create_labeled_video(_, *args, **kwargs):
 def plot_trajectories(_, *args, **kwargs):
     """Plots the trajectories of various bodyparts across the video.\n.
 
-    Example\n
-    --------\n
-    for labeling the frames\n
-    >>> python3 dlc.py plot_trajectories /analysis/project/reaching-task/config.yaml
+    Examples:
+        for labeling the frames\n
+        >>> python3 dlc.py plot_trajectories /analysis/project/reaching-task/config.yaml
         /analysis/project/videos/reachingvideo1.avi  \n
-    --------\n
     """
     from deeplabcut.utils import plotting
 
@@ -638,36 +609,19 @@ def export_model(_, *args, **kwargs):
     configuration, snapshot files, and frozen graph of the model to a directory named
     exported-models within the project directory.
 
-    Parameters
-    -----------
-
-    cfg_path : string\n
-    \tpath to the DLC Project config.yaml file
-
-    iteration : int, optional\n
-    \tthe model iteration you wish to export.\n
-    \tIf None, uses the iteration listed in the config file
-
-    shuffle : int, optional\n
-    \tthe shuffle of the model to export. default = 1
-
-    trainingsetindex : int, optional\n
-    \tthe index of the training fraction for the model you wish to export. default = 1
-
-    snapshotindex : int, optional\n
-    \tthe snapshot index for the weights you wish to export.\n
-    \tIf None, uses the snapshotindex as defined in 'config.yaml'. Default = None
-
-    TFGPUinference : bool, optional\n
-    \tuse the tensorflow inference model? Default = True\n
-    \tFor inference using DeepLabCut-live, it is recommended to set TFGPIinference=False
-
-    overwrite : bool, optional\n
-    \tif the model you wish to export has already been exported, whether to overwrite. default = False
-
-    make_tar : bool, optional\n
-    \tDo you want to compress the exported directory to a tar file? Default = True\n
-    \tThis is necessary to export to the model zoo, but not for live inference.
+    Args:
+        cfg_path (string): path to the DLC Project config.yaml file.
+        iteration (int, optional): the model iteration you wish to export.
+            If None, uses the iteration listed in the config file.
+        shuffle (int, optional): the shuffle of the model to export. Defaults to 1.
+        trainingsetindex (int, optional): Index of the training fraction for the model to export. Defaults to 1.
+        snapshotindex (int, optional): the snapshot index for the weights you wish to export.
+            If None, uses the snapshotindex as defined in 'config.yaml'. Defaults to None.
+        TFGPUinference (bool, optional): use the tensorflow inference model? Defaults to True.
+            For inference using DeepLabCut-live, it is recommended to set TFGPIinference=False.
+        overwrite (bool, optional): If the model was already exported, whether to overwrite. Defaults to False.
+        make_tar (bool, optional): Do you want to compress the exported directory to a tar file? Defaults to True.
+            This is necessary to export to the model zoo, but not for live inference.
     """
     from deeplabcut import export_model
 
