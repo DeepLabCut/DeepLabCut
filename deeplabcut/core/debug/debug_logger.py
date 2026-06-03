@@ -213,19 +213,14 @@ def install_debug_recorder(
 
     Idempotent: repeated calls return the same recorder.
 
-    Parameters
-    ----------
-    logger_name:
-        Logger namespace to attach the recorder to.
-    capacity:
-        Maximum number of captured records. By default, uses LOG_QUEUE_MAXLEN.
-    handler_level:
-        Minimum level stored by the recorder itself.
-    ensure_logger_level:
-        Controls whether to adjust the target logger level.
+    Args:
+        logger_name: Logger namespace to attach the recorder to.
+        capacity: Maximum number of captured records. By default, uses LOG_QUEUE_MAXLEN.
+        handler_level: Minimum level stored by the recorder itself.
+        ensure_logger_level: Controls whether to adjust the target logger level.
 
-        - None: never modify the logger level
-        - int: lower the logger only if its effective level is more restrictive
+            - None: never modify the logger level
+            - int: lower the logger only if its effective level is more restrictive
     """
     root_logger = logging.getLogger(logger_name)
 
@@ -395,14 +390,10 @@ def collect_version_summary(
 class ExecutableSpec:
     """Small description of an external executable to report.
 
-    Parameters
-    ----------
-    key:
-        Label used in the output report.
-    command:
-        Executable name or absolute path to resolve.
-    version_args:
-        Arguments used to query the executable version.
+    Args:
+        key: Label used in the output report.
+        command: Executable name or absolute path to resolve.
+        version_args: Arguments used to query the executable version.
     """
 
     key: str

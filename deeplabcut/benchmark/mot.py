@@ -25,22 +25,17 @@ def convert_bboxes_to_xywh(bboxes: NDArray, inplace: bool = False) -> NDArray:
     """Converts bounding box coordinates from [x_min, y_min, x_max, y_max] format to [x,
     y, width, height] format.
 
-    Parameters
-    ----------
-    bbox : numpy.ndarray
-        A 2D array of shape (N, M), where N is the number of bounding boxes
-        and M >= 4. The first four columns represent the bounding box in the format
-        [x_min, y_min, x_max, y_max].
-    inplace : bool, optional
-        If True, modifies the input array in place. If False, returns a copy of
-        the array with the converted bounding box format. Defaults to False.
+    Args:
+        bbox (numpy.ndarray): A 2D array of shape (N, M), where N is the number of bounding boxes
+            and M >= 4. The first four columns represent the bounding box in the format
+            [x_min, y_min, x_max, y_max].
+        inplace (bool, optional): If True, modifies the input array in place. If False, returns a copy of
+            the array with the converted bounding box format. Defaults to False.
 
     Returns:
-    -------
-    numpy.ndarray or None
-        If `inplace` is False, returns a new array of the same shape as `bbox`
-        with the format [x, y, width, height]. If `inplace` is True, the input
-        array is modified directly, and nothing is returned.
+        numpy.ndarray or None: If `inplace` is False, returns a new array of the same shape as `bbox`
+            with the format [x, y, width, height]. If `inplace` is True, the input
+            array is modified directly, and nothing is returned.
     """
     w = bboxes[:, 2] - bboxes[:, 0]
     h = bboxes[:, 3] - bboxes[:, 1]
@@ -59,31 +54,24 @@ _convert_bboxes_to_xywh = convert_bboxes_to_xywh
 def reconstruct_bboxes_from_bodyparts(data: pd.DataFrame, margin: float, to_xywh: bool = False) -> NDArray:
     """Reconstructs bounding boxes from body part coordinates and likelihoods.
 
-    Parameters
-    ----------
-    data : pandas.DataFrame
-        A DataFrame containing body part data with a multi-level column index.
-        The expected levels include 'x', 'y', and 'likelihood', where:
-        - 'x' and 'y' contain the coordinates of the body parts.
-        - 'likelihood' contains the confidence scores for each body part.
-    margin : float
-        The margin to add/subtract from the minimum/maximum coordinates when defining the bounding box.
-    to_xywh : bool, optional
-        If True, converts the bounding box format from [x_min, y_min, x_max, y_max]
-        to [x, y, width, height]. Defaults to False.
+    Args:
+        data (pandas.DataFrame): A DataFrame containing body part data with a multi-level column index.
+            The expected levels include 'x', 'y', and 'likelihood', where:
+            - 'x' and 'y' contain the coordinates of the body parts.
+            - 'likelihood' contains the confidence scores for each body part.
+        margin (float): The margin to add/subtract from the minimum/maximum coordinates when defining the bounding box.
+        to_xywh (bool, optional): If True, converts the bounding box format from [x_min, y_min, x_max, y_max]
+            to [x, y, width, height]. Defaults to False.
 
     Returns:
-    -------
-    numpy.ndarray
-        An array of shape (N, 5), where N is the number of rows in `data`.
-        Each row represents a bounding box with the following values:
-        - [x_min, y_min, x_max, y_max, likelihood]
-        If `to_xywh` is True, the format will be [x, y, width, height, likelihood].
+        numpy.ndarray: An array of shape (N, 5), where N is the number of rows in `data`.
+            Each row represents a bounding box with the following values:
+            - [x_min, y_min, x_max, y_max, likelihood]
+            If `to_xywh` is True, the format will be [x, y, width, height, likelihood].
 
-    Notes:
-    -----
-    - NaN values in the input data are ignored when computing the bounding box dimensions.
-    - Warnings related to NaN values are suppressed during calculations.
+    Note:
+        - NaN values in the input data are ignored when computing the bounding box dimensions.
+        - Warnings related to NaN values are suppressed during calculations.
     """
     x = data.xs("x", axis=1, level="coords")
     y = data.xs("y", axis=1, level="coords")
@@ -103,33 +91,26 @@ def reconstruct_bboxes_from_bodyparts(data: pd.DataFrame, margin: float, to_xywh
 def reconstruct_all_bboxes(data: pd.DataFrame, margin: float, to_xywh: bool = False) -> NDArray:
     """Reconstructs bounding boxes for multiple individuals from body part data.
 
-    Parameters
-    ----------
-    data : pandas.DataFrame
-        A DataFrame containing body part data with a multi-level column index.
-        The expected levels include:
-        - 'individuals': Names of the individuals (e.g., animals).
-        - 'x', 'y', and 'likelihood': Coordinate and confidence data for body parts.
-    margin : float
-        The margin to add/subtract from the minimum/maximum coordinates when defining the bounding box.
-    to_xywh : bool
-        If True, converts the bounding box format from [x_min, y_min, x_max, y_max]
-        to [x, y, width, height].
+    Args:
+        data (pandas.DataFrame): A DataFrame containing body part data with a multi-level column index.
+            The expected levels include:
+            - 'individuals': Names of the individuals (e.g., animals).
+            - 'x', 'y', and 'likelihood': Coordinate and confidence data for body parts.
+        margin (float): The margin to add/subtract from the minimum/maximum coordinates when defining the bounding box.
+        to_xywh (bool): If True, converts the bounding box format from [x_min, y_min, x_max, y_max]
+            to [x, y, width, height].
 
     Returns:
-    -------
-    numpy.ndarray
-        A 3D array of shape (A, F, 5), where:
-        - A is the number of individuals (excluding 'single', if present).
-        - F is the number of frames (rows) in the input `data`.
-        - Each bounding box is represented as [x_min, y_min, x_max, y_max, likelihood].
-          If `to_xywh` is True, the format will be [x, y, width, height, likelihood].
+        numpy.ndarray: A 3D array of shape (A, F, 5), where:
+            - A is the number of individuals (excluding 'single', if present).
+            - F is the number of frames (rows) in the input `data`.
+            - Each bounding box is represented as [x_min, y_min, x_max, y_max, likelihood].
+              If `to_xywh` is True, the format will be [x, y, width, height, likelihood].
 
-    Notes:
-    -----
-    - Individuals are extracted from the 'individuals' level of the DataFrame columns.
-    - If an individual named 'single' exists, it is excluded from the bounding box computation.
-    - NaN values in the input data are ignored during calculations.
+    Note:
+        - Individuals are extracted from the 'individuals' level of the DataFrame columns.
+        - If an individual named 'single' exists, it is excluded from the bounding box computation.
+        - NaN values in the input data are ignored during calculations.
     """
     animals = data.columns.get_level_values("individuals").unique().tolist()
     try:
