@@ -32,19 +32,14 @@ def select_cropping_area(config, videos=None):
     to draw a box and hit the button 'set cropping parameters' to store the cropping
     parameters for a video in the config.yaml file.
 
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
-
-    videos : optional (default=None)
-        List of videos whose cropping areas are to be defined. Note that full paths are required.
-        By default, all videos in the config are successively loaded.
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        videos (optional): List of videos whose cropping areas are to be defined. Note
+            that full paths are required. By default, all videos in the config are
+            successively loaded. Defaults to None.
 
     Returns:
-    -------
-    cfg : dict
-        Updated project configuration
+        dict: Updated project configuration.
     """
     from deeplabcut.gui.widgets import FrameCropper
     from deeplabcut.utils import auxiliaryfunctions

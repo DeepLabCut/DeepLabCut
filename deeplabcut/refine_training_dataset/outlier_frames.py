@@ -47,35 +47,24 @@ def find_outliers_in_raw_data(
     """Extract outlier frames from either raw detections or assemblies of multiple
     animals.
 
-    Parameter
-    ----------
-    config : str
-        Absolute path to the project config.yaml.
-
-    pickled_file : str
-        Path to a *_full.pickle or *_assemblies.pickle.
-
-    video_file : str
-        Path to the corresponding video file for frame extraction.
-
-    pcutoff : float, optional (default=0.1)
-        Detection confidence threshold below which frames are flagged as
-        containing outliers. Only considered if raw detections are passed in.
-
-    percentiles : tuple, optional (default=(5, 95))
-        Assemblies are considered outliers if their areas are beyond the 5th
-        and 95th percentiles. Must contain a lower and upper bound.
-
-    with_annotations : bool, optional (default=True)
-        If true, extract frames and the corresponding network predictions.
-        Otherwise, only the frames are extracted.
-
-    extraction_algo : string, optional (default="kmeans")
-        Outlier detection algorithm. Must be either ``uniform`` or ``kmeans``.
-
-    copy_videos : bool, optional (default=False)
-        If True, newly-added videos (from which outlier frames are extracted) are
-        copied to the project folder. By default, symbolic links are created instead.
+    Args:
+        config (str): Absolute path to the project config.yaml.
+        pickle_file (str): Path to a *_full.pickle or *_assemblies.pickle.
+        video_file (str): Path to the corresponding video file for frame extraction.
+        pcutoff (float, optional): Detection confidence threshold below which frames are
+            flagged as containing outliers. Only considered if raw detections are
+            passed in. Defaults to 0.1.
+        percentiles (tuple, optional): Assemblies are considered outliers if their areas
+            are beyond the 5th and 95th percentiles. Must contain a lower and upper
+            bound. Defaults to (5, 95).
+        with_annotations (bool, optional): If true, extract frames and the corresponding
+            network predictions. Otherwise, only the frames are extracted. Defaults to
+            True.
+        extraction_algo (string, optional): Outlier detection algorithm. Must be either
+            ``uniform`` or ``kmeans``. Defaults to "kmeans".
+        copy_videos (bool, optional): If True, newly-added videos (from which outlier
+            frames are extracted) are copied to the project folder. By default, symbolic
+            links are created instead. Defaults to False.
     """
     if extraction_algo not in ("kmeans", "uniform"):
         raise ValueError(f"Unsupported extraction algorithm {extraction_algo}.")
@@ -122,27 +111,21 @@ def find_outliers_in_raw_data(
 def find_outliers_in_raw_detections(pickled_data, algo="uncertain", threshold=0.1, kept_keypoints=None):
     """Find outlier frames from the raw detections of multiple animals.
 
-    Parameter
-    ----------
-    pickled_data : dict
-        Data in the *_full.pickle file obtained after `analyze_videos`.
-
-    algo : string, optional (default="uncertain")
-        Outlier detection algorithm. Currently, only 'uncertain' is supported
-        for multi-animal raw detections.
-
-    threshold: float, optional (default=0.1)
-        Detection confidence threshold below which frames are flagged as
-        containing outliers. Only considered if `algo`==`uncertain`.
-
-    kept_keypoints : list, optional (default=None)
-        Indices in the list of labeled body parts to be kept of the analysis.
-        By default, all keypoints are used for outlier search.
+    Args:
+        pickled_data (dict): Data in the *_full.pickle file obtained after
+            `analyze_videos`.
+        algo (string, optional): Outlier detection algorithm. Currently, only 'uncertain'
+            is supported for multi-animal raw detections. Defaults to "uncertain".
+        threshold (float, optional): Detection confidence threshold below which frames
+            are flagged as containing outliers. Only considered if `algo`==`uncertain`.
+            Defaults to 0.1.
+        kept_keypoints (list, optional): Indices in the list of labeled body parts to
+            be kept of the analysis. By default, all keypoints are used for outlier
+            search. Defaults to None.
 
     Returns:
-    -------
-    candidates : list
-        Indices of video frames containing potential outliers
+        tuple: Indices of video frames containing potential outliers, and the processed
+            data dictionary.
     """
     if algo != "uncertain":
         raise ValueError("Only method 'uncertain' is currently supported.")
@@ -231,163 +214,134 @@ def extract_outlier_frames(
     Another crucial parameter in config.yaml is how many frames to extract
     ``numframes2extract``.
 
-    Parameters
-    ----------
-    config: str
-        Full path of the config.yaml file.
+    Args:
+        config (str): Full path of the config.yaml file.
+        videos (list[str]): The full paths to videos for analysis or a path to the
+            directory, where all the videos with same extension are stored.
+        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are
+            filtered, based on file extension. File paths and directory contents are
+            treated differently:
+            - ``None`` (default): file paths are accepted as-is; directories are
+              scanned for files with a recognized video extension.
+            - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+              both file paths and directory contents are filtered by the given
+              extension(s). Defaults to None.
+        shuffle (int, optional): The shuffle index of training dataset. The extracted
+            frames will be stored in the labeled-dataset for the corresponding shuffle
+            of training dataset. Defaults to 1.
+        trainingsetindex (int, optional): Integer specifying which TrainingsetFraction
+            to use. Note that TrainingFraction is a list in config.yaml. Defaults to 0.
+        outlieralgorithm (str, optional): String specifying the algorithm used to detect
+            the outliers.
 
-    videos : list[str]
-        The full paths to videos for analysis or a path to the directory, where all the
-        videos with same extension are stored.
+            * ``'fitting'`` fits an Auto Regressive Integrated Moving Average model to
+              the data and computes the distance to the estimated data. Larger distances
+              than epsilon are then potentially identified as outliers
+            * ``'jump'`` identifies larger jumps than 'epsilon' in any body part
+            * ``'uncertain'`` looks for frames with confidence below p_bound
+            * ``'manual'`` launches a GUI from which the user can choose the frames
+            * ``'list'`` looks for user to provide a list of frame numbers to use,
+              'frames2use'. In this case, ``'extractionalgorithm'`` is forced to be
+              ``'uniform.'``
 
-    videotype : str | Sequence[str] | None, optional, default=None
-        Controls how ``videos`` are filtered, based on file extension.
-        File paths and directory contents are treated differently:
-        - ``None`` (default): file paths are accepted as-is; directories are
-          scanned for files with a recognized video extension.
-        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
-          both file paths and directory contents are filtered by the given
-          extension(s).
-
-    shuffle : int, optional, default=1
-        The shuffle index of training dataset. The extracted frames will be stored in
-        the labeled-dataset for the corresponding shuffle of training dataset.
-
-    trainingsetindex: int, optional, default=0
-        Integer specifying which TrainingsetFraction to use.
-        Note that TrainingFraction is a list in config.yaml.
-
-    outlieralgorithm: str, optional, default="jump".
-        String specifying the algorithm used to detect the outliers.
-
-        * ``'fitting'`` fits an Auto Regressive Integrated Moving Average model to the
-          data and computes the distance to the estimated data. Larger distances than
-          epsilon are then potentially identified as outliers
-        * ``'jump'`` identifies larger jumps than 'epsilon' in any body part
-        * ``'uncertain'`` looks for frames with confidence below p_bound
-        * ``'manual'`` launches a GUI from which the user can choose the frames
-        * ``'list'`` looks for user to provide a list of
-          frame numbers to use, 'frames2use'.
-          In this case, ``'extractionalgorithm'`` is forced to be ``'uniform.'``
-
-    frames2use: list[str], optional, default=None
-        If ``'outlieralgorithm'`` is ``'list'``, provide the list of frames here.
-
-    comparisonbodyparts: list[str] or str, optional, default="all"
-        This selects the body parts for which the comparisons with the outliers are
-        carried out. If ``"all"``, then all body parts from config.yaml are used. If a
-        list of strings that are a subset of the full list E.g. ['hand','Joystick'] for
-        the demo Reaching-Mackenzie-2018-08-30/config.yaml to select only these body
-        parts.
-
-    p_bound: float between 0 and 1, optional, default=0.01
-        For outlieralgorithm ``'uncertain'`` this parameter defines the likelihood
-        below which a body part will be flagged as a putative outlier.
-
-    epsilon: float, optional, default=20
-        If ``'outlieralgorithm'`` is ``'fitting'``, this is the float bound according
-        to which frames are picked when the (average) body part estimate deviates from
-        model fit.
-
-        If ``'outlieralgorithm'`` is ``'jump'``, this is the float bound specifying the
-        distance by which body points jump from one frame to next (Euclidean distance).
-
-    ARdegree: int, optional, default=3
-        For outlieralgorithm ``'fitting'``: Autoregressive degree of ARIMA model degree.
-        (Note we use SARIMAX without exogeneous and seasonal part)
-        See https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
-
-    MAdegree: int, optional, default=1
-        For outlieralgorithm ``'fitting'``: Moving Average degree of ARIMA model degree.
-        (Note we use SARIMAX without exogeneous and seasonal part)
-        See https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
-
-    alpha: float, optional, default=0.01
-        Significance level for detecting outliers based on confidence interval of
-        fitted ARIMA model. Only the distance is used however.
-
-    extractionalgorithm : str, optional, default="kmeans"
-        String specifying the algorithm to use for selecting the frames from the
-        identified putatative outlier frames. Currently, deeplabcut supports either
-        ``kmeans`` or ``uniform`` based selection (same logic as for extract_frames).
-
-    automatic : bool, optional, default=False
-        If ``True``, extract outliers without being asked for user feedback.
-
-    cluster_resizewidth: number, default=30
-        If ``"extractionalgorithm"`` is ``"kmeans"``, one can change the width to which
-        the images are downsampled (aspect ratio is fixed).
-
-    cluster_color: bool, optional, default=False
-        If ``False``, each downsampled image is treated as a grayscale vector
-        (discarding color information). If ``True``, then the color channels are
-        considered. This increases the computational complexity.
-
-    opencv: bool, optional, default=True
-        Uses openCV for loading & extractiong (otherwise moviepy (legacy)).
-
-    savelabeled: bool, optional, default=False
-        If ``True``, frame are saved with predicted labels in each folder.
-
-    copy_videos: bool, optional, default=False
-        If True, newly-added videos (from which outlier frames are extracted) are
-        copied to the project folder. By default, symbolic links are created instead.
-
-    destfolder: str or None, optional, default=None
-        Specifies the destination folder that was used for storing analysis data. If
-        ``None``, the path of the video is used.
-
-    modelprefix: str, optional, default=""
-        Directory containing the deeplabcut models to use when evaluating the network.
-        By default, the models are assumed to exist in the project folder.
-
-    track_method: str, optional, default=""
-         Specifies the tracker used to generate the data.
-         Empty by default (corresponding to a single animal project).
-         For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
-         be taken from the config.yaml file if none is given.
-
-    kwargs: additional arguments.
-        For torch-based shuffles, can be used to specify:
+            Defaults to "jump".
+        frames2use (list[str], optional): If ``'outlieralgorithm'`` is ``'list'``,
+            provide the list of frames here. Defaults to None.
+        comparisonbodyparts (list[str] or str, optional): This selects the body parts for
+            which the comparisons with the outliers are carried out. If ``"all"``, then
+            all body parts from config.yaml are used. If a list of strings that are a
+            subset of the full list E.g. ['hand','Joystick'] for the demo
+            Reaching-Mackenzie-2018-08-30/config.yaml to select only these body parts.
+            Defaults to "all".
+        p_bound (float, optional): For outlieralgorithm ``'uncertain'`` this parameter
+            defines the likelihood below which a body part will be flagged as a putative
+            outlier. Defaults to 0.01.
+        epsilon (float, optional): If ``'outlieralgorithm'`` is ``'fitting'``, this is
+            the float bound according to which frames are picked when the (average) body
+            part estimate deviates from model fit. If ``'outlieralgorithm'`` is
+            ``'jump'``, this is the float bound specifying the distance by which body
+            points jump from one frame to next (Euclidean distance). Defaults to 20.
+        ARdegree (int, optional): For outlieralgorithm ``'fitting'``: Autoregressive
+            degree of ARIMA model degree. (Note we use SARIMAX without exogeneous and
+            seasonal part) See
+            https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
+            Defaults to 3.
+        MAdegree (int, optional): For outlieralgorithm ``'fitting'``: Moving Average
+            degree of ARIMA model degree. (Note we use SARIMAX without exogeneous and
+            seasonal part) See
+            https://www.statsmodels.org/dev/generated/statsmodels.tsa.statespace.sarimax.SARIMAX.html
+            Defaults to 1.
+        alpha (float, optional): Significance level for detecting outliers based on
+            confidence interval of fitted ARIMA model. Only the distance is used
+            however. Defaults to 0.01.
+        extractionalgorithm (str, optional): String specifying the algorithm to use for
+            selecting the frames from the identified putatative outlier frames.
+            Currently, deeplabcut supports either ``kmeans`` or ``uniform`` based
+            selection (same logic as for extract_frames). Defaults to "kmeans".
+        automatic (bool, optional): If ``True``, extract outliers without being asked
+            for user feedback. Defaults to False.
+        cluster_resizewidth (number, optional): If ``"extractionalgorithm"`` is
+            ``"kmeans"``, one can change the width to which the images are downsampled
+            (aspect ratio is fixed). Defaults to 30.
+        cluster_color (bool, optional): If ``False``, each downsampled image is treated
+            as a grayscale vector (discarding color information). If ``True``, then the
+            color channels are considered. This increases the computational complexity.
+            Defaults to False.
+        opencv (bool, optional): Uses openCV for loading & extractiong (otherwise moviepy
+            (legacy)). Defaults to True.
+        savelabeled (bool, optional): If ``True``, frame are saved with predicted labels
+            in each folder. Defaults to False.
+        copy_videos (bool, optional): If True, newly-added videos (from which outlier
+            frames are extracted) are copied to the project folder. By default, symbolic
+            links are created instead. Defaults to False.
+        destfolder (str or None, optional): Specifies the destination folder that was
+            used for storing analysis data. If ``None``, the path of the video is used.
+            Defaults to None.
+        modelprefix (str, optional): Directory containing the deeplabcut models to use
+            when evaluating the network. By default, the models are assumed to exist in
+            the project folder. Defaults to "".
+        track_method (str, optional): Specifies the tracker used to generate the data.
+            Empty by default (corresponding to a single animal project). For multiple
+            animals, must be either 'box', 'skeleton', or 'ellipse' and will be taken
+            from the config.yaml file if none is given. Defaults to "".
+        **kwargs: Additional arguments. For torch-based shuffles, can be used to specify:
             - snapshot_index
             - detector_snapshot_index
 
     Returns:
-    -------
-    None
+        None
 
     Examples:
-    --------
-    Extract the frames with default settings on Windows.
+        Extract the frames with default settings on Windows.
 
-    >>> deeplabcut.extract_outlier_frames(
-            'C:\\myproject\\reaching-task\\config.yaml',
-            ['C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi'],
-        )
+        >>> deeplabcut.extract_outlier_frames(
+                'C:\\myproject\\reaching-task\\config.yaml',
+                ['C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi'],
+            )
 
-    Extract the frames with default settings on Linux/MacOS.
+        Extract the frames with default settings on Linux/MacOS.
 
-    >>> deeplabcut.extract_outlier_frames(
-            '/analysis/project/reaching-task/config.yaml',
-            ['/analysis/project/video/reachinvideo1.avi'],
-        )
+        >>> deeplabcut.extract_outlier_frames(
+                '/analysis/project/reaching-task/config.yaml',
+                ['/analysis/project/video/reachinvideo1.avi'],
+            )
 
-    Extract the frames using the "kmeans" algorithm.
+        Extract the frames using the "kmeans" algorithm.
 
-    >>> deeplabcut.extract_outlier_frames(
-            '/analysis/project/reaching-task/config.yaml',
-            ['/analysis/project/video/reachinvideo1.avi'],
-            extractionalgorithm='kmeans',
-        )
+        >>> deeplabcut.extract_outlier_frames(
+                '/analysis/project/reaching-task/config.yaml',
+                ['/analysis/project/video/reachinvideo1.avi'],
+                extractionalgorithm='kmeans',
+            )
 
-    Extract the frames using the "kmeans" algorithm and ``"epsilon=5"`` pixels.
+        Extract the frames using the "kmeans" algorithm and ``"epsilon=5"`` pixels.
 
-    >>> deeplabcut.extract_outlier_frames(
-            '/analysis/project/reaching-task/config.yaml',
-            ['/analysis/project/video/reachinvideo1.avi'],
-            epsilon=5,
-            extractionalgorithm='kmeans',
-        )
+        >>> deeplabcut.extract_outlier_frames(
+                '/analysis/project/reaching-task/config.yaml',
+                ['/analysis/project/video/reachinvideo1.avi'],
+                epsilon=5,
+                extractionalgorithm='kmeans',
+            )
     """
     cfg = auxiliaryfunctions.read_config(config)
     bodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts)
@@ -665,26 +619,18 @@ def attempt_to_add_video(
 ) -> bool:
     """Add new videos to the config file at any stage of the project.
 
-    Parameters
-    ----------
-    config : string
-        Full path of the config file in the project.
-
-    video : string
-        Full path of the video to add to the project.
-
-    copy_videos : bool, optional
-        If this is set to True, the videos will be copied to the project/videos directory.
-        If False, the symlink of the
-        videos will be copied instead. The default is
-        ``False``; if provided it must be either ``True`` or ``False``.
-
-    coords: list, optional
-        A list containing the list of cropping coordinates of the video. The default is set to None.
+    Args:
+        config (string): Full path of the config file in the project.
+        video (string): Full path of the video to add to the project.
+        copy_videos (bool, optional): If this is set to True, the videos will be copied
+            to the project/videos directory. If False, the symlink of the videos will
+            be copied instead. The default is ``False``; if provided it must be either
+            ``True`` or ``False``.
+        coords (list, optional): A list containing the list of cropping coordinates of
+            the video. Defaults to None.
 
     Returns:
-    -------
-    True iff the video was successfully added to the project
+        bool: True iff the video was successfully added to the project.
     """
     from deeplabcut.create_project import add
 
@@ -1084,18 +1030,14 @@ def merge_datasets(config, forceiterate=None):
 
     If this is the case then the ``"iteration"`` variable is advanced by 1.
 
-    Parameters
-    ----------
-    config: str
-        Full path of the config.yaml file.
-
-    forceiterate: int or None, optional, default=None
-        If an integer is given the iteration variable is set to this value
-        This is only done if all datasets were labeled or refined.
+    Args:
+        config (str): Full path of the config.yaml file.
+        forceiterate (int or None, optional): If an integer is given the iteration
+            variable is set to this value. This is only done if all datasets were
+            labeled or refined. Defaults to None.
 
     Examples:
-    --------
-    >>> deeplabcut.merge_datasets("/analysis/project/reaching-task/config.yaml")
+        >>> deeplabcut.merge_datasets("/analysis/project/reaching-task/config.yaml")
     """
     cfg = auxiliaryfunctions.read_config(config)
     config_path = Path(config).parents[0]
