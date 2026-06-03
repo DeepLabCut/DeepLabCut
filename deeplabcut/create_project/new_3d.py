@@ -21,30 +21,21 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
     for 3d project. The configuration file is loaded with the default values. Adjust the
     parameters to your project's needs.
 
-    Parameters
-    ----------
-    project : string
-        String containing the name of the project.
+    Args:
+        project (string): String containing the name of the project.
+        experimenter (string): String containing the name of the experimenter.
+        num_cameras (int): An integer value specifying the number of cameras.
+        working_directory (string, optional): The directory where the project will be
+            created. The default is the ``current working directory``; if provided, it
+            must be a string.
 
-    experimenter : string
-        String containing the name of the experimenter.
+    Examples:
+        Linux/MacOs
+        >>> deeplabcut.create_new_project_3d("reaching-task", "Linus", 2)
 
-    num_cameras : int
-        An integer value specifying the number of cameras.
-
-    working_directory : string, optional
-        The directory where the project will be created. The default is the ``current working directory``; if provided,
-        it must be a string.
-
-
-    Example:
-    --------
-    Linux/MacOs
-    >>> deeplabcut.create_new_project_3d("reaching-task", "Linus", 2)
-
-    Windows:
-    >>> deeplabcut.create_new_project("reaching-task", "Bill", 2)
-    Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \\ )
+        Windows:
+        >>> deeplabcut.create_new_project("reaching-task", "Bill", 2)
+        Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \\ )
     """
     from datetime import datetime as dt
 
