@@ -95,7 +95,7 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
             try:
                 src = str(src)
                 dst = str(dst)
-                os.symlink(src, dst)
+                Path(dst).symlink_to(src)
                 print(f"Created the symlink of {src} to {dst}")
             except OSError:
                 try:
@@ -117,7 +117,7 @@ def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frame
             video_path = str(Path.resolve(Path(video)))
         #           video_path = os.path.realpath(video)
         except Exception:
-            video_path = os.readlink(video)
+            video_path = str(Path(video).readlink())
 
         vid = VideoReader(video_path)
         if coords is not None:

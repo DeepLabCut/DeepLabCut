@@ -38,9 +38,9 @@ def return_train_network_path(config, shuffle=1, trainingsetindex=0, modelprefix
     modelfoldername = auxiliaryfunctions.get_model_folder(
         cfg["TrainingFraction"][trainingsetindex], shuffle, cfg, modelprefix=modelprefix
     )
-    trainposeconfigfile = Path(os.path.join(cfg["project_path"], str(modelfoldername), "train", "pose_cfg.yaml"))
-    testposeconfigfile = Path(os.path.join(cfg["project_path"], str(modelfoldername), "test", "pose_cfg.yaml"))
-    snapshotfolder = Path(os.path.join(cfg["project_path"], str(modelfoldername), "train"))
+    trainposeconfigfile = Path(cfg["project_path"]) / str(modelfoldername) / "train" / "pose_cfg.yaml"
+    testposeconfigfile = Path(cfg["project_path"]) / str(modelfoldername) / "test" / "pose_cfg.yaml"
+    snapshotfolder = Path(cfg["project_path"]) / str(modelfoldername) / "train"
 
     return trainposeconfigfile, testposeconfigfile, snapshotfolder
 
@@ -164,14 +164,14 @@ def train_network(
     from deeplabcut.utils import auxiliaryfunctions
 
     tf.compat.v1.reset_default_graph()
-    start_path = os.getcwd()
+    start_path = Path.cwd()
 
     # Read file path for pose_config file. >> pass it on
     cfg = auxiliaryfunctions.read_config(config)
     modelfoldername = auxiliaryfunctions.get_model_folder(
         cfg["TrainingFraction"][trainingsetindex], shuffle, cfg, modelprefix=modelprefix
     )
-    poseconfigfile = Path(os.path.join(cfg["project_path"], str(modelfoldername), "train", "pose_cfg.yaml"))
+    poseconfigfile = Path(cfg["project_path"]) / str(modelfoldername) / "train" / "pose_cfg.yaml"
     if not poseconfigfile.is_file():
         print("The training datafile ", poseconfigfile, " is not present.")
         print("Probably, the training dataset for this specific shuffle index was not created.")
@@ -189,8 +189,6 @@ def train_network(
         cfg_dlc = auxiliaryfunctions.read_plainconfig(poseconfigfile)
 
         if superanimal_name != "":
-            import glob
-
             from dlclibrary.dlcmodelzoo.modelzoo_download import (
                 MODELOPTIONS,
                 download_huggingface_model,
@@ -209,7 +207,7 @@ def train_network(
             )
 
             if superanimal_name in MODELOPTIONS:
-                if not os.path.exists(weight_folder):
+                if not Path(weight_folder).exists():
                     download_huggingface_model(superanimal_name, weight_folder)
                 else:
                     print(f"{weight_folder} exists, using the downloaded weights")
@@ -219,8 +217,8 @@ def train_network(
                     MODELOPTIONS,
                 )
 
-            snapshots = glob.glob(os.path.join(weight_folder, "snapshot-*.index"))
-            init_weights = os.path.abspath(snapshots[0]).replace(".index", "")
+            snapshots = list(Path(weight_folder).glob("snapshot-*.index"))
+            init_weights = str(Path(snapshots[0]).resolve()).replace(".index", "")
 
             from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import (
                 train,

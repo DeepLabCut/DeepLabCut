@@ -123,7 +123,7 @@ def evaluate_multianimal_full(
     if gputouse is not None:  # gpu selectinon
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gputouse)
 
-    start_path = os.getcwd()
+    start_path = Path.cwd()
 
     if plotting is True:
         plotting = "bodypart"
@@ -139,13 +139,7 @@ def evaluate_multianimal_full(
 
     # Loading human annotatated data
     trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
-    Data = pd.read_hdf(
-        os.path.join(
-            cfg["project_path"],
-            str(trainingsetfolder),
-            "CollectedData_" + cfg["scorer"] + ".h5",
-        )
-    )
+    Data = pd.read_hdf(Path(cfg["project_path"]) / str(trainingsetfolder) / ("CollectedData_" + cfg["scorer"] + ".h5"))
     conversioncode.guarantee_multiindex_rows(Data)
 
     # Get list of body parts to evaluate network for
@@ -188,7 +182,7 @@ def evaluate_multianimal_full(
             train_pose_cfg = load_config(str(path_train_config))
             # Load meta data
             _, trainIndices, testIndices, _ = auxiliaryfunctions.load_metadata(
-                os.path.join(cfg["project_path"], train_pose_cfg["metadataset"])
+                Path(cfg["project_path"]) / train_pose_cfg["metadataset"]
             )
 
             pipeline = iaa.Sequential(random_order=False)
@@ -206,9 +200,8 @@ def evaluate_multianimal_full(
             joints = test_pose_cfg["all_joints_names"]
 
             # Create folder structure to store results.
-            evaluationfolder = os.path.join(
-                cfg["project_path"],
-                str(auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+            evaluationfolder = Path(cfg["project_path"]) / str(
+                auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
             )
             auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
 
@@ -243,8 +236,8 @@ def evaluate_multianimal_full(
             # Compute predictions over images
             ##################################################
             for snapshot_name in snapshot_names:
-                test_pose_cfg["init_weights"] = os.path.join(
-                    str(modelfolder), "train", snapshot_name
+                test_pose_cfg["init_weights"] = str(
+                    Path(modelfolder) / "train" / snapshot_name
                 )  # setting weights to corresponding snapshot.
                 training_iterations = int(snapshot_name.split("-")[-1])
 
@@ -276,15 +269,12 @@ def evaluate_multianimal_full(
                 data_path = resultsfilename.split(".h5")[0] + "_full.pickle"
 
                 if plotting:
-                    foldername = os.path.join(
-                        str(evaluationfolder),
-                        "LabeledImages_" + DLCscorer + "_" + snapshot_name,
-                    )
+                    foldername = Path(evaluationfolder) / ("LabeledImages_" + DLCscorer + "_" + snapshot_name)
                     auxiliaryfunctions.attempt_to_make_folder(foldername)
                     if plotting == "bodypart":
                         fig, ax = visualization.create_minimal_figure()
 
-                if os.path.isfile(data_path):
+                if Path(data_path).is_file():
                     print("Model already evaluated.", resultsfilename)
                 else:
                     (
@@ -299,7 +289,7 @@ def evaluate_multianimal_full(
                     conf = np.full_like(dist, np.nan)
                     print("Network Evaluation underway...")
                     for imageindex, imagename in tqdm(enumerate(Data.index)):
-                        image_path = os.path.join(cfg["project_path"], *imagename)
+                        image_path = Path(cfg["project_path"]).joinpath(*imagename)
                         frame = auxfun_videos.imread(image_path, mode="skimage")
 
                         GT = Data.iloc[imageindex]
@@ -428,7 +418,7 @@ def evaluate_multianimal_full(
                     predicted_poses = np.concatenate((predicted_poses, np.expand_dims(conf, axis=-1)), axis=-1)
                     predicted_poses = predicted_poses.reshape(predicted_poses.shape[0], -1)
                     df_predicted_poses = pd.DataFrame(predicted_poses, columns=poses_multi_index)
-                    write_poses_path = os.path.join(evaluationfolder, f"predicted_poses_{training_iterations}.h5")
+                    write_poses_path = Path(evaluationfolder) / f"predicted_poses_{training_iterations}.h5"
                     df_predicted_poses.to_hdf(write_poses_path, key="df_with_missing")
 
                     # Compute all distance statistics
@@ -447,7 +437,7 @@ def evaluate_multianimal_full(
                         ascending=[True, True],
                         inplace=True,
                     )
-                    write_path = os.path.join(evaluationfolder, f"dist_{training_iterations}.csv")
+                    write_path = Path(evaluationfolder) / f"dist_{training_iterations}.csv"
                     df_joint.to_csv(write_path)
 
                     # Calculate overall prediction error
@@ -563,7 +553,7 @@ def evaluate_multianimal_full(
                     colors = visualization.get_cmap(n_animals, name=cfg["colormap"])
                     for k, v in tqdm(assemblies.items()):
                         imname = image_paths[k]
-                        image_path = os.path.join(cfg["project_path"], *imname)
+                        image_path = Path(cfg["project_path"]).joinpath(*imname)
                         frame = auxfun_videos.imread(image_path, mode="skimage")
 
                         h, w, _ = np.shape(frame)
@@ -609,7 +599,7 @@ def evaluate_multianimal_full(
                 df.loc(axis=0)[("mAR_train", "mean")] = [d[0]["mAR"] for d in results[2]]
                 df.loc(axis=0)[("mAP_test", "mean")] = [d[1]["mAP"] for d in results[2]]
                 df.loc(axis=0)[("mAR_test", "mean")] = [d[1]["mAR"] for d in results[2]]
-                with open(data_path.replace("_full.", "_map."), "wb") as file:
+                with Path(data_path.replace("_full.", "_map.")).open("wb") as file:
                     pickle.dump((df, paf_scores), file)
 
             if len(final_result) > 0:  # Only append if results were calculated

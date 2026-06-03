@@ -10,8 +10,8 @@
 #
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
+from pathlib import Path
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
@@ -244,7 +244,7 @@ class TrainNetwork(DefaultTab):
 
         msg.setWindowTitle("Info")
         msg.setMinimumWidth(900)
-        self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+        self.logo_dir = str(Path("logo.png").resolve().parent) + "/"
         self.logo = self.logo_dir + "/assets/logo.png"
         msg.setWindowIcon(QIcon(self.logo))
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)

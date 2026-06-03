@@ -16,7 +16,7 @@
 import collections
 import contextlib
 import copy
-import os
+from pathlib import Path
 
 import tensorflow as tf
 import tf_slim as slim
@@ -246,7 +246,7 @@ def mobilenet_base(  # pylint: disable=invalid-name
                 print(f"Failed to create op {i}: {opdef} params: {params}")
                 raise
             end_points[end_point] = net
-            scope = os.path.dirname(net.name)
+            scope = str(Path(net.name).parent)
             scopes[scope] = end_point
             if final_endpoint is not None and end_point == final_endpoint:
                 break
@@ -254,8 +254,8 @@ def mobilenet_base(  # pylint: disable=invalid-name
         # Add all tensors that end with 'output' to
         # endpoints
         for t in net.graph.get_operations():
-            scope = os.path.dirname(t.name)
-            bn = os.path.basename(t.name)
+            scope = str(Path(t.name).parent)
+            bn = Path(t.name).name
             if scope in scopes and t.name.endswith("output"):
                 end_points[scopes[scope] + "/" + bn] = t.outputs[0]
         return net, end_points

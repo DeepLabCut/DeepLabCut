@@ -11,10 +11,8 @@
 from __future__ import annotations
 
 import copy
-import glob
 import json
 import logging
-import os
 from collections import defaultdict
 from pathlib import Path
 
@@ -576,7 +574,7 @@ def plot_images_coco(
     Raises:
         ValueError: if a top-down model configuration is given but detector_path is None
     """
-    with open(data_json_path) as f:
+    with Path(data_json_path).open() as f:
         obj = json.load(f)
 
     coco_images = obj["images"]
@@ -585,7 +583,7 @@ def plot_images_coco(
     image_name_to_id = {}
     for image in coco_images:
         # only works with relative path as a test image can be in a different folder
-        image_name = image["file_name"].split(os.sep)[-1]
+        image_name = Path(image["file_name"]).name
         image_name_to_id[image_name] = image["id"]
 
     image_id_to_annotations = defaultdict(list)
@@ -596,11 +594,11 @@ def plot_images_coco(
             image_id_to_annotations[image_id].append(annotation)
 
     # need to support more image types
-    images_in_folder = glob.glob(str(Path(image_folder) / "*.png"))
+    images_in_folder = list(Path(image_folder).glob("*.png"))
     corresponded_images = []
     for image in images_in_folder:
         image_path = image
-        image_name = image.split(os.sep)[-1]
+        image_name = Path(image).name
         if image_name in image_name_to_id:
             corresponded_images.append(image_path)
 
@@ -617,11 +615,11 @@ def plot_images_coco(
         cond_provider=cond_provider,
     )
 
-    os.makedirs(out_path, exist_ok=True)
+    Path(out_path).mkdir(parents=True, exist_ok=True)
 
     coco_format_predictions = []
     for image_path, prediction in predictions.items():
-        image_name = image_path.split(os.sep)[-1]
+        image_name = Path(image_path).name
         coco_prediction = dict(
             image_id=image_name_to_id[image_name],
             gt_annotations=image_id_to_annotations[image_name_to_id[image_name]],
@@ -656,8 +654,8 @@ def plot_images_coco(
             rect = plt.Rectangle((xmin, ymin), w, h, fill=False, edgecolor="blue", linewidth=2)
 
         ax.add_patch(rect)
-        image_name = image_path.split("/")[-1]
-        fig.savefig(os.path.join(out_path, image_name))
+        image_name = Path(image_path).name
+        fig.savefig(Path(out_path) / image_name)
 
     return coco_format_predictions
 

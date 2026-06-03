@@ -8,8 +8,6 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import glob
-import os
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -105,11 +103,9 @@ class SpatiotemporalAdaptation:
         if not customized_pose_config:
             dlc_root_path = get_deeplabcut_path()
 
-            project_config = read_config(
-                os.path.join(dlc_root_path, "modelzoo", "project_configs", f"{project_name}.yaml")
-            )
+            project_config = read_config(Path(dlc_root_path) / "modelzoo" / "project_configs" / f"{project_name}.yaml")
 
-            model_config = read_config(os.path.join(dlc_root_path, "modelzoo", "model_configs", f"{model_name}.yaml"))
+            model_config = read_config(Path(dlc_root_path) / "modelzoo" / "model_configs" / f"{model_name}.yaml")
 
             joints = [i for i in range(len(project_config["bodyparts"]))]
             num_joints = len(joints)
@@ -194,7 +190,7 @@ class SpatiotemporalAdaptation:
 
         _, pseudo_label_path, _, _ = load_analyzed_data(video_root, vname, DLCscorer, False, "")
         if self.modelfolder != "":
-            os.makedirs(self.modelfolder, exist_ok=True)
+            Path(self.modelfolder).mkdir(parents=True, exist_ok=True)
 
         self.adapt_iterations = kwargs.get("adapt_iterations", self.adapt_iterations)
 
@@ -206,10 +202,9 @@ class SpatiotemporalAdaptation:
         )
 
     def after_adapt_inference(self, create_labeled_video, **kwargs):
-        pattern = os.path.join(self.modelfolder, f"snapshot-{self.adapt_iterations}.index")
         ref_proj_config_path = ""
 
-        files = glob.glob(pattern)
+        files = list(Path(self.modelfolder).glob(f"snapshot-{self.adapt_iterations}.index"))
 
         if not len(files):
             raise ValueError("Weights were not found.")

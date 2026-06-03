@@ -11,7 +11,6 @@
 from __future__ import annotations
 
 import json
-import os
 import warnings
 from pathlib import Path
 
@@ -107,11 +106,11 @@ class COCOLoader(Loader):
             Check https://docs.trainingdata.io/v1.0/Export%20Format/COCO/ to see
             examples of how a json file looks like.
         """
-        json_path = os.path.join(project_root, "annotations", filename)
-        if not os.path.exists(json_path):
+        json_path = Path(project_root) / "annotations" / filename
+        if not json_path.exists():
             raise FileNotFoundError(f"File {json_path} does not exist.")
 
-        with open(json_path) as f:
+        with json_path.open() as f:
             json_obj = json.load(f)
 
         if not isinstance(json_obj, dict):

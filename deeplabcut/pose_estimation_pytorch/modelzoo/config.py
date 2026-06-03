@@ -12,7 +12,6 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 from ruamel.yaml import YAML
@@ -173,8 +172,8 @@ def write_pytorch_config_for_memory_replay(config_path, shuffle, pytorch_config)
     model_folder = dlc_proj_root / af.get_model_folder(
         cfg["TrainingFraction"][trainIndex], shuffle, cfg, engine=Engine.PYTORCH
     )
-    os.makedirs(model_folder / "train", exist_ok=True)
+    (model_folder / "train").mkdir(parents=True, exist_ok=True)
     out_path = model_folder / "train" / "pytorch_config.yaml"
-    with open(str(out_path), "w") as f:
+    with out_path.open("w") as f:
         yaml = YAML()
         yaml.dump(pytorch_config, f)

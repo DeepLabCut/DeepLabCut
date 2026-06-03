@@ -15,8 +15,6 @@ try:
     import torch
 except ModuleNotFoundError as e:
     raise ModuleNotFoundError("Unsupervised identity learning requires PyTorch. Please run `pip install torch`.") from e
-import glob
-import os
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -89,7 +87,7 @@ def train_tracking_transformer(
             destfolder = videofolder
         video_name = Path(video).stem
         # video_name = '.'.join(video.split("/")[-1].split(".")[:-1])
-        files = glob.glob(os.path.join(destfolder, video_name + dlcscorer + "*.npy"))
+        files = [str(p) for p in Path(destfolder).glob(video_name + dlcscorer + "*.npy")]
 
         # assuming there is only one match
         npy_list.append(files[0])

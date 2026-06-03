@@ -15,8 +15,8 @@ https://imgaug.readthedocs.io/en/latest/
 """
 
 import logging
-import os
 import pickle
+from pathlib import Path
 
 import imgaug.augmenters as iaa
 import numpy as np
@@ -78,7 +78,7 @@ class ImgaugPoseDataset(BasePoseDataset):
 
     def load_dataset(self):
         cfg = self.cfg
-        file_name = os.path.join(self.cfg["project_path"], cfg["dataset"])
+        file_name = str(Path(self.cfg["project_path"]) / cfg["dataset"])
         if ".mat" in file_name:  # legacy loader
             mlab = sio.loadmat(file_name)
             self.raw_data = mlab
@@ -98,7 +98,7 @@ class ImgaugPoseDataset(BasePoseDataset):
                     im_path = robust_split_path(im_path)
                 else:
                     im_path = [s.strip() for s in im_path]
-                item.im_path = os.path.join(*im_path)
+                item.im_path = str(Path(*im_path))
                 item.im_size = sample[1][0]
                 if len(sample) >= 3:
                     joints = sample[2][0][0]
@@ -117,7 +117,7 @@ class ImgaugPoseDataset(BasePoseDataset):
         else:
             print("Loading pickle data with float coordinates!")
             file_name = cfg["dataset"].split(".")[0] + ".pickle"
-            with open(os.path.join(self.cfg["project_path"], file_name), "rb") as f:
+            with (Path(self.cfg["project_path"]) / file_name).open("rb") as f:
                 pickledata = pickle.load(f)
 
             self.raw_data = pickledata
@@ -128,7 +128,7 @@ class ImgaugPoseDataset(BasePoseDataset):
                 sample = pickledata[i]  # mlab[0, i]
                 item = DataItem()
                 item.image_id = i
-                item.im_path = os.path.join(*sample["image"])  # [0][0]
+                item.im_path = str(Path(*sample["image"]))  # [0][0]
                 item.im_size = sample["size"]  # sample[1][0]
                 if len(sample) >= 3:
                     item.num_animals = len(sample["joints"])
@@ -310,7 +310,7 @@ class ImgaugPoseDataset(BasePoseDataset):
             im_file = data_item.im_path
 
             logging.debug(f"image {im_file}")
-            image = imread(os.path.join(self.cfg["project_path"], im_file), mode="skimage")
+            image = imread(Path(self.cfg["project_path"]) / im_file, mode="skimage")
 
             if self.has_gt:
                 joints = data_item.joints

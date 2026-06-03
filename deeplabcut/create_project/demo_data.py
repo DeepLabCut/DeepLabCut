@@ -9,7 +9,6 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-import os
 from pathlib import Path
 
 import deeplabcut
@@ -61,9 +60,9 @@ def transform_data(config):
 
     cfg["project_path"] = project_path
     if "Reaching" in project_path:
-        video_file = os.path.join(project_path, "videos", "reachingvideo1.avi")
+        video_file = Path(project_path) / "videos" / "reachingvideo1.avi"
     elif "openfield" in project_path:
-        video_file = os.path.join(project_path, "videos", "m4s1.mp4")
+        video_file = Path(project_path) / "videos" / "m4s1.mp4"
     else:
         print("This is not an official demo dataset.")
 

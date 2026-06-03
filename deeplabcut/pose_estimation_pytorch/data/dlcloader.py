@@ -283,7 +283,7 @@ class DLCLoader(Loader):
         shuffle_id = f"{config['Task']}_{train_frac}shuffle{shuffle}.pickle"
         doc_path = trainset_dir / f"Documentation_data-{shuffle_id}"
 
-        with open(doc_path, "rb") as f:
+        with doc_path.open("rb") as f:
             meta = pickle.load(f)
 
         train_ids = [int(i) for i in meta[1]]
@@ -579,7 +579,7 @@ def _load_pickle_dataset(
         images_sizes: all possible images sizes in the dataset
         dlc_dataset: the dataset in a DLC-format DataFrame
     """
-    with open(file, "rb") as f:
+    with Path(file).open("rb") as f:
         raw_data = pickle.load(f)
 
     num_images = len(raw_data)

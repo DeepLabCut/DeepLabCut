@@ -10,9 +10,7 @@
 #
 from __future__ import annotations
 
-import glob
 import json
-import os
 from collections import defaultdict
 from pathlib import Path
 
@@ -113,7 +111,7 @@ def video_to_frames(input_video, output_folder, cropping: list[int] | None = Non
 
         # Save the frame as an image file.
         frame_str = str(frame_count).zfill(5)
-        frame_file = os.path.join(output_folder, "images", f"frame_{frame_str}.png")
+        frame_file = str(Path(output_folder) / "images" / f"frame_{frame_str}.png")
         cv2.imwrite(frame_file, frame)
         # Increment the frame counter
         frame_count += 1
@@ -204,7 +202,7 @@ def keypoint_matching(
     config = update_config(config, max_individuals, device)
     individuals = [f"animal{i}" for i in range(max_individuals)]
     config["metadata"]["individuals"] = individuals
-    train_file_path = os.path.join(memory_replay_folder, "annotations", train_file)
+    train_file_path = memory_replay_folder / "annotations" / train_file
 
     pose_runner, detector_runner = get_inference_runners(
         config,
@@ -215,7 +213,7 @@ def keypoint_matching(
         detector_path=detector_path,
     )
 
-    with open(train_file_path) as f:
+    with train_file_path.open() as f:
         train_obj = json.load(f)
 
     images = train_obj["images"]
@@ -230,7 +228,7 @@ def keypoint_matching(
 
     for image in images:
         # this only works with relative path as the testing image can be at a different folder
-        name = image["file_name"].split(os.sep)[-1]
+        name = Path(image["file_name"]).name
         image_name_to_id[name] = image["id"]
         image_id_to_name[image["id"]] = name
 
@@ -249,31 +247,31 @@ def keypoint_matching(
     image_extensions = ["*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif", "*.tiff"]
     images_in_folder = []
     for ext in image_extensions:
-        images_in_folder.extend(glob.glob(os.path.join(memory_replay_folder, "images", ext)))
+        images_in_folder.extend(str(p) for p in (memory_replay_folder / "images").glob(ext))
 
     corresponded_images = []
     for image in images_in_folder:
         image_path = image
-        name = image.split(os.sep)[-1]
+        name = Path(image).name
         if name in image_name_to_id:
             corresponded_images.append(image_path)
 
     images = corresponded_images
-    bbox_gts = [{"bboxes": np.array(image_name_to_bbox[image.split(os.sep)[-1]])} for image in images]
+    bbox_gts = [{"bboxes": np.array(image_name_to_bbox[Path(image).name])} for image in images]
 
     pose_inputs = list(zip(images, bbox_gts, strict=False))
 
     # pose inference should return meta data for pseudo labeling
     predictions = pose_runner.inference(pose_inputs)
 
-    with open(str(memory_replay_folder / "pseudo_predictions.json"), "w") as f:
+    with (memory_replay_folder / "pseudo_predictions.json").open("w") as f:
         json.dump(pose_inputs, f, cls=NumpyEncoder)
 
     assert len(images) == len(predictions)
 
     image_name_to_pred = {}
     for image_path, prediction in zip(images, predictions, strict=False):
-        name = image_path.split(os.sep)[-1]
+        name = Path(image_path).name
         image_name_to_pred[name] = prediction
 
     pred_keypoint_names = config["metadata"]["bodyparts"]
@@ -312,7 +310,7 @@ def keypoint_matching(
     row_ind, column_ind = linear_sum_assignment(match_matrix * -1)
     keypoint_mapping_list = []
 
-    conversion_matrix_out_path = os.path.join(memory_replay_folder, "confusion_matrix.png")
+    conversion_matrix_out_path = memory_replay_folder / "confusion_matrix.png"
 
     plot_cost_matrix(match_matrix, gt_keypoint_names, pred_keypoint_names, conversion_matrix_out_path)
 
@@ -329,8 +327,8 @@ def keypoint_matching(
     for pred, anno in names:
         conversion_table[pred] = anno
 
-    conversion_table_out_path = os.path.join(memory_replay_folder, "conversion_table.csv")
-    with open(conversion_table_out_path, "w") as f:
+    conversion_table_out_path = memory_replay_folder / "conversion_table.csv"
+    with conversion_table_out_path.open("w") as f:
         out = "gt, MasterName\n"
         for name in pred_keypoint_names:
             target = name
@@ -376,10 +374,10 @@ def dlc3predictions_2_annotation_from_video(
     annotations = []
     categories = []
     annotation_id = 0
-    image_folder = os.path.join(dest_proj_folder, "images")
+    image_folder = Path(dest_proj_folder) / "images"
 
     # video_to_frames function by default outputs png or jpg
-    image_paths = sorted(glob.glob(os.path.join(image_folder, "*.png")))
+    image_paths = sorted(str(p) for p in image_folder.glob("*.png"))
 
     # Ensure predictions and image_paths have the same length before subsampling
     if len(predictions) != len(image_paths):
@@ -420,7 +418,7 @@ def dlc3predictions_2_annotation_from_video(
     for image_id, (prediction, image_path) in enumerate(zip(predictions, image_paths, strict=False)):
         image_obj = cv2.imread(image_path)
         height, width, channels = image_obj.shape
-        imagename = image_path.split(os.sep)[-1]
+        imagename = Path(image_path).name
         image = {
             "id": image_id,
             "file_name": imagename,
@@ -481,8 +479,8 @@ def dlc3predictions_2_annotation_from_video(
     }
 
     # there is no 'test' split of video adaptation. This is essentially train.json
-    with open(os.path.join(dest_proj_folder, "annotations", "test.json"), "w") as f:
+    with (Path(dest_proj_folder) / "annotations" / "test.json").open("w") as f:
         json.dump(test_obj, f, indent=4)
 
-    with open(os.path.join(dest_proj_folder, "annotations", "train.json"), "w") as f:
+    with (Path(dest_proj_folder) / "annotations" / "train.json").open("w") as f:
         json.dump(train_obj, f, indent=4)

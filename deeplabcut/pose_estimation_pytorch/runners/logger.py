@@ -310,7 +310,7 @@ class WandbLogger(ImageLoggerMixin, BaseLogger):
         }
 
         output_path = self.train_folder / "wandb_info.yaml"
-        with open(output_path, "w") as f:
+        with output_path.open("w") as f:
             yaml.safe_dump(wandb_info, f)
 
         logging.info(f"WandB run info saved to {output_path}")
@@ -435,7 +435,7 @@ class CSVLogger(BaseLogger):
     def save(self):
         """Saves the metrics to the file system."""
         logs = self._prepare_logs()
-        with open(self.log_file, "w", newline="") as f:
+        with Path(self.log_file).open("w", newline="") as f:
             writer = csv.writer(f)
             writer.writerows(logs)
 
@@ -451,7 +451,7 @@ class CSVLogger(BaseLogger):
         """Loads existing CSV data if the log file exists."""
         logging.info(f"Loading existing CSV data from {self.log_file}")
         try:
-            with open(self.log_file, newline="") as f:
+            with Path(self.log_file).open(newline="") as f:
                 reader = csv.DictReader(f)
 
                 # Update logged metrics from header

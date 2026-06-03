@@ -21,12 +21,10 @@ Licensed under GNU Lesser General Public License v3.0
 from __future__ import annotations
 
 import argparse
-import os
 
 ####################################################
 # Dependencies
 ####################################################
-import os.path
 import pickle
 from collections.abc import Sequence
 from pathlib import Path
@@ -149,17 +147,17 @@ def PlottingResults(
         cbar.set_ticklabels(bodyparts2plot)
 
     fig1.savefig(
-        os.path.join(tmpfolder, "trajectory" + suffix),
+        Path(tmpfolder) / ("trajectory" + suffix),
         bbox_inches="tight",
         dpi=resolution,
     )
-    fig2.savefig(os.path.join(tmpfolder, "plot" + suffix), bbox_inches="tight", dpi=resolution)
+    fig2.savefig(Path(tmpfolder) / ("plot" + suffix), bbox_inches="tight", dpi=resolution)
     fig3.savefig(
-        os.path.join(tmpfolder, "plot-likelihood" + suffix),
+        Path(tmpfolder) / ("plot-likelihood" + suffix),
         bbox_inches="tight",
         dpi=resolution,
     )
-    fig4.savefig(os.path.join(tmpfolder, "hist" + suffix), bbox_inches="tight", dpi=resolution)
+    fig4.savefig(Path(tmpfolder) / ("hist" + suffix), bbox_inches="tight", dpi=resolution)
 
     if showfigures:
         plt.show()
@@ -313,7 +311,7 @@ def plot_trajectories(
             df, filepath, _, suffix = auxiliaryfunctions.load_analyzed_data(
                 videofolder, vname, DLCscorer, filtered, track_method
             )
-            tmpfolder = os.path.join(videofolder, "plot-poses", vname)
+            tmpfolder = str(Path(videofolder) / "plot-poses" / vname)
             _plot_trajectories(
                 filepath,
                 bodyparts,
@@ -383,9 +381,9 @@ def _plot_trajectories(
         except KeyError:
             individuals = [""]
     if dest_folder is None:
-        vname = os.path.basename(h5file).split("DLC")[0]
-        vid_folder = os.path.dirname(h5file)
-        dest_folder = os.path.join(vid_folder, "plot-poses", vname)
+        vname = Path(h5file).name.split("DLC")[0]
+        vid_folder = Path(h5file).parent
+        dest_folder = str(vid_folder / "plot-poses" / vname)
     auxiliaryfunctions.attempt_to_make_folder(dest_folder, recursive=True)
     # Keep only the individuals and bodyparts that were labeled
     labeled_bpts = [bp for bp in df.columns.get_level_values("bodyparts").unique() if bp in bodyparts]
@@ -459,10 +457,10 @@ def plot_edge_affinity_distributions(
         Figure size in inches.
     """
 
-    with open(eval_pickle_file, "rb") as file:
+    with Path(eval_pickle_file).open("rb") as file:
         data = pickle.load(file)
     meta_pickle_file = eval_pickle_file.replace("_full.", "_meta.")
-    with open(meta_pickle_file, "rb") as file:
+    with Path(meta_pickle_file).open("rb") as file:
         metadata = pickle.load(file)
     (w_train, _), (b_train, _) = crossvalutils._calc_within_between_pafs(
         data,

@@ -10,6 +10,7 @@
 #
 import pickle
 import re
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -217,7 +218,7 @@ class TrackletManager:
 
     def load_tracklets_from_pickle(self, filename, auto_fill=True):
         self.filename = filename
-        with open(filename, "rb") as file:
+        with Path(filename).open("rb") as file:
             tracklets = pickle.load(file)
         self._load_tracklets(tracklets, auto_fill)
         self._xy = self.xy.copy()

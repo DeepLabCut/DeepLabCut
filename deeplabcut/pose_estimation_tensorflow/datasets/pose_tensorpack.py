@@ -21,6 +21,7 @@ https://github.com/tensorpack/tensorpack
 
 import multiprocessing
 import os
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -99,7 +100,7 @@ class Pose(RNGDataFlow):
 
     def load_dataset(self):
         cfg = self.cfg
-        file_name = os.path.join(self.cfg["project_path"], cfg["dataset"])
+        file_name = Path(self.cfg["project_path"]) / cfg["dataset"]
         mlab = sio.loadmat(file_name)
         self.raw_data = mlab
         mlab = mlab["dataset"]
@@ -119,7 +120,7 @@ class Pose(RNGDataFlow):
                 im_path = robust_split_path(im_path)
             else:
                 im_path = [s.strip() for s in im_path]
-            item.im_path = os.path.join(base, *im_path)
+            item.im_path = str(Path(base).joinpath(*im_path))
             item.im_size = sample[1][0]
             if len(sample) >= 3:
                 joints = sample[2][0][0]

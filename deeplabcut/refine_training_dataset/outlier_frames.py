@@ -11,7 +11,6 @@
 
 
 import argparse
-import os
 import pickle
 import re
 from collections.abc import Sequence
@@ -86,7 +85,7 @@ def find_outliers_in_raw_data(
     if not pickle_name.startswith(video_name):
         raise ValueError("Video and pickle files do not match.")
 
-    with open(pickle_file, "rb") as file:
+    with Path(pickle_file).open("rb") as file:
         data = pickle.load(file)
     if pickle_file.endswith("_full.pickle"):
         inds, data = find_outliers_in_raw_detections(data, threshold=pcutoff)
@@ -417,7 +416,7 @@ def extract_outlier_frames(
             videofolder = str(Path(video).parents[0])
         else:
             videofolder = destfolder
-        vname = os.path.splitext(os.path.basename(video))[0]
+        vname = Path(video).stem
 
         try:
             df, dataname, _, _ = auxiliaryfunctions.load_analyzed_data(
@@ -732,11 +731,11 @@ def ExtractFramesbasedonPreselection(
 
     str(Path(video).parents[0])
     vname = str(Path(video).stem)
-    tmpfolder = os.path.join(cfg["project_path"], "labeled-data", vname)
-    if os.path.isdir(tmpfolder):
+    tmpfolder = Path(cfg["project_path"]) / "labeled-data" / vname
+    if tmpfolder.is_dir():
         print("Frames from video", vname, " already extracted (more will be added)!")
     else:
-        auxiliaryfunctions.attempt_to_make_folder(tmpfolder, recursive=True)
+        auxiliaryfunctions.attempt_to_make_folder(str(tmpfolder), recursive=True)
 
     nframes = len(data)
     print("Loading video...")
@@ -866,7 +865,7 @@ def ExtractFramesbasedonPreselection(
             pass
 
         if with_annotations:
-            machinefile = os.path.join(tmpfolder, "machinelabels-iter" + str(cfg["iteration"]) + ".h5")
+            machinefile = Path(tmpfolder) / ("machinelabels-iter" + str(cfg["iteration"]) + ".h5")
             if isinstance(data, pd.DataFrame):
                 df = data.loc[frames2pick]
                 df.index = pd.MultiIndex.from_tuples(
@@ -890,7 +889,7 @@ def ExtractFramesbasedonPreselection(
                         for index in frames2pick
                     ]
                 )
-                filename = os.path.join(str(tmpfolder), f"CollectedData_{cfg['scorer']}.h5")
+                filename = str(Path(tmpfolder) / f"CollectedData_{cfg['scorer']}.h5")
                 try:
                     df_temp = pd.read_hdf(filename, "df_with_missing")
                     columns = df_temp.columns
@@ -939,11 +938,11 @@ def ExtractFramesbasedonPreselection(
 
                 DataCombined.to_hdf(machinefile, key="df_with_missing", mode="w")
                 DataCombined.to_csv(
-                    os.path.join(tmpfolder, "machinelabels.csv")
+                    Path(tmpfolder) / "machinelabels.csv"
                 )  # this is always the most current one (as reading is from h5)
             else:
                 df.to_hdf(machinefile, key="df_with_missing", mode="w")
-                df.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
+                df.to_csv(Path(tmpfolder) / "machinelabels.csv")
 
         print(rf"The outlier frames are extracted. They are stored in the subdirectory labeled-data\{vname}.")
         print("Once you extracted frames for all videos, use 'refine_labels' to manually correct the labels.")
@@ -967,13 +966,13 @@ def PlottingSingleFrame(
     """Label frame and save under imagename / this is already cropped (for clip)"""
     from skimage import io
 
-    imagename1 = os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + ".png")
-    imagename2 = os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + "labeled.png")
+    imagename1 = Path(tmpfolder) / ("img" + str(index).zfill(strwidth) + ".png")
+    imagename2 = Path(tmpfolder) / ("img" + str(index).zfill(strwidth) + "labeled.png")
 
-    if not os.path.isfile(os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + ".png")):
+    if not imagename1.is_file():
         plt.axis("off")
         image = img_as_ubyte(clip.get_frame(index * 1.0 / clip.fps))
-        io.imsave(imagename1, image)
+        io.imsave(str(imagename1), image)
 
         if savelabeled:
             if np.ndim(image) > 2:
@@ -1028,10 +1027,10 @@ def PlottingSingleFramecv2(
     """Label frame and save under imagename / cap is not already cropped."""
     from skimage import io
 
-    imagename1 = os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + ".png")
-    imagename2 = os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + "labeled.png")
+    imagename1 = Path(tmpfolder) / ("img" + str(index).zfill(strwidth) + ".png")
+    imagename2 = Path(tmpfolder) / ("img" + str(index).zfill(strwidth) + "labeled.png")
 
-    if not os.path.isfile(os.path.join(tmpfolder, "img" + str(index).zfill(strwidth) + ".png")):
+    if not imagename1.is_file():
         plt.axis("off")
         cap.set_to_frame(index)
         frame = cap.read_frame(crop=True)
@@ -1105,17 +1104,15 @@ def merge_datasets(config, forceiterate=None):
     cfg = auxiliaryfunctions.read_config(config)
     config_path = Path(config).parents[0]
 
-    bf = Path(str(config_path / "labeled-data"))
+    bf = config_path / "labeled-data"
     allfolders = [
-        os.path.join(bf, fn) for fn in os.listdir(bf) if "_labeled" not in fn and not fn.startswith(".")
+        p for p in bf.iterdir() if "_labeled" not in p.name and not p.name.startswith(".")
     ]  # exclude labeled data folders and temporary files
     flagged = False
     for _findex, folder in enumerate(allfolders):
-        if os.path.isfile(os.path.join(folder, "MachineLabelsRefine.h5")):  # Folder that was manually refine...
+        if (folder / "MachineLabelsRefine.h5").is_file():  # Folder that was manually refine...
             pass
-        elif os.path.isfile(
-            os.path.join(folder, "CollectedData_" + cfg["scorer"] + ".h5")
-        ):  # Folder that contains human data set...
+        elif (folder / ("CollectedData_" + cfg["scorer"] + ".h5")).is_file():  # Folder that contains human data set...
             pass
         else:
             print("The following folder was not manually refined,...", folder)

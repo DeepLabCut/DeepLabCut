@@ -11,7 +11,6 @@
 from __future__ import annotations
 
 import json
-import os
 from collections import defaultdict
 from pathlib import Path
 
@@ -67,7 +66,7 @@ def get_pose_predictions(
     # COCO-format annotations file containing predictions made by the SuperAnimal model
     sa_predictions = {}
     if predictions_file.exists():
-        with open(predictions_file) as f:
+        with predictions_file.open() as f:
             raw_sa_predictions = json.load(f)
 
         # parse predictions to convert lists to numpy arrays
@@ -116,7 +115,7 @@ def get_pose_predictions(
         }
         for image, predictions in sa_predictions.items()
     }
-    with open(predictions_file, "w") as f:
+    with predictions_file.open("w") as f:
         json.dump(json_sa_predictions, f, indent=2)
 
     return sa_predictions
@@ -143,7 +142,7 @@ def prepare_memory_replay_dataset(
 
     # Contains the ground truth annotations for the DeepLabCut project
     # .../dlc-models-pytorch/.../...shuffle0/train/memory_replay/annotations/train.json
-    with open(source_dataset_folder / "annotations" / train_file) as f:
+    with (source_dataset_folder / "annotations" / train_file).open() as f:
         project_gt = json.load(f)
 
     # parse the GT so that image paths are in the format (no matter the OS):
@@ -240,14 +239,14 @@ def prepare_memory_replay_dataset(
                 gts[idx]["keypoints"] = list(matched_gt.flatten())
 
     # memory replay path
-    memory_replay_train_file_path = os.path.join(source_dataset_folder, "annotations", "memory_replay_train.json")
+    memory_replay_train_file_path = Path(source_dataset_folder) / "annotations" / "memory_replay_train.json"
 
     # parse the GT to put the image paths back into OS-specific format
     for image in project_gt["images"]:
         image_rel_path = image["file_name"].split("/")
         image["file_name"] = str(af.safe_resolve(project_root / Path(*image_rel_path)))
 
-    with open(memory_replay_train_file_path, "w") as f:
+    with memory_replay_train_file_path.open("w") as f:
         json.dump(project_gt, f, indent=4)
 
 

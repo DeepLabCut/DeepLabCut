@@ -46,7 +46,7 @@ Modeloptions = MODELOPTIONS  # backwards compatibility for COLAB NOTEBOOK
 
 
 def MakeTrain_pose_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
-    raw = open(defaultconfigfile).read()
+    raw = Path(defaultconfigfile).open().read()
     docs = []
     for raw_doc in raw.split("\n---"):
         try:
@@ -57,7 +57,7 @@ def MakeTrain_pose_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
     for key in itemstochange.keys():
         docs[0][key] = itemstochange[key]
     docs[0]["max_input_size"] = 1500
-    with open(saveasconfigfile, "w") as f:
+    with Path(saveasconfigfile).open("w") as f:
         yaml.dump(docs[0], f)
     return docs[0]
 
@@ -561,7 +561,7 @@ def create_pretrained_project_tensorflow(
         model = "full_human"
 
     if model in MODELOPTIONS:
-        cwd = os.getcwd()
+        cwd = Path.cwd()
 
         cfg = deeplabcut.create_new_project(
             project, experimenter, videos, working_directory, copy_videos, video_extensions=video_extensions
@@ -610,31 +610,27 @@ def create_pretrained_project_tensorflow(
         auxiliaryfunctions.write_config(cfg, config)
         config = auxiliaryfunctions.read_config(cfg)
 
-        train_dir = Path(
-            os.path.join(
-                config["project_path"],
-                str(
-                    auxiliaryfunctions.get_model_folder(
-                        trainFraction=config["TrainingFraction"][0],
-                        shuffle=1,
-                        cfg=config,
-                    )
-                ),
-                "train",
+        train_dir = (
+            Path(config["project_path"])
+            / str(
+                auxiliaryfunctions.get_model_folder(
+                    trainFraction=config["TrainingFraction"][0],
+                    shuffle=1,
+                    cfg=config,
+                )
             )
+            / "train"
         )
-        test_dir = Path(
-            os.path.join(
-                config["project_path"],
-                str(
-                    auxiliaryfunctions.get_model_folder(
-                        trainFraction=config["TrainingFraction"][0],
-                        shuffle=1,
-                        cfg=config,
-                    )
-                ),
-                "test",
+        test_dir = (
+            Path(config["project_path"])
+            / str(
+                auxiliaryfunctions.get_model_folder(
+                    trainFraction=config["TrainingFraction"][0],
+                    shuffle=1,
+                    cfg=config,
+                )
             )
+            / "test"
         )
 
         # Create the model directory
@@ -644,8 +640,8 @@ def create_pretrained_project_tensorflow(
         modelfoldername = auxiliaryfunctions.get_model_folder(
             trainFraction=config["TrainingFraction"][0], shuffle=1, cfg=config
         )
-        path_train_config = str(os.path.join(config["project_path"], Path(modelfoldername), "train", "pose_cfg.yaml"))
-        path_test_config = str(os.path.join(config["project_path"], Path(modelfoldername), "test", "pose_cfg.yaml"))
+        path_train_config = str(Path(config["project_path"]) / Path(modelfoldername) / "train" / "pose_cfg.yaml")
+        path_test_config = str(Path(config["project_path"]) / Path(modelfoldername) / "test" / "pose_cfg.yaml")
 
         # Download the weights and put then in appropriate directory
         print("Downloading weights...")
@@ -668,9 +664,9 @@ def create_pretrained_project_tensorflow(
         # model_path = auxfun_models.check_for_weights(pose_cfg['net_type'], parent_path)
 
         # Updating training and test pose_cfg:
-        snapshotname = [fn for fn in os.listdir(train_dir) if ".meta" in fn][0].split(".meta")[0]
+        snapshotname = [p.name for p in Path(train_dir).iterdir() if ".meta" in p.name][0].split(".meta")[0]
         dict2change = {
-            "init_weights": str(os.path.join(train_dir, snapshotname)),
+            "init_weights": str(Path(train_dir) / snapshotname),
             "project_path": str(config["project_path"]),
         }
 

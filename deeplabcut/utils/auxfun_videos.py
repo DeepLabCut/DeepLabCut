@@ -20,7 +20,6 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import datetime
-import os
 import random
 import subprocess
 import warnings
@@ -42,7 +41,7 @@ DEFAULT_EXCLUDE_PATTERNS: tuple[str, ...] = "*_labeled.*", "*_full.*"
 
 class VideoReader:
     def __init__(self, video_path):
-        if not os.path.isfile(video_path):
+        if not Path(video_path).is_file():
             raise ValueError(f'Video path "{video_path}" does not point to a file.')
         self.video_path = video_path
         self.video = cv2.VideoCapture(video_path)
@@ -60,10 +59,10 @@ class VideoReader:
         return self._n_frames
 
     def check_integrity(self):
-        dest = os.path.join(self.directory, f"{self.name}.log")
+        dest = str(Path(self.directory) / f"{self.name}.log")
         command = f'ffmpeg -v error -i "{self.video_path}" -f null - 2>"{dest}"'
         subprocess.call(command, shell=True)
-        if os.path.getsize(dest) != 0:
+        if Path(dest).stat().st_size != 0:
             warnings.warn(f'Video contains errors. See "{dest}" for a detailed report.', stacklevel=2)
 
     def check_integrity_robust(self):
@@ -77,15 +76,15 @@ class VideoReader:
 
     @property
     def name(self):
-        return os.path.splitext(os.path.split(self.video_path)[1])[0]
+        return Path(self.video_path).stem
 
     @property
     def format(self):
-        return os.path.splitext(self.video_path)[1]
+        return Path(self.video_path).suffix
 
     @property
     def directory(self):
-        return os.path.dirname(self.video_path)
+        return str(Path(self.video_path).parent)
 
     @property
     def metadata(self):
@@ -346,7 +345,7 @@ class VideoWriter(VideoReader):
     def make_output_path(self, suffix, dest_folder):
         if not dest_folder:
             dest_folder = self.directory
-        return os.path.join(dest_folder, f"{self.name}{suffix}{self.format}")
+        return str(Path(dest_folder) / f"{self.name}{suffix}{self.format}")
 
 
 def check_video_integrity(video_path):

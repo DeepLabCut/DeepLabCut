@@ -14,7 +14,6 @@ Contributed by Federico Claudi - https://github.com/FedeClaudi
 """
 
 import argparse
-import os
 from collections.abc import Sequence
 from math import atan2, degrees
 from pathlib import Path
@@ -285,7 +284,7 @@ def analyzeskeleton(
             continue
 
         output_name = filepath.replace(".h5", "_skeleton.h5")
-        if os.path.isfile(output_name):
+        if Path(output_name).is_file():
             print(f"Skeleton in video {vname} already processed. Skipping...")
             video_to_skeleton_df[video] = pd.read_hdf(output_name, "df_with_missing")
             continue

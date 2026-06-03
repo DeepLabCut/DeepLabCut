@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 import functools
-import os
 import re
+from pathlib import Path
 
 import tensorflow as tf
 
@@ -238,7 +238,7 @@ def build_model(
     blocks_args, global_params = get_model_params(model_name, override_params)
 
     if model_dir:
-        param_file = os.path.join(model_dir, "model_params.txt")
+        param_file = Path(model_dir) / "model_params.txt"
         if not tf.io.gfile.exists(param_file):
             if not tf.io.gfile.exists(model_dir):
                 tf.io.gfile.makedirs(model_dir)

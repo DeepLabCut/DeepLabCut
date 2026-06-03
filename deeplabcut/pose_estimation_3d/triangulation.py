@@ -9,7 +9,6 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-import os
 import warnings
 from pathlib import Path
 
@@ -105,7 +104,7 @@ def triangulate(
     for cam in cam_names:
         snapshots[cam] = cfg_3d[str("config_file_" + cam)]
         # Check if the config file exists
-        if not os.path.exists(snapshots[cam]):
+        if not Path(snapshots[cam]).exists():
             raise Exception(
                 str("It seems the file specified in the variable config_file_" + str(cam))
                 + " does not exist. Please edit the config file with correct file path and retry."
@@ -157,10 +156,10 @@ def triangulate(
                 trainingsetindex = cfg_3d[str("trainingsetindex_" + cam_names[j])]
                 trainFraction = cfg["TrainingFraction"][trainingsetindex]
                 if flag:
-                    video = os.path.join(video_path, video_list[i][j])
+                    video = str(Path(video_path) / video_list[i][j])
                 else:
                     video_path = str(Path(video_list[i][j]).parents[0])
-                    video = os.path.join(video_path, video_list[i][j])
+                    video = str(Path(video_path) / video_list[i][j])
 
                 if destfolder is None:
                     destfolder = str(Path(video).parents[0])
@@ -179,18 +178,16 @@ def triangulate(
                     suffix = suffix[1:]
 
                 if prefix == "":
-                    output_file = os.path.join(destfolder, suffix)
+                    output_file = str(Path(destfolder) / suffix)
                 else:
                     if suffix == "":
-                        output_file = os.path.join(destfolder, prefix)
+                        output_file = str(Path(destfolder) / prefix)
                     else:
-                        output_file = os.path.join(destfolder, prefix + "_" + suffix)
+                        output_file = str(Path(destfolder) / (prefix + "_" + suffix))
 
-                output_filename = os.path.join(
-                    output_file + "_" + scorer_3d
-                )  # Check if the videos are already analyzed for 3d
-                if os.path.isfile(output_filename + ".h5"):
-                    if save_as_csv is True and not os.path.exists(output_filename + ".csv"):
+                output_filename = output_file + "_" + scorer_3d  # Check if the videos are already analyzed for 3d
+                if Path(output_filename + ".h5").is_file():
+                    if save_as_csv is True and not Path(output_filename + ".csv").exists():
                         # In case user adds save_as_csv is True after triangulating
                         pd.read_hdf(output_filename + ".h5").to_csv(str(output_filename + ".csv"))
 
@@ -208,7 +205,7 @@ def triangulate(
                         path_undistort,
                         _,
                     ) = auxiliaryfunctions_3d.Foldernames3Dproject(cfg_3d)
-                    path_stereo_file = os.path.join(path_camera_matrix, "stereo_params.pickle")
+                    path_stereo_file = str(Path(path_camera_matrix) / "stereo_params.pickle")
                     stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
                     cam_pair = str(cam_names[0] + "-" + cam_names[1])
                     is_video_analyzed = False  # variable to keep track if the video was already analyzed
@@ -234,7 +231,7 @@ def triangulate(
 
                     if is_video_analyzed:
                         print("This file is already analyzed!")
-                        dataname.append(os.path.join(destfolder, vname + DLCscorer + tr_method_suffix + ".h5"))
+                        dataname.append(str(Path(destfolder) / (vname + DLCscorer + tr_method_suffix + ".h5")))
                         scorer_name[cam_names[j]] = DLCscorer
                     else:
                         # Analyze video if score name is different
@@ -263,7 +260,7 @@ def triangulate(
                             )
                             suffix += "_filtered"
 
-                        dataname.append(os.path.join(destfolder, vname + DLCscorer + suffix + ".h5"))
+                        dataname.append(str(Path(destfolder) / (vname + DLCscorer + suffix + ".h5")))
 
                 else:  # need to do the whole jam.
                     DLCscorer = analyze_videos(
@@ -290,7 +287,7 @@ def triangulate(
                             destfolder=destfolder,
                         )
                         suffix += "_filtered"
-                    dataname.append(os.path.join(destfolder, vname + DLCscorer + suffix + ".h5"))
+                    dataname.append(str(Path(destfolder) / (vname + DLCscorer + suffix + ".h5")))
 
         if run_triangulate:
             #        if len(dataname)>0:
@@ -522,14 +519,14 @@ def undistort_points(config, dataframe, camera_pair):
             f"needs filenames to two data frames, but got dataframe={dataframe}."
         )
     for filename in dataframe:
-        if not os.path.exists(filename):
+        if not Path(filename).exists():
             raise FileNotFoundError(f"Dataframe path '{filename}' could not be found in the filesystem.")
-    if not os.path.exists(path_camera_matrix):
+    if not Path(path_camera_matrix).exists():
         raise FileNotFoundError(f"Camera matrix file '{path_camera_matrix}' could not be found in the filesystem.")
     # Create an empty dataFrame to store the undistorted 2d coordinates and likelihood
     dataframe_cam1 = pd.read_hdf(dataframe[0])
     dataframe_cam2 = pd.read_hdf(dataframe[1])
-    path_stereo_file = os.path.join(path_camera_matrix, "stereo_params.pickle")
+    path_stereo_file = str(Path(path_camera_matrix) / "stereo_params.pickle")
     stereo_file = auxiliaryfunctions.read_pickle(path_stereo_file)
     dataFrame_cam1_undistort, dataFrame_cam2_undistort = _undistort_views(
         [(dataframe_cam1, dataframe_cam2)],

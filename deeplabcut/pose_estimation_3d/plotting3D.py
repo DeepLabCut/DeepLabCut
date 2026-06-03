@@ -9,8 +9,6 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-import glob
-import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -151,8 +149,6 @@ def create_labeled_video_3d(
     >>> deeplabcut.create_labeled_video_3d(config,['/data/project1/videos'],start=100,
         end=500,view=[30,90],xlim=[-12,12],ylim=[15,25],zlim=[20,30])
     """
-    os.getcwd()
-
     # Read the config file and related variables
     cfg_3d = auxiliaryfunctions.read_config(config)
     cam_names = cfg_3d["camera_names"]
@@ -184,8 +180,8 @@ def create_labeled_video_3d(
         # triangulated file is a list which is always sorted as [triangulated.h5,camera-1.videotype,camera-2.videotype]
         # name for output video
         file_name = str(Path(triangulate_file).stem)
-        videooutname = os.path.join(path_h5_file, file_name + ".mp4")
-        if os.path.isfile(videooutname):
+        videooutname = path_h5_file / (file_name + ".mp4")
+        if videooutname.is_file():
             print("Video already created...")
         else:
             string_to_remove = str(Path(triangulate_file).suffix)
@@ -211,41 +207,21 @@ def create_labeled_video_3d(
             try:
                 print("Looking for filtered predictions...")
                 df_cam1 = pd.read_hdf(
-                    glob.glob(
-                        os.path.join(
-                            path_h5_file,
-                            str("*" + base_filename_cam1 + cam1_scorer + "*filtered.h5"),
-                        )
-                    )[0]
+                    list(path_h5_file.glob("*" + base_filename_cam1 + cam1_scorer + "*filtered.h5"))[0]
                 )
                 df_cam2 = pd.read_hdf(
-                    glob.glob(
-                        os.path.join(
-                            path_h5_file,
-                            str("*" + base_filename_cam2 + cam2_scorer + "*filtered.h5"),
-                        )
-                    )[0]
+                    list(path_h5_file.glob("*" + base_filename_cam2 + cam2_scorer + "*filtered.h5"))[0]
                 )
                 # print("Found filtered predictions, will be use these for triangulation.")
                 print(
                     "Found the following filtered data: ",
-                    os.path.join(
-                        path_h5_file,
-                        str("*" + base_filename_cam1 + cam1_scorer + "*filtered.h5"),
-                    ),
-                    os.path.join(
-                        path_h5_file,
-                        str("*" + base_filename_cam2 + cam2_scorer + "*filtered.h5"),
-                    ),
+                    path_h5_file / ("*" + base_filename_cam1 + cam1_scorer + "*filtered.h5"),
+                    path_h5_file / ("*" + base_filename_cam2 + cam2_scorer + "*filtered.h5"),
                 )
             except IndexError:
                 print("No filtered predictions found, the unfiltered predictions will be used instead.")
-                df_cam1 = pd.read_hdf(
-                    glob.glob(os.path.join(path_h5_file, str(base_filename_cam1 + cam1_scorer + "*.h5")))[0]
-                )
-                df_cam2 = pd.read_hdf(
-                    glob.glob(os.path.join(path_h5_file, str(base_filename_cam2 + cam2_scorer + "*.h5")))[0]
-                )
+                df_cam1 = pd.read_hdf(list(path_h5_file.glob(base_filename_cam1 + cam1_scorer + "*.h5"))[0])
+                df_cam2 = pd.read_hdf(list(path_h5_file.glob(base_filename_cam2 + cam2_scorer + "*.h5"))[0])
 
             df_3d = pd.read_hdf(triangulate_file)
             try:
@@ -258,7 +234,7 @@ def create_labeled_video_3d(
             end = min(end, min(len(vid_cam1), len(vid_cam2)))
             frames = list(range(start, end))
 
-            output_folder = Path(os.path.join(path_h5_file, "temp_" + file_name))
+            output_folder = path_h5_file / ("temp_" + file_name)
             output_folder.mkdir(parents=True, exist_ok=True)
 
             # Flatten the list of bodyparts to connect
@@ -337,7 +313,7 @@ def create_labeled_video_3d(
                 axes3.add_collection(coll_3d)
 
             writer = FFMpegWriter(fps=fps)
-            with writer.saving(fig, videooutname, dpi=dpi):
+            with writer.saving(fig, str(videooutname), dpi=dpi):
                 for k in tqdm(frames):
                     vid_cam1.set_to_frame(k)
                     vid_cam2.set_to_frame(k)

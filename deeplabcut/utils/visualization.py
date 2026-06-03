@@ -227,9 +227,9 @@ def plot_and_save_labeled_frame(
     scaling=1,
 ):
     if isinstance(DataCombined.index[ind], tuple):
-        image_path = os.path.join(cfg["project_path"], *DataCombined.index[ind])
+        image_path = str(Path(cfg["project_path"]).joinpath(*DataCombined.index[ind]))
     else:
-        image_path = os.path.join(cfg["project_path"], DataCombined.index[ind])
+        image_path = str(Path(cfg["project_path"]) / DataCombined.index[ind])
     frame = io.imread(image_path)
     if np.ndim(frame) > 2:  # color image!
         h, w, numcolors = np.shape(frame)
@@ -263,7 +263,7 @@ def save_labeled_frame(fig, image_path, dest_folder, belongs_to_train):
         dest = "-".join(("Training", imfoldername, imagename))
     else:
         dest = "-".join(("Test", imfoldername, imagename))
-    full_path = os.path.join(dest_folder, dest)
+    full_path = str(Path(dest_folder) / dest)
 
     # Windows throws error if file path is > 260 characters, can fix with prefix.
     # See https://docs.microsoft.com/en-us/windows/desktop/fileio/naming-a-file#maximum-path-length-limitation
@@ -369,9 +369,9 @@ def make_labeled_images_from_dataframe(
             bones.extend(zip(match1, match2, strict=False))
     ind_bones = tuple(zip(*bones, strict=False))
 
-    images_list = [os.path.join(cfg["project_path"], *tuple_) for tuple_ in df.index.tolist()]
+    images_list = [str(Path(cfg["project_path"]).joinpath(*tuple_)) for tuple_ in df.index.tolist()]
     if not destfolder:
-        destfolder = os.path.dirname(images_list[0])
+        destfolder = str(Path(images_list[0]).parent)
     tmpfolder = destfolder + "_labeled"
     auxiliaryfunctions.attempt_to_make_folder(tmpfolder)
     ic = io.imread_collection(images_list)
@@ -406,10 +406,10 @@ def make_labeled_images_from_dataframe(
                 pt.set_data(*np.expand_dims(coord, axis=1))
             if ind_bones:
                 coll.set_segments(segs[ind])
-            imagename = os.path.basename(filename)
+            imagename = Path(filename).name
             fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
             fig.savefig(
-                os.path.join(tmpfolder, imagename.replace(".png", f"_{color_by}.png")),
+                Path(tmpfolder) / imagename.replace(".png", f"_{color_by}.png"),
                 dpi=dpi,
             )
         plt.close(fig)
@@ -428,10 +428,10 @@ def make_labeled_images_from_dataframe(
             if ind_bones:
                 coll = LineCollection(segs[ind], colors=cfg["skeleton_color"], alpha=alpha)
                 ax.add_collection(coll)
-            imagename = os.path.basename(filename)
+            imagename = Path(filename).name
             fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
             fig.savefig(
-                os.path.join(tmpfolder, imagename.replace(".png", f"_{color_by}.png")),
+                Path(tmpfolder) / imagename.replace(".png", f"_{color_by}.png"),
                 dpi=dpi,
             )
             plt.close(fig)

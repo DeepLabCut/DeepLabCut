@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -108,9 +108,9 @@ class SingleDLCPoseDataset(BaseDLCPoseDataset):
             # I think width and height are important
 
             if isinstance(file_name, tuple):
-                image_path = os.path.join(self.proj_root, *list(file_name))
+                image_path = str(Path(self.proj_root).joinpath(*file_name))
             else:
-                image_path = os.path.join(self.proj_root, file_name)
+                image_path = str(Path(self.proj_root) / file_name)
 
             _, height, width = read_image_shape_fast(image_path)
 

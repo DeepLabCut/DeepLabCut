@@ -8,7 +8,6 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
 import pickle
 import re
 import shelve
@@ -494,7 +493,7 @@ class TrackletStitcher:
         split_tracklets=True,
         prestitch_residuals=True,
     ):
-        with open(pickle_file, "rb") as file:
+        with Path(pickle_file).open("rb") as file:
             tracklets = pickle.load(file)
         class_ = cls.from_dict_of_dict(tracklets, n_tracks, min_length, split_tracklets, prestitch_residuals)
         class_.filename = pickle_file
@@ -1150,7 +1149,7 @@ def stitch_tracklets(
         deeplabcut.utils.auxiliaryfunctions.attempt_to_make_folder(dest)
         vname = Path(video).stem
 
-        feature_dict_path = os.path.join(dest, vname + DLCscorer + "_bpt_features.pickle")
+        feature_dict_path = str(Path(dest) / (vname + DLCscorer + "_bpt_features.pickle"))
         # should only exist one
         if transformer_checkpoint:
             import dbm
@@ -1160,7 +1159,7 @@ def stitch_tracklets(
             except dbm.error as err:
                 raise FileNotFoundError(f"{feature_dict_path} does not exist. Did you run transformer_reID()?") from err
 
-        dataname = os.path.join(dest, vname + DLCscorer + ".h5")
+        dataname = str(Path(dest) / (vname + DLCscorer + ".h5"))
 
         method = TRACK_METHODS[track_method]
         pickle_file = dataname.split(".h5")[0] + f"{method}.pickle"

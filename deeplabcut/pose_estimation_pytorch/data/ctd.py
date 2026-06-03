@@ -359,7 +359,7 @@ class CondFromFile(CondProvider):
             A dictionary mapping image paths to condition arrays. Each array has shape
             (num_conditions, num_bodyparts, 3).
         """
-        with open(filepath) as f:
+        with Path(filepath).open() as f:
             conditions = json.load(f)
 
         # Parse list and return
@@ -421,7 +421,7 @@ class CondFromFile(CondProvider):
         Args:
             filepath: Path to the Pickle file containing conditions.
         """
-        with open(filepath, "rb") as f:
+        with Path(filepath).open("rb") as f:
             data = pickle.load(f)
 
         frames = [f for f in data.keys() if isinstance(f, int)]

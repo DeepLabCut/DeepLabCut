@@ -18,7 +18,6 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
-import os
 from pathlib import Path
 
 from deeplabcut.utils import auxiliaryfunctions
@@ -59,8 +58,8 @@ def check_for_weights(modeltype, parent_path):
     exists = False
     model_path = parent_path / MODELTYPE_FILEPATH_MAP[modeltype]
     try:
-        for file in os.listdir(model_path.parent):
-            if model_path.name in file:
+        for file in model_path.parent.iterdir():
+            if model_path.name in file.name:
                 exists = True
                 break
     except FileNotFoundError:
@@ -126,13 +125,7 @@ def download_model(modelname, target_dir):
 
     dlc_path = auxiliaryfunctions.get_deeplabcut_path()
     neturls = auxiliaryfunctions.read_plainconfig(
-        os.path.join(
-            dlc_path,
-            "pose_estimation_tensorflow",
-            "models",
-            "pretrained",
-            "pretrained_model_urls.yaml",
-        )
+        str(Path(dlc_path) / "pose_estimation_tensorflow" / "models" / "pretrained" / "pretrained_model_urls.yaml")
     )
     if modelname in neturls.keys():
         url = neturls[modelname]
@@ -170,10 +163,7 @@ def smart_restore(restorer, sess, checkpoint_path, net_type):
         restorer.restore(sess, checkpoint_path)
     except ValueError as e:  # The path may be wrong, or the weights no longer exist
         dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
-        correct_model_path = os.path.join(
-            dlcparent_path,
-            MODELTYPE_FILEPATH_MAP[net_type],
-        )
+        correct_model_path = str(Path(dlcparent_path) / MODELTYPE_FILEPATH_MAP[net_type])
         if checkpoint_path == correct_model_path:
             # The path is right, hence the weights are missing; we'll download them again.
             _ = check_for_weights(net_type, Path(dlcparent_path))

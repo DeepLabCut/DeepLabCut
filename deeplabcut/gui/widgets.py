@@ -10,6 +10,7 @@
 #
 import ast
 import os
+from pathlib import Path
 from queue import Queue
 
 import napari
@@ -107,13 +108,13 @@ class DragDropListView(QtWidgets.QListView):
     def dropEvent(self, event):
         for url in event.mimeData().urls():
             path = url.toLocalFile()
-            if os.path.isfile(path):
+            if Path(path).is_file():
                 self.add_item(path)
-            elif os.path.isdir(path):
+            elif Path(path).is_dir():
                 for root, _, files in os.walk(path):
                     for file in files:
                         if not file.startswith("."):
-                            self.add_item(os.path.join(root, file))
+                            self.add_item(str(Path(root) / file))
 
 
 class ItemSelectionFrame(QtWidgets.QFrame):
@@ -275,7 +276,7 @@ class ContextMenu(QtWidgets.QMenu):
         creator.created.connect(self.parent.insert)
 
     def fix_path(self):
-        self.current_item.setText(1, os.path.split(self.parent.filename)[0])
+        self.current_item.setText(1, str(Path(self.parent.filename).parent))
 
 
 class DictViewer(QtWidgets.QWidget):
@@ -353,7 +354,7 @@ class DictViewer(QtWidgets.QWidget):
             pass
         except SyntaxError:
             # Slashes also raise the error, but no need to print anything since it is then likely to be a path
-            if os.path.sep not in val:
+            if "/" not in val and "\\" not in val:
                 print("Consider removing leading zeros or spaces in the string.")
         return val
 

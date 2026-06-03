@@ -11,7 +11,6 @@
 from __future__ import annotations
 
 import os
-import os.path
 import re
 import warnings
 from itertools import combinations
@@ -69,7 +68,7 @@ def format_multianimal_training_data(
     array = np.round(array, decimals=n_decimals)
     for i in tqdm(train_inds):
         filename = filenames[i]
-        img_shape = read_image_shape_fast(os.path.join(project_path, *filename))
+        img_shape = read_image_shape_fast(Path(project_path).joinpath(*filename))
         joints = dict()
         has_data = False
         for n, xy in enumerate(array[i]):
@@ -367,7 +366,7 @@ def create_multianimaltraining_dataset(
 
     # Loading the encoder (if necessary downloading from TF)
     dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
-    defaultconfigfile = os.path.join(dlcparent_path, "pose_cfg.yaml")
+    defaultconfigfile = Path(dlcparent_path) / "pose_cfg.yaml"
 
     if engine == Engine.PYTORCH:
         model_path = dlcparent_path
@@ -431,7 +430,7 @@ def create_multianimaltraining_dataset(
             # Saving metadata and data file (Pickle file)
             ################################################################################
             auxiliaryfunctions.save_metadata(
-                os.path.join(project_path, metadatafilename),
+                str(Path(project_path) / metadatafilename),
                 data,
                 trainIndices,
                 testIndices,
@@ -450,7 +449,7 @@ def create_multianimaltraining_dataset(
             datafilename = datafilename.split(".mat")[0] + ".pickle"
             import pickle
 
-            with open(os.path.join(project_path, datafilename), "wb") as f:
+            with (Path(project_path) / datafilename).open("wb") as f:
                 # Pickle the 'labeled-data' dictionary using the highest protocol available.
                 pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
 
@@ -469,30 +468,9 @@ def create_multianimaltraining_dataset(
             auxiliaryfunctions.attempt_to_make_folder(str(Path(config).parents[0] / modelfoldername / "train"))
             auxiliaryfunctions.attempt_to_make_folder(str(Path(config).parents[0] / modelfoldername / "test"))
 
-            path_train_config = str(
-                os.path.join(
-                    cfg["project_path"],
-                    Path(modelfoldername),
-                    "train",
-                    "pose_cfg.yaml",
-                )
-            )
-            path_test_config = str(
-                os.path.join(
-                    cfg["project_path"],
-                    Path(modelfoldername),
-                    "test",
-                    "pose_cfg.yaml",
-                )
-            )
-            path_inference_config = str(
-                os.path.join(
-                    cfg["project_path"],
-                    Path(modelfoldername),
-                    "test",
-                    "inference_cfg.yaml",
-                )
-            )
+            path_train_config = str(Path(cfg["project_path"]) / modelfoldername / "train" / "pose_cfg.yaml")
+            path_test_config = str(Path(cfg["project_path"]) / modelfoldername / "test" / "pose_cfg.yaml")
+            path_inference_config = str(Path(cfg["project_path"]) / modelfoldername / "test" / "inference_cfg.yaml")
 
             if engine == Engine.TF:
                 jointnames = [str(bpt) for bpt in multianimalbodyparts]
@@ -646,11 +624,11 @@ def convert_cropped_to_standard_dataset(
 
     if delete_crops:
         print("Deleting crops...")
-        data_path = os.path.join(project_path, "labeled-data")
+        data_path = Path(project_path) / "labeled-data"
         for video in cfg["video_sets"]:
             _, filename, _ = trainingsetmanipulation._robust_path_split(video)
             if "_cropped" in video:  # One can never be too safe...
-                shutil.rmtree(os.path.join(data_path, filename), ignore_errors=True)
+                shutil.rmtree(data_path / filename, ignore_errors=True)
 
     cfg["video_sets"] = videos_orig
     write_config(config_path, cfg)
@@ -658,20 +636,18 @@ def convert_cropped_to_standard_dataset(
     if not recreate_datasets:
         return
 
-    datasets_folder = os.path.join(
-        project_path,
-        auxiliaryfunctions.get_training_set_folder(cfg),
-    )
+    datasets_folder = Path(project_path) / auxiliaryfunctions.get_training_set_folder(cfg)
     df_old = pd.read_hdf(
-        os.path.join(datasets_folder, "CollectedData_" + cfg["scorer"] + ".h5"),
+        datasets_folder / ("CollectedData_" + cfg["scorer"] + ".h5"),
     )
 
     def strip_cropped_image_name(path):
-        head, filename = os.path.split(path)
-        head = head.replace("_cropped", "")
+        path_obj = Path(path)
+        head = str(path_obj.parent).replace("_cropped", "")
+        filename = path_obj.name
         file, ext = filename.split(".")
         file = file.split("c")[0]
-        return os.path.join(head, file + "." + ext)
+        return str(Path(head) / (file + "." + ext))
 
     img_names_old = np.asarray([strip_cropped_image_name(img) for img in df_old.index.to_list()])
     df = merge_annotateddatasets(cfg, datasets_folder)
@@ -679,12 +655,12 @@ def convert_cropped_to_standard_dataset(
     train_idx = []
     test_idx = []
     pickle_files = []
-    for filename in os.listdir(datasets_folder):
-        if filename.endswith("pickle"):
-            pickle_file = os.path.join(datasets_folder, filename)
+    for p in datasets_folder.iterdir():
+        if p.name.endswith("pickle"):
+            pickle_file = p
             pickle_files.append(pickle_file)
-            if filename.startswith("Docu"):
-                with open(pickle_file, "rb") as f:
+            if p.name.startswith("Docu"):
+                with p.open("rb") as f:
                     _, train_inds, test_inds, train_frac = pickle.load(f)
                     train_inds_temp = np.flatnonzero(np.isin(img_names, img_names_old[train_inds]))
                     test_inds_temp = np.flatnonzero(np.isin(img_names, img_names_old[test_inds]))
@@ -694,10 +670,10 @@ def convert_cropped_to_standard_dataset(
 
     # Search a pose_config.yaml file to parse missing information
     pose_config_path = ""
-    for dirpath, _, filenames in os.walk(os.path.join(project_path, "dlc-models")):
+    for dirpath, _, filenames in os.walk(Path(project_path) / "dlc-models"):
         for file in filenames:
             if file.endswith("pose_cfg.yaml"):
-                pose_config_path = os.path.join(dirpath, file)
+                pose_config_path = str(Path(dirpath) / file)
                 break
     pose_cfg = read_plainconfig(pose_config_path)
     net_type = pose_cfg["net_type"]
@@ -707,8 +683,8 @@ def convert_cropped_to_standard_dataset(
     # Clean the training-datasets folder prior to recreating the data pickles
     shuffle_inds = set()
     for file in pickle_files:
-        os.remove(file)
-        shuffle_inds.add(int(re.findall(r"shuffle(\d+)", file)[0]))
+        file.unlink()
+        shuffle_inds.add(int(re.findall(r"shuffle(\d+)", str(file))[0]))
     create_multianimaltraining_dataset(
         config_path,
         trainIndices=train_idx,

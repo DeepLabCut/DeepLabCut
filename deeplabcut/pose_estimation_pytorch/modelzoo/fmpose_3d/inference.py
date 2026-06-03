@@ -219,12 +219,12 @@ def _video_inference_fmpose3d(
             results[video_path] = df
 
         output_json = dest_folder / f"{output_prefix}.json"
-        with open(output_json, "w") as f:
+        with output_json.open("w") as f:
             json.dump(predictions_2d, f, cls=NumpyEncoder)
 
         poses_3d_serialisable = [pose.tolist() if isinstance(pose, np.ndarray) else pose for pose in all_poses_3d]
         output_3d_json = dest_folder / f"{output_prefix}_3d.json"
-        with open(output_3d_json, "w") as f:
+        with output_3d_json.open("w") as f:
             json.dump(
                 {
                     "model": model_name,

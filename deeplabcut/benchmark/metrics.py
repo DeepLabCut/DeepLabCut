@@ -11,9 +11,9 @@
 
 """Evaluation metrics for the DeepLabCut benchmark."""
 
-import os
 import pickle
 from collections import defaultdict
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -33,7 +33,7 @@ def _format_gt_data(h5file: str, test_indices: list[int] | None = None):
     except KeyError:
         n_unique = 0
     guarantee_multiindex_rows(df)
-    file_paths = [os.path.join(*row) for row in df.index.to_list()]
+    file_paths = [Path(*row) for row in df.index.to_list()]
     temp = (
         df.stack("individuals", dropna=False)
         .reindex(animals, level="individuals")
@@ -248,13 +248,13 @@ def load_test_images(h5file: str, metadata: str) -> list[str]:
     test_images = []
     for img_path in df_test.index:
         if not isinstance(img_path, str):
-            img_path = os.path.join(*img_path)
+            img_path = str(Path(*img_path))
         test_images.append(img_path)
     return test_images
 
 
 def _load_test_indices(shuffle_metadata_path: str) -> list[int]:
     """Returns the indices of test images in the training dataset dataframe."""
-    with open(shuffle_metadata_path, "rb") as f:
+    with Path(shuffle_metadata_path).open("rb") as f:
         test_indices = set([int(i) for i in pickle.load(f)[2]])
     return list(sorted(test_indices))

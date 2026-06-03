@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
+from pathlib import Path
 
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtGui import QIcon
@@ -58,7 +58,7 @@ class OpenProject(QtWidgets.QDialog):
         self.open_line.text()
 
     def load_config(self):
-        cwd = os.getcwd()
+        cwd = str(Path.cwd())
         config = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select a configuration file", cwd, "Config files (*.yaml)"
         )
@@ -76,7 +76,7 @@ class OpenProject(QtWidgets.QDialog):
 
             msg.setWindowTitle("Error")
             msg.setMinimumWidth(400)
-            self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+            self.logo_dir = str(Path("logo.png").resolve().parent) + "/"
             self.logo = self.logo_dir + "/assets/logo.png"
             msg.setWindowIcon(QIcon(self.logo))
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
@@ -84,7 +84,7 @@ class OpenProject(QtWidgets.QDialog):
 
             self.loaded = False
         else:
-            self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
+            self.logo_dir = str(Path("logo.png").resolve().parent) + "/"
             self.logo = self.logo_dir + "/assets/logo.png"
 
             self.loaded = True

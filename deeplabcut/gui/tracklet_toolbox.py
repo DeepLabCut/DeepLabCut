@@ -8,6 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
+from pathlib import Path as PPath
 from threading import Event
 
 import matplotlib.patches as patches
@@ -835,7 +836,6 @@ class TrackletVisualizer:
         self.manager.save()
 
     def export_to_training_data(self, pcutoff=0.1):
-        import os
 
         from skimage import io
 
@@ -846,20 +846,20 @@ class TrackletVisualizer:
 
         # Save additional frames to the labeled-data directory
         strwidth = int(np.ceil(np.log10(self.nframes)))
-        tmpfolder = os.path.join(self.manager.cfg["project_path"], "labeled-data", self.video.name)
-        if os.path.isdir(tmpfolder):
+        tmpfolder = PPath(self.manager.cfg["project_path"]) / "labeled-data" / self.video.name
+        if tmpfolder.is_dir():
             print(
                 "Frames from video",
                 self.video.name,
                 " already extracted (more will be added)!",
             )
         else:
-            attempt_to_make_folder(tmpfolder)
+            attempt_to_make_folder(str(tmpfolder))
         index = []
         for ind in inds:
-            imagename = os.path.join(tmpfolder, "img" + str(ind).zfill(strwidth) + ".png")
-            index.append(tuple((os.path.join(*imagename.rsplit(os.path.sep, 3)[-3:])).split("\\")))
-            if not os.path.isfile(imagename):
+            imagename = tmpfolder / ("img" + str(ind).zfill(strwidth) + ".png")
+            index.append(tuple(PPath(*PPath(imagename).parts[-3:]).as_posix().split("/")))
+            if not imagename.is_file():
                 self.video.set_to_frame(ind)
                 frame = self.video.read_frame()
                 if frame is None:
@@ -869,7 +869,7 @@ class TrackletVisualizer:
                 if self.manager.cfg["cropping"]:
                     x1, x2, y1, y2 = [int(self.manager.cfg[key]) for key in ("x1", "x2", "y1", "y2")]
                     frame = frame[y1:y2, x1:x2]
-                io.imsave(imagename, frame)
+                io.imsave(str(imagename), frame)
 
         # Store the newly-refined data
         data = self.manager.format_data()
@@ -884,22 +884,22 @@ class TrackletVisualizer:
         df = df.groupby(level="bodyparts", axis=1, group_keys=False).apply(filter_low_prob, prob=pcutoff)
         df.index = pd.MultiIndex.from_tuples(index)
 
-        machinefile = os.path.join(tmpfolder, "machinelabels-iter" + str(self.manager.cfg["iteration"]) + ".h5")
-        if os.path.isfile(machinefile):
+        machinefile = tmpfolder / ("machinelabels-iter" + str(self.manager.cfg["iteration"]) + ".h5")
+        if machinefile.is_file():
             df_old = pd.read_hdf(machinefile)
             df_joint = pd.concat([df_old, df])
             df_joint = df_joint[~df_joint.index.duplicated(keep="first")]
             df_joint.to_hdf(machinefile, key="df_with_missing", mode="w")
-            df_joint.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
+            df_joint.to_csv(tmpfolder / "machinelabels.csv")
         else:
             df.to_hdf(machinefile, key="df_with_missing", mode="w")
-            df.to_csv(os.path.join(tmpfolder, "machinelabels.csv"))
+            df.to_csv(tmpfolder / "machinelabels.csv")
 
         # Merge with the already existing annotated data
         df.columns = df.columns.set_levels([self.manager.cfg["scorer"]], level="scorer")
         df.drop("likelihood", level="coords", axis=1, inplace=True)
-        output_path = os.path.join(tmpfolder, f"CollectedData_{self.manager.cfg['scorer']}.h5")
-        if os.path.isfile(output_path):
+        output_path = tmpfolder / f"CollectedData_{self.manager.cfg['scorer']}.h5"
+        if output_path.is_file():
             print(
                 "A training dataset file is already found for this video. The refined machine labels are merged to this"
                 "data!"
@@ -911,11 +911,11 @@ class TrackletVisualizer:
             df_joint = df_joint[~df_joint.index.duplicated(keep="first")]
             df_joint.sort_index(inplace=True)
             df_joint.to_hdf(output_path, key="df_with_missing", mode="w")
-            df_joint.to_csv(output_path.replace("h5", "csv"))
+            df_joint.to_csv(output_path.with_suffix(".csv"))
         else:
             df.sort_index(inplace=True)
             df.to_hdf(output_path, key="df_with_missing", mode="w")
-            df.to_csv(output_path.replace("h5", "csv"))
+            df.to_csv(output_path.with_suffix(".csv"))
 
 
 def refine_tracklets(

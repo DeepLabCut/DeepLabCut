@@ -60,7 +60,6 @@ def calculatepafdistancebounds(config, shuffle=0, trainingsetindex=0, modelprefi
     numdigits: number of digits to round for distances.
 
     """
-    import os
 
     from deeplabcut.pose_estimation_tensorflow.config import load_config
     from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
@@ -78,18 +77,13 @@ def calculatepafdistancebounds(config, shuffle=0, trainingsetindex=0, modelprefi
         # Loading human annotatated data
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
         trainFraction = cfg["TrainingFraction"][trainingsetindex]
-        modelfolder = os.path.join(
-            cfg["project_path"],
-            str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+        modelfolder = Path(cfg["project_path"]) / str(
+            auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
         )
 
         # Load meta data & annotations
         Data = pd.read_hdf(
-            os.path.join(
-                cfg["project_path"],
-                str(trainingsetfolder),
-                "CollectedData_" + cfg["scorer"] + ".h5",
-            )
+            Path(cfg["project_path"]) / str(trainingsetfolder) / ("CollectedData_" + cfg["scorer"] + ".h5")
         )[cfg["scorer"]]
 
         path_train_config, path_test_config, _ = return_train_network_path(
@@ -251,17 +245,15 @@ def return_evaluate_network_data(
     from deeplabcut.pose_estimation_tensorflow.config import load_config
     from deeplabcut.utils import auxiliaryfunctions
 
-    start_path = os.getcwd()
+    start_path = Path.cwd()
     # Read file path for pose_config file. >> pass it on
     cfg = auxiliaryfunctions.read_config(config)
 
     # Loading human annotatated data
     trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
     # Data=pd.read_hdf(
-    # os.path.join(
-    # cfg["project_path"],
-    # str(trainingsetfolder
-    # ),'CollectedData_' + cfg["scorer"] + '.h5'),'df_with_missing'
+    # Path(cfg["project_path"]) / str(trainingsetfolder) / ('CollectedData_' + cfg["scorer"] + '.h5'),
+    # 'df_with_missing'
     # )
 
     # Get list of body parts to evaluate network for
@@ -270,9 +262,8 @@ def return_evaluate_network_data(
     # Load data...
     ##################################################
     trainFraction = cfg["TrainingFraction"][trainingsetindex]
-    modelfolder = os.path.join(
-        cfg["project_path"],
-        str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+    modelfolder = Path(cfg["project_path"]) / str(
+        auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
     )
     path_train_config, path_test_config, _ = return_train_network_path(
         config=config,
@@ -299,28 +290,17 @@ def return_evaluate_network_data(
         scale = test_pose_cfg["global_scale"]
         print("Rescaling Data to ", scale)
         Data = (
-            pd.read_hdf(
-                os.path.join(
-                    cfg["project_path"],
-                    str(trainingsetfolder),
-                    "CollectedData_" + cfg["scorer"] + ".h5",
-                )
-            )
+            pd.read_hdf(Path(cfg["project_path"]) / str(trainingsetfolder) / ("CollectedData_" + cfg["scorer"] + ".h5"))
             * scale
         )
     else:
         scale = 1
         Data = pd.read_hdf(
-            os.path.join(
-                cfg["project_path"],
-                str(trainingsetfolder),
-                "CollectedData_" + cfg["scorer"] + ".h5",
-            )
+            Path(cfg["project_path"]) / str(trainingsetfolder) / ("CollectedData_" + cfg["scorer"] + ".h5")
         )
 
-    evaluationfolder = os.path.join(
-        cfg["project_path"],
-        str(auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+    evaluationfolder = Path(cfg["project_path"]) / str(
+        auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
     )
 
     Snapshots = auxiliaryfunctions.get_snapshots_from_folder(
@@ -339,10 +319,10 @@ def return_evaluate_network_data(
     results = []
     resultsfns = []
     for snapshot_name in snapshot_names:
-        test_pose_cfg["init_weights"] = os.path.join(
-            str(modelfolder), "train", snapshot_name
+        test_pose_cfg["init_weights"] = str(
+            Path(modelfolder) / "train" / snapshot_name
         )  # setting weights to corresponding snapshot.
-        trainingsiterations = (test_pose_cfg["init_weights"].split(os.sep)[-1]).split("-")[
+        trainingsiterations = Path(test_pose_cfg["init_weights"]).name.split("-")[
             -1
         ]  # read how many training siterations that corresponds to.
 
@@ -369,7 +349,7 @@ def return_evaluate_network_data(
         print(resultsfilename)
         resultsfns.append(resultsfilename)
         if not returnjustfns:
-            if not notanalyzed and os.path.isfile(resultsfilename):  # data exists..
+            if not notanalyzed and Path(resultsfilename).is_file():  # data exists..
                 DataMachine = pd.read_hdf(resultsfilename)
                 DataCombined = pd.concat([Data.T, DataMachine.T], axis=0).T
                 RMSE, RMSEpcutoff = pairwisedistances(
@@ -607,9 +587,7 @@ def evaluate_network(
     if plotting not in (True, False, "bodypart", "individual"):
         raise ValueError(f"Unknown value for `plotting`={plotting}")
 
-    import os
-
-    start_path = os.getcwd()
+    start_path = Path.cwd()
     from deeplabcut.utils import auxiliaryfunctions
 
     cfg = auxiliaryfunctions.read_config(config)
@@ -648,7 +626,7 @@ def evaluate_network(
         os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  #
         #    tf.logging.set_verbosity(tf.logging.WARN)
 
-        start_path = os.getcwd()
+        start_path = Path.cwd()
         # Read file path for pose_config file. >> pass it on
         cfg = auxiliaryfunctions.read_config(config)
         if gputouse is not None:  # gpu selectinon
@@ -670,11 +648,7 @@ def evaluate_network(
         # Loading human annotatated data
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
         Data = pd.read_hdf(
-            os.path.join(
-                cfg["project_path"],
-                str(trainingsetfolder),
-                "CollectedData_" + cfg["scorer"] + ".h5",
-            )
+            Path(cfg["project_path"]) / str(trainingsetfolder) / ("CollectedData_" + cfg["scorer"] + ".h5")
         )
 
         # Get list of body parts to evaluate network for
@@ -726,9 +700,8 @@ def evaluate_network(
                 test_pose_cfg["batch_size"] = 1  # in case this was edited for analysis.
 
                 # Create folder structure to store results.
-                evaluationfolder = os.path.join(
-                    cfg["project_path"],
-                    str(auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+                evaluationfolder = Path(cfg["project_path"]) / str(
+                    auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
                 )
                 auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
 
@@ -754,11 +727,9 @@ def evaluate_network(
                     scale = test_pose_cfg["global_scale"]
                     Data = (
                         pd.read_hdf(
-                            os.path.join(
-                                cfg["project_path"],
-                                str(trainingsetfolder),
-                                "CollectedData_" + cfg["scorer"] + ".h5",
-                            )
+                            Path(cfg["project_path"])
+                            / str(trainingsetfolder)
+                            / ("CollectedData_" + cfg["scorer"] + ".h5")
                         )
                         * scale
                     )
@@ -770,8 +741,8 @@ def evaluate_network(
                 # Compute predictions over images
                 ##################################################
                 for snapshot_name in snapshot_names:
-                    test_pose_cfg["init_weights"] = os.path.join(
-                        str(modelfolder), "train", snapshot_name
+                    test_pose_cfg["init_weights"] = str(
+                        Path(modelfolder) / "train" / snapshot_name
                     )  # setting weights to corresponding snapshot.
                     training_iterations = int(snapshot_name.split("-")[-1])
 
@@ -807,7 +778,7 @@ def evaluate_network(
                         print("Running evaluation ...")
                         for imageindex, imagename in tqdm(enumerate(Data.index)):
                             image = imread(
-                                os.path.join(cfg["project_path"], *imagename),
+                                Path(cfg["project_path"]).joinpath(*imagename),
                                 mode="skimage",
                             )
                             if scale != 1:
@@ -907,10 +878,7 @@ def evaluate_network(
 
                         if plotting:
                             print("Plotting...")
-                            foldername = os.path.join(
-                                str(evaluationfolder),
-                                "LabeledImages_" + DLCscorer + "_" + snapshot_name,
-                            )
+                            foldername = Path(evaluationfolder) / ("LabeledImages_" + DLCscorer + "_" + snapshot_name)
                             auxiliaryfunctions.attempt_to_make_folder(foldername)
                             Plotting(
                                 cfg,
@@ -928,11 +896,8 @@ def evaluate_network(
                         conversioncode.guarantee_multiindex_rows(DataMachine)
                         if plotting:
                             DataCombined = pd.concat([Data.T, DataMachine.T], axis=0, sort=False).T
-                            foldername = os.path.join(
-                                str(evaluationfolder),
-                                "LabeledImages_" + DLCscorer + "_" + snapshot_name,
-                            )
-                            if not os.path.exists(foldername):
+                            foldername = Path(evaluationfolder) / ("LabeledImages_" + DLCscorer + "_" + snapshot_name)
+                            if not Path(foldername).exists():
                                 print(
                                     "Plotting..."
                                     "(warning, scale might be inconsistent in comparison "
@@ -986,8 +951,8 @@ def make_results_file(final_result, evaluationfolder, DLCscorer):
         "Test error with p-cutoff",
     ]
     df = pd.DataFrame(final_result, columns=col_names)
-    output_path = os.path.join(str(evaluationfolder), DLCscorer + "-results.csv")
-    if os.path.exists(output_path):
+    output_path = Path(evaluationfolder) / (DLCscorer + "-results.csv")
+    if Path(output_path).exists():
         temp = pd.read_csv(output_path, index_col=0)
         df = pd.concat((temp, df)).reset_index(drop=True)
 
@@ -996,8 +961,8 @@ def make_results_file(final_result, evaluationfolder, DLCscorer):
     ## Also storing one "large" table with results:
     # note: evaluationfolder.parents[0] to get common folder above all shuffle evaluations.
     df = pd.DataFrame(final_result, columns=col_names)
-    output_path = os.path.join(str(Path(evaluationfolder).parents[0]), "CombinedEvaluation-results.csv")
-    if os.path.exists(output_path):
+    output_path = Path(evaluationfolder).parents[0] / "CombinedEvaluation-results.csv"
+    if Path(output_path).exists():
         temp = pd.read_csv(output_path, index_col=0)
         df = pd.concat((temp, df)).reset_index(drop=True)
 

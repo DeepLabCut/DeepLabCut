@@ -17,13 +17,12 @@ https://github.com/eldar/pose-tensorflow
 """
 
 import logging
-import os
 
 
 def setup_logging():
     FORMAT = "%(asctime)-15s %(message)s"
     logging.basicConfig(
-        filename=os.path.join("log.txt"),
+        filename="log.txt",
         filemode="a",
         datefmt="%Y-%m-%d %H:%M:%S",
         level=logging.INFO,

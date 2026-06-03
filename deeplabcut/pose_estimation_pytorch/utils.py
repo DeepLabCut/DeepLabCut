@@ -10,8 +10,8 @@
 #
 from __future__ import annotations
 
-import os
 import random
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -23,8 +23,8 @@ def create_folder(path_to_folder):
     Args:
         path_to_folder: Path to the folder that should be created
     """
-    if not os.path.exists(path_to_folder):
-        os.makedirs(path_to_folder)
+    if not Path(path_to_folder).exists():
+        Path(path_to_folder).mkdir(parents=True)
 
 
 def fix_seeds(seed: int) -> None:

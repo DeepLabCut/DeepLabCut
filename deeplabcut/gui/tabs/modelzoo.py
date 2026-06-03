@@ -8,7 +8,6 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
 import webbrowser
 from functools import partial
 from pathlib import Path
@@ -213,7 +212,7 @@ class ModelZoo(DefaultTab):
         )
         self.loc_line.setReadOnly(True)
         action = self.loc_line.addAction(
-            QIcon(os.path.join(BASE_DIR, "assets", "icons", "open2.png")),
+            QIcon(str(BASE_DIR / "assets" / "icons" / "open2.png")),
             QtWidgets.QLineEdit.TrailingPosition,
         )
         action.triggered.connect(self.select_folder)
@@ -251,7 +250,7 @@ class ModelZoo(DefaultTab):
         validator.validationChanged.connect(self._handle_validation_change)
         self.scales_line.setValidator(validator)
         tooltip_label = QtWidgets.QLabel()
-        tooltip_label.setPixmap(QPixmap(os.path.join(BASE_DIR, "assets", "icons", "help2.png")).scaledToWidth(30))
+        tooltip_label.setPixmap(QPixmap(str(BASE_DIR / "assets" / "icons" / "help2.png")).scaledToWidth(30))
         tooltip_label.setToolTip(
             "Approximate animal sizes in pixels, for spatial pyramid search. If left "
             "blank, defaults to video height +/- 50 pixels"
@@ -269,7 +268,7 @@ class ModelZoo(DefaultTab):
         self.adapt_checkbox.setStyleSheet("font-weight: bold; font-size: 16px; padding: 6px 12px;")
         # Add help button
         adapt_help_btn = QtWidgets.QToolButton()
-        adapt_help_btn.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", "help2.png")))
+        adapt_help_btn.setIcon(QIcon(str(BASE_DIR / "assets" / "icons" / "help2.png")))
         adapt_help_btn.setIconSize(QSize(24, 24))
         adapt_help_btn.setToolTip("What is video adaptation?")
 

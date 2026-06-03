@@ -2000,7 +2000,7 @@ def _load_config(config: str) -> dict:
     if not config_path.exists():
         raise FileNotFoundError(f"Config {config} is not found. Please make sure that the file exists.")
 
-    with open(config) as f:
+    with config_path.open() as f:
         project_config = YAML(typ="safe", pure=True).load(f)
 
     return project_config

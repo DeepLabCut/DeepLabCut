@@ -10,7 +10,6 @@
 #
 from __future__ import annotations
 
-import os
 import re
 from importlib import import_module
 from pathlib import Path
@@ -200,7 +199,7 @@ class CreateTrainingDataset(DefaultTab):
         memory_replay_folder = Path(self.root.project_folder) / "memory_replay"
         conversion_matrix_out_path = str(memory_replay_folder / "confusion_matrix.png")
         files = [self.root.config]
-        if os.path.exists(conversion_matrix_out_path):
+        if Path(conversion_matrix_out_path).exists():
             files.append(conversion_matrix_out_path)
         _ = launch_napari(files)
 
@@ -340,7 +339,7 @@ class CreateTrainingDataset(DefaultTab):
             )
             if self.root.is_multianimal:
                 filenames[0] = filenames[0].replace("mat", "pickle")
-            if all(os.path.exists(os.path.join(self.root.project_folder, file)) for file in filenames):
+            if all((Path(self.root.project_folder) / file).exists() for file in filenames):
                 self.root.shuffle_created.emit(self.shuffle.value())
                 msg = _create_message_box(
                     "The training dataset is successfully created.",

@@ -9,8 +9,8 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import copy
-import os
 import warnings
+from pathlib import Path
 
 import numpy as np
 
@@ -30,7 +30,7 @@ def raw_2_imagename_with_id(image):
     """
 
     file_name = image["file_name"]
-    image_name = file_name.split(os.sep)[-1]
+    image_name = Path(file_name).name
     pre, suffix = image_name.split(".")
     image_id = image["id"]
     return f"{pre}_{image_id}.{suffix}"
@@ -40,7 +40,7 @@ def raw_2_imagename(image):
     """Only getting the imagename part from the image object."""
 
     file_name = image["file_name"]
-    image_name = file_name.split(os.sep)[-1]
+    image_name = Path(file_name).name
     return image_name
 
 

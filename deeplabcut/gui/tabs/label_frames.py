@@ -10,7 +10,6 @@
 #
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 from PySide6 import QtWidgets
@@ -122,12 +121,12 @@ class LabelFrames(DefaultTab):
         dialog = QtWidgets.QFileDialog(self)
         dialog.setFileMode(QtWidgets.QFileDialog.Directory)
         dialog.setViewMode(QtWidgets.QFileDialog.Detail)
-        dialog.setDirectory(os.path.join(os.path.dirname(self.root.config), "labeled-data"))
+        dialog.setDirectory(str(Path(self.root.config).parent / "labeled-data"))
         if dialog.exec_():
             folder = dialog.selectedFiles()[0]
             has_h5 = False
-            for file in os.listdir(folder):
-                if file.endswith(".h5"):
+            for file in Path(folder).iterdir():
+                if file.name.endswith(".h5"):
                     has_h5 = True
                     break
             if not has_h5:

@@ -11,7 +11,6 @@
 
 
 import logging
-import os
 import pickle
 from math import sqrt
 from pathlib import Path
@@ -42,7 +41,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             self._n_animals = 1
 
         else:
-            self.main_cfg = auxiliaryfunctions.read_config(os.path.join(self.cfg["project_path"], "config.yaml"))
+            self.main_cfg = auxiliaryfunctions.read_config(Path(self.cfg["project_path"]) / "config.yaml")
             animals, unique, multi = auxfun_multianimal.extractindividualsandbodyparts(self.main_cfg)
             self._n_kpts = len(multi) + len(unique)
             self._n_animals = len(animals)
@@ -88,8 +87,8 @@ class MAImgaugPoseDataset(BasePoseDataset):
                     mask_kpts_below_thresh=mask_kpts_below_thresh,
                 )
 
-        file_name = os.path.join(self.cfg["project_path"], cfg["dataset"])
-        with open(os.path.join(self.cfg["project_path"], file_name), "rb") as f:
+        file_name = Path(self.cfg["project_path"]) / cfg["dataset"]
+        with (Path(self.cfg["project_path"]) / file_name).open("rb") as f:
             # Pickle the 'data' dictionary using the highest protocol available.
             pickledata = pickle.load(f)
 
@@ -105,7 +104,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             im_path = sample["image"]
             if isinstance(im_path, str):
                 im_path = robust_split_path(im_path)
-            item.im_path = os.path.join(*im_path)
+            item.im_path = str(Path(*im_path))
             item.im_size = sample["size"]
             if "joints" in sample.keys():
                 Joints = sample["joints"]
@@ -123,7 +122,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
 
     def _load_pseudo_data_from_h5(self, cfg, threshold=0.5, mask_kpts_below_thresh=False):
         gt_file = cfg["pseudo_label"]
-        assert os.path.exists(gt_file)
+        assert Path(gt_file).exists()
         path_ = Path(gt_file)
         print("Using gt file:", path_.name)
         len(cfg["all_joints_names"])
@@ -140,12 +139,12 @@ class MAImgaugPoseDataset(BasePoseDataset):
             item.num_joints = kpts.shape[0]
             joint_ids = np.arange(item.num_joints)[..., np.newaxis]
             frame_name = "frame_" + str(int(imagename.split("frame")[1])) + ".png"
-            item.im_path = os.path.join(video_root, frame_name)
+            item.im_path = str(Path(video_root) / frame_name)
 
             if self.vid:
                 item.im_size = self.video_image_size
             else:
-                item.im_size = read_image_shape_fast(os.path.join(video_root, frame_name))
+                item.im_size = read_image_shape_fast(Path(video_root) / frame_name)
 
             item.joints = {}
 
@@ -366,7 +365,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
             im_file = data_item.im_path
 
             logging.debug("image %s", im_file)
-            image = imread(os.path.join(self.cfg["project_path"], im_file), mode="skimage")
+            image = imread(Path(self.cfg["project_path"]) / im_file, mode="skimage")
             if self.has_gt:
                 joints = data_item.joints
                 kpts = np.full((self._n_kpts * self._n_animals, 2), np.nan)
@@ -504,7 +503,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
                         shape=batch_images[i].shape,
                     )
                     im = kps.draw_on_image(batch_images[i])
-                    imageio.imwrite(os.path.join(self.cfg["project_path"], str(i) + ".png"), im)
+                    imageio.imwrite(Path(self.cfg["project_path"]) / f"{i}.png", im)
 
             batch = {Batch.inputs: batch_images.astype(np.float64)}
             if self.has_gt:

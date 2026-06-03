@@ -198,7 +198,7 @@ def create_new_project(
             try:
                 src = str(src)
                 dst = str(dst)
-                os.symlink(src, dst)
+                Path(dst).symlink_to(src)
                 print(f"Created the symlink of {src} to {dst}")
             except OSError:
                 try:
@@ -223,14 +223,14 @@ def create_new_project(
             # video. [old: rel_video_path = os.path.realpath(video)]
             rel_video_path = str(Path.resolve(Path(video)))
         except Exception:
-            rel_video_path = os.readlink(str(video))
+            rel_video_path = str(Path(str(video)).readlink())
 
         try:
             vid = VideoReader(rel_video_path)
             video_sets[rel_video_path] = {"crop": ", ".join(map(str, vid.get_bbox()))}
         except OSError:
             warnings.warn("Cannot open the video file! Skipping to the next one...", stacklevel=2)
-            os.remove(video)  # Removing the video or link from the project
+            Path(video).unlink()  # Removing the video or link from the project
 
     if not len(video_sets):
         # Silently sweep the files that were already written.

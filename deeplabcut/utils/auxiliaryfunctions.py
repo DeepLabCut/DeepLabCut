@@ -212,7 +212,7 @@ def safe_resolve(path: Path) -> Path:
     """
     resolved = path.resolve()
     try:
-        open(resolved).close()
+        resolved.open().close()
         return resolved
     except OSError:
         return path.absolute()
@@ -222,9 +222,9 @@ def read_config(configname):
     """Reads structured config file defining a project."""
     ruamelFile = YAML()
     path = Path(configname)
-    if os.path.exists(path):
+    if path.exists():
         try:
-            with open(path) as f:
+            with path.open() as f:
                 cfg = ruamelFile.load(f)
                 curr_dir = Path(configname).parent.absolute()
 
@@ -244,7 +244,7 @@ def read_config(configname):
         except Exception as err:
             if len(err.args) > 2:
                 if err.args[2] == "could not determine a constructor for the tag '!!python/tuple'":
-                    with open(path) as ymlfile:
+                    with path.open() as ymlfile:
                         cfg = yaml.load(ymlfile, Loader=yaml.SafeLoader)
                         write_config(configname, cfg)
                 else:
@@ -260,7 +260,7 @@ def read_config(configname):
 
 def write_config(configname, cfg):
     """Write structured config file."""
-    with open(configname, "w") as cf:
+    with Path(configname).open("w") as cf:
         cfg_file, ruamelFile = create_config_template(cfg.get("multianimalproject", False))
         for key in cfg.keys():
             cfg_file[key] = cfg[key]
@@ -353,7 +353,7 @@ def get_unique_bodyparts(cfg: dict) -> list[str]:
 
 def write_config_3d(configname, cfg):
     """Write structured 3D config file."""
-    with open(configname, "w") as cf:
+    with Path(configname).open("w") as cf:
         cfg_file, ruamelFile = create_config_template_3d()
         for key in cfg.keys():
             cfg_file[key] = cfg[key]
@@ -361,19 +361,19 @@ def write_config_3d(configname, cfg):
 
 
 def write_config_3d_template(projconfigfile, cfg_file_3d, ruamelFile_3d):
-    with open(projconfigfile, "w") as cf:
+    with Path(projconfigfile).open("w") as cf:
         ruamelFile_3d.dump(cfg_file_3d, cf)
 
 
 def read_plainconfig(configname):
-    if not os.path.exists(configname):
+    if not Path(configname).exists():
         raise FileNotFoundError(f"Config {configname} is not found. Please make sure that the file exists.")
-    with open(configname) as file:
+    with Path(configname).open() as file:
         return YAML().load(file)
 
 
 def write_plainconfig(configname, cfg):
-    with open(configname, "w") as file:
+    with Path(configname).open("w") as file:
         YAML().dump(cfg, file)
 
 
@@ -383,28 +383,28 @@ def attempt_to_make_folder(foldername, recursive=False):
     Does nothing if it already exists.
     """
     try:
-        os.path.isdir(foldername)
+        Path(foldername).is_dir()
     except TypeError:  # https://www.python.org/dev/peps/pep-0519/
         foldername = os.fspath(foldername)  # https://github.com/DeepLabCut/DeepLabCut/issues/105 (windows)
 
-    if os.path.isdir(foldername):
+    if Path(foldername).is_dir():
         pass
     else:
         if recursive:
-            os.makedirs(foldername)
+            Path(foldername).mkdir(parents=True)
         else:
-            os.mkdir(foldername)
+            Path(foldername).mkdir()
 
 
 def read_pickle(filename):
     """Read the pickle file."""
-    with open(filename, "rb") as handle:
+    with Path(filename).open("rb") as handle:
         return pickle.load(handle)
 
 
 def write_pickle(filename, data):
     """Write the pickle file."""
-    with open(filename, "wb") as handle:
+    with Path(filename).open("wb") as handle:
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
@@ -430,19 +430,19 @@ def save_data(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv
         print("Saving csv poses!")
         DataMachine.to_csv(dataname.split(".h5")[0] + ".csv")
     DataMachine.to_hdf(dataname, key="df_with_missing", format="table", mode="w")
-    with open(dataname.split(".h5")[0] + "_meta.pickle", "wb") as f:
+    with Path(dataname.split(".h5")[0] + "_meta.pickle").open("wb") as f:
         # Pickle the 'data' dictionary using the highest protocol available.
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
 
 def save_metadata(metadatafilename, data, trainIndices, testIndices, trainFraction):
-    with open(metadatafilename, "wb") as f:
+    with Path(metadatafilename).open("wb") as f:
         # Pickle the 'labeled-data' dictionary using the highest protocol available.
         pickle.dump([data, trainIndices, testIndices, trainFraction], f, pickle.HIGHEST_PROTOCOL)
 
 
 def load_metadata(metadatafile):
-    with open(metadatafile, "rb") as f:
+    with Path(metadatafile).open("rb") as f:
         [
             trainingdata_details,
             trainIndices,
@@ -454,16 +454,16 @@ def load_metadata(metadatafile):
 
 def get_immediate_subdirectories(a_dir):
     """Get list of immediate subdirectories."""
-    return [name for name in os.listdir(a_dir) if os.path.isdir(os.path.join(a_dir, name))]
+    return [p.name for p in Path(a_dir).iterdir() if p.is_dir()]
 
 
 # TODO: @deruyter92 2026-05-20: this function could be updated to match the
 # signature of collect_video_paths, allowing for multiple extensions.
 def grab_files_in_folder(folder, ext="", relative=True):
     """Return the paths of files with extension *ext* present in *folder*."""
-    for file in os.listdir(folder):
-        if file.endswith(ext):
-            yield file if relative else os.path.join(folder, file)
+    for file in Path(folder).iterdir():
+        if file.name.endswith(ext):
+            yield file.name if relative else str(file)
 
 
 def filter_files_by_patterns(
@@ -528,24 +528,26 @@ def get_training_set_folder(cfg: dict) -> Path:
     Task = cfg["Task"]
     date = cfg["date"]
     iterate = "iteration-" + str(cfg["iteration"])
-    return Path(os.path.join("training-datasets", iterate, "UnaugmentedDataSet_" + Task + date))
+    return Path("training-datasets") / iterate / ("UnaugmentedDataSet_" + Task + date)
 
 
 def get_data_and_metadata_filenames(trainingsetfolder, trainFraction, shuffle, cfg):
     # Filename for metadata and data relative to project path for corresponding parameters
-    metadatafn = os.path.join(
-        str(trainingsetfolder),
-        "Documentation_data-"
-        + cfg["Task"]
-        + "_"
-        + str(int(trainFraction * 100))
-        + "shuffle"
-        + str(shuffle)
-        + ".pickle",
+    metadatafn = str(
+        Path(str(trainingsetfolder))
+        / (
+            "Documentation_data-"
+            + cfg["Task"]
+            + "_"
+            + str(int(trainFraction * 100))
+            + "shuffle"
+            + str(shuffle)
+            + ".pickle"
+        )
     )
-    datafn = os.path.join(
-        str(trainingsetfolder),
-        cfg["Task"] + "_" + cfg["scorer"] + str(int(100 * trainFraction)) + "shuffle" + str(shuffle) + ".mat",
+    datafn = str(
+        Path(str(trainingsetfolder))
+        / (cfg["Task"] + "_" + cfg["scorer"] + str(int(100 * trainFraction)) + "shuffle" + str(shuffle) + ".mat")
     )
 
     return datafn, metadatafn
@@ -652,7 +654,7 @@ def get_deeplabcut_path():
     """Get path of where deeplabcut is currently running."""
     import importlib.util
 
-    return os.path.split(importlib.util.find_spec("deeplabcut").origin)[0]
+    return str(Path(importlib.util.find_spec("deeplabcut").origin).parent)
 
 
 def intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts):
@@ -673,8 +675,8 @@ def intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts):
 
 
 def get_labeled_data_folder(cfg, video):
-    videoname = os.path.splitext(os.path.basename(video))[0]
-    return os.path.join(cfg["project_path"], "labeled-data", videoname)
+    videoname = Path(video).stem
+    return str(Path(cfg["project_path"]) / "labeled-data" / videoname)
 
 
 def form_data_containers(df, bodyparts):
@@ -738,14 +740,14 @@ def get_scorer_name(
         train_folder = Path(cfg["project_path"]) / model_folder / "train"
         snapshot_names = get_snapshots_from_folder(train_folder)
         snapshot_name = snapshot_names[snapshotindex]
-        trainingsiterations = (snapshot_name.split(os.sep)[-1]).split("-")[-1]
+        trainingsiterations = Path(snapshot_name).parts[-1].split("-")[-1]
 
     dlc_cfg = read_plainconfig(
-        os.path.join(
-            cfg["project_path"],
-            str(get_model_folder(trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix)),
-            "train",
-            engine.pose_cfg_name,
+        str(
+            Path(cfg["project_path"])
+            / get_model_folder(trainFraction, shuffle, cfg, engine=engine, modelprefix=modelprefix)
+            / "train"
+            / engine.pose_cfg_name
         )
     )
     # ABBREVIATE NETWORK NAMES -- esp. for mobilenet!
@@ -776,9 +778,10 @@ def check_if_post_processing(folder, vname, DLCscorer, DLCscorerlegacy, suffix="
     If not, figures out if data was already analyzed (either with legacy scorer name or
     new one!)
     """
-    outdataname = os.path.join(folder, vname + DLCscorer + suffix + ".h5")
-    sourcedataname = os.path.join(folder, vname + DLCscorer + ".h5")
-    if os.path.isfile(outdataname):  # was data already processed?
+    folder = Path(folder)
+    outdataname = str(folder / (vname + DLCscorer + suffix + ".h5"))
+    sourcedataname = str(folder / (vname + DLCscorer + ".h5"))
+    if Path(outdataname).is_file():  # was data already processed?
         if suffix == "filtered":
             print("Video already filtered...", outdataname)
         elif suffix == "_skeleton":
@@ -786,21 +789,21 @@ def check_if_post_processing(folder, vname, DLCscorer, DLCscorerlegacy, suffix="
 
         return False, outdataname, sourcedataname, DLCscorer
     else:
-        odn = os.path.join(folder, vname + DLCscorerlegacy + suffix + ".h5")
-        if os.path.isfile(odn):  # was it processed by DLC <2.1 project?
+        odn = str(folder / (vname + DLCscorerlegacy + suffix + ".h5"))
+        if Path(odn).is_file():  # was it processed by DLC <2.1 project?
             if suffix == "filtered":
                 print("Video already filtered...(with DLC<2.1)!", odn)
             elif suffix == "_skeleton":
                 print("Skeleton in video already processed... (with DLC<2.1)!", odn)
             return False, odn, odn, DLCscorerlegacy
         else:
-            sdn = os.path.join(folder, vname + DLCscorerlegacy + ".h5")
+            sdn = str(folder / (vname + DLCscorerlegacy + ".h5"))
             tracks = sourcedataname.replace(".h5", "tracks.h5")
-            if os.path.isfile(sourcedataname):  # Was the video already analyzed?
+            if Path(sourcedataname).is_file():  # Was the video already analyzed?
                 return True, outdataname, sourcedataname, DLCscorer
-            elif os.path.isfile(sdn):  # was it analyzed with DLC<2.1?
+            elif Path(sdn).is_file():  # was it analyzed with DLC<2.1?
                 return True, odn, sdn, DLCscorerlegacy
-            elif os.path.isfile(tracks):  # May be a MA project with tracklets
+            elif Path(tracks).is_file():  # May be a MA project with tracklets
                 return True, tracks.replace(".h5", f"{suffix}.h5"), tracks, DLCscorer
             else:
                 print("Video not analyzed -- Run analyze_videos first.")
@@ -810,7 +813,7 @@ def check_if_post_processing(folder, vname, DLCscorer, DLCscorerlegacy, suffix="
 def check_if_not_analyzed(destfolder, vname, DLCscorer, DLCscorerlegacy, flag="video"):
     h5files = list(grab_files_in_folder(destfolder, "h5", relative=False))
     if not len(h5files):
-        dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
+        dataname = str(Path(destfolder) / (vname + DLCscorer + ".h5"))
         return True, dataname, DLCscorer
 
     # Iterate over data files and stop as soon as one matching the scorer is found
@@ -829,18 +832,18 @@ def check_if_not_analyzed(destfolder, vname, DLCscorer, DLCscorerlegacy, flag="v
             return False, h5file, DLCscorerlegacy
 
     # If there was no match...
-    dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
+    dataname = str(Path(destfolder) / (vname + DLCscorer + ".h5"))
     return True, dataname, DLCscorer
 
 
 def check_if_not_evaluated(folder, DLCscorer, DLCscorerlegacy, snapshot):
-    dataname = os.path.join(folder, DLCscorer + "-" + str(snapshot) + ".h5")
-    if os.path.isfile(dataname):
+    dataname = str(Path(folder) / (DLCscorer + "-" + str(snapshot) + ".h5"))
+    if Path(dataname).is_file():
         print("This net has already been evaluated!")
         return False, dataname, DLCscorer
     else:
-        dn = os.path.join(folder, DLCscorerlegacy + "-" + str(snapshot) + ".h5")
-        if os.path.isfile(dn):
+        dn = str(Path(folder) / (DLCscorerlegacy + "-" + str(snapshot) + ".h5"))
+        if Path(dn).is_file():
             print("This net has already been evaluated (with DLC<2.1)!")
             return False, dn, DLCscorerlegacy
         else:
@@ -933,8 +936,9 @@ def load_analyzed_data(folder, videoname, scorer, filtered=False, track_method="
 
 
 def load_detection_data(video, scorer, track_method):
-    folder = os.path.dirname(video)
-    videoname = os.path.splitext(os.path.basename(video))[0]
+    video = Path(video)
+    folder = video.parent
+    videoname = video.stem
     if track_method == "skeleton":
         tracker = "sk"
     elif track_method == "box":
@@ -944,8 +948,8 @@ def load_detection_data(video, scorer, track_method):
     else:
         raise ValueError(f"Unrecognized track_method={track_method}")
 
-    filepath = os.path.splitext(video)[0] + scorer + f"_{tracker}.pickle"
-    if not os.path.isfile(filepath):
+    filepath = str(video.with_suffix("")) + scorer + f"_{tracker}.pickle"
+    if not Path(filepath).is_file():
         raise FileNotFoundError(
             f"No detection data found in {folder} for video {videoname}, scorer {scorer}, and tracker {track_method}"
         )
@@ -954,7 +958,7 @@ def load_detection_data(video, scorer, track_method):
 
 def find_next_unlabeled_folder(config_path, verbose=False):
     cfg = read_config(config_path)
-    base_folder = Path(os.path.join(cfg["project_path"], "labeled-data"))
+    base_folder = Path(cfg["project_path"]) / "labeled-data"
     h5files = sorted(
         base_folder.rglob("*.h5"),
         key=lambda p: p.lstat().st_mtime,

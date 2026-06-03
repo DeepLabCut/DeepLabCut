@@ -602,7 +602,7 @@ def analyze_videos(
                 robust_nframes=robust_nframes,
             )
 
-            with open(output_path / f"{output_prefix}_meta.pickle", "wb") as f:
+            with (output_path / f"{output_prefix}_meta.pickle").open("wb") as f:
                 pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
             if use_shelve and save_as_df:
@@ -610,7 +610,7 @@ def analyze_videos(
 
             if not use_shelve:
                 output_data = _generate_output_data(pose_cfg, predictions)
-                with open(output_pkl, "wb") as f:
+                with Path(output_pkl).open("wb") as f:
                     pickle.dump(output_data, f, pickle.HIGHEST_PROTOCOL)
 
                 if save_as_df:
@@ -780,7 +780,7 @@ def _generate_assemblies_file(
 ) -> None:
     """Generates the assemblies file from predictions."""
     if full_data_path.exists():
-        with open(full_data_path, "rb") as f:
+        with full_data_path.open("rb") as f:
             data = pickle.load(f)
 
     else:
@@ -831,7 +831,7 @@ def _generate_assemblies_file(
             unique_preds = unique_preds.transpose((1, 0, 2))
             assemblies["single"][frame_index] = unique_preds[0]  # single prediction
 
-    with open(output_path, "wb") as file:
+    with Path(output_path).open("wb") as file:
         pickle.dump(assemblies, file, pickle.HIGHEST_PROTOCOL)
 
     if isinstance(data, shelving.ShelfReader):

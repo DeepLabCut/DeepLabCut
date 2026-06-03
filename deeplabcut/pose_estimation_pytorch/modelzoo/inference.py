@@ -193,7 +193,7 @@ def _video_inference_superanimal(
         )
 
         results[video_path] = df
-        with open(output_json, "w") as f:
+        with output_json.open("w") as f:
             json.dump(predictions, f, cls=NumpyEncoder)
 
         if create_labeled_video:

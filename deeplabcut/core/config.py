@@ -26,7 +26,7 @@ def read_config_as_dict(config_path: str | Path) -> dict:
     Returns:
         The configuration file with pure Python classes
     """
-    with open(config_path) as f:
+    with Path(config_path).open() as f:
         cfg = YAML(typ="safe", pure=True).load(f)
 
     return cfg
@@ -46,7 +46,7 @@ def write_config(config_path: str | Path, config: dict, overwrite: bool = True) 
     if not overwrite and Path(config_path).exists():
         raise FileExistsError(f"Cannot write to {config_path} - set overwrite=True to force")
 
-    with open(config_path, "w") as file:
+    with Path(config_path).open("w") as file:
         YAML().dump(config, file)
 
 

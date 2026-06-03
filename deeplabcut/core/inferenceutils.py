@@ -20,6 +20,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass
 from math import erf, sqrt
+from pathlib import Path
 from typing import Any
 
 import networkx as nx
@@ -828,7 +829,7 @@ class Assembler:
                         pbar.update()
 
     def from_pickle(self, pickle_path):
-        with open(pickle_path, "rb") as file:
+        with Path(pickle_path).open("rb") as file:
             data = pickle.load(file)
         self.unique = data.pop("single", {})
         self.assemblies = data
@@ -876,7 +877,7 @@ class Assembler:
             data[ind] = [ass.data for ass in assemblies]
         if self.unique:
             data["single"] = self.unique
-        with open(output_name, "wb") as file:
+        with Path(output_name).open("wb") as file:
             pickle.dump(data, file, pickle.HIGHEST_PROTOCOL)
 
 

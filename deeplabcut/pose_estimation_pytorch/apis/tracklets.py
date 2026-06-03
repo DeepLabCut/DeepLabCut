@@ -66,7 +66,7 @@ def convert_detections2tracklets(
         auxiliaryfunctions.write_config(config, cfg)
 
     train_fraction = cfg["TrainingFraction"][trainingsetindex]
-    start_path = os.getcwd()  # record cwd to return to this directory in the end
+    start_path = Path.cwd()  # record cwd to return to this directory in the end
 
     # TODO: add cropping as in video analysis!
     # if cropping is not None:
@@ -182,7 +182,7 @@ def convert_detections2tracklets(
                 identity_only=identity_only,
             )
 
-            with open(track_filename, "wb") as f:
+            with Path(track_filename).open("wb") as f:
                 pickle.dump(tracklets, f, pickle.HIGHEST_PROTOCOL)
 
     os.chdir(str(start_path))

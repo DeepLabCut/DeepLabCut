@@ -19,7 +19,6 @@ Licensed under GNU Lesser General Public License v3.0
 """
 
 import math
-import os
 import pickle
 import random
 import shelve
@@ -197,9 +196,9 @@ def SaveFullMultiAnimalData(data, metadata, dataname, suffix="_full"):
     data_path = dataname.split(".h5")[0] + suffix + ".pickle"
     metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
 
-    with open(data_path, "wb") as f:
+    with Path(data_path).open("wb") as f:
         pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
-    with open(metadata_path, "wb") as f:
+    with Path(metadata_path).open("wb") as f:
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
     return data_path, metadata_path
 
@@ -209,11 +208,11 @@ def LoadFullMultiAnimalData(dataname):
     predict_videos.py."""
     data_file = dataname.split(".h5")[0] + "_full.pickle"
     try:
-        with open(data_file, "rb") as handle:
+        with Path(data_file).open("rb") as handle:
             data = pickle.load(handle)
     except (pickle.UnpicklingError, FileNotFoundError):
         data = shelve.open(data_file, flag="r")
-    with open(data_file.replace("_full.", "_meta."), "rb") as handle:
+    with Path(data_file.replace("_full.", "_meta.")).open("rb") as handle:
         metadata = pickle.load(handle)
     return data, metadata
 
@@ -526,7 +525,7 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
 def form_default_inferencecfg(cfg):
     # load defaults
     inferencecfg = auxiliaryfunctions.read_plainconfig(
-        os.path.join(auxiliaryfunctions.get_deeplabcut_path(), "inference_cfg.yaml")
+        str(Path(auxiliaryfunctions.get_deeplabcut_path()) / "inference_cfg.yaml")
     )
     # set project specific parameters:
     inferencecfg["minimalnumberofconnections"] = len(cfg["multianimalbodyparts"]) / 2  # reasonable default

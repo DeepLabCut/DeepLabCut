@@ -9,8 +9,6 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-import glob
-import os
 import shutil
 import tarfile
 from pathlib import Path
@@ -62,7 +60,7 @@ def write_deploy_config(configname, cfg):
     Write structured config file.
     """
 
-    with open(configname, "w") as cf:
+    with Path(configname).open("w") as cf:
         ruamelFile = ruamel.yaml.YAML()
         cfg_file, ruamelFile = create_deploy_config_template()
         for key in cfg.keys():
@@ -107,12 +105,11 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
     ########################
 
     train_fraction = cfg["TrainingFraction"][trainingsetindex]
-    model_folder = os.path.join(
-        cfg["project_path"],
-        str(auxiliaryfunctions.get_model_folder(train_fraction, shuffle, cfg, modelprefix=modelprefix)),
+    model_folder = Path(cfg["project_path"]) / str(
+        auxiliaryfunctions.get_model_folder(train_fraction, shuffle, cfg, modelprefix=modelprefix)
     )
-    os.path.normpath(model_folder + "/test/pose_cfg.yaml")
-    path_train_config = os.path.normpath(model_folder + "/train/pose_cfg.yaml")
+    Path(model_folder) / "test" / "pose_cfg.yaml"
+    path_train_config = Path(model_folder) / "train" / "pose_cfg.yaml"
 
     try:
         dlc_cfg = load_config(str(path_train_config))
@@ -137,8 +134,8 @@ def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelpre
     ####################################
 
     # Check if data already was generated:
-    dlc_cfg["init_weights"] = os.path.join(model_folder, "train", Snapshots[snapshotindex])
-    (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[-1]
+    dlc_cfg["init_weights"] = str(Path(model_folder) / "train" / Snapshots[snapshotindex])
+    Path(dlc_cfg["init_weights"]).name.split("-")[-1]
     dlc_cfg["num_outputs"] = cfg.get("num_outputs", dlc_cfg.get("num_outputs", 1))
     dlc_cfg["batch_size"] = None
 
@@ -180,21 +177,21 @@ def tf_to_pb(sess, checkpoint, output, output_dir=None):
         If None, will export to the directory of the checkpoint file.
     """
 
-    output_dir = os.path.expanduser(output_dir) if output_dir else os.path.dirname(checkpoint)
-    ckpt_base = os.path.basename(checkpoint)
+    output_dir = Path(output_dir).expanduser() if output_dir else Path(checkpoint).parent
+    ckpt_base = Path(checkpoint).name
 
     # save graph to pbtxt file
-    pbtxt_file = os.path.normpath(output_dir + "/" + ckpt_base + ".pbtxt")
+    pbtxt_file = str(Path(output_dir) / (ckpt_base + ".pbtxt"))
     tf.io.write_graph(sess.graph.as_graph_def(), "", pbtxt_file, as_text=True)
 
     # create frozen graph from pbtxt file
-    pb_file = os.path.normpath(output_dir + "/" + ckpt_base + ".pb")
+    pb_file = Path(output_dir) / (ckpt_base + ".pb")
     frozen_graph_def = tf.compat.v1.graph_util.convert_variables_to_constants(
         sess,
         sess.graph_def,
         output,
     )
-    with open(pb_file, "wb") as file:
+    with Path(pb_file).open("wb") as file:
         file.write(frozen_graph_def.SerializeToString())
 
 
@@ -263,7 +260,7 @@ def export_model(
     except FileNotFoundError:
         FileNotFoundError(f"The config.yaml file at {cfg_path} does not exist.")
 
-    cfg["project_path"] = os.path.dirname(os.path.realpath(cfg_path))
+    cfg["project_path"] = str(Path(cfg_path).resolve().parent)
     cfg["iteration"] = iteration if iteration is not None else cfg["iteration"]
     cfg["batch_size"] = cfg["batch_size"] if cfg["batch_size"] > 1 else 2
     cfg["snapshotindex"] = snapshotindex if snapshotindex is not None else cfg["snapshotindex"]
@@ -272,22 +269,21 @@ def export_model(
 
     sess, input, output, dlc_cfg = load_model(cfg, shuffle, trainingsetindex, TFGPUinference, modelprefix)
     ckpt = dlc_cfg["init_weights"]
-    os.path.dirname(ckpt)
 
     ### set up export directory
 
     export_dir = Path(cfg["project_path"]) / "exported-models"
-    if not os.path.isdir(export_dir):
-        os.mkdir(export_dir)
+    if not export_dir.is_dir():
+        export_dir.mkdir()
 
     sub_dir_name = f"DLC_{cfg['Task']}_{dlc_cfg['net_type']}_iteration-{cfg['iteration']}_shuffle-{shuffle}"
     full_export_dir = export_dir / sub_dir_name
 
-    if os.path.isdir(full_export_dir):
+    if full_export_dir.is_dir():
         if not overwrite:
             raise FileExistsError(f"Export directory {full_export_dir} already exists. Terminating export...")
     else:
-        os.mkdir(full_export_dir)
+        full_export_dir.mkdir()
 
     ### write pose config file
 
@@ -303,14 +299,14 @@ def export_model(
         else:
             sorted_cfg[key] = value
 
-    pose_cfg_file = os.path.normpath(full_export_dir + "/pose_cfg.yaml")
+    pose_cfg_file = full_export_dir / "pose_cfg.yaml"
     ruamel_file = ruamel.yaml.YAML()
-    ruamel_file.dump(sorted_cfg, open(pose_cfg_file, "w"))
+    ruamel_file.dump(sorted_cfg, pose_cfg_file.open("w"))
 
     ### copy checkpoint to export directory
 
-    ckpt_files = glob.glob(ckpt + "*")
-    ckpt_dest = [os.path.normpath(full_export_dir + "/" + os.path.basename(ckf)) for ckf in ckpt_files]
+    ckpt_files = list(Path(ckpt).parent.glob(Path(ckpt).name + "*"))
+    ckpt_dest = [full_export_dir / Path(ckf).name for ckf in ckpt_files]
     for ckf, ckd in zip(ckpt_files, ckpt_dest, strict=False):
         shutil.copy(ckf, ckd)
 
@@ -321,6 +317,6 @@ def export_model(
     ### tar export directory
 
     if make_tar:
-        tar_name = os.path.normpath(full_export_dir + ".tar.gz")
+        tar_name = str(full_export_dir) + ".tar.gz"
         with tarfile.open(tar_name, "w:gz") as tar:
-            tar.add(full_export_dir, arcname=os.path.basename(full_export_dir))
+            tar.add(full_export_dir, arcname=full_export_dir.name)

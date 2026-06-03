@@ -9,7 +9,6 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import json
-import os
 import pickle
 import shutil
 from pathlib import Path
@@ -35,7 +34,7 @@ from deeplabcut.utils import auxiliaryfunctions
 
 def get_filename(filename):
     if isinstance(filename, tuple):
-        filename = os.path.join(*filename)
+        filename = str(Path(*filename))
     return filename
 
 
@@ -81,7 +80,7 @@ class SingleDLC_config:
 
     def create_cfg(self, proj_root, kwargs):
         self.cfg.update(kwargs)
-        with open(os.path.join(proj_root, "config.yaml"), "w") as f:
+        with (Path(proj_root) / "config.yaml").open("w") as f:
             yaml.dump(self.cfg, f)
 
 
@@ -94,7 +93,7 @@ class MaDLC_config:
 
     def create_cfg(self, proj_root, kwargs):
         self.cfg.update(kwargs)
-        with open(os.path.join(proj_root, "config.yaml"), "w") as f:
+        with (Path(proj_root) / "config.yaml").open("w") as f:
             yaml.dump(self.cfg, f)
 
 
@@ -119,7 +118,7 @@ def _generic2madlc(
 
     assert full_image_path, "DLC wants full image path"
 
-    os.makedirs(os.path.join(proj_root, "labeled-data"), exist_ok=True)
+    (Path(proj_root) / "labeled-data").mkdir(parents=True, exist_ok=True)
 
     cfg_template = MaDLC_config()
 
@@ -157,7 +156,7 @@ def _generic2madlc(
     imageid2datasetname = meta["imageid2datasetname"]
 
     for dataset_name in meta["mat_datasets"]:
-        os.makedirs(os.path.join(proj_root, "labeled-data", dataset_name), exist_ok=True)
+        (Path(proj_root) / "labeled-data" / dataset_name).mkdir(parents=True, exist_ok=True)
 
     # also, to make sure the split is right, we will have to pass the right indices
 
@@ -175,7 +174,7 @@ def _generic2madlc(
     for image in total_images:
         image_id = image["id"]
         file_name = image["file_name"]
-        image_name = file_name.split(os.sep)[-1]
+        image_name = Path(file_name).name
         pre, suffix = image_name.split(".")
         if append_image_id:
             dest_image_name = f"{pre}_{image_id}.{suffix}"
@@ -186,16 +185,16 @@ def _generic2madlc(
 
         dataset_name = imageid2datasetname[image_id]
 
-        dest = os.path.join(proj_root, "labeled-data", dataset_name, dest_image_name)
+        dest = Path(proj_root) / "labeled-data" / dataset_name / dest_image_name
         if deepcopy:
             shutil.copy(file_name, dest)
         else:
             try:
-                os.symlink(file_name, dest)
+                dest.symlink_to(file_name)
             except Exception:
                 pass
 
-        relative_dest = os.path.join("labeled-data", dataset_name, dest_image_name)
+        relative_dest = str(Path("labeled-data") / dataset_name / dest_image_name)
 
         imageid2relativedest[image_id] = relative_dest
 
@@ -239,29 +238,29 @@ def _generic2madlc(
                     df.loc[file_name][scorer, f"individual{individual_id}", kpt_name, "x"] = -1
                     df.loc[file_name][scorer, f"individual{individual_id}", kpt_name, "y"] = -1
         df.to_hdf(
-            os.path.join(proj_root, "labeled-data", dataset_name, f"CollectedData_{scorer}.h5"),
+            str(Path(proj_root) / "labeled-data" / dataset_name / f"CollectedData_{scorer}.h5"),
             key="df_with_missing",
             mode="w",
         )
     # paf_graph default as None. But I am not sure how to do better
-    create_multianimaltraining_dataset(os.path.join(proj_root, "config.yaml"), paf_graph=None)
+    create_multianimaltraining_dataset(str(Path(proj_root) / "config.yaml"), paf_graph=None)
 
     # dlc's merge_annotation messes up my indices, so I will need to overwrite the documentation file
     # I could have done it in a more elegant way if I could modify part of DLC
     # source code, but for backward compatibility reasons, overriding
     # documentation is smarter
 
-    config_path = os.path.join(proj_root, "config.yaml")
+    config_path = str(Path(proj_root) / "config.yaml")
 
     cfg = auxiliaryfunctions.read_config(config_path)
 
-    train_folder = os.path.join(proj_root, auxiliaryfunctions.GetTrainingSetFolder(cfg))
+    train_folder = str(Path(proj_root) / auxiliaryfunctions.GetTrainingSetFolder(cfg))
 
     datafilename, metafilename = auxiliaryfunctions.GetDataandMetaDataFilenames(train_folder, train_fraction, 1, cfg)
 
     modify_train_test_cfg(config_path)
 
-    dlc_df = pd.read_hdf(os.path.join(train_folder, f"CollectedData_{scorer}.h5"))
+    dlc_df = pd.read_hdf(str(Path(train_folder) / f"CollectedData_{scorer}.h5"))
 
     # I strip off video info from the naming. For horse10, I need to get it back
     parent_trace = {}
@@ -269,8 +268,8 @@ def _generic2madlc(
     def _filter(image):
         file_name = image["file_name"]
 
-        image_name = file_name.split(os.sep)[-1]
-        video_folder = file_name.split(os.sep)[-2]
+        image_name = Path(file_name).name
+        video_folder = Path(file_name).parts[-2]
         pre, suffix = image_name.split(".")
         image_id = image["id"]
         if append_image_id:
@@ -283,23 +282,23 @@ def _generic2madlc(
     _filter_train_images = list(map(_filter, train_images))
     _filter_test_images = list(map(_filter, test_images))
 
-    with open(os.path.join(train_folder, "parent_trace.pickle"), "wb") as f:
+    with (Path(train_folder) / "parent_trace.pickle").open("wb") as f:
         pickle.dump(parent_trace, f)
 
     trainIndices = [
-        idx for idx, image in enumerate(dlc_df.index) if get_filename(image).split(os.sep)[-1] in _filter_train_images
+        idx for idx, image in enumerate(dlc_df.index) if Path(get_filename(image)).name in _filter_train_images
     ]
     testIndices = [
-        idx for idx, image in enumerate(dlc_df.index) if get_filename(image).split(os.sep)[-1] in _filter_test_images
+        idx for idx, image in enumerate(dlc_df.index) if Path(get_filename(image)).name in _filter_test_images
     ]
 
-    with open(metafilename, "rb") as f:
+    with Path(metafilename).open("rb") as f:
         metafile = pickle.load(f)
 
     metafile[1] = trainIndices
     metafile[2] = testIndices
 
-    with open(metafilename, "wb") as f:
+    with Path(metafilename).open("wb") as f:
         pickle.dump(metafile, f)
 
     # need to overwrite the data pickle file too
@@ -317,7 +316,7 @@ def _generic2madlc(
 
     print(f"overwriting data file {datafilename}")
 
-    with open(os.path.join(proj_root, datafilename), "wb") as f:
+    with (Path(proj_root) / datafilename).open("wb") as f:
         pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -335,7 +334,7 @@ def _generic2sdlc(
 
     assert full_image_path, "DLC wants full image path"
 
-    os.makedirs(os.path.join(proj_root, "labeled-data"), exist_ok=True)
+    (Path(proj_root) / "labeled-data").mkdir(parents=True, exist_ok=True)
 
     cfg_template = SingleDLC_config()
 
@@ -364,7 +363,7 @@ def _generic2sdlc(
     imageid2datasetname = meta["imageid2datasetname"]
 
     for dataset_name in meta["mat_datasets"]:
-        os.makedirs(os.path.join(proj_root, "labeled-data", dataset_name), exist_ok=True)
+        (Path(proj_root) / "labeled-data" / dataset_name).mkdir(parents=True, exist_ok=True)
 
     columnindex = pd.MultiIndex.from_product([[scorer], bodyparts, ["x", "y"]], names=["scorer", "bodyparts", "coords"])
 
@@ -383,7 +382,7 @@ def _generic2sdlc(
         image_id = image["id"]
         file_name = image["file_name"]
 
-        image_name = file_name.split(os.sep)[-1]
+        image_name = Path(file_name).name
         pre, suffix = image_name.split(".")
 
         if append_image_id:
@@ -395,19 +394,19 @@ def _generic2sdlc(
 
         dataset_name = imageid2datasetname[image_id]
 
-        dest = os.path.join(proj_root, "labeled-data", dataset_name, dest_image_name)
+        dest = Path(proj_root) / "labeled-data" / dataset_name / dest_image_name
         if deepcopy:
             shutil.copy(file_name, dest)
         else:
             try:
-                os.symlink(file_name, dest)
+                dest.symlink_to(file_name)
             except Exception:
                 pass
 
         if dataset_name == "AwA-Pose":
             count += 1
 
-        relative_dest = os.path.join("labeled-data", dataset_name, dest_image_name)
+        relative_dest = str(Path("labeled-data") / dataset_name / dest_image_name)
         imageid2relativedest[image_id] = relative_dest
 
     # so we know where to put the next annotation if there are multiple individuals in that image
@@ -452,36 +451,36 @@ def _generic2sdlc(
 
         df = df.dropna(how="all")
         df.to_hdf(
-            os.path.join(proj_root, "labeled-data", dataset_name, f"CollectedData_{scorer}.h5"),
+            str(Path(proj_root) / "labeled-data" / dataset_name / f"CollectedData_{scorer}.h5"),
             key="df_with_missing",
             mode="w",
         )
 
-    create_training_dataset(os.path.join(proj_root, "config.yaml"))
+    create_training_dataset(str(Path(proj_root) / "config.yaml"))
 
     # dlc's merge_annotation messes up my indices, so I will need to overwrite the documentation file
     # I could have done it in a more elegant way if I could modify part of DLC
     # source code, but for backward compatibility reasons, overriding
     # documentation is smarter
 
-    config_path = os.path.join(proj_root, "config.yaml")
+    config_path = str(Path(proj_root) / "config.yaml")
 
     cfg = auxiliaryfunctions.read_config(config_path)
 
-    train_folder = os.path.join(proj_root, auxiliaryfunctions.GetTrainingSetFolder(cfg))
+    train_folder = str(Path(proj_root) / auxiliaryfunctions.GetTrainingSetFolder(cfg))
 
     datafilename, metafilename = auxiliaryfunctions.GetDataandMetaDataFilenames(train_folder, train_fraction, 1, cfg)
 
     modify_train_test_cfg(config_path)
 
-    dlc_df = pd.read_hdf(os.path.join(train_folder, f"CollectedData_{scorer}.h5"))
+    dlc_df = pd.read_hdf(str(Path(train_folder) / f"CollectedData_{scorer}.h5"))
 
     parent_trace = {}
 
     def _filter(image):
         file_name = image["file_name"]
-        image_name = file_name.split(os.sep)[-1]
-        video_folder = file_name.split(os.sep)[-2]
+        image_name = Path(file_name).name
+        video_folder = Path(file_name).parts[-2]
         pre, suffix = image_name.split(".")
         image_id = image["id"]
         if append_image_id:
@@ -496,23 +495,23 @@ def _generic2sdlc(
     _filter_train_images = list(map(_filter, train_images))
     _filter_test_images = list(map(_filter, test_images))
 
-    with open(os.path.join(train_folder, "parent_trace.pickle"), "wb") as f:
+    with (Path(train_folder) / "parent_trace.pickle").open("wb") as f:
         pickle.dump(parent_trace, f)
 
     trainIndices = [
-        idx for idx, image in enumerate(dlc_df.index) if get_filename(image).split(os.sep)[-1] in _filter_train_images
+        idx for idx, image in enumerate(dlc_df.index) if Path(get_filename(image)).name in _filter_train_images
     ]
     testIndices = [
-        idx for idx, image in enumerate(dlc_df.index) if get_filename(image).split(os.sep)[-1] in _filter_test_images
+        idx for idx, image in enumerate(dlc_df.index) if Path(get_filename(image)).name in _filter_test_images
     ]
 
-    with open(metafilename, "rb") as f:
+    with Path(metafilename).open("rb") as f:
         metafile = pickle.load(f)
 
     metafile[1] = trainIndices
     metafile[2] = testIndices
 
-    with open(metafilename, "wb") as f:
+    with Path(metafilename).open("wb") as f:
         pickle.dump(metafile, f)
 
     # need to overwrite the true data file too
@@ -522,7 +521,7 @@ def _generic2sdlc(
 
     print(f"overwriting data file {datafilename}")
 
-    sio.savemat(os.path.join(datafilename), {"dataset": MatlabData})
+    sio.savemat(datafilename, {"dataset": MatlabData})
 
 
 def _generic2coco(
@@ -558,8 +557,8 @@ def _generic2coco(
             the images in the original dataset are used in the annotations.
     """
 
-    os.makedirs(os.path.join(proj_root, "images"), exist_ok=True)
-    os.makedirs(os.path.join(proj_root, "annotations"), exist_ok=True)
+    (Path(proj_root) / "images").mkdir(parents=True, exist_ok=True)
+    (Path(proj_root) / "annotations").mkdir(parents=True, exist_ok=True)
 
     # from new path to old_path
     lookuptable = {}
@@ -611,7 +610,7 @@ def _generic2coco(
                 shutil.copy(src, dest)
             else:
                 try:
-                    os.symlink(src, dest)
+                    dest.symlink_to(src)
                 except Exception as err:
                     print(f"Could not create a symlink from {src} to {dest}: {err}")
                     pass
@@ -622,7 +621,7 @@ def _generic2coco(
     train_annotations = [train_anno for train_anno in train_annotations if train_anno["image_id"] not in broken_links]
     test_annotations = [test_anno for test_anno in test_annotations if test_anno["image_id"] not in broken_links]
 
-    with open(os.path.join(proj_root, "annotations", "train.json"), "w") as f:
+    with (Path(proj_root) / "annotations" / "train.json").open("w") as f:
         train_json_obj = dict(
             images=train_images,
             annotations=train_annotations,
@@ -631,7 +630,7 @@ def _generic2coco(
 
         json.dump(train_json_obj, f, indent=4, cls=NpEncoder)
 
-    with open(os.path.join(proj_root, "annotations", "test.json"), "w") as f:
+    with (Path(proj_root) / "annotations" / "test.json").open("w") as f:
         test_json_obj = dict(
             images=test_images,
             annotations=test_annotations,

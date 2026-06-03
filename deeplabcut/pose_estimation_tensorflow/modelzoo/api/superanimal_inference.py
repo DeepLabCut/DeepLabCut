@@ -8,9 +8,6 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import glob
-import os
-import os.path
 import pickle
 import time
 import warnings
@@ -263,22 +260,8 @@ def video_inference(
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 
     if customized_test_config == "":
-        project_cfg = load_config(
-            os.path.join(
-                dlc_root_path,
-                "modelzoo",
-                "project_configs",
-                f"{project_name}.yaml",
-            )
-        )
-        model_cfg = load_config(
-            os.path.join(
-                dlc_root_path,
-                "modelzoo",
-                "model_configs",
-                f"{model_name}.yaml",
-            )
-        )
+        project_cfg = load_config(Path(dlc_root_path) / "modelzoo" / "project_configs" / f"{project_name}.yaml")
+        model_cfg = load_config(Path(dlc_root_path) / "modelzoo" / "model_configs" / f"{model_name}.yaml")
         test_cfg = {**project_cfg, **model_cfg}
         test_cfg["all_joints"] = [i for i in range(len(test_cfg["bobyparts"]))]
         test_cfg["all_joints_names"] = test_cfg["bobyparts"]
@@ -291,7 +274,7 @@ def video_inference(
 
     # add a temp folder for checkpoint
     weight_folder = str(Path(dlc_root_path) / "modelzoo" / "checkpoints" / f"{project_name}_{model_name}")
-    snapshots = glob.glob(os.path.join(weight_folder, "snapshot-*.index"))
+    snapshots = list(Path(weight_folder).glob("snapshot-*.index"))
     test_cfg["partaffinityfield_graph"] = []
     test_cfg["partaffinityfield_predict"] = False
 
@@ -301,7 +284,7 @@ def video_inference(
         if len(snapshots) == 0:
             raise FileNotFoundError(f"Did not find any super animal snapshots in {weight_folder}")
 
-        init_weights = os.path.abspath(snapshots[0]).replace(".index", "")
+        init_weights = str(Path(snapshots[0]).resolve()).replace(".index", "")
         test_cfg["init_weights"] = init_weights
 
     test_cfg["num_outputs"] = 1
@@ -320,10 +303,10 @@ def video_inference(
             destfolder = videofolder
             auxiliaryfunctions.attempt_to_make_folder(destfolder)
 
-        dataname = os.path.join(destfolder, vname + DLCscorer + ".h5")
+        dataname = str(Path(destfolder) / (vname + DLCscorer + ".h5"))
         datafiles.append(dataname)
 
-        if os.path.isfile(dataname):
+        if Path(dataname).is_file():
             print("Video already analyzed!", dataname)
         else:
             print("Loading ", video)
@@ -395,7 +378,7 @@ def video_inference(
 
             metadata_path = dataname.split(".h5")[0] + "_meta.pickle"
 
-            with open(metadata_path, "wb") as f:
+            with Path(metadata_path).open("wb") as f:
                 pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
             xyz_labs = ["x", "y", "likelihood"]

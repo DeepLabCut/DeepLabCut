@@ -10,11 +10,11 @@
 #
 
 
-import os
 import pickle
 import shutil
 from collections import defaultdict
 from copy import deepcopy
+from pathlib import Path
 
 import networkx as nx
 import numpy as np
@@ -44,9 +44,10 @@ def _set_up_evaluation(data):
 
 
 def _form_original_path(path):
-    root, filename = os.path.split(path)
-    base, ext = os.path.splitext(filename)
-    return os.path.join(root, filename.split("c")[0] + ext)
+    p = Path(path)
+    ext = p.suffix
+    filename = p.name
+    return str(p.parent / (filename.split("c")[0] + ext))
 
 
 def _unsorted_unique(array):
@@ -395,9 +396,9 @@ def cross_validate_paf_graphs(
     inf_cfg_temp = inf_cfg.copy()
     inf_cfg_temp["pcutoff"] = pcutoff
 
-    with open(full_data_file, "rb") as file:
+    with Path(full_data_file).open("rb") as file:
         data = pickle.load(file)
-    with open(metadata_file, "rb") as file:
+    with Path(metadata_file).open("rb") as file:
         metadata = pickle.load(file)
 
     params = _set_up_evaluation(data)
@@ -415,10 +416,8 @@ def cross_validate_paf_graphs(
 
     if calibrate:
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
-        calibration_file = os.path.join(
-            cfg["project_path"],
-            str(trainingsetfolder),
-            "CollectedData_" + cfg["scorer"] + ".h5",
+        calibration_file = str(
+            Path(cfg["project_path"]) / str(trainingsetfolder) / ("CollectedData_" + cfg["scorer"] + ".h5")
         )
     else:
         calibration_file = ""
@@ -448,7 +447,7 @@ def cross_validate_paf_graphs(
     inds = list(paf_inds[size_opt])
     auxiliaryfunctions.edit_config(pose_config, {"paf_best": [int(ind) for ind in inds]})
     if output_name:
-        with open(output_name, "wb") as file:
+        with Path(output_name).open("wb") as file:
             pickle.dump([results], file)
     return results[:3], paf_scores, results[3][size_opt]
 

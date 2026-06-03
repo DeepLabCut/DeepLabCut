@@ -8,7 +8,6 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
 from pathlib import Path
 
 import numpy as np
@@ -35,11 +34,11 @@ def merge_annotateddatasets(cfg):
     But if someone labels on windows and wants to train on a unix cluster or colab...
     """
     AnnotationData = []
-    data_path = Path(os.path.join(cfg["project_path"], "labeled-data"))
+    data_path = Path(cfg["project_path"]) / "labeled-data"
     videos = cfg["video_sets"].keys()
     video_filenames = parse_video_filenames(videos)
     for filename in video_filenames:
-        file_path = os.path.join(data_path / filename, f"CollectedData_{cfg['scorer']}.h5")
+        file_path = data_path / filename / f"CollectedData_{cfg['scorer']}.h5"
         try:
             data = pd.read_hdf(file_path)
             conversioncode.guarantee_multiindex_rows(data)
@@ -238,9 +237,9 @@ class MaDLCDataFrame(BasePoseDataset):
             # I think width and height are important
 
             if isinstance(file_name, tuple):
-                image_path = os.path.join(self.proj_root, *list(file_name))
+                image_path = str(Path(self.proj_root).joinpath(*file_name))
             else:
-                image_path = os.path.join(self.proj_root, file_name)
+                image_path = str(Path(self.proj_root) / file_name)
 
             _, height, width = read_image_shape_fast(image_path)
 

@@ -10,9 +10,9 @@
 #
 
 import logging
-import os
 import pickle
 import time
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -156,7 +156,7 @@ def do_dlc_train(
                     "num_kpts": num_kpts,
                     "feature_dim": feature_dim,
                 },
-                os.path.join(ckpt_folder, model_name + f"_{epoch}.pth"),
+                Path(ckpt_folder) / (model_name + f"_{epoch}.pth"),
             )
 
         if epoch % eval_period == 0:
@@ -193,7 +193,7 @@ def do_dlc_train(
     plot_dict["test_acc"] = test_acc_list
     plot_dict["epochs"] = epoch_list
 
-    with open(os.path.join(ckpt_folder, "dlc_transreid_results.pickle"), "wb") as handle:
+    with (Path(ckpt_folder) / "dlc_transreid_results.pickle").open("wb") as handle:
         pickle.dump(plot_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
@@ -247,9 +247,9 @@ def do_dlc_inference(cfg, model, triplet_loss, val_loader, num_query):
             val_loss += loss.item()
 
     features_list = np.vstack(features_list)
-    with open("video_trans_features.npy", "wb") as f:
+    with Path("video_trans_features.npy").open("wb") as f:
         np.save(f, features_list)
-    with open("labels.npy", "wb") as f:
+    with Path("labels.npy").open("wb") as f:
         np.save(f, labels_list)
     print(f"validation loss {val_loss / len(val_loader)}")
     print(f" acc {total_correct / total_n}")

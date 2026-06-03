@@ -9,7 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
-import os
+from pathlib import Path
 
 from deeplabcut.utils.auxiliaryfunctions import (
     get_deeplabcut_path,
@@ -17,5 +17,5 @@ from deeplabcut.utils.auxiliaryfunctions import (
 )
 
 dlcparent_path = get_deeplabcut_path()
-reid_config = os.path.join(dlcparent_path, "reid_cfg.yaml")
+reid_config = Path(dlcparent_path) / "reid_cfg.yaml"
 cfg = read_plainconfig(reid_config)

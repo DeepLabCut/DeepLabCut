@@ -83,7 +83,7 @@ def extract_maps(
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  #
     #    tf.logging.set_verbosity(tf.logging.WARN)
 
-    start_path = os.getcwd()
+    start_path = Path.cwd()
     # Read file path for pose_config file. >> pass it on
     cfg = auxiliaryfunctions.read_config(config)
 
@@ -105,13 +105,7 @@ def extract_maps(
 
     # Loading human annotatated data
     trainingsetfolder = auxiliaryfunctions.get_training_set_folder(cfg)
-    Data = pd.read_hdf(
-        os.path.join(
-            cfg["project_path"],
-            str(trainingsetfolder),
-            "CollectedData_" + cfg["scorer"] + ".h5",
-        )
-    )
+    Data = pd.read_hdf(Path(cfg["project_path"]) / str(trainingsetfolder) / ("CollectedData_" + cfg["scorer"] + ".h5"))
 
     # Make folder for evaluation
     auxiliaryfunctions.attempt_to_make_folder(Path(cfg["project_path"]) / "evaluation-results")
@@ -126,9 +120,8 @@ def extract_maps(
             trainingsetfolder, trainFraction, shuffle, cfg
         )
 
-        modelfolder = os.path.join(
-            cfg["project_path"],
-            str(auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+        modelfolder = Path(cfg["project_path"]) / str(
+            auxiliaryfunctions.get_model_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
         )
         path_test_config = Path(modelfolder) / "test" / "pose_cfg.yaml"
         # Load meta data
@@ -137,7 +130,7 @@ def extract_maps(
             trainIndices,
             testIndices,
             trainFraction,
-        ) = auxiliaryfunctions.load_metadata(os.path.join(cfg["project_path"], metadatafn))
+        ) = auxiliaryfunctions.load_metadata(Path(cfg["project_path"]) / metadatafn)
         try:
             dlc_cfg = load_config(str(path_test_config))
         except FileNotFoundError as e:
@@ -149,9 +142,8 @@ def extract_maps(
         dlc_cfg["batch_size"] = 1  # in case this was edited for analysis.
 
         # Create folder structure to store results.
-        evaluationfolder = os.path.join(
-            cfg["project_path"],
-            str(auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)),
+        evaluationfolder = Path(cfg["project_path"]) / str(
+            auxiliaryfunctions.get_evaluation_folder(trainFraction, shuffle, cfg, modelprefix=modelprefix)
         )
         auxiliaryfunctions.attempt_to_make_folder(evaluationfolder, recursive=True)
 
@@ -175,12 +167,10 @@ def extract_maps(
         bptnames = [dlc_cfg["all_joints_names"][i] for i in range(len(dlc_cfg["all_joints"]))]
 
         for snapindex in snapindices:
-            dlc_cfg["init_weights"] = os.path.join(
-                str(modelfolder), "train", Snapshots[snapindex]
+            dlc_cfg["init_weights"] = str(
+                Path(modelfolder) / "train" / Snapshots[snapindex]
             )  # setting weights to corresponding snapshot.
-            (dlc_cfg["init_weights"].split(os.sep)[-1]).split("-")[
-                -1
-            ]  # read how many training siterations that corresponds to.
+            Path(dlc_cfg["init_weights"]).name.split("-")[-1]  # read how many training siterations that corresponds to.
 
             # Name for deeplabcut net (based on its parameters)
             # DLCscorer,DLCscorerlegacy =
@@ -204,7 +194,7 @@ def extract_maps(
 
             DATA = {}
             for imageindex, imagename in tqdm(Indices):
-                image = imread(os.path.join(cfg["project_path"], *imagename), mode="skimage")
+                image = imread(Path(cfg["project_path"]).joinpath(*imagename), mode="skimage")
 
                 if scale != 1:
                     image = imresize(image, scale)
@@ -334,14 +324,14 @@ def extract_save_all_maps(
     print("Saving plots...")
     for frac, values in data.items():
         if not dest_folder:
-            dest_folder = os.path.join(
-                cfg["project_path"],
-                str(get_evaluation_folder(frac, shuffle, cfg, modelprefix=modelprefix)),
-                "maps",
+            dest_folder = (
+                Path(cfg["project_path"])
+                / str(get_evaluation_folder(frac, shuffle, cfg, modelprefix=modelprefix))
+                / "maps"
             )
         attempt_to_make_folder(dest_folder)
         filepath = "{imname}_{map}_{label}_{shuffle}_{frac}_{snap}.png"
-        dest_path = os.path.join(dest_folder, filepath)
+        dest_path = Path(dest_folder) / filepath
         for snap, maps in values.items():
             for imagenr in tqdm(maps):
                 (

@@ -10,7 +10,7 @@
 #
 import copy
 import json
-import os
+from pathlib import Path
 
 from deeplabcut.modelzoo.generalized_data_converter.datasets.base import BasePoseDataset
 
@@ -44,8 +44,8 @@ class COCOPoseDataset(BasePoseDataset):
         self.populate_generic()
 
     def _load_json(self, json_fn):
-        path = os.path.join(self.proj_root, "annotations", json_fn)
-        with open(path) as f:
+        path = Path(self.proj_root) / "annotations" / json_fn
+        with path.open() as f:
             json_obj = json.load(f)
         return json_obj
 
@@ -60,7 +60,7 @@ class COCOPoseDataset(BasePoseDataset):
             # assuming the file_name is mmpose style, i.e. only the image name is stored
             # so we need to add back absolute path
 
-            image["file_name"] = os.path.join(self.proj_root, "images", image_path)
+            image["file_name"] = str(Path(self.proj_root) / "images" / image_path)
 
         self.generic_train_images = temp_train_images
         self.generic_test_images = temp_test_images
