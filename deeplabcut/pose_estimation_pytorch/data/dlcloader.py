@@ -363,7 +363,7 @@ class DLCLoader(Loader):
         df: pd.DataFrame,
         parameters: PoseDatasetParameters,
     ) -> dict:
-        """Formerly Shaokai's function.
+        """Convert a DeepLabCut annotation DataFrame to a COCO-like dict.
 
         Args:
             project_root: the path to the project root
