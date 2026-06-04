@@ -9,8 +9,16 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
+from pathlib import Path
 
-def add_new_videos(config, videos, copy_videos=False, coords=None, extract_frames=False):
+
+def add_new_videos(
+    config: str | Path,
+    videos: list[str | Path],
+    copy_videos=False,
+    coords=None,
+    extract_frames=False,
+):
     """Add new videos to the config file at any stage of the project.
 
     Parameters

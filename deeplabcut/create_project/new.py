@@ -26,8 +26,8 @@ from deeplabcut.utils.deprecation import renamed_parameter
 def create_new_project(
     project: str,
     experimenter: str,
-    videos: list[str],
-    working_directory: str | None = None,
+    videos: list[str | Path],
+    working_directory: str | Path | None = None,
     copy_videos: bool = False,
     video_extensions: str | Sequence[str] | None = None,
     multianimal: bool = False,

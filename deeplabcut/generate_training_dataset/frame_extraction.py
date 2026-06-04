@@ -9,8 +9,10 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
+from pathlib import Path
 
-def select_cropping_area(config, videos=None):
+
+def select_cropping_area(config: str | Path, videos=None):
     """Interactively select the cropping area of all videos in the config. A user
     interface pops up with a frame to select the cropping parameters. Use the left click
     to draw a box and hit the button 'set cropping parameters' to store the cropping
@@ -62,7 +64,7 @@ def select_cropping_area(config, videos=None):
 
 
 def extract_frames(
-    config,
+    config: str | Path,
     mode="automatic",
     algo="kmeans",
     crop=False,

@@ -27,17 +27,17 @@ COCO_PERSON_CATEGORY_ID = 1
 
 def get_model_configs_folder_path() -> Path:
     """Returns: the folder containing the SuperAnimal model configuration files"""
-    return Path(auxiliaryfunctions.get_deeplabcut_path()) / "modelzoo" / "model_configs"
+    return auxiliaryfunctions.get_deeplabcut_path() / "modelzoo" / "model_configs"
 
 
 def get_project_configs_folder_path() -> Path:
     """Returns: the folder containing the SuperAnimal project configuration files"""
-    return Path(auxiliaryfunctions.get_deeplabcut_path()) / "modelzoo" / "project_configs"
+    return auxiliaryfunctions.get_deeplabcut_path() / "modelzoo" / "project_configs"
 
 
 def get_snapshot_folder_path() -> Path:
     """Returns: the path to the folder containing the SuperAnimal model snapshots"""
-    return Path(auxiliaryfunctions.get_deeplabcut_path()) / "modelzoo" / "checkpoints"
+    return auxiliaryfunctions.get_deeplabcut_path() / "modelzoo" / "checkpoints"
 
 
 def get_super_animal_model_config_path(model_name: str) -> Path:

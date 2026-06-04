@@ -260,8 +260,8 @@ def video_inference(
     dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
 
     if customized_test_config == "":
-        project_cfg = load_config(Path(dlc_root_path) / "modelzoo" / "project_configs" / f"{project_name}.yaml")
-        model_cfg = load_config(Path(dlc_root_path) / "modelzoo" / "model_configs" / f"{model_name}.yaml")
+        project_cfg = load_config(dlc_root_path / "modelzoo" / "project_configs" / f"{project_name}.yaml")
+        model_cfg = load_config(dlc_root_path / "modelzoo" / "model_configs" / f"{model_name}.yaml")
         test_cfg = {**project_cfg, **model_cfg}
         test_cfg["all_joints"] = [i for i in range(len(test_cfg["bobyparts"]))]
         test_cfg["all_joints_names"] = test_cfg["bobyparts"]
@@ -273,7 +273,7 @@ def video_inference(
         test_cfg = customized_test_config
 
     # add a temp folder for checkpoint
-    weight_folder = str(Path(dlc_root_path) / "modelzoo" / "checkpoints" / f"{project_name}_{model_name}")
+    weight_folder = str(dlc_root_path / "modelzoo" / "checkpoints" / f"{project_name}_{model_name}")
     snapshots = list(Path(weight_folder).glob("snapshot-*.index"))
     test_cfg["partaffinityfield_graph"] = []
     test_cfg["partaffinityfield_predict"] = False

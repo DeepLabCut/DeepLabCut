@@ -960,8 +960,8 @@ class TrackletStitcher:
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def stitch_tracklets(
-    config_path,
-    videos,
+    config_path: str | Path,
+    videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
@@ -985,11 +985,11 @@ def stitch_tracklets(
 
     Parameters
     ----------
-    config_path : str
+    config_path : str or Path
         Path to the main project config.yaml file.
 
-    videos : list
-        A list of strings containing the full paths to videos for analysis or a path to the directory, where all the
+    videos : list[str] or list[Path]
+        Full paths to videos for analysis, or a path to the directory where all the
         videos with same extension are stored.
 
     video_extensions : str | Sequence[str] | None, optional, default=None

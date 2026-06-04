@@ -38,6 +38,21 @@ from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS, collect_video_paths
 from deeplabcut.utils.deprecation import deprecated
 
 
+def as_path(path: str | Path) -> Path:
+    """Coerce a filesystem path argument to :class:`~pathlib.Path`."""
+    return Path(path)
+
+
+def as_optional_path(path: str | Path | None) -> Path | None:
+    """Coerce an optional filesystem path argument to :class:`~pathlib.Path`."""
+    return None if path is None else Path(path)
+
+
+def as_path_list(paths: Sequence[str | Path]) -> list[Path]:
+    """Coerce a sequence of filesystem path arguments to :class:`~pathlib.Path`."""
+    return [Path(p) for p in paths]
+
+
 def create_config_template(multianimal=False):
     """Creates a template for config.yaml file.
 
@@ -218,7 +233,7 @@ def safe_resolve(path: Path) -> Path:
         return path.absolute()
 
 
-def read_config(configname):
+def read_config(configname: str | Path):
     """Reads structured config file defining a project."""
     ruamelFile = YAML()
     path = Path(configname)
@@ -435,13 +450,19 @@ def save_data(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
 
-def save_metadata(metadatafilename, data, trainIndices, testIndices, trainFraction):
+def save_metadata(
+    metadatafilename: str | Path,
+    data,
+    trainIndices,
+    testIndices,
+    trainFraction,
+):
     with Path(metadatafilename).open("wb") as f:
         # Pickle the 'labeled-data' dictionary using the highest protocol available.
         pickle.dump([data, trainIndices, testIndices, trainFraction], f, pickle.HIGHEST_PROTOCOL)
 
 
-def load_metadata(metadatafile):
+def load_metadata(metadatafile: str | Path):
     with Path(metadatafile).open("rb") as f:
         [
             trainingdata_details,
@@ -531,25 +552,20 @@ def get_training_set_folder(cfg: dict) -> Path:
     return Path("training-datasets") / iterate / ("UnaugmentedDataSet_" + Task + date)
 
 
-def get_data_and_metadata_filenames(trainingsetfolder, trainFraction, shuffle, cfg):
-    # Filename for metadata and data relative to project path for corresponding parameters
-    metadatafn = str(
-        Path(str(trainingsetfolder))
-        / (
-            "Documentation_data-"
-            + cfg["Task"]
-            + "_"
-            + str(int(trainFraction * 100))
-            + "shuffle"
-            + str(shuffle)
-            + ".pickle"
-        )
+def get_data_and_metadata_filenames(
+    trainingsetfolder: str | Path,
+    trainFraction: float,
+    shuffle: int,
+    cfg: dict,
+) -> tuple[Path, Path]:
+    """Paths to data and metadata files relative to the project root."""
+    base = Path(trainingsetfolder)
+    datafn = base / (
+        cfg["Task"] + "_" + cfg["scorer"] + str(int(100 * trainFraction)) + "shuffle" + str(shuffle) + ".mat"
     )
-    datafn = str(
-        Path(str(trainingsetfolder))
-        / (cfg["Task"] + "_" + cfg["scorer"] + str(int(100 * trainFraction)) + "shuffle" + str(shuffle) + ".mat")
+    metadatafn = base / (
+        "Documentation_data-" + cfg["Task"] + "_" + str(int(trainFraction * 100)) + "shuffle" + str(shuffle) + ".pickle"
     )
-
     return datafn, metadatafn
 
 
@@ -650,11 +666,11 @@ def get_snapshots_from_folder(train_folder: Path) -> list[str]:
     return sorted(snapshot_names, key=lambda name: int(name.split("-")[1]))
 
 
-def get_deeplabcut_path():
+def get_deeplabcut_path() -> Path:
     """Get path of where deeplabcut is currently running."""
     import importlib.util
 
-    return str(Path(importlib.util.find_spec("deeplabcut").origin).parent)
+    return Path(importlib.util.find_spec("deeplabcut").origin).parent
 
 
 def intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts):
@@ -674,9 +690,9 @@ def intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts):
         return cpbpts
 
 
-def get_labeled_data_folder(cfg, video):
+def get_labeled_data_folder(cfg: dict, video: str | Path) -> Path:
     videoname = Path(video).stem
-    return str(Path(cfg["project_path"]) / "labeled-data" / videoname)
+    return Path(cfg["project_path"]) / "labeled-data" / videoname
 
 
 def form_data_containers(df, bodyparts):

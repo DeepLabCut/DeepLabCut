@@ -244,8 +244,8 @@ def video_inference(
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def analyze_videos(
-    config: str,
-    videos: str | list[str],
+    config: str | Path,
+    videos: str | Path | list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
@@ -254,7 +254,7 @@ def analyze_videos(
     snapshot_index: int | str | None = None,
     detector_snapshot_index: int | str | None = None,
     device: str | None = None,
-    destfolder: str | None = None,
+    destfolder: str | Path | None = None,
     batch_size: int | None = None,
     detector_batch_size: int | None = None,
     dynamic: tuple[bool, float, int] = (False, 0.5, 10),
@@ -415,6 +415,8 @@ def analyze_videos(
     Returns:
         The scorer used to analyze the videos
     """
+    config = Path(config)
+    destfolder = Path(destfolder) if destfolder is not None else None
     # Create the output folder
     _validate_destfolder(destfolder)
 

@@ -35,9 +35,9 @@ from deeplabcut.utils.deprecation import renamed_parameter
 
 
 def find_outliers_in_raw_data(
-    config,
-    pickle_file,
-    video_file,
+    config: str | Path,
+    pickle_file: str | Path,
+    video_file: str | Path,
     pcutoff=0.1,
     percentiles=(5, 95),
     with_annotations=True,
@@ -199,8 +199,8 @@ def _read_video_specific_cropping_margins(config: str | Path | dict, video_path:
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def extract_outlier_frames(
-    config,
-    videos,
+    config: str | Path,
+    videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
@@ -1077,7 +1077,7 @@ def PlottingSingleFramecv2(
             plt.close("all")
 
 
-def merge_datasets(config, forceiterate=None):
+def merge_datasets(config: str | Path, forceiterate=None):
     """Merge the original training dataset with the newly refined data.
 
     Checks if the original training dataset can be merged with the newly refined

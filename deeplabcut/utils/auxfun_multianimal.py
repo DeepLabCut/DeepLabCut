@@ -232,7 +232,7 @@ def returnlabelingdata(config):
             return Data
 
 
-def convert2_maDLC(config, userfeedback=True, forceindividual=None):
+def convert2_maDLC(config: str | Path, userfeedback=True, forceindividual=None):
     """
     Converts single animal annotation file into a multianimal annotation file,
     by introducing an individuals column with either the first individual
@@ -524,9 +524,7 @@ def convert_single2multiplelegacyAM(config, userfeedback=True, target=None):
 
 def form_default_inferencecfg(cfg):
     # load defaults
-    inferencecfg = auxiliaryfunctions.read_plainconfig(
-        str(Path(auxiliaryfunctions.get_deeplabcut_path()) / "inference_cfg.yaml")
-    )
+    inferencecfg = auxiliaryfunctions.read_plainconfig(auxiliaryfunctions.get_deeplabcut_path() / "inference_cfg.yaml")
     # set project specific parameters:
     inferencecfg["minimalnumberofconnections"] = len(cfg["multianimalbodyparts"]) / 2  # reasonable default
     inferencecfg["topktoretain"] = len(cfg["individuals"])

@@ -392,8 +392,8 @@ def CreateVideoSlow(
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def create_labeled_video(
-    config: str,
-    videos: list[str],
+    config: str | Path,
+    videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
@@ -435,10 +435,10 @@ def create_labeled_video(
 
     Parameters
     ----------
-    config : string
+    config : str or Path
         Full path of the config.yaml file.
 
-    videos : list[str]
+    videos : list[str] or list[Path]
         A list of strings containing the full paths to videos for analysis or a path
         to the directory, where all the videos with same extension are stored.
 
@@ -637,6 +637,10 @@ def create_labeled_video(
             video_extensions='mp4',
         )
     """
+    if config != "":
+        config = Path(config)
+    if destfolder is not None:
+        destfolder = Path(destfolder)
     if skeleton is None:
         skeleton = []
     if config == "":
@@ -701,7 +705,7 @@ def create_labeled_video(
     if superanimal_name != "":
         dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
         test_cfg = auxiliaryfunctions.read_plainconfig(
-            str(Path(dlc_root_path) / "modelzoo" / "project_configs" / f"{superanimal_name}.yaml")
+            dlc_root_path / "modelzoo" / "project_configs" / f"{superanimal_name}.yaml"
         )
 
         bodyparts = test_cfg["bodyparts"]
@@ -1145,8 +1149,8 @@ def create_video_with_keypoints_only(
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def create_video_with_all_detections(
-    config,
-    videos,
+    config: str | Path,
+    videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,

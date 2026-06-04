@@ -34,7 +34,7 @@ from deeplabcut.utils import (
 from deeplabcut.utils.auxfun_videos import VideoReader
 
 
-def comparevideolistsanddatafolders(config):
+def comparevideolistsanddatafolders(config: str | Path):
     """Auxiliary function that compares the folders in labeled-data and the ones listed
     under video_sets (in the config file).
 
@@ -60,7 +60,7 @@ def comparevideolistsanddatafolders(config):
             print(vn, " is missing in config file!")
 
 
-def adddatasetstovideolistandviceversa(config):
+def adddatasetstovideolistandviceversa(config: str | Path):
     """First run comparevideolistsanddatafolders(config) to compare the folders in
     labeled-data and the ones listed under video_sets (in the config file). If you
     detect differences this function can be used to maker sure each folder has a video
@@ -122,7 +122,7 @@ def adddatasetstovideolistandviceversa(config):
     auxiliaryfunctions.write_config(config, cfg)
 
 
-def dropduplicatesinannotatinfiles(config):
+def dropduplicatesinannotatinfiles(config: str | Path):
     """Drop duplicate entries (of images) in annotation files (this should no longer
     happen, but might be useful).
 
@@ -151,7 +151,7 @@ def dropduplicatesinannotatinfiles(config):
             print("Attention:", folder, "does not appear to have labeled data!")
 
 
-def dropannotationfileentriesduetodeletedimages(config):
+def dropannotationfileentriesduetodeletedimages(config: str | Path):
     """Drop entries for all deleted images in annotation files, i.e. for folders of the
     type: /labeled-data/*folder*/CollectedData_*scorer*.h5 Will be carried out
     iteratively for all *folders* in labeled-data.
@@ -186,7 +186,7 @@ def dropannotationfileentriesduetodeletedimages(config):
             DC.to_csv(folder / ("CollectedData_" + cfg["scorer"] + ".csv"))
 
 
-def dropimagesduetolackofannotation(config):
+def dropimagesduetolackofannotation(config: str | Path):
     """
     Drop images from corresponding folder for not annotated images: /labeled-data/*folder*/CollectedData_*scorer*.h5
     Will be carried out iteratively for all *folders* in labeled-data.
@@ -233,7 +233,7 @@ def dropimagesduetolackofannotation(config):
         )
 
 
-def dropunlabeledframes(config):
+def dropunlabeledframes(config: str | Path):
     """Drop entries such that all the bodyparts are not labeled from the annotation
     files, i.e. h5 and csv files Will be carried out iteratively for all *folders* in
     labeled-data.
@@ -269,7 +269,7 @@ def dropunlabeledframes(config):
 
 
 def check_labels(
-    config,
+    config: str | Path,
     Labels=None,
     scale=1,
     dpi=100,
@@ -651,7 +651,7 @@ def pad_train_test_indices(train_inds, test_inds, train_fraction):
     return train_inds, test_inds
 
 
-def mergeandsplit(config, trainindex=0, uniform=True):
+def mergeandsplit(config: str | Path, trainindex=0, uniform=True):
     """This function allows additional control over "create_training_dataset".
 
     Merge annotated data sets (from different folders) and split data in a specific way,
@@ -819,7 +819,7 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
 
 
 def create_training_dataset(
-    config,
+    config: str | Path,
     num_shuffles=1,
     Shuffles=None,
     windows2linux=False,
@@ -1142,14 +1142,14 @@ def create_training_dataset(
         # Loading the encoder (if necessary downloading from TF)
         dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
         if not posecfg_template:
-            defaultconfigfile = Path(dlcparent_path) / "pose_cfg.yaml"
+            defaultconfigfile = dlcparent_path / "pose_cfg.yaml"
         elif posecfg_template:
             defaultconfigfile = posecfg_template
 
         if engine == Engine.PYTORCH:
             model_path = dlcparent_path
         else:
-            model_path = auxfun_models.check_for_weights(net_type, Path(dlcparent_path))
+            model_path = auxfun_models.check_for_weights(net_type, dlcparent_path)
 
         Shuffles = validate_shuffles(cfg, Shuffles, num_shuffles, userfeedback)
 
@@ -1220,7 +1220,7 @@ def create_training_dataset(
                 # Saving metadata (Pickle file)
                 ################################################################################
                 auxiliaryfunctions.save_metadata(
-                    str(Path(project_path) / metadatafilename),
+                    Path(project_path) / metadatafilename,
                     data,
                     trainIndices,
                     testIndices,
@@ -1344,7 +1344,7 @@ def create_training_dataset(
         return splits
 
 
-def get_largestshuffle_index(config):
+def get_largestshuffle_index(config: str | Path):
     """Returns the largest shuffle for all dlc-models in the current iteration."""
     shuffle_indices = get_existing_shuffle_indices(config)
     if len(shuffle_indices) > 0:
@@ -1453,7 +1453,7 @@ def validate_shuffles(
 
 
 def create_training_model_comparison(
-    config,
+    config: str | Path,
     trainindex=0,
     num_shuffles=1,
     net_types=None,
@@ -1619,7 +1619,7 @@ def create_training_model_comparison(
 
 
 def create_training_dataset_from_existing_split(
-    config: str,
+    config: str | Path,
     from_shuffle: int,
     from_trainsetindex: int = 0,
     num_shuffles: int = 1,

@@ -26,6 +26,14 @@ from deeplabcut.utils.deprecation import renamed_parameter
 DEFAULT_ENGINE = Engine.PYTORCH
 
 
+def _coerce_video_paths(videos: list[str | Path]) -> list[Path]:
+    return [Path(v) for v in videos]
+
+
+def _coerce_optional_path(path: str | Path | None) -> Path | None:
+    return None if path is None else Path(path)
+
+
 def get_project_engine(cfg: dict) -> Engine:
     """
     Args:
@@ -95,8 +103,8 @@ def train_network(
 
     Parameters
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config : str or Path
+        Full path of the config.yaml file.
 
     shuffle: int, optional, default=1
         Integer value specifying the shuffle index to select for training.
@@ -256,6 +264,7 @@ def train_network(
             display_iters=50,
         )
     """
+    config = Path(config)
     if engine is None:
         engine = get_shuffle_engine(
             _load_config(config),
@@ -313,7 +322,7 @@ def train_network(
 
 
 def return_train_network_path(
-    config,
+    config: str | Path,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     modelprefix: str = "",
@@ -324,8 +333,8 @@ def return_train_network_path(
 
     Parameters
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config : str or Path
+        Full path of the config.yaml file.
 
     shuffle: int
         Integer value specifying the shuffle index to select for training.
@@ -345,6 +354,7 @@ def return_train_network_path(
 
     Returns the triple: trainposeconfigfile, testposeconfigfile, snapshotfolder
     """
+    config = Path(config)
     if engine is None:
         engine = get_shuffle_engine(
             _load_config(config),
@@ -404,7 +414,7 @@ def evaluate_network(
 
     Parameters
     ----------
-    config : string
+    config : str or Path
         Full path of the config.yaml file.
 
     shuffles: sequence of int, optional, default=[1]
@@ -518,6 +528,7 @@ def evaluate_network(
 
     Note: This defaults to standard plotting for single-animal projects.
     """
+    config = Path(config)
     if engine is None:
         cfg = _load_config(config)
         engines = set()
@@ -576,7 +587,7 @@ def evaluate_network(
 @renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since="3.0.0")
 @renamed_parameter(old="Snapindex", new="snapshotindex", since="3.0.0")
 def return_evaluate_network_data(
-    config: str,
+    config: str | Path,
     shuffle: int = 0,
     trainingsetindex: int = 0,
     comparison_bodyparts: str | list[str] = "all",
@@ -603,8 +614,8 @@ def return_evaluate_network_data(
        comparison_bodyparts, cfg, Snapshots[snapshotindex]
        )
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config : str or Path
+        Full path of the config.yaml file.
 
     shuffle: integer
         integers specifying shuffle index of the training dataset.
@@ -642,6 +653,7 @@ def return_evaluate_network_data(
     If you want to plot
     >>> deeplabcut.evaluate_network('/analysis/project/reaching-task/config.yaml',shuffle=[1],plotting=True)
     """
+    config = Path(config)
     if engine is None:
         engine = get_shuffle_engine(
             _load_config(config),
@@ -672,15 +684,15 @@ def return_evaluate_network_data(
 @renamed_parameter(old="batchsize", new="batch_size", since="3.0.0")
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def analyze_videos(
-    config: str,
-    videos: list[str],
+    config: str | Path,
+    videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     gputouse: str | None = None,
     save_as_csv: bool = False,
     in_random_order: bool = True,
-    destfolder: str | None = None,
+    destfolder: str | Path | None = None,
     batch_size: int | None = None,
     cropping: list[int] | None = None,
     TFGPUinference: bool = True,
@@ -713,12 +725,12 @@ def analyze_videos(
 
     Parameters
     ----------
-    config: str
+    config: str or Path
         Full path of the config.yaml file.
 
-    videos: list[str]
-        A list of strings containing the full paths to videos for analysis or a path to
-        the directory, where all the videos with same extension are stored.
+    videos: list[str] or list[Path]
+        Full paths to videos for analysis, or a path to the directory where all videos
+        with the same extension are stored.
 
     video_extensions : str | Sequence[str] | None, optional, default=None
         Controls how ``videos`` are filtered, based on file extension.
@@ -751,7 +763,7 @@ def analyze_videos(
         Whether or not to analyze videos in a random order.
         This is only relevant when specifying a video directory in `videos`.
 
-    destfolder: string or None, optional, default=None
+    destfolder: str, Path, or None, optional, default=None
         Specifies the destination folder for analysis data. If ``None``, the path of
         the video is used. Note that for subsequent analysis this folder also needs to
         be passed.
@@ -915,6 +927,9 @@ def analyze_videos(
             save_as_csv=True,
         )
     """
+    config = Path(config)
+    videos = _coerce_video_paths(videos)
+    destfolder = _coerce_optional_path(destfolder)
     if engine is None:
         engine = get_shuffle_engine(
             _load_config(config),
@@ -999,14 +1014,14 @@ def analyze_videos(
 @renamed_parameter(old="batchsize", new="batch_size", since="3.0.0")
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def create_tracking_dataset(
-    config: str,
-    videos: list[str],
+    config: str | Path,
+    videos: list[str | Path],
     track_method: str,
     video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     gputouse: int | None = None,
-    destfolder: str | None = None,
+    destfolder: str | Path | None = None,
     batch_size: int | None = None,
     cropping: list[int] | None = None,
     TFGPUinference: bool = True,
@@ -1019,13 +1034,12 @@ def create_tracking_dataset(
 
     Parameters
     ----------
-    config: str
+    config: str or Path
         Full path of the config.yaml file.
 
-    videos: list[str]
-        A list of strings containing the full paths to videos from which to create a
-        tracking dataset, or a path to the directory where all the videos with same
-        extension are stored.
+    videos: list[str] or list[Path]
+        Full paths to videos from which to create a tracking dataset, or a path to the
+        directory where all videos with the same extension are stored.
 
     track_method: str
         Specifies the tracker used to generate the pose estimation data. Must be either
@@ -1088,6 +1102,9 @@ def create_tracking_dataset(
     DLCScorer: str
         the scorer used to analyze the videos
     """
+    config = Path(config)
+    videos = _coerce_video_paths(videos)
+    destfolder = _coerce_optional_path(destfolder)
     if engine is None:
         engine = get_shuffle_engine(
             _load_config(config),
@@ -1313,8 +1330,8 @@ def analyze_images(
 
 
 def analyze_time_lapse_frames(
-    config: str,
-    directory: str,
+    config: str | Path,
+    directory: str | Path,
     frametype: str = ".png",
     shuffle: int = 1,
     trainingsetindex: int = 0,
@@ -1340,10 +1357,10 @@ def analyze_time_lapse_frames(
 
     Parameters
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config : str or Path
+        Full path of the config.yaml file.
 
-    directory: string
+    directory: str or Path
         Full path to directory containing the frames that shall be analyzed
 
     frametype: string, optional
@@ -1387,6 +1404,8 @@ def analyze_time_lapse_frames(
     Note: for test purposes one can extract all frames from a video with ffmeg, e.g.
     >>> ffmpeg -i testvideo.avi "thumb%04d.png"
     """
+    config = Path(config)
+    directory = Path(directory)
     if engine is None:
         engine = get_shuffle_engine(
             _load_config(config),
@@ -1427,13 +1446,13 @@ def analyze_time_lapse_frames(
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def convert_detections2tracklets(
-    config: str,
-    videos: list[str],
+    config: str | Path,
+    videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     overwrite: bool = False,
-    destfolder: str | None = None,
+    destfolder: str | Path | None = None,
     ignore_bodyparts: list[str] | None = None,
     inferencecfg: dict | None = None,
     modelprefix: str = "",
@@ -1449,12 +1468,12 @@ def convert_detections2tracklets(
 
     Parameters
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config : str or Path
+        Full path of the config.yaml file.
 
-    videos : list
-        A list of strings containing the full paths to videos for analysis or a path to the directory,
-        where all the videos with same extension are stored.
+    videos : list[str] or list[Path]
+        Full paths to videos for analysis, or a path to the directory where all videos
+        with the same extension are stored.
 
     video_extensions : str | Sequence[str] | None, optional, default=None
         Controls how ``videos`` are filtered, based on file extension.
@@ -1476,7 +1495,7 @@ def convert_detections2tracklets(
     overwrite: bool, optional.
         Overwrite tracks file i.e. recompute tracks from full detections and overwrite.
 
-    destfolder: string, optional
+    destfolder: str, Path, or None, optional
         Specifies the destination folder for analysis data (default is the path of the video).
         Note that for subsequent analysis this
         folder also needs to be passed.
@@ -1536,6 +1555,9 @@ def convert_detections2tracklets(
 
     --------
     """
+    config = Path(config)
+    videos = _coerce_video_paths(videos)
+    destfolder = _coerce_optional_path(destfolder)
     if engine is None:
         engine = get_shuffle_engine(
             _load_config(config),
@@ -1592,7 +1614,7 @@ def convert_detections2tracklets(
 
 
 def extract_maps(
-    config,
+    config: str | Path,
     shuffle: int = 0,
     trainingsetindex: int = 0,
     gputouse: int | None = None,
@@ -1609,8 +1631,8 @@ def extract_maps(
     partaffinity_graph, imagename, True/False if this image was in trainingset).
 
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config : str or Path
+        Full path of the config.yaml file.
 
     shuffle: integer
         integers specifying shuffle index of the training dataset. The default is 0.
@@ -1650,6 +1672,7 @@ def extract_maps(
     If you want to extract the data for image 0 and 103 (of the training set) for model trained with shuffle 0.
     >>> deeplabcut.extract_maps(configfile,0,Indices=[0,103])
     """
+    config = Path(config)
     if engine is None:
         engine = get_shuffle_engine(
             _load_config(config),
@@ -1745,7 +1768,7 @@ def visualize_paf(
 
 @renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since="3.0.0")
 def extract_save_all_maps(
-    config,
+    config: str | Path,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     comparison_bodyparts: str | list[str] = "all",
@@ -1756,7 +1779,7 @@ def extract_save_all_maps(
     rescale: bool = False,
     Indices: list[int] | None = None,
     modelprefix: str = "",
-    dest_folder: str = None,
+    dest_folder: str | Path | None = None,
     snapshot_index: int | str | None = None,
     detector_snapshot_index: int | str | None = None,
     engine: Engine | None = None,
@@ -1766,8 +1789,8 @@ def extract_save_all_maps(
     will be rescaled to the size of the input image and stored in the corresponding model folder in /evaluation-results.
 
     ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    config : str or Path
+        Full path of the config.yaml file.
 
     shuffle: integer
         integers specifying shuffle index of the training dataset. The default is 1.
@@ -1823,6 +1846,8 @@ def extract_save_all_maps(
     >>> deeplabcut.extract_save_all_maps('/analysis/project/reaching-task/config.yaml', shuffle=1,Indices=[0,1,33])
 
     """
+    config = Path(config)
+    dest_folder = _coerce_optional_path(dest_folder)
     if engine is None:
         engine = get_shuffle_engine(
             _load_config(config),
@@ -1870,7 +1895,7 @@ def extract_save_all_maps(
 
 
 def export_model(
-    cfg_path: str,
+    cfg_path: str | Path,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     snapshotindex: int | None = None,
@@ -1892,7 +1917,7 @@ def export_model(
     Parameters
     -----------
 
-    cfg_path : string
+    cfg_path : str or Path
         path to the DLC Project config.yaml file
 
     shuffle : int, optional
@@ -1937,6 +1962,7 @@ def export_model(
     >>> deeplabcut.export_model('/analysis/project/reaching-task/config.yaml',shuffle=3, snapshotindex=-1)
     --------
     """
+    cfg_path = Path(cfg_path)
     if engine is None:
         engine = get_shuffle_engine(
             _load_config(cfg_path),
@@ -1995,7 +2021,7 @@ def _gpu_to_use_to_device(gpu_to_use: int | None, device: str | None) -> str | N
     return device
 
 
-def _load_config(config: str) -> dict:
+def _load_config(config: str | Path) -> dict:
     config_path = Path(config)
     if not config_path.exists():
         raise FileNotFoundError(f"Config {config} is not found. Please make sure that the file exists.")

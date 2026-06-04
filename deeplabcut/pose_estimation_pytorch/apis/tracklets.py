@@ -36,13 +36,13 @@ from deeplabcut.utils.deprecation import renamed_parameter
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def convert_detections2tracklets(
-    config: str,
+    config: str | Path,
     videos: str | list[str],
     video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     overwrite: bool = False,
-    destfolder: str | None = None,
+    destfolder: str | Path | None = None,
     ignore_bodyparts: list[str] | None = None,
     inferencecfg: dict | None = None,
     modelprefix="",

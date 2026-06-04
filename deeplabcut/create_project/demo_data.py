@@ -17,7 +17,7 @@ from deeplabcut.utils import auxiliaryfunctions
 
 
 def load_demo_data(
-    config: str,
+    config: str | Path,
     createtrainingset: bool = True,
     engine: Engine = Engine.PYTORCH,
 ):

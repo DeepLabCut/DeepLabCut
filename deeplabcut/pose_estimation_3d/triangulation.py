@@ -24,8 +24,8 @@ from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, auxiliaryfu
 # other API (i.e. videotype: str -> video_extensions: str | Sequence[str] | None)
 # this requires updating get_camerawise_videos (matching `collect_video_paths`)
 def triangulate(
-    config,
-    video_path,
+    config: str | Path,
+    video_path: str | Path | list[str | Path] | list[list[str | Path]],
     videotype="",
     filterpredictions=True,
     filtertype="median",

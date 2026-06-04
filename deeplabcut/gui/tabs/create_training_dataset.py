@@ -338,7 +338,7 @@ class CreateTrainingDataset(DefaultTab):
                 )
             )
             if self.root.is_multianimal:
-                filenames[0] = filenames[0].replace("mat", "pickle")
+                filenames[0] = filenames[0].with_suffix(".pickle")
             if all((Path(self.root.project_folder) / file).exists() for file in filenames):
                 self.root.shuffle_created.emit(self.shuffle.value())
                 msg = _create_message_box(

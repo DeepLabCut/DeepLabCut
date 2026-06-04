@@ -56,8 +56,8 @@ def set_up_grid(figsize, xlim, ylim, zlim, view):
 # other API (i.e. videotype: str -> video_extensions: str | Sequence[str] | None)
 # this requires updating Get_list_of_triangulated_and_videoFiles.
 def create_labeled_video_3d(
-    config,
-    path,
+    config: str | Path,
+    path: str | Path,
     videofolder=None,
     start=0,
     end=None,

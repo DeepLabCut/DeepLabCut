@@ -168,8 +168,8 @@ def analyzebone(bp1, bp2):
 # MAIN FUNC
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def analyzeskeleton(
-    config,
-    videos,
+    config: str | Path,
+    videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,

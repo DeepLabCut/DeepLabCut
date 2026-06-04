@@ -22,7 +22,7 @@ from deeplabcut.utils import auxiliaryfunctions
 SUPPORTED_FILETYPES = "csv", "nwb"
 
 
-def convertcsv2h5(config, userfeedback=True, scorer=None):
+def convertcsv2h5(config: str | Path, userfeedback=True, scorer=None):
     """
     Convert (image) annotation files in folder labeled-data from csv to h5.
     This function allows the user to manually edit the csv
@@ -89,7 +89,12 @@ def convertcsv2h5(config, userfeedback=True, scorer=None):
             print("Attention:", folder, "does not appear to have labeled data!")
 
 
-def adapt_labeled_data_to_new_project(config_path, remove_old_bodyparts=False, other_scorer=False, userfeedback=False):
+def adapt_labeled_data_to_new_project(
+    config_path: str | Path,
+    remove_old_bodyparts=False,
+    other_scorer=False,
+    userfeedback=False,
+):
     """Given the config.yaml file, this function will convert the labels of an ancient
     project to a new project. For this, the labeled data must be in the project folder,
     under the labeled-data folder and with the same configuration as all deeplabcut
@@ -256,8 +261,8 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
 # TODO: @deruyter92 2026-05-20: this function still uses grab_files_in_folder instead
 # of collect_video_paths and videotype instead of video_extensions.
 def analyze_videos_converth5_to_nwb(
-    config,
-    video_folder,
+    config: str | Path,
+    video_folder: str | Path,
     videotype=".mp4",
     listofvideos=False,
 ):

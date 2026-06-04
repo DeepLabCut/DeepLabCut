@@ -68,7 +68,7 @@ class ShuffleMetadata:
         _, doc_path = auxiliaryfunctions.get_data_and_metadata_filenames(
             trainset_path, self.train_fraction, self.index, cfg
         )
-        if not Path(doc_path).exists():
+        if not doc_path.exists():
             raise ValueError(
                 f"Could not load the metadata file for {self} as {doc_path} does not "
                 f"exist. If you deleted the shuffle, you also need to delete the "

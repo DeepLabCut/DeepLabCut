@@ -21,7 +21,7 @@ from deeplabcut.gui.widgets import launch_napari
 from deeplabcut.utils.skeleton import SkeletonBuilder
 
 
-def label_frames(config_path: str | Path | None = None, image_folder: str | None = None):
+def label_frames(config_path: str | Path | None = None, image_folder: str | Path | None = None):
     """Launches the napari-deeplabcut labelling GUI.
 
     For more information on labelling data with napari-deeplabcut, see our docs:

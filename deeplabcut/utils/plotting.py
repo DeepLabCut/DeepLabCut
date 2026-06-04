@@ -170,8 +170,8 @@ def PlottingResults(
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def plot_trajectories(
-    config,
-    videos,
+    config: str | Path,
+    videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
@@ -192,12 +192,12 @@ def plot_trajectories(
 
     Parameters
     ----------
-    config: str
+    config: str or Path
         Full path of the config.yaml file.
 
-    videos: list[str]
-        Full paths to videos for analysis or a path to the directory, where all the
-        videos with same extension are stored.
+    videos: list[str] or list[Path]
+        Full paths to videos for analysis, or a path to the directory where all videos
+        with the same extension are stored.
 
     video_extensions : str | Sequence[str] | None, optional, default=None
         Controls how ``videos`` are filtered, based on file extension.
@@ -276,6 +276,9 @@ def plot_trajectories(
             ['/home/alex/analysis/project/videos/reachingvideo1.avi'],
         )
     """
+    config = Path(config)
+    if destfolder is not None:
+        destfolder = Path(destfolder)
     cfg = auxiliaryfunctions.read_config(config)
 
     if pcutoff is None:

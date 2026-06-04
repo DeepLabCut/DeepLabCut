@@ -125,7 +125,7 @@ def download_model(modelname, target_dir):
 
     dlc_path = auxiliaryfunctions.get_deeplabcut_path()
     neturls = auxiliaryfunctions.read_plainconfig(
-        str(Path(dlc_path) / "pose_estimation_tensorflow" / "models" / "pretrained" / "pretrained_model_urls.yaml")
+        dlc_path / "pose_estimation_tensorflow" / "models" / "pretrained" / "pretrained_model_urls.yaml"
     )
     if modelname in neturls.keys():
         url = neturls[modelname]
@@ -163,10 +163,10 @@ def smart_restore(restorer, sess, checkpoint_path, net_type):
         restorer.restore(sess, checkpoint_path)
     except ValueError as e:  # The path may be wrong, or the weights no longer exist
         dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
-        correct_model_path = str(Path(dlcparent_path) / MODELTYPE_FILEPATH_MAP[net_type])
+        correct_model_path = str(dlcparent_path / MODELTYPE_FILEPATH_MAP[net_type])
         if checkpoint_path == correct_model_path:
             # The path is right, hence the weights are missing; we'll download them again.
-            _ = check_for_weights(net_type, Path(dlcparent_path))
+            _ = check_for_weights(net_type, dlcparent_path)
             restorer.restore(sess, checkpoint_path)
         else:
             raise ValueError(e) from e

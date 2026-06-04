@@ -103,9 +103,9 @@ class SpatiotemporalAdaptation:
         if not customized_pose_config:
             dlc_root_path = get_deeplabcut_path()
 
-            project_config = read_config(Path(dlc_root_path) / "modelzoo" / "project_configs" / f"{project_name}.yaml")
+            project_config = read_config(dlc_root_path / "modelzoo" / "project_configs" / f"{project_name}.yaml")
 
-            model_config = read_config(Path(dlc_root_path) / "modelzoo" / "model_configs" / f"{model_name}.yaml")
+            model_config = read_config(dlc_root_path / "modelzoo" / "model_configs" / f"{model_name}.yaml")
 
             joints = [i for i in range(len(project_config["bodyparts"]))]
             num_joints = len(joints)

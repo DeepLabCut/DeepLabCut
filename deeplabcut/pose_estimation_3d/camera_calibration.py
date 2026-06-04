@@ -23,7 +23,14 @@ from deeplabcut.utils import auxiliaryfunctions, auxiliaryfunctions_3d
 matplotlib_axes_logger.setLevel("ERROR")
 
 
-def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, search_window_size=(11, 11)):
+def calibrate_cameras(
+    config: str | Path,
+    cbrow=8,
+    cbcol=6,
+    calibrate=False,
+    alpha=0.4,
+    search_window_size=(11, 11),
+):
     """This function extracts the corners points from the calibration images, calibrates
     the camera and stores the calibration files in the project folder (defined in the
     config file).
@@ -268,7 +275,7 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
         )
 
 
-def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
+def check_undistortion(config: str | Path, cbrow=8, cbcol=6, plot=True):
     """This function undistorts the calibration images based on the camera matrices and
     stores them in the project folder(defined in the config file) to visually check if
     the camera matrices are correct.

@@ -17,5 +17,5 @@ from deeplabcut.utils.auxiliaryfunctions import (
 )
 
 dlcparent_path = get_deeplabcut_path()
-reid_config = Path(dlcparent_path) / "reid_cfg.yaml"
+reid_config = dlcparent_path / "reid_cfg.yaml"
 cfg = read_plainconfig(reid_config)

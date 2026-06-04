@@ -128,13 +128,13 @@ def extract_features_for_video(
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def create_tracking_dataset(
-    config: str,
+    config: str | Path,
     videos: list[str] | list[Path],
     track_method: str,
     video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
-    destfolder: str | None = None,
+    destfolder: str | Path | None = None,
     batch_size: int | None = None,
     detector_batch_size: int | None = None,
     cropping: list[int] | None = None,

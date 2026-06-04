@@ -126,7 +126,10 @@ def parse_snapshot_index_for_analysis(
 
 
 def return_train_network_path(
-    config: str, shuffle: int = 1, trainingsetindex: int = 0, modelprefix: str = ""
+    config: str | Path,
+    shuffle: int = 1,
+    trainingsetindex: int = 0,
+    modelprefix: str = "",
 ) -> tuple[Path, Path, Path]:
     """
     Args:

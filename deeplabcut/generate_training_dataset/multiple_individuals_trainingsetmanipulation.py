@@ -100,7 +100,7 @@ def format_multianimal_training_data(
 
 
 def create_multianimaltraining_dataset(
-    config,
+    config: str | Path,
     num_shuffles=1,
     Shuffles=None,
     windows2linux=False,
@@ -366,12 +366,12 @@ def create_multianimaltraining_dataset(
 
     # Loading the encoder (if necessary downloading from TF)
     dlcparent_path = auxiliaryfunctions.get_deeplabcut_path()
-    defaultconfigfile = Path(dlcparent_path) / "pose_cfg.yaml"
+    defaultconfigfile = dlcparent_path / "pose_cfg.yaml"
 
     if engine == Engine.PYTORCH:
         model_path = dlcparent_path
     else:
-        model_path = auxfun_models.check_for_weights(net_type, Path(dlcparent_path))
+        model_path = auxfun_models.check_for_weights(net_type, dlcparent_path)
 
     Shuffles = validate_shuffles(cfg, Shuffles, num_shuffles, userfeedback)
 
@@ -430,7 +430,7 @@ def create_multianimaltraining_dataset(
             # Saving metadata and data file (Pickle file)
             ################################################################################
             auxiliaryfunctions.save_metadata(
-                str(Path(project_path) / metadatafilename),
+                Path(project_path) / metadatafilename,
                 data,
                 trainIndices,
                 testIndices,
@@ -446,7 +446,7 @@ def create_multianimaltraining_dataset(
                 overwrite=not userfeedback,
             )
 
-            datafilename = datafilename.split(".mat")[0] + ".pickle"
+            datafilename = datafilename.with_suffix(".pickle")
             import pickle
 
             with (Path(project_path) / datafilename).open("wb") as f:
@@ -578,7 +578,7 @@ def create_multianimaltraining_dataset(
                 make_pytorch_test_config(pytorch_cfg, path_test_config, save=True)
 
             # Setting inference cfg file:
-            default_inf_path = Path(dlcparent_path) / "inference_cfg.yaml"
+            default_inf_path = dlcparent_path / "inference_cfg.yaml"
             inf_updates = dict(
                 minimalnumberofconnections=int(len(cfg["multianimalbodyparts"]) / 2),
                 topktoretain=len(cfg["individuals"]),

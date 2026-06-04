@@ -29,7 +29,7 @@ from deeplabcut.utils.auxiliaryfunctions import (
 
 def dlc_modelzoo_path() -> Path:
     """Returns: the path to the `modelzoo` folder in the DeepLabCut installation"""
-    dlc_root_path = Path(get_deeplabcut_path())
+    dlc_root_path = get_deeplabcut_path()
     return dlc_root_path / "modelzoo"
 
 
@@ -215,7 +215,7 @@ def parse_project_model_name(superanimal_name: str) -> tuple[str, str]:
     project_name = superanimal_name.replace(f"_{model_name}", "")
 
     dlc_root_path = get_deeplabcut_path()
-    modelzoo_path = Path(dlc_root_path) / "modelzoo"
+    modelzoo_path = dlc_root_path / "modelzoo"
 
     available_model_configs = list((modelzoo_path / "model_configs").glob("*.yaml"))
     available_models = [path.stem for path in available_model_configs]

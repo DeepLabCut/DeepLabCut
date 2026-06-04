@@ -67,8 +67,8 @@ def columnwise_spline_interp(data, max_gap=0):
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def filterpredictions(
-    config,
-    video,
+    config: str | Path,
+    video: str | Path,
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,

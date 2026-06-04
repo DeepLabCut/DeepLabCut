@@ -476,7 +476,7 @@ def _create_inference_config(inference_cfg_path: str | Path, project_cfg: dict):
         topktoretain=len(project_cfg["individuals"]),
         withid=project_cfg.get("identity", False),
     )
-    default_inf_path = Path(auxiliaryfunctions.get_deeplabcut_path()) / "inference_cfg.yaml"
+    default_inf_path = auxiliaryfunctions.get_deeplabcut_path() / "inference_cfg.yaml"
     MakeInference_yaml(inf_updates, inference_cfg_path, default_inf_path)
 
 
