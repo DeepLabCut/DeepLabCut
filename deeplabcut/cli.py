@@ -56,7 +56,7 @@ def create_new_project(_, *args, **kwargs):
     The configuration file is loaded with default values. Change its parameters to your
     projects need.
 
-    Options:
+    Args:
         project (string): String containing the name of the project.
         experimenter (string): String containing the name of the experimenter.
         videos (list): A list of string containing the full paths of the videos to include in the project.
@@ -66,14 +66,13 @@ def create_new_project(_, *args, **kwargs):
             The default is ``True``; if provided it must be either ``True`` or ``False``.
 
     Examples:
-        To create the project in the current working directory:
-
-        To create the project in the current working directory but do not want to create the symlinks \n
-        python3 dlc.py create_new_project reaching-task
-        Tanmay /data/videos/mouse1.avi /data/videos/mouse2.avi /data/videos/mouse3.avi /analysis/project/ -c False
-
-        To create the project in the current working directory but do not want to create the symlinks:
-
+        To create the project in the current working directory without symbolic links:
+        ```bash
+        python3 dlc.py create_new_project reaching-task Tanmay \\
+        /data/videos/mouse1.avi /data/videos/mouse2.avi \\
+        /data/videos/mouse3.avi /analysis/project/ -c False
+        ```
+        To create the project in the current working directory with symbolic links:
         ```bash
         python3 dlc.py create_new_project reaching-task Tanmay \\
             /data/videos/mouse1.avi /data/videos/mouse2.avi \\
@@ -111,7 +110,7 @@ def add_new_videos(_, *args, **kwargs):
 
     Delegates to ``deeplabcut.add_new_videos``.
 
-    Options:
+    Args:
         config (string): String containing the full path of the config file in the project.
         videos (list): A list of string containing the full paths of the videos to include in the project.
         copy_videos (bool, optional): If True, symlinks of the videos are copied to
@@ -158,7 +157,7 @@ def extract_frames(_, *args, **kwargs):
     function ``add_new_videos`` at any stage of the project to add new videos to the
     config file and extract their frames.
 
-    Options:
+    Args:
         config (string): Full path of the config.yaml file as a string.
         mode (string): Mode of extraction. Must be either ``automatic`` or ``manual``.
         algo (string, optional): For automatic extraction, the algorithm to use:
@@ -207,7 +206,7 @@ def label_frames(_, config):
 
     Update the list of body parts you want to localize in the config.yaml file first.
 
-    Options:
+    Args:
         config (string): Full path of the config.yaml file.
 
     Examples:
@@ -257,7 +256,7 @@ def create_training_dataset(_, *args, **kwargs):
     Update parameters TrainFraction and iteration in config.yaml. Also update
     parameters for pose_config.yaml as wanted.
 
-    Options:
+    Args:
         config (string): Full path of the config.yaml file in the train directory of a
         project.
         num_shuffles (int, optional): Number of shuffles of training dataset to create.
@@ -301,7 +300,7 @@ def train_network(_, *args, **kwargs):
 
     Delegates to ``deeplabcut.train_network``.
 
-    Options:
+    Args:
         config (string): Full path of the config.yaml file in the train directory of a
             project.
         shuffle (int, optional): Shuffle index of the training dataset. Defaults to 1.
@@ -335,7 +334,7 @@ def evaluate_network(_, config, **kwargs):
 
     Delegates to ``deeplabcut.evaluate_network``.
 
-    Options:
+    Args:
         config (string): Full path of the config.yaml file in the train directory of a
         project.
         shuffle (list, optional): Shuffle index of the training dataset. Defaults to [1].
@@ -386,7 +385,7 @@ def analyze_videos(_, *args, **kwargs):
 
     Delegates to ``deeplabcut.analyze_videos``.
 
-    Options:
+    Args:
         config (string): Full path of the config.yaml file in the train directory of a
             project.
         videos (list): Full path(s) to video(s).
@@ -514,7 +513,7 @@ def extract_outlier_frames(_, *args, **kwargs):
     Another crucial parameter in config.yaml is how many frames to extract
     'numframes2extract'.
 
-    Options:
+    Args:
         config (string): Full path of the config.yaml file as a string.
         video (string): Full path of the video to extract frames from. Make sure that
             this video is already analyzed.
@@ -579,7 +578,7 @@ def refine_labels(_, config):
     analyze a video and extract the outlier frames using ``extract_outlier_frames``
     before refining the labels.
 
-    Options:
+    Args:
         config (string): Full path of the config.yaml file.
 
     Examples:
@@ -640,7 +639,7 @@ def create_labeled_video(_, *args, **kwargs):
 
     Make sure the video is already analyzed by the function ``analyze_videos``.
 
-    Options:
+    Args:
         config (string): Full path of the config.yaml file.
         videos (list): Full path(s) to video(s).
         shuffle (int, optional): Shuffle index of the training dataset. Defaults to 1.
@@ -689,7 +688,7 @@ def plot_trajectories(_, *args, **kwargs):
 
     Delegates to ``deeplabcut.plot_trajectories``.
 
-    Options:
+    Args:
         config (string): Full path of the config.yaml file.
         videos (list): Full path(s) to video(s).
         shuffle (int, optional): Shuffle index of the training dataset. Defaults to 1.
@@ -779,7 +778,7 @@ def export_model(_, *args, **kwargs):
     Saves the pose configuration, snapshot files, and frozen graph of the model to a
     directory named exported-models within the project directory.
 
-    Options:
+    Args:
         cfg_path (string): Path to the DLC Project config.yaml file.
         iteration (int, optional): The model iteration you wish to export.
             If None, uses the iteration listed in the config file.
