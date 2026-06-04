@@ -65,7 +65,8 @@ def get_super_animal_scorer(
     detector_snapshot_path: Path | str | None,
     torchvision_detector_name: str | None = None,
 ) -> str:
-    """
+    """Get the super animal scorer.
+
     Args:
         super_animal: The SuperAnimal dataset on which the models were trained
         model_snapshot_path: The path for the SuperAnimal pose model snapshot

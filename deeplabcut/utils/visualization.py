@@ -36,7 +36,8 @@ from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
 
 
 def get_cmap(n: int, name: str = "hsv") -> Colormap:
-    """
+    """Get the cmap.
+
     Args:
         n: number of distinct colors
         name: name of matplotlib colormap

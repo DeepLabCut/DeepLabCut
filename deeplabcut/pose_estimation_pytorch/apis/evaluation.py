@@ -110,7 +110,8 @@ def evaluate(
     pcutoff: float | list[float] = 0.6,
     force_multi_animal: bool = False,
 ) -> tuple[dict[str, float], dict[str, dict[str, np.ndarray]]]:
-    """
+    """Evaluate.
+
     Args:
         pose_runner: The runner for pose estimation
         loader: The loader containing the data to evaluate
@@ -815,7 +816,8 @@ def evaluate_network(
 
 
 def image_to_dlc_df_index(image: str) -> tuple[str, ...]:
-    """
+    """Image to dlc df index.
+
     Args:
         image: the path of the image to map to a DLC index
 

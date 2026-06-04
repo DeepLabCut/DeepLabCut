@@ -225,13 +225,14 @@ class DEKROffset(nn.Module):
         final_conv_kernel: int,
         block: type(BaseBlock) = AdaptBlock,
     ) -> None:
-        """Args:
-        channels: tuple containing the number of input, offset, and output channels.
-        num_offset_per_kpt: number of offset values per keypoint.
-        num_blocks: number of blocks in the head.
-        dilation_rate: dilation rate for convolutional layers.
-        final_conv_kernel: kernel size for the final convolution.
-        block: type of block to use in the head. Defaults to AdaptBlock.
+        """
+        Args:
+            channels: tuple containing the number of input, offset, and output channels.
+            num_offset_per_kpt: number of offset values per keypoint.
+            num_blocks: number of blocks in the head.
+            dilation_rate: dilation rate for convolutional layers.
+            final_conv_kernel: kernel size for the final convolution.
+            block: type of block to use in the head. Defaults to AdaptBlock.
         """
         super().__init__()
         self.inp_channels = channels[0]

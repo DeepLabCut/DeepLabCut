@@ -394,7 +394,8 @@ def get_shuffle_engine(
     shuffle: int,
     modelprefix: str = "",
 ) -> Engine:
-    """
+    """Get the shuffle engine.
+
     Args:
         cfg: the config for the DeepLabCut project
         trainingsetindex: the training set index used

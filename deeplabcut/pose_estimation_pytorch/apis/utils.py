@@ -128,7 +128,8 @@ def parse_snapshot_index_for_analysis(
 def return_train_network_path(
     config: str, shuffle: int = 1, trainingsetindex: int = 0, modelprefix: str = ""
 ) -> tuple[Path, Path, Path]:
-    """
+    """Return the train network path.
+
     Args:
         config: Full path of the config.yaml file as a string.
         shuffle: The shuffle index to select for training
@@ -160,7 +161,8 @@ def get_model_snapshots(
     task: Task,
     snapshot_filter: list[str] | None = None,
 ) -> list[Snapshot]:
-    """
+    """Get the model snapshots.
+
     Args:
         index: Passing an index returns the snapshot with that index (where snapshots
             based on their number of training epochs, and the last snapshot is the
@@ -216,7 +218,8 @@ def get_model_snapshots(
 
 
 def get_scorer_uid(snapshot: Snapshot, detector_snapshot: Snapshot | None) -> str:
-    """
+    """Get the scorer uid.
+
     Args:
         snapshot: the snapshot for which to get the scorer UID
         detector_snapshot: if a top-down model is used with a detector, the detector

@@ -1338,7 +1338,8 @@ def get_existing_shuffle_indices(
     train_fraction: float | None = None,
     engine: Engine | None = None,
 ) -> list[int]:
-    """
+    """Get the existing shuffle indices.
+
     Args:
         cfg: The content of a project configuration file, or the path to the project
             configuration file.

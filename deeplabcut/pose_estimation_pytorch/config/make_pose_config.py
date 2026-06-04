@@ -202,7 +202,8 @@ def make_pytorch_pose_config(
 
 
 def _add_ctd_conditions(model_cfg: dict, ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int]):
-    """
+    """Add ctd conditions.
+
     Args:
         model_cfg: dict, contents of pytorch_config.yaml
         ctd_conditions: Only for using conditional-top-down (CTD) models. It defines

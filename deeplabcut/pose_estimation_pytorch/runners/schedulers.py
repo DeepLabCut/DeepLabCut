@@ -103,7 +103,8 @@ def load_scheduler_state(
     scheduler: torch.optim.lr_scheduler.LRScheduler,
     state_dict: dict,
 ) -> None:
-    """
+    """Load scheduler state.
+
     Args:
         scheduler: The scheduler for which to load the state dict.
         state_dict: The state dict to load

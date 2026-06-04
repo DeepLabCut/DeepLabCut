@@ -278,7 +278,8 @@ def _extract_keypoints_and_bboxes(
     num_joints: int,
     num_unique_bodyparts: int,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, np.ndarray]]:
-    """
+    """Extract keypoints and bboxes.
+
     Args:
         anns: COCO-style annotations
         image_shape: the (h, w, c) shape of the image for which to get annotations

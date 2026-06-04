@@ -26,7 +26,8 @@ DEFAULT_ENGINE = Engine.PYTORCH
 
 
 def get_project_engine(cfg: dict) -> Engine:
-    """
+    """Get the project engine.
+
     Args:
         cfg: the project configuration file
 
@@ -40,7 +41,8 @@ def get_project_engine(cfg: dict) -> Engine:
 
 
 def get_available_aug_methods(engine: Engine) -> tuple[str, ...]:
-    """
+    """Get the available aug methods.
+
     Args:
         engine: the engine for which augmentation methods should be returned
 

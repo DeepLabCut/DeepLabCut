@@ -140,7 +140,8 @@ def export_model(
 
 
 def get_export_folder_name(loader: dlc3_data.DLCLoader) -> str:
-    """
+    """Get the export folder name.
+
     Args:
         loader: The loader for the shuffle for which we want to export models.
 
@@ -158,7 +159,8 @@ def get_export_filename(
     snapshot: Snapshot,
     detector_snapshot: Snapshot | None = None,
 ) -> str:
-    """
+    """Get the export filename.
+
     Args:
         loader: The loader for the shuffle for which we want to export models.
         snapshot: The pose model snapshot to export.

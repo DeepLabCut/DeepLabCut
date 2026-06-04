@@ -295,7 +295,8 @@ def edit_config(configname, edits, output_name=""):
 
 
 def get_bodyparts(cfg: dict) -> list[str]:
-    """
+    """Get the bodyparts.
+
     Args:
         cfg: a project configuration file
 
@@ -313,7 +314,8 @@ def get_bodyparts(cfg: dict) -> list[str]:
 
 
 def get_unique_bodyparts(cfg: dict) -> list[str]:
-    """
+    """Get the unique bodyparts.
+
     Args:
         cfg: a project configuration file
 
@@ -537,7 +539,8 @@ def get_model_folder(
     modelprefix: str = "",
     engine: Engine = Engine.TF,
 ) -> Path:
-    """
+    """Get the model folder.
+
     Args:
         trainFraction: the training fraction (as defined in the project configuration)
             for which to get the model folder
@@ -567,7 +570,8 @@ def get_evaluation_folder(
     engine: Engine | None = None,
     modelprefix: str = "",
 ) -> Path:
-    """
+    """Get the evaluation folder.
+
     Args:
         trainFraction: the training fraction (as defined in the project configuration)
             for which to get the evaluation folder

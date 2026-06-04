@@ -201,7 +201,8 @@ def load_base_config(config_folder_path: Path) -> dict:
 
 
 def load_backbones(configs_dir: Path) -> list[str]:
-    """
+    """Load backbones.
+
     Args:
         configs_dir: the Path to the folder containing the "configs" for PyTorch
             DeepLabCut
@@ -215,7 +216,8 @@ def load_backbones(configs_dir: Path) -> list[str]:
 
 
 def load_detectors(configs_dir: Path) -> list[str]:
-    """
+    """Load detectors.
+
     Args:
         configs_dir: the Path to the folder containing the "configs" for PyTorch
             DeepLabCut

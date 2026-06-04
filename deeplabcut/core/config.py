@@ -19,7 +19,8 @@ from ruamel.yaml import YAML
 
 
 def read_config_as_dict(config_path: str | Path) -> dict:
-    """
+    """Read config as dict.
+
     Args:
         config_path: the path to the configuration file to load
 
