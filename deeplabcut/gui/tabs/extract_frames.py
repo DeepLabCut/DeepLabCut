@@ -277,7 +277,7 @@ class ExtractFrames(DefaultTab):
             the path to the video (or symlink) in the project's 'videos' folder
 
         Raises:
-            FileNotFoundError if there is no symlink or video in the 'videos' folder for
+            FileNotFoundError: If there is no symlink or video in the 'videos' folder for
                 the given video
         """
         video_path = Path(video_path).resolve()

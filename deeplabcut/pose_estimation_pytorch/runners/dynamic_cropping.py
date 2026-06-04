@@ -72,7 +72,7 @@ class DynamicCropper:
             the crop.
 
         Raises:
-            RuntimeError: if there is not exactly one image in the batch to crop, or if
+            RuntimeError: If there is not exactly one image in the batch to crop, or if
                 `crop` was previously called with an image of a different width or
                 height.
         """
@@ -293,7 +293,7 @@ class TopDownDynamicCropper(DynamicCropper):
             the crop.
 
         Raises:
-            RuntimeError: if there is not exactly one image in the batch to crop, or if
+            RuntimeError: If there is not exactly one image in the batch to crop, or if
                 `crop` was previously called with an image of a different W or H.
         """
         if len(image) != 1:

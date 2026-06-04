@@ -135,7 +135,7 @@ def mobilenet(
       logits/endpoints pair
 
     Raises:
-      ValueError: On invalid arguments
+      ValueError: If arguments are invalid.
     """
     if conv_defs is None:
         conv_defs = V2_DEF

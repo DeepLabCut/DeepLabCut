@@ -103,8 +103,8 @@ def _video_inference_superanimal(
     Returns:
         results: Dictionary with the result pd.DataFrame for each video
 
-    Raises:
-        Warning: If the function is called directly.
+    Warns:
+        UserWarning: If the function is called directly (outside internal pose estimation code).
     """
     raise_warning_if_called_directly()
 

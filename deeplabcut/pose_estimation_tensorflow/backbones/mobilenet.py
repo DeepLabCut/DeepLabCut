@@ -161,8 +161,7 @@ def mobilenet_base(  # pylint: disable=invalid-name
                   losses.
 
     Raises:
-      ValueError: depth_multiplier <= 0, or the target output_stride is not
-                  allowed.
+      ValueError: If ``depth_multiplier`` <= 0 or the target ``output_stride`` is not allowed.
     """
     if multiplier <= 0:
         raise ValueError("multiplier is not greater than zero.")
@@ -317,7 +316,7 @@ def mobilenet(
         activation tensor.
 
     Raises:
-      ValueError: Input rank is invalid.
+      ValueError: If the input rank is invalid.
     """
     is_training = mobilenet_args.get("is_training", False)
     input_shape = inputs.get_shape().as_list()

@@ -55,7 +55,7 @@ def replace_default_values(
         the configuration with placeholder values replaced
 
     Raises:
-        ValueError: if there is a placeholder value who's "updated" value was not
+        ValueError: If there is a placeholder value who's "updated" value was not
             given to the method
     """
 

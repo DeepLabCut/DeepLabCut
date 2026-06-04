@@ -164,7 +164,9 @@ class InferenceConfig:
 
           - nested dictionaries
           - dot-notation keys (e.g., {"compile.enabled": True})
-        Raises KeyError if a key does not exist.
+
+        Raises:
+            KeyError: If a key does not exist.
         """
         instance = cls()
         data = data or {}

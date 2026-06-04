@@ -403,7 +403,7 @@ class CreateTrainingDataset(DefaultTab):
                 ctd conditions in the right format for deeplabcut.create_training_dataset() API method.
 
         Raises:
-            Value error if conditions are missing or invalid.
+            ValueError: If conditions are missing or invalid.
         """
         if conditions_path is None:
             raise ValueError("No conditions were selected for CTD model.")
@@ -656,7 +656,7 @@ class WeightInitializationSelector(QtWidgets.QWidget):
                 SuperAnimal model.
 
         Raises:
-            ValueError if WeightInitialization should be defined but could not be
+            ValueError: If WeightInitialization should be defined but could not be
                 created (e.g. if there's no conversion table).
         """
         if self.root.engine != Engine.PYTORCH:

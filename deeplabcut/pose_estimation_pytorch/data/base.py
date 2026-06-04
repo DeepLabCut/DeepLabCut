@@ -135,7 +135,7 @@ class Loader(ABC):
             unique_bodypart: returns the ground truth for unique bodyparts
 
         Raises:
-            ValueError if unique_bodypart=True but there are no unique bodyparts
+            ValueError: If unique_bodypart=True but there are no unique bodyparts
 
         Returns:
             A dict mapping image paths to the ground truth annotations for the mode in

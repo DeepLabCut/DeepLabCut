@@ -459,7 +459,7 @@ def analyze_image_folder(
         for it (e.g. "bodyparts", "unique_bodyparts", "bboxes", "bbox_scores")
 
     Raises:
-        ValueError: if the pose model is a top-down model but no detector path is given
+        ValueError: If the pose model is a top-down model but no detector path is given
     """
     if not isinstance(model_cfg, dict):
         model_cfg = config_utils.read_config_as_dict(model_cfg)
@@ -574,7 +574,7 @@ def plot_images_coco(
         A list of dictionaries containing predictions made on each image.
 
     Raises:
-        ValueError: if a top-down model configuration is given but detector_path is None
+        ValueError: If a top-down model configuration is given but detector_path is None
     """
     with open(data_json_path) as f:
         obj = json.load(f)

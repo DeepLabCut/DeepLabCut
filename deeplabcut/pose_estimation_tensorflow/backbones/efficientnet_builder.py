@@ -232,8 +232,8 @@ def build_model(
       endpoints: the endpoints for each layer.
 
     Raises:
-      When model_name specified an undefined model, raises NotImplementedError.
-      When override_params has invalid fields, raises ValueError.
+      NotImplementedError: If ``model_name`` specifies an undefined model.
+      ValueError: If ``override_params`` contains invalid fields.
     """
     assert isinstance(images, tf.Tensor)
     if not training or fine_tuning:
@@ -276,8 +276,8 @@ def build_model_base(images, model_name, use_batch_norm=False, drop_out=False, o
       endpoints: the endpoints for each layer.
 
     Raises:
-      When model_name specified an undefined model, raises NotImplementedError.
-      When override_params has invalid fields, raises ValueError.
+      NotImplementedError: If ``model_name`` specifies an undefined model.
+      ValueError: If ``override_params`` contains invalid fields.
     """
     assert isinstance(images, tf.Tensor)
     blocks_args, global_params = get_model_params(model_name, override_params)

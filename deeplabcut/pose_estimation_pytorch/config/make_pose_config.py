@@ -395,7 +395,7 @@ def create_backbone_with_heatmap_model(
         the backbone + heatmap model configuration
 
     Raises:
-        ValueError: if the model is being created for a multi-animal project but the
+        ValueError: If the model is being created for a multi-animal project but the
             head won't be associated with a detector (heatmaps can only predict
             bodyparts for a single individual).
     """

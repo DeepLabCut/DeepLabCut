@@ -49,7 +49,7 @@ def get_available_aug_methods(engine: Engine) -> tuple[str, ...]:
         default method to use
 
     Raises:
-        RuntimeError: if no augmentations methods are defined for the given engine
+        RuntimeError: If no augmentations methods are defined for the given engine
     """
     if engine == Engine.TF:
         return "imgaug", "default", "deterministic", "scalecrop", "tensorpack"

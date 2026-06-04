@@ -612,7 +612,7 @@ def get_snapshots_from_folder(train_folder: Path) -> list[str]:
     increasing training iterations.
 
     Raises:
-        FileNotFoundError: if no snapshot_names are found in the train_folder.
+        FileNotFoundError: If no snapshot_names are found in the train_folder.
     """
     snapshot_names = [file.stem for file in train_folder.iterdir() if "index" in file.name]
 

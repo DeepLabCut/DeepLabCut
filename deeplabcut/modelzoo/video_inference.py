@@ -153,7 +153,9 @@ def video_inference_superanimal(
 
     Raises:
         NotImplementedError: If the model is not found in the modelzoo.
-        Warning: If the superanimal_name will be deprecated in the future.
+
+    Warns:
+        UserWarning: If an fmpose3d ``model_name`` is used with a mismatched ``superanimal_name``.
 
     Note:
         (Model Explanation) SuperAnimal-Quadruped:

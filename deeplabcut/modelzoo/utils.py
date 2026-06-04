@@ -46,7 +46,7 @@ def get_super_animal_project_cfg(super_animal: str) -> dict:
         the project configuration for the given SuperAnimal model
 
     Raises:
-        ValueError if no such SuperAnimal is found
+        ValueError: If no such SuperAnimal is found.
     """
     project_configs_dir = dlc_modelzoo_path() / "project_configs"
     super_animal_projects = {p.stem: p for p in project_configs_dir.iterdir()}

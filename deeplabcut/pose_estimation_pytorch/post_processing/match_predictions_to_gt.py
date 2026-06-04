@@ -25,7 +25,7 @@ def rmse_match_prediction_to_gt(pred_kpts: np.ndarray, gt_kpts: np.ndarray) -> n
     the potential missing animal.
 
     Raises:
-        ValueError: if `gt_kpts.shape != pred_kpts.shape`
+        ValueError: If `gt_kpts.shape != pred_kpts.shape`
 
     Args:
         pred_kpts: shape (num_predictions, num_keypoints, 3), ground truth keypoints for

@@ -100,8 +100,8 @@ class COCOLoader(Loader):
             json_obj: JSON object loaded from the file
 
         Raises:
-            FileNotFoundError if the file does not exist
-            ValueError if the object stored in the file is not a dict
+            FileNotFoundError: If the file does not exist
+            ValueError: If the object stored in the file is not a dict
 
         Examples:
             Check https://docs.trainingdata.io/v1.0/Export%20Format/COCO/ to see

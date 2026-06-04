@@ -392,7 +392,7 @@ class Model(tf.keras.Model):
           global_params: GlobalParams, a set of global parameters.
 
         Raises:
-          ValueError: when blocks_args is not specified as a list.
+          ValueError: If ``blocks_args`` is not specified as a list.
         """
         super().__init__()
         if not isinstance(blocks_args, list):

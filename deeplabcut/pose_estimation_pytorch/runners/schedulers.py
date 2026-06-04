@@ -109,7 +109,7 @@ def load_scheduler_state(
         state_dict: The state dict to load
 
     Raises:
-        ValueError: if the state dict fails to load.
+        ValueError: If the state dict fails to load.
     """
     try:
         scheduler.load_state_dict(state_dict)
