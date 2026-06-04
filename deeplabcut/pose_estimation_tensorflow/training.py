@@ -103,11 +103,11 @@ def train_network(
     Examples:
         To train the network for first shuffle of the training dataset
 
-        >>> deeplabcut.train_network("/analysis/project/reaching-task/config.yaml")
+            deeplabcut.train_network("/analysis/project/reaching-task/config.yaml")
 
         To train the network for second shuffle of the training dataset
 
-        >>> deeplabcut.train_network(
+            deeplabcut.train_network(
                 '/analysis/project/reaching-task/config.yaml',
                 shuffle=2,
                 keepdeconvweights=True,

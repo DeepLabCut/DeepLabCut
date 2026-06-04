@@ -60,7 +60,7 @@ def create_new_project(
     Examples:
         Linux/MacOS:
 
-        >>> deeplabcut.create_new_project(
+            deeplabcut.create_new_project(
                 project='reaching-task',
                 experimenter='Linus',
                 videos=[
@@ -70,7 +70,7 @@ def create_new_project(
                 ],
                 working_directory='/analysis/project/',
             )
-        >>> deeplabcut.create_new_project(
+            deeplabcut.create_new_project(
                 project='reaching-task',
                 experimenter='Linus',
                 videos=['/data/videos'],
@@ -79,7 +79,7 @@ def create_new_project(
 
         Windows:
 
-        >>> deeplabcut.create_new_project(
+            deeplabcut.create_new_project(
                 'reaching-task',
                 'Bill',
                 [r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'],

@@ -172,11 +172,11 @@ def train_network(
     Examples:
         To train the network for first shuffle of the training dataset:
 
-        >>> deeplabcut.train_network("/analysis/project/reaching-task/config.yaml")
+            deeplabcut.train_network("/analysis/project/reaching-task/config.yaml")
 
         To train the network for second shuffle of the training dataset:
 
-        >>> deeplabcut.train_network(
+            deeplabcut.train_network(
                 '/analysis/project/reaching-task/config.yaml',
                 shuffle=2,
                 keepdeconvweights=True,
@@ -185,7 +185,7 @@ def train_network(
         To train the network for shuffle created with a PyTorch engine, while overriding the
         number of epochs, batch size and other parameters.
 
-        >>> deeplabcut.train_network(
+            deeplabcut.train_network(
                 '/analysis/project/reaching-task/config.yaml',
                 shuffle=1,
                 batch_size=8,
@@ -379,13 +379,13 @@ def evaluate_network(
     Examples:
         If you do not want to plot and evaluate with shuffle set to 1.
 
-        >>> deeplabcut.evaluate_network(
+            deeplabcut.evaluate_network(
                 '/analysis/project/reaching-task/config.yaml', Shuffles=[1],
             )
 
         If you want to plot and evaluate with shuffle set to 0 and 1.
 
-        >>> deeplabcut.evaluate_network(
+            deeplabcut.evaluate_network(
                 '/analysis/project/reaching-task/config.yaml',
                 Shuffles=[0, 1],
                 plotting=True,
@@ -393,7 +393,7 @@ def evaluate_network(
 
         If you want to plot assemblies for a maDLC project:
 
-        >>> deeplabcut.evaluate_network(
+            deeplabcut.evaluate_network(
                 '/analysis/project/reaching-task/config.yaml',
                 Shuffles=[1],
                 plotting="individual",
@@ -403,11 +403,11 @@ def evaluate_network(
         "left_ear" and "right_ear" bodyparts, and keep the one set in the project config
         for other bodyparts:
 
-        >>> deeplabcut.evaluate_network(
-        >>>     "/analysis/project/reaching-task/config.yaml",
-        >>>     Shuffles=[0, 1],
-        >>>     pcutoff={"left_ear": 0.8, "right_ear": 0.8},
-        >>> )
+            deeplabcut.evaluate_network(
+                "/analysis/project/reaching-task/config.yaml",
+                Shuffles=[0, 1],
+                pcutoff={"left_ear": 0.8, "right_ear": 0.8},
+            )
 
     Note:
         This defaults to standard plotting for single-animal projects.
@@ -516,11 +516,11 @@ def return_evaluate_network_data(
     Examples:
         If you do not want to plot:
 
-        >>> deeplabcut._evaluate_network_data("/analysis/project/reaching-task/config.yaml", shuffle=[1])
+            deeplabcut._evaluate_network_data("/analysis/project/reaching-task/config.yaml", shuffle=[1])
 
         If you want to plot:
 
-        >>> deeplabcut.evaluate_network("/analysis/project/reaching-task/config.yaml", shuffle=[1], plotting=True)
+            deeplabcut.evaluate_network("/analysis/project/reaching-task/config.yaml", shuffle=[1], plotting=True)
     """
     if engine is None:
         engine = get_shuffle_engine(
@@ -646,18 +646,10 @@ def analyze_videos(
             Otherwise, data are written to disk on the fly using a "shelf"; i.e., a
             pickle-based, persistent, database-like object by default, resulting in
             constant memory footprint. Defaults to False.
-
-        The following parameters are only relevant for multi-animal projects:
-
         auto_track (bool, optional): By default, tracking and stitching are automatically performed, producing the
             final h5 data file. This is equivalent to the behavior for single-animal
-            projects.
-
-            If ``False``, one must run ``convert_detections2tracklets`` and
+            projects. If ``False``, one must run ``convert_detections2tracklets`` and
             ``stitch_tracklets`` afterwards, in order to obtain the h5 file. Defaults to True.
-
-        This function has 3 related sub-calls:
-
         identity_only (bool, optional): If ``True`` and animal identity was learned by the model, assembly and tracking
             rely exclusively on identity prediction. Defaults to False.
         calibrate (bool, optional): If ``True``, use training data to calibrate the animal assembly procedure. This
@@ -679,27 +671,41 @@ def analyze_videos(
             the
             CUDA device to use for training.
 
+    Note:
+        The following parameters are only relevant for multi-animal projects:
+
+        * ``auto_track``
+        * ``identity_only``
+        * ``calibrate``
+        * ``n_tracks``
+        * ``animal_names``
+
+        When ``auto_track`` is False, these sub-calls must be called manually:
+
+        * ``convert_detections2tracklets``
+        * ``stitch_tracklets``
+
     Returns:
         str: DLCScorer; the scorer used to analyze the videos.
 
     Examples:
         Analyzing a single video on Windows:
 
-        >>> deeplabcut.analyze_videos(
+            deeplabcut.analyze_videos(
                 'C:\\myproject\\reaching-task\\config.yaml',
                 ['C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi'],
             )
 
         Analyzing a single video on Linux/MacOS:
 
-        >>> deeplabcut.analyze_videos(
+            deeplabcut.analyze_videos(
                 '/analysis/project/reaching-task/config.yaml',
                 ['/analysis/project/videos/reachingvideo1.avi'],
             )
 
         Analyze all videos of type ``avi`` in a folder:
 
-        >>> deeplabcut.analyze_videos(
+            deeplabcut.analyze_videos(
                 '/analysis/project/reaching-task/config.yaml',
                 ['/analysis/project/videos'],
                 videotype='.avi',
@@ -707,7 +713,7 @@ def analyze_videos(
 
         Analyze multiple videos:
 
-        >>> deeplabcut.analyze_videos(
+            deeplabcut.analyze_videos(
                 '/analysis/project/reaching-task/config.yaml',
                 [
                     '/analysis/project/videos/reachingvideo1.avi',
@@ -717,7 +723,7 @@ def analyze_videos(
 
         Analyze multiple videos with ``shuffle=2``:
 
-        >>> deeplabcut.analyze_videos(
+            deeplabcut.analyze_videos(
                 '/analysis/project/reaching-task/config.yaml',
                 [
                     '/analysis/project/videos/reachingvideo1.avi',
@@ -728,7 +734,7 @@ def analyze_videos(
 
         Analyze multiple videos with ``shuffle=2``, save results as an additional csv file:
 
-        >>> deeplabcut.analyze_videos(
+            deeplabcut.analyze_videos(
                 '/analysis/project/reaching-task/config.yaml',
                 [
                     '/analysis/project/videos/reachingvideo1.avi',
@@ -1002,31 +1008,31 @@ def analyze_images(
     Examples:
         If you want to analyze all frames in /analysis/project/my_images:
 
-        >>> import deeplabcut
-        >>> deeplabcut.analyze_images(
-        >>>     "/analysis/project/reaching-task/config.yaml",
-        >>>     "/analysis/project/my_images",
-        >>> )
+            import deeplabcut
+            deeplabcut.analyze_images(
+                "/analysis/project/reaching-task/config.yaml",
+                "/analysis/project/my_images",
+            )
 
         If you want to analyze two specific images with your shuffle 3 model:
 
-        >>> import deeplabcut
-        >>> deeplabcut.analyze_images(
-        >>>     "/analysis/project/reaching-task/config.yaml",
-        >>>     images=["image_001.png", "img_002.jpg"],
-        >>>     shuffle=3,
-        >>> )
+            import deeplabcut
+            deeplabcut.analyze_images(
+                "/analysis/project/reaching-task/config.yaml",
+                images=["image_001.png", "img_002.jpg"],
+                shuffle=3,
+            )
 
         If you want to analyze frames in a folder, save them and plot predictions:
 
-        >>> import deeplabcut
-        >>> deeplabcut.analyze_images(
-        >>>     "/analysis/project/reaching-task/config.yaml",
-        >>>     "/analysis/project/my_images",
-        >>>     shuffle=3,
-        >>>     destfolder="/analysis/project/my_images_analyzed",
-        >>>     plotting=True,
-        >>> )
+            import deeplabcut
+            deeplabcut.analyze_images(
+                "/analysis/project/reaching-task/config.yaml",
+                "/analysis/project/my_images",
+                shuffle=3,
+                destfolder="/analysis/project/my_images_analyzed",
+                plotting=True,
+            )
     """
     engine = get_shuffle_engine(
         _load_config(config),
@@ -1107,16 +1113,17 @@ def analyze_time_lapse_frames(
     Examples:
         If you want to analyze all frames in /analysis/project/timelapseexperiment1:
 
-        >>> import deeplabcut
-        >>> deeplabcut.analyze_time_lapse_frames(
-        >>>     '/analysis/project/reaching-task/config.yaml',
-        >>>     '/analysis/project/timelapseexperiment1'
-        >>> )
+            import deeplabcut
+            deeplabcut.analyze_time_lapse_frames(
+                '/analysis/project/reaching-task/config.yaml',
+                '/analysis/project/timelapseexperiment1'
+            )
 
     Note:
         For test purposes one can extract all frames from a video with ffmeg, e.g.
-
-        >>> ffmpeg -i testvideo.avi "thumb%04d.png"
+        ```bash
+        ffmpeg -i testvideo.avi "thumb%04d.png"
+        ```
     """
     if engine is None:
         engine = get_shuffle_engine(
@@ -1214,22 +1221,22 @@ def convert_detections2tracklets(
     Examples:
         If you want to convert detections to tracklets:
 
-        >>> import deeplabcut
-        >>> deeplabcut.convert_detections2tracklets(
-        >>>    "/analysis/project/reaching-task/config.yaml",
-        >>>    ["/analysis/project/video1.mp4"],
-        >>>    videotype='.mp4',
-        >>> )
+            import deeplabcut
+            deeplabcut.convert_detections2tracklets(
+                "/analysis/project/reaching-task/config.yaml",
+                ["/analysis/project/video1.mp4"],
+                videotype='.mp4',
+            )
 
         If you want to convert detections to tracklets based on box_tracker:
 
-        >>> import deeplabcut
-        >>> deeplabcut.convert_detections2tracklets(
-        >>>    "/analysis/project/reaching-task/config.yaml",
-        >>>    ["/analysis/project/video1.mp4"],
-        >>>    videotype=".mp4",
-        >>>    track_method="box",
-        >>> )
+            import deeplabcut
+            deeplabcut.convert_detections2tracklets(
+                "/analysis/project/reaching-task/config.yaml",
+                ["/analysis/project/video1.mp4"],
+                videotype=".mp4",
+                track_method="box",
+            )
     """
     if engine is None:
         engine = get_shuffle_engine(
@@ -1327,7 +1334,7 @@ def extract_maps(
     Examples:
         If you want to extract the data for image 0 and 103 (of the training set) for model trained with shuffle 0.
 
-        >>> deeplabcut.extract_maps(configfile, 0, Indices=[0, 103])
+            deeplabcut.extract_maps(configfile, 0, Indices=[0, 103])
     """
     if engine is None:
         engine = get_shuffle_engine(
@@ -1477,9 +1484,9 @@ def extract_save_all_maps(
     Examples:
         Calculated maps for images 0, 1 and 33.
 
-        >>> deeplabcut.extract_save_all_maps(
-        ...     "/analysis/project/reaching-task/config.yaml", shuffle=1, Indices=[0, 1, 33]
-        ... )
+            deeplabcut.extract_save_all_maps(
+                "/analysis/project/reaching-task/config.yaml", shuffle=1, Indices=[0, 1, 33]
+            )
     """
     if engine is None:
         engine = get_shuffle_engine(
@@ -1571,7 +1578,7 @@ def export_model(
     Examples:
         Export the first stored snapshot for model trained with shuffle 3:
 
-        >>> deeplabcut.export_model("/analysis/project/reaching-task/config.yaml", shuffle=3, snapshotindex=-1)
+            deeplabcut.export_model("/analysis/project/reaching-task/config.yaml", shuffle=3, snapshotindex=-1)
     """
     if engine is None:
         engine = get_shuffle_engine(

@@ -51,10 +51,10 @@ def export_model(
             defined in the project ``config.yaml``.
         iteration: The project iteration (active learning loop) you wish to export. If
             None, the iteration listed in the project config file is used.
-        overwrite : bool, optional
+        overwrite: bool, optional
             If the model you wish to export has already been exported, whether to
             overwrite. default = False
-        wipe_paths : bool, optional
+        wipe_paths: bool, optional
             Removes the actual path of your project and the init_weights from the
             ``pytorch_config.yaml``.
         without_detector: bool, optional

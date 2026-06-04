@@ -270,13 +270,14 @@ def edit_config(configname, edits, output_name=""):
             If passed in though, new filename of the edited config. Defaults to ''.
 
     Examples:
-        config_path = 'my_stellar_lab/dlc/config.yaml'
 
-        edits = {'numframes2pick': 5,
-                 'trainingFraction': [0.5, 0.8],
-                 'skeleton': [['a', 'b'], ['b', 'c']]}
-
-        deeplabcut.auxiliaryfunctions.edit_config(config_path, edits)
+            config_path = "my_stellar_lab/dlc/config.yaml"
+            edits = {
+                "numframes2pick": 5,
+                "trainingFraction": [0.5, 0.8],
+                "skeleton": [["a", "b"], ["b", "c"]],
+            }
+            deeplabcut.auxiliaryfunctions.edit_config(config_path, edits)
     """
     cfg = read_plainconfig(configname)
     for key, value in edits.items():

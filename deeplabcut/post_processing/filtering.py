@@ -141,7 +141,7 @@ def filterpredictions(
     Examples:
         Arima model:
 
-        >>> deeplabcut.filterpredictions(
+            deeplabcut.filterpredictions(
                 'C:\\myproject\\reaching-task\\config.yaml',
                 ['C:\\myproject\\trailtracking-task\\test.mp4'],
                 shuffle=3,
@@ -152,7 +152,7 @@ def filterpredictions(
 
         Use median filter over 10 bins:
 
-        >>> deeplabcut.filterpredictions(
+            deeplabcut.filterpredictions(
                 'C:\\myproject\\reaching-task\\config.yaml',
                 ['C:\\myproject\\trailtracking-task\\test.mp4'],
                 shuffle=3,
@@ -161,14 +161,14 @@ def filterpredictions(
 
         One can then use the filtered rather than the frame-by-frame predictions by calling:
 
-        >>> deeplabcut.plot_trajectories(
+            deeplabcut.plot_trajectories(
                 'C:\\myproject\\reaching-task\\config.yaml',
                 ['C:\\myproject\\trailtracking-task\\test.mp4'],
                 shuffle=3,
                 filtered=True,
             )
 
-        >>> deeplabcut.create_labeled_video(
+            deeplabcut.create_labeled_video(
                 'C:\\myproject\\reaching-task\\config.yaml',
                 ['C:\\myproject\\trailtracking-task\\test.mp4'],
                 shuffle=3,

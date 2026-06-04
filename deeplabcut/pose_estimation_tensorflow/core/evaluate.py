@@ -227,11 +227,20 @@ def return_evaluate_network_data(
             evaluation images are also shown for the original size! Defaults to False.
 
     Examples:
-        If you do not want to plot
-        >>> deeplabcut._evaluate_network_data("/analysis/project/reaching-task/config.yaml", shuffle=[1])
+        If you do not want to plot:
 
-        If you want to plot
-        >>> deeplabcut.evaluate_network("/analysis/project/reaching-task/config.yaml", shuffle=[1], plotting=True)
+            deeplabcut._evaluate_network_data(
+                "/analysis/project/reaching-task/config.yaml",
+                shuffle=[1],
+            )
+
+        If you want to plot:
+
+            deeplabcut.evaluate_network(
+                "/analysis/project/reaching-task/config.yaml",
+                shuffle=[1],
+                plotting=True,
+            )
     """
     import os
 
@@ -548,29 +557,30 @@ def evaluate_network(
         None
 
     Examples:
-        If you do not want to plot and evaluate with shuffle set to 1.
+        If you do not want to plot and evaluate with shuffle set to 1:
 
-        >>> deeplabcut.evaluate_network(
-                '/analysis/project/reaching-task/config.yaml', Shuffles=[1],
+            deeplabcut.evaluate_network(
+                "/analysis/project/reaching-task/config.yaml",
+                Shuffles=[1],
             )
 
-        If you want to plot and evaluate with shuffle set to 0 and 1.
+        If you want to plot and evaluate with shuffle set to 0 and 1:
 
-        >>> deeplabcut.evaluate_network(
-                '/analysis/project/reaching-task/config.yaml',
+            deeplabcut.evaluate_network(
+                "/analysis/project/reaching-task/config.yaml",
                 Shuffles=[0, 1],
                 plotting=True,
             )
 
-        If you want to plot assemblies for a maDLC project
+        If you want to plot assemblies for a maDLC project:
 
-        >>> deeplabcut.evaluate_network(
-                '/analysis/project/reaching-task/config.yaml',
+            deeplabcut.evaluate_network(
+                "/analysis/project/reaching-task/config.yaml",
                 Shuffles=[1],
                 plotting="individual",
             )
 
-    Note: This defaults to standard plotting for single-animal projects.
+        Note: This defaults to standard plotting for single-animal projects.
     """
     if Shuffles is None:
         Shuffles = [1]

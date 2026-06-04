@@ -244,12 +244,15 @@ def convert2_maDLC(config, userfeedback=True, forceindividual=None):
             in the individuals column. Defaults to None.
 
     Examples:
-        Converts mulianimalbodyparts under the 'first individual' in individuals list in config.yaml
-        and uniquebodyparts under 'single'
-        >>> deeplabcut.convert2_maDLC("/socialrearing-task/config.yaml")
+        Convert multianimalbodyparts under the 'first individual' in individuals list in
+        `config.yaml` and uniquebodyparts under 'single':
 
-        Converts mulianimalbodyparts under the individual label mus17 and uniquebodyparts under 'single'
-        >>> deeplabcut.convert2_maDLC("/socialrearing-task/config.yaml", forceindividual="mus17")
+            deeplabcut.convert2_maDLC("/socialrearing-task/config.yaml")
+
+        Convert multianimalbodyparts under the individual label mus17 and uniquebodyparts
+        under 'single':
+
+            deeplabcut.convert2_maDLC("/socialrearing-task/config.yaml", forceindividual="mus17")
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()

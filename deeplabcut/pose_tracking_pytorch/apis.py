@@ -69,15 +69,15 @@ def transformer_reID(
 
     Examples:
         Training model for one video based on ellipse-tracker derived tracklets
-        >>> config = "/home/users/.../dlc-project-2025-01-01/config.yaml"
-        >>> videos = ["/home/alex/video.mp4"]
-        >>> deeplabcut.transformer_reID(config, videos, shuffle=1, track_method="ellipse")
-        >>> deeplabcut.create_labeled_video(
-        >>>     config,
-        >>>     videos,
-        >>>     shuffle=1,
-        >>>     track_method="transformer",
-        >>> )
+            config = "/home/users/.../dlc-project-2025-01-01/config.yaml"
+            videos = ["/home/alex/video.mp4"]
+            deeplabcut.transformer_reID(config, videos, shuffle=1, track_method="ellipse")
+            deeplabcut.create_labeled_video(
+                config,
+                videos,
+                shuffle=1,
+                track_method="transformer",
+            )
     """
     import os
 

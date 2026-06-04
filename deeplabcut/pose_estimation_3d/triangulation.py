@@ -55,34 +55,40 @@ def triangulate(
 
     Examples:
         Linux/MacOS — analyze all videos in the directory:
-        >>> deeplabcut.triangulate(config, "/data/project1/videos/")
+            deeplabcut.triangulate(config, "/data/project1/videos/")
 
         To analyze only a few pairs of videos:
-        >>> deeplabcut.triangulate(
-        ...     config,
-        ...     [
-        ...         ["/data/project1/videos/video1-camera-1.avi", "/data/project1/videos/video1-camera-2.avi"],
-        ...         ["/data/project1/videos/video2-camera-1.avi", "/data/project1/videos/video2-camera-2.avi"],
-        ...     ],
-        ... )
+            deeplabcut.triangulate(
+                config,
+                [
+                    [
+                        "/data/project1/videos/video1-camera-1.avi",
+                        "/data/project1/videos/video1-camera-2.avi",
+                    ],
+                    [
+                        "/data/project1/videos/video2-camera-1.avi",
+                        "/data/project1/videos/video2-camera-2.avi",
+                    ],
+                ],
+            )
 
         Windows — analyze all videos in the directory:
-        >>> deeplabcut.triangulate(config, "C:\\yourusername\\rig-95\\Videos")
+            deeplabcut.triangulate(config, "C:\\yourusername\\rig-95\\Videos")
 
         To analyze only a few pairs of videos:
-        >>> deeplabcut.triangulate(
-        ...     config,
-        ...     [
-        ...         [
-        ...             "C:\\yourusername\\rig-95\\Videos\\video1-camera-1.avi",
-        ...             "C:\\yourusername\\rig-95\\Videos\\video1-camera-2.avi",
-        ...         ],
-        ...         [
-        ...             "C:\\yourusername\\rig-95\\Videos\\video2-camera-1.avi",
-        ...             "C:\\yourusername\\rig-95\\Videos\\video2-camera-2.avi",
-        ...         ],
-        ...     ],
-        ... )
+            deeplabcut.triangulate(
+                config,
+                [
+                    [
+                        "C:\\yourusername\\rig-95\\Videos\\video1-camera-1.avi",
+                        "C:\\yourusername\\rig-95\\Videos\\video1-camera-2.avi",
+                    ],
+                    [
+                        "C:\\yourusername\\rig-95\\Videos\\video2-camera-1.avi",
+                        "C:\\yourusername\\rig-95\\Videos\\video2-camera-2.avi",
+                    ],
+                ],
+            )
     """
     from deeplabcut.compat import analyze_videos
     from deeplabcut.post_processing import filtering

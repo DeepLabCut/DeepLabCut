@@ -525,14 +525,14 @@ def create_labeled_video(
     Examples:
         Create the labeled video for a single video
 
-        >>> deeplabcut.create_labeled_video(
+            deeplabcut.create_labeled_video(
                 '/analysis/project/reaching-task/config.yaml',
                 ['/analysis/project/videos/reachingvideo1.avi'],
             )
 
         Create the labeled video for a single video and store the individual frames
 
-        >>> deeplabcut.create_labeled_video(
+            deeplabcut.create_labeled_video(
                 '/analysis/project/reaching-task/config.yaml',
                 ['/analysis/project/videos/reachingvideo1.avi'],
                 fastmode=True,
@@ -541,7 +541,7 @@ def create_labeled_video(
 
         Create the labeled video for multiple videos
 
-        >>> deeplabcut.create_labeled_video(
+            deeplabcut.create_labeled_video(
                 '/analysis/project/reaching-task/config.yaml',
                 [
                     '/analysis/project/videos/reachingvideo1.avi',
@@ -551,14 +551,14 @@ def create_labeled_video(
 
         Create the labeled video for all the videos with an .avi extension in a directory.
 
-        >>> deeplabcut.create_labeled_video(
+            deeplabcut.create_labeled_video(
                 '/analysis/project/reaching-task/config.yaml',
                 ['/analysis/project/videos/'],
             )
 
         Create the labeled video for all the videos with an .mp4 extension in a directory.
 
-        >>> deeplabcut.create_labeled_video(
+            deeplabcut.create_labeled_video(
                 '/analysis/project/reaching-task/config.yaml',
                 ['/analysis/project/videos/'],
                 videotype='mp4',

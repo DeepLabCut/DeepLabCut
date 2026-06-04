@@ -57,7 +57,7 @@ plugins:
       module_options: {}
       exclude:
         - "deeplabcut.version"
-        - "deeplabcut.cli"
+        # - "deeplabcut.cli"
         - "deeplabcut.benchmark"
         - "deeplabcut.gui"
       nav_section_title: "API Reference"
@@ -78,6 +78,7 @@ plugins:
             parameter_headings: true
             docstring_options:
               returns_multiple_items: false
+              warn_mising_types: false
             docstring_section_style: table
             separate_signature: true
             line_length: 120
@@ -93,14 +94,15 @@ plugins:
 
 markdown_extensions:
   - attr_list # adds support for setting attributes (ids) on elements
+  - pymdownx.superfences # allows for arbitrary nesting of code and content blocks inside each other
   - pymdownx.highlight: # adds support for syntax highlighting of code blocks
       anchor_linenums: true
       line_spans: __span
       pygments_lang_class: true
+      default_lang: python
   - pymdownx.arithmatex # adds support for rendering LaTeX math expressions
   - pymdownx.inlinehilite # add support for syntax highlighting of inline code blocks
   - pymdownx.snippets # adds the ability to embed content from arbitrary files into a document
-  - pymdownx.superfences # allows for arbitrary nesting of code and content blocks inside each other
   - pymdownx.tabbed: # provides a syntax to easily add tabbed Markdown content.
       alternate_style: true
   - pymdownx.blocks.details # allows for the creation of collapsible details/summary constructs.

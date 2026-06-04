@@ -314,21 +314,21 @@ def extract_outlier_frames(
     Examples:
         Extract the frames with default settings on Windows.
 
-        >>> deeplabcut.extract_outlier_frames(
+            deeplabcut.extract_outlier_frames(
                 'C:\\myproject\\reaching-task\\config.yaml',
                 ['C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi'],
             )
 
         Extract the frames with default settings on Linux/MacOS.
 
-        >>> deeplabcut.extract_outlier_frames(
+            deeplabcut.extract_outlier_frames(
                 '/analysis/project/reaching-task/config.yaml',
                 ['/analysis/project/video/reachinvideo1.avi'],
             )
 
         Extract the frames using the "kmeans" algorithm.
 
-        >>> deeplabcut.extract_outlier_frames(
+            deeplabcut.extract_outlier_frames(
                 '/analysis/project/reaching-task/config.yaml',
                 ['/analysis/project/video/reachinvideo1.avi'],
                 extractionalgorithm='kmeans',
@@ -336,7 +336,7 @@ def extract_outlier_frames(
 
         Extract the frames using the "kmeans" algorithm and ``"epsilon=5"`` pixels.
 
-        >>> deeplabcut.extract_outlier_frames(
+            deeplabcut.extract_outlier_frames(
                 '/analysis/project/reaching-task/config.yaml',
                 ['/analysis/project/video/reachinvideo1.avi'],
                 epsilon=5,
@@ -1037,7 +1037,8 @@ def merge_datasets(config, forceiterate=None):
             labeled or refined. Defaults to None.
 
     Examples:
-        >>> deeplabcut.merge_datasets("/analysis/project/reaching-task/config.yaml")
+
+            deeplabcut.merge_datasets("/analysis/project/reaching-task/config.yaml")
     """
     cfg = auxiliaryfunctions.read_config(config)
     config_path = Path(config).parents[0]

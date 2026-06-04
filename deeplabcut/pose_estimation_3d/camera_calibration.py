@@ -57,11 +57,13 @@ def calibrate_cameras(config, cbrow=8, cbcol=6, calibrate=False, alpha=0.4, sear
             refining detected checkerboard corners for subpixel accuracy.
 
     Examples:
-        Linux/MacOs/Windows
-        >>> deeplabcut.calibrate_cameras(config)
+        Linux/MacOs/Windows:
 
-        Once the right set of calibration images are selected,
-        >>> deeplabcut.calibrate_cameras(config, calibrate=True)
+            deeplabcut.calibrate_cameras(config)
+
+        Once the right set of calibration images are selected:
+
+            deeplabcut.calibrate_cameras(config, calibrate=True)
     """
     # Termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -280,8 +282,9 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
         plot (bool, optional): If True, save undistortion results as plots. Defaults to True.
 
     Examples:
-        Linux/MacOs/Windows
-        >>> deeplabcut.check_undistortion(config, cbrow=8, cbcol=6)
+        Linux/MacOs/Windows:
+
+            deeplabcut.check_undistortion(config, cbrow=8, cbcol=6)
     """
     # Read the config file
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)

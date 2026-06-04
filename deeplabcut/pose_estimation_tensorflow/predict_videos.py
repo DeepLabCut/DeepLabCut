@@ -367,31 +367,31 @@ def analyze_videos(
         str: DLCScorer; the scorer used to analyze the videos.
 
     Examples:
-        Analyzing a single video on Windows
+        Analyzing a single video on Windows:
 
-        >>> deeplabcut.analyze_videos(
+            deeplabcut.analyze_videos(
                 'C:\\myproject\\reaching-task\\config.yaml',
                 ['C:\\yourusername\\rig-95\\Videos\\reachingvideo1.avi'],
             )
 
-        Analyzing a single video on Linux/MacOS
+        Analyzing a single video on Linux/MacOS:
 
-        >>> deeplabcut.analyze_videos(
+            deeplabcut.analyze_videos(
                 '/analysis/project/reaching-task/config.yaml',
                 ['/analysis/project/videos/reachingvideo1.avi'],
             )
 
-        Analyze all videos of type ``avi`` in a folder
+        Analyze all videos of type ``avi`` in a folder:
 
-        >>> deeplabcut.analyze_videos(
+            deeplabcut.analyze_videos(
                 '/analysis/project/reaching-task/config.yaml',
                 ['/analysis/project/videos'],
                 videotype='.avi',
             )
 
-        Analyze multiple videos
+        Analyze multiple videos:
 
-        >>> deeplabcut.analyze_videos(
+            deeplabcut.analyze_videos(
                 '/analysis/project/reaching-task/config.yaml',
                 [
                     '/analysis/project/videos/reachingvideo1.avi',
@@ -399,9 +399,9 @@ def analyze_videos(
                 ],
             )
 
-        Analyze multiple videos with ``shuffle=2``
+        Analyze multiple videos with ``shuffle=2``:
 
-        >>> deeplabcut.analyze_videos(
+            deeplabcut.analyze_videos(
                 '/analysis/project/reaching-task/config.yaml',
                 [
                     '/analysis/project/videos/reachingvideo1.avi',
@@ -410,9 +410,9 @@ def analyze_videos(
                 shuffle=2,
             )
 
-        Analyze multiple videos with ``shuffle=2``, save results as an additional csv file
+        Analyze multiple videos with ``shuffle=2``, save results as an additional csv file:
 
-        >>> deeplabcut.analyze_videos(
+            deeplabcut.analyze_videos(
                 '/analysis/project/reaching-task/config.yaml',
                 [
                     '/analysis/project/videos/reachingvideo1.avi',
@@ -1152,12 +1152,12 @@ def analyze_time_lapse_frames(
             Defaults to "".
 
     Examples:
-        If you want to analyze all frames in /analysis/project/timelapseexperiment1
+        If you want to analyze all frames in /analysis/project/timelapseexperiment1:
 
-        >>> deeplabcut.analyze_images(
-        ...     "/analysis/project/reaching-task/config.yaml",
-        ...     "/analysis/project/timelapseexperiment1",
-        ... )
+            deeplabcut.analyze_images(
+                "/analysis/project/reaching-task/config.yaml",
+                "/analysis/project/timelapseexperiment1",
+            )
 
     Note:
         For test purposes one can extract all frames from a video with ffmpeg,
@@ -1472,18 +1472,20 @@ def convert_detections2tracklets(
 
     Examples:
         If you want to convert detections to tracklets:
-        >>> deeplabcut.convert_detections2tracklets(
-            '/analysis/project/reaching-task/config.yaml',
-            ['/analysis/project/video1.mp4'],
-            videotype='.mp4'
+
+            deeplabcut.convert_detections2tracklets(
+                '/analysis/project/reaching-task/config.yaml',
+                ['/analysis/project/video1.mp4'],
+                videotype='.mp4',
             )
 
         If you want to convert detections to tracklets based on box_tracker:
-        >>> deeplabcut.convert_detections2tracklets(
-            '/analysis/project/reaching-task/config.yaml',
-            ['/analysis/project/video1.mp4'],
-            videotype='.mp4',
-            track_method='box'
+
+            deeplabcut.convert_detections2tracklets(
+                '/analysis/project/reaching-task/config.yaml',
+                ['/analysis/project/video1.mp4'],
+                videotype='.mp4',
+                track_method='box',
             )
     """
     cfg = auxiliaryfunctions.read_config(config)

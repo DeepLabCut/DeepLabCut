@@ -74,8 +74,7 @@ def write_deploy_config(configname, cfg):
 
 
 def load_model(cfg, shuffle=1, trainingsetindex=0, TFGPUinference=True, modelprefix=""):
-    """Loads a tensorflow session with a DLC model from the associated configuration
-    Return a tensorflow session with DLC model given cfg and shuffle.
+    """Load a TensorFlow session with a DLC model from the associated configuration.
 
     Args:
         cfg (dict): Configuration read from the project's main config.yaml file.
@@ -217,7 +216,7 @@ def export_model(
 
     Examples:
         Export the first stored snapshot for model trained with shuffle 3:
-        >>> deeplabcut.export_model("/analysis/project/reaching-task/config.yaml", shuffle=3, snapshotindex=-1)
+            deeplabcut.export_model("/analysis/project/reaching-task/config.yaml", shuffle=3, snapshotindex=-1)
     """
     ### read config file
 

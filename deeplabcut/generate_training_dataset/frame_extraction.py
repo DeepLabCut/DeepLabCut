@@ -161,7 +161,7 @@ def extract_frames(
     Examples:
         To extract frames automatically with 'kmeans' and then crop the frames
 
-        >>> deeplabcut.extract_frames(
+            deeplabcut.extract_frames(
                 config='/analysis/project/reaching-task/config.yaml',
                 mode='automatic',
                 algo='kmeans',
@@ -171,7 +171,7 @@ def extract_frames(
         To extract frames automatically with 'kmeans' and then defining the cropping area
         using a GUI
 
-        >>> deeplabcut.extract_frames(
+            deeplabcut.extract_frames(
                 '/analysis/project/reaching-task/config.yaml',
                 'automatic',
                 'kmeans',
@@ -179,9 +179,9 @@ def extract_frames(
             )
 
         To consider the color information when extracting frames automatically with
-        'kmeans'
+        'kmeans':
 
-        >>> deeplabcut.extract_frames(
+            deeplabcut.extract_frames(
                 '/analysis/project/reaching-task/config.yaml',
                 'automatic',
                 'kmeans',
@@ -190,7 +190,7 @@ def extract_frames(
 
         To extract frames automatically with 'uniform' and then crop the frames
 
-        >>> deeplabcut.extract_frames(
+            deeplabcut.extract_frames(
                 '/analysis/project/reaching-task/config.yaml',
                 'automatic',
                 'uniform',
@@ -199,20 +199,20 @@ def extract_frames(
 
         To extract frames manually
 
-        >>> deeplabcut.extract_frames(
+            deeplabcut.extract_frames(
                 '/analysis/project/reaching-task/config.yaml', 'manual'
             )
 
         To extract frames manually, with a 60% wide frames slider
 
-        >>> deeplabcut.extract_frames(
+            deeplabcut.extract_frames(
                 '/analysis/project/reaching-task/config.yaml', 'manual', slider_width=60,
             )
 
         To extract frames from a second camera that match the frames extracted from the
         first
 
-        >>> deeplabcut.extract_frames(
+            deeplabcut.extract_frames(
                 '/analysis/project/reaching-task/config.yaml',
                 mode='match',
                 extracted_cam=0,

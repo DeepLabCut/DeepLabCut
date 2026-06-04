@@ -240,7 +240,7 @@ def plot_trajectories(
     Examples:
         To label the frames
 
-        >>> deeplabcut.plot_trajectories(
+            deeplabcut.plot_trajectories(
                 'home/alex/analysis/project/reaching-task/config.yaml',
                 ['/home/alex/analysis/project/videos/reachingvideo1.avi'],
             )

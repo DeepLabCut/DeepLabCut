@@ -476,13 +476,14 @@ def _video_inference_superanimal(
             Defaults to True.
 
     Examples:
-        >>> scale_list = [200, 300, 400]
-        >>> deeplabcut.video_inference_superanimal(
-        ...     video,
-        ...     "superanimal_topviewmouse",
-        ...     videotype=".avi",
-        ...     scale_list=scale_list,
-        ... )
+
+            scale_list = [200, 300, 400]
+            deeplabcut.video_inference_superanimal(
+                video,
+                "superanimal_topviewmouse",
+                videotype=".avi",
+                scale_list=scale_list,
+            )
     """
     from deeplabcut.pose_estimation_tensorflow.modelzoo.api import (
         SpatiotemporalAdaptation,

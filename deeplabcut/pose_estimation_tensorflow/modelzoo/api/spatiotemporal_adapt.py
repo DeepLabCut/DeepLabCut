@@ -56,21 +56,21 @@ class SpatiotemporalAdaptation:
                 non-modelzoo models. Defaults to "".
 
         Examples:
-            >>> from deeplabcut.pose_estimation_tensorflow.modelzoo.api.spatiotemporal_adapt import (
-            ...     SpatiotemporalAdaptation,
-            ... )
-            >>> video_path = "/mnt/md0/shaokai/openfield_video/m3v1mp4.mp4"
-            >>> supermodel_name = "superanimal_topviewmouse"
-            >>> videotype = "mp4"
-            >>> adapter = SpatiotemporalAdaptation(
-            ...     video_path,
-            ...     supermodel_name,
-            ...     modelfolder="temp_topview",
-            ...     videotype=videotype,
-            ... )
-            >>> adapter.before_adapt_inference()
-            >>> adapter.adaptation_training()
-            >>> adapter.after_adapt_inference()
+                from deeplabcut.pose_estimation_tensorflow.modelzoo.api.spatiotemporal_adapt import (
+                    SpatiotemporalAdaptation,
+                )
+                video_path = "/mnt/md0/shaokai/openfield_video/m3v1mp4.mp4"
+                supermodel_name = "superanimal_topviewmouse"
+                videotype = "mp4"
+                adapter = SpatiotemporalAdaptation(
+                    video_path,
+                    supermodel_name,
+                    modelfolder="temp_topview",
+                    videotype=videotype,
+                )
+            adapter.before_adapt_inference()
+            adapter.adaptation_training()
+            adapter.after_adapt_inference()
         """
         if scale_list is None:
             scale_list = []

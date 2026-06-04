@@ -293,7 +293,7 @@ def check_labels(
         None
 
     Examples:
-        >>> deeplabcut.check_labels("/analysis/project/reaching-task/config.yaml")
+            deeplabcut.check_labels("/analysis/project/reaching-task/config.yaml")
     """
     from deeplabcut.utils import visualization
 
@@ -645,23 +645,33 @@ def mergeandsplit(config, trainindex=0, uniform=True):
 
     Examples:
         To create a leave-one-folder-out model:
-        >>> trainIndices, testIndices = deeplabcut.mergeandsplit(config, trainindex=0, uniform=False)
-        returns the indices for the first video folder (as defined in config file)
-        as testIndices and all others as trainIndices.
-        You can then create the training set by calling (e.g. defining it as Shuffle 3):
-        >>> deeplabcut.create_training_dataset(config, Shuffles=[3], trainIndices=trainIndices, testIndices=testIndices)
+
+            trainIndices, testIndices = deeplabcut.mergeandsplit(config, trainindex=0, uniform=False)
+
+        Returns the indices for the first video folder (as defined in config file) as
+        testIndices and all others as trainIndices. You can then create the training set
+        by calling (e.g. defining it as Shuffle 3):
+
+            deeplabcut.create_training_dataset(
+                config,
+                Shuffles=[3],
+                trainIndices=trainIndices,
+                testIndices=testIndices,
+            )
 
         To freeze a (uniform) split (i.e. iid sampled from all the data):
-        >>> trainIndices, testIndices = deeplabcut.mergeandsplit(config, trainindex=0, uniform=True)
+
+            trainIndices, testIndices = deeplabcut.mergeandsplit(config, trainindex=0, uniform=True)
 
         You can then create two model instances that have the identical trainingset.
         Thereby you can assess the role of various parameters on the performance of DLC.
-        >>> deeplabcut.create_training_dataset(
-        ...     config,
-        ...     Shuffles=[0, 1],
-        ...     trainIndices=[trainIndices, trainIndices],
-        ...     testIndices=[testIndices, testIndices],
-        ... )
+
+            deeplabcut.create_training_dataset(
+                config,
+                Shuffles=[0, 1],
+                trainIndices=[trainIndices, trainIndices],
+                testIndices=[testIndices, testIndices],
+            )
     """
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
@@ -948,17 +958,19 @@ def create_training_dataset(
 
     Examples:
         Linux/MacOS:
-        >>> deeplabcut.create_training_dataset(
+            deeplabcut.create_training_dataset(
                 '/analysis/project/reaching-task/config.yaml', num_shuffles=1,
             )
 
-        >>> deeplabcut.create_training_dataset(
+            deeplabcut.create_training_dataset(
                 '/analysis/project/reaching-task/config.yaml', Shuffles=[2], engine=deeplabcut.Engine.TF,
             )
 
         Windows:
-        >>> deeplabcut.create_training_dataset(
-                'C:\\Users\\Ulf\\looming-task\\config.yaml', Shuffles=[3,17,5],
+
+            deeplabcut.create_training_dataset(
+                "C:\\Users\\Ulf\\looming-task\\config.yaml",
+                Shuffles=[3, 17, 5],
             )
     """
     import scipy.io as sio
@@ -1486,7 +1498,7 @@ def create_training_model_comparison(
     Examples:
         On Linux/MacOS
 
-        >>> shuffle_list = deeplabcut.create_training_model_comparison(
+            shuffle_list = deeplabcut.create_training_model_comparison(
                 '/analysis/project/reaching-task/config.yaml',
                 num_shuffles=1,
                 net_types=['resnet_50','resnet_152'],
@@ -1495,7 +1507,7 @@ def create_training_model_comparison(
 
         On Windows
 
-        >>> shuffle_list = deeplabcut.create_training_model_comparison(
+            shuffle_list = deeplabcut.create_training_model_comparison(
                 'C:\\Users\\Ulf\\looming-task\\config.yaml',
                 num_shuffles=1,
                 net_types=['resnet_50','resnet_152'],

@@ -256,33 +256,37 @@ def video_inference_superanimal(
             scale_list, you can try to use the PyTorch engine.
 
     Examples:
-        >>> import deeplabcut.modelzoo.video_inference.video_inference_superanimal as video_inference_superanimal
-        >>> video_inference_superanimal(
-            videos=["/mnt/md0/shaokai/DLCdev/3mice_video1_short.mp4"],
-            superanimal_name="superanimal_topviewmouse",
-            model_name="hrnet_w32",
-            detector_name="fasterrcnn_resnet50_fpn_v2",
-            video_adapt=True,
-            max_individuals=3,
-            pseudo_threshold=0.1,
-            bbox_threshold=0.9,
-            detector_epochs=4,
-            pose_epochs=4,
-        )
+        Using the module import path:
 
-        >>> from deeplabcut.modelzoo.video_inference import video_inference_superanimal
-        >>> videos = ["/path/to/my/video.mp4"]
-        >>> superanimal_name = "superanimal_topviewmouse"
-        >>> videotype = "mp4"
-        >>> scale_list = [200, 300, 400]
-        >>> video_inference_superanimal(
+            import deeplabcut.modelzoo.video_inference.video_inference_superanimal as video_inference_superanimal
+            video_inference_superanimal(
+                videos=["/mnt/md0/shaokai/DLCdev/3mice_video1_short.mp4"],
+                superanimal_name="superanimal_topviewmouse",
+                model_name="hrnet_w32",
+                detector_name="fasterrcnn_resnet50_fpn_v2",
+                video_adapt=True,
+                max_individuals=3,
+                pseudo_threshold=0.1,
+                bbox_threshold=0.9,
+                detector_epochs=4,
+                pose_epochs=4,
+            )
+
+        Using ``scale_list``:
+
+            from deeplabcut.modelzoo.video_inference import video_inference_superanimal
+            videos = ["/path/to/my/video.mp4"]
+            superanimal_name = "superanimal_topviewmouse"
+            videotype = "mp4"
+            scale_list = [200, 300, 400]
+            video_inference_superanimal(
                 videos,
                 superanimal_name,
                 model_name="hrnet_w32",
                 detector_name="fasterrcnn_resnet50_fpn_v2",
-                scale_list = scale_list,
-                videotype = videotype,
-                video_adapt = True,
+                scale_list=scale_list,
+                videotype=videotype,
+                video_adapt=True,
             )
     """
     if scale_list is None:

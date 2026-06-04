@@ -33,13 +33,13 @@ class TrackletManager:
                 Defaults to 0.
 
         Examples:
-            manager = TrackletManager(config_path, min_swap_len=0, min_tracklet_len=0)
 
-            manager.load_tracklets_from_pickle(filename)
-            # Alternatively
-            manager.load_tracklets_from_hdf(filename)
+                manager = TrackletManager(config_path, min_swap_len=0, min_tracklet_len=0)
+                manager.load_tracklets_from_pickle(filename)
 
-            manager.find_swapping_bodypart_pairs()
+                # Alternatively:
+                manager.load_tracklets_from_hdf(filename)
+                manager.find_swapping_bodypart_pairs()
         """
         self.config = config
         self.cfg = auxiliaryfunctions.read_config(config)

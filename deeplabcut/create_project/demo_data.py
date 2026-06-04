@@ -34,7 +34,7 @@ def load_demo_data(
             shall be created.
 
     Examples:
-        >>> deeplabcut.load_demo_data("config.yaml")
+            deeplabcut.load_demo_data("config.yaml")
     """
     config = Path(config).resolve()
     config = str(config)
