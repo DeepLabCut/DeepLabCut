@@ -130,7 +130,7 @@ def mobilenet_base(  # pylint: disable=invalid-name
         usage will be to set this value in (0, 1) to reduce the number of
         parameters or computation cost of the model.
       final_endpoint: The name of last layer, for early termination for
-      for V1-based networks: last layer is "layer_14", for V2: "layer_20"
+        for V1-based networks: last layer is "layer_14", for V2: "layer_20"
       output_stride: An integer that specifies the requested ratio of input to
         output spatial resolution. If not None, then we invoke atrous convolution
         if necessary to prevent the network from reducing the spatial resolution

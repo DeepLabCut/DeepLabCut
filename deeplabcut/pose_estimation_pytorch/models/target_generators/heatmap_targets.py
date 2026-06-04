@@ -66,7 +66,7 @@ class HeatmapGenerator(BaseGenerator):
             num_heatmaps: the number of heatmaps to generate
             pos_dist_thresh: 3*std of the gaussian. We think of dist_thresh as a radius
                 and std is a 'diameter'.
-            mode: the mode to generate heatmaps for
+            heatmap_mode: the mode to generate heatmaps for
             gradient_masking: Whether to mask the gradient when a bodypart is undefined
                 (has visibility ``0`` in the dataset). WARNING: Do not set this option
                 for bottom-up models, as a keypoint missing for one animal means the
@@ -76,8 +76,6 @@ class HeatmapGenerator(BaseGenerator):
                 image.
             background_weight: If ``gradient_masking == True`, the weight to apply to
                 the loss for background pixels.
-            learned_id_target: whether to generate the heatmap for keypoints
-                or for learned IDs
             generate_locref: whether to generate location refinement maps
             locref_std: the STD for the location refinement maps, if defined
 

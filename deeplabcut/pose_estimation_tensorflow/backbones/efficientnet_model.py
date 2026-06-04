@@ -270,7 +270,6 @@ class MBConvBlock(tf.keras.layers.Layer):
 
         Args:
           inputs: the inputs tensor.
-          training: boolean, whether the model is constructed for training.
           drop_connect_rate: float, between 0 to 1, drop connect rate.
 
         Returns:
@@ -349,7 +348,6 @@ class MBConvBlockWithoutDepthwise(MBConvBlock):
 
         Args:
           inputs: the inputs tensor.
-          training: boolean, whether the model is constructed for training.
           drop_connect_rate: float, between 0 to 1, drop connect rate.
 
         Returns:
@@ -482,7 +480,6 @@ class Model(tf.keras.Model):
 
         Args:
           inputs: input tensors.
-          training: boolean, whether the model is constructed for training.
           features_only: build the base feature network only.
 
         Returns:

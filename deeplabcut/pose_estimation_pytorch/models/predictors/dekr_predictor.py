@@ -195,7 +195,7 @@ class DEKRPredictor(BasePredictor):
 
         Args:
             offsets: Offsets tensor.
-            num_joint: Number of joints.
+            num_joints: Number of joints.
 
         Returns:
             Regression poses.

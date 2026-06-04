@@ -177,8 +177,7 @@ class COCOLoader(Loader):
         system.
 
         Args:
-            project_root: the root path of the COCO project
-            coco_json: the COCO dictionary containing the annotations
+            coco_json (dict): The COCO dictionary containing the annotations
 
         Returns:
             the validated COCO object

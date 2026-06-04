@@ -1471,8 +1471,6 @@ def extract_save_all_maps(
             ``pytorch_config.yaml`` file. Examples: {"cpu", "cuda", "cuda:0", "cuda:1"}. See
             https://pytorch.org/docs/stable/notes/cuda.html for more information. Defaults to None.
         Indices: For which images shall the scmap/locref and paf be computed? Give a list of images. Defaults to None.
-        nplots_per_row (int, optional): Number of plots per row in grid plots. By default, calculated to approximate a
-            squared grid of plots. Defaults to None.
         snapshot_index: Only for PyTorch models. Index (starting at 0) of the snapshot we want to extract maps with. To
             evaluate the last one, use -1. To extract maps for all snapshots, use "all". Default uses the value set in
             the project config.

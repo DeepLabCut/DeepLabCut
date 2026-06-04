@@ -267,7 +267,6 @@ def build_model_base(images, model_name, use_batch_norm=False, drop_out=False, o
     Args:
       images: input images tensor.
       model_name: string, the predefined model name.
-      training: boolean, whether the model is constructed for training.
       override_params: A dictionary of params for overriding. Fields must exist in
         efficientnet_model.GlobalParams.
 

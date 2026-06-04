@@ -655,7 +655,7 @@ class CTDInferenceRunner(PoseInferenceRunner):
         bu_runner: A runner for the BU model to run inference with. If no BU runner is
             given, conditions must be given in the context for the data. Otherwise an
             error will be raised during inference.
-        tracking: Whether to track using the CTD model. If
+        ctd_tracking: Whether to track using the CTD model. If
     """
 
     def __init__(
