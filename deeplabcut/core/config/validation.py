@@ -1,7 +1,9 @@
 from collections.abc import Sequence
 from typing import Annotated, Any
 
-from pydantic import AfterValidator, Field
+import numpy as np
+from numpy.typing import NDArray
+from pydantic import AfterValidator, BeforeValidator, Field
 
 
 def _describe(value: float, name: str | None = None) -> str:
@@ -34,8 +36,18 @@ def unique_values(values: Sequence[Any]) -> Sequence[Any]:
     return values
 
 
+def _coerce_ndarray(v):
+    if isinstance(v, np.ndarray):
+        return v
+    return np.asarray(v, dtype=int)
+
+
 Fraction = Annotated[float, Field(ge=0.0, le=1.0)]
 UniqueStrList = Annotated[list[str], AfterValidator(unique_values)]
 NonNegativeFloat = Annotated[float, Field(ge=0.0)]
 NonNegativeInt = Annotated[int, Field(ge=0)]
 StrictPositiveInt = Annotated[int, Field(ge=1)]
+NDArrayInt = Annotated[
+    NDArray,
+    BeforeValidator(_coerce_ndarray),
+]
