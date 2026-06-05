@@ -20,7 +20,7 @@ from pydantic import model_validator
 from typing_extensions import Self
 
 from deeplabcut.core.config import DLCBaseConfig
-from deeplabcut.core.types import PydanticNDArray
+from deeplabcut.core.config.validation import NDArrayInt
 
 
 class WeightInitialization(DLCBaseConfig):
@@ -51,7 +51,7 @@ class WeightInitialization(DLCBaseConfig):
     dataset: str | None = None
     with_decoder: bool = False
     memory_replay: bool = False
-    conversion_array: PydanticNDArray | None = None
+    conversion_array: NDArrayInt | None = None
     bodyparts: list[str] | None = None
 
     @model_validator(mode="after")

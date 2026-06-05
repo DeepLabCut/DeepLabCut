@@ -23,6 +23,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from deeplabcut.core.config.project_config import ProjectConfig
 
+import numpy as np
 import ruamel.yaml.representer
 from pydantic import ValidationError
 from ruamel.yaml import YAML
@@ -147,6 +148,8 @@ def normalize_for_serialization(obj: Any) -> Any:
         return tuple(normalize_for_serialization(v) for v in obj)
     if isinstance(obj, (list, set)):
         return [normalize_for_serialization(v) for v in obj]
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
     return obj
 
 
