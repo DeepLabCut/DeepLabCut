@@ -17,6 +17,7 @@ from pydantic import Field
 
 from deeplabcut.core.config import DLCBaseConfig, DLCVersionedConfig
 from deeplabcut.core.config.project_config import ProjectConfig
+from deeplabcut.core.config.validation import Fraction, NonNegativeInt, UniqueStringList
 from deeplabcut.pose_estimation_pytorch.config.data import DataConfig
 from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.config.logger import (
@@ -169,10 +170,10 @@ class TestConfig(DLCBaseConfig):
     # TODO @deruyter92 2026-02-05: Is this additional configuration really needed?
     # We could aim for using the PoseConfig class or InferenceConfig class instead.
     dataset: Path = Path()
-    num_joints: int = 0
-    all_joints: list[list[int]] = Field(default_factory=list)
-    all_joints_names: list[str] = Field(default_factory=list)
+    num_joints: NonNegativeInt = 0
+    all_joints: list[list[NonNegativeInt]] = Field(default_factory=list)
+    all_joints_names: UniqueStringList = Field(default_factory=list)
     net_type: NetType = NetType.RESNET_50
     dataset_type: DatasetType = DatasetType.MULTIANIMAL_IMGAUG
-    global_scale: int = 1
+    global_scale: Fraction = 1.0
     scoremap_dir: Path = Path()
