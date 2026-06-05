@@ -6,9 +6,9 @@ import sys
 import warnings
 from collections.abc import Callable, Iterator
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 from pydantic_core import ArgsKwargs
 from ruamel.yaml.comments import CommentedMap
 from typing_extensions import Self
@@ -297,13 +297,8 @@ class DLCVersionedConfig(DLCBaseConfig):
         json_schema_extra={"comment": "Config schema version. Do not edit manually."},
     )
 
-    _CHANGE_TRACKING_INTERNALS: ClassVar[frozenset[str]] = frozenset(
-        {
-            "_dirty_fields",
-            "_change_notes",
-            "_change_tracking_initialized",
-        }
-    )
+    _dirty_fields: set[str] | None = PrivateAttr(default=None)
+    _change_notes: dict[str, Any] | None = PrivateAttr(default=None)
 
     # ------------------------------------------------------------------
     # Version migration (before pydantic field validation)
@@ -354,37 +349,26 @@ class DLCVersionedConfig(DLCBaseConfig):
 
     def model_post_init(self, __context: Any) -> None:
         super().model_post_init(__context)
-        self._init_change_tracking()
+        self.mark_clean()
 
-    def _init_change_tracking(self) -> None:
-        if getattr(self, "_change_tracking_initialized", False):
+    def __setattr__(self, name: str, value: Any) -> None:
+        name = self._resolve_alias(name, warn=True, stacklevel=3)
+
+        # Private attributes (not a model field) skip tracking logic
+        if name not in type(self).model_fields or not self._fully_initialized:
+            super().__setattr__(name, value)
             return
-        object.__setattr__(self, "_change_tracking_initialized", True)
 
-        cls = type(self)
-        if not getattr(cls, "_change_tracking_installed", False):
-            original_setattr = cls.__setattr__
+        # Get the coerced values before and after setting; log changes
+        old_value = getattr(self, name, None)
+        super().__setattr__(name, value)
+        new_value = getattr(self, name)
+        if old_value != new_value:
+            self._dirty_fields.add(name)
 
-            def __setattr__(self, name: str, value: Any) -> None:
-                if name in type(self)._CHANGE_TRACKING_INTERNALS:
-                    object.__setattr__(self, name, value)
-                    return
-                canonical = self._resolve_alias(name, warn=False)
-                field_names = list(type(self).model_fields.keys())
-                dirty_fields = getattr(self, "_dirty_fields", None)
-                if dirty_fields is not None and canonical in field_names:
-                    old = getattr(self, canonical)
-                    original_setattr(self, name, value)
-                    if old != value:
-                        dirty_fields.add(canonical)
-                else:
-                    original_setattr(self, name, value)
-
-            cls.__setattr__ = __setattr__
-            cls._change_tracking_installed = True
-
-        object.__setattr__(self, "_dirty_fields", set())
-        object.__setattr__(self, "_change_notes", {})
+    @property
+    def _fully_initialized(self) -> bool:
+        return self._dirty_fields is not None and self._change_notes is not None
 
     @property
     def is_dirty(self) -> bool:
