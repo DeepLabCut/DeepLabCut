@@ -3,7 +3,7 @@ from typing import Annotated, Any
 
 import numpy as np
 from numpy.typing import NDArray
-from pydantic import AfterValidator, BeforeValidator, Field
+from pydantic import AfterValidator, BeforeValidator, Field, GetPydanticSchema, InstanceOf
 
 
 def _describe(value: float, name: str | None = None) -> str:
@@ -50,4 +50,8 @@ StrictPositiveInt = Annotated[int, Field(ge=1)]
 NDArrayInt = Annotated[
     NDArray,
     BeforeValidator(_coerce_ndarray),
+    GetPydanticSchema(
+        lambda _s, h: h(InstanceOf[np.ndarray]),
+        lambda _s, h: h(InstanceOf[np.ndarray]),
+    ),
 ]
