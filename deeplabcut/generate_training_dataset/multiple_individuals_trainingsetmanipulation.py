@@ -616,6 +616,7 @@ def create_multianimaltraining_dataset(
             pass
 
 
+# TODO @deruyter92 2026-06-05: This function seems to be unused dead code. Let's remove it.
 def convert_cropped_to_standard_dataset(
     config_path,
     recreate_datasets=True,
