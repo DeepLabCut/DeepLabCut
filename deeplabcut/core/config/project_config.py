@@ -11,9 +11,10 @@
 """Project configuration classes for DeepLabCut pose estimation models."""
 
 from pathlib import Path
-from typing import Any, Literal, Self
+from typing import Any, Literal
 
 from pydantic import Field, model_validator
+from typing_extensions import Self
 
 from deeplabcut.core.config.base_config import DLCVersionedConfig
 from deeplabcut.core.config.validation import (
