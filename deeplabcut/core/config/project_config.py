@@ -38,7 +38,6 @@ class ProjectConfig(DLCVersionedConfig):
         individuals: List of individual animal identities (multi-animal).
         uniquebodyparts: List of unique body parts (multi-animal project key).
         multianimalbodyparts: List of multi-animal body parts (multi-animal key).
-        unique_bodyparts: List of unique body parts (metadata key).
         start: Fraction of video to start extracting frames.
         stop: Fraction of video to stop extracting frames.
         numframes2pick: Number of frames to pick for labeling.
@@ -72,7 +71,7 @@ class ProjectConfig(DLCVersionedConfig):
     scorer: str = ""
     date: str = ""
     multianimalproject: bool = False
-    identity: bool | None = None
+    identity: bool | None = Field(default=None, json_schema_extra={"aliases": ["with_identity"]})
 
     # Project path
     project_path: Path = Field(
@@ -89,7 +88,7 @@ class ProjectConfig(DLCVersionedConfig):
         },
     )
 
-    # Annotation data set configuration (and individual video cropping parameters)
+    # Annotation dataset configuration (and individual video cropping parameters)
     video_sets: dict[str, Any] = Field(
         default_factory=dict,
         json_schema_extra={"comment": "\nAnnotation data set configuration (and individual video cropping parameters)"},
@@ -101,9 +100,8 @@ class ProjectConfig(DLCVersionedConfig):
     # TODO @deruyter92 2026-02-06: The current pipeline requires at least one individual defined in the
     # default configuration. This will be removed in the future.
     individuals: list[str] = Field(default_factory=lambda: ["individual_1"])
-    uniquebodyparts: list[str] = Field(default_factory=list)  # multi-animal project key
+    uniquebodyparts: list[str] = Field(default_factory=list, json_schema_extra={"aliases": ["unique_bodyparts"]})
     multianimalbodyparts: list[str] = Field(default_factory=list)  # multi-animal project key
-    unique_bodyparts: list[str] = Field(default_factory=list)  # metadata key; same as uniquebodyparts
 
     # Fraction of video to start/stop when extracting frames for labeling/refinement
     start: float = Field(
@@ -170,26 +168,6 @@ class ProjectConfig(DLCVersionedConfig):
         default=None,
         json_schema_extra={"comment": "\nConversion tables to fine-tune SuperAnimal weights"},
     )
-
-    # @TODO @deruyter92 2026-02-13: These aliases are used in parallel. One of them should be removed.
-    with_identity: bool | None = Field(
-        default=False,
-        json_schema_extra={"comment": "Alias for 'identity'. Kept for backwards compatibility."},
-    )
-    unique_bodyparts: list[str] = Field(
-        default_factory=list,
-        json_schema_extra={"comment": "Alias for 'uniquebodyparts'. Kept for backwards compatibility."},
-    )
-
-    # TODO @deruyter92 2026-02-06: These parameters are no longer used in the new pipeline.
-    resnet: int | None = Field(
-        default=None,
-        json_schema_extra={
-            "comment": "\nThese are very old parameters that are no longer used "
-            "in most cases. They are kept for backwards compatibility."
-        },
-    )
-    croppedtraining: bool | None = None
 
     def _post_yaml_load_updates(self, *, yaml_path: Path) -> None:
         """
