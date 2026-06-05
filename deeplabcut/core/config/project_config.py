@@ -20,7 +20,7 @@ from deeplabcut.core.config.validation import (
     Fraction,
     NonNegativeInt,
     StrictPositiveInt,
-    UniqueStringList,
+    UniqueStrList,
     less_than,
 )
 
@@ -102,13 +102,13 @@ class ProjectConfig(DLCVersionedConfig):
     )
     # VV TODO @deruyter92 2026-01-30: following the old original config.yaml template for now. VV
     # VV We should change this to a list[str] in the future. VV
-    bodyparts: UniqueStringList | str = "MULTI!"
+    bodyparts: UniqueStrList | str = "MULTI!"
 
     # TODO @deruyter92 2026-02-06: The current pipeline requires at least one individual defined in the
     # default configuration. This will be removed in the future.
-    individuals: UniqueStringList = Field(default_factory=lambda: ["individual_1"])
-    uniquebodyparts: UniqueStringList = Field(default_factory=list, json_schema_extra={"aliases": ["unique_bodyparts"]})
-    multianimalbodyparts: UniqueStringList = Field(default_factory=list)  # multi-animal project key
+    individuals: UniqueStrList = Field(default_factory=lambda: ["individual_1"])
+    uniquebodyparts: UniqueStrList = Field(default_factory=list, json_schema_extra={"aliases": ["unique_bodyparts"]})
+    multianimalbodyparts: UniqueStrList = Field(default_factory=list)  # multi-animal project key
 
     # Fraction of video to start/stop when extracting frames for labeling/refinement
     start: Fraction = Field(
@@ -121,7 +121,7 @@ class ProjectConfig(DLCVersionedConfig):
     numframes2pick: NonNegativeInt = 20
 
     # Plotting configuration
-    skeleton: list[UniqueStringList] = Field(
+    skeleton: list[UniqueStrList] = Field(
         default_factory=list,
         json_schema_extra={"comment": "\nPlotting configuration"},
     )
