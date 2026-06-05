@@ -24,16 +24,6 @@ class DataLoaderType(str, Enum):
     COCOLoader = "COCOLoader"
 
 
-class DataLoaderConfig(DLCBaseConfig):
-    """Base class for data loader configuration.
-
-    Attributes:
-        type: Loader type identifier
-    """
-
-    type: str
-
-
 class DLCLoaderConfig(DLCBaseConfig):
     """Configuration for DeepLabCut Loader.
 
