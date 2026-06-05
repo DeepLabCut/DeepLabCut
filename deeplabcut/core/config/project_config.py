@@ -11,11 +11,18 @@
 """Project configuration classes for DeepLabCut pose estimation models."""
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal, Self
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from deeplabcut.core.config.base_config import DLCVersionedConfig
+from deeplabcut.core.config.validation import (
+    Fraction,
+    NonNegativeInt,
+    StrictPositiveInt,
+    UniqueStringList,
+    less_than,
+)
 
 
 class ProjectConfig(DLCVersionedConfig):
@@ -81,7 +88,7 @@ class ProjectConfig(DLCVersionedConfig):
     pose_config_path: Path = Path()
 
     # Engine
-    engine: str = Field(
+    engine: Literal["pytorch", "tensorflow"] = Field(
         default="pytorch",
         json_schema_extra={
             "comment": "\nDefault DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)"
@@ -95,64 +102,64 @@ class ProjectConfig(DLCVersionedConfig):
     )
     # VV TODO @deruyter92 2026-01-30: following the old original config.yaml template for now. VV
     # VV We should change this to a list[str] in the future. VV
-    bodyparts: list[str] | str = "MULTI!"
+    bodyparts: UniqueStringList | str = "MULTI!"
 
     # TODO @deruyter92 2026-02-06: The current pipeline requires at least one individual defined in the
     # default configuration. This will be removed in the future.
-    individuals: list[str] = Field(default_factory=lambda: ["individual_1"])
-    uniquebodyparts: list[str] = Field(default_factory=list, json_schema_extra={"aliases": ["unique_bodyparts"]})
-    multianimalbodyparts: list[str] = Field(default_factory=list)  # multi-animal project key
+    individuals: UniqueStringList = Field(default_factory=lambda: ["individual_1"])
+    uniquebodyparts: UniqueStringList = Field(default_factory=list, json_schema_extra={"aliases": ["unique_bodyparts"]})
+    multianimalbodyparts: UniqueStringList = Field(default_factory=list)  # multi-animal project key
 
     # Fraction of video to start/stop when extracting frames for labeling/refinement
-    start: float = Field(
+    start: Fraction = Field(
         default=0.0,
         json_schema_extra={
             "comment": "\nFraction of video to start/stop when extracting frames for labeling/refinement"
         },
     )
-    stop: float = 1.0
-    numframes2pick: int = 20
+    stop: Fraction = 1.0
+    numframes2pick: NonNegativeInt = 20
 
     # Plotting configuration
-    skeleton: list[list[str]] = Field(
+    skeleton: list[UniqueStringList] = Field(
         default_factory=list,
         json_schema_extra={"comment": "\nPlotting configuration"},
     )
     skeleton_color: str = "black"
-    pcutoff: float = 0.4
-    dotsize: int = 12
-    alphavalue: float = 0.7
+    pcutoff: Fraction = 0.4
+    dotsize: NonNegativeInt = 12
+    alphavalue: Fraction = 0.7
     colormap: str = "rainbow"
 
     # Training, evaluation and analysis configuration
-    TrainingFraction: list[float] = Field(
+    TrainingFraction: list[Fraction] = Field(
         default_factory=list,
         json_schema_extra={"comment": "\nTraining,Evaluation and Analysis configuration"},
     )
-    iteration: int | None = None
+    iteration: NonNegativeInt | None = None
     default_net_type: str = "resnet_50"
     default_augmenter: str | None = None
     default_track_method: str | None = None
     snapshotindex: str | int = "all"
     detector_snapshotindex: int = -1
-    batch_size: int = 8
-    detector_batch_size: int = 1
+    batch_size: StrictPositiveInt = 8
+    detector_batch_size: StrictPositiveInt = 1
 
     # Cropping parameters (for analysis and outlier frame detection)
     cropping: bool = Field(
         default=False,
         json_schema_extra={"comment": "\nCropping Parameters (for analysis and outlier frame detection)"},
     )
-    x1: int | None = Field(
+    x1: NonNegativeInt | None = Field(
         default=None,
         json_schema_extra={"comment": "if cropping is true for analysis, then set the values here:"},
     )
-    x2: int | None = None
-    y1: int | None = None
-    y2: int | None = None
+    x2: NonNegativeInt | None = None
+    y1: NonNegativeInt | None = None
+    y2: NonNegativeInt | None = None
 
     # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
-    corner2move2: list[int] | None = Field(
+    corner2move2: list[NonNegativeInt] | None = Field(
         default=None,
         json_schema_extra={
             "comment": (
@@ -184,3 +191,8 @@ class ProjectConfig(DLCVersionedConfig):
                 "project_path",
                 f"project_path updated: {old} -> {project_path} (resolved from YAML location when reading config.yaml)",
             )
+
+    @model_validator(mode="after")
+    def validate_start_before_stop(self) -> Self:
+        less_than(self.start, self.stop, name="start", threshold_name="stop")
+        return self

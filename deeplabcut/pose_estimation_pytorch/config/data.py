@@ -16,6 +16,7 @@ from typing import Literal
 from pydantic import ConfigDict, Field, field_validator
 
 from deeplabcut.core.config import DLCBaseConfig
+from deeplabcut.core.config.validation import Fraction, NonNegativeFloat, NonNegativeInt
 
 
 class DataLoaderType(str, Enum):
@@ -46,8 +47,8 @@ class DLCLoaderConfig(DLCBaseConfig):
 
     type: Literal[DataLoaderType.DLCLoader]
     config: str | dict
-    trainset_index: int = 0
-    shuffle: int = 0
+    trainset_index: NonNegativeInt = 0
+    shuffle: NonNegativeInt = 0
     modelprefix: str = ""
 
 
@@ -132,12 +133,12 @@ class GenSamplingConfig(DLCBaseConfig):
 
     model_config = ConfigDict(frozen=True)
 
-    keypoint_sigmas: float | list[float] = 0.1
+    keypoint_sigmas: NonNegativeFloat | list[NonNegativeFloat] = 0.1
     keypoints_symmetry: list[tuple[int, int]] | None = None
-    jitter_prob: float = 0.16
-    swap_prob: float = 0.08
-    inv_prob: float = 0.03
-    miss_prob: float = 0.10
+    jitter_prob: Fraction = 0.16
+    swap_prob: Fraction = 0.08
+    inv_prob: Fraction = 0.03
+    miss_prob: Fraction = 0.10
 
     def to_dict(self) -> dict:
         return {
@@ -162,8 +163,8 @@ class DataConfig(DLCBaseConfig):
         loader: Data loader configuration
     """
 
-    bbox_margin: int = 25
-    colormode: str = "RGB"
+    bbox_margin: NonNegativeInt = 25
+    colormode: Literal["RGB"] = "RGB"  # Docs state that it should never be changed to BGR
     gen_sampling: GenSamplingConfig | None = None
     inference: DataTransformationConfig | None = None
     train: DataTransformationConfig | None = None
