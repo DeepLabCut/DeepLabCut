@@ -17,7 +17,7 @@ from pydantic import Field
 
 from deeplabcut.core.config import DLCBaseConfig, DLCVersionedConfig
 from deeplabcut.core.config.project_config import ProjectConfig
-from deeplabcut.core.config.validation import Fraction, NonNegativeInt, UniqueStringList
+from deeplabcut.core.config.validation import Fraction, NonNegativeInt, UniqueStrList
 from deeplabcut.pose_estimation_pytorch.config.data import DataConfig
 from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.config.logger import (
@@ -172,7 +172,7 @@ class TestConfig(DLCBaseConfig):
     dataset: Path = Path()
     num_joints: NonNegativeInt = 0
     all_joints: list[list[NonNegativeInt]] = Field(default_factory=list)
-    all_joints_names: UniqueStringList = Field(default_factory=list)
+    all_joints_names: UniqueStrList = Field(default_factory=list)
     net_type: NetType = NetType.RESNET_50
     dataset_type: DatasetType = DatasetType.MULTIANIMAL_IMGAUG
     global_scale: Fraction = 1.0
