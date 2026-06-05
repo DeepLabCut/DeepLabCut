@@ -297,8 +297,9 @@ class DLCVersionedConfig(DLCBaseConfig):
         json_schema_extra={"comment": "Config schema version. Do not edit manually."},
     )
 
-    _dirty_fields: set[str] | None = PrivateAttr(default=None)
-    _change_notes: dict[str, Any] | None = PrivateAttr(default=None)
+    _initialized: bool = PrivateAttr(default=False)
+    _dirty_fields: set[str] = PrivateAttr(default=set())
+    _change_notes: dict[str, Any] = PrivateAttr(default=dict())
 
     # ------------------------------------------------------------------
     # Version migration (before pydantic field validation)
@@ -349,13 +350,13 @@ class DLCVersionedConfig(DLCBaseConfig):
 
     def model_post_init(self, __context: Any) -> None:
         super().model_post_init(__context)
-        self.mark_clean()
+        self._initialized = True
 
     def __setattr__(self, name: str, value: Any) -> None:
         name = self._resolve_alias(name, warn=True, stacklevel=3)
 
         # Private attributes (not a model field) skip tracking logic
-        if name not in type(self).model_fields or not self._fully_initialized:
+        if name not in type(self).model_fields or not self._initialized:
             super().__setattr__(name, value)
             return
 
@@ -365,10 +366,6 @@ class DLCVersionedConfig(DLCBaseConfig):
         new_value = getattr(self, name)
         if old_value != new_value:
             self._dirty_fields.add(name)
-
-    @property
-    def _fully_initialized(self) -> bool:
-        return self._dirty_fields is not None and self._change_notes is not None
 
     @property
     def is_dirty(self) -> bool:
