@@ -16,7 +16,7 @@ import warnings
 from pathlib import Path
 
 import numpy as np
-from pydantic import model_validator
+from pydantic import field_validator, model_validator
 from typing_extensions import Self
 
 from deeplabcut.core.config import DLCBaseConfig
@@ -83,56 +83,21 @@ class WeightInitialization(DLCBaseConfig):
                 )
         return self
 
-    def to_dict(self) -> dict:
-        """Returns: the weight initialization as a dict"""
-        data = dict()
-        if self.dataset is not None:
-            data["dataset"] = self.dataset
+    @field_validator("snapshot_path", "detector_snapshot_path", mode="before")
+    @classmethod
+    def _coerce_null_path(cls, v):
+        if v is None or v == "None":
+            return None
+        return v
 
-        data["snapshot_path"] = str(self.snapshot_path)
-        if self.detector_snapshot_path is not None:
-            data["detector_snapshot_path"] = str(self.detector_snapshot_path)
-
-        data["with_decoder"] = self.with_decoder
-        data["memory_replay"] = self.memory_replay
-
-        if self.conversion_array is not None:
-            data["conversion_array"] = self.conversion_array.tolist()
-
-        if self.bodyparts is not None:
-            data["bodyparts"] = self.bodyparts
-
-        return data
-
-    @staticmethod
-    def from_dict(data: dict) -> WeightInitialization:
+    @classmethod
+    def from_dict(cls, data: dict) -> Self:
         if "snapshot_path" not in data:
-            return WeightInitialization.from_dict_legacy(data)
+            return cls.from_dict_legacy(data)
+        return cls.model_validate(data)
 
-        snapshot_path = data["snapshot_path"]
-        if data["snapshot_path"] is not None:
-            snapshot_path = Path(snapshot_path)
-
-        detector_snapshot_path = data.get("detector_snapshot_path")
-        if detector_snapshot_path is not None:
-            detector_snapshot_path = Path(detector_snapshot_path)
-
-        conversion_array = data.get("conversion_array")
-        if conversion_array is not None:
-            conversion_array = np.array(conversion_array, dtype=int)
-
-        return WeightInitialization(
-            snapshot_path=snapshot_path,
-            detector_snapshot_path=detector_snapshot_path,
-            dataset=data.get("dataset"),
-            with_decoder=data["with_decoder"],
-            memory_replay=data["memory_replay"],
-            conversion_array=conversion_array,
-            bodyparts=data.get("bodyparts"),
-        )
-
-    @staticmethod
-    def from_dict_legacy(data: dict) -> WeightInitialization:
+    @classmethod
+    def from_dict_legacy(cls, data: dict) -> Self:
         """Deals with weight initialization that were created before 3.0.0rc5"""
 
         import deeplabcut.pose_estimation_pytorch.modelzoo.utils as utils
@@ -141,7 +106,7 @@ class WeightInitialization(DLCBaseConfig):
         if conversion_array is not None:
             conversion_array = np.array(conversion_array, dtype=int)
 
-        return WeightInitialization(
+        return cls(
             snapshot_path=utils.get_super_animal_snapshot_path(
                 dataset=data["dataset"],
                 model_name="hrnet_w32",
