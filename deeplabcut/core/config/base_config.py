@@ -200,9 +200,10 @@ class DLCBaseConfig(BaseModel):
         super().__setattr__(name, value)
 
     def __getattr__(self, name: str) -> Any:
-        if name not in type(self)._alias_map():
-            raise AttributeError(f"'{type(self).__name__}' has no attribute '{name}'")
-        return getattr(self, self._resolve_alias(name, warn=True, stacklevel=2))
+        # Only runs after normal lookup fails; try resolved alias or raise AttributeError via BaseModel.__getattr__.
+        if name in type(self)._alias_map():
+            return getattr(self, self._resolve_alias(name, warn=True, stacklevel=3))
+        return super().__getattr__(name)
 
     def __getitem__(self, key: str) -> Any:
         key = self._resolve_alias(key, warn=True, stacklevel=3)
