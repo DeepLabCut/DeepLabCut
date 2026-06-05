@@ -47,18 +47,10 @@ class COCOLoaderConfig(DLCBaseConfig):
 
     Attributes:
         type: Loader type identifier
-        project_root: Root directory path of the COCO project
-        model_config_path: Path to the pytorch_config.yaml file
-        train_json_path: Path of the json file containing the train annotations relative to project_root
-        test_json_path: Path of the json file containing the test annotations relative to project_root
-        val_json_path: Path of the json file containing the validation annotations relative to project_root
     """
 
     type: Literal[DataLoaderType.COCOLoader]
-    project_root: str = ""
-    train_json_path: str = "train.json"
-    test_json_path: str = "test.json"
-    val_json_path: str = "val.json"
+    # TODO @deruyter92 2026-06-05: COCOLoader is never build from config, add confg when needed
 
 
 class DataTransformationConfig(DLCBaseConfig):
