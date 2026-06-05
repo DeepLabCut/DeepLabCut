@@ -143,6 +143,10 @@ def normalize_for_serialization(obj: Any) -> Any:
         return obj.value
     if isinstance(obj, Mapping):
         return type(obj)({k: normalize_for_serialization(v) for k, v in obj.items()})
+    if isinstance(obj, tuple):
+        return tuple(normalize_for_serialization(v) for v in obj)
+    if isinstance(obj, (list, set)):
+        return [normalize_for_serialization(v) for v in obj]
     return obj
 
 
