@@ -12,17 +12,16 @@
 
 from __future__ import annotations
 
-import copy
 import logging
 from pathlib import Path
 
 import deeplabcut.modelzoo.weight_initialization as weight_initialization
-from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_filtered_coco_detector_inference_runner,
     get_inference_runners,
     get_pose_inference_runner,
 )
+from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     COCO_PERSON_CATEGORY_ID,
     get_super_animal_snapshot_path,
@@ -34,7 +33,7 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 def _build_humanbody_inference_runners(
-    model_cfg: dict,
+    model_cfg: PoseConfig,
     model_name: str,
     detector_name: str | None,
     max_individuals: int,
@@ -42,7 +41,7 @@ def _build_humanbody_inference_runners(
     detector_batch_size: int,
     customized_pose_checkpoint: str | Path | None,
     customized_detector_checkpoint: str | Path | None,
-) -> tuple[InferenceRunner, InferenceRunner, dict]:
+) -> tuple[InferenceRunner, InferenceRunner, PoseConfig]:
     if customized_detector_checkpoint is not None:
         logging.warning(
             "customized_detector_checkpoint is ignored for superanimal_humanbody. "
@@ -83,10 +82,10 @@ def create_superanimal_inference_runners(
     batch_size: int = 1,
     detector_batch_size: int = 1,
     device: str | None = "auto",
-    customized_model_config: str | Path | dict | None = None,
+    customized_model_config: PoseConfig | dict | str | Path | None = None,
     customized_pose_checkpoint: str | Path | None = None,
     customized_detector_checkpoint: str | Path | None = None,
-) -> tuple[InferenceRunner, InferenceRunner | None, dict]:
+) -> tuple[InferenceRunner, InferenceRunner | None, PoseConfig]:
     """Create SuperAnimal inference runners for in-memory batched inference.
 
     This helper is intended for Model Zoo inference pipelines that run directly on
@@ -107,9 +106,10 @@ def create_superanimal_inference_runners(
         detector_batch_size: Batch size for detector inference.
         device: Device for inference. If ``"auto"`` or ``None``, resolves to CUDA
             when available, else CPU.
-        customized_model_config: Optional path or dict for a custom model config.
-            If not provided, uses the default SuperAnimal config. Note that this config
-            determines whether the model is top-down or bottom-up; for bottom-up models,
+        customized_model_config (PoseConfig | dict | str | Path | None, optional):
+            Optional pose configuration for a custom SuperAnimal model. If not
+            provided, uses the default SuperAnimal configuration. This determines
+            whether the model is top-down or bottom-up; for bottom-up models,
             ``detector_runner`` will be ``None`` even if ``detector_name`` is set.
         customized_pose_checkpoint: Optional custom pose checkpoint path.
         customized_detector_checkpoint: Optional custom detector checkpoint path.
@@ -119,7 +119,7 @@ def create_superanimal_inference_runners(
             - ``pose_runner`` is the pose inference runner
             - ``detector_runner`` is the detector inference runner or ``None`` if no
               detector is configured
-            - ``model_cfg`` is the resolved model configuration dict
+            - ``model_cfg`` is the resolved ``PoseConfig``
 
     Example:
         >>> from pathlib import Path
@@ -157,10 +157,7 @@ def create_superanimal_inference_runners(
         device = "auto"
 
     if customized_model_config is not None:
-        if isinstance(customized_model_config, (str, Path)):
-            model_cfg = read_config_as_dict(customized_model_config)
-        else:
-            model_cfg = copy.deepcopy(customized_model_config)
+        model_cfg = PoseConfig.from_any(customized_model_config)
     else:
         model_cfg = load_super_animal_config(
             super_animal=superanimal_name,
