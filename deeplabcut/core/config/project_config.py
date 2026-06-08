@@ -177,6 +177,16 @@ class ProjectConfig(DLCVersionedConfig):
         json_schema_extra={"comment": "\nConversion tables to fine-tune SuperAnimal weights"},
     )
 
+    # TODO @deruyter92 2026-02-06: These parameters are no longer used in the new pipeline.
+    # We should remove them in config schema v1. They are needed now to support reading old configs.
+    resnet: int | None = Field(
+        default=None,
+        json_schema_extra={
+            "comment": "\nThese are very old parameters that are no longer used They are simply ignored."
+        },
+    )
+    croppedtraining: bool | None = None
+
     def _post_yaml_load_updates(self, *, yaml_path: Path) -> None:
         """
         Override method for post-yaml load updates. Called automatically by from_yaml().
