@@ -20,6 +20,8 @@ import scipy.io as sio
 
 import deeplabcut.compat as compat
 from deeplabcut.core.config import write_project_config
+from deeplabcut.core.config.project_config import ProjectConfig
+from deeplabcut.core.config.utils import normalize_for_serialization
 from deeplabcut.generate_training_dataset.multiple_individuals_trainingsetmanipulation import (
     create_multianimaltraining_dataset,
     format_multianimal_training_data,
@@ -75,27 +77,138 @@ class NpEncoder(json.JSONEncoder):
             return super().default(obj)
 
 
-class SingleDLC_config:
-    def __init__(self):
-        self.cfg = {k: v for k, v in vars().items() if "__" not in k and "self" not in k}
+# Keys exposed via SingleDLC_config.cfg / MaDLC_config.cfg (modelzoo converter templates).
+_SINGLE_TEMPLATE_KEYS: tuple[str, ...] = (
+    "Task",
+    "project_path",
+    "scorer",
+    "date",
+    "video_sets",
+    "skeleton",
+    "bodyparts",
+    "start",
+    "stop",
+    "numframes2pick",
+    "skeleton_color",
+    "pcutoff",
+    "dotsize",
+    "alphavalue",
+    "colormap",
+    "TrainingFraction",
+    "iteration",
+    "default_net_type",
+    "default_augmenter",
+    "snapshotindex",
+    "batch_size",
+    "cropping",
+    "croppedtraining",
+    "multianimalproject",
+    "uniquebodyparts",
+    "x1",
+    "x2",
+    "y1",
+    "y2",
+    "corner2move2",
+    "move2corner",
+    "identity",
+)
+_MA_TEMPLATE_EXTRA_KEYS: tuple[str, ...] = ("individuals", "multianimalbodyparts")
 
-    def create_cfg(self, proj_root, kwargs):
-        self.cfg.update(kwargs)
-        write_project_config(Path(proj_root) / "config.yaml", self.cfg)
+
+def _exposed_template_cfg(config: ProjectConfig, keys: tuple[str, ...]) -> dict:
+    """Subset of a ProjectConfig as a plain dict (for tests and legacy callers)."""
+    normalized = normalize_for_serialization(config.model_dump())
+    cfg = {key: normalized[key] for key in keys}
+    # Legacy modelzoo templates used empty strings for unset fields.
+    if cfg.get("project_path") in (".", ""):
+        cfg["project_path"] = ""
+    if cfg.get("video_sets") == {}:
+        cfg["video_sets"] = ""
+    if cfg.get("skeleton") == []:
+        cfg["skeleton"] = ""
+    if cfg.get("TrainingFraction") == []:
+        cfg["TrainingFraction"] = ""
+    return cfg
+
+
+def modelzoo_single_template() -> ProjectConfig:
+    """Default ProjectConfig for generalized_data_converter single-animal projects."""
+    return ProjectConfig(
+        Task="",
+        project_path=Path(),
+        scorer="",
+        date="",
+        video_sets={},
+        skeleton=[],
+        bodyparts="",
+        start=0,
+        stop=1,
+        numframes2pick=42,
+        skeleton_color="black",
+        pcutoff=0.6,
+        dotsize=8,
+        alphavalue=0.7,
+        colormap="rainbow",
+        TrainingFraction=[],
+        iteration=0,
+        default_net_type="resnet_50",
+        default_augmenter="imgaug",
+        snapshotindex=-1,
+        batch_size=8,
+        cropping=False,
+        croppedtraining=False,
+        multianimalproject=False,
+        uniquebodyparts=[],
+        x1=0,
+        x2=640,
+        y1=277,
+        y2=624,
+        corner2move2=[50, 50],
+        move2corner=True,
+        identity=False,
+    )
+
+
+def modelzoo_ma_template() -> ProjectConfig:
+    """Default ProjectConfig for generalized_data_converter multi-animal projects."""
+    return modelzoo_single_template().model_copy(
+        update={
+            "default_augmenter": "multi-animal-imgaug",
+            "croppedtraining": True,
+            "multianimalproject": True,
+            "individuals": [],
+            "multianimalbodyparts": [],
+        }
+    )
+
+
+class SingleDLC_config:
+    def __init__(self) -> None:
+        self.project_config = modelzoo_single_template()
+
+    @property
+    def cfg(self) -> dict:
+        return _exposed_template_cfg(self.project_config, _SINGLE_TEMPLATE_KEYS)
+
+    def create_cfg(self, proj_root: str | Path, kwargs: dict) -> None:
+        self.project_config.update(kwargs)
+        write_project_config(Path(proj_root) / "config.yaml", self.project_config)
 
 
 class MaDLC_config:
-    def __init__(self):
-        """
-        Plain text only for generating templates
-        Some variables can be configured by the user later
-        """
+    def __init__(self) -> None:
+        self.project_config = modelzoo_ma_template()
 
-        self.cfg = {k: v for k, v in vars().items() if "__" not in k and "self" not in k}
+    @property
+    def cfg(self) -> dict:
+        return _exposed_template_cfg(
+            self.project_config,
+            _SINGLE_TEMPLATE_KEYS + _MA_TEMPLATE_EXTRA_KEYS,
+        )
 
-    def create_cfg(self, proj_root, kwargs):
-        self.cfg.update(kwargs)
-        write_project_config(Path(proj_root) / "config.yaml", self.cfg)
+    def create_cfg(self, proj_root: str | Path, kwargs: dict) -> None:
+        self.project_config.update(kwargs)
+        write_project_config(Path(proj_root) / "config.yaml", self.project_config)
 
 
 def _generic2madlc(
@@ -614,7 +727,6 @@ def _generic2coco(
                     os.symlink(src, dest)
                 except Exception as err:
                     print(f"Could not create a symlink from {src} to {dest}: {err}")
-                    pass
 
         image["file_name"] = file_name
         lookuptable[dest] = src
