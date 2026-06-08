@@ -13,6 +13,7 @@ import numpy as np
 import pytest
 
 from deeplabcut.modelzoo.webapp.inference import SuperanimalPyTorchInference
+from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.utils import auxiliaryfunctions
 
 # TODO: make a proper test incl. human model, bird model and that skips the require... at least once per week.
@@ -24,7 +25,7 @@ from deeplabcut.utils import auxiliaryfunctions
 def test_class_init(project_name, pose_model_type, max_individuals):
     inference_pipeline = SuperanimalPyTorchInference(project_name, pose_model_type, max_individuals=max_individuals)
 
-    assert isinstance(inference_pipeline.config, dict)
+    assert isinstance(inference_pipeline, PoseConfig)
     assert inference_pipeline.config["metadata"]["bodyparts"]
     assert len(inference_pipeline.config["metadata"]["bodyparts"]) > 0
 

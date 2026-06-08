@@ -12,6 +12,7 @@
 import pytest
 
 import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
+from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 
 # TODO: make a proper test incl. human model, bird model and that skips the require... at least once per week.
 
@@ -26,7 +27,7 @@ def test_get_config_model_paths(super_animal, model_name, detector_name):
         detector_name=detector_name,
     )
 
-    assert isinstance(model_config, dict)
+    assert isinstance(model_config, PoseConfig)
     if detector_name is None:
         assert model_config["method"].lower() == "bu"
         assert "detector" not in model_config
