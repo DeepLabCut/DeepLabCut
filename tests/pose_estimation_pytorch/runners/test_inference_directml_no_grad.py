@@ -21,6 +21,7 @@ import pytest
 import torch
 
 import deeplabcut.pose_estimation_pytorch.runners.inference as inference
+from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig, MultithreadingConfig
 
 
 def _reload_with_env(env_value: str | None):
@@ -51,8 +52,8 @@ def test_directml_no_grad_env(env_value, directml_no_grad):
             super().__init__(
                 model=Mock(),
                 batch_size=1,
-                inference_cfg=inference.InferenceConfig(
-                    multithreading=inference.MultithreadingConfig(enabled=False),
+                inference_cfg=InferenceConfig(
+                    multithreading=MultithreadingConfig(enabled=False),
                 ),
             )
             self.saw_inference_mode: bool | None = None
