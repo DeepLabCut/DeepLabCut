@@ -12,7 +12,7 @@ from pydantic_core import ArgsKwargs
 from ruamel.yaml.comments import CommentedMap
 from typing_extensions import Self
 
-from deeplabcut.core.config import versioning
+from deeplabcut.core.config import versioning as versioning
 from deeplabcut.core.config.utils import (
     normalize_for_serialization,
     pretty_print,
@@ -21,7 +21,6 @@ from deeplabcut.core.config.utils import (
     resolve_aliases_in_dict,
     write_config,
 )
-from deeplabcut.core.config.versioning import migrate_config
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +98,8 @@ class DLCBaseConfig(BaseModel):
                 f"dictionary, string, or Path. Got {type(config)}"
             )
 
+    # Note @deruyter92 2026-06-15: the ignore_empty option is currently just used to support
+    # some top-level fields in v0 legacy configs that are often empty. Should be removed in v1.
     @classmethod
     def from_yaml(cls, yaml_path: str | Path, ignore_empty: bool = True) -> Self:
         yaml_dict = read_config_as_dict(yaml_path)
@@ -112,19 +113,28 @@ class DLCBaseConfig(BaseModel):
     # Serialization
     # ------------------------------------------------------------------
 
+    def to_commented_map(self) -> CommentedMap:
+        """Recursively convert the config to a CommentedMap with YAML comments."""
+        dumped = self.to_dict(normalize=True)
+        data = CommentedMap()
+        for name, info in type(self).model_fields.items():
+            extra = info.json_schema_extra
+            if isinstance(extra, dict) and (comment := extra.get("comment")):
+                data.yaml_set_comment_before_after_key(name, before=comment)
+            value = getattr(self, name)
+            if isinstance(value, DLCBaseConfig):
+                data[name] = value.to_commented_map()
+            else:
+                data[name] = dumped[name]
+        return data
+
     def to_yaml(
         self,
         yaml_path: str | Path,
         *,
         overwrite: bool = True,
     ) -> None:
-        dict_data = self.to_dict(normalize=True)
-        data = CommentedMap(dict_data)
-        for name, info in type(self).model_fields.items():
-            extra = info.json_schema_extra
-            if isinstance(extra, dict) and (comment := extra.get("comment")):
-                data.yaml_set_comment_before_after_key(name, before=comment)
-        write_config(yaml_path, data, overwrite=overwrite)
+        write_config(yaml_path, self.to_commented_map(), overwrite=overwrite)
 
     def to_dict(self, *, normalize: bool = False) -> dict:
         if not normalize:
@@ -319,8 +329,8 @@ class DLCVersionedConfig(DLCBaseConfig):
     )
 
     _initialized: bool = PrivateAttr(default=False)
-    _dirty_fields: set[str] = PrivateAttr(default=set())
-    _change_notes: dict[str, Any] = PrivateAttr(default=dict())
+    _dirty_fields: set[str] = PrivateAttr(default_factory=set)
+    _change_notes: dict[str, Any] = PrivateAttr(default_factory=dict)
 
     # ------------------------------------------------------------------
     # Version migration (before pydantic field validation)
@@ -396,10 +406,16 @@ class DLCVersionedConfig(DLCBaseConfig):
         include_caller: bool = False,
         _stack_depth: int = 1,
     ) -> None:
+        field_name = self._resolve_alias(field_name)
+
+        if field_name not in type(self).model_fields:
+            raise KeyError(f"'{type(self).__name__}' has no field '{field_name}'")
+
         if include_caller:
             frame = sys._getframe(_stack_depth)
             filename = frame.f_code.co_filename.rsplit("/", 1)[-1]
             message = f"{message} [{filename}:{frame.f_lineno}]"
+
         self._change_notes[field_name] = message
 
     def log_changes(self) -> None:

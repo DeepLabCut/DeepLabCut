@@ -609,7 +609,7 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
     candidates = []
     for file in grab_files_in_folder(folder, "h5"):
         stem = Path(file).stem.replace("_filtered", "")
-        starts_by_scorer = file.startswith(videoname + scorer) or file.startswith(videoname + scorer_legacy)
+        starts_by_scorer = file.startswith((videoname + scorer, videoname + scorer_legacy))
         if tracker:
             matches_tracker = stem.endswith(tracker)
         else:

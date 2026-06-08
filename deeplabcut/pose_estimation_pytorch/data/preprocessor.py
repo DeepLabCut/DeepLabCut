@@ -51,7 +51,6 @@ class Preprocessor(ABC):
         Returns:
             the pre-processed image (or batch of images) and their context
         """
-        pass
 
 
 def build_bottom_up_preprocessor(color_mode: str, transform: A.BaseCompose) -> Preprocessor:

@@ -54,7 +54,6 @@ class BaseBackbone(ABC, nn.Module):
         Returns:
             a feature map for the input, of shape (batch_size, c', h', w')
         """
-        pass
 
     def freeze_batch_norm_layers(self) -> None:
         """Freezes batch norm layers.

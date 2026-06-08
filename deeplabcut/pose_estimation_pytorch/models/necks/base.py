@@ -33,7 +33,6 @@ class BaseNeck(ABC, torch.nn.Module):
         Returns:
             Output tensor.
         """
-        pass
 
     def _init_weights(self, pretrained: str):
         """Initialize the Neck with pretrained weights.
