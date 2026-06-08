@@ -10,102 +10,41 @@
 #
 """Main pose configuration class for DeepLabCut pose estimation models."""
 
-from enum import Enum
-from pathlib import Path
+from __future__ import annotations
 
-from pydantic import Field
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from deeplabcut.core.weight_init import WeightInitialization
+
+from pydantic import Field, field_validator
 from typing_extensions import Self
 
 from deeplabcut.core.config import DLCBaseConfig, DLCVersionedConfig
 from deeplabcut.core.config.project_config import ProjectConfig
 from deeplabcut.core.config.validation import Fraction, NonNegativeInt, UniqueStrList
 from deeplabcut.pose_estimation_pytorch.config.data import DataConfig
+from deeplabcut.pose_estimation_pytorch.config.enums import DatasetType, DetectorType, MethodType, NetType
 from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.config.logger import (
     CSVLoggerConfig,
     WandbLoggerConfig,
 )
+from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
+    build_detector_config_defaults,
+    build_pose_config_defaults,
+    resolve_net_type_and_task,
+)
+from deeplabcut.pose_estimation_pytorch.config.metadata import PoseMetadata
 from deeplabcut.pose_estimation_pytorch.config.model import (
     DetectorModelConfig,
     ModelConfig,
 )
+from deeplabcut.pose_estimation_pytorch.config.paf_parameters import PAFParameters
 from deeplabcut.pose_estimation_pytorch.config.runner import RunnerConfig
 from deeplabcut.pose_estimation_pytorch.config.training import TrainSettingsConfig
-
-
-class MethodType(str, Enum):
-    """Enumeration of pose estimation method types."""
-
-    BOTTOM_UP = "bu"
-    TOP_DOWN = "td"
-    CONDITIONAL_TOP_DOWN = "ctd"
-
-
-class NetType(str, Enum):
-    """Enumeration of network architecture types."""
-
-    # ResNet variants (bottom-up)
-    RESNET_50 = "resnet_50"
-    RESNET_101 = "resnet_101"
-
-    # ResNet variants (top-down)
-    TOP_DOWN_RESNET_50 = "top_down_resnet_50"
-    TOP_DOWN_RESNET_101 = "top_down_resnet_101"
-
-    # HRNet variants (bottom-up)
-    HRNET_W18 = "hrnet_w18"
-    HRNET_W32 = "hrnet_w32"
-    HRNET_W48 = "hrnet_w48"
-
-    # HRNet variants (top-down)
-    TOP_DOWN_HRNET_W18 = "top_down_hrnet_w18"
-    TOP_DOWN_HRNET_W32 = "top_down_hrnet_w32"
-    TOP_DOWN_HRNET_W48 = "top_down_hrnet_w48"
-
-    # CSPNeXt variants (bottom-up)
-    CSPNEXT_S = "cspnext_s"
-    CSPNEXT_M = "cspnext_m"
-    CSPNEXT_X = "cspnext_x"
-
-    # CSPNeXt variants (top-down)
-    TOP_DOWN_CSPNEXT_S = "top_down_cspnext_s"
-    TOP_DOWN_CSPNEXT_M = "top_down_cspnext_m"
-    TOP_DOWN_CSPNEXT_X = "top_down_cspnext_x"
-
-    # DEKR variants (bottom-up with HRNet backbone)
-    DEKR_W18 = "dekr_w18"
-    DEKR_W32 = "dekr_w32"
-    DEKR_W48 = "dekr_w48"
-
-    # BUCTD variants (Conditional Top-Down)
-    CTD_COAM_W32 = "ctd_coam_w32"
-    CTD_COAM_W48 = "ctd_coam_w48"
-    CTD_COAM_W48_HUMAN = "ctd_coam_w48_human"
-    CTD_PRENET_HRNET_W32 = "ctd_prenet_hrnet_w32"
-    CTD_PRENET_HRNET_W48 = "ctd_prenet_hrnet_w48"
-    CTD_PRENET_RTMPOSE_S = "ctd_prenet_rtmpose_s"
-    CTD_PRENET_RTMPOSE_M = "ctd_prenet_rtmpose_m"
-    CTD_PRENET_RTMPOSE_X = "ctd_prenet_rtmpose_x"
-    CTD_PRENET_RTMPOSE_X_HUMAN = "ctd_prenet_rtmpose_x_human"
-
-    # DLCRNet variants
-    DLCRNET_STRIDE16_MS5 = "dlcrnet_stride16_ms5"
-    DLCRNET_STRIDE32_MS5 = "dlcrnet_stride32_ms5"
-
-    # RTMPose variants (top-down)
-    RTMPOSE_S = "rtmpose_s"
-    RTMPOSE_M = "rtmpose_m"
-    RTMPOSE_X = "rtmpose_x"
-
-    # AnimalTokenPose variant (inference only)
-    ANIMALTOKENPOSE_BASE = "animaltokenpose_base"
-
-
-class DatasetType(str, Enum):
-    """Enumeration of dataset types."""
-
-    # TODO @deruyter92 2026-02-05: Add other dataset types as needed.
-    MULTIANIMAL_IMGAUG = "multi-animal-imgaug"
+from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 class DetectorConfig(DLCBaseConfig):
@@ -293,7 +232,6 @@ class PoseConfig(DLCVersionedConfig):
 
         # Normalize input parameters + build related configurations
         project_config = ProjectConfig.from_any(project_config)
-        weight_init = WeightInitialization.from_any(weight_init)
         if inference_config is None:
             inference_config = InferenceConfig()
         else:
@@ -353,3 +291,39 @@ class TestConfig(DLCBaseConfig):
     dataset_type: DatasetType = DatasetType.MULTIANIMAL_IMGAUG
     global_scale: Fraction = 1.0
     scoremap_dir: Path = Path()
+
+    @classmethod
+    def build(
+        cls,
+        pose_config: PoseConfig | dict | Path | str,
+        *,
+        dataset_type: DatasetType = DatasetType.MULTIANIMAL_IMGAUG,
+        scoremap_dir: Path | str = "test",
+        test_config_path: Path | str | None = None,
+        global_scale: Fraction = 1.0,
+        save: bool = False,
+    ) -> Self:
+
+        # Needs a validated PoseConfig
+        cfg = PoseConfig.from_any(pose_config)
+        metadata = cfg.metadata
+
+        # Build the test config
+        test_config = cls(
+            dataset=cfg.metadata.project_path,
+            dataset_type=dataset_type,  # required for downstream tracking
+            num_joints=metadata.num_bodyparts + metadata.num_unique_bodyparts,
+            all_joints=[[i] for i in range(metadata.num_bodyparts + metadata.num_unique_bodyparts)],
+            all_joints_names=metadata.bodyparts + metadata.unique_bodyparts,
+            net_type=cfg.net_type,
+            global_scale=global_scale,
+            scoremap_dir=scoremap_dir,
+        )
+
+        # Save if needed
+        if save:
+            if test_config_path is None:
+                raise ValueError("test_config_path is required to save the test config.")
+            test_config.to_yaml(test_config_path, overwrite=True)
+
+        return test_config

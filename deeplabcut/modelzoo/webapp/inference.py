@@ -13,7 +13,6 @@ import numpy as np
 
 import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
 from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
-from deeplabcut.pose_estimation_pytorch.modelzoo.utils import update_config
 
 
 class SingletonTopDownRunners:
@@ -78,10 +77,9 @@ class SuperanimalPyTorchInference:
             super_animal=project_name,
             model_name=pose_model_type,
             detector_name=detector_model_type,
+            max_individuals=max_individuals,
+            device=device,
         )
-        # TODO @deruyter92: super animal configs are currently not
-        # validated against the pydantic schema. We should add this functionality.
-        config = update_config(config, max_individuals, device)
         self._config = config
 
     def initialize_models(self, pose_model_path: str, detector_model_path: str):

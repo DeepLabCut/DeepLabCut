@@ -65,7 +65,6 @@ class RunnerConfig(DLCBaseConfig):
         optimizer: Optimizer configuration
         scheduler: Scheduler configuration
         snapshots: Snapshot configuration
-        resume_training_from: Path to resume training from
         load_weights_only: Value for torch.load() weights_only parameter
     """
 
@@ -81,5 +80,5 @@ class RunnerConfig(DLCBaseConfig):
     optimizer: OptimizerConfig | None = None
     scheduler: SchedulerConfig | None = None
     snapshots: SnapshotCheckpointConfig | None = None
-    resume_training_from: str | None = None
+    snapshot_prefix: str | None = None
     load_weights_only: bool | None = None
