@@ -45,6 +45,7 @@ class DLCBaseConfig(BaseModel):
     - Hooks: `_post_yaml_load_updates`.
     - Nested dot-notation via `select`.
     - Dict-like access over declared fields (legacy compatibility).
+    - In-place bulk updates via `update`.
     - Field aliases from `json_schema_extra`.
     """
 
@@ -225,6 +226,21 @@ class DLCBaseConfig(BaseModel):
             return self[key]
         except KeyError:
             return default
+
+    def update(
+        self,
+        updates: dict[str, Any] | None = None,
+        /,
+        **kwargs: Any,
+    ) -> Self:
+        if updates is not None and kwargs:
+            raise TypeError(f"{type(self).__name__}.update() accepts either a dict or keyword args, not both.")
+        overrides = updates if updates is not None else kwargs
+        # Resolve aliases together (checks for duplicate canonical field names)
+        resolved = resolve_aliases_in_dict(overrides, type(self)._alias_map(), target=type(self).__name__)
+        for name, value in resolved.items():
+            setattr(self, name, value)
+        return self
 
     def keys(self) -> list[str]:
         return self._field_names()
