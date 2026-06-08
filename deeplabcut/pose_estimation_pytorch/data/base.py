@@ -94,10 +94,9 @@ class Loader(ABC):
         self.model_cfg: PoseConfig = PoseConfig.from_any(model_config)
 
         def _infer_model_config_path(model_config: PoseConfig | dict | Path | str) -> Path:
-            """Resolve the pose config path.
-
-            Either the input is a path, or it is specified in
-            ``metadata.pose_config_path``.
+            """
+            Resolve the pose config path.
+            Either the input is a path, or it is specified in the field ``metadata.pose_config_path``.
             """
             provided_path = Path(model_config) if isinstance(model_config, (Path, str)) else None
             specified_path = self.model_cfg.select("metadata.pose_config_path")

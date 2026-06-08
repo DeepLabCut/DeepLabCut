@@ -539,7 +539,6 @@ def evaluate_snapshot(
 
     if pcutoff is None:
         pcutoff = cfg.get("pcutoff", 0.6)
-    # TODO @deruyter92: decide on typed / plain dict
     elif isinstance(pcutoff, dict):
         pcutoff = [pcutoff.get(bpt, 0.6) for bpt in eval_parameters.bodyparts + eval_parameters.unique_bpts]
     _validate_pcutoff(parameters.bodyparts, parameters.unique_bpts, pcutoff)

@@ -70,12 +70,15 @@ def read_config_as_dict(config_path: str | Path) -> dict:
         raise FileNotFoundError(f"Config {config_path} is not found. Please make sure that the file exists.")
     with open(config_path) as f:
         cfg = get_yaml_loader().load(f)
-
+    if cfg is None:
+        raise ValueError(f"Config {config_path} is empty or null.")
+    if not isinstance(cfg, dict):
+        raise ValueError(f"Config {config_path} must be a YAML mapping at the top level, got {type(cfg).__name__}.")
     return cfg
 
 
 def write_config(config_path: str | Path, config: dict, overwrite: bool = True) -> None:
-    """Writes a pose configuration file to disk
+    """Writes a pose configuration file to disk.
 
     Args:
         config_path: the path where the config should be saved
@@ -180,7 +183,7 @@ def pretty_print(
     indent: int = 0,
     print_fn: Callable[[str], None] | None = None,
 ) -> None:
-    """Prints a model configuration in a pretty and readable way
+    """Prints a model configuration in a pretty and readable way.
 
     Args:
         config: the config to print

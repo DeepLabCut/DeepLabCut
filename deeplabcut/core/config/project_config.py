@@ -11,9 +11,10 @@
 """Project configuration classes for DeepLabCut pose estimation models."""
 
 from pathlib import Path
-from typing import Any, Literal, Self
+from typing import Any, Literal
 
 from pydantic import Field, model_validator
+from typing_extensions import Self
 
 from deeplabcut.core.config.base_config import DLCVersionedConfig
 from deeplabcut.core.config.validation import (
@@ -223,16 +224,32 @@ class ProjectConfig(DLCVersionedConfig):
         Override method for post-yaml load updates. Called automatically by from_yaml().
         These are logged but not written to disk -- call to_yaml() explicitly if needed.
         """
-        super()._post_yaml_load_updates(yaml_path=yaml_path)
-
         project_path = yaml_path.parent
-        if project_path.resolve() != self.project_path.resolve():
+        if project_path.absolute() != self.project_path.absolute():
             old = self.project_path
             self.project_path = project_path
             self.record_change_note(
                 "project_path",
                 f"project_path updated: {old} -> {project_path} (resolved from YAML location when reading config.yaml)",
             )
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_legacy_empty_values(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        data = dict(data)
+
+        # Some old configs used empty strings for unset fields
+        for fieldname in ("skeleton", "TrainingFraction", "video_sets", "bodyparts"):
+            if data.get(fieldname) == "":
+                data.pop(fieldname)
+
+        # NOTE @deruyter92 2026-06-15: This should be removed in v1.
+        if data.get("multianimalproject") and not data.get("bodyparts"):
+            data["bodyparts"] = "MULTI!"
+
+        return data
 
     @model_validator(mode="after")
     def validate_start_before_stop(self) -> Self:

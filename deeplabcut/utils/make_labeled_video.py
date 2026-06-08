@@ -1352,12 +1352,10 @@ def create_video_with_all_detections(
                         )
                 except ValueError as err:  # No data stored for that particular frame
                     print(n, f"no data: {err}")
-                    pass
                 try:
                     clip.save_frame(frame)
                 except Exception:
                     print(n, "frame writing error.")
-                    pass
             clip.close()
         else:
             print("Detections already plotted, ", outputname)
