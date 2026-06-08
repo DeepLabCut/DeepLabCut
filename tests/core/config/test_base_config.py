@@ -95,6 +95,54 @@ class TestGet:
         assert cfg.get("nonexistent", 42) == 42
 
 
+class TestUpdate:
+    def test_update_applies_fields_dict(self):
+        cfg = ToyConfig()
+        cfg.update({"Task": "t", "project_path": "/p"})
+        assert cfg.Task == "t"
+        assert cfg.project_path == "/p"
+
+    def test_update_applies_fields_kwargs(self):
+        cfg = ToyConfig()
+        cfg.update(Task="t", project_path="/p")
+        assert cfg.Task == "t"
+        assert cfg.project_path == "/p"
+
+    def test_update_empty_is_noop(self):
+        cfg = ToyConfig(Task="unchanged")
+        assert cfg.update() is cfg
+        assert cfg.update({}) is cfg
+        assert cfg.Task == "unchanged"
+
+    def test_update_rejects_dict_and_kwargs_together(self):
+        cfg = ToyConfig()
+        with pytest.raises(TypeError, match="either a dict or keyword"):
+            cfg.update({"Task": "x"}, Task="y")
+
+    def test_update_unknown_field_raises_validation_error(self):
+        cfg = ToyConfig()
+        with pytest.raises(ValidationError):
+            cfg.update({"nonexistent": 42})
+
+    def test_update_invalid_value_raises(self):
+        cfg = TypedBase()
+        with pytest.raises(ValidationError):
+            cfg.update({"count": "not-a-number"})
+        assert cfg.count == 0
+
+    def test_update_resolves_alias_with_warning(self):
+        cfg = ToyConfig()
+        with pytest.warns(DLCDeprecationWarning, match="projectPath") as record:
+            cfg.update({"projectPath": "/alias"})
+        assert len(record) == 1
+        assert cfg.project_path == "/alias"
+
+    def test_update_rejects_alias_and_canonical_together(self):
+        with pytest.warns(DLCDeprecationWarning, match="projectPath"):
+            with pytest.raises(TypeError, match=r"projectPath.*project_path"):
+                ToyConfig().update({"projectPath": "/a", "project_path": "/b"})
+
+
 class TestKeysValuesItems:
     def test_keys(self):
         cfg = ToyConfig(Task="t", project_path="/p")

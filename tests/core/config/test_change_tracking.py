@@ -52,6 +52,12 @@ class TestDirtyState:
         cfg.count = 5
         assert cfg.dirty_fields == frozenset({"name", "count"})
 
+    def test_update_marks_fields_dirty(self):
+        cfg = TrackedConfig()
+        cfg.update({"name": "new", "count": 5})
+        assert cfg.is_dirty
+        assert cfg.dirty_fields == frozenset({"name", "count"})
+
     def test_dirty_fields_is_frozen(self):
         cfg = TrackedConfig()
         cfg.name = "x"
