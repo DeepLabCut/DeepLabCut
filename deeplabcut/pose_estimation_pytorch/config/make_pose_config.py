@@ -306,14 +306,14 @@ def _add_ctd_conditions(model_cfg: dict, ctd_conditions: int | str | Path | tupl
 
 
 def make_pytorch_test_config(
-    model_config: PoseConfig | dict,
+    model_config: PoseConfig | dict | str | Path,
     test_config_path: str | Path,
     save: bool = False,
 ) -> TestConfig:
     """Creates the test configuration for a model
 
     Args:
-        model_config: The PyTorch config for the model.
+        model_config (PoseConfig | dict | str | Path): The PyTorch pose configuration.
         test_config_path: The path of the test config
         save: Whether to save the test config to ``test_config_path``.
 
@@ -321,7 +321,7 @@ def make_pytorch_test_config(
         The test configuration as a typed TestConfig.
     """
     # Validate the model config against the PoseConfig pydantic model
-    model_config = PoseConfig.from_any(model_config).to_dict()
+    model_config = PoseConfig.from_any(model_config)
 
     bodyparts = model_config["metadata"]["bodyparts"]
     unique_bodyparts = model_config["metadata"]["unique_bodyparts"]
@@ -340,7 +340,6 @@ def make_pytorch_test_config(
     if save:
         test_config.to_yaml(test_config_path, overwrite=True)
 
-    return test_config
     return test_config
 
 

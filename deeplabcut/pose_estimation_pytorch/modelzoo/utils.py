@@ -18,7 +18,9 @@ from dlclibrary import download_huggingface_model
 
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
 from deeplabcut.core.config import read_config_as_dict
+from deeplabcut.core.config.project_config import ProjectConfig
 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import add_metadata
+from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.utils import auxiliaryfunctions
 
 # COCO category ID for the "person" class.
@@ -92,7 +94,7 @@ def load_super_animal_config(
     detector_name: str | None = None,
     max_individuals: int = 30,
     device: str | None = None,
-) -> dict:
+) -> PoseConfig:
     """Loads the model configuration file for a model, detector and SuperAnimal.
 
     Args:
@@ -103,15 +105,13 @@ def load_super_animal_config(
         device: The device to use to train/run inference on the model
 
     Returns:
-        The model configuration for a SuperAnimal-pretrained model.
+        PoseConfig: The model configuration for a SuperAnimal-pretrained model.
     """
     project_cfg_path = get_super_animal_project_config_path(super_animal=super_animal)
-    project_config = read_config_as_dict(project_cfg_path)
+    project_config = ProjectConfig.from_yaml(project_cfg_path)
 
-    # TODO @deruyter92: This is currently not validated against the PoseConfig pydantic model.
-    # We should add this functionality for super animal configs.
     model_cfg_path = get_super_animal_model_config_path(model_name=model_name)
-    model_config = read_config_as_dict(model_cfg_path)
+    model_config = PoseConfig.from_yaml(model_cfg_path)
     model_config = add_metadata(project_config, model_config, model_cfg_path)
     model_config = update_config(model_config, max_individuals, device)
 
@@ -123,7 +123,7 @@ def load_super_animal_config(
             detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name)
             detector_cfg = read_config_as_dict(detector_cfg_path)
             model_config["detector"] = detector_cfg
-    return model_config
+    return PoseConfig.from_any(model_config)
 
 
 def download_super_animal_snapshot(dataset: str, model_name: str) -> Path:
@@ -189,17 +189,22 @@ def raise_warning_if_called_directly():
 
 # TODO @deruyter92: This logic is currently completely separated from
 # the PoseConfig logic elsewhere. We should put this in line with the rest of the codebase.
-def update_config(config: dict, max_individuals: int, device: str):
-    """Loads the model configuration file for a model, detector and SuperAnimal.
+def update_config(
+    config: PoseConfig | dict | str | Path,
+    max_individuals: int,
+    device: str | None,
+) -> PoseConfig:
+    """Update placeholder values in a SuperAnimal pose configuration.
 
     Args:
-        config: The default model configuration file.
+        config (PoseConfig | dict | str | Path): The pose configuration to update.
         max_individuals: The maximum number of detections to make in an image
         device: The device to use to train/run inference on the model
 
     Returns:
-        The model configuration for a SuperAnimal-pretrained model.
+        PoseConfig: The updated pose configuration.
     """
+    config = PoseConfig.from_any(config).to_dict()
     config = config_utils.replace_default_values(
         config,
         num_bodyparts=len(config["metadata"]["bodyparts"]),
@@ -212,4 +217,4 @@ def update_config(config: dict, max_individuals: int, device: str):
     if config.get("detector", None) is not None:
         config["detector"]["device"] = device
 
-    return config
+    return PoseConfig.from_dict(config)

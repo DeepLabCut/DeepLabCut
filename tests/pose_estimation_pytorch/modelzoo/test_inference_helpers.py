@@ -9,6 +9,7 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 
+import copy
 from types import SimpleNamespace
 
 import pytest
@@ -27,11 +28,11 @@ def test_create_superanimal_inference_runners_uses_custom_config_path(monkeypatc
     cfg = _dummy_cfg("TD")
     read_calls = []
 
-    def fake_read_config_as_dict(path):
-        read_calls.append(path)
+    def fake_from_any(config):
+        read_calls.append(config)
         return cfg
 
-    monkeypatch.setattr(helpers, "read_config_as_dict", fake_read_config_as_dict)
+    monkeypatch.setattr(helpers.PoseConfig, "from_any", fake_from_any)
     monkeypatch.setattr(helpers, "update_config", lambda config, max_individuals, device: config)
     monkeypatch.setattr(
         helpers,
@@ -65,11 +66,7 @@ def test_create_superanimal_inference_runners_uses_custom_config_path(monkeypatc
 
 def test_create_superanimal_inference_runners_uses_deepcopy_for_custom_dict(monkeypatch):
     custom_cfg = _dummy_cfg("TD")
-    monkeypatch.setattr(
-        helpers,
-        "read_config_as_dict",
-        lambda path: pytest.fail("read_config_as_dict should not be called for dict input"),
-    )
+    monkeypatch.setattr(helpers.PoseConfig, "from_any", copy.deepcopy)
 
     def fake_update_config(config, max_individuals, device):
         # Mutate nested structure; caller-owned dict should stay unchanged.
@@ -110,7 +107,7 @@ def test_create_superanimal_inference_runners_auto_device_selection(monkeypatch,
     cfg = _dummy_cfg("TD")
     captured = {}
 
-    monkeypatch.setattr(helpers, "read_config_as_dict", lambda path: cfg)
+    monkeypatch.setattr(helpers.PoseConfig, "from_any", lambda config: cfg)
 
     def fake_update_config(config, max_individuals, device):
         captured["device"] = device

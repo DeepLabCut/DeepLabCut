@@ -10,7 +10,6 @@
 #
 from __future__ import annotations
 
-import copy
 import glob
 import json
 import logging
@@ -22,7 +21,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
 
-import deeplabcut.core.config as config_utils
 import deeplabcut.pose_estimation_pytorch.apis.visualization as visualization
 import deeplabcut.pose_estimation_pytorch.data as data
 import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
@@ -39,6 +37,7 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_scorer_uid,
     parse_snapshot_index_for_analysis,
 )
+from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     COCO_PERSON_CATEGORY_ID,
@@ -61,7 +60,7 @@ def superanimal_analyze_images(
     pose_threshold: float = 0.4,
     bbox_threshold: float = 0.6,
     plot_skeleton: bool = True,
-    customized_model_config: str | Path | dict | None = None,
+    customized_model_config: PoseConfig | dict | str | Path | None = None,
     customized_pose_checkpoint: str | Path | None = None,
     customized_detector_checkpoint: str | Path | None = None,
     close_figure_after_save=True,
@@ -120,9 +119,10 @@ def superanimal_analyze_images(
             If a skeleton is defined in the model configuration file, whether to plot
             the skeleton connecting the predicted bodyparts on the images.
 
-        customized_model_config: str | Path | dict | None
-            A customized SuperAnimal model config, as an alternative to the default
-            SuperAnimal model config. You can get the default SuperAnimal config with:
+        customized_model_config (PoseConfig | dict | str | Path | None, optional):
+            A customized SuperAnimal model configuration, as an alternative to the
+            default SuperAnimal model configuration. You can get the default SuperAnimal
+            config with:
                 >>> import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
                 >>> config = modelzoo.load_super_animal_config(
                 >>>     super_animal, model_name, detector_name,
@@ -189,10 +189,8 @@ def superanimal_analyze_images(
             model_name=model_name,
             detector_name=(detector_name if superanimal_name != "superanimal_humanbody" else None),
         )
-    elif isinstance(customized_model_config, (str, Path)):
-        config = config_utils.read_config_as_dict(customized_model_config)
     else:
-        config = copy.deepcopy(customized_model_config)
+        config = PoseConfig.from_any(customized_model_config)
 
     # TODO @deruyter92: This is currently not validated against the pydantic schema.
     # We should add this functionality (and do updates in an early stage).
@@ -310,7 +308,7 @@ def analyze_images(
     train_folder = model_folder / "train"
 
     model_cfg_path = train_folder / Engine.PYTORCH.pose_cfg_name
-    model_cfg = config_utils.read_config_as_dict(model_cfg_path)
+    model_cfg = PoseConfig.from_any(model_cfg_path)
     pose_task = Task(model_cfg["method"])
 
     # get the snapshots to analyze images with
@@ -426,7 +424,7 @@ def analyze_images(
 
 
 def analyze_image_folder(
-    model_cfg: str | Path | dict,
+    model_cfg: PoseConfig | dict | str | Path,
     images: str | Path | list[str] | list[Path],
     snapshot_path: str | Path,
     detector_path: str | Path | None = None,
@@ -440,7 +438,7 @@ def analyze_image_folder(
     """Runs pose inference on a folder of images and returns the predictions.
 
     Args:
-        model_cfg: The model config (or its path) used to analyze the images.
+        model_cfg (PoseConfig | dict | str | Path): The PyTorch pose configuration.
         images: The images to analyze. Can either be a directory containing images, or
             a list of paths of images.
         snapshot_path: The path of the snapshot to use to analyze the images.
@@ -464,9 +462,7 @@ def analyze_image_folder(
     Raises:
         ValueError: if the pose model is a top-down model but no detector path is given
     """
-    # TODO @deruyter92: decide on typed / plain dict
-    if not isinstance(model_cfg, dict):
-        model_cfg = config_utils.read_config_as_dict(model_cfg)
+    model_cfg = PoseConfig.from_any(model_cfg)
 
     pose_task = Task(model_cfg["method"])
     if pose_task == Task.TOP_DOWN and detector_path is None and filtered_detector_config is None:

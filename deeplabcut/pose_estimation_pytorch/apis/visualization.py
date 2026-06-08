@@ -29,7 +29,7 @@ import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.data as data
 import deeplabcut.pose_estimation_pytorch.data.preprocessor as preprocessor
 import deeplabcut.pose_estimation_pytorch.models as models
-from deeplabcut.core.config import read_config_as_dict
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils import auxiliaryfunctions
@@ -238,7 +238,7 @@ def extract_model_outputs(
 
 
 def extract_maps(
-    config,
+    config: ProjectConfig | dict | Path | str,
     shuffle: int = 0,
     trainingsetindex: int | str = 0,
     device: str | None = None,
@@ -253,7 +253,7 @@ def extract_maps(
     location refinement fields and part-affinity fields.
 
     Args:
-        config: Full path of the config.yaml file as a string.
+        config (ProjectConfig | dict | Path | str): The project configuration.
         shuffle: Index of the shuffle for which to extract maps
         trainingset_index: Integer specifying which TrainingsetFraction to use. This
             variable can also be set to "all".
@@ -291,7 +291,7 @@ def extract_maps(
 
         >>> deeplabcut.extract_maps(config, 0, indices=[0, 103])
     """
-    cfg = read_config_as_dict(config)
+    cfg = ProjectConfig.from_any(config)
 
     trainset_indices = [trainingsetindex]
     if trainingsetindex == "all":
@@ -391,7 +391,7 @@ def extract_maps(
 
 
 def extract_save_all_maps(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     comparison_bodyparts: str | list[str] = "all",
@@ -410,7 +410,7 @@ def extract_save_all_maps(
     and stored in the corresponding model folder in /evaluation-results-pytorch.
 
     Args:
-        config: Full path of the config.yaml file as a string.
+        config (ProjectConfig | dict | Path | str): The project configuration.
         shuffle: Index of the shuffle for which to extract maps
         trainingset_index: Integer specifying which TrainingsetFraction to use. This
             variable can also be set to "all".
@@ -442,7 +442,7 @@ def extract_save_all_maps(
         >>>     indices=[0, 1, 33]
         >>> )
     """
-    cfg = read_config_as_dict(config)
+    cfg = ProjectConfig.from_any(config)
     maps = extract_maps(
         config,
         shuffle=shuffle,

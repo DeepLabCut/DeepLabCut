@@ -17,13 +17,12 @@ from pathlib import Path
 
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
 import deeplabcut.utils.auxiliaryfunctions as af
-from deeplabcut.core.config import (
-    read_config_as_dict,
-    write_config,
-)
+from deeplabcut.core.config import read_config_as_dict
+from deeplabcut.core.config.project_config import ProjectConfig
 from deeplabcut.core.config.utils import get_yaml_loader
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
+from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     get_super_animal_model_config_path,
     get_super_animal_project_config_path,
@@ -34,18 +33,18 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 
 def make_super_animal_finetune_config(
     weight_init: WeightInitialization,
-    project_config: dict,
+    project_config: ProjectConfig | dict | Path | str,
     pose_config_path: str | Path,
     model_name: str,
     detector_name: str | None,
     save: bool = False,
-) -> dict:
+) -> PoseConfig:
     """Creates a PyTorch pose configuration file to finetune a SuperAnimal model on a
     downstream project.
 
     Args:
         weight_init: The weight initialization configuration.
-        project_config: The project configuration.
+        project_config (ProjectConfig | dict | Path | str): The project configuration.
         pose_config_path: The path where the pose configuration file will be saved
         model_name: The type of neural net to finetune.
         detector_name: The type of detector to use for the SuperAnimal model. If None is
@@ -53,13 +52,14 @@ def make_super_animal_finetune_config(
         save: Whether to save the model configuration file to the ``pose_config_path``.
 
     Returns:
-        The generated pose configuration file.
+        PoseConfig: The generated pose configuration.
 
     Raises:
         ValueError: If `weight_init.with_decoder = False`. This method only creates
             configs to fine-tune SuperAnimal models. Call `make_pytorch_pose_config`
             to create configuration files for transfer learning.
     """
+    project_config = ProjectConfig.from_any(project_config)
     bodyparts = af.get_bodyparts(project_config)
     if weight_init.dataset is None:
         raise ValueError("You must set the ``WeightInitialization.dataset`` when fine-tuning SuperAnimal models.")
@@ -99,7 +99,7 @@ def make_super_animal_finetune_config(
         pose_config_path=pose_config_path,
     )
     if save:
-        write_config(pose_config_path, pose_config, overwrite=True)
+        pose_config.to_yaml(pose_config_path, overwrite=True)
 
     return pose_config
 
@@ -110,9 +110,9 @@ def create_config_from_modelzoo(
     detector_name: str | None,
     converted_bodyparts: list[str],
     weight_init: WeightInitialization,
-    project_config: dict,
+    project_config: ProjectConfig | dict | Path | str,
     pose_config_path: str | Path,
-) -> dict:
+) -> PoseConfig:
     """Creates a model configuration file to fine-tune a SuperAnimal model.
 
     Args:
@@ -122,14 +122,16 @@ def create_config_from_modelzoo(
             given, the model will be set to a Bottom-Up framework.
         converted_bodyparts: The project bodyparts that the model will learn.
         weight_init: The weight initialization to use.
-        project_config: The project configuration.
+        project_config (ProjectConfig | dict | Path | str): The project configuration.
         pose_config_path: The path where the pose configuration file will be saved.
 
     Returns:
-        The generated pose configuration file.
+        PoseConfig: The generated pose configuration.
     """
+    project_config = ProjectConfig.from_any(project_config)
+
     # load the model configuration
-    model_cfg = read_config_as_dict(get_super_animal_model_config_path(model_name))
+    model_cfg = PoseConfig.from_yaml(get_super_animal_model_config_path(model_name))
     if detector_name is None:
         model_cfg["method"] = Task.BOTTOM_UP.aliases[0].lower()
         # Use default bottom-up image augmentation if no detector is given (the collate
@@ -161,8 +163,7 @@ def create_config_from_modelzoo(
 
     model_cfg["inference"] = InferenceConfig().to_dict()
 
-    # sort first-level keys to make it prettier
-    return dict(sorted(model_cfg.items()))
+    return model_cfg
 
 
 def write_pytorch_config_for_memory_replay(config_path, shuffle, pytorch_config):
