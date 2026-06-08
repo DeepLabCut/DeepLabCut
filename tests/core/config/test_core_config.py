@@ -24,11 +24,14 @@ from deeplabcut.core.config import (
     pretty_print,
     read_config,
     read_config_as_dict,
+    resolve_alias,
+    resolve_aliases_in_dict,
     write_config,
     write_config_3d,
     write_config_3d_template,
     write_project_config,
 )
+from deeplabcut.utils.deprecation import DLCDeprecationWarning
 
 # -----------------------------------------------------------------------------
 # read_config_as_dict
@@ -376,3 +379,65 @@ def test_write_config_3d_template_writes_given_template(tmp_path):
     cfg = read_config_as_dict(config_path)
     assert cfg["Task"] == "custom_3d"
     assert cfg["num_cameras"] == 3
+
+
+# -----------------------------------------------------------------------------
+# resolve_alias / resolve_aliases_in_dict
+# -----------------------------------------------------------------------------
+
+
+ALIAS_MAP = {"projectPath": "project_path"}
+
+
+def test_resolve_alias_returns_canonical_for_alias():
+    with pytest.warns(DLCDeprecationWarning, match="projectPath"):
+        assert resolve_alias("projectPath", ALIAS_MAP) == "project_path"
+
+
+def test_resolve_alias_returns_name_unchanged_for_unknown_key():
+    assert resolve_alias("Task", ALIAS_MAP, warn=False) == "Task"
+
+
+def test_resolve_alias_no_warning_when_warn_false():
+    import warnings
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DLCDeprecationWarning)
+        assert resolve_alias("projectPath", ALIAS_MAP, warn=False) == "project_path"
+
+
+def test_resolve_aliases_in_dict_resolves_single_alias():
+    with pytest.warns(DLCDeprecationWarning, match="projectPath"):
+        resolved = resolve_aliases_in_dict(
+            {"Task": "t", "projectPath": "/p"},
+            ALIAS_MAP,
+            target="ToyConfig",
+        )
+    assert resolved == {"Task": "t", "project_path": "/p"}
+
+
+def test_resolve_aliases_in_dict_empty_alias_map_returns_input_unchanged():
+    cfg_dict = {"Task": "t", "project_path": "/p"}
+    assert resolve_aliases_in_dict(cfg_dict, {}) is cfg_dict
+
+
+def test_resolve_aliases_in_dict_rejects_alias_and_canonical_together():
+    with pytest.raises(TypeError, match=r"projectPath.*project_path"):
+        resolve_aliases_in_dict(
+            {"projectPath": "/alias", "project_path": "/canonical"},
+            ALIAS_MAP,
+            target="ToyConfig",
+        )
+
+
+def test_resolve_aliases_in_dict_rejects_two_aliases_for_same_field():
+    alias_map = {
+        "projectPath": "project_path",
+        "legacyProjectPath": "project_path",
+    }
+    with pytest.raises(TypeError, match=r"projectPath.*legacyProjectPath"):
+        resolve_aliases_in_dict(
+            {"projectPath": "/a", "legacyProjectPath": "/b"},
+            alias_map,
+            target="ToyConfig",
+        )

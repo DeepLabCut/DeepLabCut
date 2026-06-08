@@ -3,7 +3,6 @@ from __future__ import annotations
 import functools
 import logging
 import sys
-import warnings
 from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import Any
@@ -18,6 +17,7 @@ from deeplabcut.core.config.utils import (
     normalize_for_serialization,
     pretty_print,
     read_config_as_dict,
+    resolve_alias,
     resolve_aliases_in_dict,
     write_config,
 )
@@ -175,38 +175,27 @@ class DLCBaseConfig(BaseModel):
         self,
         name: str,
         *,
-        warn: bool = False,
-        stacklevel: int = 3,
+        warn: bool = True,
+        stacklevel: int = 4,
     ) -> str:
-        canonical = type(self)._alias_map().get(name)
-        if canonical is not None:
-            if warn:
-                from deeplabcut.utils.deprecation import DLCDeprecationWarning
-
-                warnings.warn(
-                    f"'{name}' is deprecated, use '{canonical}' instead.",
-                    DLCDeprecationWarning,
-                    stacklevel=stacklevel,
-                )
-            return canonical
-        return name
+        return resolve_alias(name, type(self)._alias_map(), warn=warn, stacklevel=stacklevel)
 
     # ------------------------------------------------------------------
     # Dict-like access (canonical field names only in keys()/iter)
     # ------------------------------------------------------------------
 
     def __setattr__(self, name: str, value: Any) -> None:
-        name = self._resolve_alias(name, warn=True, stacklevel=3)
+        name = self._resolve_alias(name)
         super().__setattr__(name, value)
 
     def __getattr__(self, name: str) -> Any:
         # Only runs after normal lookup fails; try resolved alias or raise AttributeError via BaseModel.__getattr__.
         if name in type(self)._alias_map():
-            return getattr(self, self._resolve_alias(name, warn=True, stacklevel=3))
+            return getattr(self, self._resolve_alias(name))
         return super().__getattr__(name)
 
     def __getitem__(self, key: str) -> Any:
-        key = self._resolve_alias(key, warn=True, stacklevel=3)
+        key = self._resolve_alias(key)
         try:
             return getattr(self, key)
         except AttributeError:
@@ -353,7 +342,7 @@ class DLCVersionedConfig(DLCBaseConfig):
         self._initialized = True
 
     def __setattr__(self, name: str, value: Any) -> None:
-        name = self._resolve_alias(name, warn=True, stacklevel=3)
+        name = self._resolve_alias(name)
 
         # Private attributes (not a model field) skip tracking logic
         if name not in type(self).model_fields or not self._initialized:
