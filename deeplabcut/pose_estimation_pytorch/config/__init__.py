@@ -56,6 +56,7 @@ from deeplabcut.pose_estimation_pytorch.config.pose import (
     MethodType,
     NetType,
     PoseConfig,
+    PoseMetadata,
     TestConfig,
 )
 from deeplabcut.pose_estimation_pytorch.config.runner import (
@@ -133,6 +134,7 @@ __all__ = [
     "MethodType",
     "NetType",
     "PoseConfig",
+    "PoseMetadata",
     "TestConfig",
     # Runner config
     "OptimizerConfig",
