@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import logging
 import warnings
+from collections import Counter
 from collections.abc import Callable, Mapping
 from enum import Enum
 from functools import wraps
@@ -91,11 +92,40 @@ def write_config(config_path: str | Path, config: dict, overwrite: bool = True) 
         get_yaml_dumper().dump(config, file)
 
 
+def resolve_alias(
+    name: str,
+    alias_map: dict[str, str],
+    *,
+    warn: bool = True,
+    stacklevel: int = 3,
+) -> str:
+    """Resolve a config key to its canonical field name.
+    Args:
+        name: Raw key name (alias or canonical).
+        alias_map: ``{alias: canonical_name}`` for deprecated keys.
+        warn: If True, emit :class:`DLCDeprecationWarning` when ``name`` is an alias.
+        stacklevel: Passed to :func:`warnings.warn` for deprecation messages.
+    Returns:
+        Canonical field name, or ``name`` unchanged if it is not an alias.
+    """
+    canonical = alias_map.get(name, name)
+    if warn and name in alias_map:
+        from deeplabcut.utils.deprecation import DLCDeprecationWarning
+
+        warnings.warn(
+            f"'{name}' is deprecated, use '{canonical}' instead.",
+            DLCDeprecationWarning,
+            stacklevel=stacklevel,
+        )
+    return canonical
+
+
 def resolve_aliases_in_dict(
     cfg_dict: dict,
     alias_map: dict[str, str],
     *,
     target: str = "config",
+    warn: bool = True,
     stacklevel: int = 3,
 ) -> dict:
     """Rename deprecated config keys to their canonical names.
@@ -111,29 +141,21 @@ def resolve_aliases_in_dict(
         ``alias_map`` is empty.
 
     Raises:
-        TypeError: If both an alias and its canonical name are present.
+        TypeError: If multiple keys resolve to the same canonical field name
+        (e.g. an alias and its canonical name, or two aliases for one field).
     """
     if not alias_map:
         return cfg_dict
 
-    for alias, canonical in alias_map.items():
-        if alias in cfg_dict and canonical in cfg_dict:
-            raise TypeError(f"{target} received both '{alias}' and '{canonical}'. Use only '{canonical}'.")
+    def _raise_for_duplicates(raw_to_canonical: dict[str, str]):
+        counts = Counter(raw_to_canonical.values())
+        conflicts = [f"{raw} -> {canonical}" for raw, canonical in raw_to_canonical.items() if counts[canonical] > 1]
+        if conflicts:
+            raise TypeError(f"{target} received duplicate canonical field names: {', '.join(conflicts)}.")
 
-    from deeplabcut.utils.deprecation import DLCDeprecationWarning
-
-    resolved = {}
-    for k, v in cfg_dict.items():
-        canonical = alias_map.get(k)
-        if canonical is not None:
-            warnings.warn(
-                f"Config key '{k}' is deprecated, use '{canonical}' instead.",
-                DLCDeprecationWarning,
-                stacklevel=stacklevel,
-            )
-            k = canonical
-        resolved[k] = v
-    return resolved
+    raw_to_canonical = {raw: resolve_alias(raw, alias_map, warn=warn, stacklevel=stacklevel + 1) for raw in cfg_dict}
+    _raise_for_duplicates(raw_to_canonical)
+    return {raw_to_canonical[raw]: v for raw, v in cfg_dict.items()}
 
 
 def normalize_for_serialization(obj: Any) -> Any:

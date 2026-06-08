@@ -182,8 +182,9 @@ class TestAliases:
         assert cfg.project_path == "/alias"
 
     def test_model_validate_rejects_alias_and_canonical_together(self):
-        with pytest.raises(TypeError, match="both 'projectPath' and 'project_path'"):
-            ToyConfig.model_validate({"Task": "t", "projectPath": "/alias", "project_path": "/canonical"})
+        with pytest.warns(DLCDeprecationWarning, match="projectPath"):
+            with pytest.raises(TypeError, match=r"projectPath.*project_path"):
+                ToyConfig.model_validate({"Task": "t", "projectPath": "/alias", "project_path": "/canonical"})
 
     def test_getitem_alias_warns_and_reads_canonical(self):
         cfg = ToyConfig(project_path="/p")
