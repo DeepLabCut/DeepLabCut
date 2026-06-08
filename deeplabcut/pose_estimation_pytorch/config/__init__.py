@@ -22,6 +22,12 @@ from deeplabcut.pose_estimation_pytorch.config.data import (
     DLCLoaderConfig,
     GenSamplingConfig,
 )
+from deeplabcut.pose_estimation_pytorch.config.enums import (
+    DatasetType,
+    DetectorType,
+    MethodType,
+    NetType,
+)
 from deeplabcut.pose_estimation_pytorch.config.inference import (
     AutocastConfig,
     CompileConfig,
@@ -36,27 +42,25 @@ from deeplabcut.pose_estimation_pytorch.config.logger import (
     WandbLoggerConfig,
 )
 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
-    add_detector,
-    add_identity_head,
-    add_metadata,
-    add_unique_bodypart_head,
-    create_backbone_with_heatmap_model,
-    create_backbone_with_paf_model,
+    # add_detector,
+    # add_identity_head,
+    # add_metadata,
+    # add_unique_bodypart_head,
+    # create_backbone_with_heatmap_model,
+    # create_backbone_with_paf_model,
     make_basic_project_config,
     make_pytorch_pose_config,
     make_pytorch_test_config,
 )
+from deeplabcut.pose_estimation_pytorch.config.metadata import PoseMetadata
 from deeplabcut.pose_estimation_pytorch.config.model import (
     DetectorModelConfig,
     ModelConfig,
 )
+from deeplabcut.pose_estimation_pytorch.config.paf_parameters import PAFParameters
 from deeplabcut.pose_estimation_pytorch.config.pose import (
-    DatasetType,
     DetectorConfig,
-    MethodType,
-    NetType,
     PoseConfig,
-    PoseMetadata,
     TestConfig,
 )
 from deeplabcut.pose_estimation_pytorch.config.runner import (
@@ -86,15 +90,15 @@ __all__ = [
     "read_config_as_dict",
     "write_config",
     # Config creation API
-    "add_detector",
-    "add_identity_head",
-    "add_metadata",
-    "add_unique_bodypart_head",
-    "create_backbone_with_heatmap_model",
-    "create_backbone_with_paf_model",
-    "make_basic_project_config",
-    "make_pytorch_pose_config",
-    "make_pytorch_test_config",
+    # "add_detector",
+    # "add_identity_head",
+    # "add_metadata",
+    # "add_unique_bodypart_head",
+    # "create_backbone_with_heatmap_model",
+    # "create_backbone_with_paf_model",
+    "make_basic_project_config",  # deprecated
+    "make_pytorch_pose_config",  # deprecated
+    "make_pytorch_test_config",  # deprecated
     # Config utilities
     "available_detectors",
     "available_models",
@@ -129,6 +133,7 @@ __all__ = [
     "DetectorModelConfig",
     "ModelConfig",
     # Pose config
+    "DetectorType",
     "DatasetType",
     "DetectorConfig",
     "MethodType",
@@ -143,4 +148,6 @@ __all__ = [
     "SnapshotCheckpointConfig",
     # Training config
     "TrainSettingsConfig",
+    # PAF parameters
+    "PAFParameters",
 ]

@@ -12,7 +12,7 @@ from deeplabcut.core.config.validation import UniqueStrList
 # Once field names are aligned (in v1), we should merge these ProjectConfig subsets.
 class PoseMetadata(DLCBaseConfig):
     project_path: Path | None = None
-    pose_config_path: Path | None = None
+    pose_config_path: Path = Field(default_factory=Path)
     bodyparts: UniqueStrList = Field(default_factory=list)
     unique_bodyparts: UniqueStrList = Field(default_factory=list, json_schema_extra={"aliases": ["uniquebodyparts"]})
     individuals: UniqueStrList = Field(default_factory=lambda: ["individual_1"])
