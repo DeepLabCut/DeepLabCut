@@ -213,8 +213,9 @@ def update_config(
     )
     config["metadata"]["individuals"] = [f"animal{i}" for i in range(max_individuals)]
 
-    config["device"] = device
-    if config.get("detector", None) is not None:
-        config["detector"]["device"] = device
+    resolved_device = device if device is not None else "auto"
+    config["device"] = resolved_device
+    if config.get("detector") is not None:
+        config["detector"]["device"] = resolved_device
 
     return PoseConfig.from_dict(config)
