@@ -116,9 +116,9 @@ def load_super_animal_config(
     model_config = update_config(model_config, max_individuals, device)
 
     if detector_name is None and super_animal != "superanimal_humanbody":
-        model_config["method"] = "BU"
+        model_config["method"] = "bu"
     else:
-        model_config["method"] = "TD"
+        model_config["method"] = "td"
         if super_animal != "superanimal_humanbody":
             detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name)
             detector_cfg = read_config_as_dict(detector_cfg_path)
