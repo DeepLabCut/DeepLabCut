@@ -20,7 +20,7 @@ from deeplabcut.core.config.project_config import ProjectConfig
 from deeplabcut.core.config.utils import ensure_plain_config
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
-from deeplabcut.pose_estimation_pytorch.config.pose import NetType, PoseConfig, TestConfig
+from deeplabcut.pose_estimation_pytorch.config.pose import NetType, PoseConfig, PoseMetadata, TestConfig
 from deeplabcut.pose_estimation_pytorch.config.training import TrainSettingsConfig
 from deeplabcut.pose_estimation_pytorch.config.utils import (
     get_config_folder_path,
@@ -225,16 +225,10 @@ def make_pytorch_pose_config(
     Returns:
         the PyTorch pose configuration as a typed PoseConfig
     """
-    # Initialize ProjectConfig
+    # Get metadata from project config
     project_config = ProjectConfig.from_any(project_config)
-    project_config.pose_config_path = pose_config_path
-
-    # @TODO @deruyter92 2026-02-13: This is a temporary fix to allow backwards compatibility.
-    # This should be resolved by migrating to V1 project config.
-    project_config.with_identity = project_config.identity
-    if project_config.bodyparts == "MULTI!":
-        project_config.bodyparts = project_config.multianimalbodyparts
-    project_config.unique_bodyparts = project_config.uniquebodyparts
+    metadata = PoseMetadata.from_project_config(project_config)
+    metadata.pose_config_path = pose_config_path
 
     if weight_init is not None:
         weight_init = WeightInitialization.from_any(weight_init)
@@ -243,7 +237,7 @@ def make_pytorch_pose_config(
     # (update_config only deep-merges plain dicts, not typed configs)
     pose_config_dict = PoseConfig(
         net_type=NetType(net_type) if net_type is not None else None,
-        metadata=project_config,
+        metadata=metadata,
         train_settings=TrainSettingsConfig(weight_init=weight_init),
     ).to_dict()
 

@@ -14,6 +14,7 @@ from enum import Enum
 from pathlib import Path
 
 from pydantic import Field
+from typing_extensions import Self
 
 from deeplabcut.core.config import DLCBaseConfig, DLCVersionedConfig
 from deeplabcut.core.config.project_config import ProjectConfig
@@ -116,6 +117,29 @@ class DetectorConfig(DLCBaseConfig):
     inference: InferenceConfig = Field(default_factory=InferenceConfig)
 
 
+# TODO @deruyter92 2026-06-08: This is duplicated from ProjectConfig. Note that field names are misaligned!
+# Once field names are aligned (in v1), we should merge these ProjectConfig subsets.
+class PoseMetadata(DLCBaseConfig):
+    project_path: Path = Field(default_factory=Path)
+    pose_config_path: Path = Field(default_factory=Path)
+    bodyparts: UniqueStrList = Field(default_factory=list)
+    unique_bodyparts: UniqueStrList = Field(default_factory=list, json_schema_extra={"aliases": ["uniquebodyparts"]})
+    individuals: UniqueStrList = Field(default_factory=lambda: ["individual_1"])
+    with_identity: bool | None = Field(default=None, json_schema_extra={"aliases": ["identity"]})
+
+    @classmethod
+    def from_project_config(cls, project_config: ProjectConfig | dict | Path | str) -> Self:
+        cfg = ProjectConfig.from_any(project_config)
+        return cls(
+            project_path=cfg.project_path,
+            pose_config_path=cfg.pose_config_path,
+            bodyparts=cfg.multianimalbodyparts if cfg.multianimalproject else project_config.bodyparts,
+            unique_bodyparts=cfg.uniquebodyparts,
+            individuals=cfg.individuals,
+            with_identity=cfg.identity,
+        )
+
+
 class PoseConfig(DLCVersionedConfig):
     """Main configuration class for DeepLabCut pose estimation models.
 
@@ -140,7 +164,7 @@ class PoseConfig(DLCVersionedConfig):
     net_type: NetType = NetType.RESNET_50
     method: MethodType = MethodType.BOTTOM_UP
     device: str = "auto"
-    metadata: ProjectConfig | None = None
+    metadata: PoseMetadata
     data: DataConfig | None = None
     inference: InferenceConfig = Field(default_factory=InferenceConfig)
     logger: CSVLoggerConfig | WandbLoggerConfig | None = Field(default=None, discriminator="type")
