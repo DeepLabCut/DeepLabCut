@@ -71,7 +71,7 @@ class VideoProcessor(ABC):
                 self.svid = self.create_video()
 
         except Exception as ex:
-            logger.error("VideoProcessor initialization failed: %s", ex)
+            logger.exception("VideoProcessor initialization failed: %s", ex)
 
         if fps is not None:  # Overwrite the video's FPS
             # NOTE @C-Achard 2026-06-09 improving checks here might break old API
