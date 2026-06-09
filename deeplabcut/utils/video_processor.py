@@ -21,11 +21,13 @@ fourcc = cv2.VideoWriter_fourcc(*'MJPG')
 i.e. 'XVID'
 """
 
+from abc import ABC, abstractmethod
+
 import cv2
 import numpy as np
 
 
-class VideoProcessor:
+class VideoProcessor(ABC):
     """Base class for a video processing unit, implementation is required for video
     loading and saving.
 
@@ -69,44 +71,49 @@ class VideoProcessor:
             self.i += 1
         return frame
 
+    @property
     def height(self):
         return self.h
 
+    @property
     def width(self):
         return self.w
 
+    @property
     def fps(self):
         return self.FPS
 
+    @property
     def counter(self):
         return self.i
 
+    @property
     def frame_count(self):
         return self.nframes
 
+    @abstractmethod
     def get_video(self):
-        """Implement your own."""
-        pass
+        raise NotImplementedError("Implement your own get_video method.")
 
+    @abstractmethod
     def get_info(self):
-        """Implement your own."""
-        pass
+        raise NotImplementedError("Implement your own get_info method.")
 
+    @abstractmethod
     def create_video(self):
-        """Implement your own."""
-        pass
+        raise NotImplementedError("Implement your own create_video method.")
 
+    @abstractmethod
     def _read_frame(self):
-        """Implement your own."""
-        pass
+        raise NotImplementedError("Implement your own _read_frame method.")
 
+    @abstractmethod
     def save_frame(self, frame):
-        """Implement your own."""
-        pass
+        raise NotImplementedError("Implement your own save_frame method.")
 
+    @abstractmethod
     def close(self):
-        """Implement your own."""
-        pass
+        raise NotImplementedError("Implement your own close method.")
 
 
 class VideoProcessorCV(VideoProcessor):
