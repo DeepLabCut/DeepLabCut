@@ -233,11 +233,11 @@ def _generic2madlc(
                 # need to be careful here to assign right keypoints to right people
                 if coord[0] > 0 and coord[1] > 0:
                     # leave them to NaN if values are 0
-                    df.loc[file_name][scorer, f"individual{individual_id}", kpt_name, "x"] = coord[0]
-                    df.loc[file_name][scorer, f"individual{individual_id}", kpt_name, "y"] = coord[1]
+                    df.loc[file_name, (scorer, f"individual{individual_id}", kpt_name, "x")] = coord[0]
+                    df.loc[file_name, (scorer, f"individual{individual_id}", kpt_name, "y")] = coord[1]
                 elif coord[2] == -1:
-                    df.loc[file_name][scorer, f"individual{individual_id}", kpt_name, "x"] = -1
-                    df.loc[file_name][scorer, f"individual{individual_id}", kpt_name, "y"] = -1
+                    df.loc[file_name, (scorer, f"individual{individual_id}", kpt_name, "x")] = -1
+                    df.loc[file_name, (scorer, f"individual{individual_id}", kpt_name, "y")] = -1
         df.to_hdf(
             os.path.join(proj_root, "labeled-data", dataset_name, f"CollectedData_{scorer}.h5"),
             key="df_with_missing",
@@ -443,12 +443,12 @@ def _generic2sdlc(
                 # need to be careful here to assign right keypoints to right people
 
                 if coord[0] > 0 and coord[1] > 0:
-                    df.loc[file_name][scorer, kpt_name, "x"] = coord[0]
-                    df.loc[file_name][scorer, kpt_name, "y"] = coord[1]
+                    df.loc[file_name, (scorer, kpt_name, "x")] = coord[0]
+                    df.loc[file_name, (scorer, kpt_name, "y")] = coord[1]
                 elif coord[2] == -1:
                     # if -1, this visibility flag means a given keypoint was not annotated in the original dataset
-                    df.loc[file_name][scorer, kpt_name, "x"] = -1
-                    df.loc[file_name][scorer, kpt_name, "y"] = -1
+                    df.loc[file_name, (scorer, kpt_name, "x")] = -1
+                    df.loc[file_name, (scorer, kpt_name, "y")] = -1
 
         df = df.dropna(how="all")
         df.to_hdf(

@@ -170,9 +170,9 @@ def create_video_h5_from_pickle(proj_root, cfg, reference_pickle, videopath):
 
     for imagename, kpts in zip(imagenames, detections, strict=False):
         for kpt_id, kpt_name in enumerate(keypoint_names):
-            df.loc[imagename][scorer, kpt_name, "x"] = kpts[kpt_id, 0]
-            df.loc[imagename][scorer, kpt_name, "y"] = kpts[kpt_id, 1]
-            df.loc[imagename][scorer, kpt_name, "likelihood"] = kpts[kpt_id, 2]
+            df.loc[imagename, (scorer, kpt_name, "x")] = kpts[kpt_id, 0]
+            df.loc[imagename, (scorer, kpt_name, "y")] = kpts[kpt_id, 1]
+            df.loc[imagename, (scorer, kpt_name, "likelihood")] = kpts[kpt_id, 2]
 
     vname = Path(videopath).stem
     DLCscorer = ""
