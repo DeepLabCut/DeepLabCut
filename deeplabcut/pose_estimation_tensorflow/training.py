@@ -68,7 +68,7 @@ def train_network(
             ``max_snapshots_to_keep`` many are kept! If you change this to None, then all
             are kept.
             See: https://github.com/DeepLabCut/DeepLabCut/issues/8#issuecomment-387404835
-        displayiters (int, optional): This variable is actually set in ``pose_config.yaml``. However, you can
+        display_iters (int, optional): This variable is actually set in ``pose_config.yaml``. However, you can
             overwrite it with this hack. Don't use this regularly, just if you are too lazy
             to dig out the ``pose_config.yaml`` file for the corresponding project. If
             ``None``, the value from there is used, otherwise it is overwritten! Defaults to None.

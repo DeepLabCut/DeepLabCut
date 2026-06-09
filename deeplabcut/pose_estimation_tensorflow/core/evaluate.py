@@ -518,7 +518,7 @@ def evaluate_network(
 
     Args:
         config (string): Full path of the config.yaml file.
-        Shuffles (list, optional): List of integers specifying the shuffle indices of
+        shuffles (list, optional): List of integers specifying the shuffle indices of
             the training dataset. Defaults to [1].
         trainingsetindex (int or str, optional): Integer specifying which
             "TrainingsetFraction" to use. Note that "TrainingFraction" is a list in

@@ -821,7 +821,7 @@ def create_training_dataset(
         config (string): Full path of the ``config.yaml`` file as a string.
         num_shuffles (int, optional): Number of shuffles of training dataset to create,
             i.e. ``[1,2,3]`` for ``num_shuffles=3``. Defaults to 1.
-        Shuffles (list[int], optional): Alternatively the user can also give a list of
+        shuffles (list[int], optional): Alternatively the user can also give a list of
             shuffles.
         userfeedback (bool, optional): If ``False``, all requested train/test splits are
             created (no matter if they already exist). If you want to assure that

@@ -101,7 +101,7 @@ def train_network(
             ``max_snapshots_to_keep`` many are kept! If you change this to None, then all
             are kept.
             See: https://github.com/DeepLabCut/DeepLabCut/issues/8#issuecomment-387404835
-        displayiters (optional): This variable is actually set in ``pose_config.yaml``. However, you can
+        display_iters (optional): This variable is actually set in ``pose_config.yaml``. However, you can
             overwrite it with this hack. Don't use this regularly, just if you are too lazy
             to dig out the ``pose_config.yaml`` file for the corresponding project. If
             ``None``, the value from there is used, otherwise it is overwritten! Defaults to None.
@@ -333,7 +333,7 @@ def evaluate_network(
 
     Args:
         config (string): Full path of the config.yaml file.
-        Shuffles (list, optional): List of integers specifying the shuffle indices of the training dataset.
+        shuffles (list, optional): List of integers specifying the shuffle indices of the training dataset.
             Defaults to [1].
         trainingsetindex (int or str, optional): Integer specifying which "TrainingsetFraction" to use. Note that
             "TrainingFraction" is a list in config.yaml. This variable can also be set to "all". Defaults to 0.

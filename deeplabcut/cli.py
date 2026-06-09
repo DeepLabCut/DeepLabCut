@@ -390,7 +390,7 @@ def analyze_videos(_, *args, **kwargs):
             project.
         videos (list): Full path(s) to video(s).
         shuffle (int, optional): Shuffle index of the training dataset. Defaults to 1.
-        videotype (string, optional): Video extension when the input is a directory.
+        video_extensions (string, optional): Video extension when the input is a directory.
             Defaults to ``.avi``.
         save_as_csv (bool, optional): Also save predictions as a CSV file. Defaults to
             False.
@@ -643,7 +643,7 @@ def create_labeled_video(_, *args, **kwargs):
         config (string): Full path of the config.yaml file.
         videos (list): Full path(s) to video(s).
         shuffle (int, optional): Shuffle index of the training dataset. Defaults to 1.
-        videotype (string, optional): Video extension when the input is a directory.
+        video_extensions (string, optional): Video extension when the input is a directory.
             Defaults to ``.avi``.
         save_frames (bool, optional): Save individual frames before combining into video.
             Defaults to False.
@@ -692,7 +692,7 @@ def plot_trajectories(_, *args, **kwargs):
         config (string): Full path of the config.yaml file.
         videos (list): Full path(s) to video(s).
         shuffle (int, optional): Shuffle index of the training dataset. Defaults to 1.
-        videotype (string, optional): Video extension when the input is a directory.
+        video_extensions (string, optional): Video extension when the input is a directory.
         Defaults to ``.avi``.
         showfigures (bool, optional): Also display plots interactively. Defaults to False.
 
