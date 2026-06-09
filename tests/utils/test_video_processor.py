@@ -179,3 +179,16 @@ def test_invalid_input_video_raises_file_not_found_or_io_error(tmp_path):
 
     with pytest.raises((FileNotFoundError, OSError)):
         VideoProcessorCV(fname=str(missing_path))
+
+
+def test_processor_passes_filename_as_str(tmp_path):
+    video_path = tmp_path / "input.mp4"
+    _make_test_video(video_path, nframes=1, width=8, height=6, fps=10.0)
+
+    # Should not raise even if a Path object is passed.
+    clip = VideoProcessorCV(fname=video_path)
+
+    try:
+        assert clip.fname == str(video_path)
+    finally:
+        clip.close()
