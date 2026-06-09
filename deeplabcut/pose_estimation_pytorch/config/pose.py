@@ -120,11 +120,13 @@ class DetectorConfig(DLCBaseConfig):
 # TODO @deruyter92 2026-06-08: This is duplicated from ProjectConfig. Note that field names are misaligned!
 # Once field names are aligned (in v1), we should merge these ProjectConfig subsets.
 class PoseMetadata(DLCBaseConfig):
-    project_path: Path = Field(default_factory=Path)
+    project_path: Path | None = None
     pose_config_path: Path = Field(default_factory=Path)
     bodyparts: UniqueStrList = Field(default_factory=list)
     unique_bodyparts: UniqueStrList = Field(default_factory=list, json_schema_extra={"aliases": ["uniquebodyparts"]})
     individuals: UniqueStrList = Field(default_factory=lambda: ["individual_1"])
+
+    # TODO @deruyter92 2026-06-09: Nullable field to support old configs with empty identity field -> fix in v1.
     with_identity: bool | None = Field(default=None, json_schema_extra={"aliases": ["identity"]})
 
     @classmethod
@@ -133,7 +135,7 @@ class PoseMetadata(DLCBaseConfig):
         return cls(
             project_path=cfg.project_path,
             pose_config_path=cfg.pose_config_path,
-            bodyparts=cfg.multianimalbodyparts if cfg.multianimalproject else project_config.bodyparts,
+            bodyparts=cfg.multianimalbodyparts if cfg.multianimalproject else cfg.bodyparts,
             unique_bodyparts=cfg.uniquebodyparts,
             individuals=cfg.individuals,
             with_identity=cfg.identity,
