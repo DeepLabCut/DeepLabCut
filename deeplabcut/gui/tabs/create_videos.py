@@ -237,7 +237,7 @@ class CreateVideos(DefaultTab):
     def create_videos(self):
         config = self.root.config
         shuffle = self.root.shuffle_value
-        videos = sorted(str(v) for v in self.files)
+        videos = self.files
         trailpoints = self.trail_points.value()
         if hasattr(self, "color_by_widget"):
             # Multianimal scenario.
