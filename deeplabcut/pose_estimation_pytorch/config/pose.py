@@ -164,7 +164,7 @@ class PoseConfig(DLCVersionedConfig):
     net_type: NetType = NetType.RESNET_50
     method: MethodType = MethodType.BOTTOM_UP
     device: str = "auto"
-    metadata: PoseMetadata
+    metadata: PoseMetadata | None = None
     data: DataConfig | None = None
     inference: InferenceConfig = Field(default_factory=InferenceConfig)
     logger: CSVLoggerConfig | WandbLoggerConfig | None = Field(default=None, discriminator="type")
