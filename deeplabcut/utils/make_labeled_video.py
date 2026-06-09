@@ -135,7 +135,7 @@ def CreateVideo(
     else:
         nindividuals = len(Dataframe.columns.get_level_values("individuals").unique())
         map2bp = [bplist.index(bp) for bp in all_bpts]
-        nbpts_per_ind = Dataframe.groupby(level="individuals", axis=1).size().values // 3
+        nbpts_per_ind = Dataframe.T.groupby(level="individuals").size().values // 3
         map2id = []
         for i, j in enumerate(nbpts_per_ind):
             map2id.extend([i] * j)
@@ -283,7 +283,7 @@ def CreateVideoSlow(
     else:
         nindividuals = len(Dataframe.columns.get_level_values("individuals").unique())
         map2bp = [bplist.index(bp) for bp in all_bpts]
-        nbpts_per_ind = Dataframe.groupby(level="individuals", axis=1).size().values // 3
+        nbpts_per_ind = Dataframe.T.groupby(level="individuals").size().values // 3
         map2id = []
         for i, j in enumerate(nbpts_per_ind):
             map2id.extend([i] * j)
