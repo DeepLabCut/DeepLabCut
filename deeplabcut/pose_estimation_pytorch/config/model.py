@@ -13,6 +13,7 @@
 from pydantic import Field
 
 from deeplabcut.core.config import DLCBaseConfig
+from deeplabcut.core.config.validation import Fraction
 
 
 class ModelConfig(DLCBaseConfig):
@@ -47,3 +48,4 @@ class DetectorModelConfig(DLCBaseConfig):
     freeze_bn_stats: bool = False
     freeze_bn_weights: bool = False
     variant: str = ""
+    box_score_thresh: Fraction = 0.6
