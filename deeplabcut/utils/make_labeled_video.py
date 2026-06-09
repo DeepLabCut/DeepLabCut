@@ -908,7 +908,7 @@ def proc_video(
                 if bodyparts2connect:
                     all_bpts = df.columns.get_level_values("bodyparts")[::3]
                     inds = get_segment_indices(bodyparts2connect, all_bpts)
-                clip = vp(fname=str(video), fps=outputframerate)
+                clip = vp(fname=video, fps=outputframerate)
                 create_video_with_keypoints_only(
                     df,
                     videooutname,
@@ -926,7 +926,7 @@ def proc_video(
                 tmpfolder = os.path.join(str(videofolder), "temp-" + vname)
                 if save_frames:
                     auxiliaryfunctions.attempt_to_make_folder(tmpfolder)
-                clip = vp(str(video))
+                clip = vp(video)
                 CreateVideoSlow(
                     videooutname,
                     clip,
@@ -1018,7 +1018,7 @@ def create_video(
         output_path = h5file.replace(".h5", f"{s}_labeled.mp4")
 
     clip = vp(
-        fname=str(video),
+        fname=video,
         sname=str(output_path),
         codec=codec,
         sw=bbox[1] - bbox[0] if display_cropped else "",
@@ -1286,7 +1286,7 @@ def create_video_with_all_detections(
 
             pcutoff = cfg["pcutoff"]
             dotsize = cfg["dotsize"]
-            clip = vp(fname=str(video), sname=str(outputname), codec="mp4v")
+            clip = vp(fname=video, sname=outputname, codec="mp4v")
             ny, nx = clip.height, clip.width
 
             bboxes_pcutoff = (
