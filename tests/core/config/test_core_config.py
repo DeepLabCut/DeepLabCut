@@ -58,7 +58,6 @@ def test_read_config_as_dict_raises_on_invalid_yaml(tmp_path):
         read_config_as_dict(config_path)
 
 
-@pytest.mark.skip("This preferred behavior is not yet implemented.")
 def test_read_config_as_dict_breaks_for_yaml_tags(tmp_path):
     """read_config breaks for YAML tags like !!python/tuple"""
     config_path = tmp_path / "config.yaml"
