@@ -37,7 +37,16 @@ class VideoProcessor(ABC):
     sh and sw are the output height and width respectively.
     """
 
-    def __init__(self, fname="", sname="", nframes=-1, fps=None, codec="X264", sh="", sw=""):
+    def __init__(
+        self,
+        fname: str = "",
+        sname: str = "",
+        nframes: int = -1,
+        fps: float = None,
+        codec: str = "X264",
+        sh: int = "",
+        sw: int = "",
+    ):
         self._fname = None
         self._sname = None
         self.FPS = None
