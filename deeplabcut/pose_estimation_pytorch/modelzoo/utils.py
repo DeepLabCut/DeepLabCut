@@ -19,8 +19,7 @@ from dlclibrary import download_huggingface_model
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.config.project_config import ProjectConfig
-from deeplabcut.pose_estimation_pytorch.config.make_pose_config import add_metadata
-from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
+from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig, PoseMetadata
 from deeplabcut.utils import auxiliaryfunctions
 
 # COCO category ID for the "person" class.
@@ -112,7 +111,10 @@ def load_super_animal_config(
 
     model_cfg_path = get_super_animal_model_config_path(model_name=model_name)
     model_config = PoseConfig.from_yaml(model_cfg_path)
-    model_config = add_metadata(project_config, model_config, model_cfg_path)
+    metadata = PoseMetadata.from_project_config(project_config)
+    metadata.pose_config_path = model_cfg_path
+    model_config.metadata = PoseMetadata.from_project_config(project_config)
+    model_config.metadata = metadata
     model_config = update_config(model_config, max_individuals, device)
 
     if detector_name is None and super_animal != "superanimal_humanbody":
