@@ -21,10 +21,13 @@ fourcc = cv2.VideoWriter_fourcc(*'MJPG')
 i.e. 'XVID'
 """
 
+import logging
 from abc import ABC, abstractmethod
 
 import cv2
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 class VideoProcessor(ABC):
@@ -37,6 +40,11 @@ class VideoProcessor(ABC):
     def __init__(self, fname="", sname="", nframes=-1, fps=None, codec="X264", sh="", sw=""):
         self._fname = None
         self._sname = None
+        self.FPS = None
+        self.vid = None
+        self.svid = None
+        self.sh = 0
+        self.sw = 0
         ###
         self.fname = fname
         self.sname = sname
@@ -63,9 +71,11 @@ class VideoProcessor(ABC):
                 self.svid = self.create_video()
 
         except Exception as ex:
-            print("Error: %s", ex)
+            logger.error("VideoProcessor initialization failed: %s", ex)
 
         if fps is not None:  # Overwrite the video's FPS
+            # NOTE @C-Achard 2026-06-09 improving checks here might break old API
+            # same for raising on missing FPS
             self.FPS = fps
 
     def load_frame(self):
