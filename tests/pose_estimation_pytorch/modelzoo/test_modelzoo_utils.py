@@ -30,7 +30,7 @@ def test_get_config_model_paths(super_animal, model_name, detector_name):
     assert isinstance(model_config, PoseConfig)
     if detector_name is None:
         assert model_config["method"].lower() == "bu"
-        assert "detector" not in model_config
+        assert model_config.detector is None
     else:
         assert model_config["method"].lower() == "td"
-        assert "detector" in model_config
+        assert model_config.detector is not None
