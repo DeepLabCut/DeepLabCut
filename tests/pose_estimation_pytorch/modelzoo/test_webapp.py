@@ -25,7 +25,7 @@ from deeplabcut.utils import auxiliaryfunctions
 def test_class_init(project_name, pose_model_type, max_individuals):
     inference_pipeline = SuperanimalPyTorchInference(project_name, pose_model_type, max_individuals=max_individuals)
 
-    assert isinstance(inference_pipeline, PoseConfig)
+    assert isinstance(inference_pipeline.config, PoseConfig)
     assert inference_pipeline.config["metadata"]["bodyparts"]
     assert len(inference_pipeline.config["metadata"]["bodyparts"]) > 0
 
