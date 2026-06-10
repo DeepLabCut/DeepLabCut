@@ -41,13 +41,21 @@ def create_new_project(
         experimenter (string): The name of the experimenter.
         videos (list[str]): A list of strings representing the full paths of the videos
             to include in the project. If the strings represent a directory instead of
-            a file, all videos of ``videotype`` will be imported.
+            a file, all videos of ``video_extensions`` will be imported.
         working_directory (string, optional): The directory where the project will be
             created. The default is the ``current working directory``.
         copy_videos (bool, optional): If True, the videos are copied to the ``videos``
             directory. If False, symlinks of the videos will be created in the
             ``project/videos`` directory; in the event of a failure to create symbolic
             links, videos will be moved instead. Defaults to False.
+        video_extensions (str | Sequence[str] | None, optional):
+            Controls how ``videos`` are filtered, based on file extension.
+            File paths and directory contents are treated differently:
+            - ``None`` (default): file paths are accepted as-is; directories are
+              scanned for files with a recognized video extension.
+            - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+              both file paths and directory contents are filtered by the given
+              extension(s). Defaults to None.
         multianimal (bool, optional): For creating a multi-animal project (introduced
             in DLC 2.2). Defaults to False.
         individuals (list[str] | None, optional): Relevant only if multianimal is True.

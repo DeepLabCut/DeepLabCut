@@ -460,7 +460,7 @@ def _video_inference_superanimal(
             Combined with ``project_name`` as ``project_name + "_" + model_name``.
         scale_list (list, optional): Target heights for multi-scale test-time
             augmentation. By default uses the original size.
-        videotype (string, optional): When ``videos`` is a directory, only videos with
+        video_extensions (string, optional): When ``videos`` is a directory, only videos with
             this extension are analyzed. Defaults to ``.mp4``.
         video_adapt (bool, optional): If True, apply video adaptation for less
             jittering results. Defaults to False.

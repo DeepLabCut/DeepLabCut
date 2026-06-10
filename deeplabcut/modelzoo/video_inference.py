@@ -101,7 +101,8 @@ def video_inference_superanimal(
             framework), the type of object detector to use for inference.
         scale_list (list): A list of different resolutions for the spatial pyramid. Used
             only for bottom up models.
-        videotype (str): Checks for the extension of the video in case the input to the
+        video_extensions (str | Sequence[str] | None, optional):
+            Checks for the extension of the video in case the input to the
             video is a directory. Only videos with this extension are analyzed. The
             default is ``.mp4``.
         dest_folder (str): The path to the folder where the results should be saved.

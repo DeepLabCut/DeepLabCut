@@ -193,7 +193,7 @@ def train_network(
                 batch_size=8,
                 epochs=100,
                 save_epochs=10,
-                displayiters=50,
+                display_iters=50,
             )
     """
     if engine is None:
@@ -382,14 +382,14 @@ def evaluate_network(
         If you do not want to plot and evaluate with shuffle set to 1.
 
             deeplabcut.evaluate_network(
-                '/analysis/project/reaching-task/config.yaml', Shuffles=[1],
+                '/analysis/project/reaching-task/config.yaml', shuffles=[1],
             )
 
         If you want to plot and evaluate with shuffle set to 0 and 1.
 
             deeplabcut.evaluate_network(
                 '/analysis/project/reaching-task/config.yaml',
-                Shuffles=[0, 1],
+                shuffles=[0, 1],
                 plotting=True,
             )
 
@@ -397,7 +397,7 @@ def evaluate_network(
 
             deeplabcut.evaluate_network(
                 '/analysis/project/reaching-task/config.yaml',
-                Shuffles=[1],
+                shuffles=[1],
                 plotting="individual",
             )
 
@@ -407,7 +407,7 @@ def evaluate_network(
 
             deeplabcut.evaluate_network(
                 "/analysis/project/reaching-task/config.yaml",
-                Shuffles=[0, 1],
+                shuffles=[0, 1],
                 pcutoff={"left_ear": 0.8, "right_ear": 0.8},
             )
 
@@ -595,7 +595,8 @@ def analyze_videos(
         config (str): Full path of the config.yaml file.
         videos (list[str]): A list of strings containing the full paths to videos for analysis or a path to
             the directory, where all the videos with same extension are stored.
-        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are filtered, based on file extension.
+        video_extensions (str | Sequence[str] | None, optional):  Controls
+            how ``videos`` are filtered, based on file extension.
             File paths and directory contents are treated differently:
             - ``None`` (default): file paths are accepted as-is; directories are
               scanned for files with a recognized video extension.
