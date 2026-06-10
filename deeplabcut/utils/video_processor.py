@@ -191,12 +191,12 @@ class VideoProcessor(ABC):
     def fps(self):
         return self._fps
 
-    @deprecated(replacement="VideoProcessor.video_fps", since="3.1")
+    # @deprecated(replacement="VideoProcessor.video_fps", since="3.1")
     @property
     def FPS(self):
         return self._fps
 
-    @deprecated(replacement="VideoProcessor.video_fps", since="3.1")
+    # @deprecated(replacement="VideoProcessor.video_fps", since="3.1")
     @FPS.setter
     def FPS(self, value):
         self.video_fps = None if value is None else float(value)
