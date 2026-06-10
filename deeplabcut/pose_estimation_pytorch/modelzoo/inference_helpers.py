@@ -122,33 +122,33 @@ def create_superanimal_inference_runners(
             - ``model_cfg`` is the resolved model configuration dict
 
     Example:
-        >>> from pathlib import Path
-        >>> import numpy as np
-        >>> from PIL import Image
-        >>> from deeplabcut.pose_estimation_pytorch.modelzoo.inference_helpers import (
-        ...     create_superanimal_inference_runners,
-        ... )
-        >>>
-        >>> img_paths = [
-        ...     "/path/to/images/frame_0000.png",
-        ...     "/path/to/images/frame_0001.png",
-        ...     "/path/to/images/frame_0002.png",
-        ... ]
-        >>> images = [np.asarray(Image.open(Path(p)).convert("RGB")) for p in img_paths]
-        >>>
-        >>> pose_runner, det_runner, model_cfg = create_superanimal_inference_runners(
-        ...     superanimal_name="superanimal_quadruped",
-        ...     model_name="hrnet_w32",
-        ...     detector_name="fasterrcnn_resnet50_fpn_v2",
-        ...     max_individuals=10,
-        ...     batch_size=1,
-        ...     detector_batch_size=1,
-        ... )
-        >>>
-        >>> det_preds = det_runner.inference(images) if det_runner is not None else None
-        >>> pose_inputs = list(zip(images, det_preds)) if det_preds is not None else images
-        >>> pose_preds = pose_runner.inference(pose_inputs)
-        >>> print(len(pose_preds))
+
+        from pathlib import Path
+        import numpy as np
+        from PIL import Image
+        from deeplabcut.pose_estimation_pytorch.modelzoo.inference_helpers import (
+            create_superanimal_inference_runners,
+        )
+        img_paths = [
+            "/path/to/images/frame_0000.png",
+            "/path/to/images/frame_0001.png",
+            "/path/to/images/frame_0002.png",
+        ]
+        images = [np.asarray(Image.open(Path(p)).convert("RGB")) for p in img_paths]
+
+        pose_runner, det_runner, model_cfg = create_superanimal_inference_runners(
+            superanimal_name="superanimal_quadruped",
+            model_name="hrnet_w32",
+            detector_name="fasterrcnn_resnet50_fpn_v2",
+            max_individuals=10,
+            batch_size=1,
+            detector_batch_size=1,
+        )
+
+        det_preds = det_runner.inference(images) if det_runner is not None else None
+        pose_inputs = list(zip(images, det_preds)) if det_preds is not None else images
+        pose_preds = pose_runner.inference(pose_inputs)
+        print(len(pose_preds))
     """
     if model_name.lower().startswith("fmpose3d"):
         raise NotImplementedError("FMPose3D is not supported in this helper. Use the FMPose3D inference API.")

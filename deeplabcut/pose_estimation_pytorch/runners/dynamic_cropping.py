@@ -37,22 +37,22 @@ class DynamicCropper:
             The margin used to expand an individuals bounding box before cropping it.
 
     Examples:
-        >>> import deeplabcut.pose_estimation_pytorch.models as models
+        import deeplabcut.pose_estimation_pytorch.models as models
         >>>
-        >>> model: models.PoseModel
-        >>> frames: torch.Tensor  # shape (num_frames, 3, H, W)
+        model: models.PoseModel
+        frames: torch.Tensor  # shape (num_frames, 3, H, W)
         >>>
-        >>> dynamic = DynamicCropper(threshold=0.6, margin=25)
-        >>> predictions = []
-        >>> for image in frames:
-        >>>     image = dynamic.crop(image)
+        dynamic = DynamicCropper(threshold=0.6, margin=25)
+        predictions = []
+        for image in frames:
+            image = dynamic.crop(image)
         >>>
-        >>>     outputs = model(image)
-        >>>     preds = model.get_predictions(outputs)
-        >>>     pose = preds["bodypart"]["poses"]
+            outputs = model(image)
+            preds = model.get_predictions(outputs)
+            pose = preds["bodypart"]["poses"]
         >>>
-        >>>     dynamic.update(pose)
-        >>>     predictions.append(pose)
+            dynamic.update(pose)
+            predictions.append(pose)
         >>>
     """
 

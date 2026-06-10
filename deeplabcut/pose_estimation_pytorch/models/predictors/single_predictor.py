@@ -96,9 +96,9 @@ class HeatmapPredictor(BasePredictor):
             Y and X indices of the top values.
 
         Example:
-            >>> predictor = HeatmapPredictor(location_refinement=True, locref_std=7.2801)
-            >>> heatmap = torch.rand(32, 17, 64, 64)
-            >>> Y, X = predictor.get_top_values(heatmap)
+            predictor = HeatmapPredictor(location_refinement=True, locref_std=7.2801)
+            heatmap = torch.rand(32, 17, 64, 64)
+            Y, X = predictor.get_top_values(heatmap)
         """
         batchsize, ny, nx, num_joints = heatmap.shape
         heatmap_flat = heatmap.reshape(batchsize, nx * ny, num_joints)
@@ -118,11 +118,11 @@ class HeatmapPredictor(BasePredictor):
             Pose predictions of the format: (batch_size, num_people = 1, num_joints, 3)
 
         Example:
-            >>> predictor = HeatmapPredictor(location_refinement=True, locref_std=7.2801)
-            >>> heatmap = torch.rand(32, 64, 64, 17)
-            >>> locref = torch.rand(32, 64, 64, 17, 2)
-            >>> scale_factors = (0.5, 0.5)
-            >>> poses = predictor.get_pose_prediction(heatmap, locref, scale_factors)
+            predictor = HeatmapPredictor(location_refinement=True, locref_std=7.2801)
+            heatmap = torch.rand(32, 64, 64, 17)
+            locref = torch.rand(32, 64, 64, 17, 2)
+            scale_factors = (0.5, 0.5)
+            poses = predictor.get_pose_prediction(heatmap, locref, scale_factors)
         """
         y, x = self.get_top_values(heatmap)  # y, x: (batch_size, num_joints)
 

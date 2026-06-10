@@ -81,16 +81,18 @@ def superanimal_analyze_images(
         model_name: str
             The name of the pose model architecture to use for inference. To get a list
             of available models for a SuperAnimal, call:
-                >>> import dlclibrary
-                >>> superanimal_name = "superanimal_topviewmouse"
-                >>> dlclibrary.get_available_models(superanimal_name)
+
+                import dlclibrary
+                superanimal_name = "superanimal_topviewmouse"
+                dlclibrary.get_available_models(superanimal_name)
 
         detector_name: str
             The name of the detector architecture to use for inference. To get a list
             of available detectors for a SuperAnimal, call:
-                >>> import dlclibrary
-                >>> superanimal_name = "superanimal_topviewmouse"
-                >>> dlclibrary.get_available_detectors(superanimal_name)
+
+                import dlclibrary
+                superanimal_name = "superanimal_topviewmouse"
+                dlclibrary.get_available_detectors(superanimal_name)
 
         images: str, Path, list[str], list[Path]
             The images to analyze. Can either be a directory containing images, or
@@ -123,10 +125,11 @@ def superanimal_analyze_images(
         customized_model_config: str | Path | dict | None
             A customized SuperAnimal model config, as an alternative to the default
             SuperAnimal model config. You can get the default SuperAnimal config with:
-                >>> import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
-                >>> config = modelzoo.load_super_animal_config(
-                >>>     super_animal, model_name, detector_name,
-                >>> )
+
+                import deeplabcut.pose_estimation_pytorch.modelzoo as modelzoo
+                config = modelzoo.load_super_animal_config(
+                    super_animal, model_name, detector_name,
+                )
 
         customized_pose_checkpoint: str | None
             A customized SuperAnimal pose checkpoint, as an alternative to the
@@ -140,19 +143,19 @@ def superanimal_analyze_images(
         The predictions made by the model for each image.
 
     Examples:
-        >>> from deeplabcut.pose_estimation_pytorch.apis import (
-        >>>     superanimal_analyze_images
-        >>> )
-        >>> predictions = superanimal_analyze_images(
-        >>>     superanimal_name="superanimal_topviewmouse",
-        >>>     model_name="resnet_50",
-        >>>     detector_name="fasterrcnn_mobilenet_v3_large_fpn",
-        >>>     images="test_mouse_images",
-        >>>     max_individuals=3,
-        >>>     out_folder="test_mouse_images_labeled",
-        >>>     device="cuda:0",
-        >>>     pose_threshold=0.1,
-        >>> )
+        from deeplabcut.pose_estimation_pytorch.apis import (
+            superanimal_analyze_images
+        )
+        predictions = superanimal_analyze_images(
+            superanimal_name="superanimal_topviewmouse",
+            model_name="resnet_50",
+            detector_name="fasterrcnn_mobilenet_v3_large_fpn",
+            images="test_mouse_images",
+            max_individuals=3,
+            out_folder="test_mouse_images_labeled",
+            device="cuda:0",
+            pose_threshold=0.1,
+        )
     """
     out_folder = Path(out_folder)
     out_folder.mkdir(exist_ok=True, parents=True)

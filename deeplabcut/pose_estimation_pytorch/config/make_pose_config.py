@@ -308,38 +308,38 @@ def make_basic_project_config(
         Creating a `pytorch_config` for a ResNet50 backbone with a part-affinity head (
         as multi_animal=True and top_down=False)
 
-        >>> import deeplabcut.pose_estimation_pytorch as pep
-        >>> project_config = pep.config.make_basic_project_config(
-        >>>     dataset_path="/path/coco",
-        >>>     bodyparts=["nose", "left_eye", "right_eye"],
-        >>>     max_individuals=12,
-        >>>     multi_animal=True,
-        >>> )
-        >>> model_config = pep.config.make_pytorch_pose_config(
-        >>>     project_config=project_config,
-        >>>     pose_config_path="/path/coco/models/resnet50/pytorch_config.yaml",
-        >>>     net_type="resnet_50",
-        >>>     top_down=False,
-        >>>     save=True,
-        >>> )
+        import deeplabcut.pose_estimation_pytorch as pep
+        project_config = pep.config.make_basic_project_config(
+            dataset_path="/path/coco",
+            bodyparts=["nose", "left_eye", "right_eye"],
+            max_individuals=12,
+            multi_animal=True,
+        )
+        model_config = pep.config.make_pytorch_pose_config(
+            project_config=project_config,
+            pose_config_path="/path/coco/models/resnet50/pytorch_config.yaml",
+            net_type="resnet_50",
+            top_down=False,
+            save=True,
+        )
 
         Creating a `pytorch_config` for a ResNet50 backbone with a simple heatmap head
         (as the project is single-animal):
 
-        >>> import deeplabcut.pose_estimation_pytorch as pep
-        >>> project_config = pep.config.make_basic_project_config(
-        >>>     dataset_path="/path/coco",
-        >>>     bodyparts=["nose", "left_eye", "right_eye"],
-        >>>     max_individuals=1,
-        >>>     multi_animal=False,
-        >>> )
-        >>> model_config = pep.config.make_pytorch_pose_config(
-        >>>     project_config=project_config,
-        >>>     pose_config_path="/path/coco/models/resnet50/pytorch_config.yaml",
-        >>>     net_type="resnet_50",
-        >>>     top_down=False,
-        >>>     save=True,
-        >>> )
+        import deeplabcut.pose_estimation_pytorch as pep
+        project_config = pep.config.make_basic_project_config(
+            dataset_path="/path/coco",
+            bodyparts=["nose", "left_eye", "right_eye"],
+            max_individuals=1,
+            multi_animal=False,
+        )
+        model_config = pep.config.make_pytorch_pose_config(
+            project_config=project_config,
+            pose_config_path="/path/coco/models/resnet50/pytorch_config.yaml",
+            net_type="resnet_50",
+            top_down=False,
+            save=True,
+        )
     """
     return dict(
         project_path=str(dataset_path),

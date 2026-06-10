@@ -31,9 +31,9 @@ def make_sine_position_embedding(
         Sine position embeddings with shape (batch_size, d_model, h * w).
 
     Example:
-        >>> h, w, d_model = 10, 20, 512
-        >>> pos_emb = make_sine_position_embedding(h, w, d_model)
-        >>> print(pos_emb.shape)  # Output: torch.Size([1, 512, 200])
+        h, w, d_model = 10, 20, 512
+        pos_emb = make_sine_position_embedding(h, w, d_model)
+        print(pos_emb.shape)  # Output: torch.Size([1, 512, 200])
     """
     area = torch.ones(1, h, w)
     y_embed = area.cumsum(1, dtype=torch.float32)

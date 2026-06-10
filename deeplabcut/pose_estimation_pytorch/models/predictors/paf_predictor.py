@@ -126,10 +126,10 @@ class PartAffinityFieldPredictor(BasePredictor):
             A dictionary containing a "poses" key with the output tensor as value.
 
         Example:
-            >>> predictor = PartAffinityFieldPredictor(num_animals=3, location_refinement=True, locref_stdev=7.2801)
-            >>> output = (torch.rand(32, 17, 64, 64), torch.rand(32, 34, 64, 64), torch.rand(32, 136, 64, 64))
-            >>> stride = 8
-            >>> poses = predictor.forward(stride, output)
+            predictor = PartAffinityFieldPredictor(num_animals=3, location_refinement=True, locref_stdev=7.2801)
+            output = (torch.rand(32, 17, 64, 64), torch.rand(32, 34, 64, 64), torch.rand(32, 136, 64, 64))
+            stride = 8
+            poses = predictor.forward(stride, output)
         """
         heatmaps = outputs["heatmap"]  # (batch_size, num_joints, height, width)
         locrefs = outputs["locref"]  # (batch_size, num_joints*2, height, width)
