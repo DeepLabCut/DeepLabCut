@@ -876,6 +876,7 @@ class TrackletVisualizer:
         df = data.iloc[inds]
 
         # Uncertain keypoints are ignored
+        # TODO @deruyter92 2026-06-10: pandas migration 3.0 forbids in-place mutations of dataframe subset views.
         def filter_low_prob(cols, prob):
             mask = cols.iloc[:, 2] < prob
             cols.loc[mask] = np.nan

@@ -326,6 +326,8 @@ def evaluate_multianimal_full(
                         # Form 2D array of shape (n_rows, 4) where the last dim is
                         # (sample_index, peak_y, peak_x, bpt_index) to slice the PAFs.
                         temp = df.reset_index(level="bodyparts").dropna()
+                        # TODO @deruyter92 2026-06-10: pandas migration 3.0 - this will break if bodyparts is a str type
+                        # and future.no_silent_downcasting is also removed in pandas 3.0.
                         with pd.option_context("future.no_silent_downcasting", True):
                             temp["bodyparts"] = (
                                 temp["bodyparts"]
@@ -364,7 +366,8 @@ def evaluate_multianimal_full(
 
                         coords_pred = pred["coordinates"][0]
                         probs_pred = pred["confidence"]
-                        for bpt, xy_gt in df.groupby(level="bodyparts"):
+                        for bpt, xy_gt in df.T.groupby(level="bodyparts"):
+                            xy_gt = xy_gt.T
                             inds_gt = np.flatnonzero(np.all(~np.isnan(xy_gt), axis=1))
                             n_joint = joints.index(bpt)
                             xy = coords_pred[n_joint]
@@ -491,9 +494,9 @@ def evaluate_multianimal_full(
 
                         print("##########################################")
                         print("Average Euclidean distance to GT per individual (in pixels; test-only)")
-                        print(error_masked.iloc[testIndices].groupby("individuals", axis=1).mean().mean().to_string())
+                        print(error_masked.iloc[testIndices].T.groupby("individuals").mean().T.mean().to_string())
                         print("Average Euclidean distance to GT per bodypart (in pixels; test-only)")
-                        print(error_masked.iloc[testIndices].groupby("bodyparts", axis=1).mean().mean().to_string())
+                        print(error_masked.iloc[testIndices].T.groupby("bodyparts").mean().T.mean().to_string())
 
                     PredicteData["metadata"] = {
                         "nms radius": test_pose_cfg["nmsradius"],
