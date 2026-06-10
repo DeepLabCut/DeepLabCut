@@ -28,6 +28,8 @@ from typing import Literal
 import cv2
 import numpy as np
 
+from deeplabcut.utils.deprecation import deprecated
+
 logger = logging.getLogger(__name__)
 
 
@@ -173,22 +175,28 @@ class VideoProcessor(ABC):
         self._nframes = int(value)
 
     ### Legacy compatibility methods
+    @deprecated(replacement="VideoProcessor.i", since="3.1")
     def counter(self):
         return self.i
 
+    @deprecated(replacement="VideoProcessor.h", since="3.1")
     def height(self):
         return self._h
 
+    @deprecated(replacement="VideoProcessor.w", since="3.1")
     def width(self):
         return self._w
 
+    @deprecated(replacement="VideoProcessor.video_fps", since="3.1")
     def fps(self):
         return self._fps
 
+    @deprecated(replacement="VideoProcessor.video_fps", since="3.1")
     @property
     def FPS(self):
         return self._fps
 
+    @deprecated(replacement="VideoProcessor.video_fps", since="3.1")
     @FPS.setter
     def FPS(self, value):
         self.video_fps = None if value is None else float(value)
