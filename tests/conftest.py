@@ -36,6 +36,36 @@ REQUIRED_TEST_FILES = [
 ]
 
 
+def _install_certifi_https_context_on_windows() -> None:
+    """Use certifi for stdlib HTTPS requests on Windows test runners."""
+    if os.name != "nt":
+        return
+
+    try:
+        import certifi
+    except ImportError:
+        return
+
+    def _create_certifi_https_context(
+        purpose=ssl.Purpose.SERVER_AUTH,
+        *,
+        cafile=None,
+        capath=None,
+        cadata=None,
+    ):
+        return ssl.create_default_context(
+            purpose=purpose,
+            cafile=cafile or certifi.where(),
+            capath=capath,
+            cadata=cadata,
+        )
+
+    ssl._create_default_https_context = _create_certifi_https_context
+
+
+_install_certifi_https_context_on_windows()
+
+
 def _urlopen_with_certifi_fallback(url: str):
     """Open a URL, falling back to certifi if the default SSL context fails."""
     try:
