@@ -13,8 +13,13 @@ from utils import (
     run,
 )
 
-import deeplabcut.utils.auxiliaryfunctions as af
-from deeplabcut.compat import Engine
+# Enable pandas future mode warnings if DLC_PANDAS_FUTURE env var is set
+from deeplabcut.utils.pandas_future_mode import configure_pandas_future_if_enabled
+
+configure_pandas_future_if_enabled()
+
+import deeplabcut.utils.auxiliaryfunctions as af  # noqa: E402
+from deeplabcut.compat import Engine  # noqa: E402
 
 
 def main(
