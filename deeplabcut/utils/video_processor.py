@@ -42,10 +42,10 @@ class VideoProcessor(ABC):
         fname: str = "",
         sname: str = "",
         nframes: int = -1,
-        fps: float = None,
+        fps: float | None = None,
         codec: str = "X264",
-        sh: int = "",
-        sw: int = "",
+        sh: int | None = None,
+        sw: int | None = None,
     ):
         self._fname = None
         self._sname = None
@@ -71,7 +71,7 @@ class VideoProcessor(ABC):
                 self.sh = 0
                 self.sw = 0
             if self.sname != "":
-                if sh == "" and sw == "":
+                if sh is None and sw is None:
                     self.sh = self.h
                     self.sw = self.w
                 else:
@@ -99,7 +99,7 @@ class VideoProcessor(ABC):
 
     @fname.setter
     def fname(self, value):
-        self._fname = str(value)
+        self._fname = "" if value in (None, "") else str(value)
 
     @property
     def sname(self):
@@ -107,7 +107,7 @@ class VideoProcessor(ABC):
 
     @sname.setter
     def sname(self, value):
-        self._sname = str(value)
+        self._sname = "" if value in (None, "") else str(value)
 
     @property
     def height(self):
@@ -257,7 +257,7 @@ class VideoProcessorCV(VideoProcessor):
             ``None`` frames. Non-``None`` frames are converted from RGB to BGR
             before being passed to OpenCV.
         """
-        if frame is not None:
+        if frame is not None and self.svid is not None:
             self.svid.write(np.flip(frame, 2))
 
     def close(self):
