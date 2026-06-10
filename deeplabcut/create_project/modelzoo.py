@@ -158,7 +158,9 @@ def create_pretrained_project(
             None.
         copy_videos (bool, optional): If this is set to True, the videos are copied to
             the ``videos`` directory. If it is False, symlink of the videos are copied
-            to the project/videos directory. Note: on Windows, True is necessary when not running in Administrator mode. The same applies whenever symlinks are disabled or unsupported.
+            to the project/videos directory.
+            Note: on Windows, True is necessary when not running in Administrator mode.
+            The same applies whenever symlinks are disabled or unsupported.
             Defaults to False.
         analyzevideo (bool, optional): If true, then the video is analyzed and a labeled
             video is created. If false, then only the project will be created and the

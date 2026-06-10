@@ -514,7 +514,8 @@ def return_evaluate_network_data(
         comparison_bodyparts (list of bodyparts): The average error will be computed for those body parts only (has to
             be a subset of the body parts). Defaults to "all".
         snapshotindex (str or int, optional): The index of the snapshot to return the evaluation data for. This can be
-            an integer (e.g. 5000) or a string (e.g. "snapshot-5000"). If None, the snapshot index specified in the project configuration file will be used. Defaults to None.
+            an integer (e.g. 5000) or a string (e.g. "snapshot-5000").
+            If None, the snapshot index specified in the project configuration file will be used. Defaults to None.
         rescale (bool): Evaluate the model at the 'global_scale' variable (as set in the test/pose_config.yaml file for
             a particular project). I.e. every image will be resized according to that scale and prediction will be
             compared to the resized ground truth. The error will be reported in pixels at rescaled to the *original*
@@ -532,7 +533,11 @@ def return_evaluate_network_data(
 
         If you want to plot:
 
-            deeplabcut.return_evaluate_network_data("/analysis/project/reaching-task/config.yaml", shuffle=[1], plotting=True)
+            deeplabcut.return_evaluate_network_data(
+                "/analysis/project/reaching-task/config.yaml",
+                shuffle=[1],
+                plotting=True
+            )
     """
     if engine is None:
         engine = get_shuffle_engine(
@@ -868,7 +873,8 @@ def create_tracking_dataset(
             stored.
         track_method (str): Specifies the tracker used to generate the pose estimation data. Must be either 'box',
             'skeleton', or 'ellipse'.
-        video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are filtered, based on file extension.
+        video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are filtered,
+            based on file extension.
             File paths and directory contents are treated differently:
             - ``None`` (default): file paths are accepted as-is; directories are
               scanned for files with a recognized video extension.
@@ -1206,7 +1212,8 @@ def convert_detections2tracklets(
         config (string): Full path of the config.yaml file as a string.
         videos (list): A list of strings containing the full paths to videos for analysis or a path to the directory,
             where all the videos with same extension are stored.
-        video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are filtered, based on file extension.
+        video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are filtered,
+            based on file extension.
             File paths and directory contents are treated differently: - ``None`` (default): file paths are accepted
             as-is; directories are scanned for files with a recognized video extension. - ``str`` or ``Sequence[str]``
             (e.g. ``"mp4"`` or ``["mp4", "avi"]``): both file paths and directory contents are filtered by the given
@@ -1475,8 +1482,8 @@ def extract_save_all_maps(
         shuffle (int): Shuffle index of the training dataset. Defaults to 1.
         trainingsetindex (int, optional): Integer specifying which TrainingsetFraction to use. By default the first
             (note that TrainingFraction is a list in config.yaml). This variable can also be set to "all".
-        comparison_bodyparts (list of bodyparts): The average error will be computed for those body parts only (has to be
-            a subset of the body parts). Defaults to "all".
+        comparison_bodyparts (list of bodyparts): The average error will be computed for those body parts only
+            (has to be a subset of the body parts). Defaults to "all".
         extract_paf (bool): Extract part affinity fields by default. Note that turning it off will make the function
             much faster.
         all_paf_in_one (bool): By default, all part affinity fields are displayed on a single frame. If false,
