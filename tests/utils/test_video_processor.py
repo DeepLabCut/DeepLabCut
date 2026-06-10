@@ -33,11 +33,11 @@ def test_video_processor_cv_reads_basic_metadata(tmp_path):
     clip = VideoProcessorCV(fname=str(video_path))
 
     try:
-        assert clip.width == 12
-        assert clip.height == 10
-        assert clip.frame_count == 4
-        assert clip.counter == 0
-        assert clip.fps > 0
+        assert clip.w == 12
+        assert clip.h == 10
+        assert clip.nframes == 4
+        assert clip.i == 0
+        assert clip.video_fps > 0
         assert clip.nc == 3
     finally:
         clip.close()
@@ -54,7 +54,7 @@ def test_video_processor_cv_load_frame_returns_rgb_and_increments_counter(tmp_pa
 
         assert frame is not None
         assert frame.shape == (6, 8, 3)
-        assert clip.counter == 1
+        assert clip.i == 1
 
         # Compression can slightly alter values, so verify channel ordering by relative values.
         assert (
@@ -73,11 +73,11 @@ def test_video_processor_cv_load_frame_eof_does_not_increment_counter(tmp_path):
 
     try:
         assert clip.load_frame() is not None
-        assert clip.counter == 1
+        assert clip.i == 1
 
         eof_frame = clip.load_frame()
         assert eof_frame is None
-        assert clip.counter == 1
+        assert clip.i == 1
     finally:
         clip.close()
 
@@ -89,7 +89,7 @@ def test_video_processor_cv_respects_nframes_cap(tmp_path):
     clip = VideoProcessorCV(fname=str(video_path), nframes=2)
 
     try:
-        assert clip.frame_count == 2
+        assert clip.nframes == 2
     finally:
         clip.close()
 
@@ -101,7 +101,7 @@ def test_video_processor_cv_nframes_minus_one_uses_all_frames(tmp_path):
     clip = VideoProcessorCV(fname=str(video_path), nframes=-1)
 
     try:
-        assert clip.frame_count == 3
+        assert clip.nframes == 3
     finally:
         clip.close()
 
@@ -113,7 +113,7 @@ def test_video_processor_cv_fps_override(tmp_path):
     clip = VideoProcessorCV(fname=str(video_path), fps=123.0)
 
     try:
-        assert clip.fps == 123.0
+        assert clip.video_fps == 123.0
     finally:
         clip.close()
 

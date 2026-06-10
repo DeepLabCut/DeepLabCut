@@ -108,7 +108,7 @@ def CreateVideo(
     else:
         ny, nx = clip.height, clip.width
 
-    fps = clip.fps
+    fps = clip.video_fps
     if isinstance(fps, float):
         if fps * 1000 > 65535:
             fps = round(fps)
@@ -254,7 +254,7 @@ def CreateVideoSlow(
     else:
         ny, nx = clip.height, clip.width
 
-    fps = clip.fps
+    fps = clip.video_fps
     if outputframerate is None:  # by def. same as input rate.
         outputframerate = fps
 
@@ -919,7 +919,7 @@ def proc_video(
                     skeleton_color=skeleton_color,
                     color_by=color_by,
                     colormap=cfg["colormap"],
-                    fps=clip.fps,
+                    fps=clip.video_fps,
                 )
                 clip.close()
             elif not fastmode:
@@ -1287,7 +1287,7 @@ def create_video_with_all_detections(
             pcutoff = cfg["pcutoff"]
             dotsize = cfg["dotsize"]
             clip = vp(fname=video, sname=outputname, codec="mp4v")
-            ny, nx = clip.height, clip.width
+            ny, nx = clip.h, clip.w
 
             bboxes_pcutoff = (
                 metadata.get("data", {})

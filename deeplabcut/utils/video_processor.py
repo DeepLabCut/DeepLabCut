@@ -23,6 +23,7 @@ i.e. 'XVID'
 
 import logging
 from abc import ABC, abstractmethod
+from typing import Literal
 
 import cv2
 import numpy as np
@@ -31,10 +32,40 @@ logger = logging.getLogger(__name__)
 
 
 class VideoProcessor(ABC):
-    """Base class for a video processing unit, implementation is required for video
-    loading and saving.
+    """Abstract base class for video reading and writing.
 
-    sh and sw are the output height and width respectively.
+    Subclasses implement backend-specific video loading, metadata extraction,
+    output video creation, frame reading, frame writing, and cleanup.
+
+    Args:
+        fname (str): Path to the input video. If empty, no input video is opened.
+        sname (str): Path to the output video. If empty, no output video is created.
+        nframes (int): Number of frames to process. ``-1`` means all frames.
+        fps (float | None): Optional FPS override.
+        codec (str): FourCC codec string used for output videos.
+        sh (int | Literal[""] | None): Output video height. ``""`` and ``None``
+            mean use the input height.
+        sw (int | Literal[""] | None): Output video width. ``""`` and ``None``
+            mean use the input width.
+
+    Attributes:
+        fname (str): Input video path.
+        sname (str): Output video path.
+        nframes (int): Number of frames to process.
+        video_fps (float | None): Video frame rate.
+        FPS (float | None): Legacy alias for ``video_fps``.
+        h (int): Input video height.
+        w (int): Input video width.
+        nc (int): Number of channels.
+        i (int): Number of successfully loaded frames.
+        vid: Backend-specific input video object.
+        svid: Backend-specific output video object.
+        sh (int): Output video height.
+        sw (int): Output video width.
+
+    Notes:
+        ``height()``, ``width()``, ``fps()``, ``counter()``, and
+        ``frame_count()`` are retained as methods for backwards compatibility.
     """
 
     def __init__(
@@ -44,23 +75,23 @@ class VideoProcessor(ABC):
         nframes: int = -1,
         fps: float | None = None,
         codec: str = "X264",
-        sh: int | None = None,
-        sw: int | None = None,
+        sh: int | Literal[""] | None = "",
+        sw: int | Literal[""] | None = "",
     ):
         self._fname = None
         self._sname = None
-        self.FPS = None
+        self._fps = None
+        self._nframes = None
+        self._h = 0
+        self._w = 0
         self.vid = None
         self.svid = None
         self.sh = 0
         self.sw = 0
-        ###
         self.fname = fname
         self.sname = sname
-        self.nframes = nframes
         self.codec = codec
-        self.h = 0
-        self.w = 0
+        self.nframes = nframes
         self.nc = 3
         self.i = 0
 
@@ -71,9 +102,9 @@ class VideoProcessor(ABC):
                 self.sh = 0
                 self.sw = 0
             if self.sname != "":
-                if sh is None and sw is None:
-                    self.sh = self.h
-                    self.sw = self.w
+                if sh in ("", None) and sw in (None, ""):
+                    self.sh = self._h
+                    self.sw = self._w
                 else:
                     self.sw = sw
                     self.sh = sh
@@ -85,7 +116,7 @@ class VideoProcessor(ABC):
         if fps is not None:  # Overwrite the video's FPS
             # NOTE @C-Achard 2026-06-09 improving checks here might break old API
             # same for raising on missing FPS
-            self.FPS = fps
+            self.video_fps = fps
 
     def load_frame(self):
         frame = self._read_frame()
@@ -110,24 +141,62 @@ class VideoProcessor(ABC):
         self._sname = "" if value in (None, "") else str(value)
 
     @property
-    def height(self):
-        return self.h
+    def h(self):
+        return self._h
 
     @property
-    def width(self):
-        return self.w
+    def w(self):
+        return self._w
+
+    @h.setter
+    def h(self, value):
+        self._h = int(value)
+
+    @w.setter
+    def w(self, value):
+        self._w = int(value)
 
     @property
-    def fps(self):
-        return self.FPS
+    def video_fps(self):
+        return self._fps
+
+    @video_fps.setter
+    def video_fps(self, value):
+        self._fps = None if value is None else float(value)
 
     @property
+    def nframes(self):
+        return self._nframes
+
+    @nframes.setter
+    def nframes(self, value):
+        self._nframes = int(value)
+
+    ### Legacy compatibility methods
     def counter(self):
         return self.i
 
+    def height(self):
+        return self._h
+
+    def width(self):
+        return self._w
+
+    def fps(self):
+        return self._fps
+
     @property
+    def FPS(self):
+        return self._fps
+
+    @FPS.setter
+    def FPS(self, value):
+        self.video_fps = None if value is None else float(value)
+
     def frame_count(self):
-        return self.nframes
+        return self._nframes
+
+    ###
 
     @abstractmethod
     def get_video(self):
@@ -206,7 +275,7 @@ class VideoProcessorCV(VideoProcessor):
         self.w = int(self.vid.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.h = int(self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
         all_frames = int(self.vid.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.FPS = self.vid.get(cv2.CAP_PROP_FPS)
+        self.video_fps = self.vid.get(cv2.CAP_PROP_FPS)
         self.nc = 3
 
         if self.nframes == -1 or self.nframes > all_frames:
@@ -224,7 +293,7 @@ class VideoProcessorCV(VideoProcessor):
             string, preserving the historical OpenCV behavior.
         """
         fourcc = cv2.VideoWriter_fourcc(*self.codec)
-        return cv2.VideoWriter(self.sname, fourcc, self.FPS, (self.sw, self.sh), True)
+        return cv2.VideoWriter(self.sname, fourcc, self.video_fps, (self.sw, self.sh), True)
 
     def _read_frame(self):
         """Read the next video frame.
@@ -257,8 +326,12 @@ class VideoProcessorCV(VideoProcessor):
             ``None`` frames. Non-``None`` frames are converted from RGB to BGR
             before being passed to OpenCV.
         """
-        if frame is not None and self.svid is not None:
+        if frame is None:
+            return
+        if self.svid is not None:
             self.svid.write(np.flip(frame, 2))
+        else:
+            logger.warning(f"Could not write video because no output video writer is open for {self.sname}")
 
     def close(self):
         """Release OpenCV reader and writer resources.
