@@ -11,6 +11,7 @@
 
 import os
 import pickle
+import ssl
 import urllib.request
 import zipfile
 from io import BytesIO
@@ -35,10 +36,24 @@ REQUIRED_TEST_FILES = [
 ]
 
 
+def _urlopen_with_certifi_fallback(url: str):
+    """Open a URL, falling back to certifi if the default SSL context fails."""
+    try:
+        return urllib.request.urlopen(url)
+    except ssl.SSLError as e:
+        try:
+            import certifi
+        except ImportError:
+            raise RuntimeError from e
+
+        context = ssl.create_default_context(cafile=certifi.where())
+        return urllib.request.urlopen(url, context=context)
+
+
 def unzip_from_url(url: str, dest_folder: str) -> None:
     """Directly extract files without writing the archive to disk."""
     os.makedirs(dest_folder, exist_ok=True)
-    resp = urllib.request.urlopen(url)
+    resp = _urlopen_with_certifi_fallback(url)
     with zipfile.ZipFile(BytesIO(resp.read())) as zf:
         for member in tqdm(zf.infolist(), desc="Extracting"):
             try:
