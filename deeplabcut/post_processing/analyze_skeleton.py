@@ -188,7 +188,7 @@ def analyzeskeleton(
         config (str): Full path of the config.yaml file.
         videos (list[str]): The full paths to videos for analysis or a path to the
             directory, where all the videos with same extension are stored.
-        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are
+        video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
             filtered, based on file extension. File paths and directory contents are
             treated differently:
             - ``None`` (default): file paths are accepted as-is; directories are
