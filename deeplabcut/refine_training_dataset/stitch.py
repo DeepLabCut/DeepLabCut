@@ -37,6 +37,7 @@ from deeplabcut.core.trackingutils import (
 )
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 
 class Tracklet:
@@ -957,10 +958,11 @@ class TrackletStitcher:
                 return path
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def stitch_tracklets(
     config_path,
     videos,
-    videotype: str | Sequence[str] | None = None,
+    video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     n_tracks=None,
@@ -985,7 +987,7 @@ def stitch_tracklets(
         config_path (str): Path to the main project config.yaml file.
         videos (list): Full paths to videos for analysis, or a directory where all videos
             with the same extension are stored.
-        videotype (str | Sequence[str] | None, optional): Controls how ``videos`` are
+        video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
             filtered, based on file extension. File paths and directory contents are
             treated differently:
             - ``None`` (default): file paths are accepted as-is; directories are
@@ -1049,7 +1051,7 @@ def stitch_tracklets(
     Returns:
         TrackletStitcher: A TrackletStitcher object.
     """
-    vids = collect_video_paths(videos, extensions=videotype)
+    vids = collect_video_paths(videos, extensions=video_extensions)
     if not vids:
         print("No video(s) found. Please check your path!")
         return

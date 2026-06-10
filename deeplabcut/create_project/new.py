@@ -13,20 +13,23 @@
 import os
 import shutil
 import warnings
+from collections.abc import Sequence
 from pathlib import Path
 
 from deeplabcut import DEBUG
 from deeplabcut.core.engine import Engine
-from deeplabcut.utils.auxfun_videos import VideoReader
+from deeplabcut.utils.auxfun_videos import VideoReader, collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def create_new_project(
     project: str,
     experimenter: str,
     videos: list[str],
     working_directory: str | None = None,
     copy_videos: bool = False,
-    videotype: str = "",
+    video_extensions: str | Sequence[str] | None = None,
     multianimal: bool = False,
     individuals: list[str] | None = None,
 ):
@@ -141,29 +144,18 @@ def create_new_project(
 
     # Add all videos in the folder. Multiple folders can be passed in a list,
     # similar to the video files. Folders and video files can also be passed!
-    collected_videos = []
-    paths = [Path(p) for p in videos]
-    for i in paths:
-        # Check if it is a folder
-        if i.is_dir():
-            vids_in_dir = [p for p in i.iterdir() if str(p).lower().endswith(videotype)]
-            if len(vids_in_dir) == 0:
-                print("No videos found in", i)
-                print(
-                    "Perhaps change the videotype, which is currently set to:",
-                    videotype,
-                )
-            else:
-                collected_videos += vids_in_dir
-                print(
-                    len(vids_in_dir),
-                    " videos from the directory",
-                    i,
-                    "were added to the project.",
-                )
-        else:
-            if i.is_file():
-                collected_videos.append(i)
+    collected_videos: list[Path] = collect_video_paths(videos, extensions=video_extensions)
+
+    # TODO @deruyter92 2026-05-20: Move this verbosity block to `collect_video_paths` instead
+    files_per_dir: dict[Path, int] = {}
+    for f in collected_videos:
+        files_per_dir[f.parent] = files_per_dir.get(f.parent, 0) + 1
+    for dir, count in files_per_dir.items():
+        print(f"Found {count} videos in {dir}")
+    for p in (Path(v) for v in videos if Path(v).is_dir()):
+        if p.resolve() not in {d.resolve() for d in files_per_dir}:
+            print(f"No videos found in {p}")
+            print(f"Perhaps change the video_extensions, which is currently set to: {video_extensions}")
 
     videos = collected_videos
     dirs = [data_path / i.stem for i in videos]

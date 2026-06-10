@@ -11,11 +11,14 @@
 
 from collections.abc import Sequence
 
+from deeplabcut.utils.deprecation import renamed_parameter
 
+
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def transformer_reID(
     config: str,
     videos: list[str],
-    videotype: str | Sequence[str] | None = None,
+    video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     track_method: str = "ellipse",
@@ -99,7 +102,7 @@ def transformer_reID(
         config,
         videos,
         track_method,
-        videotype=videotype,
+        video_extensions=video_extensions,
         shuffle=shuffle,
         trainingsetindex=trainingsetindex,
         modelprefix=modelprefix,
@@ -122,7 +125,7 @@ def transformer_reID(
         config,
         DLCscorer,
         videos,
-        videotype=videotype,
+        video_extensions=video_extensions,
         train_frac=train_frac,
         modelprefix=modelprefix,
         train_epochs=train_epochs,
@@ -138,7 +141,7 @@ def transformer_reID(
     deeplabcut.stitch_tracklets(
         config,
         videos,
-        videotype=videotype,
+        video_extensions=video_extensions,
         shuffle=shuffle,
         trainingsetindex=trainingsetindex,
         track_method=track_method,

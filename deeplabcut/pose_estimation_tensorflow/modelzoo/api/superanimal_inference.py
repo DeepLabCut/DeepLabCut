@@ -28,6 +28,7 @@ from deeplabcut.pose_estimation_tensorflow.core import predict as single_predict
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal as predict
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 warnings.simplefilter("ignore", category=RuntimeWarning)
 
@@ -243,12 +244,13 @@ def _video_inference(
     return PredicteData, nframes
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def video_inference(
     videos,
     project_name,
     model_name,
     scale_list=None,
-    videotype: str | Sequence[str] | None = None,
+    video_extensions: str | Sequence[str] | None = None,
     destfolder=None,
     batchsize=1,
     robust_nframes=False,
@@ -307,7 +309,7 @@ def video_inference(
 
     sess, inputs, outputs = single_predict.setup_pose_prediction(test_cfg, allow_growth=allow_growth)
     DLCscorer = "DLC_" + Path(test_cfg["init_weights"]).stem
-    videos = collect_video_paths(videos, extensions=videotype)
+    videos = collect_video_paths(videos, extensions=video_extensions)
 
     datafiles = []
     for video in videos:
@@ -429,7 +431,7 @@ def _video_inference_superanimal(
     project_name,
     model_name,
     scale_list=None,
-    videotype=".mp4",
+    video_extensions=".mp4",
     video_adapt=False,
     plot_trajectories=True,
     pcutoff=0.1,
@@ -460,8 +462,8 @@ def _video_inference_superanimal(
             Combined with ``project_name`` as ``project_name + "_" + model_name``.
         scale_list (list, optional): Target heights for multi-scale test-time
             augmentation. By default uses the original size.
-        video_extensions (string, optional): When ``videos`` is a directory, only videos with
-            this extension are analyzed. Defaults to ``.mp4``.
+        video_extensions (string or Sequence[str], optional): When ``videos`` is a directory, only videos with
+            these extensions are analyzed. Defaults to ``"mp4"``.
         video_adapt (bool, optional): If True, apply video adaptation for less
             jittering results. Defaults to False.
         plot_trajectories (bool, optional): Plot trajectories of body parts.
@@ -481,7 +483,7 @@ def _video_inference_superanimal(
             deeplabcut.video_inference_superanimal(
                 video,
                 "superanimal_topviewmouse",
-                videotype=".avi",
+                video_extensions=".avi",
                 scale_list=scale_list,
             )
     """
@@ -500,7 +502,7 @@ def _video_inference_superanimal(
             video,
             superanimal_name,
             modelfolder=str(modelfolder),
-            videotype=video.split(".")[-1],
+            video_extensions=video.split(".")[-1],
             scale_list=scale_list,
         )
         if not video_adapt:

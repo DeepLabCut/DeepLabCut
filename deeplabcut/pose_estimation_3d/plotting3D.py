@@ -54,6 +54,9 @@ def set_up_grid(figsize, xlim, ylim, zlim, view):
     return fig, axes1, axes2, axes3
 
 
+# TODO: @deruyter92 2026-05-20: the function signature could be updated to match
+# other API (i.e. videotype: str -> video_extensions: str | Sequence[str] | None)
+# this requires updating Get_list_of_triangulated_and_videoFiles.
 def create_labeled_video_3d(
     config,
     path,

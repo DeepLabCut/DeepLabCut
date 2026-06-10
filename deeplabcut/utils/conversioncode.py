@@ -203,6 +203,8 @@ def adapt_labeled_data_to_new_project(config_path, remove_old_bodyparts=False, o
     convertcsv2h5(config_path, userfeedback=userfeedback)
 
 
+# TODO: @deruyter92 2026-05-20: this function still uses grab_files_in_folder instead
+# of collect_video_paths and videotype instead of video_extensions.
 def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos=False):
     """By default the output poses (when running analyze_videos) are stored as
     MultiIndex Pandas Array, which contains the name of the network, body part name, (x,
@@ -238,6 +240,8 @@ def analyze_videos_converth5_to_csv(video_folder, videotype=".mp4", listofvideos
     _convert_h5_files_to("csv", None, h5_files, videos)
 
 
+# TODO: @deruyter92 2026-05-20: this function still uses grab_files_in_folder instead
+# of collect_video_paths and videotype instead of video_extensions.
 def analyze_videos_converth5_to_nwb(
     config,
     video_folder,

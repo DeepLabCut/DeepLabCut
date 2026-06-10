@@ -16,6 +16,8 @@ repos:
       - id: name-tests-test
         args: [--pytest-test-first]
         stages: [pre-commit, manual]
+      - id: check-json
+        stages: [pre-commit, manual]
 
       # These modify files. Run locally only (pre-commit stage).
       - id: end-of-file-fixer

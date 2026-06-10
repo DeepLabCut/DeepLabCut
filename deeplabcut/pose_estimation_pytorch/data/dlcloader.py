@@ -23,6 +23,7 @@ import scipy.io as sio
 
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.core.engine import Engine
+from deeplabcut.generate_training_dataset.trainingsetmanipulation import drop_likelihood_columns
 from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.snapshots import Snapshot
@@ -373,6 +374,8 @@ class DLCLoader(Loader):
         Returns:
             the coco format data
         """
+        df = drop_likelihood_columns(df)
+
         with_individuals = "individuals" in df.columns.names
         if not with_individuals and (len(parameters.individuals) > 1 or len(parameters.unique_bpts) > 0):
             raise ValueError(

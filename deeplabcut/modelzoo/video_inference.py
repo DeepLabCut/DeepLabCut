@@ -14,6 +14,7 @@ import json
 import logging
 import os
 import warnings
+from collections.abc import Sequence
 from pathlib import Path
 
 import torch
@@ -30,6 +31,7 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     update_config,
 )
 from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
+from deeplabcut.utils.deprecation import renamed_parameter
 from deeplabcut.utils.pseudo_label import (
     dlc3predictions_2_annotation_from_video,
     video_to_frames,
@@ -55,13 +57,14 @@ def get_checkpoint_epoch(checkpoint_path):
         return 0
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def video_inference_superanimal(
     videos: str | list,
     superanimal_name: str,
     model_name: str,
     detector_name: str | None = None,
     scale_list: list | None = None,
-    videotype: str = ".mp4",
+    video_extensions: str | Sequence[str] | None = None,
     dest_folder: str | None = None,
     cropping: list[int] | None = None,
     video_adapt: bool = False,
@@ -280,7 +283,7 @@ def video_inference_superanimal(
             from deeplabcut.modelzoo.video_inference import video_inference_superanimal
             videos = ["/path/to/my/video.mp4"]
             superanimal_name = "superanimal_topviewmouse"
-            videotype = "mp4"
+            video_extensions = "mp4"
             scale_list = [200, 300, 400]
             video_inference_superanimal(
                 videos,
@@ -288,7 +291,7 @@ def video_inference_superanimal(
                 model_name="hrnet_w32",
                 detector_name="fasterrcnn_resnet50_fpn_v2",
                 scale_list=scale_list,
-                videotype=videotype,
+                video_extensions=video_extensions,
                 video_adapt=True,
             )
     """
@@ -317,7 +320,7 @@ def video_inference_superanimal(
             superanimal_name,
             model_name,
             scale_list,
-            videotype,
+            video_extensions,
             video_adapt,
             plot_trajectories,
             pcutoff,

@@ -439,6 +439,8 @@ def get_immediate_subdirectories(a_dir):
     return [name for name in os.listdir(a_dir) if os.path.isdir(os.path.join(a_dir, name))]
 
 
+# TODO: @deruyter92 2026-05-20: this function could be updated to match the
+# signature of collect_video_paths, allowing for multiple extensions.
 def grab_files_in_folder(folder, ext="", relative=True):
     """Return the paths of files with extension *ext* present in *folder*."""
     for file in os.listdir(folder):

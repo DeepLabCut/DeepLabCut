@@ -46,6 +46,7 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import VideoReader, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 
 class VideoIterator(VideoReader):
@@ -241,10 +242,11 @@ def video_inference(
     return predictions
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def analyze_videos(
     config: str,
     videos: str | list[str],
-    videotype: str | Sequence[str] | None = None,
+    video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     save_as_csv: bool = False,
@@ -284,7 +286,7 @@ def analyze_videos(
         videos: a str (or list of strings) containing the full paths to videos for
             analysis or a path to the directory, where all the videos with same
             extension are stored.
-        videotype: Controls how ``videos`` are filtered, based on file extension.
+        video_extensions: Controls how ``videos`` are filtered, based on file extension.
             File paths and directory contents are treated differently:
             - ``None`` (default): file paths are accepted as-is; directories are
               scanned for files with a recognized video extension.
@@ -546,7 +548,7 @@ def analyze_videos(
     print(f"Using scorer: {dlc_scorer}")
 
     # Reading video and init variables
-    videos = collect_video_paths(videos, extensions=videotype, shuffle=in_random_order)
+    videos = collect_video_paths(videos, extensions=video_extensions, shuffle=in_random_order)
     h5_files_created = False  # Track if any .h5 files were created
 
     for video in videos:
@@ -676,7 +678,7 @@ def analyze_videos(
                     convert_detections2tracklets(
                         config=config,
                         videos=str(video),
-                        videotype=videotype,
+                        video_extensions=video_extensions,
                         shuffle=shuffle,
                         trainingsetindex=trainingsetindex,
                         overwrite=False,
@@ -688,7 +690,7 @@ def analyze_videos(
                     stitch_tracklets(
                         config,
                         [str(video)],
-                        videotype,
+                        video_extensions,
                         shuffle,
                         trainingsetindex,
                         n_tracks=n_tracks,

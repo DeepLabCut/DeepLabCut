@@ -191,7 +191,7 @@ if __name__ == "__main__":
         config_path,
         [new_video_path],
         TESTTRACKER,
-        videotype="mp4",
+        video_extensions="mp4",
     )
 
     train_epochs = 10
@@ -300,7 +300,7 @@ if __name__ == "__main__":
         config_path,
         [new_video_path],
         shuffle=3,
-        videotype="mp4",
+        video_extensions="mp4",
         save_as_csv=True,
         destfolder=DESTFOLDER,
         cropping=[0, 50, 0, 50],
@@ -316,7 +316,7 @@ if __name__ == "__main__":
     deeplabcut.transformer_reID(
         config_path,
         [new_video_path],
-        videotype="mp4",
+        video_extensions="mp4",
         shuffle=3,
         n_tracks=n_tracks,
         track_method=TESTTRACKER,
@@ -330,7 +330,7 @@ if __name__ == "__main__":
     deeplabcut.create_labeled_video(
         config_path,
         [new_video_path],
-        videotype="mp4",
+        video_extensions="mp4",
         shuffle=3,
         track_method="ellipse",
         destfolder=DESTFOLDER,
@@ -339,7 +339,7 @@ if __name__ == "__main__":
     deeplabcut.create_labeled_video(
         config_path,
         [new_video_path],
-        videotype="mp4",
+        video_extensions="mp4",
         shuffle=3,
         track_method="transformer",
         destfolder=DESTFOLDER,

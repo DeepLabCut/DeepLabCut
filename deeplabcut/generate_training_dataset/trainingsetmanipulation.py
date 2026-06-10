@@ -469,11 +469,16 @@ def parse_video_filenames(videos: list[str]) -> list[str]:
     return filenames
 
 
-def _drop_likelihood_columns(df: pd.DataFrame) -> pd.DataFrame:
+def drop_likelihood_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Drop any columns whose coord level is named 'likelihood'.
 
     This sanitizes annotation DataFrames coming from h5/csv files before they are
     used for training dataset generation.
+
+    # NOTE @C-Achard 2026-05-18: This is used in several places as a guard
+        Most call sites using this should instead go through a canonical, validated project loading function
+        AND THEN do any custom local processing they require. The current design is hard to maintain and error prone,
+        and lacks a clearly documented, centralized project I/O interface.
     """
     if not isinstance(df.columns, pd.MultiIndex):
         return df
@@ -483,7 +488,7 @@ def _drop_likelihood_columns(df: pd.DataFrame) -> pd.DataFrame:
 
     likelihood_mask = coord_values == "likelihood"
     if likelihood_mask.any():
-        logging.info("Detected likelihood columns in annotation data; dropping them.")
+        logging.warning("Detected likelihood columns in annotation data; dropping them.", stacklevel=2)
         df = df.drop(columns=df.columns[likelihood_mask])
 
     return df
@@ -545,7 +550,7 @@ def merge_annotateddatasets(cfg, trainingsetfolder_full):
     AnnotationData = AnnotationData.reindex(bodyparts, axis=1, level=AnnotationData.columns.names.index("bodyparts"))
     # Filter out any stray likelihood columns that may have been concatenated in
     # see napari-deeplabcut #204 and DeepLabCut #3319
-    AnnotationData = _drop_likelihood_columns(AnnotationData)
+    AnnotationData = drop_likelihood_columns(AnnotationData)
 
     if AnnotationData.empty:
         logging.warning(
@@ -683,23 +688,24 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     fn = os.path.join(project_path, trainingsetfolder, "CollectedData_" + cfg["scorer"])
 
     try:
-        Data = pd.read_hdf(fn + ".h5")
+        data = pd.read_hdf(fn + ".h5")
+        data = drop_likelihood_columns(data)
     except FileNotFoundError:
-        Data = merge_annotateddatasets(
+        data = merge_annotateddatasets(
             cfg,
             Path(os.path.join(project_path, trainingsetfolder)),
         )
-        if Data is None:
+        if data is None:
             return [], []
 
-    conversioncode.guarantee_multiindex_rows(Data)
-    Data = Data[scorer]  # extract labeled data
+    conversioncode.guarantee_multiindex_rows(data)
+    data = data[scorer]  # extract labeled data
 
     if uniform:
         TrainingFraction = cfg["TrainingFraction"]
         trainFraction = TrainingFraction[trainindex]
         trainIndices, testIndices = SplitTrials(
-            range(len(Data.index)),
+            range(len(data.index)),
             trainFraction,
             True,
         )
@@ -708,7 +714,7 @@ def mergeandsplit(config, trainindex=0, uniform=True):
         test_video_name = [Path(i).stem for i in videos][trainindex]
         print("Excluding the following folder (from training):", test_video_name)
         trainIndices, testIndices = [], []
-        for index, name in enumerate(Data.index):
+        for index, name in enumerate(data.index):
             if test_video_name == name[1]:  # this is the video name
                 # print(name,test_video_name)
                 testIndices.append(index)
@@ -736,7 +742,7 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
         return outer
 
     # Again, remove likelihood if present
-    df = _drop_likelihood_columns(df)
+    df = drop_likelihood_columns(df)
 
     if isinstance(df.columns, pd.MultiIndex):
         coord_level = "coords" if "coords" in df.columns.names else df.columns.names[-1]

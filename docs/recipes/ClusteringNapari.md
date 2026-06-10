@@ -4,6 +4,7 @@ deeplabcut:
   last_metadata_updated: '2026-03-06'
   ignore: false
 ---
+
 # Clustering in the napari-DeepLabCut GUI
 
 To increase model performance, one can find the errors in the user-defined label (or in output H5 files after video
@@ -43,14 +44,12 @@ Your contributions and suggestions are welcomed, so test the
 This #cookbook recipe aims to show a usecase of **clustering in napari** and is contributed by 2022 DLC AI Resident
 [Sabrina Benas](https://x.com/Sabrineiitor) 💜.
 
-
 ## Detect Outliers to Refine Labels
 
 ### Open `napari` and the `DeepLabCut plugin`
 
 Then open your `CollectedData_<ScorerName>.h5` file. We used the Horse-30 dataset, presented in
 [Mathis, Biasi et al. WACV 2022](http://horse10.deeplabcut.org/), as our demo and development set. Here is an example of what it should look like:
-
 
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/1661885256863-M67UV06P8JHAR1243K1F/1.png?format=750w" width="900" title="DLC" alt="DLC" align="center" vspace = "10">
 
@@ -85,7 +84,7 @@ If you want to change the clustering method, you can modify the file
 [kmeans.py](https://github.com/DeepLabCutAIResidency/napari-deeplabcut/blob/cluster1/src/napari_deeplabcut/kmeans.py)
 ```
 
-::::{important}
+::::\{important}
 You have to keep the way the file is opened (pandas dataframe) and the output has to be the cluster points, the points
 colors in the cluster colors and the frame names (in this order).
 ::::
@@ -98,3 +97,4 @@ colors in the cluster colors and the frame names (in this order).
 - Next, we will support the machine-labeled.h5 files for full active learning support.
 
 Happy Hacking!
+```
