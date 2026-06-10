@@ -106,7 +106,7 @@ def CreateVideo(
     if displaycropped:
         ny, nx = y2 - y1, x2 - x1
     else:
-        ny, nx = clip.height, clip.width
+        ny, nx = clip.h, clip.w
 
     fps = clip.video_fps
     if isinstance(fps, float):
@@ -252,7 +252,7 @@ def CreateVideoSlow(
     if displaycropped:
         ny, nx = y2 - y1, x2 - x1
     else:
-        ny, nx = clip.height, clip.width
+        ny, nx = clip.h, clip.w
 
     fps = clip.video_fps
     if outputframerate is None:  # by def. same as input rate.
