@@ -326,7 +326,7 @@ def evaluate_multianimal_full(
                         # Form 2D array of shape (n_rows, 4) where the last dim is
                         # (sample_index, peak_y, peak_x, bpt_index) to slice the PAFs.
                         temp = df.reset_index(level="bodyparts").dropna()
-                        # TODO @deruyter92 2026-06-10: pandas migration 3.0 - this will break if bodyparts is a str type
+                        # TODO @deruyter92 2026-06-10 (#3362): pandas migration 3.0 - this will break if bodyparts is a str type
                         # and future.no_silent_downcasting is also removed in pandas 3.0.
                         with pd.option_context("future.no_silent_downcasting", True):
                             temp["bodyparts"] = (
