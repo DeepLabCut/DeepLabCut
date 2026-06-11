@@ -52,31 +52,35 @@ class CTDTrackingConfig:
         """Builds a CTD tracking configuration from a configuration dictionary.
 
         Examples:
-            Building a CTDTrackingConfig from a basic dict:
-            ctd_tracking = CTDTrackingConfig.build(
-              dict(bu_on_lost_idv=True, threshold_nms=0.75)
-            )
 
-            Building a CTDTrackingConfig from a basic dict:
-            ctd_tracking = CTDTrackingConfig.build(
-              dict(
-                bu_on_lost_idv=True,
-                bu_max_frequency=5,    # When no FPS is given, this is in frames!
-                threshold_nms=0.5,
+            Build a CTDTrackingConfig from a basic dict:
+
+              ctd_tracking = CTDTrackingConfig.build(
+                dict(bu_on_lost_idv=True, threshold_nms=0.75)
               )
-            )
 
-            Building a CTDTrackingConfig from a dict for a video with a given FPS:
-            ctd_tracking = CTDTrackingConfig.build(
-              dict(
-                bu_on_lost_idv=True,
-                bu_min_frequency=1,    # When an FPS is given, this is in seconds!
-                bu_max_frequency=5,    # When an FPS is given, this is in seconds!
-                threshold_ctd=0.1,
-                threshold_nms=0.9
-              ),
-              video_fps=30.0,
-            )
+            Build a CTDTrackingConfig from a basic dict:
+
+              ctd_tracking = CTDTrackingConfig.build(
+                dict(
+                  bu_on_lost_idv=True,
+                  bu_max_frequency=5,    # When no FPS is given, this is in frames!
+                  threshold_nms=0.5,
+                )
+              )
+
+            Build a CTDTrackingConfig from a dict for a video with a given FPS:
+
+              ctd_tracking = CTDTrackingConfig.build(
+                dict(
+                  bu_on_lost_idv=True,
+                  bu_min_frequency=1,    # When an FPS is given, this is in seconds!
+                  bu_max_frequency=5,    # When an FPS is given, this is in seconds!
+                  threshold_ctd=0.1,
+                  threshold_nms=0.9
+                ),
+                video_fps=30.0,
+              )
         """
         kwargs = {**config}
         if video_fps is not None:

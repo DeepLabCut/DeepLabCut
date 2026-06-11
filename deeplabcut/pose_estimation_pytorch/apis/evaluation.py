@@ -711,26 +711,26 @@ def evaluate_network(
     Examples:
         If you want to evaluate on shuffle 1 without plotting predictions.
 
-        import deeplabcut
-        deeplabcut.evaluate_network(
-            '/analysis/project/reaching-task/config.yaml', shuffles=[1],
-        )
+            import deeplabcut
+            deeplabcut.evaluate_network(
+                '/analysis/project/reaching-task/config.yaml', shuffles=[1],
+            )
 
         If you want to evaluate shuffles 0 and 1 and plot the predictions.
 
-        deeplabcut.evaluate_network(
-            '/analysis/project/reaching-task/config.yaml',
-            shuffles=[0, 1],
-            plotting=True,
-        )
+            deeplabcut.evaluate_network(
+                '/analysis/project/reaching-task/config.yaml',
+                shuffles=[0, 1],
+                plotting=True,
+            )
 
         If you want to plot assemblies for a maDLC project
 
-        deeplabcut.evaluate_network(
-            '/analysis/project/reaching-task/config.yaml',
-            shuffles=[1],
-            plotting="individual",
-        )
+            deeplabcut.evaluate_network(
+                '/analysis/project/reaching-task/config.yaml',
+                shuffles=[1],
+                plotting="individual",
+            )
     """
     cfg = auxiliaryfunctions.read_config(config)
 

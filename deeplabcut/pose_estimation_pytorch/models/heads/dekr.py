@@ -90,11 +90,15 @@ class DEKRHeatmap(nn.Module):
             None
 
         Examples:
-            channels = (64,128,17)
-            num_blocks = 3
-            dilation_rate = 2
-            final_conv_kernel = 3
-            block = BasicBlock
+            Initialize a DEKRHeatmap:
+
+                DEKRHeatmap(
+                    channels=(64,128,17),
+                    num_blocks=3,
+                    dilation_rate=2,
+                    final_conv_kernel=3,
+                    block=BasicBlock,
+                )
         """
         super().__init__()
         self.bn_momentum = 0.1
@@ -284,13 +288,16 @@ class DEKROffset(nn.Module):
             A sequential layer containing stacked num_blocks.
 
         Examples:
-            input:
-                block=BasicBlock
-                in_channels=64
-                out_channels=128
-                num_blocks=3
-                stride=1
-                dilation=1
+            Create a layer:
+
+                _make_layer(
+                    block=BasicBlock,
+                    in_channels=64,
+                    out_channels=128,
+                    num_blocks=3,
+                    stride=1,
+                    dilation=1,
+                )
         """
         downsample = None
         if stride != 1 or in_channels != out_channels * block.expansion:

@@ -69,12 +69,13 @@ def export_model(
 
     Examples:
         Export the last stored snapshot for model trained with shuffle 3:
-        import deeplabcut
-        deeplabcut.export_model(
-            "/analysis/project/reaching-task/config.yaml",
-            shuffle=3,
-            snapshotindex=-1,
-        )
+
+            import deeplabcut
+            deeplabcut.export_model(
+                "/analysis/project/reaching-task/config.yaml",
+                shuffle=3,
+                snapshotindex=-1,
+            )
     """
     cfg = af.read_config(str(config))
     if iteration is not None:

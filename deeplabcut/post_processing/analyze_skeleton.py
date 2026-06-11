@@ -42,11 +42,13 @@ def calc_distance_between_points_two_vectors_2d(v1, v2):
     Returns:
         list: Pairwise Euclidean distances between corresponding points.
 
-    Testing:
-    v1 = np.zeros((2, 5))
-    v2 = np.zeros((2, 5))
-    v2[1, :] = [0, 10, 25, 50, 100]
-    d = calc_distance_between_points_two_vectors_2d(v1.T, v2.T)
+    Examples:
+        Calculate pairwise Euclidean distances between corresponding points:
+
+            v1 = np.zeros((2, 5))
+            v2 = np.zeros((2, 5))
+            v2[1, :] = [0, 10, 25, 50, 100]
+            d = calc_distance_between_points_two_vectors_2d(v1.T, v2.T)
     """
     # Check dataformats
     if not isinstance(v1, np.ndarray) or not isinstance(v2, np.ndarray):
@@ -76,13 +78,16 @@ def angle_between_points_2d_anticlockwise(p1, p2):
         float: Clockwise angle between p1 and p2 using the inner product and the
             determinant of the two vectors.
 
-    Testing:  - to check:     print(zero, ninety, oneeighty, twoseventy)
-        zero = angle_between_points_2d_clockwise([0, 1], [0, 1])
-        ninety = angle_between_points_2d_clockwise([1, 0], [0, 1])
-        oneeighty = angle_between_points_2d_clockwise([0, -1], [0, 1])
-        twoseventy = angle_between_points_2d_clockwise([-1, 0], [0, 1])
-        ninety2 = angle_between_points_2d_clockwise([10, 0], [10, 1])
-        print(ninety2)
+    Examples:
+        Calculate the clockwise angle between points:
+
+
+            zero = angle_between_points_2d_clockwise([0, 1], [0, 1])
+            ninety = angle_between_points_2d_clockwise([1, 0], [0, 1])
+            oneeighty = angle_between_points_2d_clockwise([0, -1], [0, 1])
+            twoseventy = angle_between_points_2d_clockwise([-1, 0], [0, 1])
+            ninety2 = angle_between_points_2d_clockwise([10, 0], [10, 1])
+            print(ninety2)
     """
     """
         Determines the angle of a straight line drawn between point one and two.
@@ -110,17 +115,19 @@ def calc_angle_between_vectors_of_points_2d(v1, v2):
         np.ndarray: 1d array with clockwise angle between pairwise points in v1,v2.
 
     Testing:
-    v1 = np.zeros((2, 4))
-    v1[1, :] = [
-        1,
-        1,
-        1,
-        1,
-    ]
-    v2 = np.zeros((2, 4))
-    v2[0, :] = [0, 1, 0, -1]
-    v2[1, :] = [1, 0, -1, 0]
-    a = calc_angle_between_vectors_of_points_2d(v2, v1)
+        Calculate the clockwise angle:
+
+            v1 = np.zeros((2, 4))
+            v1[1, :] = [
+                1,
+                1,
+                1,
+                1,
+            ]
+            v2 = np.zeros((2, 4))
+            v2[0, :] = [0, 1, 0, -1]
+            v2[1, :] = [1, 0, -1, 0]
+            a = calc_angle_between_vectors_of_points_2d(v2, v1)
     """
     # Check data format
     if v1 is None or v2 is None or not isinstance(v1, np.ndarray) or not isinstance(v2, np.ndarray):

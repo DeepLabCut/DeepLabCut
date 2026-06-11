@@ -369,7 +369,7 @@ def update_metadata(
             if one exists
 
     Raises:
-        RuntimeError: If ``overwrite`` is False and a shuffle with the same index and
+        RuntimeError: If ``overwrite`` is ``False`` and a shuffle with the same index and
             training fraction already exists.
     """
     prefix = cfg["Task"] + cfg["date"]

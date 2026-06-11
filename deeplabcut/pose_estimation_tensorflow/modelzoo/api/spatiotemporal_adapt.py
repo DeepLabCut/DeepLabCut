@@ -59,6 +59,8 @@ class SpatiotemporalAdaptation:
                 non-modelzoo models. Defaults to "".
 
         Examples:
+            Create a SpatiotemporalAdaptation object and perform inference, adaptation, and post-adaptation inference:
+
                 from deeplabcut.pose_estimation_tensorflow.modelzoo.api.spatiotemporal_adapt import (
                     SpatiotemporalAdaptation,
                 )
@@ -71,9 +73,9 @@ class SpatiotemporalAdaptation:
                     modelfolder="temp_topview",
                     video_extensions=video_extensions,
                 )
-            adapter.before_adapt_inference()
-            adapter.adaptation_training()
-            adapter.after_adapt_inference()
+                adapter.before_adapt_inference()
+                adapter.adaptation_training()
+                adapter.after_adapt_inference()
         """
         if scale_list is None:
             scale_list = []

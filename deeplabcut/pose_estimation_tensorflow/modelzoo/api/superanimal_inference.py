@@ -478,6 +478,7 @@ def _video_inference_superanimal(
             Defaults to True.
 
     Examples:
+      Given a list of scales for the spatial pyramid, perform inference:
 
             scale_list = [200, 300, 400]
             deeplabcut.video_inference_superanimal(

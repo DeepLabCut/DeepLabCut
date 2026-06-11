@@ -270,6 +270,7 @@ def edit_config(configname, edits, output_name=""):
             If passed in though, new filename of the edited config. Defaults to ''.
 
     Examples:
+        Edit a config file:
 
             config_path = "my_stellar_lab/dlc/config.yaml"
             edits = {
