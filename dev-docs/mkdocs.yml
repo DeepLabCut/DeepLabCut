@@ -110,6 +110,7 @@ markdown_extensions:
   - pymdownx.blocks.definition # allows for the creation of definition lists.
   - pymdownx.blocks.tab # allows for the creation of tab containers.
   - pymdownx.blocks.html # allows for the arbitrary creation of HTML elements of various types.
+  - pymdownx.magiclink # adds support for magic links / URLs, e.g. https://example.com.
 
 extra:
   version:
