@@ -1046,7 +1046,7 @@ def parse_ground_truth_data_file(h5_file):
         pass
     # Cast columns of dtype 'object' to float to avoid TypeError
     # further down in _parse_ground_truth_data.
-    # TODO @deruyter92 2026-06-10: pandas migration 3.0 requires us to add support for string dtype columns.
+    # TODO @deruyter92 2026-06-10 (#3362): pandas migration 3.0 requires us to add support for string dtype columns.
     cols = df.select_dtypes(include="object").columns
     if cols.to_list():
         df[cols] = df[cols].astype("float")
