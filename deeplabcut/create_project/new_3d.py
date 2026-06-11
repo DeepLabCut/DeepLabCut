@@ -38,7 +38,7 @@ def create_new_project_3d(project, experimenter, num_cameras=2, working_director
 
             deeplabcut.create_new_project_3d("reaching-task", "Bill", 2)
 
-        Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \\ )
+        On Windows, paths should be formatted as ``r`"C:\"`` or ``"C:\\"`` (i.e. a double backslash).
     """
     from datetime import datetime as dt
 

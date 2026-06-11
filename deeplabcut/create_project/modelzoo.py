@@ -210,7 +210,7 @@ def create_pretrained_project(
                 copy_videos=True,
             )
 
-        Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
+        On Windows, paths should be formatted as ``r`"C:\"`` or ``"C:\\"`` (i.e. a double backslash).
     """
     if engine == Engine.TF:
         return create_pretrained_project_tensorflow(
@@ -335,7 +335,7 @@ def create_pretrained_project_pytorch(
                 copy_videos=True,
             )
 
-        Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
+        On Windows, paths should be formatted as ``r`"C:\"`` or ``"C:\\"`` (i.e. a double backslash).
     """
     # Check arguments
     if not dataset:
@@ -537,7 +537,7 @@ def create_pretrained_project_tensorflow(
                 copy_videos=True,
             )
 
-        Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
+        On Windows, paths should be formatted as ``r`"C:\"`` or ``"C:\\"`` (i.e. a double backslash).
     """
     if not model:
         model = "full_human"
