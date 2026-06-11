@@ -28,8 +28,6 @@ from typing import Literal
 import cv2
 import numpy as np
 
-from deeplabcut.utils.deprecation import deprecated
-
 logger = logging.getLogger(__name__)
 
 
@@ -118,7 +116,7 @@ class VideoProcessor(ABC):
         if fps is not None:  # Overwrite the video's FPS
             # NOTE @C-Achard 2026-06-09 improving checks here might break old API
             # same for raising on missing FPS
-            self.video_fps = fps
+            self.fps = fps
 
     def load_frame(self):
         frame = self._read_frame()
@@ -159,11 +157,11 @@ class VideoProcessor(ABC):
         self._w = int(value)
 
     @property
-    def video_fps(self):
+    def fps(self):
         return self._fps
 
-    @video_fps.setter
-    def video_fps(self, value):
+    @fps.setter
+    def fps(self, value):
         self._fps = None if value is None else float(value)
 
     @property
@@ -173,40 +171,6 @@ class VideoProcessor(ABC):
     @nframes.setter
     def nframes(self, value):
         self._nframes = int(value)
-
-    ### Legacy compatibility methods
-    @deprecated(replacement="VideoProcessor.i", since="3.1")
-    def counter(self):
-        return self.i
-
-    @deprecated(replacement="VideoProcessor.h", since="3.1")
-    def height(self):
-        return self._h
-
-    @deprecated(replacement="VideoProcessor.w", since="3.1")
-    def width(self):
-        return self._w
-
-    @deprecated(replacement="VideoProcessor.video_fps", since="3.1")
-    def fps(self):
-        return self._fps
-
-    # @deprecated(replacement="VideoProcessor.video_fps", since="3.1")
-    # TODO: @C-Achard implement deprecated_property decorator
-    @property
-    def FPS(self):
-        return self._fps
-
-    # @deprecated(replacement="VideoProcessor.video_fps", since="3.1")
-    # TODO: @C-Achard implement deprecated_property decorator
-    @FPS.setter
-    def FPS(self, value):
-        self.video_fps = None if value is None else float(value)
-
-    def frame_count(self):
-        return self._nframes
-
-    ###
 
     @abstractmethod
     def get_video(self):
@@ -285,7 +249,7 @@ class VideoProcessorCV(VideoProcessor):
         self.w = int(self.vid.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.h = int(self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
         all_frames = int(self.vid.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.video_fps = self.vid.get(cv2.CAP_PROP_FPS)
+        self.fps = self.vid.get(cv2.CAP_PROP_FPS)
         self.nc = 3
 
         if self.nframes == -1 or self.nframes > all_frames:
@@ -303,7 +267,7 @@ class VideoProcessorCV(VideoProcessor):
             string, preserving the historical OpenCV behavior.
         """
         fourcc = cv2.VideoWriter_fourcc(*self.codec)
-        return cv2.VideoWriter(self.sname, fourcc, self.video_fps, (self.sw, self.sh), True)
+        return cv2.VideoWriter(self.sname, fourcc, self.fps, (self.sw, self.sh), True)
 
     def _read_frame(self):
         """Read the next video frame.

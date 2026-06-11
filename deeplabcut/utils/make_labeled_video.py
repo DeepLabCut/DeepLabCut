@@ -108,7 +108,7 @@ def CreateVideo(
     else:
         ny, nx = clip.h, clip.w
 
-    fps = clip.video_fps
+    fps = clip.fps
     if isinstance(fps, float):
         if fps * 1000 > 65535:
             fps = round(fps)
@@ -254,7 +254,7 @@ def CreateVideoSlow(
     else:
         ny, nx = clip.h, clip.w
 
-    fps = clip.video_fps
+    fps = clip.fps
     if outputframerate is None:  # by def. same as input rate.
         outputframerate = fps
 
@@ -919,7 +919,7 @@ def proc_video(
                     skeleton_color=skeleton_color,
                     color_by=color_by,
                     colormap=cfg["colormap"],
-                    fps=clip.video_fps,
+                    fps=clip.fps,
                 )
                 clip.close()
             elif not fastmode:

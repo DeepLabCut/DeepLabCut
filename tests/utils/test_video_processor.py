@@ -37,7 +37,7 @@ def test_video_processor_cv_reads_basic_metadata(tmp_path):
         assert clip.h == 10
         assert clip.nframes == 4
         assert clip.i == 0
-        assert clip.video_fps > 0
+        assert clip.fps > 0
         assert clip.nc == 3
     finally:
         clip.close()
@@ -113,7 +113,7 @@ def test_video_processor_cv_fps_override(tmp_path):
     clip = VideoProcessorCV(fname=str(video_path), fps=123.0)
 
     try:
-        assert clip.video_fps == 123.0
+        assert clip.fps == 123.0
     finally:
         clip.close()
 
