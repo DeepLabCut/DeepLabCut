@@ -55,7 +55,7 @@ def replace_default_values(
         the configuration with placeholder values replaced
 
     Raises:
-        ValueError: if there is a placeholder value who's "updated" value was not
+        ValueError: If there is a placeholder value who's "updated" value was not
             given to the method
     """
 
@@ -201,7 +201,8 @@ def load_base_config(config_folder_path: Path) -> dict:
 
 
 def load_backbones(configs_dir: Path) -> list[str]:
-    """
+    """Load backbones.
+
     Args:
         configs_dir: the Path to the folder containing the "configs" for PyTorch
             DeepLabCut
@@ -215,7 +216,8 @@ def load_backbones(configs_dir: Path) -> list[str]:
 
 
 def load_detectors(configs_dir: Path) -> list[str]:
-    """
+    """Load detectors.
+
     Args:
         configs_dir: the Path to the folder containing the "configs" for PyTorch
             DeepLabCut

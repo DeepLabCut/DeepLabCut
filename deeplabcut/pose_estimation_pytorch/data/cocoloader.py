@@ -100,8 +100,8 @@ class COCOLoader(Loader):
             json_obj: JSON object loaded from the file
 
         Raises:
-            FileNotFoundError if the file does not exist
-            ValueError if the object stored in the file is not a dict
+            FileNotFoundError: If the file does not exist
+            ValueError: If the object stored in the file is not a dict
 
         Examples:
             Check https://docs.trainingdata.io/v1.0/Export%20Format/COCO/ to see
@@ -177,8 +177,7 @@ class COCOLoader(Loader):
         system.
 
         Args:
-            project_root: the root path of the COCO project
-            coco_json: the COCO dictionary containing the annotations
+            coco_json (dict): The COCO dictionary containing the annotations
 
         Returns:
             the validated COCO object
@@ -233,6 +232,7 @@ class COCOLoader(Loader):
 
     def load_data(self, mode: str = "train") -> dict:
         """Convert data from JSON object to dictionary.
+
         Args:
             mode: indicates which JSON object to convert. Defaults to "train".
 

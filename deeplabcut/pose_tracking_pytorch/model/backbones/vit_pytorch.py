@@ -61,7 +61,8 @@ def drop_path(x, drop_prob: float = 0.0, training: bool = False):
 
 class DropPath(nn.Module):
     """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual
-    blocks)."""
+    blocks).
+    """
 
     def __init__(self, drop_prob=None):
         super().__init__()
@@ -434,6 +435,7 @@ def trunc_normal_(tensor, mean=0.0, std=1.0, a=-2.0, b=2.0):
     with values outside :math:`[a, b]` redrawn until they are within
     the bounds. The method used for generating the random values works
     best when :math:`a \leq \text{mean} \leq b`.
+
     Args:
         tensor: an n-dimensional `torch.Tensor`
         mean: the mean of the normal distribution
@@ -441,7 +443,9 @@ def trunc_normal_(tensor, mean=0.0, std=1.0, a=-2.0, b=2.0):
         a: the minimum cutoff value
         b: the maximum cutoff value
     Examples:
-        >>> w = torch.empty(3, 5)
-        >>> nn.init.trunc_normal_(w)
+        Fill tensor with values drawn from a truncated normal distribution:
+
+            w = torch.empty(3, 5)
+            nn.init.trunc_normal_(w)
     """
     return _no_grad_trunc_normal_(tensor, mean, std, a, b)

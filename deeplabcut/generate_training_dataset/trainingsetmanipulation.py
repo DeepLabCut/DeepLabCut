@@ -40,10 +40,8 @@ def comparevideolistsanddatafolders(config):
     """Auxiliary function that compares the folders in labeled-data and the ones listed
     under video_sets (in the config file).
 
-    Parameter
-    ----------
-    config : string
-        String containing the full path of the config file in the project.
+    Args:
+        config (string): String containing the full path of the config file in the project.
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
@@ -77,10 +75,8 @@ def adddatasetstovideolistandviceversa(config):
 
     Handle with care!
 
-    Parameter
-    ----------
-    config : string
-        String containing the full path of the config file in the project.
+    Args:
+        config (string): String containing the full path of the config file in the project.
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"]
@@ -127,10 +123,8 @@ def dropduplicatesinannotatinfiles(config):
     """Drop duplicate entries (of images) in annotation files (this should no longer
     happen, but might be useful).
 
-    Parameter
-    ----------
-    config : string
-        String containing the full path of the config file in the project.
+    Args:
+        config (string): String containing the full path of the config file in the project.
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
@@ -157,10 +151,8 @@ def dropannotationfileentriesduetodeletedimages(config):
     type: /labeled-data/*folder*/CollectedData_*scorer*.h5 Will be carried out
     iteratively for all *folders* in labeled-data.
 
-    Parameter
-    ----------
-    config : string
-        String containing the full path of the config file in the project.
+    Args:
+        config (string): String containing the full path of the config file in the project.
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
@@ -192,10 +184,8 @@ def dropimagesduetolackofannotation(config):
     Drop images from corresponding folder for not annotated images: /labeled-data/*folder*/CollectedData_*scorer*.h5
     Will be carried out iteratively for all *folders* in labeled-data.
 
-    Parameter
-    ----------
-    config : string
-        String containing the full path of the config file in the project.
+    Args:
+        config (string): String containing the full path of the config file in the project.
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
@@ -239,10 +229,8 @@ def dropunlabeledframes(config):
     files, i.e. h5 and csv files Will be carried out iteratively for all *folders* in
     labeled-data.
 
-    Parameter
-    ----------
-    config : string
-        String containing the full path of the config file in the project.
+    Args:
+        config (string): String containing the full path of the config file in the project.
     """
     cfg = auxiliaryfunctions.read_config(config)
     videos = cfg["video_sets"].keys()
@@ -287,38 +275,26 @@ def check_labels(
 
     Make sure that these labels are fine.
 
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        Labels (list, optional): List of at least 3 matplotlib markers. The first one
+            will be used to indicate the human ground truth location. Defaults to '+'.
+        scale (float, optional): Change the relative size of the output images.
+            Defaults to 1.
+        dpi (int, optional): Output resolution in dpi. Defaults to 100.
+        draw_skeleton (bool, optional): Plot skeleton overlaid over body parts.
+            Defaults to True.
+        visualizeindividuals (bool, optional): For a multianimal project, if True, the
+            different individuals have different colors (and all bodyparts the same).
+            If False, the colors change over bodyparts rather than individuals.
+            Defaults to True.
 
-    Labels: list, default='+'
-        List of at least 3 matplotlib markers. The first one will be used to indicate
-        the human ground truth location (Default: +)
+    Returns:
+        None
 
-    scale : float, default=1
-        Change the relative size of the output images.
-
-    dpi : int, optional, default=100
-        Output resolution in dpi.
-
-    draw_skeleton: bool, default=True
-        Plot skeleton overlaid over body parts.
-
-    visualizeindividuals: bool, default: True.
-        For a multianimal project, if True, the different individuals have different
-        colors (and all bodyparts the same). If False, the colors change over bodyparts
-        rather than individuals.
-
-    Returns
-    -------
-    None
-
-    Examples
-    --------
-    >>> deeplabcut.check_labels('/analysis/project/reaching-task/config.yaml')
+    Examples:
+            deeplabcut.check_labels("/analysis/project/reaching-task/config.yaml")
     """
-
     from deeplabcut.utils import visualization
 
     if Labels is None:
@@ -663,38 +639,44 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     or leave-one-folder out split
     by passing the index of the corresponding video from the config.yaml file as variable trainindex.
 
-    Parameter
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        trainindex (int, optional): Either (in case uniform = True) indexes which element
+            of TrainingFraction in the config file should be used (note it is a list!).
+            Alternatively (uniform = False) indexes which folder is dropped, i.e. the
+            first if trainindex=0, the second if trainindex =1, etc.
+        uniform (bool, optional): Perform uniform split (disregarding folder structure in
+            labeled data), or (if False) leave one folder out.
 
-    trainindex: int, optional
-        Either (in case uniform = True) indexes which element of TrainingFraction
-        in the config file should be used (note it is a list!).
-        Alternatively (uniform = False) indexes which folder is dropped,
-        i.e. the first if trainindex=0, the second if trainindex =1, etc.
+    Examples:
+        To create a leave-one-folder-out model:
 
-    uniform: bool, optional
-        Perform uniform split (disregarding folder structure in labeled data), or (if False) leave one folder out.
+            trainIndices, testIndices = deeplabcut.mergeandsplit(config, trainindex=0, uniform=False)
 
-    Examples
-    --------
-    To create a leave-one-folder-out model:
-    >>> trainIndices, testIndices=deeplabcut.mergeandsplit(config,trainindex=0,uniform=False)
-    returns the indices for the first video folder (as defined in config file)
-    as testIndices and all others as trainIndices.
-    You can then create the training set by calling (e.g. defining it as Shuffle 3):
-    >>> deeplabcut.create_training_dataset(config,Shuffles=[3],trainIndices=trainIndices,testIndices=testIndices)
+        Returns the indices for the first video folder (as defined in config file) as
+        testIndices and all others as trainIndices. You can then create the training set
+        by calling (e.g. defining it as Shuffle 3):
 
-    To freeze a (uniform) split (i.e. iid sampled from all the data):
-    >>> trainIndices, testIndices=deeplabcut.mergeandsplit(config,trainindex=0,uniform=True)
+            deeplabcut.create_training_dataset(
+                config,
+                Shuffles=[3],
+                trainIndices=trainIndices,
+                testIndices=testIndices,
+            )
 
-    You can then create two model instances that have the identical trainingset.
-    Thereby you can assess the role of various parameters on the performance of DLC.
-    >>> deeplabcut.create_training_dataset(
-    ...     config,Shuffles=[0,1],trainIndices=[trainIndices, trainIndices],
-    ...     testIndices=[testIndices, testIndices])
-    --------
+        To freeze a (uniform) split (i.e. iid sampled from all the data):
+
+            trainIndices, testIndices = deeplabcut.mergeandsplit(config, trainindex=0, uniform=True)
+
+        You can then create two model instances that have the identical trainingset.
+        Thereby you can assess the role of various parameters on the performance of DLC.
+
+            deeplabcut.create_training_dataset(
+                config,
+                Shuffles=[0, 1],
+                trainIndices=[trainIndices, trainIndices],
+                testIndices=[testIndices, testIndices],
+            )
     """
     # Loading metadata from config file:
     cfg = auxiliaryfunctions.read_config(config)
@@ -841,33 +823,23 @@ def create_training_dataset(
     Labels from all the extracted frames are merged into a single .h5 file.
     Only the videos included in the config file are used to create this dataset.
 
-    Parameters
-    ----------
-    config : string
-        Full path of the ``config.yaml`` file as a string.
-
-    num_shuffles : int, optional, default=1
-        Number of shuffles of training dataset to create, i.e. ``[1,2,3]`` for
-        ``num_shuffles=3``.
-
-    Shuffles: list[int], optional
-        Alternatively the user can also give a list of shuffles.
-
-    userfeedback: bool, optional, default=True
-        If ``False``, all requested train/test splits are created (no matter if they
-        already exist). If you want to assure that previous splits etc. are not
-        overwritten, set this to ``True`` and you will be asked for each split.
-
-    trainIndices: list of lists, optional, default=None
-        List of one or multiple lists containing train indexes.
-        A list containing two lists of training indexes will produce two splits.
-
-    testIndices: list of lists, optional, default=None
-        List of one or multiple lists containing test indexes.
-
-    net_type: list, optional, default=None
-        Type of networks. The options available depend on which engine is used.
-        Currently supported options are:
+    Args:
+        config (string): Full path of the ``config.yaml`` file as a string.
+        num_shuffles (int, optional): Number of shuffles of training dataset to create,
+            i.e. ``[1,2,3]`` for ``num_shuffles=3``. Defaults to 1.
+        shuffles (list[int], optional): Alternatively the user can also give a list of
+            shuffles.
+        userfeedback (bool, optional): If ``False``, all requested train/test splits are
+            created (no matter if they already exist). If you want to assure that
+            previous splits etc. are not overwritten, set this to ``True`` and you will
+            be asked for each split. Defaults to True.
+        trainIndices (list of lists, optional): List of one or multiple lists containing
+            train indexes. A list containing two lists of training indexes will produce
+            two splits. Defaults to None.
+        testIndices (list of lists, optional): List of one or multiple lists containing
+            test indexes. Defaults to None.
+        net_type (list, optional): Type of networks. The options available depend on which
+            engine is used. Currently supported options are:
             TensorFlow
                 * ``resnet_50``
                 * ``resnet_101``
@@ -920,20 +892,21 @@ def create_training_dataset(
                 * ``top_down_hrnet_w48``
                 * ``top_down_resnet_101``
                 * ``top_down_resnet_50``
+            Defaults to None.
 
-    detector_type: string, optional, default=None
-        Only for the PyTorch engine.
-        When passing creating shuffles for top-down models, you can specify which
-        detector you want. If the detector_type is None, the ```ssdlite``` will be used.
-        The list of all available detectors can be obtained by calling
-        ``deeplabcut.pose_estimation_pytorch.available_detectors()``. Supported options:
+        detector_type (string, optional): Only for the PyTorch engine. When passing
+            creating shuffles for top-down models, you can specify which detector you
+            want. If the detector_type is None, the ```ssdlite``` will be used. The list
+            of all available detectors can be obtained by calling
+            ``deeplabcut.pose_estimation_pytorch.available_detectors()``. Supported
+            options:
             * ``ssdlite``
             * ``fasterrcnn_mobilenet_v3_large_fpn``
             * ``fasterrcnn_resnet50_fpn_v2``
+            Defaults to None.
 
-    augmenter_type: string, optional, default=None
-        Type of augmenter. The options available depend on which engine is used.
-        Currently supported options are:
+        augmenter_type (string, optional): Type of augmenter. The options available
+            depend on which engine is used. Currently supported options are:
             TensorFlow
                 * ``default``
                 * ``scalecrop``
@@ -942,33 +915,32 @@ def create_training_dataset(
                 * ``deterministic``
             PyTorch
                 * ``albumentations``
+            Defaults to None.
 
-    posecfg_template: string, optional, default=None
-        Only for the TensorFlow engine.
-        Path to a ``pose_cfg.yaml`` file to use as a template for generating the new
-        one for the current iteration. Useful if you would like to start with the same
-        parameters a previous training iteration. None uses the default
-        ``pose_cfg.yaml``.
+        posecfg_template (string, optional): Only for the TensorFlow engine. Path to a
+            ``pose_cfg.yaml`` file to use as a template for generating the new one for
+            the current iteration. Useful if you would like to start with the same
+            parameters a previous training iteration. None uses the default
+            ``pose_cfg.yaml``. Defaults to None.
 
-    superanimal_name: string, optional, default=""
-        Only for the TensorFlow engine. For the PyTorch engine, use the ``weight_init``
-        parameter.
-        Specify the superanimal name is transfer learning with superanimal is desired.
-        This makes sure the pose config template uses superanimal configs as template.
+        superanimal_name (string, optional): Only for the TensorFlow engine. For the
+            PyTorch engine, use the ``weight_init`` parameter. Specify the superanimal
+            name is transfer learning with superanimal is desired. This makes sure the
+            pose config template uses superanimal configs as template. Defaults to "".
 
-    weight_init: WeightInitialisation, optional, default=None
-        PyTorch engine only. Specify how model weights should be initialized. The
-        default mode uses transfer learning from ImageNet weights.
+        weight_init (WeightInitialisation, optional): PyTorch engine only. Specify how
+            model weights should be initialized. The default mode uses transfer learning
+            from ImageNet weights. Defaults to None.
 
-    engine: Engine, optional
-        Whether to create a pose config for a Tensorflow or PyTorch model. Defaults to
-        the value specified in the project configuration file. If no engine is specified
-        for the project, defaults to ``deeplabcut.compat.DEFAULT_ENGINE``.
+        engine (Engine, optional): Whether to create a pose config for a Tensorflow or
+            PyTorch model. Defaults to the value specified in the project configuration
+            file. If no engine is specified for the project, defaults to
+            ``deeplabcut.compat.DEFAULT_ENGINE``.
 
-    ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None, default = None,
-        If using a conditional-top-down (CTD) net_type, this argument should be
-        specified. It defines the conditions that will be used with the CTD model.
-        It can be either:
+        ctd_conditions (int | str | Path | tuple[int, str] | tuple[int, int] | None,
+            optional): If using a conditional-top-down (CTD) net_type, this argument
+            should be specified. It defines the conditions that will be used with the CTD
+            model. It can be either:
             * A shuffle number (ctd_conditions: int), which must correspond to a
                 bottom-up (BU) network type.
             * A predictions file path (ctd_conditions: string | Path), which must
@@ -976,39 +948,36 @@ def create_training_dataset(
             * A shuffle number and a particular snapshot
                 (ctd_conditions: tuple[int, str] | tuple[int, int]), which respectively
                 correspond to a bottom-up (BU) network type and a particular snapshot
-                name or index.
+                name or index. Defaults to None.
 
-    Returns
-    -------
-    list(tuple) or None
-        If training dataset was successfully created, a list of tuples is returned.
-        The first two elements in each tuple represent the training fraction and the
-        shuffle value. The last two elements in each tuple are arrays of integers
-        representing the training and test indices.
+    Returns:
+        list(tuple) or None: If training dataset was successfully created, a list of
+            tuples is returned. The first two elements in each tuple represent the
+            training fraction and the shuffle value. The last two elements in each tuple
+            are arrays of integers representing the training and test indices.
 
-        Returns None if training dataset could not be created.
+            Returns None if training dataset could not be created.
 
-    Notes
-    -----
-    Use the function ``add_new_videos`` at any stage of the project to add more videos
-    to the project.
+    Note:
+        Use the function ``add_new_videos`` at any stage of the project to add more
+        videos to the project.
 
-    Examples
-    --------
+    Examples:
+        Linux/MacOS:
+            deeplabcut.create_training_dataset(
+                '/analysis/project/reaching-task/config.yaml', num_shuffles=1,
+            )
 
-    Linux/MacOS:
-    >>> deeplabcut.create_training_dataset(
-            '/analysis/project/reaching-task/config.yaml', num_shuffles=1,
-        )
+            deeplabcut.create_training_dataset(
+                '/analysis/project/reaching-task/config.yaml', Shuffles=[2], engine=deeplabcut.Engine.TF,
+            )
 
-    >>> deeplabcut.create_training_dataset(
-            '/analysis/project/reaching-task/config.yaml', Shuffles=[2], engine=deeplabcut.Engine.TF,
-        )
+        Windows:
 
-    Windows:
-    >>> deeplabcut.create_training_dataset(
-            'C:\\Users\\Ulf\\looming-task\\config.yaml', Shuffles=[3,17,5],
-        )
+            deeplabcut.create_training_dataset(
+                "C:\\Users\\Ulf\\looming-task\\config.yaml",
+                Shuffles=[3, 17, 5],
+            )
     """
     import scipy.io as sio
 
@@ -1375,7 +1344,8 @@ def get_existing_shuffle_indices(
     train_fraction: float | None = None,
     engine: Engine | None = None,
 ) -> list[int]:
-    """
+    """Get the existing shuffle indices.
+
     Args:
         cfg: The content of a project configuration file, or the path to the project
             configuration file.
@@ -1484,84 +1454,75 @@ def create_training_model_comparison(
     indices. Therefore, this function is useful for benchmarking the performance of
     different network and augmentation types on the same training/testdata.
 
-    Parameters
-    ----------
-    config: str
-        Full path of the config.yaml file.
+    Args:
+        config (str): Full path of the config.yaml file.
+        trainindex (int, optional): Either (in case uniform = True) indexes which element
+            of TrainingFraction in the config file should be used (note it is a list!).
+            Alternatively (uniform = False) indexes which folder is dropped, i.e. the
+            first if trainindex=0, the second if trainindex=1, etc. Defaults to 0.
+        num_shuffles (int, optional): Number of shuffles of training dataset to create,
+            i.e. [1,2,3] for num_shuffles=3. Defaults to 1.
+        net_types (list[str], optional): Currently supported networks are
 
-    trainindex: int, optional, default=0
-        Either (in case uniform = True) indexes which element of TrainingFraction in
-        the config file should be used (note it is a list!).
-        Alternatively (uniform = False) indexes which folder is dropped, i.e. the first
-        if trainindex=0, the second if trainindex=1, etc.
+            * ``"resnet_50"``
+            * ``"resnet_101"``
+            * ``"resnet_152"``
+            * ``"mobilenet_v2_1.0"``
+            * ``"mobilenet_v2_0.75"``
+            * ``"mobilenet_v2_0.5"``
+            * ``"mobilenet_v2_0.35"``
+            * ``"efficientnet-b0"``
+            * ``"efficientnet-b1"``
+            * ``"efficientnet-b2"``
+            * ``"efficientnet-b3"``
+            * ``"efficientnet-b4"``
+            * ``"efficientnet-b5"``
+            * ``"efficientnet-b6"``
 
-    num_shuffles : int, optional, default=1
-        Number of shuffles of training dataset to create,
-        i.e. [1,2,3] for num_shuffles=3.
+            Defaults to ["resnet_50"].
 
-    net_types: list[str], optional, default=["resnet_50"]
-        Currently supported networks are
+        augmenter_types (list[str], optional): Currently supported augmenters are
 
-        * ``"resnet_50"``
-        * ``"resnet_101"``
-        * ``"resnet_152"``
-        * ``"mobilenet_v2_1.0"``
-        * ``"mobilenet_v2_0.75"``
-        * ``"mobilenet_v2_0.5"``
-        * ``"mobilenet_v2_0.35"``
-        * ``"efficientnet-b0"``
-        * ``"efficientnet-b1"``
-        * ``"efficientnet-b2"``
-        * ``"efficientnet-b3"``
-        * ``"efficientnet-b4"``
-        * ``"efficientnet-b5"``
-        * ``"efficientnet-b6"``
+            * ``"default"``
+            * ``"imgaug"``
+            * ``"tensorpack"``
+            * ``"deterministic"``
 
-    augmenter_types: list[str], optional, default=["imgaug"]
-        Currently supported augmenters are
+            Defaults to ["imgaug"].
 
-        * ``"default"``
-        * ``"imgaug"``
-        * ``"tensorpack"``
-        * ``"deterministic"``
+        userfeedback (bool, optional): If ``False``, then all requested train/test splits
+            are created, no matter if they already exist. If you want to assure that
+            previous splits etc. are not overwritten, then set this to True and you will
+            be asked for each split. Defaults to False.
 
-    userfeedback: bool, optional, default=False
-        If ``False``, then all requested train/test splits are created, no matter if
-        they already exist. If you want to assure that previous splits etc. are not
-        overwritten, then set this to True and you will be asked for each split.
+        windows2linux: ..deprecated:: Has no effect since 2.2.0.4 and will be removed in
+            2.2.1.
 
-    windows2linux
+    Returns:
+        shuffle_list (list): List of indices corresponding to the trainingsplits/models
+            that were created.
 
-        ..deprecated::
-            Has no effect since 2.2.0.4 and will be removed in 2.2.1.
+    Examples:
+        On Linux/MacOS
 
-    Returns
-    -------
-    shuffle_list: list
-        List of indices corresponding to the trainingsplits/models that were created.
+            shuffle_list = deeplabcut.create_training_model_comparison(
+                '/analysis/project/reaching-task/config.yaml',
+                num_shuffles=1,
+                net_types=['resnet_50','resnet_152'],
+                augmenter_types=['tensorpack','deterministic'],
+            )
 
-    Examples
-    --------
-    On Linux/MacOS
+        On Windows
 
-    >>> shuffle_list = deeplabcut.create_training_model_comparison(
-            '/analysis/project/reaching-task/config.yaml',
-            num_shuffles=1,
-            net_types=['resnet_50','resnet_152'],
-            augmenter_types=['tensorpack','deterministic'],
-        )
+            shuffle_list = deeplabcut.create_training_model_comparison(
+                'C:\\Users\\Ulf\\looming-task\\config.yaml',
+                num_shuffles=1,
+                net_types=['resnet_50','resnet_152'],
+                augmenter_types=['tensorpack','deterministic'],
+            )
 
-    On Windows
-
-    >>> shuffle_list = deeplabcut.create_training_model_comparison(
-            'C:\\Users\\Ulf\\looming-task\\config.yaml',
-            num_shuffles=1,
-            net_types=['resnet_50','resnet_152'],
-            augmenter_types=['tensorpack','deterministic'],
-        )
-
-    See ``examples/testscript_openfielddata_augmentationcomparison.py`` for an example
-    of how to use ``shuffle_list``.
+        See ``examples/testscript_openfielddata_augmentationcomparison.py`` for an
+        example of how to use ``shuffle_list``.
     """
     # read cfg file
     if augmenter_types is None:

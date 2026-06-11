@@ -256,7 +256,7 @@ def train_network(
             paths to the values to update in the config.
             For example, to update the gpus to run the training on, you can use:
             ```
-            pytorch_cfg_updates={"runner.gpus": [0,1,2,3]}
+            pytorch_cfg_updates = {"runner.gpus": [0, 1, 2, 3]}
             ```
             To see the full list - check the pytorch_cfg.yaml file in your project folder
     """

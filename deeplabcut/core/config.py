@@ -19,7 +19,8 @@ from ruamel.yaml import YAML
 
 
 def read_config_as_dict(config_path: str | Path) -> dict:
-    """
+    """Read config as dict.
+
     Args:
         config_path: the path to the configuration file to load
 
@@ -41,7 +42,7 @@ def write_config(config_path: str | Path, config: dict, overwrite: bool = True) 
         overwrite: whether to overwrite the file if it already exists
 
     Raises:
-        FileExistsError if overwrite=True and the file already exists
+        FileExistsError: If overwrite=True and the file already exists
     """
     if not overwrite and Path(config_path).exists():
         raise FileExistsError(f"Cannot write to {config_path} - set overwrite=True to force")

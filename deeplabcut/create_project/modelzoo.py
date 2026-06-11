@@ -145,80 +145,72 @@ def create_pretrained_project(
 
     http://modelzoo.deeplabcut.org
 
-    Parameters
-    ----------
-    project : string
-        String containing the name of the project.
+    Args:
+        project (string): String containing the name of the project.
+        experimenter (string): String containing the name of the experimenter.
+        model (string | None, optional): The model / dataset to use as basis for the
+            project. If None, the default model / dataset for the selected engine will
+            be used. Defaults to None.
+        videos (list[string]): A list of string containing the full paths of the videos
+            to include in the project.
+        working_directory (string, optional): The directory where the project will be
+            created. If None - the current working directory will be used. Defaults to
+            None.
+        copy_videos (bool, optional): If this is set to True, the videos are copied to
+            the ``videos`` directory. If it is False, symlink of the videos are copied
+            to the project/videos directory.
+            Note: on Windows, True is necessary when not running in Administrator mode.
+            The same applies whenever symlinks are disabled or unsupported.
+            Defaults to False.
+        analyzevideo (bool, optional): If true, then the video is analyzed and a labeled
+            video is created. If false, then only the project will be created and the
+            weights downloaded.
+        filtered (bool, optional): Indicates if filtered pose data output should be
+            plotted rather than frame-by-frame predictions. Filtered version can be
+            calculated with deeplabcut.filterpredictions(). Defaults to True.
+        createlabeledvideo (bool, optional): Specifies if a labeled video needs to be
+            created. Defaults to True.
+        trainFraction (float | None, optional): Fraction that will be used in
+            dlc-model/trainingset folder name. If None - default value (0.95) from new
+            projects will be used. Defaults to None.
+        engine (Engine, optional): Engine on which the pretrained weights are based.
+            Defaults to Engine.PYTORCH.
+        multi_animal (bool, optional): Specifies if the project is single or
+            multi-animal. Implemented only for Pytorch-based models. Defaults to False.
+        individuals (list[str] | None, optional): Only if multianimal is True. Defines
+            the names of the individuals. Defaults to None.
+        net_name (str | None, optional): Valid only if using Pytorch engine. Name of the
+            pose model on which the superanimal dataset has been trained on. If None -
+            "hrnet_w32" will be used as default. Defaults to None.
+        detector_name (str | None, optional): Valid only if using Pytorch engine. Name
+            of the detector model on which the superanimal dataset has been trained on.
+            If None - "fasterrcnn_resnet50_fpn_v2" will be used as default. Defaults to
+            None.
 
-    experimenter : string
-        String containing the name of the experimenter.
+    Examples:
+        Linux/MacOs loading full_human model and analyzing video /homosapiens1.avi:
 
-    model: string | None, default = None,
-        The model / dataset to use as basis for the project.
-        If None, the default model / dataset for the selected engine will be used.
+            deeplabcut.create_pretrained_project(
+                "humanstrokestudy", "Linus", ["/data/videos/homosapiens1.avi"], copy_videos=False
+            )
 
-    videos : list[string]
-        A list of string containing the full paths of the videos to include in the project.
+        Loading full_cat model and analyzing video "felixfeliscatus3.avi":
 
-    working_directory : string, optional, default = None
-        The directory where the project will be created. If None - the current working directory will be used.
+            deeplabcut.create_pretrained_project(
+                "humanstrokestudy", "Linus", ["/data/videos/felixfeliscatus3.avi"], model="full_cat", engine=Engine.TF
+            )
 
-    copy_videos : bool, optional, default = False,
-        If this is set to True, the videos are copied to the ``videos`` directory.
-        If it is False, symlink of the videos are copied to the project/videos directory.
-        Note: on Windows: True is often necessary!
+        Windows:
 
-    analyzevideo: bool, optional
-        If true, then the video is analyzed and a labeled video is created.
-        If false, then only the project will be created and the weights downloaded.
+            deeplabcut.create_pretrained_project(
+                "humanstrokestudy",
+                "Bill",
+                [r"C:\yourusername\rig-95\Videos\reachingvideo1.avi"],
+                r"C:\yourusername\analysis\project",
+                copy_videos=True,
+            )
 
-    filtered: bool, default True
-        Indicates if filtered pose data output should be plotted rather than frame-by-frame predictions.
-        Filtered version can be calculated with deeplabcut.filterpredictions()
-
-    createlabeledvideo: bool, default True,
-        Specifies if a labeled video needs to be created.
-
-    trainFraction: float|None, default = None.
-            Fraction that will be used in dlc-model/trainingset folder name.
-            If None - default value (0.95) from new projects will be used.
-
-    engine: Engine, default Engine.PYTORCH,
-        engine on which the pretrained weights are based
-
-    multi_animal: bool = False,
-        Specifies if the project is single or multi-animal.
-        Implemented only for Pytorch-based models.
-
-    individuals: list[str] | None = None,
-        Only if multianimal is True.
-        Defines the names of the individuals.
-
-    net_name: str | None, default = None,
-        Valid only if using Pytorch engine.
-        Name of the pose model on which the superanimal dataset has been trained on.
-        If None - "hrnet_w32" will be used as default.
-
-    detector_name: str | None, default = None,
-        Valid only if using Pytorch engine.
-        Name of the detector model on which the superanimal dataset has been trained on.
-        If None - "fasterrcnn_resnet50_fpn_v2" will be used as default.
-
-    Example
-    --------
-    Linux/MacOs loading full_human model and analyzing video /homosapiens1.avi
-    >>> deeplabcut.create_pretrained_project("humanstrokestudy", "Linus",
-    ...     ["/data/videos/homosapiens1.avi"], copy_videos=False)
-
-    Loading full_cat model and analyzing video "felixfeliscatus3.avi"
-    >>> deeplabcut.create_pretrained_project("humanstrokestudy", "Linus",
-    ...     ["/data/videos/felixfeliscatus3.avi"], model="full_cat", engine=Engine.TF)
-
-    Windows:
-    >>> deeplabcut.create_pretrained_project("humanstrokestudy", "Bill",
-    ...     [r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'],
-    ...     r'C:\yourusername\analysis\project', copy_videos=True)
-    Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
+        On Windows, paths should be formatted as ``r`"C:\"`` or ``"C:\\"`` (i.e. a double backslash).
     """
     if engine == Engine.TF:
         return create_pretrained_project_tensorflow(
@@ -282,76 +274,68 @@ def create_pretrained_project_pytorch(
 
     http://modelzoo.deeplabcut.org
 
-    Parameters
-    ----------
-    project : string
-        String containing the name of the project.
+    Args:
+        project (string): String containing the name of the project.
+        experimenter (string): String containing the name of the experimenter.
+        dataset (string | None, optional): The superanimal dataset to use as basis for
+            the project. If not specified - superanimal_quadruped will be used by
+            default. Defaults to None.
+        videos (list[string]): A list of string containing the full paths of the videos
+            to include in the project.
+        working_directory (string, optional): The directory where the project will be
+            created. If None - the current working directory will be used. Defaults to
+            None.
+        copy_videos (bool, optional): If this is set to True, the videos are copied to
+            the ``videos`` directory. If it is False, symlink of the videos are copied
+            to the project/videos directory. Note: on Windows: True is often necessary!
+            Defaults to False.
+        analyze_video (bool, optional): If true, then the video is analyzed and a
+            labeled video is created. If false, then only the project will be created
+            and the weights downloaded.
+        filtered (bool, optional): Indicates if filtered pose data output should be
+            plotted rather than frame-by-frame predictions. Filtered version can be
+            calculated with deeplabcut.filterpredictions(). Defaults to True.
+        create_labeled_video (bool, optional): Specifies if a labeled video needs to be
+            created. Defaults to True.
+        train_fraction (float | None, optional): Fraction that will be used in
+            dlc-model/trainingset folder name. If None - default value (0.95) from new
+            projects will be used. Defaults to None.
+        multi_animal (bool, optional): Specifies if the project is single or
+            multi-animal. Defaults to False.
+        individuals (list[str] | None, optional): Only if multianimal is True. Defines
+            the names of the individuals. Defaults to None.
+        net_name (str | None, optional): Valid only if using Pytorch engine. Name of the
+            pose model on which the superanimal dataset has been trained on. If None -
+            "hrnet_w32" will be used as default. Defaults to None.
+        detector_name (str | None, optional): Valid only if using Pytorch engine. Name
+            of the detector model on which the superanimal dataset has been trained on.
+            If None - "fasterrcnn_resnet50_fpn_v2" will be used as default. Defaults to
+            None.
 
-    experimenter : string
-        String containing the name of the experimenter.
+    Examples:
+        Linux/MacOs loading full_human model and analyzing video /homosapiens1.avi:
 
-    dataset: string|None, default = None,
-        The superanimal dataset to use as basis for the project.
-        If not specified - superanimal_quadruped will be used by default.
+            deeplabcut.create_pretrained_project_pytorch(
+                "humanstrokestudy", "Linus", ["/data/videos/homosapiens1.avi"], copy_videos=False
+            )
 
-    videos : list[string]
-        A list of string containing the full paths of the videos to include in the project.
+        Loading full_cat model and analyzing video "felixfeliscatus3.avi":
 
-    working_directory : string, optional, default = None
-        The directory where the project will be created. If None - the current working directory will be used.
+            deeplabcut.create_pretrained_project_pytorch(
+                "humanstrokestudy", "Linus", ["/data/videos/felixfeliscatus3.avi"], model="full_cat", engine=Engine.TF
+            )
 
-    copy_videos : bool, optional, default = False,
-        If this is set to True, the videos are copied to the ``videos`` directory.
-        If it is False, symlink of the videos are copied to the project/videos directory.
-        Note: on Windows: True is often necessary!
+        Windows:
 
-    analyze_video: bool, optional
-        If true, then the video is analyzed and a labeled video is created.
-        If false, then only the project will be created and the weights downloaded.
+            deeplabcut.create_pretrained_project_pytorch(
+                "humanstrokestudy",
+                "Bill",
+                [r"C:\yourusername\rig-95\Videos\reachingvideo1.avi"],
+                r"C:\yourusername\analysis\project",
+                copy_videos=True,
+            )
 
-    filtered: bool, default True
-        Indicates if filtered pose data output should be plotted rather than frame-by-frame predictions.
-        Filtered version can be calculated with deeplabcut.filterpredictions()
-
-    create_labeled_video: bool, default True
-        Specifies if a labeled video needs to be created.
-
-    train_fraction: float|None, default = None.
-            Fraction that will be used in dlc-model/trainingset folder name.
-            If None - default value (0.95) from new projects will be used.
-
-    multi_animal: bool = False,
-        Specifies if the project is single or multi-animal
-
-    individuals: list[str]|None = None,
-        Only if multianimal is True.
-        Defines the names of the individuals.
-
-    net_name: str | None, default = None,
-        Valid only if using Pytorch engine.
-        Name of the pose model on which the superanimal dataset has been trained on.
-        If None - "hrnet_w32" will be used as default.
-
-    detector_name: str | None, default = None,
-        Valid only if using Pytorch engine.
-        Name of the detector model on which the superanimal dataset has been trained on.
-        If None - "fasterrcnn_resnet50_fpn_v2" will be used as default.
-
-    Example
-    --------
-    Linux/MacOs loading full_human model and analyzing video /homosapiens1.avi
-    >>> deeplabcut.create_pretrained_project_pytorch("humanstrokestudy", "Linus",
-    ...     ["/data/videos/homosapiens1.avi"], copy_videos=False)
-
-    Loading full_cat model and analyzing video "felixfeliscatus3.avi"
-    >>> deeplabcut.create_pretrained_project_pytorch("humanstrokestudy", "Linus",
-    ...     ["/data/videos/felixfeliscatus3.avi"], model="full_cat", engine=Engine.TF)
-
-    Windows:
-    >>> deeplabcut.create_pretrained_project_pytorch("humanstrokestudy",
-    ...     "Bill", [r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'],
-    ...     r'C:\yourusername\analysis\project', copy_videos=True)
-    Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
+        On Windows, paths should be formatted as ``r`"C:\"`` or ``"C:\\"`` (i.e. a double backslash).
     """
     # Check arguments
     if not dataset:
@@ -503,59 +487,57 @@ def create_pretrained_project_tensorflow(
 
     http://modelzoo.deeplabcut.org
 
-    Parameters
-    ----------
-    project : string
-        String containing the name of the project.
+    Args:
+        project (string): String containing the name of the project.
+        experimenter (string): String containing the name of the experimenter.
+        model (string | None, optional): The model / dataset to use as basis for the
+            project. If not specified - full_human will be used by default. Defaults to
+            None.
+        videos (list[string]): A list of string containing the full paths of the videos
+            to include in the project.
+        working_directory (string, optional): The directory where the project will be
+            created. If None - the current working directory will be used. Defaults to
+            None.
+        copy_videos (bool, optional): If this is set to True, the videos are copied to
+            the ``videos`` directory. If it is False, symlink of the videos are copied
+            to the project/videos directory. Note: on Windows: True is often necessary!
+            Defaults to False.
+        analyzevideo (bool, optional): If true, then the video is analyzed and a labeled
+            video is created. If false, then only the project will be created and the
+            weights downloaded.
+        filtered (bool, optional): Indicates if filtered pose data output should be
+            plotted rather than frame-by-frame predictions. Filtered version can be
+            calculated with deeplabcut.filterpredictions(). Defaults to True.
+        createlabeledvideo (bool, optional): Specifies if a labeled video needs to be
+            created. Defaults to True.
+        trainFraction (float | None, optional): Fraction that will be used in
+            dlc-model/trainingset folder name. If None - default value (0.95) from new
+            projects will be used. Defaults to None.
 
-    experimenter : string
-        String containing the name of the experimenter.
+    Examples:
+        Linux/MacOs loading full_human model and analyzing video /homosapiens1.avi:
 
-    model: string|None, default = None,
-        The model / dataset to use as basis for the project.
-        If not specified - full_human will be used by default.
+            deeplabcut.create_pretrained_project_tensorflow(
+                "humanstrokestudy", "Linus", ["/data/videos/homosapiens1.avi"], copy_videos=False
+            )
 
-    videos : list[string]
-        A list of string containing the full paths of the videos to include in the project.
+        Loading full_cat model and analyzing video "felixfeliscatus3.avi":
 
-    working_directory : string, optional, default = None
-        The directory where the project will be created. If None - the current working directory will be used.
+            deeplabcut.create_pretrained_project_tensorflow(
+                "humanstrokestudy", "Linus", ["/data/videos/felixfeliscatus3.avi"], model="full_cat", engine=Engine.TF
+            )
 
-    copy_videos : bool, optional, default = False,
-        If this is set to True, the videos are copied to the ``videos`` directory.
-        If it is False, symlink of the videos are copied to the project/videos directory.
-        Note: on Windows: True is often necessary!
+        Windows:
 
-    analyzevideo: bool, optional
-        If true, then the video is analyzed and a labeled video is created.
-        If false, then only the project will be created and the weights downloaded.
+            deeplabcut.create_pretrained_project_tensorflow(
+                "humanstrokestudy",
+                "Bill",
+                [r"C:\yourusername\rig-95\Videos\reachingvideo1.avi"],
+                r"C:\yourusername\analysis\project",
+                copy_videos=True,
+            )
 
-    filtered: bool, default True
-        Indicates if filtered pose data output should be plotted rather than frame-by-frame predictions.
-        Filtered version can be calculated with deeplabcut.filterpredictions()
-
-    createlabeledvideo: bool, default True
-        Specifies if a labeled video needs to be created.
-
-    trainFraction: float|None, default = None.
-            Fraction that will be used in dlc-model/trainingset folder name.
-            If None - default value (0.95) from new projects will be used.
-
-    Example
-    --------
-    Linux/MacOs loading full_human model and analyzing video /homosapiens1.avi
-    >>> deeplabcut.create_pretrained_project_tensorflow("humanstrokestudy",
-    ...  "Linus", ["/data/videos/homosapiens1.avi"], copy_videos=False)
-
-    Loading full_cat model and analyzing video "felixfeliscatus3.avi"
-    >>> deeplabcut.create_pretrained_project_tensorflow("humanstrokestudy",
-    ...  "Linus", ["/data/videos/felixfeliscatus3.avi"], model="full_cat", engine=Engine.TF)
-
-    Windows:
-    >>> deeplabcut.create_pretrained_project_tensorflow("humanstrokestudy",
-    ...  "Bill", [r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'],
-    ...  r'C:\yourusername\analysis\project', copy_videos=True)
-    Users must format paths with either:  r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
+        On Windows, paths should be formatted as ``r`"C:\"`` or ``"C:\\"`` (i.e. a double backslash).
     """
     if not model:
         model = "full_human"

@@ -76,7 +76,6 @@ gui = [
 openvino = [ "openvino-dev==2022.1" ]
 docs = [
   "jupyter-book==1.0.4.post1",
-  "numpydoc",
   "sphinxcontrib-mermaid",
 ]
 dev-docs = [
@@ -198,6 +197,8 @@ torch-backend = "auto"
 target-version = "py310"
 line-length = 120
 fix = true
+[tool.ruff.format]
+docstring-code-format = true
 [tool.ruff.lint]
 select = [ "E", "F", "B", "I", "UP" ]
 ignore = [ "E741", "B007" ]

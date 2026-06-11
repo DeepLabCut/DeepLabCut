@@ -128,150 +128,137 @@ def create_multianimaltraining_dataset(
     Important differences to standard:
      - stores coordinates with numdigits as many digits
 
-    Parameter
-    ----------
-    config : string
-        Full path of the config.yaml file as a string.
+    Args:
+        config (string): Full path of the config.yaml file as a string.
+        num_shuffles (int, optional): Number of shuffles of training dataset to create,
+            i.e. [1,2,3] for num_shuffles=3. Defaults to 1.
+        Shuffles (list of shuffles): Alternatively the user can also give a list of
+            shuffles (integers!).
+        net_type (string): Type of networks. The options available depend on which
+            engine is used. See Lauer et al. 2021
+            https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1
+            Currently supported options are:
+                TensorFlow
+                    * ``resnet_50``
+                    * ``resnet_101``
+                    * ``resnet_152``
+                    * ``efficientnet-b0``
+                    * ``efficientnet-b1``
+                    * ``efficientnet-b2``
+                    * ``efficientnet-b3``
+                    * ``efficientnet-b4``
+                    * ``efficientnet-b5``
+                    * ``efficientnet-b6``
+                PyTorch (call ``deeplabcut.pose_estimation_pytorch.available_models()``
+                for a complete list)
+                    * ``animaltokenpose_base``
+                    * ``cspnext_m``
+                    * ``cspnext_s``
+                    * ``cspnext_x``
+                    * ``ctd_coam_w32``
+                    * ``ctd_coam_w48``
+                    * ``ctd_prenet_hrnet_w32``
+                    * ``ctd_prenet_hrnet_w48``
+                    * ``ctd_prenet_rtmpose_m``
+                    * ``ctd_prenet_rtmpose_x``
+                    * ``ctd_prenet_rtmpose_x_human``
+                    * ``dekr_w18``
+                    * ``dekr_w32``
+                    * ``dekr_w48``
+                    * ``dlcrnet_stride16_ms5``
+                    * ``dlcrnet_stride32_ms5``
+                    * ``hrnet_w18``
+                    * ``hrnet_w32``
+                    * ``hrnet_w48``
+                    * ``resnet_101``
+                    * ``resnet_50``
+                    * ``rtmpose_m``
+                    * ``rtmpose_s``
+                    * ``rtmpose_x``
+                    * ``top_down_cspnext_m``
+                    * ``top_down_cspnext_s``
+                    * ``top_down_cspnext_x``
+                    * ``top_down_hrnet_w18``
+                    * ``top_down_hrnet_w32``
+                    * ``top_down_hrnet_w48``
+                    * ``top_down_resnet_101``
+                    * ``top_down_resnet_50``
+        detector_type (string, optional): Only for the PyTorch engine. When passing
+            creating shuffles for top-down models, you can specify which detector you
+            want. If the detector_type is None, the ```ssdlite``` will be used. The list
+            of all available detectors can be obtained by calling
+            ``deeplabcut.pose_estimation_pytorch.available_detectors()``. Supported
+            options:
+                * ``ssdlite``
+                * ``fasterrcnn_mobilenet_v3_large_fpn``
+                * ``fasterrcnn_resnet50_fpn_v2``
+        numdigits (int, optional): Number of decimal digits for stored coordinates.
+        crop_size (tuple of int, optional): Only for the TensorFlow engine. Dimensions
+            (width, height) of the crops for data augmentation. Defaults to 400x400.
+        crop_sampling (str, optional): Only for the TensorFlow engine. Crop centers
+            sampling method. Must be either: "uniform" (randomly over the image),
+            "keypoints" (randomly over the annotated keypoints), "density" (weighing
+            preferentially dense regions of keypoints), or "hybrid" (alternating
+            randomly between "uniform" and "density"). Defaults to "hybrid".
+        paf_graph (list of lists, or "config", optional): Only for the TensorFlow
+            engine. If not None, overwrite the default complete graph. This is useful
+            for advanced users who already know a good graph, or simply want to use a
+            specific one. Note that, in that case, the data-driven selection procedure
+            upon model evaluation will be skipped. "config" will use the skeleton
+            defined in the config file. Defaults to None.
+        trainIndices (list of lists, optional): List of one or multiple lists containing
+            train indexes. A list containing two lists of training indexes will produce
+            two splits. Defaults to None.
+        testIndices (list of lists, optional): List of one or multiple lists containing
+            test indexes. Defaults to None.
+        n_edges_threshold (int, optional): Only for the TensorFlow engine. Number of
+            edges above which the graph is automatically pruned. Defaults to 105.
+        paf_graph_degree (int, optional): Only for the TensorFlow engine. Degree of
+            paf_graph when automatically pruning it (before training). Defaults to 6.
+        userfeedback (bool, optional): If ``False``, all requested train/test splits
+            are created (no matter if they already exist). If you want to assure that
+            previous splits etc. are not overwritten, set this to ``True`` and you will
+            be asked for each split. Defaults to True.
+        weight_init (WeightInitialisation, optional): PyTorch engine only. Specify how
+            model weights should be initialized. The default mode uses transfer
+            learning from ImageNet weights. Defaults to None.
+        engine (Engine, optional): Whether to create a pose config for a Tensorflow or
+            PyTorch model. Defaults to the value specified in the project configuration
+            file. If no engine is specified for the project, defaults to
+            ``deeplabcut.compat.DEFAULT_ENGINE``.
+        ctd_conditions (int | str | Path | tuple[int, str] | tuple[int, int], optional):
+            If using a conditional-top-down (CTD) net_type, this argument needs to be
+            specified. It defines the conditions that will be used with the CTD model.
+            It can be either:
+                * A shuffle number (ctd_conditions: int), which must correspond to a
+                  bottom-up (BU) network type.
+                * A predictions file path (ctd_conditions: string | Path), which must
+                  correspond to a .json or .h5 predictions file.
+                * A shuffle number and a particular snapshot (ctd_conditions:
+                  tuple[int, str] | tuple[int, int]), which respectively correspond to
+                  a bottom-up (BU) network type and a particular snapshot name or index.
+            Defaults to None.
 
-    num_shuffles : int, optional
-        Number of shuffles of training dataset to create, i.e. [1,2,3] for num_shuffles=3. Default is set to 1.
+    Examples:
 
-    Shuffles: list of shuffles.
-        Alternatively the user can also give a list of shuffles (integers!).
+            deeplabcut.create_multianimaltraining_dataset(
+                "/analysis/project/reaching-task/config.yaml",
+                num_shuffles=1,
+            )
 
-    net_type: string
-        Type of networks. The options available depend on which engine is used. See
-        Lauer et al. 2021 https://www.biorxiv.org/content/10.1101/2021.04.30.442096v1
-        Currently supported options are:
-            TensorFlow
-                * ``resnet_50``
-                * ``resnet_101``
-                * ``resnet_152``
-                * ``efficientnet-b0``
-                * ``efficientnet-b1``
-                * ``efficientnet-b2``
-                * ``efficientnet-b3``
-                * ``efficientnet-b4``
-                * ``efficientnet-b5``
-                * ``efficientnet-b6``
-            PyTorch (call ``deeplabcut.pose_estimation_pytorch.available_models()`` for
-            a complete list)
-                * ``animaltokenpose_base``
-                * ``cspnext_m``
-                * ``cspnext_s``
-                * ``cspnext_x``
-                * ``ctd_coam_w32``
-                * ``ctd_coam_w48``
-                * ``ctd_prenet_hrnet_w32``
-                * ``ctd_prenet_hrnet_w48``
-                * ``ctd_prenet_rtmpose_m``
-                * ``ctd_prenet_rtmpose_x``
-                * ``ctd_prenet_rtmpose_x_human``
-                * ``dekr_w18``
-                * ``dekr_w32``
-                * ``dekr_w48``
-                * ``dlcrnet_stride16_ms5``
-                * ``dlcrnet_stride32_ms5``
-                * ``hrnet_w18``
-                * ``hrnet_w32``
-                * ``hrnet_w48``
-                * ``resnet_101``
-                * ``resnet_50``
-                * ``rtmpose_m``
-                * ``rtmpose_s``
-                * ``rtmpose_x``
-                * ``top_down_cspnext_m``
-                * ``top_down_cspnext_s``
-                * ``top_down_cspnext_x``
-                * ``top_down_hrnet_w18``
-                * ``top_down_hrnet_w32``
-                * ``top_down_hrnet_w48``
-                * ``top_down_resnet_101``
-                * ``top_down_resnet_50``
+            deeplabcut.create_multianimaltraining_dataset(
+                "/analysis/project/reaching-task/config.yaml",
+                Shuffles=[0, 1, 2],
+                trainIndices=[trainInd1, trainInd2, trainInd3],
+                testIndices=[testInd1, testInd2, testInd3],
+            )
 
-    detector_type: string, optional, default=None
-        Only for the PyTorch engine.
-        When passing creating shuffles for top-down models, you can specify which
-        detector you want. If the detector_type is None, the ```ssdlite``` will be used.
-        The list of all available detectors can be obtained by calling
-        ``deeplabcut.pose_estimation_pytorch.available_detectors()``. Supported options:
-            * ``ssdlite``
-            * ``fasterrcnn_mobilenet_v3_large_fpn``
-            * ``fasterrcnn_resnet50_fpn_v2``
+        Windows:
 
-    numdigits: int, optional
-
-    crop_size: tuple of int, optional
-        Only for the TensorFlow engine.
-        Dimensions (width, height) of the crops for data augmentation.
-        Default is 400x400.
-
-    crop_sampling: str, optional
-        Only for the TensorFlow engine.
-        Crop centers sampling method. Must be either:
-        "uniform" (randomly over the image),
-        "keypoints" (randomly over the annotated keypoints),
-        "density" (weighing preferentially dense regions of keypoints),
-        or "hybrid" (alternating randomly between "uniform" and "density").
-        Default is "hybrid".
-
-    paf_graph: list of lists, or "config" optional (default=None)
-        Only for the TensorFlow engine.
-        If not None, overwrite the default complete graph. This is useful for advanced users who
-        already know a good graph, or simply want to use a specific one. Note that, in that case,
-        the data-driven selection procedure upon model evaluation will be skipped.
-
-        "config" will use the skeleton defined in the config file.
-
-    trainIndices: list of lists, optional (default=None)
-        List of one or multiple lists containing train indexes.
-        A list containing two lists of training indexes will produce two splits.
-
-    testIndices: list of lists, optional (default=None)
-        List of one or multiple lists containing test indexes.
-
-    n_edges_threshold: int, optional (default=105)
-        Only for the TensorFlow engine.
-        Number of edges above which the graph is automatically pruned.
-
-    paf_graph_degree: int, optional (default=6)
-        Only for the TensorFlow engine.
-        Degree of paf_graph when automatically pruning it (before training).
-
-    userfeedback: bool, optional, default=True
-        If ``False``, all requested train/test splits are created (no matter if they
-        already exist). If you want to assure that previous splits etc. are not
-        overwritten, set this to ``True`` and you will be asked for each split.
-
-    weight_init: WeightInitialisation, optional, default=None
-        PyTorch engine only. Specify how model weights should be initialized. The
-        default mode uses transfer learning from ImageNet weights.
-
-    engine: Engine, optional
-        Whether to create a pose config for a Tensorflow or PyTorch model. Defaults to
-        the value specified in the project configuration file. If no engine is specified
-        for the project, defaults to ``deeplabcut.compat.DEFAULT_ENGINE``.
-
-    ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] , optional, default = None,
-        If using a conditional-top-down (CTD) net_type, this argument needs to be specified.
-        It defines the conditions that will be used with the CTD model.
-        It can be either:
-            * A shuffle number (ctd_conditions: int), which must correspond to a bottom-up (BU) network type.
-            * A predictions file path (ctd_conditions: string | Path), which must correspond to a .json or .h5
-            predictions file.
-            * A shuffle number and a particular snapshot (ctd_conditions: tuple[int, str] | tuple[int, int]), which
-            respectively correspond to a bottom-up (BU) network type and a particular snapshot name or index.
-
-    Example
-    --------
-    >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml',num_shuffles=1)
-
-    >>> deeplabcut.create_multianimaltraining_dataset('/analysis/project/reaching-task/config.yaml', Shuffles=[0,1,2],
-    trainIndices=[trainInd1, trainInd2, trainInd3], testIndices=[testInd1, testInd2, testInd3])
-
-    Windows:
-    >>> deeplabcut.create_multianimaltraining_dataset(r'C:\\Users\\Ulf\\looming-task\\config.yaml',Shuffles=[3,17,5])
-    --------
+            deeplabcut.create_multianimaltraining_dataset(
+                r"C:\\Users\\Ulf\\looming-task\\config.yaml",
+                Shuffles=[3, 17, 5],
+            )
     """
     if windows2linux:
         warnings.warn(

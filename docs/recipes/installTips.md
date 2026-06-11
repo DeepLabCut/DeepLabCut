@@ -350,7 +350,6 @@ Activate! `conda activate DEEPLABCUT` and then run: `conda install -c conda-forg
 
 Then run `python -m deeplabcut` which launches the DLC GUI.
 
-
 ## How to confirm that your GPU is being used by DeepLabCut
 
 During training and analysis steps, DeepLabCut does not use the GPU processor heavily. To confirm that DeepLabCut is properly using your GPU:

@@ -262,25 +262,23 @@ def write_config(configname, cfg):
 def edit_config(configname, edits, output_name=""):
     """Convenience function to edit and save a config file from a dictionary.
 
-    Parameters
-    ----------
-    configname : string
-        String containing the full path of the config file in the project.
-    edits : dict
-        Key–value pairs to edit in config
-    output_name : string, optional (default='')
-        Overwrite the original config.yaml by default.
-        If passed in though, new filename of the edited config.
+    Args:
+        configname (string): String containing the full path of the config file in the
+            project.
+        edits (dict): Key–value pairs to edit in config.
+        output_name (string, optional): Overwrite the original config.yaml by default.
+            If passed in though, new filename of the edited config. Defaults to ''.
 
-    Examples
-    --------
-    config_path = 'my_stellar_lab/dlc/config.yaml'
+    Examples:
+        Edit a config file:
 
-    edits = {'numframes2pick': 5,
-             'trainingFraction': [0.5, 0.8],
-             'skeleton': [['a', 'b'], ['b', 'c']]}
-
-    deeplabcut.auxiliaryfunctions.edit_config(config_path, edits)
+            config_path = "my_stellar_lab/dlc/config.yaml"
+            edits = {
+                "numframes2pick": 5,
+                "trainingFraction": [0.5, 0.8],
+                "skeleton": [["a", "b"], ["b", "c"]],
+            }
+            deeplabcut.auxiliaryfunctions.edit_config(config_path, edits)
     """
     cfg = read_plainconfig(configname)
     for key, value in edits.items():
@@ -298,7 +296,8 @@ def edit_config(configname, edits, output_name=""):
 
 
 def get_bodyparts(cfg: dict) -> list[str]:
-    """
+    """Get the bodyparts.
+
     Args:
         cfg: a project configuration file
 
@@ -316,7 +315,8 @@ def get_bodyparts(cfg: dict) -> list[str]:
 
 
 def get_unique_bodyparts(cfg: dict) -> list[str]:
-    """
+    """Get the unique bodyparts.
+
     Args:
         cfg: a project configuration file
 
@@ -406,7 +406,8 @@ def get_list_of_videos(
 
 def save_data(PredicteData, metadata, dataname, pdindex, imagenames, save_as_csv):
     """Save predicted data as h5 file and metadata as pickle file; created by
-    predict_videos.py."""
+    predict_videos.py.
+    """
     DataMachine = pd.DataFrame(PredicteData, columns=pdindex, index=imagenames)
     if save_as_csv:
         print("Saving csv poses!")
@@ -491,7 +492,8 @@ def filter_files_by_patterns(
 @deprecated(replacement="deeplabcut.collect_video_paths", since="3.0.0")
 def get_video_list(filename, videopath, videtype):
     """Get list of videos in a path (if filetype == all), otherwise just a specific
-    file."""
+    file.
+    """
     videos = list(grab_files_in_folder(videopath, videtype))
     if filename == "all":
         return videos
@@ -540,7 +542,8 @@ def get_model_folder(
     modelprefix: str = "",
     engine: Engine = Engine.TF,
 ) -> Path:
-    """
+    """Get the model folder.
+
     Args:
         trainFraction: the training fraction (as defined in the project configuration)
             for which to get the model folder
@@ -570,7 +573,8 @@ def get_evaluation_folder(
     engine: Engine | None = None,
     modelprefix: str = "",
 ) -> Path:
-    """
+    """Get the evaluation folder.
+
     Args:
         trainFraction: the training fraction (as defined in the project configuration)
             for which to get the evaluation folder
@@ -615,7 +619,7 @@ def get_snapshots_from_folder(train_folder: Path) -> list[str]:
     increasing training iterations.
 
     Raises:
-        FileNotFoundError: if no snapshot_names are found in the train_folder.
+        FileNotFoundError: If no snapshot_names are found in the train_folder.
     """
     snapshot_names = [file.stem for file in train_folder.iterdir() if "index" in file.name]
 
@@ -639,7 +643,8 @@ def get_deeplabcut_path():
 
 def intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts):
     """Returns all body parts when comparisonbodyparts=='all', otherwise all bpts that
-    are in the intersection of comparisonbodyparts and the actual bodyparts."""
+    are in the intersection of comparisonbodyparts and the actual bodyparts.
+    """
     # if "MULTI!" in allbpts:
     if cfg["multianimalproject"]:
         allbpts = cfg["multianimalbodyparts"] + cfg["uniquebodyparts"]
@@ -678,13 +683,17 @@ def get_scorer_name(
     **kwargs,
 ):
     """Extract the scorer/network name for a particular shuffle, training fraction, etc.
-    If the engine is not specified, determines which to use from
-    kwargs: additional arguments.
-        For torch-based shuffles, can be used to specify:
+
+    If the engine is not specified, determines which to use from the project
+    configuration.
+
+    Args:
+        **kwargs: Additional arguments. For torch-based shuffles, can be used to specify:
             - snapshot_index
             - detector_snapshot_index
 
-    Returns tuple of DLCscorer, DLCscorerlegacy (old naming convention)
+    Returns:
+        tuple: DLCscorer and DLCscorerlegacy (old naming convention).
     """
     if engine is None:
         from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
@@ -844,7 +853,6 @@ def find_video_full_data(folder, videoname, scorer):
 
 def find_video_metadata(folder, videoname: str, scorer: str):
     """For backward compatibility, let us search the substring 'meta'."""
-
     scorer_legacy = scorer.replace("DLC", "DeepCut")
     meta_files = filter_files_by_patterns(
         folder=folder,
@@ -867,7 +875,6 @@ def load_video_full_data(folder, videoname, scorer):
 
 def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, track_method=""):
     """Find potential data files from the hints given to the function."""
-
     scorer_legacy = scorer.replace("DLC", "DeepCut")
     suffix = "_filtered" if filtered else ""
     tracker = TRACK_METHODS.get(track_method, "")

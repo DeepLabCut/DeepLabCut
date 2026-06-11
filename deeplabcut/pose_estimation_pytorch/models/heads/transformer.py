@@ -24,7 +24,8 @@ from deeplabcut.pose_estimation_pytorch.models.target_generators import BaseGene
 @HEADS.register_module
 class TransformerHead(BaseHead):
     """Transformer Head module to predict heatmaps using a transformer-based
-    approach."""
+    approach.
+    """
 
     def __init__(
         self,

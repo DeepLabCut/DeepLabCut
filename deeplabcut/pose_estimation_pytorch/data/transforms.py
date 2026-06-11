@@ -175,9 +175,8 @@ def build_auto_padding(
         border_mask_value: padding value for mask if border_mode is 'constant'
 
     Raises:
-        ValueError:
-            Only one of 'min_height' and 'pad_height_divisor' parameters must be set
-            Only one of 'min_width' and 'pad_width_divisor' parameters must be set
+        ValueError: If both ``min_height`` and ``pad_height_divisor`` are set, or both
+            ``min_width`` and ``pad_width_divisor`` are set.
 
     Returns:
         the auto-padding transform

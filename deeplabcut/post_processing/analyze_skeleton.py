@@ -30,28 +30,26 @@ from deeplabcut.utils.deprecation import renamed_parameter
 
 # utility functions
 def calc_distance_between_points_two_vectors_2d(v1, v2):
-    """calc_distance_between_points_two_vectors_2d [pairwise distance between vectors
-    points]
+    """Calculate pairwise distance between vector points.
 
-    Arguments:
-        v1 {[np.array]} -- [description]
-        v2 {[type]} -- [description]
+    Args:
+        v1 (np.array): First array of 2D points.
+        v2 (np.array): Second array of 2D points.
 
     Raises:
-        ValueError -- [description]
-        ValueError -- [description]
-        ValueError -- [description]
+        ValueError: If input arguments have invalid data format, shape, or length.
 
     Returns:
-        [type] -- [description]
+        list: Pairwise Euclidean distances between corresponding points.
 
-    testing:
-    >>> v1 = np.zeros((2, 5))
-    >>> v2 = np.zeros((2, 5))
-    >>> v2[1, :]  = [0, 10, 25, 50, 100]
-    >>> d = calc_distance_between_points_two_vectors_2d(v1.T, v2.T)
+    Examples:
+        Calculate pairwise Euclidean distances between corresponding points:
+
+            v1 = np.zeros((2, 5))
+            v2 = np.zeros((2, 5))
+            v2[1, :] = [0, 10, 25, 50, 100]
+            d = calc_distance_between_points_two_vectors_2d(v1.T, v2.T)
     """
-
     # Check dataformats
     if not isinstance(v1, np.ndarray) or not isinstance(v2, np.ndarray):
         raise ValueError("Invalid argument data format")
@@ -66,27 +64,31 @@ def calc_distance_between_points_two_vectors_2d(v1, v2):
 
 
 def angle_between_points_2d_anticlockwise(p1, p2):
-    """angle_between_points_2d_clockwise [Determines the angle of a straight line drawn
-    between point one and two. The number returned, which is a double in degrees, tells
-    us how much we have to rotate a horizontal line anti-clockwise for it to match the
-    line between the two points.]
+    """Determine the angle of a straight line drawn between point one and two.
 
-    Arguments:
-        p1 {[np.ndarray, list]} -- np.array or list [ with the X and Y coordinates of the point]
-        p2 {[np.ndarray, list]} -- np.array or list [ with the X and Y coordinates of the point]
+    The number returned, which is a double in degrees, tells us how much we have to
+    rotate a horizontal line anti-clockwise for it to match the line between the two
+    points.
+
+    Args:
+        p1 (np.ndarray or list): Array or list with the X and Y coordinates of the point.
+        p2 (np.ndarray or list): Array or list with the X and Y coordinates of the point.
 
     Returns:
-        [int] -- [clockwise angle between p1, p2 using the inner product and the deterinant of the two vectors]
+        float: Clockwise angle between p1 and p2 using the inner product and the
+            determinant of the two vectors.
 
-    Testing:  - to check:     print(zero, ninety, oneeighty, twoseventy)
-        >>> zero = angle_between_points_2d_clockwise([0, 1], [0, 1])
-        >>> ninety = angle_between_points_2d_clockwise([1, 0], [0, 1])
-        >>> oneeighty = angle_between_points_2d_clockwise([0, -1], [0, 1])
-        >>> twoseventy = angle_between_points_2d_clockwise([-1, 0], [0, 1])
-        >>> ninety2 = angle_between_points_2d_clockwise([10, 0], [10, 1])
-        >>> print(ninety2)
+    Examples:
+        Calculate the clockwise angle between points:
+
+
+            zero = angle_between_points_2d_clockwise([0, 1], [0, 1])
+            ninety = angle_between_points_2d_clockwise([1, 0], [0, 1])
+            oneeighty = angle_between_points_2d_clockwise([0, -1], [0, 1])
+            twoseventy = angle_between_points_2d_clockwise([-1, 0], [0, 1])
+            ninety2 = angle_between_points_2d_clockwise([10, 0], [10, 1])
+            print(ninety2)
     """
-
     """
         Determines the angle of a straight line drawn between point one and two.
         The number returned, which is a double in degrees, tells us how much we have to rotate
@@ -103,25 +105,30 @@ def angle_between_points_2d_anticlockwise(p1, p2):
 
 
 def calc_angle_between_vectors_of_points_2d(v1, v2):
-    """calc_angle_between_vectors_of_points_2d [calculates the clockwise angle between
-    each set of point for two 2d arrays of points]
+    """Calculate the clockwise angle between each set of points for two 2d arrays.
 
-    Arguments:
-        v1 {[np.ndarray]} -- [2d array with X,Y position at each timepoint]
-        v2 {[np.ndarray]} -- [2d array with X,Y position at each timepoint]
+    Args:
+        v1 (np.ndarray): 2d array with X,Y position at each timepoint.
+        v2 (np.ndarray): 2d array with X,Y position at each timepoint.
 
     Returns:
-        [np.ndarray] -- [1d array with clockwise angle between pairwise points in v1,v2]
+        np.ndarray: 1d array with clockwise angle between pairwise points in v1,v2.
 
     Testing:
-    >>> v1 = np.zeros((2, 4))
-    >>> v1[1, :] = [1, 1, 1, 1, ]
-    >>> v2 = np.zeros((2, 4))
-    >>> v2[0, :] = [0, 1, 0, -1]
-    >>> v2[1, :] = [1, 0, -1, 0]
-    >>> a = calc_angle_between_vectors_of_points_2d(v2, v1)
-    """
+        Calculate the clockwise angle:
 
+            v1 = np.zeros((2, 4))
+            v1[1, :] = [
+                1,
+                1,
+                1,
+                1,
+            ]
+            v2 = np.zeros((2, 4))
+            v2[0, :] = [0, 1, 0, -1]
+            v2[1, :] = [1, 0, -1, 0]
+            a = calc_angle_between_vectors_of_points_2d(v2, v1)
+    """
     # Check data format
     if v1 is None or v2 is None or not isinstance(v1, np.ndarray) or not isinstance(v2, np.ndarray):
         raise ValueError("Invalid format for input arguments")
@@ -142,11 +149,11 @@ def calc_angle_between_vectors_of_points_2d(v1, v2):
 
 # Process single bone
 def analyzebone(bp1, bp2):
-    """[Computes length and orientation of the bone at each frame]
+    """Compute length and orientation of the bone at each frame.
 
-    Arguments:
-        bp1 {[type]} -- [description]
-        bp2 {[type]} -- [description]
+    Args:
+        bp1: First body part data.
+        bp2: Second body part data.
     """
     bp1_pos = np.vstack([bp1.x.values, bp1.y.values]).T
     bp2_pos = np.vstack([bp2.x.values, bp2.y.values]).T
@@ -186,67 +193,46 @@ def analyzeskeleton(
 
     The bone and skeleton information is defined in the config file.
 
-    Parameters
-    ----------
-    config: str
-        Full path of the config.yaml file.
-
-    videos: list[str]
-        The full paths to videos for analysis or a path to the directory, where all the
-        videos with same extension are stored.
-
-    video_extensions : str | Sequence[str] | None, optional, default=None
-        Controls how ``videos`` are filtered, based on file extension.
-        File paths and directory contents are treated differently:
-        - ``None`` (default): file paths are accepted as-is; directories are
-          scanned for files with a recognized video extension.
-        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
-          both file paths and directory contents are filtered by the given
-          extension(s).
-
-    shuffle : int, optional, default=1
-        The shuffle index of training dataset. The extracted frames will be stored in
-        the labeled-dataset for the corresponding shuffle of training dataset.
-
-    trainingsetindex: int, optional, default=0
-        Integer specifying which TrainingsetFraction to use.
-        Note that TrainingFraction is a list in config.yaml.
-
-    filtered: bool, optional, default=False
-        Boolean variable indicating if filtered output should be plotted rather than
-        frame-by-frame predictions. Filtered version can be calculated with
-        ``deeplabcut.filterpredictions``.
-
-    save_as_csv: bool, optional, default=False
-        Saves the predictions in a .csv file.
-
-    destfolder: string or None, optional, default=None
-        Specifies the destination folder for analysis data. If ``None``, the path of
-        the video is used. Note that for subsequent analysis this folder also needs to
-        be passed.
-
-    modelprefix: str, optional, default=""
-        Directory containing the deeplabcut models to use when evaluating the network.
-        By default, the models are assumed to exist in the project folder.
-
-    track_method: string, optional, default=""
-        Specifies the tracker used to generate the data.
-        Empty by default (corresponding to a single animal project).
-        For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
-        be taken from the config.yaml file if none is given.
-
-    return_data: bool, optional, default=False
-        If True, returns a dictionary of the filtered data keyed by video names.
-
-    kwargs: additional arguments.
-        For torch-based shuffles, can be used to specify:
+    Args:
+        config (str): Full path of the config.yaml file.
+        videos (list[str]): The full paths to videos for analysis or a path to the
+            directory, where all the videos with same extension are stored.
+        video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
+            filtered, based on file extension. File paths and directory contents are
+            treated differently:
+            - ``None`` (default): file paths are accepted as-is; directories are
+              scanned for files with a recognized video extension.
+            - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+              both file paths and directory contents are filtered by the given
+              extension(s). Defaults to None.
+        shuffle (int, optional): The shuffle index of training dataset. The extracted
+            frames will be stored in the labeled-dataset for the corresponding shuffle
+            of training dataset. Defaults to 1.
+        trainingsetindex (int, optional): Integer specifying which TrainingsetFraction
+            to use. Note that TrainingFraction is a list in config.yaml. Defaults to 0.
+        filtered (bool, optional): Boolean variable indicating if filtered output should
+            be plotted rather than frame-by-frame predictions. Filtered version can be
+            calculated with ``deeplabcut.filterpredictions``. Defaults to False.
+        save_as_csv (bool, optional): Saves the predictions in a .csv file. Defaults to
+            False.
+        destfolder (string or None, optional): Specifies the destination folder for
+            analysis data. If ``None``, the path of the video is used. Note that for
+            subsequent analysis this folder also needs to be passed. Defaults to None.
+        modelprefix (str, optional): Directory containing the deeplabcut models to use
+            when evaluating the network. By default, the models are assumed to exist in
+            the project folder. Defaults to "".
+        track_method (string, optional): Specifies the tracker used to generate the
+            data. Empty by default (corresponding to a single animal project). For
+            multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
+            be taken from the config.yaml file if none is given. Defaults to "".
+        return_data (bool, optional): If True, returns a dictionary of the filtered data
+            keyed by video names. Defaults to False.
+        **kwargs: Additional arguments. For torch-based shuffles, can be used to specify:
             - snapshot_index
             - detector_snapshot_index
 
-    Returns
-    -------
-    video_to_skeleton_df
-        Dictionary mapping video filepaths to skeleton dataframes.
+    Returns:
+        dict: Dictionary mapping video filepaths to skeleton dataframes.
 
         * If no videos exist, the dictionary will be empty.
         * If a video is not analyzed, the corresponding value in the dictionary will be

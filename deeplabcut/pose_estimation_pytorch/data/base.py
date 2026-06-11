@@ -135,7 +135,7 @@ class Loader(ABC):
             unique_bodypart: returns the ground truth for unique bodyparts
 
         Raises:
-            ValueError if unique_bodypart=True but there are no unique bodyparts
+            ValueError: If unique_bodypart=True but there are no unique bodyparts
 
         Returns:
             A dict mapping image paths to the ground truth annotations for the mode in
@@ -327,7 +327,6 @@ class Loader(ABC):
             ValueError: If 'bbox' is not found in annotation when method is 'gt'.
             ValueError: If method is not one of 'gt', 'detection bbox', 'keypoints', or 'segmentation mask'.
         """
-
         if not method:
             return annotations
 

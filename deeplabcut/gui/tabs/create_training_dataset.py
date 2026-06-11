@@ -393,6 +393,7 @@ class CreateTrainingDataset(DefaultTab):
     def _build_ctd_conditions(self, conditions_path: str | Path) -> Path | tuple[int, str]:
         """
         Builds CTD conditions in appropriate format from path to conditions.
+
         Args:
             conditions_path: str | Path:
                  path to conditions (path to snapshot or to predictions)
@@ -402,7 +403,7 @@ class CreateTrainingDataset(DefaultTab):
                 ctd conditions in the right format for deeplabcut.create_training_dataset() API method.
 
         Raises:
-            Value error if conditions are missing or invalid.
+            ValueError: If conditions are missing or invalid.
         """
         if conditions_path is None:
             raise ValueError("No conditions were selected for CTD model.")
@@ -655,7 +656,7 @@ class WeightInitializationSelector(QtWidgets.QWidget):
                 SuperAnimal model.
 
         Raises:
-            ValueError if WeightInitialization should be defined but could not be
+            ValueError: If WeightInitialization should be defined but could not be
                 created (e.g. if there's no conversion table).
         """
         if self.root.engine != Engine.PYTORCH:
@@ -704,7 +705,8 @@ class WeightInitializationSelector(QtWidgets.QWidget):
 
 class DataSplitSelector(QtWidgets.QWidget):
     """Allows users to create training sets with the same train/test split as
-    another."""
+    another.
+    """
 
     def __init__(self, root: QtWidgets.QMainWindow, parent: QtWidgets.QWidget):
         super().__init__()

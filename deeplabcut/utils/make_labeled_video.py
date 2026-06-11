@@ -248,7 +248,6 @@ def CreateVideoSlow(
     bboxes_color: str | None = None,
 ):
     """Creating individual frames with labeled body parts and making a video."""
-
     if displaycropped:
         ny, nx = y2 - y1, x2 - x1
     else:
@@ -434,209 +433,138 @@ def create_labeled_video(
     Make sure the video is already analyzed by the function
     ``deeplabcut.analyze_videos``.
 
-    Parameters
-    ----------
-    config : string
-        Full path of the config.yaml file.
+    Args:
+        config (string): Full path of the config.yaml file.
+        videos (list[str]): A list of strings containing the full paths to videos for analysis or a path
+            to the directory, where all the videos with same extension are stored.
+        video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
+            filtered, based on file extension. File paths and directory contents are
+            treated differently:
+            - ``None`` (default): file paths are accepted as-is; directories are
+              scanned for files with a recognized video extension.
+            - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+              both file paths and directory contents are filtered by the given
+              extension(s). Defaults to None.
+        shuffle (int, optional): Number of shuffles of training dataset. Defaults to 1.
+        trainingsetindex (int, optional): Integer specifying which TrainingsetFraction to use.
+            Note that TrainingFraction is a list in config.yaml. Defaults to 0.
+        filtered (bool, optional): If True, plot filtered output rather than
+            frame-by-frame predictions. Filtered version can be calculated with
+            ``deeplabcut.filterpredictions``. Defaults to False.
+        fastmode (bool, optional): If ``True``, uses openCV (much faster but less customization of video) instead
+            of matplotlib if ``False``. You can also "save_frames" individually or not in
+            the matplotlib mode (if you set the "save_frames" variable accordingly).
+            However, using matplotlib to create the frames it therefore allows much more
+            flexible (one can set transparency of markers, crop, and easily customize). Defaults to True.
+        save_frames (bool, optional): If ``True``, creates each frame individual and then combines into a video.
+            Setting this to ``True`` is relatively slow as it stores all individual frames. Defaults to False.
+        keypoints_only (bool, optional): By default, both video frames and keypoints are visible. If ``True``, only the
+            keypoints are shown. These clips are an hommage to Johansson movies,
+            see https://www.youtube.com/watch?v=1F5ICP9SYLU and of course his seminal
+            paper: "Visual perception of biological motion and a model for its analysis"
+            by Gunnar Johansson in Perception & Psychophysics 1973. Defaults to False.
+        Frames2plot (List[int] or None, optional): If not ``None`` and ``save_frames=True``,
+            plot frames at the given indices. E.g. ``Frames2plot=[0,11]`` plots the first
+            and 12th frame. Defaults to None.
+        displayedbodyparts (list[str] or str, optional): Body parts plotted in the video. If ``all``, then all
+            body parts from config.yaml are used. If a list of strings that are a subset of
+            the full list. E.g. ['hand','Joystick'] for the demo
+            Reaching-Mackenzie-2018-08-30/config.yaml to select only these body parts. Defaults to "all".
+        displayedindividuals (list[str] or str, optional): Individuals plotted in the video.
+            By default, all individuals present in the config will be shown. Defaults to "all".
+        codec (str, optional): Codec for labeled video. For available options, see
+            http://www.fourcc.org/codecs.php. Note that this depends on your ffmpeg
+            installation. Defaults to "mp4v".
+        outputframerate (int or None, optional): Output frame rate for labeled video (only
+            when saving frames). If ``None``, uses the original video rate. Defaults to None.
+        destfolder (Path, string or None, optional): Destination folder used for storing analysis data. If
+            ``None``, the path of the video file is used. Defaults to None.
+        draw_skeleton (bool, optional): If ``True`` adds a line connecting the body parts making a skeleton on each
+            frame. The body parts to be connected and the color of these connecting lines
+            are specified in the config file. Defaults to False.
+        trailpoints (int, optional): Number of previous frames whose body parts are plotted in a frame
+            (for displaying history). Defaults to 0.
+        displaycropped (bool, optional): Specifies whether only cropped frame is displayed (with labels analyzed
+            therein), or the original frame with the labels analyzed in the cropped subset. Defaults to False.
+        color_by (string, optional): Coloring rule. By default, each bodypart is colored differently.
+            If set to 'individual', points belonging to a single individual are colored the
+            same. Defaults to 'bodypart'.
+        modelprefix (str, optional): Directory containing the deeplabcut models to use when evaluating the network.
+            By default, the models are assumed to exist in the project folder. Defaults to "".
+        init_weights (str, optional): Checkpoint path to the super model. Defaults to "".
+        track_method (string, optional): Tracker used to generate the data.
+            Empty by default (corresponding to a single animal project).
+            For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
+            be taken from the config.yaml file if none is given. Defaults to "".
+        superanimal_name (str, optional): Name of the superanimal model. Defaults to "".
+        pcutoff (float, optional): Overrides the pcutoff set in the project configuration to plot the trajectories.
+            Defaults to None.
+        skeleton (list, optional): Skeleton definition for drawing. Defaults to None.
+        skeleton_color (string, optional): Color for the skeleton. Defaults to "white".
+        dotsize (int, optional): Size of label dots to use. Defaults to 8.
+        colormap (str, optional): Colormap to use for the labels. Defaults to "rainbow".
+        alphavalue (float, optional): Transparency of markers. Defaults to 0.5.
+        overwrite (bool, optional): If ``True`` overwrites existing labeled videos. Defaults to False.
+        confidence_to_alpha (bool | Callable[[float], float], optional): If False, all keypoints
+            use alpha=1. Otherwise, a function f: [0, 1] -> [0, 1] maps score to alpha.
+            When True, f(x) = max(0, (x - pcutoff)/(1 - pcutoff)). Defaults to False.
+        plot_bboxes (bool, optional): If using Pytorch and in Top-Down mode,
+            setting this to true will also plot the bounding boxes. Defaults to True.
+        bboxes_pcutoff (float, optional): If plotting bounding boxes, this overrides the bboxes_pcutoff
+            set in the model configuration. Defaults to None.
+        max_workers (int | None): Maximum number of processes to use for multiprocessing.
+            Set this parameter to limit the total RAM-usage of simultaneous processes.
+            Default: no maximum (i.e. number of spawned processes is based on the number of
+            cores and the number of input videos).
+        kwargs (dict, optional): Additional arguments.
+            For torch-based shuffles, can be used to specify:
+                - snapshot_index
+                - detector_snapshot_index
 
-    videos : list[str]
-        A list of strings containing the full paths to videos for analysis or a path
-        to the directory, where all the videos with same extension are stored.
+    Returns:
+        list[bool]: ``True`` if the video is successfully created for each item in ``videos``.
 
-    video_extensions : str | Sequence[str] | None, optional, default=None
-        Controls how ``videos`` are filtered, based on file extension.
-        File paths and directory contents are treated differently:
-        - ``None`` (default): file paths are accepted as-is; directories are
-          scanned for files with a recognized video extension.
-        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
-          both file paths and directory contents are filtered by the given
-          extension(s).
+    Examples:
+        Create the labeled video for a single video
 
-    shuffle : int, optional, default=1
-        Number of shuffles of training dataset.
+            deeplabcut.create_labeled_video(
+                '/analysis/project/reaching-task/config.yaml',
+                ['/analysis/project/videos/reachingvideo1.avi'],
+            )
 
-    trainingsetindex: int, optional, default=0
-        Integer specifying which TrainingsetFraction to use.
-        Note that TrainingFraction is a list in config.yaml.
+        Create the labeled video for a single video and store the individual frames
 
-    filtered: bool, optional, default=False
-        Boolean variable indicating if filtered output should be plotted rather than
-        frame-by-frame predictions. Filtered version can be calculated with
-        ``deeplabcut.filterpredictions``.
+            deeplabcut.create_labeled_video(
+                '/analysis/project/reaching-task/config.yaml',
+                ['/analysis/project/videos/reachingvideo1.avi'],
+                fastmode=True,
+                save_frames=True,
+            )
 
-    fastmode: bool, optional, default=True
-        If ``True``, uses openCV (much faster but less customization of video) instead
-        of matplotlib if ``False``. You can also "save_frames" individually or not in
-        the matplotlib mode (if you set the "save_frames" variable accordingly).
-        However, using matplotlib to create the frames it therefore allows much more
-        flexible (one can set transparency of markers, crop, and easily customize).
+        Create the labeled video for multiple videos
 
-    save_frames: bool, optional, default=False
-        If ``True``, creates each frame individual and then combines into a video.
-        Setting this to ``True`` is relatively slow as it stores all individual frames.
+            deeplabcut.create_labeled_video(
+                '/analysis/project/reaching-task/config.yaml',
+                [
+                    '/analysis/project/videos/reachingvideo1.avi',
+                    '/analysis/project/videos/reachingvideo2.avi',
+                ],
+            )
 
-    keypoints_only: bool, optional, default=False
-        By default, both video frames and keypoints are visible. If ``True``, only the
-        keypoints are shown. These clips are an hommage to Johansson movies,
-        see https://www.youtube.com/watch?v=1F5ICP9SYLU and of course his seminal
-        paper: "Visual perception of biological motion and a model for its analysis"
-        by Gunnar Johansson in Perception & Psychophysics 1973.
+        Create the labeled video for all the videos with an .avi extension in a directory.
 
-    Frames2plot: List[int] or None, optional, default=None
-        If not ``None`` and ``save_frames=True`` then the frames corresponding to the
-        index will be plotted. For example, ``Frames2plot=[0,11]`` will plot the first
-        and the 12th frame.
+            deeplabcut.create_labeled_video(
+                '/analysis/project/reaching-task/config.yaml',
+                ['/analysis/project/videos/'],
+            )
 
-    displayedbodyparts: list[str] or str, optional, default="all"
-        This selects the body parts that are plotted in the video. If ``all``, then all
-        body parts from config.yaml are used. If a list of strings that are a subset of
-        the full list. E.g. ['hand','Joystick'] for the demo
-        Reaching-Mackenzie-2018-08-30/config.yaml to select only these body parts.
+        Create the labeled video for all the videos with an .mp4 extension in a directory.
 
-    displayedindividuals: list[str] or str, optional, default="all"
-        Individuals plotted in the video.
-        By default, all individuals present in the config will be shown.
-
-    codec: str, optional, default="mp4v"
-        Codec for labeled video. For available options, see
-        http://www.fourcc.org/codecs.php. Note that this depends on your ffmpeg
-        installation.
-
-    outputframerate: int or None, optional, default=None
-        Positive number, output frame rate for labeled video (only available for the
-        mode with saving frames.) If ``None``, which results in the original video
-        rate.
-
-    destfolder: Path, string or None, optional, default=None
-        Specifies the destination folder that was used for storing analysis data. If
-        ``None``, the path of the video file is used.
-
-    draw_skeleton: bool, optional, default=False
-        If ``True`` adds a line connecting the body parts making a skeleton on each
-        frame. The body parts to be connected and the color of these connecting lines
-        are specified in the config file.
-
-    trailpoints: int, optional, default=0
-        Number of previous frames whose body parts are plotted in a frame
-        (for displaying history).
-
-    displaycropped: bool, optional, default=False
-        Specifies whether only cropped frame is displayed (with labels analyzed
-        therein), or the original frame with the labels analyzed in the cropped subset.
-
-    color_by : string, optional, default='bodypart'
-        Coloring rule. By default, each bodypart is colored differently.
-        If set to 'individual', points belonging to a single individual are colored the
-        same.
-
-    modelprefix: str, optional, default=""
-        Directory containing the deeplabcut models to use when evaluating the network.
-        By default, the models are assumed to exist in the project folder.
-
-    init_weights: str,
-        Checkpoint path to the super model
-
-    track_method: string, optional, default=""
-        Specifies the tracker used to generate the data.
-        Empty by default (corresponding to a single animal project).
-        For multiple animals, must be either 'box', 'skeleton', or 'ellipse' and will
-        be taken from the config.yaml file if none is given.
-
-    superanimal_name: str, optional, default=""
-        Name of the superanimal model.
-
-    pcutoff: float, optional, default=None
-        Overrides the pcutoff set in the project configuration to plot the trajectories.
-
-    skeleton: list, optional, default=[],
-
-    skeleton_color: string, optional, default="white",
-        Color for the skeleton
-
-    dotsize, int, optional, default=8,
-        Size of label dots tu use
-
-    colormap: str, optional, default="rainbow",
-        Colormap to use for the labels
-
-    alphavalue: float, optional, default=0.5,
-
-    overwrite: bool, optional, default=False
-        If ``True`` overwrites existing labeled videos.
-
-    confidence_to_alpha: Union[bool, Callable[[float], float], default=False
-        If False, all keypoints will be plot with alpha=1. Otherwise, this can be
-        defined as a function f: [0, 1] -> [0, 1] such that the alpha value for a
-        keypoint will be set as a function of its score: alpha = f(score). The default
-        function used when True is f(x) = max(0, (x - pcutoff)/(1 - pcutoff)).
-
-    plot_bboxes: bool, optional, default=True
-        If using Pytorch and in Top-Down mode,
-        setting this to true will also plot the bounding boxes
-
-    bboxes_pcutoff, float, optional, default=None:
-        If plotting bounding boxes, this overrides the bboxes_pcutoff
-        set in the model configuration.
-
-    max_workers (int | None):
-        Maximum number of processes to use for multiprocessing.
-        Set this parameter to limit the total RAM-usage of simultaneous processes.
-        Default: no maximum (i.e. number of spawned processes is based on the number of
-        cores and the number of input videos).
-
-    kwargs: additional arguments.
-        For torch-based shuffles, can be used to specify:
-            - snapshot_index
-            - detector_snapshot_index
-
-    Returns
-    -------
-        results : list[bool]
-        ``True`` if the video is successfully created for each item in ``videos``.
-
-    Examples
-    --------
-
-    Create the labeled video for a single video
-
-    >>> deeplabcut.create_labeled_video(
-            '/analysis/project/reaching-task/config.yaml',
-            ['/analysis/project/videos/reachingvideo1.avi'],
-        )
-
-    Create the labeled video for a single video and store the individual frames
-
-    >>> deeplabcut.create_labeled_video(
-            '/analysis/project/reaching-task/config.yaml',
-            ['/analysis/project/videos/reachingvideo1.avi'],
-            fastmode=True,
-            save_frames=True,
-        )
-
-    Create the labeled video for multiple videos
-
-    >>> deeplabcut.create_labeled_video(
-            '/analysis/project/reaching-task/config.yaml',
-            [
-                '/analysis/project/videos/reachingvideo1.avi',
-                '/analysis/project/videos/reachingvideo2.avi',
-            ],
-        )
-
-    Create the labeled video for all the videos with an .avi extension in a directory.
-
-    >>> deeplabcut.create_labeled_video(
-            '/analysis/project/reaching-task/config.yaml',
-            ['/analysis/project/videos/'],
-        )
-
-    Create the labeled video for all the videos with an .mp4 extension in a directory.
-
-    >>> deeplabcut.create_labeled_video(
-            '/analysis/project/reaching-task/config.yaml',
-            ['/analysis/project/videos/'],
-            video_extensions='mp4',
-        )
+            deeplabcut.create_labeled_video(
+                '/analysis/project/reaching-task/config.yaml',
+                ['/analysis/project/videos/'],
+                    video_extensions='mp4',
+                )
     """
     if skeleton is None:
         skeleton = []
@@ -817,16 +745,10 @@ def proc_video(
     plot_bboxes: bool = True,
     bboxes_pcutoff: float = 0.6,
 ):
-    """Helper function for create_videos.
+    """Helper function for create_labeled_video.
 
-    Parameters
-    ----------
-
-
-    Returns
-    -------
-        result : bool
-        ``True`` if a video is successfully created.
+    Returns:
+        bool: ``True`` if a video is successfully created.
     """
     videofolder = Path(video).parent
     if destfolder is None:
@@ -1166,60 +1088,40 @@ def create_video_with_all_detections(
 ):
     """Create a video labeled with all the detections stored in a '*_full.pickle' file.
 
-    Parameters
-    ----------
-    config : str
-        Absolute path to the config.yaml file
-
-    videos : list of str
-        A list of strings containing the full paths to videos for analysis or a path to the directory,
-        where all the videos with same extension are stored.
-
-    video_extensions : str | Sequence[str] | None, optional, default=None
-        Controls how ``videos`` are filtered, based on file extension.
-        File paths and directory contents are treated differently:
-        - ``None`` (default): file paths are accepted as-is; directories are
-          scanned for files with a recognized video extension.
-        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
-          both file paths and directory contents are filtered by the given
-          extension(s).
-
-    shuffle : int, optional
-        Number of shuffles of training dataset. Default is set to 1.
-
-    trainingsetindex: int, optional
-        Integer specifying which TrainingsetFraction to use.
-        By default the first (note that TrainingFraction is a list in config.yaml).
-
-    displayedbodyparts: list of strings, optional
-        This selects the body parts that are plotted in the video.
-        Either ``all``, then all body parts from config.yaml are used or
-        a list of strings that are a subset of the full list.
-        E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml
-        to select only these two body parts.
-
-    cropping: list[int], optional (default=None)
-        If passed in, the [x1, x2, y1, y2] crop coordinates are used to shift detections appropriately.
-
-    destfolder: string, optional
-        Specifies the destination folder that was used for storing analysis data
-        (default is the path of the video).
-
-    confidence_to_alpha: Union[bool, Callable[[float], float], default=False
-        If False, all keypoints will be plot with alpha=1. Otherwise, this can be
-        defined as a function f: [0, 1] -> [0, 1] such that the alpha value for a
-        keypoint will be set as a function of its score: alpha = f(score). The default
-        function used when True is f(x) = x.
-
-    plot_bboxes: bool, optional (default=True)
-        If detections were produced using a Pytorch Top-Down model,
-        setting this parameter to True will also plot
-        the bounding boxes generated by the detector.
-
-    kwargs: additional arguments.
-        For torch-based shuffles, can be used to specify:
-            - snapshot_index
-            - detector_snapshot_index
+    Args:
+        config (str): Absolute path to the config.yaml file.
+        videos (list of str): Full paths to videos for analysis, or a directory where all
+            videos with the same extension are stored.
+        video_extensions (str | Sequence[str] | None, optional): Controls how ``videos`` are
+            filtered, based on file extension. File paths and directory contents are
+            treated differently:
+            - ``None`` (default): file paths are accepted as-is; directories are
+              scanned for files with a recognized video extension.
+            - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+              both file paths and directory contents are filtered by the given
+              extension(s). Defaults to None.
+        shuffle (int, optional): Number of shuffles of training dataset. Defaults to 1.
+        trainingsetindex (int, optional): Integer specifying which TrainingsetFraction to use.
+            By default the first (note that TrainingFraction is a list in config.yaml).
+        displayedbodyparts (list of strings, optional): Body parts plotted in the video.
+            Either ``all``, then all body parts from config.yaml are used or
+            a list of strings that are a subset of the full list.
+            E.g. ['hand','Joystick'] for the demo Reaching-Mackenzie-2018-08-30/config.yaml
+            to select only these two body parts.
+        cropping (list[int], optional): If passed in, [x1, x2, y1, y2] crop coordinates
+            shift detections appropriately. Defaults to None.
+        destfolder (string, optional): Destination folder used for storing analysis data
+            (default is the path of the video).
+        confidence_to_alpha (bool | Callable[[float], float], optional): If False, all keypoints
+            use alpha=1. Otherwise, a function f: [0, 1] -> [0, 1] maps score to alpha.
+            When True, f(x) = x. Defaults to False.
+        plot_bboxes (bool, optional): If detections were produced using a Pytorch Top-Down model,
+            setting this parameter to True will also plot
+            the bounding boxes generated by the detector. Defaults to True.
+        kwargs (dict, optional): Additional arguments.
+            For torch-based shuffles, can be used to specify:
+                - snapshot_index
+                - detector_snapshot_index
     """
     import re
 

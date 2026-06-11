@@ -36,7 +36,8 @@ from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
 
 
 def get_cmap(n: int, name: str = "hsv") -> Colormap:
-    """
+    """Get the cmap.
+
     Args:
         n: number of distinct colors
         name: name of matplotlib colormap
@@ -62,8 +63,8 @@ def make_labeled_image(
     ax=None,
 ):
     """Creating a labeled image with the original human labels, as well as the
-    DeepLabCut's!"""
-
+    DeepLabCut's!
+    """
     if labels is None:
         labels = ["+", ".", "x"]
     alphavalue = cfg["alphavalue"]  # .5
@@ -157,7 +158,6 @@ def make_multianimal_labeled_image(
     Returns:
         matplotlib Axes object with plotted labels and predictions.
     """
-
     if labels is None:
         labels = ["+", ".", "x"]
     if ax is None:
@@ -308,31 +308,25 @@ def make_labeled_images_from_dataframe(
 ):
     """Write labeled frames to disk from a DataFrame.
 
-    Parameters
-    ----------
-    df : pd.DataFrame
-        DataFrame containing the labeled data. Typically, the DataFrame is obtained
-        through pandas.read_csv() or pandas.read_hdf().
-    cfg : dict
-        Project configuration.
-    destfolder : string, optional
-        Destination folder into which images will be stored. By default, same location as the labeled data.
-        Note that the folder will be created if it does not exist.
-    scale : float, optional
-        Up/downscale the output dimensions.
-        By default, outputs are of the same dimensions as the original images.
-    dpi : int, optional
-        Output resolution. 100 dpi by default.
-    keypoint : str, optional
-        Keypoint appearance. By default, keypoints are marked by a + sign.
-        Refer to https://matplotlib.org/3.2.1/api/markers_api.html for a list of all possible options.
-    draw_skeleton : bool, optional
-        Whether to draw the animal skeleton as defined in *cfg*. True by default.
-    color_by : str, optional
-        Color scheme of the keypoints. Must be either 'bodypart' or 'individual'.
-        By default, keypoints are colored relative to the bodypart they represent.
+    Args:
+        df (pd.DataFrame): DataFrame containing the labeled data. Typically, the
+            DataFrame is obtained through pandas.read_csv() or pandas.read_hdf().
+        cfg (dict): Project configuration.
+        destfolder (string, optional): Destination folder into which images will be
+            stored. By default, same location as the labeled data. Note that the folder
+            will be created if it does not exist.
+        scale (float, optional): Up/downscale the output dimensions. By default, outputs
+            are of the same dimensions as the original images.
+        dpi (int, optional): Output resolution. 100 dpi by default.
+        keypoint (str, optional): Keypoint appearance. By default, keypoints are marked
+            by a + sign. Refer to https://matplotlib.org/3.2.1/api/markers_api.html for
+            a list of all possible options.
+        draw_skeleton (bool, optional): Whether to draw the animal skeleton as defined in
+            *cfg*. True by default.
+        color_by (str, optional): Color scheme of the keypoints. Must be either
+            'bodypart' or 'individual'. By default, keypoints are colored relative to
+            the bodypart they represent.
     """
-
     bodyparts = df.columns.get_level_values("bodyparts")
     bodypart_names = bodyparts.unique()
     nbodyparts = len(bodypart_names)

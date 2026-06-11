@@ -35,40 +35,40 @@ def label_frames(config_path: str | Path | None = None, image_folder: str | None
     `image_folder` for the project is opened in the napari-deeplabcut GUI to be labeled.
     If only the `config_path` is given, the first image folder is opened.
 
-    Parameters
-    ----------
-    config_path: str, Path, None
-        Full path of the project config.yaml file.
+    Args:
+        config_path (str | Path | None, optional): Full path of the project config.yaml
+            file. Defaults to None.
+        image_folder (str, optional): Name of the image folder to open for labelling.
+            Defaults to None.
 
-    image_folder: str, None
-        Name of the image folder to open for labelling.
+    Examples:
+        Opening the napari-deeplabcut annotation GUI without opening a specific folder of
+        images to label. You then need to drag-and-drop your image folder into the GUI.
+        See the napari-deeplabcut docs linked above for more information about labelling in
+        napari-deeplabcut.
 
-    Examples
-    --------
-    Opening the napari-deeplabcut annotation GUI without opening a specific folder of
-    images to label. You then need to drag-and-drop your image folder into the GUI.
-    See the napari-deeplabcut docs linked above for more information about labelling in
-    napari-deeplabcut.
-    >>> import deeplabcut
-    >>> deeplabcut.label_frames()
+            import deeplabcut
+            deeplabcut.label_frames()
 
-    Opening the images extracted from the "2025-01-01-experiment7" video in
-    napari-deeplabcut on Windows. The project's folder structure should look as follows:
-    reaching-task/                    # project root directory
-    ├── config.yaml                   # project configuration file
-    └── labeled-data/                 # folder containing all extracted image folders
-        ├── ...
-        ├── 2025-01-01-experiment7    # folder containing the images to label
-        └── ...
+        Opening the images extracted from the "2025-01-01-experiment7" video in
+        napari-deeplabcut on Windows. The project's folder structure should look as follows:
 
-    >>> deeplabcut.label_frames(
-    >>>     "C:\\myproject\\reaching-task\\config.yaml",
-    >>>     "2025-01-01-experiment7",
-    >>> )
+        reaching-task/                    # project root directory
+        ├── config.yaml                   # project configuration file
+        └── labeled-data/                 # folder containing all extracted image folders
+            ├── ...
+            ├── 2025-01-01-experiment7    # folder containing the images to label
+            └── ...
 
-    Opening the images extracted from the first video listed in the project
-    configuration in napari-deeplabcut on a Unix system.
-    >>> deeplabcut.label_frames("/users/john/project/config.yaml")
+            deeplabcut.label_frames(
+                "C:\\myproject\\reaching-task\\config.yaml",
+                "2025-01-01-experiment7",
+            )
+
+        Opening the images extracted from the first video listed in the project
+        configuration in napari-deeplabcut on a Unix system.
+
+            deeplabcut.label_frames("/users/john/project/config.yaml")
     """
     files = None
     if config_path is None:

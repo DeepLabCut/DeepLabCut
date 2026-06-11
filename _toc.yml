@@ -91,7 +91,7 @@ parts:
     chapters:
       - file: docs/dev
         title: Developer Documentation
-    
+
   - caption: Additional guides (Recipes)
     chapters:
       - file: docs/recipes/index

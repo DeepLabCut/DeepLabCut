@@ -39,87 +39,65 @@ def create_new_project(
     a basic configuration file. The configuration file is loaded with the default
     values. Change its parameters to your projects need.
 
-    Parameters
-    ----------
-    project : string
-        The name of the project.
+    Args:
+        project (string): The name of the project.
+        experimenter (string): The name of the experimenter.
+        videos (list[str]): A list of strings representing the full paths of the videos
+            to include in the project. If the strings represent a directory instead of
+            a file, all videos of ``video_extensions`` will be imported.
+        working_directory (string, optional): The directory where the project will be
+            created. The default is the ``current working directory``.
+        copy_videos (bool, optional): If True, the videos are copied to the ``videos``
+            directory. If False, symlinks of the videos will be created in the
+            ``project/videos`` directory; in the event of a failure to create symbolic
+            links, videos will be moved instead. Defaults to False.
+        video_extensions (str | Sequence[str] | None, optional):
+            Controls how ``videos`` are filtered, based on file extension.
+            File paths and directory contents are treated differently:
+            - ``None`` (default): file paths are accepted as-is; directories are
+              scanned for files with a recognized video extension.
+            - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+              both file paths and directory contents are filtered by the given
+              extension(s). Defaults to None.
+        multianimal (bool, optional): For creating a multi-animal project (introduced
+            in DLC 2.2). Defaults to False.
+        individuals (list[str] | None, optional): Relevant only if multianimal is True.
+            List of individuals to be used in the project configuration. If None,
+            defaults to ['individual1', 'individual2', 'individual3'].
 
-    experimenter : string
-        The name of the experimenter.
+    Returns:
+        str: Path to the new project configuration file.
 
-    videos : list[str]
-        A list of strings representing the full paths of the videos or video-directories
-        to include in the project.
+    Examples:
+        Linux/MacOS:
 
-    video_extensions (str | Sequence[str] | None, default=None):
-        Controls how ``videos`` are filtered, based on file extension.
-        File paths and directory contents are treated differently:
-        - ``None`` (default): file paths are accepted as-is; directories are
-          scanned for files with a recognized video extension.
-        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
-          both file paths and directory contents are filtered by the given
-          extension(s).
+            deeplabcut.create_new_project(
+                project='reaching-task',
+                experimenter='Linus',
+                videos=[
+                    '/data/videos/mouse1.avi',
+                    '/data/videos/mouse2.avi',
+                    '/data/videos/mouse3.avi'
+                ],
+                working_directory='/analysis/project/',
+            )
+            deeplabcut.create_new_project(
+                project='reaching-task',
+                experimenter='Linus',
+                videos=['/data/videos'],
+                videotype='.mp4',
+            )
 
-    working_directory : string, optional
-        The directory where the project will be created. The default is the
-        ``current working directory``.
+        Windows:
 
-    copy_videos : bool, optional, Default: False.
-        If True, the videos are copied to the ``videos`` directory. If False, symlinks
-        of the videos will be created in the ``project/videos`` directory; in the event
-        of a failure to create symbolic links, videos will be moved instead.
+            deeplabcut.create_new_project(
+                'reaching-task',
+                'Bill',
+                [r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'],
+                copy_videos=True,
+            )
 
-    multianimal: bool, optional. Default: False.
-        For creating a multi-animal project (introduced in DLC 2.2)
-
-    individuals: list[str]|None = None,
-        Relevant only if multianimal is True.
-        list of individuals to be used in the project configuration.
-        If None - defaults to ['individual1', 'individual2', 'individual3']
-
-    Returns
-    -------
-    str
-        Path to the new project configuration file.
-
-    Raises
-    ------
-    FileNotFoundError
-        If a non-existent path is passed to ``videos``.
-
-    Examples
-    --------
-
-    Linux/MacOS:
-
-    >>> deeplabcut.create_new_project(
-            project='reaching-task',
-            experimenter='Linus',
-            videos=[
-                '/data/videos/mouse1.avi',
-                '/data/videos/mouse2.avi',
-                '/data/videos/mouse3.avi'
-            ],
-            working_directory='/analysis/project/',
-        )
-    >>> deeplabcut.create_new_project(
-            project='reaching-task',
-            experimenter='Linus',
-            videos=['/data/videos'],
-            video_extensions='.mp4',
-        )
-
-    Windows:
-
-    >>> deeplabcut.create_new_project(
-            'reaching-task',
-            'Bill',
-            [r'C:\yourusername\rig-95\Videos\reachingvideo1.avi'],
-            copy_videos=True,
-        )
-
-    Users must format paths with either:
-    r'C:\ OR 'C:\\ <- i.e. a double backslash \ \ )
+        On Windows, paths should be formatted as ``r`"C:\"`` or ``"C:\\"`` (i.e. a double backslash).
     """
     from datetime import datetime as dt
 

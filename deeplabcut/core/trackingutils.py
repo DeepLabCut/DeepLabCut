@@ -178,10 +178,13 @@ class EllipseFitter:
         """Least Squares ellipse fitting algorithm Fit an ellipse to a set of X- and
         Y-coordinates. See Halir and Flusser, 1998 for implementation details.
 
-        :param x: ndarray, 1D trajectory
-        :param y: ndarray, 1D trajectory
-        :return: 1D ndarray of 6 coefficients of the general quadratic curve: ax^2 +
-            2bxy + cy^2 + 2dx + 2fy + g = 0
+        Args:
+            x (ndarray): 1D trajectory.
+            y (ndarray): 1D trajectory.
+
+        Returns:
+            ndarray: 1D array of 6 coefficients of the general quadratic curve:
+                ax^2 + 2bxy + cy^2 + 2dx + 2fy + g = 0.
         """
         D1 = np.vstack((x * x, x * y, y * y))
         D2 = np.vstack((x, y, np.ones_like(x)))
@@ -205,10 +208,13 @@ class EllipseFitter:
     def _fit_error(x, y, sd):
         """Fit a sd-sigma covariance error ellipse to the data.
 
-        :param x: ndarray, 1D input of X coordinates
-        :param y: ndarray, 1D input of Y coordinates
-        :param sd: int, size of the error ellipse in 'standard deviation'
-        :return: ellipse center, semi-axes length, angle to the X-axis
+        Args:
+            x (ndarray): 1D input of X coordinates.
+            y (ndarray): 1D input of Y coordinates.
+            sd (int): Size of the error ellipse in standard deviations.
+
+        Returns:
+            list: Ellipse center, semi-axes length, and angle to the X-axis.
         """
         cov = np.cov(x, y)
         E, V = np.linalg.eigh(cov)  # Returns the eigenvalues in ascending order
@@ -222,14 +228,16 @@ class EllipseFitter:
     @staticmethod
     @jit(nopython=True)
     def calc_parameters(coeffs):
-        """
-        Calculate ellipse center coordinates, semi-axes lengths, and
+        """Calculate ellipse center coordinates, semi-axes lengths, and
         the counterclockwise angle of rotation from the x-axis to the ellipse major axis.
         Visit http://mathworld.wolfram.com/Ellipse.html
         for how to estimate ellipse parameters.
 
-        :param coeffs: list of fitting coefficients
-        :return: center: 1D ndarray, semi-axes: 1D ndarray, angle: float
+        Args:
+            coeffs (list): Fitting coefficients.
+
+        Returns:
+            list: Center (1D ndarray), semi-axes (1D ndarray), and angle (float).
         """
         # The general quadratic curve has the form:
         # ax^2 + 2bxy + cy^2 + 2dx + 2fy + g = 0
@@ -359,7 +367,8 @@ class BoxTracker(BaseTracker):
     @staticmethod
     def convert_x_to_bbox(x, score=None):
         """Takes a bounding box in the centre form [x,y,s,r] and returns it in the form
-        [x1,y1,x2,y2] where x1,y1 is the top left and x2,y2 is the bottom right."""
+        [x1,y1,x2,y2] where x1,y1 is the top left and x2,y2 is the bottom right.
+        """
         w = np.sqrt(x[2] * x[3])
         h = x[2] / w
         if score is None:
@@ -371,7 +380,8 @@ class BoxTracker(BaseTracker):
     def convert_bbox_to_z(bbox):
         """Takes a bounding box in the form [x1,y1,x2,y2] and returns z in the form
         [x,y,s,r] where x,y is the centre of the box and s is the scale/area and r is
-        the aspect ratio."""
+        the aspect ratio.
+        """
         w = bbox[2] - bbox[0]
         h = bbox[3] - bbox[1]
         x = bbox[0] + w / 2.0
@@ -741,34 +751,28 @@ def reconstruct_all_ellipses(data, sd):
     coordinates across multiple frames. Each ellipse is fitted to the coordinates using
     an `EllipseFitter`.
 
-    Parameters
-    ----------
-    data : pandas.DataFrame
-        A multi-level DataFrame containing body part coordinates and likelihood values.
-        The index represents frames, and the columns follow a multi-level structure:
-        - Level 0: Scorer
-        - Level 1: Individuals
-        - Level 2: Body parts
-        - Level 3: Coordinates ("x" and "y") and "likelihood".
-    sd : float
-        The standard deviation used by the `EllipseFitter` for fitting ellipses.
+    Args:
+        data (pandas.DataFrame): A multi-level DataFrame containing body part coordinates and likelihood values.
+            The index represents frames, and the columns follow a multi-level structure:
+            - Level 0: Scorer
+            - Level 1: Individuals
+            - Level 2: Body parts
+            - Level 3: Coordinates ("x" and "y") and "likelihood".
+        sd (float): The standard deviation used by the `EllipseFitter` for fitting ellipses.
 
-    Returns
-    -------
-    numpy.ndarray
-        A 3D array of shape (A, F, 5), where:
-        - A is the number of individuals (excluding "single" if present).
-        - F is the number of frames.
-        - Each row contains ellipse parameters [cx, cy, width, height, angle].
+    Returns:
+        numpy.ndarray: A 3D array of shape (A, F, 5), where:
+            - A is the number of individuals (excluding "single" if present).
+            - F is the number of frames.
+            - Each row contains ellipse parameters [cx, cy, width, height, angle].
 
-    Notes
-    -----
-    - The method drops the "likelihood" column from the input DataFrame as it is not
-      relevant for ellipse fitting.
-    - If the "single" individual is present, it is excluded from the reconstruction process.
-    - The `EllipseFitter` is used to fit ellipses to the body part coordinates for each
-      individual in each frame.
-    - NaN values are assigned when no valid ellipse can be fitted.
+    Note:
+        - The method drops the "likelihood" column from the input DataFrame as it is not
+          relevant for ellipse fitting.
+        - If the "single" individual is present, it is excluded from the reconstruction process.
+        - The `EllipseFitter` is used to fit ellipses to the body part coordinates for each
+          individual in each frame.
+        - NaN values are assigned when no valid ellipse can be fitted.
     """
     xy = data.droplevel("scorer", axis=1).drop("likelihood", axis=1, level=-1)
     if "single" in xy:

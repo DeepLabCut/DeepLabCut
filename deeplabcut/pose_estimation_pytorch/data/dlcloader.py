@@ -184,7 +184,7 @@ class DLCLoader(Loader):
             mode: mode indicating whether to use 'train' or 'test' data.
 
         Raises:
-            AttributeError: if the specified mode (train or test) does not exist.
+            AttributeError: If the specified mode (train or test) does not exist.
 
         Returns:
             the coco-style annotations
@@ -226,7 +226,7 @@ class DLCLoader(Loader):
             image_resolutions: all possible image resolutions in the dataset
 
         Raises:
-            ValueError: if the data contained in the ground truth HDF does not contain
+            ValueError: If the data contained in the ground truth HDF does not contain
                 a dataframe.
         """
         trainset_dir = Path(config["project_path"]) / af.get_training_set_folder(config)
@@ -364,7 +364,7 @@ class DLCLoader(Loader):
         df: pd.DataFrame,
         parameters: PoseDatasetParameters,
     ) -> dict:
-        """Formerly Shaokai's function.
+        """Convert a DeepLabCut annotation DataFrame to a COCO-like dict.
 
         Args:
             project_root: the path to the project root
@@ -665,7 +665,7 @@ def _validate_dataframes(
         The validated and sanitized DataFrames
 
     Raises:
-        ValueError: if strict and there is a small fixable error, or if there are images
+        ValueError: If strict and there is a small fixable error, or if there are images
         that are present in both the training and test set.
     """
     error = False

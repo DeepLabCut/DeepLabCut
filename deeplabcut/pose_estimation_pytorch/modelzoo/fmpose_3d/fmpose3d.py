@@ -109,24 +109,26 @@ def get_fmpose3d_inference_api(
         snapshot_path: The path to the snapshot file. If None, FMPose3D will download the default snapshot.
         device: The device to use. If None, the device will be inferred from the environment.
         config_kwargs: Additional keyword arguments to pass to the FMPose3DConfig.
+
     Returns:
         FMPose3DInference: An FMPose3DInference API runner.
 
-    Example Usages
-    ```python
-    # Initialize the API (downloads the default weights automatically from huggingface)
-    fmpose = get_fmpose3d_inference_api(
-        model_type="fmpose3d_animals",
-        device="cuda:0",
-    )
+    Examples:
+        Lift 2d predictions to 3d using the FMPose3D API:
 
-    # Run inference on an image
-    predictions_3d = fmpose.predict(source="path/to/image.jpg") # or (H, W, 3) numpy array
+            # Initialize the API (downloads the default weights automatically from huggingface):
+            fmpose = get_fmpose3d_inference_api(
+                model_type="fmpose3d_animals",
+                device="cuda:0",
+            )
 
-    # Lift 2d predictions to 3d
-    keypoints_2d = np.random.rand(num_frames, num_joints, 2)
-    predictions_3d = fmpose.pose_3d(keypoints_2d=keypoints_2d)
-    ```
+            # Run inference on an image:
+            predictions_3d = fmpose.predict(source="path/to/image.jpg")  # or (H, W, 3) numpy array
+
+            # Lift 2d predictions to 3d:
+            keypoints_2d = np.random.rand(num_frames, num_joints, 2)
+            predictions_3d = fmpose.pose_3d(keypoints_2d=keypoints_2d)
+
     """
     if config_kwargs is None:
         config_kwargs = {}

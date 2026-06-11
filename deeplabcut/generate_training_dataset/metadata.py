@@ -35,7 +35,7 @@ class DataSplit:
     def __post_init__(self) -> None:
         """
         Raises:
-            ValueError if the indices are not sorted in increasing
+            RuntimeError: If the indices are not sorted in strictly increasing order.
         """
         for indices in [self.train_indices, self.test_indices]:
             idx = np.array(indices)
@@ -134,7 +134,7 @@ class TrainingDatasetMetadata:
     def __post_init__(self) -> None:
         """
         Raises:
-            ValueError if the indices are not sorted in increasing order
+            RuntimeError: If the shuffles are not sorted in ascending training fraction and index.
         """
         indices = [[s.train_fraction, s.index] for s in self.shuffles]
         for (frac1, idx1), (frac2, idx2) in zip(indices[:-1], indices[1:], strict=False):
@@ -160,8 +160,8 @@ class TrainingDatasetMetadata:
             A new instance of TrainingDatasetMetadata with updated shuffles
 
         Raises:
-            ValueError: if overwrite=False and there is already a shuffle with the given
-                index in the metadata file.
+            RuntimeError: If ``overwrite`` is False and a shuffle with the same index and
+                training fraction already exists.
         """
         existing_indices = [s.index for s in self.shuffles if s.train_fraction == shuffle.train_fraction]
         if shuffle.index in existing_indices:
@@ -191,7 +191,7 @@ class TrainingDatasetMetadata:
             the shuffle with the given trainset index and shuffle index
 
         Raises:
-            ValueError if trainset_index is out of bounds or the shuffle is not present
+            ValueError: If trainset_index is out of bounds or the shuffle is not present
         """
         fractions = self.project_config["TrainingFraction"]
         if trainset_index >= len(fractions):
@@ -369,8 +369,8 @@ def update_metadata(
             if one exists
 
     Raises:
-        ValueError: if overwrite=False and there is already a shuffle with the given
-            index in the metadata file.
+        RuntimeError: If ``overwrite`` is ``False`` and a shuffle with the same index and
+            training fraction already exists.
     """
     prefix = cfg["Task"] + cfg["date"]
     metadata = TrainingDatasetMetadata.load(cfg, load_splits=True)
@@ -394,7 +394,8 @@ def get_shuffle_engine(
     shuffle: int,
     modelprefix: str = "",
 ) -> Engine:
-    """
+    """Get the shuffle engine.
+
     Args:
         cfg: the config for the DeepLabCut project
         trainingsetindex: the training set index used
@@ -405,7 +406,7 @@ def get_shuffle_engine(
         the engine that the shuffle was created with
 
     Raises:
-        ValueError if the engine for the shuffle cannot be determined or the shuffle
+        ValueError: If the engine for the shuffle cannot be determined or the shuffle
         doesn't exist
     """
     if not TrainingDatasetMetadata.path(cfg).exists():

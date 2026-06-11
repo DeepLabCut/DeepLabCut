@@ -135,7 +135,7 @@ def download_super_animal_snapshot(dataset: str, model_name: str) -> Path:
         The path to the downloaded snapshot.
 
     Raises:
-        RuntimeError if the model fails to download.
+        RuntimeError: If the model fails to download.
     """
     snapshot_dir = get_snapshot_folder_path()
     model_name = f"{dataset}_{model_name}"

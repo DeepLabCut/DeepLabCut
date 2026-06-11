@@ -75,7 +75,6 @@ class Benchmark(abc.ABC):
 
     def evaluate(self, name: str, on_error="raise"):
         """Evaluate this benchmark with all registered methods."""
-
         if name not in self.names():
             raise ValueError(f"{name} is not registered. Valid names are {self.names()}")
         if on_error not in ("ignore", "return", "raise"):

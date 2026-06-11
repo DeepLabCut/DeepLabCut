@@ -38,8 +38,9 @@ def extract_cnn_output(outputs_np, cfg):
 
 
 def extract_cnn_outputmulti(outputs_np, cfg):
-    """extract locref + scmap from network
-    Dimensions: image batch x imagedim1 x imagedim2 x bodypart"""
+    """Extract locref + scmap from network
+    Dimensions: image batch x imagedim1 x imagedim2 x bodypart
+    """
     scmap = outputs_np[0]
     if cfg["location_refinement"]:
         locref = outputs_np[1]

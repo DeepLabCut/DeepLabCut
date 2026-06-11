@@ -191,10 +191,10 @@ class Bottleneck(BaseBlock):
         """Forward pass through the Bottleneck block.
 
         Args:
-            x : Input tensor.
+            x (torch.Tensor): Input tensor.
 
         Returns:
-            Output tensor.
+            torch.Tensor: Output tensor.
         """
         residual = x
 

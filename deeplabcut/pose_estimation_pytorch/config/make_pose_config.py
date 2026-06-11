@@ -202,7 +202,8 @@ def make_pytorch_pose_config(
 
 
 def _add_ctd_conditions(model_cfg: dict, ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int]):
-    """
+    """Add ctd conditions.
+
     Args:
         model_cfg: dict, contents of pytorch_config.yaml
         ctd_conditions: Only for using conditional-top-down (CTD) models. It defines
@@ -304,41 +305,41 @@ def make_basic_project_config(
         `make_pytorch_pose_config`.
 
     Examples:
-        Creating a `pytorch_config` for a ResNet50 backbone with a part-affinity head (
-        as multi_animal=True and top_down=False)
+        Creating a ``pytorch_config`` for a ResNet50 backbone with a part-affinity head (
+        ``multi_animal=True`` and ``top_down=False``)
 
-        >>> import deeplabcut.pose_estimation_pytorch as pep
-        >>> project_config = pep.config.make_basic_project_config(
-        >>>     dataset_path="/path/coco",
-        >>>     bodyparts=["nose", "left_eye", "right_eye"],
-        >>>     max_individuals=12,
-        >>>     multi_animal=True,
-        >>> )
-        >>> model_config = pep.config.make_pytorch_pose_config(
-        >>>     project_config=project_config,
-        >>>     pose_config_path="/path/coco/models/resnet50/pytorch_config.yaml",
-        >>>     net_type="resnet_50",
-        >>>     top_down=False,
-        >>>     save=True,
-        >>> )
+            import deeplabcut.pose_estimation_pytorch as pep
+            project_config = pep.config.make_basic_project_config(
+                dataset_path="/path/coco",
+                bodyparts=["nose", "left_eye", "right_eye"],
+                max_individuals=12,
+                multi_animal=True,
+            )
+            model_config = pep.config.make_pytorch_pose_config(
+                project_config=project_config,
+                pose_config_path="/path/coco/models/resnet50/pytorch_config.yaml",
+                net_type="resnet_50",
+                top_down=False,
+                save=True,
+            )
 
-        Creating a `pytorch_config` for a ResNet50 backbone with a simple heatmap head
-        (as the project is single-animal):
+        Creating a ``pytorch_config`` for a ResNet50 backbone with a simple heatmap head
+        (the project is single-animal):
 
-        >>> import deeplabcut.pose_estimation_pytorch as pep
-        >>> project_config = pep.config.make_basic_project_config(
-        >>>     dataset_path="/path/coco",
-        >>>     bodyparts=["nose", "left_eye", "right_eye"],
-        >>>     max_individuals=1,
-        >>>     multi_animal=False,
-        >>> )
-        >>> model_config = pep.config.make_pytorch_pose_config(
-        >>>     project_config=project_config,
-        >>>     pose_config_path="/path/coco/models/resnet50/pytorch_config.yaml",
-        >>>     net_type="resnet_50",
-        >>>     top_down=False,
-        >>>     save=True,
-        >>> )
+            import deeplabcut.pose_estimation_pytorch as pep
+            project_config = pep.config.make_basic_project_config(
+                dataset_path="/path/coco",
+                bodyparts=["nose", "left_eye", "right_eye"],
+                max_individuals=1,
+                multi_animal=False,
+            )
+            model_config = pep.config.make_pytorch_pose_config(
+                project_config=project_config,
+                pose_config_path="/path/coco/models/resnet50/pytorch_config.yaml",
+                net_type="resnet_50",
+                top_down=False,
+                save=True,
+            )
     """
     return dict(
         project_path=str(dataset_path),
@@ -395,7 +396,7 @@ def create_backbone_with_heatmap_model(
         the backbone + heatmap model configuration
 
     Raises:
-        ValueError: if the model is being created for a multi-animal project but the
+        ValueError: If the model is being created for a multi-animal project but the
             head won't be associated with a detector (heatmaps can only predict
             bodyparts for a single individual).
     """

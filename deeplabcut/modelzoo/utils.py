@@ -46,7 +46,7 @@ def get_super_animal_project_cfg(super_animal: str) -> dict:
         the project configuration for the given SuperAnimal model
 
     Raises:
-        ValueError if no such SuperAnimal is found
+        ValueError: If no such SuperAnimal is found.
     """
     project_configs_dir = dlc_modelzoo_path() / "project_configs"
     super_animal_projects = {p.stem: p for p in project_configs_dir.iterdir()}
@@ -65,7 +65,8 @@ def get_super_animal_scorer(
     detector_snapshot_path: Path | str | None,
     torchvision_detector_name: str | None = None,
 ) -> str:
-    """
+    """Get the super animal scorer.
+
     Args:
         super_animal: The SuperAnimal dataset on which the models were trained
         model_snapshot_path: The path for the SuperAnimal pose model snapshot
@@ -194,7 +195,6 @@ def parse_project_model_name(superanimal_name: str) -> tuple[str, str]:
         project_name: the parsed SuperAnimal model name
         model_name: the model architecture (e.g., dlcrnet, hrnetw32)
     """
-
     if superanimal_name == "superanimal_quadruped":
         warnings.warn(
             f"{superanimal_name} is deprecated and will be removed in a future version. Use"
