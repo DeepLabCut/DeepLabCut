@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 from pydantic import Field, ValidationError
 
-from deeplabcut.core.config import DLCBaseConfig, DLCVersionedConfig, ProjectConfig
+from deeplabcut.core.config import DLCBaseConfig, DLCVersionedConfig, ProjectConfig, versioning
 from deeplabcut.utils.deprecation import DLCDeprecationWarning
 
 # -----------------------------------------------------------------------------
@@ -234,3 +234,35 @@ def test_item_assignment_with_alias_should_warn_once_and_track_canonical_field()
     assert cfg.identity is True
     assert "identity" in cfg.dirty_fields
     assert "with_identity" not in cfg.dirty_fields
+
+
+# -----------------------------------------------------------------------------
+# Migration skipped on typed construction
+# -----------------------------------------------------------------------------
+
+
+class _TypedConstructionCfg(DLCVersionedConfig):
+    config_version: int = 1
+    epochs: int = 50
+
+
+@pytest.mark.xfail(
+    reason=(
+        "When initializing a DLCVersionedConfig, omitting config_version is treated "
+        "as version 0, even if default value is set. This should not run the migration chain."
+    ),
+    raises=ValueError,
+)
+@pytest.mark.parametrize("kwargs", [{}, {"epochs": 100}])
+def test_migration_skipped_on_typed_construction(monkeypatch, kwargs):
+    """Typed construction must not run the legacy YAML migration chain.
+
+    ``MyCfg(epochs=100)`` is current-schema construction, not loading an old file.
+    Migration should only run via ``from_dict`` / ``from_yaml``.
+    """
+    monkeypatch.setattr(versioning, "CURRENT_CONFIG_VERSION", 1)
+
+    cfg = _TypedConstructionCfg(**kwargs)
+
+    assert cfg.epochs == kwargs.get("epochs", 50)
+    assert cfg.config_version == 1
