@@ -27,13 +27,11 @@ import numpy as np
 import pandas as pd
 from matplotlib.collections import LineCollection
 from matplotlib.widgets import Button, LassoSelector
-from scipy.spatial import cKDTree as KDTree
+from scipy.spatial import KDTree
 from skimage import io
 
 from deeplabcut.core.config import read_config_as_dict, write_config
-from deeplabcut.generate_training_dataset.trainingsetmanipulation import (
-    drop_likelihood_columns,
-)
+from deeplabcut.generate_training_dataset.trainingsetmanipulation import drop_likelihood_columns
 
 
 class SkeletonBuilder:

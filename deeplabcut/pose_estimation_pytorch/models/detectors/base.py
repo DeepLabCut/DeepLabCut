@@ -85,7 +85,6 @@ class BaseDetector(ABC, nn.Module):
             losses: {'loss_name': loss_value}
             detections: for each of the b images, {"boxes": bounding_boxes}
         """
-        pass
 
     @abstractmethod
     def get_target(self, labels: dict) -> list[dict]:
@@ -97,7 +96,6 @@ class BaseDetector(ABC, nn.Module):
         Returns:
             list of dictionaries, each representing target information for a single annotation.
         """
-        pass
 
     def freeze_batch_norm_layers(self) -> None:
         """Freezes batch norm layers.
