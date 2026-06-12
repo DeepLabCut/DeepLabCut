@@ -189,6 +189,13 @@ class ProjectConfig(DLCVersionedConfig):
     )
     croppedtraining: bool | None = None
 
+    @property
+    def bodyparts_list(self) -> list[str]:
+        # Animal-count agnostic; Always return a list (never "MULTI!", None, etc.)
+        if self.multianimalproject:
+            return list(self.multianimalbodyparts)
+        return list(self.bodyparts)
+
     def _post_yaml_load_updates(self, *, yaml_path: Path) -> None:
         """
         Override method for post-yaml load updates. Called automatically by from_yaml().
