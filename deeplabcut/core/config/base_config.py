@@ -392,10 +392,16 @@ class DLCVersionedConfig(DLCBaseConfig):
         include_caller: bool = False,
         _stack_depth: int = 1,
     ) -> None:
+        field_name = self._resolve_alias(field_name)
+
+        if field_name not in type(self).model_fields:
+            raise KeyError(f"'{type(self).__name__}' has no field '{field_name}'")
+
         if include_caller:
             frame = sys._getframe(_stack_depth)
             filename = frame.f_code.co_filename.rsplit("/", 1)[-1]
             message = f"{message} [{filename}:{frame.f_lineno}]"
+
         self._change_notes[field_name] = message
 
     def log_changes(self) -> None:
