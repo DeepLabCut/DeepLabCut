@@ -17,7 +17,7 @@ from pathlib import Path
 
 from deeplabcut.core.config import read_config_as_dict, write_config
 from deeplabcut.core.weight_init import WeightInitialization
-from deeplabcut.pose_estimation_pytorch.config import PoseConfig
+from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.config.utils import (
     get_config_folder_path,
     load_backbones,
