@@ -141,19 +141,19 @@ class VideoProcessor(ABC):
         self._sname = "" if value in (None, "") else str(value)
 
     @property
-    def h(self):
+    def height(self):
         return self._h
 
     @property
-    def w(self):
+    def width(self):
         return self._w
 
-    @h.setter
-    def h(self, value):
+    @height.setter
+    def height(self, value):
         self._h = int(value)
 
-    @w.setter
-    def w(self, value):
+    @width.setter
+    def width(self, value):
         self._w = int(value)
 
     @property
@@ -246,8 +246,8 @@ class VideoProcessorCV(VideoProcessor):
             If ``self.nframes`` is ``-1`` or greater than the total number of
             frames reported by OpenCV, it is replaced by OpenCV's frame count.
         """
-        self.w = int(self.vid.get(cv2.CAP_PROP_FRAME_WIDTH))
-        self.h = int(self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.width = int(self.vid.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.height = int(self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
         all_frames = int(self.vid.get(cv2.CAP_PROP_FRAME_COUNT))
         self.fps = self.vid.get(cv2.CAP_PROP_FPS)
         self.nc = 3

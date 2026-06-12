@@ -33,8 +33,8 @@ def test_video_processor_cv_reads_basic_metadata(tmp_path):
     clip = VideoProcessorCV(fname=str(video_path))
 
     try:
-        assert clip.w == 12
-        assert clip.h == 10
+        assert clip.width == 12
+        assert clip.height == 10
         assert clip.nframes == 4
         assert clip.i == 0
         assert clip.fps > 0
