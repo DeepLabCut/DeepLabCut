@@ -49,7 +49,7 @@ class DLCBaseConfig(BaseModel):
     - Field aliases from `json_schema_extra`.
     """
 
-    model_config = ConfigDict(extra="forbid", validate_assignment=True)
+    model_config = ConfigDict(extra="forbid", validate_assignment=True, arbitrary_types_allowed=True)
 
     # ------------------------------------------------------------------
     # Validation (before pydantic field validation)
