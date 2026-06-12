@@ -22,7 +22,6 @@ from __future__ import annotations
 
 import os
 import pickle
-import warnings
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -48,9 +47,7 @@ def read_plainconfig(configname: str | Path) -> dict:
     return core_config.read_config_as_dict(config_path=configname)
 
 
-def write_plainconfig(
-    configname: str | Path, cfg: dict, overwrite: bool = True
-) -> None:
+def write_plainconfig(configname: str | Path, cfg: dict, overwrite: bool = True) -> None:
     """Write a config dict to YAML (alias for write_config). See deeplabcut.core.config."""
     core_config.write_config(config_path=configname, config=cfg, overwrite=overwrite)
 
@@ -612,7 +609,7 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
     candidates = []
     for file in grab_files_in_folder(folder, "h5"):
         stem = Path(file).stem.replace("_filtered", "")
-        starts_by_scorer = file.startswith(videoname + scorer) or file.startswith(videoname + scorer_legacy)
+        starts_by_scorer = file.startswith((videoname + scorer, videoname + scorer_legacy))
         if tracker:
             matches_tracker = stem.endswith(tracker)
         else:

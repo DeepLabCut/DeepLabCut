@@ -97,7 +97,6 @@ class BaseHead(ABC, nn.Module):
         Returns:
             the head outputs (e.g. "heatmap", "locref")
         """
-        pass
 
     def get_loss(
         self,
@@ -172,4 +171,3 @@ class WeightConversionMixin(ABC):
                 )
                 ``
         """
-        pass

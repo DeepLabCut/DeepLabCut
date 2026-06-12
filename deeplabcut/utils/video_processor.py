@@ -86,27 +86,21 @@ class VideoProcessor:
 
     def get_video(self):
         """Implement your own."""
-        pass
 
     def get_info(self):
         """Implement your own."""
-        pass
 
     def create_video(self):
         """Implement your own."""
-        pass
 
     def _read_frame(self):
         """Implement your own."""
-        pass
 
     def save_frame(self, frame):
         """Implement your own."""
-        pass
 
     def close(self):
         """Implement your own."""
-        pass
 
 
 class VideoProcessorCV(VideoProcessor):

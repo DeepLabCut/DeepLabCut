@@ -66,7 +66,7 @@ def create_empty_df(dataframe, scorer, flag):
                 [[scorer], [bodypart], ["x", "y", "z"]],
                 names=["scorer", "bodyparts", "coords"],
             )
-        frame = pd.DataFrame(a, columns=pdindex, index=range(0, df.shape[0]))
+        frame = pd.DataFrame(a, columns=pdindex, index=range(df.shape[0]))
         dataFrame = pd.concat([frame, dataFrame], axis=1)
     return (dataFrame, scorer, bodyparts)
 

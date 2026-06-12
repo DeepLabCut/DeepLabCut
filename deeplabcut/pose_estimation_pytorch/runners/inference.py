@@ -256,7 +256,7 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
             self.inference_cfg = InferenceConfig.from_dict(inference_cfg)
         elif inference_cfg is None:
             self.inference_cfg = InferenceConfig()
-        else: 
+        else:
             raise ValueError(f"Invalid inference config: {inference_cfg}")
 
         if self.snapshot_path is not None and self.snapshot_path != "":
@@ -539,7 +539,11 @@ class InferenceRunner(Runner, Generic[ModelType], metaclass=ABCMeta):
                 return item
             except Empty:
                 # check if producer is still running
-                if self._stop_event.is_set() or self._preprocessing_thread is None or not self._preprocessing_thread.is_alive():
+                if (
+                    self._stop_event.is_set()
+                    or self._preprocessing_thread is None
+                    or not self._preprocessing_thread.is_alive()
+                ):
                     return None
                 continue
 

@@ -104,8 +104,8 @@ class WeightInitialization:
         if "snapshot_path" not in data:
             return WeightInitialization.from_dict_legacy(data)
 
-        snapshot_path = data['snapshot_path']
-        if data['snapshot_path'] is not None:
+        snapshot_path = data["snapshot_path"]
+        if data["snapshot_path"] is not None:
             snapshot_path = Path(snapshot_path)
 
         detector_snapshot_path = data.get("detector_snapshot_path")

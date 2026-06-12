@@ -1122,7 +1122,7 @@ def merge_datasets(config, forceiterate=None):
         else:
             print("The following folder was not manually refined,...", folder)
             flagged = True
-            pass  # this folder does not contain a MachineLabelsRefine file (not updated...)
+            # this folder does not contain a MachineLabelsRefine file (not updated...)
 
     if not flagged:
         # updates iteration by 1

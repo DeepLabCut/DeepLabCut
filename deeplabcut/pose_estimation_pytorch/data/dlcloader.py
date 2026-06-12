@@ -20,8 +20,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import scipy.io as sio
-from deeplabcut.core.config.project_config import ProjectConfig
+
 import deeplabcut.utils.auxiliaryfunctions as af
+from deeplabcut.core.config.project_config import ProjectConfig
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.trainingsetmanipulation import drop_likelihood_columns
 from deeplabcut.pose_estimation_pytorch.data.base import Loader
@@ -51,9 +52,7 @@ class DLCLoader(Loader):
         self._project_config: ProjectConfig = ProjectConfig.from_any(config)
         self._project_root = provided_root_dir or self._project_config.project_path
         if self._project_root is None:
-            raise ValueError(
-                "`config` must contain a `project_path` field."
-            )
+            raise ValueError("`config` must contain a `project_path` field.")
 
         self._shuffle = shuffle
         self._trainset_index = trainset_index

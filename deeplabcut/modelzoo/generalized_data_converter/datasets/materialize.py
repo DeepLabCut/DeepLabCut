@@ -612,7 +612,6 @@ def _generic2coco(
                     os.symlink(src, dest)
                 except Exception as err:
                     print(f"Could not create a symlink from {src} to {dest}: {err}")
-                    pass
 
         image["file_name"] = file_name
         lookuptable[dest] = src

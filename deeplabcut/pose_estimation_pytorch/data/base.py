@@ -10,16 +10,16 @@
 #
 from __future__ import annotations
 
+import warnings
 from abc import ABC, abstractmethod
 from pathlib import Path
-import warnings
 
 import albumentations as A
 import numpy as np
 
-from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
-import deeplabcut.core.config as config_utils
 import deeplabcut.pose_estimation_pytorch.config as config
+from deeplabcut.core.types import DEPRECATED_ARGUMENT
+from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.data.dataset import (
     PoseDataset,
     PoseDatasetParameters,
@@ -34,7 +34,6 @@ from deeplabcut.pose_estimation_pytorch.data.utils import (
     map_id_to_annotations,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
-from deeplabcut.core.types import DEPRECATED_ARGUMENT
 
 
 class Loader(ABC):
@@ -66,18 +65,20 @@ class Loader(ABC):
         Args:
             project_root: The root directory of the project.
             image_root: The root directory of the images.
-            model_config (Path | str | PoseConfig | dict): 
+            model_config (Path | str | PoseConfig | dict):
                 The pose model configuration. Can be a path to a YAML file, a PoseConfig object, or a dictionary.
             (model_config_path: The path to the pose model configuration. Deprecated, use `model_config` instead.)
         """
+
         def _resolve_legacy_args(model_config, model_config_path):
             """Support for legacy argument `model_config_path`. returns new model_config arg"""
             if model_config_path:
                 warnings.warn(
                     "argument `model_config_path` in Loader.__init__ is deprecated, use `model_config` instead",
                     DeprecationWarning,
+                    stacklevel=2,
                 )
-                if model_config is not None: 
+                if model_config is not None:
                     raise ValueError(
                         "`model_config_path` and `model_config` arguments cannot be provided together! "
                         "Please provide only `model_config`."
@@ -86,21 +87,24 @@ class Loader(ABC):
                     model_config_path = Path(model_config_path) / "pytorch_config.yaml"
                 model_config = model_config_path
             elif model_config is None:
-                raise ValueError(
-                    "`model_config` argument must be provided."
-                )
+                raise ValueError("`model_config` argument must be provided.")
             return model_config
-        model_config = _resolve_legacy_args(model_config, model_config_path)    
+
+        model_config = _resolve_legacy_args(model_config, model_config_path)
         self.model_cfg: PoseConfig = PoseConfig.from_any(model_config)
 
         def _infer_model_config_path(model_config: PoseConfig | dict | Path | str) -> Path:
-            """Resolve the pose config path. Either the input is a path, or it is specified in `metadata.pose_config_path` field."""
+            """
+            Resolve the pose config path.
+            Either the input is a path, or it is specified in `metadata.pose_config_path` field.
+            """
             provided_path = Path(model_config) if isinstance(model_config, (Path, str)) else None
             specified_path = self.model_cfg.select("metadata.pose_config_path")
             model_config_path = provided_path or specified_path
             if model_config_path is None:
                 raise ValueError("`model_config` must contain a `metadata.pose_config_path` field.")
             return Path(model_config_path)
+
         self.model_config_path = _infer_model_config_path(model_config)
 
         self.project_root = Path(project_root)

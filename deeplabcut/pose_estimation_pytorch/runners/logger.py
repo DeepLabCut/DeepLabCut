@@ -152,7 +152,6 @@ class ImageLoggerMixin(ABC):
             targets: the targets for each model head
             step: the current step
         """
-        pass
 
     def select_images_to_log(self, train: DataLoader, valid: DataLoader) -> None:
         """Selects the train and test images to log.
@@ -448,7 +447,6 @@ class CSVLogger(BaseLogger):
         Args:
             config: Experiment config file.
         """
-        pass
 
     def _load_existing_data(self) -> None:
         """Loads existing CSV data if the log file exists."""
