@@ -10,12 +10,13 @@
 #
 """Tests for deeplabcut.core.config."""
 
+import logging
 from collections.abc import Mapping
 from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
-from ruamel.yaml import YAMLError
+from ruamel.yaml.error import YAMLError
 
 from deeplabcut.core.config import (
     create_config_template,
@@ -76,8 +77,6 @@ def test_read_config_as_dict_raises_when_root_is_not_mapping(tmp_path):
 def test_read_config_as_dict_breaks_for_yaml_tags(tmp_path):
     """read_config breaks for YAML tags like !!python/tuple"""
     config_path = tmp_path / "config.yaml"
-    # NOTE @deruyter92 2026-02-03: This test is currently skipped, because
-    # read_config_as_dict currently allows unsafe yaml loading. This should be fixed in the future.
     config_path.write_text("project_path: /old/path\nengine: pytorch\nbodyparts: !!python/tuple [a, b, c]\n")
     with pytest.raises(YAMLError):
         read_config_as_dict(config_path)
@@ -279,20 +278,16 @@ def test_read_config_preserves_existing_engine_and_project_path(tmp_path, engine
     assert cfg["project_path"] == tmp_path
 
 
-@pytest.mark.skip("This preferred behavior is not yet implemented.")
 def test_read_config_breaks_for_yaml_tags(tmp_path):
-    """read_config breaks for YAML tags like !!python/tuple"""
+    """read_config raises for YAML files containing unsafe tags like !!python/tuple."""
     config_path = tmp_path / "config.yaml"
-    # Ruamel fails on !!python/tuple; read_config falls back to PyYAML and repairs the file.
     config_path.write_text("project_path: /old/path\nengine: pytorch\nbodyparts: !!python/tuple [a, b, c]\n")
     with pytest.raises(YAMLError):
         read_config(config_path)
 
 
-@pytest.mark.skip("This preferred behavior is not yet implemented.")
 def test_read_config_breaks_for_invalid_fieds(tmp_path):
-    # NOTE @deruyter92 2026-02-03: This test is currently skipped, because
-    # read_config does not validate the keys. This should be fixed in the future.
+    """read_config raises when the YAML contains field names not declared by ProjectConfig."""
     config_path = tmp_path / "typos.yaml"
     config_path.write_text(
         "project_pathh: /wrong\n"  # typo
@@ -340,6 +335,30 @@ def test_write_project_config_uses_multianimal_template_when_flag_true(tmp_path)
     cfg = read_config_as_dict(config_path)
     assert "individuals" in cfg
     assert "uniquebodyparts" in cfg
+
+
+def test_write_project_config_falls_back_and_preserves_unknown_keys(tmp_path, caplog):
+    """Unvalidated legacy write succeeds via fallback with logging, but may not round-trip via read_config."""
+    config_path = tmp_path / "config.yaml"
+    payload = {
+        "project_path": str(tmp_path),
+        "Task": "mytask",
+        "bodyparts": ["a", "b"],
+        "legacy_custom_field": "keep-me",  # extra="forbid" on ProjectConfig, will be preserved
+    }
+
+    with caplog.at_level(logging.ERROR, logger="deeplabcut.core.config.utils"):
+        with pytest.warns(UserWarning, match="legacy config file writing"):
+            write_project_config(config_path, payload)
+
+    assert "Invalid configuration" in caplog.text
+    assert config_path.is_file()
+    written = read_config_as_dict(config_path)
+    assert written["legacy_custom_field"] == "keep-me"
+    assert written["Task"] == "mytask"
+
+    with pytest.raises(ValidationError):
+        read_config(config_path)
 
 
 # -----------------------------------------------------------------------------
@@ -445,6 +464,7 @@ def test_resolve_aliases_in_dict_rejects_alias_and_canonical_together():
             {"projectPath": "/alias", "project_path": "/canonical"},
             ALIAS_MAP,
             target="ToyConfig",
+            warn=False,
         )
 
 
@@ -458,4 +478,5 @@ def test_resolve_aliases_in_dict_rejects_two_aliases_for_same_field():
             {"projectPath": "/a", "legacyProjectPath": "/b"},
             alias_map,
             target="ToyConfig",
+            warn=False,
         )

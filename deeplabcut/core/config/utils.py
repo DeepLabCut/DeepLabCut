@@ -326,7 +326,18 @@ def write_project_config(
     configname: str | Path,
     cfg: dict | ProjectConfig,
 ) -> None:
-    """Write structured project config file (config.yaml) preserving template order."""
+    """
+    Write structured project config file (config.yaml) preserving template order.
+
+    Args:
+        configname (str | Path): Path to the project configuration file (config.yaml).
+        cfg (dict | ProjectConfig): The project configuration to write (requires ProjectConfig schema).
+
+    Note:
+        Validates before writing when possible, unvalidated legacy dump on failure; This may not round-trip via
+        read_config for non-conformant legacy configurations.
+    """
+    from deeplabcut.core.config.base_config import DLCBaseConfig
     from deeplabcut.core.config.project_config import ProjectConfig
 
     try:
@@ -334,11 +345,18 @@ def write_project_config(
         project_config.to_yaml(configname)
         return
     except ValidationError as e:
-        warnings.warn(
-            f"Invalid configuration! Validation error in config file {cfg}. Error: {e}"
-            " Reverting to legacy config file writing.",
-            stacklevel=2,
+        logger.error(
+            "Invalid configuration! Validation error in project config file %s. Error: %s "
+            "Trying to write the file to disk anyway. Please verify the config file.",
+            cfg,
+            e,
         )
+    if isinstance(cfg, DLCBaseConfig):
+        logger.error("Expected a ProjectConfig, got %s.", type(cfg).__name__)
+        cfg.to_yaml(configname)
+        return
+
+    warnings.warn("Reverting to legacy config file writing..", stacklevel=2)
     with open(configname, "w") as cf:
         cfg_file, ruamelFile = create_config_template(cfg.get("multianimalproject", False))
         for key in cfg.keys():

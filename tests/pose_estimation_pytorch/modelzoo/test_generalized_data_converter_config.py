@@ -15,13 +15,9 @@ configuration system can preserve existing behavior. Add or adjust assertions
 if you intentionally change defaults.
 """
 
-import os
-import tempfile
-from pathlib import Path
-
 import pytest
-import yaml
 
+from deeplabcut.core.config import read_config_as_dict, write_config
 from deeplabcut.modelzoo.generalized_data_converter.datasets.materialize import (
     MaDLC_config,
     SingleDLC_config,
@@ -110,62 +106,57 @@ class TestModelzooProjectConfigDefaults:
 class TestModelzooCreateProjectConfig:
     """Behavior of create_cfg: file location, format, and update semantics."""
 
-    def test_single_dlc_create_cfg_writes_config_yaml(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            config = SingleDLC_config()
-            config.create_cfg(tmpdir, {"Task": "mytask"})
-            path = Path(tmpdir) / "config.yaml"
-            assert path.exists()
-            with open(path) as f:
-                data = yaml.safe_load(f)
-            assert data["Task"] == "mytask"
-            assert data["default_net_type"] == "resnet_50"
+    def test_single_dlc_create_cfg_writes_config_yaml(self, tmp_path):
+        config = SingleDLC_config()
+        config.create_cfg(tmp_path, {"Task": "mytask"})
+        path = tmp_path / "config.yaml"
+        assert path.exists()
+        data = read_config_as_dict(path)
+        assert data["Task"] == "mytask"
+        assert data["default_net_type"] == "resnet_50"
 
-    def test_create_cfg_overwrites_with_kwargs(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            config = SingleDLC_config()
-            config.create_cfg(tmpdir, {"Task": "mytask", "batch_size": 16})
-            path = Path(tmpdir) / "config.yaml"
-            with open(path) as f:
-                data = yaml.safe_load(f)
-            assert data["Task"] == "mytask"
-            assert data["batch_size"] == 16
+    def test_create_cfg_overwrites_with_kwargs(self, tmp_path):
+        config = SingleDLC_config()
+        config.create_cfg(tmp_path, {"Task": "mytask", "batch_size": 16})
+        path = tmp_path / "config.yaml"
+        data = read_config_as_dict(path)
+        assert data["Task"] == "mytask"
+        assert data["batch_size"] == 16
 
-    def test_ma_dlc_create_cfg_writes_config_yaml(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            config = MaDLC_config()
-            config.create_cfg(tmpdir, {"Task": "matask"})
-            path = Path(tmpdir) / "config.yaml"
-            assert path.exists()
-            with open(path) as f:
-                data = yaml.safe_load(f)
-            assert data["Task"] == "matask"
-            assert data["multianimalproject"] is True
+    def test_ma_dlc_create_cfg_writes_config_yaml(self, tmp_path):
+        config = MaDLC_config()
+        config.create_cfg(tmp_path, {"Task": "matask"})
+        path = tmp_path / "config.yaml"
+        assert path.exists()
+        data = read_config_as_dict(path)
+        assert data["Task"] == "matask"
+        assert data["multianimalproject"] is True
 
 
 class TestModifyTrainTestCfg:
     """Behavior of modify_train_test_cfg (train/test pose config updates)."""
 
-    def test_modify_train_test_cfg_requires_existing_config_path(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            config_path = os.path.join(tmpdir, "config.yaml")
-            # Non-existent config must not silently succeed
-            with pytest.raises(FileNotFoundError):
-                modify_train_test_cfg(config_path)
+    def test_modify_train_test_cfg_requires_existing_config_path(self, tmp_path):
+        config_path = tmp_path / "config.yaml"
+        # Non-existent config must not silently succeed
+        with pytest.raises(FileNotFoundError):
+            modify_train_test_cfg(config_path)
 
-    def test_modify_train_test_cfg_sets_expected_values(self):
-        """When a valid project layout exists, train/test configs get multi_stage, batch_size, gradient_masking.
-        We only assert the intended defaults; full integration would need a real project.
-        """
-
-        # Document intended behavior: multi_stage=True, batch_size=8, gradient_masking=True
-        # Actual call requires compat.return_train_network_path to resolve paths;
-        # this test just documents the intended defaults for migration.
-        intended_train_test_defaults = {
-            "multi_stage": True,
-            "batch_size": 8,
-            "gradient_masking": True,
-        }
-        assert intended_train_test_defaults["multi_stage"] is True
-        assert intended_train_test_defaults["batch_size"] == 8
-        assert intended_train_test_defaults["gradient_masking"] is True
+    def test_modify_train_test_cfg_sets_expected_values(self, tmp_path, monkeypatch):
+        train_path = tmp_path / "train" / "pytorch_config.yaml"
+        test_path = tmp_path / "test" / "pose_cfg.yaml"
+        snapshot_folder = tmp_path / "train"
+        train_path.parent.mkdir(parents=True)
+        test_path.parent.mkdir(parents=True)
+        write_config(train_path, {"batch_size": 1, "multi_stage": False, "gradient_masking": False})
+        write_config(test_path, {"batch_size": 1, "multi_stage": False, "gradient_masking": False})
+        monkeypatch.setattr(
+            "deeplabcut.modelzoo.generalized_data_converter.datasets.materialize.compat.return_train_network_path",
+            lambda *args, **kwargs: (train_path, test_path, snapshot_folder),
+        )
+        modify_train_test_cfg(tmp_path / "config.yaml")  # ignored by mock
+        for path in (train_path, test_path):
+            data = read_config_as_dict(path)
+            assert data["multi_stage"] is True
+            assert data["batch_size"] == 8
+            assert data["gradient_masking"] is True

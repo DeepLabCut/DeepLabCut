@@ -13,7 +13,7 @@
 import logging
 
 import pytest
-from pydantic import ValidationError
+from pydantic import Field, ValidationError
 
 from deeplabcut.core.config import DLCVersionedConfig, versioning
 from deeplabcut.core.config.versioning import (
@@ -21,6 +21,7 @@ from deeplabcut.core.config.versioning import (
     migrate_config,
     register_migration,
 )
+from deeplabcut.utils.deprecation import DLCDeprecationWarning
 
 _LOGGER_NAME = "deeplabcut.core.config.versioning"
 
@@ -39,24 +40,10 @@ _NEW_FIELD = "toy_new_field"
 _TOY_CONFIG_TYPE = "ToyVersionedConfig"
 
 
-@register_migration(_TOY_VERSION_OLD, _TOY_VERSION_NEW, config_type=_TOY_CONFIG_TYPE)
-def _toy_migrate_v98_to_v99(config: dict) -> dict:
-    """Test-only: rename toy_legacy_field -> toy_new_field."""
-    out = config.copy()
-    out["config_version"] = _TOY_VERSION_NEW
-    if _LEGACY_FIELD in out:
-        out[_NEW_FIELD] = out.pop(_LEGACY_FIELD)
-    return out
-
-
-@register_migration(_TOY_VERSION_NEW, _TOY_VERSION_OLD, config_type=_TOY_CONFIG_TYPE)
-def _toy_migrate_v99_to_v98(config: dict) -> dict:
-    """Test-only: rename toy_new_field -> toy_legacy_field."""
-    out = config.copy()
-    out["config_version"] = _TOY_VERSION_OLD
-    if _NEW_FIELD in out:
-        out[_LEGACY_FIELD] = out.pop(_NEW_FIELD)
-    return out
+@pytest.fixture(autouse=True)
+def _toy_versioned_config_migrations(register_toy_migrations):
+    """Default v98 <-> v99 migrations for ToyVersionedConfig tests in this module."""
+    register_toy_migrations(_TOY_CONFIG_TYPE)
 
 
 # -----------------------------------------------------------------------------
@@ -81,8 +68,7 @@ def test_migrate_config_same_version_returns_unchanged():
     assert migrate_config(cfg, config_type=_TOY_CONFIG_TYPE, target_version=0) is cfg
 
 
-def test_migrate_config_does_not_mutate_input(monkeypatch):
-    monkeypatch.setattr(versioning, "CURRENT_CONFIG_VERSION", _TOY_VERSION_NEW)
+def test_migrate_config_does_not_mutate_input():
     cfg = {"config_version": _TOY_VERSION_OLD, _LEGACY_FIELD: "x"}
     result = migrate_config(cfg, config_type=_TOY_CONFIG_TYPE, target_version=_TOY_VERSION_NEW)
     assert cfg[_LEGACY_FIELD] == "x"
@@ -98,13 +84,6 @@ def test_migrate_config_target_exceeds_current_raises(monkeypatch):
 # -----------------------------------------------------------------------------
 # Toy migration round-trip (v98 <-> v99)
 # -----------------------------------------------------------------------------
-
-
-@pytest.fixture(autouse=True)
-def _isolated_toy_migration(monkeypatch):
-    """Isolate each test from global migration registry changes."""
-    monkeypatch.setattr(versioning, "_MIGRATIONS", versioning._MIGRATIONS.copy())
-    monkeypatch.setattr(versioning, "CURRENT_CONFIG_VERSION", _TOY_VERSION_NEW)
 
 
 def test_migration_v98_to_v99_renames_toy_field():
@@ -176,7 +155,7 @@ def test_roundtrip_v98_without_toy_field_unchanged():
 
 
 # -----------------------------------------------------------------------------
-# MigrationMixin: migration prevents validation error for renamed field
+# DLCVersionedConfig: migration prevents validation error for renamed field
 # -----------------------------------------------------------------------------
 
 
@@ -190,7 +169,7 @@ def ToyConfigWithValidField():
 
 
 def test_config_with_legacy_field_raises_without_migration(monkeypatch, ToyConfigWithValidField):
-    """Initializing ProjectConfig with the legacy (wrong) field raises validation error."""
+    """Legacy unknown field raises validation error when no migration is registered."""
     monkeypatch.setattr(versioning, "CURRENT_CONFIG_VERSION", _TOY_VERSION_OLD)
     config_with_legacy_field = {
         "config_version": _TOY_VERSION_OLD,
@@ -201,16 +180,12 @@ def test_config_with_legacy_field_raises_without_migration(monkeypatch, ToyConfi
 
 
 def test_config_after_migration_accepts_renamed_field(monkeypatch, ToyConfigWithValidField):
-    """Registering a migration renames the wrong field so ProjectConfig accepts the config."""
+    """Registering a migration renames the legacy field so the model accepts the config."""
     monkeypatch.setattr(versioning, "CURRENT_CONFIG_VERSION", _TOY_VERSION_NEW)
     config_with_legacy_field = {
         "config_version": _TOY_VERSION_OLD,
         "this_fieldname_is_not_in_project_config": "some_value",
     }
-
-    # Replace the existing toy (98→99) migration with one that renames
-    # the unknown field to a field the model actually declares.
-    del versioning._MIGRATIONS[(_TOY_CONFIG_TYPE, _TOY_VERSION_OLD, _TOY_VERSION_NEW)]
 
     @register_migration(_TOY_VERSION_OLD, _TOY_VERSION_NEW, config_type="ToyConfig")
     def _toy_migrate_legacy_to_valid_field(config: dict) -> dict:
@@ -236,18 +211,9 @@ class _MigrateThenAliasConfig(DLCVersionedConfig):
     )
 
 
-@register_migration(_TOY_VERSION_OLD, _TOY_VERSION_NEW, config_type="_MigrateThenAliasConfig")
-def _alias_cfg_migrate_v98_to_v99(config: dict) -> dict:
-    """Test-only: rename toy_legacy_field -> toy_new_field for _MigrateThenAliasConfig."""
-    if _LEGACY_FIELD in config:
-        config[_NEW_FIELD] = config.pop(_LEGACY_FIELD)
-    return config
-
-
 @pytest.fixture
-def _migrate_then_alias_current(monkeypatch):
-    monkeypatch.setattr(versioning, "_MIGRATIONS", versioning._MIGRATIONS.copy())
-    monkeypatch.setattr(versioning, "CURRENT_CONFIG_VERSION", _TOY_VERSION_NEW)
+def _migrate_then_alias_current(register_toy_migrations):
+    register_toy_migrations("_MigrateThenAliasConfig")
 
 
 def test_migration_then_alias_legacy_version_key(_migrate_then_alias_current):
@@ -871,26 +837,12 @@ class _FileVersionedConfig(DLCVersionedConfig):
     other: str = "default"
 
 
-# Register toy migrations for _FileVersionedConfig so the autouse fixture's
-# CURRENT_CONFIG_VERSION=_TOY_VERSION_NEW setting triggers migration correctly.
-@register_migration(_TOY_VERSION_OLD, _TOY_VERSION_NEW, config_type="_FileVersionedConfig")
-def _file_migrate_v98_to_v99(config: dict) -> dict:
-    """Test-only migration for _FileVersionedConfig: rename toy_legacy_field -> toy_new_field."""
-    if _LEGACY_FIELD in config:
-        config[_NEW_FIELD] = config.pop(_LEGACY_FIELD)
-    return config
-
-
-@register_migration(_TOY_VERSION_NEW, _TOY_VERSION_OLD, config_type="_FileVersionedConfig")
-def _file_migrate_v99_to_v98(config: dict) -> dict:
-    """Test-only downgrade migration for _FileVersionedConfig."""
-    if _NEW_FIELD in config:
-        config[_LEGACY_FIELD] = config.pop(_NEW_FIELD)
-    return config
-
-
 class TestFromYamlMigration:
     """from_yaml and to_yaml must interact correctly with the migration system."""
+
+    @pytest.fixture(autouse=True)
+    def _file_versioned_migrations(self, register_toy_migrations):
+        register_toy_migrations("_FileVersionedConfig")
 
     def test_from_yaml_with_old_version_runs_migration(self, tmp_path):
         """A YAML file at an old config_version is migrated on load."""
@@ -945,8 +897,8 @@ class ValidatedMigratingConfig(DLCVersionedConfig):
     count: int = 0
 
 
-class TestMigrationMixinWithValidateAssignment:
-    """MigrationMixin must not interfere with validate_assignment (regression)."""
+class TestVersionedConfigValidateAssignment:
+    """Versioned config must not interfere with validate_assignment (regression)."""
 
     @pytest.fixture(autouse=True)
     def _default_version(self, monkeypatch):

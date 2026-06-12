@@ -84,11 +84,6 @@ def main(
                         }
                     )
 
-                # Only add conditional top-down config updates for conditional top-down models
-                if is_model_cond_top_down(net_type):
-                    pytorch_cfg_updates["inference.conditions.shuffle"] = conditions_shuffle
-                    pytorch_cfg_updates["inference.conditions.snapshot_index"] = -1
-
                 run(
                     config_path=config_path,
                     train_fraction=train_frac,
@@ -99,6 +94,7 @@ def main(
                     engine=engine,
                     pytorch_cfg_updates=pytorch_cfg_updates,
                     create_labeled_videos=create_labeled_videos,
+                    ctd_conditions=(conditions_shuffle, -1) if is_model_cond_top_down(net_type) else None,
                 )
             except Exception as err:
                 log_step(f"FAILED TO RUN {net_type}")

@@ -57,6 +57,89 @@ class TestProjectConfigDefaults:
 
 
 # -----------------------------------------------------------------------------
+# bodyparts_list
+# -----------------------------------------------------------------------------
+
+
+class TestProjectConfigBodypartsList:
+    def test_single_animal_bodyparts_list_returns_bodyparts(self):
+        cfg = ProjectConfig(multianimalproject=False, bodyparts=["nose", "tail"])
+        assert cfg.bodyparts_list == ["nose", "tail"]
+
+    def test_multi_animal_bodyparts_list_returns_multianimalbodyparts(self):
+        cfg = ProjectConfig(
+            multianimalproject=True,
+            bodyparts="MULTI!",
+            multianimalbodyparts=["nose", "tail"],
+        )
+        assert cfg.bodyparts_list == ["nose", "tail"]
+
+    def test_single_animal_multi_sentinel_raises(self):
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError, match="MULTI!"):
+            ProjectConfig(multianimalproject=False, bodyparts="MULTI!")
+
+
+# -----------------------------------------------------------------------------
+# validate_project_path / from_any(repair_path=True)
+# -----------------------------------------------------------------------------
+
+
+def _write_wrong_project_path_yaml(config_path: Path) -> None:
+    config_path.write_text("project_path: /completely/wrong/path\nengine: pytorch\n")
+
+
+class TestValidateProjectPath:
+    def test_raises_when_yaml_not_found(self, tmp_path):
+        cfg = ProjectConfig(project_path=tmp_path)
+        with pytest.raises(FileNotFoundError, match="config.yaml not found"):
+            cfg.validate_project_path()
+
+    @pytest.mark.parametrize("write", [False, True])
+    def test_validate_project_path_write_flag(self, tmp_path, write):
+        config_path = tmp_path / "config.yaml"
+        _write_wrong_project_path_yaml(config_path)
+        cfg = ProjectConfig(project_path=Path("/completely/wrong/path"))
+        cfg.validate_project_path(yaml_path=config_path, write=write)
+        assert cfg.project_path == tmp_path
+        saved = read_config_as_dict(config_path)
+        if write:
+            assert Path(saved["project_path"]) == tmp_path
+            assert not cfg.is_dirty
+        else:
+            assert saved["project_path"] == "/completely/wrong/path"
+            assert "project_path" in cfg.dirty_fields
+
+    @pytest.mark.parametrize(
+        ("config_input", "repair_path"),
+        [
+            ("yaml_path", True),
+            ("dict", True),
+            ("dict", False),
+        ],
+        ids=["yaml_path", "dict_repair", "dict_no_repair"],
+    )
+    def test_from_any_repair_path(self, tmp_path, config_input, repair_path):
+        config_path = tmp_path / "config.yaml"
+        _write_wrong_project_path_yaml(config_path)
+        if config_input == "yaml_path":
+            cfg = ProjectConfig.from_any(config_path, repair_path=repair_path)
+        else:
+            cfg = ProjectConfig.from_any(
+                {"project_path": tmp_path, "engine": "pytorch"},
+                repair_path=repair_path,
+            )
+        assert cfg.project_path == tmp_path
+        assert not cfg.is_dirty
+        saved = read_config_as_dict(config_path)
+        if config_input == "yaml_path" and repair_path:
+            assert Path(saved["project_path"]) == tmp_path
+        else:
+            assert saved["project_path"] == "/completely/wrong/path"
+
+
+# -----------------------------------------------------------------------------
 # _post_yaml_load_updates: project_path repair
 # -----------------------------------------------------------------------------
 
