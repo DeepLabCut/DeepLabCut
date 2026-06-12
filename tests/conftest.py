@@ -66,6 +66,12 @@ def ensure_test_data():
     yield
 
 
+@pytest.fixture(scope="session")
+def test_data_dir():
+    """Path to shared test data under tests/data/."""
+    return TEST_DATA_DIR
+
+
 @pytest.fixture(scope="function")
 def ground_truth_detections():
     with open(os.path.join(TEST_DATA_DIR, "dets.pickle"), "rb") as file:

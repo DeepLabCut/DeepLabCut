@@ -30,7 +30,11 @@ if __name__ == "__main__":
         detector_name=detector_name,
         with_decoder=False,
     )
-    deeplabcut.create_training_dataset(config_path, weight_init=weight_init)
+    deeplabcut.create_training_dataset(
+        config_path,
+        weight_init=weight_init,
+        net_type=model_name,
+    )
 
     deeplabcut.train_network(
         config_path,

@@ -22,6 +22,8 @@ from ruamel.yaml.scalarstring import SingleQuotedScalarString as SQS
 import deeplabcut.pose_estimation_pytorch.apis.export as export
 import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.pose_estimation_pytorch import Task
+from deeplabcut.pose_estimation_pytorch.config.metadata import PoseMetadata
+from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 
 
@@ -93,6 +95,18 @@ def _make_mock_loader(
         loader.model_cfg["detector"] = dict(resume_training_from=None)
 
     return loader
+
+
+def test_wipe_paths_clears_resume_training_from() -> None:
+    cfg = PoseConfig(
+        resume_training_from="/abs/snapshot.pt",
+        metadata=PoseMetadata(project_path=Path("/proj"), pose_config_path=Path("/proj/cfg.yaml")),
+    ).to_dict()
+
+    export.wipe_paths_from_model_config(cfg)
+
+    assert cfg["resume_training_from"] is None
+    assert cfg["metadata"]["project_path"] == ""
 
 
 def _get_export_model_data(
