@@ -58,6 +58,21 @@ def test_read_config_as_dict_raises_on_invalid_yaml(tmp_path):
         read_config_as_dict(config_path)
 
 
+@pytest.mark.parametrize("content", ["", "null", "~"])
+def test_read_config_as_dict_raises_when_empty_or_null(tmp_path, content):
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(content)
+    with pytest.raises(ValueError, match="empty or null"):
+        read_config_as_dict(config_path)
+
+
+def test_read_config_as_dict_raises_when_root_is_not_mapping(tmp_path):
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text("- item\n")
+    with pytest.raises(ValueError, match="must be a YAML mapping"):
+        read_config_as_dict(config_path)
+
+
 def test_read_config_as_dict_breaks_for_yaml_tags(tmp_path):
     """read_config breaks for YAML tags like !!python/tuple"""
     config_path = tmp_path / "config.yaml"
