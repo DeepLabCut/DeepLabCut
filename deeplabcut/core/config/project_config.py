@@ -203,6 +203,24 @@ class ProjectConfig(DLCVersionedConfig):
                 f"project_path updated: {old} -> {project_path} (resolved from YAML location when reading config.yaml)",
             )
 
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_legacy_empty_values(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        data = dict(data)
+
+        # Some old configs used empty strings for unset fields
+        for fieldname in ("skeleton", "TrainingFraction", "video_sets", "bodyparts"):
+            if data.get(fieldname) == "":
+                data.pop(fieldname)
+
+        # NOTE @deruyter92 2026-06-15: This should be removed in v1.
+        if data.get("multianimalproject") and not data.get("bodyparts"):
+            data["bodyparts"] = "MULTI!"
+
+        return data
+
     @model_validator(mode="after")
     def validate_start_before_stop(self) -> Self:
         less_than(self.start, self.stop, name="start", threshold_name="stop")

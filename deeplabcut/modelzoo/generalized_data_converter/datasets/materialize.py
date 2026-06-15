@@ -140,7 +140,7 @@ def modelzoo_single_template() -> ProjectConfig:
         date="",
         video_sets={},
         skeleton=[],
-        bodyparts="",
+        bodyparts=[],
         start=0,
         stop=1,
         numframes2pick=42,
@@ -171,6 +171,8 @@ def modelzoo_single_template() -> ProjectConfig:
 
 def modelzoo_ma_template() -> ProjectConfig:
     """Default ProjectConfig for generalized_data_converter multi-animal projects."""
+    modelzoo_single_template()
+
     return modelzoo_single_template().model_copy(
         update={
             "default_augmenter": "multi-animal-imgaug",
@@ -178,6 +180,7 @@ def modelzoo_ma_template() -> ProjectConfig:
             "multianimalproject": True,
             "individuals": [],
             "multianimalbodyparts": [],
+            "bodyparts": "MULTI!",
         }
     )
 

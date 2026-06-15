@@ -37,7 +37,7 @@ SINGLE_DLC_DEFAULTS = {
     "date": "",
     "video_sets": "",
     "skeleton": "",
-    "bodyparts": "",
+    "bodyparts": [],
     "start": 0,
     "stop": 1,
     "numframes2pick": 42,
@@ -69,6 +69,7 @@ SINGLE_DLC_DEFAULTS = {
 # MaDLC_config defaults; only differences from Single are listed in tests
 MA_DLC_DEFAULTS_OVERRIDES = {
     "default_augmenter": "multi-animal-imgaug",
+    "bodyparts": "MULTI!",
     "croppedtraining": True,
     "multianimalproject": True,
 }
