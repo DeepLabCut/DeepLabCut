@@ -1220,7 +1220,7 @@ class DetectorToPoseInferenceRunner:
 
         return pred
 
-    @torch.inference_mode()
+    @_inference_mode_decorator
     def inference(
         self,
         images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
