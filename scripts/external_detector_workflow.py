@@ -529,7 +529,7 @@ def main(
         raise FileNotFoundError(f"Config file not found: {config}")
 
     # Update the detector args
-    detector = PretrainedDetectorModel(...)
+    detector = PretrainedDetectorModel()
 
     # Build loader once to resolve the canonical model folder.
     loader = DLCLoader(
