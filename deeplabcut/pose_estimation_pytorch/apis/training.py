@@ -148,8 +148,21 @@ def train(
     train_detector_runner = None
     valid_detector_runner = None
 
-    if task == Task.TOP_DOWN:
-        validate_image_paths = loader.model_cfg["data"].get("bbox_validate_image_paths", False)
+    data_cfg = loader.model_cfg.get("data", {})
+    bbox_source = data_cfg.get("bbox_source")
+    precomputed_bboxes = data_cfg.get("precomputed_bboxes")
+
+    if task == Task.TOP_DOWN and bbox_source == "detection_bbox":
+        if not precomputed_bboxes:
+            raise ValueError(
+                "data.bbox_source='detection_bbox' was requested for top-down pose "
+                "training, but data.precomputed_bboxes is not configured. "
+                "Please provide a BBoxes JSON artifact or set data.bbox_source to "
+                "'gt' or 'keypoints'."
+            )
+
+        validate_image_paths = data_cfg.get("bbox_validate_image_paths", False)
+
         train_detector_runner = build_precomputed_detector_runner_from_config(
             loader.model_cfg,
             mode="train",
@@ -161,6 +174,12 @@ def train(
             mode="test",
             target_format="xywh",
             validate_image_paths=validate_image_paths,
+        )
+    elif precomputed_bboxes:
+        logging.info(
+            "data.precomputed_bboxes is configured but data.bbox_source=%r. "
+            "Ignoring precomputed detector boxes for this training run.",
+            bbox_source,
         )
 
     train_dataset = loader.create_dataset(
