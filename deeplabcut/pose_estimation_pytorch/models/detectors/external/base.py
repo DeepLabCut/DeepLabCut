@@ -220,7 +220,10 @@ def precompute_detector_bboxes(
 
     result = {}
     for mode in modes:
-        image_paths = [Path(p) for p in loader.get_image_paths(mode)]
+        if hasattr(loader, "get_image_paths"):
+            image_paths = [Path(p) for p in loader.get_image_paths(mode)]  # type: ignore[attr-defined]
+        else:
+            image_paths = [Path(p) for p in loader.image_filenames(mode)]
         outputs = detector_runner.inference(image_paths)
 
         if len(outputs) != len(image_paths):

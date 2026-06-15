@@ -226,7 +226,7 @@ def make_pytorch_pose_config(
     if (
         task == Task.TOP_DOWN
         and detector_mode == DetectorMode.NATIVE
-        and bbox_source == BBoxComputationMethod.DETECTION_BBOX.value
+        and _yaml_safe_value(bbox_source) == BBoxComputationMethod.DETECTION_BBOX.value
         and precomputed_bboxes is None
     ):
         raise ValueError(

@@ -1245,7 +1245,7 @@ def build_inference_runner(
     inference_cfg: InferenceConfig | dict | None = None,
     detector_runner: DetectorRunnerLike | None = None,
     **kwargs,
-) -> InferenceRunner:
+) -> InferenceRunner | DetectorToPoseInferenceRunner:
     """Build a runner object according to a pytorch configuration file.
 
     Args:

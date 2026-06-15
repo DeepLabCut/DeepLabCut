@@ -165,6 +165,8 @@ class BBoxEntry(StrictBaseModel):
         boxes = self.to_array(dtype=dtype)
         if self.bbox_format == "xyxy":
             boxes = _xyxy_to_xywh(boxes)
+        elif self.bbox_format == "cxcywh":
+            boxes = _xyxy_to_xywh(_cxcywh_to_xyxy(boxes))
         return boxes
 
     def to_xyxy(self, *, dtype: np.dtype[Any] = np.float32) -> np.ndarray:
@@ -172,6 +174,8 @@ class BBoxEntry(StrictBaseModel):
         boxes = self.to_array(dtype=dtype)
         if self.bbox_format == "xywh":
             boxes = _xywh_to_xyxy(boxes)
+        elif self.bbox_format == "cxcywh":
+            boxes = _cxcywh_to_xyxy(boxes)
         return boxes
 
     def to_detector_context(

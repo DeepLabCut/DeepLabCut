@@ -333,10 +333,8 @@ def _extract_keypoints_and_bboxes(
         wh = np.maximum(maxs - mins, 1.0)
         return float(wh[0] * wh[1])
 
-    len(anns_to_merge)
-
     area = np.array([default_area(a) for a in anns_to_merge], dtype=float)
-    category_id = np.array([a.get("category_id", 0) for a in anns_to_merge], dtype=int)
+    category_id = np.array([a.get("category_id", 1) for a in anns_to_merge], dtype=int)
     iscrowd = np.array([a.get("iscrowd", 0) for a in anns_to_merge], dtype=int)
     individual_id = np.array([a.get("individual_id", i) for i, a in enumerate(anns_to_merge)], dtype=int)
 
