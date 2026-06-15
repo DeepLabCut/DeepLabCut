@@ -1006,16 +1006,16 @@ class DetectorToPoseInferenceRunner:
         pose_runner,
         detector_runner: DetectorRunnerLike,
         *,
-        max_individuals: int = 1,
-        num_joints: int = 17,
-        num_unique_bodyparts: int = 0,
+        max_individuals: int | None = None,
+        num_joints: int | None = 17,
+        num_unique_bodyparts: int | None = 0,
         fill_value: float = np.nan,
     ) -> None:
         self.pose_runner = pose_runner
         self.detector_runner = detector_runner
-        self.max_individuals = max(1, max_individuals)
-        self.num_joints = max(1, num_joints)
-        self.num_unique_bodyparts = max(0, num_unique_bodyparts)
+        self.max_individuals = None if max_individuals is None else max(1, max_individuals)
+        self.num_joints = 17 if num_joints is None else max(1, num_joints)
+        self.num_unique_bodyparts = 0 if num_unique_bodyparts is None else max(0, num_unique_bodyparts)
         self.fill_value = fill_value
 
     @staticmethod
