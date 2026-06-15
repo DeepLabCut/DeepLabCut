@@ -196,7 +196,6 @@ class PoseConfig(DLCVersionedConfig):
                 super_animal=super_animal,
                 model_name=model_name,
                 detector_name=detector_name,
-                max_individuals=max_individuals,
                 metadata=metadata,
                 device=device,
             )

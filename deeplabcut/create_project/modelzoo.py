@@ -35,9 +35,10 @@ from deeplabcut.generate_training_dataset.trainingsetmanipulation import (
 )
 from deeplabcut.modelzoo.utils import get_super_animal_project_cfg
 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
-    add_metadata,
+    # add_metadata,
     make_pytorch_test_config,
 )
+from deeplabcut.pose_estimation_pytorch.config.metadata import PoseMetadata
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import load_super_animal_config
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.deprecation import renamed_parameter
@@ -442,7 +443,7 @@ def create_pretrained_project_pytorch(
         model_name=net_name,
         detector_name=detector_name,
     )
-    pytorch_config = add_metadata(config, pytorch_config, train_cfg_path)
+    pytorch_config["metadata"] = PoseMetadata.build(config, train_cfg_path).to_dict()
     pytorch_config["resume_training_from"] = str(train_dir / new_snapshot_name)
     pytorch_config["detector"]["resume_training_from"] = str(train_dir / new_detector_name)
     write_config(train_cfg_path, pytorch_config)
