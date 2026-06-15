@@ -2,7 +2,7 @@
 Synthetic end-to-end example for the external-detector / precomputed-bbox workflow
 in DeepLabCut PyTorch top-down pose estimation.
 
-If you are mostly interested in the process of using a detec
+If you are mostly interested in the process of using a detector see the "Usage" section below.
 
 This example is intentionally focused and highly documented. It demonstrates the
 "offline boxes" workflow, which is typically the easiest path to integrate custom
