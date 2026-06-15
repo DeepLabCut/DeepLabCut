@@ -372,7 +372,7 @@ def make_labeled_images_from_dataframe(
     images_list = [str(Path(cfg["project_path"]).joinpath(*tuple_)) for tuple_ in df.index.tolist()]
     if not destfolder:
         destfolder = str(Path(images_list[0]).parent)
-    tmpfolder = destfolder + "_labeled"
+    tmpfolder = str(destfolder) + "_labeled"
     auxiliaryfunctions.attempt_to_make_folder(tmpfolder)
     ic = io.imread_collection(images_list)
 
