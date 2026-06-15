@@ -301,7 +301,8 @@ def export_model(
 
     pose_cfg_file = full_export_dir / "pose_cfg.yaml"
     ruamel_file = ruamel.yaml.YAML()
-    ruamel_file.dump(sorted_cfg, pose_cfg_file.open("w"))
+    with pose_cfg_file.open("w") as pose_cfg_file:
+        ruamel_file.dump(sorted_cfg, pose_cfg_file)
 
     ### copy checkpoint to export directory
 
