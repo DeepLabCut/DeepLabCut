@@ -333,7 +333,7 @@ def write_project_config(
     except ValidationError as e:
         warnings.warn(
             f"Invalid configuration! Validation error in config file {cfg}. Error: {e}"
-            "Reverting to legacy config file writing.",
+            " Reverting to legacy config file writing.",
             stacklevel=2,
         )
     with open(configname, "w") as cf:
