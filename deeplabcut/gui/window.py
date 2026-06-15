@@ -390,7 +390,7 @@ class MainWindow(QMainWindow):
             QtWidgets.QMessageBox.warning(
                 self,
                 "Update failed",
-                "No available installer backend was found.",
+                "No update commands were generated.",
             )
 
     def _drain_update_process_output(self, process=None):
