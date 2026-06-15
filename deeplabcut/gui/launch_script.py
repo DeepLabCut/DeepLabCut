@@ -25,8 +25,7 @@ import PySide6.QtWidgets as QtWidgets
 import qdarkstyle
 from PySide6.QtCore import Qt
 
-from deeplabcut.gui import BASE_DIR
-from deeplabcut.gui.gui_assets import icon_from_resource, pixmap_from_resource
+from deeplabcut.gui.gui_assets import get_style_qss, icon_from_resource, pixmap_from_resource
 
 
 def launch_dlc():
@@ -37,11 +36,8 @@ def launch_dlc():
     splash = QtWidgets.QSplashScreen(pixmap)
     splash.show()
 
-    stylefile = BASE_DIR / "style.qss"
-    with stylefile.open() as f:
-        app.setStyleSheet(f.read())
-
-    dark_stylesheet = qdarkstyle.load_stylesheet_pyside2()
+    app.setStyleSheet(get_style_qss())  # this gets overridden immediately?
+    dark_stylesheet = qdarkstyle.load_stylesheet_pyside6()
     app.setStyleSheet(dark_stylesheet)
 
     # Set up a logger and add an stdout handler.
