@@ -27,7 +27,7 @@ if __name__ == "__main__":
         superanimal_name,
         model_name="hrnet_w32",
         detector_name="fasterrcnn_resnet50_fpn_v2",
-        videotype=".avi",
+        video_extensions=".avi",
         scale_list=scale_list,
     )
 
@@ -38,6 +38,6 @@ if __name__ == "__main__":
         superanimal_name,
         model_name="hrnet_w32",
         detector_name="fasterrcnn_resnet50_fpn_v2",
-        videotype=".avi",
+        video_extensions=".avi",
         scale_list=scale_list,
     )

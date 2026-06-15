@@ -191,14 +191,24 @@ class TrainingDatasetMetadata:
             the shuffle with the given trainset index and shuffle index
 
         Raises:
-            ValueError if the shuffle is not present in the metadata
+            ValueError if trainset_index is out of bounds or the shuffle is not present
         """
-        train_fraction = self.project_config["TrainingFraction"][trainset_index]
+        fractions = self.project_config["TrainingFraction"]
+        if trainset_index >= len(fractions):
+            raise ValueError(
+                f"trainset_index={trainset_index} is out of bounds for "
+                f"TrainingFraction={fractions} (length {len(fractions)})."
+            )
+        train_fraction = fractions[trainset_index]
         for shuffle in self.shuffles:
             if shuffle.train_fraction == train_fraction and shuffle.index == index:
                 return shuffle
 
-        raise ValueError(f"Could not find a shuffle with trainingset fraction {train_fraction} and index {index}")
+        known = [(s.train_fraction, s.index) for s in self.shuffles] or "none"
+        raise ValueError(
+            f"Could not find a shuffle with train_fraction={train_fraction} and "
+            f"index={index}. Known shuffles (fraction, index): {known}."
+        )
 
     def save(self) -> None:
         """Saves the training dataset metadata to disk."""
@@ -242,6 +252,8 @@ class TrainingDatasetMetadata:
             cfg = config
 
         metadata_path = TrainingDatasetMetadata.path(cfg)
+        if not metadata_path.exists():
+            raise FileNotFoundError(f"No metadata.yaml found at {metadata_path}.")
         with open(metadata_path) as file:
             metadata = YAML(typ="safe", pure=True).load(file)
 
@@ -398,36 +410,47 @@ def get_shuffle_engine(
     """
     if not TrainingDatasetMetadata.path(cfg).exists():
         metadata = TrainingDatasetMetadata.create(cfg)
-        metadata.save()
+        if metadata.shuffles:
+            # only persist when there is actual content to avoid writing empty files
+            metadata.save()
+    else:
+        metadata = TrainingDatasetMetadata.load(cfg)
 
-    metadata = TrainingDatasetMetadata.load(cfg)
-    shuffle_metadata = metadata.get(trainingsetindex, shuffle)
-    if modelprefix:
-        # try to get the engine by checking which models folder exists
-        engines = find_engines_from_model_folders(cfg, trainingsetindex, shuffle, modelprefix)
-        if len(engines) == 0:
-            raise ValueError(
-                f"Couldn't find any shuffles with trainingsetindex={trainingsetindex}, "
-                f"shuffle={shuffle} and modelprefix={modelprefix}. Please check that "
-                f"such a shuffle is defined."
-            )
+    # Try to resolve the shuffle from metadata; fall through to model-folder detection
+    # on failure so that inference works even when metadata is incomplete.
+    shuffle_metadata = None
+    try:
+        shuffle_metadata = metadata.get(trainingsetindex, shuffle)
+    except ValueError as e:
+        logging.warning(
+            "Could not read shuffle metadata for trainingsetindex=%s, shuffle=%s: %s. "
+            "Falling back to detecting the engine from model folders.",
+            trainingsetindex,
+            shuffle,
+            e,
+        )
 
-        if len(engines) == 1:
-            return engines.pop()
+    if shuffle_metadata is not None:
+        return shuffle_metadata.engine
 
-        if shuffle_metadata.engine in engines:
-            engine = shuffle_metadata.engine
-        else:
-            engine = engines.pop()  # take a random engine
+    engines = find_engines_from_model_folders(cfg, trainingsetindex, shuffle, modelprefix)
+    if len(engines) == 0:
+        prefix_str = f" and modelprefix={modelprefix}" if modelprefix else ""
+        raise ValueError(
+            f"Couldn't find any shuffles with trainingsetindex={trainingsetindex}, "
+            f"shuffle={shuffle}{prefix_str}. The shuffle was not found "
+            "in metadata.yaml and no model folder exists for it. Please check that "
+            "such a shuffle is defined."
+        )
 
+    engine = list(engines)[0]  # Get any engine from the set
+    if len(engines) > 1:
         logging.warning(
             f"Found multiple engines for trainingsetindex={trainingsetindex}, "
             f"shuffle={shuffle} and modelprefix={modelprefix}. Using engine={engine}. "
             f"To select another engine, please specify it in your API call."
         )
-        return engine
-
-    return shuffle_metadata.engine
+    return engine
 
 
 def find_engines_from_model_folders(

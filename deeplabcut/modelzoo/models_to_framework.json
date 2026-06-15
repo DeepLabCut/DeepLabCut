@@ -5,5 +5,5 @@
     "rtmpose_s": "pytorch",
     "rtmpose_x": "pytorch",
     "fmpose3d_humans": "pytorch",
-    "fmpose3d_animals": "pytorch",
+    "fmpose3d_animals": "pytorch"
 }

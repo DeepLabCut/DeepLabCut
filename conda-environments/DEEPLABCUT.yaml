@@ -29,6 +29,7 @@ dependencies:
   - ipython
   - jupyter
   - ffmpeg
+  - pyside6
   - pip:
     - torch
     - torchvision

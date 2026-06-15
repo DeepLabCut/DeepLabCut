@@ -300,7 +300,7 @@ which then also uses temporal information to link across the video frames.
 Note, we also highly recommend that you use more bodyparts that you might otherwise have
 (see the example below).
 
-For more information, checkout the [napari-deeplabcut docs](napari-gui) for
+For more information, checkout the [napari-deeplabcut docs](file:napari-gui-landing) for
 more information about the labelling workflow.
 
 ### (E) Check Annotated Frames

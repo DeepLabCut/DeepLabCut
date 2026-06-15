@@ -21,6 +21,9 @@ from deeplabcut.core.trackingutils import TRACK_METHODS
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, auxiliaryfunctions_3d
 
 
+# TODO: @deruyter92 2026-05-20: the function signature could be updated to match
+# other API (i.e. videotype: str -> video_extensions: str | Sequence[str] | None)
+# this requires updating get_camerawise_videos (matching `collect_video_paths`)
 def triangulate(
     config,
     video_path,
@@ -238,7 +241,7 @@ def triangulate(
                         DLCscorer = analyze_videos(
                             config_2d,
                             [video],
-                            videotype=videotype,
+                            video_extensions=videotype,
                             shuffle=shuffle,
                             trainingsetindex=trainingsetindex,
                             gputouse=gputouse,
@@ -252,7 +255,7 @@ def triangulate(
                             filtering.filterpredictions(
                                 config_2d,
                                 [video],
-                                videotype=videotype,
+                                video_extensions=videotype,
                                 shuffle=shuffle,
                                 trainingsetindex=trainingsetindex,
                                 filtertype=filtertype,
@@ -266,7 +269,7 @@ def triangulate(
                     DLCscorer = analyze_videos(
                         config_2d,
                         [video],
-                        videotype=videotype,
+                        video_extensions=videotype,
                         shuffle=shuffle,
                         trainingsetindex=trainingsetindex,
                         gputouse=gputouse,
@@ -280,7 +283,7 @@ def triangulate(
                         filtering.filterpredictions(
                             config_2d,
                             [video],
-                            videotype=videotype,
+                            video_extensions=videotype,
                             shuffle=shuffle,
                             trainingsetindex=trainingsetindex,
                             filtertype=filtertype,

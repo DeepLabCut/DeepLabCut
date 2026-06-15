@@ -11,8 +11,7 @@
 from __future__ import annotations
 
 import logging
-import random
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 import albumentations as A
@@ -65,7 +64,9 @@ from deeplabcut.pose_estimation_pytorch.runners.snapshots import (
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import resolve_device
-from deeplabcut.utils import auxfun_videos, auxiliaryfunctions
+from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS, collect_video_paths
+from deeplabcut.utils.deprecation import deprecated
 
 
 def parse_snapshot_index_for_analysis(
@@ -293,49 +294,17 @@ def get_scorer_name(
     return f"DLC_{name}_{task}{date}shuffle{shuffle}_{snapshot_uid}"
 
 
+@deprecated(replacement="deeplabcut.collect_video_paths", since="3.0.0")
 def list_videos_in_folder(
     data_path: str | Path | list[str | Path],
-    video_type: str | None = None,
+    video_type: str | Sequence[str] | None = SUPPORTED_VIDEOS,
     shuffle: bool = False,
 ) -> list[Path]:
-    """
-    Args:
-        data_path: Path or list of paths to folders containing videos, or individual
-            video files. Can be a mix of directories and files.
-        video_type: The type of video to filter for (e.g., "mp4", ".mp4"). If None,
-            all supported video types are included.
-        shuffle: Whether to shuffle the order of videos. If False, videos are returned
-            in sorted order for deterministic behavior.
-
-    Returns:
-        The paths of videos to analyze. Duplicate paths are removed.
-
-    Raises:
-        FileNotFoundError: If any path in data_path does not exist.
-    """
-    if isinstance(data_path, (str, Path)):
-        data_path = [data_path]
-
-    if not video_type:
-        video_suffixes = {f".{ext.lower()}" for ext in auxfun_videos.SUPPORTED_VIDEOS}
-    else:
-        video_suffixes = {f".{video_type.lstrip('.').lower()}"}
-
-    videos = []
-    for path in map(Path, data_path):
-        if not path.exists():
-            raise FileNotFoundError(f"Could not find: {path}. Check access rights.")
-
-        if path.is_dir():
-            videos.extend(f for f in path.iterdir() if f.is_file() and f.suffix.lower() in video_suffixes)
-        elif path.is_file() and path.suffix.lower() in video_suffixes:
-            videos.append(path)
-
-    # Resolve video paths and remove duplicates
-    unique_videos = list(dict.fromkeys(v.resolve() for v in videos))
-    if shuffle:
-        random.shuffle(unique_videos)
-    return unique_videos
+    return collect_video_paths(
+        data_path=data_path,
+        extensions=video_type,
+        shuffle=shuffle,
+    )
 
 
 def ensure_multianimal_df_format(df_predictions: pd.DataFrame) -> pd.DataFrame:

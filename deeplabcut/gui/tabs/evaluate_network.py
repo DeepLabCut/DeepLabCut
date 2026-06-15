@@ -214,7 +214,7 @@ class EvaluateNetwork(DefaultTab):
             image_dir = Path(self.root.project_folder) / eval_folder / f"LabeledImages_{scorer}"
             labeled_images = [str(p) for p in image_dir.rglob("*.png")]
             if len(labeled_images) > 0:
-                _ = launch_napari(image_dir)
+                _ = launch_napari(labeled_images)
 
     @Slot(Engine)
     def _on_engine_change(self, engine: Engine) -> None:

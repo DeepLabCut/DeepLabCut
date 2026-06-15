@@ -14,6 +14,11 @@ import pytest
 
 from deeplabcut.pose_estimation_tensorflow.datasets import augmentation
 
+tf = pytest.importorskip(
+    "tensorflow",
+    reason="TensorFlow not installed (use a project extra such as .[tf])",
+)
+
 
 @pytest.mark.parametrize(
     "width, height",

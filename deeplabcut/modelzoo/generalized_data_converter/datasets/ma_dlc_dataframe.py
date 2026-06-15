@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 
 from deeplabcut.generate_training_dataset.trainingsetmanipulation import (
+    drop_likelihood_columns,
     parse_video_filenames,
 )
 from deeplabcut.modelzoo.generalized_data_converter.datasets.base import BasePoseDataset
@@ -79,6 +80,7 @@ def merge_annotateddatasets(cfg):
     else:
         bodyparts = cfg["bodyparts"]
     AnnotationData = AnnotationData.reindex(bodyparts, axis=1, level=AnnotationData.columns.names.index("bodyparts"))
+    AnnotationData = drop_likelihood_columns(AnnotationData)
 
     return AnnotationData
 
@@ -140,7 +142,7 @@ class MaDLCDataFrame(BasePoseDataset):
         self.whether_anno_image_match(self.generic_test_images, self.generic_test_annotations)
 
     def _df2generic(self, df, image_id_offset=0):
-
+        df = drop_likelihood_columns(df)
         individuals = df.columns.get_level_values("individuals").unique().tolist()
 
         unique_bpts = []

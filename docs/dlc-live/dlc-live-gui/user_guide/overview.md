@@ -146,7 +146,7 @@ Find more information here if needed: {ref}`deeplabcut-live`.
 
 ```{note}
 Timestamps are additionally saved in a JSON file alongside the video, providing precise timing information for when each frame was processed.
-See {ref}`file:dlclivegui-tinmestamp-format` for details.
+See {ref}`file:dlclivegui-timestamp-format` for details.
 ```
 
 (sec:dlclivegui-recording-paths-info)=

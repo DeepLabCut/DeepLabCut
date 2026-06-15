@@ -203,7 +203,7 @@ class RefineTracklets(DefaultTab):
         deeplabcut.stitch_tracklets(
             self.root.config,
             self.files,
-            videotype=self.video_selection_widget.videotype_widget.currentText(),
+            video_extensions=self.video_selection_widget.videotype_widget.currentText(),
             shuffle=self.shuffle.value(),
             n_tracks=self.num_animals_in_videos.value(),
         )
@@ -217,7 +217,7 @@ class RefineTracklets(DefaultTab):
         deeplabcut.filterpredictions(
             self.root.config,
             self.files,
-            videotype=videotype,
+            video_extensions=videotype,
             shuffle=self.shuffle.value(),
             filtertype=self.filter_type_widget.currentText(),
             windowlength=self.window_length_widget.value(),

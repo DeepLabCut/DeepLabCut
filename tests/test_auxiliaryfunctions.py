@@ -48,6 +48,8 @@ def test_find_analyzed_data(tmpdir_factory):
             auxiliaryfunctions.find_analyzed_data(fake_folder, "video" + str(ind), SCORER, filtered=True)
 
 
+@pytest.mark.deprecated
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_get_list_of_videos(tmpdir_factory):
     fake_folder = tmpdir_factory.mktemp("videos")
     n_ext = len(SUPPORTED_VIDEOS)

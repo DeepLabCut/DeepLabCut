@@ -3,7 +3,7 @@ deeplabcut:
   last_metadata_updated: '2026-03-17'
   ignore: false
 ---
-(file:dlclivegui-tinmestamp-format)=
+(file:dlclivegui-timestamp-format)=
 # Video timestamp format
 
 When recording videos, the application automatically saves frame timestamps to a JSON file alongside the video file.

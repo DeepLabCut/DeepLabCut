@@ -35,7 +35,7 @@ configfile, path_train_config = deeplabcut.create_pretrained_project(
     YourName,
     video,
     model=MODEL_NAME,
-    videotype="avi",
+    video_extensions="avi",
     analyzevideo=True,
     createlabeledvideo=True,
     copy_videos=False,

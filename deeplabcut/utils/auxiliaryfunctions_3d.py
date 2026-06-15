@@ -111,6 +111,9 @@ def triangulatePoints(P1, P2, x1, x2):
     return X / X[3]
 
 
+# TODO: @deruyter92 2026-05-20: the function signature could be updated to match
+# other API (i.e. videotype: str -> video_extensions: str | Sequence[str] | None)
+# see `collect_video_paths` for reference.
 def get_camerawise_videos(path, cam_names, videotype):
     """This function returns the list of videos corresponding to the camera names
     specified in the cam_names. e.g. if cam_names = ['camera-1','camera-2']

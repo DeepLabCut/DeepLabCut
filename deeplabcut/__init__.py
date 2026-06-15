@@ -102,6 +102,7 @@ from .utils.auxfun_videos import (
     DownSampleVideo,
     ShortenVideo,
     check_video_integrity,
+    collect_video_paths,
 )
 
 # -----------------------------------------------------------------------------

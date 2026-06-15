@@ -10,6 +10,7 @@
 #
 import glob
 import os
+from collections.abc import Sequence
 from pathlib import Path
 
 from deeplabcut.pose_estimation_tensorflow.modelzoo.api.superanimal_inference import (
@@ -20,17 +21,19 @@ from deeplabcut.utils.auxiliaryfunctions import (
     load_analyzed_data,
     read_config,
 )
+from deeplabcut.utils.deprecation import renamed_parameter
 from deeplabcut.utils.make_labeled_video import create_labeled_video
 from deeplabcut.utils.plotting import _plot_trajectories
 
 
 class SpatiotemporalAdaptation:
+    @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
     def __init__(
         self,
         video_path,
         supermodel_name,
         scale_list=None,
-        videotype="mp4",
+        video_extensions: str | Sequence[str] | None = "mp4",
         adapt_iterations=1000,
         modelfolder="",
         customized_pose_config="",
@@ -48,9 +51,14 @@ class SpatiotemporalAdaptation:
            Currently we support supertopview(LabMice) and superquadruped (quadruped side-view animals)
         scale_list: list
            A list of different resolutions for the spatial pyramid
-        videotype: string
-           Checks for the extension of the video in case the input to the video is a directory.\n Only videos with this
-           extension are analyzed. The default is ``.avi``
+        video_extensions: str | Sequence[str] | None, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
         adapt_iterations: int
            Number of iterations for adaptation training. Empirically 1000 is sufficient. Training longer can cause worse
            performance depending whether there is occlusion in the video
@@ -66,11 +74,11 @@ class SpatiotemporalAdaptation:
         from  deeplabcut.modelzoo.apis import SpatiotemporalAdaptation
         video_path = '/mnt/md0/shaokai/openfield_video/m3v1mp4.mp4'
         superanimal_name = 'superanimal_topviewmouse'
-        videotype = 'mp4'
+        video_extensions = 'mp4'
         >>> adapter = SpatiotemporalAdaptation(video_path,
                                        superanimal_name,
                                        modelfolder = "temp_topview",
-                                       videotype = videotype)
+                                       video_extensions = video_extensions)
 
         adapter.before_adapt_inference()
         adapter.adaptation_training()
@@ -82,7 +90,7 @@ class SpatiotemporalAdaptation:
         self.video_path = video_path
         self.supermodel_name = supermodel_name
         self.scale_list = scale_list
-        self.videotype = videotype
+        self.video_extensions = video_extensions
         vname = str(Path(self.video_path).stem)
         self.adapt_modelprefix = vname + "_video_adaptation"
         self.adapt_iterations = adapt_iterations
@@ -120,7 +128,7 @@ class SpatiotemporalAdaptation:
                 [self.video_path],
                 self.project_name,
                 self.model_name,
-                videotype=self.videotype,
+                video_extensions=self.video_extensions,
                 scale_list=self.scale_list,
                 init_weights=self.init_weights,
                 customized_test_config=self.customized_pose_config,
@@ -130,7 +138,7 @@ class SpatiotemporalAdaptation:
                 [self.video_path],
                 self.project_name,
                 self.model_name,
-                videotype=self.videotype,
+                video_extensions=self.video_extensions,
                 scale_list=self.scale_list,
                 customized_test_config=self.customized_pose_config,
             )
@@ -144,7 +152,7 @@ class SpatiotemporalAdaptation:
             create_labeled_video(
                 "",
                 [self.video_path],
-                videotype=self.videotype,
+                video_extensions=self.video_extensions,
                 filtered=False,
                 init_weights=self.init_weights,
                 draw_skeleton=True,
@@ -218,7 +226,7 @@ class SpatiotemporalAdaptation:
             [self.video_path],
             self.project_name,
             self.model_name,
-            videotype=self.videotype,
+            video_extensions=self.video_extensions,
             init_weights=adapt_weights,
             scale_list=scale_list,
             customized_test_config=self.customized_pose_config,
@@ -231,7 +239,7 @@ class SpatiotemporalAdaptation:
             create_labeled_video(
                 ref_proj_config_path,
                 [self.video_path],
-                videotype=self.videotype,
+                video_extensions=self.video_extensions,
                 filtered=False,
                 init_weights=adapt_weights,
                 draw_skeleton=True,

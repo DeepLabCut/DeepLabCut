@@ -11,6 +11,7 @@
 import os
 import pickle
 import warnings
+from collections.abc import Sequence
 from pathlib import Path
 
 import numpy as np
@@ -26,16 +27,18 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.core.inferenceutils import Assembly
 from deeplabcut.pose_estimation_pytorch.apis.utils import (
     get_scorer_name,
-    list_videos_in_folder,
     parse_snapshot_index_for_analysis,
 )
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import DLCLoader
+from deeplabcut.utils.auxfun_videos import collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def convert_detections2tracklets(
     config: str,
     videos: str | list[str],
-    videotype: str | None = None,
+    video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     overwrite: bool = False,
@@ -124,9 +127,10 @@ def convert_detections2tracklets(
         modelprefix=modelprefix,
     )
 
-    videos = list_videos_in_folder(videos, videotype)
+    paths_input = videos
+    videos = collect_video_paths(videos, extensions=video_extensions)
     if len(videos) == 0:
-        print(f"No videos were found in {videos}")
+        print(f"No videos were found in {paths_input}")
         return
 
     for video in videos:

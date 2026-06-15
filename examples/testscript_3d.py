@@ -181,7 +181,7 @@ if __name__ == "__main__":
     deeplabcut.triangulate(path_config_file, video_dir, save_as_csv=True)
 
     print("CREATING LABELED VIDEO 3-D")
-    deeplabcut.create_labeled_video_3d(path_config_file, [video_dir], start=5, end=10, videotype=".avi")
+    deeplabcut.create_labeled_video_3d(path_config_file, [video_dir], start=5, end=10, video_extensions=".avi")
 
     # output_path = [os.path.join(basepath,folder)]
     # deeplabcut.create_labeled_video_3d(path_config_file,output_path,start=5,end=10)

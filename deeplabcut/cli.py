@@ -304,7 +304,7 @@ def evaluate_network(_, config, **kwargs):
 @click.option(
     "-vtype",
     "--video_type",
-    "videotype",
+    "video_extensions",
     default=".avi",
     help="The extension of video in case the input is a directory",
 )
@@ -493,7 +493,7 @@ def refine_labels(_, config):
 @click.option(
     "-v",
     "--video_type",
-    "videotype",
+    "video_extensions",
     default=".avi",
     help="Checks for the extension of the video in case the input is a directory.\
               Only videos with this extension are analyzed. The default is ``.avi``",
@@ -543,7 +543,7 @@ def create_labeled_video(_, *args, **kwargs):
 @click.option(
     "-v",
     "--video_type",
-    "videotype",
+    "video_extensions",
     default=".avi",
     help="Checks for the extension of the video in case the input is a directory.\
               Only videos with this extension are analyzed. The default is ``.avi``",

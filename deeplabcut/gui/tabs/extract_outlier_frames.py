@@ -136,7 +136,7 @@ class ExtractOutlierFrames(DefaultTab):
         config: {config},
         shuffle: {shuffle},
         videos: {videos},
-        videotype: {videotype},
+        video_extensions: {videotype},
         outlier algorithm: {outlieralgorithm},
         track method: {track_method}
         """
@@ -144,7 +144,7 @@ class ExtractOutlierFrames(DefaultTab):
         deeplabcut.extract_outlier_frames(
             config=config,
             videos=videos,
-            videotype=videotype,
+            video_extensions=videotype,
             shuffle=shuffle,
             outlieralgorithm=outlieralgorithm,
             track_method=track_method,

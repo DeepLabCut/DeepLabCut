@@ -21,6 +21,7 @@ import pickle
 import re
 import time
 import warnings
+from collections.abc import Sequence
 from pathlib import Path
 
 import cv2
@@ -40,17 +41,20 @@ from deeplabcut.pose_estimation_tensorflow.core.openvino.session import (
 )
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxfun_models, auxfun_multianimal, auxiliaryfunctions
+from deeplabcut.utils.auxfun_videos import collect_video_paths
+from deeplabcut.utils.deprecation import renamed_parameter
 
 ####################################################
 # Loading data, and defining model folder
 ####################################################
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def create_tracking_dataset(
     config,
     videos,
     track_method,
-    videotype="",
+    video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     gputouse=None,
@@ -198,7 +202,7 @@ def create_tracking_dataset(
     ##################################################
     # Looping over videos
     ##################################################
-    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    Videos = collect_video_paths(videos, extensions=video_extensions)
     if len(Videos) > 0:
         if "multi-animal" in dlc_cfg["dataset_type"]:
             for video in Videos:
@@ -247,14 +251,15 @@ def create_tracking_dataset(
             )
         return DLCscorer  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
-        print("No video(s) were found. Please check your paths and/or 'videotype'.")
+        print("No video(s) were found. Please check your paths and/or video extensions filter.")
         return DLCscorer
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def analyze_videos(
     config,
     videos,
-    videotype="",
+    video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     gputouse=None,
@@ -298,10 +303,14 @@ def analyze_videos(
         A list of strings containing the full paths to videos for analysis or a path to
         the directory, where all the videos with same extension are stored.
 
-    videotype: str, optional, default=""
-        Checks for the extension of the video in case the input to the video is a
-        directory. Only videos with this extension are analyzed. If left unspecified,
-        videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+    video_extensions : str | Sequence[str] | None, optional, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
 
     shuffle: int, optional, default=1
         An integer specifying the shuffle index of the training dataset used for
@@ -439,7 +448,7 @@ def analyze_videos(
     >>> deeplabcut.analyze_videos(
             '/analysis/project/reaching-task/config.yaml',
             ['/analysis/project/videos'],
-            videotype='.avi',
+            video_extensions='.avi',
         )
 
     Analyze multiple videos
@@ -594,7 +603,7 @@ def analyze_videos(
     ##################################################
     # Looping over videos
     ##################################################
-    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype, in_random_order)
+    Videos = collect_video_paths(videos, extensions=video_extensions, shuffle=in_random_order)
     if len(Videos) > 0:
         if "multi-animal" in dlc_cfg["dataset_type"]:
             from deeplabcut.pose_estimation_tensorflow.predict_multianimal import (
@@ -619,7 +628,7 @@ def analyze_videos(
                     convert_detections2tracklets(
                         config,
                         [video],
-                        videotype,
+                        video_extensions,
                         shuffle,
                         trainingsetindex,
                         destfolder=destfolder,
@@ -630,7 +639,7 @@ def analyze_videos(
                     stitch_tracklets(
                         config,
                         [video],
-                        videotype,
+                        video_extensions,
                         shuffle,
                         trainingsetindex,
                         destfolder=destfolder,
@@ -680,7 +689,7 @@ def analyze_videos(
             )
         return DLCscorer  # note: this is either DLCscorer or DLCscorerlegacy depending on what was used!
     else:
-        print("No video(s) were found. Please check your paths and/or 'video_type'.")
+        print("No video(s) were found. Please check your paths and/or video_extensions filter.")
         return DLCscorer
 
 
@@ -1475,10 +1484,11 @@ def _convert_detections_to_tracklets(
         pickle.dump(tracklets, f, pickle.HIGHEST_PROTOCOL)
 
 
+@renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def convert_detections2tracklets(
     config,
     videos,
-    videotype="",
+    video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
     overwrite=False,
@@ -1504,10 +1514,14 @@ def convert_detections2tracklets(
         A list of strings containing the full paths to videos for analysis
         or a path to the directory, where all the videos with same extension are stored.
 
-    videotype: string, optional
-        Checks for the extension of the video in case the input to the video is a directory.\n
-        Only videos with this extension are analyzed.
-        If left unspecified, videos with common extensions ('avi', 'mp4', 'mov', 'mpeg', 'mkv') are kept.
+    video_extensions : str | Sequence[str] | None, optional, default=None
+        Controls how ``videos`` are filtered, based on file extension.
+        File paths and directory contents are treated differently:
+        - ``None`` (default): file paths are accepted as-is; directories are
+          scanned for files with a recognized video extension.
+        - ``str`` or ``Sequence[str]`` (e.g. ``"mp4"`` or ``["mp4", "avi"]``):
+          both file paths and directory contents are filtered by the given
+          extension(s).
 
     shuffle: int, optional
         An integer specifying the shuffle index of the training dataset used for training the network.
@@ -1560,14 +1574,14 @@ def convert_detections2tracklets(
     >>> deeplabcut.convert_detections2tracklets(
         '/analysis/project/reaching-task/config.yaml',
         ['/analysis/project/video1.mp4'],
-        videotype='.mp4'
+        video_extensions='.mp4'
         )
 
     If you want to convert detections to tracklets based on box_tracker:
     >>> deeplabcut.convert_detections2tracklets(
         '/analysis/project/reaching-task/config.yaml',
         ['/analysis/project/video1.mp4'],
-        videotype='.mp4',
+        video_extensions='.mp4',
         track_method='box'
         )
 
@@ -1651,7 +1665,7 @@ def convert_detections2tracklets(
     ##################################################
     # Looping over videos
     ##################################################
-    Videos = auxiliaryfunctions.get_list_of_videos(videos, videotype)
+    Videos = collect_video_paths(videos, extensions=video_extensions)
     if len(Videos) > 0:
         for video in Videos:
             print("Processing... ", video)
