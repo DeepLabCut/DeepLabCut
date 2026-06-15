@@ -1411,7 +1411,9 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
         ]
     )
     # remove frames used for video creation
-    [p.unlink() for p in Path(destfolder).iterdir() if "frame" in p.name]
+    for p in Path(destfolder).iterdir():
+        if p.is_file() and "frame" in p.name:
+            p.unlink()
 
 
 def create_video_from_pickled_tracks(video, pickle_file, destfolder="", output_name="", pcutoff=0.6):
