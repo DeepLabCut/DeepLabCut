@@ -14,10 +14,10 @@ from pathlib import Path
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtGui import QIcon
 
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.gui.dlc_params import DLCParams
+from deeplabcut.gui.gui_assets import icon_from_resource
 from deeplabcut.gui.widgets import ConfigEditor
 
 
@@ -671,8 +671,9 @@ def _create_message_box(text, info_text):
 
     msg.setWindowTitle("Info")
     msg.setMinimumWidth(900)
-    logo = Path("logo.png").resolve().parent / "assets" / "logo.png"
-    msg.setWindowIcon(QIcon(str(logo)))
+    # logo = Path("logo.png").resolve().parent / "assets" / "logo.png"
+    icon = icon_from_resource("logo.png")
+    msg.setWindowIcon(icon)
     msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
     return msg
 
@@ -685,8 +686,8 @@ def _create_confirmation_box(title, description):
 
     msg.setWindowTitle("Confirmation")
     msg.setMinimumWidth(900)
-    logo = Path("logo.png").resolve().parent / "assets" / "logo.png"
-    msg.setWindowIcon(QIcon(str(logo)))
+    icon = icon_from_resource("logo.png")
+    msg.setWindowIcon(icon)
     msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
     return msg
 
