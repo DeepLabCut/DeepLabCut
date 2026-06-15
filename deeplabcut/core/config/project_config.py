@@ -135,7 +135,7 @@ class ProjectConfig(DLCVersionedConfig):
 
     # Training, evaluation and analysis configuration
     TrainingFraction: list[Fraction] = Field(
-        default_factory=list,
+        default_factory=lambda: [0.95],
         json_schema_extra={"comment": "\nTraining,Evaluation and Analysis configuration"},
     )
     iteration: NonNegativeInt | None = None
