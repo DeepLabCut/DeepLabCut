@@ -56,7 +56,7 @@ from deeplabcut.gui.tabs import (
     UnsupervizedIdTracking,
     VideoEditor,
 )
-from deeplabcut.gui.utils import UpdateChecker, build_update_commands
+from deeplabcut.gui.utils import UpdateChecker, _build_update_commands
 from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
 
 warnings.filterwarnings(
@@ -382,7 +382,7 @@ class MainWindow(QMainWindow):
 
         self._update_process_output = []
         self._update_attempt_outputs = []
-        self._update_commands = build_update_commands(packages)
+        self._update_commands = _build_update_commands(packages)
         self._current_update_backend = None
 
         if not self._start_next_update_command():
@@ -399,10 +399,7 @@ class MainWindow(QMainWindow):
             sender = self.sender()
             process = sender if sender is not None else self._update_process
 
-        if process is not self._update_process:
-            return
-
-        if process is None:
+        if process is None or process is not self._update_process:
             return
 
         data = bytes(process.readAll())
@@ -464,7 +461,7 @@ class MainWindow(QMainWindow):
         self._update_attempt_outputs.append(failed_output)
 
         self._disconnect_update_process(process)
-        self._update_process.deleteLater()
+        process.deleteLater()
         self._update_process = None
         self._update_process_output = []
 
@@ -480,7 +477,7 @@ class MainWindow(QMainWindow):
 
     def _on_update_process_finished(self, exit_code, exit_status):
         process = self.sender()
-        if process is not self._update_process:
+        if process is None or process is not self._update_process:
             return
 
         if self._closing:
@@ -496,8 +493,6 @@ class MainWindow(QMainWindow):
         backend = self._current_update_backend or "installer"
 
         if exit_status == QtCore.QProcess.NormalExit and exit_code == 0:
-            self._progress_bar.hide()
-
             QtWidgets.QMessageBox.information(
                 self,
                 "Update complete",

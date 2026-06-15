@@ -4,26 +4,26 @@ import pytest
 
 pytest.importorskip("PySide6")
 
-from deeplabcut.gui.utils import build_update_commands, package_specs_for_update
+from deeplabcut.gui.utils import _build_update_commands, _package_specs_for_update
 
 
 def test_package_specs_for_update_adds_gui_extra_to_deeplabcut():
-    assert package_specs_for_update(["deeplabcut"]) == ["deeplabcut[gui]"]
+    assert _package_specs_for_update(["deeplabcut"]) == ["deeplabcut[gui]"]
 
 
 def test_package_specs_for_update_preserves_other_packages():
-    assert package_specs_for_update(["napari-deeplabcut"]) == ["napari-deeplabcut"]
+    assert _package_specs_for_update(["napari-deeplabcut"]) == ["napari-deeplabcut"]
 
 
 def test_package_specs_for_update_handles_mixed_packages():
-    assert package_specs_for_update(["deeplabcut", "napari-deeplabcut"]) == [
+    assert _package_specs_for_update(["deeplabcut", "napari-deeplabcut"]) == [
         "deeplabcut[gui]",
         "napari-deeplabcut",
     ]
 
 
 def test_package_specs_for_update_strips_whitespace():
-    assert package_specs_for_update([" deeplabcut ", " napari-deeplabcut "]) == [
+    assert _package_specs_for_update([" deeplabcut ", " napari-deeplabcut "]) == [
         "deeplabcut[gui]",
         "napari-deeplabcut",
     ]
@@ -42,7 +42,7 @@ def test_build_update_commands_backend_order(monkeypatch, available_installers, 
 
     monkeypatch.setattr("deeplabcut.gui.utils.shutil.which", fake_which)
 
-    commands = build_update_commands(["deeplabcut", "napari-deeplabcut"])
+    commands = _build_update_commands(["deeplabcut", "napari-deeplabcut"])
 
     assert [backend for backend, _program, _args in commands] == expected_backends
 
@@ -53,7 +53,7 @@ def test_build_update_commands_uses_uv_when_available(monkeypatch):
         lambda name: "/mock/bin/uv" if name == "uv" else None,
     )
 
-    commands = build_update_commands(["deeplabcut", "napari-deeplabcut"])
+    commands = _build_update_commands(["deeplabcut", "napari-deeplabcut"])
 
     assert commands == [
         (
@@ -92,7 +92,7 @@ def test_build_update_commands_uses_uv_then_pip(monkeypatch):
         lambda name: installers.get(name),
     )
 
-    commands = build_update_commands(["deeplabcut"])
+    commands = _build_update_commands(["deeplabcut"])
 
     assert commands == [
         (
@@ -124,7 +124,7 @@ def test_build_update_commands_uses_uv_then_pip(monkeypatch):
 def test_build_update_commands_always_has_pip_fallback(monkeypatch):
     monkeypatch.setattr("deeplabcut.gui.utils.shutil.which", lambda _name: None)
 
-    commands = build_update_commands(["deeplabcut"])
+    commands = _build_update_commands(["deeplabcut"])
 
     assert commands == [
         (

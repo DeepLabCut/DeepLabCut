@@ -238,7 +238,7 @@ class UpdateChecker(QtCore.QObject):
         return installed == latest
 
 
-def package_specs_for_update(packages: list[str]) -> list[str]:
+def _package_specs_for_update(packages: list[str]) -> list[str]:
     """Return package specs to install for GUI updates.
 
     DeepLabCut itself should be updated with the GUI extra so GUI dependencies
@@ -257,7 +257,7 @@ def package_specs_for_update(packages: list[str]) -> list[str]:
     return specs
 
 
-def build_update_commands(packages: list[str]) -> list[tuple[str, str, list[str]]]:
+def _build_update_commands(packages: list[str]) -> list[tuple[str, str, list[str]]]:
     """Build installer commands, ordered from preferred to fallback.
 
     Returns tuples of:
@@ -268,7 +268,7 @@ def build_update_commands(packages: list[str]) -> list[tuple[str, str, list[str]
       1. uv, if available
       2. current-interpreter pip fallback
     """
-    specs = package_specs_for_update(packages)
+    specs = _package_specs_for_update(packages)
     commands = []
 
     uv = shutil.which("uv")
