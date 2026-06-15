@@ -130,6 +130,16 @@ class PrecomputedDetectorRunner:
         self.target_format = target_format
         self.validate_image_paths = validate_image_paths
 
+        self._entries_by_path: dict[str, BBoxEntry] = {}
+        for entry in self.entries:
+            if entry.image_path is None:
+                continue
+
+            key = self._normalize_path_for_compare(entry.image_path)
+            if key in self._entries_by_path:
+                raise ValueError(f"Duplicate precomputed bbox entry for image_path={entry.image_path}")
+            self._entries_by_path[key] = entry
+
     @staticmethod
     def _normalize_path_for_compare(path: Path | str) -> str:
         return Path(path).as_posix()
@@ -148,6 +158,46 @@ class PrecomputedDetectorRunner:
             target_format=target_format,
             validate_image_paths=validate_image_paths,
         )
+
+    @staticmethod
+    def _normalize_path_for_compare(path: Path | str) -> str:
+        return Path(path).as_posix().lower()
+
+    @staticmethod
+    def _extract_image_path(item) -> Path | None:
+        if isinstance(item, tuple):
+            image = item[0]
+        else:
+            image = item
+
+        if isinstance(image, (str, Path)):
+            return Path(image)
+
+        return None
+
+    def _find_entry_by_suffix(self, requested_path: Path) -> BBoxEntry | None:
+        requested = self._normalize_path_for_compare(requested_path)
+
+        matches = []
+        for entry in self.entries:
+            if entry.image_path is None:
+                continue
+
+            entry_path = self._normalize_path_for_compare(entry.image_path)
+
+            if requested.endswith(entry_path) or entry_path.endswith(requested):
+                matches.append(entry)
+
+        if len(matches) == 1:
+            return matches[0]
+
+        if len(matches) > 1:
+            raise ValueError(
+                f"Ambiguous precomputed bbox entries for requested image {requested_path}: "
+                f"{[m.image_path for m in matches]}"
+            )
+
+        return None
 
     def inference(self, images, shelf_writer=None) -> list[DetectorContext]:
         """
@@ -168,34 +218,49 @@ class PrecomputedDetectorRunner:
             List of DLC detector contexts:
                 [{"bboxes": ..., "bbox_scores": ...}, ...]
         """
-        requested_paths: list[Path | None] = []
-
-        for item in images:
-            if isinstance(item, tuple):
-                image = item[0]
-            else:
-                image = item
-
-            if isinstance(image, (str, Path)):
-                requested_paths.append(Path(image))
-            else:
-                # For array inputs, we cannot path-match — use order only
-                requested_paths.append(None)
-
-        if len(requested_paths) != len(self.entries):
-            raise ValueError(f"Got {len(requested_paths)} images but {len(self.entries)} precomputed bbox entries.")
+        images = list(images)
+        requested_paths = [self._extract_image_path(item) for item in images]
 
         outputs: list[DetectorContext] = []
 
-        for requested_path, entry in zip(requested_paths, self.entries, strict=False):
-            if self.validate_image_paths and requested_path is not None and entry.image_path is not None:
-                if self._normalize_path_for_compare(entry.image_path) != self._normalize_path_for_compare(
-                    requested_path
-                ):
+        can_path_match = len(self._entries_by_path) > 0 and all(path is not None for path in requested_paths)
+
+        if can_path_match:
+            for requested_path in requested_paths:
+                assert requested_path is not None
+                key = self._normalize_path_for_compare(requested_path)
+
+                entry = self._entries_by_path.get(key)
+
+                if entry is None:
+                    # Optional useful fallback: match by filename/suffix when exact path differs.
+                    entry = self._find_entry_by_suffix(requested_path)
+
+                if entry is None:
                     raise ValueError(
-                        f"Precomputed bbox entry path mismatch: expected {requested_path}, got {entry.image_path}"
+                        f"No precomputed bbox entry found for requested image {requested_path}. "
+                        f"Known entries include: {list(self._entries_by_path.keys())[:5]}"
                     )
 
+                outputs.append(entry.to_detector_context(target_format=self.target_format))
+
+            return outputs
+
+        # Order-only fallback.
+        # This is necessary for ndarray inputs or precomputed entries without paths.
+        if self.validate_image_paths and any(path is not None for path in requested_paths):
+            raise ValueError(
+                "Cannot validate image paths because precomputed bbox entries do not contain "
+                "image_path metadata for path-based lookup."
+            )
+
+        if len(images) > len(self.entries):
+            raise ValueError(
+                f"Got {len(images)} images but only {len(self.entries)} precomputed bbox entries "
+                "are available for order-only matching."
+            )
+
+        for entry in self.entries[: len(images)]:
             outputs.append(entry.to_detector_context(target_format=self.target_format))
 
         return outputs
@@ -247,7 +312,7 @@ def build_precomputed_detector_runner_from_config(
     model_cfg: dict,
     mode: str,
     *,
-    target_format: str = "xywh",
+    target_format: BBoxFormat = "xywh",
     validate_image_paths: bool = False,
 ) -> PrecomputedDetectorRunner | None:
     """
