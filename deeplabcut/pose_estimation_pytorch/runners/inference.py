@@ -1121,8 +1121,7 @@ class DetectorToPoseInferenceRunner:
 
         if len(bbox_scores) != len(bboxes):
             raise ValueError(
-                f"Expected one bbox score per bbox, got {len(bbox_scores)} scores "
-                f"for {len(bboxes)} boxes."
+                f"Expected one bbox score per bbox, got {len(bbox_scores)} scores for {len(bboxes)} boxes."
             )
 
         if len(bboxes) == 0:
@@ -1224,10 +1223,7 @@ class DetectorToPoseInferenceRunner:
     @torch.inference_mode()
     def inference(
         self,
-        images: (
-            Iterable[str | Path | np.ndarray]
-            | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]
-        ),
+        images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
         shelf_writer: shelving.ShelfWriter | None = None,
     ):
         images = list(images)
@@ -1241,10 +1237,7 @@ class DetectorToPoseInferenceRunner:
         detections = self.detector_runner.inference(raw_images)
 
         if len(detections) != len(raw_images):
-            raise ValueError(
-                f"Detector returned {len(detections)} outputs for "
-                f"{len(raw_images)} input images."
-            )
+            raise ValueError(f"Detector returned {len(detections)} outputs for {len(raw_images)} input images.")
 
         enriched_inputs = []
 

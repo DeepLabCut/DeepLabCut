@@ -211,7 +211,6 @@ class DLCLoader(Loader):
         bbox_margin = self.model_cfg["data"].get("bbox_margin", 20)
         data = self.to_coco(str(self._project_root), self._dfs[mode], params, bbox_margin=bbox_margin)
 
-        
         # `to_coco(...)` initializes keypoint-derived GT bboxes for compatibility
         # with APIs that consume `load_data()` directly. The margin is config-driven.
         #
