@@ -12,7 +12,6 @@
 
 import logging
 import warnings
-from collections.abc import Mapping
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -256,10 +255,10 @@ def test_config_file_video_sets_format(
     cfg = auxiliaryfunctions.read_config(config_path)
 
     assert "video_sets" in cfg
-    assert isinstance(cfg["video_sets"], Mapping)
+    assert isinstance(cfg["video_sets"], dict)
 
     # Check format of video_sets entries
-    for video_path, video_info in cfg["video_sets"].items():
-        assert isinstance(video_info, Mapping)
+    for _video_path, video_info in cfg["video_sets"].items():
+        assert isinstance(video_info, dict)
         assert "crop" in video_info
         assert isinstance(video_info["crop"], str)

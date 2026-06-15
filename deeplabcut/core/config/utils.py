@@ -75,7 +75,7 @@ def read_config_as_dict(config_path: str | Path) -> dict:
 
 
 def write_config(config_path: str | Path, config: dict, overwrite: bool = True) -> None:
-    """Writes a pose configuration file to disk
+    """Writes a pose configuration file to disk.
 
     Args:
         config_path: the path where the config should be saved
@@ -180,7 +180,7 @@ def pretty_print(
     indent: int = 0,
     print_fn: Callable[[str], None] | None = None,
 ) -> None:
-    """Prints a model configuration in a pretty and readable way
+    """Prints a model configuration in a pretty and readable way.
 
     Args:
         config: the config to print
