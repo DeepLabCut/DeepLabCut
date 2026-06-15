@@ -226,7 +226,7 @@ def test_config_after_migration_accepts_renamed_field(monkeypatch, ToyConfigWith
             config["valid_project_config_field"] = config.pop("this_fieldname_is_not_in_project_config")
         return config
 
-    cfg = ToyConfigWithValidField(**config_with_legacy_field)
+    cfg = ToyConfigWithValidField.from_dict(config_with_legacy_field)
     assert cfg.valid_project_config_field == "some_value"
 
 
@@ -259,7 +259,7 @@ def _migrate_then_alias_current(monkeypatch):
 
 def test_migration_then_alias_legacy_version_key(_migrate_then_alias_current):
     """v98 legacy key is renamed by migration, then validated."""
-    cfg = _MigrateThenAliasConfig.model_validate(
+    cfg = _MigrateThenAliasConfig.from_dict(
         {
             "config_version": _TOY_VERSION_OLD,
             _LEGACY_FIELD: "from_migration",
@@ -294,8 +294,8 @@ def test_migration_then_alias_on_old_version_with_deprecated_alias(
     assert cfg.toy_new_field == "both_steps"
 
 
-def test_args_kwargs_input_runs_migration(_migrate_then_alias_current):
-    """Constructor ArgsKwargs is normalized before migrate_config runs."""
+def test_from_dict_runs_migration(_migrate_then_alias_current):
+    """Legacy dicts loaded via from_dict are migrated before validation."""
 
     class _KwOnlyVersioned(DLCVersionedConfig):
         config_version: int = _TOY_VERSION_NEW
@@ -307,11 +307,34 @@ def test_args_kwargs_input_runs_migration(_migrate_then_alias_current):
             config[_NEW_FIELD] = config.pop(_LEGACY_FIELD)
         return config
 
-    cfg = _KwOnlyVersioned(
-        config_version=_TOY_VERSION_OLD,
-        **{_LEGACY_FIELD: "kwargs_value"},
+    cfg = _KwOnlyVersioned.from_dict(
+        {
+            "config_version": _TOY_VERSION_OLD,
+            _LEGACY_FIELD: "kwargs_value",
+        }
     )
     assert cfg.toy_new_field == "kwargs_value"
+    assert cfg.config_version == _TOY_VERSION_NEW
+
+
+def test_constructor_does_not_run_migration(_migrate_then_alias_current):
+    """Typed construction must not run the legacy migration chain."""
+
+    class _KwOnlyVersioned(DLCVersionedConfig):
+        config_version: int = _TOY_VERSION_NEW
+        toy_new_field: str = ""
+
+    @register_migration(_TOY_VERSION_OLD, _TOY_VERSION_NEW, config_type="_KwOnlyVersioned")
+    def _kw_migrate_v98_to_v99(config: dict) -> dict:
+        if _LEGACY_FIELD in config:
+            config[_NEW_FIELD] = config.pop(_LEGACY_FIELD)
+        return config
+
+    with pytest.raises(ValidationError):
+        _KwOnlyVersioned(
+            config_version=_TOY_VERSION_OLD,
+            **{_LEGACY_FIELD: "kwargs_value"},
+        )
 
 
 # =============================================================================

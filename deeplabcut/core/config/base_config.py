@@ -320,26 +320,14 @@ class DLCVersionedConfig(DLCBaseConfig):
     # Version migration (before pydantic field validation)
     # ------------------------------------------------------------------
 
-    @model_validator(mode="before")
     @classmethod
-    def migrate_before_validate(cls, data: Any) -> Any:
-        """Upgrade a raw config dict to `CURRENT_CONFIG_VERSION`.
-
-        Args:
-            data: Raw validator input (`ArgsKwargs` or `dict`).
-
-        Returns:
-            Migrated dict for input dict or ArgsKwargs. Unchanged otherwise.
-        """
-        if isinstance(data, ArgsKwargs):
-            data = cls._args_kwargs_to_dict(data)
-        if isinstance(data, dict):
-            data = versioning.migrate_config(
-                data,
-                config_type=cls.__name__,
-                target_version=versioning.CURRENT_CONFIG_VERSION,
-            )
-        return data
+    def from_dict(cls, cfg_dict: dict) -> Self:
+        cfg_dict = versioning.migrate_config(
+            cfg_dict,
+            config_type=cls.__name__,
+            target_version=versioning.CURRENT_CONFIG_VERSION,
+        )
+        return super().from_dict(cfg_dict)
 
     # ------------------------------------------------------------------
     # Serialization

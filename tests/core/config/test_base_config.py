@@ -438,12 +438,12 @@ class TestNoMigrationOnBaseConfig:
             _LEGACY_FIELD: "value",
         }
         with pytest.raises(ValidationError):
-            _ToyBaseOnly.model_validate(legacy_cfg)
+            _ToyBaseOnly.from_dict(legacy_cfg)
 
     def test_versioned_config_applies_migration_for_same_input(self):
         legacy_cfg = {
             "config_version": _TOY_VERSION_OLD,
             _LEGACY_FIELD: "value",
         }
-        cfg = _ToyVersioned.model_validate(legacy_cfg)
+        cfg = _ToyVersioned.from_dict(legacy_cfg)
         assert cfg.toy_new_field == "value"
