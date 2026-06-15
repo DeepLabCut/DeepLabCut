@@ -104,7 +104,7 @@ class ProjectConfig(DLCVersionedConfig):
     )
     # VV TODO @deruyter92 2026-01-30: following the old original config.yaml template for now. VV
     # VV We should change this to a list[str] in the future. VV
-    bodyparts: UniqueStrList | str = "MULTI!"
+    bodyparts: UniqueStrList | Literal["MULTI!"] = "MULTI!"
 
     # TODO @deruyter92 2026-02-06: The current pipeline requires at least one individual defined in the
     # default configuration. This will be removed in the future.
@@ -142,7 +142,7 @@ class ProjectConfig(DLCVersionedConfig):
     default_net_type: str = "resnet_50"
     default_augmenter: str | None = None
     default_track_method: str | None = None
-    snapshotindex: str | int = "all"
+    snapshotindex: Literal["all"] | int = "all"
     detector_snapshotindex: int = -1
     batch_size: StrictPositiveInt = 8
     detector_batch_size: StrictPositiveInt = 1
