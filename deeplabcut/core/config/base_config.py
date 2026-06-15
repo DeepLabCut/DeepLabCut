@@ -313,8 +313,8 @@ class DLCVersionedConfig(DLCBaseConfig):
     )
 
     _initialized: bool = PrivateAttr(default=False)
-    _dirty_fields: set[str] = PrivateAttr(default=set())
-    _change_notes: dict[str, Any] = PrivateAttr(default=dict())
+    _dirty_fields: set[str] = PrivateAttr(default_factory=set)
+    _change_notes: dict[str, Any] = PrivateAttr(default_factory=dict)
 
     # ------------------------------------------------------------------
     # Version migration (before pydantic field validation)
