@@ -42,6 +42,12 @@ def _coerce_ndarray(v):
     return np.asarray(v, dtype=int)
 
 
+def _bodypart_pair(values: Sequence[Any]) -> list[str]:
+    if len(values) != 2:
+        raise ValueError(f"Each bodypart pair must contain exactly two bodyparts, got {len(values)}")
+    return list(unique_values(values))
+
+
 Fraction = Annotated[float, Field(ge=0.0, le=1.0)]
 UniqueStrList = Annotated[list[str], AfterValidator(unique_values)]
 NonNegativeFloat = Annotated[float, Field(ge=0.0)]
@@ -55,3 +61,4 @@ NDArrayInt = Annotated[
         lambda _s, h: h(InstanceOf[np.ndarray]),
     ),
 ]
+BodypartPair = Annotated[list[str], AfterValidator(_bodypart_pair)]

@@ -18,6 +18,7 @@ from typing_extensions import Self
 
 from deeplabcut.core.config.base_config import DLCVersionedConfig
 from deeplabcut.core.config.validation import (
+    BodypartPair,
     Fraction,
     NonNegativeInt,
     StrictPositiveInt,
@@ -122,7 +123,7 @@ class ProjectConfig(DLCVersionedConfig):
     numframes2pick: NonNegativeInt = 20
 
     # Plotting configuration
-    skeleton: list[UniqueStrList] = Field(
+    skeleton: list[BodypartPair] = Field(
         default_factory=list,
         json_schema_extra={"comment": "\nPlotting configuration"},
     )
