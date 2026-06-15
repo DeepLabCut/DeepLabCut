@@ -1090,10 +1090,12 @@ class DetectorToPoseInferenceRunner:
         if len(bboxes) == 0:
             return bboxes, bbox_scores
 
-        # Keep deterministic ordering: highest confidence first.
-        order = np.argsort(-bbox_scores)
-        bboxes = bboxes[order]
-        bbox_scores = bbox_scores[order]
+        # Keep deterministic ordering: highest confidence first
+        # only if max_individuals is set
+        if self.max_individuals is not None:
+            order = np.argsort(-bbox_scores)
+            bboxes = bboxes[order]
+            bbox_scores = bbox_scores[order]
 
         # Only truncate if explicitly requested.
         if self.max_individuals is not None:
@@ -1184,24 +1186,32 @@ class DetectorToPoseInferenceRunner:
     @torch.inference_mode()
     def inference(
         self,
-        images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
+        images: (
+            Iterable[str | Path | np.ndarray]
+            | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]
+        ),
         shelf_writer: shelving.ShelfWriter | None = None,
     ):
         images = list(images)
 
-        # Split once so we can preserve/extend incoming contexts
+        # Split once so we can preserve and copy incoming contexts.
         split_items = [self._split_input_and_context(item) for item in images]
-        raw_images = [x[0] for x in split_items]
-        incoming_contexts = [x[1] for x in split_items]
+        raw_images = [image for image, _ in split_items]
+        incoming_contexts = [context for _, context in split_items]
 
+        # Detector sees raw image inputs only. The wrapper owns context enrichment.
         detections = self.detector_runner.inference(raw_images)
+
         if len(detections) != len(raw_images):
-            raise ValueError(f"Detector returned {len(detections)} outputs for {len(raw_images)} input images.")
+            raise ValueError(
+                f"Detector returned {len(detections)} outputs for "
+                f"{len(raw_images)} input images."
+            )
 
         enriched_inputs = []
-        normalized_contexts = []
 
         for image, context, det in zip(raw_images, incoming_contexts, detections, strict=False):
+            # Copy context so caller-owned dictionaries are not mutated.
             context = dict(context)
 
             bboxes, bbox_scores = self._select_and_order_boxes(det, context=context)
@@ -1210,42 +1220,16 @@ class DetectorToPoseInferenceRunner:
             context["bbox_scores"] = bbox_scores
             context["detector_output"] = det
 
-            normalized_contexts.append(context)
             enriched_inputs.append((image, context))
 
-        raw_predictions = self.pose_runner.inference(enriched_inputs, shelf_writer=None)
-
-        # infer last dim from first valid prediction
-        last_dim_hint = 3
-        for pred in raw_predictions:
-            if isinstance(pred, dict) and "bodyparts" in pred:
-                arr = np.asarray(pred["bodyparts"])
-                if arr.ndim == 3 and arr.shape[-1] > 0:
-                    last_dim_hint = arr.shape[-1]
-                    break
-
-        predictions = []
-        for context, pred in zip(normalized_contexts, raw_predictions, strict=False):
-            n_boxes = len(np.asarray(context["bboxes"]).reshape(-1, 4))
-
-            if n_boxes == 0:
-                pred_norm = self._empty_prediction(last_dim=last_dim_hint)
-            else:
-                pred_norm = self._normalize_prediction(pred, last_dim_hint=last_dim_hint)
-
-            predictions.append(pred_norm)
-
-        if shelf_writer is not None:
-            for pred in predictions:
-                shelf_writer.add_prediction(
-                    bodyparts=pred["bodyparts"],
-                    unique_bodyparts=pred.get("unique_bodyparts"),
-                    identity_scores=pred.get("identity_scores"),
-                    features=pred.get("features"),
-                )
-            return []
-
-        return predictions
+        # The wrapped pose runner owns:
+        # - top-down preprocessing
+        # - pose prediction
+        # - postprocessing
+        # - shelf writing
+        #
+        # The wrapper only injects detector context and returns the pose runner output.
+        return self.pose_runner.inference(enriched_inputs, shelf_writer=shelf_writer)
 
 
 def build_inference_runner(
