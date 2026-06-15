@@ -12,11 +12,11 @@ import os
 from datetime import datetime
 
 from PySide6 import QtCore, QtWidgets
-from PySide6.QtGui import QBrush, QColor, QDesktopServices, QIcon, QPainter, QPen
+from PySide6.QtGui import QBrush, QColor, QDesktopServices, QPainter, QPen
 
 from deeplabcut.create_project import create_new_project, create_new_project_3d
-from deeplabcut.gui import BASE_DIR
 from deeplabcut.gui.dlc_params import DLCParams
+from deeplabcut.gui.gui_assets import icon_from_resource
 from deeplabcut.gui.tabs.docs import (
     URL_3D,
     URL_MA_CONFIGURE,
@@ -235,7 +235,7 @@ class ProjectCreator(QtWidgets.QDialog):
         self.loc_line = QtWidgets.QLineEdit(self.loc_default, user_frame)
         self.loc_line.setReadOnly(True)
         action = self.loc_line.addAction(
-            QIcon(os.path.join(BASE_DIR, "assets", "icons", "open2.png")),
+            icon_from_resource("icons", "open2.png"),
             QtWidgets.QLineEdit.TrailingPosition,
         )
         action.triggered.connect(self.on_click)
