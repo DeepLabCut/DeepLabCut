@@ -384,3 +384,80 @@ def test_live_mock_detector_can_roundtrip_through_schema_and_precomputed_runner(
     expected_bbox = np.asarray(live_context["bboxes"][0], dtype=np.float32)
 
     np.testing.assert_allclose(actual_bbox, expected_bbox)
+
+
+def test_precomputed_detector_runner_supports_path_based_subset_lookup():
+    bboxes = BBoxes(
+        train=[
+            BBoxEntry(
+                bboxes=[(1.0, 2.0, 3.0, 4.0)],
+                bbox_scores=[0.1],
+                bbox_format="xywh",
+                image_path=Path("img0.png"),
+            ),
+            BBoxEntry(
+                bboxes=[(5.0, 6.0, 7.0, 8.0)],
+                bbox_scores=[0.9],
+                bbox_format="xywh",
+                image_path=Path("img1.png"),
+            ),
+        ]
+    )
+
+    runner = PrecomputedDetectorRunner.from_bboxes(bboxes, mode="train")
+
+    outputs = runner.inference([Path("img1.png")])
+
+    assert len(outputs) == 1
+    np.testing.assert_allclose(
+        outputs[0]["bboxes"],
+        np.array([[5.0, 6.0, 7.0, 8.0]], dtype=np.float32),
+    )
+    np.testing.assert_allclose(
+        outputs[0]["bbox_scores"],
+        np.array([0.9], dtype=np.float32),
+    )
+
+
+def test_precomputed_detector_runner_preserves_requested_path_order():
+    bboxes = BBoxes(
+        train=[
+            BBoxEntry(
+                bboxes=[(1.0, 2.0, 3.0, 4.0)],
+                bbox_scores=[0.1],
+                bbox_format="xywh",
+                image_path=Path("img0.png"),
+            ),
+            BBoxEntry(
+                bboxes=[(5.0, 6.0, 7.0, 8.0)],
+                bbox_scores=[0.9],
+                bbox_format="xywh",
+                image_path=Path("img1.png"),
+            ),
+        ]
+    )
+
+    runner = PrecomputedDetectorRunner.from_bboxes(bboxes, mode="train")
+
+    outputs = runner.inference([Path("img1.png"), Path("img0.png")])
+
+    np.testing.assert_allclose(outputs[0]["bboxes"], np.array([[5.0, 6.0, 7.0, 8.0]], dtype=np.float32))
+    np.testing.assert_allclose(outputs[1]["bboxes"], np.array([[1.0, 2.0, 3.0, 4.0]], dtype=np.float32))
+
+
+def test_precomputed_detector_runner_raises_for_unknown_requested_path():
+    bboxes = BBoxes(
+        train=[
+            BBoxEntry(
+                bboxes=[(1.0, 2.0, 3.0, 4.0)],
+                bbox_scores=[0.1],
+                bbox_format="xywh",
+                image_path=Path("img0.png"),
+            )
+        ]
+    )
+
+    runner = PrecomputedDetectorRunner.from_bboxes(bboxes, mode="train")
+
+    with pytest.raises(ValueError, match="No precomputed bbox entry found"):
+        runner.inference([Path("missing.png")])
