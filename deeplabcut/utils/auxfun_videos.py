@@ -44,7 +44,7 @@ class VideoReader:
         if not Path(video_path).is_file():
             raise ValueError(f'Video path "{video_path}" does not point to a file.')
         self.video_path = video_path
-        self.video = cv2.VideoCapture(video_path)
+        self.video = cv2.VideoCapture(str(video_path))
         if not self.video.isOpened():
             raise OSError("Video could not be opened; it may be corrupted.")
         self.parse_metadata()
