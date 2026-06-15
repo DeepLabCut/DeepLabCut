@@ -236,6 +236,26 @@ def test_item_assignment_with_alias_should_warn_once_and_track_canonical_field()
 
 
 # -----------------------------------------------------------------------------
+# Cross-field validation vs bulk update
+# -----------------------------------------------------------------------------
+
+
+@pytest.mark.xfail(
+    reason=(
+        "update() applies overrides one setattr at a time; cross-field "
+        "model validators run on each assignment, so intermediate states "
+        "like multianimalproject=True with bodyparts=[] are rejected."
+    ),
+)
+def test_update_applies_cross_field_overrides_atomically():
+    """Bulk update should validate the merged state, not each setattr in isolation."""
+    cfg = ProjectConfig(bodyparts=[], multianimalproject=False)
+    cfg.update({"multianimalproject": True, "bodyparts": "MULTI!"})
+    assert cfg.multianimalproject is True
+    assert cfg.bodyparts == "MULTI!"
+
+
+# -----------------------------------------------------------------------------
 # Migration skipped on typed construction
 # -----------------------------------------------------------------------------
 
