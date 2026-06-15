@@ -16,7 +16,7 @@ def greater_than(
     name: str | None = None,
     threshold_name: str | None = None,
 ) -> None:
-    if value < threshold:
+    if value <= threshold:
         raise ValueError(f"{_describe(value, name)} must be greater than {_describe(threshold, threshold_name)}")
 
 
