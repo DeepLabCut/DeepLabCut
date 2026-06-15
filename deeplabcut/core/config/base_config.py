@@ -12,7 +12,7 @@ from pydantic_core import ArgsKwargs
 from ruamel.yaml.comments import CommentedMap
 from typing_extensions import Self
 
-from deeplabcut.core.config import versioning
+from deeplabcut.core.config import versioning as versioning
 from deeplabcut.core.config.utils import (
     normalize_for_serialization,
     pretty_print,
@@ -21,7 +21,6 @@ from deeplabcut.core.config.utils import (
     resolve_aliases_in_dict,
     write_config,
 )
-from deeplabcut.core.config.versioning import migrate_config
 
 logger = logging.getLogger(__name__)
 
@@ -333,7 +332,7 @@ class DLCVersionedConfig(DLCBaseConfig):
         if isinstance(data, ArgsKwargs):
             data = cls._args_kwargs_to_dict(data)
         if isinstance(data, dict):
-            data = migrate_config(
+            data = versioning.migrate_config(
                 data,
                 config_type=cls.__name__,
                 target_version=versioning.CURRENT_CONFIG_VERSION,
