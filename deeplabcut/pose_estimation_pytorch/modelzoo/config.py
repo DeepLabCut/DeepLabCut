@@ -68,18 +68,20 @@ def build_superanimal_inference_config(
     model_config = read_config_as_dict(model_cfg_path)
     model_config = config_utils.replace_default_values(
         model_config,
-        num_bodyparts=len(model_config["metadata"]["bodyparts"]),
+        num_bodyparts=metadata.num_bodyparts,
         num_individuals=max_individuals,
         backbone_output_channels=model_config["model"]["backbone_output_channels"],
     )
     if detector_name is None and super_animal != "superanimal_humanbody":
-        model_config["method"] = "BU"
+        model_config["method"] = Task.BOTTOM_UP.aliases[0].lower()
     else:
-        model_config["method"] = "TD"
+        model_config["method"] = Task.TOP_DOWN.aliases[0].lower()
         if super_animal != "superanimal_humanbody":
             detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name)
             detector_cfg = read_config_as_dict(detector_cfg_path)
             model_config["detector"] = detector_cfg
+        else:
+            model_config.pop("detector", None)
 
     model_config["metadata"] = metadata.to_dict()
     if device is not None:
