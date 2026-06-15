@@ -134,9 +134,10 @@ def test_detector_then_pose_inference_injects_bboxes_and_preserves_context():
 
     assert results == [{"poses": "ok"}]
 
-    # Detector got the original inputs
+    # Detector gets raw image inputs only; incoming contexts are preserved
+    # and forwarded to the pose runner after bbox injection.
     assert len(detector_runner.calls) == 1
-    assert detector_runner.calls[0]["images"] == images
+    assert detector_runner.calls[0]["images"] == ["img0.png", Path("img1.png")]
 
     # Pose runner got enriched inputs
     assert len(pose_runner.calls) == 1
