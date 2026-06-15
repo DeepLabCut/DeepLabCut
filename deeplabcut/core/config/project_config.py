@@ -24,6 +24,7 @@ from deeplabcut.core.config.validation import (
     StrictPositiveInt,
     UniqueStrList,
     less_than,
+    validate_crop_bounds,
 )
 
 
@@ -205,4 +206,17 @@ class ProjectConfig(DLCVersionedConfig):
     @model_validator(mode="after")
     def validate_start_before_stop(self) -> Self:
         less_than(self.start, self.stop, name="start", threshold_name="stop")
+        return self
+
+    @model_validator(mode="after")
+    def validate_bodyparts_single_animal(self) -> Self:
+        if not self.multianimalproject and self.bodyparts == "MULTI!":
+            raise ValueError("bodyparts must be a list of strings when multianimalproject is False, got 'MULTI!'")
+        return self
+
+    @model_validator(mode="after")
+    def validate_cropping_bounds(self) -> Self:
+        if self.cropping and any(value is None for value in (self.x1, self.x2, self.y1, self.y2)):
+            raise ValueError("When cropping is enabled, x1, x2, y1, and y2 must all be set")
+        validate_crop_bounds(x1=self.x1, x2=self.x2, y1=self.y1, y2=self.y2)
         return self

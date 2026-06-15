@@ -36,6 +36,23 @@ def unique_values(values: Sequence[Any]) -> Sequence[Any]:
     return values
 
 
+def validate_crop_bounds(
+    *,
+    x1: int | None,
+    x2: int | None,
+    y1: int | None,
+    y2: int | None,
+) -> None:
+    bounds = (x1, x2, y1, y2)
+    if any(value is None for value in bounds):
+        if any(value is not None for value in bounds):
+            raise ValueError("Crop bounds x1, x2, y1, and y2 must either all be set or all be omitted")
+        return
+
+    less_than(x1, x2, name="x1", threshold_name="x2")
+    less_than(y1, y2, name="y1", threshold_name="y2")
+
+
 def _coerce_ndarray(v):
     if isinstance(v, np.ndarray):
         return v
