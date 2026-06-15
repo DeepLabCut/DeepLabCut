@@ -112,19 +112,28 @@ class DLCBaseConfig(BaseModel):
     # Serialization
     # ------------------------------------------------------------------
 
+    def to_commented_map(self) -> CommentedMap:
+        """Recursively convert the config to a CommentedMap with YAML comments."""
+        dumped = self.to_dict(normalize=True)
+        data = CommentedMap()
+        for name, info in type(self).model_fields.items():
+            extra = info.json_schema_extra
+            if isinstance(extra, dict) and (comment := extra.get("comment")):
+                data.yaml_set_comment_before_after_key(name, before=comment)
+            value = getattr(self, name)
+            if isinstance(value, DLCBaseConfig):
+                data[name] = value.to_commented_map()
+            else:
+                data[name] = dumped[name]
+        return data
+
     def to_yaml(
         self,
         yaml_path: str | Path,
         *,
         overwrite: bool = True,
     ) -> None:
-        dict_data = self.to_dict(normalize=True)
-        data = CommentedMap(dict_data)
-        for name, info in type(self).model_fields.items():
-            extra = info.json_schema_extra
-            if isinstance(extra, dict) and (comment := extra.get("comment")):
-                data.yaml_set_comment_before_after_key(name, before=comment)
-        write_config(yaml_path, data, overwrite=overwrite)
+        write_config(yaml_path, self.to_commented_map(), overwrite=overwrite)
 
     def to_dict(self, *, normalize: bool = False) -> dict:
         if not normalize:

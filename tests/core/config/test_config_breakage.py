@@ -152,7 +152,6 @@ class _CommentedOuter(DLCBaseConfig):
     )
 
 
-@pytest.mark.xfail(reason="YAML comments are currently applied only to top-level config fields.")
 def test_to_yaml_should_emit_comments_for_nested_config_fields(tmp_path):
     """Nested config models can have field comments too.
 
