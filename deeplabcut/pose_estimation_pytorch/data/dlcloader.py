@@ -207,12 +207,15 @@ class DLCLoader(Loader):
             raise ValueError(f"No data in {mode} split for this shuffle!")
 
         params = self.get_dataset_parameters()
-        data = self.to_coco(str(self._project_root), self._dfs[mode], params)
+        bbox_margin = self.model_cfg["data"].get("bbox_margin", 20)
+        data = self.to_coco(str(self._project_root), self._dfs[mode], params, bbox_margin=bbox_margin)
 
-        # IMPORTANT:
-        # Do not recompute / overwrite bboxes here.
-        # `create_dataset(...)` now owns bbox source selection ("gt", "keypoints",
-        # "detection bbox", ...), which keeps dataset construction explicit and safe.
+        
+        # `to_coco(...)` initializes keypoint-derived GT bboxes for compatibility
+        # with APIs that consume `load_data()` directly. The margin is config-driven.
+        #
+        # `create_dataset(...)` still owns the effective training bbox source and may
+        # rewrite these boxes according to bbox_source / detector_runner.
         return data
 
     def load_ground_truth(
@@ -371,6 +374,7 @@ class DLCLoader(Loader):
         project_root: str | Path,
         df: pd.DataFrame,
         parameters: PoseDatasetParameters,
+        bbox_margin: int = 20,
     ) -> dict:
         """Formerly Shaokai's function.
 
@@ -378,6 +382,7 @@ class DLCLoader(Loader):
             project_root: the path to the project root
             df: the DLC-format annotation dataframe to convert to a COCO-format dict
             parameters: the parameters for pose estimation
+            bbox_margin: the margin to add around the bounding boxes
 
         Returns:
             the coco format data
@@ -470,12 +475,12 @@ class DLCLoader(Loader):
                     )
 
         coco_dict = {"annotations": anns, "categories": categories, "images": images}
-        coco_dict = DLCLoader._add_bbox_annotations(coco_dict)
+        coco_dict = DLCLoader._add_bbox_annotations(coco_dict, bbox_margin=bbox_margin)
         coco_dict = DLCLoader._remove_nans(coco_dict)
         return coco_dict
 
     @staticmethod
-    def _add_bbox_annotations(coco_dict: dict) -> dict:
+    def _add_bbox_annotations(coco_dict: dict, bbox_margin: int = 20) -> dict:
         for annotation in coco_dict.get("annotations", []):
             if "bbox" not in annotation:
                 image = [img for img in coco_dict.get("images") if img.get("id") == annotation.get("image_id")][0]
@@ -483,7 +488,7 @@ class DLCLoader(Loader):
                     keypoints=np.array(annotation["keypoints"]),  # (..., num_keypoints, xy)
                     image_h=image.get("height"),
                     image_w=image.get("width"),
-                    margin=20,
+                    margin=bbox_margin,
                 )
                 annotation["bbox"] = list(bbox)
         return coco_dict
