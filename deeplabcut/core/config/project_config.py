@@ -127,7 +127,7 @@ class ProjectConfig(DLCVersionedConfig):
         json_schema_extra={"comment": "\nPlotting configuration"},
     )
     skeleton_color: str = "black"
-    pcutoff: Fraction = 0.4
+    pcutoff: Fraction = 0.6
     dotsize: NonNegativeInt = 12
     alphavalue: Fraction = 0.7
     colormap: str = "rainbow"
