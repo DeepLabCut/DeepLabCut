@@ -105,7 +105,7 @@ class ProjectConfig(DLCVersionedConfig):
     )
     # VV TODO @deruyter92 2026-01-30: following the old original config.yaml template for now. VV
     # VV We should change this to a list[str] in the future. VV
-    bodyparts: UniqueStrList | Literal["MULTI!"] = "MULTI!"
+    bodyparts: UniqueStrList | Literal["MULTI!"] = Field(default_factory=list)
 
     # TODO @deruyter92 2026-02-06: The current pipeline requires at least one individual defined in the
     # default configuration. This will be removed in the future.
@@ -212,6 +212,11 @@ class ProjectConfig(DLCVersionedConfig):
     def validate_bodyparts_single_animal(self) -> Self:
         if not self.multianimalproject and self.bodyparts == "MULTI!":
             raise ValueError("bodyparts must be a list of strings when multianimalproject is False, got 'MULTI!'")
+
+        # TODO @deruyter92 2026-06-15: This sentinel should be removed in v1.
+        elif self.multianimalproject and self.bodyparts != "MULTI!":
+            raise ValueError(f"bodyparts must be 'MULTI!' when multianimalproject is True, got {self.bodyparts}")
+
         return self
 
     @model_validator(mode="after")

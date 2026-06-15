@@ -248,7 +248,10 @@ def create_config_template(multianimal: bool = False) -> tuple:
     from deeplabcut.core.config.project_config import ProjectConfig
 
     ruamelFile = get_yaml_dumper()
-    cfg_file = ProjectConfig(multianimalproject=multianimal).to_dict()
+
+    # TODO @deruyter92 2026-06-15: This sentinel should be removed in v1.
+    bodyparts = "MULTI!" if multianimal else []
+    cfg_file = ProjectConfig(multianimalproject=multianimal, bodyparts=bodyparts).to_dict()
     return cfg_file, ruamelFile
 
 
