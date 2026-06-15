@@ -88,7 +88,7 @@ class MAImgaugPoseDataset(BasePoseDataset):
                 )
 
         file_name = Path(self.cfg["project_path"]) / cfg["dataset"]
-        with (Path(self.cfg["project_path"]) / file_name).open("rb") as f:
+        with file_name.open("rb") as f:
             # Pickle the 'data' dictionary using the highest protocol available.
             pickledata = pickle.load(f)
 
