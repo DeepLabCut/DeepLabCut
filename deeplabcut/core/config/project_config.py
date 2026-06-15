@@ -87,7 +87,7 @@ class ProjectConfig(DLCVersionedConfig):
         default_factory=Path,
         json_schema_extra={"comment": "\nProject path (change when moving around)"},
     )
-    pose_config_path: Path = Path()
+    pose_config_path: Path | None = None
 
     # Engine
     engine: Literal["pytorch", "tensorflow"] = Field(

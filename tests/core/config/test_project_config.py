@@ -27,6 +27,7 @@ class TestProjectConfigDefaults:
         assert cfg.engine == "pytorch"
         assert cfg.Task == ""
         assert isinstance(cfg.project_path, Path)
+        assert cfg.pose_config_path is None
 
     def test_from_dict_minimal(self):
         cfg = ProjectConfig.from_dict(
