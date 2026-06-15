@@ -1074,18 +1074,33 @@ class DetectorToPoseInferenceRunner:
         Future extension:
         - if context contains reference boxes, reorder using IoU matching
         """
-        bboxes, bbox_scores = self._normalize_detector_output(det)
+        bboxes = np.asarray(det.get("bboxes", np.zeros((0, 4))), dtype=np.float32).reshape(-1, 4)
 
-        if len(bboxes) == 0:
-            return (
-                np.zeros((0, 4), dtype=np.float32),
-                np.zeros((0,), dtype=np.float32),
+        if "bbox_scores" in det:
+            bbox_scores = np.asarray(det["bbox_scores"], dtype=np.float32).reshape(-1)
+        else:
+            bbox_scores = np.ones((len(bboxes),), dtype=np.float32)
+
+        if len(bbox_scores) != len(bboxes):
+            raise ValueError(
+                f"Expected one bbox score per bbox, got {len(bbox_scores)} scores "
+                f"for {len(bboxes)} boxes."
             )
 
-        order = np.argsort(-bbox_scores)
-        order = order[: self.max_individuals]
+        if len(bboxes) == 0:
+            return bboxes, bbox_scores
 
-        return bboxes[order], bbox_scores[order]
+        # Keep deterministic ordering: highest confidence first.
+        order = np.argsort(-bbox_scores)
+        bboxes = bboxes[order]
+        bbox_scores = bbox_scores[order]
+
+        # Only truncate if explicitly requested.
+        if self.max_individuals is not None:
+            bboxes = bboxes[: self.max_individuals]
+            bbox_scores = bbox_scores[: self.max_individuals]
+
+        return bboxes.astype(np.float32, copy=False), bbox_scores.astype(np.float32, copy=False)
 
     @staticmethod
     def _pad_first_dim(arr: np.ndarray, target_n: int, fill_value=np.nan) -> np.ndarray:
@@ -1105,19 +1120,25 @@ class DetectorToPoseInferenceRunner:
         return np.concatenate([arr, pad], axis=0)
 
     def _empty_prediction(self, last_dim: int = 3) -> dict[str, np.ndarray]:
+        # If max_individuals is unspecified, an image with no detections should emit
+        # zero pose rows. If it is specified, emit a fixed-size padded empty output.
+        n_individuals = 0 if self.max_individuals is None else self.max_individuals
+
         pred = {
             "bodyparts": np.full(
-                (self.max_individuals, self.num_joints, last_dim),
+                (n_individuals, self.num_joints, last_dim),
                 self.fill_value,
                 dtype=np.float32,
             )
         }
+
         if self.num_unique_bodyparts > 0:
             pred["unique_bodyparts"] = np.full(
                 (1, self.num_unique_bodyparts, last_dim),
                 self.fill_value,
                 dtype=np.float32,
             )
+
         return pred
 
     def _normalize_prediction(
@@ -1136,7 +1157,14 @@ class DetectorToPoseInferenceRunner:
             raise ValueError(f"Unexpected bodyparts shape: {bodyparts.shape}")
 
         last_dim = bodyparts.shape[-1]
-        pred["bodyparts"] = self._pad_first_dim(bodyparts, self.max_individuals, fill_value=self.fill_value)
+        if self.max_individuals is not None:
+            pred["bodyparts"] = self._pad_first_dim(
+                bodyparts,
+                self.max_individuals,
+                fill_value=self.fill_value,
+            )
+        else:
+            pred["bodyparts"] = bodyparts
 
         if self.num_unique_bodyparts > 0:
             if "unique_bodyparts" in pred:
