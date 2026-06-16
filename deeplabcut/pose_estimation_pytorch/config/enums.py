@@ -1,4 +1,12 @@
+from __future__ import annotations
+
+import functools
 from enum import Enum
+
+_LEGACY_NET_TYPE_ALIASES = {
+    "dlcrnet_ms5": "dlcrnet_stride16_ms5",
+}
+_TOP_DOWN_PREFIX = "top_down_"
 
 
 class MethodType(str, Enum):
@@ -10,42 +18,29 @@ class MethodType(str, Enum):
 
 
 class NetType(str, Enum):
-    """Enumeration of network architecture types."""
+    """Enumeration of network architecture types as stored in configs.
 
-    # ResNet variants (bottom-up)
+    Note:
+        Aliases (e.g. ``top_down_resnet_50``) are user-facing names that map to
+        a canonical member plus an optional top-down flag. See ``alias``,
+        ``from_alias``, and ``available_aliases``
+    """
+
     RESNET_50 = "resnet_50"
     RESNET_101 = "resnet_101"
 
-    # ResNet variants (top-down)
-    TOP_DOWN_RESNET_50 = "top_down_resnet_50"
-    TOP_DOWN_RESNET_101 = "top_down_resnet_101"
-
-    # HRNet variants (bottom-up)
     HRNET_W18 = "hrnet_w18"
     HRNET_W32 = "hrnet_w32"
     HRNET_W48 = "hrnet_w48"
 
-    # HRNet variants (top-down)
-    TOP_DOWN_HRNET_W18 = "top_down_hrnet_w18"
-    TOP_DOWN_HRNET_W32 = "top_down_hrnet_w32"
-    TOP_DOWN_HRNET_W48 = "top_down_hrnet_w48"
-
-    # CSPNeXt variants (bottom-up)
     CSPNEXT_S = "cspnext_s"
     CSPNEXT_M = "cspnext_m"
     CSPNEXT_X = "cspnext_x"
 
-    # CSPNeXt variants (top-down)
-    TOP_DOWN_CSPNEXT_S = "top_down_cspnext_s"
-    TOP_DOWN_CSPNEXT_M = "top_down_cspnext_m"
-    TOP_DOWN_CSPNEXT_X = "top_down_cspnext_x"
-
-    # DEKR variants (bottom-up with HRNet backbone)
     DEKR_W18 = "dekr_w18"
     DEKR_W32 = "dekr_w32"
     DEKR_W48 = "dekr_w48"
 
-    # BUCTD variants (Conditional Top-Down)
     CTD_COAM_W32 = "ctd_coam_w32"
     CTD_COAM_W48 = "ctd_coam_w48"
     CTD_COAM_W48_HUMAN = "ctd_coam_w48_human"
@@ -56,17 +51,49 @@ class NetType(str, Enum):
     CTD_PRENET_RTMPOSE_X = "ctd_prenet_rtmpose_x"
     CTD_PRENET_RTMPOSE_X_HUMAN = "ctd_prenet_rtmpose_x_human"
 
-    # DLCRNet variants
     DLCRNET_STRIDE16_MS5 = "dlcrnet_stride16_ms5"
     DLCRNET_STRIDE32_MS5 = "dlcrnet_stride32_ms5"
 
-    # RTMPose variants (top-down)
     RTMPOSE_S = "rtmpose_s"
     RTMPOSE_M = "rtmpose_m"
     RTMPOSE_X = "rtmpose_x"
 
-    # AnimalTokenPose variant (inference only)
     ANIMALTOKENPOSE_BASE = "animaltokenpose_base"
+
+    @functools.cached_property
+    def is_backbone(self) -> bool:
+        from deeplabcut.pose_estimation_pytorch.config.utils import (
+            get_config_folder_path,
+            load_backbones,
+        )
+
+        return self.value in frozenset(load_backbones(get_config_folder_path()))
+
+    def alias(self, *, top_down: bool = False) -> str:
+        """User-facing name (e.g. ``top_down_resnet_50`` for backbone + TD)."""
+        if top_down and self.is_backbone:
+            return f"{_TOP_DOWN_PREFIX}{self.value}"
+        return self.value
+
+    @classmethod
+    def from_alias(cls, label: str) -> tuple[NetType, bool]:
+        """Parse user-facing / legacy name → (canonical enum, top_down)."""
+        label = _LEGACY_NET_TYPE_ALIASES.get(label, label)
+        label_has_td_prefix = False
+        if label.startswith(_TOP_DOWN_PREFIX):
+            label = label.removeprefix(_TOP_DOWN_PREFIX)
+            label_has_td_prefix = True
+        return cls(label), label_has_td_prefix
+
+    @classmethod
+    def available_aliases(cls) -> list[str]:
+        """All selectable model names for GUI / docs / ``create_training_dataset``."""
+        labels: list[str] = []
+        for net_type in cls:
+            labels.append(net_type.alias(top_down=False))
+            if net_type.is_backbone:
+                labels.append(net_type.alias(top_down=True))
+        return sorted(labels)
 
 
 class DetectorType(str, Enum):
