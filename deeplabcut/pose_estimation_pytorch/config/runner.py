@@ -81,5 +81,6 @@ class RunnerConfig(DLCBaseConfig):
     optimizer: OptimizerConfig | None = None
     scheduler: SchedulerConfig | None = None
     snapshots: SnapshotCheckpointConfig | None = None
+    snapshot_prefix: str | None = None
     resume_training_from: str | None = None
     load_weights_only: bool | None = None
