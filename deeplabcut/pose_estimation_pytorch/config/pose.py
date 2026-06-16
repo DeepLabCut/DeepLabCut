@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from deeplabcut.core.weight_init import WeightInitialization
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from typing_extensions import Self
 
 from deeplabcut.core.config import DLCBaseConfig, DLCVersionedConfig
@@ -34,7 +34,7 @@ from deeplabcut.pose_estimation_pytorch.config.logger import (
 from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
     build_detector_config_defaults,
     build_pose_config_defaults,
-    resolve_task,
+    resolve_net_type_and_task,
 )
 from deeplabcut.pose_estimation_pytorch.config.metadata import PoseMetadata
 from deeplabcut.pose_estimation_pytorch.config.model import (
@@ -105,6 +105,14 @@ class PoseConfig(DLCVersionedConfig):
     train_settings: TrainSettingsConfig | None = None
     detector: DetectorConfig | None = None
 
+    @field_validator("net_type", mode="before")
+    @classmethod
+    def _coerce_net_type(cls, v: object) -> NetType:
+        if isinstance(v, NetType):
+            return v
+        net_type, _ = NetType.from_alias(str(v))
+        return net_type
+
     @classmethod
     def build(
         cls,
@@ -114,8 +122,8 @@ class PoseConfig(DLCVersionedConfig):
         top_down: bool,
         multi_animal: bool | None = None,
         net_type: NetType | str | None = None,
-        detector_type: DetectorType | None = None,
-        weight_init: WeightInitialization | None = None,
+        detector_type: DetectorType | str | None = None,
+        weight_init: WeightInitialization | dict | Path | str | None = None,
         ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
         save: bool = False,
     ) -> Self:
@@ -125,9 +133,9 @@ class PoseConfig(DLCVersionedConfig):
             project_config (ProjectConfig | dict | Path | str): The project configuration.
             pose_config_path (str | Path): The path to the pose configuration.
             top_down (bool): Whether to use a top-down backbone.
-            net_type (NetType | str | None, optional): The network architecture type.
+            net_type (NetType | str | None, optional): The network architecture type (without 'top_down_' prefix).
                 If None, the default net type from the project config will be used.
-            detector_type (str | None, optional): The detector architecture type. Required for top-down models.
+            detector_type (DetectorType | str | None, optional): The detector architecture. Required for td models.
             weight_init (WeightInitialization | None, optional): The weight initialization object or path.
             ctd_conditions (int | str | Path | tuple[int, str] | tuple[int, int] | None, optional):
                 The conditional top-down conditions. Only required for CTD models.
@@ -141,11 +149,17 @@ class PoseConfig(DLCVersionedConfig):
 
         # Normalize input parameters + set defaults if not provided
         project_config = ProjectConfig.from_any(project_config)
-        task: Task = resolve_task(net_type, top_down=top_down)
-        if net_type is None:
-            net_type = project_config.default_net_type
         if multi_animal is None:
             multi_animal = project_config.multianimalproject
+        net_type, task = resolve_net_type_and_task(
+            net_type,
+            default=project_config.default_net_type,
+            top_down=top_down,
+        )
+        if detector_type is not None:
+            detector_type = DetectorType(detector_type)
+        if weight_init is not None:
+            weight_init = WeightInitialization.from_any(weight_init)
 
         # Build related configurations (PoseMetadata, PAFParameters, DetectorConfig)
         metadata = PoseMetadata.build(project_config, pose_config_path=pose_config_path)
@@ -155,8 +169,6 @@ class PoseConfig(DLCVersionedConfig):
             paf_parameters = PAFParameters.build(project_config)
         elif task == Task.TOP_DOWN:
             detector_config = DetectorConfig.build(metadata.num_individuals, detector_type)
-        if weight_init is not None:
-            weight_init = WeightInitialization.from_any(weight_init)
 
         # Build the pose model config
         defaults: dict = build_pose_config_defaults(

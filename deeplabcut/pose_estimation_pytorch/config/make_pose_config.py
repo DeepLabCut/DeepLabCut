@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import copy
+import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -35,6 +36,8 @@ from deeplabcut.utils.deprecation import deprecated
 
 if TYPE_CHECKING:
     from deeplabcut.pose_estimation_pytorch.config import DetectorConfig, PoseConfig, TestConfig
+
+logger = logging.getLogger(__name__)
 
 
 @deprecated(replacement="pose_estimation_pytorch.config.TestConfig.build", since="3.1")
@@ -257,8 +260,6 @@ def build_detector_config_defaults(
         the model configuration with an added detector config
     """
     configs_dir = get_config_folder_path()
-
-    detector_type = detector_type.lower()
     detector_config = update_config(
         read_config_as_dict(configs_dir / "base" / "base_detector.yaml"),
         read_config_as_dict(configs_dir / "detectors" / f"{detector_type}.yaml"),
@@ -273,7 +274,7 @@ def build_detector_config_defaults(
 # TODO @deruyter92 2026-06-12: currently, the responsibility for determining the task
 # is controlled either in the default config (for "non-backbone" models) or by the
 # API parameter `top_down` (for "backbone" models). This should be refactored.
-def resolve_task(net_type: str, *, top_down: bool) -> Task:
+def _resolve_task(net_type: str, *, top_down: bool) -> Task:
     configs_dir = get_config_folder_path()
     backbones = load_backbones(configs_dir)
     if net_type in backbones:
@@ -282,6 +283,48 @@ def resolve_task(net_type: str, *, top_down: bool) -> Task:
     cfg_path = configs_dir / architecture / f"{net_type}.yaml"
     model_cfg = read_config_as_dict(cfg_path)
     return Task(model_cfg.get("method", "BU").upper())
+
+
+def resolve_net_type_and_task(
+    net_type: str | NetType | None,
+    *,
+    default: str,
+    top_down: bool,
+) -> tuple[NetType, Task]:
+    """Resolve the net type from build args and project config default.
+
+    Args:
+        net_type (str | None): Architecture name, or None to use ``default``
+            from project config.
+        default (str): Fallback when ``net_type`` is None. Invalid values warn
+            and fall back to ``resnet_50``.
+        top_down (bool): Build a top-down backbone (ignored for non-backbones).
+
+    Returns:
+        (NetType, Task): the resolved canonical NetType and Task
+    """
+    if net_type is None:
+        try:
+            net_type, td_prefix = NetType.from_alias(default)
+        except ValueError:
+            logger.warning(f"Invalid default_net_type in project config: {default} using resnet_50 instead.")
+            net_type, td_prefix = NetType.RESNET_50, False
+    else:
+        net_type, td_prefix = NetType.from_alias(str(net_type))  # fails loudly if invalid
+
+    if td_prefix:
+        if top_down:
+            logger.warning(
+                "Passed net_type with top_down prefix. Instead use "
+                "PoseConfig.build(..., top_down=True) to specify the task."
+            )
+        else:
+            raise ValueError(
+                "Passed net_type with top_down prefix. but top_down is False."
+                "Please use only PoseConfig.build(..., top_down=True/False) to specify the task."
+            )
+    task = _resolve_task(net_type, top_down=top_down)
+    return net_type, task
 
 
 def _add_ctd_conditions(model_cfg: dict, ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int]):
