@@ -194,6 +194,8 @@ class ProjectConfig(DLCVersionedConfig):
         # Animal-count agnostic; Always return a list (never "MULTI!", None, etc.)
         if self.multianimalproject:
             return list(self.multianimalbodyparts)
+        if self.bodyparts == "MULTI!":
+            raise ValueError("bodyparts must be a list of strings when multianimalproject is False, got 'MULTI!'")
         return list(self.bodyparts)
 
     def _post_yaml_load_updates(self, *, yaml_path: Path) -> None:
