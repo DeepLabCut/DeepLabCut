@@ -17,6 +17,8 @@ class SAM3DARTDetectorConfig(PromptedDetectorConfig, CheckpointDetectorConfig):
     skip_blocks: set[int] | None = None
     mask_blocks: list[str] | None = None
 
+    show_progress: bool = True
+
     detection_only: bool = True
 
     @field_validator("imgsz")

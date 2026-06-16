@@ -14,77 +14,13 @@ from sam3.model_builder import (
     build_sam3_image_model,
     load_pruned_config,
 )
-from tqdm import tqdm
 
-from deeplabcut.pose_estimation_pytorch.data.bboxes import _xyxy_to_xywh
-from deeplabcut.pose_estimation_pytorch.models.detectors.external import BaseExternalDetector
+from deeplabcut.pose_estimation_pytorch.models.detectors.external import BaseExternalDetector, DetectionResult
 from deeplabcut.pose_estimation_pytorch.models.detectors.external.models.dart.config import (
     SAM3DARTDetectorConfig,
 )
 
 logger = logging.getLogger(__name__)
-
-
-# -----------------------------------------------------------------------------
-# Image input helper
-# -----------------------------------------------------------------------------
-
-
-def _coerce_to_pil_rgb(item: Any, *, color_order: str = "RGB") -> Image.Image:
-    """
-    Accept common DLC/external-detector inputs:
-      - str / Path
-      - PIL.Image
-      - np.ndarray
-      - (image, context) tuples
-
-    Returns:
-        PIL RGB image.
-
-    Notes
-    -----
-    ``color_order`` only applies to NumPy arrays. Use ``color_order="BGR"`` when
-    passing OpenCV-style arrays.
-    """
-    if isinstance(item, tuple) and len(item) > 0:
-        item = item[0]
-
-    if isinstance(item, Image.Image):
-        return item if item.mode == "RGB" else item.convert("RGB")
-
-    if isinstance(item, (str, Path)):
-        with Image.open(item) as img:
-            return img.convert("RGB")
-
-    if isinstance(item, np.ndarray):
-        arr = item
-
-        if arr.ndim == 2:
-            arr = np.stack([arr, arr, arr], axis=-1)
-
-        if arr.ndim != 3:
-            raise ValueError(f"Expected image ndarray with shape HxWxC, got shape={arr.shape}.")
-
-        if arr.shape[2] == 4:
-            arr = arr[:, :, :3]
-
-        if arr.shape[2] != 3:
-            raise ValueError(f"Expected image ndarray with 3 or 4 channels, got shape={arr.shape}.")
-
-        if color_order == "BGR":
-            arr = arr[:, :, ::-1]
-        elif color_order != "RGB":
-            raise ValueError(f"Unsupported color_order={color_order!r}; expected 'RGB' or 'BGR'.")
-
-        if arr.dtype != np.uint8:
-            arr = np.clip(arr, 0, 255).astype(np.uint8)
-
-        return Image.fromarray(arr, mode="RGB")
-
-    raise TypeError(
-        f"Unsupported image input type: {type(item)!r}. "
-        "Supported: Path/str, PIL.Image, np.ndarray, or (image, context)."
-    )
 
 
 class DARTDetectorModel(BaseExternalDetector):
@@ -260,6 +196,142 @@ class DARTDetectorModel(BaseExternalDetector):
         )
 
     @staticmethod
+    def _tensor_to_pil_rgb(tensor: torch.Tensor) -> Image.Image:
+        """
+        Convert a CHW or HWC torch image tensor to PIL RGB.
+
+        Supports:
+        - uint8 [0, 255]
+        - float [0, 1]
+        - float [0, 255]
+        """
+        tensor = tensor.detach().cpu()
+
+        if tensor.ndim != 3:
+            raise ValueError(f"Expected image tensor with 3 dimensions, got shape={tuple(tensor.shape)}.")
+
+        # CHW -> HWC
+        if tensor.shape[0] in {1, 3, 4}:
+            arr = tensor.permute(1, 2, 0).numpy()
+        else:
+            arr = tensor.numpy()
+
+        if arr.ndim != 3:
+            raise ValueError(f"Expected image array HxWxC, got shape={arr.shape}.")
+
+        if arr.shape[2] == 1:
+            arr = np.repeat(arr, 3, axis=2)
+
+        if arr.shape[2] == 4:
+            arr = arr[:, :, :3]
+
+        if arr.shape[2] != 3:
+            raise ValueError(f"Expected 1, 3, or 4 channels, got shape={arr.shape}.")
+
+        if arr.dtype != np.uint8:
+            if np.nanmax(arr) <= 1.0:
+                arr = arr * 255.0
+            arr = np.clip(arr, 0, 255).astype(np.uint8)
+
+        return Image.fromarray(arr, mode="RGB")
+
+    def _postprocess_xyxy(
+        self,
+        boxes_xyxy: np.ndarray,
+        scores: np.ndarray,
+        image_size: tuple[int, int] | None = None,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Clean raw XYXY detector outputs while keeping XYXY format.
+
+        Conversion to DLC XYWH belongs in BaseExternalDetector.inference(...).
+        """
+        boxes_xyxy = np.asarray(boxes_xyxy, dtype=np.float32).reshape(-1, 4)
+        scores = np.asarray(scores, dtype=np.float32).reshape(-1)
+
+        if len(boxes_xyxy) == 0:
+            return (
+                np.empty((0, 4), dtype=np.float32),
+                np.empty((0,), dtype=np.float32),
+            )
+
+        if len(boxes_xyxy) != len(scores):
+            raise ValueError(f"Expected one score per box, got boxes={boxes_xyxy.shape}, scores={scores.shape}.")
+
+        if self.config.clip_boxes and image_size is not None:
+            width, height = image_size
+            boxes_xyxy[:, [0, 2]] = np.clip(boxes_xyxy[:, [0, 2]], 0, width)
+            boxes_xyxy[:, [1, 3]] = np.clip(boxes_xyxy[:, [1, 3]], 0, height)
+
+        widths = boxes_xyxy[:, 2] - boxes_xyxy[:, 0]
+        heights = boxes_xyxy[:, 3] - boxes_xyxy[:, 1]
+        areas = widths * heights
+
+        valid = np.ones(len(boxes_xyxy), dtype=bool)
+
+        if self.config.filter_invalid_boxes:
+            valid &= np.isfinite(boxes_xyxy).all(axis=1)
+            valid &= np.isfinite(scores)
+            valid &= widths > 0
+            valid &= heights > 0
+
+        if self.config.min_box_area > 0:
+            valid &= areas >= self.config.min_box_area
+
+        if not valid.all():
+            logger.warning(
+                "Filtering out %d invalid DART detections",
+                int((~valid).sum()),
+            )
+
+        boxes_xyxy = boxes_xyxy[valid]
+        scores = scores[valid]
+        areas = areas[valid]
+
+        if len(boxes_xyxy) == 0:
+            return (
+                np.empty((0, 4), dtype=np.float32),
+                np.empty((0,), dtype=np.float32),
+            )
+
+        if self.config.largest_only:
+            keep = np.array([int(np.argmax(areas))], dtype=np.int64)
+            boxes_xyxy = boxes_xyxy[keep]
+            scores = scores[keep]
+
+        if self.config.max_detections is not None and len(scores) > self.config.max_detections:
+            order = np.argsort(-scores)[: self.config.max_detections]
+            boxes_xyxy = boxes_xyxy[order]
+            scores = scores[order]
+
+        return (
+            boxes_xyxy.astype(np.float32, copy=False),
+            scores.astype(np.float32, copy=False),
+        )
+
+    def _predict_pil_xyxy(self, image: Image.Image) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Run DART/SAM3 on one PIL image.
+
+        Returns:
+            boxes_xyxy:
+                np.ndarray[N, 4], absolute pixel XYXY boxes.
+            scores:
+                np.ndarray[N].
+        """
+        self.ensure_loaded()
+        assert self.predictor is not None
+
+        state = self.predictor.set_image(image)
+        results = self.predictor.predict(
+            state,
+            confidence_threshold=self.config.score_threshold,
+            nms_threshold=self.config.nms_threshold,
+        )
+
+        return self._extract_boxes_scores(results)
+
+    @staticmethod
     def _extract_boxes_scores(results: dict[str, Any]) -> tuple[np.ndarray, np.ndarray]:
         """
         Extract XYXY boxes and scores from the SAM3/DART predictor output.
@@ -288,134 +360,69 @@ class DARTDetectorModel(BaseExternalDetector):
 
         return boxes, scores
 
-    def _postprocess(
+    def predict(
         self,
-        boxes_xyxy: np.ndarray,
-        scores: np.ndarray,
-        image_size: tuple[int, int] | None = None,
-    ) -> tuple[np.ndarray, np.ndarray]:
+        images: list[torch.Tensor],
+    ) -> list[DetectionResult]:
         """
-        Convert raw XYXY detector output into DLC-compatible XYWH boxes.
+        BaseExternalDetector API.
+
+        Args:
+            images:
+                List of image tensors, typically CHW.
+
+        Returns:
+            One detection dict per image:
+                {
+                    "boxes": FloatTensor[N, 4],   # XYXY absolute pixel coords
+                    "scores": FloatTensor[N],
+                    "labels": LongTensor[N],
+                }
         """
-        boxes_xyxy = np.asarray(boxes_xyxy, dtype=np.float32).reshape(-1, 4)
-        scores = np.asarray(scores, dtype=np.float32).reshape(-1)
-
-        if len(boxes_xyxy) == 0:
-            return self._empty_arrays()
-
-        if len(boxes_xyxy) != len(scores):
-            raise ValueError(f"Expected one score per box, got boxes={boxes_xyxy.shape}, scores={scores.shape}.")
-
-        if self.config.clip_boxes and image_size is not None:
-            width, height = image_size
-            boxes_xyxy[:, [0, 2]] = np.clip(boxes_xyxy[:, [0, 2]], 0, width)
-            boxes_xyxy[:, [1, 3]] = np.clip(boxes_xyxy[:, [1, 3]], 0, height)
-
-        widths = boxes_xyxy[:, 2] - boxes_xyxy[:, 0]
-        heights = boxes_xyxy[:, 3] - boxes_xyxy[:, 1]
-        areas = widths * heights
-
-        valid = np.ones(len(boxes_xyxy), dtype=bool)
-
-        if self.config.filter_invalid_boxes:
-            valid &= np.isfinite(boxes_xyxy).all(axis=1)
-            valid &= np.isfinite(scores)
-            valid &= widths > 0
-            valid &= heights > 0
-
-        if self.config.min_box_area > 0:
-            valid &= areas >= self.config.min_box_area
-
-        if not valid.all():
-            logger.warning("Filtering out %d invalid DART detections", int((~valid).sum()))
-
-        boxes_xyxy = boxes_xyxy[valid]
-        scores = scores[valid]
-        areas = areas[valid]
-
-        if len(boxes_xyxy) == 0:
-            return self._empty_arrays()
-
-        if self.config.largest_only:
-            keep = np.array([int(np.argmax(areas))], dtype=np.int64)
-            boxes_xyxy = boxes_xyxy[keep]
-            scores = scores[keep]
-
-        if self.config.max_detections is not None and len(scores) > self.config.max_detections:
-            order = np.argsort(-scores)[: self.config.max_detections]
-            boxes_xyxy = boxes_xyxy[order]
-            scores = scores[order]
-
-        boxes_xywh = _xyxy_to_xywh(boxes_xyxy)
-        boxes_xywh[:, 2:] = np.maximum(boxes_xywh[:, 2:], 0.0)
-
-        return boxes_xywh.astype(np.float32, copy=False), scores.astype(np.float32, copy=False)
-
-    @staticmethod
-    def _format_dlc_output(
-        boxes_xywh: np.ndarray,
-        scores: np.ndarray,
-    ) -> dict[str, np.ndarray]:
-        """
-        Validate and format one image's detections for DLC top-down context.
-        """
-        boxes_xywh = np.asarray(boxes_xywh, dtype=np.float32)
-        scores = np.asarray(scores, dtype=np.float32)
-
-        if boxes_xywh.ndim != 2 or boxes_xywh.shape[1] != 4:
-            raise ValueError(f"Expected bboxes shape [N, 4], got {boxes_xywh.shape}.")
-
-        if scores.ndim != 1:
-            raise ValueError(f"Expected bbox_scores shape [N], got {scores.shape}.")
-
-        if len(boxes_xywh) != len(scores):
-            raise ValueError(f"Expected one score per bbox, got {len(scores)} scores for {len(boxes_xywh)} boxes.")
-
-        return {
-            "bboxes": boxes_xywh.astype(np.float32, copy=False),
-            "bbox_scores": scores.astype(np.float32, copy=False),
-        }
-
-    def inference(self, images, shelf_writer=None):
-        """
-        Run DART/SAM3 detection and return DLC-compatible detector contexts.
-        """
-        _ = shelf_writer  # Accepted for DLC compatibility; not used by this adapter.
-
         self.ensure_loaded()
 
         if self.config.warmup_on_first_inference and not self._warmed_up:
             self.warmup()
 
-        assert self.predictor is not None
-
-        outputs: list[dict[str, np.ndarray]] = []
-        iterator = tqdm(images) if self.config.show_progress else images
+        detections: list[DetectionResult] = []
 
         with torch.inference_mode():
-            for item in iterator:
-                image = _coerce_to_pil_rgb(
-                    item,
-                    color_order=self.config.image_color_order,
-                )
+            for tensor in images:
+                image = self._tensor_to_pil_rgb(tensor)
 
-                state = self.predictor.set_image(image)
-                results = self.predictor.predict(
-                    state,
-                    confidence_threshold=self.config.score_threshold,
-                    nms_threshold=self.config.nms_threshold,
-                )
-
-                boxes_xyxy, scores = self._extract_boxes_scores(results)
-                boxes_xywh, scores = self._postprocess(
+                boxes_xyxy, scores = self._predict_pil_xyxy(image)
+                boxes_xyxy, scores = self._postprocess_xyxy(
                     boxes_xyxy=boxes_xyxy,
                     scores=scores,
                     image_size=image.size,
                 )
 
-                outputs.append(self._format_dlc_output(boxes_xywh, scores))
+                boxes_t = torch.as_tensor(
+                    boxes_xyxy,
+                    dtype=torch.float32,
+                    device=self.device,
+                )
+                scores_t = torch.as_tensor(
+                    scores,
+                    dtype=torch.float32,
+                    device=self.device,
+                )
 
-        return outputs
+                labels_t = torch.zeros(
+                    (len(scores_t),),
+                    dtype=torch.long,
+                    device=self.device,
+                )
+
+                detections.append(
+                    {
+                        "boxes": boxes_t,
+                        "scores": scores_t,
+                        "labels": labels_t,
+                    }
+                )
+
+        return detections
 
     # ------------------------------------------------------------------
     # Metadata
