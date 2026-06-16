@@ -42,9 +42,8 @@ def build_superanimal_metadata(super_animal: str, model_name: str, max_individua
     project_cfg_path = get_super_animal_project_config_path(super_animal=super_animal)
     project_config = read_config_as_dict(project_cfg_path)
     model_cfg_path = get_super_animal_model_config_path(model_name=model_name)
-    read_config_as_dict(model_cfg_path)
     metadata = {
-        "project_path": project_config.get("project_path") or Path(),
+        "project_path": project_config.get("project_path"),
         "pose_config_path": model_cfg_path,
         "bodyparts": af.get_bodyparts(project_config),
         "unique_bodyparts": af.get_unique_bodyparts(project_config),
