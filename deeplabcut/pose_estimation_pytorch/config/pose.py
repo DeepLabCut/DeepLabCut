@@ -193,6 +193,7 @@ class PoseConfig(DLCVersionedConfig):
     def build_for_superanimal_inference(
         cls,
         super_animal: str,
+        *,
         model_name: str,
         detector_name: str | None = None,
         max_individuals: int = 30,
@@ -217,7 +218,8 @@ class PoseConfig(DLCVersionedConfig):
     def build_for_superanimal_finetune(
         cls,
         project_config: ProjectConfig | dict | Path | str,
-        *model_name: str,
+        *,
+        model_name: str,
         detector_name: str | None,
         pose_config_path: str | Path,
         weight_init: WeightInitialization,
@@ -257,7 +259,7 @@ class PoseConfig(DLCVersionedConfig):
 
         if save:
             pose_config.to_yaml(metadata.pose_config_path, overwrite=True)
-        return
+        return pose_config
 
 
 class TestConfig(DLCBaseConfig):

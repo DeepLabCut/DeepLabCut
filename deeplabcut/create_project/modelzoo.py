@@ -443,7 +443,7 @@ def create_pretrained_project_pytorch(
         model_name=net_name,
         detector_name=detector_name,
     )
-    pytorch_config["metadata"] = PoseMetadata.build(config, train_cfg_path).to_dict()
+    pytorch_config["metadata"] = PoseMetadata.build(config, pose_config_path=train_cfg_path).to_dict()
     pytorch_config["resume_training_from"] = str(train_dir / new_snapshot_name)
     pytorch_config["detector"]["resume_training_from"] = str(train_dir / new_detector_name)
     write_config(train_cfg_path, pytorch_config)
