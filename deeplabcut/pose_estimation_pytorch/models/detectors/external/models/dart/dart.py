@@ -18,22 +18,34 @@ from tqdm import tqdm
 
 from deeplabcut.pose_estimation_pytorch.data.bboxes import _xyxy_to_xywh
 from deeplabcut.pose_estimation_pytorch.models.detectors.external import BaseExternalDetector
-
-from .config import SAM3DARTDetectorConfig
+from deeplabcut.pose_estimation_pytorch.models.detectors.external.models.dart.config import (
+    SAM3DARTDetectorConfig,
+)
 
 logger = logging.getLogger(__name__)
 
 
-def _coerce_to_pil_rgb(item: Any) -> Image.Image:
+# -----------------------------------------------------------------------------
+# Image input helper
+# -----------------------------------------------------------------------------
+
+
+def _coerce_to_pil_rgb(item: Any, *, color_order: str = "RGB") -> Image.Image:
     """
     Accept common DLC/external-detector inputs:
       - str / Path
       - PIL.Image
       - np.ndarray
       - (image, context) tuples
-    and return a PIL RGB image.
+
+    Returns:
+        PIL RGB image.
+
+    Notes
+    -----
+    ``color_order`` only applies to NumPy arrays. Use ``color_order="BGR"`` when
+    passing OpenCV-style arrays.
     """
-    # Handle DLC-style tuples such as (image, context)
     if isinstance(item, tuple) and len(item) > 0:
         item = item[0]
 
@@ -41,139 +53,240 @@ def _coerce_to_pil_rgb(item: Any) -> Image.Image:
         return item if item.mode == "RGB" else item.convert("RGB")
 
     if isinstance(item, (str, Path)):
-        return Image.open(item).convert("RGB")
+        with Image.open(item) as img:
+            return img.convert("RGB")
 
     if isinstance(item, np.ndarray):
         arr = item
-        if arr.ndim == 2:
-            # grayscale -> RGB
-            arr = np.stack([arr, arr, arr], axis=-1)
-        if arr.ndim != 3 or arr.shape[2] != 3:
-            raise ValueError(f"Expected HxWx3 ndarray for image input, got shape={arr.shape}")
 
-        # If coming from OpenCV, the caller should convert BGR->RGB before passing.
+        if arr.ndim == 2:
+            arr = np.stack([arr, arr, arr], axis=-1)
+
+        if arr.ndim != 3:
+            raise ValueError(f"Expected image ndarray with shape HxWxC, got shape={arr.shape}.")
+
+        if arr.shape[2] == 4:
+            arr = arr[:, :, :3]
+
+        if arr.shape[2] != 3:
+            raise ValueError(f"Expected image ndarray with 3 or 4 channels, got shape={arr.shape}.")
+
+        if color_order == "BGR":
+            arr = arr[:, :, ::-1]
+        elif color_order != "RGB":
+            raise ValueError(f"Unsupported color_order={color_order!r}; expected 'RGB' or 'BGR'.")
+
         if arr.dtype != np.uint8:
             arr = np.clip(arr, 0, 255).astype(np.uint8)
 
         return Image.fromarray(arr, mode="RGB")
 
     raise TypeError(
-        f"Unsupported image input type: {type(item)!r}. Supported: Path/str, PIL.Image, np.ndarray, (image, context)."
+        f"Unsupported image input type: {type(item)!r}. "
+        "Supported: Path/str, PIL.Image, np.ndarray, or (image, context)."
     )
 
 
 class DARTDetectorModel(BaseExternalDetector):
     """
-    PyTorch-only SAM3/DART detector adapter for DeepLabCut external-detector workflows.
+    PyTorch-only SAM3/DART detector adapter for DeepLabCut external detector workflows.
 
-    Contract:
-        inference(images, shelf_writer=None) -> list[dict]
-    Each dict contains:
-        {
-            "bboxes": np.ndarray[N, 4],      # XYWH in pixels
-            "bbox_scores": np.ndarray[N],    # detection confidences
-        }
+    The DART/SAM3 predictor is expected to return XYXY boxes internally; this adapter
+    clips/filters/postprocesses them and emits DLC-compatible XYWH boxes.
     """
 
-    def __init__(
-        self,
-        config: SAM3DARTDetectorConfig,
-    ) -> None:
+    backend_name = "sam3_dart"
+
+    def __init__(self, config: SAM3DARTDetectorConfig) -> None:
         super().__init__()
 
         self.config = config
+        self.device = config.resolved_device()
+        self.use_fp16 = config.resolved_use_fp16()
 
-        if config.imgsz % 14 != 0:
-            raise ValueError(f"imgsz must be divisible by 14, got {config.imgsz}")
-        if not Path(config.checkpoint).is_file():
-            logger.warning(f"Checkpoint file not found: {config.checkpoint}. The model will fail to load.")
+        self.predictor: Sam3MultiClassPredictorFast | None = None
+        self._loaded = False
+        self._warmed_up = False
+        self._resolved_checkpoint: str | None = None
+
+        if not self.config.lazy_load:
+            self.load_model()
+
+    # ------------------------------------------------------------------
+    # Lifecycle
+    # ------------------------------------------------------------------
+
+    def _resolve_checkpoint(self) -> str | None:
+        """
+        Resolve the configured SAM3 checkpoint path.
+
+        Downloading is intentionally opt-in through ``allow_checkpoint_download`` so
+        object construction and model loading remain reproducible and explicit.
+        """
+        checkpoint = self.config.checkpoint
+
+        if checkpoint is None:
+            return None
+
+        path = Path(checkpoint).expanduser()
+        if path.is_file():
+            return str(path)
+
+        if self.config.allow_checkpoint_download:
             from sam3.model_builder import download_ckpt_from_hf
 
-            config.checkpoint = download_ckpt_from_hf()
+            downloaded = download_ckpt_from_hf()
+            logger.info("Downloaded SAM3 checkpoint to %s", downloaded)
+            return downloaded
 
-        self.classes = list(config.classes)
-        self.checkpoint = config.checkpoint
-        self.device = config.device
-        self.imgsz = config.imgsz
-        self.confidence = config.confidence
-        self.nms = config.nms
-        self.compile_mode = config.compile_mode
-        self.max_detections = config.max_detections
-        self.largest_only = config.largest_only
-        self.skip_blocks = config.skip_blocks
-        self.mask_blocks = config.mask_blocks
-
-        self.predictor = None
-        self._loaded = False
-        # Optional warmup
-        self._warmed_up = False
+        raise FileNotFoundError(
+            f"SAM3 checkpoint not found: {path}. Pass a valid checkpoint path or set allow_checkpoint_download=True."
+        )
 
     def load_model(self) -> None:
-        pruned_config = load_pruned_config(self.checkpoint) if self.checkpoint else None
+        """
+        Load the SAM3/DART model and initialize the fast multi-class predictor.
+        """
+        if self._loaded and self.predictor is not None:
+            return
+
+        checkpoint = self._resolve_checkpoint()
+        self._resolved_checkpoint = checkpoint
+
+        logger.info("Loading SAM3/DART detector")
+        logger.info("Device: %s", self.device)
+        logger.info("Use FP16: %s", self.use_fp16)
+        logger.info("Checkpoint: %s", checkpoint)
+        logger.info("Classes/prompts: %s", self.config.classes)
+        logger.info("Image size: %s", self.config.imgsz)
+
+        pruned_config = load_pruned_config(checkpoint) if checkpoint else None
+
         if pruned_config is not None:
             model = build_pruned_sam3_image_model(
-                checkpoint_path=self.checkpoint,
+                checkpoint_path=checkpoint,
                 pruning_config=pruned_config,
                 device=self.device,
                 eval_mode=True,
-                skip_blocks=self.skip_blocks,
+                skip_blocks=self.config.skip_blocks,
             )
-            # Matches DART demo behavior for distilled checkpoints
+
+            # Matches DART demo behavior for distilled checkpoints.
             if model.transformer.decoder.presence_token is not None:
                 model.transformer.decoder.presence_token = None
         else:
             model = build_sam3_image_model(
                 device=self.device,
-                checkpoint_path=self.checkpoint,
+                checkpoint_path=checkpoint,
                 eval_mode=True,
-                skip_blocks=self.skip_blocks,
-                mask_blocks=self.mask_blocks,
+                skip_blocks=self.config.skip_blocks,
+                mask_blocks=self.config.mask_blocks,
             )
 
-        # Precompute position encodings if using a non-default resolution
-        if self.imgsz != 1008:
+        # Precompute position encodings if using a non-default resolution.
+        if self.config.imgsz != 1008:
             pos_enc = model.backbone.vision_backbone.position_encoding
-            pos_enc.precompute_for_resolution(self.imgsz)
+            pos_enc.precompute_for_resolution(self.config.imgsz)
 
-        # Fast predictor, PyTorch only: no TRT args passed here
         self.predictor = Sam3MultiClassPredictorFast(
             model,
             device=self.device,
-            resolution=self.imgsz,
-            compile_mode=self.compile_mode,
-            use_fp16=(self.device.startswith("cuda")),
-            presence_threshold=0.05,
-            detection_only=True,
+            resolution=self.config.imgsz,
+            compile_mode=self.config.compile_mode,
+            use_fp16=self.use_fp16,
+            presence_threshold=self.config.presence_threshold,
+            detection_only=self.config.detection_only,
             trt_engine_path=None,
             trt_enc_dec_engine_path=None,
         )
 
-        # Precompute text embeddings once
-        self.predictor.set_classes(self.classes)
+        # Precompute text embeddings once.
+        self.predictor.set_classes(self.config.classes)
         self._loaded = True
 
     def ensure_loaded(self) -> None:
+        """
+        Lazily load the detector model if needed.
+        """
         if not self._loaded or self.predictor is None:
             self.load_model()
+
+    def unload_model(self) -> None:
+        """
+        Release predictor references and clear CUDA cache when available.
+        Useful for notebooks and long-running workflows.
+        """
+        self.predictor = None
+        self._loaded = False
+        self._warmed_up = False
+
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
     def warmup(self) -> None:
         """
         Optional one-time warmup to pay compile/CUDA startup cost upfront.
         """
+        self.ensure_loaded()
+
         if self._warmed_up:
             return
 
-        dummy = Image.new("RGB", (self.imgsz, self.imgsz))
+        assert self.predictor is not None
+
+        dummy = Image.new("RGB", (self.config.imgsz, self.config.imgsz))
         with torch.inference_mode():
             state = self.predictor.set_image(dummy)
             _ = self.predictor.predict(
                 state,
-                confidence_threshold=self.confidence,
-                nms_threshold=self.nms,
+                confidence_threshold=self.config.score_threshold,
+                nms_threshold=self.config.nms_threshold,
             )
+
         if self.device.startswith("cuda"):
             torch.cuda.synchronize()
+
         self._warmed_up = True
+
+    # ------------------------------------------------------------------
+    # Inference helpers
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _empty_arrays() -> tuple[np.ndarray, np.ndarray]:
+        return (
+            np.empty((0, 4), dtype=np.float32),
+            np.empty((0,), dtype=np.float32),
+        )
+
+    @staticmethod
+    def _extract_boxes_scores(results: dict[str, Any]) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Extract XYXY boxes and scores from the SAM3/DART predictor output.
+        """
+        if "boxes" not in results or "scores" not in results:
+            raise KeyError(f"DART predictor result must contain 'boxes' and 'scores'. Got keys={list(results.keys())}.")
+
+        boxes = results["boxes"]
+        scores = results["scores"]
+
+        if isinstance(boxes, torch.Tensor):
+            boxes = boxes.detach().cpu().numpy()
+        else:
+            boxes = np.asarray(boxes)
+
+        if isinstance(scores, torch.Tensor):
+            scores = scores.detach().cpu().numpy()
+        else:
+            scores = np.asarray(scores)
+
+        boxes = boxes.astype(np.float32, copy=False).reshape(-1, 4)
+        scores = scores.astype(np.float32, copy=False).reshape(-1)
+
+        if len(boxes) != len(scores):
+            raise ValueError(f"DART returned mismatched boxes/scores: boxes={boxes.shape}, scores={scores.shape}.")
+
+        return boxes, scores
 
     def _postprocess(
         self,
@@ -181,79 +294,160 @@ class DARTDetectorModel(BaseExternalDetector):
         scores: np.ndarray,
         image_size: tuple[int, int] | None = None,
     ) -> tuple[np.ndarray, np.ndarray]:
-        max_w, max_h = image_size if image_size is not None else (None, None)
-        if boxes_xyxy.size == 0:
-            return (
-                np.zeros((0, 4), dtype=np.float32),
-                np.zeros((0,), dtype=np.float32),
-            )
+        """
+        Convert raw XYXY detector output into DLC-compatible XYWH boxes.
+        """
+        boxes_xyxy = np.asarray(boxes_xyxy, dtype=np.float32).reshape(-1, 4)
+        scores = np.asarray(scores, dtype=np.float32).reshape(-1)
 
-        # Keep only largest detection if requested
-        if self.largest_only:
-            areas = (boxes_xyxy[:, 2] - boxes_xyxy[:, 0]) * (boxes_xyxy[:, 3] - boxes_xyxy[:, 1])
+        if len(boxes_xyxy) == 0:
+            return self._empty_arrays()
+
+        if len(boxes_xyxy) != len(scores):
+            raise ValueError(f"Expected one score per box, got boxes={boxes_xyxy.shape}, scores={scores.shape}.")
+
+        if self.config.clip_boxes and image_size is not None:
+            width, height = image_size
+            boxes_xyxy[:, [0, 2]] = np.clip(boxes_xyxy[:, [0, 2]], 0, width)
+            boxes_xyxy[:, [1, 3]] = np.clip(boxes_xyxy[:, [1, 3]], 0, height)
+
+        widths = boxes_xyxy[:, 2] - boxes_xyxy[:, 0]
+        heights = boxes_xyxy[:, 3] - boxes_xyxy[:, 1]
+        areas = widths * heights
+
+        valid = np.ones(len(boxes_xyxy), dtype=bool)
+
+        if self.config.filter_invalid_boxes:
+            valid &= np.isfinite(boxes_xyxy).all(axis=1)
+            valid &= np.isfinite(scores)
+            valid &= widths > 0
+            valid &= heights > 0
+
+        if self.config.min_box_area > 0:
+            valid &= areas >= self.config.min_box_area
+
+        if not valid.all():
+            logger.warning("Filtering out %d invalid DART detections", int((~valid).sum()))
+
+        boxes_xyxy = boxes_xyxy[valid]
+        scores = scores[valid]
+        areas = areas[valid]
+
+        if len(boxes_xyxy) == 0:
+            return self._empty_arrays()
+
+        if self.config.largest_only:
             keep = np.array([int(np.argmax(areas))], dtype=np.int64)
             boxes_xyxy = boxes_xyxy[keep]
             scores = scores[keep]
 
-        # Keep top-k by confidence if requested
-        if self.max_detections is not None and len(scores) > self.max_detections:
-            order = np.argsort(-scores)[: self.max_detections]
+        if self.config.max_detections is not None and len(scores) > self.config.max_detections:
+            order = np.argsort(-scores)[: self.config.max_detections]
             boxes_xyxy = boxes_xyxy[order]
             scores = scores[order]
 
-        valid = (
-            np.isfinite(boxes_xyxy).all(axis=1)
-            & np.isfinite(scores)
-            & ((boxes_xyxy[:, 2] - boxes_xyxy[:, 0]) > 0)
-            & ((boxes_xyxy[:, 3] - boxes_xyxy[:, 1]) > 0)
-        )
-        if not valid.all():
-            logger.warning(
-                f"Filtering out {len(valid) - valid.sum()} "
-                f"invalid detections with boxes={boxes_xyxy[~valid]} and scores={scores[~valid]}"
-            )
         boxes_xywh = _xyxy_to_xywh(boxes_xyxy)
-
-        # Clamp widths/heights to non-negative
         boxes_xywh[:, 2:] = np.maximum(boxes_xywh[:, 2:], 0.0)
-        # Clamp to image size if given (handles partial detections at borders)
-        if max_w is not None and max_h is not None:
-            boxes_xywh[:, 0] = np.clip(boxes_xywh[:, 0], 0, max_w)
-            boxes_xywh[:, 1] = np.clip(boxes_xywh[:, 1], 0, max_h)
-            boxes_xywh[:, 2] = np.clip(boxes_xywh[:, 2], 0, max_w - boxes_xywh[:, 0])
-            boxes_xywh[:, 3] = np.clip(boxes_xywh[:, 3], 0, max_h - boxes_xywh[:, 1])
 
-        return boxes_xywh.astype(np.float32), scores.astype(np.float32)
+        return boxes_xywh.astype(np.float32, copy=False), scores.astype(np.float32, copy=False)
 
-    def inference(self, images, shelf_writer=None, profile: bool = False):
+    @staticmethod
+    def _format_dlc_output(
+        boxes_xywh: np.ndarray,
+        scores: np.ndarray,
+    ) -> dict[str, np.ndarray]:
+        """
+        Validate and format one image's detections for DLC top-down context.
+        """
+        boxes_xywh = np.asarray(boxes_xywh, dtype=np.float32)
+        scores = np.asarray(scores, dtype=np.float32)
+
+        if boxes_xywh.ndim != 2 or boxes_xywh.shape[1] != 4:
+            raise ValueError(f"Expected bboxes shape [N, 4], got {boxes_xywh.shape}.")
+
+        if scores.ndim != 1:
+            raise ValueError(f"Expected bbox_scores shape [N], got {scores.shape}.")
+
+        if len(boxes_xywh) != len(scores):
+            raise ValueError(f"Expected one score per bbox, got {len(scores)} scores for {len(boxes_xywh)} boxes.")
+
+        return {
+            "bboxes": boxes_xywh.astype(np.float32, copy=False),
+            "bbox_scores": scores.astype(np.float32, copy=False),
+        }
+
+    def inference(self, images, shelf_writer=None):
+        """
+        Run DART/SAM3 detection and return DLC-compatible detector contexts.
+        """
+        _ = shelf_writer  # Accepted for DLC compatibility; not used by this adapter.
+
         self.ensure_loaded()
-
-        outputs = []
 
         if self.config.warmup_on_first_inference and not self._warmed_up:
             self.warmup()
 
+        assert self.predictor is not None
+
+        outputs: list[dict[str, np.ndarray]] = []
+        iterator = tqdm(images) if self.config.show_progress else images
+
         with torch.inference_mode():
-            for item in tqdm(images):
-                image = _coerce_to_pil_rgb(item)
+            for item in iterator:
+                image = _coerce_to_pil_rgb(
+                    item,
+                    color_order=self.config.image_color_order,
+                )
 
                 state = self.predictor.set_image(image)
                 results = self.predictor.predict(
                     state,
-                    confidence_threshold=self.confidence,
-                    nms_threshold=self.nms,
+                    confidence_threshold=self.config.score_threshold,
+                    nms_threshold=self.config.nms_threshold,
                 )
 
-                boxes_xyxy = results["boxes"].detach().cpu().numpy()
-                scores = results["scores"].detach().cpu().numpy()
-
-                boxes_xywh, scores = self._postprocess(boxes_xyxy, scores)
-
-                outputs.append(
-                    {
-                        "bboxes": boxes_xywh,
-                        "bbox_scores": scores,
-                    }
+                boxes_xyxy, scores = self._extract_boxes_scores(results)
+                boxes_xywh, scores = self._postprocess(
+                    boxes_xyxy=boxes_xyxy,
+                    scores=scores,
+                    image_size=image.size,
                 )
+
+                outputs.append(self._format_dlc_output(boxes_xywh, scores))
 
         return outputs
+
+    # ------------------------------------------------------------------
+    # Metadata
+    # ------------------------------------------------------------------
+
+    def metadata(self) -> dict[str, Any]:
+        """
+        Return reproducibility metadata for bbox artifacts and DLC config.
+        """
+        return {
+            "name": self.__class__.__name__,
+            "backend": self.backend_name,
+            "classes": list(self.config.classes),
+            "checkpoint": str(self.config.checkpoint) if self.config.checkpoint is not None else None,
+            "resolved_checkpoint": self._resolved_checkpoint,
+            "device": self.device,
+            "use_fp16": self.use_fp16,
+            "imgsz": self.config.imgsz,
+            "score_threshold": self.config.score_threshold,
+            "nms_threshold": self.config.nms_threshold,
+            "presence_threshold": self.config.presence_threshold,
+            "max_detections": self.config.max_detections,
+            "largest_only": self.config.largest_only,
+            "min_box_area": self.config.min_box_area,
+            "clip_boxes": self.config.clip_boxes,
+            "filter_invalid_boxes": self.config.filter_invalid_boxes,
+            "image_color_order": self.config.image_color_order,
+            "compile_mode": self.config.compile_mode,
+            "skip_blocks": sorted(self.config.skip_blocks) if self.config.skip_blocks else None,
+            "mask_blocks": self.config.mask_blocks,
+            "detection_only": self.config.detection_only,
+            "box_format": "xywh",
+            "coordinate_system": "absolute_pixels",
+            "config": self.config.model_dump(mode="json"),
+        }
