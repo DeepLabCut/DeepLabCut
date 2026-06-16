@@ -230,6 +230,7 @@ class PoseConfig(DLCVersionedConfig):
 
         # Normalize input parameters + build related configurations
         project_config = ProjectConfig.from_any(project_config)
+        weight_init = WeightInitialization.from_any(weight_init)
         if inference_config is None:
             inference_config = InferenceConfig()
         else:
