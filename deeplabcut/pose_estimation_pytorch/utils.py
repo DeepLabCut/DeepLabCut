@@ -12,12 +12,11 @@ from __future__ import annotations
 
 import os
 import random
-from pathlib import Path
 
 import numpy as np
 import torch
 
-from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
+from deeplabcut.pose_estimation_pytorch.config.pose import DetectorConfig, PoseConfig
 
 
 def create_folder(path_to_folder):
@@ -43,7 +42,7 @@ def fix_seeds(seed: int) -> None:
     torch.backends.cudnn.benchmark = False
 
 
-def resolve_device(model_config: PoseConfig | dict | str | Path) -> str:
+def resolve_device(model_config: PoseConfig | DetectorConfig) -> str:
     """Determines which device should be used from the model config.
 
     When the device is set to 'auto':
@@ -58,9 +57,12 @@ def resolve_device(model_config: PoseConfig | dict | str | Path) -> str:
     Returns:
         the device on which training should be run
     """
-    model_config = PoseConfig.from_any(model_config)
-    device = model_config["device"]
-    supports_mps = "resnet" in model_config.get("net_type", "resnet")
+    device = model_config.device
+
+    if isinstance(model_config, DetectorConfig):
+        supports_mps = False
+    else:
+        supports_mps = "resnet" in model_config.get("net_type", "")
 
     if device == "auto":
         if torch.cuda.is_available():
