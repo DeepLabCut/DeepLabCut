@@ -1,3 +1,4 @@
+# deeplabcut/pose_estimation_pytorch/data/bboxes.py
 from __future__ import annotations
 
 from enum import Enum
@@ -48,12 +49,15 @@ def _numpy_to_jsonable(obj: Any) -> Any:
 
 def _xyxy_to_xywh(boxes: np.ndarray) -> np.ndarray:
     """Assumes top-left origin. Converts [x_min, y_min, x_max, y_max] to [x_min, y_min, width, height]."""
-    boxes = np.asarray(boxes, dtype=np.float32).copy().reshape(-1, 4)
-    if len(boxes) == 0:
-        return boxes
-    boxes[:, 2] = boxes[:, 2] - boxes[:, 0]
-    boxes[:, 3] = boxes[:, 3] - boxes[:, 1]
-    return boxes
+    if boxes.ndim != 2 or boxes.shape[1] != 4:
+        raise ValueError(f"Expected boxes of shape [N, 4], but got {boxes.shape}.")
+    boxes = boxes.astype(np.float32, copy=False)
+    out = np.empty_like(boxes, dtype=np.float32)
+    out[:, 0] = boxes[:, 0]
+    out[:, 1] = boxes[:, 1]
+    out[:, 2] = boxes[:, 2] - boxes[:, 0]
+    out[:, 3] = boxes[:, 3] - boxes[:, 1]
+    return out
 
 
 def _xywh_to_xyxy(boxes: np.ndarray) -> np.ndarray:
