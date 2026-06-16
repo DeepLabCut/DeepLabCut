@@ -217,39 +217,72 @@ class BaseExternalDetector(ABC, nn.Module):
             "bbox_scores": scores.astype(np.float32, copy=False),
         }
 
-    def inference(self, images, shelf_writer=None) -> list[DetectorContext]:
+    def inference(
+        self,
+        images,
+        shelf_writer=None,
+        *,
+        show_progress: bool | None = None,
+        progress_desc: str | None = None,
+    ) -> list[DetectorContext]:
         """
         DetectorRunnerLike API.
 
-        This lets any BaseExternalDetector be passed directly to:
-            - precompute_detector_bboxes(...)
-            - Loader.create_dataset(..., detector_runner=...)
-            - DetectorToPoseInferenceRunner(..., detector_runner=...)
-
-        Args:
-            images:
-                Iterable of Path / str / PIL / ndarray / (image, context).
-            shelf_writer:
-                Accepted for compatibility, ignored.
-
-        Returns:
-            List of DLC detector contexts:
-                {
-                    "bboxes": np.ndarray[N, 4],      # XYWH absolute pixels
-                    "bbox_scores": np.ndarray[N],
-                }
+        Converts external image inputs to tensors, calls predict(...), and converts
+        raw XYXY detection results into DLC detector contexts with XYWH boxes.
         """
         _ = shelf_writer
 
+        from tqdm.auto import tqdm
+
         image_list = list(images)
-        tensors = [self._coerce_to_chw_tensor(item) for item in image_list]
+        config = getattr(self, "config", None)
 
-        detections = self.predict(tensors)
+        if show_progress is None:
+            show_progress = bool(getattr(config, "show_progress", False))
 
-        if len(detections) != len(image_list):
-            raise ValueError(f"Detector returned {len(detections)} outputs for {len(image_list)} images.")
+        if progress_desc is None:
+            progress_desc = getattr(self, "backend_name", self.__class__.__name__)
 
-        return [self._detection_to_context(det) for det in detections]
+        batch_size = int(getattr(config, "batch_size", 1))
+        batch_size = max(1, batch_size)
+
+        outputs: list[DetectorContext] = []
+
+        pbar = None
+        if show_progress:
+            pbar = tqdm(
+                total=len(image_list),
+                desc=progress_desc,
+                unit="image",
+                leave=True,
+            )
+
+        try:
+            for start in range(0, len(image_list), batch_size):
+                batch_items = image_list[start : start + batch_size]
+                tensors = [self._coerce_to_chw_tensor(item) for item in batch_items]
+
+                detections = self.predict(tensors)
+
+                if len(detections) != len(batch_items):
+                    raise ValueError(
+                        f"Detector returned {len(detections)} outputs for "
+                        f"{len(batch_items)} images in batch starting at index {start}."
+                    )
+
+                outputs.extend(self._detection_to_context(det) for det in detections)
+
+                if pbar is not None:
+                    pbar.update(len(batch_items))
+        finally:
+            if pbar is not None:
+                pbar.close()
+
+        if len(outputs) != len(image_list):
+            raise ValueError(f"Detector returned {len(outputs)} outputs for {len(image_list)} images.")
+
+        return outputs
 
 
 class PrecomputedDetectorRunner:
@@ -513,7 +546,7 @@ def precompute_detector_bboxes(
             detector_runner,
             image_paths,
             show_progress=show_progress,
-            progress_desc=f"Detecting bboxes [{mode}]",
+            progress_desc=f"Computing dataset detections for: [{mode}]",
         )
 
         if len(outputs) != len(image_paths):
