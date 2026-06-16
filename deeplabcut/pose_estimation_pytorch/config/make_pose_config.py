@@ -147,12 +147,14 @@ def build_pose_config_defaults(
 
     if net_type in backbones:
         if task == Task.BOTTOM_UP and multi_animal:
+            if paf_parameters is None:
+                raise ValueError("PAF parameters are required for multi-animal bottom-up models.")
             model_cfg = _create_backbone_with_paf_model(
                 configs_dir=configs_dir,
                 net_type=net_type,
                 num_individuals=metadata.num_individuals,
                 bodyparts=metadata.bodyparts,
-                paf_parameters=paf_parameters,
+                paf_parameters=paf_parameters.to_dict(),
             )
         else:
             model_cfg = _create_backbone_with_heatmap_model(
@@ -166,7 +168,9 @@ def build_pose_config_defaults(
         architecture = net_type.split("_")[0]
         default_value_kwargs = {}
         if architecture == "dlcrnet":
-            default_value_kwargs.update(paf_parameters)
+            if paf_parameters is None:
+                raise ValueError("PAF parameters are required for DLCRNet models.")
+            default_value_kwargs.update(paf_parameters.to_dict())
 
         cfg_path = configs_dir / architecture / f"{net_type}.yaml"
         model_cfg = read_config_as_dict(cfg_path)
@@ -179,6 +183,8 @@ def build_pose_config_defaults(
     model_cfg["net_type"] = net_type
 
     if task == Task.TOP_DOWN:
+        if detector_config is None:
+            raise ValueError("detector_config is required for top-down pose configs.")
         model_cfg["detector"] = detector_config.to_dict()
 
     # add the default augmentations to the config
@@ -232,7 +238,7 @@ def build_pose_config_defaults(
     # Add metadata and weight init to the model config
     model_cfg["metadata"] = metadata.to_dict()
     if weight_init is not None:
-        model_cfg["train_settings"]["weight_init"] = weight_init
+        model_cfg["train_settings"]["weight_init"] = weight_init.to_dict()
     return model_cfg
 
 
