@@ -15,6 +15,21 @@ from pydantic import BaseModel, ConfigDict, Field
 BBoxFormat = Literal["xywh", "xyxy", "cxcywh"]
 EvalMode: TypeAlias = Literal["train", "test"]
 
+RecomputePolicy: TypeAlias = Literal[
+    "resume",
+    "missing",
+    "invalid",
+    "missing_or_invalid",
+    "all",
+    "none",
+]
+
+EmptyBBoxPolicy: TypeAlias = Literal[
+    "valid",
+    "invalid",
+    "recompute",
+]
+
 
 class BBoxComputationMethod(str, Enum):
     GT = "gt"
@@ -216,6 +231,9 @@ class BBoxEntry(StrictBaseModel):
 
 
 class BBoxes(StrictBaseModel):
+    schema_version: str = "1.0"
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
     train: list[BBoxEntry] = Field(default_factory=list)
     test: list[BBoxEntry] = Field(default_factory=list)
 
@@ -256,3 +274,135 @@ class BBoxes(StrictBaseModel):
             )
             for image_path, bbox_entry in zip(image_paths, mode_bboxes, strict=False)
         ]
+
+
+def normalize_bbox_image_path(path: str | Path) -> str:
+    """
+    Normalize image paths for comparing bbox artifact entries to loader image paths.
+
+    This intentionally uses lowercase POSIX paths to make matching robust across
+    Windows/POSIX path separators.
+    """
+    return Path(path).as_posix().lower()
+
+
+def index_bbox_entries_by_path(
+    entries: list[BBoxEntry],
+) -> tuple[dict[str, BBoxEntry], list[str]]:
+    """
+    Build an image_path -> BBoxEntry index and return duplicate keys.
+
+    Entries without image_path are ignored.
+    """
+    by_path: dict[str, BBoxEntry] = {}
+    duplicates: list[str] = []
+
+    for entry in entries:
+        if entry.image_path is None:
+            continue
+
+        key = normalize_bbox_image_path(entry.image_path)
+        if key in by_path:
+            duplicates.append(key)
+
+        by_path[key] = entry
+
+    return by_path, duplicates
+
+
+def validate_bbox_entry(
+    entry: BBoxEntry,
+    *,
+    target_format: BBoxFormat = "xywh",
+    empty_policy: EmptyBBoxPolicy = "valid",
+    min_existing_score: float | None = None,
+) -> tuple[bool, str | None, bool]:
+    """
+    Validate one existing BBoxEntry.
+
+    Returns:
+        valid:
+            Whether the entry is structurally valid.
+        reason:
+            Reason for invalidity, or None.
+        empty:
+            Whether the entry contains zero boxes.
+
+    Notes:
+        empty_policy="recompute" returns valid=True and empty=True. The recompute
+        decision is handled separately by should_recompute_bbox_entry(...).
+    """
+    try:
+        context = entry.to_detector_context(target_format=target_format)
+    except Exception as exc:
+        return False, f"failed conversion to {target_format!r}: {exc}", False
+
+    boxes = np.asarray(context.get("bboxes", np.zeros((0, 4))), dtype=np.float32).reshape(-1, 4)
+    scores = np.asarray(
+        context.get("bbox_scores", np.ones((len(boxes),), dtype=np.float32)),
+        dtype=np.float32,
+    ).reshape(-1)
+
+    empty = len(boxes) == 0
+
+    if len(scores) != len(boxes):
+        return False, f"{len(boxes)} boxes but {len(scores)} bbox_scores", empty
+
+    if empty:
+        if empty_policy == "invalid":
+            return False, "empty bbox entry", True
+        return True, None, True
+
+    if not np.isfinite(boxes).all():
+        return False, "non-finite bbox coordinates", empty
+
+    if not np.isfinite(scores).all():
+        return False, "non-finite bbox scores", empty
+
+    if target_format == "xywh":
+        if np.any(boxes[:, 2] < 0) or np.any(boxes[:, 3] < 0):
+            return False, "negative width/height", empty
+
+    if min_existing_score is not None and len(scores) > 0:
+        if float(np.max(scores)) < min_existing_score:
+            return False, f"max bbox score below {min_existing_score}", empty
+
+    return True, None, empty
+
+
+def should_recompute_bbox_entry(
+    *,
+    exists: bool,
+    valid: bool,
+    empty: bool,
+    recompute: RecomputePolicy,
+    empty_policy: EmptyBBoxPolicy,
+) -> bool:
+    """
+    Decide whether an entry should be recomputed based on existence/validity policy.
+
+    recompute="resume" is the user-friendly safe default:
+      - reuse valid entries
+      - recompute missing entries
+      - recompute invalid entries
+      - handle empty entries according to empty_policy
+    """
+    if recompute == "resume":
+        recompute = "missing_or_invalid"
+
+    if recompute == "all":
+        return True
+
+    if recompute == "none":
+        return False
+
+    if not exists:
+        return recompute in {"missing", "missing_or_invalid"}
+
+    if empty and empty_policy == "recompute":
+        return recompute in {"invalid", "missing_or_invalid"}
+
+    if not valid:
+        return recompute in {"invalid", "missing_or_invalid"}
+
+    return False

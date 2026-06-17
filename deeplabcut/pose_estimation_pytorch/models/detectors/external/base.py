@@ -19,8 +19,14 @@ from deeplabcut.pose_estimation_pytorch.data.bboxes import (
     BBoxes,
     BBoxFormat,
     DetectorContext,
+    EmptyBBoxPolicy,
     EvalMode,
+    RecomputePolicy,
     _xyxy_to_xywh,
+    index_bbox_entries_by_path,
+    normalize_bbox_image_path,
+    should_recompute_bbox_entry,
+    validate_bbox_entry,
 )
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
@@ -719,47 +725,215 @@ def precompute_detector_bboxes(
     output_file: str | Path,
     modes: tuple[str, ...] = ("train", "test"),
     *,
-    bbox_format: str = "xywh",
+    bbox_format: BBoxFormat = "xywh",
     show_progress: bool | None = None,
+    recompute: RecomputePolicy = "resume",
+    empty_policy: EmptyBBoxPolicy = "valid",
+    validate_image_paths: bool = True,
+    min_existing_score: float | None = None,
+    detector_metadata: dict[str, Any] | None = None,
+    strict: bool = True,
 ) -> BBoxes:
     """
-    Run a detector runner on all images for the requested modes and save the results
-    to a BBoxes JSON artifact.
+    Run a detector runner on requested images and save a reusable BBoxes JSON artifact.
+
+    Existing entries can be reused or selectively recomputed.
 
     Args:
-        show_progress:
-            If None, let the detector decide.
-            If True/False, override detector progress behavior when supported.
+        recompute:
+            - "missing": recompute only missing entries
+            - "invalid": recompute only invalid existing entries
+            - "missing_or_invalid": recompute missing or invalid entries
+            - "all": recompute everything
+            - "none": never run detector; validate/reuse only
+            - "resume": user-friendly default; reuse valid entries, recompute missing/invalid entries
+
+        empty_policy:
+            - "valid": zero-box entries are valid
+            - "invalid": zero-box entries are invalid
+            - "recompute": zero-box entries are structurally valid, but selected for
+              recomputation when recompute includes invalid entries
+
+        validate_image_paths:
+            If True, reuse existing entries by image_path. Existing entries without
+            image_path metadata are treated as missing.
+
+            If False, fall back to order-based reuse when path metadata is absent.
+
+        min_existing_score:
+            If set, existing entries with boxes but max score below this value are
+            considered invalid/recompute candidates.
+
+        detector_metadata:
+            Optional metadata to store in the artifact under metadata["detector"].
+
+        strict:
+            If True, raise when an entry is missing/invalid and recompute policy does
+            not allow recomputing it.
     """
     output_file = Path(output_file)
+    existing_bboxes = BBoxes.from_file(output_file, missing_ok=True)
 
-    result = {}
+    if detector_metadata is not None:
+        existing_bboxes.metadata["detector"] = detector_metadata
+
+    result: dict[str, list[BBoxEntry]] = {
+        "train": list(existing_bboxes.train),
+        "test": list(existing_bboxes.test),
+    }
+
     for mode in modes:
         if hasattr(loader, "get_image_paths"):
             image_paths = [Path(p) for p in loader.get_image_paths(mode)]  # type: ignore[attr-defined]
         else:
             image_paths = [Path(p) for p in loader.image_filenames(mode)]
 
-        outputs = _call_detector_inference(
-            detector_runner,
-            image_paths,
-            show_progress=show_progress,
-            progress_desc=f"Computing dataset detections for: [{mode}]",
+        existing_entries = list(getattr(existing_bboxes, mode, []))
+        entries_by_path, duplicate_paths = index_bbox_entries_by_path(existing_entries)
+
+        if duplicate_paths:
+            message = (
+                f"[{mode}] Found duplicate image_path entries in existing bbox artifact. "
+                f"Examples: {duplicate_paths[:5]}"
+            )
+            if strict:
+                raise ValueError(message)
+            logger.warning(message)
+
+        final_entries: list[BBoxEntry | None] = [None] * len(image_paths)
+        recompute_paths: list[Path] = []
+        recompute_indices: list[int] = []
+        errors: list[str] = []
+
+        for i, image_path in enumerate(image_paths):
+            key = normalize_bbox_image_path(image_path)
+
+            entry: BBoxEntry | None = None
+
+            if validate_image_paths:
+                # Strict path-based reuse. If old entries have no image_path metadata,
+                # they are treated as missing and can be recomputed.
+                entry = entries_by_path.get(key)
+            else:
+                # Prefer path lookup when available, otherwise allow order-based reuse.
+                entry = entries_by_path.get(key)
+                if entry is None and i < len(existing_entries):
+                    entry = existing_entries[i]
+
+            exists = entry is not None
+            valid = False
+            reason = "missing bbox entry"
+            empty = False
+
+            if exists:
+                valid, reason, empty = validate_bbox_entry(
+                    entry,
+                    target_format=bbox_format,
+                    empty_policy=empty_policy,
+                    min_existing_score=min_existing_score,
+                )
+
+            recompute_this = should_recompute_bbox_entry(
+                exists=exists,
+                valid=valid,
+                empty=empty,
+                recompute=recompute,
+                empty_policy=empty_policy,
+            )
+
+            if recompute_this:
+                recompute_paths.append(image_path)
+                recompute_indices.append(i)
+                continue
+
+            if not exists:
+                errors.append(
+                    f"[{mode}] Missing bbox entry for image {image_path}. "
+                    f"Set recompute='missing' or recompute='missing_or_invalid' to compute it."
+                )
+                continue
+
+            if not valid:
+                errors.append(
+                    f"[{mode}] Invalid bbox entry for image {image_path}: {reason}. "
+                    f"Set recompute='invalid' or recompute='missing_or_invalid' to recompute it."
+                )
+                continue
+
+            final_entries[i] = entry
+
+        if errors and strict:
+            message = [
+                "Cannot build complete precomputed bbox artifact.",
+                f"Artifact: {output_file}",
+                f"Mode: {mode}",
+                f"Recompute policy: {recompute}",
+                "",
+                "Problems found:",
+                *[f"  - {error}" for error in errors[:20]],
+            ]
+
+            if len(errors) > 20:
+                message.append(f"  ... and {len(errors) - 20} more problems")
+
+            message.extend(
+                [
+                    "",
+                    "How to fix:",
+                    "  Re-run precompute_detector_bboxes(...) with "
+                    "recompute='missing_or_invalid', or recompute='all' if you want a fresh artifact.",
+                ]
+            )
+
+            raise ValueError("\n".join(message))
+
+        if len(recompute_paths) > 0:
+            if recompute == "none":
+                raise ValueError(f"[{mode}] {len(recompute_paths)} entries need recomputation, but recompute='none'.")
+
+            outputs = _call_detector_inference(
+                detector_runner,
+                recompute_paths,
+                show_progress=show_progress,
+                progress_desc=f"Computing dataset detections for: [{mode}]",
+            )
+
+            if len(outputs) != len(recompute_paths):
+                raise ValueError(
+                    f"Detector returned {len(outputs)} outputs for {len(recompute_paths)} {mode} images to recompute."
+                )
+
+            for i, image_path, out in zip(recompute_indices, recompute_paths, outputs, strict=False):
+                final_entries[i] = BBoxEntry.from_detector_context(
+                    out,
+                    image_path=image_path,
+                    bbox_format=bbox_format,
+                )
+
+        missing_after_merge = [image_paths[i] for i, entry in enumerate(final_entries) if entry is None]
+        if missing_after_merge:
+            raise ValueError(
+                f"[{mode}] Could not build a complete bbox artifact. "
+                f"{len(missing_after_merge)} entries are still missing. "
+                f"Examples: {missing_after_merge[:5]}"
+            )
+
+        result[mode] = [entry for entry in final_entries if entry is not None]
+
+        reused = len(image_paths) - len(recompute_paths)
+        logger.info(
+            "Precomputed bboxes [%s]: reused %d entries, recomputed %d entries",
+            mode,
+            reused,
+            len(recompute_paths),
         )
 
-        if len(outputs) != len(image_paths):
-            raise ValueError(f"Detector returned {len(outputs)} outputs for {len(image_paths)} {mode} images.")
-
-        result[mode] = [
-            BBoxEntry.from_detector_context(
-                out,
-                image_path=img_path,
-                bbox_format=bbox_format,
-            )
-            for img_path, out in zip(image_paths, outputs, strict=False)
-        ]
-
-    bboxes = BBoxes(**result)
+    bboxes = BBoxes(
+        schema_version=existing_bboxes.schema_version,
+        metadata=existing_bboxes.metadata,
+        train=result["train"],
+        test=result["test"],
+    )
     bboxes.dump_json(output_file)
     return bboxes
 

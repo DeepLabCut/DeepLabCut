@@ -28,7 +28,10 @@ from deeplabcut.pose_estimation_pytorch.data.postprocessor import build_detector
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import build_bottom_up_preprocessor
 from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
 from deeplabcut.pose_estimation_pytorch.models.detectors.external import EXTERNAL_DETECTORS, PrecomputedDetectorRunner
-from deeplabcut.pose_estimation_pytorch.models.detectors.external.base import validate_precomputed_bboxes_for_loader
+from deeplabcut.pose_estimation_pytorch.models.detectors.external.base import (
+    precompute_detector_bboxes,
+    validate_precomputed_bboxes_for_loader,
+)
 
 # Important: ensure the mock detector module is imported so registry population happens
 from deeplabcut.pose_estimation_pytorch.runners.inference import build_inference_runner
@@ -525,3 +528,317 @@ def test_validate_precomputed_bboxes_allows_empty_bboxes(tmp_path):
     )
 
     assert summary["train"]["entries_without_bboxes"] == 1
+
+
+class RecordingDetectorRunner:
+    """
+    Tiny detector runner used to test precompute resume/recompute policies.
+    """
+
+    def __init__(
+        self,
+        *,
+        bbox: tuple[float, float, float, float] = (91.0, 92.0, 93.0, 94.0),
+        score: float = 0.99,
+    ):
+        self.bbox = bbox
+        self.score = score
+        self.calls: list[Path] = []
+
+    def inference(self, images, shelf_writer=None, **kwargs):
+        images = list(images)
+        self.calls.extend([Path(p) for p in images])
+
+        return [
+            {
+                "bboxes": np.asarray([self.bbox], dtype=np.float32),
+                "bbox_scores": np.asarray([self.score], dtype=np.float32),
+            }
+            for _ in images
+        ]
+
+
+def test_precompute_resume_reuses_valid_entries_and_computes_missing_mode(tmp_path):
+    """
+    resume should reuse valid existing entries and compute only missing entries.
+
+    FakeDLCLoader has one train image and one test image, both named img0.png.
+    Here train exists and test is missing, so only test should be computed.
+    """
+    loader = FakeDLCLoader()
+    bbox_file = tmp_path / "precomputed_bboxes.json"
+
+    existing = BBoxes(
+        train=[
+            BBoxEntry(
+                bboxes=[(1.0, 2.0, 3.0, 4.0)],
+                bbox_scores=[0.8],
+                bbox_format="xywh",
+                image_path=Path("img0.png"),
+            )
+        ],
+        test=[],
+    )
+    existing.dump_json(bbox_file)
+
+    detector = RecordingDetectorRunner(
+        bbox=(11.0, 12.0, 13.0, 14.0),
+        score=0.95,
+    )
+
+    artifact = precompute_detector_bboxes(
+        loader=loader,
+        detector_runner=detector,
+        output_file=bbox_file,
+        modes=("train", "test"),
+        bbox_format="xywh",
+        recompute="resume",
+        validate_image_paths=True,
+    )
+
+    assert len(detector.calls) == 1
+
+    np.testing.assert_allclose(
+        artifact.train[0].to_xywh(),
+        np.asarray([[1.0, 2.0, 3.0, 4.0]], dtype=np.float32),
+    )
+    np.testing.assert_allclose(
+        artifact.test[0].to_xywh(),
+        np.asarray([[11.0, 12.0, 13.0, 14.0]], dtype=np.float32),
+    )
+    np.testing.assert_allclose(artifact.test[0].bbox_scores, [0.95])
+
+
+def test_precompute_resume_recomputes_invalid_existing_entry(tmp_path):
+    """
+    resume should recompute an existing entry if it is structurally invalid.
+    """
+    loader = FakeDLCLoader()
+    bbox_file = tmp_path / "precomputed_bboxes.json"
+
+    # Invalid: one box, zero scores.
+    existing = BBoxes(
+        train=[
+            BBoxEntry(
+                bboxes=[(1.0, 2.0, 3.0, 4.0)],
+                bbox_scores=[],
+                bbox_format="xywh",
+                image_path=Path("img0.png"),
+            )
+        ]
+    )
+    existing.dump_json(bbox_file)
+
+    detector = RecordingDetectorRunner(
+        bbox=(21.0, 22.0, 23.0, 24.0),
+        score=0.91,
+    )
+
+    artifact = precompute_detector_bboxes(
+        loader=loader,
+        detector_runner=detector,
+        output_file=bbox_file,
+        modes=("train",),
+        bbox_format="xywh",
+        recompute="resume",
+        validate_image_paths=True,
+    )
+
+    assert len(detector.calls) == 1
+    np.testing.assert_allclose(
+        artifact.train[0].to_xywh(),
+        np.asarray([[21.0, 22.0, 23.0, 24.0]], dtype=np.float32),
+    )
+    np.testing.assert_allclose(artifact.train[0].bbox_scores, [0.91])
+
+
+def test_precompute_recompute_none_raises_for_missing_entry(tmp_path):
+    """
+    recompute='none' should be validation-only. Missing entries should raise.
+    """
+    loader = FakeDLCLoader()
+    bbox_file = tmp_path / "precomputed_bboxes.json"
+
+    BBoxes(train=[]).dump_json(bbox_file)
+
+    detector = RecordingDetectorRunner()
+
+    with pytest.raises(ValueError, match="Missing bbox entry"):
+        precompute_detector_bboxes(
+            loader=loader,
+            detector_runner=detector,
+            output_file=bbox_file,
+            modes=("train",),
+            bbox_format="xywh",
+            recompute="none",
+            validate_image_paths=True,
+        )
+
+    assert len(detector.calls) == 0
+
+
+def test_precompute_recompute_all_recomputes_valid_existing_entry(tmp_path):
+    """
+    recompute='all' should ignore valid existing entries and recompute everything.
+    """
+    loader = FakeDLCLoader()
+    bbox_file = tmp_path / "precomputed_bboxes.json"
+
+    existing = BBoxes(
+        train=[
+            BBoxEntry(
+                bboxes=[(1.0, 2.0, 3.0, 4.0)],
+                bbox_scores=[0.8],
+                bbox_format="xywh",
+                image_path=Path("img0.png"),
+            )
+        ]
+    )
+    existing.dump_json(bbox_file)
+
+    detector = RecordingDetectorRunner(
+        bbox=(31.0, 32.0, 33.0, 34.0),
+        score=0.93,
+    )
+
+    artifact = precompute_detector_bboxes(
+        loader=loader,
+        detector_runner=detector,
+        output_file=bbox_file,
+        modes=("train",),
+        bbox_format="xywh",
+        recompute="all",
+        validate_image_paths=True,
+    )
+
+    assert len(detector.calls) == 1
+    np.testing.assert_allclose(
+        artifact.train[0].to_xywh(),
+        np.asarray([[31.0, 32.0, 33.0, 34.0]], dtype=np.float32),
+    )
+    np.testing.assert_allclose(artifact.train[0].bbox_scores, [0.93])
+
+
+def test_precompute_resume_keeps_empty_entry_when_empty_policy_valid(tmp_path):
+    """
+    Empty bbox entries should be reusable when empty_policy='valid'.
+    This matters for true empty/no-animal frames.
+    """
+    loader = FakeDLCLoader()
+    bbox_file = tmp_path / "precomputed_bboxes.json"
+
+    existing = BBoxes(
+        train=[
+            BBoxEntry(
+                bboxes=[],
+                bbox_scores=[],
+                bbox_format="xywh",
+                image_path=Path("img0.png"),
+            )
+        ]
+    )
+    existing.dump_json(bbox_file)
+
+    detector = RecordingDetectorRunner()
+
+    artifact = precompute_detector_bboxes(
+        loader=loader,
+        detector_runner=detector,
+        output_file=bbox_file,
+        modes=("train",),
+        bbox_format="xywh",
+        recompute="resume",
+        empty_policy="valid",
+        validate_image_paths=True,
+    )
+
+    assert len(detector.calls) == 0
+    assert len(artifact.train[0].bboxes) == 0
+    assert len(artifact.train[0].bbox_scores) == 0
+
+
+def test_precompute_resume_recomputes_empty_entry_when_empty_policy_recompute(tmp_path):
+    """
+    empty_policy='recompute' should select empty entries for recomputation under resume.
+    """
+    loader = FakeDLCLoader()
+    bbox_file = tmp_path / "precomputed_bboxes.json"
+
+    existing = BBoxes(
+        train=[
+            BBoxEntry(
+                bboxes=[],
+                bbox_scores=[],
+                bbox_format="xywh",
+                image_path=Path("img0.png"),
+            )
+        ]
+    )
+    existing.dump_json(bbox_file)
+
+    detector = RecordingDetectorRunner(
+        bbox=(41.0, 42.0, 43.0, 44.0),
+        score=0.97,
+    )
+
+    artifact = precompute_detector_bboxes(
+        loader=loader,
+        detector_runner=detector,
+        output_file=bbox_file,
+        modes=("train",),
+        bbox_format="xywh",
+        recompute="resume",
+        empty_policy="recompute",
+        validate_image_paths=True,
+    )
+
+    assert len(detector.calls) == 1
+    np.testing.assert_allclose(
+        artifact.train[0].to_xywh(),
+        np.asarray([[41.0, 42.0, 43.0, 44.0]], dtype=np.float32),
+    )
+    np.testing.assert_allclose(artifact.train[0].bbox_scores, [0.97])
+
+
+def test_precompute_resume_recomputes_existing_entry_below_min_score(tmp_path):
+    """
+    min_existing_score should let users selectively refresh low-confidence entries.
+    """
+    loader = FakeDLCLoader()
+    bbox_file = tmp_path / "precomputed_bboxes.json"
+
+    existing = BBoxes(
+        train=[
+            BBoxEntry(
+                bboxes=[(1.0, 2.0, 3.0, 4.0)],
+                bbox_scores=[0.1],
+                bbox_format="xywh",
+                image_path=Path("img0.png"),
+            )
+        ]
+    )
+    existing.dump_json(bbox_file)
+
+    detector = RecordingDetectorRunner(
+        bbox=(51.0, 52.0, 53.0, 54.0),
+        score=0.89,
+    )
+
+    artifact = precompute_detector_bboxes(
+        loader=loader,
+        detector_runner=detector,
+        output_file=bbox_file,
+        modes=("train",),
+        bbox_format="xywh",
+        recompute="resume",
+        empty_policy="valid",
+        min_existing_score=0.5,
+        validate_image_paths=True,
+    )
+
+    assert len(detector.calls) == 1
+    np.testing.assert_allclose(
+        artifact.train[0].to_xywh(),
+        np.asarray([[51.0, 52.0, 53.0, 54.0]], dtype=np.float32),
+    )
+    np.testing.assert_allclose(artifact.train[0].bbox_scores, [0.89])
