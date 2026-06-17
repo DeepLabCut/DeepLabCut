@@ -26,7 +26,6 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     COCO_PERSON_CATEGORY_ID,
     get_super_animal_snapshot_path,
     load_super_animal_config,
-    update_config,
 )
 from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
 from deeplabcut.pose_estimation_pytorch.task import Task
@@ -163,8 +162,9 @@ def create_superanimal_inference_runners(
             super_animal=superanimal_name,
             model_name=model_name,
             detector_name=detector_name,
+            max_individuals=max_individuals,
+            device=device,
         )
-    model_cfg = update_config(model_cfg, max_individuals=max_individuals, device=device)
 
     if superanimal_name == "superanimal_humanbody":
         return _build_humanbody_inference_runners(

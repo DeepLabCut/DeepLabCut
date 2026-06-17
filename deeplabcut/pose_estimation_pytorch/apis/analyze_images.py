@@ -41,7 +41,6 @@ from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     COCO_PERSON_CATEGORY_ID,
-    update_config,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import resolve_device
@@ -188,13 +187,12 @@ def superanimal_analyze_images(
             super_animal=superanimal_name,
             model_name=model_name,
             detector_name=(detector_name if superanimal_name != "superanimal_humanbody" else None),
+            max_individuals=max_individuals,
+            device=device,
         )
     else:
         config = PoseConfig.from_any(customized_model_config)
 
-    # TODO @deruyter92: This is currently not validated against the pydantic schema.
-    # We should add this functionality (and do updates in an early stage).
-    config = update_config(config, max_individuals, device)
     config["metadata"]["individuals"] = [f"animal{i}" for i in range(max_individuals)]
     if config.get("detector") is not None:
         config["detector"]["model"]["box_score_thresh"] = bbox_threshold
