@@ -92,7 +92,7 @@ def make_basic_project_config(
 
 
 def build_pose_config_defaults(
-    net_type: NetType | str,
+    net_type: NetType,
     metadata: PoseMetadata,
     *,
     task: Task,
@@ -168,14 +168,14 @@ def build_pose_config_defaults(
                 top_down=task == Task.TOP_DOWN,
             )
     else:
-        architecture = net_type.split("_")[0]
+        architecture = net_type.value.split("_")[0]
         default_value_kwargs = {}
         if architecture == "dlcrnet":
             if paf_parameters is None:
                 raise ValueError("PAF parameters are required for DLCRNet models.")
             default_value_kwargs.update(paf_parameters.to_dict())
 
-        cfg_path = configs_dir / architecture / f"{net_type}.yaml"
+        cfg_path = configs_dir / architecture / f"{net_type.value}.yaml"
         model_cfg = read_config_as_dict(cfg_path)
         model_cfg = replace_default_values(
             model_cfg,
@@ -183,7 +183,7 @@ def build_pose_config_defaults(
             num_individuals=metadata.num_individuals,
             **default_value_kwargs,
         )
-    model_cfg["net_type"] = net_type
+    model_cfg["net_type"] = net_type.value
 
     if task == Task.TOP_DOWN:
         if detector_config is None:
@@ -201,7 +201,7 @@ def build_pose_config_defaults(
     if metadata.unique_bodyparts:
         if task != Task.BOTTOM_UP:
             raise ValueError(
-                f"You selected a top-down model architecture ({net_type}), but you have"
+                f"You selected a top-down model architecture ({net_type.value}), but you have"
                 f" unique bodyparts, which is not yet implemented for top-down models."
                 " Please select a bottom-up architecture such as `resnet_50` for single"
                 " animal projects or `dlcrnet_50` for multi-animal projects."
@@ -218,7 +218,7 @@ def build_pose_config_defaults(
     if metadata.with_identity:
         if task != Task.BOTTOM_UP:
             raise ValueError(
-                f"You selected a top-down model architecture ({net_type}), but you have"
+                f"You selected a top-down model architecture ({net_type.value}), but you have"
                 f" set `identity: true`, which is not yet implemented for top-down"
                 f" models. Please select a bottom-up architecture such as `dlcrnet_50`"
                 f" to train with identity, or set `identity: false`."
@@ -262,7 +262,7 @@ def build_detector_config_defaults(
     configs_dir = get_config_folder_path()
     detector_config = update_config(
         read_config_as_dict(configs_dir / "base" / "base_detector.yaml"),
-        read_config_as_dict(configs_dir / "detectors" / f"{detector_type}.yaml"),
+        read_config_as_dict(configs_dir / "detectors" / f"{detector_type.value}.yaml"),
     )
     detector_config = replace_default_values(
         detector_config,
@@ -274,13 +274,13 @@ def build_detector_config_defaults(
 # TODO @deruyter92 2026-06-12: currently, the responsibility for determining the task
 # is controlled either in the default config (for "non-backbone" models) or by the
 # API parameter `top_down` (for "backbone" models). This should be refactored.
-def _resolve_task(net_type: str, *, top_down: bool) -> Task:
+def _resolve_task(net_type: NetType, *, top_down: bool) -> Task:
     configs_dir = get_config_folder_path()
     backbones = load_backbones(configs_dir)
     if net_type in backbones:
         return Task.TOP_DOWN if top_down else Task.BOTTOM_UP
-    architecture = net_type.split("_")[0]
-    cfg_path = configs_dir / architecture / f"{net_type}.yaml"
+    architecture = net_type.value.split("_")[0]
+    cfg_path = configs_dir / architecture / f"{net_type.value}.yaml"
     model_cfg = read_config_as_dict(cfg_path)
     return Task(model_cfg.get("method", "BU").upper())
 
@@ -375,7 +375,7 @@ def _add_ctd_conditions(model_cfg: dict, ctd_conditions: int | str | Path | tupl
 
 def _create_backbone_with_heatmap_model(
     configs_dir: Path,
-    net_type: str,
+    net_type: NetType,
     multianimal_project: bool,
     bodyparts: list[str],
     top_down: bool,
@@ -404,11 +404,11 @@ def _create_backbone_with_heatmap_model(
             "A pose model formed of a backbone and simple heatmap + location refinement"
             " head can only be used for single animal projects. As you're working with"
             " a multi-animal project, please select a multi-individual model instead of"
-            f" {net_type} or use a detector to create a top-down model."
+            f" {net_type.value} or use a detector to create a top-down model."
         )
 
     # add the backbone to the config
-    model_config = read_config_as_dict(configs_dir / "backbones" / f"{net_type}.yaml")
+    model_config = read_config_as_dict(configs_dir / "backbones" / f"{net_type.value}.yaml")
     backbone_output_channels = model_config["model"]["backbone_output_channels"]
 
     model_config["method"] = "bu"
@@ -431,7 +431,7 @@ def _create_backbone_with_heatmap_model(
 
 def _create_backbone_with_paf_model(
     configs_dir: Path,
-    net_type: str,
+    net_type: NetType,
     num_individuals: int,
     bodyparts: list[str],
     paf_parameters: dict,
@@ -451,7 +451,7 @@ def _create_backbone_with_paf_model(
         the backbone + heatmap, location refinement, PAF model configuration
     """
     # add the backbone to the config
-    model_config = read_config_as_dict(configs_dir / "backbones" / f"{net_type}.yaml")
+    model_config = read_config_as_dict(configs_dir / "backbones" / f"{net_type.value}.yaml")
     backbone_output_channels = model_config["model"]["backbone_output_channels"]
 
     # add a bodypart head
