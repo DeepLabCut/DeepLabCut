@@ -66,9 +66,11 @@ class PoseMetadata(DLCBaseConfig):
         from deeplabcut.pose_estimation_pytorch.modelzoo.config import build_superanimal_metadata
 
         metadata = build_superanimal_metadata(
-            super_animal=super_animal, model_name=model_name, max_individuals=max_individuals
+            super_animal=super_animal,
+            model_name=model_name,
+            max_individuals=max_individuals,
         )
-        return cls.build(metadata)
+        return cls.from_dict(metadata)
 
     # NOTE @deruyter92 2026-06-12
     # This serves as a replacement for pose_estimation_pytorch.config.make_basic_project_config.
