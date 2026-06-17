@@ -306,9 +306,10 @@ def resolve_net_type_and_task(
     if net_type is None:
         try:
             net_type, td_prefix = NetType.from_alias(default)
-        except ValueError:
-            logger.warning(f"Invalid default_net_type in project config: {default} using resnet_50 instead.")
-            net_type, td_prefix = NetType.RESNET_50, False
+        except ValueError as e:
+            raise ValueError(
+                f"Invalid default_net_type in project config: {default}. Must be one of {NetType.available_aliases()}"
+            ) from e
     else:
         net_type, td_prefix = NetType.from_alias(str(net_type))  # fails loudly if invalid
 
