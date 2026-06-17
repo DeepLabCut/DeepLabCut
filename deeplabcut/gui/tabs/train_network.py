@@ -228,12 +228,32 @@ class TrainNetwork(DefaultTab):
         self.root.logger.info(f"{attribute.label} set to {value}")
 
     def open_posecfg_editor(self):
+        pose_cfg = getattr(self._shuffle_display, "pose_cfg", None)
+        if not isinstance(pose_cfg, dict):
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("No model configuration found")
+            msg.setText("No pose configuration exists for the selected shuffle yet.")
+            msg.setInformativeText("Create the training dataset/model configuration for this shuffle first.")
+            msg.exec_()
+            return
+
         editor = ConfigEditor(self.root.pose_cfg_path)
         editor.show()
 
     def train_network(self):
         config = self.root.config
         shuffle = int(self._shuffle.value())
+
+        pose_cfg = getattr(self._shuffle_display, "pose_cfg", None)
+        if self.root.engine == Engine.PYTORCH and not isinstance(pose_cfg, dict):
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle("Shuffle not ready")
+            msg.setText(f"No PyTorch model configuration exists for shuffle {shuffle}.")
+            msg.setInformativeText("Create the training dataset/model configuration for this shuffle before training.")
+            msg.exec_()
+            return
 
         kwargs = dict(gputouse=None, autotune=False)
         for k, spin_box in self._attribute_kwargs[self.root.engine].items():
@@ -262,17 +282,22 @@ class TrainNetwork(DefaultTab):
 
     @Slot(dict)
     def _pose_cfg_change(self, pose_cfg: dict | None) -> None:
-        if pose_cfg is None:
+        if not isinstance(pose_cfg, dict):
+            for _requirement, widgets in self._rows_with_requirements:
+                for widget in widgets:
+                    widget.hide()
+
+            self._update_snapshot_selection_widgets_visibility()
             return
 
         for requirement, widgets in self._rows_with_requirements:
             key, value = requirement
             show = pose_cfg.get(key) == value
-            for w in widgets:
+            for widget in widgets:
                 if show:
-                    w.show()
+                    widget.show()
                 else:
-                    w.hide()
+                    widget.hide()
 
         self._update_snapshot_selection_widgets_visibility()
 
