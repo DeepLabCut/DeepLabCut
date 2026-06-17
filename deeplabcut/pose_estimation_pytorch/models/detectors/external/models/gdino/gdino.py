@@ -1,18 +1,16 @@
-# deeplabcut/pose_estimation_pytorch/models/detectors/external/models/grounding_dino/grounding_dino.py
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 from typing import Any
 
 import numpy as np
 import torch
 from PIL import Image
-from torchvision.ops import box_convert
-from tqdm import tqdm
 
-from deeplabcut.pose_estimation_pytorch.data.bboxes import _xyxy_to_xywh
-from deeplabcut.pose_estimation_pytorch.models.detectors.external import BaseExternalDetector
+from deeplabcut.pose_estimation_pytorch.models.detectors.external import (
+    BaseExternalDetector,
+    DetectionResult,
+)
 from deeplabcut.pose_estimation_pytorch.models.detectors.external.models.gdino.config import (
     GroundingDINODetectorConfig,
 )
@@ -20,54 +18,19 @@ from deeplabcut.pose_estimation_pytorch.models.detectors.external.models.gdino.c
 logger = logging.getLogger(__name__)
 
 
-def _coerce_to_pil_rgb(item: Any, *, color_order: str = "RGB") -> Image.Image:
-    if isinstance(item, tuple) and len(item) > 0:
-        item = item[0]
-
-    if isinstance(item, Image.Image):
-        return item if item.mode == "RGB" else item.convert("RGB")
-
-    if isinstance(item, (str, Path)):
-        with Image.open(item) as img:
-            return img.convert("RGB")
-
-    if isinstance(item, np.ndarray):
-        arr = item
-
-        if arr.ndim == 2:
-            arr = np.stack([arr, arr, arr], axis=-1)
-
-        if arr.ndim != 3:
-            raise ValueError(f"Expected image ndarray with shape HxWxC, got {arr.shape}.")
-
-        if arr.shape[2] == 4:
-            arr = arr[:, :, :3]
-
-        if arr.shape[2] != 3:
-            raise ValueError(f"Expected 3 or 4 image channels, got {arr.shape}.")
-
-        if color_order == "BGR":
-            arr = arr[:, :, ::-1]
-        elif color_order != "RGB":
-            raise ValueError(f"Unsupported color_order={color_order!r}")
-
-        if arr.dtype != np.uint8:
-            arr = np.clip(arr, 0, 255).astype(np.uint8)
-
-        return Image.fromarray(arr, mode="RGB")
-
-    raise TypeError(f"Unsupported image input type: {type(item)!r}")
-
-
 class GroundingDINODetectorModel(BaseExternalDetector):
     """
-    DLC external-detector adapter for installed GroundingDINO.
+    Hugging Face Transformers GroundingDINO adapter for DLC external detectors.
 
-    Uses GroundingDINO as an imported dependency rather than copying/modifying
-    GroundingDINO model internals.
+    This version uses:
+        transformers.AutoProcessor
+        transformers.AutoModelForZeroShotObjectDetection
+
+    It does not import the original groundingdino package and does not require
+    compiling groundingdino._C custom ops.
     """
 
-    backend_name = "grounding_dino"
+    backend_name = "grounding_dino_hf"
 
     def __init__(self, config: GroundingDINODetectorConfig) -> None:
         super().__init__()
@@ -76,55 +39,76 @@ class GroundingDINODetectorModel(BaseExternalDetector):
         self.device = config.resolved_device()
         self.use_fp16 = config.resolved_use_fp16()
 
+        self.processor = None
         self.model = None
-        self._transform = None
         self._loaded = False
 
         if not self.config.lazy_load:
             self.load_model()
 
+    # ------------------------------------------------------------------
+    # Lifecycle
+    # ------------------------------------------------------------------
+
     def load_model(self) -> None:
-        if self._loaded and self.model is not None:
+        if self._loaded and self.model is not None and self.processor is not None:
             return
 
         try:
-            import groundingdino.datasets.transforms as T
-            from groundingdino.util.inference import load_model
+            from transformers import AutoModelForZeroShotObjectDetection, AutoProcessor
         except ImportError as exc:
             raise ImportError(
-                "GroundingDINO is not installed. Install it for example with:\n"
-                "  pip install git+https://github.com/IDEA-Research/GroundingDINO.git\n"
-                "or clone the repository and run `pip install -e .`."
+                "Transformers is required for the HF GroundingDINO detector. "
+                "Install it with `pip install transformers`."
             ) from exc
 
-        logger.info("Loading GroundingDINO detector")
+        logger.info("Loading HF GroundingDINO detector")
+        logger.info("Model ID: %s", self.config.model_id)
         logger.info("Device: %s", self.device)
-        logger.info("Config: %s", self.config.model_config_path)
-        logger.info("Checkpoint: %s", self.config.model_checkpoint_path)
-        logger.info("Classes/prompts: %s", self.config.classes)
+        logger.info("Classes/prompts: %s", self.config.text_labels())
 
-        self.model = load_model(
-            model_config_path=str(self.config.model_config_path),
-            model_checkpoint_path=str(self.config.model_checkpoint_path),
-            device=self.device,
+        processor_kwargs: dict[str, Any] = {
+            "local_files_only": self.config.local_files_only,
+            "trust_remote_code": self.config.trust_remote_code,
+        }
+        model_kwargs: dict[str, Any] = {
+            "local_files_only": self.config.local_files_only,
+            "trust_remote_code": self.config.trust_remote_code,
+        }
+
+        if self.config.cache_dir is not None:
+            processor_kwargs["cache_dir"] = self.config.cache_dir
+            model_kwargs["cache_dir"] = self.config.cache_dir
+
+        self.processor = AutoProcessor.from_pretrained(
+            self.config.model_id,
+            **processor_kwargs,
         )
+        self.model = AutoModelForZeroShotObjectDetection.from_pretrained(
+            self.config.model_id,
+            **model_kwargs,
+        )
+
         self.model.to(self.device)
         self.model.eval()
-
-        # Same transform pattern used by GroundingDINO's inference helpers.
-        self._transform = T.Compose(
-            [
-                T.RandomResize([800], max_size=1333),
-                T.ToTensor(),
-                T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-            ]
-        )
 
         self._loaded = True
 
     def ensure_loaded(self) -> None:
-        if not self._loaded or self.model is None or self._transform is None:
+        if not self._loaded or self.model is None or self.processor is None:
             self.load_model()
+
+    def unload_model(self) -> None:
+        self.processor = None
+        self.model = None
+        self._loaded = False
+
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
 
     @staticmethod
     def _empty_arrays() -> tuple[np.ndarray, np.ndarray]:
@@ -133,71 +117,136 @@ class GroundingDINODetectorModel(BaseExternalDetector):
             np.empty((0,), dtype=np.float32),
         )
 
-    def _prepare_image_tensor(self, image: Image.Image) -> torch.Tensor:
-        assert self._transform is not None
-        image_tensor, _ = self._transform(image, None)
-        return image_tensor
+    @staticmethod
+    def _tensor_to_pil_rgb(tensor: torch.Tensor) -> Image.Image:
+        """
+        Convert a CHW or HWC torch image tensor to PIL RGB.
+
+        Supports:
+          - uint8 [0, 255]
+          - float [0, 1]
+          - float [0, 255]
+        """
+        tensor = tensor.detach().cpu()
+
+        if tensor.ndim != 3:
+            raise ValueError(f"Expected image tensor with 3 dimensions, got shape={tuple(tensor.shape)}.")
+
+        # CHW -> HWC
+        if tensor.shape[0] in {1, 3, 4}:
+            arr = tensor.permute(1, 2, 0).numpy()
+        else:
+            arr = tensor.numpy()
+
+        if arr.ndim != 3:
+            raise ValueError(f"Expected image array HxWxC, got shape={arr.shape}.")
+
+        if arr.shape[2] == 1:
+            arr = np.repeat(arr, 3, axis=2)
+
+        if arr.shape[2] == 4:
+            arr = arr[:, :, :3]
+
+        if arr.shape[2] != 3:
+            raise ValueError(f"Expected 1, 3, or 4 channels, got shape={arr.shape}.")
+
+        if arr.dtype != np.uint8:
+            if np.nanmax(arr) <= 1.0:
+                arr = arr * 255.0
+            arr = np.clip(arr, 0, 255).astype(np.uint8)
+
+        return Image.fromarray(arr, mode="RGB")
 
     def _predict_one_xyxy(self, image: Image.Image) -> tuple[np.ndarray, np.ndarray]:
         """
-        Run GroundingDINO for one PIL image.
+        Run HF GroundingDINO for one PIL image.
 
         Returns:
             boxes_xyxy:
-                Absolute pixel XYXY boxes.
+                np.ndarray[N, 4], absolute pixel XYXY boxes.
             scores:
-                Detection scores.
+                np.ndarray[N].
         """
         self.ensure_loaded()
         assert self.model is not None
+        assert self.processor is not None
 
-        from groundingdino.util.inference import predict
+        # Use a single period-separated prompt string for compatibility with
+        # transformers versions whose tokenizer does not accept nested label lists.
+        text_prompt = self.config.formatted_prompt()
 
-        width, height = image.size
-        image_tensor = self._prepare_image_tensor(image)
+        inputs = self.processor(
+            images=image,
+            text=text_prompt,
+            return_tensors="pt",
+        ).to(self.device)
 
-        boxes_cxcywh, logits, _phrases = predict(
-            model=self.model,
-            image=image_tensor,
-            caption=self.config.formatted_prompt(),
-            box_threshold=self.config.box_threshold,
-            text_threshold=self.config.text_threshold,
-            device=self.device,
-        )
+        device_type = torch.device(self.device).type
+        use_autocast = self.use_fp16 and device_type == "cuda"
 
-        if boxes_cxcywh.numel() == 0:
+        with torch.inference_mode():
+            with torch.autocast(
+                device_type=device_type,
+                dtype=torch.float16,
+                enabled=use_autocast,
+            ):
+                outputs = self.model(**inputs)
+
+        # HF expects target_sizes as [height, width].
+        target_sizes = [image.size[::-1]]
+
+        try:
+            results = self.processor.post_process_grounded_object_detection(
+                outputs,
+                inputs.input_ids,
+                threshold=self.config.box_threshold,
+                text_threshold=self.config.text_threshold,
+                target_sizes=target_sizes,
+            )
+        except TypeError:
+            # Some transformers versions use box_threshold instead of threshold.
+            results = self.processor.post_process_grounded_object_detection(
+                outputs,
+                inputs.input_ids,
+                box_threshold=self.config.box_threshold,
+                text_threshold=self.config.text_threshold,
+                target_sizes=target_sizes,
+            )
+
+        result = results[0]
+        boxes = result.get("boxes", torch.empty((0, 4)))
+        scores = result.get("scores", torch.empty((0,)))
+
+        if len(boxes) == 0:
             return self._empty_arrays()
 
-        # GroundingDINO returns normalized cxcywh boxes.
-        boxes_xyxy = box_convert(
-            boxes=boxes_cxcywh,
-            in_fmt="cxcywh",
-            out_fmt="xyxy",
-        )
-
-        scale = torch.tensor(
-            [width, height, width, height],
-            dtype=boxes_xyxy.dtype,
-            device=boxes_xyxy.device,
-        )
-        boxes_xyxy = boxes_xyxy * scale
-
-        if logits.ndim == 2:
-            scores = logits.max(dim=1).values
+        if isinstance(boxes, torch.Tensor):
+            boxes = boxes.detach().cpu().numpy()
         else:
-            scores = logits
+            boxes = np.asarray(boxes)
+
+        if isinstance(scores, torch.Tensor):
+            scores = scores.detach().cpu().numpy()
+        else:
+            scores = np.asarray(scores)
 
         return (
-            boxes_xyxy.detach().cpu().numpy().astype(np.float32, copy=False),
-            scores.detach().cpu().numpy().astype(np.float32, copy=False),
+            boxes.astype(np.float32, copy=False).reshape(-1, 4),
+            scores.astype(np.float32, copy=False).reshape(-1),
         )
 
-    def _postprocess(
+    def _postprocess_xyxy(
         self,
         boxes_xyxy: np.ndarray,
         scores: np.ndarray,
         image_size: tuple[int, int],
     ) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Clean raw XYXY detector outputs while keeping XYXY format.
+
+        BaseExternalDetector.inference(...) converts DetectionResult XYXY boxes into
+        DLC detector context XYWH boxes.
+        """
         boxes_xyxy = np.asarray(boxes_xyxy, dtype=np.float32).reshape(-1, 4)
         scores = np.asarray(scores, dtype=np.float32).reshape(-1)
 
@@ -244,70 +293,90 @@ class GroundingDINODetectorModel(BaseExternalDetector):
             boxes_xyxy = boxes_xyxy[order]
             scores = scores[order]
 
-        boxes_xywh = _xyxy_to_xywh(boxes_xyxy)
-
         return (
-            boxes_xywh.astype(np.float32, copy=False),
+            boxes_xyxy.astype(np.float32, copy=False),
             scores.astype(np.float32, copy=False),
         )
 
-    @staticmethod
-    def _format_dlc_output(
-        boxes_xywh: np.ndarray,
-        scores: np.ndarray,
-    ) -> dict[str, np.ndarray]:
-        boxes_xywh = np.asarray(boxes_xywh, dtype=np.float32)
-        scores = np.asarray(scores, dtype=np.float32)
+    # ------------------------------------------------------------------
+    # BaseExternalDetector API
+    # ------------------------------------------------------------------
 
-        if boxes_xywh.ndim != 2 or boxes_xywh.shape[1] != 4:
-            raise ValueError(f"Expected bboxes shape [N, 4], got {boxes_xywh.shape}.")
+    def predict(
+        self,
+        images: list[torch.Tensor],
+    ) -> list[DetectionResult]:
+        """
+        BaseExternalDetector API.
 
-        if scores.ndim != 1:
-            raise ValueError(f"Expected bbox_scores shape [N], got {scores.shape}.")
+        Args:
+            images:
+                List of image tensors, typically CHW.
 
-        if len(boxes_xywh) != len(scores):
-            raise ValueError(f"Expected one score per bbox, got {len(scores)} scores for {len(boxes_xywh)} boxes.")
-
-        return {
-            "bboxes": boxes_xywh,
-            "bbox_scores": scores,
-        }
-
-    def inference(self, images, shelf_writer=None):
-        _ = shelf_writer
-
+        Returns:
+            One detection dict per image:
+                {
+                    "boxes": FloatTensor[N, 4],   # XYXY absolute pixel coords
+                    "scores": FloatTensor[N],
+                    "labels": LongTensor[N],
+                }
+        """
         self.ensure_loaded()
 
-        outputs: list[dict[str, np.ndarray]] = []
-        iterator = tqdm(images) if self.config.show_progress else images
+        detections: list[DetectionResult] = []
 
         with torch.inference_mode():
-            for item in iterator:
-                image = _coerce_to_pil_rgb(
-                    item,
-                    color_order=self.config.image_color_order,
-                )
+            for tensor in images:
+                image = self._tensor_to_pil_rgb(tensor)
 
                 boxes_xyxy, scores = self._predict_one_xyxy(image)
-
-                boxes_xywh, scores = self._postprocess(
+                boxes_xyxy, scores = self._postprocess_xyxy(
                     boxes_xyxy=boxes_xyxy,
                     scores=scores,
                     image_size=image.size,
                 )
 
-                outputs.append(self._format_dlc_output(boxes_xywh, scores))
+                boxes_t = torch.as_tensor(
+                    boxes_xyxy,
+                    dtype=torch.float32,
+                    device=self.device,
+                )
+                scores_t = torch.as_tensor(
+                    scores,
+                    dtype=torch.float32,
+                    device=self.device,
+                )
 
-        return outputs
+                # HF post-processing returns text labels, but DLC top-down only
+                # needs boxes/scores here. Use placeholder class IDs.
+                labels_t = torch.zeros(
+                    (len(scores_t),),
+                    dtype=torch.long,
+                    device=self.device,
+                )
+
+                detections.append(
+                    {
+                        "boxes": boxes_t,
+                        "scores": scores_t,
+                        "labels": labels_t,
+                    }
+                )
+
+        return detections
+
+    # ------------------------------------------------------------------
+    # Metadata
+    # ------------------------------------------------------------------
 
     def metadata(self) -> dict[str, Any]:
         return {
             "name": self.__class__.__name__,
             "backend": self.backend_name,
+            "model_id": self.config.model_id,
             "classes": list(self.config.classes),
+            "text_labels": self.config.text_labels(),
             "formatted_prompt": self.config.formatted_prompt(),
-            "model_config_path": str(self.config.model_config_path),
-            "model_checkpoint_path": str(self.config.model_checkpoint_path),
             "device": self.device,
             "use_fp16": self.use_fp16,
             "box_threshold": self.config.box_threshold,
@@ -318,15 +387,7 @@ class GroundingDINODetectorModel(BaseExternalDetector):
             "clip_boxes": self.config.clip_boxes,
             "filter_invalid_boxes": self.config.filter_invalid_boxes,
             "image_color_order": self.config.image_color_order,
-            "box_format": "xywh",
+            "box_format": "xyxy",
             "coordinate_system": "absolute_pixels",
             "config": self.config.model_dump(mode="json"),
         }
-
-    def unload_model(self) -> None:
-        self.model = None
-        self._transform = None
-        self._loaded = False
-
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
