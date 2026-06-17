@@ -8,12 +8,6 @@ from typing import Any
 import numpy as np
 import torch
 from PIL import Image
-from sam3.model.sam3_multiclass_fast import Sam3MultiClassPredictorFast
-from sam3.model_builder import (
-    build_pruned_sam3_image_model,
-    build_sam3_image_model,
-    load_pruned_config,
-)
 
 from deeplabcut.pose_estimation_pytorch.models.detectors.external import BaseExternalDetector, DetectionResult
 from deeplabcut.pose_estimation_pytorch.models.detectors.external.models.dart.config import (
@@ -21,6 +15,15 @@ from deeplabcut.pose_estimation_pytorch.models.detectors.external.models.dart.co
 )
 
 logger = logging.getLogger(__name__)
+try:
+    from sam3.model.sam3_multiclass_fast import Sam3MultiClassPredictorFast
+    from sam3.model_builder import (
+        build_pruned_sam3_image_model,
+        build_sam3_image_model,
+        load_pruned_config,
+    )
+except ImportError as e:
+    logger.warning("Failed to import SAM3/DART modules: %s", e)
 
 
 class DARTDetectorModel(BaseExternalDetector):
