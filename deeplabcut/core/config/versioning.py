@@ -239,38 +239,26 @@ def migrate_config(
 @register_migration(0, 1, config_type="ProjectConfig")
 def migrate_project_v0_to_v1(config: dict) -> dict:
     """Migrate ProjectConfig from unversioned/legacy (v0) to v1."""
-    # TODO @deruyter92 2026-01-30: Migration logic goes here.
-    # e.g. renaming uniquebodyparts -> unique_bodyparts, with_identity -> identity
+    # Migration logic goes here, when migrating to v1.
     return config
 
 
 @register_migration(1, 0, config_type="ProjectConfig")
 def migrate_project_v1_to_v0(config: dict) -> dict:
     """Migrate ProjectConfig from v1 back to v0 (legacy format)."""
-    # TODO @deruyter92 2026-01-30: Migration logic goes here.
+    # Migration logic goes here, when migrating to v1.
     return config
 
 
 @register_migration(0, 1, config_type="PoseConfig")
 def migrate_pose_v0_to_v1(config: dict) -> dict:
     """Migrate PoseConfig from v0 to v1."""
-    # TODO: Migration logic goes here.
+    # Migration logic goes here, when migrating to v1.
     return config
 
 
 @register_migration(1, 0, config_type="PoseConfig")
 def migrate_pose_v1_to_v0(config: dict) -> dict:
     """Migrate PoseConfig from v1 back to v0."""
-    # TODO: Migration logic goes here.
+    # Migration logic goes here, when migrating to v1.
     return config
-
-
-# ============================================================================
-# Future migrations — add per-config-type pairs following the pattern above:
-# ============================================================================
-#
-# @register_migration(1, 2, config_type="ProjectConfig")
-# def migrate_project_v1_to_v2(config: dict) -> dict:
-#     """Migrate ProjectConfig from v1 to v2."""
-#     # The wrapper passes a copy, so mutate directly.
-#     return config
