@@ -71,17 +71,27 @@ class TrainNetwork(DefaultTab):
         self._update_snapshot_selection_widgets_visibility()
 
     def _update_snapshot_selection_widgets_visibility(self):
-        if self.root.engine == Engine.PYTORCH:
-            self.resume_from_snapshot_label.show()
-            self.snapshot_selection_widget.show()
-            # Display detector snapshot selection widget only if in Top-Down mode
-            if self._shuffle_display.pose_cfg.get("method", "").lower() == "td":
-                self.detector_snapshot_selection_widget.show()
-            else:
-                self.detector_snapshot_selection_widget.hide()
-        else:
+        if self.root.engine != Engine.PYTORCH:
             self.resume_from_snapshot_label.hide()
             self.snapshot_selection_widget.hide()
+            self.detector_snapshot_selection_widget.hide()
+            return
+
+        pose_cfg = getattr(self._shuffle_display, "pose_cfg", None)
+
+        if not isinstance(pose_cfg, dict):
+            self.resume_from_snapshot_label.hide()
+            self.snapshot_selection_widget.hide()
+            self.detector_snapshot_selection_widget.hide()
+            return
+
+        self.resume_from_snapshot_label.show()
+        self.snapshot_selection_widget.show()
+
+        # Display detector snapshot selection widget only if in Top-Down mode.
+        if pose_cfg.get("method", "").lower() == "td":
+            self.detector_snapshot_selection_widget.show()
+        else:
             self.detector_snapshot_selection_widget.hide()
 
     def _set_page(self):
