@@ -28,6 +28,7 @@ from deeplabcut.pose_estimation_pytorch.data.postprocessor import build_detector
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import build_bottom_up_preprocessor
 from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
 from deeplabcut.pose_estimation_pytorch.models.detectors.external import EXTERNAL_DETECTORS, PrecomputedDetectorRunner
+from deeplabcut.pose_estimation_pytorch.models.detectors.external.base import validate_precomputed_bboxes_for_loader
 
 # Important: ensure the mock detector module is imported so registry population happens
 from deeplabcut.pose_estimation_pytorch.runners.inference import build_inference_runner
@@ -461,3 +462,66 @@ def test_precomputed_detector_runner_raises_for_unknown_requested_path():
 
     with pytest.raises(ValueError, match="No precomputed bbox entry found"):
         runner.inference([Path("missing.png")])
+
+
+def test_validate_precomputed_bboxes_for_loader_requires_train_and_test(tmp_path):
+    loader = FakeDLCLoader()
+
+    bboxes = BBoxes(
+        train=[
+            BBoxEntry(
+                bboxes=[(1.0, 2.0, 3.0, 4.0)],
+                bbox_scores=[0.9],
+                bbox_format="xywh",
+                image_path=Path("img0.png"),
+            )
+        ],
+        test=[],
+    )
+
+    bbox_file = tmp_path / "precomputed_bboxes.json"
+    bboxes.dump_json(bbox_file)
+
+    with pytest.raises(ValueError, match="\\[test\\] Expected"):
+        validate_precomputed_bboxes_for_loader(
+            loader,
+            bbox_file,
+            required_modes=("train", "test"),
+            require_image_paths=True,
+        )
+
+
+def test_validate_precomputed_bboxes_allows_empty_bboxes(tmp_path):
+    loader = FakeDLCLoader()
+
+    bboxes = BBoxes(
+        train=[
+            BBoxEntry(
+                bboxes=[],
+                bbox_scores=[],
+                bbox_format="xywh",
+                image_path=Path("img0.png"),
+            )
+        ],
+        test=[
+            BBoxEntry(
+                bboxes=[],
+                bbox_scores=[],
+                bbox_format="xywh",
+                image_path=Path("img0.png"),
+            )
+        ],
+    )
+
+    bbox_file = tmp_path / "precomputed_bboxes.json"
+    bboxes.dump_json(bbox_file)
+
+    summary = validate_precomputed_bboxes_for_loader(
+        loader,
+        bbox_file,
+        required_modes=("train", "test"),
+        require_image_paths=True,
+        allow_empty_bboxes=True,
+    )
+
+    assert summary["train"]["entries_without_bboxes"] == 1

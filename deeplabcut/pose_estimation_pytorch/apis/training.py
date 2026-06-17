@@ -31,6 +31,7 @@ from deeplabcut.pose_estimation_pytorch.data.collate import COLLATE_FUNCTIONS
 from deeplabcut.pose_estimation_pytorch.models import DETECTORS, PoseModel
 from deeplabcut.pose_estimation_pytorch.models.detectors.external.base import (
     build_precomputed_detector_runner_from_config,
+    validate_precomputed_bboxes_for_loader,
 )
 from deeplabcut.pose_estimation_pytorch.modelzoo.memory_replay import (
     prepare_memory_replay,
@@ -162,6 +163,26 @@ def train(
             )
 
         validate_image_paths = data_cfg.get("bbox_validate_image_paths", False)
+
+        bbox_summary = validate_precomputed_bboxes_for_loader(
+            loader,
+            precomputed_bboxes,
+            required_modes=("train", "test"),
+            target_format="xywh",
+            require_image_paths=validate_image_paths,
+            allow_empty_bboxes=True,
+        )
+
+        logging.info("Validated precomputed detector bboxes:")
+        for mode, stats in bbox_summary.items():
+            logging.info(
+                "  %s: %d/%d entries, %d total boxes, %d images without boxes",
+                mode,
+                stats["bbox_entries"],
+                stats["expected_images"],
+                stats["total_bboxes"],
+                stats["entries_without_bboxes"],
+            )
 
         train_detector_runner = build_precomputed_detector_runner_from_config(
             loader.model_cfg,

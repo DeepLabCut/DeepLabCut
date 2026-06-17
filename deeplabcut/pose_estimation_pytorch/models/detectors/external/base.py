@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Protocol, TypedDict
@@ -22,6 +23,8 @@ from deeplabcut.pose_estimation_pytorch.data.bboxes import (
     _xyxy_to_xywh,
 )
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
+
+logger = logging.getLogger(__name__)
 
 
 class DetectionResult(TypedDict, total=False):
@@ -513,6 +516,201 @@ def _call_detector_inference(
         shelf_writer=shelf_writer,
         **supported_kwargs,
     )
+
+
+def validate_precomputed_bboxes_for_loader(
+    loader: Loader,
+    bbox_file: str | Path,
+    *,
+    required_modes: tuple[str, ...] = ("train", "test"),
+    target_format: BBoxFormat = "xywh",
+    require_image_paths: bool = True,
+    allow_empty_bboxes: bool = True,
+) -> dict[str, dict[str, int]]:
+    """
+    Validate that a precomputed bbox artifact is complete and compatible with a loader.
+
+    This is intended as a preflight check before training a top-down pose model with
+    external/precomputed detector boxes.
+
+    Important:
+        Entries with zero bboxes can be valid, e.g. true empty/no-animal frames.
+        Missing entries are not valid for training because they mean the artifact was
+        not computed for all images in the requested split.
+
+    Args:
+        loader:
+            DLC loader for the project/shuffle.
+        bbox_file:
+            Path to precomputed_bboxes.json.
+        required_modes:
+            Modes that must be complete. For normal training, use ("train", "test").
+        target_format:
+            Format to validate after conversion. Usually "xywh".
+        require_image_paths:
+            If True, every BBoxEntry must contain image_path metadata.
+        allow_empty_bboxes:
+            If False, entries with zero boxes are errors. Usually keep True.
+
+    Returns:
+        Per-mode summary dictionary.
+
+    Raises:
+        FileNotFoundError:
+            If the bbox artifact does not exist.
+        ValueError:
+            If the artifact is incomplete or malformed.
+    """
+    bbox_file = Path(bbox_file)
+
+    if not bbox_file.exists():
+        raise FileNotFoundError(
+            f"Precomputed bbox artifact not found: {bbox_file}. Run precompute_detector_bboxes(...) before training."
+        )
+
+    bboxes = BBoxes.from_file(bbox_file)
+
+    errors: list[str] = []
+    warnings: list[str] = []
+    summary: dict[str, dict[str, int]] = {}
+
+    def normalize_path(path: str | Path) -> str:
+        return Path(path).as_posix().lower()
+
+    def loader_image_paths(mode: str) -> list[Path]:
+        if hasattr(loader, "get_image_paths"):
+            return [Path(p) for p in loader.get_image_paths(mode)]  # type: ignore[attr-defined]
+        return [Path(p) for p in loader.image_filenames(mode)]
+
+    for mode in required_modes:
+        image_paths = loader_image_paths(mode)
+        entries = list(getattr(bboxes, mode, []))
+
+        mode_summary = {
+            "expected_images": len(image_paths),
+            "bbox_entries": len(entries),
+            "entries_with_image_path": sum(e.image_path is not None for e in entries),
+            "entries_without_bboxes": 0,
+            "total_bboxes": 0,
+        }
+
+        if len(entries) != len(image_paths):
+            errors.append(
+                f"[{mode}] Expected {len(image_paths)} bbox entries, found {len(entries)}. "
+                "This usually means the artifact was computed for the wrong split, "
+                "only partially computed, or computed with modes missing. "
+                f"Re-run precompute_detector_bboxes(..., modes={required_modes!r})."
+            )
+
+        entries_by_path: dict[str, BBoxEntry] = {}
+        duplicate_paths: list[str] = []
+
+        for entry in entries:
+            if entry.image_path is None:
+                continue
+
+            key = normalize_path(entry.image_path)
+            if key in entries_by_path:
+                duplicate_paths.append(key)
+            entries_by_path[key] = entry
+
+        if duplicate_paths:
+            errors.append(
+                f"[{mode}] Duplicate bbox entries found for image_path values. Examples: {duplicate_paths[:5]}"
+            )
+
+        if require_image_paths and entries:
+            missing_metadata = [i for i, e in enumerate(entries) if e.image_path is None]
+            if missing_metadata:
+                errors.append(
+                    f"[{mode}] {len(missing_metadata)} bbox entries are missing image_path metadata. "
+                    "Path metadata is required to verify that the bbox artifact matches this project/shuffle."
+                )
+
+        if entries_by_path:
+            expected_keys = {normalize_path(p) for p in image_paths}
+            actual_keys = set(entries_by_path)
+
+            missing = sorted(expected_keys - actual_keys)
+            extra = sorted(actual_keys - expected_keys)
+
+            if missing:
+                errors.append(
+                    f"[{mode}] Missing bbox entries for {len(missing)} loader images. Examples: {missing[:5]}"
+                )
+
+            if extra:
+                warnings.append(
+                    f"[{mode}] Artifact contains {len(extra)} bbox entries not used by this loader/shuffle. "
+                    f"Examples: {extra[:5]}"
+                )
+
+        for i, entry in enumerate(entries):
+            try:
+                context = entry.to_detector_context(target_format=target_format)
+            except Exception as exc:
+                errors.append(f"[{mode}] Entry {i} failed conversion to {target_format!r}: {exc}")
+                continue
+
+            boxes = np.asarray(
+                context.get("bboxes", np.zeros((0, 4), dtype=np.float32)),
+                dtype=np.float32,
+            ).reshape(-1, 4)
+
+            scores = np.asarray(
+                context.get("bbox_scores", np.ones((len(boxes),), dtype=np.float32)),
+                dtype=np.float32,
+            ).reshape(-1)
+
+            mode_summary["total_bboxes"] += len(boxes)
+
+            if len(boxes) == 0:
+                mode_summary["entries_without_bboxes"] += 1
+                if not allow_empty_bboxes:
+                    errors.append(f"[{mode}] Entry {i} has no bboxes.")
+                continue
+
+            if len(scores) != len(boxes):
+                errors.append(f"[{mode}] Entry {i} has {len(boxes)} boxes but {len(scores)} bbox_scores.")
+
+            if not np.isfinite(boxes).all():
+                errors.append(f"[{mode}] Entry {i} contains non-finite bbox coordinates.")
+
+            if not np.isfinite(scores).all():
+                errors.append(f"[{mode}] Entry {i} contains non-finite bbox scores.")
+
+            if target_format == "xywh":
+                invalid_dims = (boxes[:, 2] < 0) | (boxes[:, 3] < 0)
+                if np.any(invalid_dims):
+                    errors.append(
+                        f"[{mode}] Entry {i} contains {int(invalid_dims.sum())} boxes with negative width/height."
+                    )
+
+        summary[mode] = mode_summary
+
+    for warning in warnings:
+        logging.warning(warning)
+
+    if errors:
+        message = [
+            "Invalid or incomplete precomputed bbox artifact for external top-down training.",
+            "",
+            f"Artifact: {bbox_file}",
+            f"Required modes: {required_modes}",
+            "",
+            "Problems found:",
+            *[f"  - {error}" for error in errors],
+            "",
+            "How to fix:",
+            f"  Run precompute_detector_bboxes(..., output_file={str(bbox_file)!r}, modes={required_modes!r}).",
+            "",
+            "Note:",
+            "  Entries with zero bboxes are allowed by default because they can represent true empty/no-animal frames.",
+            "  Missing entries are not allowed because the data loader cannot align detector boxes to all images.",
+        ]
+        raise ValueError("\n".join(message))
+
+    return summary
 
 
 def precompute_detector_bboxes(
