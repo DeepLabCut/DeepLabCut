@@ -54,6 +54,7 @@ class DetectorConfig(DLCBaseConfig):
     runner: RunnerConfig | None = None
     train_settings: TrainSettingsConfig | None = None
     inference: InferenceConfig = Field(default_factory=InferenceConfig)
+    resume_training_from: str | None = None
 
     @classmethod
     def build(
@@ -104,6 +105,7 @@ class PoseConfig(DLCVersionedConfig):
     runner: RunnerConfig | None = None
     train_settings: TrainSettingsConfig | None = None
     detector: DetectorConfig | None = None
+    resume_training_from: str | None = None
 
     @field_validator("net_type", mode="before")
     @classmethod
