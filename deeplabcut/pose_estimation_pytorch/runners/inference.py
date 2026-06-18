@@ -30,9 +30,11 @@ import deeplabcut.pose_estimation_pytorch.runners.ctd as ctd
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.core.inferenceutils import calc_object_keypoint_similarity
 from deeplabcut.pose_estimation_pytorch.config.utils import update_config_by_dotpath
+from deeplabcut.pose_estimation_pytorch.data.base import DetectorRunnerLike
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import Postprocessor
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import LoadImage, Preprocessor
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector
+from deeplabcut.pose_estimation_pytorch.models.detectors.external import BaseExternalDetector
 from deeplabcut.pose_estimation_pytorch.models.model import PoseModel
 from deeplabcut.pose_estimation_pytorch.runners.base import ModelType, Runner
 from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (
@@ -41,6 +43,7 @@ from deeplabcut.pose_estimation_pytorch.runners.dynamic_cropping import (
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
 
+DetectorModel = BaseDetector | BaseExternalDetector
 # NOTE @deruyter92 2026-04-28: AMD GPUs with DirectML inference mode currently do not
 # support torch.inference_mode, which is stricter than torch.no_grad. The ENV
 # variable is used to conditionally use torch.no_grad instead. See PR #3295.
@@ -977,10 +980,10 @@ class CTDInferenceRunner(PoseInferenceRunner):
         return cond_pose[: len(self._idx_to_id)]
 
 
-class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
+class DetectorInferenceRunner(InferenceRunner[DetectorModel]):
     """Runner for object detection inference."""
 
-    def __init__(self, model: BaseDetector, **kwargs):
+    def __init__(self, model: DetectorModel, **kwargs):
         """
         Args:
             model: The detector to use for inference.
@@ -1020,6 +1023,246 @@ class DetectorInferenceRunner(InferenceRunner[BaseDetector]):
         return predictions
 
 
+class DetectorToPoseInferenceRunner:
+    """
+    Compose a detector runner with a top-down pose runner.
+
+    Expected flow:
+        input image(s)
+          -> detector_runner.inference(...)
+          -> inject detector boxes into context["bboxes"]
+          -> pose_runner.inference(...)
+
+    This is intentionally simple:
+    - it does not modify the pose runner internals
+    - it works with any detector_runner that satisfies DetectorRunnerLike
+    - it works with live detector runners and precomputed detector runners
+    """
+
+    def __init__(
+        self,
+        pose_runner,
+        detector_runner: DetectorRunnerLike,
+        *,
+        max_individuals: int | None = None,
+        num_joints: int | None = 17,
+        num_unique_bodyparts: int | None = 0,
+        fill_value: float = np.nan,
+    ) -> None:
+        self.pose_runner = pose_runner
+        self.detector_runner = detector_runner
+        self.max_individuals = None if max_individuals is None else max(1, max_individuals)
+        self.num_joints = 17 if num_joints is None else max(1, num_joints)
+        self.num_unique_bodyparts = 0 if num_unique_bodyparts is None else max(0, num_unique_bodyparts)
+        self.fill_value = fill_value
+
+    @staticmethod
+    def _split_input_and_context(
+        item: str | Path | np.ndarray | tuple[str | Path | np.ndarray, dict[str, Any]],
+    ) -> tuple[str | Path | np.ndarray, dict[str, Any]]:
+        """
+        Normalize an inference item into (image, context).
+
+        Supported inputs:
+          - "path/to/image.png"
+          - Path("path/to/image.png")
+          - np.ndarray image
+          - (image, context_dict)
+        """
+        if isinstance(item, tuple):
+            image, context = item
+            return image, dict(context)
+        return item, {}
+
+    @staticmethod
+    def _normalize_detector_output(det: dict[str, Any]) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Convert detector output into the context format expected by TopDownCrop.
+
+        Required:
+          - det["bboxes"] shaped [N, 4] in xywh format
+
+        Optional:
+          - det["bbox_scores"] shaped [N]
+        """
+        bboxes = np.asarray(det.get("bboxes", np.zeros((0, 4), dtype=np.float32)), dtype=np.float32).reshape(-1, 4)
+
+        bbox_scores = np.asarray(
+            det.get("bbox_scores", np.ones((len(bboxes),), dtype=np.float32)),
+            dtype=np.float32,
+        ).reshape(-1)
+
+        if len(bbox_scores) != len(bboxes):
+            raise ValueError(
+                f"Expected one bbox score per bbox, but got {len(bbox_scores)} scores for {len(bboxes)} boxes."
+            )
+
+        return bboxes, bbox_scores
+
+    def _select_and_order_boxes(
+        self,
+        det: dict[str, Any],
+        context: dict[str, Any] | None = None,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Default strategy:
+        - sort by descending score
+        - keep at most max_individuals
+
+        Future extension:
+        - if context contains reference boxes, reorder using IoU matching
+        """
+        bboxes = np.asarray(det.get("bboxes", np.zeros((0, 4))), dtype=np.float32).reshape(-1, 4)
+
+        if "bbox_scores" in det:
+            bbox_scores = np.asarray(det["bbox_scores"], dtype=np.float32).reshape(-1)
+        else:
+            bbox_scores = np.ones((len(bboxes),), dtype=np.float32)
+
+        if len(bbox_scores) != len(bboxes):
+            raise ValueError(
+                f"Expected one bbox score per bbox, got {len(bbox_scores)} scores for {len(bboxes)} boxes."
+            )
+
+        if len(bboxes) == 0:
+            return bboxes, bbox_scores
+
+        # Keep deterministic ordering: highest confidence first
+        # only if max_individuals is set
+        if self.max_individuals is not None:
+            order = np.argsort(-bbox_scores)
+            bboxes = bboxes[order]
+            bbox_scores = bbox_scores[order]
+
+        # Only truncate if explicitly requested.
+        if self.max_individuals is not None:
+            bboxes = bboxes[: self.max_individuals]
+            bbox_scores = bbox_scores[: self.max_individuals]
+
+        return bboxes.astype(np.float32, copy=False), bbox_scores.astype(np.float32, copy=False)
+
+    @staticmethod
+    def _pad_first_dim(arr: np.ndarray, target_n: int, fill_value=np.nan) -> np.ndarray:
+        arr = np.asarray(arr)
+
+        if arr.shape[0] == target_n:
+            return arr
+
+        if arr.shape[0] > target_n:
+            return arr[:target_n]
+
+        if not np.issubdtype(arr.dtype, np.floating):
+            arr = arr.astype(np.float32)
+
+        pad_shape = (target_n - arr.shape[0],) + arr.shape[1:]
+        pad = np.full(pad_shape, fill_value, dtype=arr.dtype)
+        return np.concatenate([arr, pad], axis=0)
+
+    def _empty_prediction(self, last_dim: int = 3) -> dict[str, np.ndarray]:
+        # If max_individuals is unspecified, an image with no detections should emit
+        # zero pose rows. If it is specified, emit a fixed-size padded empty output.
+        n_individuals = 0 if self.max_individuals is None else self.max_individuals
+
+        pred = {
+            "bodyparts": np.full(
+                (n_individuals, self.num_joints, last_dim),
+                self.fill_value,
+                dtype=np.float32,
+            )
+        }
+
+        if self.num_unique_bodyparts > 0:
+            pred["unique_bodyparts"] = np.full(
+                (1, self.num_unique_bodyparts, last_dim),
+                self.fill_value,
+                dtype=np.float32,
+            )
+
+        return pred
+
+    def _normalize_prediction(
+        self,
+        pred: dict[str, Any] | None,
+        *,
+        last_dim_hint: int = 3,
+    ) -> dict[str, np.ndarray]:
+        if pred is None or "bodyparts" not in pred:
+            return self._empty_prediction(last_dim=last_dim_hint)
+
+        pred = dict(pred)
+
+        bodyparts = np.asarray(pred["bodyparts"])
+        if bodyparts.ndim != 3:
+            raise ValueError(f"Unexpected bodyparts shape: {bodyparts.shape}")
+
+        last_dim = bodyparts.shape[-1]
+        if self.max_individuals is not None:
+            pred["bodyparts"] = self._pad_first_dim(
+                bodyparts,
+                self.max_individuals,
+                fill_value=self.fill_value,
+            )
+        else:
+            pred["bodyparts"] = bodyparts
+
+        if self.num_unique_bodyparts > 0:
+            if "unique_bodyparts" in pred:
+                ub = np.asarray(pred["unique_bodyparts"])
+                if ub.ndim == 2:
+                    ub = ub[None, ...]
+                pred["unique_bodyparts"] = self._pad_first_dim(ub, 1, fill_value=self.fill_value)
+            else:
+                pred["unique_bodyparts"] = np.full(
+                    (1, self.num_unique_bodyparts, last_dim),
+                    self.fill_value,
+                    dtype=np.float32,
+                )
+
+        return pred
+
+    @_inference_mode_decorator
+    def inference(
+        self,
+        images: (Iterable[str | Path | np.ndarray] | Iterable[tuple[str | Path | np.ndarray, dict[str, Any]]]),
+        shelf_writer: shelving.ShelfWriter | None = None,
+    ):
+        images = list(images)
+
+        # Split once so we can preserve and copy incoming contexts.
+        split_items = [self._split_input_and_context(item) for item in images]
+        raw_images = [image for image, _ in split_items]
+        incoming_contexts = [context for _, context in split_items]
+
+        # Detector sees raw image inputs only. The wrapper owns context enrichment.
+        detections = self.detector_runner.inference(raw_images)
+
+        if len(detections) != len(raw_images):
+            raise ValueError(f"Detector returned {len(detections)} outputs for {len(raw_images)} input images.")
+
+        enriched_inputs = []
+
+        for image, context, det in zip(raw_images, incoming_contexts, detections, strict=False):
+            # Copy context so caller-owned dictionaries are not mutated.
+            context = dict(context)
+
+            bboxes, bbox_scores = self._select_and_order_boxes(det, context=context)
+
+            context["bboxes"] = bboxes
+            context["bbox_scores"] = bbox_scores
+            context["detector_output"] = det
+
+            enriched_inputs.append((image, context))
+
+        # The wrapped pose runner owns:
+        # - top-down preprocessing
+        # - pose prediction
+        # - postprocessing
+        # - shelf writing
+        #
+        # The wrapper only injects detector context and returns the pose runner output.
+        return self.pose_runner.inference(enriched_inputs, shelf_writer=shelf_writer)
+
+
 def build_inference_runner(
     task: Task,
     model: nn.Module,
@@ -1031,8 +1274,9 @@ def build_inference_runner(
     dynamic: DynamicCropper | None = None,
     load_weights_only: bool | None = None,
     inference_cfg: InferenceConfig | dict | None = None,
+    detector_runner: DetectorRunnerLike | None = None,
     **kwargs,
-) -> InferenceRunner:
+) -> InferenceRunner | DetectorToPoseInferenceRunner:
     """Build a runner object according to a pytorch configuration file.
 
     Args:
@@ -1090,6 +1334,17 @@ def build_inference_runner(
             dynamic = None
 
     if task == Task.COND_TOP_DOWN:
-        return CTDInferenceRunner(**kwargs)
+        runner = CTDInferenceRunner(**kwargs)
+    else:
+        runner = PoseInferenceRunner(dynamic=dynamic, **kwargs)
 
-    return PoseInferenceRunner(dynamic=dynamic, **kwargs)
+    if detector_runner is not None and task == Task.TOP_DOWN:
+        return DetectorToPoseInferenceRunner(
+            pose_runner=runner,
+            detector_runner=detector_runner,
+            max_individuals=kwargs.get("max_individuals", 1),
+            num_joints=kwargs.get("num_joints"),
+            num_unique_bodyparts=kwargs.get("num_unique_bodyparts", 0),
+        )
+
+    return runner
