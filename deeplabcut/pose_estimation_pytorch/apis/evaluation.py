@@ -574,6 +574,14 @@ def evaluate_snapshot(
                 validate_image_paths=data_cfg.get("bbox_validate_image_paths", False),
             )
 
+        force_multi_animal = _should_force_multi_animal_evaluation(
+            loader=loader,
+            split_detector_runner=split_detector_runner,
+            data_cfg=data_cfg,
+            parameters=parameters,
+            uses_precomputed_detector_bboxes=uses_precomputed_detector_bboxes,
+        )
+
         results, predictions_for_split = evaluate(
             pose_runner=pose_runner,
             loader=loader,
@@ -583,6 +591,7 @@ def evaluate_snapshot(
             comparison_bodyparts=comparison_bodyparts,
             per_keypoint_evaluation=per_keypoint_evaluation,
             parameters=parameters,
+            force_multi_animal=force_multi_animal,
         )
 
         if per_keypoint_evaluation:
@@ -1021,6 +1030,41 @@ def _extract_rmse_per_bodypart(
             rmse_per_bodypart[bpt] = rmse
 
     return rmse_per_bodypart
+
+
+def _should_force_multi_animal_evaluation(
+    *,
+    loader: Loader,
+    split_detector_runner: InferenceRunner | None,
+    data_cfg: dict,
+    parameters: PoseDatasetParameters,
+    uses_precomputed_detector_bboxes: bool,
+) -> bool:
+    """
+    Decide whether evaluation should use multi-instance pose matching.
+
+    Detector-based top-down evaluation can produce a variable number of predictions
+    per image. However, if precomputed detector boxes are explicitly capped to one
+    bbox per image, single-animal evaluation should remain valid.
+    """
+    if loader.pose_task != Task.TOP_DOWN:
+        return False
+
+    if split_detector_runner is None:
+        return False
+
+    if uses_precomputed_detector_bboxes:
+        # Uncapped precomputed bbox configs may return multiple
+        # bboxes per image, even for single-animal datasets.
+        max_detections = data_cfg.get("bbox_max_detections", None)
+        if max_detections is None:
+            return True
+
+        return int(max_detections) > 1
+
+    # Native detector runner is capped by max_num_animals through the detector
+    # postprocessor. Only force multi-instance matching for true multi-animal cases.
+    return parameters.max_num_animals > 1
 
 
 if __name__ == "__main__":
