@@ -36,6 +36,9 @@ from deeplabcut.pose_estimation_pytorch.apis.utils import (
 )
 from deeplabcut.pose_estimation_pytorch.data import DLCLoader, Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
+from deeplabcut.pose_estimation_pytorch.models.detectors.external.base import (
+    build_precomputed_detector_runner_from_config,
+)
 from deeplabcut.pose_estimation_pytorch.runners import InferenceRunner
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.task import Task
@@ -516,6 +519,13 @@ def evaluate_snapshot(
         detector_path=detector_path,
     )
 
+    data_cfg = loader.model_cfg.get("data", {})
+    uses_precomputed_detector_bboxes = (
+        loader.pose_task == Task.TOP_DOWN
+        and data_cfg.get("bbox_source") == "detection_bbox"
+        and data_cfg.get("precomputed_bboxes") is not None
+    )
+
     # For memory-replay SuperAnimal models, convert bodyparts to project bodyparts
     if weight_init_cfg := loader.model_cfg["train_settings"].get("weight_init", None):
         weight_init = WeightInitialization.from_dict(weight_init_cfg)
@@ -554,16 +564,27 @@ def evaluate_snapshot(
         "pcutoff": (", ".join([str(v) for v in pcutoff]) if isinstance(pcutoff, list) else pcutoff),
     }
     for split in ["train", "test"]:
+        split_detector_runner = detector_runner
+
+        if uses_precomputed_detector_bboxes:
+            split_detector_runner = build_precomputed_detector_runner_from_config(
+                loader.model_cfg,
+                mode=split,
+                target_format="xywh",
+                validate_image_paths=data_cfg.get("bbox_validate_image_paths", False),
+            )
+
         results, predictions_for_split = evaluate(
             pose_runner=pose_runner,
             loader=loader,
             mode=split,
             pcutoff=pcutoff,
-            detector_runner=detector_runner,
+            detector_runner=split_detector_runner,
             comparison_bodyparts=comparison_bodyparts,
             per_keypoint_evaluation=per_keypoint_evaluation,
             parameters=parameters,
         )
+
         if per_keypoint_evaluation:
             rmse_per_bodypart[split] = _extract_rmse_per_bodypart(
                 results,
@@ -755,6 +776,12 @@ def evaluate_network(
                 modelprefix=modelprefix,
             )
             loader.evaluation_folder.mkdir(exist_ok=True, parents=True)
+            data_cfg = loader.model_cfg.get("data", {})
+            uses_precomputed_detector_bboxes = (
+                loader.pose_task == Task.TOP_DOWN
+                and data_cfg.get("bbox_source") == "detection_bbox"
+                and data_cfg.get("precomputed_bboxes") is not None
+            )
 
             if device is not None:
                 loader.model_cfg["device"] = device
@@ -769,7 +796,13 @@ def evaluate_network(
 
             detector_snapshots = [None]
             if loader.pose_task == Task.TOP_DOWN:
-                if detector_snapshot_index is not None:
+                if uses_precomputed_detector_bboxes:
+                    print(
+                        "Using precomputed detector bounding boxes to compute evaluation metrics:\n"
+                        f"  {data_cfg.get('precomputed_bboxes')}"
+                    )
+
+                elif detector_snapshot_index is not None:
                     det_snapshots = get_model_snapshots("all", loader.model_folder, Task.DETECT)
                     if len(det_snapshots) == 0:
                         print(
@@ -778,7 +811,7 @@ def evaluate_network(
                             f"found in {loader.model_folder}. Using ground truth "
                             "bounding boxes to compute metrics.\n"
                             "To analyze videos with a top-down model, you'll need to "
-                            "train a detector!"
+                            "train a detector or configure data.precomputed_bboxes."
                         )
                     else:
                         detector_snapshots = get_model_snapshots(
