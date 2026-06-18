@@ -17,13 +17,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-import deeplabcut.pose_estimation_pytorch.data.base as base_mod
-from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.pose_estimation_pytorch.data.bboxes import (
     BBoxEntry,
     BBoxes,
 )
-from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import build_detector_postprocessor
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import build_bottom_up_preprocessor
 from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
@@ -36,123 +33,6 @@ from deeplabcut.pose_estimation_pytorch.models.detectors.external.base import (
 # Important: ensure the mock detector module is imported so registry population happens
 from deeplabcut.pose_estimation_pytorch.runners.inference import build_inference_runner
 from deeplabcut.pose_estimation_pytorch.task import Task
-
-
-class DummyPoseDataset:
-    """
-    Tiny stand-in for PoseDataset so tests can inspect what create_dataset()
-    actually passes through without depending on the real dataset internals.
-    """
-
-    def __init__(
-        self,
-        images,
-        annotations,
-        transform,
-        mode,
-        task,
-        parameters,
-        ctd_config=None,
-    ):
-        self.images = images
-        self.annotations = annotations
-        self.transform = transform
-        self.mode = mode
-        self.task = task
-        self.parameters = parameters
-        self.ctd_config = ctd_config
-
-
-class FakeDLCLoader(Loader):
-    """
-    Minimal loader for testing create_dataset() logic.
-
-    It mimics DLCLoader’s backward-compatible behavior:
-    top-down and detect tasks default to keypoint-derived boxes unless a
-    detector_runner is provided.
-    """
-
-    def __init__(self, bbox_source: str | None = None):
-        # Avoid calling Loader.__init__() because we want a tiny controlled fixture
-        self.project_root = Path(".")
-        self.image_root = Path(".")
-        self.model_config_path = Path("dummy_pytorch_config.yaml")
-        self.model_cfg = {
-            "method": "td",
-            "data": {
-                "bbox_margin": 7,
-            },
-            "train_settings": {},
-        }
-        if bbox_source is not None:
-            self.model_cfg["data"]["bbox_source"] = bbox_source
-
-        self.pose_task = Task.TOP_DOWN
-        self._loaded_data = {}
-
-        # Cached payload, reused across calls.
-        # This lets us test that create_dataset() does NOT mutate cached load_data().
-        self._payload = {
-            "images": [
-                {
-                    "id": 1,
-                    "file_name": "img0.png",
-                    "width": 256,
-                    "height": 128,
-                }
-            ],
-            "annotations": [
-                {
-                    "id": 1,
-                    "image_id": 1,
-                    "category_id": 1,
-                    "individual": "animal",
-                    "individual_id": 0,
-                    # Placeholder bbox that should be overridden
-                    "bbox": np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float32),
-                    "area": 12.0,
-                    "keypoints": np.array(
-                        [
-                            [30.0, 40.0, 2.0],
-                            [50.0, 60.0, 2.0],
-                        ],
-                        dtype=np.float32,
-                    ),
-                    "num_keypoints": 2,
-                    "iscrowd": 0,
-                }
-            ],
-        }
-
-    def load_data(self, mode: str = "train"):
-        self._loaded_data.setdefault(mode, self._payload)
-        return self._loaded_data[mode]
-
-    def get_dataset_parameters(self) -> PoseDatasetParameters:
-        return PoseDatasetParameters(
-            bodyparts=["nose", "tail"],
-            unique_bpts=[],
-            individuals=["animal"],
-            with_center_keypoints=False,
-            color_mode="RGB",
-            top_down_crop_size=(256, 256),
-            top_down_crop_margin=0,
-            top_down_crop_with_context=True,
-        )
-
-    def default_bbox_method(self, task: Task) -> str | None:
-        # Mimic DLCLoader backward compatibility
-        if task in (Task.TOP_DOWN, Task.DETECT):
-            return "keypoints"
-        return None
-
-
-@pytest.fixture(autouse=True)
-def patch_pose_dataset(monkeypatch):
-    """
-    Replace PoseDataset with a tiny dummy object so tests focus on loader logic.
-    """
-    monkeypatch.setattr(base_mod, "PoseDataset", DummyPoseDataset)
 
 
 def test_bbox_entry_from_detector_context_roundtrip_xywh():
@@ -219,12 +99,12 @@ def test_precomputed_detector_runner_inference_matches_dlc_contract():
     )
 
 
-def test_create_dataset_accepts_precomputed_detector_runner():
+def test_create_dataset_accepts_precomputed_detector_runner(fake_dlc_loader):
     """
     DLC loader.create_dataset(...) should be able to consume PrecomputedDetectorRunner
     and rewrite annotation bboxes accordingly.
     """
-    loader = FakeDLCLoader()
+    loader = fake_dlc_loader
 
     precomputed = BBoxes(
         train=[
@@ -260,12 +140,12 @@ def test_create_dataset_accepts_precomputed_detector_runner():
     )
 
 
-def test_create_dataset_with_precomputed_detector_runner_does_not_mutate_cached_load_data():
+def test_create_dataset_with_precomputed_detector_runner_does_not_mutate_cached_load_data(fake_dlc_loader):
     """
     Regression test: create_dataset() must deep-copy cached annotations before rewriting
     bboxes, otherwise load_data() becomes stateful and unsafe.
     """
-    loader = FakeDLCLoader()
+    loader = fake_dlc_loader
 
     precomputed = BBoxes(
         train=[
@@ -305,7 +185,7 @@ def test_create_dataset_with_precomputed_detector_runner_does_not_mutate_cached_
     np.testing.assert_allclose(raw_after, np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float32))
 
 
-def test_live_mock_detector_can_roundtrip_through_schema_and_precomputed_runner():
+def test_live_mock_detector_can_roundtrip_through_schema_and_precomputed_runner(fake_dlc_loader):
     """
     Strong integration test:
 
@@ -376,7 +256,7 @@ def test_live_mock_detector_can_roundtrip_through_schema_and_precomputed_runner(
     )
 
     # 6. Use in DLC create_dataset(...)
-    loader = FakeDLCLoader()
+    loader = fake_dlc_loader
     dataset = loader.create_dataset(
         transform=None,
         mode="train",
@@ -467,8 +347,8 @@ def test_precomputed_detector_runner_raises_for_unknown_requested_path():
         runner.inference([Path("missing.png")])
 
 
-def test_validate_precomputed_bboxes_for_loader_requires_train_and_test(tmp_path):
-    loader = FakeDLCLoader()
+def test_validate_precomputed_bboxes_for_loader_requires_train_and_test(tmp_path, fake_dlc_loader):
+    loader = fake_dlc_loader
 
     bboxes = BBoxes(
         train=[
@@ -494,8 +374,8 @@ def test_validate_precomputed_bboxes_for_loader_requires_train_and_test(tmp_path
         )
 
 
-def test_validate_precomputed_bboxes_allows_empty_bboxes(tmp_path):
-    loader = FakeDLCLoader()
+def test_validate_precomputed_bboxes_allows_empty_bboxes(tmp_path, fake_dlc_loader):
+    loader = fake_dlc_loader
 
     bboxes = BBoxes(
         train=[
@@ -558,14 +438,14 @@ class RecordingDetectorRunner:
         ]
 
 
-def test_precompute_resume_reuses_valid_entries_and_computes_missing_mode(tmp_path):
+def test_precompute_resume_reuses_valid_entries_and_computes_missing_mode(tmp_path, fake_dlc_loader):
     """
     resume should reuse valid existing entries and compute only missing entries.
 
     FakeDLCLoader has one train image and one test image, both named img0.png.
     Here train exists and test is missing, so only test should be computed.
     """
-    loader = FakeDLCLoader()
+    loader = fake_dlc_loader
     bbox_file = tmp_path / "precomputed_bboxes.json"
 
     existing = BBoxes(
@@ -609,11 +489,11 @@ def test_precompute_resume_reuses_valid_entries_and_computes_missing_mode(tmp_pa
     np.testing.assert_allclose(artifact.test[0].bbox_scores, [0.95])
 
 
-def test_precompute_resume_recomputes_invalid_existing_entry(tmp_path):
+def test_precompute_resume_recomputes_invalid_existing_entry(tmp_path, fake_dlc_loader):
     """
     resume should recompute an existing entry if it is structurally invalid.
     """
-    loader = FakeDLCLoader()
+    loader = fake_dlc_loader
     bbox_file = tmp_path / "precomputed_bboxes.json"
 
     # Invalid: one box, zero scores.
@@ -652,11 +532,11 @@ def test_precompute_resume_recomputes_invalid_existing_entry(tmp_path):
     np.testing.assert_allclose(artifact.train[0].bbox_scores, [0.91])
 
 
-def test_precompute_recompute_none_raises_for_missing_entry(tmp_path):
+def test_precompute_recompute_none_raises_for_missing_entry(tmp_path, fake_dlc_loader):
     """
     recompute='none' should be validation-only. Missing entries should raise.
     """
-    loader = FakeDLCLoader()
+    loader = fake_dlc_loader
     bbox_file = tmp_path / "precomputed_bboxes.json"
 
     BBoxes(train=[]).dump_json(bbox_file)
@@ -677,11 +557,11 @@ def test_precompute_recompute_none_raises_for_missing_entry(tmp_path):
     assert len(detector.calls) == 0
 
 
-def test_precompute_recompute_all_recomputes_valid_existing_entry(tmp_path):
+def test_precompute_recompute_all_recomputes_valid_existing_entry(tmp_path, fake_dlc_loader):
     """
     recompute='all' should ignore valid existing entries and recompute everything.
     """
-    loader = FakeDLCLoader()
+    loader = fake_dlc_loader
     bbox_file = tmp_path / "precomputed_bboxes.json"
 
     existing = BBoxes(
@@ -719,12 +599,12 @@ def test_precompute_recompute_all_recomputes_valid_existing_entry(tmp_path):
     np.testing.assert_allclose(artifact.train[0].bbox_scores, [0.93])
 
 
-def test_precompute_resume_keeps_empty_entry_when_empty_policy_valid(tmp_path):
+def test_precompute_resume_keeps_empty_entry_when_empty_policy_valid(tmp_path, fake_dlc_loader):
     """
     Empty bbox entries should be reusable when empty_policy='valid'.
     This matters for true empty/no-animal frames.
     """
-    loader = FakeDLCLoader()
+    loader = fake_dlc_loader
     bbox_file = tmp_path / "precomputed_bboxes.json"
 
     existing = BBoxes(
@@ -757,11 +637,11 @@ def test_precompute_resume_keeps_empty_entry_when_empty_policy_valid(tmp_path):
     assert len(artifact.train[0].bbox_scores) == 0
 
 
-def test_precompute_resume_recomputes_empty_entry_when_empty_policy_recompute(tmp_path):
+def test_precompute_resume_recomputes_empty_entry_when_empty_policy_recompute(tmp_path, fake_dlc_loader):
     """
     empty_policy='recompute' should select empty entries for recomputation under resume.
     """
-    loader = FakeDLCLoader()
+    loader = fake_dlc_loader
     bbox_file = tmp_path / "precomputed_bboxes.json"
 
     existing = BBoxes(
@@ -800,11 +680,11 @@ def test_precompute_resume_recomputes_empty_entry_when_empty_policy_recompute(tm
     np.testing.assert_allclose(artifact.train[0].bbox_scores, [0.97])
 
 
-def test_precompute_resume_recomputes_existing_entry_below_min_score(tmp_path):
+def test_precompute_resume_recomputes_existing_entry_below_min_score(tmp_path, fake_dlc_loader):
     """
     min_existing_score should let users selectively refresh low-confidence entries.
     """
-    loader = FakeDLCLoader()
+    loader = fake_dlc_loader
     bbox_file = tmp_path / "precomputed_bboxes.json"
 
     existing = BBoxes(
