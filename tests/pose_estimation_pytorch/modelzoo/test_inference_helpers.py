@@ -33,7 +33,6 @@ def test_create_superanimal_inference_runners_uses_custom_config_path(monkeypatc
         return cfg
 
     monkeypatch.setattr(helpers.PoseConfig, "from_any", fake_from_any)
-    monkeypatch.setattr(helpers, "update_config", lambda config, max_individuals, device: config)
     monkeypatch.setattr(
         helpers,
         "get_inference_runners",
@@ -64,16 +63,15 @@ def test_create_superanimal_inference_runners_uses_custom_config_path(monkeypatc
     assert model_cfg is cfg
 
 
-def test_create_superanimal_inference_runners_uses_deepcopy_for_custom_dict(monkeypatch):
+def test_create_superanimal_inference_runners_does_not_mutate_custom_dict(monkeypatch):
     custom_cfg = _dummy_cfg("TD")
-    monkeypatch.setattr(helpers.PoseConfig, "from_any", copy.deepcopy)
+    original_bodyparts = list(custom_cfg["metadata"]["bodyparts"])
 
-    def fake_update_config(config, max_individuals, device):
-        # Mutate nested structure; caller-owned dict should stay unchanged.
-        config["metadata"]["bodyparts"].append("tail")
-        return config
-
-    monkeypatch.setattr(helpers, "update_config", fake_update_config)
+    monkeypatch.setattr(
+        helpers.PoseConfig,
+        "from_any",
+        lambda config: copy.deepcopy(config),
+    )
     monkeypatch.setattr(
         helpers,
         "get_inference_runners",
@@ -98,22 +96,31 @@ def test_create_superanimal_inference_runners_uses_deepcopy_for_custom_dict(monk
         customized_model_config=custom_cfg,
     )
 
-    assert custom_cfg["metadata"]["bodyparts"] == ["nose"]
-    assert model_cfg["metadata"]["bodyparts"] == ["nose", "tail"]
+    assert custom_cfg["metadata"]["bodyparts"] == original_bodyparts
+    assert model_cfg is not custom_cfg
 
 
 @pytest.mark.parametrize("input_device", ["auto", None])
 def test_create_superanimal_inference_runners_auto_device_selection(monkeypatch, input_device):
-    cfg = _dummy_cfg("TD")
     captured = {}
 
-    monkeypatch.setattr(helpers.PoseConfig, "from_any", lambda config: cfg)
-
-    def fake_update_config(config, max_individuals, device):
+    def fake_build_for_superanimal_inference(
+        cls,
+        super_animal,
+        *,
+        model_name,
+        detector_name=None,
+        max_individuals=30,
+        device=None,
+    ):
         captured["device"] = device
-        return config
+        return _dummy_cfg("TD")
 
-    monkeypatch.setattr(helpers, "update_config", fake_update_config)
+    monkeypatch.setattr(
+        helpers.PoseConfig,
+        "build_for_superanimal_inference",
+        classmethod(fake_build_for_superanimal_inference),
+    )
     monkeypatch.setattr(
         helpers,
         "get_inference_runners",
@@ -135,7 +142,7 @@ def test_create_superanimal_inference_runners_auto_device_selection(monkeypatch,
         superanimal_name="superanimal_quadruped",
         model_name="hrnet_w32",
         detector_name="fasterrcnn_resnet50_fpn_v2",
-        customized_model_config="/tmp/custom_model_cfg.yaml",
+        customized_model_config=None,
         device=input_device,
     )
     assert captured["device"] == "auto"
@@ -154,10 +161,13 @@ def test_create_superanimal_inference_runners_raises_for_fmpose3d():
 def test_create_superanimal_inference_runners_propagates_unsupported_dataset_error(
     monkeypatch,
 ):
+    def fake_build_for_superanimal_inference(cls, *args, **kwargs):
+        raise ValueError("Unsupported dataset for model zoo config")
+
     monkeypatch.setattr(
-        helpers,
-        "load_super_animal_config",
-        lambda **kwargs: (_ for _ in ()).throw(ValueError("Unsupported dataset for model zoo config")),
+        helpers.PoseConfig,
+        "build_for_superanimal_inference",
+        classmethod(fake_build_for_superanimal_inference),
     )
 
     with pytest.raises(ValueError, match="Unsupported dataset"):
