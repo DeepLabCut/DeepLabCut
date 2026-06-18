@@ -76,6 +76,33 @@ class DetectorMode(Enum):
         raise ValueError(f"Unknown detector_mode: {detector_mode}")
 
 
+def _add_external_bbox_filtering_defaults(
+    pose_config: dict,
+    *,
+    max_individuals: int,
+) -> None:
+    """
+    Add default bbox filtering/ranking settings for external/precomputed detector boxes.
+
+    Native DLC detector inference already caps detector outputs through the detector
+    postprocessor. Precomputed external boxes bypass that postprocessor, so we record
+    equivalent filtering behavior in the pose config for PrecomputedDetectorRunner.
+
+    Defaults:
+      - cap boxes to max_individuals
+      - rank primarily by score and secondarily by area
+      - keep structurally valid boxes only
+      - do not apply an additional score threshold by default
+    """
+    data_cfg = pose_config.setdefault("data", {})
+
+    data_cfg.setdefault("bbox_max_detections", int(max_individuals))
+    data_cfg.setdefault("bbox_selection_strategy", "score_then_area")
+    data_cfg.setdefault("bbox_min_score", None)
+    data_cfg.setdefault("bbox_min_box_area", 0.0)
+    data_cfg.setdefault("bbox_filter_invalid_boxes", True)
+
+
 def make_pytorch_pose_config(
     project_config: dict,
     pose_config_path: str | Path,
@@ -284,6 +311,8 @@ def make_pytorch_pose_config(
         pose_config["data"].setdefault("bbox_match_iou_threshold", 0.1)
         pose_config["data"].setdefault("bbox_fallback_to_gt", False)
         pose_config["data"].setdefault("bbox_validate_image_paths", False)
+
+        _add_external_bbox_filtering_defaults(pose_config, max_individuals=len(individuals))
 
     elif bbox_source is not None:
         pose_config["data"]["bbox_source"] = bbox_source
