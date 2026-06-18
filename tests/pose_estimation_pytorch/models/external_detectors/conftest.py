@@ -207,6 +207,9 @@ def fake_eval_topdown_loader(tmp_path):
                 "bbox_source": "detection_bbox",
                 "precomputed_bboxes": str(tmp_path / "precomputed_bboxes.json"),
                 "bbox_validate_image_paths": True,
+                "bbox_max_detections": 1,
+                "bbox_selection_strategy": "score_then_area",
+                "bbox_filter_invalid_boxes": True,
             },
         }
 
@@ -327,6 +330,9 @@ def patch_evaluate_network_dependencies(monkeypatch, eval_mod, tmp_path, fake_sn
                     "bbox_source": "detection_bbox",
                     "precomputed_bboxes": str(tmp_path / "precomputed_bboxes.json"),
                     "bbox_validate_image_paths": True,
+                    "bbox_max_detections": 1,
+                    "bbox_selection_strategy": "score_then_area",
+                    "bbox_filter_invalid_boxes": True,
                 },
             }
 

@@ -26,6 +26,7 @@ from deeplabcut.pose_estimation_pytorch.data.preprocessor import build_bottom_up
 from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
 from deeplabcut.pose_estimation_pytorch.models.detectors.external import EXTERNAL_DETECTORS, PrecomputedDetectorRunner
 from deeplabcut.pose_estimation_pytorch.models.detectors.external.base import (
+    build_precomputed_detector_runner_from_config,
     precompute_detector_bboxes,
     validate_precomputed_bboxes_for_loader,
 )
@@ -722,3 +723,109 @@ def test_precompute_resume_recomputes_existing_entry_below_min_score(tmp_path, f
         np.asarray([[51.0, 52.0, 53.0, 54.0]], dtype=np.float32),
     )
     np.testing.assert_allclose(artifact.train[0].bbox_scores, [0.89])
+
+
+def test_precomputed_detector_runner_filters_to_highest_score():
+    bboxes = BBoxes(
+        train=[
+            BBoxEntry(
+                bboxes=[
+                    (0.0, 0.0, 100.0, 100.0),
+                    (10.0, 10.0, 20.0, 20.0),
+                ],
+                bbox_scores=[0.2, 0.9],
+                bbox_format="xywh",
+                image_path=Path("img0.png"),
+            )
+        ]
+    )
+
+    runner = PrecomputedDetectorRunner.from_bboxes(
+        bboxes,
+        mode="train",
+        max_detections=1,
+        selection_strategy="score",
+    )
+
+    out = runner.inference([Path("img0.png")])[0]
+
+    np.testing.assert_allclose(
+        out["bboxes"],
+        np.array([[10.0, 10.0, 20.0, 20.0]], dtype=np.float32),
+    )
+    np.testing.assert_allclose(
+        out["bbox_scores"],
+        np.array([0.9], dtype=np.float32),
+    )
+
+
+def test_precomputed_detector_runner_filters_to_largest_box():
+    bboxes = BBoxes(
+        train=[
+            BBoxEntry(
+                bboxes=[
+                    (0.0, 0.0, 100.0, 100.0),
+                    (10.0, 10.0, 20.0, 20.0),
+                ],
+                bbox_scores=[0.2, 0.9],
+                bbox_format="xywh",
+                image_path=Path("img0.png"),
+            )
+        ]
+    )
+
+    runner = PrecomputedDetectorRunner.from_bboxes(
+        bboxes,
+        mode="train",
+        max_detections=1,
+        selection_strategy="largest",
+    )
+
+    out = runner.inference([Path("img0.png")])[0]
+
+    np.testing.assert_allclose(
+        out["bboxes"],
+        np.array([[0.0, 0.0, 100.0, 100.0]], dtype=np.float32),
+    )
+    np.testing.assert_allclose(
+        out["bbox_scores"],
+        np.array([0.2], dtype=np.float32),
+    )
+
+
+def test_build_precomputed_detector_runner_from_config_uses_bbox_filter_config(tmp_path):
+    bbox_file = tmp_path / "bboxes.json"
+
+    BBoxes(
+        test=[
+            BBoxEntry(
+                bboxes=[
+                    (0.0, 0.0, 100.0, 100.0),
+                    (10.0, 10.0, 20.0, 20.0),
+                ],
+                bbox_scores=[0.2, 0.9],
+                bbox_format="xywh",
+                image_path=Path("img0.png"),
+            )
+        ]
+    ).dump_json(bbox_file)
+
+    model_cfg = {
+        "data": {
+            "precomputed_bboxes": str(bbox_file),
+            "bbox_max_detections": 1,
+            "bbox_selection_strategy": "score",
+        }
+    }
+
+    runner = build_precomputed_detector_runner_from_config(
+        model_cfg,
+        mode="test",
+    )
+
+    out = runner.inference([Path("img0.png")])[0]
+
+    np.testing.assert_allclose(
+        out["bboxes"],
+        np.array([[10.0, 10.0, 20.0, 20.0]], dtype=np.float32),
+    )
