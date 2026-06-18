@@ -2,10 +2,18 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal
+from typing import Literal, TypeAlias
 
 import torch
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+BBoxSelectionStrategy: TypeAlias = Literal[
+    "score",
+    "largest",
+    "score_then_area",
+    "area_then_score",
+    "score_area_product",
+]
 
 
 class ExternalDetectorConfig(BaseModel):
@@ -35,7 +43,15 @@ class ExternalDetectorConfig(BaseModel):
     batch_size: int = Field(default=1, ge=1)
     score_threshold: float = Field(default=0.25, ge=0.0, le=1.0)
     max_detections: int | None = Field(default=None, ge=1)
-    largest_only: bool = False
+    bbox_selection_strategy: BBoxSelectionStrategy = Field(
+        default="score_then_area",
+        description=(
+            "Strategy used when selecting a subset of boxes. "
+            "'score' keeps highest confidence boxes, 'largest' keeps largest boxes, "
+            "'score_then_area' sorts by score then area, 'area_then_score' sorts by "
+            "area then score, and 'score_area_product' sorts by score*area."
+        ),
+    )
 
     # Output normalization
     output_box_format: Literal["xywh"] = "xywh"

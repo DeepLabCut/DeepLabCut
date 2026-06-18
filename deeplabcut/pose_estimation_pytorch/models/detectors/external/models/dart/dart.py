@@ -30,8 +30,7 @@ class DARTDetectorModel(BaseExternalDetector):
     """
     PyTorch-only SAM3/DART detector adapter for DeepLabCut external detector workflows.
 
-    The DART/SAM3 predictor is expected to return XYXY boxes internally; this adapter
-    clips/filters/postprocesses them and emits DLC-compatible XYWH boxes.
+    The DART/SAM3 predictor is expected to return XYXY boxes internally.
     """
 
     backend_name = "sam3_dart"
@@ -245,18 +244,17 @@ class DARTDetectorModel(BaseExternalDetector):
         image_size: tuple[int, int] | None = None,
     ) -> tuple[np.ndarray, np.ndarray]:
         """
-        Clean raw XYXY detector outputs while keeping XYXY format.
+        Normalize raw DART XYXY detector outputs while keeping XYXY format.
 
-        Conversion to DLC XYWH belongs in BaseExternalDetector.inference(...).
+        This method intentionally only performs shape validation and optional clipping.
+        Generic filtering/ranking logic is handled by BaseExternalDetector when converting
+        DetectionResult -> DLC DetectorContext.
         """
         boxes_xyxy = np.asarray(boxes_xyxy, dtype=np.float32).reshape(-1, 4)
         scores = np.asarray(scores, dtype=np.float32).reshape(-1)
 
         if len(boxes_xyxy) == 0:
-            return (
-                np.empty((0, 4), dtype=np.float32),
-                np.empty((0,), dtype=np.float32),
-            )
+            return self._empty_arrays()
 
         if len(boxes_xyxy) != len(scores):
             raise ValueError(f"Expected one score per box, got boxes={boxes_xyxy.shape}, scores={scores.shape}.")
@@ -265,47 +263,6 @@ class DARTDetectorModel(BaseExternalDetector):
             width, height = image_size
             boxes_xyxy[:, [0, 2]] = np.clip(boxes_xyxy[:, [0, 2]], 0, width)
             boxes_xyxy[:, [1, 3]] = np.clip(boxes_xyxy[:, [1, 3]], 0, height)
-
-        widths = boxes_xyxy[:, 2] - boxes_xyxy[:, 0]
-        heights = boxes_xyxy[:, 3] - boxes_xyxy[:, 1]
-        areas = widths * heights
-
-        valid = np.ones(len(boxes_xyxy), dtype=bool)
-
-        if self.config.filter_invalid_boxes:
-            valid &= np.isfinite(boxes_xyxy).all(axis=1)
-            valid &= np.isfinite(scores)
-            valid &= widths > 0
-            valid &= heights > 0
-
-        if self.config.min_box_area > 0:
-            valid &= areas >= self.config.min_box_area
-
-        if not valid.all():
-            logger.warning(
-                "Filtering out %d invalid DART detections",
-                int((~valid).sum()),
-            )
-
-        boxes_xyxy = boxes_xyxy[valid]
-        scores = scores[valid]
-        areas = areas[valid]
-
-        if len(boxes_xyxy) == 0:
-            return (
-                np.empty((0, 4), dtype=np.float32),
-                np.empty((0,), dtype=np.float32),
-            )
-
-        if self.config.largest_only:
-            keep = np.array([int(np.argmax(areas))], dtype=np.int64)
-            boxes_xyxy = boxes_xyxy[keep]
-            scores = scores[keep]
-
-        if self.config.max_detections is not None and len(scores) > self.config.max_detections:
-            order = np.argsort(-scores)[: self.config.max_detections]
-            boxes_xyxy = boxes_xyxy[order]
-            scores = scores[order]
 
         return (
             boxes_xyxy.astype(np.float32, copy=False),
@@ -448,7 +405,7 @@ class DARTDetectorModel(BaseExternalDetector):
             "nms_threshold": self.config.nms_threshold,
             "presence_threshold": self.config.presence_threshold,
             "max_detections": self.config.max_detections,
-            "largest_only": self.config.largest_only,
+            "bbox_selection_strategy": self.config.bbox_selection_strategy,
             "min_box_area": self.config.min_box_area,
             "clip_boxes": self.config.clip_boxes,
             "filter_invalid_boxes": self.config.filter_invalid_boxes,

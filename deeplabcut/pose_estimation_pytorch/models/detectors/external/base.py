@@ -28,6 +28,9 @@ from deeplabcut.pose_estimation_pytorch.data.bboxes import (
     should_recompute_bbox_entry,
     validate_bbox_entry,
 )
+from deeplabcut.pose_estimation_pytorch.models.detectors.external.models.config.base import (
+    BBoxSelectionStrategy,
+)
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
 
 logger = logging.getLogger(__name__)
@@ -68,6 +71,121 @@ def _build_external_detector(
 
 
 EXTERNAL_DETECTORS = Registry("external_detectors", build_func=_build_external_detector)
+
+
+def _filter_detector_context(
+    context: DetectorContext,
+    *,
+    min_bbox_score: float | None = None,
+    max_detections: int | None = None,
+    selection_strategy: BBoxSelectionStrategy = "score_then_area",
+    min_box_area: float = 0.0,
+    filter_invalid_boxes: bool = True,
+) -> DetectorContext:
+    """
+    Filter a DLC detector context in XYWH format.
+
+    This is used for precomputed detector outputs and can also be used as a final
+    safety filter for external live detectors.
+
+    Args:
+        context:
+            Detector context with XYWH bboxes and bbox_scores.
+        min_bbox_score:
+            Optional minimum score threshold.
+        max_detections:
+            Optional maximum number of boxes to keep.
+        selection_strategy:
+            Strategy for ranking boxes when max_detections is set.
+        min_box_area:
+            Minimum XYWH area to keep.
+        filter_invalid_boxes:
+            Whether to remove non-finite boxes/scores and boxes with non-positive size.
+
+    Returns:
+        Filtered detector context.
+    """
+    boxes = np.asarray(
+        context.get("bboxes", np.zeros((0, 4), dtype=np.float32)),
+        dtype=np.float32,
+    ).reshape(-1, 4)
+
+    scores = np.asarray(
+        context.get("bbox_scores", np.ones((len(boxes),), dtype=np.float32)),
+        dtype=np.float32,
+    ).reshape(-1)
+
+    if len(boxes) != len(scores):
+        raise ValueError(f"Expected one bbox score per bbox, got boxes={boxes.shape}, scores={scores.shape}.")
+
+    if len(boxes) == 0:
+        return {
+            "bboxes": boxes.astype(np.float32, copy=False),
+            "bbox_scores": scores.astype(np.float32, copy=False),
+        }
+
+    widths = boxes[:, 2]
+    heights = boxes[:, 3]
+    areas = widths * heights
+
+    keep = np.ones(len(boxes), dtype=bool)
+
+    if filter_invalid_boxes:
+        keep &= np.isfinite(boxes).all(axis=1)
+        keep &= np.isfinite(scores)
+        keep &= widths > 0
+        keep &= heights > 0
+
+    if min_box_area > 0:
+        keep &= areas >= min_box_area
+
+    if min_bbox_score is not None:
+        keep &= scores >= float(min_bbox_score)
+
+    boxes = boxes[keep]
+    scores = scores[keep]
+    areas = areas[keep]
+
+    if len(boxes) == 0:
+        return {
+            "bboxes": np.empty((0, 4), dtype=np.float32),
+            "bbox_scores": np.empty((0,), dtype=np.float32),
+        }
+
+    if max_detections is not None:
+        max_detections = int(max_detections)
+        if max_detections < 1:
+            raise ValueError(f"max_detections must be >= 1 or None, got {max_detections}.")
+
+        if selection_strategy == "score":
+            order = np.argsort(-scores)
+
+        elif selection_strategy == "largest":
+            order = np.argsort(-areas)
+
+        elif selection_strategy == "score_then_area":
+            # np.lexsort uses the last key as the primary key.
+            # Primary: score descending; secondary: area descending.
+            order = np.lexsort((-areas, -scores))
+
+        elif selection_strategy == "area_then_score":
+            # Primary: area descending; secondary: score descending.
+            order = np.lexsort((-scores, -areas))
+
+        elif selection_strategy == "score_area_product":
+            order = np.argsort(-(scores * areas))
+
+        else:
+            raise ValueError(f"Unknown bbox selection strategy: {selection_strategy!r}")
+
+        order = order[:max_detections]
+        boxes = boxes[order]
+        scores = scores[order]
+
+    return {
+        "bboxes": boxes.astype(np.float32, copy=False),
+        "bbox_scores": scores.astype(np.float32, copy=False),
+    }
 
 
 class BaseExternalDetector(ABC, nn.Module):
@@ -182,8 +300,7 @@ class BaseExternalDetector(ABC, nn.Module):
         arr = np.array(image, dtype=np.uint8, copy=True)
         return torch.from_numpy(arr).permute(2, 0, 1).contiguous()
 
-    @staticmethod
-    def _detection_to_context(det: DetectionResult) -> DetectorContext:
+    def _detection_to_context(self, det: DetectionResult) -> DetectorContext:
         """
         Convert one raw detector output into DLC detector context format.
 
@@ -221,10 +338,27 @@ class BaseExternalDetector(ABC, nn.Module):
 
         boxes_xywh = _xyxy_to_xywh(boxes_xyxy)
 
-        return {
+        context = {
             "bboxes": boxes_xywh.astype(np.float32, copy=False),
             "bbox_scores": scores.astype(np.float32, copy=False),
         }
+
+        config = getattr(self, "config", None)
+
+        if config is None:
+            return context
+
+        max_detections = getattr(config, "max_detections", None)
+        selection_strategy = getattr(config, "bbox_selection_strategy", "score_then_area")
+
+        return _filter_detector_context(
+            context,
+            min_bbox_score=getattr(config, "score_threshold", None),
+            max_detections=max_detections,
+            selection_strategy=selection_strategy,
+            min_box_area=float(getattr(config, "min_box_area", 0.0)),
+            filter_invalid_boxes=bool(getattr(config, "filter_invalid_boxes", True)),
+        )
 
     def inference(
         self,
@@ -313,10 +447,20 @@ class PrecomputedDetectorRunner:
         *,
         target_format: BBoxFormat = "xywh",
         validate_image_paths: bool = False,
+        min_bbox_score: float | None = None,
+        max_detections: int | None = None,
+        selection_strategy: BBoxSelectionStrategy = "score_then_area",
+        min_box_area: float = 0.0,
+        filter_invalid_boxes: bool = True,
     ) -> None:
         self.entries = list(entries)
         self.target_format = target_format
         self.validate_image_paths = validate_image_paths
+        self.min_bbox_score = min_bbox_score
+        self.max_detections = max_detections
+        self.selection_strategy = selection_strategy
+        self.min_box_area = min_box_area
+        self.filter_invalid_boxes = filter_invalid_boxes
 
         self._entries_by_path: dict[str, BBoxEntry] = {}
         for entry in self.entries:
@@ -328,10 +472,6 @@ class PrecomputedDetectorRunner:
                 raise ValueError(f"Duplicate precomputed bbox entry for image_path={entry.image_path}")
             self._entries_by_path[key] = entry
 
-    @staticmethod
-    def _normalize_path_for_compare(path: Path | str) -> str:
-        return Path(path).as_posix()
-
     @classmethod
     def from_bboxes(
         cls,
@@ -340,11 +480,21 @@ class PrecomputedDetectorRunner:
         *,
         target_format: BBoxFormat = "xywh",
         validate_image_paths: bool = False,
+        min_bbox_score: float | None = None,
+        max_detections: int | None = None,
+        selection_strategy: BBoxSelectionStrategy = "score_then_area",
+        min_box_area: float = 0.0,
+        filter_invalid_boxes: bool = True,
     ) -> PrecomputedDetectorRunner:
         return cls(
             entries=getattr(bboxes, mode),
             target_format=target_format,
             validate_image_paths=validate_image_paths,
+            min_bbox_score=min_bbox_score,
+            max_detections=max_detections,
+            selection_strategy=selection_strategy,
+            min_box_area=min_box_area,
+            filter_invalid_boxes=filter_invalid_boxes,
         )
 
     @staticmethod
@@ -386,6 +536,17 @@ class PrecomputedDetectorRunner:
             )
 
         return None
+
+    def _entry_to_filtered_context(self, entry: BBoxEntry) -> DetectorContext:
+        context = entry.to_detector_context(target_format=self.target_format)
+        return _filter_detector_context(
+            context,
+            min_bbox_score=self.min_bbox_score,
+            max_detections=self.max_detections,
+            selection_strategy=self.selection_strategy,
+            min_box_area=self.min_box_area,
+            filter_invalid_boxes=self.filter_invalid_boxes,
+        )
 
     def inference(
         self,
@@ -460,7 +621,7 @@ class PrecomputedDetectorRunner:
                         f"Known entries include: {list(self._entries_by_path.keys())[:5]}"
                     )
 
-                outputs.append(entry.to_detector_context(target_format=self.target_format))
+                outputs.append(self._entry_to_filtered_context(entry))
 
             return outputs
 
@@ -489,7 +650,7 @@ class PrecomputedDetectorRunner:
             )
 
         for entry in iterator:
-            outputs.append(entry.to_detector_context(target_format=self.target_format))
+            outputs.append(self._entry_to_filtered_context(entry))
 
         return outputs
 
@@ -955,9 +1116,20 @@ def build_precomputed_detector_runner_from_config(
         return None
 
     bboxes = BBoxes.from_file(Path(bbox_file))
+
+    max_detections = data_cfg.get("bbox_max_detections")
+    selection_strategy = data_cfg.get("bbox_selection_strategy", "score_then_area")
+
+    # If the user does not explicitly configure bbox_max_detections, preserve old behavior.
+    # Do not silently default to max_num_animals here; make that a config-generation choice.
     return PrecomputedDetectorRunner.from_bboxes(
         bboxes,
         mode=mode,
         target_format=target_format,
         validate_image_paths=validate_image_paths,
+        min_bbox_score=data_cfg.get("bbox_min_score"),
+        max_detections=max_detections,
+        selection_strategy=selection_strategy,
+        min_box_area=float(data_cfg.get("bbox_min_box_area", 0.0)),
+        filter_invalid_boxes=bool(data_cfg.get("bbox_filter_invalid_boxes", True)),
     )
