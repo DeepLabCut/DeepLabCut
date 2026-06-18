@@ -86,10 +86,8 @@ class SingleDLC_config:
 
 class MaDLC_config:
     def __init__(self):
-        """
-        Plain text only for generating templates
-        Some variables can be configured by the user later
-        """
+        """Plain text only for generating templates Some variables can be configured by
+        the user later."""
 
         self.cfg = {k: v for k, v in vars().items() if "__" not in k and "self" not in k}
 

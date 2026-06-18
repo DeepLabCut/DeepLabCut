@@ -552,12 +552,7 @@ def evaluate_snapshot(
         "Shuffle number": loader.shuffle,
         "Training epochs": snapshot.epochs,
         "Detector epochs (TD only)": (-1 if detector_snapshot is None else detector_snapshot.epochs),
-        "pcutoff": (
-            ", ".join([str(v) for v in pcutoff])
-            # TODO @deruyter92: decide on typed / plain list
-            if isinstance(pcutoff, list)
-            else pcutoff
-        ),
+        "pcutoff": (", ".join([str(v) for v in pcutoff]) if isinstance(pcutoff, list) else pcutoff),
     }
     for split in ["train", "test"]:
         results, predictions_for_split = evaluate(

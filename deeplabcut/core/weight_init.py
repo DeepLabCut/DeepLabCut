@@ -18,13 +18,12 @@ from pathlib import Path
 import numpy as np
 from pydantic.dataclasses import dataclass
 
-from deeplabcut.core.config import ConfigMixin
 from deeplabcut.core.types import PydanticNDArray
 
 
 @dataclass
-class WeightInitialization(ConfigMixin):
-    """Configures weights initialization when transfer learning or fine-tuning models
+class WeightInitialization:
+    """Configures weights initialization when transfer learning or fine-tuning models.
 
     Args:
         snapshot_path: The path to the snapshot used to initialize pose model weights
@@ -131,8 +130,7 @@ class WeightInitialization(ConfigMixin):
 
     @staticmethod
     def from_dict_legacy(data: dict) -> WeightInitialization:
-        """Deals with weight initialization that were created before 3.0.0rc5"""
-
+        """Deals with weight initialization that were created before 3.0.0rc5."""
         import deeplabcut.pose_estimation_pytorch.modelzoo.utils as utils
 
         conversion_array = data.get("conversion_array")

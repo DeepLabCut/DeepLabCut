@@ -150,10 +150,10 @@ def evaluate_multianimal_full(
 
     # Get list of body parts to evaluate network for
     comparisonbodyparts = auxiliaryfunctions.intersection_of_body_parts_and_ones_given_by_user(cfg, comparisonbodyparts)
-    all_bpts = np.asarray(len(cfg["individuals"]) * list(cfg["multianimalbodyparts"]) + list(cfg["uniquebodyparts"]))
+    all_bpts = np.asarray(len(cfg["individuals"]) * cfg["multianimalbodyparts"] + cfg["uniquebodyparts"])
     colors = visualization.get_cmap(len(comparisonbodyparts), name=cfg["colormap"])
     # Make folder for evaluation
-    auxiliaryfunctions.attempt_to_make_folder(str(Path(cfg["project_path"]) / "evaluation-results"))
+    auxiliaryfunctions.attempt_to_make_folder(str(cfg["project_path"] + "/evaluation-results/"))
     for shuffle in Shuffles:
         for trainFraction in TrainingFractions:
             ##################################################
