@@ -8,6 +8,7 @@ import torch
 from PIL import Image
 
 from deeplabcut.pose_estimation_pytorch.models.detectors.external import (
+    EXTERNAL_DETECTORS,
     BaseExternalDetector,
     DetectionResult,
 )
@@ -360,3 +361,6 @@ class GroundingDINODetectorModel(BaseExternalDetector):
             "coordinate_system": "absolute_pixels",
             "config": self.config.model_dump(mode="json"),
         }
+
+
+EXTERNAL_DETECTORS.register_module(module=GroundingDINODetectorModel)

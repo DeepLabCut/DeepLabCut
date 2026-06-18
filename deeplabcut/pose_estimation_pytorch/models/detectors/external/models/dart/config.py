@@ -2,7 +2,7 @@
 
 from pydantic import Field, field_validator
 
-from deeplabcut.pose_estimation_pytorch.models.detectors.external.models.config.base import (
+from deeplabcut.pose_estimation_pytorch.models.detectors.external.config.base import (
     CheckpointDetectorConfig,
     PromptedDetectorConfig,
 )

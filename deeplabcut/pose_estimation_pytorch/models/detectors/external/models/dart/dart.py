@@ -9,7 +9,11 @@ import numpy as np
 import torch
 from PIL import Image
 
-from deeplabcut.pose_estimation_pytorch.models.detectors.external import BaseExternalDetector, DetectionResult
+from deeplabcut.pose_estimation_pytorch.models.detectors.external import (
+    EXTERNAL_DETECTORS,
+    BaseExternalDetector,
+    DetectionResult,
+)
 from deeplabcut.pose_estimation_pytorch.models.detectors.external.models.dart.config import (
     SAM3DARTDetectorConfig,
 )
@@ -26,6 +30,7 @@ except ImportError as e:
     logger.warning("Failed to import SAM3/DART modules: %s", e)
 
 
+# @EXTERNAL_DETECTORS.register_module()
 class DARTDetectorModel(BaseExternalDetector):
     """
     PyTorch-only SAM3/DART detector adapter for DeepLabCut external detector workflows.
@@ -418,3 +423,6 @@ class DARTDetectorModel(BaseExternalDetector):
             "coordinate_system": "absolute_pixels",
             "config": self.config.model_dump(mode="json"),
         }
+
+
+EXTERNAL_DETECTORS.register_module(module=DARTDetectorModel)

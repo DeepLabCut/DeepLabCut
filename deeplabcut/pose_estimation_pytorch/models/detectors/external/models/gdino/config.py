@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pydantic import Field
 
-from deeplabcut.pose_estimation_pytorch.models.detectors.external.models.config.base import (
+from deeplabcut.pose_estimation_pytorch.models.detectors.external.config.base import (
     PromptedDetectorConfig,
 )
 
