@@ -28,7 +28,7 @@ from deeplabcut.pose_estimation_pytorch.data.bboxes import (
     should_recompute_bbox_entry,
     validate_bbox_entry,
 )
-from deeplabcut.pose_estimation_pytorch.models.detectors.external.models.config.base import (
+from deeplabcut.pose_estimation_pytorch.models.detectors.external.config.base import (
     BBoxSelectionStrategy,
 )
 from deeplabcut.pose_estimation_pytorch.registry import Registry, build_from_cfg
