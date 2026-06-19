@@ -10,18 +10,14 @@
 #
 from __future__ import annotations
 
-import warnings
 from abc import ABC, abstractmethod
 from pathlib import Path
 
 import albumentations as A
 import numpy as np
 
-from deeplabcut.core.types import DEPRECATED_ARGUMENT
-from deeplabcut.pose_estimation_pytorch.config.data import (
-    GenSamplingConfig,
-)
-from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
+from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.pose_estimation_pytorch.config import GenSamplingConfig, PoseConfig
 from deeplabcut.pose_estimation_pytorch.data.dataset import (
     PoseDataset,
     PoseDatasetParameters,
@@ -51,12 +47,12 @@ class Loader(ABC):
             Returns a dictionary containing dataset parameters derived from the configuration.
     """
 
+    @renamed_parameter(old="model_config_path", new="model_config", since="3.1.0")
     def __init__(
         self,
         project_root: str | Path,
         image_root: str | Path,
         model_config: PoseConfig | dict | Path | str | None = None,
-        model_config_path: Path | str | None = DEPRECATED_ARGUMENT,
     ) -> None:
         """
         Initialize the Loader.
@@ -68,43 +64,22 @@ class Loader(ABC):
                 The pose model configuration. Can be a path to a YAML file, a PoseConfig object, or a dictionary.
             (model_config_path: The path to the pose model configuration. Deprecated, use `model_config` instead.)
         """
+        normalized_config: PoseConfig = PoseConfig.from_any(model_config)
 
-        def _resolve_legacy_args(model_config, model_config_path):
-            """Support for legacy argument `model_config_path`. returns new model_config arg"""
-            if model_config_path:
-                warnings.warn(
-                    "argument `model_config_path` in Loader.__init__ is deprecated, use `model_config` instead",
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
-                if model_config is not None:
-                    raise ValueError(
-                        "`model_config_path` and `model_config` arguments cannot be provided together! "
-                        "Please provide only `model_config`."
-                    )
-                if Path(model_config_path).is_dir():
-                    model_config_path = Path(model_config_path) / "pytorch_config.yaml"
-                model_config = model_config_path
-            elif model_config is None:
-                raise ValueError("`model_config` argument must be provided.")
-            return model_config
-
-        model_config = _resolve_legacy_args(model_config, model_config_path)
-        self.model_cfg: PoseConfig = PoseConfig.from_any(model_config)
-
-        def _infer_model_config_path(model_config: PoseConfig | dict | Path | str) -> Path:
-            """
-            Resolve the pose config path.
-            Either the input is a path, or it is specified in the field ``metadata.pose_config_path``.
-            """
+        def _infer_model_config_path(
+            model_config: PoseConfig | dict | Path | str,
+            normalized_config: PoseConfig,
+        ) -> Path:
+            """Resolve the pose config path from the input argument (if path), or the normalized config."""
             provided_path = Path(model_config) if isinstance(model_config, (Path, str)) else None
-            specified_path = self.model_cfg.select("metadata.pose_config_path")
-            model_config_path = provided_path or specified_path
+            path_from_config = normalized_config.select("metadata.pose_config_path")
+            model_config_path = provided_path or path_from_config
             if model_config_path is None:
                 raise ValueError("`model_config` must contain a `metadata.pose_config_path` field.")
             return Path(model_config_path)
 
-        self.model_config_path = _infer_model_config_path(model_config)
+        self.model_config_path = _infer_model_config_path(model_config, normalized_config)
+        self.model_cfg = normalized_config
 
         self.project_root = Path(project_root)
         self.image_root = Path(image_root)

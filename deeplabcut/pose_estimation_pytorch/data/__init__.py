@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from deeplabcut.pose_estimation_pytorch.config.data import GenSamplingConfig
+from deeplabcut.pose_estimation_pytorch.config import GenSamplingConfig
 from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.pose_estimation_pytorch.data.cocoloader import COCOLoader
 from deeplabcut.pose_estimation_pytorch.data.collate import COLLATE_FUNCTIONS

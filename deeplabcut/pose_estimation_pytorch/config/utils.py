@@ -15,10 +15,9 @@ from __future__ import annotations
 import copy
 from pathlib import Path
 
-from deeplabcut.core.config import read_config_as_dict
-from deeplabcut.core.config.utils import ensure_plain_config
+from deeplabcut.core.config import ensure_plain_config, read_config_as_dict
+from deeplabcut.core.deprecation import deprecated
 from deeplabcut.utils import auxiliaryfunctions
-from deeplabcut.utils.deprecation import deprecated
 
 
 @ensure_plain_config

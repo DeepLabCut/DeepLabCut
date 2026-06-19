@@ -28,11 +28,11 @@ from pathlib import Path
 import pandas as pd
 
 from deeplabcut.core import config as core_config
+from deeplabcut.core.deprecation import deprecated
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.trackingutils import TRACK_METHODS
 from deeplabcut.utils import auxfun_multianimal
 from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS, collect_video_paths
-from deeplabcut.utils.deprecation import deprecated
 
 # NOTE @deruyter92 2026-01-29: Configuration I/O is now centralized in deeplabcut.core.config
 # These functions are exported here for backwards compatibility with existing code.

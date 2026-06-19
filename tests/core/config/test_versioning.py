@@ -21,7 +21,7 @@ from deeplabcut.core.config.versioning import (
     migrate_config,
     register_migration,
 )
-from deeplabcut.utils.deprecation import DLCDeprecationWarning
+from deeplabcut.core.deprecation import DLCDeprecationWarning
 
 _LOGGER_NAME = "deeplabcut.core.config.versioning"
 

@@ -46,10 +46,11 @@ from skimage.draw import disk, line_aa, rectangle_perimeter, set_color
 from skimage.util import img_as_ubyte
 from tqdm import trange
 
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.core.engine import Engine
+from deeplabcut.pose_estimation_pytorch.config import PoseConfig
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions, visualization
 from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
-from deeplabcut.utils.deprecation import renamed_parameter
 from deeplabcut.utils.video_processor import (
     VideoProcessorCV as vp,
 )  # used to CreateVideo
@@ -670,15 +671,11 @@ def create_labeled_video(
         )
         model_config_path = Path(config).parent / model_folder / "train" / Engine.PYTORCH.pose_cfg_name
         if model_config_path.exists():
-            model_config = auxiliaryfunctions.read_plainconfig(str(model_config_path))
-            # TODO @deruyter92: This pattern should be refactored throughout the codebase
-            # it is reading a config value that is supposed to be missing / None.
-            if (model_config["train_settings"].get("weight_init") or {}).get("memory_replay", False):
+            model_config = PoseConfig.from_yaml(model_config_path)
+            if model_config.select("train_settings.weight_init.memory_replay"):
                 superanimal_name = model_config["train_settings"]["weight_init"]["dataset"]
             if bboxes_pcutoff is None:
-                # TODO @deruyter92: This pattern should be refactored throughout the codebase
-                # it is reading a config value that is supposed to be missing / None.
-                bboxes_pcutoff = ((model_config.get("detector") or {}).get("model") or {}).get("box_score_thresh", 0.6)
+                bboxes_pcutoff = model_config.select("detector.model.box_score_thresh") or 0.6
         else:
             if bboxes_pcutoff is None:
                 bboxes_pcutoff = 0.6
@@ -1295,11 +1292,9 @@ def create_video_with_all_detections(
             clip = vp(fname=video, sname=outputname, codec="mp4v")
             ny, nx = clip.height(), clip.width()
 
-            # TODO @deruyter92: This pattern should be refactored throughout the codebase
-            # it is reading a config value that is supposed to be missing / None.
-            bboxes_pcutoff = (
-                (((metadata.get("data") or {}).get("pytorch-config") or {}).get("detector") or {}).get("model") or {}
-            ).get("box_score_thresh", 0.6)
+            bboxes_pcutoff = 0.6
+            if pytorch_cfg := (metadata.get("data") or {}).get("pytorch-config"):
+                bboxes_pcutoff = PoseConfig.from_any(pytorch_cfg).select("detector.model.box_score_thresh") or 0.6
             bboxes_color = (255, 0, 0)
 
             for n in trange(clip.nframes):

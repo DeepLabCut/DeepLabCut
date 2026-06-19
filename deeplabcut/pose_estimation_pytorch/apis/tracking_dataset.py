@@ -22,11 +22,11 @@ import deeplabcut.pose_estimation_pytorch.models as models
 import deeplabcut.pose_estimation_pytorch.runners as runners
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.core.config import read_config_as_dict
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.pose_estimation_pytorch.apis.videos import VideoIterator
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_tracking_pytorch import create_triplets_dataset
 from deeplabcut.utils.auxfun_videos import collect_video_paths
-from deeplabcut.utils.deprecation import renamed_parameter
 
 
 def build_feature_extraction_runner(

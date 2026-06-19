@@ -50,7 +50,7 @@ class COCOLoaderConfig(DLCBaseConfig):
     """
 
     type: Literal[DataLoaderType.COCOLoader]
-    # TODO @deruyter92 2026-06-05: COCOLoader is never build from config, add confg when needed
+    # TODO @deruyter92 2026-06-05: COCOLoader is never build from config, add config when needed
 
 
 class DataTransformationConfig(DLCBaseConfig):
@@ -121,16 +121,6 @@ class GenSamplingConfig(DLCBaseConfig):
     swap_prob: Fraction = 0.08
     inv_prob: Fraction = 0.03
     miss_prob: Fraction = 0.10
-
-    def to_dict(self) -> dict:
-        return {
-            "keypoint_sigmas": self.keypoint_sigmas,
-            "keypoints_symmetry": self.keypoints_symmetry,
-            "jitter_prob": self.jitter_prob,
-            "swap_prob": self.swap_prob,
-            "inv_prob": self.inv_prob,
-            "miss_prob": self.miss_prob,
-        }
 
 
 class DetectorDataConfig(DLCBaseConfig):

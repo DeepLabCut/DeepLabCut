@@ -24,6 +24,7 @@ import statsmodels.api as sm
 from skimage.util import img_as_ubyte
 
 from deeplabcut.core import inferenceutils
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.utils import (
     auxfun_multianimal,
     auxiliaryfunctions,
@@ -32,7 +33,6 @@ from deeplabcut.utils import (
     visualization,
 )
 from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
-from deeplabcut.utils.deprecation import renamed_parameter
 
 
 def find_outliers_in_raw_data(

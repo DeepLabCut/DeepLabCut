@@ -17,8 +17,8 @@ from pathlib import Path
 
 import numpy as np
 
-from deeplabcut.core.types import DEPRECATED_ARGUMENT
-from deeplabcut.pose_estimation_pytorch.config.pose import MethodType, PoseConfig
+from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.pose_estimation_pytorch.config import MethodType, PoseConfig
 from deeplabcut.pose_estimation_pytorch.data.base import Loader
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.utils import (
@@ -40,19 +40,19 @@ class COCOLoader(Loader):
     Examples:
         loader = COCOLoader(
             project_root='/path/to/project/',
-            model_config_path='/path/to/project/experiments/train/pytorch_config.yaml'
+            model_config='/path/to/project/experiments/train/pytorch_config.yaml',
             train_json_filename="train.json",
             test_json_filename="test.json",
         )
     """
 
+    @renamed_parameter(old="model_config_path", new="model_config", since="3.0.0")
     def __init__(
         self,
         project_root: str | Path,
         model_config: PoseConfig | dict | Path | str | None = None,
         train_json_filename: str = "train.json",
         test_json_filename: str = "test.json",
-        model_config_path: str | Path | None = DEPRECATED_ARGUMENT,
     ):
         """
         Initialize the COCOLoader.
@@ -63,10 +63,9 @@ class COCOLoader(Loader):
                 file, a PoseConfig object, or a dictionary.
             train_json_filename: The name of the JSON file containing the train annotations.
             test_json_filename: The name of the JSON file containing the test annotations.
-            model_config_path: The path to the pose model configuration. Deprecated, use `model_config` instead.
         """
         image_root = Path(project_root) / "images"
-        super().__init__(project_root, image_root, model_config, model_config_path)
+        super().__init__(project_root, image_root, model_config)
         self.train_json_filename = train_json_filename
         self.test_json_filename = test_json_filename
         self._dataset_parameters = None

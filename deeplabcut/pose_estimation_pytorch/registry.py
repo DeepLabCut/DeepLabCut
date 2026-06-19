@@ -12,7 +12,7 @@ import inspect
 from functools import partial
 from typing import Any
 
-from deeplabcut.core.config.utils import ensure_plain_config
+from deeplabcut.core.config import ensure_plain_config
 
 
 # NOTE @deruyter92 2026-02-17: The configuration is currently converted to a

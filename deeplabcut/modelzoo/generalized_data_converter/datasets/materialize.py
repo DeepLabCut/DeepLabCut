@@ -19,9 +19,7 @@ import pandas as pd
 import scipy.io as sio
 
 import deeplabcut.compat as compat
-from deeplabcut.core.config import write_project_config
-from deeplabcut.core.config.project_config import ProjectConfig
-from deeplabcut.core.config.utils import normalize_for_serialization
+from deeplabcut.core.config import ProjectConfig, normalize_for_serialization, write_project_config
 from deeplabcut.generate_training_dataset.multiple_individuals_trainingsetmanipulation import (
     create_multianimaltraining_dataset,
     format_multianimal_training_data,

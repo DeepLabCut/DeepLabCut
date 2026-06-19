@@ -268,10 +268,10 @@ class DLCBaseConfig(BaseModel):
         except (AttributeError, KeyError, TypeError):
             return default
 
-    def set_nested(self, path: str, value: Any) -> None:
+    def set_nested(self, path: str, value: Any) -> Self:
         if "." not in path:
             setattr(self, path, value)
-            return
+            return self
         parts = path.split(".")
         parent_fields, final_field = parts[:-1], parts[-1]
         try:

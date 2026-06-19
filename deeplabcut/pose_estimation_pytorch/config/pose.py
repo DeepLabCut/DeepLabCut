@@ -21,8 +21,7 @@ if TYPE_CHECKING:
 from pydantic import Field, field_validator
 from typing_extensions import Self
 
-from deeplabcut.core.config import DLCBaseConfig, DLCVersionedConfig
-from deeplabcut.core.config.project_config import ProjectConfig
+from deeplabcut.core.config import DLCBaseConfig, DLCVersionedConfig, ProjectConfig
 from deeplabcut.core.config.validation import Fraction, NonNegativeInt, UniqueStrList
 from deeplabcut.pose_estimation_pytorch.config.data import DataConfig, DetectorDataConfig
 from deeplabcut.pose_estimation_pytorch.config.enums import DatasetType, DetectorType, MethodType, NetType

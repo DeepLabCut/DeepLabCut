@@ -28,7 +28,7 @@ import deeplabcut.pose_estimation_pytorch.post_processing.nms as nms
 import deeplabcut.pose_estimation_pytorch.runners.ctd as ctd
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.core.inferenceutils import calc_object_keypoint_similarity
-from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
+from deeplabcut.pose_estimation_pytorch.config import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.data.postprocessor import Postprocessor
 from deeplabcut.pose_estimation_pytorch.data.preprocessor import LoadImage, Preprocessor
 from deeplabcut.pose_estimation_pytorch.models.detectors import BaseDetector

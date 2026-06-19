@@ -23,12 +23,12 @@ import pandas as pd
 from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import predict as single_predict
 from deeplabcut.pose_estimation_tensorflow.core import predict_multianimal as predict
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
-from deeplabcut.utils.deprecation import renamed_parameter
 
 warnings.simplefilter("ignore", category=RuntimeWarning)
 
