@@ -23,11 +23,12 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from deeplabcut.core.config.project_config import ProjectConfig
-
 import numpy as np
 import ruamel.yaml.representer
 from pydantic import ValidationError
 from ruamel.yaml import YAML
+
+from deeplabcut.core.config.base_config import DLCBaseConfig
 
 logger = logging.getLogger(__name__)
 

@@ -4,6 +4,8 @@ from deeplabcut.core.config.utils import (
     create_config_template,
     create_config_template_3d,
     edit_config,
+    get_yaml_dumper,
+    get_yaml_loader,
     pretty_print,
     read_config,
     read_config_as_dict,
@@ -31,4 +33,6 @@ __all__ = [
     "write_config_3d",
     "write_config_3d_template",
     "write_project_config",
+    "get_yaml_loader",
+    "get_yaml_dumper",
 ]
