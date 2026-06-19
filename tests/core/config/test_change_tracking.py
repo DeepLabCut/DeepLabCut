@@ -15,7 +15,7 @@ import pytest
 from pydantic import Field, ValidationError
 
 from deeplabcut.core.config import DLCVersionedConfig
-from deeplabcut.utils.deprecation import DLCDeprecationWarning
+from deeplabcut.core.deprecation import DLCDeprecationWarning
 
 
 class TrackedConfig(DLCVersionedConfig):

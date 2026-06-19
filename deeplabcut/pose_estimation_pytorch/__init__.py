@@ -32,12 +32,12 @@ from deeplabcut.pose_estimation_pytorch.apis import (
     visualize_predictions,
 )
 from deeplabcut.pose_estimation_pytorch.config import (
+    GenSamplingConfig,
     available_detectors,
     available_models,
     is_model_cond_top_down,
     is_model_top_down,
 )
-from deeplabcut.pose_estimation_pytorch.config.data import GenSamplingConfig
 from deeplabcut.pose_estimation_pytorch.data import (
     COLLATE_FUNCTIONS,
     COCOLoader,

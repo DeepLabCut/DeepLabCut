@@ -20,6 +20,7 @@ from pathlib import Path
 import torch
 from dlclibrary.dlcmodelzoo.modelzoo_download import download_huggingface_model
 
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.modelzoo.utils import get_super_animal_scorer
 from deeplabcut.pose_estimation_pytorch.config import PoseConfig
 from deeplabcut.pose_estimation_pytorch.modelzoo.train_from_coco import adaptation_train
@@ -28,7 +29,6 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     get_super_animal_snapshot_path,
 )
 from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
-from deeplabcut.utils.deprecation import renamed_parameter
 from deeplabcut.utils.pseudo_label import (
     dlc3predictions_2_annotation_from_video,
     video_to_frames,

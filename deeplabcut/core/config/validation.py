@@ -26,7 +26,7 @@ def less_than(
     name: str,
     threshold_name: str | None = None,
 ) -> None:
-    if value > threshold:
+    if value >= threshold:
         raise ValueError(f"{_describe(value, name)} must be less than {_describe(threshold, threshold_name)}")
 
 

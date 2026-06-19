@@ -20,8 +20,7 @@ from pathlib import Path
 
 import numpy as np
 
-from deeplabcut.core.config.project_config import ProjectConfig
-from deeplabcut.core.config.utils import get_yaml_dumper, get_yaml_loader
+from deeplabcut.core.config import ProjectConfig, get_yaml_dumper, get_yaml_loader
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils import auxiliaryfunctions
 

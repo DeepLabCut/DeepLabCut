@@ -11,7 +11,7 @@ import pytest
 from pydantic import Field, ValidationError
 
 from deeplabcut.core.config import DLCBaseConfig, DLCVersionedConfig
-from deeplabcut.utils.deprecation import DLCDeprecationWarning
+from deeplabcut.core.deprecation import DLCDeprecationWarning
 
 _TOY_VERSION_OLD = 98
 _TOY_VERSION_NEW = 99

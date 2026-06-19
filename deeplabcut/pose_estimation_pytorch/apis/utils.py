@@ -27,6 +27,7 @@ from torchvision.models.detection import (
 )
 
 from deeplabcut.core.config import ProjectConfig
+from deeplabcut.core.deprecation import deprecated
 from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
@@ -67,7 +68,6 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import resolve_device
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS, collect_video_paths
-from deeplabcut.utils.deprecation import deprecated
 
 
 def parse_snapshot_index_for_analysis(

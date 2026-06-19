@@ -17,8 +17,8 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from deeplabcut.core.config import read_config_as_dict
-from deeplabcut.core.config.project_config import ProjectConfig
+from deeplabcut.core.config import ProjectConfig, read_config_as_dict
+from deeplabcut.core.deprecation import deprecated
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.config.enums import DetectorType, NetType
 from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
@@ -31,7 +31,6 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     replace_default_values,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
-from deeplabcut.utils.deprecation import deprecated
 
 if TYPE_CHECKING:
     from deeplabcut.pose_estimation_pytorch.config import DetectorConfig, PoseConfig, TestConfig

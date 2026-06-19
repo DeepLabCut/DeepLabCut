@@ -28,7 +28,7 @@ import ruamel.yaml.representer
 from pydantic import ValidationError
 from ruamel.yaml import YAML
 
-from deeplabcut.core.config.base_config import DLCBaseConfig
+from deeplabcut.core.deprecation import deprecated
 
 logger = logging.getLogger(__name__)
 
@@ -114,7 +114,7 @@ def resolve_alias(
     """
     canonical = alias_map.get(name, name)
     if warn and name in alias_map:
-        from deeplabcut.utils.deprecation import DLCDeprecationWarning
+        from deeplabcut.core.deprecation import DLCDeprecationWarning
 
         warnings.warn(
             f"'{name}' is deprecated, use '{canonical}' instead.",
@@ -238,6 +238,7 @@ def ensure_plain_config(fn: Callable) -> Callable:
 # -----------------------------------------------------------------------------
 
 
+@deprecated(replacement="deeplabcut.core.config.ProjectConfig", since="3.1")
 def create_config_template(multianimal: bool = False) -> tuple:
     """
     Creates a template for config.yaml file. This specific order is preserved while saving as yaml file.
@@ -245,7 +246,6 @@ def create_config_template(multianimal: bool = False) -> tuple:
     Returns:
         (cfg_file, ruamelFile) for further editing and dumping.
     """
-    warnings.warn("This function is deprecated. Use deeplabcut.core.config.ProjectConfig instead.", stacklevel=2)
     from deeplabcut.core.config.project_config import ProjectConfig
 
     ruamelFile = get_yaml_dumper()

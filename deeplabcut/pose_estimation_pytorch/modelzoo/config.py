@@ -27,6 +27,7 @@ import deeplabcut.utils.auxiliaryfunctions as af
 from deeplabcut.core.config import (
     read_config_as_dict,
 )
+from deeplabcut.core.deprecation import deprecated
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.pose_estimation_pytorch.config.metadata import PoseMetadata
@@ -35,7 +36,6 @@ from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     get_super_animal_project_config_path,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
-from deeplabcut.utils.deprecation import deprecated
 
 
 def build_superanimal_metadata(super_animal: str, model_name: str, max_individuals: int) -> dict:

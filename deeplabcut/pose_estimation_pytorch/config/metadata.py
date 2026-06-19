@@ -3,8 +3,7 @@ from pathlib import Path
 from pydantic import Field
 from typing_extensions import Self
 
-from deeplabcut.core.config import DLCBaseConfig
-from deeplabcut.core.config.project_config import ProjectConfig
+from deeplabcut.core.config import DLCBaseConfig, ProjectConfig
 from deeplabcut.core.config.validation import UniqueStrList
 
 
@@ -17,7 +16,7 @@ class PoseMetadata(DLCBaseConfig):
     unique_bodyparts: UniqueStrList = Field(default_factory=list, json_schema_extra={"aliases": ["uniquebodyparts"]})
     individuals: UniqueStrList = Field(default_factory=lambda: ["individual_1"])
 
-    # TODO @deruyter92 2026-06-09: Nullable field to support old configs with empty identity field -> fix in v1.
+    # TODO @deruyter92 2026-06-09: Nullable field to support old configs with empty identity field -> fix in v1
     with_identity: bool | None = Field(default=None, json_schema_extra={"aliases": ["identity"]})
 
     @property

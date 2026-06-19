@@ -32,7 +32,7 @@ from deeplabcut.core.config import (
     write_config_3d_template,
     write_project_config,
 )
-from deeplabcut.utils.deprecation import DLCDeprecationWarning
+from deeplabcut.core.deprecation import DLCDeprecationWarning
 
 # -----------------------------------------------------------------------------
 # read_config_as_dict
@@ -286,7 +286,7 @@ def test_read_config_breaks_for_yaml_tags(tmp_path):
         read_config(config_path)
 
 
-def test_read_config_breaks_for_invalid_fieds(tmp_path):
+def test_read_config_breaks_for_invalid_fields(tmp_path):
     """read_config raises when the YAML contains field names not declared by ProjectConfig."""
     config_path = tmp_path / "typos.yaml"
     config_path.write_text(

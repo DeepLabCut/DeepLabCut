@@ -10,7 +10,7 @@ import pytest
 from pydantic import Field, ValidationError
 
 from deeplabcut.core.config import DLCBaseConfig, DLCVersionedConfig, ProjectConfig, versioning
-from deeplabcut.utils.deprecation import DLCDeprecationWarning
+from deeplabcut.core.deprecation import DLCDeprecationWarning
 
 # -----------------------------------------------------------------------------
 # In-place nested mutation

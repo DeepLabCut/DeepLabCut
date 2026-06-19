@@ -47,5 +47,5 @@ class DetectorModelConfig(DLCBaseConfig):
     type: str = ""
     freeze_bn_stats: bool = False
     freeze_bn_weights: bool = False
-    variant: str = ""
-    box_score_thresh: Fraction = 0.6
+    variant: str | None = None
+    box_score_thresh: Fraction | None = None

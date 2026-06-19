@@ -27,6 +27,7 @@ from tqdm import tqdm
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.core.config import ProjectConfig
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.pose_estimation_pytorch.apis.ctd import (
     get_condition_provider,
     get_conditions_provider_for_video,
@@ -48,7 +49,6 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import VideoReader, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import collect_video_paths
-from deeplabcut.utils.deprecation import renamed_parameter
 
 
 class VideoIterator(VideoReader):

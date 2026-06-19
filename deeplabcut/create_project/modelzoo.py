@@ -35,14 +35,12 @@ from deeplabcut.generate_training_dataset.trainingsetmanipulation import (
     MakeInference_yaml,
 )
 from deeplabcut.modelzoo.utils import get_super_animal_project_cfg
-from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
-    # add_metadata,
+from deeplabcut.pose_estimation_pytorch.config import (
+    PoseMetadata,
     make_pytorch_test_config,
 )
-from deeplabcut.pose_estimation_pytorch.config.metadata import PoseMetadata
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import load_super_animal_config
 from deeplabcut.utils import auxiliaryfunctions
-from deeplabcut.utils.deprecation import renamed_parameter
 
 Modeloptions = MODELOPTIONS  # backwards compatibility for COLAB NOTEBOOK
 

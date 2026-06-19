@@ -19,9 +19,9 @@ import numpy as np
 
 import deeplabcut.core.visualization as visualization
 from deeplabcut.core.config import read_config_as_dict
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
-from deeplabcut.utils.deprecation import renamed_parameter
 
 DEFAULT_ENGINE = Engine.PYTORCH
 

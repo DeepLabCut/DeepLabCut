@@ -21,8 +21,8 @@ import torch
 from dlclibrary import download_huggingface_model
 
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
+from deeplabcut.core.deprecation import deprecated
 from deeplabcut.utils import auxiliaryfunctions
-from deeplabcut.utils.deprecation import deprecated
 
 # COCO category ID for the "person" class.
 COCO_PERSON_CATEGORY_ID = 1

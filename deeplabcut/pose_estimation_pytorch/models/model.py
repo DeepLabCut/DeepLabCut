@@ -18,7 +18,7 @@ import torch
 import torch.nn as nn
 
 from deeplabcut.core.weight_init import WeightInitialization
-from deeplabcut.pose_estimation_pytorch.config.model import ModelConfig
+from deeplabcut.pose_estimation_pytorch.config import ModelConfig
 from deeplabcut.pose_estimation_pytorch.models.backbones import BACKBONES, BaseBackbone
 from deeplabcut.pose_estimation_pytorch.models.criterions import (
     CRITERIONS,

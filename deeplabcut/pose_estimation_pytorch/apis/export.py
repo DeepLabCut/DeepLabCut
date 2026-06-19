@@ -17,8 +17,8 @@ import torch
 
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.data as dlc3_data
-from deeplabcut.core.config.project_config import ProjectConfig
-from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
+from deeplabcut.core.config import ProjectConfig
+from deeplabcut.pose_estimation_pytorch.config import PoseConfig
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.task import Task
 

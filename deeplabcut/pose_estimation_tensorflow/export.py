@@ -17,7 +17,7 @@ from pathlib import Path
 
 import tensorflow as tf
 
-from deeplabcut.core.config.utils import get_yaml_loader
+from deeplabcut.core.config import get_yaml_loader
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import predict
 from deeplabcut.utils import auxiliaryfunctions
