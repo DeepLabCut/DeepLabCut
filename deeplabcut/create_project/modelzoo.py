@@ -23,7 +23,8 @@ from dlclibrary.dlcmodelzoo.modelzoo_download import (
 )
 
 import deeplabcut
-from deeplabcut.core.config import read_config_as_dict
+from deeplabcut.core.config import ProjectConfig
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import (
     DataSplit,
@@ -404,10 +405,11 @@ def create_pretrained_project_pytorch(
         cfg_edits["multianimalbodyparts"] = super_animal_bodyparts
     else:
         cfg_edits["bodyparts"] = super_animal_bodyparts
-    auxiliaryfunctions.edit_config(cfg_path, edits=cfg_edits)
+    config = ProjectConfig.from_yaml(cfg_path)
+    config.update(cfg_edits)
+    config.to_yaml(cfg_path, log_changes=True, mark_clean=True)
 
     # Create the shuffle train and test directories
-    config = read_config_as_dict(cfg_path)
     shuffle_dir = Path(cfg_path).parent / auxiliaryfunctions.get_model_folder(
         trainFraction=config["TrainingFraction"][0],
         shuffle=1,
@@ -568,7 +570,9 @@ def create_pretrained_project_tensorflow(
             project, experimenter, videos, working_directory, copy_videos, video_extensions=video_extensions
         )
         if trainFraction is not None:
-            auxiliaryfunctions.edit_config(cfg, {"TrainingFraction": [trainFraction]})
+            ProjectConfig.from_yaml(cfg).update(TrainingFraction=[trainFraction]).to_yaml(
+                cfg, log_changes=True, mark_clean=True
+            )
 
         config = auxiliaryfunctions.read_config(cfg)
         if model == "full_human":
@@ -662,7 +666,7 @@ def create_pretrained_project_tensorflow(
             "bodyparts": pose_cfg["all_joints_names"],
             "dotsize": 6,
         }
-        auxiliaryfunctions.edit_config(cfg, dict_)
+        ProjectConfig.from_yaml(cfg).update(dict_).to_yaml(cfg, log_changes=True, mark_clean=True)
 
         # downloading base encoder / not required unless on re-trains
         # (but when a training set is created this happens anyway)

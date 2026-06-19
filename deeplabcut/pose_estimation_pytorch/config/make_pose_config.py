@@ -29,7 +29,6 @@ from deeplabcut.pose_estimation_pytorch.config.utils import (
     load_backbones,
     load_base_config,
     replace_default_values,
-    update_config,
 )
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.utils.deprecation import deprecated
@@ -194,8 +193,8 @@ def build_pose_config_defaults(
     aug_filename = "aug_default.yaml" if task == Task.BOTTOM_UP else "aug_top_down.yaml"
     aug_cfg = {"data": read_config_as_dict(configs_dir / "base" / aug_filename)}
 
-    model_cfg = update_config(model_cfg, aug_cfg)
-    model_cfg = update_config(base_cfg, model_cfg)
+    model_cfg = _update_config(model_cfg, aug_cfg)
+    model_cfg = _update_config(base_cfg, model_cfg)
 
     # add a unique bodypart head if needed
     if metadata.unique_bodyparts:
@@ -260,7 +259,7 @@ def build_detector_config_defaults(
         the model configuration with an added detector config
     """
     configs_dir = get_config_folder_path()
-    detector_config = update_config(
+    detector_config = _update_config(
         read_config_as_dict(configs_dir / "base" / "base_detector.yaml"),
         read_config_as_dict(configs_dir / "detectors" / f"{detector_type.value}.yaml"),
     )
@@ -326,6 +325,38 @@ def resolve_net_type_and_task(
             )
     task = _resolve_task(net_type, top_down=top_down)
     return net_type, task
+
+
+# NOTE @deruyter92 2026-06-19: Moved this from public API to internal use only.
+# Only used for construction of default config dictionaries. Can likely be refactored.
+def _update_config(config: dict, updates: dict, copy_original: bool = True) -> dict:
+    """Updates items in the configuration file.
+
+    The configuration dict should only be composed of primitive Python types
+    (dict, list and values). This is the case when reading the file using
+    `read_config_as_dict`.
+
+    Args:
+        config: the configuration dict to update
+        updates: the updates to make to the configuration dict
+        copy_original: whether to copy the original dict before updating it
+
+    Returns:
+        the updated dictionary
+    """
+    if copy_original:
+        config = copy.deepcopy(config)
+
+    for k, v in updates.items():
+        if k in config and isinstance(config[k], dict) and isinstance(v, dict):
+            if k in ("optimizer", "scheduler") and config["type"] != v["type"]:
+                # if changing the optimizer or scheduler type, update all values
+                config[k] = v
+            else:
+                config[k] = _update_config(config[k], v, copy_original=False)
+        else:
+            config[k] = copy.deepcopy(v)
+    return config
 
 
 def _add_ctd_conditions(model_cfg: dict, ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int]):

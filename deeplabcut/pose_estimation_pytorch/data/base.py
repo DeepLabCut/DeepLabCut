@@ -17,7 +17,6 @@ from pathlib import Path
 import albumentations as A
 import numpy as np
 
-import deeplabcut.pose_estimation_pytorch.config as config
 from deeplabcut.core.types import DEPRECATED_ARGUMENT
 from deeplabcut.pose_estimation_pytorch.config.data import (
     GenSamplingConfig,
@@ -141,15 +140,18 @@ class Loader(ABC):
             prefix = Task.DETECT.snapshot_prefix
         return list_snapshots(self.model_folder, prefix, best_in_last=best_in_last)
 
-    def update_model_cfg(self, updates: dict) -> None:
+    def update_model_cfg(self, updates: dict, log_changes: bool = False, save_config: bool = True) -> None:
         """Updates the model configuration.
 
         Args:
             updates: the items to update in the model configuration
         """
-        cfg_dict = config.update_config_by_dotpath(self.model_cfg.to_dict(), updates)
-        self.model_cfg = PoseConfig.from_dict(cfg_dict)
-        self.model_cfg.to_yaml(self.model_config_path)
+        for key, value in updates.items():
+            self.model_cfg.set_nested(key, value)
+        if log_changes:
+            self.model_cfg.log_changes()
+        if save_config:
+            self.model_cfg.to_yaml(self.model_config_path)
 
     @abstractmethod
     def load_data(self, mode: str = "train") -> dict[str, list[dict]]:

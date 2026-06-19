@@ -146,14 +146,17 @@ def benchmark_paf_graphs(
             print(f"|   edges: {best_edges}")
             print()
 
-        # TODO @deruyter92: Mid-way updates of the config are not ideal.
-        # We should validate this against the pydantic schema.
-
         # update the edges to keep in the PyTorch configuration file
-        loader.update_model_cfg({"model.heads.bodypart.predictor.edges_to_keep": best_edges})
+        loader.model_cfg.model.heads["bodypart"]["predictor"]["edges_to_keep"] = best_edges
+        loader.model_cfg.log_changes()
+        loader.model_cfg.to_yaml(loader.model_config_path)
 
         # update the edges indices
         test_config = loader.model_folder.parent / "test" / "pose_cfg.yaml"
+
+        # NOTE @deruyter92 2026-06-23: Pruned edges are persisted on loader.model_cfg
+        # (edges_to_keep). The paf_best on test/pose_cfg.yaml is a legacy field still
+        # read by PyTorch shelving/videos metadata (PAFinds).
         auxiliaryfunctions.edit_config(str(test_config), dict(paf_best=best_edges))
 
     return results
