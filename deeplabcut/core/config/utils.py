@@ -374,6 +374,10 @@ def edit_config(configname: str | Path, edits: dict, output_name: str | Path = "
     """
     Convenience function to edit and save a config file from a dictionary.
 
+    Note:
+        Legacy helper without schema validation. Prefer manipulating and saving
+        the typed config instead (e.g. cfg.update(edits).to_yaml(cfg_path))
+
     Parameters
     ----------
     configname : string

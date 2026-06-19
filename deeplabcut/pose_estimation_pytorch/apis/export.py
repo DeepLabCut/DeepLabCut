@@ -17,14 +17,14 @@ import torch
 
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.data as dlc3_data
-import deeplabcut.utils.auxiliaryfunctions as af
+from deeplabcut.core.config.project_config import ProjectConfig
 from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.runners.snapshots import Snapshot
 from deeplabcut.pose_estimation_pytorch.task import Task
 
 
 def export_model(
-    config: str | Path,
+    config: ProjectConfig | dict | Path | str,
     shuffle: int = 1,
     trainingsetindex: int = 0,
     snapshotindex: int | None = None,
@@ -77,7 +77,7 @@ def export_model(
         >>>     snapshotindex=-1,
         >>> )
     """
-    cfg = af.read_config(str(config))
+    cfg = ProjectConfig.from_any(config)
     if iteration is not None:
         cfg["iteration"] = iteration
 
@@ -180,19 +180,15 @@ def get_export_filename(
     return export_filename + ".pt"
 
 
-def wipe_paths_from_model_config(model_cfg: dict) -> None:
+def wipe_paths_from_model_config(model_cfg: PoseConfig) -> None:
     """Removes all paths from the contents of the ``pytorch_config`` file.
 
     Args:
         model_cfg: The model configuration to wipe.
     """
-    model_cfg["metadata"]["project_path"] = ""
-    model_cfg["metadata"]["pose_config_path"] = ""
-    if "weight_init" in model_cfg["train_settings"]:
-        model_cfg["train_settings"]["weight_init"] = None
-    if "resume_training_from" in model_cfg:
-        model_cfg["resume_training_from"] = None
-    # TODO @deruyter92: This pattern should be refactored throughout the codebase
-    # it is reading a config value that is supposed to be missing / None.
-    if "resume_training_from" in (model_cfg.get("detector") or {}):
-        model_cfg["detector"]["resume_training_from"] = None
+    model_cfg.metadata.project_path = None
+    model_cfg.metadata.pose_config_path = None
+    model_cfg.train_settings.weight_init = None
+    model_cfg.resume_training_from = None
+    if model_cfg.detector is not None:
+        model_cfg.detector.resume_training_from = None

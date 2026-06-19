@@ -24,7 +24,7 @@ from typing_extensions import Self
 from deeplabcut.core.config import DLCBaseConfig, DLCVersionedConfig
 from deeplabcut.core.config.project_config import ProjectConfig
 from deeplabcut.core.config.validation import Fraction, NonNegativeInt, UniqueStrList
-from deeplabcut.pose_estimation_pytorch.config.data import DataConfig
+from deeplabcut.pose_estimation_pytorch.config.data import DataConfig, DetectorDataConfig
 from deeplabcut.pose_estimation_pytorch.config.enums import DatasetType, DetectorType, MethodType, NetType
 from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.config.logger import (
@@ -50,7 +50,7 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 class DetectorConfig(DLCBaseConfig):
     model: DetectorModelConfig
     device: str = "auto"
-    data: DataConfig | None = None
+    data: DetectorDataConfig | None = None
     runner: RunnerConfig | None = None
     train_settings: TrainSettingsConfig | None = None
     inference: InferenceConfig = Field(default_factory=InferenceConfig)
@@ -97,13 +97,13 @@ class PoseConfig(DLCVersionedConfig):
     net_type: NetType = NetType.RESNET_50
     method: MethodType = MethodType.BOTTOM_UP
     device: str = "auto"
-    metadata: PoseMetadata | None = None
-    data: DataConfig | None = None
+    metadata: PoseMetadata
+    data: DataConfig
+    runner: RunnerConfig
+    train_settings: TrainSettingsConfig
     inference: InferenceConfig = Field(default_factory=InferenceConfig)
     logger: CSVLoggerConfig | WandbLoggerConfig | None = Field(default=None, discriminator="type")
     with_center_keypoints: bool = False
-    runner: RunnerConfig | None = None
-    train_settings: TrainSettingsConfig | None = None
     detector: DetectorConfig | None = None
     resume_training_from: str | None = None
 

@@ -301,36 +301,35 @@ def train_network(
                 train_json_filename="memory_replay_train.json",
             )
 
-    cfg_updates = {}
-
     # Pose model training settings
     if batch_size is not None:
-        cfg_updates["train_settings.batch_size"] = batch_size
+        loader.model_cfg.train_settings.batch_size = batch_size
     if epochs is not None:
-        cfg_updates["train_settings.epochs"] = epochs
+        loader.model_cfg.train_settings.epochs = epochs
     if save_epochs is not None:
-        cfg_updates["runner.snapshots.save_epochs"] = save_epochs
+        loader.model_cfg.runner.snapshots.save_epochs = save_epochs
     if display_iters is not None:
-        cfg_updates["train_settings.display_iters"] = display_iters
+        loader.model_cfg.train_settings.display_iters = display_iters
 
     # Detector config settings (if exists)
     if loader.model_cfg.get("detector") is not None:
         if detector_batch_size is not None:
-            cfg_updates["detector.train_settings.batch_size"] = detector_batch_size
+            loader.model_cfg.detector.train_settings.batch_size = detector_batch_size
         if detector_epochs is not None:
-            cfg_updates["detector.train_settings.epochs"] = detector_epochs
+            loader.model_cfg.detector.train_settings.epochs = detector_epochs
         if detector_save_epochs is not None:
-            cfg_updates["detector.runner.snapshots.save_epochs"] = detector_save_epochs
+            loader.model_cfg.detector.runner.snapshots.save_epochs = detector_save_epochs
         if display_iters is not None:
-            cfg_updates["detector.train_settings.display_iters"] = display_iters
+            loader.model_cfg.detector.train_settings.display_iters = display_iters
 
     # Optional generic overrides
     if pytorch_cfg_updates is not None:
-        cfg_updates.update(pytorch_cfg_updates)
+        for key, value in pytorch_cfg_updates.items():
+            loader.model_cfg.set_nested(key, value)
 
-    # Only call update if anything changed
-    if cfg_updates:
-        loader.update_model_cfg(cfg_updates)
+    # Save the updated config
+    loader.model_cfg.log_changes()
+    loader.model_cfg.to_yaml(loader.model_config_path)
 
     setup_file_logging(loader.model_folder / "train.txt")
 

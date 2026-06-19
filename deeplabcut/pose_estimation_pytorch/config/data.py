@@ -133,6 +133,25 @@ class GenSamplingConfig(DLCBaseConfig):
         }
 
 
+class DetectorDataConfig(DLCBaseConfig):
+    """Data configuration for object-detector training (no pose-only fields)."""
+
+    colormode: Literal["RGB"] = "RGB"
+    inference: DataTransformationConfig | None = None
+    train: DataTransformationConfig | None = None
+
+    @field_validator("train", "inference", mode="before")
+    @classmethod
+    def validate_transforms(cls, v):
+        from deeplabcut.pose_estimation_pytorch.data import build_transforms
+
+        try:
+            build_transforms(v)
+        except Exception as e:
+            raise ValueError(f"Could not build transforms. Please check your config. Config: {v}; Error: {e}") from e
+        return v
+
+
 class DataConfig(DLCBaseConfig):
     """Complete data configuration.
 

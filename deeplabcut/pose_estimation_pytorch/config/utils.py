@@ -18,6 +18,7 @@ from pathlib import Path
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.config.utils import ensure_plain_config
 from deeplabcut.utils import auxiliaryfunctions
+from deeplabcut.utils.deprecation import deprecated
 
 
 @ensure_plain_config
@@ -118,44 +119,20 @@ def replace_default_values(
     return config
 
 
-@ensure_plain_config
+@deprecated(replacement=None, since="3.1")
 def update_config(config: dict, updates: dict, copy_original: bool = True) -> dict:
-    """Updates items in the configuration file.
+    """Deprecated helper for updating config dictionaries."""
+    from deeplabcut.pose_estimation_pytorch.config.make_pose_config import _update_config
 
-    The configuration dict should only be composed of primitive Python types
-    (dict, list and values). This is the case when reading the file using
-    `read_config_as_dict`.
-
-    Args:
-        config: the configuration dict to update
-        updates: the updates to make to the configuration dict
-        copy_original: whether to copy the original dict before updating it
-
-    Returns:
-        the updated dictionary
-    """
-    if copy_original:
-        config = copy.deepcopy(config)
-
-    for k, v in updates.items():
-        if k in config and isinstance(config[k], dict) and isinstance(v, dict):
-            if k in ("optimizer", "scheduler") and config["type"] != v["type"]:
-                # if changing the optimizer or scheduler type, update all values
-                config[k] = v
-            else:
-                config[k] = update_config(config[k], v, copy_original=False)
-        else:
-            config[k] = copy.deepcopy(v)
-    return config
+    return _update_config(config, updates, copy_original)
 
 
-# TODO @deruyter92 2026-02-17: This function is currently still used to update
-# the config in a late stage (after the config is initially created and validated).
-# We should move away from this strategy and update all override arguments during
-# config creation.
-@ensure_plain_config
+@deprecated(replacement=None, since="3.1")
 def update_config_by_dotpath(config: dict, updates: dict, copy_original: bool = True) -> dict:
-    """Updates items in the configuration file using dot notation for nested keys
+    """Deprecated helper for updating config dictionaries using dot notation.
+    ``DLCBaseConfig.set_nested`` (new in 3.1) can be used instead (not identical).
+
+    Updates items in the configuration file using dot notation for nested keys
 
     The configuration dict should only be composed of primitive Python types
     (dict, list and values). This is the case when reading the file using
