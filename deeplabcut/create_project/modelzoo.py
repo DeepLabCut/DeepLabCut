@@ -23,7 +23,7 @@ from dlclibrary.dlcmodelzoo.modelzoo_download import (
 )
 
 import deeplabcut
-from deeplabcut.core.config import read_config_as_dict, write_config
+from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import (
     DataSplit,
@@ -446,7 +446,7 @@ def create_pretrained_project_pytorch(
     pytorch_config["metadata"] = PoseMetadata.build(config, pose_config_path=train_cfg_path).to_dict()
     pytorch_config["resume_training_from"] = str(train_dir / new_snapshot_name)
     pytorch_config["detector"]["resume_training_from"] = str(train_dir / new_detector_name)
-    write_config(train_cfg_path, pytorch_config)
+    pytorch_config.to_yaml(train_cfg_path)
 
     # Create test pose_cfg.yaml
     test_cfg_path = test_dir / "pose_cfg.yaml"
