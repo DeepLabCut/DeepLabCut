@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import inspect
+import json
 import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -71,6 +73,90 @@ def _build_external_detector(
 
 
 EXTERNAL_DETECTORS = Registry("external_detectors", build_func=_build_external_detector)
+
+
+def _json_safe_value(value: Any) -> Any:
+    """
+    Convert values to stable JSON-serializable objects for hashing/metadata comparison.
+    """
+    if isinstance(value, Path):
+        return value.as_posix()
+
+    if isinstance(value, dict):
+        return {str(k): _json_safe_value(v) for k, v in value.items()}
+
+    if isinstance(value, (list, tuple)):
+        return [_json_safe_value(v) for v in value]
+
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+
+    if hasattr(value, "model_dump"):
+        return _json_safe_value(value.model_dump(mode="json"))
+
+    return value
+
+
+def detector_metadata_for_artifact(detector_runner: DetectorRunnerLike) -> dict[str, Any]:
+    """
+    Return detector metadata suitable for storing in a BBoxes artifact.
+
+    Detector classes can expose a richer metadata() method. Older/custom runners
+    fall back to their class name.
+    """
+    if hasattr(detector_runner, "metadata"):
+        metadata = detector_runner.metadata()  # type: ignore[attr-defined]
+    else:
+        metadata = {"name": detector_runner.__class__.__name__}
+
+    return _json_safe_value(metadata)
+
+
+def detector_artifact_uid(
+    detector_runner: DetectorRunnerLike,
+    *,
+    length: int = 12,
+) -> str:
+    """
+    Create a stable detector/config-specific UID for bbox artifact filenames.
+    """
+    metadata = detector_metadata_for_artifact(detector_runner)
+
+    hash_payload = {
+        "name": metadata.get("name"),
+        "backend": metadata.get("backend"),
+        "config": metadata.get("config", metadata),
+    }
+
+    serialized = json.dumps(
+        hash_payload,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    digest = hashlib.sha256(serialized.encode("utf-8")).hexdigest()[:length]
+
+    backend = metadata.get("backend") or metadata.get("name") or detector_runner.__class__.__name__
+    backend = str(backend).lower().replace("/", "_").replace("\\", "_").replace(" ", "_")
+
+    return f"{backend}_{digest}"
+
+
+def detector_specific_precomputed_bboxes_path(
+    loader: Loader,
+    detector_runner: DetectorRunnerLike,
+    *,
+    filename_prefix: str = "precomputed_bboxes",
+) -> Path:
+    """
+    Build a detector-config-specific bbox artifact path under the model train folder.
+
+    Example:
+        train/precomputed_bboxes/precomputed_bboxes_hf_rf_detr_ab12cd34ef56.json
+    """
+    uid = detector_artifact_uid(detector_runner)
+    bbox_dir = Path(loader.model_folder) / "precomputed_bboxes"
+    bbox_dir.mkdir(parents=True, exist_ok=True)
+    return bbox_dir / f"{filename_prefix}_{uid}.json"
 
 
 def _filter_detector_context(
@@ -936,6 +1022,24 @@ def precompute_detector_bboxes(
     existing_bboxes = BBoxes.from_file(output_file, missing_ok=True)
 
     if detector_metadata is not None:
+        detector_metadata = _json_safe_value(detector_metadata)
+        existing_detector_metadata = existing_bboxes.metadata.get("detector")
+
+        if existing_detector_metadata is not None:
+            existing_detector_metadata = _json_safe_value(existing_detector_metadata)
+
+            if existing_detector_metadata != detector_metadata and recompute != "all":
+                raise ValueError(
+                    "Existing precomputed bbox artifact was created with different detector metadata.\n"
+                    f"Artifact: {output_file}\n\n"
+                    "This usually means you are trying to reuse bbox entries from a different detector, "
+                    "checkpoint, prompt, threshold, or class-filter configuration.\n\n"
+                    "How to fix:\n"
+                    "  - use detector_specific_precomputed_bboxes_path(...) "
+                    "to create a detector-specific artifact, or\n"
+                    "  - set recompute='all' if you intentionally want to overwrite this artifact."
+                )
+
         existing_bboxes.metadata["detector"] = detector_metadata
 
     result: dict[str, list[BBoxEntry]] = {
