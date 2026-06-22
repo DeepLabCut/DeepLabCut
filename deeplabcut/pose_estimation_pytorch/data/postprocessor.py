@@ -504,13 +504,17 @@ class PredictKeypointIdentities(Postprocessor):
 
         id_score_matrix = np.zeros((num_preds, num_keypoints, num_ids))
         for pred_idx, individual_keypoints in enumerate(pose):
-            heatmap_indices = np.rint(individual_keypoints).astype(int)
+            xy = individual_keypoints[:, :2]
+            valid = np.all(np.isfinite(xy), axis=1)
+
+            heatmap_indices = np.zeros((num_keypoints, 2), dtype=int)
+            if np.any(valid):
+                heatmap_indices[valid] = np.rint(xy[valid]).astype(int)
             xs = np.clip(heatmap_indices[:, 0], 0, w - 1)
             ys = np.clip(heatmap_indices[:, 1], 0, h - 1)
-
-            # get the score from each identity heatmap at each predicted keypoint
             for kpt_idx, (x, y) in enumerate(zip(xs, ys, strict=False)):
-                id_score_matrix[pred_idx, kpt_idx] = identity_heatmap[y, x, :]
+                if valid[kpt_idx]:
+                    id_score_matrix[pred_idx, kpt_idx] = identity_heatmap[y, x, :]
 
         predictions[self.identity_key] = id_score_matrix
         if not self.keep_id_maps:
