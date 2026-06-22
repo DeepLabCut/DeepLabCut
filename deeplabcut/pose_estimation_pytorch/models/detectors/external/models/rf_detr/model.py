@@ -1,3 +1,4 @@
+# deeplabcut/pose_estimation_pytorch/models/detectors/external/models/rf_detr/model.py
 from __future__ import annotations
 
 import logging
@@ -12,27 +13,29 @@ from deeplabcut.pose_estimation_pytorch.models.detectors.external import (
     BaseExternalDetector,
     DetectionResult,
 )
-from deeplabcut.pose_estimation_pytorch.models.detectors.external.models.rf_detr_v2.config import (
-    RTDETRV2DetectorConfig,
+from deeplabcut.pose_estimation_pytorch.models.detectors.external.models.rf_detr.config import (
+    RFDETRDetectorConfig,
 )
 
 logger = logging.getLogger(__name__)
 
 
-# @EXTERNAL_DETECTORS.register_module()
-class RTDETRV2DetectorModel(BaseExternalDetector):
+class RFDETRDetectorModel(BaseExternalDetector):
     """
-    Hugging Face RT-DETRv2 adapter for DLC external detector workflows.
+    Hugging Face RF-DETR adapter for DLC external detector workflows.
 
     This adapter returns raw XYXY absolute pixel boxes. Generic filtering/ranking,
-    max-detection selection, and conversion to DLC XYWH detector context are handled
-    by BaseExternalDetector.
+    max-detection selection, and XYXY -> XYWH conversion are handled by
+    BaseExternalDetector.
     """
 
-    backend_name = "hf_rtdetr_v2"
+    backend_name = "hf_rf_detr"
 
-    def __init__(self, config: RTDETRV2DetectorConfig) -> None:
+    def __init__(self, config: RFDETRDetectorConfig | dict) -> None:
         super().__init__()
+
+        if isinstance(config, dict):
+            config = RFDETRDetectorConfig(**config)
 
         self.config = config
         self.device = config.resolved_device()
@@ -55,13 +58,15 @@ class RTDETRV2DetectorModel(BaseExternalDetector):
             return
 
         try:
-            from transformers import RTDetrImageProcessor, RTDetrV2ForObjectDetection
+            from transformers import AutoImageProcessor, AutoModelForObjectDetection
         except ImportError as exc:
             raise ImportError(
-                "Transformers is required for the HF RT-DETRv2 detector. Install it with `pip install transformers`."
+                "HF RF-DETR requires Transformers with AutoImageProcessor and "
+                "AutoModelForObjectDetection support. Install or upgrade with:\n\n"
+                "  pip install --upgrade transformers"
             ) from exc
 
-        logger.info("Loading HF RT-DETRv2 detector")
+        logger.info("Loading HF RF-DETR detector")
         logger.info("Model ID: %s", self.config.model_id)
         logger.info("Device: %s", self.device)
         logger.info("Target classes: %s", self.config.target_classes)
@@ -69,11 +74,11 @@ class RTDETRV2DetectorModel(BaseExternalDetector):
 
         hf_kwargs = self.config.hf_kwargs()
 
-        self.processor = RTDetrImageProcessor.from_pretrained(
+        self.processor = AutoImageProcessor.from_pretrained(
             self.config.model_id,
             **hf_kwargs,
         )
-        self.model = RTDetrV2ForObjectDetection.from_pretrained(
+        self.model = AutoModelForObjectDetection.from_pretrained(
             self.config.model_id,
             **hf_kwargs,
         )
@@ -170,15 +175,11 @@ class RTDETRV2DetectorModel(BaseExternalDetector):
             if missing and not self.config.allow_missing_target_classes:
                 known = sorted(normalized.keys())
                 raise ValueError(
-                    "Could not find target class(es) in RT-DETRv2 id2label: "
+                    "Could not find target class(es) in RF-DETR id2label: "
                     f"{missing}. Known labels include: {known[:20]}"
                 )
 
-        if not keep:
-            self._target_label_ids_cache = None
-        else:
-            self._target_label_ids_cache = keep
-
+        self._target_label_ids_cache = keep if keep else None
         return self._target_label_ids_cache
 
     def _filter_labels(
@@ -203,7 +204,7 @@ class RTDETRV2DetectorModel(BaseExternalDetector):
         images: list[torch.Tensor],
     ) -> list[DetectionResult]:
         """
-        Run RT-DETRv2 on a batch of images.
+        Run HF RF-DETR on a batch of images.
 
         Returns:
             One detection dict per image:
@@ -235,6 +236,7 @@ class RTDETRV2DetectorModel(BaseExternalDetector):
             ):
                 outputs = self.model(**inputs)
 
+        # HF object detection post-processing expects [batch_size, 2] as [height, width].
         target_sizes = torch.tensor(
             [(image.height, image.width) for image in pil_images],
             dtype=torch.long,
@@ -252,7 +254,10 @@ class RTDETRV2DetectorModel(BaseExternalDetector):
         for result in results:
             boxes = result.get("boxes", torch.empty((0, 4), device=self.device))
             scores = result.get("scores", torch.empty((0,), device=self.device))
-            labels = result.get("labels", torch.empty((0,), dtype=torch.long, device=self.device))
+            labels = result.get(
+                "labels",
+                torch.empty((0,), dtype=torch.long, device=self.device),
+            )
 
             if len(boxes) == 0:
                 boxes_np, scores_np, labels_np = self._empty_arrays()
@@ -263,11 +268,12 @@ class RTDETRV2DetectorModel(BaseExternalDetector):
 
                 if len(boxes_np) != len(scores_np):
                     raise ValueError(
-                        f"RT-DETRv2 returned mismatched boxes/scores: boxes={boxes_np.shape}, scores={scores_np.shape}."
+                        f"RF-DETR returned mismatched boxes/scores: boxes={boxes_np.shape}, scores={scores_np.shape}."
                     )
+
                 if len(boxes_np) != len(labels_np):
                     raise ValueError(
-                        f"RT-DETRv2 returned mismatched boxes/labels: boxes={boxes_np.shape}, labels={labels_np.shape}."
+                        f"RF-DETR returned mismatched boxes/labels: boxes={boxes_np.shape}, labels={labels_np.shape}."
                     )
 
                 boxes_np, scores_np, labels_np = self._filter_labels(
@@ -330,4 +336,4 @@ class RTDETRV2DetectorModel(BaseExternalDetector):
         }
 
 
-EXTERNAL_DETECTORS.register_module(module=RTDETRV2DetectorModel)
+EXTERNAL_DETECTORS.register_module(module=RFDETRDetectorModel)

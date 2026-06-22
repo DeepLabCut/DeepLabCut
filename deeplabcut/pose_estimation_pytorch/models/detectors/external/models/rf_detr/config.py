@@ -1,3 +1,4 @@
+# deeplabcut/pose_estimation_pytorch/models/detectors/external/models/rf_detr/config.py
 from __future__ import annotations
 
 from typing import Any
@@ -9,59 +10,41 @@ from deeplabcut.pose_estimation_pytorch.models.detectors.external.config.base im
 )
 
 
-class RTDETRV2DetectorConfig(ExternalDetectorConfig):
+class RFDETRDetectorConfig(ExternalDetectorConfig):
     """
-    Hugging Face RT-DETRv2 detector config.
+    Hugging Face RF-DETR detector config.
 
-    Notes:
-        This is a closed-vocabulary detector. For public checkpoints such as
-        ``PekingU/rtdetr_v2_r18vd``, labels are usually COCO labels. This is not an
-        open-vocabulary text-prompt detector like GroundingDINO.
+    Uses Roboflow RF-DETR checkpoints through:
+        AutoImageProcessor
+        AutoModelForObjectDetection
     """
 
     model_id: str = Field(
-        default="PekingU/rtdetr_v2_r18vd",
-        description="Hugging Face model ID or local checkpoint directory.",
+        default="Roboflow/rf-detr-medium",
+        description="Hugging Face RF-DETR model ID or local checkpoint directory.",
     )
 
-    local_files_only: bool = Field(
-        default=False,
-        description="Whether to only use local Hugging Face files.",
-    )
-
-    trust_remote_code: bool = Field(
-        default=False,
-        description="Passed to Hugging Face from_pretrained(...).",
-    )
-
-    cache_dir: str | None = Field(
-        default=None,
-        description="Optional Hugging Face cache directory.",
-    )
+    local_files_only: bool = False
+    trust_remote_code: bool = False
+    cache_dir: str | None = None
 
     target_classes: list[str] | None = Field(
         default=None,
         description=(
-            "Optional class names to keep after model inference. If None, all classes "
-            "are kept. Names are matched against model.config.id2label case-insensitively."
+            "Optional class names to keep after inference. If None, all classes are kept. "
+            "Names are matched against model.config.id2label case-insensitively."
         ),
     )
 
     target_label_ids: list[int] | None = Field(
         default=None,
         description=(
-            "Optional numeric label IDs to keep after model inference. If both "
-            "target_classes and target_label_ids are provided, the union is used."
+            "Optional numeric label IDs to keep after inference. If both target_classes "
+            "and target_label_ids are provided, the union is used."
         ),
     )
 
-    allow_missing_target_classes: bool = Field(
-        default=False,
-        description=(
-            "If False, raise when a target class is not found in model.config.id2label. "
-            "If True, missing target classes are ignored."
-        ),
-    )
+    allow_missing_target_classes: bool = False
 
     @field_validator("target_classes")
     @classmethod
