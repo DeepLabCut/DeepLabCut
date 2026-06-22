@@ -27,6 +27,9 @@ from deeplabcut.pose_estimation_pytorch.data.transforms import build_transforms
 from deeplabcut.pose_estimation_pytorch.models.detectors.external import EXTERNAL_DETECTORS, PrecomputedDetectorRunner
 from deeplabcut.pose_estimation_pytorch.models.detectors.external.base import (
     build_precomputed_detector_runner_from_config,
+    detector_artifact_uid,
+    detector_metadata_for_artifact,
+    detector_specific_precomputed_bboxes_path,
     precompute_detector_bboxes,
     validate_precomputed_bboxes_for_loader,
 )
@@ -34,6 +37,8 @@ from deeplabcut.pose_estimation_pytorch.models.detectors.external.base import (
 # Important: ensure the mock detector module is imported so registry population happens
 from deeplabcut.pose_estimation_pytorch.runners.inference import build_inference_runner
 from deeplabcut.pose_estimation_pytorch.task import Task
+
+from .conftest import MetadataRecordingDetectorRunner, RecordingDetectorRunner
 
 
 def test_bbox_entry_from_detector_context_roundtrip_xywh():
@@ -409,34 +414,6 @@ def test_validate_precomputed_bboxes_allows_empty_bboxes(tmp_path, fake_dlc_load
     )
 
     assert summary["train"]["entries_without_bboxes"] == 1
-
-
-class RecordingDetectorRunner:
-    """
-    Tiny detector runner used to test precompute resume/recompute policies.
-    """
-
-    def __init__(
-        self,
-        *,
-        bbox: tuple[float, float, float, float] = (91.0, 92.0, 93.0, 94.0),
-        score: float = 0.99,
-    ):
-        self.bbox = bbox
-        self.score = score
-        self.calls: list[Path] = []
-
-    def inference(self, images, shelf_writer=None, **kwargs):
-        images = list(images)
-        self.calls.extend([Path(p) for p in images])
-
-        return [
-            {
-                "bboxes": np.asarray([self.bbox], dtype=np.float32),
-                "bbox_scores": np.asarray([self.score], dtype=np.float32),
-            }
-            for _ in images
-        ]
 
 
 def test_precompute_resume_reuses_valid_entries_and_computes_missing_mode(tmp_path, fake_dlc_loader):
@@ -828,4 +805,247 @@ def test_build_precomputed_detector_runner_from_config_uses_bbox_filter_config(t
     np.testing.assert_allclose(
         out["bboxes"],
         np.array([[10.0, 10.0, 20.0, 20.0]], dtype=np.float32),
+    )
+
+
+# Add these tests at the end of the file.
+
+
+def test_detector_metadata_for_artifact_uses_detector_metadata_method():
+    detector = MetadataRecordingDetectorRunner(
+        backend="detector_a",
+        threshold=0.25,
+    )
+
+    metadata = detector_metadata_for_artifact(detector)
+
+    assert metadata["name"] == "MetadataRecordingDetectorRunner"
+    assert metadata["backend"] == "detector_a"
+    assert metadata["config"]["threshold"] == 0.25
+
+
+def test_detector_metadata_for_artifact_falls_back_to_class_name():
+    detector = RecordingDetectorRunner()
+
+    metadata = detector_metadata_for_artifact(detector)
+
+    assert metadata == {"name": "RecordingDetectorRunner"}
+
+
+def test_detector_artifact_uid_is_stable_for_same_metadata():
+    detector_a = MetadataRecordingDetectorRunner(
+        backend="detector_a",
+        threshold=0.25,
+    )
+    detector_b = MetadataRecordingDetectorRunner(
+        backend="detector_a",
+        threshold=0.25,
+    )
+
+    assert detector_artifact_uid(detector_a) == detector_artifact_uid(detector_b)
+
+
+def test_detector_artifact_uid_changes_when_metadata_changes():
+    detector_a = MetadataRecordingDetectorRunner(
+        backend="detector_a",
+        threshold=0.25,
+    )
+    detector_b = MetadataRecordingDetectorRunner(
+        backend="detector_a",
+        threshold=0.75,
+    )
+
+    assert detector_artifact_uid(detector_a) != detector_artifact_uid(detector_b)
+
+
+def test_detector_specific_precomputed_bboxes_path_uses_detector_uid(tmp_path, fake_dlc_loader):
+    loader = fake_dlc_loader
+    loader.model_folder = tmp_path / "model" / "train"
+
+    detector = MetadataRecordingDetectorRunner(
+        backend="rf_detr",
+        threshold=0.25,
+    )
+
+    path = detector_specific_precomputed_bboxes_path(
+        loader,
+        detector,
+        filename_prefix="raw_detector_bboxes",
+    )
+
+    assert path.parent == loader.model_folder / "precomputed_bboxes"
+    assert path.name.startswith("raw_detector_bboxes_rf_detr_")
+    assert path.suffix == ".json"
+
+
+def test_detector_specific_precomputed_bboxes_path_differs_for_different_detector_configs(
+    tmp_path,
+    fake_dlc_loader,
+):
+    loader = fake_dlc_loader
+    loader.model_folder = tmp_path / "model" / "train"
+
+    detector_a = MetadataRecordingDetectorRunner(
+        backend="rf_detr",
+        threshold=0.25,
+    )
+    detector_b = MetadataRecordingDetectorRunner(
+        backend="rf_detr",
+        threshold=0.75,
+    )
+
+    path_a = detector_specific_precomputed_bboxes_path(loader, detector_a)
+    path_b = detector_specific_precomputed_bboxes_path(loader, detector_b)
+
+    assert path_a != path_b
+
+
+def test_precompute_raises_when_existing_artifact_detector_metadata_differs(
+    tmp_path,
+    fake_dlc_loader,
+):
+    loader = fake_dlc_loader
+    bbox_file = tmp_path / "precomputed_bboxes.json"
+
+    existing = BBoxes(
+        metadata={
+            "detector": {
+                "name": "MetadataRecordingDetectorRunner",
+                "backend": "detector_a",
+                "config": {
+                    "threshold": 0.25,
+                },
+            }
+        },
+        train=[
+            BBoxEntry(
+                bboxes=[(1.0, 2.0, 3.0, 4.0)],
+                bbox_scores=[0.8],
+                bbox_format="xywh",
+                image_path=Path("img0.png"),
+            )
+        ],
+    )
+    existing.dump_json(bbox_file)
+
+    detector = MetadataRecordingDetectorRunner(
+        backend="detector_b",
+        threshold=0.75,
+    )
+
+    with pytest.raises(ValueError, match="different detector metadata"):
+        precompute_detector_bboxes(
+            loader=loader,
+            detector_runner=detector,
+            output_file=bbox_file,
+            modes=("train",),
+            bbox_format="xywh",
+            recompute="resume",
+            validate_image_paths=True,
+            detector_metadata=detector.metadata(),
+        )
+
+    assert len(detector.calls) == 0
+
+
+def test_precompute_recompute_all_allows_detector_metadata_change(
+    tmp_path,
+    fake_dlc_loader,
+):
+    loader = fake_dlc_loader
+    bbox_file = tmp_path / "precomputed_bboxes.json"
+
+    existing = BBoxes(
+        metadata={
+            "detector": {
+                "name": "MetadataRecordingDetectorRunner",
+                "backend": "detector_a",
+                "config": {
+                    "threshold": 0.25,
+                },
+            }
+        },
+        train=[
+            BBoxEntry(
+                bboxes=[(1.0, 2.0, 3.0, 4.0)],
+                bbox_scores=[0.8],
+                bbox_format="xywh",
+                image_path=Path("img0.png"),
+            )
+        ],
+    )
+    existing.dump_json(bbox_file)
+
+    detector = MetadataRecordingDetectorRunner(
+        backend="detector_b",
+        threshold=0.75,
+        bbox=(61.0, 62.0, 63.0, 64.0),
+        score=0.77,
+    )
+
+    artifact = precompute_detector_bboxes(
+        loader=loader,
+        detector_runner=detector,
+        output_file=bbox_file,
+        modes=("train",),
+        bbox_format="xywh",
+        recompute="all",
+        validate_image_paths=True,
+        detector_metadata=detector.metadata(),
+    )
+
+    assert len(detector.calls) == 1
+
+    assert artifact.metadata["detector"]["backend"] == "detector_b"
+    assert artifact.metadata["detector"]["config"]["threshold"] == 0.75
+
+    np.testing.assert_allclose(
+        artifact.train[0].to_xywh(),
+        np.asarray([[61.0, 62.0, 63.0, 64.0]], dtype=np.float32),
+    )
+    np.testing.assert_allclose(artifact.train[0].bbox_scores, [0.77])
+
+
+def test_precompute_resume_allows_same_detector_metadata(
+    tmp_path,
+    fake_dlc_loader,
+):
+    loader = fake_dlc_loader
+    bbox_file = tmp_path / "precomputed_bboxes.json"
+
+    detector = MetadataRecordingDetectorRunner(
+        backend="detector_a",
+        threshold=0.25,
+    )
+    metadata = detector.metadata()
+
+    existing = BBoxes(
+        metadata={"detector": metadata},
+        train=[
+            BBoxEntry(
+                bboxes=[(1.0, 2.0, 3.0, 4.0)],
+                bbox_scores=[0.8],
+                bbox_format="xywh",
+                image_path=Path("img0.png"),
+            )
+        ],
+    )
+    existing.dump_json(bbox_file)
+
+    artifact = precompute_detector_bboxes(
+        loader=loader,
+        detector_runner=detector,
+        output_file=bbox_file,
+        modes=("train",),
+        bbox_format="xywh",
+        recompute="resume",
+        validate_image_paths=True,
+        detector_metadata=metadata,
+    )
+
+    assert len(detector.calls) == 0
+
+    np.testing.assert_allclose(
+        artifact.train[0].to_xywh(),
+        np.asarray([[1.0, 2.0, 3.0, 4.0]], dtype=np.float32),
     )

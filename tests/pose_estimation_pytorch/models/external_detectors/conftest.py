@@ -146,6 +146,33 @@ class RecordingDetectorRunner:
         ]
 
 
+class MetadataRecordingDetectorRunner(RecordingDetectorRunner):
+    def __init__(
+        self,
+        *,
+        name: str = "MetadataRecordingDetectorRunner",
+        backend: str = "test_detector",
+        threshold: float = 0.5,
+        bbox: tuple[float, float, float, float] = (91.0, 92.0, 93.0, 94.0),
+        score: float = 0.99,
+    ):
+        super().__init__(bbox=bbox, score=score)
+        self.name = name
+        self.backend = backend
+        self.threshold = threshold
+
+    def metadata(self):
+        return {
+            "name": self.name,
+            "backend": self.backend,
+            "config": {
+                "threshold": self.threshold,
+                "bbox": self.bbox,
+                "score": self.score,
+            },
+        }
+
+
 @pytest.fixture(autouse=True)
 def patch_pose_dataset(monkeypatch):
     """
