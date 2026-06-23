@@ -18,8 +18,7 @@ from PySide6.QtCore import Qt
 
 from deeplabcut.generate_training_dataset import check_labels
 from deeplabcut.gui.components import DefaultTab
-from deeplabcut.gui.widgets import launch_napari
-from deeplabcut.utils.skeleton import SkeletonBuilder
+from deeplabcut.gui.widgets import SkeletonBuilder, launch_napari
 
 
 def label_frames(config_path: str | Path | None = None, image_folder: str | None = None):
@@ -140,4 +139,8 @@ class LabelFrames(DefaultTab):
         _ = launch_napari(labeled_images, plugin="napari", stack=True)
 
     def build_skeleton(self, *args):
-        SkeletonBuilder(config_path=self.root.config)
+        self.skeleton_builder = SkeletonBuilder(
+            config_path=self.root.config,
+            parent=self.root,
+        )
+        self.skeleton_builder.show()

@@ -287,4 +287,8 @@ class CreateVideos(DefaultTab):
     def build_skeleton(self, *args):
         from deeplabcut.gui.widgets import SkeletonBuilder
 
-        SkeletonBuilder(config_path=self.root.config, parent=self.root)
+        self.skeleton_builder = SkeletonBuilder(
+            config_path=self.root.config,
+            parent=self.root,
+        )
+        self.skeleton_builder.show()
