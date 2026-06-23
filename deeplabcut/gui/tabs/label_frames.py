@@ -140,4 +140,4 @@ class LabelFrames(DefaultTab):
         _ = launch_napari(labeled_images, plugin="napari", stack=True)
 
     def build_skeleton(self, *args):
-        SkeletonBuilder(self.root.config)
+        SkeletonBuilder(config_path=self.root.config, parent=self.root)
