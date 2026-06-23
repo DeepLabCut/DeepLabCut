@@ -523,8 +523,8 @@ class FrameCropper(QtWidgets.QDialog):
 
 
 class SkeletonBuilder(BaseSkeletonBuilder, QtWidgets.QDialog):
-    def __init__(self, *, config_path, parent=None):
-        QtWidgets.QDialog.__init__(self, parent=parent)
+    def __init__(self, config_path, *, parent=None):
+        QtWidgets.QDialog.__init__(self, parent)
         self._parent = parent
         self.setWindowTitle("Skeleton Builder")
         BaseSkeletonBuilder.__init__(self, config_path)
