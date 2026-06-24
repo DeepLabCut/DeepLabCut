@@ -587,4 +587,4 @@ class SkeletonBuilder(BaseSkeletonBuilder, QtWidgets.QDialog):
     def export(self, *args):
         super().export(*args)
         self._parent.logger.info("Skeleton exported successfully.")
-        self._parent.statusbar.showMessage("Skeleton exported successfully.", 5000)
+        self._parent.status_bar.showMessage("Skeleton exported successfully.", 5000)
