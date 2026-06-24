@@ -90,8 +90,9 @@ class SkeletonBuilder:
         self.inds = set()
         self.segs = set()
         # Draw the skeleton if already existent
-        if self.cfg["skeleton"]:
-            for bone in self.cfg["skeleton"]:
+        skeleton = self.cfg.get("skeleton", [])
+        if skeleton:
+            for bone in skeleton:
                 pair = np.flatnonzero(self.bpts.isin(bone))
                 if len(pair) != 2:
                     continue
