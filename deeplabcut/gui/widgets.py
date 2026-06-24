@@ -534,16 +534,16 @@ class SkeletonBuilder(BaseSkeletonBuilder, QtWidgets.QDialog):
         self.fig = Figure()
         self.canvas = FigureCanvas(self.fig)
 
-        self.ax = self.fig.add_subplot(111)
-        self.ax.axis("off")
+        self._ax = self.fig.add_subplot(111)
+        self._ax.axis("off")
 
-        ax_clear = self.fig.add_axes([0.85, 0.55, 0.1, 0.1])
-        ax_export = self.fig.add_axes([0.85, 0.45, 0.1, 0.1])
+        ax_clear = self.fig.add_axes(self.clear_button_axes)
+        ax_export = self.fig.add_axes(self.export_button_axes)
 
-        self.clear_button = Button(ax_clear, "Clear")
+        self.clear_button = Button(ax_clear, self.clear_button_text)
         self.clear_button.on_clicked(self.clear)
 
-        self.export_button = Button(ax_export, "Export")
+        self.export_button = Button(ax_export, self.export_button_text)
         self.export_button.on_clicked(self.export)
 
         self.fig.canvas.mpl_connect("pick_event", self.on_pick)
@@ -556,18 +556,17 @@ class SkeletonBuilder(BaseSkeletonBuilder, QtWidgets.QDialog):
         hi = np.nanmax(self.xy, axis=0)
         center = (hi + lo) / 2
         w, h = hi - lo
-        ampl = 1.3
-        w *= ampl
-        h *= ampl
+        w *= self.ampl
+        h *= self.ampl
 
-        self.ax.set_xlim(center[0] - w / 2, center[0] + w / 2)
-        self.ax.set_ylim(center[1] - h / 2, center[1] + h / 2)
-        self.ax.imshow(self.image)
-        self.ax.scatter(*self.xy.T, s=self.cfg["dotsize"] ** 2)
-        self.ax.add_collection(self.lines)
-        self.ax.invert_yaxis()
+        self._ax.set_xlim(center[0] - w / 2, center[0] + w / 2)
+        self._ax.set_ylim(center[1] - h / 2, center[1] + h / 2)
+        self._ax.imshow(self.image)
+        self._ax.scatter(*self.xy.T, s=self.cfg["dotsize"] ** 2)
+        self._ax.add_collection(self.lines)
+        self._ax.invert_yaxis()
 
-        self.lasso = LassoSelector(self.ax, onselect=self.on_select)
+        self.lasso = LassoSelector(self._ax, onselect=self.on_select)
         self.canvas.draw_idle()
 
     def read_config(self, config_path):
