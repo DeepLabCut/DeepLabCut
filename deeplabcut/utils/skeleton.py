@@ -173,17 +173,51 @@ class SkeletonBuilder:
     def write_config(self, config_path, cfg):
         write_config(config_path, cfg)
 
+    def _show_export_feedback(self):
+        if not hasattr(self, "export_button"):
+            return
+
+        button = self.export_button
+        canvas = self.fig.canvas
+
+        original_text = button.label.get_text()
+        original_color = button.ax.get_facecolor()
+
+        n_edges = len(self.cfg.get("skeleton") or [])
+        button.label.set_text(f"Saved {n_edges}")
+        button.ax.set_facecolor("#c8e6c9")  # light green
+        canvas.draw_idle()
+
+        def reset_button():
+            button.label.set_text(original_text)
+            button.ax.set_facecolor(original_color)
+            canvas.draw_idle()
+            return False  # stop Matplotlib timer
+
+        timer = canvas.new_timer(interval=1200)
+        timer.add_callback(reset_button)
+
+        # Keep a reference so the timer is not garbage-collected.
+        self._export_feedback_timer = timer
+        timer.start()
+
     def export(self, *args):
-        inds_flat = set(ind for pair in self.inds for ind in pair)
-        unconnected = [i for i in range(len(self.xy)) if i not in inds_flat]
-        if len(unconnected):
-            warnings.warn(
-                "You didn't connect all the bodyparts (which is fine!). This is just a note to let you know.",
-                stacklevel=2,
-            )
-        # sort to ensure consistent order in config.yaml
-        self.cfg["skeleton"] = [tuple(self.bpts[list(pair)]) for pair in sorted(self.inds)]
-        self.write_config(self.config_path, self.cfg)
+        try:
+            inds_flat = set(ind for pair in self.inds for ind in pair)
+            unconnected = [i for i in range(len(self.xy)) if i not in inds_flat]
+            # if empty, mention we are saving an empty skeleton
+            if not self.inds:
+                logger.info("No bodyparts are connected. Saving an empty skeleton.")
+            elif len(unconnected):
+                logger.info(
+                    "Not all bodyparts are connected. Note that connecting all bodyparts is not necessary.",
+                )
+            # sort to ensure consistent order in config.yaml
+            self.cfg["skeleton"] = [tuple(self.bpts[list(pair)]) for pair in sorted(self.inds)]
+            self.write_config(self.config_path, self.cfg)
+            self._show_export_feedback()
+        except Exception as e:
+            logger.warning(f"Failed to export skeleton: {e}", stacklevel=2)
 
     def on_pick(self, event):
         if event.mouseevent.button == 3:
@@ -197,16 +231,27 @@ class SkeletonBuilder:
             self.fig.canvas.draw_idle()
 
     def on_select(self, verts):
-        # self.path = Path(verts)
-        # self.verts = verts
-        inds = self.tree.query_ball_point(verts, 5)
+        # Transform keypoints and lasso vertices from image/data coordinates
+        # into display coordinates. This makes the grab radius independent of
+        # the image resolution and current zoom level.
+        xy_display = self._ax.transData.transform(self.xy)
+        verts_display = self._ax.transData.transform(np.asarray(verts))
+
+        tree_display = KDTree(xy_display)
+        inds = tree_display.query_ball_point(
+            verts_display,
+            self.lasso_select_size,
+        )
+
         inds_unique = []
         for lst in inds:
             if len(lst) and lst[0] not in inds_unique:
                 inds_unique.append(lst[0])
+
         for pair in zip(inds_unique, inds_unique[1:], strict=False):
             pair_sorted = tuple(sorted(pair))
             self.inds.add(pair_sorted)
             self.segs.add(tuple(map(tuple, self.xy[pair_sorted, :])))
-        self.lines.set_segments(self.segs)
+
+        self.lines.set_segments(list(self.segs))
         self.fig.canvas.draw_idle()
