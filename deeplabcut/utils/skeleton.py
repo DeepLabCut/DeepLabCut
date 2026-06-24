@@ -18,6 +18,7 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
+import logging
 import os
 import warnings
 
@@ -32,6 +33,8 @@ from scipy.spatial import KDTree
 from skimage import io
 
 from deeplabcut.generate_training_dataset.trainingsetmanipulation import drop_likelihood_columns
+
+logger = logging.getLogger(__name__)
 
 
 # NOTE @C-Achard 2026-03-26 duplicate config read/write functions
@@ -52,9 +55,18 @@ def write_config(configname, cfg):
 
 class SkeletonBuilder:
     def __init__(self, config_path):
+        ### Usage parameters
+        self.lasso_select_size = 5
+        self.clear_button_axes = [0.85, 0.55, 0.1, 0.1]
+        self.clear_button_text = "Clear"
+        self.export_button_axes = [0.85, 0.45, 0.1, 0.1]
+        self.export_button_text = "Save"
+        self.ampl = 1.3  # Amplification factor for the zoomed-in view of the animal
+        ###
         self.config_path = config_path
         self.cfg = read_config(config_path)
         # Find uncropped labeled data
+        self._ax = None
         self.df = None
         found = False
         root = os.path.join(self.cfg["project_path"], "labeled-data")
@@ -106,28 +118,27 @@ class SkeletonBuilder:
 
     def build_ui(self):
         self.fig = plt.figure()
-        ax = self.fig.add_subplot(111)
-        ax.axis("off")
+        self._ax = self.fig.add_subplot(111)
+        self._ax.axis("off")
         lo = np.nanmin(self.xy, axis=0)
         hi = np.nanmax(self.xy, axis=0)
         center = (hi + lo) / 2
         w, h = hi - lo
-        ampl = 1.3
-        w *= ampl
-        h *= ampl
-        ax.set_xlim(center[0] - w / 2, center[0] + w / 2)
-        ax.set_ylim(center[1] - h / 2, center[1] + h / 2)
-        ax.imshow(self.image)
-        ax.scatter(*self.xy.T, s=self.cfg["dotsize"] ** 2)
-        ax.add_collection(self.lines)
-        ax.invert_yaxis()
+        w *= self.ampl
+        h *= self.ampl
+        self._ax.set_xlim(center[0] - w / 2, center[0] + w / 2)
+        self._ax.set_ylim(center[1] - h / 2, center[1] + h / 2)
+        self._ax.imshow(self.image)
+        self._ax.scatter(*self.xy.T, s=self.cfg["dotsize"] ** 2)
+        self._ax.add_collection(self.lines)
+        self._ax.invert_yaxis()
 
-        self.lasso = LassoSelector(ax, onselect=self.on_select)
-        ax_clear = self.fig.add_axes([0.85, 0.55, 0.1, 0.1])
-        ax_export = self.fig.add_axes([0.85, 0.45, 0.1, 0.1])
-        self.clear_button = Button(ax_clear, "Clear")
+        self.lasso = LassoSelector(self._ax, onselect=self.on_select)
+        ax_clear = self.fig.add_axes(self.clear_button_axes)
+        ax_export = self.fig.add_axes(self.export_button_axes)
+        self.clear_button = Button(ax_clear, self.clear_button_text)
         self.clear_button.on_clicked(self.clear)
-        self.export_button = Button(ax_export, "Export")
+        self.export_button = Button(ax_export, self.export_button_text)
         self.export_button.on_clicked(self.export)
         self.fig.canvas.mpl_connect("pick_event", self.on_pick)
 
