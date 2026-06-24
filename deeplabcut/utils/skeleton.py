@@ -54,15 +54,15 @@ def write_config(configname, cfg):
 
 
 class SkeletonBuilder:
+    ### Usage parameters
+    lasso_select_size = 5
+    clear_button_axes = [0.85, 0.55, 0.1, 0.1]
+    clear_button_text = "Clear"
+    export_button_axes = [0.85, 0.45, 0.1, 0.1]
+    export_button_text = "Save"
+    ampl = 1.3  # Amplification factor for the zoomed-in view of the animal
+
     def __init__(self, config_path):
-        ### Usage parameters
-        self.lasso_select_size = 5
-        self.clear_button_axes = [0.85, 0.55, 0.1, 0.1]
-        self.clear_button_text = "Clear"
-        self.export_button_axes = [0.85, 0.45, 0.1, 0.1]
-        self.export_button_text = "Save"
-        self.ampl = 1.3  # Amplification factor for the zoomed-in view of the animal
-        ###
         self.config_path = config_path
         self.cfg = read_config(config_path)
         # Find uncropped labeled data
