@@ -27,6 +27,8 @@ class CreateVideos(DefaultTab):
     def __init__(self, root, parent, h1_description):
         super().__init__(root, parent, h1_description)
 
+        self.skeleton_builder = None
+
         self.bodyparts_to_use = self.root.all_bodyparts
         self._set_page()
 

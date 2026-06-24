@@ -102,6 +102,7 @@ class LabelFrames(DefaultTab):
         super().__init__(root, parent, h1_description)
 
         self._set_page()
+        self.skeleton_builder = None
 
     def _set_page(self):
         self.label_frames_btn = QtWidgets.QPushButton("Label Frames")

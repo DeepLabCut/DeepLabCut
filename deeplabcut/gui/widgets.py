@@ -531,6 +531,8 @@ class SkeletonBuilder(BaseSkeletonBuilder, QtWidgets.QDialog):
 
     def build_ui(self):
         self.fig = Figure()
+        self.canvas = FigureCanvas(self.fig)
+
         self.ax = self.fig.add_subplot(111)
         self.ax.axis("off")
 
@@ -545,7 +547,6 @@ class SkeletonBuilder(BaseSkeletonBuilder, QtWidgets.QDialog):
 
         self.fig.canvas.mpl_connect("pick_event", self.on_pick)
 
-        self.canvas = FigureCanvas(self.fig)
         layout = QtWidgets.QVBoxLayout(self)
         layout.addWidget(self.canvas)
         self.setLayout(layout)
@@ -581,3 +582,7 @@ class SkeletonBuilder(BaseSkeletonBuilder, QtWidgets.QDialog):
     def display(self):
         # No-op, the dialog is shown/exec'd by the caller
         pass
+
+    def export(self, *args):
+        super().export(*args)
+        self._parent.logger.info("Skeleton exported successfully.")
