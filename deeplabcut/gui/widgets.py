@@ -19,7 +19,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from matplotlib.figure import Figure
 from matplotlib.widgets import Button, LassoSelector, RectangleSelector
 from PySide6 import QtCore, QtWidgets
-from PySide6.QtGui import QAction, QCursor, QStandardItem, QStandardItemModel
+from PySide6.QtGui import QAction, QCursor, QStandardItem, QStandardItemModel, Qt
 
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter
@@ -527,6 +527,7 @@ class SkeletonBuilder(BaseSkeletonBuilder, QtWidgets.QDialog):
         QtWidgets.QDialog.__init__(self, parent)
         self._parent = parent
         self.setWindowTitle("Skeleton Builder")
+        self.setAttribute(Qt.WA_DeleteOnClose, True)
         BaseSkeletonBuilder.__init__(self, config_path)
 
     def build_ui(self):
@@ -586,3 +587,4 @@ class SkeletonBuilder(BaseSkeletonBuilder, QtWidgets.QDialog):
     def export(self, *args):
         super().export(*args)
         self._parent.logger.info("Skeleton exported successfully.")
+        self._parent.statusbar.showMessage("Skeleton exported successfully.", 5000)

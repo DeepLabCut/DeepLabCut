@@ -139,9 +139,14 @@ class LabelFrames(DefaultTab):
         labeled_images = (Path(self.root.config).parent / "labeled-data").rglob("*_labeled/*.png")
         _ = launch_napari(labeled_images, plugin="napari", stack=True)
 
+    def _on_skeleton_builder_destroyed(self):
+        self.skeleton_builder = None
+
     def build_skeleton(self, *args):
-        self.skeleton_builder = SkeletonBuilder(
-            config_path=self.root.config,
-            parent=self.root,
-        )
-        self.skeleton_builder.show()
+        if self.skeleton_builder is None:
+            self.skeleton_builder = SkeletonBuilder(
+                config_path=self.root.config,
+                parent=self.root,
+            )
+            self.skeleton_builder.show()
+            self.skeleton_builder.destroyed.connect(self._on_skeleton_builder_destroyed)

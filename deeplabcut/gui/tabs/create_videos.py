@@ -73,6 +73,9 @@ class CreateVideos(DefaultTab):
         self.help_button.clicked.connect(self.show_help_dialog)
         self.main_layout.addWidget(self.help_button, alignment=Qt.AlignLeft)
 
+    def _on_skeleton_builder_destroyed(self):
+        self.skeleton_builder = None
+
     def show_help_dialog(self):
         dialog = QtWidgets.QDialog(self)
         layout = QtWidgets.QVBoxLayout()
@@ -289,8 +292,10 @@ class CreateVideos(DefaultTab):
     def build_skeleton(self, *args):
         from deeplabcut.gui.widgets import SkeletonBuilder
 
-        self.skeleton_builder = SkeletonBuilder(
-            config_path=self.root.config,
-            parent=self.root,
-        )
-        self.skeleton_builder.show()
+        if self.skeleton_builder is None:
+            self.skeleton_builder = SkeletonBuilder(
+                config_path=self.root.config,
+                parent=self.root,
+            )
+            self.skeleton_builder.destroyed.connect(self._on_skeleton_builder_destroyed)
+            self.skeleton_builder.show()
