@@ -299,7 +299,7 @@ def prepare_figure_axes(width, height, scale=1.0, dpi=100):
 def make_labeled_images_from_dataframe(
     df,
     cfg,
-    destfolder="",
+    destfolder=None,
     scale=1.0,
     dpi=100,
     keypoint="+",
@@ -315,7 +315,7 @@ def make_labeled_images_from_dataframe(
         through pandas.read_csv() or pandas.read_hdf().
     cfg : dict
         Project configuration.
-    destfolder : string, optional
+    destfolder : str or Path, optional
         Destination folder into which images will be stored. By default, same location as the labeled data.
         Note that the folder will be created if it does not exist.
     scale : float, optional
@@ -370,9 +370,11 @@ def make_labeled_images_from_dataframe(
     ind_bones = tuple(zip(*bones, strict=False))
 
     images_list = [str(Path(cfg["project_path"]).joinpath(*tuple_)) for tuple_ in df.index.tolist()]
-    if not destfolder:
-        destfolder = str(Path(images_list[0]).parent)
-    tmpfolder = str(destfolder) + "_labeled"
+    if destfolder is None:
+        destfolder = Path(images_list[0]).parent
+    else:
+        destfolder = Path(destfolder)
+    tmpfolder = destfolder.parent / (destfolder.name + "_labeled")
     auxiliaryfunctions.attempt_to_make_folder(tmpfolder)
     ic = io.imread_collection(images_list)
 
@@ -409,7 +411,7 @@ def make_labeled_images_from_dataframe(
             imagename = Path(filename).name
             fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
             fig.savefig(
-                Path(tmpfolder) / imagename.replace(".png", f"_{color_by}.png"),
+                tmpfolder / imagename.replace(".png", f"_{color_by}.png"),
                 dpi=dpi,
             )
         plt.close(fig)
@@ -431,7 +433,7 @@ def make_labeled_images_from_dataframe(
             imagename = Path(filename).name
             fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
             fig.savefig(
-                Path(tmpfolder) / imagename.replace(".png", f"_{color_by}.png"),
+                tmpfolder / imagename.replace(".png", f"_{color_by}.png"),
                 dpi=dpi,
             )
             plt.close(fig)
