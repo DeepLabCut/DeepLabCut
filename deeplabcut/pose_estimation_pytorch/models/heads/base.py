@@ -79,6 +79,7 @@ class BaseHead(ABC, nn.Module):
         elif weight_init is not None:
             raise ValueError(f"Could not parse ``weight_init`` parameter: {weight_init}.")
 
+        # TODO @deruyter92: decide on typed / plain dict
         if isinstance(criterion, dict):
             if aggregator is None:
                 raise ValueError("When multiple criterions are defined, a loss aggregator must also be given")
@@ -96,7 +97,6 @@ class BaseHead(ABC, nn.Module):
         Returns:
             the head outputs (e.g. "heatmap", "locref")
         """
-        pass
 
     def get_loss(
         self,
@@ -171,4 +171,3 @@ class WeightConversionMixin(ABC):
                 )
                 ``
         """
-        pass

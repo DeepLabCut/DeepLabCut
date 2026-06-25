@@ -23,9 +23,9 @@ import numpy as np
 import pandas as pd
 from scipy.spatial import distance
 
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import collect_video_paths
-from deeplabcut.utils.deprecation import renamed_parameter
 
 
 # utility functions

@@ -19,19 +19,16 @@ from pathlib import Path
 
 import torch
 from dlclibrary.dlcmodelzoo.modelzoo_download import download_huggingface_model
-from ruamel.yaml import YAML
 
-from deeplabcut.core.config import read_config_as_dict
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.modelzoo.utils import get_super_animal_scorer
+from deeplabcut.pose_estimation_pytorch.config import PoseConfig
 from deeplabcut.pose_estimation_pytorch.modelzoo.train_from_coco import adaptation_train
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     get_snapshot_folder_path,
     get_super_animal_snapshot_path,
-    load_super_animal_config,
-    update_config,
 )
 from deeplabcut.utils.auxiliaryfunctions import get_deeplabcut_path
-from deeplabcut.utils.deprecation import renamed_parameter
 from deeplabcut.utils.pseudo_label import (
     dlc3predictions_2_annotation_from_video,
     video_to_frames,
@@ -418,12 +415,14 @@ def video_inference_superanimal(
         )
 
         if customized_model_config is not None:
-            config = read_config_as_dict(customized_model_config)
+            config = PoseConfig.from_any(customized_model_config)
         else:
-            config = load_super_animal_config(
+            config = PoseConfig.build_for_superanimal_inference(
                 super_animal=superanimal_name,
                 model_name=model_name,
                 detector_name=(detector_name if superanimal_name != "superanimal_humanbody" else None),
+                max_individuals=max_individuals,
+                device=device,
             )
 
         pose_model_path = customized_pose_checkpoint
@@ -443,8 +442,6 @@ def video_inference_superanimal(
         dlc_scorer = get_super_animal_scorer(
             superanimal_name, pose_model_path, detector_path, torchvision_detector_name
         )
-
-        config = update_config(config, max_individuals, device)
 
         output_suffix = "_before_adapt"
 
@@ -528,9 +525,7 @@ def video_inference_superanimal(
 
             # the model config's parameters need to be updated for adaptation training
             model_config_path = model_folder / "pytorch_config.yaml"
-            with open(model_config_path, "w") as f:
-                yaml = YAML()
-                yaml.dump(config, f)
+            config.to_yaml(model_config_path, overwrite=True)
 
             # get the current epoch of the pose model
             current_pose_epoch = get_checkpoint_epoch(pose_model_path)

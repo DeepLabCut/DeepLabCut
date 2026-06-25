@@ -114,7 +114,7 @@ def extract_maps(
     )
 
     # Make folder for evaluation
-    auxiliaryfunctions.attempt_to_make_folder(str(cfg["project_path"] + "/evaluation-results/"))
+    auxiliaryfunctions.attempt_to_make_folder(str(Path(cfg["project_path"]) / "evaluation-results"))
 
     Maps = {}
     for trainFraction in TrainingFractions:

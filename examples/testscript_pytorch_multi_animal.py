@@ -68,17 +68,22 @@ def main(
                     "runner.device": device,
                     "runner.snapshots.save_epochs": save_epochs,
                     "runner.snapshots.max_snapshots": max_snapshots_to_keep,
-                    "detector.train_settings.display_iters": 1,
-                    "detector.train_settings.epochs": detector_epochs,
-                    "detector.train_settings.batch_size": detector_batch_size,
-                    "detector.train_settings.dataloader_workers": 0,
-                    "detector.runner.snapshots.save_epochs": save_epochs,
-                    "detector.runner.snapshots.max_snapshots": max_snapshots_to_keep,
                     "logger": logger,
                 }
-                if is_model_cond_top_down(net_type):
-                    pytorch_cfg_updates["inference.conditions.shuffle"] = conditions_shuffle
-                    pytorch_cfg_updates["inference.conditions.snapshot_index"] = -1
+
+                # Only add detector config updates for top-down models
+                if is_model_top_down(net_type):
+                    pytorch_cfg_updates.update(
+                        {
+                            "detector.train_settings.display_iters": 1,
+                            "detector.train_settings.epochs": detector_epochs,
+                            "detector.train_settings.batch_size": detector_batch_size,
+                            "detector.train_settings.dataloader_workers": 0,
+                            "detector.runner.snapshots.save_epochs": save_epochs,
+                            "detector.runner.snapshots.max_snapshots": max_snapshots_to_keep,
+                        }
+                    )
+
                 run(
                     config_path=config_path,
                     train_fraction=train_frac,
@@ -89,6 +94,7 @@ def main(
                     engine=engine,
                     pytorch_cfg_updates=pytorch_cfg_updates,
                     create_labeled_videos=create_labeled_videos,
+                    ctd_conditions=(conditions_shuffle, -1) if is_model_cond_top_down(net_type) else None,
                 )
             except Exception as err:
                 log_step(f"FAILED TO RUN {net_type}")
