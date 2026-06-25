@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-from pathlib import Path as PPath
+from pathlib import Path
 from threading import Event
 
 import matplotlib.patches as patches
@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import matplotlib.transforms as mtransforms
 import numpy as np
 import pandas as pd
-from matplotlib.path import Path
+from matplotlib.path import Path as MPLPath
 from matplotlib.widgets import Button, CheckButtons, LassoSelector, Slider, TextBox
 from PySide6.QtCore import QMutex
 from PySide6.QtWidgets import QMessageBox
@@ -256,7 +256,7 @@ class PointSelector:
         self.toggle()
 
     def on_select(self, verts):
-        path = Path(verts)
+        path = MPLPath(verts)
         xy = self.collection.get_offsets()
         self.tracker.picked = list(np.nonzero(path.contains_points(xy))[0])
         self.fc[:, -1] = self.alpha_other
@@ -846,7 +846,7 @@ class TrackletVisualizer:
 
         # Save additional frames to the labeled-data directory
         strwidth = int(np.ceil(np.log10(self.nframes)))
-        tmpfolder = PPath(self.manager.cfg["project_path"]) / "labeled-data" / self.video.name
+        tmpfolder = Path(self.manager.cfg["project_path"]) / "labeled-data" / self.video.name
         if tmpfolder.is_dir():
             print(
                 "Frames from video",
@@ -858,7 +858,7 @@ class TrackletVisualizer:
         index = []
         for ind in inds:
             imagename = tmpfolder / ("img" + str(ind).zfill(strwidth) + ".png")
-            index.append(tuple(PPath(*PPath(imagename).parts[-3:]).as_posix().split("/")))
+            index.append(tuple(imagename.parts[-3:]))
             if not imagename.is_file():
                 self.video.set_to_frame(ind)
                 frame = self.video.read_frame()
