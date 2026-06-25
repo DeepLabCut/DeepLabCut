@@ -240,7 +240,7 @@ def read_config(configname: str | Path):
         try:
             with path.open() as f:
                 cfg = ruamelFile.load(f)
-                curr_dir = Path(configname).parent.absolute()
+                curr_dir = safe_resolve(Path(configname).parent)
 
                 if cfg.get("engine") is None:
                     cfg["engine"] = Engine.TF.aliases[0]
@@ -252,7 +252,7 @@ def read_config(configname: str | Path):
                 if cfg.get("detector_batch_size") is None:
                     cfg["detector_batch_size"] = 1
 
-                if cfg["project_path"] != curr_dir:
+                if safe_resolve(Path(cfg["project_path"])) != curr_dir:
                     cfg["project_path"] = str(curr_dir)
                     write_config(configname, cfg)
         except Exception as err:

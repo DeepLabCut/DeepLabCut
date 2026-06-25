@@ -218,7 +218,7 @@ def train_network(
                 )
 
             snapshots = list(Path(weight_folder).glob("snapshot-*.index"))
-            init_weights = str(Path(snapshots[0]).resolve()).replace(".index", "")
+            init_weights = auxiliaryfunctions.safe_resolve(snapshots[0].with_suffix(""))
 
             from deeplabcut.pose_estimation_tensorflow.core.train_multianimal import (
                 train,
@@ -233,7 +233,7 @@ def train_network(
                 max_to_keep=max_snapshots_to_keep,
                 keepdeconvweights=keepdeconvweights,
                 allow_growth=allow_growth,
-                init_weights=init_weights,
+                init_weights=str(init_weights),
                 remove_head=(True if superanimal_name != "" and superanimal_transfer_learning else False),
             )  # pass on path and file name for pose_cfg.yaml!
 
