@@ -469,11 +469,6 @@ def load_metadata(metadatafile: str | Path):
         return trainingdata_details, trainIndices, testIndices, testFraction_data
 
 
-def get_immediate_subdirectories(a_dir):
-    """Get list of immediate subdirectories."""
-    return [p.name for p in Path(a_dir).iterdir() if p.is_dir()]
-
-
 # TODO: @deruyter92 2026-05-20: this function could be updated to match the
 # signature of collect_video_paths, allowing for multiple extensions.
 def grab_files_in_folder(folder, ext="", relative=True):
