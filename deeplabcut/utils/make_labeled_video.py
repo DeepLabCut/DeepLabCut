@@ -107,9 +107,9 @@ def CreateVideo(
     if displaycropped:
         ny, nx = y2 - y1, x2 - x1
     else:
-        ny, nx = clip.height(), clip.width()
+        ny, nx = clip.height, clip.width
 
-    fps = clip.fps()
+    fps = clip.fps
     if isinstance(fps, float):
         if fps * 1000 > 65535:
             fps = round(fps)
@@ -253,9 +253,9 @@ def CreateVideoSlow(
     if displaycropped:
         ny, nx = y2 - y1, x2 - x1
     else:
-        ny, nx = clip.height(), clip.width()
+        ny, nx = clip.height, clip.width
 
-    fps = clip.fps()
+    fps = clip.fps
     if outputframerate is None:  # by def. same as input rate.
         outputframerate = fps
 
@@ -920,7 +920,7 @@ def proc_video(
                     skeleton_color=skeleton_color,
                     color_by=color_by,
                     colormap=cfg["colormap"],
-                    fps=clip.fps(),
+                    fps=clip.fps,
                 )
                 clip.close()
             elif not fastmode:
@@ -1027,9 +1027,9 @@ def create_video(
         fps=fps,
     )
 
-    cropping = bbox != (0, clip.w, 0, clip.h)
+    cropping = bbox != (0, clip.width, 0, clip.height)
 
-    x1, x2, y1, y2 = bbox if bbox is not None else (0, clip.w, 0, clip.h)
+    x1, x2, y1, y2 = bbox if bbox is not None else (0, clip.width, 0, clip.height)
 
     df = pd.read_hdf(h5file)
 
@@ -1290,7 +1290,7 @@ def create_video_with_all_detections(
             pcutoff = cfg["pcutoff"]
             dotsize = cfg["dotsize"]
             clip = vp(fname=video, sname=outputname, codec="mp4v")
-            ny, nx = clip.height(), clip.width()
+            ny, nx = clip.height, clip.width
 
             bboxes_pcutoff = 0.6
             if pytorch_cfg := (metadata.get("data") or {}).get("pytorch-config"):
