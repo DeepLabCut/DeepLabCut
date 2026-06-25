@@ -98,19 +98,18 @@ def calc_prediction_errors(preds, gt):
     return errors
 
 
-def _map(strings, substrings):
+def _map(paths: list[Path], subpaths: list[Path]) -> dict[Path, Path]:
     """Map image paths from predicted data to GT as the first are typically absolute
     whereas the latter are relative to the project path."""
-
-    lookup = dict()
-    strings_ = strings.copy()
-    substrings_ = substrings.copy()
-    while strings_:
-        string = strings_.pop()
-        for s in substrings_:
-            if string.endswith(s):
-                lookup[string] = s
-                substrings_.remove(s)
+    lookup = {}
+    paths_ = paths.copy()
+    subpaths_ = subpaths.copy()
+    while paths_:
+        path = paths_.pop()
+        for s in subpaths_:
+            if path.parts[-len(s.parts) :] == s.parts:
+                lookup[path] = s
+                subpaths_.remove(s)
                 break
     return lookup
 
@@ -146,6 +145,7 @@ def calc_map_from_obj(
     drop_kpts=None,
 ):
     """Calculate mean average precision (mAP) based on predictions."""
+    eval_results = {Path(k): v for k, v in eval_results_obj.items()}
     df = pd.read_hdf(h5_file)
     try:
         df.drop("single", level="individuals", axis=1, inplace=True)
@@ -157,7 +157,7 @@ def calc_map_from_obj(
     test_indices = _load_test_indices(metadata_file)
     df_test = df.iloc[test_indices]
     test_images = load_test_images(h5_file, metadata_file)
-    missing_images = set(test_images) - set(eval_results_obj.keys())
+    missing_images = set(test_images) - set(eval_results)
     if len(missing_images) > 0:
         raise ValueError(
             f"Failed to compute the test mAP: there are test images missing from theprediction object: {missing_images}"
@@ -184,7 +184,7 @@ def calc_map_from_obj(
         for ind in sorted(drop_kpts, reverse=True):
             kpts.pop(ind)
 
-    assemblies_pred = conv_obj_to_assemblies(eval_results_obj, kpts)
+    assemblies_pred = conv_obj_to_assemblies(eval_results, kpts)
     with deeplabcut.benchmark.utils.DisableOutput():
         oks = inferenceutils.evaluate_assembly(
             assemblies_pred,
@@ -213,7 +213,7 @@ def calc_rmse_from_obj(
         for ind in sorted(drop_kpts, reverse=True):
             kpts.pop(ind)
 
-    test_objects = {k: v for k, v in eval_results_obj.items() if k in gt["annotations"].keys()}
+    test_objects = {Path(k): v for k, v in eval_results_obj.items() if Path(k) in gt["annotations"]}
     if len(gt["annotations"]) != len(test_objects):
         gt_images = list(gt["annotations"].keys())
         missing_images = [img for img in gt_images if img not in test_objects]
@@ -239,18 +239,13 @@ def calc_rmse_from_obj(
     return np.nanmean(errors[..., 0])
 
 
-def load_test_images(h5file: str, metadata: str) -> list[str]:
+def load_test_images(h5file: str, metadata: str) -> list[Path]:
     """Returns the names of the test images for the benchmark, in the order
     corresponding to the test indices."""
     df = pd.read_hdf(h5file)
     test_indices = _load_test_indices(metadata)
     df_test = df.iloc[test_indices]
-    test_images = []
-    for img_path in df_test.index:
-        if not isinstance(img_path, str):
-            img_path = str(Path(*img_path))
-        test_images.append(img_path)
-    return test_images
+    return [Path(img_path) if isinstance(img_path, str) else Path(*img_path) for img_path in df_test.index]
 
 
 def _load_test_indices(shuffle_metadata_path: str) -> list[int]:
