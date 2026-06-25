@@ -508,8 +508,7 @@ class PredictKeypointIdentities(Postprocessor):
             valid = np.all(np.isfinite(xy), axis=1)
 
             heatmap_indices = np.zeros((num_keypoints, 2), dtype=int)
-            if np.any(valid):
-                heatmap_indices[valid] = np.rint(xy[valid]).astype(int)
+            heatmap_indices[valid] = np.rint(xy[valid]).astype(int)
             xs = np.clip(heatmap_indices[:, 0], 0, w - 1)
             ys = np.clip(heatmap_indices[:, 1], 0, h - 1)
             for kpt_idx, (x, y) in enumerate(zip(xs, ys, strict=False)):
