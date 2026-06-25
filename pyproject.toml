@@ -101,7 +101,7 @@ tf-cu11 = [
   "tensorpack==0.11",
   "tf-keras==2.14.1",
   "tf-slim==1.1",
-  "torch<2.1",
+  "torch<2.13",
   "torchvision<0.16",
 ]
 tf-cu12 = [
@@ -111,7 +111,7 @@ tf-cu12 = [
   "tensorpack==0.11",
   "tf-keras==2.18",
   "tf-slim==1.1",
-  "torch<2.11",
+  "torch<2.13",
   "torchvision<0.26",
 ]
 tf-latest = [
