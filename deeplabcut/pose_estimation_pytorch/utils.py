@@ -10,23 +10,12 @@
 #
 from __future__ import annotations
 
-import os
 import random
 
 import numpy as np
 import torch
 
 from deeplabcut.pose_estimation_pytorch.config.pose import DetectorConfig, PoseConfig
-
-
-def create_folder(path_to_folder):
-    """Creates all folders contained in the path.
-
-    Args:
-        path_to_folder: Path to the folder that should be created
-    """
-    if not os.path.exists(path_to_folder):
-        os.makedirs(path_to_folder)
 
 
 def fix_seeds(seed: int) -> None:
