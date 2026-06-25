@@ -8,41 +8,14 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-"""Compatibility file for methods available with either PyTorch or Tensorflow."""
+"""DeepLabCut pose estimation API"""
 
-
-# TODO: Migrate this file to deeplabcut.tensorflow_compat.tensorflow_api and deeplabcut.api
-
-from __future__ import annotations
-
-from collections.abc import Sequence
 from pathlib import Path
 
 import numpy as np
-from ruamel.yaml import YAML
 
-import deeplabcut.core.visualization as visualization
-from deeplabcut.core.engine import Engine
-from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 from deeplabcut.utils.deprecation import renamed_parameter
 
-DEFAULT_ENGINE = Engine.PYTORCH
-
-
-def get_project_engine(cfg: dict) -> Engine:
-    if cfg.get("engine") is not None:
-        return Engine(cfg["engine"])
-
-    return DEFAULT_ENGINE
-
-
-def get_available_aug_methods(engine: Engine) -> tuple[str, ...]:
-    if engine == Engine.TF:
-        return "imgaug", "default", "deterministic", "scalecrop", "tensorpack"
-    elif engine == Engine.PYTORCH:
-        return ("albumentations",)
-
-    raise RuntimeError(f"Unknown augmentation for engine: {engine}")
 
 
 @renamed_parameter(old="maxiters", new="max_iters", since="3.0.0")
@@ -76,60 +49,28 @@ def train_network(
     pose_threshold: float | None = 0.1,
     pytorch_cfg_updates: dict | None = None,
 ):
-    if engine is None:
-        engine = get_shuffle_engine(
-            _load_config(config),
-            trainingsetindex=trainingsetindex,
-            shuffle=shuffle,
-        )
+    from deeplabcut.pose_estimation_pytorch.apis import train_network
 
-    if engine == Engine.TF:
-        from deeplabcut.pose_estimation_tensorflow import train_network
-
-        if max_snapshots_to_keep is None:
-            max_snapshots_to_keep = 5
-
-        return train_network(
-            str(config),
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            max_snapshots_to_keep=max_snapshots_to_keep,
-            displayiters=display_iters,
-            saveiters=save_iters,
-            maxiters=max_iters,
-            allow_growth=allow_growth,
-            gputouse=gputouse,
-            autotune=autotune,
-            keepdeconvweights=keepdeconvweights,
-            superanimal_name=superanimal_name,
-            superanimal_transfer_learning=superanimal_transfer_learning,
-            modelprefix=modelprefix,
-        )
-    elif engine == Engine.PYTORCH:
-        from deeplabcut.pose_estimation_pytorch.apis import train_network
-
-        return train_network(
-            config,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            modelprefix=modelprefix,
-            device=device,
-            snapshot_path=snapshot_path,
-            detector_path=detector_path,
-            load_head_weights=keepdeconvweights,
-            batch_size=batch_size,
-            epochs=epochs,
-            save_epochs=save_epochs,
-            detector_batch_size=detector_batch_size,
-            detector_epochs=detector_epochs,
-            detector_save_epochs=detector_save_epochs,
-            display_iters=display_iters,
-            max_snapshots_to_keep=max_snapshots_to_keep,
-            pose_threshold=pose_threshold,
-            pytorch_cfg_updates=pytorch_cfg_updates,
-        )
-
-    raise NotImplementedError(f"This function is not implemented for {engine}")
+    return train_network(
+        config,
+        shuffle=shuffle,
+        trainingsetindex=trainingsetindex,
+        modelprefix=modelprefix,
+        device=device,
+        snapshot_path=snapshot_path,
+        detector_path=detector_path,
+        load_head_weights=keepdeconvweights,
+        batch_size=batch_size,
+        epochs=epochs,
+        save_epochs=save_epochs,
+        detector_batch_size=detector_batch_size,
+        detector_epochs=detector_epochs,
+        detector_save_epochs=detector_save_epochs,
+        display_iters=display_iters,
+        max_snapshots_to_keep=max_snapshots_to_keep,
+        pose_threshold=pose_threshold,
+        pytorch_cfg_updates=pytorch_cfg_updates,
+    )
 
 
 def return_train_network_path(
@@ -139,36 +80,16 @@ def return_train_network_path(
     modelprefix: str = "",
     engine: Engine | None = None,
 ) -> tuple[Path, Path, Path]:
-    if engine is None:
-        engine = get_shuffle_engine(
-            _load_config(config),
-            trainingsetindex=trainingsetindex,
-            shuffle=shuffle,
-            modelprefix=modelprefix,
-        )
+    from deeplabcut.pose_estimation_pytorch.apis.utils import (
+        return_train_network_path,
+    )
 
-    if engine == Engine.TF:
-        from deeplabcut.pose_estimation_tensorflow import return_train_network_path
-
-        return return_train_network_path(
-            config,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            modelprefix=modelprefix,
-        )
-    elif engine == Engine.PYTORCH:
-        from deeplabcut.pose_estimation_pytorch.apis.utils import (
-            return_train_network_path,
-        )
-
-        return return_train_network_path(
-            config,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            modelprefix=modelprefix,
-        )
-
-    raise NotImplementedError(f"This function is not implemented for {engine}")
+    return return_train_network_path(
+        config,
+        shuffle=shuffle,
+        trainingsetindex=trainingsetindex,
+        modelprefix=modelprefix,
+    )
 
 
 @renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since="3.0.0")
@@ -189,59 +110,20 @@ def evaluate_network(
     engine: Engine | None = None,
     **torch_kwargs,
 ):
-    if engine is None:
-        cfg = _load_config(config)
-        engines = set()
-        for shuffle in shuffles:
-            engines.add(
-                get_shuffle_engine(
-                    cfg,
-                    trainingsetindex=trainingsetindex,
-                    shuffle=shuffle,
-                    modelprefix=modelprefix,
-                )
-            )
-        if len(engines) == 0:
-            raise ValueError(f"You must pass at least one shuffle to evaluate (had {list(shuffles)})")
-        elif len(engines) > 1:
-            raise ValueError(f"All shuffles must have the same engine (found {list(engines)})")
-        engine = engines.pop()
-
-    if engine == Engine.TF:
-        from deeplabcut.pose_estimation_tensorflow import evaluate_network
-
-        return evaluate_network(
-            str(config),
-            Shuffles=shuffles,
-            trainingsetindex=trainingsetindex,
-            plotting=plotting,
-            show_errors=show_errors,
-            comparisonbodyparts=comparison_bodyparts,
-            gputouse=gputouse,
-            rescale=rescale,
-            modelprefix=modelprefix,
-            per_keypoint_evaluation=per_keypoint_evaluation,
-            snapshots_to_evaluate=snapshots_to_evaluate,
-        )
-    elif engine == Engine.PYTORCH:
-        from deeplabcut.pose_estimation_pytorch.apis import evaluate_network
-
-        _update_device(gputouse, torch_kwargs)
-        return evaluate_network(
-            config,
-            shuffles=shuffles,
-            trainingsetindex=trainingsetindex,
-            plotting=plotting,
-            show_errors=show_errors,
-            comparison_bodyparts=comparison_bodyparts,
-            snapshots_to_evaluate=snapshots_to_evaluate,
-            per_keypoint_evaluation=per_keypoint_evaluation,
-            modelprefix=modelprefix,
-            pcutoff=pcutoff,
-            **torch_kwargs,
-        )
-
-    raise NotImplementedError(f"This function is not implemented for {engine}")
+   from deeplabcut.pose_estimation_pytorch.apis import evaluate_network
+    return evaluate_network(
+        config,
+        shuffles=shuffles,
+        trainingsetindex=trainingsetindex,
+        plotting=plotting,
+        show_errors=show_errors,
+        comparison_bodyparts=comparison_bodyparts,
+        snapshots_to_evaluate=snapshots_to_evaluate,
+        per_keypoint_evaluation=per_keypoint_evaluation,
+        modelprefix=modelprefix,
+        pcutoff=pcutoff,
+        **torch_kwargs,
+    )
 
 
 @renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since="3.0.0")
@@ -259,30 +141,6 @@ def return_evaluate_network_data(
     returnjustfns: bool = True,
     engine: Engine | None = None,
 ):
-    if engine is None:
-        engine = get_shuffle_engine(
-            _load_config(config),
-            trainingsetindex=trainingsetindex,
-            shuffle=shuffle,
-            modelprefix=modelprefix,
-        )
-
-    if engine == Engine.TF:
-        from deeplabcut.pose_estimation_tensorflow import return_evaluate_network_data
-
-        return return_evaluate_network_data(
-            config,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            comparisonbodyparts=comparison_bodyparts,
-            Snapindex=snapshotindex,
-            rescale=rescale,
-            fulldata=fulldata,
-            show_errors=show_errors,
-            modelprefix=modelprefix,
-            returnjustfns=returnjustfns,
-        )
-
     raise NotImplementedError(f"This function is not implemented for {engine}")
 
 
@@ -315,85 +173,31 @@ def analyze_videos(
     engine: Engine | None = None,
     **torch_kwargs,
 ):
-    if engine is None:
-        engine = get_shuffle_engine(
-            _load_config(config),
-            trainingsetindex=trainingsetindex,
-            shuffle=shuffle,
-            modelprefix=modelprefix,
-        )
 
-    if engine == Engine.TF:
-        from deeplabcut.pose_estimation_tensorflow import analyze_videos
+    from deeplabcut.pose_estimation_pytorch.apis import analyze_videos
 
-        kwargs = {}
-        if use_openvino is not None:  # otherwise default comes from tensorflow API
-            kwargs["use_openvino"] = use_openvino
-
-        return analyze_videos(
-            config,
-            videos,
-            video_extensions=video_extensions,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            gputouse=gputouse,
-            save_as_csv=save_as_csv,
-            in_random_order=in_random_order,
-            destfolder=destfolder,
-            batchsize=batch_size,
-            cropping=cropping,
-            TFGPUinference=TFGPUinference,
-            dynamic=dynamic,
-            modelprefix=modelprefix,
-            robust_nframes=robust_nframes,
-            allow_growth=allow_growth,
-            use_shelve=use_shelve,
-            auto_track=auto_track,
-            n_tracks=n_tracks,
-            animal_names=animal_names,
-            calibrate=calibrate,
-            identity_only=identity_only,
-            **kwargs,
-        )
-    elif engine == Engine.PYTORCH:
-        from deeplabcut.pose_estimation_pytorch.apis import analyze_videos
-
-        _update_device(gputouse, torch_kwargs)
-
-        if batch_size is not None:
-            if "batch_size" in torch_kwargs:
-                print(
-                    f"You called analyze_videos with parameters ``batch_size={batch_size}"
-                    f"`` and batch_size={torch_kwargs['batch_size']}. Only one is "
-                    f"needed/used. Using batch size {torch_kwargs['batch_size']}"
-                )
-            else:
-                torch_kwargs["batch_size"] = batch_size
-
-        return analyze_videos(
-            config,
-            videos=videos,
-            video_extensions=video_extensions,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            save_as_csv=save_as_csv,
-            in_random_order=in_random_order,
-            destfolder=destfolder,
-            dynamic=dynamic,
-            modelprefix=modelprefix,
-            use_shelve=use_shelve,
-            robust_nframes=robust_nframes,
-            auto_track=auto_track,
-            n_tracks=n_tracks,
-            animal_names=animal_names,
-            calibrate=calibrate,
-            identity_only=identity_only,
-            overwrite=False,
-            cropping=cropping,
-            **torch_kwargs,
-        )
-
-    raise NotImplementedError(f"This function is not implemented for {engine}")
+    return analyze_videos(
+        config,
+        videos=videos,
+        video_extensions=video_extensions,
+        shuffle=shuffle,
+        trainingsetindex=trainingsetindex,
+        save_as_csv=save_as_csv,
+        in_random_order=in_random_order,
+        destfolder=destfolder,
+        dynamic=dynamic,
+        modelprefix=modelprefix,
+        use_shelve=use_shelve,
+        robust_nframes=robust_nframes,
+        auto_track=auto_track,
+        n_tracks=n_tracks,
+        animal_names=animal_names,
+        calibrate=calibrate,
+        identity_only=identity_only,
+        overwrite=False,
+        cropping=cropping,
+        **torch_kwargs,
+    )
 
 
 @renamed_parameter(old="batchsize", new="batch_size", since="3.0.0")
@@ -415,52 +219,24 @@ def create_tracking_dataset(
     n_triplets: int = 1000,
     engine: Engine | None = None,
 ) -> str:
-    if engine is None:
-        engine = get_shuffle_engine(
-            _load_config(config),
-            trainingsetindex=trainingsetindex,
-            shuffle=shuffle,
-            modelprefix=modelprefix,
-        )
 
-    if engine == Engine.TF:
-        from deeplabcut.pose_estimation_tensorflow import create_tracking_dataset
 
-        return create_tracking_dataset(
-            config,
-            videos,
-            track_method,
-            video_extensions=video_extensions,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            gputouse=gputouse,
-            destfolder=destfolder,
-            batchsize=batch_size,
-            cropping=cropping,
-            TFGPUinference=TFGPUinference,
-            modelprefix=modelprefix,
-            robust_nframes=robust_nframes,
-            n_triplets=n_triplets,
-        )
-    elif engine == Engine.PYTORCH:
-        from deeplabcut.pose_estimation_pytorch.apis import create_tracking_dataset
+    from deeplabcut.pose_estimation_pytorch.apis import create_tracking_dataset
 
-        return create_tracking_dataset(
-            config,
-            videos,
-            track_method,
-            video_extensions=video_extensions,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            destfolder=destfolder,
-            batch_size=batch_size,
-            cropping=cropping,
-            modelprefix=modelprefix,
-            robust_nframes=robust_nframes,
-            n_triplets=n_triplets,
-        )
-
-    raise NotImplementedError(f"This function is not implemented for {engine}")
+    return create_tracking_dataset(
+        config,
+        videos,
+        track_method,
+        video_extensions=video_extensions,
+        shuffle=shuffle,
+        trainingsetindex=trainingsetindex,
+        destfolder=destfolder,
+        batch_size=batch_size,
+        cropping=cropping,
+        modelprefix=modelprefix,
+        robust_nframes=robust_nframes,
+        n_triplets=n_triplets,
+    )
 
 
 def analyze_images(
@@ -482,37 +258,28 @@ def analyze_images(
     plot_skeleton: bool = False,
     **torch_kwargs,
 ) -> dict[str, dict[str, np.ndarray | np.ndarray]]:
-    engine = get_shuffle_engine(
-        _load_config(config),
-        trainingsetindex=trainingsetindex,
+
+    from deeplabcut.pose_estimation_pytorch import analyze_images
+
+    return analyze_images(
+        config=config,
+        images=images,
+        frame_type=frame_type,
+        output_dir=destfolder,
         shuffle=shuffle,
+        trainingsetindex=trainingsetindex,
+        snapshot_index=snapshot_index,
+        detector_snapshot_index=detector_snapshot_index,
         modelprefix=modelprefix,
+        device=device,
+        save_as_csv=save_as_csv,
+        max_individuals=max_individuals,
+        plotting=plotting,
+        pcutoff=pcutoff,
+        bbox_pcutoff=bbox_pcutoff,
+        plot_skeleton=plot_skeleton,
+        **torch_kwargs,
     )
-
-    if engine == Engine.PYTORCH:
-        from deeplabcut.pose_estimation_pytorch import analyze_images
-
-        return analyze_images(
-            config=config,
-            images=images,
-            frame_type=frame_type,
-            output_dir=destfolder,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            snapshot_index=snapshot_index,
-            detector_snapshot_index=detector_snapshot_index,
-            modelprefix=modelprefix,
-            device=device,
-            save_as_csv=save_as_csv,
-            max_individuals=max_individuals,
-            plotting=plotting,
-            pcutoff=pcutoff,
-            bbox_pcutoff=bbox_pcutoff,
-            plot_skeleton=plot_skeleton,
-            **torch_kwargs,
-        )
-
-    raise NotImplementedError(f"This function is not implemented for {engine}")
 
 
 def analyze_time_lapse_frames(
@@ -527,42 +294,20 @@ def analyze_time_lapse_frames(
     modelprefix: str = "",
     engine: Engine | None = None,
 ):
-    if engine is None:
-        engine = get_shuffle_engine(
-            _load_config(config),
-            trainingsetindex=trainingsetindex,
-            shuffle=shuffle,
-            modelprefix=modelprefix,
-        )
 
-    if engine == Engine.TF:
-        from deeplabcut.pose_estimation_tensorflow import analyze_time_lapse_frames
 
-        return analyze_time_lapse_frames(
-            config,
-            directory,
-            frametype=frametype,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            gputouse=gputouse,
-            save_as_csv=save_as_csv,
-            modelprefix=modelprefix,
-        )
-    elif engine == Engine.PYTORCH:
-        from deeplabcut.pose_estimation_pytorch import analyze_images
+    from deeplabcut.pose_estimation_pytorch import analyze_images
 
-        return analyze_images(
-            config=config,
-            images=directory,
-            output_dir=directory,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            device=_gpu_to_use_to_device(gputouse, device),
-            save_as_csv=save_as_csv,
-            modelprefix=modelprefix,
-        )
-
-    raise NotImplementedError(f"This function is not implemented for {engine}")
+    return analyze_images(
+        config=config,
+        images=directory,
+        output_dir=directory,
+        shuffle=shuffle,
+        trainingsetindex=trainingsetindex,
+        device=_gpu_to_use_to_device(gputouse, device),
+        save_as_csv=save_as_csv,
+        modelprefix=modelprefix,
+    )
 
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
@@ -584,59 +329,22 @@ def convert_detections2tracklets(
     track_method: str = "",
     engine: Engine | None = None,
 ):
-    if engine is None:
-        engine = get_shuffle_engine(
-            _load_config(config),
-            trainingsetindex=trainingsetindex,
-            shuffle=shuffle,
-            modelprefix=modelprefix,
-        )
 
-    if engine == Engine.TF:
-        from deeplabcut.pose_estimation_tensorflow import convert_detections2tracklets
-
-        return convert_detections2tracklets(
-            config,
-            videos,
-            video_extensions=video_extensions,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            overwrite=overwrite,
-            destfolder=destfolder,
-            ignore_bodyparts=ignore_bodyparts,
-            inferencecfg=inferencecfg,
-            modelprefix=modelprefix,
-            greedy=greedy,
-            calibrate=calibrate,
-            window_size=window_size,
-            identity_only=identity_only,
-            track_method=track_method,
-        )
-
-    elif engine == Engine.PYTORCH:
-        from deeplabcut.pose_estimation_pytorch.apis import convert_detections2tracklets
-
-        if greedy or calibrate or window_size:
-            raise NotImplementedError(
-                f"The 'greedy', 'calibrate' and 'window_size' option are not yet implemented with {engine}"
-            )
-
-        return convert_detections2tracklets(
-            config,
-            videos,
-            video_extensions=video_extensions,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            overwrite=overwrite,
-            destfolder=destfolder,
-            ignore_bodyparts=ignore_bodyparts,
-            inferencecfg=inferencecfg,
-            modelprefix=modelprefix,
-            identity_only=identity_only,
-            track_method=track_method,
-        )
-
-    raise NotImplementedError(f"This function is not implemented for {engine}")
+    from deeplabcut.pose_estimation_pytorch.apis import convert_detections2tracklets
+    return convert_detections2tracklets(
+        config,
+        videos,
+        video_extensions=video_extensions,
+        shuffle=shuffle,
+        trainingsetindex=trainingsetindex,
+        overwrite=overwrite,
+        destfolder=destfolder,
+        ignore_bodyparts=ignore_bodyparts,
+        inferencecfg=inferencecfg,
+        modelprefix=modelprefix,
+        identity_only=identity_only,
+        track_method=track_method,
+    )
 
 
 def extract_maps(
@@ -650,44 +358,22 @@ def extract_maps(
     modelprefix: str = "",
     engine: Engine | None = None,
 ):
-    if engine is None:
-        engine = get_shuffle_engine(
-            _load_config(config),
-            trainingsetindex=trainingsetindex,
-            shuffle=shuffle,
-            modelprefix=modelprefix,
-        )
+    from deeplabcut.pose_estimation_pytorch import extract_maps
 
-    if engine == Engine.TF:
-        from deeplabcut.pose_estimation_tensorflow import extract_maps
-
-        return extract_maps(
-            config,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            gputouse=gputouse,
-            rescale=rescale,
-            Indices=Indices,
-            modelprefix=modelprefix,
-        )
-    elif engine == Engine.PYTORCH:
-        from deeplabcut.pose_estimation_pytorch import extract_maps
-
-        return extract_maps(
-            config,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            device=_gpu_to_use_to_device(gputouse, device),
-            rescale=rescale,
-            indices=Indices,
-            modelprefix=modelprefix,
-        )
-
-    raise NotImplementedError(f"This function is not implemented for {engine}")
+    return extract_maps(
+        config,
+        shuffle=shuffle,
+        trainingsetindex=trainingsetindex,
+        device=_gpu_to_use_to_device(gputouse, device),
+        rescale=rescale,
+        indices=Indices,
+        modelprefix=modelprefix,
+    )
 
 
 def visualize_scoremaps(image: np.ndarray, scmap: np.ndarray):
-    return visualization.visualize_scoremaps(image, scmap)
+    import deeplabcut.core.visualization as _visualization
+    return _visualization.visualize_scoremaps(image, scmap)
 
 
 def visualize_locrefs(
@@ -698,7 +384,8 @@ def visualize_locrefs(
     step: int = 5,
     zoom_width: int = 0,
 ):
-    return visualization.visualize_locrefs(image, scmap, locref_x, locref_y, step=step, zoom_width=zoom_width)
+    import deeplabcut.core.visualization as _visualization
+    return _visualization.visualize_locrefs(image, scmap, locref_x, locref_y, step=step, zoom_width=zoom_width)
 
 
 def visualize_paf(
@@ -707,7 +394,8 @@ def visualize_paf(
     step: int = 5,
     colors: list | None = None,
 ):
-    return visualization.visualize_paf(image, paf, step=step, colors=colors)
+    import deeplabcut.core.visualization as _visualization
+    return _visualization.visualize_paf(image, paf, step=step, colors=colors)
 
 
 @renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since="3.0.0")
@@ -728,50 +416,23 @@ def extract_save_all_maps(
     detector_snapshot_index: int | str | None = None,
     engine: Engine | None = None,
 ):
-    if engine is None:
-        engine = get_shuffle_engine(
-            _load_config(config),
-            trainingsetindex=trainingsetindex,
-            shuffle=shuffle,
-            modelprefix=modelprefix,
-        )
+    from deeplabcut.pose_estimation_pytorch import extract_save_all_maps
 
-    if engine == Engine.TF:
-        from deeplabcut.pose_estimation_tensorflow import extract_save_all_maps
-
-        return extract_save_all_maps(
-            config,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            comparisonbodyparts=comparison_bodyparts,
-            extract_paf=extract_paf,
-            all_paf_in_one=all_paf_in_one,
-            gputouse=gputouse,
-            rescale=rescale,
-            Indices=Indices,
-            modelprefix=modelprefix,
-            dest_folder=dest_folder,
-        )
-    elif engine == Engine.PYTORCH:
-        from deeplabcut.pose_estimation_pytorch import extract_save_all_maps
-
-        return extract_save_all_maps(
-            config,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            comparison_bodyparts=comparison_bodyparts,
-            extract_paf=extract_paf,
-            all_paf_in_one=all_paf_in_one,
-            device=_gpu_to_use_to_device(gputouse, device),
-            rescale=rescale,
-            indices=Indices,
-            modelprefix=modelprefix,
-            snapshot_index=snapshot_index,
-            detector_snapshot_index=detector_snapshot_index,
-            dest_folder=dest_folder,
-        )
-
-    raise NotImplementedError(f"This function is not implemented for {engine}")
+    return extract_save_all_maps(
+        config,
+        shuffle=shuffle,
+        trainingsetindex=trainingsetindex,
+        comparison_bodyparts=comparison_bodyparts,
+        extract_paf=extract_paf,
+        all_paf_in_one=all_paf_in_one,
+        device=_gpu_to_use_to_device(gputouse, device),
+        rescale=rescale,
+        indices=Indices,
+        modelprefix=modelprefix,
+        snapshot_index=snapshot_index,
+        detector_snapshot_index=detector_snapshot_index,
+        dest_folder=dest_folder,
+    )
 
 
 def export_model(
@@ -788,70 +449,16 @@ def export_model(
     modelprefix: str = "",
     engine: Engine | None = None,
 ) -> None:
-    if engine is None:
-        engine = get_shuffle_engine(
-            _load_config(cfg_path),
-            trainingsetindex=trainingsetindex,
-            shuffle=shuffle,
-            modelprefix=modelprefix,
-        )
+    from deeplabcut.pose_estimation_pytorch.apis.export import export_model
 
-    if engine == Engine.TF:
-        from deeplabcut.pose_estimation_tensorflow import export_model
-
-        return export_model(
-            cfg_path=cfg_path,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            snapshotindex=snapshotindex,
-            iteration=iteration,
-            TFGPUinference=TFGPUinference,
-            overwrite=overwrite,
-            make_tar=make_tar,
-            wipepaths=wipepaths,
-            modelprefix=modelprefix,
-        )
-    elif engine == Engine.PYTORCH:
-        from deeplabcut.pose_estimation_pytorch.apis.export import export_model
-
-        return export_model(
-            config=cfg_path,
-            shuffle=shuffle,
-            trainingsetindex=trainingsetindex,
-            snapshotindex=snapshotindex,
-            iteration=iteration,
-            overwrite=overwrite,
-            wipe_paths=wipepaths,
-            without_detector=without_detector,
-            modelprefix=modelprefix,
-        )
-
-    raise NotImplementedError(f"This function is not implemented for {engine}")
-
-
-def _update_device(gpu_to_use: int | None, torch_kwargs: dict) -> None:
-    if "device" not in torch_kwargs and gpu_to_use is not None:
-        device = _gpu_to_use_to_device(gpu_to_use, device=None)
-        if device is not None:
-            torch_kwargs["device"] = device
-
-
-def _gpu_to_use_to_device(gpu_to_use: int | None, device: str | None) -> str | None:
-    if device is None and gpu_to_use is not None:
-        if isinstance(gpu_to_use, int):
-            device = f"cuda:{gpu_to_use}"
-        else:
-            device = gpu_to_use
-
-    return device
-
-
-def _load_config(config: str) -> dict:
-    config_path = Path(config)
-    if not config_path.exists():
-        raise FileNotFoundError(f"Config {config} is not found. Please make sure that the file exists.")
-
-    with open(config) as f:
-        project_config = YAML(typ="safe", pure=True).load(f)
-
-    return project_config
+    return export_model(
+        config=cfg_path,
+        shuffle=shuffle,
+        trainingsetindex=trainingsetindex,
+        snapshotindex=snapshotindex,
+        iteration=iteration,
+        overwrite=overwrite,
+        wipe_paths=wipepaths,
+        without_detector=without_detector,
+        modelprefix=modelprefix,
+    )
