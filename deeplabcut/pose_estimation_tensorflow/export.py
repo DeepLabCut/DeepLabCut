@@ -260,7 +260,7 @@ def export_model(
     except FileNotFoundError:
         FileNotFoundError(f"The config.yaml file at {cfg_path} does not exist.")
 
-    cfg["project_path"] = str(Path(cfg_path).resolve().parent)
+    cfg["project_path"] = str(auxiliaryfunctions.safe_resolve(Path(cfg_path)).parent)
     cfg["iteration"] = iteration if iteration is not None else cfg["iteration"]
     cfg["batch_size"] = cfg["batch_size"] if cfg["batch_size"] > 1 else 2
     cfg["snapshotindex"] = snapshotindex if snapshotindex is not None else cfg["snapshotindex"]
