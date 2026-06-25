@@ -13,6 +13,7 @@ Routing for legacy TensorFlow API while still supported. Remove this module when
 """
 
 import warnings
+from collections.abc import Callable
 from functools import lru_cache
 from importlib import import_module
 from pathlib import Path
@@ -23,6 +24,21 @@ from deeplabcut.utils.auxiliaryfunctions import read_config
 from deeplabcut.utils.deprecation import DLCDeprecationWarning
 
 _TF_MODULE = "deeplabcut.tensorflow_compat.tensorflow_api"
+
+_DROPPED_TF_KWARGS = frozenset(
+    {
+        "allow_growth",
+        "autotune",
+        "superanimal_name",
+        "superanimal_transfer_learning",
+        "save_iters",
+        "max_iters",
+    }
+)
+
+_RENAMED_TF_KWARGS: dict[str, tuple[str, Callable]] = {
+    "gputouse": ("device", lambda v: f"cuda:{v}" if isinstance(v, int) else v),
+}
 
 
 @lru_cache
@@ -39,10 +55,10 @@ def warn_deprecated_tensorflow():
         "TensorFlow support will be removed in a future release.\n"
         "Your project config and annotated data are fully compatible with PyTorch.\n"
         "Please run create_training_dataset with any PyTorch model architecture to switch to PyTorch.\n"
-        "See our documentaion for more info: https://deeplabcut.github.io/DeepLabCut/docs/pytorch/architectures.html \n"
+        "See our docs for more information: https://deeplabcut.github.io/DeepLabCut/docs/pytorch/architectures.html \n"
         "━" * 60,
         DLCDeprecationWarning,
-        stacklevel=4,
+        stacklevel=3,
     )
 
 
@@ -60,9 +76,11 @@ def with_tensorflow_fallback(canonical_function=None, *, tensorflow_name=None):
                 modelprefix=kwargs.get("modelprefix", ""),
                 engine=kwargs.get("engine"),
             )
+            kwargs.pop("engine", None)
             if engine == Engine.TF:
                 warn_deprecated_tensorflow()
                 return _get_tensorflow_impl(tf_name)(*args, **kwargs)
+            kwargs = _resolve_legacy_kwargs(kwargs)
             return fn(*args, **kwargs)
 
         return wrapper
@@ -89,3 +107,28 @@ def resolve_engine(
         shuffle=shuffle,
         modelprefix=modelprefix,
     )
+
+
+def _resolve_legacy_kwargs(kwargs: dict) -> dict:
+    """Resolve legacy TensorFlow kwargs to canonical (PyTorch) kwargs."""
+    kwargs = dict(kwargs)
+    for old, (new, convert) in _RENAMED_TF_KWARGS.items():
+        if old in kwargs and new in kwargs:
+            raise TypeError(f"Cannot specify both '{old}' (deprecated) and '{new}'. Use '{new}' only.")
+        elif old in kwargs:
+            converted = convert(kwargs.pop(old))
+            kwargs[new] = converted
+            warnings.warn(
+                f"'{old}' is deprecated; use {new}='{converted}' instead.",
+                DLCDeprecationWarning,
+                stacklevel=3,
+            )
+    for key in _DROPPED_TF_KWARGS:
+        if key in kwargs:
+            kwargs.pop(key)
+            warnings.warn(
+                f"'{key}' is a TensorFlow-only parameter and has no effect for PyTorch projects.",
+                DLCDeprecationWarning,
+                stacklevel=3,
+            )
+    return kwargs
