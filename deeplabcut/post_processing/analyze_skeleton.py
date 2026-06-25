@@ -292,7 +292,8 @@ def analyzeskeleton(
 
         bones = {}
         if "individuals" in df.columns.names:
-            for animal_name, df_ in df.groupby(level="individuals", axis=1):
+            for animal_name, df_ in df.T.groupby(level="individuals"):
+                df_ = df_.T
                 temp = df_.droplevel(["scorer", "individuals"], axis=1)
                 if animal_name != "single":
                     for bp1, bp2 in cfg["skeleton"]:

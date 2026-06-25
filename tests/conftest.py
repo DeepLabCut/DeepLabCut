@@ -20,7 +20,12 @@ import pytest
 from PIL import Image
 from tqdm import tqdm
 
-from deeplabcut.core import inferenceutils
+# Enable pandas future mode warnings if DLC_PANDAS_FUTURE env var is set
+from deeplabcut.utils.pandas_future_mode import configure_pandas_future_if_enabled
+
+configure_pandas_future_if_enabled()
+
+from deeplabcut.core import inferenceutils  # noqa: E402
 
 TESTS_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_DATA_DIR = os.path.join(TESTS_DIR, "data")
