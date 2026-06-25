@@ -24,21 +24,6 @@ from deeplabcut.utils.deprecation import DLCDeprecationWarning
 
 _TF_MODULE = "deeplabcut.tensorflow_compat.tensorflow_api"
 
-_DROPPED_TF_KWARGS = frozenset(
-    {
-        "allow_growth",
-        "autotune",
-        "superanimal_name",
-        "superanimal_transfer_learning",
-        "save_iters",
-        "max_iters",
-    }
-)
-
-_RENAMED_TF_KWARGS: dict[str, tuple[str, Callable]] = {
-    "gputouse": ("device", lambda v: f"cuda:{v}" if isinstance(v, int) else v),
-}
-
 
 @lru_cache
 def _get_tensorflow_impl(name: str):
@@ -61,14 +46,28 @@ def warn_deprecated_tensorflow():
     )
 
 
-def with_tensorflow_fallback(_fn: Callable | None = None, *, tensorflow_name: str | None = None) -> Callable:
+def with_tensorflow_fallback(
+    _fn: Callable | None = None,
+    *,
+    tensorflow_name: str | None = None,
+    renamed_params: dict[str, str] | None = None,
+    dropped_params: list[str] | None = None,
+    normalize_gputouse: bool = False,
+) -> Callable:
     """Decorator for wrapping canonical PyTorch API functions, routing to a fallback TF function if required.
     It automatically resolves the engine and converts legacy TensorFlow kwargs to canonical PyTorch kwargs, if needed.
     Can be used with or without parentheses.
 
     Args:
-        tensorflow_name: The name of the fallback TensorFlow function in ``_TF_MODULE``. If not specified, uses the name
-            of the canonical PyTorch function.
+        tensorflow_name (str | None): The name of the fallback TensorFlow function in ``_TF_MODULE``. If not specified,
+            uses the name of the canonical PyTorch function.
+        renamed_params (dict[str, str] | None): Optional mapping from old TF parameter names to the new canonical
+            PyTorch names. A warning will be emitted and the value is passed under the new canonical name. If both the
+            old and new names are specified, raises a TypeError.
+        dropped_params (list[str] | None): Optional list of dropped TensorFlow parameter names. A warning will be
+            emitted and the value is ignored.
+        normalize_gputouse (bool): resolve the old TF ``gputouse`` parameter to the new canonical PyTorch ``device``
+            parameter. Raises a TypeError if both are specified.
 
     Note:
         The engine is resolved from the shuffle metadata if not specified explicitly. If neither ``shuffles``,
@@ -84,7 +83,12 @@ def with_tensorflow_fallback(_fn: Callable | None = None, *, tensorflow_name: st
             if engine == Engine.TF:
                 warn_deprecated_tensorflow()
                 return _get_tensorflow_impl(tf_name)(*args, **kwargs)
-            kwargs = _resolve_legacy_kwargs(kwargs)
+            kwargs = _resolve_legacy_kwargs(
+                kwargs,
+                renamed_params=renamed_params or {},
+                dropped_params=dropped_params or [],
+                normalize_gputouse=normalize_gputouse,
+            )
             return fn(*args, **kwargs)
 
         return wrapper
@@ -117,21 +121,43 @@ def _resolve_engine(*args, **kwargs) -> Engine:
     return engines.pop()
 
 
-def _resolve_legacy_kwargs(kwargs: dict) -> dict:
+def _normalize_gputouse(gputouse: str | int) -> str:
+    if isinstance(gputouse, int):
+        return f"cuda:{gputouse}"
+    if gputouse.startswith("cuda:"):
+        return gputouse
+    if gputouse.startswith("gpu:"):
+        return gputouse.replace("gpu:", "cuda:")
+    return gputouse
+
+
+def _resolve_legacy_kwargs(
+    kwargs: dict,
+    renamed_params: dict[str, str],
+    dropped_params: list[str],
+    normalize_gputouse: bool = False,
+) -> dict:
     """Resolve legacy TensorFlow kwargs to canonical (PyTorch) kwargs."""
-    kwargs = dict(kwargs)
-    for old, (new, convert) in _RENAMED_TF_KWARGS.items():
-        if old in kwargs and new in kwargs:
-            raise TypeError(f"Cannot specify both '{old}' (deprecated) and '{new}'. Use '{new}' only.")
-        elif old in kwargs:
-            converted = convert(kwargs.pop(old))
-            kwargs[new] = converted
+
+    if normalize_gputouse and (gpu := kwargs.get("gputouse")):
+        # Normalize parameter "gputouse" to torch device string and rename
+        kwargs["gputouse"] = _normalize_gputouse(gpu)
+        renamed_params["gputouse"] = "device"
+
+    # Rename deprecated parameters
+    for old, new in renamed_params.items():
+        if old in kwargs:
+            if new in kwargs:
+                raise TypeError(f"Cannot specify both '{old}' (deprecated) and '{new}'. Use '{new}' only.")
+            kwargs[new] = kwargs.pop(old)
             warnings.warn(
-                f"'{old}' is deprecated; use {new}='{converted}' instead.",
+                f"'{old}' is deprecated; use {new}='{kwargs[new]}' instead.",
                 DLCDeprecationWarning,
                 stacklevel=3,
             )
-    for key in _DROPPED_TF_KWARGS:
+
+    # Drop unused parameters
+    for key in dropped_params:
         if key in kwargs:
             kwargs.pop(key)
             warnings.warn(
