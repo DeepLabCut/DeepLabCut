@@ -13,7 +13,6 @@ import os
 import numpy as np
 import pandas as pd
 import pytest
-from conftest import TEST_DATA_DIR
 from skimage import color, io
 
 from deeplabcut.generate_training_dataset import (
@@ -29,8 +28,8 @@ from deeplabcut.utils.auxfun_videos import imread
 from deeplabcut.utils.conversioncode import guarantee_multiindex_rows
 
 
-def test_read_image_shape_fast(tmp_path):
-    path_rgb_image = os.path.join(TEST_DATA_DIR, "image.png")
+def test_read_image_shape_fast(tmp_path, test_data_dir):
+    path_rgb_image = os.path.join(test_data_dir, "image.png")
     img = imread(path_rgb_image, mode="skimage")
     shape = img.shape
     assert read_image_shape_fast(path_rgb_image) == (shape[2], shape[0], shape[1])
@@ -54,14 +53,14 @@ def test_split_trials():
         assert (len(train_inds) + len(test_inds)) == n_rows
 
 
-def test_format_training_data(monkeypatch):
+def test_format_training_data(monkeypatch, test_data_dir):
     fake_shape = 3, 480, 640
     monkeypatch.setattr(
         trainingsetmanipulation,
         "read_image_shape_fast",
         lambda _: fake_shape,
     )
-    df = pd.read_hdf(os.path.join(TEST_DATA_DIR, "trimouse_calib.h5")).xs("mus1", level="individuals", axis=1)
+    df = pd.read_hdf(os.path.join(test_data_dir, "trimouse_calib.h5")).xs("mus1", level="individuals", axis=1)
     guarantee_multiindex_rows(df)
     train_inds = list(range(10))
     _, data = format_training_data(df, train_inds, 12, "")
@@ -73,14 +72,14 @@ def test_format_training_data(monkeypatch):
     assert all((d[2][0, 0].shape[1] == 3 and d[2][0, 0].dtype == np.int64) for d in data)
 
 
-def test_format_multianimal_training_data(monkeypatch):
+def test_format_multianimal_training_data(monkeypatch, test_data_dir):
     fake_shape = 3, 480, 640
     monkeypatch.setattr(
         multiple_individuals_trainingsetmanipulation,
         "read_image_shape_fast",
         lambda _: fake_shape,
     )
-    df = pd.read_hdf(os.path.join(TEST_DATA_DIR, "trimouse_calib.h5"))
+    df = pd.read_hdf(os.path.join(test_data_dir, "trimouse_calib.h5"))
     guarantee_multiindex_rows(df)
     train_inds = list(range(10))
     n_decimals = 1
@@ -110,7 +109,7 @@ def test_parse_video_filenames(videos: list[str], expected_filenames: list[str])
     assert filenames == expected_filenames
 
 
-def test_format_training_data_ignores_likelihood_columns(monkeypatch):
+def test_format_training_data_ignores_likelihood_columns(monkeypatch, test_data_dir):
     fake_shape = 3, 480, 640
     monkeypatch.setattr(
         trainingsetmanipulation,
@@ -119,7 +118,7 @@ def test_format_training_data_ignores_likelihood_columns(monkeypatch):
     )
 
     # Base single-animal dataframe (x/y only)
-    df = pd.read_hdf(os.path.join(TEST_DATA_DIR, "trimouse_calib.h5")).xs(
+    df = pd.read_hdf(os.path.join(test_data_dir, "trimouse_calib.h5")).xs(
         "mus1",
         level="individuals",
         axis=1,

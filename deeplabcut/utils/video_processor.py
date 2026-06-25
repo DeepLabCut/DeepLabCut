@@ -174,27 +174,29 @@ class VideoProcessor(ABC):
 
     @abstractmethod
     def get_video(self):
+
         raise NotImplementedError("Implement your own get_video method.")
+
 
     @abstractmethod
     def get_info(self):
-        raise NotImplementedError("Implement your own get_info method.")
+        """Implement your own."""
 
     @abstractmethod
     def create_video(self):
-        raise NotImplementedError("Implement your own create_video method.")
+        """Implement your own."""
 
     @abstractmethod
     def _read_frame(self):
-        raise NotImplementedError("Implement your own _read_frame method.")
+        """Implement your own."""
 
     @abstractmethod
     def save_frame(self, frame):
-        raise NotImplementedError("Implement your own save_frame method.")
+        """Implement your own."""
 
     @abstractmethod
     def close(self):
-        raise NotImplementedError("Implement your own close method.")
+        """Implement your own."""
 
 
 class VideoProcessorCV(VideoProcessor):

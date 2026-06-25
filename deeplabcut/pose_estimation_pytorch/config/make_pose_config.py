@@ -13,33 +13,95 @@
 from __future__ import annotations
 
 import copy
+import logging
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from deeplabcut.core.config import read_config_as_dict, write_config
+from deeplabcut.core.config import ProjectConfig, read_config_as_dict
+from deeplabcut.core.deprecation import deprecated
 from deeplabcut.core.weight_init import WeightInitialization
+from deeplabcut.pose_estimation_pytorch.config.enums import DetectorType, NetType
+from deeplabcut.pose_estimation_pytorch.config.inference import InferenceConfig
+from deeplabcut.pose_estimation_pytorch.config.metadata import PoseMetadata
+from deeplabcut.pose_estimation_pytorch.config.paf_parameters import PAFParameters
 from deeplabcut.pose_estimation_pytorch.config.utils import (
     get_config_folder_path,
     load_backbones,
     load_base_config,
     replace_default_values,
-    update_config,
 )
-from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
 from deeplabcut.pose_estimation_pytorch.task import Task
-from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
+
+if TYPE_CHECKING:
+    from deeplabcut.pose_estimation_pytorch.config import DetectorConfig, PoseConfig, TestConfig
+
+logger = logging.getLogger(__name__)
 
 
+@deprecated(replacement="pose_estimation_pytorch.config.TestConfig.build", since="3.1")
+def make_pytorch_test_config(
+    model_config: PoseConfig | dict | str | Path,
+    test_config_path: str | Path,
+    save: bool = False,
+) -> TestConfig:
+    from deeplabcut.pose_estimation_pytorch.config import TestConfig
+
+    return TestConfig.build(model_config, test_config_path=test_config_path, save=save)
+
+
+@deprecated(replacement="pose_estimation_pytorch.config.PoseConfig.build", since="3.1")
 def make_pytorch_pose_config(
-    project_config: dict,
+    project_config: ProjectConfig | dict | Path | str,
     pose_config_path: str | Path,
-    net_type: str | None = None,
+    net_type: NetType | str | None = None,
     top_down: bool = False,
     detector_type: str | None = None,
     weight_init: WeightInitialization | None = None,
     save: bool = False,
     ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
+) -> PoseConfig:
+    from deeplabcut.pose_estimation_pytorch.config import PoseConfig
+
+    return PoseConfig.build(
+        project_config,
+        pose_config_path,
+        net_type=net_type,
+        top_down=top_down,
+        detector_type=detector_type,
+        weight_init=weight_init,
+        save=save,
+        ctd_conditions=ctd_conditions,
+    )
+
+
+@deprecated(replacement="pose_estimation_pytorch.config.PoseMetadata", since="3.1")
+def make_basic_project_config(
+    dataset_path: Path | str,
+    bodyparts: list[str],
+    max_individuals: int,
+    multi_animal: bool = True,
 ) -> dict:
-    """Creates a PyTorch pose configuration file for a DeepLabCut project.
+    """Deprecated factory for basic config dict for non-DLC projects."""
+    return PoseMetadata(
+        project_path=dataset_path,
+        bodyparts=bodyparts,
+        individuals=[f"individual{i:03d}" for i in range(max_individuals)],
+    ).to_dict_legacy()
+
+
+def build_pose_config_defaults(
+    net_type: NetType,
+    metadata: PoseMetadata,
+    *,
+    task: Task,
+    multi_animal: bool,
+    paf_parameters: PAFParameters | None = None,
+    weight_init: WeightInitialization | None = None,
+    detector_config: DetectorConfig | None = None,
+    ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
+) -> dict:
+    """
+    Load the model config defaults (from model-specific yaml) for a given project and net_type.
 
     The base/ folder contains default configurations, such as data augmentations or
     heatmap heads (that can be used to predict pose or identity based on visual
@@ -58,18 +120,14 @@ def make_pytorch_pose_config(
     based on the project config file.
 
     Args:
-        project_config: the DeepLabCut project config
-        pose_config_path: the path where the pytorch pose configuration will be saved
+        project_config: the DeepLabCut project config (used to infer individuals, bodyparts and identity tracking)
         net_type: the architecture of the desired pose estimation model
-        top_down: when the net_type is a backbone, whether to create a top-down model
+        task: when the net_type is a backbone, whether to create a top-down model
             by associating a detector to the pose model. Required for multi-animal
             projects when net_type is a backbone (as a backbone + heatmap head can only
             predict pose for single individuals).
         detector_type: for top-down pose models, the architecture of the desired object
             detection model
-        weight_init: Specify how model weights should be initialized. If None, ImageNet
-            pretrained weights from Timm will be loaded when training.
-        save: Whether to save the model configuration file to the ``pose_config_path``.
         ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] , optional, default = None,
             If using a conditional-top-down (CTD) net_type, this argument needs to be specified.
             It defines the conditions that will be used with the CTD model.
@@ -82,123 +140,222 @@ def make_pytorch_pose_config(
 
 
     Returns:
-        the PyTorch pose configuration file
+        The model configuration defaults as a dictionary.
     """
-    multianimal_project = project_config.get("multianimalproject", False)
-    individuals = project_config.get("individuals", ["single"])
-    with_identity = project_config.get("identity")
-    bodyparts = auxiliaryfunctions.get_bodyparts(project_config)
-    unique_bpts = auxiliaryfunctions.get_unique_bodyparts(project_config)
-
-    if net_type is None:
-        net_type = project_config.get("default_net_type", "resnet_50")
-
     configs_dir = get_config_folder_path()
-    pose_config = load_base_config(configs_dir)
-    pose_config = add_metadata(project_config, pose_config, pose_config_path)
-    pose_config["net_type"] = net_type
-
+    base_cfg = load_base_config(configs_dir)
     backbones = load_backbones(configs_dir)
+
     if net_type in backbones:
-        if not top_down and multianimal_project:
-            model_cfg = create_backbone_with_paf_model(
+        if task == Task.BOTTOM_UP and multi_animal:
+            if paf_parameters is None:
+                raise ValueError("PAF parameters are required for multi-animal bottom-up models.")
+            model_cfg = _create_backbone_with_paf_model(
                 configs_dir=configs_dir,
                 net_type=net_type,
-                num_individuals=len(individuals),
-                bodyparts=bodyparts,
-                paf_parameters=_get_paf_parameters(project_config, bodyparts),
+                num_individuals=metadata.num_individuals,
+                bodyparts=metadata.bodyparts,
+                paf_parameters=paf_parameters.to_dict(),
             )
         else:
-            model_cfg = create_backbone_with_heatmap_model(
+            model_cfg = _create_backbone_with_heatmap_model(
                 configs_dir=configs_dir,
                 net_type=net_type,
-                multianimal_project=multianimal_project,
-                bodyparts=bodyparts,
-                top_down=top_down,
+                multianimal_project=multi_animal,
+                bodyparts=metadata.bodyparts,
+                top_down=task == Task.TOP_DOWN,
             )
     else:
-        architecture = net_type.split("_")[0]
+        architecture = net_type.value.split("_")[0]
         default_value_kwargs = {}
         if architecture == "dlcrnet":
-            default_value_kwargs.update(_get_paf_parameters(project_config, bodyparts))
+            if paf_parameters is None:
+                raise ValueError("PAF parameters are required for DLCRNet models.")
+            default_value_kwargs.update(paf_parameters.to_dict())
 
-        cfg_path = configs_dir / architecture / f"{net_type}.yaml"
+        cfg_path = configs_dir / architecture / f"{net_type.value}.yaml"
         model_cfg = read_config_as_dict(cfg_path)
         model_cfg = replace_default_values(
             model_cfg,
-            num_bodyparts=len(bodyparts),
-            num_individuals=len(individuals),
+            num_bodyparts=metadata.num_bodyparts,
+            num_individuals=metadata.num_individuals,
             **default_value_kwargs,
         )
+    model_cfg["net_type"] = net_type.value
 
-    task = Task(model_cfg.get("method", "BU").upper())
     if task == Task.TOP_DOWN:
-        model_cfg = add_detector(
-            configs_dir,
-            model_cfg,
-            len(individuals),
-            detector_type=detector_type,
-        )
+        if detector_config is None:
+            raise ValueError("detector_config is required for top-down pose configs.")
+        model_cfg["detector"] = detector_config.to_dict()
 
     # add the default augmentations to the config
     aug_filename = "aug_default.yaml" if task == Task.BOTTOM_UP else "aug_top_down.yaml"
     aug_cfg = {"data": read_config_as_dict(configs_dir / "base" / aug_filename)}
 
-    pose_config = update_config(pose_config, aug_cfg)
-
-    # add the model to the config
-    pose_config = update_config(pose_config, model_cfg)
-
-    # set the dataset from which to load weights
-    if weight_init is not None:
-        pose_config["train_settings"]["weight_init"] = weight_init.to_dict()
+    model_cfg = _update_config(model_cfg, aug_cfg)
+    model_cfg = _update_config(base_cfg, model_cfg)
 
     # add a unique bodypart head if needed
-    if len(unique_bpts) > 0:
+    if metadata.unique_bodyparts:
         if task != Task.BOTTOM_UP:
             raise ValueError(
-                f"You selected a top-down model architecture ({net_type}), but you have"
+                f"You selected a top-down model architecture ({net_type.value}), but you have"
                 f" unique bodyparts, which is not yet implemented for top-down models."
                 " Please select a bottom-up architecture such as `resnet_50` for single"
                 " animal projects or `dlcrnet_50` for multi-animal projects."
             )
 
-        pose_config = add_unique_bodypart_head(
+        model_cfg = _add_unique_bodypart_head(
             configs_dir,
-            pose_config,
-            num_unique_bodyparts=len(unique_bpts),
-            backbone_output_channels=pose_config["model"]["backbone_output_channels"],
+            model_cfg,
+            num_unique_bodyparts=metadata.num_unique_bodyparts,
+            backbone_output_channels=model_cfg["model"]["backbone_output_channels"],
         )
 
     # add an identity head if needed
-    if with_identity:
+    if metadata.with_identity:
         if task != Task.BOTTOM_UP:
             raise ValueError(
-                f"You selected a top-down model architecture ({net_type}), but you have"
+                f"You selected a top-down model architecture ({net_type.value}), but you have"
                 f" set `identity: true`, which is not yet implemented for top-down"
                 f" models. Please select a bottom-up architecture such as `dlcrnet_50`"
                 f" to train with identity, or set `identity: false`."
             )
 
-        pose_config = add_identity_head(
+        model_cfg = _add_identity_head(
             configs_dir,
-            pose_config,
-            num_individuals=len(individuals),
-            backbone_output_channels=pose_config["model"]["backbone_output_channels"],
+            model_cfg,
+            num_individuals=metadata.num_individuals,
+            backbone_output_channels=model_cfg["model"]["backbone_output_channels"],
         )
 
-    pose_config["inference"] = InferenceConfig().to_dict()
+    model_cfg["inference"] = InferenceConfig().to_dict()
     # Add conditions for CTD models if specified
-    if task == Task.COND_TOP_DOWN and ctd_conditions is not None:
-        _add_ctd_conditions(pose_config, ctd_conditions)
+    if task == Task.COND_TOP_DOWN:
+        if ctd_conditions is None:
+            raise ValueError("A CTD conditions is required for conditional-top-down models.")
+        _add_ctd_conditions(model_cfg, ctd_conditions)
 
-    # sort first-level keys to make it prettier
-    pose_config = dict(sorted(pose_config.items()))
+    # Add metadata and weight init to the model config
+    model_cfg["metadata"] = metadata.to_dict()
+    if weight_init is not None:
+        model_cfg["train_settings"]["weight_init"] = weight_init.to_dict()
+    return model_cfg
 
-    if save:
-        write_config(pose_config_path, pose_config, overwrite=True)
 
-    return pose_config
+def build_detector_config_defaults(
+    num_individuals: int,
+    detector_type: DetectorType,
+) -> dict:
+    """Adds a detector to a model.
+
+    Args:
+        configs_dir: path to the DeepLabCut "configs" directory
+        num_individuals: the maximum number of individuals the model should detect
+        detector_type: the type of detector to use (if None, uses ``ssdlite``)
+
+    Returns:
+        the model configuration with an added detector config
+    """
+    configs_dir = get_config_folder_path()
+    detector_config = _update_config(
+        read_config_as_dict(configs_dir / "base" / "base_detector.yaml"),
+        read_config_as_dict(configs_dir / "detectors" / f"{detector_type.value}.yaml"),
+    )
+    detector_config = replace_default_values(
+        detector_config,
+        num_individuals=num_individuals,
+    )
+    return dict(sorted(detector_config.items()))
+
+
+# TODO @deruyter92 2026-06-12: currently, the responsibility for determining the task
+# is controlled either in the default config (for "non-backbone" models) or by the
+# API parameter `top_down` (for "backbone" models). This should be refactored.
+def _resolve_task(net_type: NetType, *, top_down: bool) -> Task:
+    configs_dir = get_config_folder_path()
+    backbones = load_backbones(configs_dir)
+    if net_type in backbones:
+        return Task.TOP_DOWN if top_down else Task.BOTTOM_UP
+    architecture = net_type.value.split("_")[0]
+    cfg_path = configs_dir / architecture / f"{net_type.value}.yaml"
+    model_cfg = read_config_as_dict(cfg_path)
+    return Task(model_cfg.get("method", "BU").upper())
+
+
+def resolve_net_type_and_task(
+    net_type: str | NetType | None,
+    *,
+    default: str,
+    top_down: bool,
+) -> tuple[NetType, Task]:
+    """Resolve the net type from build args and project config default.
+
+    Args:
+        net_type (str | None): Architecture name, or None to use ``default``
+            from project config.
+        default (str): Fallback when ``net_type`` is None. Invalid values warn
+            and fall back to ``resnet_50``.
+        top_down (bool): Build a top-down backbone (ignored for non-backbones).
+
+    Returns:
+        (NetType, Task): the resolved canonical NetType and Task
+    """
+    if net_type is None:
+        try:
+            net_type, td_prefix = NetType.from_alias(default)
+        except ValueError as e:
+            raise ValueError(
+                f"Invalid default_net_type in project config: {default}. Must be one of {NetType.available_aliases()}"
+            ) from e
+    else:
+        net_type, td_prefix = NetType.from_alias(str(net_type))  # fails loudly if invalid
+
+    if td_prefix:
+        if top_down:
+            logger.warning(
+                "Passed net_type with top_down prefix. Instead use "
+                "PoseConfig.build(..., top_down=True) to specify the task."
+            )
+        else:
+            raise ValueError(
+                "Passed net_type with top_down prefix. but top_down is False."
+                "Please use only PoseConfig.build(..., top_down=True/False) to specify the task."
+            )
+    task = _resolve_task(net_type, top_down=top_down)
+    return net_type, task
+
+
+# NOTE @deruyter92 2026-06-19: Moved this from public API to internal use only.
+# Only used for construction of default config dictionaries. Can likely be refactored.
+def _update_config(config: dict, updates: dict, copy_original: bool = True) -> dict:
+    """Updates items in the configuration file.
+
+    The configuration dict should only be composed of primitive Python types
+    (dict, list and values). This is the case when reading the file using
+    `read_config_as_dict`.
+
+    Args:
+        config: the configuration dict to update
+        updates: the updates to make to the configuration dict
+        copy_original: whether to copy the original dict before updating it
+
+    Returns:
+        the updated dictionary
+    """
+    if copy_original:
+        config = copy.deepcopy(config)
+
+    for k, v in updates.items():
+        if k in config and isinstance(config[k], dict) and isinstance(v, dict):
+            if k in ("optimizer", "scheduler") and config["type"] != v["type"]:
+                # if changing the optimizer or scheduler type, update all values
+                config[k] = v
+            else:
+                config[k] = _update_config(config[k], v, copy_original=False)
+        else:
+            config[k] = copy.deepcopy(v)
+    return config
 
 
 def _add_ctd_conditions(model_cfg: dict, ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int]):
@@ -246,136 +403,9 @@ def _add_ctd_conditions(model_cfg: dict, ctd_conditions: int | str | Path | tupl
     model_cfg["inference"]["conditions"] = conditions
 
 
-def make_pytorch_test_config(
-    model_config: dict,
-    test_config_path: str | Path,
-    save: bool = False,
-) -> dict:
-    """Creates the test configuration for a model.
-
-    Args:
-        model_config: The PyTorch config for the model.
-        test_config_path: The path of the test config
-        save: Whether to save the test config to ``test_config_path``.
-
-    Returns:
-        The test configuration file.
-    """
-    bodyparts = model_config["metadata"]["bodyparts"]
-    unique_bodyparts = model_config["metadata"]["unique_bodyparts"]
-    all_joint_names = bodyparts + unique_bodyparts
-
-    test_config = dict(
-        dataset=model_config["metadata"]["project_path"],
-        dataset_type="multi-animal-imgaug",  # required for downstream tracking
-        num_joints=len(all_joint_names),
-        all_joints=[[i] for i in range(len(all_joint_names))],
-        all_joints_names=all_joint_names,
-        net_type=model_config["net_type"],
-        global_scale=1,
-        scoremap_dir="test",
-    )
-    if save:
-        write_config(test_config_path, test_config)
-
-    return test_config
-
-
-def make_basic_project_config(
-    dataset_path: Path | str,
-    bodyparts: list[str],
-    max_individuals: int,
-    multi_animal: bool = True,
-) -> dict:
-    """Creates a basic configuration dict that can be used to create model configs.
-
-    This should be used to create the `project_config` given to
-    `make_pytorch_pose_config` for non-DeepLabCut projects (e.g. when creating a
-    configuration file for a model that will be trained on a COCO dataset).
-
-    Args:
-        dataset_path: The path to the dataset for which the config will be created.
-        bodyparts: The bodyparts labeled for individuals in the dataset.
-        max_individuals: The maximum number of individuals to detect in a single image.
-        multi_animal: Whether multiple animals can be present in an image.
-
-    Returns:
-        The created project configuration dict that can be given to
-        `make_pytorch_pose_config`.
-
-    Examples:
-        Creating a `pytorch_config` for a ResNet50 backbone with a part-affinity head (
-        as multi_animal=True and top_down=False)
-
-        >>> import deeplabcut.pose_estimation_pytorch as pep
-        >>> project_config = pep.config.make_basic_project_config(
-        >>>     dataset_path="/path/coco",
-        >>>     bodyparts=["nose", "left_eye", "right_eye"],
-        >>>     max_individuals=12,
-        >>>     multi_animal=True,
-        >>> )
-        >>> model_config = pep.config.make_pytorch_pose_config(
-        >>>     project_config=project_config,
-        >>>     pose_config_path="/path/coco/models/resnet50/pytorch_config.yaml",
-        >>>     net_type="resnet_50",
-        >>>     top_down=False,
-        >>>     save=True,
-        >>> )
-
-        Creating a `pytorch_config` for a ResNet50 backbone with a simple heatmap head
-        (as the project is single-animal):
-
-        >>> import deeplabcut.pose_estimation_pytorch as pep
-        >>> project_config = pep.config.make_basic_project_config(
-        >>>     dataset_path="/path/coco",
-        >>>     bodyparts=["nose", "left_eye", "right_eye"],
-        >>>     max_individuals=1,
-        >>>     multi_animal=False,
-        >>> )
-        >>> model_config = pep.config.make_pytorch_pose_config(
-        >>>     project_config=project_config,
-        >>>     pose_config_path="/path/coco/models/resnet50/pytorch_config.yaml",
-        >>>     net_type="resnet_50",
-        >>>     top_down=False,
-        >>>     save=True,
-        >>> )
-    """
-    return dict(
-        project_path=str(dataset_path),
-        multianimalproject=multi_animal,
-        bodyparts=bodyparts,
-        multianimalbodyparts=bodyparts,
-        uniquebodyparts=[],
-        individuals=[f"individual{i:03d}" for i in range(max_individuals)],
-    )
-
-
-def add_metadata(project_config: dict, config: dict, pose_config_path: str | Path) -> dict:
-    """Adds metadata to a pytorch pose configuration.
-
-    Args:
-        project_config: the project configuration
-        config: the pytorch pose configuration
-        pose_config_path: the path where the pytorch pose configuration will be saved
-
-    Returns:
-        the configuration with a `meta` key added
-    """
-    config = copy.deepcopy(config)
-    config["metadata"] = {
-        "project_path": project_config["project_path"],
-        "pose_config_path": str(pose_config_path),
-        "bodyparts": auxiliaryfunctions.get_bodyparts(project_config),
-        "unique_bodyparts": auxiliaryfunctions.get_unique_bodyparts(project_config),
-        "individuals": project_config.get("individuals", ["animal"]),
-        "with_identity": project_config.get("identity", False),
-    }
-    return config
-
-
-def create_backbone_with_heatmap_model(
+def _create_backbone_with_heatmap_model(
     configs_dir: Path,
-    net_type: str,
+    net_type: NetType,
     multianimal_project: bool,
     bodyparts: list[str],
     top_down: bool,
@@ -404,12 +434,11 @@ def create_backbone_with_heatmap_model(
             "A pose model formed of a backbone and simple heatmap + location refinement"
             " head can only be used for single animal projects. As you're working with"
             " a multi-animal project, please select a multi-individual model instead of"
-            f" {net_type} or use a detector to create a top-down model (create your"
-            f" configuration with `make_pytorch_pose_config(..., top_down=True)`)."
+            f" {net_type.value} or use a detector to create a top-down model."
         )
 
     # add the backbone to the config
-    model_config = read_config_as_dict(configs_dir / "backbones" / f"{net_type}.yaml")
+    model_config = read_config_as_dict(configs_dir / "backbones" / f"{net_type.value}.yaml")
     backbone_output_channels = model_config["model"]["backbone_output_channels"]
 
     model_config["method"] = "bu"
@@ -430,9 +459,9 @@ def create_backbone_with_heatmap_model(
     return model_config
 
 
-def create_backbone_with_paf_model(
+def _create_backbone_with_paf_model(
     configs_dir: Path,
-    net_type: str,
+    net_type: NetType,
     num_individuals: int,
     bodyparts: list[str],
     paf_parameters: dict,
@@ -452,7 +481,7 @@ def create_backbone_with_paf_model(
         the backbone + heatmap, location refinement, PAF model configuration
     """
     # add the backbone to the config
-    model_config = read_config_as_dict(configs_dir / "backbones" / f"{net_type}.yaml")
+    model_config = read_config_as_dict(configs_dir / "backbones" / f"{net_type.value}.yaml")
     backbone_output_channels = model_config["model"]["backbone_output_channels"]
 
     # add a bodypart head
@@ -469,41 +498,7 @@ def create_backbone_with_paf_model(
     return model_config
 
 
-def add_detector(
-    configs_dir: Path,
-    config: dict,
-    num_individuals: int,
-    detector_type: str | None = None,
-) -> dict:
-    """Adds a detector to a model.
-
-    Args:
-        configs_dir: path to the DeepLabCut "configs" directory
-        config: model configuration to update
-        num_individuals: the maximum number of individuals the model should detect
-        detector_type: the type of detector to use (if None, uses ``ssdlite``)
-
-    Returns:
-        the model configuration with an added detector config
-    """
-    if detector_type is None:
-        detector_type = "ssdlite"  # default detector
-
-    detector_type = detector_type.lower()
-    config = copy.deepcopy(config)
-    detector_config = update_config(
-        read_config_as_dict(configs_dir / "base" / "base_detector.yaml"),
-        read_config_as_dict(configs_dir / "detectors" / f"{detector_type}.yaml"),
-    )
-    detector_config = replace_default_values(
-        detector_config,
-        num_individuals=num_individuals,
-    )
-    config["detector"] = dict(sorted(detector_config.items()))
-    return config
-
-
-def add_unique_bodypart_head(
+def _add_unique_bodypart_head(
     configs_dir: Path,
     config: dict,
     num_unique_bodyparts: int,
@@ -531,7 +526,7 @@ def add_unique_bodypart_head(
     return config
 
 
-def add_identity_head(
+def _add_identity_head(
     configs_dir: Path,
     config: dict,
     num_individuals: int,
@@ -556,28 +551,3 @@ def add_identity_head(
         backbone_output_channels=backbone_output_channels,
     )
     return config
-
-
-def _get_paf_parameters(
-    project_config: dict,
-    bodyparts: list[str],
-    num_limbs_threshold: int = 105,
-    paf_graph_degree: int = 6,
-) -> dict:
-    """Gets values for PAF parameters from the project configuration."""
-    paf_graph = [[i, j] for i in range(len(bodyparts)) for j in range(i + 1, len(bodyparts))]
-    num_limbs = len(paf_graph)
-    # If the graph is unnecessarily large (with 15+ keypoints by default),
-    # we randomly prune it to a size guaranteeing an average node degree of 6;
-    # see Suppl. Fig S9c in Lauer et al., 2022.
-    if num_limbs >= num_limbs_threshold:
-        paf_graph = auxfun_multianimal.prune_paf_graph(
-            paf_graph,
-            average_degree=paf_graph_degree,
-        )
-        num_limbs = len(paf_graph)
-    return {
-        "paf_graph": paf_graph,
-        "num_limbs": num_limbs,
-        "paf_edges_to_keep": project_config.get("paf_best", list(range(num_limbs))),
-    }

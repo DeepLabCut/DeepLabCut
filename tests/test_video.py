@@ -11,7 +11,6 @@
 import os
 
 import pytest
-from conftest import TEST_DATA_DIR
 
 from deeplabcut.utils.auxfun_videos import VideoWriter
 
@@ -19,8 +18,8 @@ POS_FRAMES = 1  # Equivalent to cv2.CAP_PROP_POS_FRAMES
 
 
 @pytest.fixture()
-def video_clip():
-    return VideoWriter(os.path.join(TEST_DATA_DIR, "vid.avi"))
+def video_clip(test_data_dir):
+    return VideoWriter(os.path.join(test_data_dir, "vid.avi"))
 
 
 def test_reader_wrong_inputs(tmp_path):
@@ -38,10 +37,10 @@ def test_reader_check_integrity(video_clip):
     assert os.path.getsize(log_file) == 0
 
 
-def test_reader_video_path(video_clip):
+def test_reader_video_path(video_clip, test_data_dir):
     assert video_clip.name == "vid"
     assert video_clip.format == ".avi"
-    assert video_clip.directory == TEST_DATA_DIR
+    assert video_clip.directory == test_data_dir
 
 
 def test_reader_metadata(video_clip):

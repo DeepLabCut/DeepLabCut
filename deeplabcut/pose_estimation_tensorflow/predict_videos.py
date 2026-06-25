@@ -33,6 +33,7 @@ from skimage.util import img_as_ubyte
 from tqdm import tqdm
 
 from deeplabcut.core import inferenceutils, trackingutils
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.pose_estimation_tensorflow.config import load_config
 from deeplabcut.pose_estimation_tensorflow.core import predict
 from deeplabcut.pose_estimation_tensorflow.core.openvino.session import (
@@ -42,7 +43,6 @@ from deeplabcut.pose_estimation_tensorflow.core.openvino.session import (
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import auxfun_models, auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import collect_video_paths
-from deeplabcut.utils.deprecation import renamed_parameter
 
 ####################################################
 # Loading data, and defining model folder

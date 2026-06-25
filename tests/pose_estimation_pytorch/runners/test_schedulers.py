@@ -39,7 +39,7 @@ def generate_random_lr_list(num_floats: int):
 
 @pytest.mark.parametrize(
     "milestones, lr_list",
-    [([10, 430], [[0.05], [0.005]]), (list(sorted(random.sample(range(0, 999), 2))), generate_random_lr_list(2))],
+    [([10, 430], [[0.05], [0.005]]), (list(sorted(random.sample(range(999), 2))), generate_random_lr_list(2))],
 )
 def test_scheduler(milestones, lr_list):
     """Testing schedulers.py.
