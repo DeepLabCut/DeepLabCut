@@ -445,8 +445,7 @@ def plot_edge_affinity_distributions(
 
     Parameters
     ----------
-    eval_pickle_file : string
-        Path to a *_full.pickle from the evaluation-results folder.
+    eval_pickle_file (str | Path): Path to a *_full.pickle from the evaluation-results folder.
 
     include_bodyparts : list of strings, optional
         A list of body part names whose edges are to be shown.
@@ -460,10 +459,11 @@ def plot_edge_affinity_distributions(
         Figure size in inches.
     """
 
-    with Path(eval_pickle_file).open("rb") as file:
+    eval_pickle_file = Path(eval_pickle_file)
+    with eval_pickle_file.open("rb") as file:
         data = pickle.load(file)
-    meta_pickle_file = eval_pickle_file.replace("_full.", "_meta.")
-    with Path(meta_pickle_file).open("rb") as file:
+    meta_pickle_file = eval_pickle_file.with_name(eval_pickle_file.name.replace("_full.", "_meta."))
+    with meta_pickle_file.open("rb") as file:
         metadata = pickle.load(file)
     (w_train, _), (b_train, _) = crossvalutils._calc_within_between_pafs(
         data,
