@@ -20,7 +20,6 @@ Licensed under GNU Lesser General Public License v3.0
 
 from __future__ import annotations
 
-import os
 import pickle
 import warnings
 from collections.abc import Sequence
@@ -397,18 +396,15 @@ def attempt_to_make_folder(foldername, recursive=False):
 
     Does nothing if it already exists.
     """
-    try:
-        Path(foldername).is_dir()
-    except TypeError:  # https://www.python.org/dev/peps/pep-0519/
-        foldername = os.fspath(foldername)  # https://github.com/DeepLabCut/DeepLabCut/issues/105 (windows)
+    foldername = Path(foldername)
 
-    if Path(foldername).is_dir():
-        pass
+    if foldername.is_dir():
+        return
+
+    if recursive:
+        foldername.mkdir(parents=True)
     else:
-        if recursive:
-            Path(foldername).mkdir(parents=True)
-        else:
-            Path(foldername).mkdir()
+        foldername.mkdir()
 
 
 def read_pickle(filename):
