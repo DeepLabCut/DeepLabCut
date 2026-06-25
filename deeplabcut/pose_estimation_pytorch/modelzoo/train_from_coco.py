@@ -28,12 +28,12 @@ def adaptation_train(
     test_file: str,
     model_config_path: str | Path,
     device: str | None,
-    epochs: int | None,
-    save_epochs: int | None,
-    detector_epochs: int | None,
-    detector_save_epochs: int | None,
-    snapshot_path: str | None,
-    detector_path: str | None,
+    epochs: int = 4,
+    save_epochs: int = 1,
+    detector_epochs: int = 4,
+    detector_save_epochs: int = 1,
+    snapshot_path: str | None = None,
+    detector_path: str | None = None,
     batch_size: int = 8,
     detector_batch_size: int = 8,
     eval_interval: int | None = None,
@@ -49,28 +49,24 @@ def adaptation_train(
 
     utils.fix_seeds(loader.model_cfg["train_settings"]["seed"])
 
-    updates = {
-        "model.backbone.freeze_bn_stats": True,
-        "runner.snapshots.max_snapshots": 5,
-        "runner.snapshots.save_epochs": save_epochs or 1,
-        "train_settings.batch_size": batch_size,
-        "train_settings.epochs": epochs or 4,
-    }
+    # Config updates
+    loader.model_cfg.model.backbone.freeze_bn_stats = True
+    loader.model_cfg.runner.snapshots.save_epochs = save_epochs
+    loader.model_cfg.train_settings.batch_size = batch_size
+    loader.model_cfg.train_settings.epochs = epochs
+
     if not skip_detector:
-        updates.update(
-            {
-                "detector.model.freeze_bn_stats": True,
-                "detector.runner.snapshots.max_snapshots": 5,
-                "detector.runner.snapshots.save_epochs": detector_save_epochs or 1,
-                "detector.train_settings.batch_size": detector_batch_size,
-                "detector.train_settings.epochs": detector_epochs or 4,
-            }
-        )
+        loader.model_cfg.detector.model.freeze_bn_stats = True
+        loader.model_cfg.detector.runner.snapshots.save_epochs = detector_save_epochs
+        loader.model_cfg.detector.train_settings.batch_size = detector_batch_size
+        loader.model_cfg.detector.train_settings.epochs = detector_epochs
 
     if eval_interval is not None:
-        updates["runner.eval_interval"] = eval_interval
+        loader.model_cfg.runner.eval_interval = eval_interval
 
-    loader.update_model_cfg(updates)
+    # Save the updated config
+    loader.model_cfg.log_changes()
+    loader.model_cfg.to_yaml(loader.model_config_path)
 
     pose_task = Task(loader.model_cfg["method"])
     if pose_task == Task.TOP_DOWN and not skip_detector:
@@ -79,7 +75,7 @@ def adaptation_train(
             logger_config = copy.deepcopy(loader.model_cfg["logger"])
             logger_config["run_name"] += "-detector"
 
-        if loader.model_cfg["detector"]["train_settings"]["epochs"] > 0:
+        if loader.model_cfg.detector is not None and loader.model_cfg.detector.train_settings.epochs > 0:
             train(
                 loader=loader,
                 run_config=loader.model_cfg["detector"],

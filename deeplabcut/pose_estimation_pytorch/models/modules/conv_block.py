@@ -50,7 +50,6 @@ class BaseBlock(ABC, nn.Module):
         Returns:
             Output tensor.
         """
-        pass
 
     def _init_weights(self, pretrained: str | None):
         """Method for initializing block weights from pretrained models.

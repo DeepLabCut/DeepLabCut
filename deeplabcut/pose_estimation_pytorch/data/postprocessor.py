@@ -39,7 +39,6 @@ class Postprocessor(ABC):
         Returns:
             a single post-processed prediction
         """
-        pass
 
 
 def build_bottom_up_postprocessor(
