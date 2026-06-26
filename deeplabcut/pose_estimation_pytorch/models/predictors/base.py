@@ -61,4 +61,3 @@ class BasePredictor(ABC, nn.Module):
         Raises:
             NotImplementedError: This method must be implemented in subclasses.
         """
-        pass

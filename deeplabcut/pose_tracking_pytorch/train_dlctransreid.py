@@ -22,8 +22,8 @@ from pathlib import Path
 
 import numpy as np
 
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.utils.auxfun_videos import collect_video_paths
-from deeplabcut.utils.deprecation import renamed_parameter
 
 from .config import cfg
 from .datasets import make_dlc_dataloader

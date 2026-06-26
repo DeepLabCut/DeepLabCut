@@ -27,33 +27,17 @@ import numpy as np
 import pandas as pd
 from matplotlib.collections import LineCollection
 from matplotlib.widgets import Button, LassoSelector
-from ruamel.yaml import YAML
 from scipy.spatial import KDTree
 from skimage import io
 
+from deeplabcut.core.config import read_config_as_dict, write_config
 from deeplabcut.generate_training_dataset.trainingsetmanipulation import drop_likelihood_columns
-
-
-# NOTE @C-Achard 2026-03-26 duplicate config read/write functions
-# should be addressed in config refactor
-def read_config(configname):
-    if not os.path.exists(configname):
-        raise FileNotFoundError(f"Config {configname} is not found. Please make sure that the file exists.")
-    yaml = YAML(typ="rt")
-    with open(configname, encoding="utf-8") as file:
-        return yaml.load(file)
-
-
-def write_config(configname, cfg):
-    yaml = YAML(typ="rt")
-    with open(configname, "w", encoding="utf-8") as file:
-        yaml.dump(cfg, file)
 
 
 class SkeletonBuilder:
     def __init__(self, config_path):
         self.config_path = config_path
-        self.cfg = read_config(config_path)
+        self.cfg = read_config_as_dict(config_path)
         # Find uncropped labeled data
         self.df = None
         found = False
@@ -156,7 +140,7 @@ class SkeletonBuilder:
         self.fig.canvas.draw_idle()
 
     def read_config(self, config_path):
-        return read_config(config_path)
+        return read_config_as_dict(config_path)
 
     def write_config(self, config_path, cfg):
         write_config(config_path, cfg)
