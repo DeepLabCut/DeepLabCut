@@ -1,1 +1,1 @@
-.. autofunction:: deeplabcut.compat.train_network
+.. autofunction:: deeplabcut.train_network
