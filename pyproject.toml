@@ -213,6 +213,14 @@ ignore = [ "E741", "B007" ]
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
+# Config for the docformatter pre-commit hook (currently disabled in favour of ruff).
+# Re-enable the hook in .pre-commit-config.yaml when large-scale docstring
+# reformatting is needed.
+[tool.docformatter]
+wrap-descriptions = 88
+wrap-summaries = 88
+black = true
+
 [tool.pyproject-fmt]
 max_supported_python = "3.12"
 generate_python_version_classifiers = true
@@ -227,3 +235,8 @@ markers = [
   "functional: functional/integration-style tests",
   "deprecated: tests for deprecated APIs kept for backward-compatibility",
 ]
+
+[tool.mdformat]
+# Preserve prose line breaks; avoid spurious diffs from reflowing paragraphs.
+wrap = "no"
+end_of_line = "lf"
