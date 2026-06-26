@@ -26,8 +26,8 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
+from deeplabcut.core.deprecation import DLCDeprecationWarning
 from deeplabcut.core.engine import Engine
-from deeplabcut.utils.deprecation import DLCDeprecationWarning
 
 _PYTORCH = Engine.PYTORCH
 _RESOLVE = "deeplabcut.api._tf_routing._resolve_engine"
