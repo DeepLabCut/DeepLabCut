@@ -98,14 +98,24 @@ def with_tensorflow_fallback(
     return decorator
 
 
+def _shuffles_from_kwargs(kwargs: dict) -> list | tuple:
+    """Return shuffle indices from kwargs, accepting legacy ``Shuffles``."""
+    if "shuffles" in kwargs and "Shuffles" in kwargs:
+        raise TypeError("Cannot specify both 'Shuffles' (deprecated) and 'shuffles'. Use 'shuffles' only.")
+    if "shuffles" in kwargs:
+        return kwargs["shuffles"]
+    if "Shuffles" in kwargs:
+        return kwargs["Shuffles"]
+    return [kwargs.get("shuffle", 1)]
+
+
 def _resolve_engine(*args, **kwargs) -> Engine:
     """Resolve engine from explicit engine parameter or shuffle metadata."""
     engine = kwargs.get("engine")
     if engine is not None:
         return engine
 
-    # Resolve engine from shuffle (default to shuffle=1 if not specified)
-    shuffles = kwargs.get("shuffles") or [kwargs.get("shuffle", 1)]
+    shuffles = _shuffles_from_kwargs(kwargs)
     cfg = read_config(kwargs.get("config", args[0]))
     engines = {
         get_shuffle_engine(

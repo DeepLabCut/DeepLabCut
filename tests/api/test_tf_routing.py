@@ -188,6 +188,32 @@ def test_resolve_engine_from_shuffles_list(mock_read_config, mock_get_shuffle_en
     assert mock_get_shuffle_engine.call_count == 2
 
 
+@patch("deeplabcut.api._tf_routing.get_shuffle_engine", return_value=Engine.TF)
+@patch("deeplabcut.api._tf_routing.read_config", return_value={"project_path": "/tmp"})
+def test_resolve_engine_accepts_legacy_shuffles_kwarg(mock_read_config, mock_get_shuffle_engine):
+    engine = tf_routing._resolve_engine("cfg.yaml", Shuffles=[2, 3])
+
+    assert engine == Engine.TF
+    assert mock_get_shuffle_engine.call_count == 2
+    mock_get_shuffle_engine.assert_any_call(
+        {"project_path": "/tmp"},
+        trainingsetindex=0,
+        shuffle=2,
+        modelprefix="",
+    )
+    mock_get_shuffle_engine.assert_any_call(
+        {"project_path": "/tmp"},
+        trainingsetindex=0,
+        shuffle=3,
+        modelprefix="",
+    )
+
+
+def test_resolve_engine_rejects_both_shuffles_and_shuffles():
+    with pytest.raises(TypeError, match="Cannot specify both 'Shuffles'"):
+        tf_routing._resolve_engine("cfg.yaml", shuffles=[1], Shuffles=[2])
+
+
 @patch("deeplabcut.api._tf_routing.get_shuffle_engine")
 @patch("deeplabcut.api._tf_routing.read_config", return_value={"project_path": "/tmp"})
 def test_resolve_engine_raises_when_shuffles_have_different_engines(mock_read_config, mock_get_shuffle_engine):
