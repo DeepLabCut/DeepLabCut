@@ -10,6 +10,8 @@
 #
 """DeepLabCut pose estimation API"""
 
+from __future__ import annotations
+
 from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -117,7 +119,7 @@ def evaluate_network(
     device: str | None = None,
     plotting: bool | str = False,
     show_errors: bool = True,
-    transform: A.Compose = None,
+    transform: A.Compose | None = None,
     snapshots_to_evaluate: list[str] | None = None,
     comparison_bodyparts: str | list[str] | None = None,
     per_keypoint_evaluation: bool = False,
