@@ -111,7 +111,7 @@ def transformer_reID(
         modelprefix=modelprefix,
     )
 
-    deeplabcut.compat.create_tracking_dataset(
+    deeplabcut.create_tracking_dataset(
         config,
         videos,
         track_method,

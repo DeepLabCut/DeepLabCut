@@ -19,7 +19,6 @@ import pandas as pd
 import scipy.io as sio
 import yaml
 
-import deeplabcut.compat as compat
 from deeplabcut.generate_training_dataset.multiple_individuals_trainingsetmanipulation import (
     create_multianimaltraining_dataset,
     format_multianimal_training_data,
@@ -44,7 +43,9 @@ def modify_train_test_cfg(config_path, shuffle=1, modelprefix=""):
     # use dlcr net
     # use gradient masking
     # set batch size as 8
-    trainposeconfigfile, testposeconfigfile, snapshotfolder = compat.return_train_network_path(
+    from deeplabcut.api.pose_estimation import return_train_network_path
+
+    trainposeconfigfile, testposeconfigfile, snapshotfolder = return_train_network_path(
         config_path, shuffle=shuffle, modelprefix=modelprefix, trainingsetindex=0
     )
 
