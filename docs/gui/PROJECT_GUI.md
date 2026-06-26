@@ -21,6 +21,10 @@ While several advanced features are not fully available in this Project GUI, we 
 1. Install DeepLabCut following the instructions in the {ref}`installation page<file:how-to-install>`.
 1. Open the terminal and run: `python -m deeplabcut`
 
+```{important}
+If you use Windows, please always open the terminal with administrator privileges! Right click, and "run as administrator".
+```
+
 <p align="center">
 <img src="https://images.squarespace-cdn.com/content/v1/57f6d51c9f74566f55ecf271/07ae2633-dc3e-4b6d-beec-27c08d9f8531/ezgif.com-gif-maker+%284%29.gif?format=2500w" width="80%">
 </p>

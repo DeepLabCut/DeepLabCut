@@ -10,47 +10,81 @@ deeplabcut:
 
 (file:multi-animal-quick-start)=
 
-# Multi-animal pose estimation with DeepLabCut: A 5-minute tutorial
+# Multi-animal at a glance
 
-## GUI:
+This page summarizes the main DeepLabCut functions used in a standard multi-animal
+2D pose-estimation workflow.
 
-Full graphical user interface: just follow the tabs in the GUI! `python -m deeplabcut` launches the GUI.
+## GUI workflow
 
-## Terminal:
+DeepLabCut provides a full graphical user interface. To launch it, run:
 
-**Import deeplabcut**
+```bash
+python -m deeplabcut
+```
+
+Then follow the tabs in the Project Manager GUI.
+
+## Python workflow
+
+The same workflow can also be run from Python. Start by importing DeepLabCut:
 
 ```python
 import deeplabcut
 ```
 
-**(1) Create a project**
+### 1. Create a project
 
 ```python
 project_name = "cutemice"
 experimenter = "teamdlc"
-video_path = "path_to_a_video_file"
+video_paths = ["/absolute/path/to/video_file.mp4"]
+
 config_path = deeplabcut.create_new_project(
     project_name,
     experimenter,
-    [video_paths],
+    video_paths,
     multianimal=True,
     copy_videos=True,
 )
 ```
 
-> **_NOTE:_** Make sure to specify the absolute path to the video file(s).
-> It is quickly obtained on Windows with <kbd>⇧ Shift</kbd>+<kbd>Right click</kbd> and `Copy as path`,
-> and on Mac with <kbd>⌥ Option</kbd>+<kbd>Right click</kbd> and `Copy as Pathname`.
-> Ubuntu users only need to copy the file and its path gets added to the clipboard.
+```{note}
+Use absolute paths to your video file(s).
 
-> Next, you can set a variable for the config_path: 'Full path of the project configuration file\*'
+On Windows, you can quickly copy a file path with <kbd>Shift</kbd> +
+<kbd>Right click</kbd> and **Copy as path**. On macOS, use
+<kbd>Option</kbd> + <kbd>Right click</kbd> and **Copy as Pathname**.
+On Ubuntu, copying the file usually also copies its path to the clipboard.
+```
 
-**(2) Edit the config.ymal file to set up your project**
+The returned `config_path` is the full path to the project `config.yaml` file. This
+variable is used throughout the rest of the workflow.
 
-> **_NOTE:_** Here is were you will define your key point names and animal IDs. Also you can change the default # of frames to extract for the next step.
+### 2. Configure the project
 
-**(3) Extract video frames to annotate**
+Open the generated `config.yaml` file and edit it for your experiment.
+
+At this stage, define the animal identities and keypoints you want to track. For
+multi-animal projects, the most important fields are typically:
+
+- `individuals`
+- `multianimalbodyparts`
+- `uniquebodyparts`
+- `identity`
+- `numframes2pick`
+
+```{important}
+Do not include spaces in the names of individuals, body parts, multi-animal body
+parts, or unique body parts.
+```
+
+```{tip}
+You can also adjust the number of frames to extract in the next step by editing
+`numframes2pick` in `config.yaml`.
+```
+
+### 3. Extract video frames to annotate
 
 ```python
 deeplabcut.extract_frames(
@@ -61,15 +95,18 @@ deeplabcut.extract_frames(
 )
 ```
 
-> **_NOTE:_** try to extract a few frames from many videos vs. a lot of frames from one video!
+```{tip}
+For robust training data, it is usually better to extract a few informative frames
+from many videos than many similar frames from a single video.
+```
 
-**(4) Annotate Frames**
+### 4. Annotate frames
 
 ```python
 deeplabcut.label_frames(config_path)
 ```
 
-**(5) Visually check annotated frames**
+### 5. Check annotated frames
 
 ```python
 deeplabcut.check_labels(
@@ -78,7 +115,10 @@ deeplabcut.check_labels(
 )
 ```
 
-**(6) Create the training dataset**
+Use the generated labeled images to visually confirm that the annotations were saved
+correctly.
+
+### 6. Create the training dataset
 
 ```python
 deeplabcut.create_multianimaltraining_dataset(
@@ -88,18 +128,24 @@ deeplabcut.create_multianimaltraining_dataset(
 )
 ```
 
-**(7) Train the network**
+### 7. Train the network
+
+Choose the example corresponding to the engine you are using.
+
+#### PyTorch engine
 
 ```python
-# PyTorch Engine
 deeplabcut.train_network(
     config_path,
     device="cuda",
     save_epochs=5,
     epochs=200,
 )
+```
 
-# TensorFlow Engine
+#### TensorFlow engine
+
+```python
 deeplabcut.train_network(
     config_path,
     saveiters=10000,
@@ -108,7 +154,7 @@ deeplabcut.train_network(
 )
 ```
 
-**(8) Evaluate the network**
+### 8. Evaluate the network
 
 ```python
 deeplabcut.evaluate_network(
@@ -117,45 +163,57 @@ deeplabcut.evaluate_network(
 )
 ```
 
-**(9) Analyze a video (extracts detections and association costs)**
+Inspect the evaluation results before moving on to video analysis. For multi-animal
+projects, pay particular attention to detection quality and tracking readiness.
+
+### 9. Analyze videos
 
 ```python
 deeplabcut.analyze_videos(
     config_path,
-    [video],
+    video_paths,
     auto_track=True,
 )
 ```
 
-> **_NOTE:_** `auto_track=True` will complete steps 10-11 for you automatically so you get the "final" H5 file. Use the below steps if you need to change the parameters of tracking based on your dataset.
+```{note}
+With `auto_track=True`, DeepLabCut automatically performs the tracking steps needed to
+produce the final `.h5` output file. Use the manual tracking steps below only if you
+need to inspect detections or tune tracking parameters for your dataset.
+```
 
-**(10) Spatial and (locally) temporal grouping: Track body part assemblies frame-by-frame**
+### 10. Convert detections to tracklets
+
+This step performs spatial and local temporal grouping, assembling body parts into
+tracklets frame by frame.
 
 ```python
 deeplabcut.convert_detections2tracklets(
     config_path,
-    [video],
+    video_paths,
     track_method="ellipse",
 )
 ```
 
-**(11) Reconstruct full animal trajectories (tracks from tracklets)**
+### 11. Stitch tracklets into trajectories
+
+This step reconstructs full animal trajectories from the tracklets.
 
 ```python
 deeplabcut.stitch_tracklets(
     config_path,
-    [video],
+    video_paths,
     track_method="ellipse",
     min_length=5,
 )
 ```
 
-**(12) Create a pretty video output**
+### 12. Create labeled videos
 
 ```python
 deeplabcut.create_labeled_video(
     config_path,
-    [video],
+    video_paths,
     color_by="individual",
     keypoints_only=False,
     trailpoints=10,
@@ -163,3 +221,7 @@ deeplabcut.create_labeled_video(
     track_method="ellipse",
 )
 ```
+
+This creates a video with the predicted keypoints overlaid. For multi-animal projects,
+`color_by="individual"` is useful for visually checking identity assignment and
+trajectory consistency.

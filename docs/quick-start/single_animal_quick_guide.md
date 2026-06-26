@@ -11,90 +11,149 @@ deeplabcut:
 
 (file:single-animal-quick-start)=
 
-# QUICK GUIDE to single Animal Training:
+# Single-animal at a glance
 
-**The main steps to take you from project creation to analyzed videos:**
+This page summarizes the main DeepLabCut functions used in a standard single-animal
+2D pose-estimation workflow, from project creation to analyzed videos.
 
-Open ipython in the terminal:
+## Start Python
 
-```
+Open a terminal and start an interactive Python session, for example with IPython:
+
+```bash
 ipython
 ```
 
-Import DeepLabCut:
+Then import DeepLabCut:
 
-```
+```python
 import deeplabcut
 ```
 
-Create a new project:
+## Workflow
 
-```
-deeplabcut.create_new_project("project_name", "experimenter", ["path of video 1", "path of video2", ..])
+### 1. Create a project
+
+```python
+project_name = "project_name"
+experimenter = "experimenter"
+video_paths = [
+    "/absolute/path/to/video_1.mp4",
+    "/absolute/path/to/video_2.mp4",
+]
+
+config_path = deeplabcut.create_new_project(
+    project_name,
+    experimenter,
+    video_paths,
+    copy_videos=True,
+)
 ```
 
-Set a config_path variable for ease of use + go edit this file!:
-
+```{note}
+Use absolute paths to your video files. The returned `config_path` is the full path to
+the project `config.yaml` file and is used throughout the rest of the workflow.
 ```
-config_path = "yourdirectory/project_name/config.yaml"
+
+### 2. Configure the project
+
+Open the generated `config.yaml` file and edit it for your experiment.
+
+At this stage, define the body parts or points of interest that you want to track. You
+can also adjust project settings such as the number of frames to extract, visualization
+settings, and training options.
+
+```{important}
+Do not include spaces in body-part names.
 ```
 
-Extract frames:
+### 3. Extract frames
 
-```
+```python
 deeplabcut.extract_frames(config_path)
 ```
 
-Label frames:
+### 4. Label frames
 
-```
+```python
 deeplabcut.label_frames(config_path)
 ```
 
-Check labels \[OPTIONAL\]:
+### 5. Check labels
 
-```
+```python
 deeplabcut.check_labels(config_path)
 ```
 
-Create training dataset:
-
+```{tip}
+This step is optional, but strongly recommended. Use the generated labeled images to
+visually confirm that the annotations were saved correctly before training.
 ```
+
+### 6. Create the training dataset
+
+```python
 deeplabcut.create_training_dataset(config_path)
 ```
 
-Train the network:
+### 7. Train the network
 
-```
+```python
 deeplabcut.train_network(config_path)
 ```
 
-Evaluate the trained network:
+### 8. Evaluate the trained network
 
-```
+```python
 deeplabcut.evaluate_network(config_path)
 ```
 
-Video analysis:
+Inspect the evaluation results before moving on to video analysis. If pose-estimation
+quality is not sufficient, improve the labels, add more training data, or train for
+longer before continuing.
 
-```
-deeplabcut.analyze_videos(config_path, ["path of video 1", "path of video2", ..])
-```
+### 9. Analyze videos
 
-Filter predictions \[OPTIONAL\]:
-
-```
-deeplabcut.filterpredictions(config_path, ["path of video 1", "path of video2", ..])
-```
-
-Plot results (trajectories):
-
-```
-deeplabcut.plot_trajectories(config_path, ["path of video 1", "path of video2", ..], filtered=True)
+```python
+deeplabcut.analyze_videos(
+    config_path,
+    video_paths,
+)
 ```
 
-Create a video:
+### 10. Filter predictions
 
+```python
+deeplabcut.filterpredictions(
+    config_path,
+    video_paths,
+)
 ```
-deeplabcut.create_labeled_video(config_path, ["path of video 1", "path of video2", ..], filtered=True)
+
+```{note}
+Filtering is optional. It can help smooth pose predictions before plotting
+trajectories or creating labeled videos.
 ```
+
+### 11. Plot trajectories
+
+```python
+deeplabcut.plot_trajectories(
+    config_path,
+    video_paths,
+    filtered=True,
+)
+```
+
+### 12. Create labeled videos
+
+```python
+deeplabcut.create_labeled_video(
+    config_path,
+    video_paths,
+    filtered=True,
+)
+```
+
+This creates videos with the predicted keypoints overlaid, which is useful for a quick
+visual inspection of tracking quality.
