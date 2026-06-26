@@ -38,12 +38,6 @@ warnings.filterwarnings("once", category=DLCDeprecationWarning)
 # -----------------------------------------------------------------------------
 
 # Train / evaluate / predict functions
-from .api.dataset_management import (
-    create_multianimaltraining_dataset,
-    create_training_dataset,
-    create_training_dataset_from_existing_split,
-    create_training_model_comparison,
-)
 from .api.pose_estimation import (
     analyze_images,
     analyze_time_lapse_frames,
@@ -74,6 +68,10 @@ from .generate_training_dataset import (
     adddatasetstovideolistandviceversa,
     check_labels,
     comparevideolistsanddatafolders,
+    create_multianimaltraining_dataset,
+    create_training_dataset,
+    create_training_dataset_from_existing_split,
+    create_training_model_comparison,
     dropannotationfileentriesduetodeletedimages,
     dropduplicatesinannotatinfiles,
     dropimagesduetolackofannotation,
