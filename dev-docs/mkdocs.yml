@@ -113,6 +113,7 @@ markdown_extensions:
   - pymdownx.magiclink # adds support for magic links / URLs, e.g. https://example.com.
 
 extra:
+  main_docs_url: "https://deeplabcut.github.io/DeepLabCut/"
   version:
     provider: mike
     default: main
@@ -121,18 +122,17 @@ copyright: "Copyright © 2026 The DeepLabCut Team"
 
 nav:
   - Get Started:
-      - Overview: index.md
-      # - Installation: installation.md
-      - Quick Start: quickstart.md
+      - Overview: get-started/index.md
+      - Quick Start: get-started/quickstart.md
   - Developer Guides:
-      - Overview: devguides.md
-      - Model Architecture: models.md
-      # - Configuration Files: configuration.md
-      - Data Preparation: dataprep.md
-      - Training Models: training.md
-      - Inference & Analysis: inference.md
-      # - Adding Custom Models: custom_models.md
-      # - Multi-animal Tracking: tracking.md
+      - Overview: developer-guides/index.md
+      - Model Architecture: developer-guides/models.md
+      # - Configuration Files: developer-guides/configuration.md
+      - Data Preparation: developer-guides/dataprep.md
+      - Training Models: developer-guides/training.md
+      - Inference & Analysis: developer-guides/inference.md
+      # - Adding Custom Models: developer-guides/custom_models.md
+      # - Multi-animal Tracking: developer-guides/tracking.md
   - Examples:
-      - Practical Examples: examples.md
+      - Practical Examples: examples/index.md
   - API Reference
