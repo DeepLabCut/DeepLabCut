@@ -40,7 +40,6 @@ from deeplabcut import auxiliaryfunctions
 from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.debug import install_debug_recorder
 from deeplabcut.core.engine import Engine
-from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 from deeplabcut.gui import components
 from deeplabcut.gui.config_file_monitor import ConfigFileMonitor
 from deeplabcut.gui.dialogs import create_generate_debug_log_action
@@ -311,41 +310,30 @@ class MainWindow(QMainWindow):
         return [""]
 
     @property
-    def _selected_model_train_folder(self) -> tuple[Path, Engine]:
-        """Resolve model paths from the validated project-config snapshot."""
-        cfg = self.cfg
-        if cfg is None:
-            raise RuntimeError("No project configuration is loaded.")
-
-        shuffle = int(self.shuffle_value)
-        trainingset_index = int(self.trainingset_index)
-        engine = get_shuffle_engine(
-            cfg,
-            trainingsetindex=trainingset_index,
-            shuffle=shuffle,
-        )
-        model_folder = auxiliaryfunctions.get_model_folder(
-            cfg.TrainingFraction[trainingset_index],
-            shuffle,
-            cfg,
-            engine=engine,
-        )
-        return Path(cfg.project_path) / model_folder / "train", engine
-
-    @property
     def pose_cfg_path(self) -> Path:
         try:
-            train_folder, engine = self._selected_model_train_folder
-            filename = "pytorch_config.yaml" if engine == Engine.PYTORCH else "pose_cfg.yaml"
-            return train_folder / filename
+            return Path(
+                deeplabcut.return_train_network_path(
+                    self.config_path,
+                    shuffle=int(self.shuffle_value),
+                    trainingsetindex=int(self.trainingset_index),
+                    modelprefix="",
+                )[0]
+            ).absolute()
         except FileNotFoundError:
             return (Path(deeplabcut.__file__).parent / "pose_cfg.yaml").absolute()
 
     @property
     def models_folder(self) -> Path:
         try:
-            train_folder, _ = self._selected_model_train_folder
-            return train_folder
+            return Path(
+                deeplabcut.return_train_network_path(
+                    self.config_path,
+                    shuffle=int(self.shuffle_value),
+                    trainingsetindex=int(self.trainingset_index),
+                    modelprefix="",
+                )[2]
+            ).absolute()
         except FileNotFoundError:
             return self.project_folder
 
