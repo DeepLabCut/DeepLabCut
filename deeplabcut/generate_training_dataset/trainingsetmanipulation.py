@@ -21,10 +21,9 @@ import pandas as pd
 import yaml
 from PIL import Image
 
-import deeplabcut.compat as compat
 import deeplabcut.generate_training_dataset.metadata as metadata
 from deeplabcut.core.config import ProjectConfig, read_config, write_config
-from deeplabcut.core.engine import Engine
+from deeplabcut.core.engine import Engine, get_available_aug_methods, get_project_engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import (
     auxfun_models,
@@ -934,7 +933,7 @@ def create_training_dataset(
         engine (Engine, optional): Whether to create a pose config for a Tensorflow or
             PyTorch model. Defaults to the value specified in the project configuration
             file. If no engine is specified for the project, defaults to
-            ``deeplabcut.compat.DEFAULT_ENGINE``.
+            ``deeplabcut.core.DEFAULT_ENGINE``.
 
         ctd_conditions (int | str | Path | tuple[int, str] | tuple[int, int] | None,
             optional): If using a conditional-top-down (CTD) net_type, this argument
@@ -1031,7 +1030,7 @@ def create_training_dataset(
         scorer = cfg["scorer"]
         project_path = cfg["project_path"]
         if engine is None:
-            engine = compat.get_project_engine(cfg)
+            engine = get_project_engine(cfg)
 
         # Create path for training sets & store data there
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
@@ -1069,7 +1068,7 @@ def create_training_dataset(
                 top_down = True
                 net_type = net_type[len("top_down_") :]
 
-        augmenters = compat.get_available_aug_methods(engine)
+        augmenters = get_available_aug_methods(engine)
         default_augmenter = augmenters[0]
         if augmenter_type is None:
             augmenter_type = cfg.get("default_augmenter", default_augmenter)
@@ -1152,7 +1151,8 @@ def create_training_dataset(
         for trainFraction, shuffle, (trainIndices, testIndices) in splits:
             if len(trainIndices) > 0:
                 if userfeedback:
-                    trainposeconfigfile, _, _ = compat.return_train_network_path(
+                    from deeplabcut.api.pose_estimation import return_train_network_path
+                    trainposeconfigfile, _, _ = return_train_network_path(
                         cfg_path,
                         shuffle=shuffle,
                         trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
@@ -1672,7 +1672,7 @@ def create_training_dataset_from_existing_split(
         engine: Whether to create a pose config for a Tensorflow or PyTorch model.
             Defaults to the value specified in the project configuration file. If no
             engine is specified for the project, defaults to
-            ``deeplabcut.compat.DEFAULT_ENGINE``.
+            ``deeplabcut.core.engine.DEFAULT_ENGINE``.
 
         ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None, default = None,
             If using a conditional-top-down (CTD) net_type, this argument should be
