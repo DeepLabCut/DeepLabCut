@@ -29,6 +29,7 @@ from deeplabcut.generate_training_dataset.trainingsetmanipulation import (
     merge_annotateddatasets,
     validate_shuffles,
 )
+from deeplabcut.pose_estimation_tensorflow import return_train_network_path
 from deeplabcut.tensorflow_compat.dataset_management.create_multi_animal import (
     create_multianimaltraining_dataset,
 )
@@ -36,8 +37,10 @@ from deeplabcut.tensorflow_compat.dataset_management.pose_yaml import (
     MakeTest_pose_yaml,
     MakeTrain_pose_yaml,
 )
-from deeplabcut.tensorflow_compat.tensorflow_api import return_train_network_path
 from deeplabcut.utils import auxfun_models, auxiliaryfunctions
+
+_ENGINE = Engine.TF
+_AUGMENTERS = get_available_aug_methods(_ENGINE)
 
 
 def create_training_dataset(
@@ -54,7 +57,6 @@ def create_training_dataset(
     posecfg_template=None,
     superanimal_name="",
     weight_init: WeightInitialization | None = None,
-    engine: Engine | None = None,
     ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
 ):
     if windows2linux:
@@ -96,12 +98,10 @@ def create_training_dataset(
             trainIndices=trainIndices,
             testIndices=testIndices,
             userfeedback=userfeedback,
-            engine=Engine.TF,
             weight_init=weight_init,
             ctd_conditions=ctd_conditions,
         )
 
-    engine = Engine.TF
     scorer = cfg["scorer"]
     project_path = cfg["project_path"]
 
@@ -125,7 +125,7 @@ def create_training_dataset(
     elif not ("resnet" in net_type or "mobilenet" in net_type or "efficientnet" in net_type or "dlcrnet" in net_type):
         raise ValueError("Invalid network type:", net_type)
 
-    augmenters = get_available_aug_methods(engine)
+    augmenters = _AUGMENTERS
     default_augmenter = augmenters[0]
     if augmenter_type is None:
         augmenter_type = cfg.get("default_augmenter", default_augmenter)
@@ -136,12 +136,11 @@ def create_training_dataset(
         elif augmenter_type not in augmenters:
             augmenter_type = default_augmenter
             logging.info(
-                f"Default augmenter {augmenter_type} not available for engine "
-                f"{engine}: using {default_augmenter} instead"
+                f"Default augmenter {augmenter_type} not available for TensorFlow: using {default_augmenter} instead"
             )
 
     if augmenter_type not in augmenters:
-        raise ValueError(f"Invalid augmenter type: {augmenter_type} (available: for engine={engine}: {augmenters})")
+        raise ValueError(f"Invalid augmenter type: {augmenter_type} (available for TensorFlow: {augmenters})")
 
     if posecfg_template:
         if net_type != prior_cfg["net_type"]:
@@ -197,7 +196,6 @@ def create_training_dataset(
                     config,
                     shuffle=shuffle,
                     trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
-                    engine=engine,
                 )
                 if trainposeconfigfile.is_file():
                     askuser = input(
@@ -230,7 +228,7 @@ def create_training_dataset(
                 cfg=cfg,
                 train_fraction=trainFraction,
                 shuffle=shuffle,
-                engine=engine,
+                engine=_ENGINE,
                 train_indices=trainIndices,
                 test_indices=testIndices,
                 overwrite=not userfeedback,
@@ -240,7 +238,7 @@ def create_training_dataset(
                 trainFraction,
                 shuffle,
                 cfg,
-                engine=engine,
+                engine=_ENGINE,
             )
             auxiliaryfunctions.attempt_to_make_folder(Path(config).parents[0] / modelfoldername, recursive=True)
             auxiliaryfunctions.attempt_to_make_folder(str(Path(config).parents[0] / modelfoldername) + "/train")
@@ -251,7 +249,7 @@ def create_training_dataset(
                     cfg["project_path"],
                     Path(modelfoldername),
                     "train",
-                    engine.pose_cfg_name,
+                    _ENGINE.pose_cfg_name,
                 )
             )
             path_test_config = str(
@@ -270,7 +268,7 @@ def create_training_dataset(
                 )
             items2change = {
                 "dataset": datafilename,
-                "engine": engine.aliases[0],
+                "engine": _ENGINE.aliases[0],
                 "metadataset": metadatafilename,
                 "num_joints": len(bodyparts),
                 "all_joints": [[i] for i in range(len(bodyparts))],

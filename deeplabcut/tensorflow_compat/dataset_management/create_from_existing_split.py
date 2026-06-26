@@ -15,7 +15,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import deeplabcut.generate_training_dataset.metadata as metadata
-from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.generate_training_dataset.trainingsetmanipulation import _compute_padding
 from deeplabcut.tensorflow_compat.dataset_management.create_single_animal import (
@@ -38,7 +37,6 @@ def create_training_dataset_from_existing_split(
     posecfg_template: dict | None = None,
     superanimal_name: str = "",
     weight_init: WeightInitialization | None = None,
-    engine: Engine | None = None,
 ) -> None | list[int]:
     cfg = auxiliaryfunctions.read_config(config)
     trainset_meta_path = metadata.TrainingDatasetMetadata.path(cfg)
@@ -78,6 +76,5 @@ def create_training_dataset_from_existing_split(
         posecfg_template=posecfg_template,
         superanimal_name=superanimal_name,
         weight_init=weight_init,
-        engine=Engine.TF,
         ctd_conditions=ctd_conditions,
     )
