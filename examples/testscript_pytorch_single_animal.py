@@ -19,7 +19,7 @@ from deeplabcut.utils.pandas_future_mode import configure_pandas_future_if_enabl
 configure_pandas_future_if_enabled()
 
 import deeplabcut.utils.auxiliaryfunctions as af  # noqa: E402
-from deeplabcut.compat import Engine  # noqa: E402
+from deeplabcut.core.engine import Engine  # noqa: E402
 
 
 def main(

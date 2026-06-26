@@ -50,6 +50,16 @@ class Engine(EngineDataMixin, Enum):
         return f"Engine.{self.name}"
 
 
+DEFAULT_ENGINE = Engine.PYTORCH
+
+
+def get_project_engine(cfg: dict) -> Engine:
+    """Return the engine for a project config, or the default if none is set."""
+    if cfg.get("engine") is not None:
+        return Engine(cfg["engine"])
+    return DEFAULT_ENGINE
+
+
 def get_available_aug_methods(engine: Engine) -> tuple[str, ...]:
     """Returns the augmentation methods available for the given engine.
 

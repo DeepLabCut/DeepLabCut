@@ -151,7 +151,7 @@ class TestModifyTrainTestCfg:
         write_config(train_path, {"batch_size": 1, "multi_stage": False, "gradient_masking": False})
         write_config(test_path, {"batch_size": 1, "multi_stage": False, "gradient_masking": False})
         monkeypatch.setattr(
-            "deeplabcut.modelzoo.generalized_data_converter.datasets.materialize.compat.return_train_network_path",
+            "deeplabcut.api.pose_estimation.return_train_network_path",
             lambda *args, **kwargs: (train_path, test_path, snapshot_folder),
         )
         modify_train_test_cfg(tmp_path / "config.yaml")  # ignored by mock

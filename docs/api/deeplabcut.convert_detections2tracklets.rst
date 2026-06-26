@@ -1,1 +1,1 @@
-.. autofunction:: deeplabcut.compat.convert_detections2tracklets
+.. autofunction:: deeplabcut.convert_detections2tracklets
