@@ -7,6 +7,12 @@ on:
 permissions:
   contents: write
 
+# Prevent concurrent deploys to gh-pages; queue new runs instead of cancelling
+# so no push is silently skipped.
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
 jobs:
   build:
     uses: ./.github/workflows/build-main-docs.yml
@@ -62,6 +68,8 @@ jobs:
           python -m pip install ".[dev-docs]"
 
       - name: Configure git for mike
+        # Sets the commit author identity for the gh-pages branch.
+        # Actual push permission comes from the GITHUB_TOKEN with contents:write above.
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
