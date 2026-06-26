@@ -17,8 +17,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from deeplabcut.api import _tf_routing as tf_routing
+from deeplabcut.core.deprecation import DLCDeprecationWarning
 from deeplabcut.core.engine import Engine
-from deeplabcut.utils.deprecation import DLCDeprecationWarning
 
 # ---------------------------------------------------------------------------
 # _normalize_gputouse

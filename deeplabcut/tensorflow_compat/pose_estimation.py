@@ -18,8 +18,8 @@ from pathlib import Path
 import numpy as np
 
 import deeplabcut.core.visualization as visualization
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.core.engine import Engine
-from deeplabcut.utils.deprecation import renamed_parameter
 
 
 def get_available_aug_methods() -> tuple[str, ...]:

@@ -29,7 +29,7 @@ if DEBUG:
 # DeepLabCut deprecation warnings are shown only once per message instance.
 import warnings
 
-from deeplabcut.utils.deprecation import DLCDeprecationWarning
+from deeplabcut.core.deprecation import DLCDeprecationWarning
 
 warnings.filterwarnings("once", category=DLCDeprecationWarning)
 
