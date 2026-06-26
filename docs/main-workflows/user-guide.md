@@ -1139,8 +1139,8 @@ deeplabcut.analyze_videos(
 class-container: multi-animal
 ---
   For multi-animal projects, the video analysis is slightly more complex compared to single-animal projects: besides
-  bare keypoint estimation, the keypoints need to be assigned to one of the different individuals and coherenty tracked
-  across frames. This tracking procedure is **automated by default**, but it is worthwile to understand the details,
+  bare keypoint estimation, the keypoints need to be assigned to one of the different individuals and coherently tracked
+  across frames. This tracking procedure is **automated by default**, but it is worthwhile to understand the details,
   which are discussed in the {ref}`multi-animal tracking guide <file:multi-animal-tracking>`.
 
   **Disabling automated tracking**<br>
