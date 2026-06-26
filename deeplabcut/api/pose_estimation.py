@@ -106,9 +106,9 @@ def return_train_network_path(
     )
 
 
+@renamed_parameter(old="Shuffles", new="shuffles", since="3.0.0")
 @with_tensorflow_fallback(normalize_gputouse=True, dropped_params=["rescale"])
 @renamed_parameter(old="comparisonbodyparts", new="comparison_bodyparts", since="3.0.0")
-@renamed_parameter(old="Shuffles", new="shuffles", since="3.0.0")
 def evaluate_network(
     config: str | Path,
     shuffles: Iterable[int] = (1,),
