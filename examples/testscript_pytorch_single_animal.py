@@ -14,7 +14,7 @@ from utils import (
 )
 
 import deeplabcut.utils.auxiliaryfunctions as af
-from deeplabcut.compat import Engine
+from deeplabcut.core.engine import Engine
 
 
 def main(

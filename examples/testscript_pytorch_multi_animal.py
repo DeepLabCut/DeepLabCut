@@ -23,7 +23,7 @@ from utils import (
 )
 
 import deeplabcut.utils.auxiliaryfunctions as af
-from deeplabcut.compat import Engine
+from deeplabcut.core.engine import Engine
 from deeplabcut.pose_estimation_pytorch.config.utils import (
     is_model_cond_top_down,
     is_model_top_down,
