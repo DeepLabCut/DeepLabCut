@@ -21,20 +21,18 @@ import pandas as pd
 import yaml
 from PIL import Image
 
+import deeplabcut.compat as compat
 import deeplabcut.generate_training_dataset.metadata as metadata
 from deeplabcut.core.config import ProjectConfig, read_config, write_config
-from deeplabcut.core.engine import Engine, get_available_aug_methods
+from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
-from deeplabcut.pose_estimation_pytorch.apis.utils import return_train_network_path
 from deeplabcut.utils import (
+    auxfun_models,
     auxfun_multianimal,
     auxiliaryfunctions,
     conversioncode,
 )
 from deeplabcut.utils.auxfun_videos import VideoReader
-
-_ENGINE = Engine.PYTORCH
-_AUGMENTERS = get_available_aug_methods(_ENGINE)
 
 
 def comparevideolistsanddatafolders(config: str | Path):
@@ -332,6 +330,13 @@ def check_labels(
     print("If all the labels are ok, then use the function 'create_training_dataset' to create the training dataset!")
 
 
+def boxitintoacell(joints):
+    """Auxiliary function for creating matfile."""
+    outer = np.array([[None]], dtype=object)
+    outer[0, 0] = np.array(joints, dtype="int64")
+    return outer
+
+
 def ParseYaml(configfile: str | Path):
     raw = open(configfile).read()
     docs = []
@@ -341,6 +346,59 @@ def ParseYaml(configfile: str | Path):
         except SyntaxError:
             docs.append(raw_doc)
     return docs
+
+
+def MakeTrain_pose_yaml(
+    itemstochange,
+    saveasconfigfile,
+    defaultconfigfile,
+    items2drop: dict | None = None,
+    save: bool = True,
+):
+    if items2drop is None:
+        items2drop = {}
+
+    docs = ParseYaml(defaultconfigfile)
+    for key in items2drop.keys():
+        if key in docs[0].keys():
+            docs[0].pop(key)
+
+    for key in itemstochange.keys():
+        docs[0][key] = itemstochange[key]
+
+    if save:
+        with open(saveasconfigfile, "w") as f:
+            yaml.dump(docs[0], f)
+
+    return docs[0]
+
+
+def MakeTest_pose_yaml(
+    dictionary,
+    keys2save,
+    saveasfile,
+    nmsradius=None,
+    minconfidence=None,
+    sigma=None,
+    locref_smooth=None,
+):
+    dict_test = {}
+    for key in keys2save:
+        dict_test[key] = dictionary[key]
+
+    # adding important values for multianiaml project:
+    if nmsradius is not None:
+        dict_test["nmsradius"] = nmsradius
+    if minconfidence is not None:
+        dict_test["minconfidence"] = minconfidence
+    if sigma is not None:
+        dict_test["sigma"] = sigma
+    if locref_smooth is not None:
+        dict_test["locref_smooth"] = locref_smooth
+
+    dict_test["scoremap_dir"] = "test"
+    with open(saveasfile, "w") as f:
+        yaml.dump(dict_test, f)
 
 
 def MakeInference_yaml(itemstochange, saveasconfigfile, defaultconfigfile):
@@ -757,6 +815,7 @@ def create_training_dataset(
     posecfg_template=None,
     superanimal_name="",
     weight_init: WeightInitialization | None = None,
+    engine: Engine | None = None,
     ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
 ):
     """Creates a training dataset.
@@ -966,12 +1025,15 @@ def create_training_dataset(
             trainIndices=trainIndices,
             testIndices=testIndices,
             userfeedback=userfeedback,
+            engine=engine,
             weight_init=weight_init,
             ctd_conditions=ctd_conditions,
         )
     else:
         scorer = cfg["scorer"]
         project_path = cfg["project_path"]
+        if engine is None:
+            engine = compat.get_project_engine(cfg)
 
         # Create path for training sets & store data there
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
@@ -995,13 +1057,21 @@ def create_training_dataset(
         # loading & linking pretrained models
         if net_type is None:  # loading & linking pretrained models
             net_type = cfg.get("default_net_type", "resnet_50")
+        elif engine == Engine.PYTORCH:
+            pass
+        else:
+            if "resnet" in net_type or "mobilenet" in net_type or "efficientnet" in net_type or "dlcrnet" in net_type:
+                pass
+            else:
+                raise ValueError("Invalid network type:", net_type)
 
         top_down = False
-        if net_type.startswith("top_down_"):
-            top_down = True
-            net_type = net_type[len("top_down_") :]
+        if engine == Engine.PYTORCH:
+            if net_type.startswith("top_down_"):
+                top_down = True
+                net_type = net_type[len("top_down_") :]
 
-        augmenters = _AUGMENTERS
+        augmenters = compat.get_available_aug_methods(engine)
         default_augmenter = augmenters[0]
         if augmenter_type is None:
             augmenter_type = cfg.get("default_augmenter", default_augmenter)
@@ -1012,13 +1082,19 @@ def create_training_dataset(
                 cfg.default_augmenter = augmenter_type
                 cfg.to_yaml(cfg_path, log_changes=True, mark_clean=True)
             elif augmenter_type not in augmenters:
-                # as the default augmenter might not be available for PyTorch
+                # as the default augmenter might not be available for the given engine
                 augmenter_type = default_augmenter
                 logging.info(
-                    f"Default augmenter {augmenter_type} not available for PyTorch: using {default_augmenter} instead"
+                    f"Default augmenter {augmenter_type} not available for engine "
+                    f"{engine}: using {default_augmenter} instead"
                 )
 
         if augmenter_type not in augmenters:
+            if engine != Engine.PYTORCH:
+                raise ValueError(
+                    f"Invalid augmenter type: {augmenter_type} (available: for engine={engine}: {augmenters})"
+                )
+
             logging.info(f"Switching augmentation to {default_augmenter} for PyTorch")
             augmenter_type = default_augmenter
 
@@ -1040,7 +1116,10 @@ def create_training_dataset(
             defaultconfigfile = dlcparent_path / "pose_cfg.yaml"
         elif posecfg_template:
             defaultconfigfile = posecfg_template
-        model_path = dlcparent_path
+        if engine == Engine.PYTORCH:
+            model_path = dlcparent_path
+        else:
+            model_path = auxfun_models.check_for_weights(net_type, Path(dlcparent_path))
 
         Shuffles = validate_shuffles(cfg, Shuffles, num_shuffles, userfeedback)
 
@@ -1074,11 +1153,11 @@ def create_training_dataset(
         for trainFraction, shuffle, (trainIndices, testIndices) in splits:
             if len(trainIndices) > 0:
                 if userfeedback:
-                    from deeplabcut.api.pose_estimation import return_train_network_path
-                    trainposeconfigfile, _, _ = return_train_network_path(
-                        cfg_path,
+                    trainposeconfigfile, _, _ = compat.return_train_network_path(
+                        config,
                         shuffle=shuffle,
                         trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
+                        engine=engine,
                     )
                     if trainposeconfigfile.is_file():
                         askuser = input(
@@ -1121,7 +1200,7 @@ def create_training_dataset(
                     cfg=cfg,
                     train_fraction=trainFraction,
                     shuffle=shuffle,
-                    engine=_ENGINE,
+                    engine=engine,
                     train_indices=trainIndices,
                     test_indices=testIndices,
                     overwrite=not userfeedback,
@@ -1135,7 +1214,7 @@ def create_training_dataset(
                     trainFraction,
                     shuffle,
                     cfg,
-                    engine=_ENGINE,
+                    engine=engine,
                 )
                 auxiliaryfunctions.attempt_to_make_folder(cfg.project_path / modelfoldername, recursive=True)
                 auxiliaryfunctions.attempt_to_make_folder(cfg.project_path / modelfoldername / "train")
@@ -1143,40 +1222,95 @@ def create_training_dataset(
 
                 path_train_config = str(Path(cfg["project_path"]) / modelfoldername / "train" / engine.pose_cfg_name)
                 path_test_config = str(Path(cfg["project_path"]) / modelfoldername / "test" / "pose_cfg.yaml")
-                from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
-                    make_pytorch_pose_config,
-                    make_pytorch_test_config,
-                )
-                from deeplabcut.pose_estimation_pytorch.modelzoo.config import (
-                    make_super_animal_finetune_config,
-                )
+ 
+                if engine == Engine.TF:
+                    if weight_init is not None:
+                        raise ValueError(
+                            "Weight initialization is not supported for TensorFlow engine. "
+                            "Pretrained weights are automatically downloaded."
+                        )
+                    items2change = {
+                        "dataset": datafilename,
+                        "engine": engine.aliases[0],
+                        "metadataset": metadatafilename,
+                        "num_joints": len(bodyparts),
+                        "all_joints": [[i] for i in range(len(bodyparts))],
+                        "all_joints_names": [str(bpt) for bpt in bodyparts],
+                        "init_weights": model_path,
+                        "project_path": str(cfg["project_path"]),
+                        "net_type": net_type,
+                        "dataset_type": augmenter_type,
+                    }
 
-                if weight_init is not None and weight_init.with_decoder:
-                    pytorch_cfg = make_super_animal_finetune_config(
-                        project_config=cfg,
-                        pose_config_path=path_train_config,
-                        model_name=net_type,
-                        detector_name=detector_type,
-                        weight_init=weight_init,
-                        save=True,
-                    )
-                else:
-                    pytorch_cfg = make_pytorch_pose_config(
-                        project_config=cfg,
-                        pose_config_path=path_train_config,
-                        net_type=net_type,
-                        top_down=top_down,
-                        detector_type=detector_type,
-                        weight_init=weight_init,
-                        save=True,
-                        ctd_conditions=ctd_conditions,
+                    items2drop = {}
+                    if augmenter_type == "scalecrop":
+                        # these values are dropped as scalecrop
+                        # doesn't have rotation implemented
+                        items2drop = {"rotation": 0, "rotratio": 0.0}
+                    # Also drop maDLC smart cropping augmentation parameters
+                    for key in [
+                        "pre_resize",
+                        "crop_size",
+                        "max_shift",
+                        "crop_sampling",
+                    ]:
+                        items2drop[key] = None
+
+                    trainingdata = MakeTrain_pose_yaml(
+                        items2change,
+                        path_train_config,
+                        defaultconfigfile,
+                        items2drop,
+                        save=(engine == Engine.TF),
                     )
 
-                make_pytorch_test_config(pytorch_cfg, path_test_config, save=True)
-                print(
-                    "The training dataset is successfully created. Use the function"
-                    "'train_network' to start training. Happy training!"
-                )
+                    keys2save = [
+                        "dataset",
+                        "num_joints",
+                        "all_joints",
+                        "all_joints_names",
+                        "net_type",
+                        "init_weights",
+                        "global_scale",
+                        "location_refinement",
+                        "locref_stdev",
+                    ]
+                    MakeTest_pose_yaml(trainingdata, keys2save, path_test_config)
+                    print(
+                        "The training dataset is successfully created. Use the function"
+                        "'train_network' to start training. Happy training!"
+                    )
+                elif engine == Engine.PYTORCH:
+                    from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
+                        make_pytorch_pose_config,
+                        make_pytorch_test_config,
+                    )
+                    from deeplabcut.pose_estimation_pytorch.modelzoo.config import (
+                        make_super_animal_finetune_config,
+                    )
+
+                    if weight_init is not None and weight_init.with_decoder:
+                        pytorch_cfg = make_super_animal_finetune_config(
+                            project_config=cfg,
+                            pose_config_path=path_train_config,
+                            model_name=net_type,
+                            detector_name=detector_type,
+                            weight_init=weight_init,
+                            save=True,
+                        )
+                    else:
+                        pytorch_cfg = make_pytorch_pose_config(
+                            project_config=cfg,
+                            pose_config_path=path_train_config,
+                            net_type=net_type,
+                            top_down=top_down,
+                            detector_type=detector_type,
+                            weight_init=weight_init,
+                            save=True,
+                            ctd_conditions=ctd_conditions,
+                        )
+
+                    make_pytorch_test_config(pytorch_cfg, path_test_config, save=True)
 
         return splits
 
@@ -1461,6 +1595,7 @@ def create_training_dataset_from_existing_split(
     posecfg_template: dict | None = None,
     superanimal_name: str = "",
     weight_init: WeightInitialization | None = None,
+    engine: Engine | None = None,
 ) -> None | list[int]:
     """Labels from all the extracted frames are merged into a single .h5 file. Only the
     videos included in the config file are used to create this dataset.
@@ -1539,7 +1674,7 @@ def create_training_dataset_from_existing_split(
         engine: Whether to create a pose config for a Tensorflow or PyTorch model.
             Defaults to the value specified in the project configuration file. If no
             engine is specified for the project, defaults to
-            ``deeplabcut.core.engine.DEFAULT_ENGINE``.
+            ``deeplabcut.compat.DEFAULT_ENGINE``.
 
         ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None, default = None,
             If using a conditional-top-down (CTD) net_type, this argument should be
@@ -1604,6 +1739,7 @@ def create_training_dataset_from_existing_split(
         posecfg_template=posecfg_template,
         superanimal_name=superanimal_name,
         weight_init=weight_init,
+        engine=engine,
         ctd_conditions=ctd_conditions,
     )
 
