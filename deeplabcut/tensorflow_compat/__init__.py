@@ -12,17 +12,7 @@
 Compatibility layer for the legacy TensorFlow API. Remove this package when TF support is dropped.
 """
 
-from deeplabcut.tensorflow_compat.dataset_management import (
-    MakeInference_yaml,
-    MakeTest_pose_yaml,
-    MakeTrain_pose_yaml,
-    ParseYaml,
-    create_multianimaltraining_dataset,
-    create_training_dataset,
-    create_training_dataset_from_existing_split,
-    create_training_model_comparison,
-)
-from deeplabcut.tensorflow_compat.tensorflow_api import (
+from deeplabcut.tensorflow_compat.pose_estimation import (
     analyze_images,
     analyze_time_lapse_frames,
     analyze_videos,
