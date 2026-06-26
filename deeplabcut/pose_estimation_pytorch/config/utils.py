@@ -15,10 +15,12 @@ from __future__ import annotations
 import copy
 from pathlib import Path
 
-from deeplabcut.core.config import read_config_as_dict
+from deeplabcut.core.config import ensure_plain_config, read_config_as_dict
+from deeplabcut.core.deprecation import deprecated
 from deeplabcut.utils import auxiliaryfunctions
 
 
+@ensure_plain_config
 def replace_default_values(
     config: dict | list,
     num_bodyparts: int | None = None,
@@ -116,38 +118,20 @@ def replace_default_values(
     return config
 
 
+@deprecated(replacement=None, since="3.1")
 def update_config(config: dict, updates: dict, copy_original: bool = True) -> dict:
-    """Updates items in the configuration file.
+    """Deprecated helper for updating config dictionaries."""
+    from deeplabcut.pose_estimation_pytorch.config.make_pose_config import _update_config
 
-    The configuration dict should only be composed of primitive Python types
-    (dict, list and values). This is the case when reading the file using
-    `read_config_as_dict`.
-
-    Args:
-        config: the configuration dict to update
-        updates: the updates to make to the configuration dict
-        copy_original: whether to copy the original dict before updating it
-
-    Returns:
-        the updated dictionary
-    """
-    if copy_original:
-        config = copy.deepcopy(config)
-
-    for k, v in updates.items():
-        if k in config and isinstance(config[k], dict) and isinstance(v, dict):
-            if k in ("optimizer", "scheduler") and config["type"] != v["type"]:
-                # if changing the optimizer or scheduler type, update all values
-                config[k] = v
-            else:
-                config[k] = update_config(config[k], v, copy_original=False)
-        else:
-            config[k] = copy.deepcopy(v)
-    return config
+    return _update_config(config, updates, copy_original)
 
 
+@deprecated(replacement=None, since="3.1")
 def update_config_by_dotpath(config: dict, updates: dict, copy_original: bool = True) -> dict:
-    """Updates items in the configuration file using dot notation for nested keys.
+    """Deprecated helper for updating config dictionaries using dot notation.
+    ``DLCBaseConfig.set_nested`` (new in 3.1) can be used instead (not identical).
+
+    Updates items in the configuration file using dot notation for nested keys
 
     The configuration dict should only be composed of primitive Python types
     (dict, list and values). This is the case when reading the file using
@@ -177,7 +161,7 @@ def update_config_by_dotpath(config: dict, updates: dict, copy_original: bool = 
         # Navigate to nested location
         current = config
         for part in parts[:-1]:
-            if part not in current:
+            if part not in current or current[part] is None:
                 current[part] = {}
             current = current[part]
 

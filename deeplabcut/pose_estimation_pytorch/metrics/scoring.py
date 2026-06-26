@@ -41,7 +41,8 @@ def _match_identity_preds_to_gt(config_path: str, full_pickle_path: str) -> tupl
 
         df = df_gt.unstack("coords").reindex(joints, level="bodyparts")
         xy_pred = dict_["prediction"]["coordinates"][0]
-        for bpt, xy_gt in df.groupby(level="bodyparts"):
+        for bpt, xy_gt in df.T.groupby(level="bodyparts"):
+            xy_gt = xy_gt.T
             inds_gt = np.flatnonzero(np.all(~np.isnan(xy_gt), axis=1))
             n_joint = joints.index(bpt)
             xy = xy_pred[n_joint]

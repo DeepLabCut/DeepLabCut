@@ -19,10 +19,15 @@ import pandas as pd
 
 matplotlib.use("Agg")  # Non-interactive backend, for CI/CD on Windows
 
-import deeplabcut
-from deeplabcut.core.engine import Engine
-from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
-from deeplabcut.utils.auxfun_videos import VideoReader
+# Enable pandas future mode warnings if DLC_PANDAS_FUTURE env var is set
+from deeplabcut.utils.pandas_future_mode import configure_pandas_future_if_enabled
+
+configure_pandas_future_if_enabled()
+
+import deeplabcut  # noqa: E402
+from deeplabcut.core.engine import Engine  # noqa: E402
+from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions  # noqa: E402
+from deeplabcut.utils.auxfun_videos import VideoReader  # noqa: E402
 
 MODELS = ["dlcrnet_ms5", "dlcr101_ms5", "efficientnet-b0"]
 

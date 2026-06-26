@@ -349,11 +349,12 @@ def run(
     engine: Engine = Engine.PYTORCH,
     pytorch_cfg_updates: dict | None = None,
     create_labeled_videos: bool = False,
+    ctd_conditions: tuple[int, int] | None = None,
 ) -> None:
     times = [time.time()]
     log_step(f"Testing with net type {net_type}")
     log_step("Creating the training dataset")
-    deeplabcut.create_training_dataset(str(config_path), net_type=net_type, engine=engine)
+    deeplabcut.create_training_dataset(config_path, net_type=net_type, engine=engine, ctd_conditions=ctd_conditions)
     existing_shuffles = get_existing_shuffle_indices(config_path, train_fraction=train_fraction, engine=engine)
     shuffle_index = existing_shuffles[-1]
 

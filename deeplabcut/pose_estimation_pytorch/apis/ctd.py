@@ -48,6 +48,7 @@ def get_condition_provider(
             "To run inference with CTD models, you must specify the BU model you want to use to generate conditions.\n"
         ) + error_message
         raise ValueError(error_message)
+    # TODO @deruyter92: decide on typed / plain dict
     elif not isinstance(condition_cfg, dict):
         raise ValueError(error_message)
 
@@ -114,6 +115,7 @@ def load_conditions_for_evaluation(loader: data.Loader, images: list[str]) -> di
     if isinstance(condition_cfg, (str, Path)):
         condition_filepath = Path(condition_cfg)
         cond_provider = CondFromFile(filepath=condition_filepath)
+    # TODO @deruyter92: decide on typed / plain dict
     elif isinstance(condition_cfg, dict):
         if isinstance(loader, data.DLCLoader) and "config" not in condition_cfg:
             condition_cfg["config"] = loader.project_root / "config.yaml"

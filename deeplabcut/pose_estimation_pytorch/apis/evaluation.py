@@ -622,7 +622,7 @@ def evaluate_snapshot(
 
         df_ground_truth = ensure_multianimal_df_format(loader.df)
 
-        bboxes_cutoff = loader.model_cfg.get("detector", {}).get("model", {}).get("box_score_thresh", 0.6)
+        bboxes_cutoff = loader.model_cfg.select("detector.model.box_score_thresh") or 0.6
 
         for mode in ["train", "test"]:
             df_combined = predictions[mode].merge(df_ground_truth, left_index=True, right_index=True)

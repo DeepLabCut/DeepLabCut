@@ -11,7 +11,7 @@
 
 from collections.abc import Sequence
 
-from deeplabcut.utils.deprecation import renamed_parameter
+from deeplabcut.core.deprecation import renamed_parameter
 
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")

@@ -23,9 +23,9 @@ import numpy as np
 import pandas as pd
 from scipy.spatial import distance
 
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import collect_video_paths
-from deeplabcut.utils.deprecation import renamed_parameter
 
 
 # utility functions
@@ -292,7 +292,8 @@ def analyzeskeleton(
 
         bones = {}
         if "individuals" in df.columns.names:
-            for animal_name, df_ in df.groupby(level="individuals", axis=1):
+            for animal_name, df_ in df.T.groupby(level="individuals"):
+                df_ = df_.T
                 temp = df_.droplevel(["scorer", "individuals"], axis=1)
                 if animal_name != "single":
                     for bp1, bp2 in cfg["skeleton"]:
