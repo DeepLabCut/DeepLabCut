@@ -115,7 +115,8 @@ def _resolve_engine(*args, **kwargs) -> Engine:
         return engine
 
     shuffles = _shuffles_from_kwargs(kwargs)
-    cfg = read_config(kwargs.get("config", args[0]))
+    config = kwargs["config"] if "config" in kwargs else args[0]
+    cfg = read_config(config)
     from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 
     engines = {
