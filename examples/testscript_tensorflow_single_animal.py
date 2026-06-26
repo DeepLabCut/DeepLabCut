@@ -32,9 +32,14 @@ import numpy as np
 import pandas as pd
 import scipy.io as sio
 
-import deeplabcut
-from deeplabcut.core.engine import Engine
-from deeplabcut.utils import auxiliaryfunctions
+# Enable pandas future mode warnings if DLC_PANDAS_FUTURE env var is set
+from deeplabcut.utils.pandas_future_mode import configure_pandas_future_if_enabled
+
+configure_pandas_future_if_enabled()
+
+import deeplabcut  # noqa: E402
+from deeplabcut.core.engine import Engine  # noqa: E402
+from deeplabcut.utils import auxiliaryfunctions  # noqa: E402
 
 matplotlib.use("Agg")  # Non-interactive backend, for CI/CD on Windows
 

@@ -435,7 +435,7 @@ def check_undistortion(config, cbrow=8, cbcol=6, plot=True):
             f2.suptitle("Undistorted corner points on camera-1 and camera-2", fontsize=25)
             ax1.imshow(cv2.cvtColor(im_remapped1, cv2.COLOR_BGR2RGB))
             ax2.imshow(cv2.cvtColor(im_remapped2, cv2.COLOR_BGR2RGB))
-            for i in range(0, cam1_undistort.shape[1]):
+            for i in range(cam1_undistort.shape[1]):
                 ax1.scatter(
                     [cam1_undistort[-1][i, 0, 0]],
                     [cam1_undistort[-1][i, 0, 1]],

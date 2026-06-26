@@ -12,14 +12,13 @@ import os
 
 import numpy as np
 import pytest
-from conftest import TEST_DATA_DIR
 
+from deeplabcut.core.config import read_config_as_dict, write_config
 from deeplabcut.pose_estimation_tensorflow.datasets import (
     Batch,
     PoseDatasetFactory,
     pose_multianimal_imgaug,
 )
-from deeplabcut.utils import read_plainconfig
 
 tf = pytest.importorskip(
     "tensorflow",
@@ -35,9 +34,18 @@ pose_multianimal_imgaug.imread = mock_imread
 
 
 @pytest.fixture()
-def ma_dataset():
-    cfg = read_plainconfig(os.path.join(TEST_DATA_DIR, "pose_cfg.yaml"))
-    cfg["project_path"] = TEST_DATA_DIR
+def ma_dataset(test_data_dir):
+    ## TODO @deruyter92 2026-06-15: this test config is currently invalid and needs to be
+    # updated. For now it is updated in place. (see https://github.com/DeepLabCut/UnitTestData/issues/4)
+    for cfg_name in ("config.yaml", "pose_cfg.yaml"):
+        cfg_path = os.path.join(test_data_dir, cfg_name)
+        cfg = read_config_as_dict(cfg_path)
+        if len(cfg.get("bodyparts", [])) > 0 and len(cfg.get("multianimalbodyparts", [])) > 0:
+            cfg["bodyparts"] = "MULTI!"
+        write_config(cfg_path, cfg, overwrite=True)
+
+    cfg = read_config_as_dict(os.path.join(test_data_dir, "pose_cfg.yaml"))
+    cfg["project_path"] = test_data_dir
     cfg["dataset"] = "trimouse_train_data.pickle"
     return PoseDatasetFactory.create(cfg)
 
