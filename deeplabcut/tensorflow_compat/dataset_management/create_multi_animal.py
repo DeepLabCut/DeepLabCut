@@ -43,6 +43,8 @@ from deeplabcut.utils import (
     auxiliaryfunctions,
 )
 
+_ENGINE = Engine.TF
+
 
 def create_multianimaltraining_dataset(
     config,
@@ -61,7 +63,6 @@ def create_multianimaltraining_dataset(
     paf_graph_degree=6,
     userfeedback: bool = True,
     weight_init: WeightInitialization | None = None,
-    engine: Engine | None = None,
     ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
 ):
     if windows2linux:
@@ -78,8 +79,6 @@ def create_multianimaltraining_dataset(
         raise ValueError(
             f"Invalid sampling {crop_sampling}. Must be either 'uniform', 'keypoints', 'density', or 'hybrid."
         )
-
-    engine = Engine.TF
 
     cfg = auxiliaryfunctions.read_config(config)
     scorer = cfg["scorer"]
@@ -101,7 +100,7 @@ def create_multianimaltraining_dataset(
         net_type = cfg.get("default_net_type", "dlcrnet_ms5")
 
     if not any(net in net_type for net in ("resnet", "eff", "dlc", "mob")):
-        raise ValueError(f"Unsupported network {net_type} for engine {engine}.")
+        raise ValueError(f"Unsupported network {net_type} for TensorFlow.")
 
     multi_stage = False
     if all(net in net_type for net in ("dlcr", "_ms5")):
@@ -198,7 +197,7 @@ def create_multianimaltraining_dataset(
                 cfg=cfg,
                 train_fraction=trainFraction,
                 shuffle=shuffle,
-                engine=engine,
+                engine=_ENGINE,
                 train_indices=trainIndices,
                 test_indices=testIndices,
                 overwrite=not userfeedback,
@@ -212,7 +211,7 @@ def create_multianimaltraining_dataset(
                 trainFraction,
                 shuffle,
                 cfg,
-                engine=engine,
+                engine=_ENGINE,
             )
             auxiliaryfunctions.attempt_to_make_folder(Path(config).parents[0] / modelfoldername, recursive=True)
             auxiliaryfunctions.attempt_to_make_folder(str(Path(config).parents[0] / modelfoldername / "train"))
@@ -247,7 +246,7 @@ def create_multianimaltraining_dataset(
             jointnames.extend([str(bpt) for bpt in uniquebodyparts])
             items2change = {
                 "dataset": datafilename,
-                "engine": engine.aliases[0],
+                "engine": _ENGINE.aliases[0],
                 "metadataset": metadatafilename,
                 "num_joints": len(multianimalbodyparts) + len(uniquebodyparts),
                 "all_joints": [[i] for i in range(len(multianimalbodyparts) + len(uniquebodyparts))],

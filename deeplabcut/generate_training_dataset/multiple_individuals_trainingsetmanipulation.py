@@ -21,7 +21,7 @@ from tqdm import tqdm
 
 import deeplabcut.generate_training_dataset.metadata as metadata
 from deeplabcut.core.config import ProjectConfig
-from deeplabcut.core.engine import Engine, get_project_engine
+from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import (
     auxfun_multianimal,
@@ -36,6 +36,8 @@ from .trainingsetmanipulation import (
     read_image_shape_fast,
     validate_shuffles,
 )
+
+_ENGINE = Engine.PYTORCH
 
 
 def format_multianimal_training_data(
@@ -113,7 +115,6 @@ def create_multianimaltraining_dataset(
     paf_graph_degree=6,
     userfeedback: bool = True,
     weight_init: WeightInitialization | None = None,
-    engine: Engine | None = None,
     ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
 ):
     """Creates a training dataset for multi-animal datasets. Labels from all the
@@ -294,10 +295,6 @@ def create_multianimaltraining_dataset(
     if net_type is None:  # loading & linking pretrained models
         net_type = cfg.get("default_net_type", "dlcrnet_ms5")
 
-    # load the engine to use to create the shuffle
-    if engine is None:
-        engine = get_project_engine(cfg)
-
     (
         individuals,
         uniquebodyparts,
@@ -404,7 +401,7 @@ def create_multianimaltraining_dataset(
                 cfg=cfg,
                 train_fraction=trainFraction,
                 shuffle=shuffle,
-                engine=engine,
+                engine=_ENGINE,
                 train_indices=trainIndices,
                 test_indices=testIndices,
                 overwrite=not userfeedback,
@@ -426,7 +423,7 @@ def create_multianimaltraining_dataset(
                 trainFraction,
                 shuffle,
                 cfg,
-                engine=engine,
+                engine=_ENGINE,
             )
             auxiliaryfunctions.attempt_to_make_folder(cfg.project_path / modelfoldername, recursive=True)
             auxiliaryfunctions.attempt_to_make_folder(cfg.project_path / modelfoldername / "train")
@@ -448,7 +445,7 @@ def create_multianimaltraining_dataset(
             if net_type == "dlcrnet_ms5":
                 net_type = "dlcrnet_stride16_ms5"
 
-            config_path = Path(path_train_config).with_name(engine.pose_cfg_name)
+            config_path = Path(path_train_config).with_name(_ENGINE.pose_cfg_name)
             if weight_init is not None and weight_init.with_decoder:
                 pytorch_cfg = make_super_animal_finetune_config(
                     project_config=cfg,
