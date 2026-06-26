@@ -353,7 +353,7 @@ def analyze_time_lapse_frames(
     )
 
 
-@with_tensorflow_fallback(normalize_gputouse=True, dropped_params=["destfolder"])
+@with_tensorflow_fallback(normalize_gputouse=True)
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def convert_detections2tracklets(
     config: str,
