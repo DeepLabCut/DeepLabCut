@@ -34,7 +34,7 @@ from PySide6.QtWidgets import (
 
 import deeplabcut
 from deeplabcut import __version__ as DLC_VERSION
-from deeplabcut import auxiliaryfunctions, compat
+from deeplabcut import auxiliaryfunctions
 from deeplabcut.core.debug import install_debug_recorder
 from deeplabcut.core.engine import Engine
 from deeplabcut.gui import components
@@ -255,7 +255,7 @@ class MainWindow(QMainWindow):
     def pose_cfg_path(self) -> Path:
         try:
             return Path(
-                compat.return_train_network_path(
+                deeplabcut.return_train_network_path(
                     self.config_path,
                     shuffle=int(self.shuffle_value),
                     trainingsetindex=int(self.trainingset_index),
@@ -269,7 +269,7 @@ class MainWindow(QMainWindow):
     def models_folder(self) -> Path:
         try:
             return Path(
-                compat.return_train_network_path(
+                deeplabcut.return_train_network_path(
                     self.config_path,
                     shuffle=int(self.shuffle_value),
                     trainingsetindex=int(self.trainingset_index),
