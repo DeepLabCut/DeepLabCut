@@ -222,6 +222,24 @@ class MainWindow(QMainWindow):
                 msg.setWindowIcon(icon)
                 msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
                 msg.exec_()
+                return
+            else:
+                msg = QtWidgets.QMessageBox()
+                msg.setIcon(QtWidgets.QMessageBox.Warning)
+                msg.setText("TensorFlow support is deprecated.")
+                msg.setInformativeText(
+                    "TensorFlow support will be removed in a future release.\n\n"
+                    "Your project config and annotated data are fully compatible with PyTorch. "
+                    "We recommend switching to the PyTorch engine.\n\n"
+                    "See the docs for more information:\n"
+                    "https://deeplabcut.github.io/DeepLabCut/docs/pytorch/architectures.html"
+                )
+                msg.setWindowTitle("TensorFlow Deprecated")
+                msg.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+                msg.button(QtWidgets.QMessageBox.Ok).setText("Continue with TensorFlow")
+                msg.button(QtWidgets.QMessageBox.Cancel).setText("Switch to PyTorch")
+                if msg.exec_() == QtWidgets.QMessageBox.Cancel:
+                    return
 
         self._engine = e
         self.engine_change.emit(e)
