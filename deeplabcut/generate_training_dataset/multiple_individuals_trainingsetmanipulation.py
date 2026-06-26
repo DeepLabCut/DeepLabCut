@@ -20,9 +20,8 @@ from pathlib import Path
 import numpy as np
 from tqdm import tqdm
 
-import deeplabcut.compat as compat
 import deeplabcut.generate_training_dataset.metadata as metadata
-from deeplabcut.core.engine import Engine
+from deeplabcut.core.engine import Engine, get_project_engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import (
     auxfun_models,
@@ -250,7 +249,7 @@ def create_multianimaltraining_dataset(
     engine: Engine, optional
         Whether to create a pose config for a Tensorflow or PyTorch model. Defaults to
         the value specified in the project configuration file. If no engine is specified
-        for the project, defaults to ``deeplabcut.compat.DEFAULT_ENGINE``.
+        for the project, defaults to ``deeplabcut.core.engine.DEFAULT_ENGINE``.
 
     ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] , optional, default = None,
         If using a conditional-top-down (CTD) net_type, this argument needs to be specified.
@@ -312,7 +311,7 @@ def create_multianimaltraining_dataset(
 
     # load the engine to use to create the shuffle
     if engine is None:
-        engine = compat.get_project_engine(cfg)
+        engine = get_project_engine(cfg)
 
     if not (any(net in net_type for net in ("resnet", "eff", "dlc", "mob")) or engine == Engine.PYTORCH):
         raise ValueError(f"Unsupported network {net_type} for engine {engine}.")
