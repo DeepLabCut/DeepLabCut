@@ -116,7 +116,7 @@ class TrainingDatasetMetadata:
             name="my-dlc-projectJun17-trainset60shuffle5",
             train_fraction=0.6,
             index=5,
-            engine=Engine.PYTORCH,
+            engine=compat.Engine.PYTORCH,
             split=DataSplit(train_indices=(1, 3, 4), test_indices=(0, 2)),
         )
         trainset_metadata = trainset_metadata.add(new_shuffle)
