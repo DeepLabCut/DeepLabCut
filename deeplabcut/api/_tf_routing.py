@@ -19,7 +19,6 @@ from importlib import import_module
 
 from deeplabcut.core.deprecation import DLCDeprecationWarning
 from deeplabcut.core.engine import Engine
-from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 from deeplabcut.utils.auxiliaryfunctions import read_config
 
 _TF_MODULE = "deeplabcut.tensorflow_compat"
@@ -117,6 +116,8 @@ def _resolve_engine(*args, **kwargs) -> Engine:
 
     shuffles = _shuffles_from_kwargs(kwargs)
     cfg = read_config(kwargs.get("config", args[0]))
+    from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
+
     engines = {
         get_shuffle_engine(
             cfg,
