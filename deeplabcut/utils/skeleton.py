@@ -55,7 +55,7 @@ def write_config(configname, cfg):
 
 class SkeletonBuilder:
     ### Usage parameters
-    lasso_select_size = 5
+    lasso_select_size = 10
     clear_button_axes = [0.85, 0.55, 0.1, 0.1]
     clear_button_text = "Clear"
     export_button_axes = [0.85, 0.45, 0.1, 0.1]
@@ -201,23 +201,25 @@ class SkeletonBuilder:
         self._export_feedback_timer = timer
         timer.start()
 
-    def export(self, *args):
+    def export(self, *args) -> bool:
         try:
             inds_flat = set(ind for pair in self.inds for ind in pair)
             unconnected = [i for i in range(len(self.xy)) if i not in inds_flat]
             # if empty, mention we are saving an empty skeleton
             if not self.inds:
-                logger.info("No bodyparts are connected. Saving an empty skeleton.")
+                logger.warning("No bodyparts are connected. Saving an empty skeleton.")
             elif len(unconnected):
-                logger.info(
+                logger.warning(
                     "Not all bodyparts are connected. Note that connecting all bodyparts is not necessary.",
                 )
             # sort to ensure consistent order in config.yaml
             self.cfg["skeleton"] = [tuple(self.bpts[list(pair)]) for pair in sorted(self.inds)]
             self.write_config(self.config_path, self.cfg)
             self._show_export_feedback()
+            return True
         except Exception as e:
             logger.warning(f"Failed to export skeleton: {e}", stacklevel=2)
+            return False
 
     def on_pick(self, event):
         if event.mouseevent.button == 3:

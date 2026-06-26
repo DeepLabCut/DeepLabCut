@@ -584,6 +584,10 @@ class SkeletonBuilder(BaseSkeletonBuilder, QtWidgets.QDialog):
         pass
 
     def export(self, *args):
-        super().export(*args)
-        self._parent.logger.info("Skeleton exported successfully.")
-        self._parent.status_bar.showMessage("Skeleton exported successfully.", 5000)
+        success = super().export(*args)
+        if success:
+            self._parent.logger.info("Skeleton exported successfully.")
+            self._parent.status_bar.showMessage("Skeleton exported successfully.", 5000)
+        else:
+            self._parent.logger.warning("Failed to export skeleton.")
+            self._parent.status_bar.showMessage("Failed to export skeleton.", 5000)
