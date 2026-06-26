@@ -1,1 +1,1 @@
-.. autofunction:: deeplabcut.compat.evaluate_network
+.. autofunction:: deeplabcut.evaluate_network
