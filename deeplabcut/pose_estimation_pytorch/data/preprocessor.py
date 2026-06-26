@@ -51,7 +51,6 @@ class Preprocessor(ABC):
         Returns:
             the pre-processed image (or batch of images) and their context
         """
-        pass
 
 
 def build_bottom_up_preprocessor(color_mode: str, transform: A.BaseCompose) -> Preprocessor:
@@ -250,6 +249,7 @@ class AugmentImage(Preprocessor):
         offsets = context.get("offsets", (0, 0))
         scales = context.get("scales", (1, 1))
         if isinstance(offsets, tuple):
+            # TODO @deruyter92: decide on typed / plain list
             if isinstance(new_offsets, list):
                 updated_offsets = [
                     AugmentImage.update_offset(offsets, scales, new_offset) for new_offset in new_offsets
@@ -262,6 +262,7 @@ class AugmentImage(Preprocessor):
                 updated_offsets = AugmentImage.update_offset(offsets, scales, new_offsets)
                 updated_scales = AugmentImage.update_scale(scales, new_scales)
         else:
+            # TODO @deruyter92: decide on typed / plain list
             if isinstance(new_offsets, list):
                 if not len(offsets) == len(new_offsets):
                     raise ValueError("Cannot rescale lists when not same length")

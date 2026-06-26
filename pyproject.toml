@@ -43,6 +43,7 @@ dependencies = [
   "numba>=0.54",
   "numpy>=1.18.5,<2",
   "packaging>=26",
+  # Migration to pandas 3.0 is tracked in https://github.com/DeepLabCut/DeepLabCut/issues/3362.
   "pandas[hdf5,performance]>=2.2,<3",
   "pillow>=7.1",
   "pycocotools",
@@ -200,7 +201,7 @@ fix = true
 [tool.ruff.format]
 docstring-code-format = true
 [tool.ruff.lint]
-select = [ "E", "F", "B", "I", "UP" ]
+select = [ "E", "F", "B", "I", "UP", "PIE" ]
 ignore = [ "E741", "B007" ]
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = [ "F401", "E402" ]

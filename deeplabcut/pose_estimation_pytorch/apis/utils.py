@@ -26,8 +26,10 @@ from torchvision.models.detection import (
     fasterrcnn_resnet50_fpn,
 )
 
-from deeplabcut.core.config import read_config_as_dict
+from deeplabcut.core.config import ProjectConfig
+from deeplabcut.core.deprecation import deprecated
 from deeplabcut.core.engine import Engine
+from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
 from deeplabcut.pose_estimation_pytorch.data.dataset import PoseDatasetParameters
 from deeplabcut.pose_estimation_pytorch.data.dlcloader import (
@@ -66,20 +68,19 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_estimation_pytorch.utils import resolve_device
 from deeplabcut.utils import auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS, collect_video_paths
-from deeplabcut.utils.deprecation import deprecated
 
 
 def parse_snapshot_index_for_analysis(
-    cfg: dict,
-    model_cfg: dict,
+    cfg: ProjectConfig | dict | Path | str,
+    model_cfg: PoseConfig | dict | Path | str,
     snapshot_index: int | str | None,
     detector_snapshot_index: int | str | None,
 ) -> tuple[int, int | None]:
     """Gets the index of the snapshots to use for data analysis (e.g. video analysis)
 
     Args:
-        cfg: The project configuration.
-        model_cfg: The model configuration.
+        cfg (ProjectConfig | dict | Path | str): The project configuration.
+        model_cfg (PoseConfig | dict | Path | str): The PyTorch pose configuration.
         snapshot_index: The index of the snapshot to use, if one was given by the user.
         detector_snapshot_index: The index of the detector snapshot to use, if one
             was given by the user.
@@ -89,6 +90,9 @@ def parse_snapshot_index_for_analysis(
         detector_snapshot_index: the detector index to use for analysis, or None if no
             detector should be used
     """
+    cfg = ProjectConfig.from_any(cfg)
+    model_cfg = PoseConfig.from_any(model_cfg)
+
     if snapshot_index is None:
         snapshot_index = cfg["snapshotindex"]
     if snapshot_index == "all":
@@ -236,7 +240,7 @@ def get_scorer_uid(snapshot: Snapshot, detector_snapshot: Snapshot | None) -> st
 
 
 def get_scorer_name(
-    cfg: dict,
+    cfg: ProjectConfig | dict | Path | str,
     shuffle: int,
     train_fraction: float,
     snapshot_index: int | None = None,
@@ -247,7 +251,7 @@ def get_scorer_name(
     """Get the scorer name for a particular PyTorch DeepLabCut shuffle.
 
     Args:
-        cfg: The project configuration.
+        cfg (ProjectConfig | dict | Path | str): The project configuration.
         shuffle: The index of the shuffle for which to get the scorer
         train_fraction: The training fraction for the shuffle.
         snapshot_index: The index of the snapshot used. If None, the value is loaded
@@ -262,6 +266,7 @@ def get_scorer_name(
     Returns:
         the scorer name
     """
+    cfg = ProjectConfig.from_any(cfg)
     model_dir = Path(cfg["project_path"]) / auxiliaryfunctions.get_model_folder(
         train_fraction,
         shuffle,
@@ -270,7 +275,7 @@ def get_scorer_name(
         modelprefix=modelprefix,
     )
     train_dir = model_dir / "train"
-    model_cfg = read_config_as_dict(str(train_dir / Engine.PYTORCH.pose_cfg_name))
+    model_cfg = PoseConfig.from_yaml(train_dir / Engine.PYTORCH.pose_cfg_name)
     net_type = model_cfg["net_type"]
     pose_task = Task(model_cfg["method"])
 
@@ -432,7 +437,7 @@ def build_bboxes_dict_for_dataframe(
 
 
 def get_inference_runners(
-    model_config: dict,
+    model_config: PoseConfig | dict | str | Path,
     snapshot_path: str | Path,
     max_individuals: int | None = None,
     num_bodyparts: int | None = None,
@@ -451,7 +456,7 @@ def get_inference_runners(
     """Builds the runners for pose estimation.
 
     Args:
-        model_config: the pytorch configuration file
+        model_config (PoseConfig | dict | str | Path): The PyTorch pose configuration.
         snapshot_path: the path of the snapshot from which to load the weights
         max_individuals: the maximum number of individuals per image (if None, uses the
             individuals defined in the model_config metadata)
@@ -483,6 +488,7 @@ def get_inference_runners(
         a runner for pose estimation
         a runner for detection, if detector_path is not None
     """
+    model_config = PoseConfig.from_any(model_config)
     if max_individuals is None:
         max_individuals = len(model_config["metadata"]["individuals"])
     if num_bodyparts is None:
@@ -513,7 +519,9 @@ def get_inference_runners(
             with_identity=with_identity,
         )
     else:
-        crop_cfg = model_config["data"]["inference"].get("top_down_crop", {})
+        # TODO @deruyter92: This pattern should be refactored throughout the codebase
+        # it is reading a config value that is supposed to be missing / None.
+        crop_cfg = model_config["data"]["inference"].get("top_down_crop") or {}
         width, height = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
         margin = crop_cfg.get("margin", 0)
         if pose_task == Task.COND_TOP_DOWN:
@@ -591,7 +599,7 @@ def get_inference_runners(
 
 
 def get_detector_inference_runner(
-    model_config: dict,
+    model_config: PoseConfig | dict | str | Path,
     snapshot_path: str | Path,
     batch_size: int = 1,
     device: str | None = None,
@@ -603,7 +611,7 @@ def get_detector_inference_runner(
     """Builds an inference runner for object detection.
 
     Args:
-        model_config: the pytorch configuration file
+        model_config (PoseConfig | dict | str | Path): The PyTorch pose configuration.
         snapshot_path: the path of the snapshot from which to load the weights
         max_individuals: the maximum number of individuals per image
         batch_size: the batch size to use for the pose model.
@@ -619,6 +627,7 @@ def get_detector_inference_runner(
     Returns:
         an inference runner for object detection
     """
+    model_config = PoseConfig.from_any(model_config)
     if device is None:
         device = resolve_device(model_config)
     elif device == "mps":  # FIXME(niels): Cannot run detectors on MPS
@@ -684,7 +693,7 @@ def get_filtered_coco_detector_inference_runner(
     box_score_thresh: float = 0.6,
     max_individuals: int | None = None,
     color_mode: str | None = None,
-    model_config: dict | None = None,
+    model_config: PoseConfig | dict | str | Path | None = None,
     transform: A.BaseCompose | None = None,
     inference_cfg: InferenceConfig | dict | None = None,
     min_bbox_score: float | None = None,
@@ -696,7 +705,7 @@ def get_filtered_coco_detector_inference_runner(
     wraps it in a `FilteredDetector` that keeps only detections for a specified COCO category,
     and packages it into a `DetectorInferenceRunner` ready for inference.
 
-    You can optionally provide a model configuration dictionary to resolve `device`, `max_individuals`,
+    You can optionally provide a model configuration to resolve `device`, `max_individuals`,
     and `color_mode`. If no `model_config` is given, these must be specified explicitly.
 
     Args:
@@ -715,8 +724,9 @@ def get_filtered_coco_detector_inference_runner(
                                                  If None, resolved from model_config.
         color_mode (str or None, optional): Color mode used for preprocessing (e.g., "RGB").
                                             If None, resolved from model_config.
-        model_config (dict or None, optional): Optional configuration dictionary used to resolve
-                                               `device`, `max_individuals`, and `color_mode`.
+        model_config (PoseConfig | dict | str | Path | None, optional): Optional pose
+            configuration used to resolve ``device``, ``max_individuals``, and
+            ``color_mode``.
         transform (A.BaseCompose or None, optional): Optional preprocessing pipeline.
                                                      If None, uses the model's default transform.
         inference_cfg: Configuration for the InferenceRunner. If None - uses the
@@ -737,6 +747,7 @@ def get_filtered_coco_detector_inference_runner(
         raise ValueError(f"Unsupported model: {model_name}")
 
     if model_config is not None:
+        model_config = PoseConfig.from_any(model_config)
         if device is None:
             device = resolve_device(model_config)
         if max_individuals is None:
@@ -759,7 +770,7 @@ def get_filtered_coco_detector_inference_runner(
     if transform is None:
         transform = build_transforms({"scale_to_unit_range": True})
 
-    if inference_cfg is None:
+    if inference_cfg is None and model_config is not None:
         inference_cfg = model_config.get("inference")
 
     entry = TORCHVISION_DETECTORS[model_name]
@@ -788,7 +799,7 @@ def get_filtered_coco_detector_inference_runner(
 
 
 def get_pose_inference_runner(
-    model_config: dict,
+    model_config: PoseConfig | dict | str | Path,
     snapshot_path: str | Path,
     batch_size: int = 1,
     device: str | None = None,
@@ -802,7 +813,7 @@ def get_pose_inference_runner(
     """Builds an inference runner for pose estimation.
 
     Args:
-        model_config: the pytorch configuration file
+        model_config (PoseConfig | dict | str | Path): The PyTorch pose configuration.
         snapshot_path: the path of the snapshot from which to load the weights
         max_individuals: the maximum number of individuals per image
         batch_size: the batch size to use for the pose model.
@@ -827,6 +838,7 @@ def get_pose_inference_runner(
     Returns:
         an inference runner for pose estimation
     """
+    model_config = PoseConfig.from_any(model_config)
     pose_task = Task(model_config["method"])
     metadata = model_config["metadata"]
     num_bodyparts = len(metadata["bodyparts"])
@@ -857,14 +869,16 @@ def get_pose_inference_runner(
             with_identity=with_identity,
         )
     else:
-        crop_cfg = model_config["data"]["inference"].get("top_down_crop", {})
+        # TODO @deruyter92: This pattern should be refactored throughout the codebase
+        # it is reading a config value that is supposed to be missing / None.
+        crop_cfg = model_config["data"]["inference"].get("top_down_crop") or {}
         width, height = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
         margin = crop_cfg.get("margin", 0)
 
         if pose_task == Task.COND_TOP_DOWN:
             if cond_provider is not None:
                 kwargs["bu_runner"] = get_pose_inference_runner(
-                    model_config=read_config_as_dict(cond_provider.config_path),
+                    model_config=PoseConfig.from_yaml(cond_provider.config_path),
                     snapshot_path=cond_provider.snapshot_path,
                     batch_size=1,
                     device=device,

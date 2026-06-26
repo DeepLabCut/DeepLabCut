@@ -25,6 +25,7 @@ from PIL import Image
 
 import deeplabcut.compat as compat
 import deeplabcut.generate_training_dataset.metadata as metadata
+from deeplabcut.core.config import ProjectConfig, read_config
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import (
@@ -43,7 +44,7 @@ def comparevideolistsanddatafolders(config):
     Args:
         config (string): String containing the full path of the config file in the project.
     """
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = read_config(config)
     videos = cfg["video_sets"].keys()
     video_names = [Path(i).stem for i in videos]
     alldatafolders = [fn for fn in os.listdir(Path(config).parent / "labeled-data") if "_labeled" not in fn]
@@ -78,7 +79,7 @@ def adddatasetstovideolistandviceversa(config):
     Args:
         config (string): String containing the full path of the config file in the project.
     """
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = read_config(config)
     videos = cfg["video_sets"]
     video_names = [Path(i).stem for i in videos]
 
@@ -126,7 +127,7 @@ def dropduplicatesinannotatinfiles(config):
     Args:
         config (string): String containing the full path of the config file in the project.
     """
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = read_config(config)
     videos = cfg["video_sets"].keys()
     video_names = [Path(i).stem for i in videos]
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
@@ -154,7 +155,7 @@ def dropannotationfileentriesduetodeletedimages(config):
     Args:
         config (string): String containing the full path of the config file in the project.
     """
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = read_config(config)
     videos = cfg["video_sets"].keys()
     video_names = [Path(i).stem for i in videos]
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
@@ -187,7 +188,7 @@ def dropimagesduetolackofannotation(config):
     Args:
         config (string): String containing the full path of the config file in the project.
     """
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = read_config(config)
     videos = cfg["video_sets"].keys()
     video_names = [Path(i).stem for i in videos]
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
@@ -232,7 +233,7 @@ def dropunlabeledframes(config):
     Args:
         config (string): String containing the full path of the config file in the project.
     """
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = read_config(config)
     videos = cfg["video_sets"].keys()
     video_names = [Path(i).stem for i in videos]
     folders = [Path(config).parent / "labeled-data" / Path(i) for i in video_names]
@@ -299,7 +300,7 @@ def check_labels(
 
     if Labels is None:
         Labels = ["+", ".", "x"]
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = read_config(config)
     videos = cfg["video_sets"].keys()
     video_names = [_robust_path_split(video)[1] for video in videos]
 
@@ -337,7 +338,7 @@ def boxitintoacell(joints):
     return outer
 
 
-def ParseYaml(configfile):
+def ParseYaml(configfile: str | Path):
     raw = open(configfile).read()
     docs = []
     for raw_doc in raw.split("\n---"):
@@ -628,7 +629,7 @@ def pad_train_test_indices(train_inds, test_inds, train_fraction):
     return train_inds, test_inds
 
 
-def mergeandsplit(config, trainindex=0, uniform=True):
+def mergeandsplit(config: str | Path | ProjectConfig | dict, trainindex=0, uniform=True):
     """This function allows additional control over "create_training_dataset".
 
     Merge annotated data sets (from different folders) and split data in a specific way,
@@ -640,7 +641,8 @@ def mergeandsplit(config, trainindex=0, uniform=True):
     by passing the index of the corresponding video from the config.yaml file as variable trainindex.
 
     Args:
-        config (string): Full path of the config.yaml file as a string.
+        config (str | Path | ProjectConfig | dict): Full path of the config.yaml file.
+            Alternatively, a ProjectConfig object or a dictionary can be passed.
         trainindex (int, optional): Either (in case uniform = True) indexes which element
             of TrainingFraction in the config file should be used (note it is a list!).
             Alternatively (uniform = False) indexes which folder is dropped, i.e. the
@@ -679,7 +681,7 @@ def mergeandsplit(config, trainindex=0, uniform=True):
             )
     """
     # Loading metadata from config file:
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = ProjectConfig.from_any(config, repair_path=True)
     scorer = cfg["scorer"]
     project_path = cfg["project_path"]
     # Create path for training sets & store data there
@@ -802,7 +804,7 @@ def format_training_data(df, train_inds, nbodyparts, project_path):
 
 
 def create_training_dataset(
-    config,
+    config: str | Path | ProjectConfig | dict,
     num_shuffles=1,
     Shuffles=None,
     windows2linux=False,
@@ -824,10 +826,11 @@ def create_training_dataset(
     Only the videos included in the config file are used to create this dataset.
 
     Args:
-        config (string): Full path of the ``config.yaml`` file as a string.
+        config (str | Path | ProjectConfig | dict): Full path of the ``config.yaml``
+            file. Alternatively, a ProjectConfig object or a dictionary can be passed.
         num_shuffles (int, optional): Number of shuffles of training dataset to create,
             i.e. ``[1,2,3]`` for ``num_shuffles=3``. Defaults to 1.
-        shuffles (list[int], optional): Alternatively the user can also give a list of
+        Shuffles (list[int], optional): Alternatively the user can also give a list of
             shuffles.
         userfeedback (bool, optional): If ``False``, all requested train/test splits are
             created (no matter if they already exist). If you want to assure that
@@ -990,7 +993,9 @@ def create_training_dataset(
         )
 
     # Loading metadata from config file:
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = ProjectConfig.from_any(config, repair_path=True)
+    cfg_path = config if isinstance(config, (str, Path)) else cfg.config_yaml_path
+
     auxiliaryfunctions.get_deeplabcut_path()
 
     if superanimal_name != "":
@@ -1017,7 +1022,7 @@ def create_training_dataset(
         )
 
         create_multianimaltraining_dataset(
-            config,
+            cfg,
             num_shuffles,
             Shuffles,
             net_type=net_type,
@@ -1081,7 +1086,8 @@ def create_training_dataset(
             if augmenter_type is None:  # this could be in config.yaml for old projects!
                 # updating variable if null/None! #backwardscompatability
                 augmenter_type = default_augmenter
-                auxiliaryfunctions.edit_config(config, {"default_augmenter": augmenter_type})
+                cfg.default_augmenter = augmenter_type
+                cfg.to_yaml(cfg_path, log_changes=True, mark_clean=True)
             elif augmenter_type not in augmenters:
                 # as the default augmenter might not be available for the given engine
                 augmenter_type = default_augmenter
@@ -1156,7 +1162,7 @@ def create_training_dataset(
             if len(trainIndices) > 0:
                 if userfeedback:
                     trainposeconfigfile, _, _ = compat.return_train_network_path(
-                        config,
+                        cfg_path,
                         shuffle=shuffle,
                         trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
                         engine=engine,
@@ -1218,9 +1224,9 @@ def create_training_dataset(
                     cfg,
                     engine=engine,
                 )
-                auxiliaryfunctions.attempt_to_make_folder(Path(config).parents[0] / modelfoldername, recursive=True)
-                auxiliaryfunctions.attempt_to_make_folder(str(Path(config).parents[0] / modelfoldername) + "/train")
-                auxiliaryfunctions.attempt_to_make_folder(str(Path(config).parents[0] / modelfoldername) + "/test")
+                auxiliaryfunctions.attempt_to_make_folder(cfg.project_path / modelfoldername, recursive=True)
+                auxiliaryfunctions.attempt_to_make_folder(cfg.project_path / modelfoldername / "train")
+                auxiliaryfunctions.attempt_to_make_folder(cfg.project_path / modelfoldername / "test")
 
                 path_train_config = str(
                     os.path.join(
@@ -1376,7 +1382,7 @@ def get_existing_shuffle_indices(
         )
 
     if isinstance(cfg, (str, Path)):
-        cfg = auxiliaryfunctions.read_config(cfg)
+        cfg = read_config(cfg)
 
     project = Path(cfg["project_path"])
     trainset_folder = project / auxiliaryfunctions.get_training_set_folder(cfg)
@@ -1440,7 +1446,7 @@ def validate_shuffles(
 
 
 def create_training_model_comparison(
-    config,
+    config: str | Path | ProjectConfig | dict,
     trainindex=0,
     num_shuffles=1,
     net_types=None,
@@ -1455,7 +1461,8 @@ def create_training_model_comparison(
     different network and augmentation types on the same training/testdata.
 
     Args:
-        config (str): Full path of the config.yaml file.
+        config (str | Path | ProjectConfig | dict): Full path of the config.yaml file.
+            Alternatively, a ProjectConfig object or a dictionary can be passed.
         trainindex (int, optional): Either (in case uniform = True) indexes which element
             of TrainingFraction in the config file should be used (note it is a list!).
             Alternatively (uniform = False) indexes which folder is dropped, i.e. the
@@ -1494,7 +1501,6 @@ def create_training_model_comparison(
             are created, no matter if they already exist. If you want to assure that
             previous splits etc. are not overwritten, then set this to True and you will
             be asked for each split. Defaults to False.
-
         windows2linux: ..deprecated:: Has no effect since 2.2.0.4 and will be removed in
             2.2.1.
 
@@ -1529,7 +1535,7 @@ def create_training_model_comparison(
         augmenter_types = ["imgaug"]
     if net_types is None:
         net_types = ["resnet_50"]
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = ProjectConfig.from_any(config, repair_path=True)
 
     if windows2linux:
         warnings.warn(
@@ -1559,7 +1565,7 @@ def create_training_model_comparison(
 
     shuffle_list = []
     for shuffle in range(num_shuffles):
-        trainIndices, testIndices = mergeandsplit(config, trainindex=trainindex, uniform=True)
+        trainIndices, testIndices = mergeandsplit(cfg, trainindex=trainindex, uniform=True)
         for idx_net, net in enumerate(net_types):
             for idx_aug, aug in enumerate(augmenter_types):
                 get_max_shuffle_idx = (
@@ -1583,7 +1589,7 @@ def create_training_model_comparison(
                     + str(shuffle)
                 )
                 create_training_dataset(
-                    config,
+                    cfg,
                     Shuffles=[get_max_shuffle_idx],
                     net_type=net,
                     trainIndices=[trainIndices],
@@ -1597,7 +1603,7 @@ def create_training_model_comparison(
 
 
 def create_training_dataset_from_existing_split(
-    config: str,
+    config: str | Path | ProjectConfig | dict,
     from_shuffle: int,
     from_trainsetindex: int = 0,
     num_shuffles: int = 1,
@@ -1616,7 +1622,8 @@ def create_training_dataset_from_existing_split(
     videos included in the config file are used to create this dataset.
 
     Args:
-        config: Full path of the ``config.yaml`` file as a string.
+        config (str | Path | ProjectConfig | dict):
+        Full path of the ``config.yaml`` file. Alternatively, a ProjectConfig object or a dictionary can be passed.
 
         from_shuffle: The index of the shuffle from which to copy the train/test split.
 
@@ -1714,7 +1721,7 @@ def create_training_dataset_from_existing_split(
     Raises:
         ValueError: If the shuffle from which to copy the data split doesn't exist.
     """
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = ProjectConfig.from_any(config, repair_path=True)
     trainset_meta_path = metadata.TrainingDatasetMetadata.path(cfg)
     if not trainset_meta_path.exists():
         meta = metadata.TrainingDatasetMetadata.create(cfg)
@@ -1741,7 +1748,7 @@ def create_training_dataset_from_existing_split(
         test_idx = test_idx + (test_padding * [-1])
 
     return create_training_dataset(
-        config=config,
+        config=cfg,
         num_shuffles=num_shuffles,
         Shuffles=shuffles,
         userfeedback=userfeedback,

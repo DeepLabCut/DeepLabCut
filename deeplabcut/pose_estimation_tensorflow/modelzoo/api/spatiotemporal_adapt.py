@@ -13,6 +13,7 @@ import os
 from collections.abc import Sequence
 from pathlib import Path
 
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.pose_estimation_tensorflow.modelzoo.api.superanimal_inference import (
     video_inference,
 )
@@ -21,7 +22,6 @@ from deeplabcut.utils.auxiliaryfunctions import (
     load_analyzed_data,
     read_config,
 )
-from deeplabcut.utils.deprecation import renamed_parameter
 from deeplabcut.utils.make_labeled_video import create_labeled_video
 from deeplabcut.utils.plotting import _plot_trajectories
 

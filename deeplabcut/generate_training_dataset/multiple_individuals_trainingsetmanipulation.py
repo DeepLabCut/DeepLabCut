@@ -22,6 +22,7 @@ from tqdm import tqdm
 
 import deeplabcut.compat as compat
 import deeplabcut.generate_training_dataset.metadata as metadata
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.weight_init import WeightInitialization
 from deeplabcut.utils import (
@@ -101,7 +102,7 @@ def format_multianimal_training_data(
 
 
 def create_multianimaltraining_dataset(
-    config,
+    config: str | Path | ProjectConfig | dict,
     num_shuffles=1,
     Shuffles=None,
     windows2linux=False,
@@ -129,7 +130,8 @@ def create_multianimaltraining_dataset(
      - stores coordinates with numdigits as many digits
 
     Args:
-        config (string): Full path of the config.yaml file as a string.
+        config (str | Path | ProjectConfig | dict): Full path of the config.yaml file.
+            Alternatively, a ProjectConfig object or a dictionary can be passed.
         num_shuffles (int, optional): Number of shuffles of training dataset to create,
             i.e. [1,2,3] for num_shuffles=3. Defaults to 1.
         Shuffles (list of shuffles): Alternatively the user can also give a list of
@@ -276,7 +278,7 @@ def create_multianimaltraining_dataset(
         )
 
     # Loading metadata from config file:
-    cfg = auxiliaryfunctions.read_config(config)
+    cfg = ProjectConfig.from_any(config, repair_path=True)
     scorer = cfg["scorer"]
     project_path = cfg["project_path"]
     # Create path for training sets & store data there
@@ -452,9 +454,9 @@ def create_multianimaltraining_dataset(
                 cfg,
                 engine=engine,
             )
-            auxiliaryfunctions.attempt_to_make_folder(Path(config).parents[0] / modelfoldername, recursive=True)
-            auxiliaryfunctions.attempt_to_make_folder(str(Path(config).parents[0] / modelfoldername / "train"))
-            auxiliaryfunctions.attempt_to_make_folder(str(Path(config).parents[0] / modelfoldername / "test"))
+            auxiliaryfunctions.attempt_to_make_folder(cfg.project_path / modelfoldername, recursive=True)
+            auxiliaryfunctions.attempt_to_make_folder(cfg.project_path / modelfoldername / "train")
+            auxiliaryfunctions.attempt_to_make_folder(cfg.project_path / modelfoldername / "test")
 
             path_train_config = str(
                 os.path.join(
@@ -603,6 +605,7 @@ def create_multianimaltraining_dataset(
             pass
 
 
+# TODO @deruyter92 2026-06-05: This function seems to be unused dead code. Let's remove it.
 def convert_cropped_to_standard_dataset(
     config_path,
     recreate_datasets=True,

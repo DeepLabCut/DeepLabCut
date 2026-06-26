@@ -16,14 +16,11 @@ from pathlib import Path
 import albumentations as A
 import numpy as np
 
-import deeplabcut.core.config as config_utils
-import deeplabcut.pose_estimation_pytorch.config as config
+from deeplabcut.core.deprecation import renamed_parameter
+from deeplabcut.pose_estimation_pytorch.config import GenSamplingConfig, PoseConfig
 from deeplabcut.pose_estimation_pytorch.data.dataset import (
     PoseDataset,
     PoseDatasetParameters,
-)
-from deeplabcut.pose_estimation_pytorch.data.generative_sampling import (
-    GenSamplingConfig,
 )
 from deeplabcut.pose_estimation_pytorch.data.snapshots import Snapshot, list_snapshots
 from deeplabcut.pose_estimation_pytorch.data.utils import (
@@ -50,16 +47,42 @@ class Loader(ABC):
             Returns a dictionary containing dataset parameters derived from the configuration.
     """
 
+    @renamed_parameter(old="model_config_path", new="model_config", since="3.1.0")
     def __init__(
         self,
         project_root: str | Path,
         image_root: str | Path,
-        model_config_path: str | Path,
+        model_config: PoseConfig | dict | Path | str | None = None,
     ) -> None:
+        """
+        Initialize the Loader.
+
+        Args:
+            project_root: The root directory of the project.
+            image_root: The root directory of the images.
+            model_config (Path | str | PoseConfig | dict):
+                The pose model configuration. Can be a path to a YAML file, a PoseConfig object, or a dictionary.
+            (model_config_path: The path to the pose model configuration. Deprecated, use `model_config` instead.)
+        """
+        normalized_config: PoseConfig = PoseConfig.from_any(model_config)
+
+        def _infer_model_config_path(
+            model_config: PoseConfig | dict | Path | str,
+            normalized_config: PoseConfig,
+        ) -> Path:
+            """Resolve the pose config path from the input argument (if path), or the normalized config."""
+            provided_path = Path(model_config) if isinstance(model_config, (Path, str)) else None
+            path_from_config = normalized_config.select("metadata.pose_config_path")
+            model_config_path = provided_path or path_from_config
+            if model_config_path is None:
+                raise ValueError("`model_config` must contain a `metadata.pose_config_path` field.")
+            return Path(model_config_path)
+
+        self.model_config_path = _infer_model_config_path(model_config, normalized_config)
+        self.model_cfg = normalized_config
+
         self.project_root = Path(project_root)
         self.image_root = Path(image_root)
-        self.model_config_path = Path(model_config_path)
-        self.model_cfg = config_utils.read_config_as_dict(str(model_config_path))
         self.pose_task = Task(self.model_cfg["method"])
         self._loaded_data: dict[str, dict[str, list[dict]]] = {}
 
@@ -92,14 +115,18 @@ class Loader(ABC):
             prefix = Task.DETECT.snapshot_prefix
         return list_snapshots(self.model_folder, prefix, best_in_last=best_in_last)
 
-    def update_model_cfg(self, updates: dict) -> None:
+    def update_model_cfg(self, updates: dict, log_changes: bool = False, save_config: bool = True) -> None:
         """Updates the model configuration.
 
         Args:
             updates: the items to update in the model configuration
         """
-        self.model_cfg = config.update_config_by_dotpath(self.model_cfg, updates)
-        config_utils.write_config(self.model_config_path, self.model_cfg)
+        for key, value in updates.items():
+            self.model_cfg.set_nested(key, value)
+        if log_changes:
+            self.model_cfg.log_changes()
+        if save_config:
+            self.model_cfg.to_yaml(self.model_config_path)
 
     @abstractmethod
     def load_data(self, mode: str = "train") -> dict[str, list[dict]]:
@@ -152,7 +179,7 @@ class Loader(ABC):
             individuals = parameters.individuals
             num_bodyparts = parameters.num_joints
 
-        if "weight_init" in self.model_cfg["train_settings"]:
+        if self.model_cfg["train_settings"].get("weight_init") is not None:
             weight_init_cfg = self.model_cfg["train_settings"]["weight_init"]
             if weight_init_cfg["memory_replay"]:
                 conversion_array = weight_init_cfg["conversion_array"]
@@ -249,10 +276,8 @@ class Loader(ABC):
         data["annotations"] = self.filter_annotations(data["annotations"], task)
         ctd_config = None
         if self.pose_task == Task.COND_TOP_DOWN:
-            ctd_config = GenSamplingConfig(
-                bbox_margin=self.model_cfg["data"].get("bbox_margin", 20),
-                **self.model_cfg["data"].get("gen_sampling", {}),
-            )
+            # TODO @deruyter92: when moving to typed configs, this conversion becomes unnecessary
+            ctd_config = GenSamplingConfig.from_any(self.model_cfg.data.gen_sampling)
 
         dataset = PoseDataset(
             images=data["images"],

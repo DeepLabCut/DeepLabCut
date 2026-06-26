@@ -33,7 +33,7 @@ import skimage.color
 from skimage import io
 from skimage.util import img_as_ubyte
 
-from deeplabcut.utils.deprecation import DLCDeprecationWarning
+from deeplabcut.core.deprecation import DLCDeprecationWarning
 
 # more videos are in principle covered, as OpenCV is used and allows many formats.
 SUPPORTED_VIDEOS = "avi", "mp4", "mov", "mpeg", "mpg", "mpv", "mkv", "flv", "qt", "yuv"

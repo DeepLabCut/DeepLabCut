@@ -12,13 +12,16 @@ import inspect
 import subprocess
 import warnings
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 
 import torch
 from dlclibrary import download_huggingface_model
 
 import deeplabcut.pose_estimation_pytorch.config.utils as config_utils
-from deeplabcut.core.config import read_config_as_dict
-from deeplabcut.pose_estimation_pytorch.config.make_pose_config import add_metadata
+from deeplabcut.core.deprecation import deprecated
 from deeplabcut.utils import auxiliaryfunctions
 
 # COCO category ID for the "person" class.
@@ -86,42 +89,23 @@ def get_super_animal_snapshot_path(
     return model_path
 
 
+@deprecated(replacement="PoseConfig.build_for_superanimal_inference", since="3.1")
 def load_super_animal_config(
     super_animal: str,
     model_name: str,
     detector_name: str | None = None,
     max_individuals: int = 30,
     device: str | None = None,
-) -> dict:
-    """Loads the model configuration file for a model, detector and SuperAnimal.
+) -> "PoseConfig":
+    from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 
-    Args:
-        super_animal: The name of the SuperAnimal for which to create the model config.
-        model_name: The name of the model for which to create the model config.
-        detector_name: The name of the detector for which to create the model config.
-        max_individuals: The maximum number of detections to make in an image
-        device: The device to use to train/run inference on the model
-
-    Returns:
-        The model configuration for a SuperAnimal-pretrained model.
-    """
-    project_cfg_path = get_super_animal_project_config_path(super_animal=super_animal)
-    project_config = read_config_as_dict(project_cfg_path)
-
-    model_cfg_path = get_super_animal_model_config_path(model_name=model_name)
-    model_config = read_config_as_dict(model_cfg_path)
-    model_config = add_metadata(project_config, model_config, model_cfg_path)
-    model_config = update_config(model_config, max_individuals, device)
-
-    if detector_name is None and super_animal != "superanimal_humanbody":
-        model_config["method"] = "BU"
-    else:
-        model_config["method"] = "TD"
-        if super_animal != "superanimal_humanbody":
-            detector_cfg_path = get_super_animal_model_config_path(model_name=detector_name)
-            detector_cfg = read_config_as_dict(detector_cfg_path)
-            model_config["detector"] = detector_cfg
-    return model_config
+    return PoseConfig.build_for_superanimal_inference(
+        super_animal=super_animal,
+        model_name=model_name,
+        detector_name=detector_name,
+        max_individuals=max_individuals,
+        device=device,
+    )
 
 
 def download_super_animal_snapshot(dataset: str, model_name: str) -> Path:
@@ -204,8 +188,9 @@ def update_config(config: dict, max_individuals: int, device: str):
     )
     config["metadata"]["individuals"] = [f"animal{i}" for i in range(max_individuals)]
 
-    config["device"] = device
-    if config.get("detector", None) is not None:
-        config["detector"]["device"] = device
+    resolved_device = device if device is not None else "auto"
+    config["device"] = resolved_device
+    if config.get("detector") is not None:
+        config["detector"]["device"] = resolved_device
 
     return config

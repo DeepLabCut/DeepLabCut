@@ -17,9 +17,9 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from deeplabcut import DEBUG
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.core.engine import Engine
 from deeplabcut.utils.auxfun_videos import VideoReader, collect_video_paths
-from deeplabcut.utils.deprecation import renamed_parameter
 
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")

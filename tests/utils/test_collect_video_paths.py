@@ -25,8 +25,8 @@ from pathlib import Path
 
 import pytest
 
+from deeplabcut.core.deprecation import DLCDeprecationWarning
 from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS, collect_video_paths
-from deeplabcut.utils.deprecation import DLCDeprecationWarning
 
 
 def _touch(path: Path) -> Path:

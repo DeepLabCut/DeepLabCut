@@ -65,7 +65,7 @@ def create_empty_df(dataframe, scorer, flag):
                 [[scorer], [bodypart], ["x", "y", "z"]],
                 names=["scorer", "bodyparts", "coords"],
             )
-        frame = pd.DataFrame(a, columns=pdindex, index=range(0, df.shape[0]))
+        frame = pd.DataFrame(a, columns=pdindex, index=range(df.shape[0]))
         dataFrame = pd.concat([frame, dataFrame], axis=1)
     return (dataFrame, scorer, bodyparts)
 
@@ -262,7 +262,8 @@ def _reconstruct_tracks_as_tracklets(df):
     from deeplabcut.refine_training_dataset.stitch import Tracklet
 
     tracklets = []
-    for _, group in df.groupby("individuals", axis=1):
+    for _, group in df.T.groupby("individuals"):
+        group = group.T
         temp = group.dropna(how="all")
         inds = temp.index.to_numpy()
         track = Tracklet(temp.to_numpy().reshape((len(temp), -1, 3)), inds)
