@@ -27,8 +27,8 @@ if TYPE_CHECKING:
 
 
 from deeplabcut.api._tf_routing import with_tensorflow_fallback
+from deeplabcut.core.deprecation import deprecated, renamed_parameter
 from deeplabcut.pose_estimation_pytorch.runners.inference import InferenceConfig
-from deeplabcut.utils.deprecation import deprecated, renamed_parameter
 
 
 @with_tensorflow_fallback(

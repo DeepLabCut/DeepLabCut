@@ -17,10 +17,10 @@ from collections.abc import Callable
 from functools import lru_cache
 from importlib import import_module
 
+from deeplabcut.core.deprecation import DLCDeprecationWarning
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
 from deeplabcut.utils.auxiliaryfunctions import read_config
-from deeplabcut.utils.deprecation import DLCDeprecationWarning
 
 _TF_MODULE = "deeplabcut.tensorflow_compat"
 
