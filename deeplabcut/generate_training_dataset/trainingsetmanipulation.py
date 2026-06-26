@@ -24,14 +24,18 @@ import yaml
 from PIL import Image
 
 import deeplabcut.generate_training_dataset.metadata as metadata
-from deeplabcut.core.engine import Engine, get_available_aug_methods, get_project_engine
+from deeplabcut.core.engine import Engine, get_available_aug_methods
 from deeplabcut.core.weight_init import WeightInitialization
+from deeplabcut.pose_estimation_pytorch.apis.utils import return_train_network_path
 from deeplabcut.utils import (
     auxfun_multianimal,
     auxiliaryfunctions,
     conversioncode,
 )
 from deeplabcut.utils.auxfun_videos import VideoReader
+
+_ENGINE = Engine.PYTORCH
+_AUGMENTERS = get_available_aug_methods(_ENGINE)
 
 
 def comparevideolistsanddatafolders(config):
@@ -771,7 +775,6 @@ def create_training_dataset(
     posecfg_template=None,
     superanimal_name="",
     weight_init: WeightInitialization | None = None,
-    engine: Engine | None = None,
     ctd_conditions: int | str | Path | tuple[int, str] | tuple[int, int] | None = None,
 ):
     """Creates a training dataset.
@@ -994,15 +997,12 @@ def create_training_dataset(
             trainIndices=trainIndices,
             testIndices=testIndices,
             userfeedback=userfeedback,
-            engine=engine,
             weight_init=weight_init,
             ctd_conditions=ctd_conditions,
         )
     else:
         scorer = cfg["scorer"]
         project_path = cfg["project_path"]
-        if engine is None:
-            engine = get_project_engine(cfg)
 
         # Create path for training sets & store data there
         trainingsetfolder = auxiliaryfunctions.get_training_set_folder(
@@ -1034,7 +1034,7 @@ def create_training_dataset(
             top_down = True
             net_type = net_type[len("top_down_") :]
 
-        augmenters = get_available_aug_methods(engine)
+        augmenters = _AUGMENTERS
         default_augmenter = augmenters[0]
         if augmenter_type is None:
             augmenter_type = cfg.get("default_augmenter", default_augmenter)
@@ -1044,11 +1044,10 @@ def create_training_dataset(
                 augmenter_type = default_augmenter
                 auxiliaryfunctions.edit_config(config, {"default_augmenter": augmenter_type})
             elif augmenter_type not in augmenters:
-                # as the default augmenter might not be available for the given engine
+                # as the default augmenter might not be available for PyTorch
                 augmenter_type = default_augmenter
                 logging.info(
-                    f"Default augmenter {augmenter_type} not available for engine "
-                    f"{engine}: using {default_augmenter} instead"
+                    f"Default augmenter {augmenter_type} not available for PyTorch: using {default_augmenter} instead"
                 )
 
         if augmenter_type not in augmenters:
@@ -1106,13 +1105,10 @@ def create_training_dataset(
         for trainFraction, shuffle, (trainIndices, testIndices) in splits:
             if len(trainIndices) > 0:
                 if userfeedback:
-                    from deeplabcut.api.pose_estimation import return_train_network_path
-
                     trainposeconfigfile, _, _ = return_train_network_path(
                         config,
                         shuffle=shuffle,
                         trainingsetindex=cfg["TrainingFraction"].index(trainFraction),
-                        engine=engine,
                     )
                     if trainposeconfigfile.is_file():
                         askuser = input(
@@ -1155,7 +1151,7 @@ def create_training_dataset(
                     cfg=cfg,
                     train_fraction=trainFraction,
                     shuffle=shuffle,
-                    engine=engine,
+                    engine=_ENGINE,
                     train_indices=trainIndices,
                     test_indices=testIndices,
                     overwrite=not userfeedback,
@@ -1169,7 +1165,7 @@ def create_training_dataset(
                     trainFraction,
                     shuffle,
                     cfg,
-                    engine=engine,
+                    engine=_ENGINE,
                 )
                 auxiliaryfunctions.attempt_to_make_folder(Path(config).parents[0] / modelfoldername, recursive=True)
                 auxiliaryfunctions.attempt_to_make_folder(str(Path(config).parents[0] / modelfoldername) + "/train")
@@ -1180,7 +1176,7 @@ def create_training_dataset(
                         cfg["project_path"],
                         Path(modelfoldername),
                         "train",
-                        engine.pose_cfg_name,
+                        _ENGINE.pose_cfg_name,
                     )
                 )
                 path_test_config = str(
@@ -1517,7 +1513,6 @@ def create_training_dataset_from_existing_split(
     posecfg_template: dict | None = None,
     superanimal_name: str = "",
     weight_init: WeightInitialization | None = None,
-    engine: Engine | None = None,
 ) -> None | list[int]:
     """Labels from all the extracted frames are merged into a single .h5 file. Only the
     videos included in the config file are used to create this dataset.
@@ -1660,7 +1655,6 @@ def create_training_dataset_from_existing_split(
         posecfg_template=posecfg_template,
         superanimal_name=superanimal_name,
         weight_init=weight_init,
-        engine=engine,
         ctd_conditions=ctd_conditions,
     )
 
