@@ -16,6 +16,7 @@ from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
 import deeplabcut
+from deeplabcut.core.config import ProjectConfig
 from deeplabcut.gui.components import (
     BodypartListWidget,
     DefaultTab,
@@ -28,7 +29,6 @@ from deeplabcut.gui.components import (
 )
 from deeplabcut.gui.utils import move_to_separate_thread
 from deeplabcut.gui.widgets import ConfigEditor
-from deeplabcut.utils.auxiliaryfunctions import edit_config
 
 
 @dataclass(frozen=True)
@@ -431,7 +431,13 @@ class AnalyzeVideos(DefaultTab):
 
         # Keep config in sync with GUI choice before launching worker
         if self.root.is_multianimal and options.track_method is not None:
-            edit_config(self.root.config, {"default_track_method": options.track_method})
+            # NOTE @deruyter92 2026-06-23: Most of GUI is not migrated to typed configs yet, so we normalize here.
+            cfg = ProjectConfig.from_any(self.root.config, repair_path=True)
+            cfg_path = self.root.config if isinstance(self.root.config, (str, Path)) else cfg.config_yaml_path
+
+            # Update track method and write to disk
+            cfg.default_track_method = options.track_method
+            cfg.to_yaml(cfg_path, overwrite=True, log_changes=True, mark_clean=True)
 
         func = partial(self._run_pipeline, options, batches)
 

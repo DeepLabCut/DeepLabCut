@@ -22,11 +22,11 @@ import deeplabcut.pose_estimation_pytorch.models as models
 import deeplabcut.pose_estimation_pytorch.runners as runners
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
 from deeplabcut.core.config import read_config_as_dict
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.pose_estimation_pytorch.apis.videos import VideoIterator
 from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.pose_tracking_pytorch import create_triplets_dataset
 from deeplabcut.utils.auxfun_videos import collect_video_paths
-from deeplabcut.utils.deprecation import renamed_parameter
 
 
 def build_feature_extraction_runner(
@@ -53,7 +53,9 @@ def build_feature_extraction_runner(
     if top_down:
         rescale_mode = postprocessing.RescaleAndOffset.Mode.KEYPOINT_TD
         data_cfg = loader.model_cfg["data"]["inference"]
-        crop_cfg = data_cfg.get("top_down_crop", {})
+        # TODO @deruyter92: This pattern should be refactored throughout the codebase
+        # it is reading a config value that is supposed to be missing / None.
+        crop_cfg = data_cfg.get("top_down_crop") or {}
         width, height = crop_cfg.get("width", 256), crop_cfg.get("height", 256)
         preprocessor = data.build_top_down_preprocessor(
             color_mode=loader.model_cfg["data"]["colormode"],

@@ -379,3 +379,45 @@ def test_remove_low_confidence_boxes(data):
 
     np.testing.assert_array_equal(predictions["bboxes"], expected_bboxes)
     np.testing.assert_array_equal(predictions["bbox_scores"], expected_scores)
+
+
+def test_predict_keypoint_identities_handles_nan_keypoints():
+    import warnings
+
+    p = PredictKeypointIdentities(
+        identity_key="keypoint_identity",
+        identity_map_key="identity_map",
+        pose_key="bodyparts",
+        keep_id_maps=True,
+    )
+
+    # PAF-style output: (num_individuals, num_bodyparts, 5); missing joint is all-NaN
+    bodyparts = np.array(
+        [
+            [
+                [3.1, 1.0, 0.8, 0.0, 0.5],  # valid
+                [np.nan, np.nan, np.nan, np.nan, np.nan],  # missing (assembler default)
+                [1.0, 0.0, 0.9, 1.0, 0.5],  # valid
+            ],
+        ]
+    )
+    id_heatmap = np.array(
+        [
+            [[0.1, 0.1], [0.2, 0.1], [0.3, 0.1], [0.4, 0.1]],
+            [[0.1, 0.2], [0.2, 0.2], [0.3, 0.2], [0.4, 0.2]],
+            [[0.1, 0.3], [0.2, 0.3], [0.3, 0.3], [0.4, 0.3]],
+            [[0.1, 0.4], [0.2, 0.4], [0.3, 0.4], [0.4, 0.4]],
+        ]
+    )
+    predictions_in = {"bodyparts": bodyparts, "identity_map": id_heatmap}
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        predictions, _ = p(predictions_in, {})
+
+    expected = np.zeros((1, 3, 2))
+    expected[0, 0] = id_heatmap[1, 3]  # rint(3.1, 1.0) -> (3, 1)
+    expected[0, 1] = 0.0  # NaN keypoint: leave identity scores at zero
+    expected[0, 2] = id_heatmap[0, 1]  # rint(1.0, 0.0) -> (1, 0)
+
+    np.testing.assert_array_equal(predictions["keypoint_identity"], expected)

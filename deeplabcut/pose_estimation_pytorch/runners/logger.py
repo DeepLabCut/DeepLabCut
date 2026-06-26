@@ -152,7 +152,6 @@ class ImageLoggerMixin(ABC):
             targets: the targets for each model head
             step: the current step
         """
-        pass
 
     def select_images_to_log(self, train: DataLoader, valid: DataLoader) -> None:
         """Selects the train and test images to log.
@@ -224,7 +223,10 @@ class ImageLoggerMixin(ABC):
         images_to_log = [(i, p) for i, p in enumerate(paths) if p in self._logged]
         for idx, path in images_to_log:
             base = self._logged[path]["name"]
-            keypoints = inputs.get("annotations", {}).get("keypoints")
+
+            # TODO @deruyter92: This pattern should be refactored throughout the codebase
+            # it is reading a config value that is supposed to be missing / None.
+            keypoints = (inputs.get("annotations") or {}).get("keypoints")
             if keypoints is not None:
                 keypoints = keypoints[idx]
             image_logs[f"{base}.input"] = self._prepare_image(
@@ -445,7 +447,6 @@ class CSVLogger(BaseLogger):
         Args:
             config: Experiment config file.
         """
-        pass
 
     def _load_existing_data(self) -> None:
         """Loads existing CSV data if the log file exists."""
