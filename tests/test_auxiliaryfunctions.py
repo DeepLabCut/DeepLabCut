@@ -315,23 +315,24 @@ class TestReadConfigProjectPath:
     """read_config() must never persist a \\\\?\\Volume{GUID}\\... path into
     project_path, even on Windows 11 SMB network drives."""
 
-    def test_project_path_not_written_as_volume_guid(self, tmp_path):
-        """If resolve() would produce a Volume GUID path, read_config must fall
-        back to abspath and write a usable path to config.yaml."""
+    def test_project_path_corrected_when_persisted_as_volume_guid(self, tmp_path):
+        """Regression test for https://github.com/DeepLabCut/DeepLabCut/issues/3348.
+
+        A config.yaml whose project_path was previously corrupted to a
+        \\\\?\\Volume{GUID}\\... form (e.g. by an older buggy read_config())
+        must be corrected to the real directory on the next read.
+        """
         project_dir = tmp_path / "my_project"
         project_dir.mkdir()
         config_file = project_dir / "config.yaml"
 
-        auxiliaryfunctions.write_config(config_file, {"project_path": str(project_dir)})
+        bad_path = r"\\?\Volume{DEADBEEF-0000-0000-0000-000000000000}\my_project"
+        auxiliaryfunctions.write_config(config_file, {"project_path": bad_path})
 
-        fake_volume_guid = Path(r"\\?\Volume{DEADBEEF-0000-0000-0000-000000000000}\my_project")
+        cfg = auxiliaryfunctions.read_config(config_file)
 
-        with patch.object(Path, "resolve", return_value=fake_volume_guid):
-            cfg = auxiliaryfunctions.read_config(config_file)
-
-        assert "Volume{" not in cfg["project_path"]
-        # The stored value must be openable as a plain string
-        assert os.path.isdir(cfg["project_path"])
+        assert "Volume{" not in str(cfg["project_path"])
+        assert cfg["project_path"].exists()
 
     def test_project_path_updated_when_moved(self, tmp_path):
         """read_config() must still update project_path when a project is moved
@@ -344,5 +345,5 @@ class TestReadConfigProjectPath:
 
         cfg = auxiliaryfunctions.read_config(config_file)
 
-        expected = str(project_dir.absolute())
+        expected = project_dir.absolute()
         assert cfg["project_path"] == expected

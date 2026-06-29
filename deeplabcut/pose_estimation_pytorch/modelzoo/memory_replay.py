@@ -244,7 +244,7 @@ def prepare_memory_replay_dataset(
     # parse the GT to put the image paths back into OS-specific format
     for image in project_gt["images"]:
         image_rel_path = image["file_name"].split("/")
-        image["file_name"] = str(af.safe_resolve(project_root / Path(*image_rel_path)))
+        image["file_name"] = str(project_root / Path(*image_rel_path))
 
     with memory_replay_train_file_path.open("w") as f:
         json.dump(project_gt, f, indent=4)
