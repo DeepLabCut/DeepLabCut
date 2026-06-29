@@ -68,6 +68,11 @@ jobs:
               ;;
           esac
 
+          if [ "${{ inputs.action }}" = "deploy" ] && [ -z "${{ inputs.git_tag }}" ] && [ "${{ inputs.version_label }}" != "main" ]; then
+            echo "::error::git_tag is required when deploying non-'main' versions."
+            exit 1
+          fi
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
