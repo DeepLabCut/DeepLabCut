@@ -92,8 +92,8 @@ parts:
 
   - caption: Development
     chapters:
-      - file: docs/dev
-        title: Developer Documentation
+      - title: Developer Documentation
+        url: https://deeplabcut.github.io/DeepLabCut/dev/
 
   - caption: Additional guides (Recipes)
     chapters:

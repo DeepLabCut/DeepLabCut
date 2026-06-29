@@ -1,12 +1,18 @@
-name: Build dev-docs (mkdocs)
+name: Docs / Build dev-docs
 
 on:
   workflow_call:
     inputs:
       python-version:
-        description: "Python version used to build the dev docs."
+        description: Python version used to build the dev docs.
         required: false
         default: "3.10"
+        type: string
+
+      config-file:
+        description: MkDocs config file.
+        required: false
+        default: "dev-docs/mkdocs.yml"
         type: string
 
 jobs:
@@ -14,24 +20,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Set up dev-docs environment
+        uses: ./.github/actions/setup-dev-docs
         with:
           python-version: ${{ inputs.python-version }}
 
-      - name: Install system dependencies for mkdocs-material social plugin
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y libcairo2-dev libfreetype6-dev libffi-dev \
-            libjpeg-dev libpng-dev libz-dev
-
-      - name: Install dev-docs dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install ".[dev-docs]"
-
-      - name: Build dev docs
-        run: mkdocs build -v -f dev-docs/mkdocs.yml
+      - name: Build dev-docs
+        run: mkdocs build -v -f ${{ inputs.config-file }}

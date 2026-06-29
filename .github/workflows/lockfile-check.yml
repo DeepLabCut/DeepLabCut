@@ -1,4 +1,4 @@
-name: Lockfile
+name: Code / Lockfile
 
 on:
   pull_request:
