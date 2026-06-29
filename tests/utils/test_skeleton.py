@@ -41,6 +41,9 @@ def make_test_builder():
 
 def attach_fake_canvas(builder):
     builder.fig = Figure()
+    builder._ax = builder.fig.add_subplot(111)
+    builder._ax.set_xlim(-5, 25)
+    builder._ax.set_ylim(-5, 5)
     builder.fig.canvas.draw_idle = lambda: None
 
 
@@ -136,7 +139,7 @@ def test_clear_resets_indices_segments_and_linecollection():
 # ---------------------------------------------------------------------
 
 
-def test_export_sorts_pairs_and_warns_for_unconnected(monkeypatch):
+def test_export_sorts_pairs_and_warns_for_unconnected(monkeypatch, caplog):
     builder = make_test_builder()
     builder.config_path = "dummy_config.yaml"
     builder.xy = np.array(
@@ -159,8 +162,9 @@ def test_export_sorts_pairs_and_warns_for_unconnected(monkeypatch):
 
     monkeypatch.setattr(skeleton_mod, "write_config", fake_write_config)
 
-    with pytest.warns(UserWarning, match="didn't connect all the bodyparts"):
+    with caplog.at_level("INFO"):
         builder.export()
+    assert "Not all bodyparts are connected" in caplog.text
 
     assert captured["path"] == "dummy_config.yaml"
     assert captured["cfg"]["skeleton"] == [
