@@ -1,0 +1,123 @@
+name: Docs / Deploy dev-docs with Mike
+
+on:
+  workflow_call:
+    inputs:
+      action:
+        description: "Mike action to perform: deploy or delete."
+        required: true
+        type: string
+
+      version_label:
+        description: "Version label to deploy/delete, e.g. main or 3.0."
+        required: true
+        type: string
+
+      aliases:
+        description: "Space-separated aliases to assign on deploy, e.g. latest."
+        required: false
+        default: ""
+        type: string
+
+      default_label:
+        description: "If non-empty, run mike set-default with this label after deploy."
+        required: false
+        default: ""
+        type: string
+
+      git_tag:
+        description: "Optional git tag whose deeplabcut package should be checked out before deploying."
+        required: false
+        default: ""
+        type: string
+
+      python-version:
+        description: Python version used for dev docs.
+        required: false
+        default: "3.10"
+        type: string
+
+      config-file:
+        description: MkDocs config file.
+        required: false
+        default: "dev-docs/mkdocs.yml"
+        type: string
+
+      deploy-prefix:
+        description: Mike deploy prefix.
+        required: false
+        default: "dev"
+        type: string
+
+jobs:
+  mike:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Validate inputs
+        shell: bash
+        run: |
+          case "${{ inputs.action }}" in
+            deploy|delete)
+              ;;
+            *)
+              echo "::error::Unsupported action '${{ inputs.action }}'. Expected 'deploy' or 'delete'."
+              exit 1
+              ;;
+          esac
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check out tagged package source
+        if: inputs.git_tag != ''
+        shell: bash
+        run: |
+          git checkout "${{ inputs.git_tag }}" -- deeplabcut
+
+      - name: Set up dev-docs environment
+        uses: ./.github/actions/setup-dev-docs
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Configure git for Mike
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Deploy dev-docs version
+        if: inputs.action == 'deploy'
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.aliases }}" ]; then
+            mike deploy --push \
+              --config-file "${{ inputs.config-file }}" \
+              --deploy-prefix "${{ inputs.deploy-prefix }}" \
+              --update-aliases \
+              "${{ inputs.version_label }}" ${{ inputs.aliases }}
+          else
+            mike deploy --push \
+              --config-file "${{ inputs.config-file }}" \
+              --deploy-prefix "${{ inputs.deploy-prefix }}" \
+              "${{ inputs.version_label }}"
+          fi
+
+          if [ -n "${{ inputs.default_label }}" ]; then
+            mike set-default --push \
+              --config-file "${{ inputs.config-file }}" \
+              --deploy-prefix "${{ inputs.deploy-prefix }}" \
+              "${{ inputs.default_label }}"
+          fi
+
+      - name: Delete dev-docs version
+        if: inputs.action == 'delete'
+        shell: bash
+        run: |
+          mike delete --push \
+            --config-file "${{ inputs.config-file }}" \
+            --deploy-prefix "${{ inputs.deploy-prefix }}" \
+            "${{ inputs.version_label }}"
