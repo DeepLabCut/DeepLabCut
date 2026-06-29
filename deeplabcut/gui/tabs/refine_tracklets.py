@@ -8,7 +8,6 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
 from pathlib import Path
 
 from PySide6 import QtWidgets
@@ -248,9 +247,9 @@ class RefineTracklets(DefaultTab):
         video = list(self.files)[0]
         track_method = cfg.get("default_track_method", "ellipse")
         method = trackingutils.TRACK_METHODS[track_method]
-        dest = str(Path(video).parents[0])
+        dest = Path(video).parents[0]
         vname = Path(video).stem
-        datafile = os.path.join(dest, vname + DLCscorer + f"{method}.h5")
+        datafile = str(dest / (vname + DLCscorer + f"{method}.h5"))
         self.manager, self.viz = deeplabcut.refine_tracklets(
             self.root.config,
             datafile,

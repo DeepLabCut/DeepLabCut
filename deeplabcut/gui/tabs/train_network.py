@@ -10,12 +10,10 @@
 #
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtGui import QIcon
 
 import deeplabcut.compat as compat
 from deeplabcut.core.engine import Engine
@@ -27,6 +25,7 @@ from deeplabcut.gui.components import (
     _create_label_widget,
 )
 from deeplabcut.gui.displays.selected_shuffle_display import SelectedShuffleDisplay
+from deeplabcut.gui.gui_assets import icon_from_resource
 from deeplabcut.gui.widgets import ConfigEditor
 
 
@@ -244,9 +243,7 @@ class TrainNetwork(DefaultTab):
 
         msg.setWindowTitle("Info")
         msg.setMinimumWidth(900)
-        self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-        self.logo = self.logo_dir + "/assets/logo.png"
-        msg.setWindowIcon(QIcon(self.logo))
+        msg.setWindowIcon(icon_from_resource("logo.png"))
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
 

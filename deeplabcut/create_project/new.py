@@ -26,8 +26,8 @@ from deeplabcut.utils.auxfun_videos import VideoReader, collect_video_paths
 def create_new_project(
     project: str,
     experimenter: str,
-    videos: list[str],
-    working_directory: str | None = None,
+    videos: list[str | Path],
+    working_directory: str | Path | None = None,
     copy_videos: bool = False,
     video_extensions: str | Sequence[str] | None = None,
     multianimal: bool = False,
@@ -154,7 +154,7 @@ def create_new_project(
     # Create project and sub-directories
     if not DEBUG and project_path.exists():
         print(f'Project "{project_path}" already exists!')
-        return os.path.join(str(project_path), "config.yaml")
+        return str(project_path / "config.yaml")
     video_path = project_path / "videos"
     data_path = project_path / "labeled-data"
     shuffles_path = project_path / "training-datasets"
@@ -198,7 +198,7 @@ def create_new_project(
             try:
                 src = str(src)
                 dst = str(dst)
-                os.symlink(src, dst)
+                Path(dst).symlink_to(src)
                 print(f"Created the symlink of {src} to {dst}")
             except OSError:
                 try:
@@ -223,14 +223,14 @@ def create_new_project(
             # video. [old: rel_video_path = os.path.realpath(video)]
             rel_video_path = str(Path.resolve(Path(video)))
         except Exception:
-            rel_video_path = os.readlink(str(video))
+            rel_video_path = str(Path(str(video)).readlink())
 
         try:
             vid = VideoReader(rel_video_path)
             video_sets[rel_video_path] = {"crop": ", ".join(map(str, vid.get_bbox()))}
         except OSError:
             warnings.warn("Cannot open the video file! Skipping to the next one...", stacklevel=2)
-            os.remove(video)  # Removing the video or link from the project
+            Path(video).unlink()  # Removing the video or link from the project
 
     if not len(video_sets):
         # Silently sweep the files that were already written.
@@ -304,7 +304,7 @@ def create_new_project(
     cfg_file["alphavalue"] = 0.7  # for plots transparency of markers
     cfg_file["colormap"] = "rainbow"  # for plots type of colormap
 
-    projconfigfile = os.path.join(str(project_path), "config.yaml")
+    projconfigfile = project_path / "config.yaml"
     # Write dictionary to yaml  config file
     auxiliaryfunctions.write_config(projconfigfile, cfg_file)
 

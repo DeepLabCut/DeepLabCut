@@ -8,7 +8,7 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
+from pathlib import Path
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
@@ -65,7 +65,7 @@ class ManageProject(DefaultTab):
         editor.show()
 
     def add_new_videos(self):
-        cwd = os.getcwd()
+        cwd = str(Path.cwd())
         files = QFileDialog.getOpenFileNames(
             self,
             "Select videos to add to the project",

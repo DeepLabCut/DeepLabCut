@@ -12,6 +12,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 
@@ -57,7 +59,7 @@ def _load_metadata(cfg: dict) -> list[str]:
         trainset_meta = metadata.TrainingDatasetMetadata.create(cfg)
         trainset_meta.save()
 
-    with open(metadata_path) as file:
+    with Path(metadata_path).open() as file:
         raw_metadata = file.read()
 
     return raw_metadata.split("\n")

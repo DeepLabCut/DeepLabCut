@@ -8,10 +8,11 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
+from pathlib import Path
 
 from PySide6 import QtCore, QtWidgets
-from PySide6.QtGui import QIcon
+
+from deeplabcut.gui.gui_assets import icon_from_resource
 
 
 class OpenProject(QtWidgets.QDialog):
@@ -58,7 +59,7 @@ class OpenProject(QtWidgets.QDialog):
         self.open_line.text()
 
     def load_config(self):
-        cwd = os.getcwd()
+        cwd = str(Path.cwd())
         config = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select a configuration file", cwd, "Config files (*.yaml)"
         )
@@ -76,17 +77,13 @@ class OpenProject(QtWidgets.QDialog):
 
             msg.setWindowTitle("Error")
             msg.setMinimumWidth(400)
-            self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-            self.logo = self.logo_dir + "/assets/logo.png"
-            msg.setWindowIcon(QIcon(self.logo))
+            icon = icon_from_resource("logo.png")
+            msg.setWindowIcon(icon)
             msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
             msg.exec_()
 
             self.loaded = False
         else:
-            self.logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-            self.logo = self.logo_dir + "/assets/logo.png"
-
             self.loaded = True
             self.accept()
             self.close()

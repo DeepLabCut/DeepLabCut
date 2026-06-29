@@ -9,7 +9,6 @@
 # Licensed under GNU Lesser General Public License v3.0
 #
 import logging
-import os
 import sys
 import warnings
 from functools import cached_property
@@ -21,7 +20,7 @@ import qdarkstyle
 from napari_deeplabcut import __version__ as NAPARI_DLC_VERSION
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QIcon, QPixmap
+from PySide6.QtGui import QAction, QPixmap
 from PySide6.QtWidgets import (
     QComboBox,
     QLabel,
@@ -37,8 +36,9 @@ from deeplabcut import __version__ as DLC_VERSION
 from deeplabcut import auxiliaryfunctions, compat
 from deeplabcut.core.debug import install_debug_recorder
 from deeplabcut.core.engine import Engine
-from deeplabcut.gui import BASE_DIR, components
+from deeplabcut.gui import components
 from deeplabcut.gui.dialogs import create_generate_debug_log_action
+from deeplabcut.gui.gui_assets import icon_from_resource, pixmap_from_resource
 from deeplabcut.gui.tabs import (
     AnalyzeVideos,
     CreateTrainingDataset,
@@ -217,9 +217,8 @@ class MainWindow(QMainWindow):
 
                 msg.setWindowTitle("Info")
                 msg.setMinimumWidth(900)
-                logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-                logo = logo_dir + "/assets/logo.png"
-                msg.setWindowIcon(QIcon(logo))
+                icon = icon_from_resource("logo.png")
+                msg.setWindowIcon(icon)
                 msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
                 msg.exec_()
 
@@ -228,7 +227,7 @@ class MainWindow(QMainWindow):
 
     @property
     def project_folder(self) -> str:
-        return self.cfg.get("project_path", os.path.expanduser("~/Desktop"))
+        return self.cfg.get("project_path", str(Path("~/Desktop").expanduser()))
 
     @property
     def is_multianimal(self) -> bool:
@@ -278,15 +277,15 @@ class MainWindow(QMainWindow):
 
     @property
     def inference_cfg_path(self) -> str:
-        return os.path.join(
-            self.cfg["project_path"],
-            auxiliaryfunctions.get_model_folder(
+        return str(
+            Path(self.cfg["project_path"])
+            / auxiliaryfunctions.get_model_folder(
                 self.cfg["TrainingFraction"][int(self.trainingset_index)],
                 int(self.shuffle_value),
                 self.cfg,
-            ),
-            "test",
-            "inference_cfg.yaml",
+            )
+            / "test"
+            / "inference_cfg.yaml"
         )
 
     def update_cfg(self, text):
@@ -609,8 +608,8 @@ class MainWindow(QMainWindow):
         palette.setColor(QtGui.QPalette.Window, QtGui.QColor("#ffffff"))
         self.setPalette(palette)
 
-        icon = os.path.join(BASE_DIR, "assets", "logo.png")
-        self.setWindowIcon(QIcon(icon))
+        # icon = str(BASE_DIR / "assets" / "logo.png")
+        self.setWindowIcon(icon_from_resource("logo.png"))
 
         # Set default window size and allow resizing
         self.resize(
@@ -643,8 +642,7 @@ class MainWindow(QMainWindow):
         image_widget = QtWidgets.QLabel(self)
         image_widget.setAlignment(Qt.AlignCenter)
         image_widget.setContentsMargins(0, 0, 0, 0)
-        logo = os.path.join(BASE_DIR, "assets", "logo_transparent.png")
-        pixmap = QtGui.QPixmap(logo)
+        pixmap = pixmap_from_resource("logo_transparent.png")
         image_widget.setPixmap(pixmap.scaledToHeight(400, QtCore.Qt.SmoothTransformation))
         self.layout.addWidget(image_widget)
         description = (
@@ -700,7 +698,7 @@ class MainWindow(QMainWindow):
         self.newAction = QAction(self)
         self.newAction.setText("&New Project...")
 
-        self.newAction.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", names[0])))
+        self.newAction.setIcon(icon_from_resource("icons", names[0]))
         self.newAction.setShortcut("Ctrl+N")
         self.newAction.setStatusTip("Create a new project...")
 
@@ -708,7 +706,7 @@ class MainWindow(QMainWindow):
 
         # Creating actions using the second constructor
         self.openAction = QAction("&Open...", self)
-        self.openAction.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", names[1])))
+        self.openAction.setIcon(icon_from_resource("icons", names[1]))
         self.openAction.setShortcut("Ctrl+O")
         self.openAction.setStatusTip("Open a project...")
         self.openAction.triggered.connect(self._open_project)
@@ -722,7 +720,7 @@ class MainWindow(QMainWindow):
         self.darkmodeAction.triggered.connect(self.darkmode)
 
         self.helpAction = QAction("&Help", self)
-        self.helpAction.setIcon(QIcon(os.path.join(BASE_DIR, "assets", "icons", names[2])))
+        self.helpAction.setIcon(icon_from_resource("icons", names[2]))
         self.helpAction.setStatusTip("Ask for help...")
         self.helpAction.triggered.connect(self._ask_for_help)
 

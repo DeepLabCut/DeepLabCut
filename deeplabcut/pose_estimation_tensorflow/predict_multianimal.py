@@ -48,7 +48,7 @@ def extract_bpt_feature_from_video(
         protocol=pickle.DEFAULT_PROTOCOL,
     )
 
-    with open(destfolder / f"{basename}_assemblies.pickle", "rb") as f:
+    with (destfolder / f"{basename}_assemblies.pickle").open("rb") as f:
         assemblies = pickle.load(f)
 
     print("Loading ", video)
@@ -204,7 +204,7 @@ def AnalyzeMultiAnimalVideo(
     print(f"Video Analyzed. Saving results in {destfolder}")
 
     if use_shelve:
-        with open(destfolder / f"{basename}_meta.pickle", "wb") as f:
+        with (destfolder / f"{basename}_meta.pickle").open("wb") as f:
             pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
     else:
         auxfun_multianimal.SaveFullMultiAnimalData(predicted_data, metadata, str(destfolder / f"{basename}.h5"))

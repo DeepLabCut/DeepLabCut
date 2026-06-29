@@ -10,15 +10,14 @@
 #
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtGui import QIcon
 
 from deeplabcut.core.config import read_config_as_dict
 from deeplabcut.gui.dlc_params import DLCParams
+from deeplabcut.gui.gui_assets import icon_from_resource
 from deeplabcut.gui.widgets import ConfigEditor
 
 
@@ -355,7 +354,7 @@ class VideoSelectionWidget(QtWidgets.QWidget):
         )
 
         if filenames[0]:
-            abs_files = [os.path.abspath(vid) for vid in filenames[0]]
+            abs_files = [str(Path(vid).resolve()) for vid in filenames[0]]
             self.root.add_video_files(abs_files)
 
             # Optional safety: sync dropdown to selected file suffix
@@ -418,7 +417,7 @@ class SnapshotSelectionWidget(QtWidgets.QWidget):
             self.selected_snapshot_text.setText("")
             self.clear_snapshot_button.hide()
         else:
-            self.selected_snapshot_text.setText(f"{os.path.basename(self.selected_snapshot)}")
+            self.selected_snapshot_text.setText(f"{Path(self.selected_snapshot).name}")
             self.clear_snapshot_button.show()
 
     def select_snapshot(self):
@@ -436,7 +435,7 @@ class SnapshotSelectionWidget(QtWidgets.QWidget):
         )
         # When Canceling a file selection, Qt returns an empty string as selected file
         if selected_snapshot:
-            self.selected_snapshot = os.path.abspath(selected_snapshot)
+            self.selected_snapshot = str(Path(selected_snapshot).resolve())
 
         self._update_selected_snapshot_display()
 
@@ -525,7 +524,7 @@ class ConditionsSelectionWidget(QtWidgets.QWidget):
                 selected_conditions = None
 
         # When Canceling a file selection, Qt returns an empty string as selected file
-        self.selected_conditions = str(os.path.abspath(selected_conditions)) if selected_conditions else None
+        self.selected_conditions = str(Path(selected_conditions).resolve()) if selected_conditions else None
 
         self._update_selected_conditions_display()
 
@@ -672,9 +671,9 @@ def _create_message_box(text, info_text):
 
     msg.setWindowTitle("Info")
     msg.setMinimumWidth(900)
-    logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-    logo = logo_dir + "/assets/logo.png"
-    msg.setWindowIcon(QIcon(logo))
+    # logo = Path("logo.png").resolve().parent / "assets" / "logo.png"
+    icon = icon_from_resource("logo.png")
+    msg.setWindowIcon(icon)
     msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
     return msg
 
@@ -687,9 +686,8 @@ def _create_confirmation_box(title, description):
 
     msg.setWindowTitle("Confirmation")
     msg.setMinimumWidth(900)
-    logo_dir = os.path.dirname(os.path.realpath("logo.png")) + os.path.sep
-    logo = logo_dir + "/assets/logo.png"
-    msg.setWindowIcon(QIcon(logo))
+    icon = icon_from_resource("logo.png")
+    msg.setWindowIcon(icon)
     msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
     return msg
 

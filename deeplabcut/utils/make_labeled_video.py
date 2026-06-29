@@ -29,7 +29,6 @@ import os
 ####################################################
 # Dependencies
 ####################################################
-import os.path
 from collections.abc import Callable, Iterable, Sequence
 from functools import partial
 from multiprocessing import Pool, get_start_method
@@ -394,8 +393,8 @@ def CreateVideoSlow(
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def create_labeled_video(
-    config: str,
-    videos: list[str],
+    config: str | Path,
+    videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle: int = 1,
     trainingsetindex: int = 0,
@@ -437,10 +436,10 @@ def create_labeled_video(
 
     Parameters
     ----------
-    config : string
+    config : str or Path
         Full path of the config.yaml file.
 
-    videos : list[str]
+    videos : list[str] or list[Path]
         A list of strings containing the full paths to videos for analysis or a path
         to the directory, where all the videos with same extension are stored.
 
@@ -639,6 +638,10 @@ def create_labeled_video(
             video_extensions='mp4',
         )
     """
+    if config != "":
+        config = Path(config)
+    if destfolder is not None:
+        destfolder = Path(destfolder)
     if skeleton is None:
         skeleton = []
     if config == "":
@@ -703,12 +706,7 @@ def create_labeled_video(
     if superanimal_name != "":
         dlc_root_path = auxiliaryfunctions.get_deeplabcut_path()
         test_cfg = auxiliaryfunctions.read_plainconfig(
-            os.path.join(
-                dlc_root_path,
-                "modelzoo",
-                "project_configs",
-                f"{superanimal_name}.yaml",
-            )
+            dlc_root_path / "modelzoo" / "project_configs" / f"{superanimal_name}.yaml"
         )
 
         bodyparts = test_cfg["bodyparts"]
@@ -738,7 +736,7 @@ def create_labeled_video(
         bodyparts2connect = None
         skeleton_color = None
 
-    start_path = os.getcwd()
+    start_path = Path.cwd()
     Videos = collect_video_paths(videos, extensions=video_extensions)
 
     if not Videos:
@@ -871,7 +869,7 @@ def proc_video(
                 s = ""
 
             videooutname = filepath.replace(".h5", f"{s}_p{int(100 * pcutoff)}_labeled.mp4")
-            if os.path.isfile(videooutname) and not overwrite:
+            if Path(videooutname).is_file() and not overwrite:
                 print("Labeled video already created. Skipping...")
                 return
 
@@ -924,7 +922,7 @@ def proc_video(
                 )
                 clip.close()
             elif not fastmode:
-                tmpfolder = os.path.join(str(videofolder), "temp-" + vname)
+                tmpfolder = str(Path(str(videofolder)) / ("temp-" + vname))
                 if save_frames:
                     auxiliaryfunctions.attempt_to_make_folder(tmpfolder)
                 clip = vp(video)
@@ -1152,8 +1150,8 @@ def create_video_with_keypoints_only(
 
 @renamed_parameter(old="videotype", new="video_extensions", since="3.0.0")
 def create_video_with_all_detections(
-    config,
-    videos,
+    config: str | Path,
+    videos: list[str | Path],
     video_extensions: str | Sequence[str] | None = None,
     shuffle=1,
     trainingsetindex=0,
@@ -1244,17 +1242,17 @@ def create_video_with_all_detections(
         confidence_to_alpha = _get_default_conf_to_alpha(confidence_to_alpha, 0)
 
     for video in videos:
-        videofolder = os.path.splitext(video)[0]
+        videofolder = str(Path(video).with_suffix(""))
 
         if destfolder is None:
             outputname = f"{videofolder + DLCscorername}_full.mp4"
-            full_pickle = os.path.join(videofolder + DLCscorername + "_full.pickle")
+            full_pickle = videofolder + DLCscorername + "_full.pickle"
         else:
             auxiliaryfunctions.attempt_to_make_folder(destfolder)
-            outputname = os.path.join(destfolder, str(Path(video).stem) + DLCscorername + "_full.mp4")
-            full_pickle = os.path.join(destfolder, str(Path(video).stem) + DLCscorername + "_full.pickle")
+            outputname = str(Path(destfolder) / (Path(video).stem + DLCscorername + "_full.mp4"))
+            full_pickle = str(Path(destfolder) / (Path(video).stem + DLCscorername + "_full.pickle"))
 
-        if not (os.path.isfile(outputname)):
+        if not Path(outputname).is_file():
             video_name = str(Path(video).stem)
             print("Creating labeled video for ", video_name)
             h5file = full_pickle.replace("_full.pickle", ".h5")
@@ -1361,8 +1359,8 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
 
     from tqdm import tqdm
 
-    if not os.path.isdir(destfolder):
-        os.mkdir(destfolder)
+    if not Path(destfolder).is_dir():
+        Path(destfolder).mkdir()
 
     vid = VideoWriter(video)
     nframes = len(vid)
@@ -1381,9 +1379,9 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
     for index in tqdm(range(nframes)):
         vid.set_to_frame(index)
         imname = "frame" + str(index).zfill(strwidth)
-        image_output = os.path.join(destfolder, imname + ".png")
+        image_output = str(Path(destfolder) / (imname + ".png"))
         frame = vid.read_frame()
-        if frame is not None and not os.path.isfile(image_output):
+        if frame is not None and not Path(image_output).is_file():
             im.set_data(frame[:, X1:X2])
             for n, trackid in enumerate(trackids):
                 if imname in tracks[trackid]:
@@ -1410,15 +1408,17 @@ def _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff, s
         ]
     )
     # remove frames used for video creation
-    [os.remove(image) for image in os.listdir(destfolder) if "frame" in image]
+    for p in Path(destfolder).iterdir():
+        if p.is_file() and "frame" in p.name:
+            p.unlink()
 
 
 def create_video_from_pickled_tracks(video, pickle_file, destfolder="", output_name="", pcutoff=0.6):
     if not destfolder:
-        destfolder = os.path.splitext(video)[0]
+        destfolder = str(Path(video).with_suffix(""))
     if not output_name:
-        video_name, ext = os.path.splitext(os.path.split(video)[1])
-        output_name = video_name + "DLClabeled" + ext
+        video_path = Path(video)
+        output_name = video_path.stem + "DLClabeled" + video_path.suffix
     tracks = auxiliaryfunctions.read_pickle(pickle_file)
     _create_video_from_tracks(video, tracks, destfolder, output_name, pcutoff)
 
