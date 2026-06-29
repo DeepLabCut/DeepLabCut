@@ -55,6 +55,8 @@ def safe_resolve(path: Path) -> Path:
     try:
         if resolved.is_dir():
             # test if os.listdir works after str-conversion
+            import os
+
             os.listdir(str(resolved))
         else:
             open(str(resolved)).close()
