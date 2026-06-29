@@ -1,4 +1,4 @@
-name: Build main docs (Jupyter Book)
+name: Docs / Build main docs (Jupyter Book)
 
 on:
   workflow_call:
