@@ -3,7 +3,9 @@ deeplabcut:
   last_metadata_updated: '2026-03-17'
   ignore: false
 ---
+
 (file:dlclivegui-pretrained-models)=
+
 # Pre-trained models
 
 This page explains how to programmatically download and export **pre-trained, GUI-compatible** models from the DeepLabCut Model Zoo using the `dlclive.modelzoo` API, and convert them for use in DLC-live and by extension, the GUI.
@@ -25,7 +27,7 @@ The example below is intended for the PyTorch engine.
 If you are using **TensorFlow models**, you will typically point the GUI to a DLC model *.pb file* instead of a model *.pth/.pt file*.
 ```
 
----
+______________________________________________________________________
 
 ## Quick start
 
@@ -65,10 +67,10 @@ assert TORCH_CONFIG["checkpoint"].exists(), "Export failed"
 What this does:
 
 1. Creates the destination directory if needed.
-2. Downloads the correct model snapshot (weights) for the specified `super_animal` + `model_name`.
-3. Writes a **single `.pt` export file** containing the model config and weights.
+1. Downloads the correct model snapshot (weights) for the specified `super_animal` + `model_name`.
+1. Writes a **single `.pt` export file** containing the model config and weights.
 
----
+______________________________________________________________________
 
 ## API reference
 
@@ -84,7 +86,7 @@ Behavior:
 - If `export_path` already exists, the function **skips** exporting (and emits a warning).
 - If `detector_name` is provided, it downloads and exports a top-down model with the detector weights as well.
 
----
+______________________________________________________________________
 
 ## What gets saved in the exported `.pt`
 
@@ -117,7 +119,7 @@ export_modelzoo_model(
 print(f"Exported model zoo checkpoint to: {export_path}")
 ```
 
----
+______________________________________________________________________
 
 ## In the future
 

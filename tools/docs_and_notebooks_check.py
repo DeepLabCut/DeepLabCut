@@ -80,6 +80,7 @@ import fnmatch
 import json
 import os
 import re
+import shlex
 import subprocess
 from collections.abc import Sequence
 from datetime import date, datetime, timezone
@@ -91,7 +92,7 @@ import yaml
 from nbformat.validator import NotebookValidationError
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-SCHEMA_VERSION = 1
+REPORT_SCHEMA_VERSION: Literal[1, 2] = 2
 GLOB_CHARS = set("*?[")
 DLC_NAMESPACE = "deeplabcut"
 OUTPUT_FILENAME = "docs_nb_checks"
@@ -147,6 +148,7 @@ class PolicyConfig(BaseModel):
 
     # Strict-mode toggle: if true, scan/parsing errors also fail `check`
     fail_on_scan_errors: bool = False
+    fail_if_metadata_sync_needed: bool = False
 
     # Allowlists for strict checks (start empty; ratchet later)
     require_metadata: list[str] = Field(default_factory=list)
@@ -156,7 +158,7 @@ class PolicyConfig(BaseModel):
 
 
 class ToolConfig(BaseModel):
-    version: int = 1
+    version: Literal[1] = 1
     scan: ScanConfig
     policy: PolicyConfig
 
@@ -188,13 +190,17 @@ class FileRecord(BaseModel):
 
 
 class Report(BaseModel):
-    schema_version: int = SCHEMA_VERSION
+    schema_version: Literal[1, 2] = REPORT_SCHEMA_VERSION
     generated_at: datetime
     repo_root: str
     config_path: str
 
     totals: dict[str, int]
     records: list[FileRecord]
+
+    # New: actionable metadata-sync guidance for maintainers
+    metadata_sync_targets: list[str] = Field(default_factory=list)
+    metadata_sync_command: str | None = None
 
 
 # Rebuild models due to __future__ annotations
@@ -592,6 +598,75 @@ def match_allowlist(rel_path: str, allowlist: list[str]) -> bool:
 
 
 # -----------------------------
+#  CI enforcement utils
+# -----------------------------
+def record_needs_metadata_sync(rec: FileRecord) -> bool:
+    if "invalid_metadata" in rec.warnings:
+        # avoid mixing "invalid metadata" issues with "metadata sync needed" guidance,
+        # since the former may require manual fixes
+        return False
+
+    # If metadata could not be read/parsed/validated reliably, just return False.
+    # These are scan/repair issues first, not "missing/out-of-sync metadata".
+    metadata_sync_blocking_error_prefixes = (
+        "metadata_read_failed:",
+        "markdown_frontmatter_invalid:",
+        "nbformat_invalid:",
+    )
+    if any(err.startswith(metadata_sync_blocking_error_prefixes) for err in (rec.errors or [])):
+        return False
+
+    if rec.kind not in {"md", "ipynb"}:
+        return False
+    if rec.meta and rec.meta.ignore:
+        return False
+
+    embedded = rec.meta.last_content_updated if rec.meta else None
+    computed = rec.last_content_updated
+
+    if computed is None:
+        return False
+
+    return embedded != computed
+
+
+def collect_metadata_sync_targets(records: list[FileRecord]) -> list[str]:
+    paths: list[str] = []
+    for rec in records:
+        if record_needs_metadata_sync(rec):
+            paths.append(rec.path)
+    return sorted(set(paths))
+
+
+def build_metadata_sync_command(config_path: str, paths: list[str]) -> str | None:
+    if not paths:
+        return None
+    config_path = shlex.quote(config_path)
+    paths = [shlex.quote(p) for p in paths]
+
+    target_lines = " \\\n  ".join(paths)
+    return (
+        "python tools/docs_and_notebooks_check.py \\\n"
+        f"  --config {config_path} \\\n"
+        "  update \\\n"
+        "  --write \\\n"
+        "  --set-content-date-from-git \\\n"
+        "  --targets \\\n"
+        f"  {target_lines} \\\n"
+        "  --ack-meta-commit-marker"
+    )
+
+
+def build_git_add_command(paths: list[str]) -> str | None:
+    if not paths:
+        return None
+    paths = [shlex.quote(p) for p in paths]
+
+    path_lines = " \\\n  ".join(paths)
+    return f"git add \\\n  {path_lines}"
+
+
+# -----------------------------
 # Core scanning
 # -----------------------------
 
@@ -680,6 +755,9 @@ def scan_files(repo_root: Path, cfg: ToolConfig, targets: list[str] | None = Non
         if rec.meta and rec.meta.ignore:
             records.append(rec)
             continue
+
+        if record_needs_metadata_sync(rec):
+            rec.warnings.append("metadata_sync_needed")
 
         last_verified = rec.meta.last_verified if rec.meta else None
         rec.days_since_verified = compute_days_since(last_verified, today)
@@ -893,6 +971,7 @@ def summarize(records: list[FileRecord]) -> dict[str, int]:
         "missing_last_verified": sum(1 for r in records if "missing_last_verified" in r.warnings),
         "content_stale": sum(1 for r in records if any(w.startswith("content_stale") for w in r.warnings)),
         "verified_stale": sum(1 for r in records if any(w.startswith("verified_stale") for w in r.warnings)),
+        "metadata_sync_needed": sum(1 for r in records if "metadata_sync_needed" in r.warnings),
     }
 
 
@@ -912,7 +991,8 @@ def to_markdown(report: Report, cfg: ToolConfig) -> str:
     lines.append(f"- Missing metadata: **{t['missing_metadata']}**\n")
     lines.append(f"- Missing last_verified: **{t['missing_last_verified']}**\n")
     lines.append(f"- Content-stale (> {pol.warn_if_content_older_than_days}d): **{t['content_stale']}**\n")
-    lines.append(f"- Verification-stale (> {pol.warn_if_verified_older_than_days}d): **{t['verified_stale']}**\n\n")
+    lines.append(f"- Verification-stale (> {pol.warn_if_verified_older_than_days}d): **{t['verified_stale']}**\n")
+    lines.append(f"- Metadata sync needed: **{t['metadata_sync_needed']}**\n\n")
 
     def fmt_date(d: date | None) -> str:
         return d.isoformat() if d else "-"
@@ -959,6 +1039,30 @@ def to_markdown(report: Report, cfg: ToolConfig) -> str:
         for r in err_recs:
             lines.append(f"- **{r.path}**: {', '.join(r.errors)}\n")
         lines.append("\n")
+
+    if report.metadata_sync_targets:
+        lines.append("## Metadata sync suggestions\n\n")
+        lines.append(
+            "The following files have embedded `deeplabcut.last_content_updated` metadata "
+            "that is missing or out of sync with the git-derived content date:\n\n"
+        )
+        for p in report.metadata_sync_targets:
+            lines.append(f"- `{p}`\n")
+        lines.append("\n")
+
+        if report.metadata_sync_command:
+            lines.append("Run this locally:\n\n")
+            lines.append("```bash\n")
+            lines.append(report.metadata_sync_command + "\n")
+            lines.append("```\n\n")
+
+            git_add = build_git_add_command(report.metadata_sync_targets)
+            if git_add:
+                lines.append("Then commit with:\n\n")
+                lines.append("```bash\n")
+                lines.append(git_add + "\n")
+                lines.append(f'git commit -m "{SUGGESTED_TAGGED_COMMIT}"\n')
+                lines.append("```\n\n")
 
     lines.append("## Notes\n")
     lines.append("- 'Out of date' does not necessarily mean 'broken'. Use this as a triage signal.\n")
@@ -1020,6 +1124,11 @@ def enforce(cfg: ToolConfig, records: list[FileRecord]) -> list[str]:
                         violations.append(
                             f"{r.path}: last_verified is {days}d old (> {pol.warn_if_verified_older_than_days}d)"
                         )
+
+        if pol.fail_if_metadata_sync_needed and record_needs_metadata_sync(r):
+            violations.append(
+                f"{r.path}: embedded last_content_updated is missing or out of sync with git content update date"
+            )
 
         if r.kind == "ipynb" and match_allowlist(r.path, pol.require_notebook_normalized):
             if "notebook_not_normalized" in (r.warnings or []):
@@ -1198,15 +1307,35 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.write:
             print(f"\nSuggested commit message:\n  {SUGGESTED_TAGGED_COMMIT}\n")
 
+    metadata_sync_targets = collect_metadata_sync_targets(records)
+    metadata_sync_command = build_metadata_sync_command(str(config_path), metadata_sync_targets)
+
     report = Report(
         generated_at=datetime.now(timezone.utc),
         repo_root=str(repo_root),
         config_path=str(config_path),
         totals=summarize(records),
         records=records,
+        metadata_sync_targets=metadata_sync_targets,
+        metadata_sync_command=metadata_sync_command,
     )
 
     json_path, md_path = write_outputs(report, cfg, out_dir)
+
+    if metadata_sync_targets and args.cmd in {"report", "check"}:
+        print(f"\nMetadata sync needed for {len(metadata_sync_targets)} file(s):")
+        for p in metadata_sync_targets:
+            print(f"- {p}")
+
+        if metadata_sync_command:
+            print("\nRun this locally:")
+            print(metadata_sync_command)
+
+            git_add = build_git_add_command(metadata_sync_targets)
+            if git_add:
+                print("\nThen commit with:")
+                print(git_add)
+                print(f'git commit -m "{SUGGESTED_TAGGED_COMMIT}"')
 
     # Emit GitHub Actions job summary if available
     emit_summary = not getattr(args, "no_step_summary", False)
