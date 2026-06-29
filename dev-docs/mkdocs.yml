@@ -78,7 +78,7 @@ plugins:
             parameter_headings: true
             docstring_options:
               returns_multiple_items: false
-              warn_mising_types: false
+              warn_missing_types: false
             docstring_section_style: table
             separate_signature: true
             line_length: 120
