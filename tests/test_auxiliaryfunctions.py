@@ -8,7 +8,6 @@
 #
 # Licensed under GNU Lesser General Public License v3.0
 #
-import os
 from pathlib import Path
 from unittest.mock import patch
 
@@ -331,8 +330,8 @@ class TestReadConfigProjectPath:
 
         cfg = auxiliaryfunctions.read_config(config_file)
 
-        assert "Volume{" not in cfg["project_path"]
-        assert os.path.isdir(cfg["project_path"])
+        assert "Volume{" not in str(cfg["project_path"])
+        assert cfg["project_path"].exists()
 
     def test_project_path_updated_when_moved(self, tmp_path):
         """read_config() must still update project_path when a project is moved
@@ -345,5 +344,5 @@ class TestReadConfigProjectPath:
 
         cfg = auxiliaryfunctions.read_config(config_file)
 
-        expected = str(project_dir.absolute())
+        expected = project_dir.absolute()
         assert cfg["project_path"] == expected
