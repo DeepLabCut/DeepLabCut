@@ -337,7 +337,7 @@ class AnalyzeVideos(DefaultTab):
 
         for _, videos in batches:
             for video in videos:
-                parent = str(Path(video).parent.resolve())
+                parent = str(Path(video).parent.absolute())
                 if parent not in seen:
                     seen.add(parent)
                     folders.append(parent)

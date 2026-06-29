@@ -147,7 +147,7 @@ def create_new_project(
     date = dt.today().strftime("%Y-%m-%d")
     if working_directory is None:
         working_directory = "."
-    wd = Path(working_directory).resolve()
+    wd = Path(working_directory).absolute()
     project_name = f"{project}-{experimenter}-{date}"
     project_path = wd / project_name
 

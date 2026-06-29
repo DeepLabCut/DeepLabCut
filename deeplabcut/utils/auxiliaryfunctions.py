@@ -42,6 +42,28 @@ read_config = core_config.read_config
 write_config = core_config.write_project_config
 
 
+def safe_resolve(path: Path) -> Path:
+    """Return a resolved Path that is safe to use with str-based I/O.
+
+    Prefers Path.resolve() so that symlinks are followed (useful on Linux).
+    Falls back to Path.absolute() when the resolved path cannot be opened
+    as a plain string — e.g. on Windows 11 + SMB network drives where
+    resolve() may return an unusable \\\\?\\Volume{GUID}\\... form.
+
+    See https://github.com/DeepLabCut/DeepLabCut/issues/3348
+    """
+    resolved = path.resolve()
+    try:
+        if resolved.is_dir():
+            # test if os.listdir works after str-conversion
+            os.listdir(str(resolved))
+        else:
+            open(str(resolved)).close()
+        return resolved
+    except OSError:
+        return path.absolute()
+
+
 def read_plainconfig(configname: str | Path) -> dict:
     """Load a YAML config (alias for read_config_as_dict). See deeplabcut.core.config."""
     return core_config.read_config_as_dict(config_path=configname)
