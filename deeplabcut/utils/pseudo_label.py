@@ -30,7 +30,6 @@ from deeplabcut.modelzoo.generalized_data_converter.datasets import (
 from deeplabcut.pose_estimation_pytorch.apis.utils import get_inference_runners
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import (
     select_device,
-    update_config,
 )
 
 
@@ -185,6 +184,8 @@ def keypoint_matching(
         super_animal=superanimal_name,
         model_name=model_name,
         detector_name=detector_name,
+        max_individuals=max_individuals,
+        device=device,
     )
     if device is None:
         device = select_device()
@@ -199,7 +200,6 @@ def keypoint_matching(
         model_name=detector_name,
     )
 
-    config = update_config(config, max_individuals, device)
     individuals = [f"animal{i}" for i in range(max_individuals)]
     config["metadata"]["individuals"] = individuals
     train_file_path = memory_replay_folder / "annotations" / train_file

@@ -26,6 +26,8 @@ from tqdm import tqdm
 
 import deeplabcut.pose_estimation_pytorch.apis.utils as utils
 import deeplabcut.pose_estimation_pytorch.runners.shelving as shelving
+from deeplabcut.core.config import ProjectConfig
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.pose_estimation_pytorch.apis.ctd import (
     get_condition_provider,
     get_conditions_provider_for_video,
@@ -33,6 +35,7 @@ from deeplabcut.pose_estimation_pytorch.apis.ctd import (
 from deeplabcut.pose_estimation_pytorch.apis.tracklets import (
     convert_detections2tracklets,
 )
+from deeplabcut.pose_estimation_pytorch.config.pose import PoseConfig
 from deeplabcut.pose_estimation_pytorch.data import DLCLoader
 from deeplabcut.pose_estimation_pytorch.data.ctd import CondFromModel
 from deeplabcut.pose_estimation_pytorch.runners import (
@@ -46,7 +49,6 @@ from deeplabcut.pose_estimation_pytorch.task import Task
 from deeplabcut.refine_training_dataset.stitch import stitch_tracklets
 from deeplabcut.utils import VideoReader, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import collect_video_paths
-from deeplabcut.utils.deprecation import renamed_parameter
 
 
 class VideoIterator(VideoReader):
@@ -498,6 +500,7 @@ def analyze_videos(
                 condition_cfg=loader.model_cfg["inference"]["conditions"],
                 config=config,
             )
+        # TODO @deruyter92: decide on typed / plain dict
         elif isinstance(ctd_conditions, dict):
             cond_provider = get_condition_provider(
                 condition_cfg=ctd_conditions,
@@ -506,6 +509,7 @@ def analyze_videos(
         else:
             cond_provider = ctd_conditions
 
+    # TODO @deruyter92: decide on typed / plain dict
     if isinstance(ctd_tracking, dict):
         # FIXME(niels) - add video FPS setting
         ctd_tracking = CTDTrackingConfig.build(ctd_tracking)
@@ -852,8 +856,8 @@ def _validate_destfolder(destfolder: str | None) -> None:
 
 
 def _generate_metadata(
-    cfg: dict,
-    pytorch_config: dict,
+    cfg: ProjectConfig,
+    pytorch_config: PoseConfig,
     dlc_scorer: str,
     train_fraction: int,
     batch_size: int,
@@ -877,7 +881,7 @@ def _generate_metadata(
         "stop": runtime[1],
         "run_duration": runtime[1] - runtime[0],
         "Scorer": dlc_scorer,
-        "pytorch-config": pytorch_config,
+        "pytorch-config": pytorch_config.to_dict(),
         "fps": video.fps,
         "batch_size": batch_size,
         "frame_dimensions": (w, h),

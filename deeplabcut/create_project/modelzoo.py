@@ -23,7 +23,8 @@ from dlclibrary.dlcmodelzoo.modelzoo_download import (
 )
 
 import deeplabcut
-from deeplabcut.core.config import read_config_as_dict, write_config
+from deeplabcut.core.config import ProjectConfig
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import (
     DataSplit,
@@ -34,13 +35,12 @@ from deeplabcut.generate_training_dataset.trainingsetmanipulation import (
     MakeInference_yaml,
 )
 from deeplabcut.modelzoo.utils import get_super_animal_project_cfg
-from deeplabcut.pose_estimation_pytorch.config.make_pose_config import (
-    add_metadata,
+from deeplabcut.pose_estimation_pytorch.config import (
+    PoseMetadata,
     make_pytorch_test_config,
 )
 from deeplabcut.pose_estimation_pytorch.modelzoo.utils import load_super_animal_config
 from deeplabcut.utils import auxiliaryfunctions
-from deeplabcut.utils.deprecation import renamed_parameter
 
 Modeloptions = MODELOPTIONS  # backwards compatibility for COLAB NOTEBOOK
 
@@ -403,10 +403,11 @@ def create_pretrained_project_pytorch(
         cfg_edits["multianimalbodyparts"] = super_animal_bodyparts
     else:
         cfg_edits["bodyparts"] = super_animal_bodyparts
-    auxiliaryfunctions.edit_config(cfg_path, edits=cfg_edits)
+    config = ProjectConfig.from_yaml(cfg_path)
+    config.update(cfg_edits)
+    config.to_yaml(cfg_path, log_changes=True, mark_clean=True)
 
     # Create the shuffle train and test directories
-    config = read_config_as_dict(cfg_path)
     shuffle_dir = Path(cfg_path).parent / auxiliaryfunctions.get_model_folder(
         trainFraction=config["TrainingFraction"][0],
         shuffle=1,
@@ -442,10 +443,10 @@ def create_pretrained_project_pytorch(
         model_name=net_name,
         detector_name=detector_name,
     )
-    pytorch_config = add_metadata(config, pytorch_config, train_cfg_path)
+    pytorch_config["metadata"] = PoseMetadata.build(config, pose_config_path=train_cfg_path).to_dict()
     pytorch_config["resume_training_from"] = str(train_dir / new_snapshot_name)
     pytorch_config["detector"]["resume_training_from"] = str(train_dir / new_detector_name)
-    write_config(train_cfg_path, pytorch_config)
+    pytorch_config.to_yaml(train_cfg_path)
 
     # Create test pose_cfg.yaml
     test_cfg_path = test_dir / "pose_cfg.yaml"
@@ -567,7 +568,9 @@ def create_pretrained_project_tensorflow(
             project, experimenter, videos, working_directory, copy_videos, video_extensions=video_extensions
         )
         if trainFraction is not None:
-            auxiliaryfunctions.edit_config(cfg, {"TrainingFraction": [trainFraction]})
+            ProjectConfig.from_yaml(cfg).update(TrainingFraction=[trainFraction]).to_yaml(
+                cfg, log_changes=True, mark_clean=True
+            )
 
         config = auxiliaryfunctions.read_config(cfg)
         if model == "full_human":
@@ -657,7 +660,7 @@ def create_pretrained_project_tensorflow(
             "bodyparts": pose_cfg["all_joints_names"],
             "dotsize": 6,
         }
-        auxiliaryfunctions.edit_config(cfg, dict_)
+        ProjectConfig.from_yaml(cfg).update(dict_).to_yaml(cfg, log_changes=True, mark_clean=True)
 
         # downloading base encoder / not required unless on re-trains
         # (but when a training set is created this happens anyway)

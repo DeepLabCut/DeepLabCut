@@ -30,13 +30,13 @@ from scipy.stats import mode
 from tqdm import trange
 
 import deeplabcut
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.core.trackingutils import (
     TRACK_METHODS,
     calc_iou,
 )
 from deeplabcut.utils import auxfun_multianimal, auxiliaryfunctions
 from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
-from deeplabcut.utils.deprecation import renamed_parameter
 
 
 class Tracklet:

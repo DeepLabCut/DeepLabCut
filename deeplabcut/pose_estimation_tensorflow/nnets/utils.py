@@ -213,5 +213,3 @@ def drop_connect(inputs, is_training, drop_connect_rate):
 
 class DepthwiseConv2D(tf.keras.layers.DepthwiseConv2D, tf.compat.v1.layers.Layer):
     """Wrap keras DepthwiseConv2D to tf.layers."""
-
-    pass

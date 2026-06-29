@@ -17,8 +17,7 @@ from PySide6.QtCore import Qt
 
 from deeplabcut.generate_training_dataset import check_labels
 from deeplabcut.gui.components import DefaultTab
-from deeplabcut.gui.widgets import launch_napari
-from deeplabcut.utils.skeleton import SkeletonBuilder
+from deeplabcut.gui.widgets import SkeletonBuilder, launch_napari
 
 
 def label_frames(config_path: str | Path | None = None, image_folder: str | Path | None = None):
@@ -102,6 +101,7 @@ class LabelFrames(DefaultTab):
         super().__init__(root, parent, h1_description)
 
         self._set_page()
+        self.skeleton_builder = None
 
     def _set_page(self):
         self.label_frames_btn = QtWidgets.QPushButton("Label Frames")
@@ -138,5 +138,14 @@ class LabelFrames(DefaultTab):
         labeled_images = (Path(self.root.config).parent / "labeled-data").rglob("*_labeled/*.png")
         _ = launch_napari(labeled_images, plugin="napari", stack=True)
 
+    def _on_skeleton_builder_destroyed(self):
+        self.skeleton_builder = None
+
     def build_skeleton(self, *args):
-        SkeletonBuilder(self.root.config)
+        if self.skeleton_builder is None:
+            self.skeleton_builder = SkeletonBuilder(
+                config_path=self.root.config,
+                parent=self.root,
+            )
+            self.skeleton_builder.show()
+            self.skeleton_builder.destroyed.connect(self._on_skeleton_builder_destroyed)

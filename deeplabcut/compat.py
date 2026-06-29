@@ -16,12 +16,12 @@ from collections.abc import Sequence
 from pathlib import Path
 
 import numpy as np
-from ruamel.yaml import YAML
 
 import deeplabcut.core.visualization as visualization
+from deeplabcut.core.config import read_config_as_dict
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset.metadata import get_shuffle_engine
-from deeplabcut.utils.deprecation import renamed_parameter
 
 DEFAULT_ENGINE = Engine.PYTORCH
 
@@ -2021,12 +2021,5 @@ def _gpu_to_use_to_device(gpu_to_use: int | None, device: str | None) -> str | N
     return device
 
 
-def _load_config(config: str | Path) -> dict:
-    config_path = Path(config)
-    if not config_path.exists():
-        raise FileNotFoundError(f"Config {config} is not found. Please make sure that the file exists.")
-
-    with config_path.open() as f:
-        project_config = YAML(typ="safe", pure=True).load(f)
-
-    return project_config
+def _load_config(config: str) -> dict:
+    return read_config_as_dict(config)

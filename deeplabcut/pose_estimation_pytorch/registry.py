@@ -12,11 +12,16 @@ import inspect
 from functools import partial
 from typing import Any
 
+from deeplabcut.core.config import ensure_plain_config
 
+
+# NOTE @deruyter92 2026-02-17: The configuration is currently converted to a
+# plain dictionary, using this decorator, since fully typed configs are not
+# supported for all modules in the registry.
+@ensure_plain_config
 def build_from_cfg(cfg: dict, registry: "Registry", default_args: dict | None = None) -> Any:
-    """Builds a module from the configuration dictionary when it represents a class
-    configuration, or call a function from the configuration dictionary when it
-    represents a function configuration.
+    """Builds a module from the configuration dictionary when it represents a class configuration,
+    or call a function from the configuration dictionary when it represents a function configuration.
 
     Args:
         cfg: Configuration dictionary. It should at least contain the key "type".

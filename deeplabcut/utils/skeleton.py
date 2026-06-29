@@ -18,6 +18,7 @@ https://github.com/DeepLabCut/DeepLabCut/blob/master/AUTHORS
 Licensed under GNU Lesser General Public License v3.0
 """
 
+import logging
 import warnings
 from pathlib import Path
 
@@ -27,34 +28,29 @@ import numpy as np
 import pandas as pd
 from matplotlib.collections import LineCollection
 from matplotlib.widgets import Button, LassoSelector
-from ruamel.yaml import YAML
 from scipy.spatial import KDTree
 from skimage import io
 
+from deeplabcut.core.config import read_config_as_dict, write_config
 from deeplabcut.generate_training_dataset.trainingsetmanipulation import drop_likelihood_columns
 
-
-# NOTE @C-Achard 2026-03-26 duplicate config read/write functions
-# should be addressed in config refactor
-def read_config(configname):
-    if not Path(configname).exists():
-        raise FileNotFoundError(f"Config {configname} is not found. Please make sure that the file exists.")
-    yaml = YAML(typ="rt")
-    with Path(configname).open(encoding="utf-8") as file:
-        return yaml.load(file)
-
-
-def write_config(configname, cfg):
-    yaml = YAML(typ="rt")
-    with Path(configname).open("w", encoding="utf-8") as file:
-        yaml.dump(cfg, file)
+logger = logging.getLogger(__name__)
 
 
 class SkeletonBuilder:
+    ### Usage parameters
+    lasso_select_size = 10
+    clear_button_axes = [0.85, 0.55, 0.1, 0.1]
+    clear_button_text = "Clear"
+    export_button_axes = [0.85, 0.45, 0.1, 0.1]
+    export_button_text = "Save"
+    ampl = 1.3  # Amplification factor for the zoomed-in view of the animal
+
     def __init__(self, config_path):
         self.config_path = config_path
-        self.cfg = read_config(config_path)
+        self.cfg = read_config_as_dict(config_path)
         # Find uncropped labeled data
+        self._ax = None
         self.df = None
         found = False
         root = Path(self.cfg["project_path"]) / "labeled-data"
@@ -89,8 +85,9 @@ class SkeletonBuilder:
         self.inds = set()
         self.segs = set()
         # Draw the skeleton if already existent
-        if self.cfg["skeleton"]:
-            for bone in self.cfg["skeleton"]:
+        skeleton = self.cfg.get("skeleton", [])
+        if skeleton:
+            for bone in skeleton:
                 pair = np.flatnonzero(self.bpts.isin(bone))
                 if len(pair) != 2:
                     continue
@@ -104,28 +101,27 @@ class SkeletonBuilder:
 
     def build_ui(self):
         self.fig = plt.figure()
-        ax = self.fig.add_subplot(111)
-        ax.axis("off")
+        self._ax = self.fig.add_subplot(111)
+        self._ax.axis("off")
         lo = np.nanmin(self.xy, axis=0)
         hi = np.nanmax(self.xy, axis=0)
         center = (hi + lo) / 2
         w, h = hi - lo
-        ampl = 1.3
-        w *= ampl
-        h *= ampl
-        ax.set_xlim(center[0] - w / 2, center[0] + w / 2)
-        ax.set_ylim(center[1] - h / 2, center[1] + h / 2)
-        ax.imshow(self.image)
-        ax.scatter(*self.xy.T, s=self.cfg["dotsize"] ** 2)
-        ax.add_collection(self.lines)
-        ax.invert_yaxis()
+        w *= self.ampl
+        h *= self.ampl
+        self._ax.set_xlim(center[0] - w / 2, center[0] + w / 2)
+        self._ax.set_ylim(center[1] - h / 2, center[1] + h / 2)
+        self._ax.imshow(self.image)
+        self._ax.scatter(*self.xy.T, s=self.cfg["dotsize"] ** 2)
+        self._ax.add_collection(self.lines)
+        self._ax.invert_yaxis()
 
-        self.lasso = LassoSelector(ax, onselect=self.on_select)
-        ax_clear = self.fig.add_axes([0.85, 0.55, 0.1, 0.1])
-        ax_export = self.fig.add_axes([0.85, 0.45, 0.1, 0.1])
-        self.clear_button = Button(ax_clear, "Clear")
+        self.lasso = LassoSelector(self._ax, onselect=self.on_select)
+        ax_clear = self.fig.add_axes(self.clear_button_axes)
+        ax_export = self.fig.add_axes(self.export_button_axes)
+        self.clear_button = Button(ax_clear, self.clear_button_text)
         self.clear_button.on_clicked(self.clear)
-        self.export_button = Button(ax_export, "Export")
+        self.export_button = Button(ax_export, self.export_button_text)
         self.export_button.on_clicked(self.export)
         self.fig.canvas.mpl_connect("pick_event", self.on_pick)
 
@@ -155,22 +151,58 @@ class SkeletonBuilder:
         self.fig.canvas.draw_idle()
 
     def read_config(self, config_path):
-        return read_config(config_path)
+        return read_config_as_dict(config_path)
 
     def write_config(self, config_path, cfg):
         write_config(config_path, cfg)
 
-    def export(self, *args):
-        inds_flat = set(ind for pair in self.inds for ind in pair)
-        unconnected = [i for i in range(len(self.xy)) if i not in inds_flat]
-        if len(unconnected):
-            warnings.warn(
-                "You didn't connect all the bodyparts (which is fine!). This is just a note to let you know.",
-                stacklevel=2,
-            )
-        # sort to ensure consistent order in config.yaml
-        self.cfg["skeleton"] = [tuple(self.bpts[list(pair)]) for pair in sorted(self.inds)]
-        self.write_config(self.config_path, self.cfg)
+    def _show_export_feedback(self):
+        if not hasattr(self, "export_button"):
+            return
+
+        button = self.export_button
+        canvas = self.fig.canvas
+
+        original_text = button.label.get_text()
+        original_color = button.ax.get_facecolor()
+
+        n_edges = len(self.cfg.get("skeleton") or [])
+        button.label.set_text(f"Saved {n_edges}")
+        button.ax.set_facecolor("#c8e6c9")  # light green
+        canvas.draw_idle()
+
+        def reset_button():
+            button.label.set_text(original_text)
+            button.ax.set_facecolor(original_color)
+            canvas.draw_idle()
+            return False  # stop Matplotlib timer
+
+        timer = canvas.new_timer(interval=1200)
+        timer.add_callback(reset_button)
+
+        # Keep a reference so the timer is not garbage-collected.
+        self._export_feedback_timer = timer
+        timer.start()
+
+    def export(self, *args) -> bool:
+        try:
+            inds_flat = set(ind for pair in self.inds for ind in pair)
+            unconnected = [i for i in range(len(self.xy)) if i not in inds_flat]
+            # if empty, mention we are saving an empty skeleton
+            if not self.inds:
+                logger.warning("No bodyparts are connected. Saving an empty skeleton.")
+            elif len(unconnected):
+                logger.warning(
+                    "Not all bodyparts are connected. Note that connecting all bodyparts is not necessary.",
+                )
+            # sort to ensure consistent order in config.yaml
+            self.cfg["skeleton"] = [tuple(self.bpts[list(pair)]) for pair in sorted(self.inds)]
+            self.write_config(self.config_path, self.cfg)
+            self._show_export_feedback()
+            return True
+        except Exception as e:
+            logger.warning(f"Failed to export skeleton: {e}", stacklevel=2)
+            return False
 
     def on_pick(self, event):
         if event.mouseevent.button == 3:
@@ -184,16 +216,27 @@ class SkeletonBuilder:
             self.fig.canvas.draw_idle()
 
     def on_select(self, verts):
-        # self.path = Path(verts)
-        # self.verts = verts
-        inds = self.tree.query_ball_point(verts, 5)
+        # Transform keypoints and lasso vertices from image/data coordinates
+        # into display coordinates. This makes the grab radius independent of
+        # the image resolution and current zoom level.
+        xy_display = self._ax.transData.transform(self.xy)
+        verts_display = self._ax.transData.transform(np.asarray(verts))
+
+        tree_display = KDTree(xy_display)
+        inds = tree_display.query_ball_point(
+            verts_display,
+            self.lasso_select_size,
+        )
+
         inds_unique = []
         for lst in inds:
             if len(lst) and lst[0] not in inds_unique:
                 inds_unique.append(lst[0])
+
         for pair in zip(inds_unique, inds_unique[1:], strict=False):
             pair_sorted = tuple(sorted(pair))
             self.inds.add(pair_sorted)
             self.segs.add(tuple(map(tuple, self.xy[pair_sorted, :])))
-        self.lines.set_segments(self.segs)
+
+        self.lines.set_segments(list(self.segs))
         self.fig.canvas.draw_idle()

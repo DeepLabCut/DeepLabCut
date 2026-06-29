@@ -194,7 +194,7 @@ class TrackletManager:
 
             # Map a tracklet # to the animal ID it belongs to or the bodypart # it corresponds to.
             self.individuals = self.cfg["individuals"] + (["single"] if len(self.cfg["uniquebodyparts"]) else [])
-            self.tracklet2id = [i for i in range(0, self.nindividuals) for _ in bodyparts_multi] + [
+            self.tracklet2id = [i for i in range(self.nindividuals) for _ in bodyparts_multi] + [
                 self.nindividuals
             ] * len(bodyparts_single)
             bps = bodyparts_multi + bodyparts_single

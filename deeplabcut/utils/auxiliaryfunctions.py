@@ -21,312 +21,39 @@ Licensed under GNU Lesser General Public License v3.0
 from __future__ import annotations
 
 import pickle
-import warnings
 from collections.abc import Sequence
 from pathlib import Path
 
 import pandas as pd
-import ruamel.yaml.representer
-import yaml
-from ruamel.yaml import YAML
 
+from deeplabcut.core import config as core_config
+from deeplabcut.core.deprecation import deprecated
 from deeplabcut.core.engine import Engine
 from deeplabcut.core.trackingutils import TRACK_METHODS
 from deeplabcut.utils import auxfun_multianimal
 from deeplabcut.utils.auxfun_videos import SUPPORTED_VIDEOS, collect_video_paths
-from deeplabcut.utils.deprecation import deprecated
+
+# NOTE @deruyter92 2026-01-29: Configuration I/O is now centralized in deeplabcut.core.config
+# These functions are exported here for backwards compatibility with existing code.
+create_config_template = core_config.create_config_template
+create_config_template_3d = core_config.create_config_template_3d
+read_config = core_config.read_config
+write_config = core_config.write_project_config
 
 
-def as_path(path: str | Path) -> Path:
-    """Coerce a filesystem path argument to :class:`~pathlib.Path`."""
-    return Path(path)
+def read_plainconfig(configname: str | Path) -> dict:
+    """Load a YAML config (alias for read_config_as_dict). See deeplabcut.core.config."""
+    return core_config.read_config_as_dict(config_path=configname)
 
 
-def as_optional_path(path: str | Path | None) -> Path | None:
-    """Coerce an optional filesystem path argument to :class:`~pathlib.Path`."""
-    return None if path is None else Path(path)
+def write_plainconfig(configname: str | Path, cfg: dict, overwrite: bool = True) -> None:
+    """Write a config dict to YAML (alias for write_config). See deeplabcut.core.config."""
+    core_config.write_config(config_path=configname, config=cfg, overwrite=overwrite)
 
 
-def as_path_list(paths: Sequence[str | Path]) -> list[Path]:
-    """Coerce a sequence of filesystem path arguments to :class:`~pathlib.Path`."""
-    return [Path(p) for p in paths]
-
-
-def create_config_template(multianimal=False):
-    """Creates a template for config.yaml file.
-
-    This specific order is preserved while saving as yaml file.
-    """
-    if multianimal:
-        yaml_str = """\
-# Project definitions (do not edit)
-Task:
-scorer:
-date:
-multianimalproject:
-identity:
-\n
-# Project path (change when moving around)
-project_path:
-\n
-# Default DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)
-engine: pytorch
-\n
-# Annotation data set configuration (and individual video cropping parameters)
-video_sets:
-individuals:
-uniquebodyparts:
-multianimalbodyparts:
-bodyparts:
-\n
-# Fraction of video to start/stop when extracting frames for labeling/refinement
-start:
-stop:
-numframes2pick:
-\n
-# Plotting configuration
-skeleton:
-skeleton_color:
-pcutoff:
-dotsize:
-alphavalue:
-colormap:
-\n
-# Training,Evaluation and Analysis configuration
-TrainingFraction:
-iteration:
-default_net_type:
-default_augmenter:
-default_track_method:
-snapshotindex:
-detector_snapshotindex:
-batch_size:
-\n
-# Cropping Parameters (for analysis and outlier frame detection)
-cropping:
-#if cropping is true for analysis, then set the values here:
-x1:
-x2:
-y1:
-y2:
-\n
-# Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
-corner2move2:
-move2corner:
-\n
-# Conversion tables to fine-tune SuperAnimal weights
-SuperAnimalConversionTables:
-        """
-    else:
-        yaml_str = """\
-# Project definitions (do not edit)
-Task:
-scorer:
-date:
-multianimalproject:
-identity:
-\n
-# Project path (change when moving around)
-project_path:
-\n
-# Default DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)
-engine: pytorch
-\n
-# Annotation data set configuration (and individual video cropping parameters)
-video_sets:
-bodyparts:
-\n
-# Fraction of video to start/stop when extracting frames for labeling/refinement
-start:
-stop:
-numframes2pick:
-\n
-# Plotting configuration
-skeleton:
-skeleton_color:
-pcutoff:
-dotsize:
-alphavalue:
-colormap:
-\n
-# Training,Evaluation and Analysis configuration
-TrainingFraction:
-iteration:
-default_net_type:
-default_augmenter:
-snapshotindex:
-detector_snapshotindex:
-batch_size:
-detector_batch_size:
-\n
-# Cropping Parameters (for analysis and outlier frame detection)
-cropping:
-#if cropping is true for analysis, then set the values here:
-x1:
-x2:
-y1:
-y2:
-\n
-# Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
-corner2move2:
-move2corner:
-\n
-# Conversion tables to fine-tune SuperAnimal weights
-SuperAnimalConversionTables:
-        """
-
-    ruamelFile = YAML()
-    cfg_file = ruamelFile.load(yaml_str)
-    return cfg_file, ruamelFile
-
-
-def create_config_template_3d():
-    """Creates a template for config.yaml file for 3d project.
-
-    This specific order is preserved while saving as yaml file.
-    """
-    yaml_str = """\
-# Project definitions (do not edit)
-Task:
-scorer:
-date:
-\n
-# Project path (change when moving around)
-project_path:
-\n
-# Plotting configuration
-skeleton: # Note that the pairs must be defined, as you want them linked!
-skeleton_color:
-pcutoff:
-colormap:
-dotsize:
-alphaValue:
-markerType:
-markerColor:
-\n
-# Number of cameras, camera names, path of the config files, shuffle index and trainingsetindex used to analyze videos:
-num_cameras:
-camera_names:
-scorername_3d: # Enter the scorer name for the 3D output
-    """
-    ruamelFile_3d = YAML()
-    cfg_file_3d = ruamelFile_3d.load(yaml_str)
-    return cfg_file_3d, ruamelFile_3d
-
-
-def safe_resolve(path: Path) -> Path:
-    """Return a resolved Path that is safe to use with str-based I/O.
-
-    Prefers Path.resolve() so that symlinks are followed (useful on Linux).
-    Falls back to Path.absolute() when the resolved path cannot be opened
-    as a plain string — e.g. on Windows 11 + SMB network drives where
-    resolve() may return an unusable \\\\?\\Volume{GUID}\\... form.
-
-    See https://github.com/DeepLabCut/DeepLabCut/issues/3348
-    """
-    resolved = path.resolve()
-    try:
-        resolved.open().close()
-        return resolved
-    except OSError:
-        return path.absolute()
-
-
-def read_config(configname: str | Path):
-    """Reads structured config file defining a project."""
-    ruamelFile = YAML()
-    path = Path(configname)
-    if path.exists():
-        try:
-            with path.open() as f:
-                cfg = ruamelFile.load(f)
-                curr_dir = safe_resolve(Path(configname).parent)
-
-                if cfg.get("engine") is None:
-                    cfg["engine"] = Engine.TF.aliases[0]
-                    write_config(configname, cfg)
-
-                if cfg.get("detector_snapshotindex") is None:
-                    cfg["detector_snapshotindex"] = -1
-
-                if cfg.get("detector_batch_size") is None:
-                    cfg["detector_batch_size"] = 1
-
-                if safe_resolve(Path(cfg["project_path"])) != curr_dir:
-                    cfg["project_path"] = str(curr_dir)
-                    write_config(configname, cfg)
-        except Exception as err:
-            if len(err.args) > 2:
-                if err.args[2] == "could not determine a constructor for the tag '!!python/tuple'":
-                    with path.open() as ymlfile:
-                        cfg = yaml.load(ymlfile, Loader=yaml.SafeLoader)
-                        write_config(configname, cfg)
-                else:
-                    raise
-
-    else:
-        raise FileNotFoundError(
-            f"Config file at {path} not found. Please make sure that the file exists and/or that you passed the path of"
-            f"the config file correctly!"
-        )
-    return cfg
-
-
-def write_config(configname, cfg):
-    """Write structured config file."""
-    with Path(configname).open("w") as cf:
-        cfg_file, ruamelFile = create_config_template(cfg.get("multianimalproject", False))
-        for key in cfg.keys():
-            cfg_file[key] = cfg[key]
-
-        # Adding default value for variable skeleton and skeleton_color for backward compatibility.
-        if "skeleton" not in cfg.keys():
-            cfg_file["skeleton"] = []
-            cfg_file["skeleton_color"] = "black"
-        # Use a very large width so long strings (e.g., file paths or keys with spaces)
-        # are kept on a single line instead of being wrapped, which can otherwise cause
-        # them to be emitted as complex keys. See also:
-        # https://stackoverflow.com/questions/31197268/pyyaml-yaml-dump-produces-complex-key-for-string-key-122-chars/31199123#31199123
-        ruamelFile.width = 1_000_000
-        ruamelFile.dump(cfg_file, cf)
-
-
-def edit_config(configname, edits, output_name=""):
-    """Convenience function to edit and save a config file from a dictionary.
-
-    Parameters
-    ----------
-    configname : string
-        String containing the full path of the config file in the project.
-    edits : dict
-        Key–value pairs to edit in config
-    output_name : string, optional (default='')
-        Overwrite the original config.yaml by default.
-        If passed in though, new filename of the edited config.
-
-    Examples
-    --------
-    config_path = 'my_stellar_lab/dlc/config.yaml'
-
-    edits = {'numframes2pick': 5,
-             'trainingFraction': [0.5, 0.8],
-             'skeleton': [['a', 'b'], ['b', 'c']]}
-
-    deeplabcut.auxiliaryfunctions.edit_config(config_path, edits)
-    """
-    cfg = read_plainconfig(configname)
-    for key, value in edits.items():
-        cfg[key] = value
-    if not output_name:
-        output_name = configname
-    try:
-        write_plainconfig(output_name, cfg)
-    except ruamel.yaml.representer.RepresenterError:
-        warnings.warn("Some edits could not be written. The configuration file will be left unchanged.", stacklevel=2)
-        for key in edits:
-            cfg.pop(key)
-        write_plainconfig(output_name, cfg)
-    return cfg
+edit_config = core_config.edit_config
+write_config_3d = core_config.write_config_3d
+write_config_3d_template = core_config.write_config_3d_template
 
 
 def get_bodyparts(cfg: dict) -> list[str]:
@@ -363,32 +90,6 @@ def get_unique_bodyparts(cfg: dict) -> list[str]:
         return unique_bodyparts
 
     return []
-
-
-def write_config_3d(configname, cfg):
-    """Write structured 3D config file."""
-    with Path(configname).open("w") as cf:
-        cfg_file, ruamelFile = create_config_template_3d()
-        for key in cfg.keys():
-            cfg_file[key] = cfg[key]
-        ruamelFile.dump(cfg_file, cf)
-
-
-def write_config_3d_template(projconfigfile, cfg_file_3d, ruamelFile_3d):
-    with Path(projconfigfile).open("w") as cf:
-        ruamelFile_3d.dump(cfg_file_3d, cf)
-
-
-def read_plainconfig(configname):
-    if not Path(configname).exists():
-        raise FileNotFoundError(f"Config {configname} is not found. Please make sure that the file exists.")
-    with Path(configname).open() as file:
-        return YAML().load(file)
-
-
-def write_plainconfig(configname, cfg):
-    with Path(configname).open("w") as file:
-        YAML().dump(cfg, file)
 
 
 def attempt_to_make_folder(foldername, recursive=False):
@@ -903,7 +604,7 @@ def find_analyzed_data(folder, videoname: str, scorer: str, filtered=False, trac
     candidates = []
     for file in grab_files_in_folder(folder, "h5"):
         stem = Path(file).stem.replace("_filtered", "")
-        starts_by_scorer = file.startswith(videoname + scorer) or file.startswith(videoname + scorer_legacy)
+        starts_by_scorer = file.startswith((videoname + scorer, videoname + scorer_legacy))
         if tracker:
             matches_tracker = stem.endswith(tracker)
         else:

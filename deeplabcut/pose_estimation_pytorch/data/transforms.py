@@ -37,6 +37,7 @@ def build_transforms(augmentations: dict) -> A.BaseCompose:
         symmetries = None
         if isinstance(hflip_cfg, float):
             hflip_proba = hflip_cfg
+        # TODO @deruyter92: decide on typed / plain dict
         elif isinstance(hflip_cfg, dict):
             if "p" in hflip_cfg:
                 hflip_proba = float(hflip_cfg["p"])

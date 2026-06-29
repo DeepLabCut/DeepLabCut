@@ -23,6 +23,7 @@ import statsmodels.api as sm
 from skimage.util import img_as_ubyte
 
 from deeplabcut.core import inferenceutils
+from deeplabcut.core.deprecation import renamed_parameter
 from deeplabcut.utils import (
     auxfun_multianimal,
     auxiliaryfunctions,
@@ -31,7 +32,6 @@ from deeplabcut.utils import (
     visualization,
 )
 from deeplabcut.utils.auxfun_videos import VideoWriter, collect_video_paths
-from deeplabcut.utils.deprecation import renamed_parameter
 
 
 def find_outliers_in_raw_data(
@@ -431,7 +431,9 @@ def extract_outlier_frames(
             # offset if the data was cropped
             # note: When output video is also cropped, the keypoints should be shifted back.
             out_x1, out_y1 = _read_video_specific_cropping_margins(config, video)
-            if metadata.get("data", {}).get("cropping"):
+            # TODO @deruyter92: This pattern should be refactored throughout the codebase
+            # it is reading a config value that is supposed to be missing / None.
+            if (metadata.get("data") or {}).get("cropping"):
                 x1, _, y1, _ = metadata["data"]["cropping_parameters"]
                 df.iloc[:, df.columns.get_level_values(level="coords") == "x"] += x1 - out_x1
                 df.iloc[:, df.columns.get_level_values(level="coords") == "y"] += y1 - out_y1
@@ -447,7 +449,7 @@ def extract_outlier_frames(
             elif outlieralgorithm == "jump":
                 temp_dt = df_temp.diff(axis=0) ** 2
                 temp_dt.drop("likelihood", axis=1, level="coords", inplace=True)
-                sum_ = temp_dt.groupby(level="bodyparts", axis=1).sum()
+                sum_ = temp_dt.T.groupby(level="bodyparts").sum().T
                 ind = df_temp.index[(sum_ > epsilon**2).any(axis=1)].tolist()
                 Indices.extend(ind)
             elif outlieralgorithm == "fitting":
@@ -751,7 +753,7 @@ def ExtractFramesbasedonPreselection(
         duration = clip.duration
 
     if cfg["cropping"]:  # one might want to adjust
-        coords = cfg["video_sets"].get(video, {}).get("crop")
+        coords = (cfg["video_sets"].get(video) or {}).get("crop")
         if coords is not None:
             coords = list(map(int, coords.split(", ")))
     else:
@@ -1117,7 +1119,7 @@ def merge_datasets(config: str | Path, forceiterate=None):
         else:
             print("The following folder was not manually refined,...", folder)
             flagged = True
-            pass  # this folder does not contain a MachineLabelsRefine file (not updated...)
+            # this folder does not contain a MachineLabelsRefine file (not updated...)
 
     if not flagged:
         # updates iteration by 1

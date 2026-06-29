@@ -11,13 +11,12 @@
 import os
 
 import pandas as pd
-from conftest import TEST_DATA_DIR
 
 from deeplabcut.utils import conversioncode
 
 
-def test_guarantee_multiindex_rows():
-    df_unix = pd.read_hdf(os.path.join(TEST_DATA_DIR, "trimouse_calib.h5"))
+def test_guarantee_multiindex_rows(test_data_dir):
+    df_unix = pd.read_hdf(os.path.join(test_data_dir, "trimouse_calib.h5"))
     df_posix = df_unix.copy()
     df_posix.index = df_posix.index.str.replace("/", "\\")
     nrows = len(df_unix)

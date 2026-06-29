@@ -13,7 +13,7 @@ import warnings
 import pytest
 from packaging.version import Version
 
-from deeplabcut.utils.deprecation import (
+from deeplabcut.core.deprecation import (
     DLCDeprecationWarning,
     deprecated,
     renamed_parameter,

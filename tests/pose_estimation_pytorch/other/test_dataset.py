@@ -11,7 +11,6 @@
 import os
 import random
 from pathlib import Path
-from unittest.mock import Mock, patch
 
 import albumentations as A
 import pytest
@@ -23,25 +22,6 @@ from deeplabcut.core.engine import Engine
 from deeplabcut.generate_training_dataset import create_training_dataset
 
 
-def mock_config() -> Mock:
-    aux_functions = Mock()
-    aux_functions.read_config_as_dict = Mock()
-    aux_functions.read_config_as_dict.return_value = {
-        "data": {"train": {}, "inference": {}},
-        "metadata": {
-            "project_path": "",
-            "pose_config_path": "",
-            "bodyparts": ["snout", "leftear", "rightear", "tailbase"],
-            "unique_bodyparts": [],
-            "individuals": ["animal"],
-            "with_identity": False,
-        },
-        "method": "bu",
-    }
-    return aux_functions
-
-
-@patch("deeplabcut.pose_estimation_pytorch.data.base.config", mock_config())
 def _get_dataset(path, transform, mode="train"):
     project_root = Path(path)
     if not (project_root / "training-datasets").exists():

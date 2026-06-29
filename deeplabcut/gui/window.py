@@ -56,7 +56,7 @@ from deeplabcut.gui.tabs import (
     UnsupervizedIdTracking,
     VideoEditor,
 )
-from deeplabcut.gui.utils import UpdateChecker
+from deeplabcut.gui.utils import UpdateChecker, _build_update_commands
 from deeplabcut.gui.widgets import StreamReceiver, StreamWriter
 
 warnings.filterwarnings(
@@ -98,6 +98,9 @@ class MainWindow(QMainWindow):
         # Update checks
         self._update_process = None
         self._update_process_output = []
+        self._update_commands = []
+        self._update_attempt_outputs = []
+        self._current_update_backend = None
 
         self._scheduled_update_check_silent = True
         self._update_check_timer = QtCore.QTimer(self)
@@ -308,6 +311,20 @@ class MainWindow(QMainWindow):
     def video_files(self):
         return self.files
 
+    def _disconnect_update_process(self, process):
+        if process is None:
+            return
+
+        for signal, slot in (
+            (process.finished, self._on_update_process_finished),
+            (process.errorOccurred, self._on_update_process_error),
+            (process.readyRead, self._drain_update_process_output),
+        ):
+            try:
+                signal.disconnect(slot)
+            except (TypeError, RuntimeError):
+                pass
+
     def check_for_updates(self, *, silent=True, delay_ms=0):
         """Start an update check immediately or schedule it after a delay."""
         if self._closing:
@@ -329,6 +346,29 @@ class MainWindow(QMainWindow):
             return
         self._updater.check(silent=self._scheduled_update_check_silent)
 
+    def _start_next_update_command(self):
+        """Start the next update backend. Return True if one was started."""
+        if not self._update_commands:
+            return False
+
+        backend_name, program, arguments = self._update_commands.pop(0)
+        self._current_update_backend = backend_name
+
+        self.status_bar.showMessage(f"Installing updates with {backend_name}...")
+
+        self._update_process = QtCore.QProcess(self)
+        self._update_process.setProgram(program)
+        self._update_process.setArguments(arguments)
+
+        self._update_process.finished.connect(self._on_update_process_finished)
+        self._update_process.errorOccurred.connect(self._on_update_process_error)
+        self._update_process.readyRead.connect(self._drain_update_process_output)
+        self._update_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
+        self._update_process.start()
+
+        self.logger.info("Starting update command: %s %s", program, " ".join(arguments))
+        return True
+
     def _run_update_command(self, packages):
         if not packages:
             return
@@ -340,21 +380,28 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage("Installing updates...")
 
         self._update_process_output = []
-        self._update_process = QtCore.QProcess(self)
-        self._update_process.setProgram(sys.executable)
-        self._update_process.setArguments(["-m", "pip", "install", "-U", *packages])
+        self._update_attempt_outputs = []
+        self._update_commands = _build_update_commands(packages)
+        self._current_update_backend = None
 
-        self._update_process.finished.connect(self._on_update_process_finished)
-        self._update_process.errorOccurred.connect(self._on_update_process_error)
-        self._update_process.readyRead.connect(self._drain_update_process_output)
-        self._update_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-        self._update_process.start()
+        if not self._start_next_update_command():
+            self._cleanup_update_process()
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Update failed",
+                "No update commands were generated.",
+            )
 
-    def _drain_update_process_output(self):
-        if self._update_process is None:
+    def _drain_update_process_output(self, process=None):
+
+        if process is None:
+            sender = self.sender()
+            process = sender if sender is not None else self._update_process
+
+        if process is None or process is not self._update_process:
             return
 
-        data = bytes(self._update_process.readAll())
+        data = bytes(process.readAll())
         if not data:
             return
 
@@ -370,44 +417,79 @@ class MainWindow(QMainWindow):
 
     def _cleanup_update_process(self):
         if self._update_process is not None:
+            self._disconnect_update_process(self._update_process)
             self._update_process.deleteLater()
             self._update_process = None
+
         self._update_process_output = []
+        self._update_commands = []
+        self._update_attempt_outputs = []
+        self._current_update_backend = None
+
         self._progress_bar.hide()
         self.status_bar.showMessage("www.deeplabcut.org")
 
     def _on_update_process_error(self, error):
+
+        process = self.sender()
+        if process is not self._update_process:
+            return
+
         if self._closing:
             self._cleanup_update_process()
             return
 
-        error_strings = {
-            QtCore.QProcess.FailedToStart: (
-                "Process failed to start. Check that pip is available and you have sufficient permissions."
-            ),
-            QtCore.QProcess.Crashed: "Update process crashed unexpectedly.",
-            QtCore.QProcess.Timedout: "Update process timed out.",
-            QtCore.QProcess.WriteError: "Could not write to update process.",
-            QtCore.QProcess.ReadError: "Could not read from update process.",
-            QtCore.QProcess.UnknownError: "An unknown error occurred.",
-        }
-        message = error_strings.get(error, "An unknown error occurred.")
-        QtWidgets.QMessageBox.warning(self, "Update failed", message)
+        backend = self._current_update_backend or "installer"
 
+        error_strings = {
+            QtCore.QProcess.FailedToStart: f"The {backend} update process failed to start.",
+            QtCore.QProcess.Crashed: f"The {backend} update process crashed unexpectedly.",
+            QtCore.QProcess.Timedout: f"The {backend} update process timed out.",
+            QtCore.QProcess.WriteError: f"Could not write to the {backend} update process.",
+            QtCore.QProcess.ReadError: f"Could not read from the {backend} update process.",
+            QtCore.QProcess.UnknownError: f"An unknown {backend} update error occurred.",
+        }
+
+        if process is not None:
+            self._drain_update_process_output(process)
+
+        output = "".join(self._update_process_output).strip()
+        message = error_strings.get(error, f"An unknown {backend} update error occurred.")
+        failed_output = f"{message}\n\n{output}" if output else message
+        self.logger.warning(failed_output)
+        self._update_attempt_outputs.append(failed_output)
+
+        self._disconnect_update_process(process)
+        process.deleteLater()
+        self._update_process = None
+        self._update_process_output = []
+
+        if self._start_next_update_command():
+            return
+
+        QtWidgets.QMessageBox.warning(
+            self,
+            "Update failed",
+            "No update backend completed successfully.\n\n" + "\n\n---\n\n".join(self._update_attempt_outputs),
+        )
         self._cleanup_update_process()
 
     def _on_update_process_finished(self, exit_code, exit_status):
+        process = self.sender()
+        if process is None or process is not self._update_process:
+            return
+
         if self._closing:
             self._cleanup_update_process()
             return
 
-        if self._update_process is None:
+        if process is None:
             return
 
-        self._progress_bar.hide()
-        self._drain_update_process_output()
+        self._drain_update_process_output(process)
 
         output = "".join(self._update_process_output).strip()
+        backend = self._current_update_backend or "installer"
 
         if exit_status == QtCore.QProcess.NormalExit and exit_code == 0:
             QtWidgets.QMessageBox.information(
@@ -415,17 +497,32 @@ class MainWindow(QMainWindow):
                 "Update complete",
                 "The update completed successfully.\n\nPlease restart DeepLabCut to use the updated packages.",
             )
+
             if output:
                 self.logger.info(output)
-        else:
-            QtWidgets.QMessageBox.warning(
-                self,
-                "Update failed",
-                "The update command did not complete successfully.\n\n"
-                f"{output or 'No additional output was captured.'}",
-            )
-            if output:
-                self.logger.error(output)
+
+            self._cleanup_update_process()
+            return
+
+        failed_output = (
+            f"{backend} failed with exit code {exit_code}.\n\n{output or 'No additional output was captured.'}"
+        )
+        self._update_attempt_outputs.append(failed_output)
+        self.logger.warning(failed_output)
+
+        self._disconnect_update_process(process)
+        process.deleteLater()
+        self._update_process = None
+        self._update_process_output = []
+
+        if self._start_next_update_command():
+            return
+
+        QtWidgets.QMessageBox.warning(
+            self,
+            "Update failed",
+            "No update backend completed successfully.\n\n" + "\n\n---\n\n".join(self._update_attempt_outputs),
+        )
 
         self._cleanup_update_process()
 

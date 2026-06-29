@@ -14,7 +14,6 @@ from copy import deepcopy
 
 import numpy as np
 import pytest
-from conftest import TEST_DATA_DIR
 from scipy.spatial.distance import squareform
 
 from deeplabcut.core import inferenceutils
@@ -132,8 +131,8 @@ def test_assembly():
     assert len(ass3) == 2
 
 
-def test_assembler(tmpdir_factory, real_assemblies):
-    with open(os.path.join(TEST_DATA_DIR, "trimouse_full.pickle"), "rb") as file:
+def test_assembler(tmpdir_factory, real_assemblies, test_data_dir):
+    with open(os.path.join(test_data_dir, "trimouse_full.pickle"), "rb") as file:
         data = pickle.load(file)
     with pytest.warns(UserWarning):
         ass = inferenceutils.Assembler(
@@ -170,8 +169,8 @@ def test_assembler(tmpdir_factory, real_assemblies):
     ass.to_pickle(output_dir.join("fake.pickle"))
 
 
-def test_assembler_with_single_bodypart(real_assemblies):
-    with open(os.path.join(TEST_DATA_DIR, "trimouse_full.pickle"), "rb") as file:
+def test_assembler_with_single_bodypart(real_assemblies, test_data_dir):
+    with open(os.path.join(test_data_dir, "trimouse_full.pickle"), "rb") as file:
         temp = pickle.load(file)
     data = {"metadata": temp.pop("metadata")}
     for k, dict_ in temp.items():
@@ -196,8 +195,8 @@ def test_assembler_with_single_bodypart(real_assemblies):
     assert all(len(a) == 3 for a in ass.assemblies.values())
 
 
-def test_assembler_with_unique_bodypart(real_assemblies_montblanc):
-    with open(os.path.join(TEST_DATA_DIR, "montblanc_full.pickle"), "rb") as file:
+def test_assembler_with_unique_bodypart(real_assemblies_montblanc, test_data_dir):
+    with open(os.path.join(test_data_dir, "montblanc_full.pickle"), "rb") as file:
         data = pickle.load(file)
     ass = inferenceutils.Assembler(
         data,
@@ -219,8 +218,8 @@ def test_assembler_with_unique_bodypart(real_assemblies_montblanc):
     np.testing.assert_equal(assemblies, assemblies_gt)
 
 
-def test_assembler_with_identity(tmpdir_factory, real_assemblies):
-    with open(os.path.join(TEST_DATA_DIR, "trimouse_full.pickle"), "rb") as file:
+def test_assembler_with_identity(tmpdir_factory, real_assemblies, test_data_dir):
+    with open(os.path.join(test_data_dir, "trimouse_full.pickle"), "rb") as file:
         data = pickle.load(file)
 
     # Generate fake identity predictions
@@ -274,11 +273,11 @@ def test_assembler_with_identity(tmpdir_factory, real_assemblies):
     ass.to_pickle(output_dir.join("fake.pickle"))
 
 
-def test_assembler_calibration(real_assemblies):
-    with open(os.path.join(TEST_DATA_DIR, "trimouse_full.pickle"), "rb") as file:
+def test_assembler_calibration(real_assemblies, test_data_dir):
+    with open(os.path.join(test_data_dir, "trimouse_full.pickle"), "rb") as file:
         data = pickle.load(file)
     ass = inferenceutils.Assembler(data, max_n_individuals=3, n_multibodyparts=12)
-    ass.calibrate(os.path.join(TEST_DATA_DIR, "trimouse_calib.h5"))
+    ass.calibrate(os.path.join(test_data_dir, "trimouse_calib.h5"))
     assert ass._kde is not None
     assert ass.safe_edge
 
